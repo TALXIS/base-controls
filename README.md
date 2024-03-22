@@ -1,20 +1,18 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# Building the components locally
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+1. Run `npm install` inside the root directory.
+1. Run `npm run sandbox`. This will run the sandbox environment located in `src/sandbox`,
+where you can import and test all of the components (the source code for all components is located in `src/components`).
+1. Optionally, you can run `npm run documentation` to view the current documentation for existing components and use it for testing purposes.
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+# Testing the components locally in Portal
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+1. Run `npm i yalc -g` (only needed once)
+1. Navigate to the shared components root directory.
+1. Run `npm run build`.
+1. Run `yalc publish`.
+1. Go to the Portal.Web.Frontend directory and run `yalc add @talxis/react-components`. This will replace the NPM package in `package.json` with the locally built version.
+1. Run the Portal.
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+If you want to see the latest changes applied, repeat steps 2 and 3 and run `yalc update` in the `Portal.Web.Frontend` directory.
+**Don't forget to revert the `package.json` file to the original version before pushing any changes to the Portal repo!**
