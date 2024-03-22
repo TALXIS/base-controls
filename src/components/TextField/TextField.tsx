@@ -1,29 +1,33 @@
-import React from 'react';
-import { TextField } from '@talxis/react-components/dist/components/TextField';
+import { TextField as TextFieldBase } from '@talxis/react-components/dist/components/TextField';
+import { useEffect, useRef } from 'react';
 import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
-import { ISingleLineText } from './interfaces';
-import { useComponent } from '../../hooks';
+import { useTextField } from './hooks/useTextField';
+import { ITextField } from './interfaces';
 
-export const SingleLineText = (props: ISingleLineText) => {
+export const TextField = (props: ITextField) => {
     const context = props.context;
     const bindings = props.bindings;
     const boundValue = bindings.value;
+    const ref = useRef<HTMLDivElement>(null);
     const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent(props);
-    const [t] = useComponent(props);
+    const [height] = useTextField(props, ref);
+
     
     return (
-        <TextField
+        <TextFieldBase
             readOnly={context.mode.isControlDisabled}
+            multiline={bindings.IsMultiLine?.raw}
+            resizable={true}
             autoFocus={bindings.AutoFocus?.raw}
+            elementRef={ref}
             styles={{
                 fieldGroup: {
-                    height: context.mode?.allocatedHeight || undefined
+                    height: height,
+                    width: context.mode.allocatedWidth || undefined
                 }
             }}
-            width={context.mode.allocatedWidth || 0}
             borderless={bindings.EnableBorder?.raw === false}
             errorMessage={boundValue.errorMessage}
-            maxLength={boundValue.attributes?.MaxLength}
             deleteButtonProps={bindings.EnableDeleteButton?.raw === true ? {
                 key: 'delete',
                 showOnlyOnHover: true,

@@ -12,9 +12,6 @@ export default [
     {
         input: [
             'src/components/*/*.tsx',
-            'src/index.tsx',
-            'src/utilities/components/*/*.tsx',
-            'src/utilities/helpers/*/*.tsx',
             'src/hooks/*.ts'],
         output: [
             {

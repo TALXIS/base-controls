@@ -1,11 +1,8 @@
 import { initializeIcons, Label, PrimaryButton} from '@fluentui/react';
-import { TextField } from '@talxis/react-components/dist/components/TextField';
+import { TextField as TalxisTextField } from '@talxis/react-components/dist/components/TextField';
 import React, { useState } from 'react';
-import { SingleLineText } from '../components/SingleLineText/SingleLineText';
+import { TextField } from '../components/TextField/TextField';
 import { Context } from './mock/Context';
-import { Formatting } from './mock/Formatting';
-import { Mode } from './mock/Mode';
-import { UserSettings } from './mock/UserSettings';
 
 initializeIcons();
 
@@ -17,17 +14,23 @@ export const Sandbox: React.FC = () => {
     return (
         <>
             <Label>Outside change</Label>
-            <TextField value={value} onChange={(e, value) => setValue(value)} />
+            <TalxisTextField value={value} onChange={(e, value) => setValue(value)} />
             {isMounted &&
                 <>
                     <Label>Component</Label>
-                    <SingleLineText
+                    <TextField
                         context={new Context()}
                         onNotifyOutputChanged={(outputs) => {
                             setValue(outputs.value as string);
                         }}
                         bindings={{
-                            EnableDeleteButton: {
+/*                             EnableDeleteButton: {
+                                raw: true,
+                            }, */
+                            EnableCopyButton: {
+                                raw: true,
+                            },
+                            IsMultiLine: {
                                 raw: true,
                             },
                             value: {

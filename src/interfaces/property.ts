@@ -15,3 +15,9 @@ export interface ITwoOptionsProperty extends Omit<ComponentFramework.PropertyTyp
     error?: boolean;
     errorMessage?: string;
 }
+
+export interface IDecimalNumberProperty extends Omit<ComponentFramework.PropertyTypes.Property, 'type' | 'error' | 'errorMessage'> {
+    type?: string;
+    error?: boolean;
+    errorMessage?: string;
+}

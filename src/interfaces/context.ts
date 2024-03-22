@@ -4,10 +4,6 @@ export interface IOutputs {
     [key: string]: any
 }
 
-export interface IBindings {
-    [key: string]: IProperty | undefined;
-}
-
 export interface IContext {
     mode: ComponentFramework.Mode;
     userSettings: ComponentFramework.UserSettings;
