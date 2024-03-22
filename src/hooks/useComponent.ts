@@ -18,7 +18,7 @@ export const useComponent = <TBindings extends IBindings, TOutputs extends IOutp
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;
         for (const [key, outputValue] of Object.entries(outputs)) {
-            const bindingValue = bindingsRef.current[key].raw
+            const bindingValue = bindingsRef.current[key]?.raw
             if (!deepEqual(bindingValue, outputValue)) {
                 isDirty = true;
             }

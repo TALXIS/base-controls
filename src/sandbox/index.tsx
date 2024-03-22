@@ -1,4 +1,5 @@
-import { initializeIcons, Label, PrimaryButton, TextField } from '@fluentui/react';
+import { initializeIcons, Label, PrimaryButton} from '@fluentui/react';
+import { TextField } from '@talxis/react-components/dist/components/TextField';
 import React, { useState } from 'react';
 import { SingleLineText } from '../components/SingleLineText/SingleLineText';
 import { Context } from './mock/Context';
@@ -35,9 +36,11 @@ export const Sandbox: React.FC = () => {
                         }} />
                 </>
             }
-            {test}
+            <br />
             <PrimaryButton text='Mount/Unmount component' onClick={() => setIsMounted(!isMounted)} />
-            <PrimaryButton onClick={() => setTest('test2') }/>
+            <br />
+            <br />
+            <PrimaryButton text='Trigger rerender' onClick={() => setTest(Math.random().toString()) }/>
         </>
     )
 }

@@ -9,6 +9,7 @@ export const SingleLineText = (props: ISingleLineText) => {
     const bindings = props.bindings;
     const boundValue = bindings.value;
     const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent(props);
+    const [t] = useComponent(props);
     
     return (
         <TextField

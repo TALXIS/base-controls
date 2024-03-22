@@ -5,7 +5,7 @@ export interface IOutputs {
 }
 
 export interface IBindings {
-    [key: string]: IProperty;
+    [key: string]: IProperty | undefined;
 }
 
 export interface IContext {

@@ -1,10 +1,10 @@
 import { IStringProperty, ITwoOptionsProperty } from "../../interfaces";
-import { IComponent, IOutputs } from "../../interfaces/context";
+import { IBindings, IComponent, IOutputs } from "../../interfaces/context";
 
-export interface ISingleLineText extends IComponent<ISingleLineTextInputs, ISingleLineTextOutputs> {
+export interface ISingleLineText extends IComponent<ISingleLineTextBindings, ISingleLineTextOutputs> {
 }
 
-interface ISingleLineTextInputs {
+interface ISingleLineTextBindings extends IBindings {
     /** default `true`    */
     EnableBorder?: ITwoOptionsProperty;
     /**
