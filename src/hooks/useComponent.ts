@@ -1,32 +1,32 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import deepEqual from 'fast-deep-equal';
-import { IContext, IInputs, IOutputs } from "../interfaces/context";
+import { IComponent, IBindings, IOutputs } from "../interfaces";
 
 /**
- * Provides automatic checking if the given outputs are different from the provided inputs. Use the returned method any time you want
+ * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
-export const useComponent = <TInputs extends IInputs, TOutputs extends IOutputs>(context: IContext<TInputs, TOutputs>): [
+export const useComponent = <TBindings extends IBindings, TOutputs extends IOutputs>(props: IComponent<TBindings, TOutputs>): [
     (outputs: TOutputs) => void
 ] => {
-    const inputsRef = useRef<TInputs>(context.inputs);
+    const bindingsRef = useRef<TBindings>(props.bindings);
 
     useEffect(() => {
-        inputsRef.current = context.inputs;
-    }, [context.inputs]);
+        bindingsRef.current = props.bindings;
+    }, [props.bindings]);
 
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;
-        for (const [key, value] of Object.entries(outputs)) {
-            const inputValue = inputsRef.current[key].raw
-            if (!deepEqual(value, inputValue)) {
+        for (const [key, outputValue] of Object.entries(outputs)) {
+            const bindingValue = bindingsRef.current[key].raw
+            if (!deepEqual(bindingValue, outputValue)) {
                 isDirty = true;
             }
         }
         if (!isDirty) {
             return;
         }
-        context.onNotifyOutputChanged?.(outputs);
+        props.onNotifyOutputChanged?.(outputs);
     }
     return [onNotifyOutputChanged];
 }

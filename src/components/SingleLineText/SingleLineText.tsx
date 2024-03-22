@@ -5,23 +5,25 @@ import { ISingleLineText } from './interfaces';
 import { useComponent } from '../../hooks';
 
 export const SingleLineText = (props: ISingleLineText) => {
-    const binding = props.inputs.value;
+    const context = props.context;
+    const bindings = props.bindings;
+    const boundValue = bindings.value;
     const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent(props);
     
     return (
         <TextField
-            readOnly={props.mode?.isControlDisabled}
-            autoFocus={props.AutoFocus?.raw}
+            readOnly={context.mode.isControlDisabled}
+            autoFocus={bindings.AutoFocus?.raw}
             styles={{
                 fieldGroup: {
-                    height: props.mode?.allocatedHeight ?? undefined
+                    height: context.mode?.allocatedHeight || undefined
                 }
             }}
-            width={props.mode?.allocatedWidth}
-            borderless={props.EnableBorder?.raw === false}
-            errorMessage={binding.errorMessage}
-            maxLength={binding.attributes?.MaxLength}
-            deleteButtonProps={props.EnableDeleteButton?.raw === true ? {
+            width={context.mode.allocatedWidth || 0}
+            borderless={bindings.EnableBorder?.raw === false}
+            errorMessage={boundValue.errorMessage}
+            maxLength={boundValue.attributes?.MaxLength}
+            deleteButtonProps={bindings.EnableDeleteButton?.raw === true ? {
                 key: 'delete',
                 showOnlyOnHover: true,
                 iconProps: {
@@ -29,7 +31,7 @@ export const SingleLineText = (props: ISingleLineText) => {
                 },
                 onClick: () => setValue(null)
             } : undefined}
-            clickToCopyProps={props.EnableCopyButton?.raw === true ? {
+            clickToCopyProps={bindings.EnableCopyButton?.raw === true ? {
                 key: 'copy',
                 iconProps: {
                     iconName: 'Copy'

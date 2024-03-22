@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { IProperty } from "../interfaces";
-import { IContext, IOutputs } from "../interfaces/context";
+import { IComponent, IOutputs } from "../interfaces/context";
 import { useComponent } from "./useComponent";
 
-interface IInputs {
+interface IBindings {
     value: IProperty
 }
 /**
@@ -20,17 +20,18 @@ interface IInputs {
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
 
-export const useInputBasedComponent = <TOutputs extends IOutputs>(context: IContext<IInputs, TOutputs>): [
+export const useInputBasedComponent = <TBindings extends IBindings, TOutputs extends IOutputs>(props: IComponent<TBindings, TOutputs>): [
     any,
     (value: any) => void,
     (outputs: TOutputs) => void
 ] => {
     const [value, setValue] = useState<string>();
-    const [onNotifyOutputChanged] = useComponent(context as any);
+    const [onNotifyOutputChanged] = useComponent(props as any);
 
     useEffect(() => {
-        setValue(context.inputs.value.raw);
-    }, [context.inputs]);
+        console.log('useEffect triggered');
+        setValue(props.bindings.value.raw);
+    }, [props.bindings.value.raw]);
 
     return [value, setValue, onNotifyOutputChanged];
 

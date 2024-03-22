@@ -1,7 +1,10 @@
 import { IStringProperty, ITwoOptionsProperty } from "../../interfaces";
-import { IContext, IInputs, IOutputs } from "../../interfaces/context";
+import { IComponent, IOutputs } from "../../interfaces/context";
 
-export interface ISingleLineText extends IContext<ISingleLineTextInputs, ISingleLineTextOutputs> {
+export interface ISingleLineText extends IComponent<ISingleLineTextInputs, ISingleLineTextOutputs> {
+}
+
+interface ISingleLineTextInputs {
     /** default `true`    */
     EnableBorder?: ITwoOptionsProperty;
     /**
@@ -10,9 +13,6 @@ export interface ISingleLineText extends IContext<ISingleLineTextInputs, ISingle
     AutoFocus?: ITwoOptionsProperty;
     EnableCopyButton?: ITwoOptionsProperty;
     EnableDeleteButton?: ITwoOptionsProperty;
-}
-
-interface ISingleLineTextInputs extends IInputs {
     value: IStringProperty;
 }
 

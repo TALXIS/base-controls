@@ -1,6 +1,7 @@
 import { initializeIcons, Label, PrimaryButton, TextField } from '@fluentui/react';
 import React, { useState } from 'react';
 import { SingleLineText } from '../components/SingleLineText/SingleLineText';
+import { Context } from './mock/Context';
 import { Formatting } from './mock/Formatting';
 import { Mode } from './mock/Mode';
 import { UserSettings } from './mock/UserSettings';
@@ -10,6 +11,7 @@ initializeIcons();
 export const Sandbox: React.FC = () => {
     const [value, setValue] = useState<string>();
     const [isMounted, setIsMounted] = useState<boolean>(true);
+    const [test, setTest] = useState('test');
 
     return (
         <>
@@ -19,24 +21,23 @@ export const Sandbox: React.FC = () => {
                 <>
                     <Label>Component</Label>
                     <SingleLineText
-                        mode={new Mode()}
-                        EnableDeleteButton={{
-                            raw: true,
-                        }}
-                        formatting={new Formatting()}
-                        userSettings={new UserSettings()}
+                        context={new Context()}
                         onNotifyOutputChanged={(outputs) => {
-                            console.log('triggered');
                             setValue(outputs.value as string);
                         }}
-                        inputs={{
+                        bindings={{
+                            EnableDeleteButton: {
+                                raw: true,
+                            },
                             value: {
                                 raw: value ?? null,
                             }
                         }} />
                 </>
             }
+            {test}
             <PrimaryButton text='Mount/Unmount component' onClick={() => setIsMounted(!isMounted)} />
+            <PrimaryButton onClick={() => setTest('test2') }/>
         </>
     )
 }
