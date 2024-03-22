@@ -26,6 +26,7 @@ export const Sandbox: React.FC = () => {
                         formatting={new Formatting()}
                         userSettings={new UserSettings()}
                         onNotifyOutputChanged={(outputs) => {
+                            console.log('triggered');
                             setValue(outputs.value as string);
                         }}
                         inputs={{

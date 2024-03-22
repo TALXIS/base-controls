@@ -7,7 +7,6 @@ import { useComponent } from '../../hooks';
 export const SingleLineText = (props: ISingleLineText) => {
     const binding = props.inputs.value;
     const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent(props);
-    console.log(props);
     
     return (
         <TextField

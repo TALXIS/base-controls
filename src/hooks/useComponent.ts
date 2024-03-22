@@ -3,7 +3,7 @@ import deepEqual from 'fast-deep-equal';
 import { IContext, IInputs, IOutputs } from "../interfaces/context";
 
 /**
- * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided `onNotifyOutputChaged` method any time you want
+ * Provides automatic checking if the given outputs are different from the provided inputs. Use the returned method any time you want
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
 export const useComponent = <TInputs extends IInputs, TOutputs extends IOutputs>(context: IContext<TInputs, TOutputs>): [
