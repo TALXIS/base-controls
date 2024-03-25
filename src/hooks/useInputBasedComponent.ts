@@ -25,7 +25,7 @@ export const useInputBasedComponent = <TValue, TParameters extends IParameters, 
     (value: TValue | null) => void,
     (outputs: TOutputs) => void
 ] => {
-    const [value, setValue] = useState<TValue | null>(null);
+    const [value, setValue] = useState<TValue | null>(props.parameters.value.raw);
     const [onNotifyOutputChanged] = useComponent(props as any);
 
     useEffect(() => {

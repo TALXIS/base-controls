@@ -9,7 +9,7 @@ initializeIcons();
 export const Sandbox: React.FC = () => {
     const [value, setValue] = useState<string>();
     const [isMounted, setIsMounted] = useState<boolean>(true);
-    const [test, setTest] = useState('test');
+    const [test, setTest] = useState('');
 
     return (
         <>
