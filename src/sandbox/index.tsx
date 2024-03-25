@@ -10,11 +10,6 @@ export const Sandbox: React.FC = () => {
     const [value, setValue] = useState<string>();
     const [isMounted, setIsMounted] = useState<boolean>(true);
     const [test, setTest] = useState('');
-    useEffect(() => {
-        setTimeout(() => {
-            setIsMounted(false);
-        }, 3000);
-    }, []);
     return (
         <>
             <Label>Outside change</Label>
@@ -28,8 +23,11 @@ export const Sandbox: React.FC = () => {
                             setValue(outputs.value as string);
                         }}
                         parameters={{
-                            NotifyOutputChangedOnUnmount: {
+                            IsMultiLine: {
                                 raw: true
+                            },
+                            isResizable: {
+                                raw: false
                             },
                             EnableCopyButton: {
                                 raw: true,

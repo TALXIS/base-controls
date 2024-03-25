@@ -17,7 +17,7 @@ export const TextField = (props: ITextField) => {
         <TextFieldBase
             readOnly={context.mode.isControlDisabled}
             multiline={parameters.IsMultiLine?.raw}
-            resizable={true}
+            resizable={parameters.isResizable?.raw}
             autoFocus={parameters.AutoFocus?.raw}
             elementRef={ref}
             styles={{
