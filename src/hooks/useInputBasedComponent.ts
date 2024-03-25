@@ -3,7 +3,7 @@ import { IProperty } from "../interfaces";
 import { IComponent, IOutputs } from "../interfaces/context";
 import { useComponent } from "./useComponent";
 
-interface IBindings {
+interface IParameters {
     value: IProperty
 }
 /**
@@ -11,7 +11,7 @@ interface IBindings {
  * An example of this is a standard Decimal component - we do not want to trigger `notifyOutputChanged` on every value change,
  * since this would trigger decimal validation on every keystroke which would result in a bad UX. In this case, the `notifyOutputChanged` should
  * be triggered when the user looses focus on the component (`onBlur` event).
- * @returns {[]} The hook returns an array with three props. First `value` prop is a value that will will always be in sync with the value that comes from the `value` binding. 
+ * @returns {[]} The hook returns an array with three props. First `value` prop is a value that will will always be in sync with the value that comes from the `value` parameter. 
  * Use this for displaying the up-to-date value to the user.
  * 
  * Second prop is a method that can be used to change the current value. The new value will get propagated to the `value` variable returned from this hook. This method wont propagate the value to the framework.
@@ -20,18 +20,18 @@ interface IBindings {
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
 
-export const useInputBasedComponent = <TBindings extends IBindings, TOutputs extends IOutputs>(props: IComponent<TBindings, TOutputs>): [
-    any,
-    (value: any) => void,
+export const useInputBasedComponent = <TValue, TParameters extends IParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>): [
+    TValue | null,
+    (value: TValue | null) => void,
     (outputs: TOutputs) => void
 ] => {
-    const [value, setValue] = useState<string>();
+    const [value, setValue] = useState<TValue | null>(null);
     const [onNotifyOutputChanged] = useComponent(props as any);
 
     useEffect(() => {
-        console.log('useEffect triggered');
-        setValue(props.bindings.value.raw);
-    }, [props.bindings.value.raw]);
+        console.log(`Updating the component with new value: ${props.parameters.value.raw}`)
+        setValue(props.parameters.value.raw);
+    }, [props.parameters.value.raw]);
 
     return [value, setValue, onNotifyOutputChanged];
 

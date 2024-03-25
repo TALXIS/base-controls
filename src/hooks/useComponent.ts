@@ -18,14 +18,16 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;
         for (const [key, outputValue] of Object.entries(outputs)) {
-            const bindingValue = parametersRef.current[key]?.raw
-            if (!deepEqual(bindingValue, outputValue)) {
+            const parameterValue = parametersRef.current[key]?.raw
+            if (!deepEqual(parameterValue, outputValue)) {
                 isDirty = true;
+                break;
             }
         }
         if (!isDirty) {
             return;
         }
+        console.log('Change detected, triggering notifyOutputChanged')
         props.onNotifyOutputChanged?.(outputs);
     }
     return [onNotifyOutputChanged];

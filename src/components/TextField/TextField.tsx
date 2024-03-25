@@ -1,17 +1,16 @@
 import { TextField as TextFieldBase } from '@talxis/react-components/dist/components/TextField';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
 import { useTextField } from './hooks/useTextField';
-import { ITextField } from './interfaces';
+import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
 
 export const TextField = (props: ITextField) => {
     const context = props.context;
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const ref = useRef<HTMLDivElement>(null);
-    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent(props);
+    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent<string, ITextFieldParameters, ITextFieldOutputs>(props);
     const [height] = useTextField(props, ref);
-
     
     return (
         <TextFieldBase
@@ -42,14 +41,14 @@ export const TextField = (props: ITextField) => {
                     iconName: 'Copy'
                 }
             } : undefined}
-            value={value}
+            value={value ?? undefined}
             onBlur={() => {
                 onNotifyOutputChanged({
-                    value: value
+                    value: value ?? undefined
                 })
             }}
             onChange={(e, value) => {
-                setValue(value)
+                setValue(value ?? null)
             }} />
 
     )

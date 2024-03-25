@@ -1,4 +1,4 @@
-import { initializeIcons, Label, PrimaryButton} from '@fluentui/react';
+import { initializeIcons, Label, PrimaryButton, TextFieldBase} from '@fluentui/react';
 import { TextField as TalxisTextField } from '@talxis/react-components/dist/components/TextField';
 import React, { useState } from 'react';
 import { TextField } from '../components/TextField/TextField';
@@ -24,9 +24,6 @@ export const Sandbox: React.FC = () => {
                             setValue(outputs.value as string);
                         }}
                         parameters={{
-/*                             EnableDeleteButton: {
-                                raw: true,
-                            }, */
                             EnableCopyButton: {
                                 raw: true,
                             },
