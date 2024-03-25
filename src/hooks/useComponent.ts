@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef } from "react";
+import React from 'react';
 import deepEqual from 'fast-deep-equal';
 import { IComponent, IOutputs, IParameters } from "../interfaces";
 

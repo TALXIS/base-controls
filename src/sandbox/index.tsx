@@ -1,6 +1,6 @@
 import { initializeIcons, Label, PrimaryButton, TextFieldBase} from '@fluentui/react';
 import { TextField as TalxisTextField } from '@talxis/react-components/dist/components/TextField';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TextField } from '../components/TextField/TextField';
 import { Context } from './mock/Context';
 
@@ -10,7 +10,11 @@ export const Sandbox: React.FC = () => {
     const [value, setValue] = useState<string>();
     const [isMounted, setIsMounted] = useState<boolean>(true);
     const [test, setTest] = useState('');
-
+    useEffect(() => {
+        setTimeout(() => {
+            setIsMounted(false);
+        }, 3000);
+    }, []);
     return (
         <>
             <Label>Outside change</Label>
@@ -24,6 +28,9 @@ export const Sandbox: React.FC = () => {
                             setValue(outputs.value as string);
                         }}
                         parameters={{
+                            NotifyOutputChangedOnUnmount: {
+                                raw: true
+                            },
                             EnableCopyButton: {
                                 raw: true,
                             },

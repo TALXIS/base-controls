@@ -1,12 +1,12 @@
 import { IDecimalNumberProperty } from "../../interfaces";
-import { IInputStaticParameters } from "../../interfaces/parameters";
+import { IInputParameters } from "../../interfaces/parameters";
 import { IComponent, IOutputs } from "../../interfaces/context";
 
 export interface IDecimal extends IComponent<IDecimalParameters, IDecimalOutputs> {
     
 }
 
-export interface IDecimalParameters extends IInputStaticParameters {
+export interface IDecimalParameters extends IInputParameters {
     //bound parameter
     value: IDecimalNumberProperty;
 }

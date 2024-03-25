@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
 import { useTextField } from './hooks/useTextField';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
+import React from 'react';
 
 export const TextField = (props: ITextField) => {
     const context = props.context;

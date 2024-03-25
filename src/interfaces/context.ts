@@ -10,9 +10,10 @@ export interface IContext {
 
 export interface IComponent<TParameters, TOutputs> {
     context: IContext;
-    parameters: TParameters
+    parameters: TParameters;
     /**
-    * Fires when the user looses focus on the component and the outputs differ from inputs.
+    * Fires when the component changes the parameter value. It is usually fired directly after the change occurs in the value.
+    * Exceptions are input based component where it fires on the blur event.
     */
     onNotifyOutputChanged?: (outputs: TOutputs) => void;
 }

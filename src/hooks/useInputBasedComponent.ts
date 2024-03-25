@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IProperty } from "../interfaces";
 import { IComponent, IOutputs } from "../interfaces/context";
 import { useComponent } from "./useComponent";
+import React from 'react';
+import { IInputParameters } from "../interfaces/parameters";
 
-interface IParameters {
-    value: IProperty
-}
 /**
  * Use when working with components that need to store value changes internally before triggering `notifyOutputChanged`.
  * An example of this is a standard Decimal component - we do not want to trigger `notifyOutputChanged` on every value change,
@@ -20,18 +19,33 @@ interface IParameters {
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
 
-export const useInputBasedComponent = <TValue, TParameters extends IParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>): [
+export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>): [
     TValue | null,
     (value: TValue | null) => void,
     (outputs: TOutputs) => void
 ] => {
     const [value, setValue] = useState<TValue | null>(props.parameters.value.raw);
+    const valueRef = useRef<TValue | null>(props.parameters.value.raw)
     const [onNotifyOutputChanged] = useComponent(props as any);
 
     useEffect(() => {
         console.log(`Updating the component with new value: ${props.parameters.value.raw}`)
         setValue(props.parameters.value.raw);
     }, [props.parameters.value.raw]);
+
+    useEffect(() => {
+        valueRef.current = value;
+    }, [value]);
+    
+    useEffect(() => {
+        return () => {
+            if(props.parameters.NotifyOutputChangedOnUnmount?.raw === true) {
+                onNotifyOutputChanged({
+                    value: valueRef.current
+                })
+            }
+        }
+    }, []);
 
     return [value, setValue, onNotifyOutputChanged];
 
