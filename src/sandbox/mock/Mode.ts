@@ -7,7 +7,7 @@ export class Mode implements ComponentFramework.Mode {
 
     constructor() {
         this.allocatedHeight = 0
-        this.allocatedWidth = 400;
+        this.allocatedWidth = 240;
         this.isControlDisabled = false;
         this.isVisible = true;
         this.label = 'Label'

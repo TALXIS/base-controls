@@ -27,9 +27,6 @@ export const Sandbox: React.FC = () => {
                             EnableCopyButton: {
                                 raw: true,
                             },
-                            IsMultiLine: {
-                                raw: true,
-                            },
                             value: {
                                 raw: value ?? null,
                             }
