@@ -6,8 +6,8 @@ import { ITextField } from './interfaces';
 
 export const TextField = (props: ITextField) => {
     const context = props.context;
-    const bindings = props.bindings;
-    const boundValue = bindings.value;
+    const parameters = props.parameters;
+    const boundValue = parameters.value;
     const ref = useRef<HTMLDivElement>(null);
     const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent(props);
     const [height] = useTextField(props, ref);
@@ -16,9 +16,9 @@ export const TextField = (props: ITextField) => {
     return (
         <TextFieldBase
             readOnly={context.mode.isControlDisabled}
-            multiline={bindings.IsMultiLine?.raw}
+            multiline={parameters.IsMultiLine?.raw}
             resizable={true}
-            autoFocus={bindings.AutoFocus?.raw}
+            autoFocus={parameters.AutoFocus?.raw}
             elementRef={ref}
             styles={{
                 fieldGroup: {
@@ -26,9 +26,9 @@ export const TextField = (props: ITextField) => {
                     width: context.mode.allocatedWidth || undefined
                 }
             }}
-            borderless={bindings.EnableBorder?.raw === false}
+            borderless={parameters.EnableBorder?.raw === false}
             errorMessage={boundValue.errorMessage}
-            deleteButtonProps={bindings.EnableDeleteButton?.raw === true ? {
+            deleteButtonProps={parameters.EnableDeleteButton?.raw === true ? {
                 key: 'delete',
                 showOnlyOnHover: true,
                 iconProps: {
@@ -36,7 +36,7 @@ export const TextField = (props: ITextField) => {
                 },
                 onClick: () => setValue(null)
             } : undefined}
-            clickToCopyProps={bindings.EnableCopyButton?.raw === true ? {
+            clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
                 key: 'copy',
                 iconProps: {
                     iconName: 'Copy'

@@ -23,7 +23,7 @@ export const Sandbox: React.FC = () => {
                         onNotifyOutputChanged={(outputs) => {
                             setValue(outputs.value as string);
                         }}
-                        bindings={{
+                        parameters={{
 /*                             EnableDeleteButton: {
                                 raw: true,
                             }, */

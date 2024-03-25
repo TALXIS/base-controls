@@ -1,11 +1,11 @@
 import { IStringProperty, ITwoOptionsProperty } from "../../interfaces";
-import { IInputStaticBindings } from "../../interfaces/bindings";
+import { IInputStaticParameters } from "../../interfaces/bindings";
 import { IComponent, IOutputs } from "../../interfaces/context";
 
-export interface ITextField extends IComponent<ITextFieldBindings, ITextFieldOutputs> {
+export interface ITextField extends IComponent<ITextFieldParameters, ITextFieldOutputs> {
 }
 
-interface ITextFieldBindings extends IInputStaticBindings {
+interface ITextFieldParameters extends IInputStaticParameters {
     IsMultiLine?: ITwoOptionsProperty;
     value: IStringProperty;
 }

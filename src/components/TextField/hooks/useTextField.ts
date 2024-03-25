@@ -6,7 +6,7 @@ export const useTextField = (props: ITextField, ref: React.RefObject<HTMLDivElem
         if (props.context.mode.allocatedHeight) {
             return props.context.mode.allocatedHeight;
         }
-        if (props.bindings.IsMultiLine?.raw) {
+        if (props.parameters.IsMultiLine?.raw) {
             return 80;
         }
         return undefined;
@@ -17,7 +17,7 @@ export const useTextField = (props: ITextField, ref: React.RefObject<HTMLDivElem
     const firstRenderRef = useRef<boolean>(true);
     
     useEffect(() => {
-        if (!props.bindings.IsMultiLine?.raw) {
+        if (!props.parameters.IsMultiLine?.raw) {
             return;
         }
         const resizeObserver = new ResizeObserver(() => {

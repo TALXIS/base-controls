@@ -1,10 +1,10 @@
 import { IProperty, ITwoOptionsProperty } from "./property";
 
-export interface IBindings {
+export interface IParameters {
     [key: string]: IProperty | undefined;
 }
 
-export interface IInputStaticBindings extends IBindings {
+export interface IInputStaticParameters extends IParameters {
     /** default `true`    */
     EnableBorder?: ITwoOptionsProperty;
     /**

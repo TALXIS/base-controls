@@ -7,6 +7,6 @@ export interface IOutputs {
     [key: string]: any
 }
 
-export interface IBindings {
+export interface IParameters {
     [key: string]: IProperty | undefined;
 }

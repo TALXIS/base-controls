@@ -1,5 +1,3 @@
-import { IProperty } from "./property";
-
 export interface IOutputs {
     [key: string]: any
 }
@@ -10,9 +8,9 @@ export interface IContext {
     formatting: ComponentFramework.Formatting;
 }
 
-export interface IComponent<TBindings, TOutputs> {
+export interface IComponent<TParameters, TOutputs> {
     context: IContext;
-    bindings: TBindings
+    parameters: TParameters
     /**
     * Fires when the user looses focus on the component and the outputs differ from inputs.
     */
