@@ -42,7 +42,7 @@ export const TextField = (props: ITextField) => {
                     iconName: 'Copy'
                 }
             } : undefined}
-            value={value ?? undefined}
+            value={value ?? ""}
             onBlur={() => {
                 onNotifyOutputChanged({
                     value: value ?? undefined
