@@ -21,6 +21,10 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         for (const [key, outputValue] of Object.entries(outputs)) {
             const parameterValue = parametersRef.current[key]?.raw
             if (!deepEqual(parameterValue, outputValue)) {
+                // handles undefined X null
+                if(parameterValue == outputValue) {
+                    continue
+                }
                 isDirty = true;
                 break;
             }
