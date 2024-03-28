@@ -18,7 +18,6 @@ import { IInputParameters } from "../interfaces/parameters";
  * The last prop is a method that will notify the framework that you wish to write changes.  
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
-
 export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>): [
     TValue | null,
     (value: TValue | null) => void,
