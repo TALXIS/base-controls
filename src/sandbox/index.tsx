@@ -1,6 +1,6 @@
-import { initializeIcons, Label, PrimaryButton, TextFieldBase} from '@fluentui/react';
+import { initializeIcons, Label, PrimaryButton} from '@fluentui/react';
 import { TextField as TalxisTextField } from '@talxis/react-components/dist/components/TextField';
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { TextField } from '../components/TextField/TextField';
 import { Context } from './mock/Context';
 import { Decimal } from '../components/Decimal/Decimal';
@@ -9,10 +9,11 @@ initializeIcons();
 
 export const Sandbox: React.FC = () => {
     const [value, setValue] = useState<string>();
-    const [decimalValue, setDecimalValue] = useState<number>();
+    const [decimalValue, setDecimalValue] = useState<number|null>(null);
     const [isMounted, setIsMounted] = useState<boolean>(true);
     const [hasError, setHasError] = useState<boolean>(false);
     const [test, setTest] = useState('');
+    const context = new Context();
     return (
         <>
             <Label>Outside change</Label>
@@ -49,18 +50,16 @@ export const Sandbox: React.FC = () => {
 
             <Label>Decimal component</Label>
             <Decimal
-                context={new Context()}
+                context={context}
                 parameters={{
-                    IsMultiLine: { raw: true },
-                    isResizable: { raw: false },
                     EnableCopyButton: { raw: false },
-                    value: { raw: decimalValue ?? null,
-                     errorMessage:isNaN(decimalValue!) ? "This is decimal column": '',
-                    error:hasError  },
+                    value: { raw: +decimalValue! ?? null,
+                    errorMessage: "This is decimal column",
+                    error:hasError,  },
                     
                 }}
+                
                 onNotifyOutputChanged={(outputs) => {
-                    setDecimalValue(outputs.value);
                     isNaN(outputs.value!) ?setHasError( true) :setHasError( false);
                 }}
             />
