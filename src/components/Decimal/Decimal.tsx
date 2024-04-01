@@ -24,6 +24,13 @@ export const Decimal = (props: IDecimal) => {
         });
     }, [boundValue.raw, onNotifyOutputChanged]);
 
+    useEffect(()=>{
+        const numericValue=extractNumericPart(value);
+        if (numericValue){
+         setValue(context.formatting.formatInteger(context.formatting.formatDecimal(+numericValue,boundValue.attributes?.Precision)as unknown as number)as unknown as number);
+        }else setValue(value);
+    },[]);
+
     return <TextField
     readOnly={context.mode.isControlDisabled}
             autoFocus={parameters.AutoFocus?.raw}
