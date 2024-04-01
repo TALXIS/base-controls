@@ -5,35 +5,31 @@ import React, {useEffect, useRef } from 'react';
 import numeral from 'numeral';
 
 export const Decimal = (props: IDecimal) => {
-    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent<string, IDecimalParameters, IDecimalOutputs>(props);
+    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent<string|number, IDecimalParameters, IDecimalOutputs>(props);
     const context = props.context;
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const ref = useRef<HTMLDivElement>(null);
 
-    function extractNumericPart(str: string): number|undefined {
+    function extractNumericPart(str:any): number|undefined {
         let formatedValue = numeral(str).value() || undefined;
         return formatedValue!;
     }
 
-    function formatNumber():string{
-        let numericValue = extractNumericPart(value!);
-        if(numericValue){
-            const formatedDecimalValue = context.formatting.formatDecimal(numericValue!,boundValue.attributes?.Precision);
-            return context.formatting.formatInteger(+formatedDecimalValue);
-        }else return value!;
-    }
-
     useEffect(() => {
-        setValue(formatNumber());
-    }, []);
-    
+        // Extract numeric part and send it via onNotifyOutputChanged when value changes
+        const numericValue = extractNumericPart(boundValue.raw);
+        onNotifyOutputChanged({
+            value: numericValue !== undefined ? numericValue : boundValue.raw ?? undefined
+        });
+    }, [boundValue.raw, onNotifyOutputChanged]);
+
     return <TextField
     readOnly={context.mode.isControlDisabled}
             autoFocus={parameters.AutoFocus?.raw}
             elementRef={ref}
             borderless={parameters.EnableBorder?.raw === false}
-            errorMessage={boundValue.error? boundValue.errorMessage : ''}
+            errorMessage={boundValue.errorMessage}
             deleteButtonProps={parameters.EnableDeleteButton?.raw === true ? {
                 key: 'delete',
                 showOnlyOnHover: true,
@@ -48,13 +44,12 @@ export const Decimal = (props: IDecimal) => {
                     iconName: 'Copy'
                 }
             } : undefined}
-            value={value !=null ? value: undefined}
+            value={value != null ? value as string: undefined}
             
             onBlur={() => {
                let numericValue = extractNumericPart(value!);
-               setValue(formatNumber());
                 onNotifyOutputChanged({
-                    value: value !=null ?numericValue!== undefined ? numericValue : +value  : undefined
+                    value: value !=null ?numericValue!== undefined ? numericValue : value as number  : undefined
                 })
             }}
             onChange={(e, value) => {

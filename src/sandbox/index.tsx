@@ -1,5 +1,6 @@
 import { initializeIcons, Label, PrimaryButton} from '@fluentui/react';
 import { TextField as TalxisTextField } from '@talxis/react-components/dist/components/TextField';
+import { TextField as TalxisDecimalField } from '@talxis/react-components/dist/components/TextField';
 import React, {  useState } from 'react';
 import { TextField } from '../components/TextField/TextField';
 import { Context } from './mock/Context';
@@ -11,9 +12,14 @@ export const Sandbox: React.FC = () => {
     const [value, setValue] = useState<string>();
     const [decimalValue, setDecimalValue] = useState<number|null>(null);
     const [isMounted, setIsMounted] = useState<boolean>(true);
-    const [hasError, setHasError] = useState<boolean>(false);
     const [test, setTest] = useState('');
     const context = new Context();
+     function formatNumber(decimalVal: number):number{
+        if(decimalVal && !isNaN(decimalVal)){
+            const formatedDecimalValue = context.formatting.formatDecimal(+decimalVal);
+            return context.formatting.formatInteger(formatedDecimalValue as unknown as number) as unknown as number;
+        }else return decimalVal;
+    }
     return (
         <>
             <Label>Outside change</Label>
@@ -47,20 +53,21 @@ export const Sandbox: React.FC = () => {
             <br />
             <br />
             <PrimaryButton text='Trigger rerender' onClick={() => setTest(Math.random().toString()) }/>
-
+            <Label>Outside changes</Label>
+            <TalxisDecimalField onChange={(e, value) => setDecimalValue(formatNumber(value as unknown as number))} />
             <Label>Decimal component</Label>
             <Decimal
                 context={context}
                 parameters={{
+                    EnableBorder:{raw:true},
                     EnableCopyButton: { raw: false },
-                    value: { raw: +decimalValue! ?? null,
-                    errorMessage: "This is decimal column",
-                    error:hasError,  },
-                    
+                    value:{
+                        raw:decimalValue ?? null
+                    }  
                 }}
                 
                 onNotifyOutputChanged={(outputs) => {
-                    isNaN(outputs.value!) ?setHasError( true) :setHasError( false);
+                    setDecimalValue(formatNumber(outputs.value!));
                 }}
             />
         </>
