@@ -10,7 +10,7 @@ initializeIcons();
 
 export const Sandbox: React.FC = () => {
     const [value, setValue] = useState<string>();
-    const [decimalValue, setDecimalValue] = useState<number|null>(null);
+    const [decimalValue, setDecimalValue] = useState<number>();
     const [isMounted, setIsMounted] = useState<boolean>(true);
     const [test, setTest] = useState('');
     const context = new Context();
@@ -54,7 +54,11 @@ export const Sandbox: React.FC = () => {
             <br />
             <PrimaryButton text='Trigger rerender' onClick={() => setTest(Math.random().toString()) }/>
             <Label>Outside changes</Label>
-            <TalxisDecimalField onChange={(e, value) => setDecimalValue(formatNumber(value as unknown as number))} />
+            <TalxisDecimalField onChange={(e, value) => setDecimalValue(value as unknown as number)}
+              onBlur={() => {
+                setDecimalValue(formatNumber(decimalValue!));
+             }}
+            />
             <Label>Decimal component</Label>
             <Decimal
                 context={context}
@@ -62,7 +66,9 @@ export const Sandbox: React.FC = () => {
                     EnableBorder:{raw:true},
                     EnableCopyButton: { raw: false },
                     value:{
-                        raw:decimalValue ?? null
+                        raw:decimalValue ?? null,
+                        errorMessage: "Decimal column",
+                        error: false
                     }  
                 }}
                 
