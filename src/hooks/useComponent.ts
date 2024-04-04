@@ -13,17 +13,17 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
     const parametersRef = useRef<TParameters>(props.parameters);
 
     useEffect(() => {
-        parametersRef.current = props.parameters
+        parametersRef.current = props.parameters;
     }, [props.parameters]);
 
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;
         for (const [key, outputValue] of Object.entries(outputs)) {
-            const parameterValue = parametersRef.current[key]?.raw
+            const parameterValue = parametersRef.current[key]?.raw;
             if (!deepEqual(parameterValue, outputValue)) {
                 // handles undefined X null
                 if(parameterValue == outputValue) {
-                    continue
+                    continue;
                 }
                 isDirty = true;
                 break;
@@ -32,8 +32,8 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         if (!isDirty) {
             return;
         }
-        console.log('Change detected, triggering notifyOutputChanged')
+        console.log('Change detected, triggering notifyOutputChanged');
         props.onNotifyOutputChanged?.(outputs);
-    }
+    };
     return [onNotifyOutputChanged];
-}
+};

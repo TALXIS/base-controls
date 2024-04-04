@@ -24,11 +24,11 @@ export const useInputBasedComponent = <TValue, TParameters extends IInputParamet
     (outputs: TOutputs) => void
 ] => {
     const [value, setValue] = useState<TValue | null>(props.parameters.value.raw);
-    const valueRef = useRef<TValue | null>(props.parameters.value.raw)
+    const valueRef = useRef<TValue | null>(props.parameters.value.raw);
     const [onNotifyOutputChanged] = useComponent(props as any);
 
     useEffect(() => {
-        console.log(`Updating the component with new value: ${props.parameters.value.raw}`)
+        console.log(`Updating the component with new value: ${props.parameters.value.raw}`);
         setValue(props.parameters.value.raw);
     }, [props.parameters.value.raw]);
 
@@ -41,11 +41,11 @@ export const useInputBasedComponent = <TValue, TParameters extends IInputParamet
             if(props.parameters.NotifyOutputChangedOnUnmount?.raw === true) {
                 onNotifyOutputChanged({
                     value: valueRef.current
-                })
+                });
             }
-        }
+        };
     }, []);
 
     return [value, setValue, onNotifyOutputChanged];
 
-}
+};

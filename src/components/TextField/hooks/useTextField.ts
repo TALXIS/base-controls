@@ -27,17 +27,17 @@ export const useTextField = (props: ITextField, ref: React.RefObject<HTMLDivElem
             }
             hasBeenResizedRef.current = true;
             console.log('running');
-            setHeight(undefined)
+            setHeight(undefined);
         });
         const textarea = ref.current?.querySelector('textarea') as HTMLTextAreaElement;
         if (height) {
-            textarea.setAttribute('style', `height: ${height}px`)
+            textarea.setAttribute('style', `height: ${height}px`);
         }
         resizeObserver.observe(textarea);
 
         return () => {
             resizeObserver.disconnect();
-        }
+        };
     }, []);
     return [height];
-}
+};

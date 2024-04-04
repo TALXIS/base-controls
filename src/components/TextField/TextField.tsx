@@ -46,11 +46,11 @@ export const TextField = (props: ITextField) => {
             onBlur={() => {
                 onNotifyOutputChanged({
                     value: value ?? undefined
-                })
+                });
             }}
             onChange={(e, value) => {
-                setValue(value ?? null)
+                setValue(value ?? null);
             }} />
 
-    )
-}
+    );
+};

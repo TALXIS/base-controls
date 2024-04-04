@@ -61,7 +61,9 @@
     "eject": "react-scripts eject",
     "documentation": "start-storybook -p 6006",
     "sandbox": "react-scripts start",
-    "build-documentation": "build-storybook"
+    "build-documentation": "build-storybook",
+    "lint": "eslint \"./src/**\"",
+    "lint:fix": "eslint \"./src/**\" --fix"
   },
   "eslintConfig": {
     "extends": [

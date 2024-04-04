@@ -1,0 +1,116 @@
+{
+    "$schema": "http://json.schemastore.org/eslintrc",
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "ignorePatterns": [
+        "**/*.css",
+        "**/*.json",
+        "**/*.resx",
+        "**/*.xml",
+        "**/*.svg",
+        "**/*.mdx",
+        "/src/sandbox",
+        "config-overrides.js"
+    ],
+    "extends": [],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "jsx": true,
+        "useJSXTextNode": true,
+        "sourceType": "module",
+        "project": [
+            "./tsconfig.json"
+        ]
+    },
+    "plugins": [
+        "@typescript-eslint",
+        "react",
+        "react-hooks"
+    ],
+    "rules": {
+        "no-dupe-class-members": "off",
+        "no-return-await": "warn",
+        "semi": [
+            "error",
+            "always"
+        ],
+        // "quotes": [
+        //     "warn",
+        //     "double",
+        //     {
+        //         "allowTemplateLiterals": true,
+        //         "avoidEscape": true
+        //     }
+        // ],
+        "no-debugger": "error",
+        "@typescript-eslint/naming-convention": [
+            "warn",
+            // Currently disabled until we do big refactoring
+            // {
+            //     "selector": "interface",
+            //     "format": [
+            //         "PascalCase"
+            //     ],
+            //     "custom": {
+            //         "regex": "^I[A-Z]",
+            //         "match": true
+            //     }
+            // },
+            {
+                "selector": "memberLike",
+                "modifiers": [
+                    "private"
+                ],
+                "format": [
+                    "camelCase"
+                ],
+                "leadingUnderscore": "require"
+            }
+            // {
+            //     "selector": "variableLike",
+            //     "format": [
+            //         "camelCase"
+            //     ]
+            // }
+        ],
+        "@typescript-eslint/ban-ts-comment": [
+            "error",
+            {
+                "ts-ignore": "allow-with-description",
+                "ts-nocheck": "allow-with-description",
+                "ts-check": "allow-with-description"
+            }
+        ],
+        "no-multiple-empty-lines": [
+            "error",
+            {
+                "max": 1,
+                "maxEOF": 0
+            }
+        ],
+        "@typescript-eslint/prefer-for-of": "warn",
+        "@typescript-eslint/no-implied-eval": "error"
+        // "@typescript-eslint/no-explicit-any": [
+        //     "error",
+        //     {
+        //         "fixToUnknown": false,
+        //         "ignoreRestArgs": true
+        //     }
+        // ]
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "overrides": [
+        {
+            "files": [
+                "*.ts",
+                "*.tsx"
+            ]
+        }
+    ]
+}
