@@ -16,9 +16,12 @@ export const Decimal = (props: IDecimal) => {
         {
         let formatedValue = numeral(str).value() || undefined;
         return formatedValue!;
-        }else return value as number;
-    }
+        }else{
 
+            return value as number;
+        } 
+            
+    }
 
     useEffect(()=>{
         if(boundValue.raw){
@@ -53,11 +56,10 @@ export const Decimal = (props: IDecimal) => {
                let numericValue = extractNumericPart(value as string);
                 onNotifyOutputChanged({
                     value: numericValue
-                })
+                });
             }}
             onChange={(e, value) => {
                 setValue(value ?? null);
             }} 
-    />
-}
-
+    />;
+};
