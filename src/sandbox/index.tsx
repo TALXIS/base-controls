@@ -74,7 +74,6 @@ export const Sandbox: React.FC = () => {
           },
         }}
         onNotifyOutputChanged={(outputs) => {
-          debugger;
           setDecimalValue(outputs.value);
         }}
       />
