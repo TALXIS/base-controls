@@ -24,6 +24,13 @@ export interface IDecimalNumberProperty extends Omit<ComponentFramework.Property
     errorMessage?: string;
 }
 
+export interface IDateTimeProperty extends  Omit<ComponentFramework.PropertyTypes.DateTimeProperty, keyof ExcludedProps> {
+    type?: string;
+    error?: boolean;
+    errorMessage?: string;
+    attributes: ComponentFramework.PropertyHelper.FieldPropertyMetadata.DateTimeMetadata;
+}
+
 export interface ILookupProperty extends Omit<ComponentFramework.PropertyTypes.LookupProperty, keyof ExcludedProps | 'attributes' | 'getTargetEntityType' | 'getViewId'> {
     type?: string;
     error?: boolean;

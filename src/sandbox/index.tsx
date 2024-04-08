@@ -1,6 +1,7 @@
 import { initializeIcons, Label, PrimaryButton, TextFieldBase} from '@fluentui/react';
 import { TextField as TalxisTextField } from '@talxis/react-components/dist/components/TextField';
 import React, { useEffect, useState } from 'react';
+import { DateTime } from '../components/DateTime';
 import { TextField } from '../components/TextField/TextField';
 import { Context } from './mock/Context';
 
@@ -17,25 +18,16 @@ export const Sandbox: React.FC = () => {
             {isMounted &&
                 <>
                     <Label>Component</Label>
-                    <TextField
-                        context={new Context()}
-                        onNotifyOutputChanged={(outputs) => {
-                            setValue(outputs.value as string);
-                        }}
-                        parameters={{
-                            IsMultiLine: {
-                                raw: true
-                            },
-                            isResizable: {
-                                raw: false
-                            },
-                            EnableCopyButton: {
-                                raw: true,
-                            },
-                            value: {
-                                raw: value ?? null,
-                            }
-                        }} />
+                   <DateTime context={new Context()} parameters={{
+                    value: {
+                        //@ts-ignore
+                        attributes: {
+                            //@ts-ignore
+                            Behavior: 3
+                        },
+                        raw: new Date()
+                    },
+                   }} />
                 </>
             }
             <br />
