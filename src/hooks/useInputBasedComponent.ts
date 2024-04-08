@@ -18,19 +18,22 @@ import { IInputParameters } from "../interfaces/parameters";
  * The last prop is a method that will notify the framework that you wish to write changes.  
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
-export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>): [
+
+export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>, formatter?: (value: any) => any): [
     TValue | null,
     (value: TValue | null) => void,
     (outputs: TOutputs) => void
 ] => {
-    const [value, setValue] = useState<TValue | null>(props.parameters.value.raw);
-    const valueRef = useRef<TValue | null>(props.parameters.value.raw);
+    const rawValue = props.parameters.value.raw;
+    const [value, setValue] = useState<TValue | null>(rawValue);
+    const valueRef = useRef<TValue | null>(rawValue)
     const [onNotifyOutputChanged] = useComponent(props as any);
 
     useEffect(() => {
-        console.log(`Updating the component with new value: ${props.parameters.value.raw}`);
-        setValue(props.parameters.value.raw);
-    }, [props.parameters.value.raw]);
+        const formattedValue = formatter?.(rawValue);
+        setValue(formattedValue ?? rawValue);
+        console.log(`Updating the component with new value: ${formattedValue ?? rawValue}`);
+    }, [rawValue]);
 
     useEffect(() => {
         valueRef.current = value;

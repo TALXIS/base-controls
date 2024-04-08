@@ -23,3 +23,33 @@ export interface IDecimalNumberProperty extends Omit<ComponentFramework.Property
     error?: boolean;
     errorMessage?: string;
 }
+
+export interface IDateTimeProperty extends  Omit<ComponentFramework.PropertyTypes.DateTimeProperty, keyof ExcludedProps> {
+    type?: string;
+    error?: boolean;
+    errorMessage?: string;
+    attributes: ComponentFramework.PropertyHelper.FieldPropertyMetadata.DateTimeMetadata;
+}
+
+export interface ILookupProperty extends Omit<ComponentFramework.PropertyTypes.LookupProperty, keyof ExcludedProps | 'attributes' | 'getTargetEntityType' | 'getViewId'> {
+    type?: string;
+    error?: boolean;
+    errorMessage?: string;
+    attributes: ComponentFramework.PropertyHelper.FieldPropertyMetadata.LookupMetadata;
+    /**
+     * Returns the default lookup viewId.
+     */
+    getDefaultViewId: (entityName: string) => string,
+    /**
+     * Gets all views for entity (including non-lookup ones).
+     */
+    getAllViews: (entityName: string) => {
+        isAvailableInOffline: boolean;
+        isDefault: boolean;
+        isPinned: boolean;
+        isUserView: boolean;
+        relatedEntityName: string;
+        viewId: string;
+        viewName: string;
+    }[]
+}
