@@ -27,7 +27,6 @@ export const DateTime = (props: IDateTime) => {
     return (
         <Datetime
             onOpen={() => setIsPickerOpened(true)}
-            onClose={() =>}
             dateFormat={''}
             timeFormat={format === 'DateAndTime'}
             //@ts-ignore

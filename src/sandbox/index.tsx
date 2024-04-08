@@ -18,16 +18,14 @@ export const Sandbox: React.FC = () => {
             {isMounted &&
                 <>
                     <Label>Component</Label>
-                   <DateTime context={new Context()} parameters={{
-                    value: {
-                        //@ts-ignore
-                        attributes: {
-                            //@ts-ignore
-                            Behavior: 3
-                        },
-                        raw: new Date()
-                    },
-                   }} />
+                    <TextField 
+                        context={new Context()} 
+                        onNotifyOutputChanged={(output) => setValue(output.value)}
+                        parameters={{
+                        value: {
+                            raw: value ?? null
+                        }
+                    }} />
                 </>
             }
             <br />
