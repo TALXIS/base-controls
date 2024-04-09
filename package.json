@@ -53,7 +53,9 @@
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2",
     "react-window": "^1.8.6",
-    "uniqid": "^5.4.0"
+    "uniqid": "^5.4.0",
+    "@talxis/react-components": "^1.2401.2",
+    "numeral": "^2.0.6"
   },
   "scripts": {
     "build": "rollup -c",
@@ -82,10 +84,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "dependencies": {
-    "@talxis/react-components": "^1.2401.2",
-    "numeral": "^2.0.6",
-    "react-datetime": "^3.2.0"
   }
 }

@@ -1,7 +1,6 @@
 
 import { useComponent } from "../../hooks";
 import { IDateTime } from "./interfaces";
-import Datetime from 'react-datetime';
 import "react-datetime/css/react-datetime.css";
 import { useState } from "react";
 
@@ -24,7 +23,7 @@ export const DateTime = (props: IDateTime) => {
         return context.formatting.formatDateShort(value.raw);
     }
 
-    return (
+/*     return (
         <Datetime
             onOpen={() => setIsPickerOpened(true)}
             dateFormat={''}
@@ -37,5 +36,5 @@ export const DateTime = (props: IDateTime) => {
         }
              
             value={formatValue()} />
-    )
+    ) */
 }
