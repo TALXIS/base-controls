@@ -1,40 +1,38 @@
-type ExcludedProps = Pick<ComponentFramework.PropertyTypes.StringProperty, 'type' | 'error' | 'errorMessage' | 'formatted'>;
+type ExcludedProps = Pick<ComponentFramework.PropertyTypes.Property, 'formatted'>;
 
-export interface IStringProperty extends Omit<ComponentFramework.PropertyTypes.StringProperty, keyof ExcludedProps> {
-    type?: string;
-    error?: boolean;
-    errorMessage?: string;
+export interface IProperty extends Omit<Partial<ComponentFramework.PropertyTypes.Property>, keyof ExcludedProps | 'attributes'> {
 }
 
-export interface IProperty extends Omit<ComponentFramework.PropertyTypes.Property, keyof ExcludedProps> {
-    type?: string;
-    error?: boolean;
-    errorMessage?: string;
+export interface IStringProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.StringProperty> {
+    raw: string | null;
 }
 
-export interface ITwoOptionsProperty extends Omit<ComponentFramework.PropertyTypes.TwoOptionsProperty, keyof ExcludedProps> {
-    type?: string;
-    error?: boolean;
-    errorMessage?: string;
+export interface ITwoOptionsProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.TwoOptionsProperty> {
+    raw: boolean;
 }
 
-export interface IDecimalNumberProperty extends Omit<ComponentFramework.PropertyTypes.DecimalNumberProperty, keyof ExcludedProps> {
-    type?: string;
-    error?: boolean;
-    errorMessage?: string;
+export interface IDecimalNumberProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.DecimalNumberProperty>, 'attributes'> {
+    raw: number | null;
+    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.DecimalNumberMetadata> & {
+        Precision: number;
+    };
 }
 
-export interface IDateTimeProperty extends  Omit<ComponentFramework.PropertyTypes.DateTimeProperty, keyof ExcludedProps> {
-    type?: string;
-    error?: boolean;
-    errorMessage?: string;
+export interface IDateTimeProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.DateTimeProperty> {
+    raw: Date | null,
     attributes: ComponentFramework.PropertyHelper.FieldPropertyMetadata.DateTimeMetadata;
 }
 
-export interface ILookupProperty extends Omit<ComponentFramework.PropertyTypes.LookupProperty, keyof ExcludedProps | 'attributes' | 'getTargetEntityType' | 'getViewId'> {
-    type?: string;
-    error?: boolean;
-    errorMessage?: string;
+export interface IOptionSetProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.OptionSetProperty>, 'attributes'> {
+    raw: number | null,
+    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata> & {
+        DefaultValue: number;
+        Options: ComponentFramework.PropertyHelper.OptionMetadata[]
+    };
+}
+
+export interface ILookupProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.LookupProperty> {
+    raw: ComponentFramework.LookupValue[];
     attributes: ComponentFramework.PropertyHelper.FieldPropertyMetadata.LookupMetadata;
     /**
      * Returns the default lookup viewId.

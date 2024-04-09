@@ -5,6 +5,8 @@ import React, { useState } from "react";
 import { TextField } from "../components/TextField/TextField";
 import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
+import { OptionSet } from "../components/OptionSet";
+import { IDecimalNumberProperty, IOptionSetProperty } from "../interfaces";
 
 initializeIcons();
 
@@ -70,13 +72,27 @@ export const Sandbox: React.FC = () => {
           EnableBorder: { raw: true },
           EnableCopyButton: { raw: false },
           value: {
-            raw: decimalValue ?? null,
-          },
+            attributes: {
+              Precision: 2
+            },
+            raw: decimalValue ?? null
+          } as IDecimalNumberProperty,
         }}
         onNotifyOutputChanged={(outputs) => {
           setDecimalValue(outputs.value);
         }}
       />
+      <OptionSet
+        context={context}
+        parameters={{
+          value: {
+            raw: 1,
+            attributes: {
+              DefaultValue: -1,
+              Options: []
+            }
+          } as IOptionSetProperty
+        }} />
     </>
   );
 };

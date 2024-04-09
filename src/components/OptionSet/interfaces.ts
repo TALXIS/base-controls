@@ -1,0 +1,14 @@
+import { IOptionSetProperty } from "../../interfaces";
+import { IComponent, IOutputs } from "../../interfaces/context";
+import { IBaseParameters } from "../../interfaces/parameters";
+
+export interface IOptionSet extends IComponent<IOptionSetParameters, IOptionSetOutputs> {
+}
+
+export interface IOptionSetParameters extends IBaseParameters {
+    value: IOptionSetProperty;
+}
+
+export interface IOptionSetOutputs extends IOutputs {
+    value?: number
+}
