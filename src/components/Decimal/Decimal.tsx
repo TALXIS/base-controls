@@ -68,10 +68,8 @@ export const Decimal = (props: IDecimal) => {
             }
             value={value ?? ""}
             onBlur={(event) => {
-                let numericValue = extractNumericPart(event.target.value);
-                console.log(numericValue);
                 onNotifyOutputChanged({
-                    value: numericValue,
+                    value: extractNumericPart(event.target.value)
                 });
             }}
             onChange={(e, value) => {
