@@ -10,9 +10,9 @@ export const TextField = (props: ITextField) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const ref = useRef<HTMLDivElement>(null);
-    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent<string, ITextFieldParameters, ITextFieldOutputs>(props);
+    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | undefined, ITextFieldParameters, ITextFieldOutputs>(props);
     const [height] = useTextField(props, ref);
-    
+
     return (
         <TextFieldBase
             readOnly={context.mode.isControlDisabled}
@@ -34,7 +34,7 @@ export const TextField = (props: ITextField) => {
                 iconProps: {
                     iconName: 'Delete'
                 },
-                onClick: () => setValue(null)
+                onClick: () => setValue(undefined)
             } : undefined}
             clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
                 key: 'copy',
@@ -42,15 +42,15 @@ export const TextField = (props: ITextField) => {
                     iconName: 'Copy'
                 }
             } : undefined}
-            value={value ?? ""}
+            value={value}
             onBlur={() => {
                 onNotifyOutputChanged({
                     value: value ?? undefined
-                })
+                });
             }}
             onChange={(e, value) => {
-                setValue(value ?? null)
+                setValue(value);
             }} />
 
-    )
-}
+    );
+};

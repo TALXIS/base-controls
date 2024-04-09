@@ -106,8 +106,8 @@ export class NumberFormattingInfo implements ComponentFramework.UserSettingApi.N
         this.negativeInfinitySymbol = '-Infinity';
         this.negativeSign = '-';
         this.numberDecimalDigits = 2;
-        this.numberDecimalSeparator = '.';
-        this.numberGroupSeparator = ',';
+        this.numberDecimalSeparator = ',';
+        this.numberGroupSeparator = ' ';
         this.numberGroupSizes = [3];
         this.numberNegativePattern = 1;
         this.perMilleSymbol = '%';

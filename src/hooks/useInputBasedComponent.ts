@@ -20,13 +20,13 @@ import { IInputParameters } from "../interfaces/parameters";
  */
 
 export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>, formatter?: (value: any) => any): [
-    TValue | null,
-    (value: TValue | null) => void,
+    TValue,
+    (value: TValue) => void,
     (outputs: TOutputs) => void
 ] => {
     const rawValue = props.parameters.value.raw;
-    const [value, setValue] = useState<TValue | null>(rawValue);
-    const valueRef = useRef<TValue | null>(rawValue)
+    const [value, setValue] = useState<TValue>(rawValue);
+    const valueRef = useRef<TValue>(rawValue);
     const [onNotifyOutputChanged] = useComponent(props as any);
 
     useEffect(() => {
@@ -44,11 +44,11 @@ export const useInputBasedComponent = <TValue, TParameters extends IInputParamet
             if(props.parameters.NotifyOutputChangedOnUnmount?.raw === true) {
                 onNotifyOutputChanged({
                     value: valueRef.current
-                })
+                });
             }
-        }
+        };
     }, []);
 
     return [value, setValue, onNotifyOutputChanged];
 
-}
+};
