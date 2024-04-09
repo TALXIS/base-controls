@@ -4,7 +4,6 @@ import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
 import { useTextField } from './hooks/useTextField';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
 import React from 'react';
-import numeral from 'numeral';
 
 export const TextField = (props: ITextField) => {
     const context = props.context;
