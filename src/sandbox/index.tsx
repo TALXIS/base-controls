@@ -7,12 +7,13 @@ import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
 import { OptionSet } from "../components/OptionSet";
 import { IDecimalNumberProperty, IOptionSetProperty } from "../interfaces";
-
+import {options} from './shared/optionList';
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
   const [value, setValue] = useState<string>();
   const [decimalValue, setDecimalValue] = useState<number>();
+  const [selectedValue, setSelectedValue] = useState<number| null>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [test, setTest] = useState("");
   const context = new Context();
@@ -82,16 +83,20 @@ export const Sandbox: React.FC = () => {
           setDecimalValue(outputs.value);
         }}
       />
+       <Label>Component</Label>
       <OptionSet
         context={context}
         parameters={{
           value: {
-            raw: 1,
+            raw: selectedValue ?? null,
             attributes: {
               DefaultValue: -1,
-              Options: []
+              Options: options
             }
           } as IOptionSetProperty
+        }}
+        onNotifyOutputChanged={(outputs) => {
+          setSelectedValue(outputs.value);
         }} />
     </>
   );
