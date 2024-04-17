@@ -1,8 +1,9 @@
 import { useEffect, useMemo } from "react";
 import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
-import { IDateTime, IDateTimeOutputs, IDateTimeParameters } from "./interfaces";
+import { IDateTime, IDateTimeOutputs, IDateTimeParameters, IDateTimeTranslations } from "./interfaces";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat'
+import { getDateTimeTranslations } from "./translations";
 
 export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElement>): [
     Date | undefined,
@@ -14,6 +15,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     },
     (value: string | undefined) => void,
     (date: Date | undefined, time?: string) => void,
+    (key: string) => string
 
 ] => {
 
@@ -46,8 +48,6 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         return shortDatePattern
     })();
 
-    console.log(formatting);
-
     useMemo(() => {
         dayjs.extend(customParseFormat)
     }, []);
@@ -71,7 +71,10 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         return context.formatting.formatDateShort(date);
     };
 
-    const [dateStringValue, setDateStringValue, notifyOutputChanged] = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs>(props, formatDate);
+    const [dateStringValue, setDateStringValue, notifyOutputChanged, getLabel] = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations>('DateTime', props, {
+        formatter: formatDate,
+        defaultTranslations: getDateTimeTranslations()
+    });
 
     useEffect(() => {
         const onBlur = () => {
@@ -120,5 +123,5 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         })
     }
 
-    return [getDate(), dateStringValue, isDateTime, {shortDatePattern, shortTimePattern}, setDateStringValue, selectDate]
+    return [getDate(), dateStringValue, isDateTime, {shortDatePattern, shortTimePattern}, setDateStringValue, selectDate, getLabel]
 }

@@ -6,7 +6,7 @@ export const Lookup = (props: ILookup) => {
     const parameters = props.parameters;
     const context = props.context;
     const value = parameters.value;
-    const [ notifyOutputChanged ] = useComponent(props);
+    const [ notifyOutputChanged ] = useComponent('Lookup', props);
     return (
         <div></div>
     );

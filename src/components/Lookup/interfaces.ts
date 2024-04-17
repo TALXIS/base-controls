@@ -1,8 +1,8 @@
 import { ILookupProperty } from "../../interfaces";
-import { IComponent, IOutputs } from "../../interfaces/context";
+import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
 import { IBaseParameters } from "../../interfaces/parameters";
 
-export interface ILookup extends IComponent<ILookupParameters, ILookupOutputs> {
+export interface ILookup extends IComponent<ILookupParameters, ILookupOutputs, ILookupTranslations> {
     /**
      * If provided, the Lookup will use the returned values of this function to display search results.
      * @param {any} entityNames An array of entity names that he Lookup is currently targeting.
@@ -21,4 +21,8 @@ export interface ILookupParameters extends IBaseParameters {
 
 export interface ILookupOutputs extends IOutputs {
     value?: ComponentFramework.LookupValue[]
+}
+
+export interface ILookupTranslations extends ITranslations {
+
 }

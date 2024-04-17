@@ -1,6 +1,6 @@
 import { TextField } from "@talxis/react-components/dist/components/TextField";
 import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
-import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
+import { IDecimal, IDecimalOutputs, IDecimalParameters, IDecimalTranslations } from "./interfaces";
 import React, { useEffect } from "react";
 import numeral from "numeral";
 import { NumeralPCF } from "../../utils/NumeralPCF";
@@ -39,8 +39,12 @@ export const Decimal = (props: IDecimal) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const numberFormatting = context.userSettings.numberFormattingInfo;
+    
     useEffect(() => { NumeralPCF.register(numberFormatting); }, []);
-    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs>(props, formatter, extractNumericPart);
+    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs, IDecimalTranslations>('Decimal', props, {
+        formatter: formatter,
+        valueExtractor: extractNumericPart
+    });
 
     return (
         <TextField

@@ -36,7 +36,6 @@ const InternalCalendar = (props: IInternalCalendarProps) => {
                     {...props.timePickerProps}
                     defaultValue={dayjs(new Date()).startOf('day').toDate()}
                     useComboBoxAsMenuWidth
-                    label="Time"
                     autofill={{
                         componentRef: timePickerRef
                     }}
@@ -60,7 +59,7 @@ export const DateTime = (componentProps: IDateTime) => {
     const datePickerRef = useRef<IDatePicker>(null);
     const theme = useTheme();
     const styles = getDateTimeStyles(theme);
-    const [date, stringDate, isDateTime, patterns, setStringDate, selectDate] = useDateTime(componentProps, ref);
+    const [date, stringDate, isDateTime, patterns, setStringDate, selectDate, getLabel] = useDateTime(componentProps, ref);
 
     return (
         <div ref={ref}>
@@ -71,10 +70,10 @@ export const DateTime = (componentProps: IDateTime) => {
                 calendarProps={{
                     onSelectDate: (date) => selectDate(date),
                 }}
-                
                 calendarAs={(props) =>
                     <InternalCalendar {...props} timePickerProps={{
                         timeFormat: patterns.shortTimePattern,
+                        label: getLabel('time'),
                         visible: isDateTime && !componentProps.parameters.value.errorMessage,
                         useHour12: patterns.shortTimePattern.endsWith('A'),
                         onChange: (e, date) => selectDate(undefined, dayjs(date).format('HH:mm')),

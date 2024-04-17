@@ -1,8 +1,9 @@
 import { IDateTimeProperty } from "../../interfaces";
-import { IComponent, IOutputs } from "../../interfaces/context";
+import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
 import { IBaseParameters } from "../../interfaces/parameters";
 
-export interface IDateTime extends IComponent<IDateTimeParameters, IDateTimeOutputs> {
+export interface IDateTime extends IComponent<IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations> {
+    translations: IDateTimeTranslations
 }
 
 export interface IDateTimeParameters extends IBaseParameters {
@@ -11,4 +12,8 @@ export interface IDateTimeParameters extends IBaseParameters {
 
 export interface IDateTimeOutputs extends IOutputs {
     value?: Date;
+}
+export interface IDateTimeTranslations extends ITranslations {
+    goToday?: {[LCID: number]: string}
+    time?: {[LCID: number]: string}
 }

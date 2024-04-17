@@ -25,7 +25,12 @@ export const Sandbox: React.FC = () => {
 {/*       <TalxisTextField value={value} onChange={(e, value) => setValue(value)} /> */}
       <DateTime 
         context={context}
-        onNotifyOutputChanged={(outputs) => setValue(outputs.value) }
+        onNotifyOutputChanged={(outputs) => setValue(outputs.value)}
+        translations={{
+          time: {
+            1029: 'cestina',
+          }
+        }}
         parameters={{
           value: {
             raw: value as any,
