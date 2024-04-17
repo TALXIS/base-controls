@@ -10,7 +10,7 @@ export const TextField = (props: ITextField) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const ref = useRef<HTMLDivElement>(null);
-    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | undefined, ITextFieldParameters, ITextFieldOutputs, ITextFieldTranslations>('TextField', props, );
+    const [value, labels, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | undefined, ITextFieldParameters, ITextFieldOutputs, ITextFieldTranslations>('TextField', props);
     const [height] = useTextField(props, ref);
 
     return (

@@ -3,6 +3,7 @@ import { IComponent, IOutputs, ITranslations } from "../interfaces/context";
 import { useComponent } from "./useComponent";
 import React from 'react';
 import { IInputParameters } from "../interfaces/parameters";
+import { StringProps } from "../types";
 
 /**
  * Use when working with components that need to store value changes internally before triggering `notifyOutputChanged`.
@@ -26,15 +27,15 @@ interface IComponentOptions<TTranslations> {
 
 export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, options?: IComponentOptions<TTranslations>): [
     TValue,
+    Required<StringProps<TTranslations>>,
     (value: TValue) => void,
     (outputs: TOutputs) => void,
-    (key: string) => string
 ] => {
     const {formatter, valueExtractor} = {...options};
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
-    const [onNotifyOutputChanged, getLabel] = useComponent(name, props, options?.defaultTranslations);
+    const [labels, onNotifyOutputChanged] = useComponent(name, props, options?.defaultTranslations);
 
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
@@ -56,6 +57,6 @@ export const useInputBasedComponent = <TValue, TParameters extends IInputParamet
         };
     }, []);
 
-    return [value, setValue, onNotifyOutputChanged, getLabel];
+    return [value, labels, setValue, onNotifyOutputChanged];
 
 };

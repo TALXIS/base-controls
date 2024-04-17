@@ -4,6 +4,7 @@ import { IDateTime, IDateTimeOutputs, IDateTimeParameters, IDateTimeTranslations
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { getDateTimeTranslations } from "./translations";
+import { StringProps } from "../../types";
 
 export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElement>): [
     Date | undefined,
@@ -13,9 +14,9 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         shortDatePattern: string
         shortTimePattern: string;
     },
+    Required<StringProps<IDateTimeTranslations>>,
     (value: string | undefined) => void,
     (date: Date | undefined, time?: string) => void,
-    (key: string) => string
 
 ] => {
 
@@ -71,11 +72,10 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         return context.formatting.formatDateShort(date);
     };
 
-    const [dateStringValue, setDateStringValue, notifyOutputChanged, getLabel] = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations>('DateTime', props, {
+    const [dateStringValue, labels, setDateStringValue, notifyOutputChanged] = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations>('DateTime', props, {
         formatter: formatDate,
-        defaultTranslations: getDateTimeTranslations()
+        defaultTranslations: getDateTimeTranslations(props.context.userSettings)
     });
-
     useEffect(() => {
         const onBlur = () => {
             notifyOutputChanged({
@@ -123,5 +123,5 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         })
     }
 
-    return [getDate(), dateStringValue, isDateTime, {shortDatePattern, shortTimePattern}, setDateStringValue, selectDate, getLabel]
+    return [getDate(), dateStringValue, isDateTime, {shortDatePattern, shortTimePattern}, labels, setDateStringValue, selectDate]
 }

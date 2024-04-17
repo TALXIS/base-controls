@@ -41,7 +41,7 @@ export const Decimal = (props: IDecimal) => {
     const numberFormatting = context.userSettings.numberFormattingInfo;
     
     useEffect(() => { NumeralPCF.register(numberFormatting); }, []);
-    const [value, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs, IDecimalTranslations>('Decimal', props, {
+    const [value, labels, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs, IDecimalTranslations>('Decimal', props, {
         formatter: formatter,
         valueExtractor: extractNumericPart
     });

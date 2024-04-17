@@ -21,6 +21,6 @@ export interface IComponent<TParameters, TOutputs, TTranslations> {
 
 export interface ITranslations {
     [key: string]: {
-        [LCID: number]: string;
+        [LCID: number]: string | string[]
     } | undefined
 }

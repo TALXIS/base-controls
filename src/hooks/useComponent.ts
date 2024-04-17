@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef } from "react";
 import React from 'react';
 import deepEqual from 'fast-deep-equal';
 import { IComponent, IOutputs, IParameters, ITranslations } from "../interfaces";
-import { merge } from 'merge-anything'
-
+import { merge } from 'merge-anything';
+import { StringProps } from "../types";
 
 
 /**
@@ -11,15 +11,17 @@ import { merge } from 'merge-anything'
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
 export const useComponent = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, defaultTranslations?: TTranslations): [
+    Required<StringProps<TTranslations>>,
     (outputs: TOutputs) => void,
-    (key: string) => string,
 ] => {
     const parametersRef = useRef<TParameters>(props.parameters);
     const labels = useMemo(() => {
-        if(!defaultTranslations && !props.translations) {
-            return {} as TTranslations;
-        }
-        return merge(defaultTranslations ?? {}, props.translations ?? {} ) as TTranslations;
+        const mergedTranslations = structuredClone(merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations);
+        return new Proxy(mergedTranslations, {
+            get(target, key) {
+                return getLabel(key as string, mergedTranslations);
+            }
+        }) as any;
     }, []);
     console.log(labels)
 
@@ -27,21 +29,23 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         parametersRef.current = props.parameters;
     }, [props.parameters]);
 
-    const getLabel = (key: string): string => {
-        const translation = labels[key];
-        if(!translation) {
-            throw new Error(`Missing translation for ${key} label of ${name} component!`);
+    const getLabel = (key: string, translations: TTranslations): string | string[] => {
+        const translation = translations[key];
+        if (!translation) {
+            console.error(`Translation for the ${key} label of the ${name} component has not been defined!`);
+            return key;
         }
-        if(typeof translation === 'string') {
+        if (typeof translation === 'string') {
             return translation;
         }
         let label = translation[props.context.userSettings.languageId];
-        if(!label) {
-            console.info(`Translation for the ${label} label of the ${name} component has not been found. Using default Czech label instead.`);
+        if (!label) {
+            console.info(`Translation for the ${key} label of the ${name} component has not been found. Using default Czech label instead.`);
             label = translation[1029];
         }
-        if(!label) {
-            throw new Error(`Translation for the ${label} of the ${name} component does not exists neither for Czech language and current LCID.`)
+        if (!label) {
+            console.error(`Translation for the ${key} label of the ${name} component does not exists neither for Czech language and current LCID.`);
+            label = key;
         }
         return label
     }
@@ -52,7 +56,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
             const parameterValue = parametersRef.current[key]?.raw;
             if (!deepEqual(parameterValue, outputValue)) {
                 // handles undefined X null
-                if(parameterValue == outputValue) {
+                if (parameterValue == outputValue) {
                     continue;
                 }
                 isDirty = true;
@@ -65,5 +69,5 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         console.log('Change detected, triggering notifyOutputChanged');
         props.onNotifyOutputChanged?.(outputs);
     };
-    return [onNotifyOutputChanged, getLabel];
+    return [labels, onNotifyOutputChanged];
 };
