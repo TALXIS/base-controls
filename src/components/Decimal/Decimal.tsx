@@ -74,6 +74,7 @@ export const Decimal = (props: IDecimal) => {
                 parameters.EnableCopyButton?.raw === true
                     ? {
                         key: "copy",
+                        showOnlyOnHover: true,
                         iconProps: {
                             iconName: "Copy",
                         },

@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters, IDateTimeTranslations } from "./interfaces";
 import dayjs from 'dayjs';
+import  utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { getDateTimeTranslations } from "./translations";
 import { StringProps } from "../../types";
@@ -51,11 +52,12 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     })();
 
     useMemo(() => {
-        dayjs.extend(customParseFormat)
+        dayjs.extend(customParseFormat);
+        dayjs.extend(utc);
     }, []);
 
-    const formatDate = (date: Date | null | string): string | undefined => {
-        if (date == null) {
+    const formatDate = (date: Date | undefined | null | string): string | undefined => {
+        if (date == undefined) {
             return undefined;
         }
         if (typeof date === 'string') {
@@ -80,6 +82,9 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     useEffect(() => {
         const onBlur = () => {
+            if(formatDate(boundValue.raw) === dateStringValue) {
+                return;
+            }
             notifyOutputChanged({
                 value: dateExtractor(dateStringValue!) as any
             })
@@ -93,6 +98,13 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const getDate = (): Date | undefined => {
         if (boundValue.raw instanceof Date) {
+            if(behavior === 3) {
+                //the date in javascript gets automatically adjusted to local time zone
+                //this will make it think that the date already came in local time, thus not adjusting the time
+                const date = new Date(boundValue.raw.toISOString().replace('Z', ''));
+                console.log('hello', date);
+                return date;
+            }
             return boundValue.raw;
         }
         //this scenario should only happen in cases of error or null value

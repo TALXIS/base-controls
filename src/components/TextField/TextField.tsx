@@ -39,6 +39,7 @@ export const TextField = (props: ITextField) => {
             } : undefined}
             clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
                 key: 'copy',
+                showOnlyOnHover: true,
                 iconProps: {
                     iconName: 'Copy'
                 }

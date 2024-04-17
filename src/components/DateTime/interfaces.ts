@@ -1,12 +1,12 @@
 import { IDateTimeProperty } from "../../interfaces";
 import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
-import { IBaseParameters } from "../../interfaces/parameters";
+import { IBaseParameters, IInputParameters } from "../../interfaces/parameters";
 
 export interface IDateTime extends IComponent<IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations> {
     translations?: IDateTimeTranslations
 }
 
-export interface IDateTimeParameters extends IBaseParameters {
+export interface IDateTimeParameters extends IInputParameters {
     value: IDateTimeProperty;
 }
 

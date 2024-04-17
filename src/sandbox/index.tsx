@@ -32,6 +32,15 @@ export const Sandbox: React.FC = () => {
           }
         }}
         parameters={{
+          EnableCopyButton: {
+            raw: true
+          },
+          EnableDeleteButton: {
+            raw: true
+          },
+          AutoFocus: {
+            raw: true
+          },
           value: {
             raw: value as any,
             //@ts-ignore
