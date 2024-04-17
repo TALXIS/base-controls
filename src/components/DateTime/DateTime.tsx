@@ -13,6 +13,7 @@ export const DateTime = (componentProps: IDateTime) => {
     const datePickerRef = useRef<IDatePicker>(null);
     const theme = useTheme();
     const styles = getDateTimeStyles(theme);
+    const context = componentProps.context;
     const parameters = componentProps.parameters;
     const [date, stringDate, isDateTime, patterns, labels, setStringDate, selectDate, clearDate] = useDateTime(componentProps, ref);
 
@@ -58,6 +59,12 @@ export const DateTime = (componentProps: IDateTime) => {
                     autoFocus: parameters.AutoFocus?.raw,
                     borderless: parameters.EnableBorder?.raw === false,
                     errorMessage: parameters.value.errorMessage,
+                    styles:{
+                        fieldGroup: {
+                            height: context.mode.allocatedHeight || undefined,
+                            width: context.mode.allocatedWidth || undefined
+                        }
+                    },
                     //@ts-ignore - TODO: fix types in shared components
                     deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
                         key: 'Delete',
