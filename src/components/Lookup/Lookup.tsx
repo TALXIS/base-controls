@@ -9,5 +9,5 @@ export const Lookup = (props: ILookup) => {
     const [ notifyOutputChanged ] = useComponent(props);
     return (
         <div></div>
-    )
-}
+    );
+};

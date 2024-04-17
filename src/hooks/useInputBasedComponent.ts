@@ -19,13 +19,13 @@ import { IInputParameters } from "../interfaces/parameters";
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
 
-export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>, formatter?: (value: any) => any): [
+export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>, formatter?: (value: any) => any, valueExtractor?: (value: any) => any): [
     TValue,
     (value: TValue) => void,
     (outputs: TOutputs) => void
 ] => {
     const rawValue = props.parameters.value.raw;
-    const [value, setValue] = useState<TValue>(rawValue);
+    const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
     const [onNotifyOutputChanged] = useComponent(props as any);
 
@@ -43,7 +43,7 @@ export const useInputBasedComponent = <TValue, TParameters extends IInputParamet
         return () => {
             if(props.parameters.NotifyOutputChangedOnUnmount?.raw === true) {
                 onNotifyOutputChanged({
-                    value: valueRef.current
+                    value: valueExtractor?.(valueRef.current) ?? valueRef.current
                 });
             }
         };

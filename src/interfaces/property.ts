@@ -13,9 +13,8 @@ export interface ITwoOptionsProperty extends IProperty, Partial<ComponentFramewo
 
 export interface IDecimalNumberProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.DecimalNumberProperty>, 'attributes'> {
     raw: number | null;
-    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.DecimalNumberMetadata> & {
-        Precision: number;
-    };
+    type: 'Whole.None' | 'Decimal',
+    attributes?: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.DecimalNumberMetadata>
 }
 
 export interface IDateTimeProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.DateTimeProperty> {
