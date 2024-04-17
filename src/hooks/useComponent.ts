@@ -16,27 +16,32 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
 ] => {
     const parametersRef = useRef<TParameters>(props.parameters);
     const labels = useMemo(() => {
-        const mergedTranslations = structuredClone(merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations);
+        const mergedTranslations = merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations
         return new Proxy(mergedTranslations, {
             get(target, key) {
                 return getLabel(key as string, mergedTranslations);
             }
         }) as any;
     }, []);
-    console.log(labels)
 
     useEffect(() => {
         parametersRef.current = props.parameters;
     }, [props.parameters]);
 
     const getLabel = (key: string, translations: TTranslations): string | string[] => {
+        const strigify = (value: string | string[]) => {
+            if(typeof value === 'string') {
+                return value;
+            }
+            return JSON.stringify(value);
+        }
         const translation = translations[key];
         if (!translation) {
             console.error(`Translation for the ${key} label of the ${name} component has not been defined!`);
             return key;
         }
-        if (typeof translation === 'string') {
-            return translation;
+        if (typeof translation === 'string' || Array.isArray(translation)) {
+            return strigify(translation);
         }
         let label = translation[props.context.userSettings.languageId];
         if (!label) {
@@ -47,7 +52,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
             console.error(`Translation for the ${key} label of the ${name} component does not exists neither for Czech language and current LCID.`);
             label = key;
         }
-        return label
+        return strigify(label)
     }
 
     const onNotifyOutputChanged = (outputs: TOutputs) => {

@@ -14,8 +14,10 @@ export interface IDateTimeOutputs extends IOutputs {
     value?: Date;
 }
 export interface IDateTimeTranslations extends ITranslations {
-    goToday?: {[LCID: number]: string};
-    time?:  {[LCID: number]: string};
+    time?: {[LCID: number]: string}
+    goToToday?: {[LCID: number]: string}
     days?: {[LCID: number]: string[]} | string[];
     months?: {[LCID: number]: string[]} | string[];
+    shortDays?: {[LCID: number]: string[]} | string[];
+    shortMonths?: {[LCID: number]: string[]} | string[];
 }

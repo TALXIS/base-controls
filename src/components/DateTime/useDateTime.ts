@@ -17,6 +17,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     Required<StringProps<IDateTimeTranslations>>,
     (value: string | undefined) => void,
     (date: Date | undefined, time?: string) => void,
+    () => void
 
 ] => {
 
@@ -39,11 +40,11 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         }
     })();
 
+    //MS returns the pattern without correct separator and they do this during formatting
     const shortDatePattern = dateFormattingInfo.shortDatePattern.replace(/\//g, dateFormattingInfo.dateSeparator).toUpperCase();
     const shortTimePattern = dateFormattingInfo.shortTimePattern.replace(/:/g, dateFormattingInfo.timeSeparator).replace('tt', 'A');
     const formatting = (() => {
         if (isDateTime) {
-            //MS returns the pattern without correct separator and they do this during formatting
             return `${shortDatePattern} ${shortTimePattern}`
         }
         return shortDatePattern
@@ -74,8 +75,9 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const [dateStringValue, labels, setDateStringValue, notifyOutputChanged] = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations>('DateTime', props, {
         formatter: formatDate,
-        defaultTranslations: getDateTimeTranslations(props.context.userSettings)
+        defaultTranslations: getDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
     });
+
     useEffect(() => {
         const onBlur = () => {
             notifyOutputChanged({
@@ -108,6 +110,12 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         return dayjsDate.toDate();
     };
 
+    const clearDate = () => {
+        notifyOutputChanged({
+            value: undefined
+        })
+    }
+
     const selectDate = (date?: Date, time?: string) => {
         let dayjsDate = dayjs(date ?? getDate())
         let _time = time;
@@ -123,5 +131,5 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         })
     }
 
-    return [getDate(), dateStringValue, isDateTime, {shortDatePattern, shortTimePattern}, labels, setDateStringValue, selectDate]
+    return [getDate(), dateStringValue, isDateTime, {shortDatePattern, shortTimePattern}, labels, setDateStringValue, selectDate, clearDate]
 }

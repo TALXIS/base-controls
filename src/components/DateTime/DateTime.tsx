@@ -2,12 +2,12 @@
 import { IDateTime } from "./interfaces";
 import { Calendar, IAutofill, ICalendarProps, IDatePicker, useTheme } from "@fluentui/react";
 import { useEffect, useRef } from "react";
-import { DatePicker } from "./DatePicker";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./useDateTime";
 import dayjs from 'dayjs';
 import { ITimePickerProps, TimePicker } from "@talxis/react-components/dist/components/TimePicker";
 import { Text } from '@fluentui/react/lib/Text';
+import { DatePicker } from "@talxis/react-components/dist/components/DatePicker";
 
 interface IInternalTimePickerProps extends ITimePickerProps {
     visible: boolean;
@@ -59,7 +59,7 @@ export const DateTime = (componentProps: IDateTime) => {
     const datePickerRef = useRef<IDatePicker>(null);
     const theme = useTheme();
     const styles = getDateTimeStyles(theme);
-    const [date, stringDate, isDateTime, patterns, labels, setStringDate, selectDate] = useDateTime(componentProps, ref);
+    const [date, stringDate, isDateTime, patterns, labels, setStringDate, selectDate, clearDate] = useDateTime(componentProps, ref);
 
     return (
         <div ref={ref}>
@@ -68,10 +68,24 @@ export const DateTime = (componentProps: IDateTime) => {
                 componentRef={datePickerRef}
                 allowTextInput
                 calendarProps={{
+                    //needs to be here as the internal picker does not call the function passed in calendarAs
                     onSelectDate: (date) => selectDate(date),
                 }}
+                // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
+                minDate={new Date('1753-01-01T00:00:00.000Z')}
+                firstDayOfWeek={componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek}
                 calendarAs={(props) =>
-                    <InternalCalendar {...props} timePickerProps={{
+                    <InternalCalendar {...props}
+                    strings={{
+                        goToToday: labels.goToToday,
+                        days: JSON.parse(labels.days),
+                        months: JSON.parse(labels.months),
+                        shortDays: JSON.parse(labels.shortDays),
+                        shortMonths: JSON.parse(labels.shortMonths)
+                    }}
+                    timePickerProps={{
+                        autoComplete: "off",
+                        autoCapitalize: "off",
                         timeFormat: patterns.shortTimePattern,
                         label: labels.time,
                         visible: isDateTime && !componentProps.parameters.value.errorMessage,
@@ -86,7 +100,16 @@ export const DateTime = (componentProps: IDateTime) => {
                     placeholder: '---',
                     onNotifyValidationResult: () => null,
                     noValidate: true,
-                    errorMessage: componentProps.parameters.value.errorMessage
+                    errorMessage: componentProps.parameters.value.errorMessage,
+                    //@ts-ignore - TODO: fix types in shared components
+                    deleteButtonProps: {
+                        key: 'Delete',
+                        onClick: clearDate,
+                        showOnlyOnHover: true,
+                        iconProps: {
+                            iconName: 'Cancel'
+                        }
+                    }
                 }}
                 //undefined will break the calendar => it wont reflect date change in it's UI
                 value={date ?? new Date()}
