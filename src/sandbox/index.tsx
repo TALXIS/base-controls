@@ -23,7 +23,7 @@ export const Sandbox: React.FC = () => {
     <>
       <Label>Outside change</Label>
 {/*       <TalxisTextField value={value} onChange={(e, value) => setValue(value)} /> */}
-      <DateTime 
+      <Decimal
         context={context}
         parameters={{
           EnableBorder: { raw: true },
