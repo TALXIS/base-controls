@@ -3,6 +3,7 @@ import { IOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
 import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
 import {  IComboBoxOption} from '@fluentui/react';
+import * as React from 'react';
 
 export const OptionSet = (props: IOptionSet) => {
     const parameters = props.parameters;
