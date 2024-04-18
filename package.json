@@ -56,7 +56,8 @@
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2",
     "react-window": "^1.8.6",
-    "uniqid": "^5.4.0"
+    "uniqid": "^5.4.0",
+    "merge-anything": "^5.1.7"
   },
   "scripts": {
     "build": "rollup -c",
@@ -86,9 +87,4 @@
       "last 1 safari version"
     ]
   },
-  "dependencies": {
-    "i": "^0.3.7",
-    "merge-anything": "^5.1.7",
-    "npm": "^10.5.2"
-  }
 }
