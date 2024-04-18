@@ -11,7 +11,7 @@ export const OptionSet = (props: IOptionSet) => {
     const defaulValue = boundValue.attributes.DefaultValue.toString();
     const [onNotifyOutputChanged] = useComponent(props);
     const { Options } = parameters.value.attributes;
-    const context = props.context;;
+    const context = props.context;
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
@@ -27,6 +27,9 @@ export const OptionSet = (props: IOptionSet) => {
     return <ComboBox
         borderless={parameters.EnableBorder?.raw === false}
         options={comboBoxOptions}
+        autofill={parameters.AutoFocus?.raw === true ? {
+            autoFocus: true
+        }: undefined}
         readOnly={context.mode.isControlDisabled}
         selectedKey={boundValue.raw?.toString() ?? defaulValue}
         dropdownWidth={context.mode.allocatedWidth || undefined}
