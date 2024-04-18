@@ -5,7 +5,6 @@ import { IComponent, IOutputs, IParameters, ITranslations } from "../interfaces"
 import { merge } from 'merge-anything';
 import { StringProps } from "../types";
 
-
 /**
  * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
@@ -16,7 +15,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
 ] => {
     const parametersRef = useRef<TParameters>(props.parameters);
     const labels = useMemo(() => {
-        const mergedTranslations = merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations
+        const mergedTranslations = merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations;
         return new Proxy(mergedTranslations, {
             get(target, key) {
                 return getLabel(key as string, mergedTranslations);
@@ -34,7 +33,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
                 return value;
             }
             return JSON.stringify(value);
-        }
+        };
         const translation = translations[key];
         if (!translation) {
             console.error(`Translation for the ${key} label of the ${name} component has not been defined!`);
@@ -52,8 +51,8 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
             console.error(`Translation for the ${key} label of the ${name} component does not exists neither for Czech language and current LCID.`);
             label = key;
         }
-        return strigify(label)
-    }
+        return strigify(label);
+    };
 
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;

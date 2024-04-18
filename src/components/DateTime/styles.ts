@@ -27,5 +27,5 @@ export const getDateTimeStyles = (theme: ITheme) => {
                 animationDuration: '0s'
             }
         }
-    })
-}
+    });
+};

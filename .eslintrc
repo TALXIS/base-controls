@@ -12,6 +12,7 @@
         "**/*.svg",
         "**/*.mdx",
         "/src/sandbox",
+        "/src/examples",
         "config-overrides.js"
     ],
     "extends": [],

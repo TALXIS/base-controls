@@ -25,13 +25,13 @@ export const Calendar = (props: IInternalCalendarProps) => {
     const [isTimePickerControlled, setIsTimePickerControlled] = useState<boolean>(true);
     useEffect(() => {
         //@ts-ignore - we need to use the internal method to display exact time, otherwise the shown value would always get rounded to the next 15 min
-        timePickerRef.current?._updateValue(getFormattedTime())
+        timePickerRef.current?._updateValue(getFormattedTime());
         setIsTimePickerControlled(false);
     }, [props.timePickerProps.defaultValue]);
 
     const getFormattedTime = () => {
-        return dayjs(props.timePickerProps.defaultValue).format(props.timePickerProps.timeFormat)
-    }
+        return dayjs(props.timePickerProps.defaultValue).format(props.timePickerProps.timeFormat);
+    };
 
     return (
         <div className={styles.calendarCallout}>
@@ -56,11 +56,11 @@ export const Calendar = (props: IInternalCalendarProps) => {
                     }}
                     onRenderOption={(option) => {
                         //the timepicker displays 24 instead of 00 during the option displaying for some reason
-                        return <Text>{option?.text.replace('24', '00')}</Text>
+                        return <Text>{option?.text.replace('24', '00')}</Text>;
                     }}
                     increments={15}
                     allowFreeform />
             }
         </div>
-    )
-}
+    );
+};

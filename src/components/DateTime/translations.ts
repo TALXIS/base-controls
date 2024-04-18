@@ -14,5 +14,5 @@ export const getDefaultDateTimeTranslations = (dateFormattingInfo: ComponentFram
         months: dateFormattingInfo.monthNames,
         shortDays: dateFormattingInfo.shortestDayNames,
         shortMonths: dateFormattingInfo.abbreviatedMonthNames,
-    }
-}
+    };
+};

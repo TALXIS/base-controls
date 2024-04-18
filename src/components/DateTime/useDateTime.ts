@@ -3,7 +3,7 @@ import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters, IDateTimeTranslations } from "./interfaces";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import customParseFormat from 'dayjs/plugin/customParseFormat'
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "./translations";
 import { StringProps } from "../../types";
 
@@ -24,7 +24,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const boundValue = props.parameters.value;
     const context = props.context;
-    const behavior = boundValue.attributes.Behavior
+    const behavior = boundValue.attributes.Behavior;
     const format = boundValue.attributes.Format;
     const dateFormattingInfo = context.userSettings.dateFormattingInfo;
     const isDateTime = (() => {
@@ -46,9 +46,9 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const shortTimePattern = dateFormattingInfo.shortTimePattern.replace(/:/g, dateFormattingInfo.timeSeparator).replace('tt', 'A');
     const formatting = (() => {
         if (isDateTime) {
-            return `${shortDatePattern} ${shortTimePattern}`
+            return `${shortDatePattern} ${shortTimePattern}`;
         }
-        return shortDatePattern
+        return shortDatePattern;
     })();
 
     useMemo(() => {
@@ -87,13 +87,13 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             }
             notifyOutputChanged({
                 value: dateExtractor(dateStringValue!) as any
-            })
-        }
+            });
+        };
         const input = ref.current?.querySelector('input');
         input?.addEventListener('blur', onBlur);
         return () => {
             input?.removeEventListener('blur', onBlur);
-        }
+        };
     }, [dateStringValue]);
 
     const getDate = (): Date | undefined => {
@@ -124,11 +124,11 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const clearDate = () => {
         notifyOutputChanged({
             value: undefined
-        })
-    }
+        });
+    };
 
     const selectDate = (date?: Date, time?: string) => {
-        let dayjsDate = dayjs(date ?? getDate())
+        let dayjsDate = dayjs(date ?? getDate());
         let _time = time;
         //date selected from calendar, keep the original time
         if (!_time) {
@@ -139,8 +139,8 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         dayjsDate = dayjsDate.minute(parseInt(minutes));
         notifyOutputChanged({
             value: dayjsDate.toDate()
-        })
-    }
+        });
+    };
 
-    return [getDate(), dateStringValue, isDateTime, { shortDatePattern, shortTimePattern }, labels, setDateStringValue, selectDate, clearDate]
-}
+    return [getDate(), dateStringValue, isDateTime, { shortDatePattern, shortTimePattern }, labels, setDateStringValue, selectDate, clearDate];
+};
