@@ -13,14 +13,17 @@ export interface ITwoOptionsProperty extends IProperty, Partial<ComponentFramewo
 
 export interface IDecimalNumberProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.DecimalNumberProperty>, 'attributes'> {
     raw: number | null;
-    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.DecimalNumberMetadata> & {
-        Precision: number;
-    };
+    type: 'Whole.None' | 'Decimal',
+    attributes?: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.DecimalNumberMetadata>
 }
 
+//@ts-ignore - IMEMode is mandatory, but no longer supported in modern browsers - https://learn.microsoft.com/en-us/power-apps/maker/data-platform/create-edit-field-portal
 export interface IDateTimeProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.DateTimeProperty> {
     raw: Date | null,
-    attributes: ComponentFramework.PropertyHelper.FieldPropertyMetadata.DateTimeMetadata;
+    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.DateTimeMetadata> & {
+        Behavior: ComponentFramework.FormattingApi.Types.DateTimeFieldBehavior
+        Format: string;
+    };
 }
 
 export interface IOptionSetProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.OptionSetProperty>, 'attributes'> {

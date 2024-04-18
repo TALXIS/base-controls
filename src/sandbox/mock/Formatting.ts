@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 export class Formatting implements ComponentFramework.Formatting {
 
     formatCurrency(value: number, precision: number = 2, symbol: string = '$'): string {
@@ -52,6 +54,7 @@ export class Formatting implements ComponentFramework.Formatting {
     }
 
     formatTime(value: Date, behavior: ComponentFramework.FormattingApi.Types.DateTimeFieldBehavior): string {
+        return dayjs(value).format('DD.MM.YYYY HH:mm')
         // Implementation depends on behavior, e.g., 12-hour clock, 24-hour clock, etc.
         return value.toLocaleTimeString('en-US');
     }
@@ -161,7 +164,7 @@ export class DateFormattingInfo implements ComponentFramework.UserSettingApi.Dat
             calendarType: 1,
             twoDigitYearMax: 2029
         }
-        this.dateSeparator = '/';
+        this.dateSeparator = '.';
         this.dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         this.firstDayOfWeek = 0;
         this.fullDateTimePattern = 'dddd, MMMM d, yyyy h:mm:ss tt';
@@ -171,8 +174,8 @@ export class DateFormattingInfo implements ComponentFramework.UserSettingApi.Dat
         this.monthGenitiveNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         this.monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         this.pmDesignator = 'PM';
-        this.shortDatePattern = 'M/d/yyyy';
-        this.shortTimePattern = 'h:mm tt';
+        this.shortDatePattern = 'dd/MM/yyyy';
+        this.shortTimePattern = 'h:mm';
         this.shortestDayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
         this.sortableDateTimePattern = 'yyyy-MM-ddTHH:mm:ss';
         this.timeSeparator = ':';

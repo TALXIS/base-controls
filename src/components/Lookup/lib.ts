@@ -33,7 +33,7 @@ export namespace Sdk.FetchXml {
         constructor(name: string) {
             //new keyword not required
             if (!(this instanceof attribute))
-            { return new attribute(name) }
+            { return new attribute(name); }
 
             this.name = name;
         }
@@ -271,7 +271,7 @@ export namespace Sdk.FetchXml {
                         break;
 
                 }
-            })
+            });
 
             return attObj;
         }
@@ -287,14 +287,14 @@ export namespace Sdk.FetchXml {
         constructor(attribute: string, operator: Sdk.FetchXml.Operator, values?: Array<Sdk.FetchXml.value>) {
             //New keyword not required in JS
             if (!(this instanceof Sdk.FetchXml.condition))
-            { return new Sdk.FetchXml.condition(attribute, operator, values) }
+            { return new Sdk.FetchXml.condition(attribute, operator, values); }
 
             if (attribute && operator) {
                 this.attribute = attribute;
                 this.operator = operator;
             }
             else {
-                throw new Error("Sdk.FetchXml.condition constructor parameters attribute and operator are required.")
+                throw new Error("Sdk.FetchXml.condition constructor parameters attribute and operator are required.");
             }
             if (values)
                 this.values = values;
@@ -410,7 +410,7 @@ export namespace Sdk.FetchXml {
         }
         public set values(value: Array<Sdk.FetchXml.value>) {
             if (!Sdk.FetchXml.Util.isValueArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.condition.values must be an array of Sdk.FetchXml.value or null.")
+                throw new Error("Sdk.FetchXml.condition.values must be an array of Sdk.FetchXml.value or null.");
             }
             if (value == null) {
                 this._values = [];
@@ -481,7 +481,7 @@ export namespace Sdk.FetchXml {
         */
         public removeValueByRef(value) {
             if (!Sdk.FetchXml.Util.isValue(value)) {
-                throw new Error("Sdk.FetchXml.condition removeValueByRef method value parameter must be an Sdk.FetchXml.value.")
+                throw new Error("Sdk.FetchXml.condition removeValueByRef method value parameter must be an Sdk.FetchXml.value.");
             }
             Sdk.FetchXml.Util.removeCollectionValueByRef(this.values, value);
             return this;
@@ -493,7 +493,7 @@ export namespace Sdk.FetchXml {
         */
         public removeValue(value) {
             if (!Sdk.FetchXml.Util.isValue(value)) {
-                throw new Error("Sdk.FetchXml.condition removeValue method value parameter must be an Sdk.FetchXml.value.")
+                throw new Error("Sdk.FetchXml.condition removeValue method value parameter must be an Sdk.FetchXml.value.");
             }
             Sdk.FetchXml.Util.removeCollectionValue(this.values, value);
             return this;
@@ -585,34 +585,34 @@ export namespace Sdk.FetchXml {
 
             var cNode = doc.createElement("condition");
             if (this.aggregate) {
-                cNode.setAttribute("aggregate", <string>this.aggregate)
+                cNode.setAttribute("aggregate", <string>this.aggregate);
             }
             if (this.alias) {
-                cNode.setAttribute("alias", this.alias)
+                cNode.setAttribute("alias", this.alias);
             }
             if (this.attribute) {
-                cNode.setAttribute("attribute", this.attribute)
+                cNode.setAttribute("attribute", this.attribute);
             }
             if (this.column) {
-                cNode.setAttribute("column", this.column)
+                cNode.setAttribute("column", this.column);
             }
             if (this.entityname) {
-                cNode.setAttribute("entityname", this.entityname)
+                cNode.setAttribute("entityname", this.entityname);
             }
             if (this.operator) {
-                cNode.setAttribute("operator", <string>this.operator)
+                cNode.setAttribute("operator", <string>this.operator);
             }
             if (this.rowAggregate) {
-                cNode.setAttribute("rowAggregate", <string>this.rowAggregate)
+                cNode.setAttribute("rowAggregate", <string>this.rowAggregate);
             }
             if (Sdk.FetchXml.Util.isBoolean(this.uihidden)) {
-                cNode.setAttribute("uihidden", this.uihidden.toString())
+                cNode.setAttribute("uihidden", this.uihidden.toString());
             }
             if (this.uiname) {
-                cNode.setAttribute("uiname", this.uiname)
+                cNode.setAttribute("uiname", this.uiname);
             }
             if (this.uitype) {
-                cNode.setAttribute("uitype", this.uitype)
+                cNode.setAttribute("uitype", this.uitype);
             }
             /*
     Note from fetch.xsd:
@@ -665,7 +665,7 @@ export namespace Sdk.FetchXml {
                 case "in-fiscal-year":
 
                     if (this.values.length == 1) {
-                        cNode.setAttribute("value", this.values[0].value)
+                        cNode.setAttribute("value", this.values[0].value);
                     }
                     else {
                         var enumPropertyName = Sdk.FetchXml.Util.getEnumNameFromValue(Sdk.FetchXml.Operator, this.operator);
@@ -683,7 +683,7 @@ export namespace Sdk.FetchXml {
                     if (this.values.length > 1) {
                         this.values.forEach(function (v) {
                             cNode.appendChild(v.toXml(doc));
-                        })
+                        });
                     }
                     else {
                         var enumPropertyName = Sdk.FetchXml.Util.getEnumNameFromValue(Sdk.FetchXml.Operator, this.operator);
@@ -734,10 +734,9 @@ export namespace Sdk.FetchXml {
 
                     break;
                 default:
-                    throw new Error(this.operator + " is an unexpected Sdk.FetchXml.Operator value.")
+                    throw new Error(this.operator + " is an unexpected Sdk.FetchXml.Operator value.");
                     break;
             }
-
 
             return cNode;
         }
@@ -770,7 +769,7 @@ export namespace Sdk.FetchXml {
                     default:
                         break;
                 }
-            })
+            });
 
             for (var i = 0; i < xml.childNodes.length; i++) {
 
@@ -794,7 +793,7 @@ export namespace Sdk.FetchXml {
          */
         constructor(name: string, attributes?: Array<Sdk.FetchXml.attribute>, orders?: Array<Sdk.FetchXml.order>, filters?: Array<Sdk.FetchXml.filter>) {
             if (!(this instanceof Sdk.FetchXml.entity))
-            { return new Sdk.FetchXml.entity(name, attributes, orders, filters) }
+            { return new Sdk.FetchXml.entity(name, attributes, orders, filters); }
 
             this.name = name;
             if (attributes)
@@ -820,7 +819,7 @@ export namespace Sdk.FetchXml {
         }
         public set allAttributes(value: boolean) {
             if (!Sdk.FetchXml.Util.isBooleanOrNull(value)) {
-                throw new Error("Sdk.FetchXml.entity.allAttributes must be a boolean value or null.")
+                throw new Error("Sdk.FetchXml.entity.allAttributes must be a boolean value or null.");
             }
             this._allAttributes = value;
         }
@@ -832,7 +831,7 @@ export namespace Sdk.FetchXml {
         }
         public set attributes(value: Array<Sdk.FetchXml.attribute>) {
             if (!Sdk.FetchXml.Util.isAttributeArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.entity.attributes must be an array of Sdk.FetchXml.attribute or null.")
+                throw new Error("Sdk.FetchXml.entity.attributes must be an array of Sdk.FetchXml.attribute or null.");
             }
             if (value == null) {
                 this._attributes = [];
@@ -849,7 +848,7 @@ export namespace Sdk.FetchXml {
         }
         public set orders(value: Array<Sdk.FetchXml.order>) {
             if (!Sdk.FetchXml.Util.isOrderArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.entity.orders must be an array of Sdk.FetchXml.order or null.")
+                throw new Error("Sdk.FetchXml.entity.orders must be an array of Sdk.FetchXml.order or null.");
             }
             if (value == null) {
                 this._orders = [];
@@ -866,7 +865,7 @@ export namespace Sdk.FetchXml {
         }
         public set linkEntities(value: Array<Sdk.FetchXml.linkEntity>) {
             if (!Sdk.FetchXml.Util.isLinkEntityArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.entity.linkEntities must be an array of Sdk.FetchXml.linkEntity or null.")
+                throw new Error("Sdk.FetchXml.entity.linkEntities must be an array of Sdk.FetchXml.linkEntity or null.");
             }
             if (value == null) {
                 this._linkEntities = [];
@@ -883,7 +882,7 @@ export namespace Sdk.FetchXml {
         }
         public set filters(value: Array<Sdk.FetchXml.filter>) {
             if (!Sdk.FetchXml.Util.isFilterArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.entity.filters must be an array of Sdk.FetchXml.filter or null.")
+                throw new Error("Sdk.FetchXml.entity.filters must be an array of Sdk.FetchXml.filter or null.");
             }
             if (value == null) {
                 this._filters = [];
@@ -900,7 +899,7 @@ export namespace Sdk.FetchXml {
         }
         public set name(value: string) {
             if (!Sdk.FetchXml.Util.isString(value)) {
-                throw new Error("Sdk.FetchXml.entity.name must be a string.")
+                throw new Error("Sdk.FetchXml.entity.name must be a string.");
             }
             this._name = value;
 
@@ -921,7 +920,7 @@ export namespace Sdk.FetchXml {
                     }
                 });
                 if (!exists) {
-                    this.attributes.push(new Sdk.FetchXml.attribute(<string>attributeOrAttributeName))
+                    this.attributes.push(new Sdk.FetchXml.attribute(<string>attributeOrAttributeName));
                 }
                 return this;
             }
@@ -947,7 +946,7 @@ export namespace Sdk.FetchXml {
         * @returns {Sdk.FetchXml.entity}
         */
         public removeAttributeByName(attributeName: string) {
-            Sdk.FetchXml.Util.removeCollectionValueByProperty(this.attributes, "name", attributeName)
+            Sdk.FetchXml.Util.removeCollectionValueByProperty(this.attributes, "name", attributeName);
         }
 
         /** @description Removes an attribute from the attributes collection by reference
@@ -992,7 +991,7 @@ export namespace Sdk.FetchXml {
         */
         public removeOrderByRef(order: Sdk.FetchXml.order) {
             if (!Sdk.FetchXml.Util.isOrder(order)) {
-                throw new Error("Sdk.FetchXml.entity removeOrderByRef method order parameter must be an Sdk.FetchXml.order.")
+                throw new Error("Sdk.FetchXml.entity removeOrderByRef method order parameter must be an Sdk.FetchXml.order.");
             }
             Sdk.FetchXml.Util.removeCollectionValueByRef(this.orders, order);
             return this;
@@ -1004,7 +1003,7 @@ export namespace Sdk.FetchXml {
         */
         public removeOrder(order) {
             if (!Sdk.FetchXml.Util.isOrder(order)) {
-                throw new Error("Sdk.FetchXml.entity removeOrder method order parameter must be an Sdk.FetchXml.order.")
+                throw new Error("Sdk.FetchXml.entity removeOrder method order parameter must be an Sdk.FetchXml.order.");
             }
             Sdk.FetchXml.Util.removeCollectionValue(this.orders, order);
             return this;
@@ -1060,7 +1059,7 @@ export namespace Sdk.FetchXml {
         */
         public removeLinkEntityByRef(linkEntity: Sdk.FetchXml.linkEntity) {
             if (!Sdk.FetchXml.Util.isLinkEntity(linkEntity)) {
-                throw new Error("Sdk.FetchXml.entity removeLinkEntityByRef method linkEntity parameter must be an Sdk.FetchXml.linkEntity.")
+                throw new Error("Sdk.FetchXml.entity removeLinkEntityByRef method linkEntity parameter must be an Sdk.FetchXml.linkEntity.");
             }
             Sdk.FetchXml.Util.removeCollectionValueByRef(this.linkEntities, linkEntity);
             return this;
@@ -1072,7 +1071,7 @@ export namespace Sdk.FetchXml {
         */
         public removeLinkEntity(linkEntity: Sdk.FetchXml.linkEntity) {
             if (!Sdk.FetchXml.Util.isLinkEntity(linkEntity)) {
-                throw new Error("Sdk.FetchXml.entity removeLinkEntity method linkEntity parameter must be an Sdk.FetchXml.linkEntity.")
+                throw new Error("Sdk.FetchXml.entity removeLinkEntity method linkEntity parameter must be an Sdk.FetchXml.linkEntity.");
             }
             Sdk.FetchXml.Util.removeCollectionValue(this.linkEntities, linkEntity);
             return this;
@@ -1099,7 +1098,7 @@ export namespace Sdk.FetchXml {
         */
         public removeFilterByRef(filter: Sdk.FetchXml.filter) {
             if (!Sdk.FetchXml.Util.isFilter(filter)) {
-                throw new Error("Sdk.FetchXml.entity removeFilterByRef method filter parameter must be an Sdk.FetchXml.filter.")
+                throw new Error("Sdk.FetchXml.entity removeFilterByRef method filter parameter must be an Sdk.FetchXml.filter.");
             }
             Sdk.FetchXml.Util.removeCollectionValueByRef(this.filters, filter);
             return this;
@@ -1111,7 +1110,7 @@ export namespace Sdk.FetchXml {
          */
         public removeFilter(filter: Sdk.FetchXml.filter) {
             if (!Sdk.FetchXml.Util.isFilter(filter)) {
-                throw new Error("Sdk.FetchXml.entity removeFilter method filter parameter must be an Sdk.FetchXml.filter.")
+                throw new Error("Sdk.FetchXml.entity removeFilter method filter parameter must be an Sdk.FetchXml.filter.");
             }
             Sdk.FetchXml.Util.removeCollectionValue(this.filters, filter);
             return this;
@@ -1126,19 +1125,19 @@ export namespace Sdk.FetchXml {
             else {
                 this.attributes.forEach(function (a, i) {
                     entityNode.appendChild(a.toXml(doc));
-                })
+                });
             }
             this.orders.forEach(function (o, i) {
                 entityNode.appendChild(o.toXml(doc));
-            })
+            });
 
             this.linkEntities.forEach(function (l, i) {
                 entityNode.appendChild(l.toXml(doc));
-            })
+            });
 
             this.filters.forEach(function (f, i) {
                 entityNode.appendChild(f.toXml(doc));
-            })
+            });
 
             //Is required so no need to check
             entityNode.setAttribute("name", this.name);
@@ -1171,11 +1170,9 @@ export namespace Sdk.FetchXml {
             return entityObj;
         }
 
-
     }
     @sealed
     export class fetch {
-
 
         /**
         * Contains the data for a fetchXml fetch element.
@@ -1184,7 +1181,7 @@ export namespace Sdk.FetchXml {
         constructor(entity?: Sdk.FetchXml.entity) {
             //new keyword not required
             if (!(this instanceof Sdk.FetchXml.fetch))
-            { return new Sdk.FetchXml.fetch(entity) }
+            { return new Sdk.FetchXml.fetch(entity); }
             if (entity)
                 this.entity = entity;
         }
@@ -1213,7 +1210,7 @@ export namespace Sdk.FetchXml {
         }
         public set aggregate(value: boolean) {
             if (!Sdk.FetchXml.Util.isBooleanOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.aggregate must be a boolean value or null.")
+                throw new Error("Sdk.FetchXml.fetch.aggregate must be a boolean value or null.");
             }
             this._aggregate = value;
         }
@@ -1225,7 +1222,7 @@ export namespace Sdk.FetchXml {
         }
         public set count(value: number) {
             if (!Sdk.FetchXml.Util.isNumberOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.count must be a number value or null.")
+                throw new Error("Sdk.FetchXml.fetch.count must be a number value or null.");
             }
             this._count = value;
         }
@@ -1237,7 +1234,7 @@ export namespace Sdk.FetchXml {
         }
         public set distinct(value: boolean) {
             if (!Sdk.FetchXml.Util.isBooleanOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.distinct must be a boolean value or null.")
+                throw new Error("Sdk.FetchXml.fetch.distinct must be a boolean value or null.");
             }
             this._distinct = value;
         }
@@ -1249,7 +1246,7 @@ export namespace Sdk.FetchXml {
         }
         public set entity(value: Sdk.FetchXml.entity) {
             if (!Sdk.FetchXml.Util.isEntity(value)) {
-                throw new Error("Sdk.FetchXml.fetch.entity must be a Sdk.FetchXml.entity value.")
+                throw new Error("Sdk.FetchXml.fetch.entity must be a Sdk.FetchXml.entity value.");
             }
             this._entity = value;
         }
@@ -1261,7 +1258,7 @@ export namespace Sdk.FetchXml {
         }
         public set mapping(value: Sdk.FetchXml.Mapping) {
             if (!Sdk.FetchXml.Util.isEnumMemberOrNull(Sdk.FetchXml.Mapping, value)) {
-                throw new Error("Sdk.FetchXml.fetch.mapping must be a Sdk.FetchXml.Mapping value or null.")
+                throw new Error("Sdk.FetchXml.fetch.mapping must be a Sdk.FetchXml.Mapping value or null.");
             }
             this._mapping = value;
         }
@@ -1273,7 +1270,7 @@ export namespace Sdk.FetchXml {
         }
         public set minActiveRowVersion(value: boolean) {
             if (!Sdk.FetchXml.Util.isBooleanOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.minActiveRowVersion must be a boolean value or null.")
+                throw new Error("Sdk.FetchXml.fetch.minActiveRowVersion must be a boolean value or null.");
             }
             this._minActiveRowVersion = value;
         }
@@ -1285,7 +1282,7 @@ export namespace Sdk.FetchXml {
         }
         public set noLock(value: boolean) {
             if (!Sdk.FetchXml.Util.isBooleanOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.noLock must be a boolean value or null.")
+                throw new Error("Sdk.FetchXml.fetch.noLock must be a boolean value or null.");
             }
             this._noLock = value;
         }
@@ -1297,7 +1294,7 @@ export namespace Sdk.FetchXml {
         }
         public set order(value: Sdk.FetchXml.order) {
             if (!Sdk.FetchXml.Util.isOrderOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.order must be a Sdk.FetchXml.order value or null.")
+                throw new Error("Sdk.FetchXml.fetch.order must be a Sdk.FetchXml.order value or null.");
             }
             this._order = value;
         }
@@ -1309,7 +1306,7 @@ export namespace Sdk.FetchXml {
         }
         public set outputFormat(value: Sdk.FetchXml.OutputFormat) {
             if (!Sdk.FetchXml.Util.isEnumMemberOrNull(Sdk.FetchXml.OutputFormat, value)) {
-                throw new Error("Sdk.FetchXml.fetch.outputFormat must be a Sdk.FetchXml.OutputFormat value or null.")
+                throw new Error("Sdk.FetchXml.fetch.outputFormat must be a Sdk.FetchXml.OutputFormat value or null.");
             }
             this._outputFormat = value;
         }
@@ -1321,7 +1318,7 @@ export namespace Sdk.FetchXml {
         }
         public set page(value: number) {
             if (!Sdk.FetchXml.Util.isNumberOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.page must be a number value or null.")
+                throw new Error("Sdk.FetchXml.fetch.page must be a number value or null.");
             }
             this._page = value;
         }
@@ -1333,7 +1330,7 @@ export namespace Sdk.FetchXml {
         }
         public set pagingCookie(value: string) {
             if (!Sdk.FetchXml.Util.isStringOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.pagingCookie must be a string value or null.")
+                throw new Error("Sdk.FetchXml.fetch.pagingCookie must be a string value or null.");
             }
             this._pagingCookie = value;
         }
@@ -1345,7 +1342,7 @@ export namespace Sdk.FetchXml {
         }
         public set returnTotalRecordCount(value: boolean) {
             if (!Sdk.FetchXml.Util.isBooleanOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.returnTotalRecordCount must be a boolean value or null.")
+                throw new Error("Sdk.FetchXml.fetch.returnTotalRecordCount must be a boolean value or null.");
             }
             this._returnTotalRecordCount = value;
         }
@@ -1357,7 +1354,7 @@ export namespace Sdk.FetchXml {
         }
         public set top(value: number) {
             if (!Sdk.FetchXml.Util.isNumberOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.top must be a number value or null.")
+                throw new Error("Sdk.FetchXml.fetch.top must be a number value or null.");
             }
             this._top = value;
         }
@@ -1369,7 +1366,7 @@ export namespace Sdk.FetchXml {
         }
         public set utcOffset(value: number) {
             if (!Sdk.FetchXml.Util.isNumberOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.utcOffset must be a number value or null.")
+                throw new Error("Sdk.FetchXml.fetch.utcOffset must be a number value or null.");
             }
             this._utcOffset = value;
         }
@@ -1381,7 +1378,7 @@ export namespace Sdk.FetchXml {
         }
         public set version(value: string) {
             if (!Sdk.FetchXml.Util.isStringOrNull(value)) {
-                throw new Error("Sdk.FetchXml.fetch.version must be a string value or null.")
+                throw new Error("Sdk.FetchXml.fetch.version must be a string value or null.");
             }
             this._version = value;
         }
@@ -1529,51 +1526,51 @@ export namespace Sdk.FetchXml {
             var root = "<fetch />";
             var doc = new DOMParser().parseFromString(root, "text/xml");
             if (this.version) {
-                doc.documentElement.setAttribute("version", <string>this.version)
+                doc.documentElement.setAttribute("version", <string>this.version);
             }
             if (this.outputFormat) {
-                doc.documentElement.setAttribute("output-format", <string>this.outputFormat)
+                doc.documentElement.setAttribute("output-format", <string>this.outputFormat);
             }
             if (this.mapping) {
-                doc.documentElement.setAttribute("mapping", <string>this.mapping)
+                doc.documentElement.setAttribute("mapping", <string>this.mapping);
             }
             if (this.aggregate) {
-                doc.documentElement.setAttribute("aggregate", (this.aggregate) ? "true" : "false")
+                doc.documentElement.setAttribute("aggregate", (this.aggregate) ? "true" : "false");
             }
             if (this.count) {
-                doc.documentElement.setAttribute("count", this.count.toString())
+                doc.documentElement.setAttribute("count", this.count.toString());
             }
             if (this.distinct) {
-                doc.documentElement.setAttribute("distinct", (this.distinct) ? "true" : "false")
+                doc.documentElement.setAttribute("distinct", (this.distinct) ? "true" : "false");
             }
             if (this.entity) {
                 doc.documentElement.appendChild(this.entity.toXml(doc));
             }
 
             if (this.minActiveRowVersion) {
-                doc.documentElement.setAttribute("min-active-row-version", (this.minActiveRowVersion) ? "true" : "false")
+                doc.documentElement.setAttribute("min-active-row-version", (this.minActiveRowVersion) ? "true" : "false");
             }
             if (this.noLock) {
-                doc.documentElement.setAttribute("no-lock", (this.noLock) ? "true" : "false")
+                doc.documentElement.setAttribute("no-lock", (this.noLock) ? "true" : "false");
             }
             if (this.order) {
                 doc.documentElement.appendChild(this.order.toXml(doc));
             }
 
             if (this.page) {
-                doc.documentElement.setAttribute("page", this.page.toString())
+                doc.documentElement.setAttribute("page", this.page.toString());
             }
             if (this.pagingCookie) {
-                doc.documentElement.setAttribute("paging-cookie", <string>this.pagingCookie) //Does this need special handling?
+                doc.documentElement.setAttribute("paging-cookie", <string>this.pagingCookie); //Does this need special handling?
             }
             if (this.returnTotalRecordCount) {
-                doc.documentElement.setAttribute("returntotalrecordcount", (this.returnTotalRecordCount) ? "true" : "false")
+                doc.documentElement.setAttribute("returntotalrecordcount", (this.returnTotalRecordCount) ? "true" : "false");
             }
             if (this.top) {
-                doc.documentElement.setAttribute("top", this.top.toString())
+                doc.documentElement.setAttribute("top", this.top.toString());
             }
             if (this.utcOffset) {
-                doc.documentElement.setAttribute("utc-offset", this.utcOffset.toString())
+                doc.documentElement.setAttribute("utc-offset", this.utcOffset.toString());
             }
 
             return new XMLSerializer().serializeToString(doc);
@@ -1664,7 +1661,7 @@ export namespace Sdk.FetchXml {
         constructor(type?: string, conditions?: Array<condition>, filters?: Array<filter>) {
             //new keyword is not required in JS
             if (!(this instanceof filter))
-            { return new filter(type, conditions, filters) }
+            { return new filter(type, conditions, filters); }
             if (type)
                 this.type = type;
             if (conditions)
@@ -1686,7 +1683,7 @@ export namespace Sdk.FetchXml {
         }
         public set conditions(value: Array<condition>) {
             if (!Util.isFilterArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.filter.conditions must be an array of Sdk.FetchXml.condition or null.")
+                throw new Error("Sdk.FetchXml.filter.conditions must be an array of Sdk.FetchXml.condition or null.");
             }
             if (value == null) {
                 this._conditions = [];
@@ -1702,7 +1699,7 @@ export namespace Sdk.FetchXml {
         }
         public set filters(value: Array<filter>) {
             if (!Util.isFilterArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.filter.filters must be an array of Sdk.FetchXml.filter or null.")
+                throw new Error("Sdk.FetchXml.filter.filters must be an array of Sdk.FetchXml.filter or null.");
             }
             if (value == null) {
                 this._filters = [];
@@ -1753,7 +1750,7 @@ export namespace Sdk.FetchXml {
         */
         public removeConditionByRef(condition) {
             if (!Util.isCondition(condition)) {
-                throw new Error("Sdk.FetchXml.filter removeConditionByRef method condition parameter must be an Sdk.FetchXml.condition.")
+                throw new Error("Sdk.FetchXml.filter removeConditionByRef method condition parameter must be an Sdk.FetchXml.condition.");
             }
             Util.removeCollectionValueByRef(this.conditions, condition);
 
@@ -1766,7 +1763,7 @@ export namespace Sdk.FetchXml {
         */
         public removeCondition(condition) {
             if (!Util.isCondition(condition)) {
-                throw new Error("Sdk.FetchXml.filter removeCondition method condition parameter must be an Sdk.FetchXml.condition.")
+                throw new Error("Sdk.FetchXml.filter removeCondition method condition parameter must be an Sdk.FetchXml.condition.");
             }
             Util.removeCollectionValue(this.conditions, condition);
 
@@ -1782,7 +1779,7 @@ export namespace Sdk.FetchXml {
                 this.filters.push(filter);
 
             } else {
-                throw new Error("Sdk.FetchXml.filter addFilter method filter parameter must be a Sdk.FetchXml.filter value.")
+                throw new Error("Sdk.FetchXml.filter addFilter method filter parameter must be a Sdk.FetchXml.filter value.");
             }
             return this;
         }
@@ -1793,7 +1790,7 @@ export namespace Sdk.FetchXml {
         */
         public removeFilterByRef(filter) {
             if (!Util.isFilter(filter)) {
-                throw new Error("Sdk.FetchXml.filter removeFilterByRef method filter parameter must be an Sdk.FetchXml.filter.")
+                throw new Error("Sdk.FetchXml.filter removeFilterByRef method filter parameter must be an Sdk.FetchXml.filter.");
             }
             Util.removeCollectionValueByRef(this.filters, filter);
 
@@ -1806,7 +1803,7 @@ export namespace Sdk.FetchXml {
         */
         public removeFilter(filter) {
             if (!Util.isFilter(filter)) {
-                throw new Error("Sdk.FetchXml.filter removeFilter method filter parameter must be an Sdk.FetchXml.filter.")
+                throw new Error("Sdk.FetchXml.filter removeFilter method filter parameter must be an Sdk.FetchXml.filter.");
             }
             Util.removeCollectionValue(this.filters, filter);
 
@@ -1835,17 +1832,17 @@ export namespace Sdk.FetchXml {
         toXml(doc: XMLDocument): Node {
             var fNode = doc.createElement("filter");
             if (this.type) {
-                fNode.setAttribute("type", <string>this.type)
+                fNode.setAttribute("type", <string>this.type);
             }
             if (Util.isBoolean(this.isQuickFindFields)) {
-                fNode.setAttribute("isquickfindfields", this.isQuickFindFields.toString())
+                fNode.setAttribute("isquickfindfields", this.isQuickFindFields.toString());
             }
             this.conditions.forEach(function (c) {
                 fNode.appendChild(c.toXml(doc));
-            })
+            });
             this.filters.forEach(function (f) {
                 fNode.appendChild(f.toXml(doc));
-            })
+            });
             return fNode;
         }
 
@@ -1864,8 +1861,6 @@ export namespace Sdk.FetchXml {
                         break;
                 }
             });
-
-
 
             for (var i = 0; i < xml.childNodes.length; i++) {
 
@@ -1895,7 +1890,7 @@ export namespace Sdk.FetchXml {
          */
         constructor(name: string, from?: string, to?: string, linktype?: string, alias?: string) {
             if (!(this instanceof linkEntity))
-            { return new linkEntity(name, from, to, linktype, alias) }
+            { return new linkEntity(name, from, to, linktype, alias); }
 
             this.name = name;
             if (from)
@@ -2001,7 +1996,7 @@ export namespace Sdk.FetchXml {
         }
         public set attributes(value: Array<attribute>) {
             if (!Util.isAttributeArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.linkEntity.attributes must be an array of Sdk.FetchXml.attribute or null.")
+                throw new Error("Sdk.FetchXml.linkEntity.attributes must be an array of Sdk.FetchXml.attribute or null.");
             }
             if (value == null) {
                 this._attributes = [];
@@ -2018,7 +2013,7 @@ export namespace Sdk.FetchXml {
         }
         public set orders(value: Array<order>) {
             if (!Util.isOrderArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.linkEntity.orders must be an array of Sdk.FetchXml.order or null.")
+                throw new Error("Sdk.FetchXml.linkEntity.orders must be an array of Sdk.FetchXml.order or null.");
             }
             if (value == null) {
                 this._orders = [];
@@ -2035,7 +2030,7 @@ export namespace Sdk.FetchXml {
         }
         public set linkEntities(value: Array<linkEntity>) {
             if (!Util.isLinkEntityArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.linkEntity.linkEntities must be an array of Sdk.FetchXml.linkEntity or null.")
+                throw new Error("Sdk.FetchXml.linkEntity.linkEntities must be an array of Sdk.FetchXml.linkEntity or null.");
             }
             if (value == null) {
                 this._linkEntities = [];
@@ -2051,7 +2046,7 @@ export namespace Sdk.FetchXml {
         }
         public set filters(value: Array<filter>) {
             if (!Util.isFilterArrayOrNull(value)) {
-                throw new Error("Sdk.FetchXml.linkEntity.filters must be an array of Sdk.FetchXml.filter or null.")
+                throw new Error("Sdk.FetchXml.linkEntity.filters must be an array of Sdk.FetchXml.filter or null.");
             }
             if (value == null) {
                 this._filters = [];
@@ -2150,7 +2145,7 @@ export namespace Sdk.FetchXml {
                 this.linkEntities.push(linkEntity);
                 return this;
             }
-            throw new Error("Sdk.FetchXml.linkEntity addLinkEntity method linkEntity parameter must be a Sdk.FetchXml.linkEntity value.")
+            throw new Error("Sdk.FetchXml.linkEntity addLinkEntity method linkEntity parameter must be a Sdk.FetchXml.linkEntity value.");
 
             return this;
         }
@@ -2161,7 +2156,7 @@ export namespace Sdk.FetchXml {
         */
         public removeLinkEntityByRef(linkEntity) {
             if (!Util.isLinkEntity(linkEntity)) {
-                throw new Error("Sdk.FetchXml.linkEntity removeLinkEntityByRef method linkEntity parameter must be an Sdk.FetchXml.linkEntity.")
+                throw new Error("Sdk.FetchXml.linkEntity removeLinkEntityByRef method linkEntity parameter must be an Sdk.FetchXml.linkEntity.");
             }
             Util.removeCollectionValueByRef(this.linkEntities, linkEntity);
 
@@ -2174,7 +2169,7 @@ export namespace Sdk.FetchXml {
         */
         public removeLinkEntity(linkEntity) {
             if (!Util.isLinkEntity(linkEntity)) {
-                throw new Error("Sdk.FetchXml.linkEntity removeLinkEntity method linkEntity parameter must be an Sdk.FetchXml.linkEntity.")
+                throw new Error("Sdk.FetchXml.linkEntity removeLinkEntity method linkEntity parameter must be an Sdk.FetchXml.linkEntity.");
             }
             Util.removeCollectionValue(this.linkEntities, linkEntity);
 
@@ -2194,7 +2189,7 @@ export namespace Sdk.FetchXml {
                 this.attributes.push(new attribute(attribute));
                 return this;
             }
-            throw new Error("Sdk.FetchXml.linkEntity addAttribute method attribute parameter must be a Sdk.FetchXml.attribute value or a string.")
+            throw new Error("Sdk.FetchXml.linkEntity addAttribute method attribute parameter must be a Sdk.FetchXml.attribute value or a string.");
 
             return this;
         }
@@ -2205,7 +2200,7 @@ export namespace Sdk.FetchXml {
         */
         public removeAttributeByRef(attribute) {
             if (!Util.isAttribute(attribute)) {
-                throw new Error("Sdk.FetchXml.linkEntity removeAttributeByRef method attribute parameter must be an Sdk.FetchXml.attribute.")
+                throw new Error("Sdk.FetchXml.linkEntity removeAttributeByRef method attribute parameter must be an Sdk.FetchXml.attribute.");
             }
             Util.removeCollectionValueByRef(this.attributes, attribute);
 
@@ -2218,7 +2213,7 @@ export namespace Sdk.FetchXml {
         */
         public removeAttribute(attribute) {
             if (!Util.isAttribute(attribute)) {
-                throw new Error("Sdk.FetchXml.linkEntity removeAttribute method attribute parameter must be an Sdk.FetchXml.attribute.")
+                throw new Error("Sdk.FetchXml.linkEntity removeAttribute method attribute parameter must be an Sdk.FetchXml.attribute.");
             }
             Util.removeCollectionValue(this.attributes, attribute);
 
@@ -2231,9 +2226,9 @@ export namespace Sdk.FetchXml {
         */
         public removeAttributeByName(attributeName) {
             if (!Util.isString(attributeName)) {
-                throw new Error("Sdk.FetchXml.linkEntity removeAttributeByName method attributeName parameter must be a string.")
+                throw new Error("Sdk.FetchXml.linkEntity removeAttributeByName method attributeName parameter must be a string.");
             }
-            Util.removeCollectionValueByProperty(this.attributes, "name", attributeName)
+            Util.removeCollectionValueByProperty(this.attributes, "name", attributeName);
             return this;
         }
 
@@ -2252,7 +2247,7 @@ export namespace Sdk.FetchXml {
                 this.orders.push(new order(orderOrAttribute, descending, alias));
                 return this;
             }
-            throw new Error("Sdk.FetchXml.linkEntity addOrder method orderOrAttribute parameter must be a Sdk.FetchXml.order value or a string.")
+            throw new Error("Sdk.FetchXml.linkEntity addOrder method orderOrAttribute parameter must be a Sdk.FetchXml.order value or a string.");
 
             return this;
         }
@@ -2263,7 +2258,7 @@ export namespace Sdk.FetchXml {
         */
         public removeOrderByRef(order) {
             if (!Util.isOrder(order)) {
-                throw new Error("Sdk.FetchXml.linkEntity removeOrderByRef method order parameter must be an Sdk.FetchXml.order.")
+                throw new Error("Sdk.FetchXml.linkEntity removeOrderByRef method order parameter must be an Sdk.FetchXml.order.");
             }
             Util.removeCollectionValueByRef(this.orders, order);
             return this;
@@ -2275,7 +2270,7 @@ export namespace Sdk.FetchXml {
         */
         public removeOrder(order) {
             if (!Util.isOrder(order)) {
-                throw new Error("Sdk.FetchXml.linkEntity removeOrder method order parameter must be an Sdk.FetchXml.order.")
+                throw new Error("Sdk.FetchXml.linkEntity removeOrder method order parameter must be an Sdk.FetchXml.order.");
             }
             Util.removeCollectionValue(this.orders, order);
             return this;
@@ -2291,7 +2286,7 @@ export namespace Sdk.FetchXml {
                 return this;
             }
 
-            throw new Error("Sdk.FetchXml.linkEntity addFilter method filter parameter must be a Sdk.FetchXml.filter value.")
+            throw new Error("Sdk.FetchXml.linkEntity addFilter method filter parameter must be a Sdk.FetchXml.filter value.");
 
             return this;
         }
@@ -2302,7 +2297,7 @@ export namespace Sdk.FetchXml {
         */
         public removeFilterByRef(filter) {
             if (!Util.isFilter(filter)) {
-                throw new Error("Sdk.FetchXml.linkEntity removeFilterByRef method filter parameter must be an Sdk.FetchXml.filter.")
+                throw new Error("Sdk.FetchXml.linkEntity removeFilterByRef method filter parameter must be an Sdk.FetchXml.filter.");
             }
             Util.removeCollectionValueByRef(this.filters, filter);
 
@@ -2315,7 +2310,7 @@ export namespace Sdk.FetchXml {
         */
         public removeFilter(filter) {
             if (!Util.isFilter(filter)) {
-                throw new Error("Sdk.FetchXml.linkEntity removeFilter method filter parameter must be an Sdk.FetchXml.filter.")
+                throw new Error("Sdk.FetchXml.linkEntity removeFilter method filter parameter must be an Sdk.FetchXml.filter.");
             }
             Util.removeCollectionValue(this.filters, filter);
 
@@ -2327,41 +2322,41 @@ export namespace Sdk.FetchXml {
 
             var leNode = doc.createElement("link-entity");
             if (this.alias) {
-                leNode.setAttribute("alias", this.alias)
+                leNode.setAttribute("alias", this.alias);
             }
             if (this.allAttributes) {
                 leNode.appendChild(doc.createElement("all-attributes"));
             }
             if (this.from) {
-                leNode.setAttribute("from", this.from)
+                leNode.setAttribute("from", this.from);
             }
             if (Util.isBoolean(this.intersect)) {
-                leNode.setAttribute("intersect", this.intersect.toString())
+                leNode.setAttribute("intersect", this.intersect.toString());
             }
             if (this.linktype) {
-                leNode.setAttribute("link-type", this.linktype)
+                leNode.setAttribute("link-type", this.linktype);
             }
             if (this.name) {
-                leNode.setAttribute("name", this.name)
+                leNode.setAttribute("name", this.name);
             }
             if (this.to) {
-                leNode.setAttribute("to", this.to)
+                leNode.setAttribute("to", this.to);
             }
             if (Util.isBoolean(this.visible)) {
-                leNode.setAttribute("visible", this.visible.toString())
+                leNode.setAttribute("visible", this.visible.toString());
             }
             this.attributes.forEach(function (a) {
                 leNode.appendChild(a.toXml(doc));
-            })
+            });
             this.orders.forEach(function (o) {
                 leNode.appendChild(o.toXml(doc));
-            })
+            });
             this.linkEntities.forEach(function (l) {
                 leNode.appendChild(l.toXml(doc));
-            })
+            });
             this.filters.forEach(function (f) {
                 leNode.appendChild(f.toXml(doc));
-            })
+            });
 
             return leNode;
         }
@@ -2412,7 +2407,6 @@ export namespace Sdk.FetchXml {
             return linkEntityObj;
         }
 
-
     }
     @sealed
     export class order {
@@ -2425,7 +2419,7 @@ export namespace Sdk.FetchXml {
         constructor(attribute?: string, descending?: boolean, alias?: string) {
             // new keyword not required in JS
             if (!(this instanceof order))
-            { return new order(attribute, descending, alias) }
+            { return new order(attribute, descending, alias); }
 
             if (attribute)
                 this.attribute = attribute;
@@ -2506,17 +2500,16 @@ export namespace Sdk.FetchXml {
         toXml(doc: XMLDocument): Node {
             var orderNode = doc.createElement("order");
             if (this.attribute) {
-                orderNode.setAttribute("attribute", this.attribute)
+                orderNode.setAttribute("attribute", this.attribute);
             }
             if (this.alias) {
-                orderNode.setAttribute("alias", this.alias)
+                orderNode.setAttribute("alias", this.alias);
             }
             if (!Util.isNullOrUndefined(this.descending)) {
-                orderNode.setAttribute("descending", this.descending.toString())
+                orderNode.setAttribute("descending", this.descending.toString());
             }
             return orderNode;
         }
-
 
         static orderFromXml(xml) {
             var orderObj = new order();
@@ -2549,7 +2542,7 @@ export namespace Sdk.FetchXml {
         constructor(value: any, uiname?: string, uitype?: string) {
             //New keyword not required in JS
             if (!(this instanceof Sdk.FetchXml.value))
-            { return new value(value, uiname, uitype) }
+            { return new value(value, uiname, uitype); }
 
             if (value)
                 this.value = value;
@@ -2562,7 +2555,6 @@ export namespace Sdk.FetchXml {
         private _value: any = null;
         private _uiname: string = null;
         private _uitype: string = null;
-
 
         /**
        * Gets or sets the  value for the value.
@@ -2624,10 +2616,10 @@ export namespace Sdk.FetchXml {
 
             var vNode = doc.createElement("value");
             if (this.uitype) {
-                vNode.setAttribute("uitype", this.uitype)
+                vNode.setAttribute("uitype", this.uitype);
             }
             if (this.uiname) {
-                vNode.setAttribute("uiname", this.uiname)
+                vNode.setAttribute("uiname", this.uiname);
             }
             vNode.appendChild(doc.createTextNode(this.value));
             return vNode;
@@ -2654,13 +2646,13 @@ export namespace Sdk.FetchXml {
             return (typeof obj === "boolean");
         }
         public static isBooleanOrNull(obj) {
-            return (Util.isNull(obj) || Util.isBoolean(obj))
+            return (Util.isNull(obj) || Util.isBoolean(obj));
         }
         public static isNumber(obj) {
             return (typeof (obj) === "number");
         }
         public static isNumberOrNull(obj) {
-            return (Util.isNull(obj) || Util.isNumber(obj))
+            return (Util.isNull(obj) || Util.isNumber(obj));
         }
         public static isNull(obj) {
             return (obj === null);
@@ -2686,7 +2678,7 @@ export namespace Sdk.FetchXml {
             return (Util.isNull(obj) || Util.isString(obj));
         }
         public static isOrder(obj) {
-            return (obj instanceof order)
+            return (obj instanceof order);
         }
         public static isOrderOrNull(obj) {
             return (Util.isNull(obj) || Util.isOrder(obj));
@@ -2697,7 +2689,7 @@ export namespace Sdk.FetchXml {
                     if (!Util.isOrder(item)) {
                         return false;
                     }
-                })
+                });
                 return true;
             }
             return false;
@@ -2706,10 +2698,10 @@ export namespace Sdk.FetchXml {
             return (Util.isNull(obj) || Util.isOrderArray(obj));
         }
         public static isEntity(obj) {
-            return (obj instanceof entity)
+            return (obj instanceof entity);
         }
         public static isAttribute(obj) {
-            return (obj instanceof attribute)
+            return (obj instanceof attribute);
         }
         public static isAttributeArray(obj) {
             if (Array.isArray(obj)) {
@@ -2717,7 +2709,7 @@ export namespace Sdk.FetchXml {
                     if (!Util.isAttribute(item)) {
                         return false;
                     }
-                })
+                });
                 return true;
             }
             return false;
@@ -2726,7 +2718,7 @@ export namespace Sdk.FetchXml {
             return (Util.isNull(obj) || Util.isAttributeArray(obj));
         }
         public static isLinkEntity(obj) {
-            return (obj instanceof linkEntity)
+            return (obj instanceof linkEntity);
         }
         public static isLinkEntityOrNull(obj) {
             return (Util.isNull(obj) || Util.isLinkEntity(obj));
@@ -2737,7 +2729,7 @@ export namespace Sdk.FetchXml {
                     if (!Util.isLinkEntity(item)) {
                         return false;
                     }
-                })
+                });
                 return true;
             }
             return false;
@@ -2746,7 +2738,7 @@ export namespace Sdk.FetchXml {
             return (Util.isNull(obj) || Util.isLinkEntityArray(obj));
         }
         public static isFilter(obj) {
-            return (obj instanceof filter)
+            return (obj instanceof filter);
         }
         public static isFilterOrNull(obj) {
             return (Util.isNull(obj) || Util.isFilter(obj));
@@ -2757,7 +2749,7 @@ export namespace Sdk.FetchXml {
                     if (!Util.isFilter(item)) {
                         return false;
                     }
-                })
+                });
                 return true;
             }
             return false;
@@ -2766,7 +2758,7 @@ export namespace Sdk.FetchXml {
             return (Util.isNull(obj) || Util.isFilterArray(obj));
         }
         public static isCondition(obj) {
-            return (obj instanceof condition)
+            return (obj instanceof condition);
         }
         public static isConditionOrNull(obj) {
             return (Util.isNull(obj) || Util.isCondition(obj));
@@ -2777,7 +2769,7 @@ export namespace Sdk.FetchXml {
                     if (!Util.isCondition(item)) {
                         return false;
                     }
-                })
+                });
                 return true;
             }
             return false;
@@ -2786,7 +2778,7 @@ export namespace Sdk.FetchXml {
             return (Util.isNull(obj) || Util.isConditionArray(obj));
         }
         public static isValue(obj) {
-            return (obj instanceof value)
+            return (obj instanceof value);
         }
         public static isValueOrNull(obj) {
             return (Util.isNull(obj) || Util.isValue(obj));
@@ -2798,7 +2790,7 @@ export namespace Sdk.FetchXml {
                     if (!Util.isValue(item)) {
                         returnValue = false;
                     }
-                })
+                });
                 return returnValue;
             }
             return false;
@@ -2816,12 +2808,12 @@ export namespace Sdk.FetchXml {
         public static getCollectionHash(collection) {
             var ch = [];
             collection.forEach(function (c) {
-                ch.push(c.hash)
+                ch.push(c.hash);
             });
             return ch.join();
         }
         public static removeCollectionValue(collection, value) {
-            Util.removeCollectionValueByProperty(collection, "hash", value)
+            Util.removeCollectionValueByProperty(collection, "hash", value);
         }
         public static removeCollectionValueByProperty(collection, propertyName, value) {
             var matches = [];
@@ -2869,7 +2861,7 @@ export namespace Sdk.FetchXml {
             for (var i = 0; i < atts.length; i++) {
                 var name = atts[i].nodeName;
                 var value = atts[i].nodeValue;
-                switchFunction(object, name, value)
+                switchFunction(object, name, value);
             }
         }
     }
@@ -3115,4 +3107,4 @@ String.prototype.hashCode = function (): string {
         hash = hash & hash; // Convert to 32bit integer
     }
     return hash.toString();
-}
+};
