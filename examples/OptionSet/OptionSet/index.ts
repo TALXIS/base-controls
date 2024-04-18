@@ -1,8 +1,8 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as ReactDOM from 'react-dom';
 import * as React from 'react';
-import { OptionSet as OptionSetComponent } from '../../../components/OptionSet/OptionSet';
-import { IOptionSet } from "../../../components/OptionSet/interfaces";
+import { OptionSet as OptionSetComponent } from '../../../src/components/OptionSet/OptionSet';
+import { IOptionSet } from "../../../src/components/OptionSet/interfaces";
 
 export class OptionSet implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
