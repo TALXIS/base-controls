@@ -1,7 +1,7 @@
 
 import { IDateTime } from "./interfaces";
 import { IDatePicker, useTheme } from "@fluentui/react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./useDateTime";
 import dayjs from 'dayjs';
@@ -17,6 +17,11 @@ export const DateTime = (componentProps: IDateTime) => {
     const parameters = componentProps.parameters;
     const [date, stringDate, isDateTime, patterns, labels, setStringDate, selectDate, clearDate] = useDateTime(componentProps, ref);
 
+    useEffect(() => {
+        if(componentProps.parameters.AutoFocus?.raw === true) {
+            datePickerRef.current?.showDatePickerPopup();
+        }
+    }, []);
     return (
         <div ref={ref}>
             <DatePicker
