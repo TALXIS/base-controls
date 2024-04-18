@@ -31,6 +31,14 @@ export interface IOptionSetProperty extends IProperty, Omit<Partial<ComponentFra
     };
 }
 
+export interface IMultiSelectOptionSetProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.MultiSelectOptionSetProperty>, 'attributes'> {
+    raw: number[] | null,
+    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata> & {
+        DefaultValue: number;
+        Options: ComponentFramework.PropertyHelper.OptionMetadata[]
+    };
+}
+
 export interface ILookupProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.LookupProperty> {
     raw: ComponentFramework.LookupValue[];
     attributes: ComponentFramework.PropertyHelper.FieldPropertyMetadata.LookupMetadata;
