@@ -30,6 +30,10 @@ export const OptionSet = (props: IOptionSet) => {
         readOnly={context.mode.isControlDisabled}
         selectedKey={boundValue.raw?.toString() ?? defaulValue}
         dropdownWidth={context.mode.allocatedWidth || undefined}
+        style={{
+            height: context.mode.allocatedHeight || undefined,
+            width: context.mode.allocatedWidth || undefined
+        }}
         deleteButtonProps={{
             key: 'delete',
             showOnlyOnHover: true,
