@@ -8,38 +8,36 @@ import { useEffect, useState } from 'react';
 export const OptionSet = (props: IOptionSet) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
+    const defaulValue = boundValue.attributes.DefaultValue.toString();
     const [onNotifyOutputChanged] = useComponent(props);
-    const [value, setSelectedValue] = useState<string | null>(boundValue.raw?.toString() ?? boundValue.attributes.DefaultValue.toString());
     const { Options } = parameters.value.attributes;
     const context = props.context;;
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
     }));
-    
-    const handleChange = (e: React.FormEvent<IComboBox>, option?: IComboBoxOption): void => {
-        if (option) {
-            const selectedKey = option.key.toString();
-            setSelectedValue(selectedKey);
-            onNotifyOutputChanged({
-                value: +selectedKey
-            });
-        }
+
+    const handleChange = (option?: IComboBoxOption | null): void => {
+        const selectedKey = option?.key.toString();
+        onNotifyOutputChanged({
+            value: +selectedKey!
+        });
     };
 
     return <ComboBox
+        borderless={parameters.EnableBorder?.raw === false}
         options={comboBoxOptions}
         readOnly={context.mode.isControlDisabled}
-        selectedKey={value}
+        selectedKey={boundValue.raw?.toString() ?? defaulValue}
         dropdownWidth={context.mode.allocatedWidth || undefined}
-        deleteButtonProps={ {
+        deleteButtonProps={{
             key: 'delete',
             showOnlyOnHover: true,
             iconProps: {
                 iconName: 'Delete'
             },
-            onClick: () => setSelectedValue(null)
+            onClick: (e, value) => { handleChange(null); }
         }}
-        onChange={handleChange}
+        onChange={(e, option) => handleChange(option)}
     />;
 };
