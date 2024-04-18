@@ -3,9 +3,8 @@ import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters, IDateTimeTranslations } from "./interfaces";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
-import { getDateTimeTranslations } from "./translations";
+import { getDefaultDateTimeTranslations } from "./translations";
 import { StringProps } from "../../types";
 
 export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElement>): [
@@ -78,7 +77,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const [dateStringValue, labels, setDateStringValue, notifyOutputChanged] = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations>('DateTime', props, {
         formatter: formatDate,
-        defaultTranslations: getDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
+        defaultTranslations: getDefaultDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
     });
 
     useEffect(() => {

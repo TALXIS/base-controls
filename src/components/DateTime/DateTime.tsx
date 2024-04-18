@@ -5,8 +5,8 @@ import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./useDateTime";
 import dayjs from 'dayjs';
-import { DatePicker } from "./DatePicker";
 import { Calendar } from "./Calendar";
+import { DatePicker } from "@talxis/react-components/dist/components/DatePicker";
 
 export const DateTime = (componentProps: IDateTime) => {
     const ref = useRef<HTMLDivElement>(null);

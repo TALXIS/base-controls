@@ -1,6 +1,6 @@
 import { IDateTimeTranslations } from "./interfaces";
 
-export const getDateTimeTranslations = (dateFormattingInfo: ComponentFramework.UserSettingApi.DateFormattingInfo): Required<IDateTimeTranslations> => {
+export const getDefaultDateTimeTranslations = (dateFormattingInfo: ComponentFramework.UserSettingApi.DateFormattingInfo): Required<IDateTimeTranslations> => {
     return {
         time: {
             1029: 'Čas',
