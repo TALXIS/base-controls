@@ -2,7 +2,8 @@ import { useEffect, useMemo } from "react";
 import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters, IDateTimeTranslations } from "./interfaces";
 import dayjs from 'dayjs';
-import  utc from 'dayjs/plugin/utc';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { getDateTimeTranslations } from "./translations";
 import { StringProps } from "../../types";
@@ -24,11 +25,11 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const boundValue = props.parameters.value;
     const context = props.context;
-    const behavior = boundValue.attributes.Behavior;
+    const behavior = boundValue.attributes.Behavior
     const format = boundValue.attributes.Format;
     const dateFormattingInfo = context.userSettings.dateFormattingInfo;
     const isDateTime = (() => {
-        switch(format) {
+        switch (format) {
             case 'DateAndTime':
             case 'Date and Time':
             case 'DateAndTime.DateAndTime':
@@ -82,7 +83,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     useEffect(() => {
         const onBlur = () => {
-            if(formatDate(boundValue.raw) === dateStringValue) {
+            if (formatDate(boundValue.raw) === dateStringValue) {
                 return;
             }
             notifyOutputChanged({
@@ -98,11 +99,10 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const getDate = (): Date | undefined => {
         if (boundValue.raw instanceof Date) {
-            if(behavior === 3) {
+            if (behavior === 3) {
                 //the date in javascript gets automatically adjusted to local time zone
                 //this will make it think that the date already came in local time, thus not adjusting the time
                 const date = new Date(boundValue.raw.toISOString().replace('Z', ''));
-                console.log('hello', date);
                 return date;
             }
             return boundValue.raw;
@@ -132,7 +132,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         let dayjsDate = dayjs(date ?? getDate())
         let _time = time;
         //date selected from calendar, keep the original time
-        if(!_time) {
+        if (!_time) {
             _time = dayjs(getDate()).format('HH:mm');
         }
         const [hours, minutes] = _time.split(':');
@@ -143,5 +143,5 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         })
     }
 
-    return [getDate(), dateStringValue, isDateTime, {shortDatePattern, shortTimePattern}, labels, setDateStringValue, selectDate, clearDate]
+    return [getDate(), dateStringValue, isDateTime, { shortDatePattern, shortTimePattern }, labels, setDateStringValue, selectDate, clearDate]
 }
