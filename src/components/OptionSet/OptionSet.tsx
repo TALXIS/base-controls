@@ -2,8 +2,7 @@
 import { IOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
 import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
-import {  IComboBoxOption} from '@fluentui/react';
-import * as React from 'react';
+import { IComboBoxOption } from '@fluentui/react';
 
 export const OptionSet = (props: IOptionSet) => {
     const parameters = props.parameters;
@@ -33,13 +32,17 @@ export const OptionSet = (props: IOptionSet) => {
         readOnly={context.mode.isControlDisabled}
         selectedKey={boundValue.raw?.toString() ?? defaulValue}
         dropdownWidth={context.mode.allocatedWidth || undefined}
-        style={{
-            height: context.mode.allocatedHeight || undefined,
-            width: context.mode.allocatedWidth || undefined
+        styles={{
+            root: {
+                height: context.mode.allocatedHeight || undefined,
+                width: context.mode.allocatedWidth || undefined,
+                display: 'flex',
+                alignItems: 'center',
+            },
         }}
         deleteButtonProps={{
             key: 'delete',
-            showOnlyOnHover: true,
+            showOnlyOnHover: false,
             iconProps: {
                 iconName: 'Delete'
             },
