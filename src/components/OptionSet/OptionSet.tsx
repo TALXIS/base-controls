@@ -31,7 +31,7 @@ export const OptionSet = (props: IOptionSet) => {
         }: undefined}
         readOnly={context.mode.isControlDisabled}
         selectedKey={boundValue.raw?.toString() ?? defaulValue}
-        dropdownWidth={context.mode.allocatedWidth || undefined}
+        useComboBoxAsMenuWidth
         styles={{
             root: {
                 height: context.mode.allocatedHeight || undefined,
