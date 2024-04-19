@@ -19,17 +19,20 @@ export const MultiSelectOptionset = (props: IMultiSelectOptionSet) => {
     const handleChange = (option?: IComboBoxOption | null): void => {
         if (option) {
             const optionKey = option.key.toString();
-            const updatedSelectedKeys =
-                boundValue.raw && boundValue.raw.includes(+optionKey)
-                    ? boundValue.raw.filter(key => key !== +optionKey)
-                    : [...(boundValue.raw || []), optionKey];
-
+            const updatedSelectedKeys = new Set(boundValue.raw || []);
+            if (option.selected) {
+                updatedSelectedKeys.add(+optionKey);
+            } else {
+                updatedSelectedKeys.delete(+optionKey);
+            }
+            const updatedSelectedKeysArray = Array.from(updatedSelectedKeys);
+            
             onNotifyOutputChanged({
-                value: updatedSelectedKeys.map(key => +key)
+                value: updatedSelectedKeysArray.map(key => +key)
             });
         } else {
             onNotifyOutputChanged({
-                value: []
+                value: undefined
             });
         }
     };
