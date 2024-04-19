@@ -56,9 +56,12 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
 
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;
-        for (const [key, outputValue] of Object.entries(outputs)) {
+        for (let [key, outputValue] of Object.entries(outputs)) {
             const parameterValue = parametersRef.current[key]?.raw;
             if (!deepEqual(parameterValue, outputValue)) {
+                if(outputValue === "") {
+                    outputValue = null;
+                }
                 // handles undefined X null
                 if (parameterValue == outputValue) {
                     continue;
@@ -70,7 +73,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         if (!isDirty) {
             return;
         }
-        console.log('Change detected, triggering notifyOutputChanged');
+        console.log(`Change detected, triggering notifyOutputChanged on component ${name}.`);
         props.onNotifyOutputChanged?.(outputs);
     };
     return [labels, onNotifyOutputChanged];
