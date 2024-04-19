@@ -27,6 +27,7 @@ export const DateTime = (componentProps: IDateTime) => {
             <DatePicker
                 className={styles.datePicker}
                 componentRef={datePickerRef}
+                keepCalendarOpenAfterDaySelect={isDateTime}
                 allowTextInput
                 calendarProps={{
                     //needs to be here as the internal picker does not call the function passed in calendarAs
