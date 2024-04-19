@@ -42,7 +42,7 @@ export const OptionSet = (props: IOptionSet) => {
         }}
         deleteButtonProps={{
             key: 'delete',
-            showOnlyOnHover: false,
+            showOnlyOnHover: true,
             iconProps: {
                 iconName: 'Delete'
             },
