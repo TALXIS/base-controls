@@ -1,8 +1,5 @@
-import { initializeIcons, Label, PrimaryButton } from "@fluentui/react";
-import { TextField as TalxisTextField } from "@talxis/react-components/dist/components/TextField";
-import { TextField as TalxisDecimalField } from "@talxis/react-components/dist/components/TextField";
+import { initializeIcons, Label } from "@fluentui/react";
 import React, { useState } from "react";
-import { TextField } from "../components/TextField/TextField";
 import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
 import { OptionSet } from "../components/OptionSet";
@@ -17,11 +14,10 @@ export const Sandbox: React.FC = () => {
   const [value, setValue] = useState<string | Date | undefined>(new Date('2016-08-04T17:14:00Z'));
   const [decimalValue, setDecimalValue] = useState<number>();
   const [selectedValue, setSelectedValue] = useState<number | null>();
-  const [selectedKeys, setSelectedKeys] = useState<number[]>();
+  const [selectedKeys, setSelectedKeys] = useState<number[] | undefined>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [test, setTest] = useState("");
   const context = new Context();
-
   return (
     <>
       <Label>Outside change</Label>

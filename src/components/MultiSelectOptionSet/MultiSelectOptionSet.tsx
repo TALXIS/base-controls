@@ -2,15 +2,13 @@
 import { IMultiSelectOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
 import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
-import { useState } from 'react';
 import { IComboBoxOption } from '@fluentui/react';
 
 export const MultiSelectOptionset = (props: IMultiSelectOptionSet) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
-    const defaulValue = boundValue.attributes.DefaultValue.toString();
+    const defaultValue = boundValue.attributes.DefaultValue.toString();
     const [labels, onNotifyOutputChanged] = useComponent('MultiSelectOptionSet', props);
-    const [selectedKeys, setSelectedKeys] = useState<string[]>(Array.isArray(boundValue.raw) ? boundValue.raw.map(k => k.toString()) : [defaulValue]);
     const { Options } = parameters.value.attributes;
     const context = props.context;;
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
@@ -21,15 +19,15 @@ export const MultiSelectOptionset = (props: IMultiSelectOptionSet) => {
     const handleChange = (option?: IComboBoxOption | null): void => {
         if (option) {
             const optionKey = option.key.toString();
-            const updatedSelectedKeys = selectedKeys.includes(optionKey)
-                ? selectedKeys.filter(key => key !== optionKey)
-                : [...selectedKeys, optionKey];
-            setSelectedKeys(updatedSelectedKeys);
+            const updatedSelectedKeys =
+                boundValue.raw && boundValue.raw.includes(+optionKey)
+                    ? boundValue.raw.filter(key => key !== +optionKey)
+                    : [...(boundValue.raw || []), optionKey];
+
             onNotifyOutputChanged({
                 value: updatedSelectedKeys.map(key => +key)
             });
         } else {
-            setSelectedKeys([]);
             onNotifyOutputChanged({
                 value: []
             });
@@ -44,7 +42,7 @@ export const MultiSelectOptionset = (props: IMultiSelectOptionSet) => {
         autoComplete="on"
         readOnly={context.mode.isControlDisabled}
         dropdownWidth={context.mode.allocatedWidth || undefined}
-        selectedKey={selectedKeys}
+        selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : defaultValue}
         styles={{
             root: {
                 height: context.mode.allocatedHeight || undefined,
