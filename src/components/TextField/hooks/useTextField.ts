@@ -26,7 +26,6 @@ export const useTextField = (props: ITextField, ref: React.RefObject<HTMLDivElem
                 return;
             }
             hasBeenResizedRef.current = true;
-            console.log('running');
             setHeight(undefined);
         });
         const textarea = ref.current?.querySelector('textarea') as HTMLTextAreaElement;

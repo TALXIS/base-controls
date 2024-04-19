@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { IProperty } from "../interfaces";
-import { IComponent, IOutputs } from "../interfaces/context";
+import { IComponent, IOutputs, ITranslations } from "../interfaces/context";
 import { useComponent } from "./useComponent";
 import React from 'react';
 import { IInputParameters } from "../interfaces/parameters";
+import { StringProps } from "../types";
 
 /**
  * Use when working with components that need to store value changes internally before triggering `notifyOutputChanged`.
@@ -19,20 +19,28 @@ import { IInputParameters } from "../interfaces/parameters";
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
 
-export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs>(props: IComponent<TParameters, TOutputs>, formatter?: (value: any) => any): [
+interface IComponentOptions<TTranslations> {
+    defaultTranslations?: TTranslations,
+    formatter?: (value: any) => any,
+    valueExtractor?: (value: any) => any
+}
+
+export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, options?: IComponentOptions<TTranslations>): [
     TValue,
+    Required<StringProps<TTranslations>>,
     (value: TValue) => void,
-    (outputs: TOutputs) => void
+    (outputs: TOutputs) => void,
 ] => {
+    const {formatter, valueExtractor} = {...options};
     const rawValue = props.parameters.value.raw;
-    const [value, setValue] = useState<TValue>(rawValue);
+    const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
-    const [onNotifyOutputChanged] = useComponent(props as any);
+    const [labels, onNotifyOutputChanged] = useComponent(name, props, options?.defaultTranslations);
 
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
         setValue(formattedValue ?? rawValue);
-        console.log(`Updating the component with new value: ${formattedValue ?? rawValue}`);
+        console.log(`Updating component ${name} with new value: ${formattedValue ?? rawValue}`);
     }, [rawValue]);
 
     useEffect(() => {
@@ -43,12 +51,12 @@ export const useInputBasedComponent = <TValue, TParameters extends IInputParamet
         return () => {
             if(props.parameters.NotifyOutputChangedOnUnmount?.raw === true) {
                 onNotifyOutputChanged({
-                    value: valueRef.current
-                });
+                    value: valueExtractor?.(valueRef.current) ?? valueRef.current
+                } as any);
             }
         };
     }, []);
 
-    return [value, setValue, onNotifyOutputChanged];
+    return [value, labels, setValue, onNotifyOutputChanged];
 
 };

@@ -11,7 +11,8 @@ import {options} from './shared/optionList';
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
-  const [value, setValue] = useState<string>();
+  //const [value, setValue] = useState<string | Date | undefined>("shit");
+  const [value, setValue] = useState<string | Date | undefined>(new Date('2016-08-04T17:14:00Z'));
   const [decimalValue, setDecimalValue] = useState<number>();
   const [selectedValue, setSelectedValue] = useState<number| null>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
@@ -21,52 +22,7 @@ export const Sandbox: React.FC = () => {
   return (
     <>
       <Label>Outside change</Label>
-      <TalxisTextField value={value} onChange={(e, value) => setValue(value)} />
-      {isMounted && (
-        <>
-          <Label>Component</Label>
-          <TextField
-            context={new Context()}
-            onNotifyOutputChanged={(outputs) => {
-              setValue(outputs.value as string);
-            }}
-            parameters={{
-              IsMultiLine: {
-                raw: true,
-              },
-              isResizable: {
-                raw: false,
-              },
-              EnableCopyButton: {
-                raw: true,
-              },
-              value: {
-                raw: value ?? null,
-              },
-            }}
-          />
-        </>
-      )}
-      <br />
-      <PrimaryButton
-        text="Mount/Unmount component"
-        onClick={() => setIsMounted(!isMounted)}
-      />
-      <br />
-      <br />
-      <PrimaryButton
-        text="Trigger rerender"
-        onClick={() => setTest(Math.random().toString())}
-      />
-      <Label>Outside changes</Label>
-      <TalxisDecimalField
-      value={decimalValue as any}
-        onChange={(event) => {
-            //@ts-ignore
-          setDecimalValue(event.target.value);
-        }}
-      />
-      <Label>Decimal component</Label>
+{/*       <TalxisTextField value={value} onChange={(e, value) => setValue(value)} /> */}
       <Decimal
         context={context}
         parameters={{
@@ -87,6 +43,15 @@ export const Sandbox: React.FC = () => {
       <OptionSet
         context={context}
         parameters={{
+          EnableCopyButton: {
+            raw: true
+          },
+          EnableDeleteButton: {
+            raw: true
+          },
+          AutoFocus: {
+            raw: true
+          },
           value: {
             raw: selectedValue ?? null,
             attributes: {
