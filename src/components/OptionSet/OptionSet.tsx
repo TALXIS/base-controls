@@ -33,11 +33,9 @@ export const OptionSet = (props: IOptionSet) => {
         selectedKey={boundValue.raw?.toString() ?? defaulValue}
         dropdownWidth={context.mode.allocatedWidth || undefined}
         styles={{
-            container: {
-                width: context.mode.allocatedWidth || undefined,
-            },
             root: {
                 height: context.mode.allocatedHeight || undefined,
+                width: context.mode.allocatedWidth || undefined,
                 display: 'flex',
                 alignItems: 'center',
             },
