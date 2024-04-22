@@ -1,6 +1,7 @@
 
 import { ILookup } from "./interfaces";
 import { useLookup } from "./useLookup";
+import React from 'react';
 
 export const Lookup = (props: ILookup) => {
     const parameters = props.parameters;
