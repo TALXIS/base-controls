@@ -8,7 +8,6 @@ import React, { useEffect } from 'react';
 export const OptionSet = (props: IOptionSet) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
-    const defaulValue = boundValue.attributes.DefaultValue;
     const [labels, onNotifyOutputChanged] = useComponent('OptionSet', props);
     const { Options } = parameters.value.attributes;
     const context = props.context;
@@ -27,17 +26,6 @@ export const OptionSet = (props: IOptionSet) => {
         });
     };
 
-    //set the default value on first render
-    useEffect(() => {
-        //TODO: we should make sure that we always set the DefaultValue to -1 on existing records!
-        //@ts-ignore - not part of types
-        if(defaulValue !== -1 && !boundValue.raw) {
-            onNotifyOutputChanged({
-                value: defaulValue
-            })
-        }
-    }, []);
-
 
     return <ComboBox
         borderless={parameters.EnableBorder?.raw === false}
@@ -46,6 +34,7 @@ export const OptionSet = (props: IOptionSet) => {
             autoFocus: true
         }: undefined}
         readOnly={context.mode.isControlDisabled}
+        //the defaultValue comes in the raw prop directly, no need to look at it
         selectedKey={boundValue.raw?.toString() ?? -1}
         dropdownWidth={context.mode.allocatedWidth || undefined}
         styles={{
