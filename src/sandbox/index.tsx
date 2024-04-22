@@ -3,10 +3,11 @@ import React, { useState } from "react";
 import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
 import { OptionSet } from "../components/OptionSet";
-import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty } from "../interfaces";
+import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty, ITwoOptionsProperty } from "../interfaces";
 import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
-import { MultiSelectOptionset } from "../components/MultiSelectOptionSet";
+import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
+import { TwoOptions } from "../components/TwoOptions";
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
@@ -48,9 +49,6 @@ export const Sandbox: React.FC = () => {
           EnableDeleteButton: {
             raw: true
           },
-          AutoFocus: {
-            raw: true
-          },
           value: {
             raw: selectedValue ?? null,
             attributes: {
@@ -64,7 +62,7 @@ export const Sandbox: React.FC = () => {
         }} />
 
       <Label>Component</Label>
-      <MultiSelectOptionset
+      <MultiSelectOptionSet
         context={context}
         parameters={{
           value: {
@@ -79,6 +77,26 @@ export const Sandbox: React.FC = () => {
           setSelectedKeys(outputs.value);
         }}
       />
+      <Label>Component</Label>
+      <TwoOptions context={context} parameters={{
+        value: {
+          raw: true,
+          attributes: {
+            Options: [
+              {
+                Color: '',
+                Label: 'Yes',
+                Value: 0
+              },
+              {
+                Color: '',
+                Label: 'No',
+                Value: 1
+              }
+            ]
+          }
+        } as ITwoOptionsProperty
+      }} />
     </>
   );
 };

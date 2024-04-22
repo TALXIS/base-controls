@@ -7,10 +7,6 @@ export interface IStringProperty extends IProperty, Partial<ComponentFramework.P
     raw: string | null;
 }
 
-export interface ITwoOptionsProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.TwoOptionsProperty> {
-    raw: boolean;
-}
-
 export interface IDecimalNumberProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.DecimalNumberProperty>, 'attributes'> {
     raw: number | null;
     type: 'Whole.None' | 'Decimal',
@@ -28,23 +24,30 @@ export interface IDateTimeProperty extends IProperty, Partial<ComponentFramework
 
 export interface IOptionSetProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.OptionSetProperty>, 'attributes'> {
     raw: number | null,
-    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata> & {
-        DefaultValue: number;
+    attributes: Omit<Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata>, 'DefaultValue'> & {
         Options: ComponentFramework.PropertyHelper.OptionMetadata[]
+    };
+}
+
+export interface ITwoOptionsProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.TwoOptionsProperty>, 'attributes'> {
+    raw: boolean,
+    attributes: Omit<Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata>, 'DefaultValue'> & {
+        Options: [ComponentFramework.PropertyHelper.OptionMetadata, ComponentFramework.PropertyHelper.OptionMetadata]
     };
 }
 
 export interface IMultiSelectOptionSetProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.MultiSelectOptionSetProperty>, 'attributes'> {
     raw: number[] | null,
-    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata> & {
-        DefaultValue: number;
+    attributes: Omit<Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata>, 'DefaultValue'> & {
         Options: ComponentFramework.PropertyHelper.OptionMetadata[]
     };
 }
 
-export interface ILookupProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.LookupProperty> {
+export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.LookupProperty>, 'attributes'> {
     raw: ComponentFramework.LookupValue[];
-    attributes: ComponentFramework.PropertyHelper.FieldPropertyMetadata.LookupMetadata;
+    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.LookupMetadata> & {
+        Targets: string[]
+    };
     /**
      * Returns the default lookup viewId.
      */
