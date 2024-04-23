@@ -6,7 +6,8 @@ import { OptionSet } from "../components/OptionSet";
 import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty } from "../interfaces";
 import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
-import { MultiSelectOptionset } from "../components/MultiSelectOptionSet";
+import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
+import { TwoOptions } from "../components/TwoOptions";
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
@@ -15,6 +16,7 @@ export const Sandbox: React.FC = () => {
   const [decimalValue, setDecimalValue] = useState<number>();
   const [selectedValue, setSelectedValue] = useState<number | null>();
   const [selectedKeys, setSelectedKeys] = useState<number[] | undefined>();
+  const [twoOptionValue, setTwoOptionValue] = useState<number | undefined>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [test, setTest] = useState("");
   const context = new Context();
@@ -64,7 +66,7 @@ export const Sandbox: React.FC = () => {
         }} />
 
       <Label>Component</Label>
-      <MultiSelectOptionset
+      <MultiSelectOptionSet
         context={context}
         parameters={{
           value: {
@@ -77,6 +79,19 @@ export const Sandbox: React.FC = () => {
         }}
         onNotifyOutputChanged={(outputs) => {
           setSelectedKeys(outputs.value);
+        }}
+      />
+
+      <Label>Component</Label>
+      <TwoOptions
+        context={context}
+        parameters={{
+          value: {
+            raw: Boolean(twoOptionValue),
+          },
+        }}
+        onNotifyOutputChanged={(outputs) => {
+          setTwoOptionValue(outputs.value);
         }}
       />
     </>

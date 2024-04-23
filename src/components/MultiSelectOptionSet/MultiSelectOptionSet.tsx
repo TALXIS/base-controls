@@ -3,7 +3,6 @@ import { IMultiSelectOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
 import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
 import { IComboBoxOption } from '@fluentui/react';
-import React from 'react';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const parameters = props.parameters;
