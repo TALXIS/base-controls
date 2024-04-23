@@ -6,7 +6,7 @@ import { OptionSet } from "../components/OptionSet";
 import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty } from "../interfaces";
 import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
-import { MultiSelectOptionset } from "../components/MultiSelectOptionSet";
+import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
@@ -64,7 +64,7 @@ export const Sandbox: React.FC = () => {
         }} />
 
       <Label>Component</Label>
-      <MultiSelectOptionset
+      <MultiSelectOptionSet
         context={context}
         parameters={{
           value: {

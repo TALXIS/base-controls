@@ -7,8 +7,11 @@ export interface IStringProperty extends IProperty, Partial<ComponentFramework.P
     raw: string | null;
 }
 
-export interface ITwoOptionsProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.TwoOptionsProperty> {
-    raw: boolean;
+export interface ITwoOptionsProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.TwoOptionsProperty>, 'attributes'> {
+    raw: boolean,
+    attributes: Omit<Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata>, 'DefaultValue'> & {
+        Options: [ComponentFramework.PropertyHelper.OptionMetadata, ComponentFramework.PropertyHelper.OptionMetadata]
+    };
 }
 
 export interface IDecimalNumberProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.DecimalNumberProperty>, 'attributes'> {
