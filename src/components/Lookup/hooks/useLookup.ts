@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useComponent } from "../../hooks";
-import { IEntity, ILookup } from "./interfaces";
+import { useComponent } from "../../../hooks";
+import { IEntity, ILookup } from "../interfaces";
 import { useFetchXml } from "./useFetchXml";
 
 export const useLookup = (props: ILookup): [
@@ -12,15 +12,15 @@ export const useLookup = (props: ILookup): [
         deselect: (record: ComponentFramework.LookupValue) => void,
     },
     (entityName: string | null) => void,
+    (query: string) => Promise<ComponentFramework.LookupValue[]>
 ] => {
     const targets = props.parameters.value.attributes.Targets;
     const boundValue = props.parameters.value.raw;
     const context = props.context;
     const [labels, notifyOutputChanged] = useComponent('Lookup', props);
-    const [getFetchXml] = useFetchXml(props.context.webAPI);
+    const [getFetchXml, applyLookupQuery] = useFetchXml(context);
     const [entities, setEntities] = useState<IEntity[] | null>(null);
     const selectedEntity = entities?.find(x => x.selected);
-
 
     useEffect(() => {
         init();
@@ -53,28 +53,52 @@ export const useLookup = (props: ILookup): [
     }
 
     const getViewId = async (entityName: string) => {
+        //call should be cached
         const viewId = (await props.parameters.value.getAllViews(entityName)).find(x => x.isDefault)?.viewId;
-        if(!viewId) {
+        if (!viewId) {
             throw new Error(`Entity ${entityName} does not have a default view id!`);
         }
         return viewId;
     }
 
-    const getSearchResults =  async (query: string) => {
-        const viewIds: string[] = [];
-        if(selectedEntity) {
-            viewIds.push(await getViewId(selectedEntity.entityName))
+    const getSearchResults = async (query: string): Promise<ComponentFramework.LookupValue[]> => {
+        const entityViewIdMap = new Map<string, Promise<string>>();
+        if (selectedEntity) {
+            entityViewIdMap.set(selectedEntity.entityName, getViewId(selectedEntity.entityName))
         }
         else {
-            for (const entity of context.parameters.value.attributes.Targets) {
-                //TODO: parallel execution
-                viewIds.push(await getViewId(entity));
-            } 
+            for (const entity of targets) {
+                entityViewIdMap.set(entity, getViewId(entity))
+            }
         }
-        const fetchXmlPromiseArray: Promise<ComponentFramework.WebApi.Entity>[] = [];
-        for(const viewId of viewIds) {
-            fetchXmlPromiseArray.push(context.webAPI.retrieveRecord('savedquery', viewId, '?$select=fetchxml'));
+        await Promise.all(entityViewIdMap.values());
+        console.log(entityViewIdMap);
+        const fetchXmlPromiseMap = new Map<string, Promise<string> | string>()
+        for (const [entityName, viewId] of entityViewIdMap) {
+            fetchXmlPromiseMap.set(entityName, getFetchXml(await viewId))
         }
+        await Promise.all(fetchXmlPromiseMap.values());
+        for (const [entityName, fetchXml] of fetchXmlPromiseMap) {
+            fetchXmlPromiseMap.set(entityName, applyLookupQuery(entities?.find(x => x.entityName === entityName)!, await fetchXml, query))
+        }
+        const responsePromiseMap = new Map<string, Promise<ComponentFramework.WebApi.RetrieveMultipleResponse>>()
+        for(const [entityName, fetchXml] of fetchXmlPromiseMap) {
+            responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?fetchXml=${await fetchXml}`))
+        }
+        await Promise.all(responsePromiseMap.values());
+        const result: ComponentFramework.LookupValue[] = [];
+        for(const [entityName, response] of responsePromiseMap) {
+            for(const entity of (await response).entities) {
+                const entityMetadata = entities!.find(x => x.entityName === entityName)!.metadata;
+                result.push({
+                    entityType: entityName,
+                    id: entity[entityMetadata.PrimaryIdAttribute],
+                    name: entity[entityMetadata.PrimaryNameAttribute]
+                });
+            }
+        }
+        console.log(result);
+        return result;
 
     }
 
@@ -83,7 +107,7 @@ export const useLookup = (props: ILookup): [
             entityName: entityName,
             useQuickCreateForm: true
         });
-        if(!result.savedEntityReference) {
+        if (!result.savedEntityReference) {
             return;
         }
         notifyOutputChanged({
@@ -105,6 +129,7 @@ export const useLookup = (props: ILookup): [
             deselect: deselectRecord,
             select: selectRecord
         },
-        selectEntity
+        selectEntity,
+        getSearchResults
     ];
 };

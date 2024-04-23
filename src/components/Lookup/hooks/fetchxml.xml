@@ -1,0 +1,30 @@
+<fetch version="1.0" mapping="logical">
+    <entity name="talxis_person">
+        <attribute name="talxis_personid" />
+        <attribute name="talxis_name" />
+        <attribute name="createdon" />
+        <filter type="and">
+            <condition attribute="statecode" operator="eq" value="0" />
+        </filter>
+        <filter type="or">
+            <condition attribute="talxis_name" operator="like" value="%Per%" />
+        </filter>
+    </entity>
+</fetch>
+
+<fetch version="1.0" mapping="logical" savedqueryid="74b27b65-0ac7-4ea5-87fc-6e3c72c5d90b"
+    returntotalrecordcount="true" page="1" count="25" no-lock="false">
+    <entity name="talxis_person">
+        <attribute name="statecode" />
+        <attribute name="talxis_personid" />
+        <attribute name="talxis_name" />
+        <attribute name="createdon" />
+        <filter type="and">
+            <condition attribute="statecode" operator="eq" value="0" />
+        </filter>
+        <order attribute="talxis_name" descending="false" />
+        <filter type="or" isquickfindfields="1">
+            <condition attribute="talxis_name" operator="like" value="Per%" />
+        </filter>
+    </entity>
+</fetch>

@@ -2,8 +2,8 @@
 import { ContextualMenu, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
 import { CommandBarButton } from "@fluentui/react/lib/components/Button/CommandBarButton/CommandBarButton";
 import React, { useRef, useState } from 'react';
-import { IEntity } from "./interfaces";
-import { getLookupStyles } from "./styles";
+import { IEntity } from "../interfaces";
+import { getLookupStyles } from "../styles";
 
 interface IRecordCreator {
     entities: IEntity[];

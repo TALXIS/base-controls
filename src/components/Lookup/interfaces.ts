@@ -32,5 +32,7 @@ export interface IEntity {
     selected: boolean;
     metadata: ComponentFramework.PropertyHelper.EntityMetadata & {
         DisplayName: string;
+        PrimaryNameAttribute: string;
+        PrimaryIdAttribute: string;
     }
 }

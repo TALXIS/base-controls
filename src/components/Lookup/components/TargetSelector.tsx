@@ -1,8 +1,8 @@
 import React from 'react';
-import { IEntity } from './interfaces';
+import { IEntity } from '../interfaces';
 import { Text } from '@fluentui/react/lib/Text';
 import { Link, useTheme } from '@fluentui/react';
-import { getLookupStyles } from './styles';
+import { getLookupStyles } from '../styles';
 
 interface ITargetSelector {
     entities: IEntity[];

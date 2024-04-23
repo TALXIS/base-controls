@@ -1,16 +1,15 @@
 
 import { ILookup } from "./interfaces";
-import { useLookup } from "./useLookup";
+import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, PrimaryButton, TextField, useTheme } from "@fluentui/react";
-import { TagPicker } from "@talxis/react-components/dist/components/TagPicker";
-import { TargetSelector } from "./TargetSelector";
+import { IItemProps, TagPicker } from "@talxis/react-components/dist/components/TagPicker";
+import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
 import { getLookupStyles } from "./styles";
 import { IBasePicker } from "@fluentui/react/lib/components/pickers/BasePicker.types";
 import { ITag } from "@fluentui/react/lib/components/pickers/TagPicker/TagPicker.types";
-import { useFocus } from "../../hooks/useFocus";
-import { RecordCreator } from "./RecordCreator";
+import { RecordCreator } from "./components/RecordCreator";
 
 export const Lookup = (props: ILookup) => {
     const context = props.context;
@@ -18,7 +17,7 @@ export const Lookup = (props: ILookup) => {
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const theme = useTheme();
     const styles = getLookupStyles(theme);
-    const [value, entities, record, selectEntity] = useLookup(props);
+    const [value, entities, record, selectEntity, getSearchResults] = useLookup(props);
     const mouseOver = useMouseOver(ref);
     const [isFocused, setIsFocused] = useState<boolean>(false);
 
@@ -26,10 +25,22 @@ export const Lookup = (props: ILookup) => {
         return mouseOver || isFocused;
     }
 
+    const onResolveSuggestions = async (filter: string, selectedItems?: IItemProps[] | undefined): Promise<IItemProps[]> => {
+        const results = await getSearchResults(filter);
+        return results.map(result => {
+            return {
+                key: result.id,
+                text: result.name,
+                secondaryText: entities?.find(x => x.entityName === result.entityType)?.metadata.DisplayName,
+                'data-entity': result.entityType
+            }
+        })
+    }
     return (
         <div className={styles.root} ref={ref}>
             <TagPicker
                 componentRef={componentRef}
+                resolveDelay={500}
                 pickerCalloutProps={{
                     className: styles.suggestions,
                 }}
@@ -73,14 +84,7 @@ export const Lookup = (props: ILookup) => {
                         }
                     }
                 })}
-                onEmptyResolveSuggestions={() => [{ key: 'aa', text: 'aaa' }] as any} onResolveSuggestions={() => [{
-                    key: 'aa',
-                    text: 'aaaa'
-                }]} searchBtnProps={{
-                    iconProps: {
-                        iconName: 'Search'
-                    }
-                }} />
+                onResolveSuggestions={onResolveSuggestions} />
         </div>
     )
 };
