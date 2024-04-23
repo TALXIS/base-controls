@@ -37,7 +37,6 @@
       <resx path="strings/Lookup.1033.resx" version="1.0.0" />
       -->
     </resources>
-    <!-- UNCOMMENT TO ENABLE THE SPECIFIED API
     <feature-usage>
       <uses-feature name="Device.captureAudio" required="true" />
       <uses-feature name="Device.captureImage" required="true" />
@@ -48,6 +47,5 @@
       <uses-feature name="Utility" required="true" />
       <uses-feature name="WebAPI" required="true" />
     </feature-usage>
-    -->
   </control>
 </manifest>

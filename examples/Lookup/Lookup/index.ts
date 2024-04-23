@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom';
 import * as React from 'react';
 import { Lookup as LookupComponent } from '../../../src/components/Lookup/Lookup';
 import { ILookup } from '../../../src/components/Lookup/interfaces';
+import { Context as MockContext } from '../../../src/sandbox/mock/Context';
 
 export class Lookup implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
@@ -34,7 +35,25 @@ export class Lookup implements ComponentFramework.StandardControl<IInputs, IOutp
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
-        console.log(context.parameters.value);
+        if(window.location.href.includes('localhost')) {
+            const mockContext = new MockContext();
+            context.utils = mockContext.utils;
+            //@ts-ignore - tooling sucks
+            context.parameters.value.attributes.Targets = [
+                'talxis_team',
+                'talxis_person'
+                
+            ];
+            if(!Array.isArray(context.parameters.value.raw)) {
+                context.parameters.value.raw = [
+                    {
+                        entityType: 'talxis_team',
+                        id: '0000',
+                        name: 'Team 1'
+                    }
+                ];
+            }
+        }
         ReactDOM.render(React.createElement(LookupComponent as any, {
             context: context,
             parameters: {

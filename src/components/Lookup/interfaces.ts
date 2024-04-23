@@ -26,3 +26,11 @@ export interface ILookupOutputs extends IOutputs {
 export interface ILookupTranslations extends ITranslations {
 
 }
+
+export interface IEntity {
+    entityName: string;
+    selected: boolean;
+    metadata: ComponentFramework.PropertyHelper.EntityMetadata & {
+        DisplayName: string;
+    }
+}
