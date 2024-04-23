@@ -43,13 +43,13 @@ export interface IMultiSelectOptionSetProperty extends IProperty, Omit<Partial<C
     };
 }
 
-export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.LookupProperty>, 'attributes'> {
+export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.LookupProperty>, 'attributes' | 'getViewId'> {
     raw: ComponentFramework.LookupValue[];
     attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.LookupMetadata> & {
         Targets: string[]
     };
     /**
-     * Returns the default lookup viewId.
+     * Returns the default lookup viewId. Works only for Microsoft PCF's
      */
     getDefaultViewId: (entityName: string) => string,
     /**

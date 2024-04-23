@@ -18,7 +18,7 @@ export const Lookup = (props: ILookup) => {
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const theme = useTheme();
     const styles = getLookupStyles(theme);
-    const [value, entities, selectEntity, selectRecord, removeRecord] = useLookup(props);
+    const [value, entities, record, selectEntity] = useLookup(props);
     const mouseOver = useMouseOver(ref);
     const [isFocused, setIsFocused] = useState<boolean>(false);
 
@@ -37,13 +37,7 @@ export const Lookup = (props: ILookup) => {
                     resultsMaximumNumber: 99999999,
                     //@ts-ignore
                     suggestionsHeaderText: entities ? <>
-                        <RecordCreator entities={entities} onCreateRecord={(entityName) => {
-                            console.log('here')
-                            context.navigation.openForm({
-                                entityName: entityName,
-                                useQuickCreateForm: true
-                            })
-                        }} />
+                        <RecordCreator entities={entities} onCreateRecord={record.create} />
                         <TargetSelector entities={entities} onEntitySelected={selectEntity} />
                     </> : <></>,
                 }}
@@ -75,7 +69,7 @@ export const Lookup = (props: ILookup) => {
                                     }
                                 }
                             },
-                            onClick: () => removeRecord(lookup)
+                            onClick: () => record.deselect(lookup)
                         }
                     }
                 })}

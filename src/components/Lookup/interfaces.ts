@@ -13,9 +13,9 @@ export interface ILookup extends IComponent<ILookupParameters, ILookupOutputs, I
 }
 
 export interface ILookupParameters extends IBaseParameters {
-    IsInlineNewEnabled: ComponentFramework.PropertyTypes.StringProperty;
-    MultipleEnabled: ComponentFramework.PropertyTypes.StringProperty;
-    EnableNavigation: ComponentFramework.PropertyTypes.StringProperty;
+    IsInlineNewEnabled?: ComponentFramework.PropertyTypes.StringProperty;
+    MultipleEnabled?: ComponentFramework.PropertyTypes.StringProperty;
+    EnableNavigation?: ComponentFramework.PropertyTypes.StringProperty;
     value: ILookupProperty;
 }
 
