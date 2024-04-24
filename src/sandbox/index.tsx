@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
 import { OptionSet } from "../components/OptionSet";
-import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty } from "../interfaces";
+import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty, ITwoOptionsProperty } from "../interfaces";
 import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
 import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
@@ -88,7 +88,22 @@ export const Sandbox: React.FC = () => {
         parameters={{
           value: {
             raw: Boolean(twoOptionValue),
-          },
+            attributes: {
+              Options: [
+                {
+                  Label: 'No',
+                  Value: 0,
+                  Color: ''
+                },
+                {
+                  Label: 'Yes',
+                  Value: 1,
+                  Color: ''
+                }
+              ],
+              DisplayName: 'YesNoColumn'
+            }
+          } as ITwoOptionsProperty
         }}
         onNotifyOutputChanged={(outputs) => {
           setTwoOptionValue(outputs.value);

@@ -10,17 +10,17 @@ export interface IInputParameters extends IBaseParameters {
     * Tells the component to trigger `notifyOutputChanged` on it's unmount changes occured in bound parameter value.
     * Should only be use in edge cases in input based components where the notifyOutputChanged cannot be called naturally via the blur event.
      */
-    NotifyOutputChangedOnUnmount?: ITwoOptionsProperty;
-    EnableCopyButton?: ITwoOptionsProperty;
-    EnableDeleteButton?: ITwoOptionsProperty;
+    NotifyOutputChangedOnUnmount?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableCopyButton?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableDeleteButton?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface IBaseParameters extends IParameters {
     /** default `true`    */
-    EnableBorder?: ITwoOptionsProperty;
+    EnableBorder?: Omit<ITwoOptionsProperty, 'attributes'>;
     /**
     * Decides whether the input should get focus on first render.
     */
-    AutoFocus?: ITwoOptionsProperty;
-    ForceDisable?: ComponentFramework.PropertyTypes.StringProperty;
+    AutoFocus?:  Omit<ITwoOptionsProperty, 'attributes'>;
+    ForceDisable?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
