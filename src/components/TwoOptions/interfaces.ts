@@ -10,7 +10,7 @@ export interface ITwoOptionsParameters extends IBaseParameters {
 }
 
 export interface ITwoOptionsOutputs extends IOutputs {
-    value?: number
+    value?: boolean;
 }
 export interface ITwoOptionsTranslations extends ITranslations {
 

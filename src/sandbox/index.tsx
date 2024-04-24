@@ -3,10 +3,11 @@ import React, { useState } from "react";
 import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
 import { OptionSet } from "../components/OptionSet";
-import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty } from "../interfaces";
+import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty, ITwoOptionsProperty } from "../interfaces";
 import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
 import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
+import { TwoOptions } from "../components/TwoOptions";
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
@@ -15,6 +16,7 @@ export const Sandbox: React.FC = () => {
   const [decimalValue, setDecimalValue] = useState<number>();
   const [selectedValue, setSelectedValue] = useState<number | null>();
   const [selectedKeys, setSelectedKeys] = useState<number[] | undefined>();
+  const [twoOptionValue, setTwoOptionValue] = useState<number | undefined>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [test, setTest] = useState("");
   const context = new Context();
@@ -77,6 +79,34 @@ export const Sandbox: React.FC = () => {
         }}
         onNotifyOutputChanged={(outputs) => {
           setSelectedKeys(outputs.value);
+        }}
+      />
+
+      <Label>Component</Label>
+      <TwoOptions
+        context={context}
+        parameters={{
+          value: {
+            raw: Boolean(twoOptionValue),
+            attributes: {
+              Options: [
+                {
+                  Label: 'No',
+                  Value: 0,
+                  Color: ''
+                },
+                {
+                  Label: 'Yes',
+                  Value: 1,
+                  Color: ''
+                }
+              ],
+              DisplayName: 'YesNoColumn'
+            }
+          } as ITwoOptionsProperty
+        }}
+        onNotifyOutputChanged={(outputs) => {
+          setTwoOptionValue(outputs.value);
         }}
       />
     </>
