@@ -7,7 +7,7 @@ import { useFetchXml } from "./useFetchXml";
 
 export const useLookup = (props: ILookup): [
     ComponentFramework.LookupValue[],
-    IEntity[] | null,
+    IEntity[],
     Required<StringProps<ILookupTranslations>>,
     {
         create: (entityName: string) => void,
@@ -22,8 +22,8 @@ export const useLookup = (props: ILookup): [
     const context = props.context;
     const [labels, notifyOutputChanged] = useComponent('Lookup', props, lookupTranslations);
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
-    const [entities, setEntities] = useState<IEntity[] | null>(null);
-    const selectedEntity = entities?.find(x => x.selected);
+    const [entities, setEntities] = useState<IEntity[]>([]);
+    const selectedEntity = entities.find(x => x.selected);
 
     useEffect(() => {
         init();
@@ -84,7 +84,7 @@ export const useLookup = (props: ILookup): [
         }
         await Promise.all(fetchXmlPromiseMap.values());
         for (const [entityName, fetchXml] of fetchXmlPromiseMap) {
-            fetchXmlPromiseMap.set(entityName, applyLookupQuery(entities?.find(x => x.entityName === entityName)!, await fetchXml, query))
+            fetchXmlPromiseMap.set(entityName, applyLookupQuery(entities.find(x => x.entityName === entityName)!, await fetchXml, query))
         }
         const responsePromiseMap = new Map<string, Promise<ComponentFramework.WebApi.RetrieveMultipleResponse>>()
         for(const [entityName, fetchXml] of fetchXmlPromiseMap) {
@@ -94,7 +94,7 @@ export const useLookup = (props: ILookup): [
         const result: ComponentFramework.LookupValue[] = [];
         for(const [entityName, response] of responsePromiseMap) {
             for(const entity of (await response).entities) {
-                const entityMetadata = entities!.find(x => x.entityName === entityName)!.metadata;
+                const entityMetadata = entities.find(x => x.entityName === entityName)!.metadata;
                 result.push({
                     entityType: entityName,
                     id: entity[entityMetadata.PrimaryIdAttribute],
@@ -102,7 +102,6 @@ export const useLookup = (props: ILookup): [
                 });
             }
         }
-        console.log(result);
         return result;
 
     }

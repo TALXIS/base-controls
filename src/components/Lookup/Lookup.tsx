@@ -95,84 +95,87 @@ export const Lookup = (props: ILookup) => {
     }
     return (
         <div className={styles.root} ref={ref}>
-            <TagPicker
-                componentRef={componentRef}
-                resolveDelay={200}
-                pickerCalloutProps={{
-                    className: styles.suggestions,
-                }}
+            {entities.length !== 0 &&
+                <TagPicker
+                    componentRef={componentRef}
+                    resolveDelay={200}
+                    pickerCalloutProps={{
+                        className: styles.suggestions,
+                    }}
 
-                pickerSuggestionsProps={{
-                    loadingText: labels.searching,
-                    noResultsFoundText: labels.noRecordsFound,
+                    pickerSuggestionsProps={{
+                        loadingText: labels.searching,
+                        noResultsFoundText: labels.noRecordsFound,
 
-                    //@ts-ignore
-                    suggestionsHeaderText: entities ? <>
-                        {props.parameters.IsInlineNewEnabled?.raw !== false &&
-                            <RecordCreator labels={labels} entities={entities} onCreateRecord={records.create} />
-                        }
-                        <TargetSelector labels={labels} entities={entities} onEntitySelected={(entityName) => {
-                            selectEntity(entityName);
-
-                        }} />
-                    </> : <></>,
-                }}
-
-                inputProps={{
-                    autoFocus: props.parameters.AutoFocus?.raw === true,
-                    //style: itemLimit === 1 && value.length === 1 ? {visibility: 'hidden', width: 0} : undefined,
-                    onFocus: () => setIsFocused(true),
-                    onBlur: () => setIsFocused(false)
-                }}
-                transparent={!isComponentActive()}
-                onChange={(items) => {
-                    records.select(items?.map(item => {
-                        return {
-                            entityType: item['data-entity'],
-                            id: item.key,
-                            name: item.text
-                        }
-                    }))
-                }}
-                searchBtnProps={{
-                    iconProps: {
-                        iconName: 'Search'
-                    }
-                }}
-                selectedItems={value.map(lookup => {
-                    return {
-                        key: lookup.id,
-                        text: lookup.name || labels.noName,
-                        'data-entity': lookup.entityType,
-                        'data-navigation-enabled': props.parameters.EnableNavigation?.raw !== false,
-                        onClick: () => {
-                            if (props.parameters.EnableNavigation?.raw === false) {
-                                return;
+                        //@ts-ignore
+                        suggestionsHeaderText: entities ? <>
+                            {props.parameters.IsInlineNewEnabled?.raw !== false &&
+                                <RecordCreator labels={labels} entities={entities} onCreateRecord={records.create} />
                             }
-                            context.navigation.openForm({
-                                entityName: lookup.entityType,
-                                entityId: lookup.id
-                            })
-                        },
+                            {props.parameters.value.attributes.Targets.length > 1 &&
+                                <TargetSelector labels={labels} entities={entities} onEntitySelected={(entityName) => {
+                                    selectEntity(entityName);
 
-                        deleteButtonProps: {
-                            key: 'delete',
-                            showOnlyOnHover: true,
-                            iconProps: {
-                                iconName: 'ChromeClose',
-                                styles: {
-                                    root: {
-                                        fontSize: 12,
-                                        width: 16,
-                                        color: `${theme.palette.black} !important`
+                                }} />
+                            }
+                        </> : <></>,
+                    }}
+
+                    inputProps={{
+                        autoFocus: props.parameters.AutoFocus?.raw === true,
+                        onFocus: () => setIsFocused(true),
+                        onBlur: () => setIsFocused(false)
+                    }}
+                    transparent={!isComponentActive()}
+                    onChange={(items) => {
+                        records.select(items?.map(item => {
+                            return {
+                                entityType: item['data-entity'],
+                                id: item.key,
+                                name: item.text
+                            }
+                        }))
+                    }}
+                    searchBtnProps={{
+                        iconProps: {
+                            iconName: 'Search'
+                        }
+                    }}
+                    selectedItems={value.map(lookup => {
+                        return {
+                            key: lookup.id,
+                            text: lookup.name || labels.noName,
+                            'data-entity': lookup.entityType,
+                            'data-navigation-enabled': props.parameters.EnableNavigation?.raw !== false,
+                            onClick: () => {
+                                if (props.parameters.EnableNavigation?.raw === false) {
+                                    return;
+                                }
+                                context.navigation.openForm({
+                                    entityName: lookup.entityType,
+                                    entityId: lookup.id
+                                })
+                            },
+
+                            deleteButtonProps: {
+                                key: 'delete',
+                                showOnlyOnHover: true,
+                                iconProps: {
+                                    iconName: 'ChromeClose',
+                                    styles: {
+                                        root: {
+                                            fontSize: 12,
+                                            width: 16,
+                                            color: `${theme.palette.black} !important`
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                })}
-                itemLimit={itemLimit}
-                onResolveSuggestions={onResolveSuggestions} />
+                    })}
+                    itemLimit={itemLimit}
+                    onResolveSuggestions={onResolveSuggestions} />
+            }
         </div>
     )
 };
