@@ -3,7 +3,6 @@ import { IOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
 import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
 import { IComboBoxOption } from '@fluentui/react';
-import React, { useEffect } from 'react';
 
 export const OptionSet = (props: IOptionSet) => {
     const parameters = props.parameters;
@@ -25,7 +24,6 @@ export const OptionSet = (props: IOptionSet) => {
             value: value
         });
     };
-
 
     return <ComboBox
         borderless={parameters.EnableBorder?.raw === false}

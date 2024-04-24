@@ -4,6 +4,7 @@ export class UserSettings implements ComponentFramework.UserSettings {
     dateFormattingInfo: ComponentFramework.UserSettingApi.DateFormattingInfo;
     isRTL: boolean;
     languageId: number;
+    locale: string;
     numberFormattingInfo: ComponentFramework.UserSettingApi.NumberFormattingInfo;
     securityRoles: string[];
     userId: string;
@@ -15,6 +16,7 @@ export class UserSettings implements ComponentFramework.UserSettings {
         this.securityRoles = [];
         this.languageId = 1033;
         this.isRTL = false;
+        this.locale = 'en-US'
         this.numberFormattingInfo = new NumberFormattingInfo();
         this.dateFormattingInfo = new DateFormattingInfo();
     }

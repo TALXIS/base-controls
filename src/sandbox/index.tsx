@@ -8,7 +8,6 @@ import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
 import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
 import { TwoOptions } from "../components/TwoOptions";
-import { Lookup } from "../components/Lookup";
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
@@ -17,6 +16,7 @@ export const Sandbox: React.FC = () => {
   const [decimalValue, setDecimalValue] = useState<number>();
   const [selectedValue, setSelectedValue] = useState<number | null>();
   const [selectedKeys, setSelectedKeys] = useState<number[] | undefined>();
+  const [twoOptionValue, setTwoOptionValue] = useState<number | undefined>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [test, setTest] = useState("");
   const context = new Context();
@@ -79,7 +79,6 @@ export const Sandbox: React.FC = () => {
 
       <Label>Component</Label>
       <MultiSelectOptionSet
-        //@ts-ignore
         context={context}
         parameters={{
           value: {
@@ -94,28 +93,34 @@ export const Sandbox: React.FC = () => {
           setSelectedKeys(outputs.value);
         }}
       />
+
       <Label>Component</Label>
-      <TwoOptions 
-        //@ts-ignore
-        context={context} parameters={{
-        value: {
-          raw: true,
-          attributes: {
-            Options: [
-              {
-                Color: '',
-                Label: 'Yes',
-                Value: 0
-              },
-              {
-                Color: '',
-                Label: 'No',
-                Value: 1
-              }
-            ]
-          }
-        } as ITwoOptionsProperty
-      }} />
+      <TwoOptions
+        context={context}
+        parameters={{
+          value: {
+            raw: Boolean(twoOptionValue),
+            attributes: {
+              Options: [
+                {
+                  Label: 'No',
+                  Value: 0,
+                  Color: ''
+                },
+                {
+                  Label: 'Yes',
+                  Value: 1,
+                  Color: ''
+                }
+              ],
+              DisplayName: 'YesNoColumn'
+            }
+          } as ITwoOptionsProperty
+        }}
+        onNotifyOutputChanged={(outputs) => {
+          setTwoOptionValue(outputs.value);
+        }}
+      />
     </>
   );
 };
