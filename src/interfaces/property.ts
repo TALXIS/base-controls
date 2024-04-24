@@ -20,6 +20,10 @@ export interface IDecimalNumberProperty extends IProperty, Omit<Partial<Componen
     attributes?: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.DecimalNumberMetadata>
 }
 
+export interface IWholeNumberProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.WholeNumberProperty>, 'attributes'> {
+    raw: number | null;
+}
+
 //@ts-ignore - IMEMode is mandatory, but no longer supported in modern browsers - https://learn.microsoft.com/en-us/power-apps/maker/data-platform/create-edit-field-portal
 export interface IDateTimeProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.DateTimeProperty> {
     raw: Date | null,
