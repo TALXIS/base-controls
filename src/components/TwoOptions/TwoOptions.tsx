@@ -1,6 +1,7 @@
 import { Toggle } from '@fluentui/react';
 import { useComponent } from '../../hooks';
 import { ITwoOptions } from './interfaces';
+import React from 'react';
 
 export const TwoOptions = (props: ITwoOptions) => {
     const parameters = props.parameters;
@@ -11,7 +12,7 @@ export const TwoOptions = (props: ITwoOptions) => {
 
     const handleChange = (value: boolean | undefined): void => {
         onNotifyOutputChanged({
-            value: Number(value)
+            value: value
         });
     };
     
@@ -23,7 +24,6 @@ export const TwoOptions = (props: ITwoOptions) => {
         },
     }}
     checked={boundValue.raw}
-    label={boundValue.attributes.DisplayName}
     inlineLabel
     onText={options.find(option=>option.Value ===1)?.Label || 'Yes'}
     offText={options.find(option=>option.Value ===0)?.Label || 'No'}
