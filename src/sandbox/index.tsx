@@ -1,4 +1,4 @@
-import { initializeIcons, Label } from "@fluentui/react";
+import { initializeIcons, Label, TagPicker } from "@fluentui/react";
 import React, { useState } from "react";
 import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
@@ -8,6 +8,7 @@ import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
 import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
 import { TwoOptions } from "../components/TwoOptions";
+import { Lookup } from "../components/Lookup";
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
@@ -19,11 +20,25 @@ export const Sandbox: React.FC = () => {
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [test, setTest] = useState("");
   const context = new Context();
+
   return (
     <>
+      <TagPicker onResolveSuggestions={() => {
+        return [
+          {
+            key: 'a',
+            name: 'a'
+          },
+          {
+            key: 'b',
+            name: 'b'
+          }
+        ]
+      }} />
       <Label>Outside change</Label>
       {/*       <TalxisTextField value={value} onChange={(e, value) => setValue(value)} /> */}
       <Decimal
+        //@ts-ignore
         context={context}
         parameters={{
           EnableBorder: { raw: true },
@@ -41,6 +56,7 @@ export const Sandbox: React.FC = () => {
       />
       <Label>Component</Label>
       <OptionSet
+      //@ts-ignore
         context={context}
         parameters={{
           EnableCopyButton: {
@@ -63,6 +79,7 @@ export const Sandbox: React.FC = () => {
 
       <Label>Component</Label>
       <MultiSelectOptionSet
+        //@ts-ignore
         context={context}
         parameters={{
           value: {
@@ -78,7 +95,9 @@ export const Sandbox: React.FC = () => {
         }}
       />
       <Label>Component</Label>
-      <TwoOptions context={context} parameters={{
+      <TwoOptions 
+        //@ts-ignore
+        context={context} parameters={{
         value: {
           raw: true,
           attributes: {

@@ -1,4 +1,4 @@
-import { ILookupProperty } from "../../interfaces";
+import { ILookupProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
 import { IBaseParameters } from "../../interfaces/parameters";
 
@@ -13,9 +13,9 @@ export interface ILookup extends IComponent<ILookupParameters, ILookupOutputs, I
 }
 
 export interface ILookupParameters extends IBaseParameters {
-    IsInlineNewEnabled?: ComponentFramework.PropertyTypes.StringProperty;
-    MultipleEnabled?: ComponentFramework.PropertyTypes.StringProperty;
-    EnableNavigation?: ComponentFramework.PropertyTypes.StringProperty;
+    IsInlineNewEnabled?: ITwoOptionsProperty;
+    MultipleEnabled?: ITwoOptionsProperty;
+    EnableNavigation?: ITwoOptionsProperty;
     value: ILookupProperty;
 }
 
@@ -24,7 +24,12 @@ export interface ILookupOutputs extends IOutputs {
 }
 
 export interface ILookupTranslations extends ITranslations {
-
+    search: {[LCID: number]: string};
+    newRecord: {[LCID: number]: string};
+    searching: {[LCID: number]: string};
+    noRecordsFound: {[LCID: number]: string};
+    resultsFrom: {[LCID: number]: string};
+    noName: {[LCID: number]: string};
 }
 
 export interface IEntity {

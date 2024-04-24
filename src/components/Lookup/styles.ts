@@ -13,10 +13,10 @@ export const getLookupStyles = (theme: ITheme) => {
                     textDecoration: 'underline',
                     cursor: 'pointer !important'
                 }
+            },
+            '.ms-BasePicker-text': {
+                flexWrap: 'initial'
             }
-        },
-        selectedLookup: {
-            color: 'red'
         },
         suggestions: {
             '.ms-Suggestions-title': {

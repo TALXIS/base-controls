@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { useComponent } from "../../../hooks";
-import { IEntity, ILookup } from "../interfaces";
+import { StringProps } from "../../../types";
+import { IEntity, ILookup, ILookupTranslations } from "../interfaces";
+import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
 
 export const useLookup = (props: ILookup): [
     ComponentFramework.LookupValue[],
     IEntity[] | null,
+    Required<StringProps<ILookupTranslations>>,
     {
         create: (entityName: string) => void,
-        select: (record: ComponentFramework.LookupValue) => void,
+        select: (record: ComponentFramework.LookupValue[] | undefined) => void,
         deselect: (record: ComponentFramework.LookupValue) => void,
     },
     (entityName: string | null) => void,
@@ -17,7 +20,7 @@ export const useLookup = (props: ILookup): [
     const targets = props.parameters.value.attributes.Targets;
     const boundValue = props.parameters.value.raw;
     const context = props.context;
-    const [labels, notifyOutputChanged] = useComponent('Lookup', props);
+    const [labels, notifyOutputChanged] = useComponent('Lookup', props, lookupTranslations);
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
     const [entities, setEntities] = useState<IEntity[] | null>(null);
     const selectedEntity = entities?.find(x => x.selected);
@@ -48,8 +51,10 @@ export const useLookup = (props: ILookup): [
         }))
     }
 
-    const selectRecord = (record: ComponentFramework.LookupValue) => {
-
+    const selectRecords = (records: ComponentFramework.LookupValue[] | undefined) => {
+        notifyOutputChanged({
+            value: records
+        })
     }
 
     const getViewId = async (entityName: string) => {
@@ -124,10 +129,10 @@ export const useLookup = (props: ILookup): [
     }
 
     return [
-        boundValue, entities, {
+        boundValue, entities, labels, {
             create: createRecord,
             deselect: deselectRecord,
-            select: selectRecord
+            select: selectRecords
         },
         selectEntity,
         getSearchResults

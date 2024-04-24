@@ -12,7 +12,6 @@ export interface IInputParameters extends IBaseParameters {
      */
     NotifyOutputChangedOnUnmount?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableCopyButton?: Omit<ITwoOptionsProperty, 'attributes'>;
-    EnableDeleteButton?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface IBaseParameters extends IParameters {
@@ -23,4 +22,5 @@ export interface IBaseParameters extends IParameters {
     */
     AutoFocus?:  Omit<ITwoOptionsProperty, 'attributes'>;
     ForceDisable?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableDeleteButton?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
