@@ -2,7 +2,8 @@
 import { ILookup } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useRef, useState } from 'react';
-import { TagPicker, useTheme } from "@fluentui/react";
+import { useTheme } from "@fluentui/react";
+import { IItemProps, TagPicker } from "@talxis/react-components/dist/components/TagPicker";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
 import { getLookupStyles } from "./styles";
@@ -15,13 +16,13 @@ export const Lookup = (props: ILookup) => {
     const ref = useRef<HTMLDivElement>(null);
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const theme = useTheme();
-    const styles = getLookupStyles(theme);
+    const styles = getLookupStyles(theme, context.mode.allocatedHeight);
     const [value, entities, labels, records, selectEntity, getSearchResults] = useLookup(props);
     const mouseOver = useMouseOver(ref);
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const firstRenderRef = useRef(true);
 
-    const itemLimit = props.parameters.MultipleEnabled?.raw === true ? 10 : 1
+    const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
 
     useEffect(() => {
         if(!entities) {
@@ -80,13 +81,13 @@ export const Lookup = (props: ILookup) => {
     const isComponentActive = () => {
         return mouseOver || isFocused;
     }
-    //@ts-ignore
+
     const onResolveSuggestions = async (filter: string, selectedItems?: IItemProps[] | undefined): Promise<IItemProps[]> => {
         const results = await getSearchResults(filter);
         return results.map(result => {
             return {
                 key: result.id,
-                name: result.name || labels.noName,
+                text: result.name || labels.noName,
                 secondaryText: entities?.find(x => x.entityName === result.entityType)?.metadata.DisplayName,
                 'data-entity': result.entityType
             }
@@ -95,6 +96,12 @@ export const Lookup = (props: ILookup) => {
     return (
         <div className={styles.root} ref={ref}>
             <TagPicker
+                styles={{
+                    itemsWrapper: {
+                        height: 42,
+                    },
+
+                }}
                 componentRef={componentRef}
                 resolveDelay={200}
                 pickerCalloutProps={{
@@ -117,7 +124,7 @@ export const Lookup = (props: ILookup) => {
                 
                 inputProps={{
                     autoFocus: props.parameters.AutoFocus?.raw === true,
-                    style: itemLimit === 1 && value.length === 1 ? {visibility: 'hidden', width: 0} : undefined,
+                    //style: itemLimit === 1 && value.length === 1 ? {visibility: 'hidden', width: 0} : undefined,
                     onFocus: () => setIsFocused(true),
                     onBlur: () => setIsFocused(false)
                 }}
@@ -125,15 +132,13 @@ export const Lookup = (props: ILookup) => {
                 onChange={(items) => {
                     records.select(items?.map(item => {
                         return {
-                            //@ts-ignore
                             entityType: item['data-entity'],
-                            id: item.key as string,
-                            name: item.name
+                            id: item.key,
+                            name: item.text
                         }
                     }))
                 }}
                 searchBtnProps={{
-                    showOnlyOnHover: true,
                     iconProps: {
                         iconName: 'Search'
                     }
@@ -141,7 +146,7 @@ export const Lookup = (props: ILookup) => {
                 selectedItems={value.map(lookup => {
                     return {
                         key: lookup.id,
-                        name: lookup.name || labels.noName,
+                        text: lookup.name || labels.noName,
                         'data-entity': lookup.entityType,
                         onClick: () => {
                             context.navigation.openForm({
@@ -165,6 +170,7 @@ export const Lookup = (props: ILookup) => {
                         }
                     }
                 })}
+                itemLimit={itemLimit}
                 onResolveSuggestions={onResolveSuggestions} />
         </div>
     )

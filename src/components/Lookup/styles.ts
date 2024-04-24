@@ -1,31 +1,7 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react"
+import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getLookupStyles = (theme: ITheme) => {
+export const getTargetSelectorStyles = (theme: ITheme) => {
     return mergeStyleSets({
-        root: {
-            '[data-entity]': {
-                '> span > div > span': {
-                    color: theme.semanticColors.link,
-                    cursor: 'pointer',
-                    fontWeight: 600
-                },
-                ':hover': {
-                    textDecoration: 'underline',
-                    cursor: 'pointer !important'
-                }
-            },
-            '.ms-BasePicker-text': {
-                flexWrap: 'initial'
-            }
-        },
-        suggestions: {
-            '.ms-Suggestions-title': {
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 15
-            }
-        },
         targetSelector: {
             display: 'flex',
             paddingLeft: 8,
@@ -49,6 +25,44 @@ export const getLookupStyles = (theme: ITheme) => {
             '&[data-selected="true"]': {
                 color: theme.semanticColors.link,
                 fontWeight: 600
+            }
+        },
+    })
+}
+
+export const getLookupStyles = (theme: ITheme, height: number) => {
+    return mergeStyleSets({
+        root: {
+            '[class*="TALXIS__tag-picker__search-btn"][class*="TALXIS__tag-picker__search-btn"]': {
+                top: 0,
+                bottom: 0,
+                margin: `auto 0`
+            },
+            '[data-entity]': {
+                '> span > div > span': {
+                    color: theme.semanticColors.link,
+                    cursor: 'pointer',
+                    fontWeight: 600
+                },
+                ':hover': {
+                    textDecoration: 'underline',
+                    cursor: 'pointer !important'
+                }
+            },
+            '.ms-BasePicker-text': {
+                height: height ?? undefined,
+                alignItems: 'baseline',
+                'input': {
+                    height: '100%'
+                }
+            }
+        },
+        suggestions: {
+            '.ms-Suggestions-title': {
+                padding: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 15
             }
         },
         createRecordBtn: {

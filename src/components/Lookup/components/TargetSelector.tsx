@@ -2,7 +2,7 @@ import React from 'react';
 import { IEntity, ILookupTranslations } from '../interfaces';
 import { Text } from '@fluentui/react/lib/Text';
 import { Link, useTheme } from '@fluentui/react';
-import { getLookupStyles } from '../styles';
+import { getLookupStyles, getTargetSelectorStyles } from '../styles';
 import { StringProps } from '../../../types';
 
 interface ITargetSelector {
@@ -15,7 +15,7 @@ interface ITargetSelector {
 export const TargetSelector = (props: ITargetSelector) => {
     const { labels, entities, onEntitySelected } = { ...props };
     const theme = useTheme();
-    const styles = getLookupStyles(theme);
+    const styles = getTargetSelectorStyles(theme);
     return (
         <div className={styles.targetSelector}>
             <Text variant='small'>{labels.resultsFrom} </Text>

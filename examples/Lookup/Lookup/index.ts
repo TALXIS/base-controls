@@ -33,6 +33,7 @@ export class Lookup implements ComponentFramework.StandardControl<IInputs, IOutp
      * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void {
+        context.mode.allocatedHeight = 42
         if (window.location.href.includes('localhost')) {
             const mockContext = new MockContext();
             context.utils = mockContext.utils;
