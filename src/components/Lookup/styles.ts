@@ -8,6 +8,7 @@ export const getTargetSelectorStyles = (theme: ITheme) => {
             paddingRight: 8,
             paddingBottom: 8,
             gap: 8,
+            paddingTop: 8,
             '>span': {
                 lineHeight: 15,
                 minWidth: 'fit-content',
@@ -30,15 +31,23 @@ export const getTargetSelectorStyles = (theme: ITheme) => {
     })
 }
 
+const getHeight = (height: number) => {
+    if(height === -1 || height === 0) {
+        return undefined;
+    }
+    return height;
+}
+
 export const getLookupStyles = (theme: ITheme, height: number) => {
     return mergeStyleSets({
         root: {
             '[class*="TALXIS__tag-picker__search-btn"][class*="TALXIS__tag-picker__search-btn"]': {
                 top: 0,
                 bottom: 0,
-                margin: `auto 0`
+                margin: `auto 0`,
+                right: 5
             },
-            '[data-entity]': {
+            '[data-navigation-enabled="true"]': {
                 '> span > div > span': {
                     color: theme.semanticColors.link,
                     cursor: 'pointer',
@@ -50,10 +59,13 @@ export const getLookupStyles = (theme: ITheme, height: number) => {
                 }
             },
             '.ms-BasePicker-text': {
-                height: height ?? undefined,
+                height: getHeight(height) ?? 36,
                 alignItems: 'baseline',
                 'input': {
                     height: '100%'
+                },
+                '.hover-only': {
+                    animationName: 'none'
                 }
             }
         },
@@ -62,7 +74,6 @@ export const getLookupStyles = (theme: ITheme, height: number) => {
                 padding: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 15
             }
         },
         createRecordBtn: {

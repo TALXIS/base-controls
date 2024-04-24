@@ -25,15 +25,15 @@ export const Lookup = (props: ILookup) => {
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
 
     useEffect(() => {
-        if(!entities) {
+        if (!entities) {
             return;
         }
-        if(firstRenderRef.current) {
+        if (firstRenderRef.current) {
             firstRenderRef.current = false;
             return;
         }
         //@ts-ignore
-        if(componentRef.current.state.suggestionsVisible) {
+        if (componentRef.current.state.suggestionsVisible) {
             //if the suggestions callout is open and the selected target changes, refresh the results
             forceSearch();
         }
@@ -41,9 +41,9 @@ export const Lookup = (props: ILookup) => {
 
     useEffect(() => {
         const onKeyPress = (ev: KeyboardEvent) => {
-            if(ev.key === 'Backspace') {
+            if (ev.key === 'Backspace') {
                 const picker = ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]');
-                if(document.activeElement === picker && value.length === 1) {
+                if (document.activeElement === picker && value.length === 1) {
                     records.select(undefined);
                     setTimeout(() => {
                         componentRef.current?.focus();
@@ -96,32 +96,28 @@ export const Lookup = (props: ILookup) => {
     return (
         <div className={styles.root} ref={ref}>
             <TagPicker
-                styles={{
-                    itemsWrapper: {
-                        height: 42,
-                    },
-
-                }}
                 componentRef={componentRef}
                 resolveDelay={200}
                 pickerCalloutProps={{
                     className: styles.suggestions,
                 }}
-                
+
                 pickerSuggestionsProps={{
                     loadingText: labels.searching,
                     noResultsFoundText: labels.noRecordsFound,
 
                     //@ts-ignore
                     suggestionsHeaderText: entities ? <>
-                        <RecordCreator labels={labels} entities={entities} onCreateRecord={records.create} />
+                        {props.parameters.IsInlineNewEnabled?.raw !== false &&
+                            <RecordCreator labels={labels} entities={entities} onCreateRecord={records.create} />
+                        }
                         <TargetSelector labels={labels} entities={entities} onEntitySelected={(entityName) => {
                             selectEntity(entityName);
 
                         }} />
                     </> : <></>,
                 }}
-                
+
                 inputProps={{
                     autoFocus: props.parameters.AutoFocus?.raw === true,
                     //style: itemLimit === 1 && value.length === 1 ? {visibility: 'hidden', width: 0} : undefined,
@@ -148,21 +144,26 @@ export const Lookup = (props: ILookup) => {
                         key: lookup.id,
                         text: lookup.name || labels.noName,
                         'data-entity': lookup.entityType,
+                        'data-navigation-enabled': props.parameters.EnableNavigation?.raw !== false,
                         onClick: () => {
+                            if (props.parameters.EnableNavigation?.raw === false) {
+                                return;
+                            }
                             context.navigation.openForm({
                                 entityName: lookup.entityType,
                                 entityId: lookup.id
                             })
                         },
-                        
+
                         deleteButtonProps: {
                             key: 'delete',
-                            showOnlyOnHover: isFocused ? false : true,
+                            showOnlyOnHover: true,
                             iconProps: {
                                 iconName: 'ChromeClose',
                                 styles: {
                                     root: {
                                         fontSize: 12,
+                                        width: 16,
                                         color: `${theme.palette.black} !important`
                                     }
                                 }
