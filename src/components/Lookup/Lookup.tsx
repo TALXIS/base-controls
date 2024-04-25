@@ -2,7 +2,7 @@
 import { ILookup } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useRef, useState } from 'react';
-import { useTheme } from "@fluentui/react";
+import { useTheme, useWindow } from "@fluentui/react";
 import { IItemProps, TagPicker } from "@talxis/react-components/dist/components/TagPicker";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
@@ -10,6 +10,7 @@ import { getLookupStyles } from "./styles";
 import { IBasePicker } from "@fluentui/react/lib/components/pickers/BasePicker.types";
 import { ITag } from "@fluentui/react/lib/components/pickers/TagPicker/TagPicker.types";
 import { RecordCreator } from "./components/RecordCreator";
+import { useFocusIn } from "../../hooks/useFocusIn";
 
 export const Lookup = (props: ILookup) => {
     const context = props.context;
@@ -19,7 +20,7 @@ export const Lookup = (props: ILookup) => {
     const styles = getLookupStyles(theme, context.mode.allocatedHeight);
     const [value, entities, labels, records, selectEntity, getSearchResults] = useLookup(props);
     const mouseOver = useMouseOver(ref);
-    const [isFocused, setIsFocused] = useState<boolean>(false);
+    const isFocused = useFocusIn(ref);
     const firstRenderRef = useRef(true);
 
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
@@ -43,7 +44,7 @@ export const Lookup = (props: ILookup) => {
         const onKeyPress = (ev: KeyboardEvent) => {
             if (ev.key === 'Backspace') {
                 const picker = ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]');
-                if (document.activeElement === picker && value.length === 1) {
+                if ((document.activeElement === picker) && value.length === 1) {
                     records.select(undefined);
                     setTimeout(() => {
                         componentRef.current?.focus();
@@ -56,7 +57,7 @@ export const Lookup = (props: ILookup) => {
         return () => {
             document.removeEventListener('keydown', onKeyPress);
         }
-    }, []);
+    }, [value]);
 
     const forceSearch = async () => {
         //@ts-ignore - We need to use internal methods to show and fill the suggestions on entity change
@@ -123,8 +124,6 @@ export const Lookup = (props: ILookup) => {
 
                     inputProps={{
                         autoFocus: props.parameters.AutoFocus?.raw === true,
-                        onFocus: () => setIsFocused(true),
-                        onBlur: () => setIsFocused(false)
                     }}
                     transparent={!isComponentActive()}
                     onChange={(items) => {
@@ -157,9 +156,8 @@ export const Lookup = (props: ILookup) => {
                                 })
                             },
 
-                            deleteButtonProps: {
+                            deleteButtonProps: isComponentActive() ? {
                                 key: 'delete',
-                                showOnlyOnHover: true,
                                 iconProps: {
                                     iconName: 'ChromeClose',
                                     styles: {
@@ -170,7 +168,7 @@ export const Lookup = (props: ILookup) => {
                                         }
                                     }
                                 }
-                            }
+                            } : undefined
                         }
                     })}
                     itemLimit={itemLimit}
