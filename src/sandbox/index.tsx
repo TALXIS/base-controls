@@ -8,6 +8,7 @@ import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
 import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
 import { TwoOptions } from "../components/TwoOptions";
+import { Duration } from "../components/Duration";
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
@@ -17,6 +18,7 @@ export const Sandbox: React.FC = () => {
   const [selectedValue, setSelectedValue] = useState<number | null>();
   const [selectedKeys, setSelectedKeys] = useState<number[] | undefined>();
   const [twoOptionValue, setTwoOptionValue] = useState<number | undefined>();
+  const [duration, setDuration] = useState<number | undefined>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [test, setTest] = useState("");
   const context = new Context();
@@ -106,9 +108,29 @@ export const Sandbox: React.FC = () => {
           } as ITwoOptionsProperty
         }}
         onNotifyOutputChanged={(outputs) => {
-          setTwoOptionValue(outputs.value);
+          setTwoOptionValue(Number(outputs.value));
         }}
       />
+      <Label>Component</Label>
+      <Duration
+        context={context}
+        parameters={{
+          EnableCopyButton: {
+            raw: true
+          },
+          EnableDeleteButton: {
+            raw: true
+          },
+          AutoFocus: {
+            raw: false
+          },
+          value: {
+            raw: 5,
+          }
+        }}
+        onNotifyOutputChanged={(outputs) => {
+          setDuration(outputs.value);
+        }} />
     </>
   );
 };
