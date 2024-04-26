@@ -28,15 +28,4 @@ export const useFetchXml = (context: ComponentFramework.Context<any>): [
         return xmlObject.toXml();
     }
     return [get, applyLookupQuery]
-
-    /*   .addFilter(
-          ns.filter(ns.FilterType.And)
-          .addCondition(
-              ns.condition(
-                  "lastname",
-                  ns.Operator.NotEqual,
-                  [ns.value("Cannon")]
-              )
-          )
-      ) */
 }
