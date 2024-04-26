@@ -11,7 +11,6 @@ export const Duration = (props: IDuration) => {
     const boundValue = parameters.value;
     const context = props.context;
     const humanizeDuration = require("humanize-duration");
-    const supportedLanguages = humanizeDuration.getSupportedLanguages();
     const formattingInfo = context.userSettings as  UserSettings;
     const comboBoxOptions: IComboBoxOption[] = durationOptions.map(option => ({
         key: option.Value.toString(),
@@ -23,12 +22,12 @@ export const Duration = (props: IDuration) => {
         if (value === null) return null;
         const durationInMilliseconds = value * 60000;
         const units = value <= 60 ? ['m'] : value >= 1440 ? ['d'] : ['h'];
-        const language = supportedLanguages.find((language: string) => language ==formattingInfo.locale) ?? "en";
         const options = {
             delimiter: formattingInfo?.numberFormattingInfo.numberGroupSeparator || ',',
             units: units,
             maxDecimalPoints: 2,
-            language: language
+            language: formattingInfo.locale,
+            fallbacks:["en"]
         };
         return humanizeDuration(durationInMilliseconds, options);
     };
