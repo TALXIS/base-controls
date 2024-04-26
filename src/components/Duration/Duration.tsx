@@ -4,12 +4,15 @@ import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
 import { IDuration, IDurationOutputs, IDurationParameters, IDurationTranslations } from './interfaces';
 import { IComboBoxOption } from '@fluentui/react';
 import { durationOptions } from '../../sandbox/shared/durationList';
+import { Context } from '../../sandbox/mock/Context';
+import { UserSettings } from '../../sandbox/mock/UserSettings';
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const context = props.context;
     const humanizeDuration = require("humanize-duration");
-    const formattingInfo = context.userSettings;
+    const supportedLanguages = humanizeDuration.getSupportedLanguages();
+    const formattingInfo = context.userSettings as  UserSettings;
     const comboBoxOptions: IComboBoxOption[] = durationOptions.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
@@ -20,10 +23,12 @@ export const Duration = (props: IDuration) => {
         if (value === null) return null;
         const durationInMilliseconds = value * 60000;
         const units = value <= 60 ? ['m'] : value >= 1440 ? ['d'] : ['h'];
+        const language = supportedLanguages.find((language: string) => language ==formattingInfo.locale) ?? "en";
         const options = {
             delimiter: formattingInfo?.numberFormattingInfo.numberGroupSeparator || ',',
             units: units,
-            maxDecimalPoints: 2
+            maxDecimalPoints: 2,
+            language: language
         };
         return humanizeDuration(durationInMilliseconds, options);
     };
