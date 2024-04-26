@@ -26,9 +26,6 @@ export const Lookup = (props: ILookup) => {
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
 
     useEffect(() => {
-        if (!entities) {
-            return;
-        }
         if (firstRenderRef.current) {
             firstRenderRef.current = false;
             return;
@@ -59,6 +56,13 @@ export const Lookup = (props: ILookup) => {
         }
     }, [value]);
 
+    useEffect(() => {
+        if(props.parameters.AutoFocus?.raw === true) {
+            //@ts-ignore - typings
+            ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]').focus()
+        }
+    }, []);
+
     const forceSearch = async () => {
         //@ts-ignore - We need to use internal methods to show and fill the suggestions on entity change
         componentRef.current.suggestionStore.updateSuggestions([]);
@@ -85,31 +89,34 @@ export const Lookup = (props: ILookup) => {
 
     const onResolveSuggestions = async (filter: string, selectedItems?: IItemProps[] | undefined): Promise<IItemProps[]> => {
         const results = await getSearchResults(filter);
-        return results.map(result => {
-            return {
+        const suggestions: IItemProps[] = [];
+        for(const result of results) {
+            if(selectedItems?.find(x => x.key === result.id)) {
+                continue;
+            }
+            const metadata = await entities.find(x => x.entityName === result.entityType)?.metadata;
+            suggestions.push({
                 key: result.id,
                 text: result.name || labels.noName,
-                secondaryText: entities?.find(x => x.entityName === result.entityType)?.metadata.DisplayName,
+                secondaryText: metadata?.DisplayName,
                 'data-entity': result.entityType
-            }
-        })
+            })
+        }
+        return suggestions;
     }
     return (
         <div className={styles.root} ref={ref}>
-            {entities.length !== 0 &&
                 <TagPicker
                     componentRef={componentRef}
                     resolveDelay={200}
                     pickerCalloutProps={{
                         className: styles.suggestions,
                     }}
-
                     pickerSuggestionsProps={{
                         loadingText: labels.searching,
                         noResultsFoundText: labels.noRecordsFound,
-
                         //@ts-ignore
-                        suggestionsHeaderText: entities ? <>
+                        suggestionsHeaderText: <>
                             {props.parameters.IsInlineNewEnabled?.raw !== false &&
                                 <RecordCreator labels={labels} entities={entities} onCreateRecord={records.create} />
                             }
@@ -119,13 +126,12 @@ export const Lookup = (props: ILookup) => {
 
                                 }} />
                             }
-                        </> : <></>,
+                        </>
                     }}
-
                     inputProps={{
                         autoFocus: props.parameters.AutoFocus?.raw === true,
                     }}
-                    transparent={!isComponentActive()}
+                    transparent={!isComponentActive() && itemLimit === 1}
                     onChange={(items) => {
                         records.select(items?.map(item => {
                             return {
@@ -156,7 +162,7 @@ export const Lookup = (props: ILookup) => {
                                 })
                             },
 
-                            deleteButtonProps: isComponentActive() ? {
+                            deleteButtonProps: isComponentActive() || itemLimit > 1 ? {
                                 key: 'delete',
                                 iconProps: {
                                     iconName: 'ChromeClose',
@@ -173,7 +179,6 @@ export const Lookup = (props: ILookup) => {
                     })}
                     itemLimit={itemLimit}
                     onResolveSuggestions={onResolveSuggestions} />
-            }
         </div>
     )
 };

@@ -32,12 +32,14 @@ export interface ILookupTranslations extends ITranslations {
     noName: {[LCID: number]: string};
 }
 
+export interface IMetadata extends ComponentFramework.PropertyHelper.EntityMetadata {
+    DisplayName: string;
+    PrimaryNameAttribute: string;
+    PrimaryIdAttribute: string;
+}
+
 export interface IEntity {
     entityName: string;
     selected: boolean;
-    metadata: ComponentFramework.PropertyHelper.EntityMetadata & {
-        DisplayName: string;
-        PrimaryNameAttribute: string;
-        PrimaryIdAttribute: string;
-    }
+    metadata: Promise<IMetadata>
 }

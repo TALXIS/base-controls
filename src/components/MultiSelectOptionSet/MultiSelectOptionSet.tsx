@@ -3,6 +3,7 @@ import { IMultiSelectOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
 import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
 import { IComboBoxOption } from '@fluentui/react';
+import React from 'react';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const parameters = props.parameters;
@@ -42,6 +43,9 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         allowFreeInput={true}
         multiSelect
         autoComplete="on"
+        autofill={parameters.AutoFocus?.raw === true ? {
+            autoFocus: true
+        }: undefined}
         readOnly={context.mode.isControlDisabled}
         dropdownWidth={context.mode.allocatedWidth || undefined}
         selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : [-1]}

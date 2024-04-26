@@ -1,10 +1,11 @@
-//@ts-nocheck
-import { ContextualMenu, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
+
+//@ts-nocheck - typescript
+import { ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
 import { CommandBarButton } from "@fluentui/react/lib/components/Button/CommandBarButton/CommandBarButton";
-import React, { useRef, useState } from 'react';
 import { IEntity, ILookupTranslations } from "../interfaces";
 import { getLookupStyles } from "../styles";
 import { StringProps } from '../../../types';
+import { useLoadedEntities } from "../hooks/useLoadedEntities";
 
 interface IRecordCreator {
     labels: Required<StringProps<ILookupTranslations>>,
@@ -13,10 +14,10 @@ interface IRecordCreator {
 }
 
 export const RecordCreator = (props: IRecordCreator) => {
-    const buttonRef = useRef<HTMLDivElement>(null);
     const {labels, entities, onCreateRecord} = {...props};
+    const [loadedEntities] = useLoadedEntities(entities);
     const theme = useTheme();
-    const styles = getLookupStyles(theme)
+    const styles = getLookupStyles(theme, 0)
     const selectedEntity = entities.find(x => x.selected);
 
     return (
@@ -25,26 +26,26 @@ export const RecordCreator = (props: IRecordCreator) => {
             iconProps={{
                 iconName: 'Add'
             }}
-            onClick={selectedEntity ? () => onCreateRecord(selectedEntity.entityName) : () => setShowSelectEntityCallout(true)}
+            onClick={selectedEntity ? () => onCreateRecord(selectedEntity.entityName) : undefined}
             menuProps={!selectedEntity ? {
                 calloutProps: {
                     coverTarget: false  
                 },
                 isBeakVisible: true,
-                items: (() => {
+                items: loadedEntities ? (() => {
                     const items: IContextualMenuItem[] = [{
-                     key: 'header',
-                     itemType: ContextualMenuItemType.Header,
-                     text: 'Vyberte tabulku'
-                    }]
-                    return [...items, ...entities.map(entity => {
-                        return {
-                            key: entity.entityName,
-                            text: entity.metadata.DisplayName,
-                            onClick: () => onCreateRecord(entity.entityName)
-                        }
-                    })];
-                })()
+                        key: 'header',
+                        itemType: ContextualMenuItemType.Header,
+                        text: 'Vyberte tabulku'
+                       }]
+                       return [...items, ...loadedEntities.map(entity => {
+                           return {
+                               key: entity.entityName,
+                               text: entity.metadata.DisplayName,
+                               onClick: () => onCreateRecord(entity.entityName)
+                           }
+                       })];
+                })() : []
             }: undefined} 
             text={labels.newRecord} />
     )

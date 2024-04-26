@@ -4,7 +4,7 @@ import { Sdk } from "../lib";
 
 export const useFetchXml = (context: ComponentFramework.Context<any>): [
     (viewId: string) => Promise<string>,
-    (entity: IEntity, fetchXml: string, query: string) => string
+    (entity: IEntity, fetchXml: string, query: string) => Promise<string>
 ] => {
     const cachedFetchXml = useRef<{
         [viewId: string]: Promise<ComponentFramework.WebApi.Entity>
@@ -16,13 +16,14 @@ export const useFetchXml = (context: ComponentFramework.Context<any>): [
         }
         return (await cachedFetchXml.current[viewId]).fetchxml;
     }
-    const applyLookupQuery = (entity: IEntity, fetchXml: string, query: string): string => {
+    const applyLookupQuery = async (entity: IEntity, fetchXml: string, query: string): Promise<string> => {
         if (!query) {
             return fetchXml
         }
+        const metadata = await entity.metadata;
         const xmlObject = Sdk.FetchXml.fetch.fromXml(fetchXml);
         xmlObject.entity.addFilter(new Sdk.FetchXml.filter(Sdk.FetchXml.FilterType.Or, [
-            new Sdk.FetchXml.condition(entity.metadata.PrimaryNameAttribute, Sdk.FetchXml.Operator.Like, [new Sdk.FetchXml.value(`%${query}%`)])
+            new Sdk.FetchXml.condition(metadata.PrimaryNameAttribute, Sdk.FetchXml.Operator.Like, [new Sdk.FetchXml.value(`%${query}%`)])
         ]))
         return xmlObject.toXml();
     }

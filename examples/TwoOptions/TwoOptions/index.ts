@@ -36,7 +36,7 @@ export class TwoOptions implements ComponentFramework.StandardControl<IInputs, I
     {
         console.log(context.parameters.value);
         ReactDOM.render(React.createElement(TwoOptionsComponent as any, {
-            context: context,
+            context: context as any,
             parameters: {
                 value: context.parameters.value
             },

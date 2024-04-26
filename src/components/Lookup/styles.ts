@@ -51,7 +51,6 @@ export const getLookupStyles = (theme: ITheme, height: number) => {
                 '> span > div > span': {
                     color: theme.semanticColors.link,
                     cursor: 'pointer',
-                    fontWeight: 600
                 },
                 ':hover': {
                     textDecoration: 'underline',
@@ -59,13 +58,18 @@ export const getLookupStyles = (theme: ITheme, height: number) => {
                 }
             },
             '.ms-BasePicker-text': {
-                height: getHeight(height) ?? 36,
+                minHeight: getHeight(height) ?? 36,
+                height: 'min-content',
+                paddingRight: 36,
                 alignItems: 'baseline',
                 'input': {
-                    height: '100%'
+                    alignSelf: 'center'
                 },
                 '.hover-only': {
                     animationName: 'none'
+                },
+                '::after': {
+                    inset: '0px !important'
                 }
             }
         },

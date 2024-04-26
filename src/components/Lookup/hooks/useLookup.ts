@@ -22,24 +22,17 @@ export const useLookup = (props: ILookup): [
     const context = props.context;
     const [labels, notifyOutputChanged] = useComponent('Lookup', props, lookupTranslations);
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
-    const [entities, setEntities] = useState<IEntity[]>([]);
-    const selectedEntity = entities.find(x => x.selected);
-
-    useEffect(() => {
-        init();
-    }, []);
-
-    const init = async (): Promise<void> => {
-        const _entities: IEntity[] = [];
-        for (const target of targets) {
-            _entities.push({
+    const [entities, setEntities] = useState<IEntity[]>(() => {
+        return targets.map(target => {
+            return {
                 entityName: target,
                 selected: false,
-                metadata: await props.context.utils.getEntityMetadata(target, []) as any,
-            })
-        }
-        setEntities(_entities);
-    };
+                metadata: props.context.utils.getEntityMetadata(target, []) as any,
+            }
+        })
+        return []
+    });
+    const selectedEntity = entities.find(x => x.selected);
 
     const selectEntity = (entityName: string | null) => {
         setEntities([...entities as IEntity[]].map(entity => {
@@ -84,17 +77,17 @@ export const useLookup = (props: ILookup): [
         }
         await Promise.all(fetchXmlPromiseMap.values());
         for (const [entityName, fetchXml] of fetchXmlPromiseMap) {
-            fetchXmlPromiseMap.set(entityName, applyLookupQuery(entities.find(x => x.entityName === entityName)!, await fetchXml, query))
+            fetchXmlPromiseMap.set(entityName, await applyLookupQuery(entities.find(x => x.entityName === entityName)!, await fetchXml, query))
         }
         const responsePromiseMap = new Map<string, Promise<ComponentFramework.WebApi.RetrieveMultipleResponse>>()
-        for(const [entityName, fetchXml] of fetchXmlPromiseMap) {
+        for (const [entityName, fetchXml] of fetchXmlPromiseMap) {
             responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?fetchXml=${await fetchXml}`))
         }
         await Promise.all(responsePromiseMap.values());
         const result: ComponentFramework.LookupValue[] = [];
-        for(const [entityName, response] of responsePromiseMap) {
-            for(const entity of (await response).entities) {
-                const entityMetadata = entities.find(x => x.entityName === entityName)!.metadata;
+        for (const [entityName, response] of responsePromiseMap) {
+            for (const entity of (await response).entities) {
+                const entityMetadata = await entities.find(x => x.entityName === entityName)!.metadata;
                 result.push({
                     entityType: entityName,
                     id: entity[entityMetadata.PrimaryIdAttribute],

@@ -36,7 +36,7 @@ export class OptionSet implements ComponentFramework.StandardControl<IInputs, IO
     {
         console.log(context.parameters.value);
         ReactDOM.render(React.createElement(OptionSetComponent as any, {
-            context: context,
+            context: context as any,
             parameters: {
                 value: context.parameters.value
             },

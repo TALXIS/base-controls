@@ -66,7 +66,7 @@ export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramew
     /**
      * Gets all views for entity (including non-lookup ones).
      */
-    getAllViews: (entityName: string) => {
+    getAllViews: (entityName: string) => Promise<{
         isAvailableInOffline: boolean;
         isDefault: boolean;
         isPinned: boolean;
@@ -74,5 +74,5 @@ export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramew
         relatedEntityName: string;
         viewId: string;
         viewName: string;
-    }[]
+    }[]>
 }

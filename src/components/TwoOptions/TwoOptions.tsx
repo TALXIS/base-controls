@@ -22,6 +22,9 @@ export const TwoOptions = (props: ITwoOptions) => {
             height: context.mode.allocatedHeight || undefined,
             width: context.mode.allocatedWidth || undefined,
         },
+        container: {
+            alignItems: 'center'
+        }
     }}
     checked={boundValue.raw}
     inlineLabel

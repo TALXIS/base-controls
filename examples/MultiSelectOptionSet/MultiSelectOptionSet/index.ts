@@ -50,11 +50,14 @@ export class MultiSelectOptionSet implements ComponentFramework.StandardControl<
                 Label: 'Option 3',
                 Value: 3
             }
-        ]
+        ];
         ReactDOM.render(React.createElement(MultiSelectOptionSetComponent as any, {
-            context: context,
+            context: context as any,
             parameters: {
-                value: context.parameters.value
+                value: context.parameters.value,
+                AutoFocus: {
+                    raw: true
+                }
             },
             onNotifyOutputChanged: (outputs) => {
                 this._outputs = {
