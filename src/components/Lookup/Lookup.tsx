@@ -1,8 +1,8 @@
 
 import { ILookup } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
-import React, { useEffect, useRef, useState } from 'react';
-import { useTheme, useWindow } from "@fluentui/react";
+import React, { useEffect, useRef } from 'react';
+import { useTheme } from "@fluentui/react";
 import { IItemProps, TagPicker } from "@talxis/react-components/dist/components/TagPicker";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
@@ -16,14 +16,14 @@ export const Lookup = (props: ILookup) => {
     const context = props.context;
     const ref = useRef<HTMLDivElement>(null);
     const componentRef = useRef<IBasePicker<ITag>>(null);
+    const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
     const theme = useTheme();
-    const styles = getLookupStyles(theme, context.mode.allocatedHeight);
+    const styles = getLookupStyles(theme, context.mode.allocatedHeight, itemLimit === 1);
     const [value, entities, labels, records, selectEntity, getSearchResults] = useLookup(props);
     const mouseOver = useMouseOver(ref);
     const isFocused = useFocusIn(ref);
     const firstRenderRef = useRef(true);
 
-    const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
 
     useEffect(() => {
         if (firstRenderRef.current) {
@@ -109,6 +109,7 @@ export const Lookup = (props: ILookup) => {
                 <TagPicker
                     componentRef={componentRef}
                     resolveDelay={200}
+                    stackItems={itemLimit === 1}
                     pickerCalloutProps={{
                         className: styles.suggestions,
                     }}

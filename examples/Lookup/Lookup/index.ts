@@ -49,21 +49,20 @@ export class Lookup implements ComponentFramework.StandardControl<IInputs, IOutp
                         entityType: 'talxis_team',
                         id: '0000',
                         name: 'Team 1'
-                    },
-                    {
-                        entityType: 'talxis_team',
-                        id: '0001',
-                        name: 'Team 2'
                     }
                 ];
             }
         }
+        context.mode.allocatedHeight = 42
         ReactDOM.render(React.createElement(LookupComponent as any, {
             context: context,
             parameters: {
                 value: context.parameters.value,
                 AutoFocus: {
                     raw: true
+                },
+                MultipleEnabled: {
+                    raw: false
                 }
             },
             onNotifyOutputChanged: (outputs) => {
