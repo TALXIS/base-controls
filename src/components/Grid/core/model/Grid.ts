@@ -5,7 +5,7 @@ import { IEntityRecord, IGrid, IGridTranslations } from "../../interfaces";
 import { Sorting } from "../../sorting/Sorting";
 import { DataType } from "../enums/DataType";
 import { IGridColumn } from "../interfaces/IGridColumn";
-import { RecordUpdateService } from "../services/model/RecordUpdateService";
+import { RecordUpdateService } from "../services/RecordUpdateService/model/RecordUpdateService";
 import { Metadata } from "./Metadata";
 
 export class Grid {

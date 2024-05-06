@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { DataType } from '../../../enums/DataType';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
+import { useRecordUpdateServiceController } from '../../../services/RecordUpdateService/controllers/useRecordUpdateServiceController';
 import { Component } from '../../Component/Component';
 
 interface ICell {
@@ -9,8 +10,9 @@ interface ICell {
 }
 
 export const EditableCell = (props: ICell) => {
+    const record = props.data;
     const column = props.baseColumn;
-    const [isDirty, updatedRecords, updateColumnRecord, save] = useRecordUpdateServiceController();
+    const recordUpdateService = useRecordUpdateServiceController(record.getRecordId());
     const mountedRef = React.useRef(true);
     const valueRef = React.useRef(props.data.getValue(column.key));
     const [value, setValue] = React.useState(valueRef.current);
@@ -22,7 +24,7 @@ export const EditableCell = (props: ICell) => {
             if (!hasBeenUpdatedRef.current) {
                 return;
             }
-            updateColumnRecord(props.data, column, getRecordValue(valueRef.current))
+            recordUpdateService.currentRecord.setValue(column, getRecordValue(valueRef.current))
         }
     }, []);
 
@@ -87,7 +89,7 @@ export const EditableCell = (props: ICell) => {
         valueRef.current = value;
         hasBeenUpdatedRef.current = true;
         if(!mountedRef.current) {
-            updateColumnRecord(props.data, column, getRecordValue(valueRef.current));
+            recordUpdateService.currentRecord.setValue(column, getRecordValue(valueRef.current))
             return;
         }
         setValue(valueRef.current);

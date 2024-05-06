@@ -3,29 +3,29 @@ import { useTheme } from "@fluentui/react";
 import { GridApi } from "ag-grid-community/dist/lib/gridApi";
 import { useContext, useEffect, useRef } from "react";
 import { GridContext } from "../../../Grid";
-import { useAgGrid } from "../../hooks/useAgGrid";
+import { useSelectionController } from "../../../selection/controllers/useSelectionController";
+import { useGridController } from "../../controllers/useGridController";
+import { useAgGrid } from "./hooks/useAgGrid";
+import { useGridInstance } from "../../hooks/useGridInstance";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { getGridStyles } from "./styles";
 
-interface IAgGrid {
-    gridColumns: IGridColumn[]
-}
-
-export const AgGrid = (props: IAgGrid) => {
-    const {gridColumns} = {...props};
+export const AgGrid = () => {
+    const grid = useGridInstance();
+    const [isEditable, columns, records] = useGridController();
     //@ts-ignore
-    const start = (props.dataset.paging.pageNumber - 1) * props.dataset.paging.pageSize + (props.dataset.paging.totalResultCount === 0 ? 0 : 1);
+    //const start = (props.dataset.paging.pageNumber - 1) * props.dataset.paging.pageSize + (props.dataset.paging.totalResultCount === 0 ? 0 : 1);
     //@ts-ignore
-    let end = props.dataset.paging.pageNumber * props.dataset.paging.pageSize;
+    //let end = props.dataset.paging.pageNumber * props.dataset.paging.pageSize;
     const gridContext = useContext(GridContext);
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>(null);
-    const [toggleSelection] = useRowSelection();
-    const [_, validate] = useRecordValidationServiceController();
+    //const selection = useSelectionController();
+    //const [_, validate] = useRecordValidationServiceController();
     const theme = useTheme();
     const styles = getGridStyles(theme);
-    const { agColumns, selectRows } = useAgGrid(gridColumns);
+    const { agColumns, selectRows } = useAgGrid(columns);
 
-    const validateCurrentRecords = () => {
+/*     const validateCurrentRecords = () => {
         let index = 0;
         for (const record of records) {
             for (const column of columns) {
@@ -39,46 +39,46 @@ export const AgGrid = (props: IAgGrid) => {
             return;
         }
         validateCurrentRecords();
-    }, [records, columns]);
+    }, [records, columns]); */
 
 
     //TODO: make deep equal
-    useEffect(() => {
+/*     useEffect(() => {
         selectRows(gridApiRef);
-    }, [props.dataset.getSelectedRecordIds()])
+    }, [props.dataset.getSelectedRecordIds()]) */
 
     return (
         <div className={`${styles.root} ag-theme-balham`}>
-            <Save />
+{/*             <Save /> */}
             <AgGridReact
                 animateRows
                 singleClickEdit
-                rowSelection={props.selectableRows}
+                //rowSelection={grid.props.parameters.SelectableRows.raw}
                 suppressRowClickSelection
                 onRowDoubleClicked={(e) => {
-                    props.onOpenDatasetItem(e.data.getNamedReference())
+                    //props.onOpenDatasetItem(e.data.getNamedReference())
                 }}
                 onCellKeyDown={(e) => {
-                    e.event.stopPropagation()
+                    //e.event.stopPropagation()
                 }}
                 onRowClicked={(e) => {
                     if (!isEditable) {
-                        toggleSelection(e.data);
+                        //toggleSelection(e.data);
                     }
                 }}
                 getRowId={(params) => params.data.getRecordId()}
                 onGridReady={(e) => {
-                    gridApiRef.current = e.api as any;
-                    gridContext.recordValidationService.setGridApi(e.api as any);
-                    validateCurrentRecords();
-                    selectRows(gridApiRef);
+                    //gridApiRef.current = e.api as any;
+                    //gridContext.recordValidationService.setGridApi(e.api as any);
+                    //validateCurrentRecords();
+                    //selectRows(gridApiRef);
                 }}
                 rowHeight={42}
                 columnDefs={agColumns as any}
                 rowData={records}
             >
             </AgGridReact>
-            {!props.hidePagination &&
+{/*             {!props.hidePagination &&
                 <CommandBar
                     className="TALXIS__view__footer"
                     items={[{
@@ -127,7 +127,7 @@ export const AgGrid = (props: IAgGrid) => {
                         }
                     }]}
                 />
-            }
+            } */}
         </div>
     );
 }

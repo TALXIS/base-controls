@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ContextualMenu, ContextualMenuItemType, IContextualMenuItem, useTheme } from '@fluentui/react';
+import { ContextualMenu, ContextualMenuItemType, IContextualMenuItem, IContextualMenuProps, useTheme } from '@fluentui/react';
 import { IGridColumn } from '../../../core/interfaces/IGridColumn';
 import { DataType } from '../../../core/enums/DataType';
 import { getColumnHeaderContextualMenuStyles } from './styles';
@@ -7,7 +7,7 @@ import { useGridInstance } from '../../../core/hooks/useGridInstance';
 import { useColumnSortingController } from '../../controllers/useColumnSortingController';
 import { useColumnFilterConditionController } from '../../../filtering/controller/useColumnFilterConditionController';
 
-interface ISortingContextualMenu {
+export interface ISortingContextualMenu extends Omit<IContextualMenuProps, 'items'> {
     column: IGridColumn;
     onDismiss: (e?: Event | React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>, dismissAll?: boolean, showFilterCallout?: boolean) => void;
 }

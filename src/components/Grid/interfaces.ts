@@ -7,6 +7,7 @@ export interface IGrid extends IComponent<IGridParameters, IGridOutputs, IGridTr
 
 export interface IEntityRecord extends ComponentFramework.PropertyHelper.DataSetApi.EntityRecord {
     setValue: (columnName: string, value: any) => void;
+    save: () => Promise<boolean>;
 }
 
 export interface IGridParameters extends IParameters {

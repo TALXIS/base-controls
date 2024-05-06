@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Callout, IconButton, PrimaryButton, Button } from '@fluentui/react';
+import { Callout, IconButton, PrimaryButton, Button, ICalloutProps } from '@fluentui/react';
 import { Text } from '@fluentui/react/lib/Text';
 import { filterCalloutStyles } from './styles';
 import { useColumnFilterConditionController } from '../../controller/useColumnFilterConditionController';
@@ -8,7 +8,7 @@ import { FilteringUtils } from '../../utils/FilteringUtilts';
 import { ConditionOperator } from './components/ConditionOperator/ConditionOperator';
 import { ConditionValue } from './components/ConditionValue/ConditionValue';
 
-interface IFilterCallout {
+export interface IFilterCallout extends ICalloutProps {
     column: IGridColumn;
     onDismiss: () => void;
 }

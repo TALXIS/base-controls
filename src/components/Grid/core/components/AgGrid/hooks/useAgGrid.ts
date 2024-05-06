@@ -1,14 +1,14 @@
 import { ColDef, GridApi, IRowNode } from "ag-grid-community"
 import { useEffect, useState } from "react";
-import { EditableCell } from "../components/Cell/EditableCell/EditableCell";
-import { ReadOnlyCell } from "../components/Cell/ReadOnlyCell/ReadOnlyCell";
-import { ColumnHeader } from "../components/ColumnHeader/ColumnHeader";
+import { EditableCell } from "../../Cell/EditableCell/EditableCell";
+import { ReadOnlyCell } from "../../Cell/ReadOnlyCell/ReadOnlyCell";
 import { ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { GlobalCheckBox } from "../components/ColumnHeader/GlobalCheckbox/GlobalCheckbox";
-import { useGridDependencies } from "./useGridDependencies";
 import React from 'react';
-import { IGridColumn } from "../interfaces/IGridColumn";
+import { IGridColumn } from "../../../interfaces/IGridColumn";
+import { useGridInstance } from "../../../hooks/useGridInstance";
+import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
+import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -16,8 +16,8 @@ export const useAgGrid = (columns: IGridColumn[]): {
     agColumns: ColDef[],
     selectRows: (gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>) => void;
 } => {
+    const grid = useGridInstance();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
-    const [pcfContext, dataset] = useGridDependencies();
 
     const getAgColumn = (column: IGridColumn): ColDef => {
         const agColumn = {
@@ -70,7 +70,8 @@ export const useAgGrid = (columns: IGridColumn[]): {
         const nodesToSelect: IRowNode[] = [];
         gridApiRef.current.deselectAll();
         gridApiRef.current.forEachNode((node) => {
-            if (dataset.getSelectedRecordIds().includes(node.data.getRecordId())) {
+            //@ts-ignore
+            if (grid.dataset.getSelectedRecordIds().includes(node.data.getRecordId())) {
                 nodesToSelect.push(node);
             }
         });
@@ -79,7 +80,7 @@ export const useAgGrid = (columns: IGridColumn[]): {
             newValue: true
         });
         //TODO: target the cells directly
-        pcfContext.factory.requestRender();
+        grid.pcfContext.factory.requestRender();
     }
     useEffect(() => {
         if(columns.length === 0) {
