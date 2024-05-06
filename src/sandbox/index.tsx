@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
 import { OptionSet } from "../components/OptionSet";
-import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty, ITwoOptionsProperty } from "../interfaces";
+import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty, ITwoOptionsProperty, IWholeNumberProperty } from "../interfaces";
 import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
 import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
@@ -125,8 +125,8 @@ export const Sandbox: React.FC = () => {
             raw: false
           },
           value: {
-            raw: 5,
-          }
+            raw: duration ?? null,
+          } as IWholeNumberProperty
         }}
         onNotifyOutputChanged={(outputs) => {
           setDuration(outputs.value);
