@@ -7,6 +7,7 @@ import { useDateTime } from "./useDateTime";
 import dayjs from 'dayjs';
 import { Calendar } from "./Calendar";
 import { DatePicker } from "@talxis/react-components/dist/components/DatePicker";
+import React from 'react';
 
 export const DateTime = (componentProps: IDateTime) => {
     const ref = useRef<HTMLDivElement>(null);
@@ -62,7 +63,7 @@ export const DateTime = (componentProps: IDateTime) => {
                     placeholder: '---',
                     onNotifyValidationResult: () => null,
                     noValidate: true,
-                    autoFocus: parameters.AutoFocus?.raw,
+                    //autoFocus: parameters.AutoFocus?.raw,
                     borderless: parameters.EnableBorder?.raw === false,
                     errorMessage: parameters.value.errorMessage,
                     styles:{

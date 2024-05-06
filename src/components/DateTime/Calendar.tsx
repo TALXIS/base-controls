@@ -8,6 +8,7 @@ import { getDateTimeStyles } from "./styles";
 import { TimePicker } from "@talxis/react-components/dist/components/TimePicker";
 import { Text } from '@fluentui/react/lib/Text';
 import dayjs from "dayjs";
+import React from 'react';
 
 interface IInternalTimePickerProps extends ITimePickerProps {
     visible: boolean;
