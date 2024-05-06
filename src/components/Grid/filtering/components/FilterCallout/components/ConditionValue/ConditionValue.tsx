@@ -3,6 +3,7 @@ import { Component } from "../../../../../core/components/Component/Component";
 import { IGridColumn } from "../../../../../core/interfaces/IGridColumn";
 import { useColumnFilterConditionController } from "../../../../controller/useColumnFilterConditionController";
 import { ConditionValue as ConditionValueModel } from "./model/ConditionValue";
+import React from 'react';
 
 interface IConditionValue {
     column: IGridColumn;

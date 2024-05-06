@@ -2,6 +2,7 @@ import { IDatasetProperty } from "../../../../interfaces";
 import { StringProps } from "../../../../types";
 import { Filtering } from "../../filtering/model/Filtering";
 import { IEntityRecord, IGrid, IGridTranslations } from "../../interfaces";
+import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
 import { DataType } from "../enums/DataType";
 import { IGridColumn } from "../interfaces/IGridColumn";
@@ -19,7 +20,8 @@ export class Grid {
         recordUpdateService: new RecordUpdateService(this),
         filtering: new Filtering(this),
         sorting: new Sorting(this),
-        metadata: new Metadata(this)
+        metadata: new Metadata(this),
+        selection: new Selection(this)
     }
     constructor(props: IGrid, labels: Required<StringProps<IGridTranslations>>) {
         this._props = props;
@@ -31,7 +33,6 @@ export class Grid {
     public get labels() {
         return this._labels;
     }
-
     public get dataset() {
         return this._dataset;
     }
@@ -59,19 +60,22 @@ export class Grid {
     public get filtering() {
         return this._dependencies.filtering;
     }
+    public get selection() {
+        return this._dependencies.selection;
+    }
 
     public updateDependencies(props: IGrid): void {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
-        
-        for(const [key, dependency] of Object.entries(this._dependencies)) {
+
+        for (const [key, dependency] of Object.entries(this._dependencies)) {
             dependency.onDependenciesUpdated()
         }
     }
     public async refreshColumns(): Promise<IGridColumn[]> {
         const gridColumns: IGridColumn[] = [];
-        for(const column of this._dataset.columns) {
+        for (const column of this._dataset.columns) {
             const sorted = this._dataset.sorting?.find(sort => sort.name === column.name);
             const entityAliasName = column.alias?.includes('.') ? column.alias.split('.')[0] : null;
             const attributeName = entityAliasName ? column.name.split('.')[1] : column.name;
@@ -95,14 +99,18 @@ export class Grid {
             gridColumn.isEditable = await this._isColumnEditable(gridColumn);
             gridColumns.push(gridColumn);
         }
-        if(this.props.parameters.SelectableRows.raw === 'multiple') {
-            gridColumns.unshift({
-                key: '__checkbox',
-                attributeName: '__checkbox',
-                width: 45,
-            })
+        switch (this._props.parameters.SelectableRows?.raw) {
+            case 'single':
+            case 'multiple':
+            case 'true': {
+                gridColumns.unshift({
+                    key: '__checkbox',
+                    attributeName: '__checkbox',
+                    width: 45,
+                })
+            }
         }
-        if(false) {
+        if (false) {
             gridColumns.push({
                 key: '__ribbon',
                 attributeName: '__ribbon',
@@ -116,16 +124,20 @@ export class Grid {
         return gridColumns;
     }
     private async _isColumnEditable(column: IGridColumn): Promise<boolean> {
-         //we are not supporting editing for linked entities
-        if(column.entityAliasName) {
+        //only allow editing if specifically allowed
+        if (!this._props.parameters.EnableEditing?.raw) {
+            return false;
+        }
+        //we are not supporting editing for linked entities
+        if (column.entityAliasName) {
             return false;
         }
         //this column is only present in change editor dialog
-        if(column.key === '__label') {
+        if (column.key === '__label') {
             return false;
         }
         //these field types do not support editing
-        switch(column.dataType) {
+        switch (column.dataType) {
             case DataType.FILE:
             case DataType.IMAGE: {
                 return false;
@@ -137,8 +149,8 @@ export class Grid {
     }
     public refreshRecords(): IEntityRecord[] {
         const records = [];
-            for (const [_, record] of Object.entries(this._dataset.records)) {
-                records.push(record);
+        for (const [_, record] of Object.entries(this._dataset.records)) {
+            records.push(record);
         }
         this._records = records;
         return records

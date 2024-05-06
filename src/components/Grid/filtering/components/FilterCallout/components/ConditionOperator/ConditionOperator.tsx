@@ -6,6 +6,7 @@ import { useGridInstance } from '../../../../../core/hooks/useGridInstance';
 import { useColumnFilterConditionController } from '../../../../controller/useColumnFilterConditionController';
 import { IGridColumn } from '../../../../../core/interfaces/IGridColumn';
 import { DatasetConditionOperator } from '../../../../../core/enums/ConditionOperator';
+import React from 'react';
 
 interface IConditionOperator {
     column: IGridColumn;

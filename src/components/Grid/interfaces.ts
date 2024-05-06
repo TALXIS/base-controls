@@ -11,9 +11,9 @@ export interface IEntityRecord extends ComponentFramework.PropertyHelper.DataSet
 }
 
 export interface IGridParameters extends IParameters {
-    EnableEditing: ITwoOptionsProperty;
-    SelectableRows: IStringProperty & {
-        raw: 'single' | 'multiple' | 'true'
+    EnableEditing?: ITwoOptionsProperty;
+    SelectableRows?: IStringProperty & {
+        raw: 'single' | 'multiple' | 'true' | 'single'
     }
     Grid: IDatasetProperty;
 }

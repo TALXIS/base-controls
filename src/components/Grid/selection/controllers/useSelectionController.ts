@@ -1,16 +1,25 @@
-import { useMemo } from "react";
 import { useGridInstance } from "../../core/hooks/useGridInstance";
-import { Selection } from '../model/Selection';
+import { IEntityRecord } from "../../interfaces";
 
 interface ISelectionController {
-    toggle: (record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord) => void;
+    type: "multiple" | "single" | undefined;
+    selectedRecordIds: string[],
+    allRecordsSelected: boolean;
+    toggle: (record: IEntityRecord) => void;
+    clear: () => void,
+    selectAll: () => void
 }
 
 export const useSelectionController = (): ISelectionController => {
     const grid = useGridInstance();
-    const selection = useMemo(() => new Selection(grid), []);
+    const selection = grid.selection;
 
     return {
-        toggle: (record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord) => selection.toggle(record)
+        type: selection.type,
+        selectedRecordIds: selection.selectedRecordIds,
+        allRecordsSelected: selection.allRecordsSelected,
+        toggle: (record: IEntityRecord) => selection.toggle(record),
+        clear: () => selection.clear(),
+        selectAll: () => selection.selectAll()
     }
 }

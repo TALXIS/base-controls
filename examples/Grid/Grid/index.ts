@@ -44,7 +44,7 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
                         get: () => {
                             return {
                                 attributeDescriptor: {
-                                    IsValidForUpdate: Math.random() < 0.5
+                                    IsValidForUpdate: Math.random() < 0.9
                                 }
                             };
                         }
@@ -59,9 +59,15 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
                 this.updateView(context);
             };
         }
-        ReactDOM.render(React.createElement(GridComponent as any, {
+        ReactDOM.render(React.createElement(GridComponent, {
             context: context,
             parameters: {
+                SelectableRows: {
+                    raw: 'multiple'
+                },
+                EnableEditing: {
+                    raw: true
+                },
                 Grid: context.parameters.Grid
             }
         } as IGrid), this._container);

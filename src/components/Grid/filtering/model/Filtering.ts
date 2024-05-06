@@ -25,7 +25,7 @@ export class Filtering extends GridDependency {
 
     public condition(column: IGridColumn): Condition {
         const columnKey = column.key
-        const existingExpression = this._filterExpression.conditions.find(cond => this._getColumnKeyFromCondition(cond) === column.key);
+        const existingExpression = this._filterExpression?.conditions.find(cond => this._getColumnKeyFromCondition(cond) === column.key);
         if (!this._conditions.get(columnKey)) {
             this._conditions.set(columnKey, new Condition(this._grid, column, existingExpression))
         }

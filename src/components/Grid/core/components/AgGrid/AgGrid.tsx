@@ -5,25 +5,25 @@ import { useContext, useEffect, useRef } from "react";
 import { GridContext } from "../../../Grid";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridController } from "../../controllers/useGridController";
-import { useAgGrid } from "./hooks/useAgGrid";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { getGridStyles } from "./styles";
+import React from 'react';
+import { useAgGridController } from "./controllers/useAgGridController";
 
 export const AgGrid = () => {
     const grid = useGridInstance();
-    const [isEditable, columns, records] = useGridController();
     //@ts-ignore
     //const start = (props.dataset.paging.pageNumber - 1) * props.dataset.paging.pageSize + (props.dataset.paging.totalResultCount === 0 ? 0 : 1);
     //@ts-ignore
     //let end = props.dataset.paging.pageNumber * props.dataset.paging.pageSize;
     const gridContext = useContext(GridContext);
-    const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>(null);
-    //const selection = useSelectionController();
+    const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     //const [_, validate] = useRecordValidationServiceController();
     const theme = useTheme();
     const styles = getGridStyles(theme);
-    const { agColumns, selectRows } = useAgGrid(columns);
+    const {agColumns, records, isEditable} = useAgGridController(gridApiRef);
+    const selection = useSelectionController();
 
 /*     const validateCurrentRecords = () => {
         let index = 0;
@@ -41,37 +41,30 @@ export const AgGrid = () => {
         validateCurrentRecords();
     }, [records, columns]); */
 
-
-    //TODO: make deep equal
-/*     useEffect(() => {
-        selectRows(gridApiRef);
-    }, [props.dataset.getSelectedRecordIds()]) */
-
     return (
         <div className={`${styles.root} ag-theme-balham`}>
 {/*             <Save /> */}
             <AgGridReact
                 animateRows
                 singleClickEdit
-                //rowSelection={grid.props.parameters.SelectableRows.raw}
+                rowSelection={grid.selection.type}
                 suppressRowClickSelection
                 onRowDoubleClicked={(e) => {
-                    //props.onOpenDatasetItem(e.data.getNamedReference())
-                }}
-                onCellKeyDown={(e) => {
-                    //e.event.stopPropagation()
+                    //TODO: do not allow navigation only when some cell is in edit mode
+                    if(!isEditable) {
+                        grid.dataset.openDatasetItem(e.data!.getNamedReference())
+                    }
                 }}
                 onRowClicked={(e) => {
                     if (!isEditable) {
-                        //toggleSelection(e.data);
+                        selection.toggle(e.data!);
                     }
                 }}
                 getRowId={(params) => params.data.getRecordId()}
                 onGridReady={(e) => {
-                    //gridApiRef.current = e.api as any;
+                    gridApiRef.current = e.api as any;
                     //gridContext.recordValidationService.setGridApi(e.api as any);
                     //validateCurrentRecords();
-                    //selectRows(gridApiRef);
                 }}
                 rowHeight={42}
                 columnDefs={agColumns as any}

@@ -12,10 +12,11 @@ import { DataType } from '../../../enums/DataType';
 import { useColumnValidationController } from '../../../../validation/controllers/useRecordValidationController';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { useSelectionController } from '../../../../selection/controllers/useSelectionController';
+import { IEntityRecord } from '../../../../interfaces';
 
 interface ICellProps {
     baseColumn: IGridColumn;
-    data: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
+    data: IEntityRecord;
     [key: string]: any;
 }
 
@@ -147,22 +148,22 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         case DataType.OPTIONSET:
         case DataType.MULTI_SELECT_OPTIONSET:
         case DataType.TWO_OPTIONS: {
-            if (column.key === '__checkbox') {
-                return <Checkbox
-                    checked={props.node.selected}
-                    onChange={() => selection.toggle(record)} />
-            }
             return <ReadOnlyOptionSet
                 column={column}
                 record={record}
                 defaultRender={renderText} />
         }
 
-        case null:
+/*         case null:
         case undefined: {
             return <Commands record={record} />
-        }
+        } */
         default: {
+            if(column.key === '__checkbox') {
+                return <Checkbox
+                checked={props.node.selected}
+                onChange={() => selection.toggle(record)} />
+            }
             return renderText()
         }
 

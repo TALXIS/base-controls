@@ -5,11 +5,13 @@ import { Grid } from "../model/Grid";
 import { IGridColumn } from "../interfaces/IGridColumn";
 import { GridContext } from "../../Grid";
 
-export const useGridController = (gridInstance?: Grid): [
+interface IGridController {
     isEditable: boolean,
     columns: IGridColumn[],
     records: IEntityRecord[]
- ] => {
+}
+
+export const useGridController = (gridInstance?: Grid): IGridController => {
     const grid = gridInstance ?? useContext(GridContext).gridInstance;
     const [columns, setColumns] = useState<IGridColumn[]>([]);
     const [records, setRecords] = useState<IEntityRecord[]>([]);
@@ -30,6 +32,10 @@ export const useGridController = (gridInstance?: Grid): [
         useEffect(() => {
             setRecords(grid.refreshRecords());
         }, [grid.props.parameters.Grid]);
-
-    return [isEditable, columns, records]
+    
+    return {
+        isEditable,
+        columns,
+        records
+    }
 }

@@ -9,6 +9,7 @@ import { TwoOptions } from "../../../../TwoOptions/TwoOptions";
 import { DataType } from "../../enums/DataType";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { useComponentController } from "./controller/useComponentController";
+import React from 'react';
 
 export interface IComponentProps {
     column: IGridColumn;
