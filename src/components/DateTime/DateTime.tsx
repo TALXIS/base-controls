@@ -63,7 +63,7 @@ export const DateTime = (componentProps: IDateTime) => {
                     placeholder: '---',
                     onNotifyValidationResult: () => null,
                     noValidate: true,
-                    autoFocus: parameters.AutoFocus?.raw,
+                    //autoFocus: parameters.AutoFocus?.raw,
                     borderless: parameters.EnableBorder?.raw === false,
                     errorMessage: parameters.value.errorMessage,
                     styles:{

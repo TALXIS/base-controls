@@ -106,7 +106,7 @@ export const Sandbox: React.FC = () => {
           } as ITwoOptionsProperty
         }}
         onNotifyOutputChanged={(outputs) => {
-          setTwoOptionValue(outputs.value);
+          //setTwoOptionValue(outputs.value);
         }}
       />
     </>
