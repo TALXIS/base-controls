@@ -4,5 +4,5 @@ export const durationOptions : ComponentFramework.PropertyHelper.OptionMetadata[
     { Label: '30 minutes', Value: 3, Color:'' },
     { Label: '1 hour', Value: 4, Color:'' },
     { Label: '1 day', Value: 5, Color:'' },
-    { Label: '1.5 day', Value: 6, Color:'' },
+    { Label: '1.5 days', Value: 6, Color:'' },
 ];

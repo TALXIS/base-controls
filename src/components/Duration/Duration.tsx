@@ -27,7 +27,7 @@ export const Duration = (props: IDuration) => {
         //all duration formatting should happen here
         if (value === null) return null;
         const durationInMilliseconds = value * 60000;
-        const units = value <= 60 ? ['m'] : value >= 1440 ? ['d'] : ['h'];
+        const units = value < 60 ? ['m'] : value >= 1440 ? ['d'] : ['h'];
         const options = {
             units: units,
             maxDecimalPoints: 2,
