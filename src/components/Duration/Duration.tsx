@@ -7,12 +7,13 @@ import { durationOptions } from '../../sandbox/shared/durationList';
 import { UserSettings } from '../../sandbox/mock/UserSettings';
 import numeral from "numeral";
 import { NumeralPCF } from '../../utils/NumeralPCF';
+import { getDefaultDurationTranslations } from './translations';
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const context = props.context;
     const humanizeDuration = require("humanize-duration");
-    const formattingInfo = context.userSettings as  UserSettings;
+    const formattingInfo = context.userSettings as UserSettings;
     const language = formattingInfo.locale;
     const numberFormatting = context.userSettings.numberFormattingInfo;
     const comboBoxOptions: IComboBoxOption[] = durationOptions.map(option => ({
@@ -31,20 +32,59 @@ export const Duration = (props: IDuration) => {
             units: units,
             maxDecimalPoints: 2,
             language: language.slice(0, language.indexOf("-")),
-            fallbacks:["en"]
+            fallbacks: ["en"]
         };
         return humanizeDuration(durationInMilliseconds, options);
     };
 
-    const valueExtractor = (str: string | null) : number | undefined => {
+    const valueExtractor = (str: string | null): number | undefined => {
         //extraction of number of minutes from formatted string should happen here
-        numeral.locale('__pcfcustom');
-        return numeral(str).value() ?? undefined;
+        const minuteRegex = new RegExp("^" + labels.minute + "\\s|\\s" + labels.minute + "$|^" + labels.minutes + "\\s|\\s" + labels.minutes + "$", "i");
+        const hourRegex = new RegExp("^" + labels.hour + "\\s|\\s" + labels.hour + "$|^" + labels.hours + "\\s|\\s" + labels.hours + "$", "i");
+        const dayRegex = new RegExp("^" + labels.day + "\\s|\\s" + labels.day + "$|^" + labels.days + "\\s|\\s" + labels.days + "$", "i");
+
+        if (str && str.trim()) {
+            let input = str.trim();
+            let unit = 'minute';
+
+            if (minuteRegex.test(input)) {
+                input = input.replace(minuteRegex, "").trim();
+            } else if (hourRegex.test(input)) {
+                input = input.replace(hourRegex, "").trim();
+                unit = 'hour';
+            } else if (dayRegex.test(input)) {
+                input = input.replace(dayRegex, "").trim();
+                unit = 'day';
+            }
+            const parsedNumber = parseNumber(input);
+            if (parsedNumber && !isNaN(parsedNumber)) {
+                return getDurationInMinutes(parsedNumber, unit);
+            }
+            return NaN;
+        }
+        return undefined;
+    };
+
+    const parseNumber = (input: string): number|undefined => {
+        return numeral(input).value() ?? undefined;
+    };
+
+    const getDurationInMinutes = (value: number, unit: string): number => {
+        switch (unit) {
+            case 'hour':
+                return 60 * value;
+            case 'day':
+                return 60 * value * 24;
+            case 'minute':
+            default:
+                return value;
+        }
     };
 
     const [value, labels, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs, IDurationTranslations>('Duration', props, {
         formatter: formatter,
-        valueExtractor: valueExtractor
+        valueExtractor: valueExtractor,
+        defaultTranslations: getDefaultDurationTranslations(),
     });
 
     return (
@@ -69,16 +109,18 @@ export const Duration = (props: IDuration) => {
                         alignItems: 'center',
                     },
                 }}
-                onInputValueChange={(text)=>{
+                onInputValueChange={(text) => {
                     setValue(text ?? '');
                 }}
                 onBlur={(event) => {
                     onNotifyOutputChanged({
-                        value: valueExtractor(value) 
+                        value: valueExtractor(value)
                     });
                 }}
                 onChange={(e, value) => {
-                    setValue(value?.text ?? '');
+                    onNotifyOutputChanged({
+                        value: valueExtractor(value?.text ?? '')
+                    });
                 }}
             />
         </>
