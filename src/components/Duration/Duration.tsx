@@ -1,5 +1,5 @@
 import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
 import { IDuration, IDurationOutputs, IDurationParameters, IDurationTranslations } from './interfaces';
 import { IComboBoxOption } from '@fluentui/react';
@@ -16,12 +16,16 @@ export const Duration = (props: IDuration) => {
     const formattingInfo = context.userSettings as UserSettings;
     const language = formattingInfo.locale;
     const numberFormatting = context.userSettings.numberFormattingInfo;
-    const comboBoxOptions: IComboBoxOption[] = durationOptions.map(option => ({
-        key: option.Value.toString(),
-        text: option.Label,
-    }));
+    const [comboBoxOptions, setComboBoxOptions] = useState<IComboBoxOption[]>([]);
 
-    useEffect(() => { NumeralPCF.register(numberFormatting); }, []);
+    useEffect(() => {
+        NumeralPCF.register(numberFormatting);
+        const formattedOptions = durationOptions.map(option => ({
+            key: option.Value.toString(),
+            text: formatter(parseInt(option.Label)),
+        }));
+        setComboBoxOptions(formattedOptions);
+    }, []);
 
     const formatter = (value: number | null) => {
         //all duration formatting should happen here
@@ -65,7 +69,7 @@ export const Duration = (props: IDuration) => {
         return undefined;
     };
 
-    const parseNumber = (input: string): number|undefined => {
+    const parseNumber = (input: string): number | undefined => {
         return numeral(input).value() ?? undefined;
     };
 
