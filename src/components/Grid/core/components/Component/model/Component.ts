@@ -8,6 +8,7 @@ import { IMultiSelectOptionSet } from "../../../../../MultiSelectOptionSet/inter
 import { IOptionSet } from "../../../../../OptionSet/interfaces";
 import { ITextField } from "../../../../../TextField/interfaces";
 import { ITwoOptions } from "../../../../../TwoOptions/interfaces";
+import { ColumnValidation } from "../../../../validation/model/ColumnValidation";
 import { DataType } from "../../../enums/DataType";
 import { GridDependency } from "../../../model/GridDependency";
 import { IComponentProps } from "../Component";
@@ -18,8 +19,7 @@ export class Component extends GridDependency {
         let isValid = true;
         let validationErrorMessage = ""
         if (shouldValidate) {
-            //TODO: change to datatype validation
-            //[isValid, validationErrorMessage] = new ColumnValidation(this._field.dataType).validate(value);
+            [isValid, validationErrorMessage] = new ColumnValidation(props.column.dataType!).validate(value);
         }
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:

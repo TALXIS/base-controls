@@ -16,6 +16,8 @@ export class Grid {
     private _columns: IGridColumn[] = [];
     private _records: IEntityRecord[] = [];
     private _labels: Required<StringProps<IGridTranslations>>;
+    private _shouldRerender: boolean = false;
+
     private _dependencies = {
         recordUpdateService: new RecordUpdateService(this),
         filtering: new Filtering(this),
@@ -63,15 +65,18 @@ export class Grid {
     public get selection() {
         return this._dependencies.selection;
     }
+    public get shouldRerender() {
+        return this._shouldRerender;
+    }
 
     public updateDependencies(props: IGrid): void {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
-
         for (const [key, dependency] of Object.entries(this._dependencies)) {
             dependency.onDependenciesUpdated()
         }
+        this._shouldRerender = !this.shouldRerender;
     }
     public async refreshColumns(): Promise<IGridColumn[]> {
         const gridColumns: IGridColumn[] = [];

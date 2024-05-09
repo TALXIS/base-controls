@@ -2,7 +2,6 @@ import { AgGridReact } from "@ag-grid-community/react/lib/agGridReact";
 import { useTheme } from "@fluentui/react";
 import { GridApi } from "ag-grid-community/dist/lib/gridApi";
 import { useContext, useEffect, useRef } from "react";
-import { GridContext } from "../../../Grid";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridController } from "../../controllers/useGridController";
 import { useGridInstance } from "../../hooks/useGridInstance";
@@ -17,7 +16,6 @@ export const AgGrid = () => {
     //const start = (props.dataset.paging.pageNumber - 1) * props.dataset.paging.pageSize + (props.dataset.paging.totalResultCount === 0 ? 0 : 1);
     //@ts-ignore
     //let end = props.dataset.paging.pageNumber * props.dataset.paging.pageSize;
-    const gridContext = useContext(GridContext);
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     //const [_, validate] = useRecordValidationServiceController();
     const theme = useTheme();

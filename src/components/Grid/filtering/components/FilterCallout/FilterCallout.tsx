@@ -15,17 +15,30 @@ export interface IFilterCallout extends ICalloutProps {
 
 export const FilterCallout = (props: IFilterCallout) => {
     const {column, onDismiss} = {...props};
-    const [condition] = useColumnFilterConditionController(column);
+    const condition = useColumnFilterConditionController(column);
     const conditionOperator = condition.operator.get();
     const conditionValue = condition.value.get();
     const conditionUtils = FilteringUtils.condition();
-    const [shouldFocusCondititionRender, setShouldFocusConditionRender] = React.useState<boolean>(false);
+    const isDeleteButtonDisabled = () => {
+        switch(conditionValue) {
+            case null:
+            case undefined:
+            case "": {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    React.useEffect(() => {
+        return () => {
+            condition.clear()
+        }
+    }, []);
     return (
         <Callout
             {...props}
             calloutWidth={230}
-            setInitialFocus
             className={filterCalloutStyles.root}>
             <div className={filterCalloutStyles.header}>
                 <Text className={filterCalloutStyles.title} variant="mediumPlus">Filtrovat podle</Text>
@@ -33,29 +46,27 @@ export const FilterCallout = (props: IFilterCallout) => {
                     iconName: 'ChromeClose',
                 }} />
             </div>
-            {conditionOperator && conditionValue &&
+            {condition.loaded &&
                 <>
                     <div className={filterCalloutStyles.controls}>
                         <ConditionOperator column={column} />
-                        {conditionUtils.value(conditionOperator).isEditable &&
+                        {conditionUtils.value(conditionOperator!).isEditable &&
                         <ConditionValue
                             column={column} />
                         }
                     </div>
                     <div className={filterCalloutStyles.footer}>
                         <PrimaryButton text="Pouzit"
-                            onClick={() => {
-                                condition.saveAndRefresh();
-/*                                 if (save()) {
+                            onClick={async () => {
+                                if(await condition.save()) {
                                     props.onDismiss();
-                                } */
+                                }
                             }} />
-                        {conditionUtils.value(conditionOperator).isEditable &&
+                        {conditionUtils.value(conditionOperator!).isEditable &&
                             <Button text="Vymazat"
-                                disabled={conditionValue}
+                                disabled={isDeleteButtonDisabled()}
                                 onClick={() => {
                                     condition.value.set(null);
-                                    setShouldFocusConditionRender(true);
                                 }} />
                         }
                     </div>

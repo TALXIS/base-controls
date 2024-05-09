@@ -13,12 +13,13 @@ export interface ISortingContextualMenu extends Omit<IContextualMenuProps, 'item
 }
 
 export const SortingContextualMenu = (props: ISortingContextualMenu) => {
+
     const grid = useGridInstance();
     const labels = grid.labels;
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
     const {column, onDismiss} = {...props};
-    const [sorting] = useColumnSortingController(column);
-    const [condition] = useColumnFilterConditionController(column);
+    const sorting = useColumnSortingController(column);
+    const condition = useColumnFilterConditionController(column);
     const [items, setItems] = useState<IContextualMenuItem[]>([]);
 
     useEffect(() => {
@@ -34,12 +35,6 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
         }
         return `${options[1].Label} ${labels['filtersortmenu-sorttwooption-joint']} ${options[0].Label}`
     }
-    
-    const onSort = (direction: ComponentFramework.PropertyHelper.DataSetApi.Types.SortDirection) => {
-        sorting.set(direction);
-        sorting.saveAndRefresh();
-    }
-
     const getLabel = async (isDesc?: boolean) => {
         switch (column.dataType) {
             case DataType.WHOLE_NONE:
@@ -81,7 +76,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 iconProps: {
                     iconName: 'SortUp'
                 },
-                onClick: () => onSort(0)
+                onClick: () => sorting.sort(0)
             },
             {
                 key: 'sort_desc',
@@ -92,7 +87,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 iconProps: {
                     iconName: 'SortDown'
                 },
-                onClick: () => onSort(1)
+                onClick: () => sorting.sort(1)
             },
             {
                 key: 'divider',
@@ -117,14 +112,12 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                     iconName: 'ClearFilter'
                 },
                 onClick: () => {
+                    condition.clear()
                     condition.remove();
-                    condition.saveAndRefresh();
-                    //props.onDismiss();
                 }
             });
         }
-        return [];
+        return items
     }
-
-    return <ContextualMenu items={items} />;
+    return <ContextualMenu {...props} items={items} />;
 };

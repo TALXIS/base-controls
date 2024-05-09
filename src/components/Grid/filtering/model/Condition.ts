@@ -3,19 +3,22 @@ import { DataType } from "../../core/enums/DataType";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
 import { Grid } from "../../core/model/Grid";
 import { GridDependency } from "../../core/model/GridDependency";
+import { ColumnValidation } from "../../validation/model/ColumnValidation";
 import { FilteringUtils } from "../utils/FilteringUtilts";
 
 export class Condition extends GridDependency {
+
     private _column: IGridColumn;
     private _isAppliedToDataset: boolean = false;
     private _conditionExpression: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression | undefined;
     private _isRemoved?: boolean;
     private _conditionUtils = FilteringUtils.condition();
-    //if existing expression is provided, the changes will be written into it
-    constructor(grid: Grid, column: IGridColumn, existingExpression?: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression ) {
+    private _isValid: boolean = true;
+
+    constructor(grid: Grid, column: IGridColumn ) {
         super(grid);
         this._column = column;
-        this._conditionExpression = existingExpression;
+        this._conditionExpression = this._filterExpression?.conditions.find(cond => this._attributeNameDecorator(cond.conditionOperator, cond.attributeName, true) === column.attributeName);
         if (!this._conditionExpression) {
             return;
         }
@@ -36,18 +39,45 @@ export class Condition extends GridDependency {
         return this._isAppliedToDataset;
     }
 
+    public get isValid() {
+        return this._isValid;
+    }
+
     public async getExpression() {
         if (!this._conditionExpression) {
             return this._getDefault();
         }
-        this._conditionExpression.conditionOperator = this._operatorDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value) as any;
-        this._conditionExpression.value = this._valueDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value);
-        this._conditionExpression.attributeName = this._attributeNameDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.attributeName);
-        return this._conditionExpression;
+        const result = {...this._conditionExpression};
+        result.conditionOperator = this._operatorDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value) as any;
+        result.value = this._valueDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value);
+        result.attributeName = this._attributeNameDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.attributeName);
+        return result;
+
+    }
+    public async save(): Promise<boolean> {
+        if(!await this.value.isValid()) {
+            this._isValid = false;
+            this._triggerRefreshCallbacks();
+            return false;
+        }
+        const filterExpression = this._filterExpression;
+        if(this._isAppliedToDataset || this._isRemoved) {
+            filterExpression.conditions = filterExpression.conditions.filter(cond => this._attributeNameDecorator(cond.conditionOperator, cond.attributeName, true) !== this._column.attributeName);
+        }
+        if(!this._isRemoved) {
+            filterExpression.conditions.push(await this.getExpression());
+        }
+        this._dataset.filtering.setFilter(filterExpression);
+        this._dataset.refresh();
+        return true;
 
     }
     public remove() {
         this._isRemoved = true;
+        this.save();
+    }
+    public async clear() {
+        this._conditionExpression = await this._getDefault();
     }
     public get operator() {
         return {
@@ -80,7 +110,11 @@ export class Condition extends GridDependency {
     public get value() {
         return {
             get: async () => this._get('value') as Promise<any>,
-            set: async (value: any) => this._set("value", undefined, value)
+            set: async (value: any) => this._set("value", undefined, value),
+            isValid: async () => {
+                const [result, errorMessage] = await new ColumnValidation(this._column.dataType!).validate(await this.value.get());
+                return result;
+            }
         }
     }
     private async _get(type: 'operator' | 'value'): Promise<DatasetConditionOperator | any> {
@@ -93,6 +127,7 @@ export class Condition extends GridDependency {
         return this._conditionExpression.value;
     }
     private async _set(type: 'operator' | 'value', conditionOperator?: DatasetConditionOperator, value?: any) {
+        this._isValid = true;
         if (!this._conditionExpression) {
             this._conditionExpression = await this._getDefault();
         }
@@ -106,7 +141,7 @@ export class Condition extends GridDependency {
     }
 
     private _attributeNameDecorator(conditionOperator: DatasetConditionOperator, attributeName: string, undecorate?: boolean) {
-        if (this._conditionUtils.value(conditionOperator).isManuallyEditable) {
+        if (!this._conditionUtils.value(conditionOperator).isManuallyEditable) {
             return attributeName;
         }
         switch (this._column.dataType) {
@@ -235,4 +270,14 @@ export class Condition extends GridDependency {
         }
         return cond;
     }
+
+
+
+    private get _filterExpression() {
+        return structuredClone(this._dataset.filtering.getFilter()) ?? {
+            conditions: [],
+            filterOperator: 0
+        }
+    }
+
 }

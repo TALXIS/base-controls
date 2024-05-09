@@ -1,7 +1,7 @@
-import { Toggle } from '@fluentui/react';
+import { IRefObject, IToggle, Toggle } from '@fluentui/react';
 import { useComponent } from '../../hooks';
 import { ITwoOptions } from './interfaces';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export const TwoOptions = (props: ITwoOptions) => {
     const parameters = props.parameters;
@@ -9,6 +9,13 @@ export const TwoOptions = (props: ITwoOptions) => {
     const options = boundValue.attributes.Options;
     const [labels, onNotifyOutputChanged] = useComponent('TwoOptions', props);
     const context = props.context;
+    const componentRef = useRef<any>(null);
+    
+    useEffect(() => {
+        if(parameters.AutoFocus?.raw === true) {
+            componentRef.current.focus();
+        }
+    }, []);
 
     const handleChange = (value: boolean | undefined): void => {
         onNotifyOutputChanged({
@@ -27,6 +34,7 @@ export const TwoOptions = (props: ITwoOptions) => {
         }
     }}
     checked={boundValue.raw}
+    componentRef={componentRef}
     inlineLabel
     onText={options.find(option=>option.Value ===1)?.Label || 'Yes'}
     offText={options.find(option=>option.Value ===0)?.Label || 'No'}

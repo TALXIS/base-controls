@@ -26,12 +26,12 @@ export const useGridController = (gridInstance?: Grid): IGridController => {
             }
             setColumns(newColumns);
         })();
-    }, [grid.props.parameters.Grid.columns]);
+    }, [grid.shouldRerender]);
 
         //sortedRecordIds does not trigger in Power Apps on requestRender, wont work if some value changed, rerender every time or check the getValue of each record on each column
         useEffect(() => {
             setRecords(grid.refreshRecords());
-        }, [grid.props.parameters.Grid]);
+        }, [grid.shouldRerender]);
     
     return {
         isEditable,

@@ -4,6 +4,7 @@ import { columnHeaderStyles } from './styles';
 import { FilterCallout, IFilterCallout } from '../../../filtering/components/FilterCallout/FilterCallout';
 import { IGridColumn } from '../../interfaces/IGridColumn';
 import { ISortingContextualMenu, SortingContextualMenu } from '../../../sorting/components/SortingContextualMenu/SortingContextualMenu';
+import { useColumnFilterConditionController } from '../../../filtering/controller/useColumnFilterConditionController';
 
 export interface IColumnHeader {
     baseColumn: IGridColumn;
@@ -21,7 +22,18 @@ export const ColumnHeader = (props: IColumnHeader) => {
         }
         setColumnHeaderContextualMenuProps({
             column: column,
-            onDismiss: () => {}
+            onDismiss: (e, dismissAll, showFilterCallout) => {
+                setColumnHeaderContextualMenuProps(null);
+                if(!showFilterCallout) {
+                    return;
+                }
+                setFilterCalloutProps({
+                    column: column,
+                    onDismiss: () => {
+                        setFilterCalloutProps(null)
+                    }
+                })
+            }
             //onSort: (values) => gridContext.onSort(values),
             //onRemoveFilter: (filterExpression) => gridContext.onFilterChanged(filterExpression),
             /* onDismiss: (_e, dismissAll, showFilterCallout) => {
