@@ -16,8 +16,8 @@ export interface IFilterCallout extends ICalloutProps {
 export const FilterCallout = (props: IFilterCallout) => {
     const {column, onDismiss} = {...props};
     const condition = useColumnFilterConditionController(column);
-    const conditionOperator = condition.operator.get();
-    const conditionValue = condition.value.get();
+    const conditionOperator = condition?.operator.get();
+    const conditionValue = condition?.value.get();
     const conditionUtils = FilteringUtils.condition();
     const isDeleteButtonDisabled = () => {
         switch(conditionValue) {
@@ -32,9 +32,10 @@ export const FilterCallout = (props: IFilterCallout) => {
 
     React.useEffect(() => {
         return () => {
-            condition.clear()
+            condition?.clear()
         }
     }, []);
+
     return (
         <Callout
             {...props}
@@ -46,7 +47,7 @@ export const FilterCallout = (props: IFilterCallout) => {
                     iconName: 'ChromeClose',
                 }} />
             </div>
-            {condition.loaded &&
+            {condition &&
                 <>
                     <div className={filterCalloutStyles.controls}>
                         <ConditionOperator column={column} />

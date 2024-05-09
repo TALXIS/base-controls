@@ -1,13 +1,20 @@
 import { useEffect, useMemo } from "react";
 import { GridDependency } from "../model/GridDependency";
 
-export const useRefreshCallback = (model: GridDependency, refreshCallback: () => any) => {
+export const useRefreshCallback = (model: GridDependency | Promise<GridDependency>, refreshCallback: () => any) => {
     const id = useMemo(() => crypto.randomUUID(), [])
     useEffect(() => {
-        model.addRefreshCallback(id, refreshCallback);
+        (async () => {
+            const _model = await model;
+            _model.addRefreshCallback(id, refreshCallback);
+        })();
         console.log('refresh callback added')
         return () => {
-            model.removeRefreshCallback(id);
+            (async () => {
+                const _model = await model;
+                _model.removeRefreshCallback(id);
+                
+            })();
         }
     }, []);
 };

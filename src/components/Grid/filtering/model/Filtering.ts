@@ -29,18 +29,19 @@ export class Filtering extends GridDependency {
         this._conditions.clear();
     }
 
-    public condition(column: IGridColumn): Condition {
+    public async condition(column: IGridColumn): Promise<Condition> {
         const columnKey = column.key
         if (!this._conditions.get(columnKey)) {
             this._conditions.set(columnKey, new Condition(this._grid, column))
         }
-        return new Proxy(this._conditions.get(columnKey)!, {
+        const cond = new Proxy(this._conditions.get(columnKey)!, {
             get: (target, prop) => {
                 if (prop === 'save') {
                     return async () => {
                         const saveResult = await target.save();
                         if (saveResult) {
                             this._conditions.delete(target.column.key);
+                            target.clear();
                         }
                         return saveResult;
                     };
@@ -57,6 +58,8 @@ export class Filtering extends GridDependency {
                 return target[prop];
             },
         });
+        await cond.init();
+        return cond;
     }
 
     private get _filterExpression() {

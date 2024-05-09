@@ -6,16 +6,16 @@ import { FilteringUtils } from "../../../../../utils/FilteringUtilts";
 
 export class ConditionComponentValue {
     //needs to be ref to keep the current reference
-    private _columnFilterConditionControllerRef: React.MutableRefObject<IColumnFilterConditionController>
+    private _columnFilterConditionController: IColumnFilterConditionController;
     private _conditionUtils = FilteringUtils.condition();
 
-    constructor(columnFilterConditionController: React.MutableRefObject<IColumnFilterConditionController>) {
-        this._columnFilterConditionControllerRef = columnFilterConditionController;
+    constructor(columnFilterConditionController: IColumnFilterConditionController) {
+        this._columnFilterConditionController = columnFilterConditionController;
     }
 
     public get column() {
-        const _column = {...this._columnFilterConditionControllerRef.current.column};
-        switch (this._columnFilterConditionControllerRef.current.column.dataType) {
+        const _column = {...this._columnFilterConditionController.column};
+        switch (this._columnFilterConditionController.column.dataType) {
             case DataType.OPTIONSET:
             case DataType.TWO_OPTIONS: {
                 _column.dataType = DataType.MULTI_SELECT_OPTIONSET;
@@ -110,9 +110,9 @@ export class ConditionComponentValue {
         this._value.set(value);
     }
     private get _value() {
-        return this._columnFilterConditionControllerRef.current.value;
+        return this._columnFilterConditionController.value;
     }
     private get _operator() {
-        return this._columnFilterConditionControllerRef.current.operator;
+        return this._columnFilterConditionController.operator;
     }
 }

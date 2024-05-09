@@ -22,11 +22,13 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
     const condition = useColumnFilterConditionController(column);
     const [items, setItems] = useState<IContextualMenuItem[]>([]);
 
+    console.log(condition);
+
     useEffect(() => {
         (async() => {
             setItems(await getItems())
         })();
-    }, []);
+    }, [condition]);
 
     const getTwoOptionsSortLabel = async (isDesc?: boolean) => {
         const [defaultValue, options] = await grid.metadata.getOptions(column);
@@ -66,6 +68,9 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
     }
 
     const getItems = async (): Promise<IContextualMenuItem[]> => {
+        if(!condition) {
+            return []
+        }
         const items: IContextualMenuItem[] = [
             {
                 key: 'sort_asc',

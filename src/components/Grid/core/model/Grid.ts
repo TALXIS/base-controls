@@ -100,7 +100,8 @@ export class Grid {
                 //comes from extended
                 isResizable: column.isResizable ?? true,
             } as IGridColumn;
-            gridColumn.isFiltered = this._dependencies.filtering.condition(gridColumn).isAppliedToDataset
+            const condition = await this.filtering.condition(gridColumn);
+            gridColumn.isFiltered = condition.isAppliedToDataset;
             gridColumn.isEditable = await this._isColumnEditable(gridColumn);
             gridColumns.push(gridColumn);
         }

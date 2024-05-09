@@ -15,7 +15,7 @@ export const ConditionOperator = (props: IConditionOperator) => {
     const { column } = { ...props };
     const operatorUtils = FilteringUtils.condition().operator();
     const grid = useGridInstance();
-    const filtering = useColumnFilterConditionController(column);
+    const condition = useColumnFilterConditionController(column);
 
     //TODO: add missing text operator (begins with, ends with)
     const getOptions = (): IComboBoxOption[] => {
@@ -46,12 +46,15 @@ export const ConditionOperator = (props: IConditionOperator) => {
             };
         });
     };
+    if(!condition) {
+        return <></>
+    }
     return <ComboBox
         {...props}
-        selectedKey={filtering.operator.get()}
+        selectedKey={condition.operator.get()}
         shouldRestoreFocus={false}
         options={getOptions()}
         onChange={(e, option) => {
-            filtering.operator.set(option!.key as DatasetConditionOperator)
+            condition.operator.set(option!.key as DatasetConditionOperator)
         }} />;
 }

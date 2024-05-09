@@ -10,10 +10,16 @@ interface IConditionValue {
 }
 
 export const ConditionValue = (props: IConditionValue) => {
+    const condition = useColumnFilterConditionController(props.column);
+    if (!condition) {
+        return <></>
+    }
+    return <InternalConditionValue {...condition} />
+}
+
+const InternalConditionValue = (controller: IColumnFilterConditionController) => {
     const componentContainerRef = useRef<HTMLDivElement>(null);
-    const conditionRef = useRef<IColumnFilterConditionController>();
-    conditionRef.current = useColumnFilterConditionController(props.column);
-    const conditionComponentValue = useMemo(() => new ConditionComponentValue(conditionRef as React.MutableRefObject<IColumnFilterConditionController>), []);
+    const conditionComponentValue = useMemo(() => new ConditionComponentValue(controller), []);
     const column = conditionComponentValue.column;
 
     useEffect(() => {
@@ -23,22 +29,14 @@ export const ConditionValue = (props: IConditionValue) => {
         }
     }, [conditionComponentValue.get()])
 
-    console.log(conditionRef.current.value.valid)
-
     return (
         <div ref={componentContainerRef}>
             <Component
                 column={column}
                 value={conditionComponentValue.get()}
                 onNotifyOutputChanged={(value) => conditionComponentValue.set(value)}
-                shouldValidate={!conditionRef.current.value.valid}
-                additionalParameters={{
-                    AutoFocus: {
-                        raw: true
-                    }
-                }}
+                shouldValidate={!controller.value.valid}
             />
         </div>
     )
-
-};
+}

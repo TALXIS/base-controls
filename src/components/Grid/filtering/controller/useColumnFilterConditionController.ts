@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DatasetConditionOperator } from "../../core/enums/ConditionOperator";
 import { useGridInstance } from "../../core/hooks/useGridInstance"
 import { useRefreshCallback } from "../../core/hooks/useRefreshCallback";
 import { useRerender } from "../../core/hooks/useRerender";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
+import { Condition } from "../model/Condition";
 
 export interface IColumnFilterConditionController {
-    loaded: boolean,
     isAppliedToDataset: boolean,
     column: IGridColumn,
     value: {
@@ -20,48 +20,43 @@ export interface IColumnFilterConditionController {
     },
     remove: () => void;
     save: () => Promise<boolean>;
-    clear: () => Promise<void>;
+    clear: () => void;
 }
 
-export const useColumnFilterConditionController = (column: IGridColumn):IColumnFilterConditionController => {
+export const useColumnFilterConditionController = (column: IGridColumn): IColumnFilterConditionController | null => {
     const filtering = useGridInstance().filtering;
-    const condition = filtering.condition(column);
-    const [operator, setOperator] = useState<DatasetConditionOperator>();
-    const [value, setValue] = useState<any>();
-    const [loaded, setLoaded] = useState<boolean>(false);
-    const [rerender, renderDecorator] = useRerender();
-
+    const conditionPromise = filtering.condition(column);
+    const [controller, setController] = useState<IColumnFilterConditionController>();
     const refresh = async () => {
-        setOperator(await condition.operator.get());
-        setValue(await condition.value.get());
-        renderDecorator();
+        const condition = await conditionPromise;
+        setController({
+            isAppliedToDataset: condition.isAppliedToDataset,
+            column: condition?.column,
+            operator: {
+                get: () => condition.operator.get(),
+                set: (operator) => condition.operator.set(operator)
+            },
+            value: {
+                valid: condition.isValid,
+                get: () => condition.value.get(),
+                set: (value) => condition.value.set(value)
+            },
+            remove: () => condition?.remove(),
+            save: () => condition?.save(),
+            clear: () => condition?.clear()
+        })
     }
-
-    useRefreshCallback(condition, refresh);
+    useRefreshCallback(conditionPromise, refresh);
 
     useEffect(() => {
         (async () => {
-            await refresh();
-            setLoaded(true);
+            refresh();
         })();
     }, []);
 
-    return  {
-        isAppliedToDataset: condition.isAppliedToDataset,
-        column: condition.column,
-        loaded: loaded,
-        operator: {
-            get: () => operator,
-            set: (operator) => condition.operator.set(operator)
-        },
-        value: {
-            valid: condition.isValid,
-            get: () => value,
-            set: (value) => condition.value.set(value)
-        },
-        remove: () => condition.remove(),
-        save: () => condition.save(),
-        clear: () => condition.clear()
-    }
 
+    if(!controller) {
+        return null;
+    }
+    return controller;
 }

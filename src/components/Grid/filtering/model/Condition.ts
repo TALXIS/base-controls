@@ -10,23 +10,52 @@ export class Condition extends GridDependency {
 
     private _column: IGridColumn;
     private _isAppliedToDataset: boolean = false;
-    private _conditionExpression: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression | undefined;
+    private _conditionExpression: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression = {} as any;
     private _isRemoved?: boolean;
     private _conditionUtils = FilteringUtils.condition();
     private _isValid: boolean = true;
+    private _inicializationPromise: Promise<boolean> | undefined;
+    private _initialized: boolean = false;
 
-    constructor(grid: Grid, column: IGridColumn ) {
+    constructor(grid: Grid, column: IGridColumn) {
         super(grid);
         this._column = column;
-        this._conditionExpression = this._filterExpression?.conditions.find(cond => this._attributeNameDecorator(cond.conditionOperator, cond.attributeName, true) === column.attributeName);
-        if (!this._conditionExpression) {
-            return;
-        }
-        this._isAppliedToDataset = true;
-        this._conditionExpression.value = this._valueDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value, true);
-        this._conditionExpression.attributeName = this._attributeNameDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.attributeName, true)
+        return new Proxy(this, {
+            get: (target, prop) => {
+                if(prop !== 'init') {
+                    if(!target._initialized) {
+                        throw new Error('Condition has not been initialized. Make sure to call the init() method on the condition object before any operations.')
+                    }
+                }
+                //@ts-ignore
+                if (typeof target[prop] === 'function') {
+                    //@ts-ignore
+                    return target[prop].bind(target);
+                }
+                //@ts-ignore
+                return target[prop];
+            }
+        })
     }
-
+    public async init() {
+        if (!this._inicializationPromise) {
+            this._inicializationPromise = new Promise(async (resolve) => {
+                const [map, key] = await this._getConditionFromFilterExpression();
+                if(!key) {
+                    this._conditionExpression = this._getDefault();
+                }
+                else {
+                    this._isAppliedToDataset = true;
+                    this._conditionExpression = map.get(key)!;
+                }
+                this._conditionExpression.value = this._valueDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value, true);
+                this._conditionExpression.attributeName = await this._attributeNameDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.attributeName, true);
+                resolve(true);
+                this._initialized = true;
+            })
+        }
+        return this._inicializationPromise;
+    }
     public get isRemoved() {
         return this._isRemoved;
     }
@@ -44,27 +73,26 @@ export class Condition extends GridDependency {
     }
 
     public async getExpression() {
-        if (!this._conditionExpression) {
-            return this._getDefault();
-        }
-        const result = {...this._conditionExpression};
+        const result = { ...this._conditionExpression };
         result.conditionOperator = this._operatorDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value) as any;
         result.value = this._valueDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value);
-        result.attributeName = this._attributeNameDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.attributeName);
+        result.attributeName = await this._attributeNameDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.attributeName);
         return result;
 
     }
     public async save(): Promise<boolean> {
-        if(!await this.value.isValid()) {
+        if (!await this.value.isValid()) {
             this._isValid = false;
             this._triggerRefreshCallbacks();
             return false;
         }
         const filterExpression = this._filterExpression;
-        if(this._isAppliedToDataset || this._isRemoved) {
-            filterExpression.conditions = filterExpression.conditions.filter(cond => this._attributeNameDecorator(cond.conditionOperator, cond.attributeName, true) !== this._column.attributeName);
+        if (this._isAppliedToDataset || this._isRemoved) {
+            const [map, key] = await this._getConditionFromFilterExpression();
+            map.delete(key);
+            filterExpression.conditions = [...map.values()];
         }
-        if(!this._isRemoved) {
+        if (!this._isRemoved) {
             filterExpression.conditions.push(await this.getExpression());
         }
         this._dataset.filtering.setFilter(filterExpression);
@@ -76,16 +104,17 @@ export class Condition extends GridDependency {
         this._isRemoved = true;
         this.save();
     }
-    public async clear() {
-        this._conditionExpression = await this._getDefault();
+    public clear() {
+        this._inicializationPromise = undefined;
     }
     public get operator() {
         return {
-            get: async () => this._get('operator') as Promise<DatasetConditionOperator>,
-            set: async (conditionOperator: DatasetConditionOperator) => {
-                await this._set("operator", conditionOperator, null);
+            get: () => this._get('operator') as DatasetConditionOperator,
+            set: (conditionOperator: DatasetConditionOperator) => {
+                const previousOperator = this._conditionExpression.conditionOperator
+                this._set("operator", conditionOperator, null);
                 const isCurrentEditable = this._conditionUtils.value(conditionOperator).isManuallyEditable;
-                const isPreviousEditable = this._conditionUtils.value(this._conditionExpression!.conditionOperator).isManuallyEditable
+                const isPreviousEditable = this._conditionUtils.value(previousOperator).isManuallyEditable;
 
                 if (isCurrentEditable !== isPreviousEditable) {
                     // we are transitioning between editable and non-editable operators and the value of these data types needs to be set to null
@@ -109,28 +138,22 @@ export class Condition extends GridDependency {
 
     public get value() {
         return {
-            get: async () => this._get('value') as Promise<any>,
-            set: async (value: any) => this._set("value", undefined, value),
+            get: () => this._get('value') as any,
+            set: (value: any) => this._set("value", undefined, value),
             isValid: async () => {
                 const [result, errorMessage] = await new ColumnValidation(this._column.dataType!).validate(await this.value.get());
                 return result;
             }
         }
     }
-    private async _get(type: 'operator' | 'value'): Promise<DatasetConditionOperator | any> {
-        if (!this._conditionExpression) {
-            this._conditionExpression = await this._getDefault();
-        }
-        if(type === 'operator') {
+    private _get(type: 'operator' | 'value'): DatasetConditionOperator | any {
+        if (type === 'operator') {
             return this._conditionExpression.conditionOperator;
         }
         return this._conditionExpression.value;
     }
-    private async _set(type: 'operator' | 'value', conditionOperator?: DatasetConditionOperator, value?: any) {
+    private _set(type: 'operator' | 'value', conditionOperator?: DatasetConditionOperator, value?: any) {
         this._isValid = true;
-        if (!this._conditionExpression) {
-            this._conditionExpression = await this._getDefault();
-        }
         if (type === 'operator') {
             this._conditionExpression.conditionOperator = conditionOperator as any;
         }
@@ -140,15 +163,13 @@ export class Condition extends GridDependency {
         this._triggerRefreshCallbacks();
     }
 
-    private _attributeNameDecorator(conditionOperator: DatasetConditionOperator, attributeName: string, undecorate?: boolean) {
+    private async _attributeNameDecorator(conditionOperator: DatasetConditionOperator, attributeName: string, undecorate?: boolean) {
         if (!this._conditionUtils.value(conditionOperator).isManuallyEditable) {
             return attributeName;
         }
         switch (this._column.dataType) {
             case DataType.OPTIONSET:
-            case DataType.TWO_OPTIONS:
-            case DataType.LOOKUP_OWNER:
-            case DataType.LOOKUP_SIMPLE: {
+            case DataType.TWO_OPTIONS: {
                 if (undecorate) {
                     if (attributeName.endsWith('name')) {
                         return attributeName.slice(0, -4);
@@ -159,14 +180,20 @@ export class Condition extends GridDependency {
                     return attributeName;
                 }
                 return `${attributeName}name`
-
+            }
+            case DataType.LOOKUP_OWNER:
+            case DataType.LOOKUP_SIMPLE: {
+                if (undecorate) {
+                    return attributeName;
+                }
+                const metadata = await this._grid.metadata.get(this._column);
+                return `${this._column.attributeName}${metadata.PrimaryNameAttribute}`;
             }
             default: {
                 return attributeName;
             }
         }
     }
-
     private _valueDecorator(conditionOperator: DatasetConditionOperator, value: any, undecorate?: boolean) {
         switch (conditionOperator) {
             case DatasetConditionOperator.BeginWith:
@@ -229,29 +256,9 @@ export class Condition extends GridDependency {
         return conditionOperator;
     }
 
-    private async _getAttributeName(conditionOperator: DatasetConditionOperator): Promise<string> {
-        if (this._column.dataType !== DataType.LOOKUP_SIMPLE && this._column.dataType !== DataType.LOOKUP_OWNER) {
-            return this._column.attributeName;
-        }
-        switch (conditionOperator) {
-            case DatasetConditionOperator.BeginWith:
-            case DatasetConditionOperator.DoesNotBeginWith:
-            case DatasetConditionOperator.EndsWith:
-            case DatasetConditionOperator.DoesNotEndWith:
-            case DatasetConditionOperator.Like:
-            case DatasetConditionOperator.NotLike: {
-                const metadata = await this._grid.pcfContext.utils.getEntityMetadata(this._grid.dataset.getTargetEntityType(), [this._column.attributeName]);
-                return `${this._column.attributeName}${metadata.PrimaryNameAttribute}`;
-            }
-            default: {
-                return this._column.attributeName;
-            }
-        }
-    }
-
-    private async _getDefault(): Promise<ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression> {
+    private _getDefault(): ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression {
         const cond: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression = {
-            attributeName: await this._getAttributeName(DatasetConditionOperator.Equal),
+            attributeName: this._column.attributeName,
             conditionOperator: DatasetConditionOperator.Equal,
             entityAliasName: this._column.entityAliasName,
             value: ""
@@ -270,14 +277,20 @@ export class Condition extends GridDependency {
         }
         return cond;
     }
-
-
-
     private get _filterExpression() {
         return structuredClone(this._dataset.filtering.getFilter()) ?? {
             conditions: [],
             filterOperator: 0
         }
     }
-
+    private async  _getConditionFromFilterExpression(): Promise<[Map<string, ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression>, string]> {
+        const map = new Map<string, ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression>(this._filterExpression.conditions.map(x => [x.attributeName, x]));
+        for (const cond of map.values()) {
+            const conditionAttributeName = await this._attributeNameDecorator(cond.conditionOperator, cond.attributeName, true);
+            if(conditionAttributeName === this._column.attributeName) {
+                return [map, cond.attributeName]
+            }
+        }
+        return [map, ""];
+    }
 }
