@@ -117,8 +117,8 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                     iconName: 'ClearFilter'
                 },
                 onClick: () => {
-                    condition.clear()
                     condition.remove();
+                    condition.save();
                 }
             });
         }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DatasetConditionOperator } from "../../core/enums/ConditionOperator";
 import { useGridInstance } from "../../core/hooks/useGridInstance"
 import { useRefreshCallback } from "../../core/hooks/useRefreshCallback";
@@ -25,8 +25,9 @@ export interface IColumnFilterConditionController {
 
 export const useColumnFilterConditionController = (column: IGridColumn): IColumnFilterConditionController | null => {
     const filtering = useGridInstance().filtering;
-    const conditionPromise = filtering.condition(column);
+    const conditionPromise = useMemo(() => filtering.condition(column), []);
     const [controller, setController] = useState<IColumnFilterConditionController>();
+    
     const refresh = async () => {
         const condition = await conditionPromise;
         setController({
@@ -47,7 +48,6 @@ export const useColumnFilterConditionController = (column: IGridColumn): IColumn
         })
     }
     useRefreshCallback(conditionPromise, refresh);
-
     useEffect(() => {
         (async () => {
             refresh();

@@ -96,13 +96,11 @@ export class Condition extends GridDependency {
             filterExpression.conditions.push(await this.getExpression());
         }
         this._dataset.filtering.setFilter(filterExpression);
-        this._dataset.refresh();
         return true;
 
     }
     public remove() {
         this._isRemoved = true;
-        this.save();
     }
     public clear() {
         this._inicializationPromise = undefined;
@@ -141,6 +139,9 @@ export class Condition extends GridDependency {
             get: () => this._get('value') as any,
             set: (value: any) => this._set("value", undefined, value),
             isValid: async () => {
+                if(this._conditionUtils.operator(this.operator.get()).doesNotAllowValue) {
+                    return true;
+                }
                 const [result, errorMessage] = await new ColumnValidation(this._column.dataType!).validate(await this.value.get());
                 return result;
             }

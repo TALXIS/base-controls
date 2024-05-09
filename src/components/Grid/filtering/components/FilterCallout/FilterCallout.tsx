@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Callout, IconButton, PrimaryButton, Button, ICalloutProps } from '@fluentui/react';
 import { Text } from '@fluentui/react/lib/Text';
 import { filterCalloutStyles } from './styles';
-import { useColumnFilterConditionController } from '../../controller/useColumnFilterConditionController';
+import { IColumnFilterConditionController, useColumnFilterConditionController } from '../../controller/useColumnFilterConditionController';
 import { IGridColumn } from '../../../core/interfaces/IGridColumn';
 import { FilteringUtils } from '../../utils/FilteringUtilts';
 import { ConditionOperator } from './components/ConditionOperator/ConditionOperator';
@@ -16,6 +16,8 @@ export interface IFilterCallout extends ICalloutProps {
 export const FilterCallout = (props: IFilterCallout) => {
     const {column, onDismiss} = {...props};
     const condition = useColumnFilterConditionController(column);
+    const conditionRef = React.useRef<IColumnFilterConditionController | null>();
+    conditionRef.current = condition;
     const conditionOperator = condition?.operator.get();
     const conditionValue = condition?.value.get();
     const conditionUtils = FilteringUtils.condition();
@@ -32,7 +34,7 @@ export const FilterCallout = (props: IFilterCallout) => {
 
     React.useEffect(() => {
         return () => {
-            condition?.clear()
+            conditionRef.current?.clear();
         }
     }, []);
 

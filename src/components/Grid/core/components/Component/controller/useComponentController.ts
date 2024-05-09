@@ -3,19 +3,29 @@ import { IComponentProps } from "../Component";
 import { Component } from '../model/Component';
 import { useGridInstance } from "../../../hooks/useGridInstance";
 import { IComponent } from "../../../../../../interfaces/context";
+import { IGridColumn } from "../../../interfaces/IGridColumn";
 
-export const useComponentController = (props: IComponentProps): IComponent<any, any, any> | undefined => {
+interface IComponentController {
+    column: IGridColumn;
+    componentProps: IComponent<any, any, any>;
+}
+
+export const useComponentController = (props: IComponentProps): IComponentController | undefined => {
     const grid = useGridInstance();
     const component = useMemo(() => new Component(grid), []);
-    const [controlProps, setControlProps] = useState<IComponent<any, any, any>>();
+    const [controller, setController] = useState<IComponentController>();
     const mountedRef = useRef<boolean>(true);
+    
     useEffect(() => {
         (async () => {
-            const _props = await component.getControlProps(props);
+            const componentProps = await component.getControlProps(props);
             if(!mountedRef.current) {
                 return;
             }
-            setControlProps(_props);
+            setController({
+                column: props.column,
+                componentProps: componentProps
+            })
         })();
     }, [props]);
 
@@ -25,5 +35,5 @@ export const useComponentController = (props: IComponentProps): IComponent<any, 
         }
     }, []);
 
-    return controlProps;
+    return controller
 }

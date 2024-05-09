@@ -121,6 +121,15 @@ export class FilteringUtils {
                             }
                         }
                         return false;
+                    })(),
+                    doesNotAllowValue: (() => {
+                        switch(conditionOperator) {
+                            case DatasetConditionOperator.Null:
+                            case DatasetConditionOperator.NotNull:
+                                return true;
+                            default: 
+                                return false;
+                        }
                     })()
                 }
             },

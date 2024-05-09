@@ -41,7 +41,7 @@ export class Filtering extends GridDependency {
                         const saveResult = await target.save();
                         if (saveResult) {
                             this._conditions.delete(target.column.key);
-                            target.clear();
+                            this._dataset.refresh();
                         }
                         return saveResult;
                     };

@@ -20,36 +20,35 @@ export interface IComponentProps {
 }
 
 export const Component = (props: IComponentProps) => {
-    const {column} = {...props};
-    const controlProps = useComponentController(props);
-
-    if(!controlProps) {
+    const controller = useComponentController(props);
+    const {column, componentProps} = {...controller};
+    if(!column) {
         return <></>
     }
     switch(column.dataType) {
         case DataType.TWO_OPTIONS: {
-            return <TwoOptions {...controlProps} />
+            return <TwoOptions {...componentProps!} />
         }
         case DataType.OPTIONSET: {
-            return <OptionSet {...controlProps} />
+            return <OptionSet {...componentProps!} />
         }
         case DataType.MULTI_SELECT_OPTIONSET: {
-            return <MultiSelectOptionSet {...controlProps} />
+            return <MultiSelectOptionSet {...componentProps!} />
         }
         case DataType.DATE_AND_TIME_DATE_AND_TIME:
         case DataType.DATE_AND_TIME_DATE_ONLY: {
-            return <DateTime {...controlProps} />
+            return <DateTime {...componentProps!} />
         }
         case DataType.DECIMAL:
         case DataType.WHOLE_NONE: {
-            return <Decimal {...controlProps} />
+            return <Decimal {...componentProps!} />
         }
         case DataType.LOOKUP_SIMPLE:
         case DataType.LOOKUP_OWNER: {
-            return <Lookup {...controlProps} />
+            return <Lookup {...componentProps!} />
         }
         default: {
-            return <TextField {...controlProps} />
+            return <TextField {...componentProps!} />
         }
     }
 }
