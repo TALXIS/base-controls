@@ -8,6 +8,7 @@ import { UserSettings } from '../../sandbox/mock/UserSettings';
 import numeral from "numeral";
 import { NumeralPCF } from '../../utils/NumeralPCF';
 import { getDefaultDurationTranslations } from './translations';
+
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -45,7 +46,7 @@ export const Duration = (props: IDuration) => {
         const dayRegex = new RegExp("^(" + dayLabels.join('|') + ")\\s|\\s(" + dayLabels.join('|') + ")$|^(" + daysLabels.join('|') + ")\\s|\\s(" + daysLabels.join('|') + ")$", "i");
 
         if (str && str.trim()) {
-            let input = str.trim();
+            let input = str.trim().toLowerCase();
             let unit = 'minute';
 
             if (minuteRegex.test(input)) {
@@ -102,8 +103,6 @@ export const Duration = (props: IDuration) => {
     });
 
     return (
-        <>
-            <span>{value}</span>
             <ComboBox
                 borderless={parameters.EnableBorder?.raw === false}
                 options={comboBoxOptions}
@@ -113,7 +112,8 @@ export const Duration = (props: IDuration) => {
                     autoFocus: true
                 } : undefined}
                 readOnly={context.mode.isControlDisabled}
-                dropdownWidth={context.mode.allocatedWidth || undefined}
+                useComboBoxAsMenuWidth
+                errorMessage={boundValue.errorMessage}
                 text={value ?? ''}
                 styles={{
                     root: {
@@ -123,7 +123,7 @@ export const Duration = (props: IDuration) => {
                         alignItems: 'center',
                     },
                     callout: {
-                        height: 100
+                        height: 300
                     }
                 }}
                 onInputValueChange={(text) => {
@@ -140,6 +140,5 @@ export const Duration = (props: IDuration) => {
                     });
                 }}
             />
-        </>
     );
 };
