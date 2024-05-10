@@ -28,27 +28,43 @@ export const Decimal = (props: IDecimal) => {
     };
 
     const extractNumericPart = (str: any): number | undefined => {
-        //currency control just sends the string up and lets the framework decide whether the value is correct
-        //it only tries to parse the number based on the current user format
-        //this means that the value will also pass if the user inputs his own currency even though
-        //the currency is different on the field
-        let regex;
-        NumeralPCF.decimal(numberFormatting)
+        // Currency control just sends the string up and lets the framework decide whether the value is correct
+        // It only tries to parse the number based on the current user format
+        // This means that the value will also pass if the user inputs his own currency even though
+        // the currency is different on the field
+        const escapeRegExp = (string: string) => {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escaping utility function
+        }
+    
+        let regex: RegExp;
+        NumeralPCF.decimal(numberFormatting);
         if (props.parameters.value.type === 'Decimal') {
-            regex = new RegExp('^[' + '\\d' + numberFormatting.numberDecimalSeparator + numberFormatting.numberGroupSeparator + '\\s' + numberFormatting.negativeSign + ']+$');
-        }
-        if (props.parameters.value.type === 'Currency') {
-            NumeralPCF.currency(numberFormatting)
-            regex = new RegExp('^\\s*\\$?\\s*[' + '\\d' + numberFormatting.currencyDecimalSeparator + numberFormatting.currencyGroupSeparator + '\\s' + numberFormatting.currencyNegativePattern + ']+\\s*\\$?\\s*$');
-        }
-        else {
-            regex = new RegExp('^[' + '\\d' + numberFormatting.numberGroupSeparator + '\\s' + numberFormatting.negativeSign + ']+$');
+            regex = new RegExp('^[' + '\\d' + escapeRegExp(numberFormatting.numberDecimalSeparator) + escapeRegExp(numberFormatting.numberGroupSeparator) + '\\s' + escapeRegExp(numberFormatting.negativeSign) + ']+$');
+        } else if (props.parameters.value.type === 'Currency') {
+            NumeralPCF.currency(numberFormatting);
+            regex = new RegExp(
+                '^\\s*' + 
+                '(?:' + escapeRegExp(numberFormatting.currencySymbol) + '\\s*)?' + 
+                '[' +
+                '\\d' + 
+                escapeRegExp(numberFormatting.currencyDecimalSeparator) +
+                escapeRegExp(numberFormatting.currencyGroupSeparator) +
+                '\\s' + 
+                escapeRegExp(numberFormatting.negativeSign) + 
+                ']*' +
+                '(?:\\s*' + escapeRegExp(numberFormatting.currencySymbol) + ')?' +
+                '\\s*$'
+            );
+        } else {
+            regex = new RegExp('^[' + '\\d' + escapeRegExp(numberFormatting.numberGroupSeparator) + '\\s' + escapeRegExp(numberFormatting.negativeSign) + ']+$');
         }
         if (regex.test(str)) {
             return numeral(str).value() ?? undefined;
         }
-        return str;
+        return str; // Return undefined if no numeric part is extracted
     };
+    
+    
     
     const [value, labels, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs, IDecimalTranslations>('Decimal', props, {
         formatter: formatter,
