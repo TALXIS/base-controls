@@ -34,7 +34,6 @@ export class Currency implements ComponentFramework.StandardControl<IInputs, IOu
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
-        console.log(context.parameters.value);
         ReactDOM.render(React.createElement(DecimalComponent as any, {
             context: context,
             parameters: {
