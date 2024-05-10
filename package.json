@@ -68,9 +68,8 @@
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2",
     "react-window": "^1.8.6",
-    "typescript": "4.9.3",
     "uniqid": "^5.4.0",
-    "validator": "^13.11.0"
+    "merge-anything": "^5.1.7"
   },
   "scripts": {
     "build": "rollup -c",
@@ -99,5 +98,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "dependencies": {
+    "humanize-duration": "^3.32.0"
   }
 }
