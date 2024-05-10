@@ -3,6 +3,7 @@ import { IComponent } from "../../../../../../interfaces/context";
 import { IParameters } from "../../../../../../interfaces/parameters";
 import { IDateTime } from "../../../../../DateTime/interfaces";
 import { IDecimal } from "../../../../../Decimal/interfaces";
+import { IDuration } from "../../../../../Duration";
 import { ILookup } from "../../../../../Lookup/interfaces";
 import { IMultiSelectOptionSet } from "../../../../../MultiSelectOptionSet/interfaces";
 import { IOptionSet } from "../../../../../OptionSet/interfaces";
@@ -140,7 +141,9 @@ export class Component extends GridDependency {
                 } as IDateTime;
             }
             case DataType.WHOLE_NONE:
-            case DataType.DECIMAL: {
+            case DataType.DECIMAL:
+            case DataType.CURRENCY:
+            case DataType.WHOLE_DURATION: {
                 const decimalValue = value as number | null | undefined
                 const metadata = await this._grid.metadata.get(column);
                 const precision = metadata.Attributes.get(column.attributeName).Precision;
@@ -163,7 +166,7 @@ export class Component extends GridDependency {
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
 
-                } as IDecimal
+                } as IDecimal;
             }
             default: {
                 return {

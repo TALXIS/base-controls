@@ -6,6 +6,7 @@ import { MultiSelectOptionSet } from "../../../../MultiSelectOptionSet/MultiSele
 import { OptionSet } from "../../../../OptionSet/OptionSet";
 import { TextField } from "../../../../TextField/TextField";
 import { TwoOptions } from "../../../../TwoOptions/TwoOptions";
+import { Duration } from "../../../../Duration/Duration";
 import { DataType } from "../../enums/DataType";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { useComponentController } from "./controller/useComponentController";
@@ -46,6 +47,9 @@ export const Component = (props: IComponentProps) => {
         case DataType.LOOKUP_SIMPLE:
         case DataType.LOOKUP_OWNER: {
             return <Lookup {...componentProps!} />
+        }
+        case DataType.WHOLE_DURATION: {
+            return <Duration {...componentProps!} />
         }
         default: {
             return <TextField {...componentProps!} />
