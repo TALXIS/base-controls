@@ -68,6 +68,7 @@ export const Duration = (props: IDuration) => {
     };
 
     const parseNumber = (input: string): number | undefined => {
+        NumeralPCF.decimal(numberFormatting);
         return numeral(input).value() ?? undefined;
     };
 
@@ -92,9 +93,6 @@ export const Duration = (props: IDuration) => {
     };
 
     const comboBoxOptions: IComboBoxOption[] = presetOptions();
-    useEffect(() => {
-        NumeralPCF.register(numberFormatting);
-    }, []);
 
     const [value, labels, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs, IDurationTranslations>('Duration', props, {
         formatter: formatter,
