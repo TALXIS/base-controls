@@ -27,6 +27,7 @@ export const Duration = (props: IDuration) => {
             units: units,
             maxDecimalPoints: 2,
             language: language.slice(0, language.indexOf("-")),
+            decimal: context.userSettings.numberFormattingInfo.numberDecimalSeparator,
             fallbacks: ["en"]
         };
         return humanizeDuration(durationInMilliseconds, options);
