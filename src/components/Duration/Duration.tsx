@@ -33,9 +33,16 @@ export const Duration = (props: IDuration) => {
 
     const valueExtractor = (str: string | null): number | undefined => {
         //extraction of number of minutes from formatted string should happen here
-        const minuteRegex = new RegExp("^" + labels.minute + "\\s|\\s" + labels.minute + "$|^" + labels.minutes + "\\s|\\s" + labels.minutes + "$", "i");
-        const hourRegex = new RegExp("^" + labels.hour + "\\s|\\s" + labels.hour + "$|^" + labels.hours + "\\s|\\s" + labels.hours + "$", "i");
-        const dayRegex = new RegExp("^" + labels.day + "\\s|\\s" + labels.day + "$|^" + labels.days + "\\s|\\s" + labels.days + "$", "i");
+       // parsing because labels are string that represent array of strings
+        const minuteLabels= JSON.parse(labels.minute);
+        const minutesLabels= JSON.parse(labels.minutes);
+        const hourLabels= JSON.parse(labels.hour);
+        const hoursLabels= JSON.parse(labels.hours);
+        const dayLabels= JSON.parse(labels.day);
+        const daysLabels= JSON.parse(labels.days);
+        const minuteRegex = new RegExp("^(" + minuteLabels.join('|') + ")\\s|\\s(" + minuteLabels.join('|') + ")$|^(" + minutesLabels.join('|') + ")\\s|\\s(" + minutesLabels.join('|') + ")$", "i");
+        const hourRegex = new RegExp("^(" + hourLabels.join('|') + ")\\s|\\s(" + hourLabels.join('|') + ")$|^(" + hoursLabels.join('|') + ")\\s|\\s(" + hoursLabels.join('|') + ")$", "i");
+        const dayRegex = new RegExp("^(" + dayLabels.join('|') + ")\\s|\\s(" + dayLabels.join('|') + ")$|^(" + daysLabels.join('|') + ")\\s|\\s(" + daysLabels.join('|') + ")$", "i");
 
         if (str && str.trim()) {
             let input = str.trim();
@@ -80,12 +87,10 @@ export const Duration = (props: IDuration) => {
             key: option.Value.toString(),
             text: formatter(parseInt(option.Label)),
         }));
-
         return formattedOptions;
     };
 
     const comboBoxOptions: IComboBoxOption[] = presetOptions();
-    
     useEffect(() => {
         NumeralPCF.register(numberFormatting);
     }, []);

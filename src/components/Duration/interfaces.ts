@@ -13,10 +13,10 @@ export interface IDurationOutputs extends IOutputs {
     value?: number
 }
 export interface IDurationTranslations extends ITranslations {
-    minute?: {[LCID: number]: string}
-    minutes?: {[LCID: number]: string}
-    hour?: {[LCID: number]: string}
-    hours?: {[LCID: number]: string}
-    day?: {[LCID: number]: string}
-    days?: {[LCID: number]: string}
+    minute?: {[LCID: number]: string []}
+    minutes?: {[LCID: number]: string[]}
+    hour?: {[LCID: number]: string[]}
+    hours?: {[LCID: number]: string[]}
+    day?: {[LCID: number]: string[]}
+    days?: {[LCID: number]: string[]}
 }
