@@ -98,6 +98,7 @@ export const EditableCell = (props: ICell) => {
     return <Component
         column={column}
         value={getComponentValue(value)}
+        formattedValue={record.getFormattedValue(column.key)}
         onNotifyOutputChanged={onNotifyOutputChanged}
         additionalParameters={{
             AutoFocus: {

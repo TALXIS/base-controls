@@ -17,7 +17,7 @@ import { IComponentProps } from "../Component";
 export class Component extends GridDependency {
 
     public async getControlProps(props: IComponentProps): Promise<IComponent<any, any, any>> {
-        const {column, value, onNotifyOutputChanged, shouldValidate, additionalParameters} = {...props};
+        const {column, value, onNotifyOutputChanged, shouldValidate, additionalParameters, formattedValue} = {...props};
         let isValid = true;
         let validationErrorMessage = ""
         if (shouldValidate) {
@@ -153,6 +153,8 @@ export class Component extends GridDependency {
                         value: {
                             raw: decimalValue ?? null,
                             error: !isValid,
+                            //formatted value is only used for currency => there is no way to get the currency symbol so the formatCurrency method is useless
+                            formatted: formattedValue,
                             errorMessage: validationErrorMessage,
                             type: column.dataType,
                             attributes: {

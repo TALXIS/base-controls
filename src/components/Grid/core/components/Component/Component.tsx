@@ -15,6 +15,7 @@ import React from 'react';
 export interface IComponentProps {
     column: IGridColumn;
     value: any;
+    formattedValue?: string;
     onNotifyOutputChanged: (value: any) => void;
     shouldValidate?: boolean;
     additionalParameters?: IParameters;
@@ -41,7 +42,8 @@ export const Component = (props: IComponentProps) => {
             return <DateTime {...componentProps!} />
         }
         case DataType.DECIMAL:
-        case DataType.WHOLE_NONE: {
+        case DataType.WHOLE_NONE:
+        case DataType.CURRENCY: {
             return <Decimal {...componentProps!} />
         }
         case DataType.LOOKUP_SIMPLE:
