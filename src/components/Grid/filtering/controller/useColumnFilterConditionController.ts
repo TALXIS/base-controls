@@ -30,7 +30,8 @@ export const useColumnFilterConditionController = (column: IGridColumn): IColumn
     
     const refresh = async () => {
         const condition = await conditionPromise;
-        setController({
+        setController(prevState => ({
+            ...prevState,
             isAppliedToDataset: condition.isAppliedToDataset,
             column: condition?.column,
             operator: {
@@ -45,7 +46,7 @@ export const useColumnFilterConditionController = (column: IGridColumn): IColumn
             remove: () => condition?.remove(),
             save: () => condition?.save(),
             clear: () => condition?.clear()
-        })
+        }))
     }
     useRefreshCallback(conditionPromise, refresh);
     useEffect(() => {

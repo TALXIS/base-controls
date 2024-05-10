@@ -71,5 +71,8 @@ export class ColumnValidation {
         if(!value) {
             return true;
         }
+        if(value?.length === 0) {
+            return true;
+        }
     }
 }

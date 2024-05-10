@@ -14,6 +14,7 @@ import { GridDependency } from "../../../model/GridDependency";
 import { IComponentProps } from "../Component";
 
 export class Component extends GridDependency {
+
     public async getControlProps(props: IComponentProps): Promise<IComponent<any, any, any>> {
         const {column, value, onNotifyOutputChanged, shouldValidate, additionalParameters} = {...props};
         let isValid = true;
@@ -48,7 +49,9 @@ export class Component extends GridDependency {
                             raw: await this._getLookupValue(targets, value),
                             attributes: {
                                 Targets: targets
-                            }
+                            },
+                            error: !isValid,
+                            errorMessage: validationErrorMessage,
                         },
                         ...additionalParameters
                     },
@@ -65,6 +68,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: twoOptionsValue === true ? true : false,
+                            error: !isValid,
+                            errorMessage: validationErrorMessage,
                             attributes: {
                                 Options: options
                             }
@@ -82,6 +87,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
+                            error: !isValid,
+                            errorMessage: validationErrorMessage,
                             attributes: {
                                 Options: options
                             }
@@ -99,6 +106,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
+                            error: !isValid,
+                            errorMessage: validationErrorMessage,
                             attributes: {
                                 Options: options
                             }
