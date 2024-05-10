@@ -3,11 +3,12 @@ import React, { useState } from "react";
 import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
 import { OptionSet } from "../components/OptionSet";
-import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty, ITwoOptionsProperty } from "../interfaces";
+import { IDecimalNumberProperty, IMultiSelectOptionSetProperty, IOptionSetProperty, ITwoOptionsProperty, IWholeNumberProperty } from "../interfaces";
 import { options } from './shared/optionList';
 import { multiSelectOptions } from './shared/multiSelectOptionList';
 import { MultiSelectOptionSet } from "../components/MultiSelectOptionSet";
 import { TwoOptions } from "../components/TwoOptions";
+import { Duration } from "../components/Duration";
 initializeIcons();
 
 export const Sandbox: React.FC = () => {
@@ -17,6 +18,7 @@ export const Sandbox: React.FC = () => {
   const [selectedValue, setSelectedValue] = useState<number | null>();
   const [selectedKeys, setSelectedKeys] = useState<number[] | undefined>();
   const [twoOptionValue, setTwoOptionValue] = useState<number | undefined>();
+  const [duration, setDuration] = useState<number | undefined>();
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [test, setTest] = useState("");
   const context = new Context();
@@ -109,6 +111,26 @@ export const Sandbox: React.FC = () => {
           //setTwoOptionValue(outputs.value);
         }}
       />
+      <Label>Component</Label>
+      <Duration
+        context={context}
+        parameters={{
+          EnableCopyButton: {
+            raw: true
+          },
+          EnableDeleteButton: {
+            raw: true
+          },
+          AutoFocus: {
+            raw: false
+          },
+          value: {
+            raw: duration ?? null,
+          } as IWholeNumberProperty
+        }}
+        onNotifyOutputChanged={(outputs) => {
+          setDuration(outputs.value);
+        }} />
     </>
   );
 };
