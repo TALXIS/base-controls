@@ -2,6 +2,7 @@ import { IDatasetProperty } from "../../../../interfaces";
 import { StringProps } from "../../../../types";
 import { Filtering } from "../../filtering/model/Filtering";
 import { IEntityRecord, IGrid, IGridTranslations } from "../../interfaces";
+import { Paging } from "../../paging/model/Paging";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
 import { DataType } from "../enums/DataType";
@@ -23,7 +24,8 @@ export class Grid {
         filtering: new Filtering(this),
         sorting: new Sorting(this),
         metadata: new Metadata(this),
-        selection: new Selection(this)
+        selection: new Selection(this),
+        paging: new Paging(this)
     }
     constructor(props: IGrid, labels: Required<StringProps<IGridTranslations>>) {
         this._props = props;
@@ -65,6 +67,9 @@ export class Grid {
     public get selection() {
         return this._dependencies.selection;
     }
+    public get paging() {
+        return this._dependencies.paging;
+    }
     public get shouldRerender() {
         return this._shouldRerender;
     }
@@ -84,6 +89,16 @@ export class Grid {
             const sorted = this._dataset.sorting?.find(sort => sort.name === column.name);
             const entityAliasName = column.alias?.includes('.') ? column.alias.split('.')[0] : null;
             const attributeName = entityAliasName ? column.name.split('.')[1] : column.name;
+            switch(column.dataType) {
+                case DataType.FILE:
+                case DataType.IMAGE: {
+                    if(entityAliasName) {
+                        //we do not support file fields with linked entities
+                        //the getValue API throws an error in Power Apps
+                        continue;
+                    }
+                }
+            }
             const gridColumn = {
                 entityAliasName: entityAliasName,
                 attributeName: attributeName,

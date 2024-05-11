@@ -47,6 +47,6 @@ export const RecordCreator = (props: IRecordCreator) => {
                        })];
                 })() : []
             }: undefined} 
-            text={labels.newRecord} />
+            text={labels.newRecord()} />
     )
 }

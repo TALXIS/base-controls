@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useGridInstance } from "../../core/hooks/useGridInstance";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
 
@@ -8,9 +9,18 @@ interface ISortingController {
 
 export const useColumnSortingController = (column: IGridColumn): ISortingController => {
     const grid = useGridInstance();
-    const sorting = grid.sorting;
-    return {
-        value: sorting.get(column),
-        sort: (sortDirection: ComponentFramework.PropertyHelper.DataSetApi.Types.SortDirection) => sorting.sort(column, sortDirection)
-    } 
+    const sorting = grid.sorting.get(column);
+
+    const getController = (): ISortingController => {
+        return {
+            value: sorting.value,
+            sort: (direction) => sorting.sort(direction)
+        }
+    }
+    const [controller, setController] = useState<ISortingController>(() => getController())
+
+    useEffect(() => {
+        setController(getController())
+    }, [sorting.value]);
+    return controller;
 }

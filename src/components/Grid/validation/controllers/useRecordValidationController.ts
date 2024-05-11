@@ -14,9 +14,13 @@ export const useColumnValidationController = (props: IRecordValidation): [boolea
     const columnValidation = useMemo(() => {return new ColumnValidation(column.dataType!, props.doNotCheckNull)}, []);
 
     const [isValid, setIsValid] = useState<boolean>(true);
-    const [errorMessage, setErrorMessage] = useState<string>("Ivalid input!");
+    const [errorMessage, setErrorMessage] = useState<string>("");
 
     useEffect(() => {
+        if(!column.isEditable) {
+            //we are not doing validation for non-editable columns
+            return;
+        }
         const [isValid, errorMessage] = columnValidation.validate(record.getValue(column.key));
         setIsValid(isValid);
         setErrorMessage(errorMessage);

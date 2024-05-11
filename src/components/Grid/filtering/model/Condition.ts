@@ -48,6 +48,7 @@ export class Condition extends GridDependency {
                     this._isAppliedToDataset = true;
                     this._conditionExpression = map.get(key)!;
                 }
+                this._conditionExpression.conditionOperator = this._operatorDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value, true) as any;
                 this._conditionExpression.value = this._valueDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value, true);
                 this._conditionExpression.attributeName = await this._attributeNameDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.attributeName, true);
                 resolve(true);
@@ -170,7 +171,9 @@ export class Condition extends GridDependency {
         }
         switch (this._column.dataType) {
             case DataType.OPTIONSET:
-            case DataType.TWO_OPTIONS: {
+            case DataType.TWO_OPTIONS:
+            case DataType.LOOKUP_OWNER:
+            case DataType.LOOKUP_SIMPLE: {
                 if (undecorate) {
                     if (attributeName.endsWith('name')) {
                         return attributeName.slice(0, -4);
@@ -182,14 +185,14 @@ export class Condition extends GridDependency {
                 }
                 return `${attributeName}name`
             }
-            case DataType.LOOKUP_OWNER:
+/*             case DataType.LOOKUP_OWNER:
             case DataType.LOOKUP_SIMPLE: {
                 if (undecorate) {
                     return attributeName;
                 }
                 const metadata = await this._grid.metadata.get(this._column);
                 return `${this._column.attributeName}${metadata.PrimaryNameAttribute}`;
-            }
+            } */
             default: {
                 return attributeName;
             }
@@ -224,7 +227,7 @@ export class Condition extends GridDependency {
         }
     }
 
-    private _operatorDecorator(conditionOperator: DatasetConditionOperator, value: any): DatasetConditionOperator {
+    private _operatorDecorator(conditionOperator: DatasetConditionOperator, value: any, undecorate?: boolean): DatasetConditionOperator {
         switch (this._column.dataType) {
             case DataType.MULTI_SELECT_OPTIONSET:
             case DataType.OPTIONSET:
@@ -233,6 +236,16 @@ export class Condition extends GridDependency {
             case DataType.LOOKUP_SIMPLE: {
                 //we need to switch the operators based on the number of selected options
                 if (typeof value !== 'string') {
+                    if(undecorate) {
+                        switch(conditionOperator) {
+                            case DatasetConditionOperator.In: {
+                                return DatasetConditionOperator.Equal
+                            }
+                            case DatasetConditionOperator.NotIn: {
+                                return DatasetConditionOperator.NotEqual;
+                            }
+                        }
+                    }
                     switch (conditionOperator) {
                         case DatasetConditionOperator.Equal: {
                             return DatasetConditionOperator.In;

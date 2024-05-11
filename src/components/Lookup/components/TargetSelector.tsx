@@ -21,7 +21,7 @@ export const TargetSelector = (props: ITargetSelector) => {
 
     return (
         <div className={styles.targetSelector}>
-            <Text variant='small'>{labels.resultsFrom} </Text>
+            <Text variant='small'>{labels.resultsFrom()} </Text>
             <div className={styles.targetSelectorLinks}>
                 <Link
                     onClick={() => onEntitySelected(null)}

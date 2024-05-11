@@ -4,6 +4,7 @@ import deepEqual from 'fast-deep-equal';
 import { IComponent, IOutputs, IParameters, ITranslations } from "../interfaces";
 import { merge } from 'merge-anything';
 import { StringProps } from "../types";
+import { Liquid } from "liquidjs";
 
 /**
  * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
@@ -14,11 +15,12 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
     (outputs: TOutputs) => void,
 ] => {
     const parametersRef = useRef<TParameters>(props.parameters);
+    const liquid = useMemo(() => new Liquid(), []);
     const labels = useMemo(() => {
         const mergedTranslations = merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations;
         return new Proxy(mergedTranslations, {
             get(target, key) {
-                return getLabel(key as string, mergedTranslations);
+                return (variables: any) => getLabel(key as string, mergedTranslations, variables);
             }
         }) as any;
     }, []);
@@ -27,7 +29,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         parametersRef.current = props.parameters;
     }, [props.parameters]);
 
-    const getLabel = (key: string, translations: TTranslations): string | string[] => {
+    const getLabel = (key: string, translations: TTranslations, variables?: any): string | string[] => {
         const strigify = (value: string | string[]) => {
             if(typeof value === 'string') {
                 return value;
@@ -51,7 +53,8 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
             console.error(`Translation for the ${key} label of the ${name} component does not exists neither for Czech language and current LCID.`);
             label = key;
         }
-        return strigify(label);
+
+        return liquid.parseAndRenderSync(strigify(label), variables);
     };
 
     const onNotifyOutputChanged = (outputs: TOutputs) => {

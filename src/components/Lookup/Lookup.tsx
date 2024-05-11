@@ -97,7 +97,7 @@ export const Lookup = (props: ILookup) => {
             const metadata = await entities.find(x => x.entityName === result.entityType)?.metadata;
             suggestions.push({
                 key: result.id,
-                text: result.name || labels.noName,
+                text: result.name || labels.noName(),
                 secondaryText: metadata?.DisplayName,
                 'data-entity': result.entityType
             })
@@ -114,8 +114,8 @@ export const Lookup = (props: ILookup) => {
                         className: styles.suggestions,
                     }}
                     pickerSuggestionsProps={{
-                        loadingText: labels.searching,
-                        noResultsFoundText: labels.noRecordsFound,
+                        loadingText: labels.searching(),
+                        noResultsFoundText: labels.noRecordsFound(),
                         //@ts-ignore
                         suggestionsHeaderText: <>
                             {props.parameters.IsInlineNewEnabled?.raw !== false &&
@@ -150,7 +150,7 @@ export const Lookup = (props: ILookup) => {
                     selectedItems={value.map(lookup => {
                         return {
                             key: lookup.id,
-                            text: lookup.name || labels.noName,
+                            text: lookup.name || labels.noName(),
                             'data-entity': lookup.entityType,
                             'data-navigation-enabled': props.parameters.EnableNavigation?.raw !== false,
                             onClick: () => {

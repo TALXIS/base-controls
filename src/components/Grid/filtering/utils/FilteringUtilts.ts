@@ -89,11 +89,11 @@ export class FilteringUtils {
                     })(),
                     fileOperators: (() => {
                         return OPERATORS.filter(operator => {
-                            switch(operator.type) {
+                            switch (operator.type) {
                                 case DatasetConditionOperator.Null:
                                 case DatasetConditionOperator.NotNull:
                                     return true;
-                                default: 
+                                default:
                                     return false;
                             }
                         })
@@ -123,11 +123,21 @@ export class FilteringUtils {
                         return false;
                     })(),
                     doesNotAllowValue: (() => {
-                        switch(conditionOperator) {
+                        switch (conditionOperator) {
                             case DatasetConditionOperator.Null:
                             case DatasetConditionOperator.NotNull:
+                            case DatasetConditionOperator.Today:
+                            case DatasetConditionOperator.Yesterday:
+                            case DatasetConditionOperator.Tomorrow:
+                            case DatasetConditionOperator.ThisWeek:
+                            case DatasetConditionOperator.ThisMonth:
+                            case DatasetConditionOperator.ThisYear:
+                            case DatasetConditionOperator.LastWeek:
+                            case DatasetConditionOperator.Last7Days:
+                            case DatasetConditionOperator.LastMonth:
+                            case DatasetConditionOperator.LastYear:
                                 return true;
-                            default: 
+                            default:
                                 return false;
                         }
                     })()
@@ -167,9 +177,9 @@ export class FilteringUtils {
                             case DatasetConditionOperator.LastXMonths:
                             case DatasetConditionOperator.NextXMonths:
                             case DatasetConditionOperator.NextXDays:
-                            {
-                                return true;
-                            }
+                                {
+                                    return true;
+                                }
                         }
                         return false;
                     })()

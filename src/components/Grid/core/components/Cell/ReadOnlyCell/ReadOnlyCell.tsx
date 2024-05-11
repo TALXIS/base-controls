@@ -36,7 +36,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     return (
         <TooltipHost
             id={tooltipId}
-            content={errorMessage}>
+            content={!isValid ? errorMessage : undefined}>
             <div className={styles.root} data-is-valid={isValid}>
                 <div className={styles.cellContent}>
                     <InternalReadOnlyCell {...props} />

@@ -36,6 +36,11 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                 value={conditionComponentValue.get()}
                 onNotifyOutputChanged={(value) => conditionComponentValue.set(value)}
                 shouldValidate={!controller.value.valid}
+                additionalParameters={{
+                    MultipleEnabled: {
+                        raw: true
+                    }
+                }}
             />
         </div>
     )

@@ -89,4 +89,7 @@ export interface IDatasetProperty extends IProperty, Omit<ComponentFramework.Pro
     records: {
         [id: string]: IEntityRecord;
     }
+    paging: ComponentFramework.PropertyHelper.DataSetApi.Paging & {
+        pageNumber: number
+    }
 }

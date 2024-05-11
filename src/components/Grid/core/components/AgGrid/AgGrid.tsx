@@ -9,6 +9,7 @@ import { IGridColumn } from "../../interfaces/IGridColumn";
 import { getGridStyles } from "./styles";
 import React from 'react';
 import { useAgGridController } from "./controllers/useAgGridController";
+import { Paging } from "../../../paging/components/Paging/Paging";
 
 export const AgGrid = () => {
     const grid = useGridInstance();
@@ -41,20 +42,18 @@ export const AgGrid = () => {
 
     return (
         <div className={`${styles.root} ag-theme-balham`}>
-{/*             <Save /> */}
             <AgGridReact
                 animateRows
                 singleClickEdit
                 rowSelection={grid.selection.type}
                 suppressRowClickSelection
-                onRowDoubleClicked={(e) => {
-                    //TODO: do not allow navigation only when some cell is in edit mode
-                    if(!isEditable) {
+                onCellDoubleClicked={(e) => {
+                    if(!e.colDef.editable) {
                         grid.dataset.openDatasetItem(e.data!.getNamedReference())
                     }
                 }}
-                onRowClicked={(e) => {
-                    if (!isEditable) {
+                onCellClicked={(e) => {
+                    if(!e.colDef.editable) {
                         selection.toggle(e.data!);
                     }
                 }}
@@ -69,56 +68,7 @@ export const AgGrid = () => {
                 rowData={records}
             >
             </AgGridReact>
-{/*             {!props.hidePagination &&
-                <CommandBar
-                    className="TALXIS__view__footer"
-                    items={[{
-                        key: 'CurrentItems',
-                        text: props.getTranslation("pages", { start: start, end: end, recordcount: props.dataset.paging.totalResultCount >= 0 ? props.dataset.paging.totalResultCount : "5000+" }),
-                        ariaLabel: props.getTranslation("currentItems"),
-                        disabled: true,
-                    }]}
-                    farItems={[{
-                        key: 'FirstPage',
-                        text: props.getTranslation("firstPage"),
-                        ariaLabel: props.getTranslation("firstPage"),
-                        iconOnly: true,
-                        iconProps: { iconName: 'DoubleChevronLeft' },
-                        disabled: !props.dataset.paging.hasPreviousPage,
-                        onClick: () => props.dataset.paging.reset(),
-                    }, {
-                        key: 'PreviousPage',
-                        text: props.getTranslation("back"),
-                        ariaLabel: props.getTranslation("back"),
-                        iconOnly: true,
-                        iconProps: { iconName: 'Back' },
-                        disabled: !props.dataset.paging.hasPreviousPage,
-                        onClick: () => {
-                            //@ts-ignore
-                            props.dataset.paging.loadExactPage(props.dataset.paging.pageNumber - 1)
-                        }
-                    }, {
-                        key: 'CurrentPage',
-                        text: props.getTranslation("currentPage", {
-                            //@ts-ignore
-                            pagenumber: props.pageNumber
-                        }),
-                        ariaLabel: 'Current Page',
-                        disabled: true,
-                    }, {
-                        key: 'NextPage',
-                        text: props.getTranslation("next"),
-                        ariaLabel: props.getTranslation("next"),
-                        iconOnly: true,
-                        iconProps: { iconName: 'Forward' },
-                        disabled: !props.dataset.paging.hasNextPage,
-                        onClick: () => {
-                            //@ts-ignore
-                            props.dataset.paging.loadExactPage(props.dataset.paging.pageNumber + 1)
-                        }
-                    }]}
-                />
-            } */}
+            <Paging />
         </div>
     );
 }

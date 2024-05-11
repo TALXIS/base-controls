@@ -40,17 +40,17 @@ export const DateTime = (componentProps: IDateTime) => {
                 calendarAs={(props) =>
                     <Calendar {...props}
                         strings={{
-                            goToToday: labels.goToToday,
-                            days: JSON.parse(labels.days),
-                            months: JSON.parse(labels.months),
-                            shortDays: JSON.parse(labels.shortDays),
-                            shortMonths: JSON.parse(labels.shortMonths)
+                            goToToday: labels.goToToday(),
+                            days: JSON.parse(labels.days()),
+                            months: JSON.parse(labels.months()),
+                            shortDays: JSON.parse(labels.shortDays()),
+                            shortMonths: JSON.parse(labels.shortMonths())
                         }}
                         timePickerProps={{
                             autoComplete: "off",
                             autoCapitalize: "off",
                             timeFormat: patterns.shortTimePattern,
-                            label: labels.time,
+                            label: labels.time(),
                             visible: isDateTime && !parameters.value.errorMessage,
                             useHour12: patterns.shortTimePattern.endsWith('A'),
                             onChange: (e, date) => selectDate(undefined, dayjs(date).format('HH:mm')),

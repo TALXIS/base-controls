@@ -26,7 +26,7 @@ export const ReadOnlyOptionSet = (props: IReadOnlyOptionSet) => {
             //TODO: optimization using fast-deep equal
             const getOptions = async (): Promise<ComponentFramework.PropertyHelper.OptionMetadata[]> => {
                 const [defaultValue, options] = await grid.metadata.getOptions(column);
-                let value: any = record.getValue(column.attributeName);
+                let value: any = record.getValue(column.key);
                 if (column.dataType === DataType.OPTIONSET) {
                     value = value ? [parseInt(value)] : null;
                 }
