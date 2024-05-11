@@ -21,6 +21,7 @@ interface ICellProps {
 }
 
 export const ReadOnlyCell = (props: ICellProps) => {
+    const grid = useGridInstance();
     const column = props.baseColumn;
     const record = props.data;
     const theme = useTheme();
@@ -36,12 +37,12 @@ export const ReadOnlyCell = (props: ICellProps) => {
     return (
         <TooltipHost
             id={tooltipId}
-            content={!isValid ? errorMessage : undefined}>
+            content={!isValid && !grid.loading ? errorMessage : undefined}>
             <div className={styles.root} data-is-valid={isValid}>
                 <div className={styles.cellContent}>
                     <InternalReadOnlyCell {...props} />
                 </div>
-                {!isValid && <Icon styles={{
+                {!isValid && !grid.loading && <Icon styles={{
                     root: {
                         color: theme.semanticColors.errorIcon
                     }
@@ -94,6 +95,9 @@ const InternalReadOnlyCell = (props: ICellProps) => {
             }
         }
         return 'left';
+    }
+    if(grid.loading) {
+        return <div className={styles.loadingLine} />
     }
     switch (column.dataType) {
         case DataType.SINGLE_LINE_EMAIL: {

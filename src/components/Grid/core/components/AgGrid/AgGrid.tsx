@@ -10,6 +10,7 @@ import { getGridStyles } from "./styles";
 import React from 'react';
 import { useAgGridController } from "./controllers/useAgGridController";
 import { Paging } from "../../../paging/components/Paging/Paging";
+import { EmptyRecords } from "../EmptyRecords/EmptyRecords";
 
 export const AgGrid = () => {
     const grid = useGridInstance();
@@ -21,7 +22,8 @@ export const AgGrid = () => {
     //const [_, validate] = useRecordValidationServiceController();
     const theme = useTheme();
     const styles = getGridStyles(theme);
-    const {agColumns, records, isEditable} = useAgGridController(gridApiRef);
+    let {agColumns, records, isEditable} = useAgGridController(gridApiRef);
+    records = [];
     const selection = useSelectionController();
 
 /*     const validateCurrentRecords = () => {
@@ -47,6 +49,7 @@ export const AgGrid = () => {
                 singleClickEdit
                 rowSelection={grid.selection.type}
                 suppressRowClickSelection
+                noRowsOverlayComponent={EmptyRecords}
                 onCellDoubleClicked={(e) => {
                     if(!e.colDef.editable) {
                         grid.dataset.openDatasetItem(e.data!.getNamedReference())

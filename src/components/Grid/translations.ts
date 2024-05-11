@@ -62,6 +62,7 @@ export const gridTranslations: IGridTranslations = {
     "paging-page": { 1029: "Strana", 1033: "Page" },
     "paging-nextpage": { 1029: "Další", 1033: "Next" },
     "paging-lastpage": { 1029: "Poslední strana", 1033: "Last page" },
-    "paging-pages": {1029: "{{start}} - {{end}} z {{recordcount}}", 1033: "{{start}} - {{end}} of {{recordcount}}"}
+    "paging-pages": {1029: "{{start}} - {{end}} z {{recordcount}}", 1033: "{{start}} - {{end}} of {{recordcount}}"},
+    "norecordsfound": {1029: 'Nenašli jsme nic, co by se zde dalo zobrazit', 1033: 'No records found'}
 };
    

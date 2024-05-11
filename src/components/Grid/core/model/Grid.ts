@@ -73,6 +73,9 @@ export class Grid {
     public get shouldRerender() {
         return this._shouldRerender;
     }
+    public get loading() {
+        return this._dataset.loading;
+    }
 
     public updateDependencies(props: IGrid): void {
         this._props = props;

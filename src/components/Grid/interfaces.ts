@@ -84,4 +84,5 @@ export interface IGridTranslations extends ITranslations {
     "paging-page": { [LCID: number]: string };
     "paging-nextpage": { [LCID: number]: string };
     "paging-lastpage": { [LCID: number]: string };
+    "norecordsfound": { [LCID: number]: string };
 }

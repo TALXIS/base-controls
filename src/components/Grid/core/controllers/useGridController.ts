@@ -32,7 +32,7 @@ export const useGridController = (gridInstance?: Grid): IGridController => {
         useEffect(() => {
             setRecords(grid.refreshRecords());
         }, [grid.shouldRerender]);
-    
+        
     return {
         isEditable,
         columns,
