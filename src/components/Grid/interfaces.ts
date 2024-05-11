@@ -77,6 +77,7 @@ export interface IGridTranslations extends ITranslations {
     "filtersortmenu-sorttwooption-joint": { [LCID: number]: string };
     "filtersortmenu-filterby": { [LCID: number]: string };
     "filtersortmenu-clearfilter": { [LCID: number]: string };
+    "paging-pages": { [LCID: number]: string };
     "paging-of": { [LCID: number]: string };
     "paging-firstpage": { [LCID: number]: string };
     "paging-previouspage": { [LCID: number]: string };

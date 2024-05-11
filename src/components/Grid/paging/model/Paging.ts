@@ -8,7 +8,7 @@ export class Paging extends GridDependency {
     public get pageSize() {
         return this._dataset.paging.pageSize;
     }
-    public get totalRecordCount() {
+    public get totalResultCount() {
         return this._dataset.paging.totalResultCount;
     }
     public get hasPreviousPage() {
@@ -16,6 +16,13 @@ export class Paging extends GridDependency {
     }
     public get hasNextPage() {
         return this._dataset.paging.hasNextPage;
+    }
+    public get pageFirstRecordOrder() {
+        return (this.pageNumber - 1) * this.pageSize + (this.totalResultCount === 0 ? 0 : 1);
+    }
+
+    public get pageLastRecordOrder() {
+        return this.pageNumber * this.pageSize;
     }
 
     public loadNextPage() {
@@ -29,6 +36,12 @@ export class Paging extends GridDependency {
     }
     public setPageSize(pageSize: number) {
         this._dataset.paging.setPageSize(pageSize);
+        this._dataset.refresh();
+        //in Power Apps the new page size can sometimes come only after second refresh #smh
+        //@ts-ignore - Portal types
+        if(!window.TALXIS?.Portal) {
+            this._dataset.refresh()
+        }
     }
     public reset() {
         this._dataset.paging.reset();

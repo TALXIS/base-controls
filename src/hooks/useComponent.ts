@@ -20,7 +20,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         const mergedTranslations = merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations;
         return new Proxy(mergedTranslations, {
             get(target, key) {
-                return (variables: any) => getLabel(key as string, mergedTranslations, variables);
+                return (variables: any) => getLabel(key as string, mergedTranslations, variables)
             }
         }) as any;
     }, []);

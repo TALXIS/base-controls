@@ -42,7 +42,7 @@ export const ConditionOperator = (props: IConditionOperator) => {
         return operators.map(operator => {
             return {
                 key: operator.type,
-                text: grid.labels[operator.key]
+                text: grid.labels[operator.key]()
             };
         });
     };

@@ -22,8 +22,6 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
     const condition = useColumnFilterConditionController(column);
     const [items, setItems] = useState<IContextualMenuItem[]>([]);
 
-    console.log(condition);
-
     useEffect(() => {
         (async() => {
             setItems(await getItems())
@@ -33,9 +31,9 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
     const getTwoOptionsSortLabel = async (isDesc?: boolean) => {
         const [defaultValue, options] = await grid.metadata.getOptions(column);
         if(!isDesc) {
-            return `${options[0].Label} ${labels['filtersortmenu-sorttwooption-joint']} ${options[1].Label}`
+            return `${options[0].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[1].Label}`
         }
-        return `${options[1].Label} ${labels['filtersortmenu-sorttwooption-joint']} ${options[0].Label}`
+        return `${options[1].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[0].Label}`
     }
     const getLabel = async (isDesc?: boolean) => {
         switch (column.dataType) {
@@ -44,25 +42,25 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
             case DataType.FP:
             case DataType.CURRENCY: {
                 if (!isDesc) {
-                    return labels['filtersortmenu-sortnumber-a-z']
+                    return labels['filtersortmenu-sortnumber-a-z']()
                 }
-                return labels['filtersortmenu-sortnumber-z-a']
+                return labels['filtersortmenu-sortnumber-z-a']()
             }
             case DataType.DATE_AND_TIME_DATE_AND_TIME:
             case DataType.DATE_AND_TIME_DATE_ONLY: {
                 if (!isDesc) {
-                    return labels['filtersortmenu-sortdate-a-z']
+                    return labels['filtersortmenu-sortdate-a-z']()
                 }
-                return labels['filtersortmenu-sortdate-z-a']
+                return labels['filtersortmenu-sortdate-z-a']()
             }
             case DataType.TWO_OPTIONS: {
                return getTwoOptionsSortLabel(isDesc);
             }
             default: {
                 if (!isDesc) {
-                    return labels['filtersortmenu-sorttext-a-z']
+                    return labels['filtersortmenu-sorttext-a-z']()
                 }
-                return labels['filtersortmenu-sorttext-z-a']
+                return labels['filtersortmenu-sorttext-z-a']()
             }
         }
     }
@@ -102,7 +100,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 key: 'filter',
                 className: styles.item,
                 disabled: !column.isFilterable,
-                text: labels['filtermenu-filterby'],
+                text: labels['filtermenu-filterby'](),
                 iconProps: {
                     iconName: 'Filter'
                 },
@@ -112,7 +110,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
         if (condition.isAppliedToDataset) {
             items.push({
                 key: 'clearFilter',
-                text: labels['filtersortmenu-clearfilter'],
+                text: labels['filtersortmenu-clearfilter'](),
                 iconProps: {
                     iconName: 'ClearFilter'
                 },

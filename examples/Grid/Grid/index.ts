@@ -52,6 +52,8 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
                 ...context.parameters.Grid,
                 columns: [...context.parameters.Grid.columns],
                 sorting: context.parameters.Grid.sorting ?? [],
+                //@ts-ignore - not part of types
+                paging: {...context.parameters.Grid.paging, pageNumber: 1, pageSize: 25},
                 refresh: () => {
                     this.updateView(context);
                 },

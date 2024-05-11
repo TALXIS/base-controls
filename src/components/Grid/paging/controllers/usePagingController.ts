@@ -7,9 +7,12 @@ interface IPagingController {
     totalResultCount: number,
     hasPreviousPage: boolean,
     hasNextPage: boolean,
+    pageFirstRecordOrder: number,
+    pageLastRecordOrder: number,
     loadNextPage: () => void,
     loadPreviousPage: () => void,
     loadExactPage: (pageNumber: number) => void,
+    setPageSize: (pageSize: number) => void,
     reset: () => void
 }
 
@@ -19,12 +22,15 @@ export const usePagingController = (): IPagingController => {
         return {
             pageNumber: paging.pageNumber,
             pageSize: paging.pageSize,
-            totalResultCount: paging.totalRecordCount,
+            totalResultCount: paging.totalResultCount,
             hasPreviousPage: paging.hasPreviousPage,
             hasNextPage: paging.hasNextPage,
+            pageFirstRecordOrder: paging.pageFirstRecordOrder,
+            pageLastRecordOrder: paging.pageLastRecordOrder,
             loadExactPage: (pageNumber: number) => paging.loadExactPage(pageNumber),
             loadNextPage: () => paging.loadNextPage(),
             loadPreviousPage: () => paging.loadPreviousPage(),
+            setPageSize: (pageSize) => paging.setPageSize(pageSize),
             reset: () => paging.reset()
         }
     }
@@ -32,7 +38,7 @@ export const usePagingController = (): IPagingController => {
 
     useEffect(() => {
         setController(getController());
-    }, [paging.pageNumber, paging.pageSize, paging.totalRecordCount])
+    }, [paging.pageNumber, paging.pageSize, paging.totalResultCount])
 
     return controller;
 }
