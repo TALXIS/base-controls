@@ -1,22 +1,34 @@
 import { useGridInstance } from "../../../hooks/useGridInstance";
-import { IGridColumn } from "../../../interfaces/IGridColumn";
 import { IUpdatedRecord } from "../model/RecordUpdateService";
 
 interface IRecordUpdateServiceController {
+    isDirty: boolean,
     updatedRecords: IUpdatedRecord[];
-    currentRecord: {
-        setValue: (column: IGridColumn, value: any) => void;
+    saveAll: () => Promise<boolean>;
+    clearAll: () => void,
+    record(recordId: string): {
+        get: () => IUpdatedRecord | undefined
+        setValue: (columnName: string, value: any) => void
     }
 }
 
-export const useRecordUpdateServiceController = (recordId: string): IRecordUpdateServiceController => {
+export const useRecordUpdateServiceController = (): IRecordUpdateServiceController => {
     const grid = useGridInstance();
     const recordUpdateService = grid.recordUpdateService;
-
+    
     return {
-        updatedRecords: recordUpdateService.updatedRecords,
-        currentRecord: {
-            setValue: (column: IGridColumn, value: any) => recordUpdateService.record(recordId).setValue(column.key, value)
+        isDirty: recordUpdateService.isDirty,
+        updatedRecords: [...recordUpdateService.updatedRecords.values()],
+        saveAll: () => recordUpdateService.saveAll(),
+        clearAll: () => recordUpdateService.clearAll(),
+        record: (recordId: string) => {
+            const record = recordUpdateService.record(recordId);
+            return {
+                get: () => record.get(),
+                setValue: (columnName: string, value: any) => {
+                    record.setValue(columnName, value)
+                }   
+            }
         }
     }
 }

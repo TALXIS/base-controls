@@ -5,13 +5,21 @@ export interface IGrid extends IComponent<IGridParameters, IGridOutputs, IGridTr
 
 }
 
+export interface IEntityColumn extends ComponentFramework.PropertyHelper.DataSetApi.Column {
+    isResizable?: boolean;
+    isFilterable?: boolean;
+    isEditable?: boolean;
+}
 export interface IEntityRecord extends ComponentFramework.PropertyHelper.DataSetApi.EntityRecord {
     setValue: (columnName: string, value: any) => void;
     save: () => Promise<boolean>;
 }
 
 export interface IGridParameters extends IParameters {
-    EnableEditing?: ITwoOptionsProperty;
+    EnableEditing?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnablePagination?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableFiltering?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableSorting?: Omit<ITwoOptionsProperty, 'attributes'>;
     SelectableRows?: IStringProperty & {
         raw: 'single' | 'multiple' | 'true' | 'single'
     }
@@ -85,4 +93,8 @@ export interface IGridTranslations extends ITranslations {
     "paging-nextpage": { [LCID: number]: string };
     "paging-lastpage": { [LCID: number]: string };
     "norecordsfound": { [LCID: number]: string };
+    "saving-changenotification": { [LCID: number]: string };
+    "saving-save": { [LCID: number]: string };
+    "saving-saving": { [LCID: number]: string };
+    "saving-changepreview-title": { [LCID: number]: string };
 }

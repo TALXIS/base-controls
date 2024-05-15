@@ -8,7 +8,7 @@ export const getGridStyles = (theme: ITheme) => {
             flexDirection: 'column',
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
-                minHeight: 600,
+                //minHeight: 600,
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`
             },
             '.ag-body': {
@@ -16,6 +16,12 @@ export const getGridStyles = (theme: ITheme) => {
             },
             '.ag-header-viewport': {
                 backgroundColor: `${theme.semanticColors.bodyBackground}`
+            },
+            '.ag-center-cols-container': {
+                minWidth: '100%',
+            },
+            '.ag-layout-auto-height .ag-center-cols-clipper, .ag-layout-auto-height .ag-center-cols-container, .ag-layout-print .ag-center-cols-clipper, .ag-layout-print .ag-center-cols-container': {
+                minHeight: '42px !important'
             },
             '.ag-header-cell': {
                 paddingLeft: 0,
@@ -28,6 +34,9 @@ export const getGridStyles = (theme: ITheme) => {
             ':global(.TALXIS__combobox__root, [class*="TALXIS__textfield__root"], [class*="TALXIS__tag-picker__root"])': {
                 padding: '0px !important'
             },
+            '.ag-cell-inline-editing': {
+                overflow: 'initial'
+            }
         }
     })
 }

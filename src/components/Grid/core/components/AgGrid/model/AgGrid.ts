@@ -25,6 +25,7 @@ export class AgGrid extends GridDependency {
                 sortable: column.isSortable,
                 editable: column.isEditable,
                 resizable: column.isResizable,
+                suppressMovable: this._grid.props.parameters.ChangeEditorMode ? true : undefined,
                 autoHeaderHeight: true,
                 valueFormatter: (p) => {
                     return p.data.getFormattedValue(column.key)

@@ -63,6 +63,10 @@ export const gridTranslations: IGridTranslations = {
     "paging-nextpage": { 1029: "Další", 1033: "Next" },
     "paging-lastpage": { 1029: "Poslední strana", 1033: "Last page" },
     "paging-pages": {1029: "{{start}} - {{end}} z {{recordcount}}", 1033: "{{start}} - {{end}} of {{recordcount}}"},
-    "norecordsfound": {1029: 'Nenašli jsme nic, co by se zde dalo zobrazit', 1033: 'No records found'}
+    "norecordsfound": {1029: 'Nenašli jsme nic, co by se zde dalo zobrazit', 1033: 'No records found'},
+    "saving-changenotification": {1029: "Počet upravených záznamů: <b>{{numOfChanges}}</b>. Klikněte <u>zde</u> pro jejich zobrazení.", 1033: "Number of updated records: <b>{{numOfChanges}}</b>. Click <u>here</u> to review."},
+    "saving-save": {1029: "Uložit", 1033: "Save"},
+    "saving-saving": {1029: "Ukládání...", 1033: "Saving..."},
+    "saving-changepreview-title": {1033: 'Number of updated rows: {{numOfChanges}}', 1029: 'Počet upravených záznamů: {{numOfChanges}}'}
 };
    

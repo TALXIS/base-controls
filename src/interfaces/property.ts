@@ -1,4 +1,4 @@
-import { IEntityRecord } from "../components/Grid/interfaces";
+import { IEntityColumn, IEntityRecord } from "../components/Grid/interfaces";
 
 type ExcludedProps = Pick<ComponentFramework.PropertyTypes.Property, 'formatted'>;
 
@@ -81,11 +81,7 @@ export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramew
 }
 
 export interface IDatasetProperty extends IProperty, Omit<ComponentFramework.PropertyTypes.DataSet, 'error' | 'errorMessage'> {
-    columns: ComponentFramework.PropertyHelper.DataSetApi.Column[] & {
-        isResizable?: boolean;
-        isFilterable?: boolean;
-        isEditable?: boolean;
-    }[],
+    columns: IEntityColumn[],
     records: {
         [id: string]: IEntityRecord;
     }

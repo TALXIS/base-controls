@@ -12,7 +12,7 @@ interface ICell {
 export const EditableCell = (props: ICell) => {
     const record = props.data;
     const column = props.baseColumn;
-    const recordUpdateService = useRecordUpdateServiceController(record.getRecordId());
+    const recordUpdateService = useRecordUpdateServiceController();
     const mountedRef = React.useRef(true);
     const valueRef = React.useRef(props.data.getValue(column.key));
     const [value, setValue] = React.useState(valueRef.current);
@@ -24,7 +24,7 @@ export const EditableCell = (props: ICell) => {
             if (!hasBeenUpdatedRef.current) {
                 return;
             }
-            recordUpdateService.currentRecord.setValue(column, getRecordValue(valueRef.current))
+            recordUpdateService.record(record.getRecordId()).setValue(column.key, getRecordValue(valueRef.current))
         }
     }, []);
 
@@ -89,7 +89,7 @@ export const EditableCell = (props: ICell) => {
         valueRef.current = value;
         hasBeenUpdatedRef.current = true;
         if(!mountedRef.current) {
-            recordUpdateService.currentRecord.setValue(column, getRecordValue(valueRef.current))
+            recordUpdateService.record(record.getRecordId()).setValue(column.key, getRecordValue(valueRef.current))
             return;
         }
         setValue(valueRef.current);

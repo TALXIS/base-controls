@@ -1,7 +1,7 @@
 import { IDatasetProperty } from "../../../../interfaces";
 import { StringProps } from "../../../../types";
 import { Filtering } from "../../filtering/model/Filtering";
-import { IEntityRecord, IGrid, IGridTranslations } from "../../interfaces";
+import { IEntityColumn, IEntityRecord, IGrid, IGridTranslations } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
@@ -18,20 +18,31 @@ export class Grid {
     private _records: IEntityRecord[] = [];
     private _labels: Required<StringProps<IGridTranslations>>;
     private _shouldRerender: boolean = false;
-
-    private _dependencies = {
-        recordUpdateService: new RecordUpdateService(this),
-        filtering: new Filtering(this),
-        sorting: new Sorting(this),
-        metadata: new Metadata(this),
-        selection: new Selection(this),
-        paging: new Paging(this)
-    }
+   //TODO: the dependencies might not have fully loaded grid
+   //need to make sure that the grid is initialized before creating them
+    private _dependencies: {
+        recordUpdateService: RecordUpdateService,
+        filtering: Filtering,
+        sorting: Sorting,
+        metadata: Metadata,
+        selection: Selection,
+        paging: Paging
+    };
     constructor(props: IGrid, labels: Required<StringProps<IGridTranslations>>) {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
         this._labels = labels;
+        
+        this._dependencies = {
+            recordUpdateService: new RecordUpdateService(this),
+            filtering: new Filtering(this),
+            selection: new Selection(this),
+            metadata: new Metadata(this),
+            sorting: new Sorting(this),
+            paging: new Paging(this)
+        }
+
     };
 
     public get labels() {
@@ -110,8 +121,8 @@ export class Grid {
                 dataType: column.dataType as DataType,
                 displayName: column.displayName,
                 //comes from extended
-                isFilterable: column.isFilterable ?? true,
-                isSortable: !column.disableSorting,
+                isFilterable: this._isColumnFilterable(column),
+                isSortable: this._isColumnSortable(column),
                 isSorted: sorted ? true : false,
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
                 width: column.visualSizeFactor,
@@ -147,6 +158,15 @@ export class Grid {
         this._columns = gridColumns;
         return gridColumns;
     }
+    public refreshRecords(): IEntityRecord[] {
+        const records = [];
+        for (const [_, record] of Object.entries(this._dataset.records)) {
+            records.push(record);
+        }
+        this._records = records;
+        return records
+    }
+
     private async _isColumnEditable(column: IGridColumn): Promise<boolean> {
         //only allow editing if specifically allowed
         if (!this._props.parameters.EnableEditing?.raw) {
@@ -171,13 +191,17 @@ export class Grid {
         //IsEditable is not available in Power Apps
         return metadata.Attributes.get(column.attributeName).attributeDescriptor.IsValidForUpdate
     }
-    public refreshRecords(): IEntityRecord[] {
-        const records = [];
-        for (const [_, record] of Object.entries(this._dataset.records)) {
-            records.push(record);
+    private _isColumnSortable(column: IEntityColumn) {
+        if(this._props.parameters.EnableSorting?.raw === false) {
+            return false;
         }
-        this._records = records;
-        return records
+        return !column.disableSorting;
     }
+    private _isColumnFilterable(column: IEntityColumn) {
+        if(this.props.parameters.EnableFiltering?.raw === false) {
+            return false;
+        }
+        return column.isFilterable ?? true;
+    } 
 
 }

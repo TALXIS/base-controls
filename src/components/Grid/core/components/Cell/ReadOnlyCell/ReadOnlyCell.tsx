@@ -23,7 +23,7 @@ interface ICellProps {
 export const ReadOnlyCell = (props: ICellProps) => {
     const grid = useGridInstance();
     const column = props.baseColumn;
-    const record = props.data;
+    const record = props.data; 
     const theme = useTheme();
     const styles = getReadOnlyCellStyles(theme);
     const tooltipId = React.useMemo(() => Math.random().toString(), []);
@@ -95,9 +95,6 @@ const InternalReadOnlyCell = (props: ICellProps) => {
             }
         }
         return 'left';
-    }
-    if(grid.loading) {
-        return <div className={styles.loadingLine} />
     }
     switch (column.dataType) {
         case DataType.SINGLE_LINE_EMAIL: {

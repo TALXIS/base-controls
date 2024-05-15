@@ -76,7 +76,7 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
                     raw: true
                 },
                 Grid: context.parameters.Grid
-            }
+            } as any
         } as IGrid), this._container);
     }
 

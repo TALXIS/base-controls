@@ -49,6 +49,9 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         readOnly={context.mode.isControlDisabled}
         errorMessage={boundValue.errorMessage}
         dropdownWidth={context.mode.allocatedWidth || undefined}
+        calloutProps={{
+            doNotLayer: true
+        }}
         selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : [-1]}
         styles={{
             root: {
