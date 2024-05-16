@@ -64,11 +64,6 @@ export class ConditionComponentValue {
         }
         return value;
     }
-/*     public isValid() {
-        const columnValidation = new ColumnValidation(this.column.dataType);
-        const [isValid] = columnValidation.validate(this.get());
-        return isValid;
-    } */
     public set(value: any) {
         switch (this.column.dataType) {
             case DataType.DATE_AND_TIME_DATE_AND_TIME:

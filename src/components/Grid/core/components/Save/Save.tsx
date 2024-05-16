@@ -10,11 +10,12 @@ export const Save = () => {
     const grid = useGridInstance();
     const labels = grid.labels;
     const styles = getSaveStyles();
-    const { isDirty, updatedRecords, clearAll } = useRecordUpdateServiceController();
+    const { isDirty, updatedRecords, hasInvalidRecords, clearAll } = useRecordUpdateServiceController();
     const { isSaving, saveBtnProps, save } = useSave();
     const [changeEditorOpened, setChangeEditorOpened] = useState<boolean>(false);
 
     const onMessageClick = () => {
+        console.log('click')
         if (!isDirty) {
             //return;
         }
@@ -23,9 +24,9 @@ export const Save = () => {
 
     return (
         <>
-            <div onClick={onMessageClick} className={styles.root} data-dirty={isDirty && !grid.props.parameters.ChangeEditorMode!}>
+            <div onClick={onMessageClick} className={styles.root} data-dirty={isDirty /* && !grid.props.parameters.ChangeEditorMode! */}>
                 <MessageBar
-                    messageBarType={true ? MessageBarType.info : MessageBarType.error}
+                    messageBarType={!hasInvalidRecords ? MessageBarType.info : MessageBarType.error}
                     actions={
                         <div className={styles.actions}>
                             <CommandBarButton
@@ -41,7 +42,7 @@ export const Save = () => {
                                 }}
                             />
                             <CommandBarButton
-                                disabled={saveBtnProps.disabled}
+                                disabled={saveBtnProps.disabled && !hasInvalidRecords}
                                 iconProps={{
                                     iconName: 'Delete'
                                 }}
@@ -52,7 +53,7 @@ export const Save = () => {
                             />
                         </div>
                     } isMultiline={false}>
-                    {isDirty && !grid.props.parameters.ChangeEditorMode &&
+                    {isDirty && /* !grid.props.parameters.ChangeEditorMode && */
                         <span className={styles.notificationText} dangerouslySetInnerHTML={{
                             __html: labels["saving-changenotification"]({ numOfChanges: updatedRecords.length })
                         }}></span>
@@ -62,7 +63,7 @@ export const Save = () => {
             {changeEditorOpened &&
                 <ChangeEditor onDismiss={(e) => {
                     //@ts-ignore
-                    if(e.code === 'Escape') {
+                    if(e?.code === 'Escape') {
                         return;
                     }
                     setChangeEditorOpened(false);

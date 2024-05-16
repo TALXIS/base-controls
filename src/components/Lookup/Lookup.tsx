@@ -44,7 +44,7 @@ export const Lookup = (props: ILookup) => {
                 if ((document.activeElement === picker) && value.length === 1) {
                     records.select(undefined);
                     setTimeout(() => {
-                        componentRef.current?.focus();
+                        componentRef.current?.focusInput()
                     }, 200)
                 }
             }
@@ -58,8 +58,12 @@ export const Lookup = (props: ILookup) => {
 
     useEffect(() => {
         if(props.parameters.AutoFocus?.raw === true) {
-            //@ts-ignore - typings
-            ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]').focus()
+            if(componentRef.current?.items?.length === itemLimit) {
+                //@ts-ignore
+                ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]').focus();
+                return;
+            }
+            componentRef.current?.focusInput();
         }
     }, []);
 
@@ -128,9 +132,6 @@ export const Lookup = (props: ILookup) => {
                                 }} />
                             }
                         </>
-                    }}
-                    inputProps={{
-                        autoFocus: props.parameters.AutoFocus?.raw === true,
                     }}
                     transparent={!isComponentActive() && itemLimit === 1}
                     onChange={(items) => {

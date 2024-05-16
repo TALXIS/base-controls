@@ -7,6 +7,7 @@ import { IEntityRecord } from '../../../../../../../interfaces';
 import { Icon } from '@fluentui/react/lib/components/Icon/Icon';
 import { getRecordGridStyles } from './styles';
 import { useTheme } from '@fluentui/react';
+import { ColumnGroup } from 'ag-grid-community';
 
 interface IRecordGrids {
     record: IUpdatedRecord;
@@ -15,6 +16,14 @@ export const RecordGrids = (props: IRecordGrids) => {
     const grid = useGridInstance();
     const record = { ...props.record };
     const styles = getRecordGridStyles(useTheme());
+    const hasInvalidColumn = (() => {
+        for(const column of record.columns.values()) {
+            if(!record.isValid(column.name)) {
+                return true;
+            }
+        }
+        return false;
+    })();
 
     const getOriginalRecord = (record: IUpdatedRecord): IEntityRecord => {
         return {
@@ -43,7 +52,7 @@ export const RecordGrids = (props: IRecordGrids) => {
             getRecordId: () => record.getRecordId(),
             getNamedReference: () => record.getNamedReference(),
             getValue: (columnKey: string) => record.getValue(columnKey),
-            save: () => {throw new Error('Should not be called!')},
+            save: () => { throw new Error('Should not be called!') },
             setValue: (columnKey: string, value: any) => {
                 record.setValue(columnKey, value)
                 grid.pcfContext.factory.requestRender();
@@ -61,7 +70,8 @@ export const RecordGrids = (props: IRecordGrids) => {
                     context={grid.pcfContext}
                     parameters={{
                         ChangeEditorMode: {
-                            raw: "read"
+                            raw: "read",
+                            error: hasInvalidColumn,
                         },
                         EnableFiltering: {
                             raw: false
@@ -75,7 +85,9 @@ export const RecordGrids = (props: IRecordGrids) => {
                         Grid: {
                             ...grid.dataset,
                             //@ts-ignore
-                            columns: record.columns.values(),
+                            columns: [...record.columns.values()],
+                            error: hasInvalidColumn,
+                            errorMessage: hasInvalidColumn ? 'You have validation errors!' : undefined,
                             records: {
                                 [record.getRecordId()]: getOriginalRecord(record)
                             }
@@ -105,7 +117,7 @@ export const RecordGrids = (props: IRecordGrids) => {
                         Grid: {
                             ...grid.dataset,
                             //@ts-ignore
-                            columns: record.columns.values(),
+                            columns: [...record.columns.values()],
                             records: {
                                 [record.getRecordId()]: getUpdatedRecord(record)
                             }

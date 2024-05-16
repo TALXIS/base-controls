@@ -143,7 +143,7 @@ export class Condition extends GridDependency {
                 if(this._conditionUtils.operator(this.operator.get()).doesNotAllowValue) {
                     return true;
                 }
-                const [result, errorMessage] = await new ColumnValidation(this._column.dataType!).validate(await this.value.get());
+                const [result, errorMessage] = await new ColumnValidation(this._column).validate(await this.value.get());
                 return result;
             }
         }

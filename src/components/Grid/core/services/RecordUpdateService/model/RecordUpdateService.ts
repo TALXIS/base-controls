@@ -1,13 +1,15 @@
 import { cloneDeep } from "lodash";
 import { IEntityColumn, IEntityRecord } from "../../../../interfaces";
+import { ColumnValidation } from "../../../../validation/model/ColumnValidation";
 import { GridDependency } from "../../../model/GridDependency";
 
 export interface IUpdatedRecord extends IEntityRecord {
-    columns: Set<IEntityColumn>,
+    columns: Map<string, IEntityColumn>,
+    isValid: (columnKey: string) => boolean,
     getOriginalValue: (columnKey: string) => any;
     getOriginalFormattedValue: (columnKey: string) => any;
     getOriginalFormattedPrimaryNameValue: () => any;
-    clear: () => void,
+    clear: () => void;
 }
 
 export class RecordUpdateService extends GridDependency {
@@ -28,6 +30,17 @@ export class RecordUpdateService extends GridDependency {
         return this._updatedRecords.size > 0;
     }
 
+    public get hasInvalidRecords() {
+        return [...this._updatedRecords.values()].find(x => {
+            for(const column of x.columns.values()) {
+                if(!x.isValid(column.name)) {
+                    return true;
+                }
+            }
+            return false;
+        }) ? true : false;
+    }
+
     public record(recordId: string) {
         return {
             get: () => this._updatedRecords.get(recordId),
@@ -36,7 +49,7 @@ export class RecordUpdateService extends GridDependency {
                 if (!updatedRecord) {
                     const deepCopiedRecord = cloneDeep(this._internalRecordMap.get(recordId)!);
                     this._updatedRecords.set(recordId, {
-                        columns: new Set([this._getEntityColumnByKey(columnKey)]),
+                        columns: new Map([[columnKey, this._getEntityColumnByKey(columnKey)]]),
                         getRecordId: () => recordId,
                         getValue: (columnKey: string) => this._internalRecordMap.get(recordId)?.getValue(columnKey)!,
                         getFormattedValue: (columnKey: string) => this._internalRecordMap.get(recordId)?.getFormattedValue(columnKey)!,
@@ -46,6 +59,10 @@ export class RecordUpdateService extends GridDependency {
                         getOriginalFormattedPrimaryNameValue: () => deepCopiedRecord.getFormattedValue(this._dataset.columns.find(x => x.isPrimary)!.name),
                         setValue: (columnKey: string, value: any) => {
                             this._internalRecordMap.get(recordId)?.setValue(columnKey, value);
+                        },
+                        isValid: (columnKey: string) => {
+                            const [result, message] = new ColumnValidation(this._grid.columns.find(x => x.key === columnKey)!).validate(this._internalRecordMap.get(recordId)?.getValue(columnKey)!)
+                            return result;
                         },
                         clear: () => {
                             this._updatedRecords.delete(recordId);
@@ -70,7 +87,7 @@ export class RecordUpdateService extends GridDependency {
                     })
                 }
                 else {
-                    updatedRecord.columns.add(this._getEntityColumnByKey(columnKey))
+                    updatedRecord.columns.set(columnKey, this._getEntityColumnByKey(columnKey))
                 }
                 if (!doNotPropagateToDatasetRecord) {
                     this._internalRecordMap.get(recordId)?.setValue(columnKey, value);

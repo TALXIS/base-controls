@@ -1,4 +1,4 @@
-//@ts-nocheck - types
+//@ts-nocheck - types;
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as ReactDOM from 'react-dom';
 import * as React from 'react';
@@ -52,8 +52,8 @@ export class Lookup implements ComponentFramework.StandardControl<IInputs, IOutp
                     }
                 ];
             }
+            context.mode.allocatedHeight = 42;
         }
-        context.mode.allocatedHeight = 42
         ReactDOM.render(React.createElement(LookupComponent as any, {
             context: context,
             parameters: {

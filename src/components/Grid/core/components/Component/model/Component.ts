@@ -21,7 +21,7 @@ export class Component extends GridDependency {
         let isValid = true;
         let validationErrorMessage = ""
         if (shouldValidate) {
-            [isValid, validationErrorMessage] = new ColumnValidation(props.column.dataType!).validate(value);
+            [isValid, validationErrorMessage] = new ColumnValidation(props.column).validate(value);
         }
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:

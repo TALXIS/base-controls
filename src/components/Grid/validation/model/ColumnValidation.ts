@@ -4,13 +4,14 @@ import isMobilePhone from "validator/lib/isMobilePhone";
 import isURL from "validator/lib/isURL";
 import dayjs from "dayjs";
 import { DataType } from "../../core/enums/DataType";
+import { IGridColumn } from "../../core/interfaces/IGridColumn";
 
 export class ColumnValidation {
-    private _dataType: DataType;
+    private _column: IGridColumn;
     private _doNotCheckNull: boolean;
     
-    constructor(dataType: DataType, doNotCheckNull?: boolean) {
-        this._dataType = dataType
+    constructor(column: IGridColumn, doNotCheckNull?: boolean) {
+        this._column = column;
         this._doNotCheckNull = doNotCheckNull ?? false;
     }
     public validate(value: any): [boolean, string] {
@@ -20,7 +21,7 @@ export class ColumnValidation {
             }
             return [false, 'I need an input!']
         }
-        switch (this._dataType) {
+        switch (this._column.dataType) {
             case DataType.WHOLE_NONE:
             case DataType.DECIMAL:
             case DataType.CURRENCY: {

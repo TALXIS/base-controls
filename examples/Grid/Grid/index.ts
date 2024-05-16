@@ -65,6 +65,12 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
                     this.updateView(context);
                 }
             };
+            for(const [key, value] of Object.entries(context.parameters.Grid.records)) {
+                //@ts-ignore / misssing implementation
+                context.parameters.Grid.records[key].setValue = () => {
+                    context.factory.requestRender();
+                };
+            }
         }
         ReactDOM.render(React.createElement(GridComponent, {
             context: context,

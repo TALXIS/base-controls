@@ -44,7 +44,12 @@ export class Grid {
         }
 
     };
-
+    public get error() {
+        return this._dataset.error;
+    }
+    public get errorMessage() {
+        return this._dataset.errorMessage
+    }
     public get labels() {
         return this._labels;
     }

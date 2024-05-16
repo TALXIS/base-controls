@@ -11,7 +11,7 @@ interface IRecordValidation {
 export const useColumnValidationController = (props: IRecordValidation): [boolean, string] => {
     const column = props.column;
     const record = props.record;
-    const columnValidation = useMemo(() => {return new ColumnValidation(column.dataType!, props.doNotCheckNull)}, []);
+    const columnValidation = useMemo(() => {return new ColumnValidation(column, props.doNotCheckNull)}, []);
 
     const [isValid, setIsValid] = useState<boolean>(true);
     const [errorMessage, setErrorMessage] = useState<string>("");
