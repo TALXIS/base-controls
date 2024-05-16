@@ -36,6 +36,14 @@ export const DateTime = (componentProps: IDateTime) => {
                 }}
                 // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
                 minDate={new Date('1753-01-01T00:00:00.000Z')}
+                calloutProps={{
+                    onRestoreFocus: () => {
+                        const input = ref.current?.querySelector('input');
+                        setTimeout(() => {
+                            input?.focus()
+                        }, 10);
+                    }
+                }}
                 firstDayOfWeek={componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek}
                 calendarAs={(props) =>
                     <Calendar {...props}
@@ -63,7 +71,6 @@ export const DateTime = (componentProps: IDateTime) => {
                     placeholder: '---',
                     onNotifyValidationResult: () => null,
                     noValidate: true,
-                    autoFocus: parameters.AutoFocus?.raw,
                     borderless: parameters.EnableBorder?.raw === false,
                     errorMessage: parameters.value.errorMessage,
                     styles:{

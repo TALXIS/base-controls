@@ -34,20 +34,6 @@ export const ColumnHeader = (props: IColumnHeader) => {
                     }
                 })
             }
-            //onSort: (values) => gridContext.onSort(values),
-            //onRemoveFilter: (filterExpression) => gridContext.onFilterChanged(filterExpression),
-            /* onDismiss: (_e, dismissAll, showFilterCallout) => {
-                if (showFilterCallout) {
-                    setFilterCalloutProps({
-                        column: column,
-                        //onFilter: (filterExpression) => gridContext.onFilterChanged(filterExpression),
-                        onDismiss: () => {
-                            setFilterCalloutProps(null);
-                        }
-                    });
-                }
-                setColumnHeaderContextualMenuProps(null);
-            } */
         });
     }
     return (

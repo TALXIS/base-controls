@@ -10,7 +10,7 @@ export const Save = () => {
     const grid = useGridInstance();
     const labels = grid.labels;
     const styles = getSaveStyles();
-    const { isDirty, updatedRecords, clearAll} = useRecordUpdateServiceController();
+    const { isDirty, updatedRecords, clearAll } = useRecordUpdateServiceController();
     const { isSaving, saveBtnProps, save } = useSave();
     const [changeEditorOpened, setChangeEditorOpened] = useState<boolean>(false);
 
@@ -22,46 +22,52 @@ export const Save = () => {
     }
 
     return (
-        <div onClick={onMessageClick} className={styles.root} data-dirty={isDirty && !grid.props.parameters.ChangeEditorMode!}>
-            <MessageBar
-                messageBarType={true ? MessageBarType.info : MessageBarType.error}
-                actions={
-                    <div className={styles.actions}>
-                        <CommandBarButton
-                            text={isSaving ? saveBtnProps.text : undefined}
-                            disabled={saveBtnProps.disabled}
-                            onRenderIcon={isSaving ? () => <Spinner size={SpinnerSize.small} /> : undefined}
-                            iconProps={{
-                                iconName: saveBtnProps.iconName,
-                            }}
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                save();
-                            }}
-                        />
-                        <CommandBarButton
-                            disabled={saveBtnProps.disabled}
-                            iconProps={{
-                                iconName: 'Delete'
-                            }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                clearAll();
-                            }} 
+        <>
+            <div onClick={onMessageClick} className={styles.root} data-dirty={isDirty && !grid.props.parameters.ChangeEditorMode!}>
+                <MessageBar
+                    messageBarType={true ? MessageBarType.info : MessageBarType.error}
+                    actions={
+                        <div className={styles.actions}>
+                            <CommandBarButton
+                                text={isSaving ? saveBtnProps.text : undefined}
+                                disabled={saveBtnProps.disabled}
+                                onRenderIcon={isSaving ? () => <Spinner size={SpinnerSize.small} /> : undefined}
+                                iconProps={{
+                                    iconName: saveBtnProps.iconName,
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    save();
+                                }}
                             />
-                    </div>
-                } isMultiline={false}>
-                {isDirty && !grid.props.parameters.ChangeEditorMode &&
-                    <span className={styles.notificationText} dangerouslySetInnerHTML={{
-                        __html: labels["saving-changenotification"]({ numOfChanges: updatedRecords.length })
-                    }}></span>
-                }
-            </MessageBar>
+                            <CommandBarButton
+                                disabled={saveBtnProps.disabled}
+                                iconProps={{
+                                    iconName: 'Delete'
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    clearAll();
+                                }}
+                            />
+                        </div>
+                    } isMultiline={false}>
+                    {isDirty && !grid.props.parameters.ChangeEditorMode &&
+                        <span className={styles.notificationText} dangerouslySetInnerHTML={{
+                            __html: labels["saving-changenotification"]({ numOfChanges: updatedRecords.length })
+                        }}></span>
+                    }
+                </MessageBar>
+            </div>
             {changeEditorOpened &&
-                <>
-                    <ChangeEditor onDismiss={() => setChangeEditorOpened(false)} />
-                </>
+                <ChangeEditor onDismiss={(e) => {
+                    //@ts-ignore
+                    if(e.code === 'Escape') {
+                        return;
+                    }
+                    setChangeEditorOpened(false);
+                }} />
             }
-        </div>
+        </>
     )
 };

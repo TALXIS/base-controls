@@ -5,6 +5,7 @@ import { ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the grid
 import "ag-grid-community/styles/ag-theme-balham.css";
+import { DataType } from "../../../enums/DataType";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
@@ -42,11 +43,21 @@ export class AgGrid extends GridDependency {
                 headerComponentParams: {
                     baseColumn: column
                 },
-                //disable stop of editing on pressing Enter
-                //TODO: only for specific column types?
                 suppressKeyboardEvent: (params) => {
-                    if(params.event.key === 'Enter') {
-                        return true;
+                    if (params.event.key !== 'Enter' || params.api.getEditingCells().length === 0) {
+                        return false;
+                    }
+                    switch (column.dataType) {
+                        case DataType.DATE_AND_TIME_DATE_AND_TIME:
+                        case DataType.DATE_AND_TIME_DATE_ONLY:
+                        case DataType.LOOKUP_OWNER:
+                        case DataType.LOOKUP_SIMPLE:
+                        case DataType.MULTI_SELECT_OPTIONSET:
+                        case DataType.OPTIONSET:
+                        case DataType.TWO_OPTIONS:
+                        case DataType.WHOLE_DURATION: {
+                            return true;
+                        }
                     }
                     return false;
                 }
@@ -56,7 +67,7 @@ export class AgGrid extends GridDependency {
         return agColumns;
     }
     public selectRows() {
-        if(!this._gridApi) {
+        if (!this._gridApi) {
             return;
         }
         const nodesToSelect: IRowNode[] = [];

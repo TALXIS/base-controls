@@ -9,6 +9,7 @@ import { TimePicker } from "@talxis/react-components/dist/components/TimePicker"
 import { Text } from '@fluentui/react/lib/Text';
 import dayjs from "dayjs";
 import React from 'react';
+import { FocusTrapZone } from "@fluentui/react";
 
 interface IInternalTimePickerProps extends ITimePickerProps {
     visible: boolean;
@@ -28,11 +29,18 @@ export const Calendar = (props: IInternalCalendarProps) => {
         //@ts-ignore - we need to use the internal method to display exact time, otherwise the shown value would always get rounded to the next 15 min
         timePickerRef.current?._updateValue(getFormattedTime());
         setIsTimePickerControlled(false);
+
     }, [props.timePickerProps.defaultValue]);
 
     const getFormattedTime = () => {
         return dayjs(props.timePickerProps.defaultValue).format(props.timePickerProps.timeFormat);
     };
+
+    useEffect(() => {
+        //hack to focus the selected date for keyboard support
+        const day = document.querySelector('.ms-CalendarDay-daySelected') as HTMLButtonElement;
+        day?.focus();
+    }, [props]);
 
     return (
         <div className={styles.calendarCallout}>
@@ -50,7 +58,7 @@ export const Calendar = (props: IInternalCalendarProps) => {
                     autofill={{
                         componentRef: timePickerRef,
                         //hack to prevent blinking on prop updates
-                        value: isTimePickerControlled ? getFormattedTime() : undefined 
+                        value: isTimePickerControlled ? getFormattedTime() : undefined
                     }}
                     buttonIconProps={{
                         iconName: 'Clock'

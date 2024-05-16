@@ -70,7 +70,7 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
             context: context,
             parameters: {
                 SelectableRows: {
-                    raw: 'multiple'
+                    raw: 'single'
                 },
                 EnableEditing: {
                     raw: true

@@ -1,4 +1,4 @@
-import { DialogFooter, ICommandBarItemProps, IDialogProps, PrimaryButton, Spinner, SpinnerSize, useTheme } from "@fluentui/react";
+import { DialogFooter, FocusTrapZone, ICommandBarItemProps, IDialogProps, PrimaryButton, Spinner, SpinnerSize, useTheme } from "@fluentui/react";
 import { useEffect } from 'react';
 import { useGridInstance } from "../../../../hooks/useGridInstance";
 import { useRecordUpdateServiceController } from "../../../../services/RecordUpdateService/controllers/useRecordUpdateServiceController";
@@ -148,6 +148,7 @@ export const ChangeEditor = (props: IDialogProps) => {
         width={1000}
         minWidth={600}
         modalProps={{
+            isBlocking: true,
             className: styles.root,
             layerProps: {
                 eventBubblingEnabled: true
@@ -160,17 +161,17 @@ export const ChangeEditor = (props: IDialogProps) => {
             })
         }}
         hidden={false}>
-        <div className={styles.recordGrids}>
-            {updatedRecords.map(record => <RecordGrids key={record.getRecordId()} record={record} />)}
-        </div>
+            <div className={styles.recordGrids}>
+                {updatedRecords.map(record => <RecordGrids key={record.getRecordId()} record={record} />)}
+            </div>
         <DialogFooter>
             <PrimaryButton
                 className={styles.saveBtn}
                 text={saveBtnProps.text}
                 disabled={saveBtnProps.disabled}
                 onClick={() => save()}
-                >
-                {isSaving && 
+            >
+                {isSaving &&
                     <Spinner size={SpinnerSize.small} />
                 }
             </PrimaryButton>

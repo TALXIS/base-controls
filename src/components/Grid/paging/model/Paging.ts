@@ -32,19 +32,9 @@ export class Paging extends GridDependency {
         this.loadExactPage(this.pageNumber - 1);
     }
     public loadExactPage(pageNumber: number) {
-        //@ts-ignore - types
-        if (!window.TALXIS?.Portal) {
-            this._dataset.loading = true;
-            this._grid.pcfContext.factory.requestRender();
-        }
         this._dataset.paging.loadExactPage(pageNumber);
     }
     public setPageSize(pageSize: number) {
-        //@ts-ignore - types
-        if (!window.TALXIS?.Portal) {
-            this._dataset.loading = true;
-            this._grid.pcfContext.factory.requestRender();
-        }
         this._dataset.paging.setPageSize(pageSize);
         this._dataset.refresh();
         //in Power Apps the new page size can sometimes come only after second refresh #smh
