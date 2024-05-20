@@ -35,5 +35,5 @@ export const useComponentController = (props: IComponentProps): IComponentContro
         }
     }, []);
 
-    return controller
+    return controller;
 }

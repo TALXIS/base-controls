@@ -7,7 +7,6 @@ import { ColumnValidation } from "../../validation/model/ColumnValidation";
 import { FilteringUtils } from "../utils/FilteringUtilts";
 
 export class Condition extends GridDependency {
-
     private _column: IGridColumn;
     private _isAppliedToDataset: boolean = false;
     private _conditionExpression: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression = {} as any;
@@ -143,7 +142,7 @@ export class Condition extends GridDependency {
                 if(this._conditionUtils.operator(this.operator.get()).doesNotAllowValue) {
                     return true;
                 }
-                const [result, errorMessage] = await new ColumnValidation(this._column).validate(await this.value.get());
+                const [result, errorMessage] = await new ColumnValidation(this._column, true).validate(await this.value.get());
                 return result;
             }
         }

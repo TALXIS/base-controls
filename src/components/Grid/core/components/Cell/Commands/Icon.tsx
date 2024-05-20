@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import 'external-svg-loader';
 import { commandStyles } from './styles';
 
 interface IIcon {
-    src: string;
+    name: string
 }
 
-export const Icon = ({ src }: IIcon) => {
+export const Icon = ({ name }: IIcon) => {
+    //@ts-ignore - types
+    const src = useMemo(() => `https://${window.location.host}${window.Xrm.Utility.getGlobalContext().getWebResourceUrl('msdyn_AIBuilder.svg')}`, [])
     return (
         <svg data-src={src} className={commandStyles.icon} />
     );

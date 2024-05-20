@@ -1,8 +1,11 @@
 import * as React from 'react';
+import { NumeralPCF } from '../../../../../../utils/NumeralPCF';
 import { DataType } from '../../../enums/DataType';
+import { useGridInstance } from '../../../hooks/useGridInstance';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { useRecordUpdateServiceController } from '../../../services/RecordUpdateService/controllers/useRecordUpdateServiceController';
 import { Component } from '../../Component/Component';
+import numeral from "numeral";
 
 interface ICell {
     baseColumn: IGridColumn;
@@ -10,6 +13,7 @@ interface ICell {
 }
 
 export const EditableCell = (props: ICell) => {
+    const grid = useGridInstance()
     const record = props.data;
     const column = props.baseColumn;
     const recordUpdateService = useRecordUpdateServiceController();

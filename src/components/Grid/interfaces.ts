@@ -9,6 +9,7 @@ export interface IEntityColumn extends ComponentFramework.PropertyHelper.DataSet
     isResizable?: boolean;
     isFilterable?: boolean;
     isEditable?: boolean;
+    isRequired?: boolean;
 }
 export interface IEntityRecord extends ComponentFramework.PropertyHelper.DataSetApi.EntityRecord {
     setValue: (columnName: string, value: any) => void;
@@ -20,6 +21,7 @@ export interface IGridParameters extends IParameters {
     EnablePagination?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableFiltering?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableSorting?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
     SelectableRows?: IStringProperty & {
         raw: 'single' | 'multiple' | 'true' | 'single'
     }
@@ -97,4 +99,5 @@ export interface IGridTranslations extends ITranslations {
     "saving-save": { [LCID: number]: string };
     "saving-saving": { [LCID: number]: string };
     "saving-changepreview-title": { [LCID: number]: string };
+    "saving-validation-error": { [LCID: number]: string };
 }

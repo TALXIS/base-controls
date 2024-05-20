@@ -1,6 +1,11 @@
+import equal from "fast-deep-equal/es6";
 import { cloneDeep } from "lodash";
+import numeral from "numeral";
+import { NumeralPCF } from "../../../../../../utils/NumeralPCF";
 import { IEntityColumn, IEntityRecord } from "../../../../interfaces";
 import { ColumnValidation } from "../../../../validation/model/ColumnValidation";
+import { DataType } from "../../../enums/DataType";
+import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 
 export interface IUpdatedRecord extends IEntityRecord {
@@ -45,6 +50,9 @@ export class RecordUpdateService extends GridDependency {
         return {
             get: () => this._updatedRecords.get(recordId),
             setValue: (columnKey: string, value: any, doNotPropagateToDatasetRecord?: boolean) => {
+                if(!doNotPropagateToDatasetRecord && this._isEqual(columnKey, this._internalRecordMap.get(recordId)!.getValue(columnKey), value)) {
+                    return;
+                }
                 const updatedRecord = this._updatedRecords.get(recordId);
                 if (!updatedRecord) {
                     const deepCopiedRecord = cloneDeep(this._internalRecordMap.get(recordId)!);
@@ -58,10 +66,23 @@ export class RecordUpdateService extends GridDependency {
                         getOriginalFormattedValue: (columnKey: string) => deepCopiedRecord.getFormattedValue(columnKey),
                         getOriginalFormattedPrimaryNameValue: () => deepCopiedRecord.getFormattedValue(this._dataset.columns.find(x => x.isPrimary)!.name),
                         setValue: (columnKey: string, value: any) => {
+                            const updatedRecord = this._updatedRecords.get(recordId);
+                            let originalValue = updatedRecord?.getOriginalValue(columnKey);
+                            //if the new change is equal to the original record state, clear the internal dirty state
+                            if(originalValue == value || equal(value, originalValue)) {
+                                updatedRecord?.columns.delete(columnKey);
+                                if(updatedRecord?.columns.size === 0) {
+                                    this._updatedRecords.delete(recordId);
+                                }
+                            }
                             this._internalRecordMap.get(recordId)?.setValue(columnKey, value);
                         },
                         isValid: (columnKey: string) => {
-                            const [result, message] = new ColumnValidation(this._grid.columns.find(x => x.key === columnKey)!).validate(this._internalRecordMap.get(recordId)?.getValue(columnKey)!)
+                            const column = this._grid.columns.find(x => x.key === columnKey);
+                            if(!column) {
+                                return true;
+                            }
+                            const [result, message] = new ColumnValidation(column).validate(this._internalRecordMap.get(recordId)?.getValue(columnKey)!)
                             return result;
                         },
                         clear: () => {
@@ -71,7 +92,6 @@ export class RecordUpdateService extends GridDependency {
                         save: async () => {
                             try {
                                 await this._internalRecordMap.get(recordId)?.save();
-                                //TODO: add refreshCallBack instead of whole grid refresh
                                 this._updatedRecords.delete(recordId);
                             }
                             catch (err) {
@@ -90,6 +110,13 @@ export class RecordUpdateService extends GridDependency {
                     updatedRecord.columns.set(columnKey, this._getEntityColumnByKey(columnKey))
                 }
                 if (!doNotPropagateToDatasetRecord) {
+                    const updatedRecord = this._updatedRecords.get(recordId);
+                    if(this._isEqual(columnKey, updatedRecord?.getOriginalValue(columnKey)!, value)) {
+                        updatedRecord?.columns.delete(columnKey);
+                        if(updatedRecord?.columns.size === 0) {
+                            this._updatedRecords.delete(recordId);
+                        }
+                    }
                     this._internalRecordMap.get(recordId)?.setValue(columnKey, value);
                 }
             }
@@ -126,5 +153,22 @@ export class RecordUpdateService extends GridDependency {
     }
     private _isReadOnlyChangeEditor() {
         return this._grid.props.parameters.ChangeEditorMode?.raw === 'read';
+    }
+    private _isEqual(columnKey: string, oldValue: any, newValue: any) {
+        const column = this._grid.columns.find(x => x.key === columnKey);
+        //skip in special case for currency
+        //PCF has no info about the currency, which sometimes make it to ouput change
+        if(column?.dataType === DataType.CURRENCY) {
+            NumeralPCF.currency(this._grid.pcfContext.userSettings.numberFormattingInfo);
+            newValue = numeral(newValue).value();
+            if(newValue === oldValue) {
+                return true
+            }
+
+        }
+        if(oldValue == newValue) {
+            return true;
+        }
+        return equal(oldValue, newValue);
     }
 }

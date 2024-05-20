@@ -24,7 +24,7 @@ export const Save = () => {
 
     return (
         <>
-            <div onClick={onMessageClick} className={styles.root} data-dirty={isDirty /* && !grid.props.parameters.ChangeEditorMode! */}>
+            <div onClick={onMessageClick} className={styles.root} data-dirty={isDirty}>
                 <MessageBar
                     messageBarType={!hasInvalidRecords ? MessageBarType.info : MessageBarType.error}
                     actions={
@@ -42,7 +42,7 @@ export const Save = () => {
                                 }}
                             />
                             <CommandBarButton
-                                disabled={saveBtnProps.disabled && !hasInvalidRecords}
+                                disabled={saveBtnProps.disabled && !hasInvalidRecords && !grid.props.parameters.ChangeEditorMode}
                                 iconProps={{
                                     iconName: 'Delete'
                                 }}
@@ -53,7 +53,7 @@ export const Save = () => {
                             />
                         </div>
                     } isMultiline={false}>
-                    {isDirty && /* !grid.props.parameters.ChangeEditorMode && */
+                    {isDirty &&
                         <span className={styles.notificationText} dangerouslySetInnerHTML={{
                             __html: labels["saving-changenotification"]({ numOfChanges: updatedRecords.length })
                         }}></span>

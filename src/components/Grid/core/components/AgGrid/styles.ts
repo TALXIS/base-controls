@@ -8,7 +8,7 @@ export const getGridStyles = (theme: ITheme) => {
             flexDirection: 'column',
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
-                //minHeight: 600,
+                minHeight: 600,
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`
             },
             '.ag-body': {

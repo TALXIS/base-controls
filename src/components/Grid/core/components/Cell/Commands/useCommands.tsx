@@ -9,10 +9,8 @@ export const useCommands = (record: ComponentFramework.PropertyHelper.DataSetApi
     ICommandBarItemProps[] | null
 ] => {
 
-    const grid = useGridInstance();
-    //TODO: should accept null as well 
+    const dataset = useGridInstance().dataset
     const [commandBarItems, setCommandBarItems] = useState<ICommandBarItemProps[] | null>(null);
-
     useEffect(() => {
         (async () => {
             setCommandBarItems(await getCommandBarItems());
@@ -21,12 +19,10 @@ export const useCommands = (record: ComponentFramework.PropertyHelper.DataSetApi
 
     const getCommandBarItems = async () => {
         const items: ICommandBarItemProps[] = [];
-        //@ts-ignore - not part of types
         if(!dataset.retrieveRecordCommand) {
             return []
         }
-        //@ts-ignore - not part of types
-        const commands = await dataset.retrieveRecordCommand([record.getRecordId()]);
+        const commands = await dataset.retrieveRecordCommand([record.getRecordId()], ['Mscrm.HomepageGrid.cr96a_datatype.Edit']);
         for (const command of commands) {
             if (!command.shouldBeVisible) {
                 continue;
@@ -45,7 +41,7 @@ export const useCommands = (record: ComponentFramework.PropertyHelper.DataSetApi
                     e?.stopPropagation();
                     command.execute();
                 },
-                onRenderIcon: command.icon?.includes('.svg') ? () => <Icon src={command.icon} /> : undefined,
+                onRenderIcon: command.icon?.includes('.svg') ? () => <Icon name={command.icon} /> : undefined,
                 iconProps: command.icon ? {
                     iconName: command.icon
                 } : undefined

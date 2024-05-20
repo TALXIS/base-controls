@@ -44,6 +44,16 @@ export class Grid {
         }
 
     };
+    public get isNavigationEnabled() {
+        //enabled by default
+        return this.parameters.EnableNavigation?.raw !== false;
+    }
+    public get isEditable() {
+        return this._columns.find(x=> x.isEditable) ? true : false;
+    }
+    public get parameters() {
+        return this._props.parameters
+    }
     public get error() {
         return this._dataset.error;
     }
@@ -127,6 +137,7 @@ export class Grid {
                 displayName: column.displayName,
                 //comes from extended
                 isFilterable: this._isColumnFilterable(column),
+                isRequired: column.isRequired,
                 isSortable: this._isColumnSortable(column),
                 isSorted: sorted ? true : false,
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
@@ -134,9 +145,18 @@ export class Grid {
                 //comes from extended
                 isResizable: column.isResizable ?? true,
             } as IGridColumn;
+
             const condition = await this.filtering.condition(gridColumn);
             gridColumn.isFiltered = condition.isAppliedToDataset;
             gridColumn.isEditable = await this._isColumnEditable(gridColumn);
+            gridColumn.isRequired = await this._isColumnRequired(gridColumn);
+
+            if(gridColumn.displayName?.startsWith('__ribbon')) {
+                gridColumn.key = '__ribbon',
+                gridColumn.displayName = gridColumn.displayName.split('__ribbon$')?.[1]
+                gridColumn.isFilterable = false;
+                gridColumn.isSortable = false;
+            }
             gridColumns.push(gridColumn);
         }
         switch (this._props.parameters.SelectableRows?.raw) {
@@ -149,16 +169,6 @@ export class Grid {
                     width: 45,
                 })
             }
-        }
-        if (false) {
-            gridColumns.push({
-                key: '__ribbon',
-                attributeName: '__ribbon',
-                displayName: 'Actions',
-                isPrimary: false,
-                width: 600,
-                isEditable: false
-            })
         }
         this._columns = gridColumns;
         return gridColumns;
@@ -173,16 +183,16 @@ export class Grid {
     }
 
     private async _isColumnEditable(column: IGridColumn): Promise<boolean> {
+        //top priority, overriden through props
+        if(column.isEditable) {
+            return true;
+        }
         //only allow editing if specifically allowed
         if (!this._props.parameters.EnableEditing?.raw) {
             return false;
         }
         //we are not supporting editing for linked entities
         if (column.entityAliasName) {
-            return false;
-        }
-        //this column is only present in change editor dialog
-        if (column.key === '__label') {
             return false;
         }
         //these field types do not support editing
@@ -196,6 +206,21 @@ export class Grid {
         //IsEditable is not available in Power Apps
         return metadata.Attributes.get(column.attributeName).attributeDescriptor.IsValidForUpdate
     }
+    
+    private async _isColumnRequired(column: IGridColumn) {
+        if(column.isRequired) {
+            return true;
+        }
+        if(!this.parameters.EnableEditing) {
+            return false;
+        }
+        const metadata = await this.metadata.get(column);
+        const requiredLevel = metadata.Attributes.get(column.attributeName).attributeDescriptor.RequiredLevel;
+        if(requiredLevel === 1 || requiredLevel === 2) {
+            return true;
+        }
+        return false;
+    }
     private _isColumnSortable(column: IEntityColumn) {
         if(this._props.parameters.EnableSorting?.raw === false) {
             return false;
@@ -207,6 +232,5 @@ export class Grid {
             return false;
         }
         return column.isFilterable ?? true;
-    } 
-
+    }
 }

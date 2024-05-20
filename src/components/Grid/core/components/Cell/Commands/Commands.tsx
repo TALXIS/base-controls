@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useCommands } from './useCommands';
 import { CommandBar } from '@talxis/react-components/dist/components/CommandBar';
 import { commandStyles } from './styles';
+import { CommandBarButton } from '@fluentui/react';
 
 interface ICommands {
     record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
@@ -9,10 +10,10 @@ interface ICommands {
 
 export const Commands = ({ record }: ICommands) => {
     const [items] = useCommands(record);
-    if(!items) {
+    if (!items) {
         return <></>
     }
-    if (items.length > 0) {
+    if (items?.length > 0) {
         return <CommandBar className={commandStyles.talxisRoot} overflowButtonProps={{
             styles: {
                 root: commandStyles.button,
@@ -23,7 +24,8 @@ export const Commands = ({ record }: ICommands) => {
         }} styles={{
             root: commandStyles.root,
 
-        }} items={items} />;
+        }} items={[]}
+        farItems={items} />;
     }
     return <></>;
 };

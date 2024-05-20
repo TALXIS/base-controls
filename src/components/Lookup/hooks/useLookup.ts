@@ -17,11 +17,13 @@ export const useLookup = (props: ILookup): [
     (entityName: string | null) => void,
     (query: string) => Promise<ComponentFramework.LookupValue[]>
 ] => {
+
     const targets = props.parameters.value.attributes.Targets;
     const boundValue = props.parameters.value.raw;
     const context = props.context;
     const [labels, notifyOutputChanged] = useComponent('Lookup', props, lookupTranslations);
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
+    
     const [entities, setEntities] = useState<IEntity[]>(() => {
         return targets.map(target => {
             return {
@@ -30,8 +32,8 @@ export const useLookup = (props: ILookup): [
                 metadata: props.context.utils.getEntityMetadata(target, []) as any,
             }
         })
-        return []
     });
+
     const selectedEntity = entities.find(x => x.selected);
 
     const selectEntity = (entityName: string | null) => {
@@ -49,38 +51,31 @@ export const useLookup = (props: ILookup): [
             value: records
         })
     }
-
-    const getViewId = async (entityName: string) => {
-        //call should be cached
-        const viewId = (await props.parameters.value.getAllViews(entityName)).find(x => x.isDefault)?.viewId;
-        if (!viewId) {
+    const getSearchFetchXml = async (entityName: string, query: string): Promise<string> => {
+        const response = (await props.parameters.value.getAllViews(entityName)).find(x => x.isDefault);
+        if (!response?.viewId) {
             throw new Error(`Entity ${entityName} does not have a default view id!`);
         }
-        return viewId;
-    }
+        let fetchXml = response?.fetchXml
+        if(!fetchXml) {
+            fetchXml = await getFetchXml(response.viewId)
+        }
+        return applyLookupQuery(entities.find(x => x.entityName === entityName)!, fetchXml, query);
 
+    }
     const getSearchResults = async (query: string): Promise<ComponentFramework.LookupValue[]> => {
-        const entityViewIdMap = new Map<string, Promise<string>>();
-        if (selectedEntity) {
-            entityViewIdMap.set(selectedEntity.entityName, getViewId(selectedEntity.entityName))
+        const fetchXmlMap = new Map<string, Promise<string>>();
+        if(selectedEntity) {
+            fetchXmlMap.set(selectedEntity.entityName, getSearchFetchXml(selectedEntity.entityName, query))
         }
         else {
             for (const entity of targets) {
-                entityViewIdMap.set(entity, getViewId(entity))
+                fetchXmlMap.set(entity, getSearchFetchXml(entity, query))
             }
         }
-        await Promise.all(entityViewIdMap.values());
-        console.log(entityViewIdMap);
-        const fetchXmlPromiseMap = new Map<string, Promise<string> | string>()
-        for (const [entityName, viewId] of entityViewIdMap) {
-            fetchXmlPromiseMap.set(entityName, getFetchXml(await viewId))
-        }
-        await Promise.all(fetchXmlPromiseMap.values());
-        for (const [entityName, fetchXml] of fetchXmlPromiseMap) {
-            fetchXmlPromiseMap.set(entityName, await applyLookupQuery(entities.find(x => x.entityName === entityName)!, await fetchXml, query))
-        }
+        await Promise.all(fetchXmlMap.values());
         const responsePromiseMap = new Map<string, Promise<ComponentFramework.WebApi.RetrieveMultipleResponse>>()
-        for (const [entityName, fetchXml] of fetchXmlPromiseMap) {
+        for (const [entityName, fetchXml] of fetchXmlMap) {
             responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?fetchXml=${await fetchXml}`))
         }
         await Promise.all(responsePromiseMap.values());
@@ -96,7 +91,6 @@ export const useLookup = (props: ILookup): [
             }
         }
         return result;
-
     }
 
     const createRecord = async (entityName: string) => {

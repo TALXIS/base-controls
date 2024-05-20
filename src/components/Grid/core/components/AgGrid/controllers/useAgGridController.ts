@@ -10,7 +10,6 @@ import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/Glo
 import { AgGrid } from "../model/AgGrid";
 
 interface IAgGridController {
-    isEditable: boolean,
     agColumns: ColDef[],
     records: IEntityRecord[]
 }
@@ -18,7 +17,7 @@ interface IAgGridController {
 export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>): IAgGridController => {
     const grid = useGridInstance();
     const agGrid = useMemo(() => new AgGrid(grid, gridApiRef), [])
-    const {isEditable, columns, records} = useGridController();
+    const {columns, records} = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
 
     //TODO: use deep equal
@@ -45,7 +44,6 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     }, [columns]);
 
     return {
-        isEditable,
         agColumns: agColumns,
         records: records
     }

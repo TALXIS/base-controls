@@ -92,6 +92,7 @@ export const Lookup = (props: ILookup) => {
     }
 
     const onResolveSuggestions = async (filter: string, selectedItems?: IItemProps[] | undefined): Promise<IItemProps[]> => {
+        //TODO: onResolveSuggestions gets called when the record gets selected resulting in unnecessary call
         const results = await getSearchResults(filter);
         const suggestions: IItemProps[] = [];
         for(const result of results) {

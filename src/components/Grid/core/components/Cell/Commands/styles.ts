@@ -11,11 +11,6 @@ export const commandStyles = mergeStyleSets({
     },
     button: {
         backgroundColor: 'transparent',
-        ':hover': {
-            'span, i': {
-                fontWeight: 600
-            }
-        }
     },
     icon: {
         width: 16,

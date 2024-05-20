@@ -17,7 +17,6 @@ export interface IComponentProps {
     value: any;
     formattedValue?: string;
     onNotifyOutputChanged: (value: any) => void;
-    shouldValidate?: boolean;
     additionalParameters?: IParameters;
 }
 

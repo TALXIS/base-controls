@@ -53,7 +53,7 @@ export class NumeralPCF {
             });
         }
         else {
-            numeral.locale('__pcfcustomdecimal')
+            numeral.locale('__pcfcustomcurrency')
         }
     }
 }

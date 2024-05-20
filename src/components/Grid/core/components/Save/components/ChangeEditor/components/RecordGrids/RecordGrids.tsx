@@ -3,7 +3,7 @@ import { Grid } from '../../../../../../../Grid';
 import { useGridInstance } from '../../../../../../hooks/useGridInstance';
 import { IUpdatedRecord } from '../../../../../../services/RecordUpdateService/model/RecordUpdateService';
 import { Text } from '@fluentui/react/lib/Text';
-import { IEntityRecord } from '../../../../../../../interfaces';
+import { IEntityColumn, IEntityRecord } from '../../../../../../../interfaces';
 import { Icon } from '@fluentui/react/lib/components/Icon/Icon';
 import { getRecordGridStyles } from './styles';
 import { useTheme } from '@fluentui/react';
@@ -16,14 +16,18 @@ export const RecordGrids = (props: IRecordGrids) => {
     const grid = useGridInstance();
     const record = { ...props.record };
     const styles = getRecordGridStyles(useTheme());
-    const hasInvalidColumn = (() => {
+
+    const invalidColumns = (() => {
+        const columns: IEntityColumn[] = [];
         for(const column of record.columns.values()) {
             if(!record.isValid(column.name)) {
-                return true;
+                columns.push(column);
             }
         }
-        return false;
+        return columns;
     })();
+
+    const hasInvalidColumn = invalidColumns.length > 0;
 
     const getOriginalRecord = (record: IUpdatedRecord): IEntityRecord => {
         return {
@@ -87,7 +91,9 @@ export const RecordGrids = (props: IRecordGrids) => {
                             //@ts-ignore
                             columns: [...record.columns.values()],
                             error: hasInvalidColumn,
-                            errorMessage: hasInvalidColumn ? 'You have validation errors!' : undefined,
+                            errorMessage: hasInvalidColumn ? grid.labels['saving-validation-error']({
+                                columnDisplayNames: invalidColumns.map( x => x.displayName).join(', ')
+                            }): undefined,
                             records: {
                                 [record.getRecordId()]: getOriginalRecord(record)
                             }
@@ -101,6 +107,9 @@ export const RecordGrids = (props: IRecordGrids) => {
                     parameters={{
                         ChangeEditorMode: {
                             raw: "edit"
+                        },
+                        __ParentGrid: {
+                            raw: grid
                         },
                         EnableEditing: {
                             raw: true

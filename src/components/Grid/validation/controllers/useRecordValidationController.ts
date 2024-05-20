@@ -5,13 +5,12 @@ import { ColumnValidation } from "../model/ColumnValidation";
 interface IRecordValidation {
     column: IGridColumn;
     record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
-    doNotCheckNull?: boolean;
 }
 
 export const useColumnValidationController = (props: IRecordValidation): [boolean, string] => {
     const column = props.column;
     const record = props.record;
-    const columnValidation = useMemo(() => {return new ColumnValidation(column, props.doNotCheckNull)}, []);
+    const columnValidation = useMemo(() => {return new ColumnValidation(column)}, []);
 
     const [isValid, setIsValid] = useState<boolean>(true);
     const [errorMessage, setErrorMessage] = useState<string>("");

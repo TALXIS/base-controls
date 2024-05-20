@@ -13,11 +13,11 @@ import { Save } from "../Save/Save";
 
 export const AgGrid = () => {
     const grid = useGridInstance();
+    const selection = useSelectionController();
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     const theme = useTheme();
     const styles = getGridStyles(theme);
-    let { agColumns, records, isEditable } = useAgGridController(gridApiRef);
-    const selection = useSelectionController();
+    let { agColumns, records} = useAgGridController(gridApiRef);
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -27,36 +27,36 @@ export const AgGrid = () => {
                     if (parent.classList.contains(className)) {
                         return true;
                     }
-                    console.log(parent.tagName);
-                    if(parent.tagName === 'HTML') {
+                    if (parent.tagName === 'HTML') {
                         return false;
                     }
                     parent = parent.parentElement!;
-                    if(!parent) {
+                    if (!parent) {
                         return true;
-                    }  
+                    }
                 }
                 return false;
             };
             try {
-            if(!hasAncestorWithClass(e.target as HTMLElement, 'ag-cell')) {
-                gridApiRef.current?.stopEditing();
+                if (!hasAncestorWithClass(e.target as HTMLElement, 'ag-cell')) {
+                    gridApiRef.current?.stopEditing();
+                }
             }
-        }
-        catch(err) {
-            console.error(err)
-        }
+            catch (err) {
+            }
         })
     }, []);
 
     return (
         <div className={`${styles.root} ag-theme-balham`}>
-            {((isEditable && grid.props.parameters.ChangeEditorMode?.raw !== 'edit') || grid.props.parameters.ChangeEditorMode?.raw === 'read') &&
+            {((grid.isEditable && grid.parameters.ChangeEditorMode?.raw !== 'edit') || grid.parameters.ChangeEditorMode?.raw === 'read') &&
                 <Save />
             }
-            {grid.error && 
+            {grid.error &&
                 <MessageBar messageBarType={MessageBarType.error}>
-                    {grid.errorMessage}
+                    <span dangerouslySetInnerHTML={{
+                        __html: grid.errorMessage!
+                    }} />
                 </MessageBar>
             }
             <AgGridReact
@@ -69,14 +69,15 @@ export const AgGrid = () => {
                 suppressRowClickSelection
                 noRowsOverlayComponent={EmptyRecords}
                 onCellDoubleClicked={(e) => {
-                    //enable navigation
-                    if (!e.colDef.editable) {
+                    if (grid.isNavigationEnabled && !e.colDef.editable) {
                         grid.dataset.openDatasetItem(e.data!.getNamedReference())
                     }
                 }}
                 onRowClicked={(e) => {
-                    if(!isEditable) {
-                        selection.toggle(e.data!);
+                    if(selection.type && !grid.isEditable) {
+                        if (!grid.isEditable) {
+                            selection.toggle(e.data!);
+                        }
                     }
                 }}
                 getRowId={(params) => params.data.getRecordId()}

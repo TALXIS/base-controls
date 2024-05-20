@@ -77,6 +77,7 @@ export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramew
         relatedEntityName: string;
         viewId: string;
         viewName: string;
+        fetchXml?: string;
     }[]>
 }
 
@@ -88,4 +89,23 @@ export interface IDatasetProperty extends IProperty, Omit<ComponentFramework.Pro
     paging: ComponentFramework.PropertyHelper.DataSetApi.Paging & {
         pageNumber: number
     }
+    retrieveRecordCommand: (recordIds: string[], specificCommands?: string[], filterByPriority?: boolean, useNestedFormat?: boolean, refreshAllRules?: boolean) => {
+        canExecute: boolean;
+        /**
+        * Seems to be always empty - buttons present in Flyout and SplitButton are put on first level (the array of buttons is flattened).
+        */
+        children: any[];
+        commandId: string;
+        commandButtonId: string;
+        controlType: any;
+        icon: string;
+        label: string;
+        shouldBeVisible: boolean;
+        tooltip: string;
+        /**
+        * Temp portal property
+        */
+        __isInline?: boolean;
+        execute: () => Promise<void>;
+    }[]
 }

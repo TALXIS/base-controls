@@ -31,7 +31,6 @@ export const ReadOnlyCell = (props: ICellProps) => {
     const [isValid, errorMessage] = useColumnValidationController({
         column: column,
         record: record,
-        doNotCheckNull: true
     })
 
     return (
@@ -61,15 +60,25 @@ const InternalReadOnlyCell = (props: ICellProps) => {
     const styles = getReadOnlyCellStyles(theme);
     const selection = useSelectionController();
 
-    const renderLink = (props: ILinkProps, formattedValue: string) => {
+    console.log(grid.isNavigationEnabled);
+
+    const renderLink = (props: ILinkProps, formattedValue: string): JSX.Element => {
+        switch(column.dataType) {
+            case DataType.LOOKUP_OWNER:
+            case DataType.LOOKUP_SIMPLE: {
+                if(!grid.isNavigationEnabled) {
+                    return renderText();
+                }
+            }
+        }
         return (
             <Link {...props} className={styles.link} title={formattedValue}>
                 {formattedValue}
             </Link>
         );
     };
-    const renderText = () => {
-        if (column.isPrimary) {
+    const renderText = (): JSX.Element => {
+        if (column.isPrimary && grid.isNavigationEnabled) {
             return renderLink({
                 onClick: () => grid.dataset.openDatasetItem(record.getNamedReference())
             }, formattedValue);
@@ -154,16 +163,14 @@ const InternalReadOnlyCell = (props: ICellProps) => {
                 record={record}
                 defaultRender={renderText} />
         }
-
-/*         case null:
-        case undefined: {
-            return <Commands record={record} />
-        } */
         default: {
             if(column.key === '__checkbox') {
                 return <Checkbox
                 checked={props.node.selected}
                 onChange={() => selection.toggle(record)} />
+            }
+            if(column.key === '__ribbon') {
+                return <Commands record={record} />
             }
             return renderText()
         }

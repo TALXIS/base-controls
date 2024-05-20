@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import React from 'react';
-import deepEqual from 'fast-deep-equal';
+import deepEqual from 'fast-deep-equal/es6';
 import { IComponent, IOutputs, IParameters, ITranslations } from "../interfaces";
 import { merge } from 'merge-anything';
 import { StringProps } from "../types";

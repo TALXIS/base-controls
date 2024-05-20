@@ -8,18 +8,22 @@ import { IGridColumn } from "../../core/interfaces/IGridColumn";
 
 export class ColumnValidation {
     private _column: IGridColumn;
-    private _doNotCheckNull: boolean;
+    private _forceNullCheck: boolean;
     
-    constructor(column: IGridColumn, doNotCheckNull?: boolean) {
+    constructor(column: IGridColumn, forceNullCheck?: boolean) {
         this._column = column;
-        this._doNotCheckNull = doNotCheckNull ?? false;
+        this._forceNullCheck = forceNullCheck ?? false;
     }
     public validate(value: any): [boolean, string] {
-        if(this._isNull(value)) {
-            if(this._doNotCheckNull) {
-                return [true, ""];
+        const isNull = this._isNull(value);
+        if((this._column.isRequired || this._forceNullCheck)) {
+            if(isNull) {
+                return [false, 'I need an input!']
             }
-            return [false, 'I need an input!']
+        }
+        //can be null
+        else if(isNull) {
+            return [true, ""]
         }
         switch (this._column.dataType) {
             case DataType.WHOLE_NONE:

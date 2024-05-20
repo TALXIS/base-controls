@@ -6,15 +6,19 @@ import { FilteringUtils } from "../../../../../utils/FilteringUtilts";
 
 export class ConditionComponentValue {
     //needs to be ref to keep the current reference
-    private _columnFilterConditionController: IColumnFilterConditionController;
+    private _columnFilterConditionControllerRef: React.MutableRefObject<IColumnFilterConditionController>;
     private _conditionUtils = FilteringUtils.condition();
 
-    constructor(columnFilterConditionController: IColumnFilterConditionController) {
-        this._columnFilterConditionController = columnFilterConditionController;
+    constructor(columnFilterConditionControllerRef: React.MutableRefObject<IColumnFilterConditionController>) {
+        this._columnFilterConditionControllerRef = columnFilterConditionControllerRef;
     }
 
     public get column() {
         const _column = {...this._columnFilterConditionController.column};
+        //always needs to be required for filter values if non valid value is present
+        if(!this._columnFilterConditionController.value.valid) {
+            _column.isRequired = true;
+        }
         switch (this._columnFilterConditionController.column.dataType) {
             case DataType.OPTIONSET:
             case DataType.TWO_OPTIONS: {
@@ -103,6 +107,9 @@ export class ConditionComponentValue {
 
         }
         this._value.set(value);
+    }
+    private get _columnFilterConditionController() {
+        return this._columnFilterConditionControllerRef.current;
     }
     private get _value() {
         return this._columnFilterConditionController.value;

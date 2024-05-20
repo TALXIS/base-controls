@@ -67,6 +67,7 @@ export const gridTranslations: IGridTranslations = {
     "saving-changenotification": {1029: "Počet upravených záznamů: <b>{{numOfChanges}}</b>. Klikněte <u>zde</u> pro jejich zobrazení.", 1033: "Number of updated records: <b>{{numOfChanges}}</b>. Click <u>here</u> to review."},
     "saving-save": {1029: "Uložit", 1033: "Save"},
     "saving-saving": {1029: "Ukládání...", 1033: "Saving..."},
-    "saving-changepreview-title": {1033: 'Number of updated rows: {{numOfChanges}}', 1029: 'Počet upravených záznamů: {{numOfChanges}}'}
+    "saving-changepreview-title": {1033: 'Number of updated rows: {{numOfChanges}}', 1029: 'Počet upravených záznamů: {{numOfChanges}}'},
+    "saving-validation-error": {1029: 'Pro uložení záznamu je nutné opravit chybové hodnoty následujících sloupců: <b>{{columnDisplayNames}}</b>', 1033: 'Folowing columns have validation errors: <b>{{columnDisplayNames}}</b>'}
 };
    

@@ -19,7 +19,9 @@ export const ConditionValue = (props: IConditionValue) => {
 
 const InternalConditionValue = (controller: IColumnFilterConditionController) => {
     const componentContainerRef = useRef<HTMLDivElement>(null);
-    const conditionComponentValue = useMemo(() => new ConditionComponentValue(controller), []);
+    const controllerRef = useRef<IColumnFilterConditionController>(controller);
+    controllerRef.current = controller;
+    const conditionComponentValue = useMemo(() => new ConditionComponentValue(controllerRef), []);
     const column = conditionComponentValue.column;
 
     useEffect(() => {
@@ -35,7 +37,6 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                 column={column}
                 value={conditionComponentValue.get()}
                 onNotifyOutputChanged={(value) => conditionComponentValue.set(value)}
-                shouldValidate={!controller.value.valid}
                 additionalParameters={{
                     MultipleEnabled: {
                         raw: true

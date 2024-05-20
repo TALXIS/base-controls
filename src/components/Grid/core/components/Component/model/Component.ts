@@ -14,15 +14,33 @@ import { DataType } from "../../../enums/DataType";
 import { GridDependency } from "../../../model/GridDependency";
 import { IComponentProps } from "../Component";
 
+// Debounce utility function with async/await
+const debounce = (func: (...args: any[]) => Promise<any>, wait: number) => {
+    let timeout: NodeJS.Timeout | null = null;
+    let promiseCache: Promise<any> | null = null;
+
+    return async (...args: any[]) => {
+        if (!promiseCache) {
+            promiseCache = func(...args);
+        }
+
+        if (timeout) clearTimeout(timeout);
+
+        timeout = setTimeout(() => {
+            promiseCache = null;
+        }, wait);
+
+        return promiseCache;
+    };
+};
+
 export class Component extends GridDependency {
+    private _debouncedGetLookupValue = debounce(this._getLookupValue.bind(this), 50);
+    private static _lookupSavedQueriesCache = new Map<string, Promise<ComponentFramework.WebApi.Entity>>;
 
     public async getControlProps(props: IComponentProps): Promise<IComponent<any, any, any>> {
-        const {column, value, onNotifyOutputChanged, shouldValidate, additionalParameters, formattedValue} = {...props};
-        let isValid = true;
-        let validationErrorMessage = ""
-        if (shouldValidate) {
-            [isValid, validationErrorMessage] = new ColumnValidation(props.column).validate(value);
-        }
+        const { column, value, onNotifyOutputChanged, additionalParameters, formattedValue } = { ...props };
+        const [isValid, validationErrorMessage] = new ColumnValidation(props.column).validate(value);
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_OWNER: {
@@ -35,19 +53,24 @@ export class Component extends GridDependency {
                     context: this._getInjectedContext(additionalParameters),
                     parameters: {
                         value: {
-                            //TODO: pass the fetchXml into the lookup so it does not have to fetch id again via id
                             getAllViews: async (entityName: string) => {
-                                const response = await this._pcfContext.webAPI.retrieveMultipleRecords('savedquery', `?$filter=returnedtypecode eq '${entityName}' and querytype eq 64`);
-                                const result = response.entities[0];
+                                if (!Component._lookupSavedQueriesCache.get(entityName)) {
+                                    Component._lookupSavedQueriesCache.set(entityName, new Promise(async (resolve) => {
+                                        const response = await this._pcfContext.webAPI.retrieveMultipleRecords('savedquery', `?$filter=returnedtypecode eq '${entityName}' and querytype eq 64&$select=name,savedqueryid,fetchxml`);
+                                        resolve(response.entities[0])
+                                    }))
+                                }
+                                const result = await Component._lookupSavedQueriesCache.get(entityName)!;
                                 return [
                                     {
                                         isDefault: true,
                                         viewName: result.name,
-                                        viewId: result.savedqueryid
+                                        viewId: result.savedqueryid,
+                                        fetchXml: result.fetchxml
                                     }
                                 ]
                             },
-                            raw: await this._getLookupValue(targets, value),
+                            raw: await this._debouncedGetLookupValue(targets, value),
                             attributes: {
                                 Targets: targets
                             },
@@ -207,7 +230,6 @@ export class Component extends GridDependency {
             return [];
         }
         //this is case from filters where we only have the id to work it => we need to go through targets and search for the records
-        //this can be optimized to use less requests
         if (!value[0].entityType) {
             for (const lookup of value) {
                 for (const target of targets) {
