@@ -1,13 +1,7 @@
 import { ColDef, GridApi, IRowNode } from "ag-grid-community";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
-import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the grid
-import "ag-grid-community/styles/ag-theme-balham.css";
 import { DataType } from "../../../enums/DataType";
-
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>

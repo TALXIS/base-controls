@@ -47,8 +47,6 @@
     "webpack": "^5.68.0"
   },
   "peerDependencies": {
-    "@ag-grid-community/client-side-row-model": "30.0.2",
-    "@ag-grid-community/react": "30.0.2",
     "@fluentui/example-data": "^8.4.16",
     "@fluentui/react": "8.51.0 || 8.29.0",
     "@fluentui/style-utilities": "8.5.0",
@@ -56,7 +54,6 @@
     "@talxis/pcf-react-components": "file:.yalc/@talxis/pcf-react-components",
     "@talxis/react-components": "^1.2404.1",
     "@types/validator": "^13.11.9",
-    "ag-grid-community": "30.0.2",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
     "external-svg-loader": "^1.7.1",
@@ -69,7 +66,8 @@
     "react-dom": "^16.8.6 || ^17.0.2",
     "react-window": "^1.8.6",
     "uniqid": "^5.4.0",
-    "validator": "^13.11.9"
+    "validator": "^13.11.9",
+    "humanize-duration": "^3.32.0"
   },
   "scripts": {
     "build": "rollup -c",
@@ -100,8 +98,8 @@
     ]
   },
   "dependencies": {
-    "@fluentui/react-calendar-compat": "^0.1.6",
-    "@fluentui/react-datepicker-compat": "^0.4.36",
-    "humanize-duration": "^3.32.0"
+    "ag-grid-community": "30.0.2",
+    "@ag-grid-community/client-side-row-model": "30.0.2",
+    "@ag-grid-community/react": "30.0.2"
   }
 }

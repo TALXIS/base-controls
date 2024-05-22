@@ -12,12 +12,12 @@ export default [
     {
         input: [
             'src/components/*/*.tsx',
-            'src/hooks/*.ts'],
+            'src/hooks/*.ts'
+        ],
         output: [
             {
                 dir: 'dist',
                 format: 'esm',
-                sourcemap: true
             }
         ],
         plugins: [
@@ -29,14 +29,16 @@ export default [
             }),
             postcss(),
             multiInput(),
-            terser(),
+            //terser()
         ],
     },
     {
         input: ['dist/index.d.ts'],
-        output: [{ file: 'dist/index.d.ts', format: "esm" }],
+        output: [{ file: 'dist/index.d.ts', format: "esm"}],
         external: [/\.css$/],
-        plugins: [dts(),
-        del({ hook: "buildEnd", targets: ['dist/stories', 'dist/sandbox'] })],
+        plugins: [
+            dts(),
+            del({ hook: "buildEnd", targets: ['dist/stories', 'dist/sandbox'] })
+        ],
     },
-]
+];

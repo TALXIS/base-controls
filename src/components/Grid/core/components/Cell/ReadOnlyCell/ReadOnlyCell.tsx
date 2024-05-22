@@ -89,8 +89,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         const storage = new FileAttribute(grid.pcfContext.webAPI);
         const namedReference = record.getNamedReference();
         storage.downloadFileFromAttribute({
-            //@ts-ignore - file returns a different entity ref object from types
-            entityName: namedReference.entityName,
+            entityName: namedReference.etn,
             recordId: record.getRecordId(),
             fileAttribute: column.key,
         }, true)
