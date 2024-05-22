@@ -7,7 +7,7 @@ import { IEntityColumn, IEntityRecord } from '../../../../../../../interfaces';
 import { Icon } from '@fluentui/react/lib/components/Icon/Icon';
 import { getRecordGridStyles } from './styles';
 import { useTheme } from '@fluentui/react';
-import { ColumnGroup } from 'ag-grid-community';
+import { ColumnGroup } from '@ag-grid-community/core';
 
 interface IRecordGrids {
     record: IUpdatedRecord;

@@ -47,6 +47,10 @@
     "webpack": "^5.68.0"
   },
   "peerDependencies": {
+    "@ag-grid-community/core": "30.0.2",
+    "@ag-grid-community/client-side-row-model": "30.0.2",
+    "@ag-grid-community/react": "30.0.2",
+    "@ag-grid-community/styles": "30.0.2",
     "@fluentui/example-data": "^8.4.16",
     "@fluentui/react": "8.51.0 || 8.29.0",
     "@fluentui/style-utilities": "8.5.0",
@@ -98,8 +102,5 @@
     ]
   },
   "dependencies": {
-    "ag-grid-community": "30.0.2",
-    "@ag-grid-community/client-side-row-model": "30.0.2",
-    "@ag-grid-community/react": "30.0.2"
   }
 }

@@ -1,4 +1,4 @@
-import { ColDef, GridApi, IRowNode } from "ag-grid-community";
+import { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 import { DataType } from "../../../enums/DataType";

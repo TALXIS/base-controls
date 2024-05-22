@@ -1,4 +1,4 @@
-import { ColDef, GridApi } from "ag-grid-community";
+import { ColDef, GridApi } from "@ag-grid-community/core";
 import { useEffect, useMemo, useState } from "react";
 import { IEntityRecord } from "../../../../interfaces";
 import { useGridController } from "../../../controllers/useGridController"
@@ -8,14 +8,11 @@ import { ReadOnlyCell } from "../../Cell/ReadOnlyCell/ReadOnlyCell";
 import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { AgGrid } from "../model/AgGrid";
-import { ModuleRegistry} from '@ag-grid-community/core/dist/esm/es6/modules/moduleRegistry';
+import { ModuleRegistry} from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the grid
-import "ag-grid-community/styles/ag-theme-balham.css";
-//@ts-ignore
-window.__AG_ModuleRegistry = ModuleRegistry;
-//@ts-ignore
-window.__AG_ModuleRegistry.registerModules([ClientSideRowModelModule]);
+import "@ag-grid-community/styles/ag-grid.css";
+import "@ag-grid-community/styles/ag-theme-balham.css";
+ModuleRegistry.registerModules([ ClientSideRowModelModule ]);
 
 interface IAgGridController {
     agColumns: ColDef[],

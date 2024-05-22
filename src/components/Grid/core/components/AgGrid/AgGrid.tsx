@@ -1,6 +1,6 @@
 import { AgGridReact } from "@ag-grid-community/react/lib/agGridReact";
 import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
-import { GridApi } from "ag-grid-community/dist/lib/gridApi";
+import { GridApi } from "@ag-grid-community/core";
 import { useEffect, useRef } from "react";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridInstance } from "../../hooks/useGridInstance";
