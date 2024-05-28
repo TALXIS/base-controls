@@ -1,10 +1,13 @@
 import { GridDependency } from "../../core/model/GridDependency";
 
 export class Selection extends GridDependency {
-    public toggle(record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord) {
+    public toggle(record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord, newState: boolean, clearExistingSelection?: boolean) {
         const recordId = record.getRecordId();
-        const selectedRecordIds = new Set(this._dataset.getSelectedRecordIds());
-        if(selectedRecordIds.has(recordId)) {
+        const selectedRecordIds = new Set(this.selectedRecordIds);
+        if(clearExistingSelection) {
+            selectedRecordIds.clear();
+        }
+        if(newState === false) {
             selectedRecordIds.delete(recordId);
         }
         else {
@@ -15,9 +18,8 @@ export class Selection extends GridDependency {
         }
         this._grid.dataset.setSelectedRecordIds([...selectedRecordIds.values()])
     }
-
     public get selectedRecordIds() {
-        return this._grid.dataset.getSelectedRecordIds();
+        return this._dataset.getSelectedRecordIds();
     }
     public get allRecordsSelected() {
         return this.selectedRecordIds.length === this._dataset.sortedRecordIds.length;

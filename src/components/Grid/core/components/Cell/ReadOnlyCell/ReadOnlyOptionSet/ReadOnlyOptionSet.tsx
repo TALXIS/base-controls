@@ -11,7 +11,7 @@ import { DataType } from "../../../../enums/DataType";
 interface IReadOnlyOptionSet {
     column: IGridColumn;
     record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
-    defaultRender: () =>  ReactElement
+    defaultRender: () => ReactElement
 }
 
 export const ReadOnlyOptionSet = (props: IReadOnlyOptionSet) => {
@@ -23,7 +23,6 @@ export const ReadOnlyOptionSet = (props: IReadOnlyOptionSet) => {
 
     useEffect(() => {
         (async () => {
-            //TODO: optimization using fast-deep equal
             const getOptions = async (): Promise<ComponentFramework.PropertyHelper.OptionMetadata[]> => {
                 const [defaultValue, options] = await grid.metadata.getOptions(column);
                 let value: any = record.getValue(column.key);
@@ -33,20 +32,20 @@ export const ReadOnlyOptionSet = (props: IReadOnlyOptionSet) => {
                 if (column.dataType === DataType.MULTI_SELECT_OPTIONSET) {
                     value = value ? value.split(',').map((value: string) => parseInt(value)) : null;
                 }
-                if(column.dataType === DataType.TWO_OPTIONS) {
-                    value = [parseInt(value)]; 
+                if (column.dataType === DataType.TWO_OPTIONS) {
+                    value = [parseInt(value)];
                 }
                 return options.filter(option => value?.includes(option.Value)) ?? [];
             }
             const results = await getOptions();
             setOptions(results);
         })();
-    }, [record]);
+    }, [record.getValue(column.key)]);
 
     //options not loaded yet
-    if(options === null) {
+    if (options === null) {
         return <></>
-    } 
+    }
     //options loaded but either no value selected or no colors are present
     if (options.length === 0 || !options.find(x => x.Color)) {
         return defaultRender();

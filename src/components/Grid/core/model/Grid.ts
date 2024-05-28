@@ -18,8 +18,8 @@ export class Grid {
     private _records: IEntityRecord[] = [];
     private _labels: Required<StringProps<IGridTranslations>>;
     private _shouldRerender: boolean = false;
-   //TODO: the dependencies might not have fully loaded grid
-   //need to make sure that the grid is initialized before creating them
+    //TODO: the dependencies might not have fully loaded grid
+    //need to make sure that the grid is initialized before creating them
     private _dependencies: {
         recordUpdateService: RecordUpdateService,
         filtering: Filtering,
@@ -33,7 +33,7 @@ export class Grid {
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
         this._labels = labels;
-        
+
         this._dependencies = {
             recordUpdateService: new RecordUpdateService(this),
             filtering: new Filtering(this),
@@ -49,7 +49,7 @@ export class Grid {
         return this.parameters.EnableNavigation?.raw !== false;
     }
     public get isEditable() {
-        return this._columns.find(x=> x.isEditable) ? true : false;
+        return this._columns.find(x => x.isEditable) ? true : false;
     }
     public get parameters() {
         return this._props.parameters
@@ -102,6 +102,16 @@ export class Grid {
     public get loading() {
         return this._dataset.loading;
     }
+    public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
+        const clickedRecord = this._records.find(x => x.getRecordId() === entityReference.id.guid);
+        //we need to make sure the item we are opening gets selected in order for the
+        //OnOpenRecord ribbon scripts to work correctly
+        //if no record found we have clicked a lookup, no selection should be happening in that case
+        if (clickedRecord) {
+            this.selection.toggle(clickedRecord, true, true);
+        }
+        this._dataset.openDatasetItem(entityReference);
+    }
 
     public updateDependencies(props: IGrid): void {
         this._props = props;
@@ -114,14 +124,15 @@ export class Grid {
     }
     public async refreshColumns(): Promise<IGridColumn[]> {
         const gridColumns: IGridColumn[] = [];
+        let index = 0;
         for (const column of this._dataset.columns) {
             const sorted = this._dataset.sorting?.find(sort => sort.name === column.name);
-            const entityAliasName = column.alias?.includes('.') ? column.alias.split('.')[0] : null;
+            const entityAliasName = column.name?.includes('.') ? column.name.split('.')[0] : null;
             const attributeName = entityAliasName ? column.name.split('.')[1] : column.name;
-            switch(column.dataType) {
+            switch (column.dataType) {
                 case DataType.FILE:
                 case DataType.IMAGE: {
-                    if(entityAliasName) {
+                    if (entityAliasName) {
                         //we do not support file fields with linked entities
                         //the getValue API throws an error in Power Apps
                         continue;
@@ -151,12 +162,13 @@ export class Grid {
             gridColumn.isEditable = await this._isColumnEditable(gridColumn);
             gridColumn.isRequired = await this._isColumnRequired(gridColumn);
 
-            if(gridColumn.displayName?.startsWith('__ribbon')) {
+            if (gridColumn.displayName?.startsWith('__ribbon')) {
                 gridColumn.key = '__ribbon',
-                gridColumn.displayName = gridColumn.displayName.split('__ribbon$')?.[1]
+                    gridColumn.displayName.split('__ribbon$')?.[1]
                 gridColumn.isFilterable = false;
                 gridColumn.isSortable = false;
             }
+            index++;
             gridColumns.push(gridColumn);
         }
         switch (this._props.parameters.SelectableRows?.raw) {
@@ -184,7 +196,7 @@ export class Grid {
 
     private async _isColumnEditable(column: IGridColumn): Promise<boolean> {
         //top priority, overriden through props
-        if(column.isEditable) {
+        if (column.isEditable) {
             return true;
         }
         //only allow editing if specifically allowed
@@ -206,29 +218,29 @@ export class Grid {
         //IsEditable is not available in Power Apps
         return metadata.Attributes.get(column.attributeName).attributeDescriptor.IsValidForUpdate
     }
-    
+
     private async _isColumnRequired(column: IGridColumn) {
-        if(column.isRequired) {
+        if (column.isRequired) {
             return true;
         }
-        if(!this.parameters.EnableEditing) {
+        if (!this.parameters.EnableEditing) {
             return false;
         }
         const metadata = await this.metadata.get(column);
         const requiredLevel = metadata.Attributes.get(column.attributeName).attributeDescriptor.RequiredLevel;
-        if(requiredLevel === 1 || requiredLevel === 2) {
+        if (requiredLevel === 1 || requiredLevel === 2) {
             return true;
         }
         return false;
     }
     private _isColumnSortable(column: IEntityColumn) {
-        if(this._props.parameters.EnableSorting?.raw === false) {
+        if (this._props.parameters.EnableSorting?.raw === false) {
             return false;
         }
         return !column.disableSorting;
     }
     private _isColumnFilterable(column: IEntityColumn) {
-        if(this.props.parameters.EnableFiltering?.raw === false) {
+        if (this.props.parameters.EnableFiltering?.raw === false) {
             return false;
         }
         return column.isFilterable ?? true;

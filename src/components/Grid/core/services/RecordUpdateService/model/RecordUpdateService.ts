@@ -8,12 +8,13 @@ import { DataType } from "../../../enums/DataType";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 
-export interface IUpdatedRecord extends IEntityRecord {
+export interface IUpdatedRecord extends Omit<IEntityRecord, 'save'> {
     columns: Map<string, IEntityColumn>,
     isValid: (columnKey: string) => boolean,
     getOriginalValue: (columnKey: string) => any;
     getOriginalFormattedValue: (columnKey: string) => any;
     getOriginalFormattedPrimaryNameValue: () => any;
+    save: () => Promise<boolean>,
     clear: () => void;
 }
 
@@ -82,7 +83,7 @@ export class RecordUpdateService extends GridDependency {
                             if(!column) {
                                 return true;
                             }
-                            const [result, message] = new ColumnValidation(column).validate(this._internalRecordMap.get(recordId)?.getValue(columnKey)!)
+                            const [result, message] = new ColumnValidation(this._grid, column).validate(this._internalRecordMap.get(recordId)?.getValue(columnKey)!)
                             return result;
                         },
                         clear: () => {

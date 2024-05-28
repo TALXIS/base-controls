@@ -40,12 +40,12 @@ export class Component extends GridDependency {
 
     public async getControlProps(props: IComponentProps): Promise<IComponent<any, any, any>> {
         const { column, value, onNotifyOutputChanged, additionalParameters, formattedValue } = { ...props };
-        const [isValid, validationErrorMessage] = new ColumnValidation(props.column).validate(value);
+        const [isValid, validationErrorMessage] = new ColumnValidation(this._grid, props.column).validate(value);
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_OWNER: {
                 const columnMetadata = await this._grid.metadata.get(column);
-                const targets = columnMetadata.Attributes.get(column.attributeName).Targets ?? [];
+                const targets = columnMetadata.Attributes.get(column.attributeName).attributeDescriptor.Targets ?? [];
                 if (column.dataType === DataType.LOOKUP_OWNER) {
                     targets.push('systemuser', 'team')
                 }

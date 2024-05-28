@@ -22,7 +22,7 @@ export const useCommands = (record: ComponentFramework.PropertyHelper.DataSetApi
         if(!dataset.retrieveRecordCommand) {
             return []
         }
-        const commands = await dataset.retrieveRecordCommand([record.getRecordId()], ['Mscrm.HomepageGrid.cr96a_datatype.Edit']);
+        const commands = await dataset.retrieveRecordCommand([record.getRecordId()]);
         for (const command of commands) {
             if (!command.shouldBeVisible) {
                 continue;

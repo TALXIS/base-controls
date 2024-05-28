@@ -13,7 +13,7 @@ export interface IEntityColumn extends ComponentFramework.PropertyHelper.DataSet
 }
 export interface IEntityRecord extends ComponentFramework.PropertyHelper.DataSetApi.EntityRecord {
     setValue: (columnName: string, value: any) => void;
-    save: () => Promise<boolean>;
+    save: () => Promise<void>;
 }
 
 export interface IGridParameters extends IParameters {
@@ -76,6 +76,7 @@ export interface IGridTranslations extends ITranslations {
     "condition-doesnotcontainvalues": { [LCID: number]: string };
     "filtermenu-filterby": { [LCID: number]: string };
     "filtermenu-applybutton": { [LCID: number]: string };
+    "filtermenu-clearbutton": { [LCID: number]: string };
     "filtersortmenu-sorttext-a-z": { [LCID: number]: string };
     "filtersortmenu-sorttext-z-a": { [LCID: number]: string };
     "filtersortmenu-sortdate-a-z": { [LCID: number]: string };
@@ -100,4 +101,9 @@ export interface IGridTranslations extends ITranslations {
     "saving-saving": { [LCID: number]: string };
     "saving-changepreview-title": { [LCID: number]: string };
     "saving-validation-error": { [LCID: number]: string };
+    "validation-input-value": { [LCID: number]: string };
+    "validation-email": { [LCID: number]: string };
+    "validation-url": { [LCID: number]: string };
+    "validation-date": { [LCID: number]: string };
+    "validation-number": { [LCID: number]: string };
 }

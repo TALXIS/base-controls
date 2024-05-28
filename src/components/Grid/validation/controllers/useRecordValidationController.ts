@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useGridInstance } from "../../core/hooks/useGridInstance";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
 import { ColumnValidation } from "../model/ColumnValidation";
 
@@ -8,9 +9,10 @@ interface IRecordValidation {
 }
 
 export const useColumnValidationController = (props: IRecordValidation): [boolean, string] => {
+    const grid = useGridInstance();
     const column = props.column;
     const record = props.record;
-    const columnValidation = useMemo(() => {return new ColumnValidation(column)}, []);
+    const columnValidation = useMemo(() => {return new ColumnValidation(grid, column)}, []);
 
     const [isValid, setIsValid] = useState<boolean>(true);
     const [errorMessage, setErrorMessage] = useState<string>("");

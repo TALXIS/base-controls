@@ -80,10 +80,10 @@ const InternalReadOnlyCell = (props: ICellProps) => {
     const renderText = (): JSX.Element => {
         if (column.isPrimary && grid.isNavigationEnabled) {
             return renderLink({
-                onClick: () => grid.dataset.openDatasetItem(record.getNamedReference())
+                onClick: () => grid.openDatasetItem(record.getNamedReference())
             }, formattedValue);
         }
-        return <Text className={styles.text} data-align={getAlignment()} title={formattedValue}>{formattedValue}</Text>
+        return <Text className={`${styles.text} talxis-cell-text`} title={formattedValue}>{formattedValue}</Text>
     }
     const downloadFile = () => {
         const storage = new FileAttribute(grid.pcfContext.webAPI);
@@ -93,16 +93,6 @@ const InternalReadOnlyCell = (props: ICellProps) => {
             recordId: record.getRecordId(),
             fileAttribute: column.key,
         }, true)
-    }
-    const getAlignment = () => {
-        switch (column.dataType) {
-            case DataType.CURRENCY:
-            case DataType.DECIMAL:
-            case DataType.WHOLE_NONE: {
-                return 'right';
-            }
-        }
-        return 'left';
     }
     switch (column.dataType) {
         case DataType.SINGLE_LINE_EMAIL: {
@@ -121,7 +111,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         case DataType.LOOKUP_SIMPLE:
         case DataType.LOOKUP_OWNER: {
             return renderLink({
-                onClick: () => grid.dataset.openDatasetItem(record.getValue(column.key) as any)
+                onClick: () => grid.openDatasetItem(record.getValue(column.key) as any)
             }, formattedValue);
         }
         case DataType.FILE: {
@@ -166,7 +156,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
             if(column.key === '__checkbox') {
                 return <Checkbox
                 checked={props.node.selected}
-                onChange={() => selection.toggle(record)} />
+                onChange={(e, checked) => selection.toggle(record, checked!)} />
             }
             if(column.key === '__ribbon') {
                 return <Commands record={record} />

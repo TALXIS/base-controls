@@ -1,16 +1,18 @@
-import React, { useContext, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { CommandBarButton, Icon, Label, useTheme } from '@fluentui/react';
 import { FilterCallout, IFilterCallout } from '../../../filtering/components/FilterCallout/FilterCallout';
 import { IGridColumn } from '../../interfaces/IGridColumn';
 import { ISortingContextualMenu, SortingContextualMenu } from '../../../sorting/components/SortingContextualMenu/SortingContextualMenu';
-import { useColumnFilterConditionController } from '../../../filtering/controller/useColumnFilterConditionController';
 import { getColumnHeaderStyles } from './styles';
+import { useGridInstance } from '../../hooks/useGridInstance';
+import React from 'react';
 
 export interface IColumnHeader {
     baseColumn: IGridColumn;
 }
 
 export const ColumnHeader = (props: IColumnHeader) => {
+    const grid = useGridInstance();
     const column = props.baseColumn;
     const [columnHeaderContextualMenuProps, setColumnHeaderContextualMenuProps] = useState<ISortingContextualMenu | null>(null);
     const [filterCalloutProps, setFilterCalloutProps] = useState<IFilterCallout | null>(null);
@@ -45,7 +47,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
                 className={columnHeaderStyles.root}
                 onClick={onClick}
             >
-                {column.isEditable && <Icon className={columnHeaderStyles.editIcon} iconName='Edit' />}
+                {grid.isEditable && !column.isEditable && <Icon className={columnHeaderStyles.editIcon} iconName='Uneditable' />}
                 <div className={columnHeaderStyles.labelWrapper}>
                     <Label className={columnHeaderStyles.label}>{column.displayName}</Label>
                     {column.isRequired &&

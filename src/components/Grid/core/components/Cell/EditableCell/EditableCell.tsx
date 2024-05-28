@@ -5,9 +5,10 @@ import { useGridInstance } from '../../../hooks/useGridInstance';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { useRecordUpdateServiceController } from '../../../services/RecordUpdateService/controllers/useRecordUpdateServiceController';
 import { Component } from '../../Component/Component';
+import { ICellEditorParams } from '@ag-grid-community/core';
 import numeral from "numeral";
 
-interface ICell {
+interface ICell extends ICellEditorParams {
     baseColumn: IGridColumn;
     data: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
 }
@@ -68,6 +69,7 @@ export const EditableCell = (props: ICell) => {
         }
         return value;
     }
+    //this is just so the setValue API in Power Apps accepts the values that come from the components
     const getRecordValue = (value: any) => {
         switch (column.dataType) {
             case DataType.TWO_OPTIONS: {
@@ -96,6 +98,20 @@ export const EditableCell = (props: ICell) => {
             recordUpdateService.record(record.getRecordId()).setValue(column.key, getRecordValue(valueRef.current))
             return;
         }
+        switch(column.dataType) {
+            case DataType.OPTIONSET:
+            case DataType.DATE_AND_TIME_DATE_ONLY: {
+                props.stopEditing();
+                return;
+            }
+            case DataType.LOOKUP_OWNER:
+            case DataType.LOOKUP_SIMPLE: {
+                if(value?.length > 0) {
+                    props.stopEditing();
+                    return;
+                }
+            }
+        }
         setValue(valueRef.current);
     }
 
@@ -109,7 +125,10 @@ export const EditableCell = (props: ICell) => {
                 raw: true
             },
             Height: {
-                raw: 42
+                raw: 41
+            },
+            EnableNavigation: {
+                raw: false
             }
         }}
     />

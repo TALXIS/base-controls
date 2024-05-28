@@ -25,7 +25,8 @@ export const Commands = ({ record }: ICommands) => {
             root: commandStyles.root,
 
         }} items={[]}
-        farItems={items} />;
+        farItems={items}
+         />;
     }
     return <></>;
 };

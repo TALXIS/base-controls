@@ -42,7 +42,7 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
                             return {
                                 attributeDescriptor: {
                                     RequiredLevel: 2,
-                                    IsValidForUpdate: Math.random() < 0.9
+                                    IsValidForUpdate: true
                                 }
                             };
                         }
@@ -77,13 +77,13 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
             context: context,
             parameters: {
                 SelectableRows: {
-                    raw: 'single'
+                    raw: 'multiple'
                 },
                 EnableEditing: {
                     raw: true
                 },
                 EnableNavigation: {
-                    raw: false
+                    raw: true
                 },
                 Grid: context.parameters.Grid
             } as any

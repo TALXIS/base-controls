@@ -23,6 +23,7 @@ export const Lookup = (props: ILookup) => {
     const mouseOver = useMouseOver(ref);
     const isFocused = useFocusIn(ref);
     const firstRenderRef = useRef(true);
+    const shouldFocusRef = useRef(false);
 
 
     useEffect(() => {
@@ -58,14 +59,18 @@ export const Lookup = (props: ILookup) => {
 
     useEffect(() => {
         if(props.parameters.AutoFocus?.raw === true) {
-            if(componentRef.current?.items?.length === itemLimit) {
-                //@ts-ignore
-                ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]').focus();
-                return;
-            }
-            componentRef.current?.focusInput();
+            focus();
         }
     }, []);
+
+    const focus = () => {
+        if(componentRef.current?.items?.length === itemLimit) {
+            //@ts-ignore
+            ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]').focus();
+            return;
+        }
+        componentRef.current?.focusInput();
+    }
 
     const forceSearch = async () => {
         //@ts-ignore - We need to use internal methods to show and fill the suggestions on entity change
@@ -176,6 +181,13 @@ export const Lookup = (props: ILookup) => {
                                             color: `${theme.palette.black} !important`
                                         }
                                     }
+                                },
+                                onClick: () => {
+                                    shouldFocusRef.current = false;
+                                    records.deselect(lookup);
+                                    setTimeout(() => {
+                                        focus()
+                                    }, 200)
                                 }
                             } : undefined
                         }

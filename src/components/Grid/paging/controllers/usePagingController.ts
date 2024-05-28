@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useGridInstance } from "../../core/hooks/useGridInstance"
 
 interface IPagingController {
@@ -18,9 +17,8 @@ interface IPagingController {
 
 export const usePagingController = (): IPagingController => {
     const paging = useGridInstance().paging;
-    const getController = (): IPagingController => {
-        return {
-            pageNumber: paging.pageNumber,
+    return {
+        pageNumber: paging.pageNumber,
             pageSize: paging.pageSize,
             totalResultCount: paging.totalResultCount,
             hasPreviousPage: paging.hasPreviousPage,
@@ -32,13 +30,5 @@ export const usePagingController = (): IPagingController => {
             loadPreviousPage: () => paging.loadPreviousPage(),
             setPageSize: (pageSize) => paging.setPageSize(pageSize),
             reset: () => paging.reset()
-        }
     }
-    const [controller, setController] = useState<IPagingController>(() => getController());
-
-    useEffect(() => {
-        setController(getController());
-    }, [paging.pageNumber, paging.pageSize, paging.totalResultCount])
-
-    return controller;
 }

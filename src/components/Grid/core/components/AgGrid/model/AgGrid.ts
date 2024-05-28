@@ -2,6 +2,7 @@ import { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 import { DataType } from "../../../enums/DataType";
+import { IGridColumn } from "../../../interfaces/IGridColumn";
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>
@@ -14,14 +15,17 @@ export class AgGrid extends GridDependency {
         const agColumns: ColDef[] = [];
         for (const column of this._grid.columns) {
             const agColumn: ColDef = {
+                colId: column.key,
                 field: column.key,
                 headerName: column.displayName,
-                width: column.width,
+                initialWidth: column.width,
                 sortable: column.isSortable,
                 editable: column.isEditable,
                 resizable: column.isResizable,
                 suppressMovable: this._grid.props.parameters.ChangeEditorMode ? true : undefined,
                 autoHeaderHeight: true,
+                suppressSizeToFit: column.key === '__checkbox',
+                cellClass: this._getCellClassName(column),
                 valueFormatter: (p) => {
                     return p.data.getFormattedValue(column.key)
                 },
@@ -32,7 +36,7 @@ export class AgGrid extends GridDependency {
                     baseColumn: column
                 },
                 cellEditorParams: {
-                    baseColumn: column
+                    baseColumn: column,
                 },
                 headerComponentParams: {
                     baseColumn: column
@@ -75,10 +79,22 @@ export class AgGrid extends GridDependency {
             nodes: nodesToSelect,
             newValue: true
         });
-        //TODO: target the cells directly
-        this._grid.pcfContext.factory.requestRender();
+        this._gridApi.refreshCells({
+            columns: ['__checkbox'],
+            force: true
+        })
     }
     private get _gridApi() {
         return this._gridApiRef.current;
+    }
+    private _getCellClassName(column: IGridColumn) {
+        switch (column.dataType) {
+            case DataType.CURRENCY:
+            case DataType.DECIMAL:
+            case DataType.WHOLE_NONE: {
+                return 'talxis-cell-align-right';
+            }
+        }
+        return 'talxis-cell-align-left';
     }
 }

@@ -28,6 +28,9 @@ export const getDateTimeStyles = (theme: ITheme) => {
             },
             '[class^="dayCell"]:focus': {
                outline: `solid 1px !important`
+            },
+            '.ms-DatePicker': {
+                animationDuration: '0s'
             }
         }
     });

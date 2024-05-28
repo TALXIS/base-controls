@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getGridStyles = (theme: ITheme) => {
+export const getGridStyles = (theme: ITheme, numOfRecords: number) => {
     return mergeStyleSets({
         root: {
             height: '100%',
@@ -8,7 +8,8 @@ export const getGridStyles = (theme: ITheme) => {
             flexDirection: 'column',
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
-                minHeight: 600,
+                minHeight: `calc(${numOfRecords} * 42px + 64px)`,
+                '--ag-input-focus-border-color': 'transparent',
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`
             },
             '.ag-body': {
@@ -27,6 +28,28 @@ export const getGridStyles = (theme: ITheme) => {
                 paddingLeft: 0,
                 paddingRight: 0,
                 backgroundColor: `${theme.semanticColors.bodyBackground} !important`
+            },
+            '.ag-cell-inline-editing': {
+                overflow: 'visible',
+                top: -1,
+                backgroundColor: 'transparent',
+                'input': {
+                    paddingLeft: 10
+                },
+                '.TALXIS__error-message__root': {
+                    display: 'none'
+                }
+            },
+            '.talxis-cell-align-right': {
+                '[class^="cellContent"]': {
+                    justifyContent: 'flex-end',
+                },
+                '.talxis-cell-text, input': {
+                    textAlign: 'right'
+                },
+                'input': {
+                    paddingRight: 10
+                }
             },
             '.ag-cell-focus:has([data-is-valid="false"])': {
                 border: '1px solid red !important;'

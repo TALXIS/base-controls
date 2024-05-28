@@ -38,7 +38,6 @@ export const RecordGrids = (props: IRecordGrids) => {
             save: async () => {
                 const result = await record.save();
                 grid.pcfContext.factory.requestRender();
-                return result;
             },
             //only comes when clear is called to return to the original value
             setValue: (columnKey: string, value: any) => {

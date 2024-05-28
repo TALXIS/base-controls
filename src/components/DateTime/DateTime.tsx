@@ -3,9 +3,9 @@ import { IDateTime } from "./interfaces";
 import { IDatePicker, useTheme } from "@fluentui/react";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
-import { useDateTime } from "./useDateTime";
+import { useDateTime } from "./hooks/useDateTime";
 import dayjs from 'dayjs';
-import { Calendar } from "./Calendar";
+import { Calendar } from "./components/Calendar";
 import { DatePicker } from "@talxis/react-components/dist/components/DatePicker";
 import React from 'react';
 
@@ -36,14 +36,6 @@ export const DateTime = (componentProps: IDateTime) => {
                 }}
                 // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
                 minDate={new Date('1753-01-01T00:00:00.000Z')}
-                calloutProps={{
-                    onRestoreFocus: () => {
-                        const input = ref.current?.querySelector('input');
-                        setTimeout(() => {
-                            input?.focus()
-                        }, 10);
-                    }
-                }}
                 firstDayOfWeek={componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek}
                 calendarAs={(props) =>
                     <Calendar {...props}

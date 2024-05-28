@@ -28,7 +28,7 @@ export const useLookup = (props: ILookup): [
         return targets.map(target => {
             return {
                 entityName: target,
-                selected: false,
+                selected: targets.length === 1 ? true : false,
                 metadata: props.context.utils.getEntityMetadata(target, []) as any,
             }
         })

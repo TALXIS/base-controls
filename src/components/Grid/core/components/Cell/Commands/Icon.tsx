@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
 import 'external-svg-loader';
 import { commandStyles } from './styles';
 
@@ -6,10 +6,12 @@ interface IIcon {
     name: string
 }
 
-export const Icon = ({ name }: IIcon) => {
+const IconComponent = ({ name }: IIcon) => {
     //@ts-ignore - types
-    const src = useMemo(() => `https://${window.location.host}${window.Xrm.Utility.getGlobalContext().getWebResourceUrl('msdyn_AIBuilder.svg')}`, [])
+    const src = !window.TALXIS?.Portal ? `https://${window.location.host}${window.Xrm.Utility.getGlobalContext().getWebResourceUrl(name)}` : name;
     return (
         <svg data-src={src} className={commandStyles.icon} />
     );
 };
+
+export const Icon = memo(IconComponent);

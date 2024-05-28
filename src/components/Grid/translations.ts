@@ -45,6 +45,7 @@ export const gridTranslations: IGridTranslations = {
     "condition-doesnotcontainvalues": { 1029: "Neobsahuje hodnoty", 1033: "Does not contain values" },
     "filtermenu-filterby": { 1029: "Filtrovat podle", 1033: "Filter By" },
     "filtermenu-applybutton": { 1029: "Použít", 1033: "Apply" },
+    "filtermenu-clearbutton": { 1029: "Vymazat", 1033: "Clear" },
     "filtersortmenu-sorttext-a-z": { 1029: "Seřadit od A do Z", 1033: "Sort A to Z" },
     "filtersortmenu-sorttext-z-a": { 1029: "Seřadit od Z do A", 1033: "Sort Z to A" },
     "filtersortmenu-sortdate-a-z": { 1029: "Seřadit od nejstarších", 1033: "Sort older to newer" },
@@ -68,6 +69,12 @@ export const gridTranslations: IGridTranslations = {
     "saving-save": {1029: "Uložit", 1033: "Save"},
     "saving-saving": {1029: "Ukládání...", 1033: "Saving..."},
     "saving-changepreview-title": {1033: 'Number of updated rows: {{numOfChanges}}', 1029: 'Počet upravených záznamů: {{numOfChanges}}'},
-    "saving-validation-error": {1029: 'Pro uložení záznamu je nutné opravit chybové hodnoty následujících sloupců: <b>{{columnDisplayNames}}</b>', 1033: 'Folowing columns have validation errors: <b>{{columnDisplayNames}}</b>'}
+    "saving-validation-error": {1029: 'Pro uložení záznamu je nutné opravit chybové hodnoty následujících sloupců: <b>{{columnDisplayNames}}</b>', 1033: 'Folowing columns have validation errors: <b>{{columnDisplayNames}}</b>'},
+    "validation-input-value":  {1029: 'Zadejte hodnotu', 1033: 'Please enter value.'},
+    "validation-email":  {1029: 'Neplatný formát emailové adresy.', 1033: 'Invalid Email address format.'},
+    "validation-url":  {1029: 'Neplatný formát webové adresy.', 1033: 'Invalid URL format.'},
+    "validation-date": {1029: 'Neplatný formát datumu.', 1033: 'Invalid Date format.'},
+    "validation-number": {1029: 'Neplatný formát čísla.', 1033: 'Invalid Number format.'},
+    
 };
    

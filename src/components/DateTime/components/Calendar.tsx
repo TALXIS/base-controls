@@ -4,7 +4,7 @@ import { ITimePickerProps } from "@fluentui/react/lib/components/TimePicker/Time
 import { useTheme } from "@fluentui/react/lib/utilities/ThemeProvider/useTheme";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
-import { getDateTimeStyles } from "./styles";
+import { getDateTimeStyles } from "../styles";
 import { TimePicker } from "@talxis/react-components/dist/components/TimePicker";
 import { Text } from '@fluentui/react/lib/Text';
 import dayjs from "dayjs";
@@ -55,6 +55,11 @@ export const Calendar = (props: IInternalCalendarProps) => {
                     }}
                     defaultValue={dayjs(new Date()).startOf('day').toDate()}
                     useComboBoxAsMenuWidth
+                    styles={{
+                        callout: {
+                            maxHeight: '300px !important'
+                        }
+                    }}
                     autofill={{
                         componentRef: timePickerRef,
                         //hack to prevent blinking on prop updates

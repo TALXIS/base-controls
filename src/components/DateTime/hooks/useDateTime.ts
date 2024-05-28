@@ -1,11 +1,13 @@
 import { useEffect, useMemo } from "react";
-import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
-import { IDateTime, IDateTimeOutputs, IDateTimeParameters, IDateTimeTranslations } from "./interfaces";
+import { useInputBasedComponent } from "../../../hooks/useInputBasedComponent";
+import { IDateTime, IDateTimeOutputs, IDateTimeParameters, IDateTimeTranslations } from "../interfaces";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { getDefaultDateTimeTranslations } from "./translations";
-import { StringProps } from "../../types";
+import { getDefaultDateTimeTranslations } from "../translations";
+import { StringProps } from "../../../types";
+dayjs.extend(customParseFormat);
+dayjs.extend(utc);
 
 export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElement>): [
     Date | undefined,
@@ -50,11 +52,6 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         }
         return shortDatePattern;
     })();
-
-    useMemo(() => {
-        dayjs.extend(customParseFormat);
-        dayjs.extend(utc);
-    }, []);
 
     const formatDate = (date: Date | undefined | null | string): string | undefined => {
         if (date == undefined) {

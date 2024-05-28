@@ -7,6 +7,7 @@ import { IGridColumn } from '../../../core/interfaces/IGridColumn';
 import { FilteringUtils } from '../../utils/FilteringUtilts';
 import { ConditionOperator } from './components/ConditionOperator/ConditionOperator';
 import { ConditionValue } from './components/ConditionValue/ConditionValue';
+import { useGridInstance } from '../../../core/hooks/useGridInstance';
 
 export interface IFilterCallout extends ICalloutProps {
     column: IGridColumn;
@@ -16,11 +17,13 @@ export interface IFilterCallout extends ICalloutProps {
 export const FilterCallout = (props: IFilterCallout) => {
     const {column, onDismiss} = {...props};
     const condition = useColumnFilterConditionController(column);
+    const grid = useGridInstance();
     const conditionRef = React.useRef<IColumnFilterConditionController | null>();
     conditionRef.current = condition;
     const conditionOperator = condition?.operator.get();
     const conditionValue = condition?.value.get();
     const conditionUtils = FilteringUtils.condition();
+
     const isDeleteButtonDisabled = () => {
         switch(conditionValue) {
             case null:
@@ -44,7 +47,7 @@ export const FilterCallout = (props: IFilterCallout) => {
             calloutWidth={230}
             className={filterCalloutStyles.root}>
             <div className={filterCalloutStyles.header}>
-                <Text className={filterCalloutStyles.title} variant="mediumPlus">Filtrovat podle</Text>
+                <Text className={filterCalloutStyles.title} variant="mediumPlus">{grid.labels['filtermenu-filterby']()}</Text>
                 <IconButton onClick={() => onDismiss()} iconProps={{
                     iconName: 'ChromeClose',
                 }} />
@@ -59,14 +62,14 @@ export const FilterCallout = (props: IFilterCallout) => {
                         }
                     </div>
                     <div className={filterCalloutStyles.footer}>
-                        <PrimaryButton text="Pouzit"
+                        <PrimaryButton text={grid.labels['filtermenu-applybutton']()}
                             onClick={async () => {
                                 if(await condition.save()) {
                                     props.onDismiss();
                                 }
                             }} />
                         {conditionUtils.value(conditionOperator!).isEditable &&
-                            <Button text="Vymazat"
+                            <Button text={grid.labels['filtermenu-clearbutton']()}
                                 disabled={isDeleteButtonDisabled()}
                                 onClick={() => {
                                     condition.value.set(null);

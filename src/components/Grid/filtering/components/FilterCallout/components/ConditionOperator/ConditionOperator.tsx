@@ -54,6 +54,12 @@ export const ConditionOperator = (props: IConditionOperator) => {
         selectedKey={condition.operator.get()}
         shouldRestoreFocus={false}
         options={getOptions()}
+        useComboBoxAsMenuWidth
+        styles={{
+            callout: {
+                maxHeight: '300px !important'
+            }
+        }}
         onChange={(e, option) => {
             condition.operator.set(option!.key as DatasetConditionOperator)
         }} />;

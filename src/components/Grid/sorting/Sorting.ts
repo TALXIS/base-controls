@@ -6,6 +6,11 @@ export class Sorting extends GridDependency {
             value: this._dataset.sorting.find(x => x.name === column.key),
             sort: (direction: ComponentFramework.PropertyHelper.DataSetApi.Types.SortDirection) => {
                 const sortMap: Map<string, ComponentFramework.PropertyHelper.DataSetApi.SortStatus> = new Map(this._dataset.sorting.map(x => [x.name, x]));
+                //sorting across multiple columns is currently not supported in Portal
+                //@ts-ignore - types
+                if(window.TALXIS?.Portal) {
+                    sortMap.clear();
+                }
                 sortMap.set(column.key, {
                     name: column.key,
                     sortDirection: direction

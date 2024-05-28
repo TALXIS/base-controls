@@ -56,7 +56,7 @@
     "@fluentui/style-utilities": "8.5.0",
     "@talxis/client-libraries": "^1.2402.3",
     "@talxis/pcf-react-components": "file:.yalc/@talxis/pcf-react-components",
-    "@talxis/react-components": "^1.2404.1",
+    "@talxis/react-components": "file:.yalc/@talxis/react-components",
     "@types/validator": "^13.11.9",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
@@ -102,5 +102,6 @@
     ]
   },
   "dependencies": {
+    "@talxis/react-components": "file:.yalc/@talxis/react-components"
   }
 }

@@ -5,7 +5,7 @@ interface ISelectionController {
     type: "multiple" | "single" | undefined;
     selectedRecordIds: string[],
     allRecordsSelected: boolean;
-    toggle: (record: IEntityRecord) => void;
+    toggle: (record: IEntityRecord, state: boolean) => void;
     clear: () => void,
     selectAll: () => void
 }
@@ -18,7 +18,7 @@ export const useSelectionController = (): ISelectionController => {
         type: selection.type,
         selectedRecordIds: selection.selectedRecordIds,
         allRecordsSelected: selection.allRecordsSelected,
-        toggle: (record: IEntityRecord) => selection.toggle(record),
+        toggle: (record: IEntityRecord, state: boolean) => selection.toggle(record, state),
         clear: () => selection.clear(),
         selectAll: () => selection.selectAll()
     }
