@@ -10,6 +10,7 @@ import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/Glo
 import { AgGrid } from "../model/AgGrid";
 import { ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import { useDebounce } from 'use-debounce';
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
@@ -26,6 +27,8 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     const agGrid = useMemo(() => new AgGrid(grid, gridApiRef), [])
     const { columns, records } = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
+    //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
+    const [agRecords] = useDebounce(records, 0);
 
     useEffect(() => {
         if (!agGridReadyRef.current) {
@@ -38,7 +41,6 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
         agGridReadyRef.current = true;
         agGrid.selectRows();
     }
-
     useEffect(() => {
         if (columns.length === 0) {
             return;
@@ -59,7 +61,7 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
 
     return {
         agColumns: agColumns,
-        records: records,
+        records: agRecords,
         onGridReady: onGridReady
     }
 }

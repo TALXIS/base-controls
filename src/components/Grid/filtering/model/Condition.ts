@@ -7,7 +7,6 @@ import { ColumnValidation } from "../../validation/model/ColumnValidation";
 import { FilteringUtils } from "../utils/FilteringUtilts";
 
 export class Condition extends GridDependency {
-    
     private _column: IGridColumn;
     private _isAppliedToDataset: boolean = false;
     private _conditionExpression: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression = {} as any;

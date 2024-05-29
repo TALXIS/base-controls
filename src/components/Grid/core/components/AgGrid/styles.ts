@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getGridStyles = (theme: ITheme, numOfRecords: number) => {
+export const getGridStyles = (theme: ITheme, numOfRecords?: number) => {
     return mergeStyleSets({
         root: {
             height: '100%',
@@ -8,9 +8,12 @@ export const getGridStyles = (theme: ITheme, numOfRecords: number) => {
             flexDirection: 'column',
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
-                minHeight: `calc(${numOfRecords} * 42px + 64px)`,
+                minHeight: numOfRecords ? `calc(${numOfRecords} * 42px + 64px)` : undefined,
                 '--ag-input-focus-border-color': 'transparent',
-                borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`
+                borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
+                ':has(.ag-overlay:not(.ag-hidden)) .ag-body': {
+                    minHeight: 170
+                }
             },
             '.ag-body': {
                 borderTop: `1px solid ${theme.semanticColors.bodyDivider}`

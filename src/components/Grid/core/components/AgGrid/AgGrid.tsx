@@ -18,8 +18,10 @@ export const AgGrid = () => {
     const gridColumnApiRef = useRef<ColumnApi>();
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
+    //used for grid sizing - only the initial pageSize is relevant for this case
+    const pageSizeRef = useRef<number>(grid.paging.pageSize);
+    console.log(pageSizeRef.current);
     let { agColumns, records, onGridReady} = useAgGridController(gridApiRef);
-    const styles = getGridStyles(theme, grid.paging.pageSize);
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -69,6 +71,17 @@ export const AgGrid = () => {
             gridApiRef.current!.sizeColumnsToFit();
         }
     }
+    const getDomLayout = () => {
+        if(pageSizeRef.current > grid.records.length) {
+            return 'autoHeight';
+        }
+        if(grid.parameters.ChangeEditorMode) {
+            return 'autoHeight'
+        }
+        return undefined;
+    }
+
+    const styles = getGridStyles(theme, !getDomLayout() ? pageSizeRef.current : undefined);
     return (
         <div ref={containerRef} className={`${styles.root} ag-theme-balham`}>
             {((grid.isEditable && grid.parameters.ChangeEditorMode?.raw !== 'edit') || grid.parameters.ChangeEditorMode?.raw === 'read') &&
@@ -85,7 +98,7 @@ export const AgGrid = () => {
                 animateRows
                 //singleClickEdit
                 //enableCellTextSelection
-                //domLayout={grid.props.parameters.ChangeEditorMode?.raw ? "autoHeight" : undefined}
+                domLayout={getDomLayout()}
                 //rowMultiSelectWithClick
                 rowSelection={grid.selection.type}
                 noRowsOverlayComponent={EmptyRecords}

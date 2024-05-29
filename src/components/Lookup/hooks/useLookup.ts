@@ -76,7 +76,7 @@ export const useLookup = (props: ILookup): [
         await Promise.all(fetchXmlMap.values());
         const responsePromiseMap = new Map<string, Promise<ComponentFramework.WebApi.RetrieveMultipleResponse>>()
         for (const [entityName, fetchXml] of fetchXmlMap) {
-            responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?fetchXml=${await fetchXml}`))
+            responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?fetchXml=${encodeURIComponent((await fetchXml))}`))
         }
         await Promise.all(responsePromiseMap.values());
         const result: ComponentFramework.LookupValue[] = [];

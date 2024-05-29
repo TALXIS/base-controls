@@ -6,6 +6,7 @@ import { IEntity, ILookupTranslations } from "../interfaces";
 import { getLookupStyles } from "../styles";
 import { StringProps } from '../../../types';
 import { useLoadedEntities } from "../hooks/useLoadedEntities";
+import React from 'react';
 
 interface IRecordCreator {
     labels: Required<StringProps<ILookupTranslations>>,

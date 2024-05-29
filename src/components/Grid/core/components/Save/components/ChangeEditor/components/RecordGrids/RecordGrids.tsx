@@ -3,11 +3,10 @@ import { Grid } from '../../../../../../../Grid';
 import { useGridInstance } from '../../../../../../hooks/useGridInstance';
 import { IUpdatedRecord } from '../../../../../../services/RecordUpdateService/model/RecordUpdateService';
 import { Text } from '@fluentui/react/lib/Text';
-import { IEntityColumn, IEntityRecord } from '../../../../../../../interfaces';
+import { IEntityColumn, IEntityRecord, IGrid, IGridParameters } from '../../../../../../../interfaces';
 import { Icon } from '@fluentui/react/lib/components/Icon/Icon';
 import { getRecordGridStyles } from './styles';
 import { useTheme } from '@fluentui/react';
-import { ColumnGroup } from '@ag-grid-community/core';
 
 interface IRecordGrids {
     record: IUpdatedRecord;
@@ -16,6 +15,28 @@ export const RecordGrids = (props: IRecordGrids) => {
     const grid = useGridInstance();
     const record = { ...props.record };
     const styles = getRecordGridStyles(useTheme());
+    const sharedProps: IGrid = {
+        context: grid.pcfContext,
+        parameters: {
+            EnableFiltering: {
+                raw: false
+            },
+            EnablePagination: {
+                raw: false
+            },
+            EnableSorting: {
+                raw: false
+            },
+            Grid: {
+                ...grid.dataset,
+                columns: [...record.columns.values()],
+                paging: {
+                    ...grid.dataset.paging,
+                    pageSize: 1
+                }
+            }
+        } as IGridParameters
+    }
 
     const invalidColumns = (() => {
         const columns: IEntityColumn[] = [];
@@ -70,25 +91,15 @@ export const RecordGrids = (props: IRecordGrids) => {
                     <Text title={record.getOriginalFormattedPrimaryNameValue()} variant='large'>{record.getOriginalFormattedPrimaryNameValue()}</Text>
                 </div>
                 <Grid
-                    context={grid.pcfContext}
+                    {...sharedProps}
                     parameters={{
+                        ...sharedProps.parameters,
                         ChangeEditorMode: {
                             raw: "read",
                             error: hasInvalidColumn,
                         },
-                        EnableFiltering: {
-                            raw: false
-                        },
-                        EnablePagination: {
-                            raw: false
-                        },
-                        EnableSorting: {
-                            raw: false
-                        },
                         Grid: {
-                            ...grid.dataset,
-                            //@ts-ignore
-                            columns: [...record.columns.values()],
+                            ...sharedProps.parameters.Grid,
                             error: hasInvalidColumn,
                             errorMessage: hasInvalidColumn ? grid.labels['saving-validation-error']({
                                 columnDisplayNames: invalidColumns.map( x => x.displayName).join(', ')
@@ -96,41 +107,29 @@ export const RecordGrids = (props: IRecordGrids) => {
                             records: {
                                 [record.getRecordId()]: getOriginalRecord(record)
                             }
-                        }
-                    }} />
+                        },
+
+                    } as IGridParameters} />
             </div>
             <Icon iconName="DoubleChevronDown8" />
             <div className={styles.editableGrid}>
                 <Grid
-                    context={grid.pcfContext}
+                    {...sharedProps}
                     parameters={{
+                        ...sharedProps.parameters,
                         ChangeEditorMode: {
                             raw: "edit"
-                        },
-                        __ParentGrid: {
-                            raw: grid
                         },
                         EnableEditing: {
                             raw: true
                         },
-                        EnableFiltering: {
-                            raw: false
-                        },
-                        EnablePagination: {
-                            raw: false
-                        },
-                        EnableSorting: {
-                            raw: false
-                        },
                         Grid: {
-                            ...grid.dataset,
-                            //@ts-ignore
-                            columns: [...record.columns.values()],
+                            ...sharedProps.parameters.Grid,
                             records: {
                                 [record.getRecordId()]: getUpdatedRecord(record)
                             }
                         }
-                    }} />
+                    } as IGridParameters} />
             </div>
         </div>
     )
