@@ -1,4 +1,4 @@
-import { initializeIcons, Label } from "@fluentui/react";
+import { initializeIcons, Label, TagPicker } from "@fluentui/react";
 import React, { useState } from "react";
 import { Context } from "./mock/Context";
 import { Decimal } from "../components/Decimal/Decimal";
@@ -22,6 +22,7 @@ export const Sandbox: React.FC = () => {
   const [isMounted, setIsMounted] = useState<boolean>(true);
   const [test, setTest] = useState("");
   const context = new Context();
+
   return (
     <>
       <Label>Outside change</Label>

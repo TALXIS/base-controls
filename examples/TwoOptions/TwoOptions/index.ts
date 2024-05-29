@@ -34,11 +34,13 @@ export class TwoOptions implements ComponentFramework.StandardControl<IInputs, I
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
-        console.log(context.parameters.value);
         ReactDOM.render(React.createElement(TwoOptionsComponent as any, {
-            context: context,
+            context: context as any,
             parameters: {
-                value: context.parameters.value
+                value: context.parameters.value,
+                AutoFocus: {
+                    raw: true
+                }
             },
             onNotifyOutputChanged: (outputs) => {
                 this._outputs = outputs;

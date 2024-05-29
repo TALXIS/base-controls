@@ -36,12 +36,12 @@ export const Duration = (props: IDuration) => {
     const valueExtractor = (str: string | null): number | undefined => {
         //extraction of number of minutes from formatted string should happen here
        // parsing because labels are string that represent array of strings
-        const minuteLabels= JSON.parse(labels.minute);
-        const minutesLabels= JSON.parse(labels.minutes);
-        const hourLabels= JSON.parse(labels.hour);
-        const hoursLabels= JSON.parse(labels.hours);
-        const dayLabels= JSON.parse(labels.day);
-        const daysLabels= JSON.parse(labels.days);
+        const minuteLabels= JSON.parse(labels.minute());
+        const minutesLabels= JSON.parse(labels.minutes());
+        const hourLabels= JSON.parse(labels.hour());
+        const hoursLabels= JSON.parse(labels.hours());
+        const dayLabels= JSON.parse(labels.day());
+        const daysLabels= JSON.parse(labels.days());
         const minuteRegex = new RegExp("^(" + minuteLabels.join('|') + ")\\s|\\s(" + minuteLabels.join('|') + ")$|^(" + minutesLabels.join('|') + ")\\s|\\s(" + minutesLabels.join('|') + ")$", "i");
         const hourRegex = new RegExp("^(" + hourLabels.join('|') + ")\\s|\\s(" + hourLabels.join('|') + ")$|^(" + hoursLabels.join('|') + ")\\s|\\s(" + hoursLabels.join('|') + ")$", "i");
         const dayRegex = new RegExp("^(" + dayLabels.join('|') + ")\\s|\\s(" + dayLabels.join('|') + ")$|^(" + daysLabels.join('|') + ")\\s|\\s(" + daysLabels.join('|') + ")$", "i");

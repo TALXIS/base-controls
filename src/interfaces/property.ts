@@ -1,3 +1,5 @@
+import { IEntityColumn, IEntityRecord } from "../components/Grid/interfaces";
+
 type ExcludedProps = Pick<ComponentFramework.PropertyTypes.Property, 'formatted'>;
 
 export interface IProperty extends Omit<Partial<ComponentFramework.PropertyTypes.Property>, keyof ExcludedProps | 'attributes'> {
@@ -36,31 +38,38 @@ export interface IDateTimeProperty extends IProperty, Partial<ComponentFramework
 
 export interface IOptionSetProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.OptionSetProperty>, 'attributes'> {
     raw: number | null,
-    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata> & {
-        DefaultValue: number;
+    attributes: Omit<Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata>, 'DefaultValue'> & {
         Options: ComponentFramework.PropertyHelper.OptionMetadata[]
+    };
+}
+
+export interface ITwoOptionsProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.TwoOptionsProperty>, 'attributes'> {
+    raw: boolean,
+    attributes: Omit<Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata>, 'DefaultValue'> & {
+        Options: [ComponentFramework.PropertyHelper.OptionMetadata, ComponentFramework.PropertyHelper.OptionMetadata]
     };
 }
 
 export interface IMultiSelectOptionSetProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.MultiSelectOptionSetProperty>, 'attributes'> {
     raw: number[] | null,
-    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata> & {
-        DefaultValue: number;
+    attributes: Omit<Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata>, 'DefaultValue'> & {
         Options: ComponentFramework.PropertyHelper.OptionMetadata[]
     };
 }
 
-export interface ILookupProperty extends IProperty, Partial<ComponentFramework.PropertyTypes.LookupProperty> {
+export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.LookupProperty>, 'attributes' | 'getViewId'> {
     raw: ComponentFramework.LookupValue[];
-    attributes: ComponentFramework.PropertyHelper.FieldPropertyMetadata.LookupMetadata;
+    attributes: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.LookupMetadata> & {
+        Targets: string[]
+    };
     /**
-     * Returns the default lookup viewId.
+     * Returns the default lookup viewId. Works only for Microsoft PCF's
      */
     getDefaultViewId: (entityName: string) => string,
     /**
      * Gets all views for entity (including non-lookup ones).
      */
-    getAllViews: (entityName: string) => {
+    getAllViews: (entityName: string) => Promise<{
         isAvailableInOffline: boolean;
         isDefault: boolean;
         isPinned: boolean;
@@ -68,5 +77,35 @@ export interface ILookupProperty extends IProperty, Partial<ComponentFramework.P
         relatedEntityName: string;
         viewId: string;
         viewName: string;
+        fetchXml?: string;
+    }[]>
+}
+
+export interface IDatasetProperty extends IProperty, Omit<ComponentFramework.PropertyTypes.DataSet, 'error' | 'errorMessage'> {
+    columns: IEntityColumn[],
+    records: {
+        [id: string]: IEntityRecord;
+    }
+    paging: ComponentFramework.PropertyHelper.DataSetApi.Paging & {
+        pageNumber: number
+    }
+    retrieveRecordCommand: (recordIds: string[], specificCommands?: string[], filterByPriority?: boolean, useNestedFormat?: boolean, refreshAllRules?: boolean) => {
+        canExecute: boolean;
+        /**
+        * Seems to be always empty - buttons present in Flyout and SplitButton are put on first level (the array of buttons is flattened).
+        */
+        children: any[];
+        commandId: string;
+        commandButtonId: string;
+        controlType: any;
+        icon: string;
+        label: string;
+        shouldBeVisible: boolean;
+        tooltip: string;
+        /**
+        * Temp portal property
+        */
+        __isInline?: boolean;
+        execute: () => Promise<void>;
     }[]
 }

@@ -2,14 +2,16 @@
 import { IMultiSelectOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
 import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
-import { IComboBoxOption } from '@fluentui/react';
+import { IComboBox, IComboBoxOption } from '@fluentui/react';
+import React, { useEffect, useRef } from 'react';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
+    const [labels, onNotifyOutputChanged] = useComponent('MultiSelectOptionSet', props);
     const parameters = props.parameters;
     const boundValue = parameters.value;
-    const [labels, onNotifyOutputChanged] = useComponent('MultiSelectOptionSet', props);
+    const componentRef = useRef<IComboBox>(null);
     const { Options } = parameters.value.attributes;
-    const context = props.context;;
+    const context = props.context;
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
@@ -36,15 +38,26 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         });
     };
 
+    useEffect(() => {
+        if (parameters.AutoFocus?.raw) {
+            componentRef.current?.focus(true);
+        }
+    }, []);
+
     return <ComboBox
+        componentRef={componentRef}
         borderless={parameters.EnableBorder?.raw === false}
         options={comboBoxOptions}
         allowFreeInput={true}
         multiSelect
         autoComplete="on"
+        autofill={parameters.AutoFocus?.raw === true ? {
+            autoFocus: true
+        }: undefined}
         readOnly={context.mode.isControlDisabled}
-        dropdownWidth={context.mode.allocatedWidth || undefined}
+        errorMessage={boundValue.errorMessage}
         selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : [-1]}
+        useComboBoxAsMenuWidth
         styles={{
             root: {
                 height: context.mode.allocatedHeight || undefined,
@@ -52,6 +65,9 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
                 display: 'flex',
                 alignItems: 'center',
             },
+            callout: {
+                maxHeight: '300px !important'
+            }
         }}
         deleteButtonProps={{
             key: 'delete',

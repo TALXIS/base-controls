@@ -3,7 +3,6 @@ import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
 import { IBaseParameters, IInputParameters } from "../../interfaces/parameters";
 
 export interface IDateTime extends IComponent<IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations> {
-    translations?: IDateTimeTranslations
 }
 
 export interface IDateTimeParameters extends IInputParameters {

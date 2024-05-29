@@ -2,14 +2,8 @@ export interface IOutputs {
     [key: string]: any
 }
 
-export interface IContext {
-    mode: ComponentFramework.Mode;
-    userSettings: ComponentFramework.UserSettings;
-    formatting: ComponentFramework.Formatting;
-}
-
 export interface IComponent<TParameters, TOutputs, TTranslations> {
-    context: IContext;
+    context: ComponentFramework.Context<TParameters>;
     parameters: TParameters;
     translations?: TTranslations
     /**

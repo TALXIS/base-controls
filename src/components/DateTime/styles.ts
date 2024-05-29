@@ -25,6 +25,12 @@ export const getDateTimeStyles = (theme: ITheme) => {
             },
             '[class^="monthAndYear"], [class*="weekDayLabelCell"]': {
                 animationDuration: '0s'
+            },
+            '[class^="dayCell"]:focus': {
+               outline: `solid 1px !important`
+            },
+            '.ms-DatePicker': {
+                animationDuration: '0s'
             }
         }
     });
