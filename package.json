@@ -55,8 +55,6 @@
     "@fluentui/react": "8.51.0 || 8.29.0",
     "@fluentui/style-utilities": "8.5.0",
     "@talxis/client-libraries": "^1.2402.3",
-    "@talxis/pcf-react-components": "file:.yalc/@talxis/pcf-react-components",
-    "@talxis/react-components": "file:.yalc/@talxis/react-components",
     "@types/validator": "^13.11.9",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
@@ -71,8 +69,9 @@
     "react-dom": "^16.8.6 || ^17.0.2",
     "react-window": "^1.8.6",
     "uniqid": "^5.4.0",
+    "use-debounce": "^10.0.1",
     "validator": "^13.11.9",
-    "use-debounce": "^10.0.1"
+    "@talxis/react-components": "^1.2404.1"
   },
   "scripts": {
     "build": "rollup -c",
@@ -103,6 +102,5 @@
     ]
   },
   "dependencies": {
-    "@talxis/react-components": "file:.yalc/@talxis/react-components"
   }
 }
