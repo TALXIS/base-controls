@@ -1,7 +1,7 @@
 {
-  "name": "@talxis/pcf-react-components",
+  "name": "@talxis/base-controls",
   "version": "0.0.1",
-  "description": "Layer between React components and PCF",
+  "description": "Set of React components that natively work with Power Apps Component Framework API's",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "license": "MIT",
