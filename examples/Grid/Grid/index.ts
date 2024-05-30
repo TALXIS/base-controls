@@ -1,8 +1,6 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as ReactDOM from 'react-dom';
 import * as React from 'react';
-import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
-type DataSet = ComponentFramework.PropertyTypes.DataSet;
 import { Grid as GridComponent } from '../../../src/components/Grid/Grid';
 import { IGrid } from "../../../src/components/Grid/interfaces";
 
@@ -76,17 +74,8 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
         ReactDOM.render(React.createElement(GridComponent, {
             context: context,
             parameters: {
-                SelectableRows: {
-                    raw: 'multiple'
-                },
-                EnableEditing: {
-                    raw: true
-                },
-                EnableNavigation: {
-                    raw: true
-                },
-                Grid: context.parameters.Grid
-            } as any
+                ...context.parameters
+            }
         } as IGrid), this._container);
     }
 

@@ -20,7 +20,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
     const buttonRef = useRef<HTMLElement>(null);
 
     const onClick = () => {
-        if ((column.isFilterable === false && column.isFilterable === false)) {
+        if ((column.isFilterable === false && column.isSortable === false)) {
             return;
         }
         setColumnHeaderContextualMenuProps({

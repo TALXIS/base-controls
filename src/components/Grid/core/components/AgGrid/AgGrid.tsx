@@ -71,17 +71,14 @@ export const AgGrid = () => {
             gridApiRef.current!.sizeColumnsToFit();
         }
     }
-    const getDomLayout = () => {
-        if(pageSizeRef.current > grid.records.length) {
-            return 'autoHeight';
-        }
-        if(grid.parameters.ChangeEditorMode) {
-            return 'autoHeight'
-        }
-        return undefined;
-    }
 
-    const styles = getGridStyles(theme, !getDomLayout() ? pageSizeRef.current : undefined);
+    const getGridHeight = () => {
+        if(pageSizeRef.current < grid.records.length) {
+            return pageSizeRef.current;
+        }
+        return grid.records.length;
+    }
+    const styles = getGridStyles(theme, getGridHeight());
     return (
         <div ref={containerRef} className={`${styles.root} ag-theme-balham`}>
             {((grid.isEditable && grid.parameters.ChangeEditorMode?.raw !== 'edit') || grid.parameters.ChangeEditorMode?.raw === 'read') &&
@@ -95,10 +92,11 @@ export const AgGrid = () => {
                 </MessageBar>
             }
             <AgGridReact
-                animateRows
+                suppressAnimationFrame
+                suppressColumnMoveAnimation
                 //singleClickEdit
                 //enableCellTextSelection
-                domLayout={getDomLayout()}
+                //domLayout={getDomLayout()}
                 //rowMultiSelectWithClick
                 rowSelection={grid.selection.type}
                 noRowsOverlayComponent={EmptyRecords}

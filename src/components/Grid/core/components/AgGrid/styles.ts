@@ -8,12 +8,15 @@ export const getGridStyles = (theme: ITheme, numOfRecords?: number) => {
             flexDirection: 'column',
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
-                minHeight: numOfRecords ? `calc(${numOfRecords} * 42px + 64px)` : undefined,
+                maxHeight: '100%',
                 '--ag-input-focus-border-color': 'transparent',
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
                 ':has(.ag-overlay:not(.ag-hidden)) .ag-body': {
                     minHeight: 170
                 }
+            },
+            '.ag-root-wrapper.ag-layout-normal': {
+                height: numOfRecords ? `calc(${numOfRecords} * 42px + 64px)` : undefined,
             },
             '.ag-body': {
                 borderTop: `1px solid ${theme.semanticColors.bodyDivider}`
