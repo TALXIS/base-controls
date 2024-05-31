@@ -27,9 +27,23 @@ export const RecordGrids = (props: IRecordGrids) => {
             EnableSorting: {
                 raw: false
             },
+            EnableNavigation: {
+                raw: false
+            },
             Grid: {
                 ...grid.dataset,
+                sorting: [],
                 columns: [...record.columns.values()],
+                filtering: {
+                    ...grid.dataset.filtering,
+                    getFilter: () => {
+                        return {
+                            conditions: [],
+                            filterOperator: 0,
+                        }
+                    }
+                },
+                getSelectedRecordIds: () => [],
                 paging: {
                     ...grid.dataset.paging,
                     pageSize: 1

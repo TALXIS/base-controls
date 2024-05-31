@@ -36,6 +36,7 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
         }
         agGrid.selectRows();
     }, [grid.dataset.getSelectedRecordIds().join('')]);
+    
 
     const onGridReady = () => {
         agGridReadyRef.current = true;

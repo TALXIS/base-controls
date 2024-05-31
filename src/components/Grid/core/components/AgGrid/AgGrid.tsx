@@ -8,8 +8,9 @@ import { getGridStyles } from "./styles";
 import React from 'react';
 import { useAgGridController } from "./controllers/useAgGridController";
 import { Paging } from "../../../paging/components/Paging/Paging";
-import { EmptyRecords } from "../EmptyRecords/EmptyRecords";
+import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
+import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 
 export const AgGrid = () => {
     const grid = useGridInstance();
@@ -20,7 +21,6 @@ export const AgGrid = () => {
     const theme = useTheme();
     //used for grid sizing - only the initial pageSize is relevant for this case
     const pageSizeRef = useRef<number>(grid.paging.pageSize);
-    console.log(pageSizeRef.current);
     let { agColumns, records, onGridReady} = useAgGridController(gridApiRef);
 
     useEffect(() => {
@@ -49,7 +49,22 @@ export const AgGrid = () => {
             catch (err) {
             }
         })
+        return () => {
+            console.log(gridApiRef.current)
+            gridApiRef.current.getState()
+        }
     }, []);
+
+    useEffect(() => {
+        if(!gridApiRef.current) {
+            return;
+        }
+        if(grid.loading) {
+            gridApiRef.current.showLoadingOverlay();
+            return;
+        }
+        gridApiRef.current.hideOverlay()
+    }, [grid.loading]);
 
     const getColumnsWidth = () => {
         let width = 0;
@@ -78,6 +93,8 @@ export const AgGrid = () => {
         }
         return grid.records.length;
     }
+
+
     const styles = getGridStyles(theme, getGridHeight());
     return (
         <div ref={containerRef} className={`${styles.root} ag-theme-balham`}>
@@ -92,18 +109,12 @@ export const AgGrid = () => {
                 </MessageBar>
             }
             <AgGridReact
-                suppressAnimationFrame
-                suppressColumnMoveAnimation
-                //singleClickEdit
-                //enableCellTextSelection
-                //domLayout={getDomLayout()}
-                //rowMultiSelectWithClick
+                animateRows
+                rowBuffer={0}
                 rowSelection={grid.selection.type}
                 noRowsOverlayComponent={EmptyRecords}
-                //suppressRowClickSelection
-                isRowSelectable={(node) => selection.type && !grid.isEditable ? true : false}
+                loadingOverlayComponent={LoadingOverlay}
                 onRowSelected={(e) => {
-                    console.log(e);
                     //prevent infinite loop since we are also setting the rows
                     //when the selection comes from above
                     if(e.source.includes('api')) {
@@ -116,13 +127,25 @@ export const AgGrid = () => {
                         grid.openDatasetItem(e.data!.getNamedReference())
                     }
                 }}
+                onCellMouseOver={(e) => {
+                    if(e.colDef.colId === '__checkbox') {
+                        gridApiRef.current?.setSuppressRowClickSelection(true);
+                    }
+                }}
+                onCellMouseOut={(e) => {
+                    gridApiRef.current?.setSuppressRowClickSelection(false);
+                }}
                 getRowId={(params) => params.data.getRecordId()}
                 onGridReady={(e) => {
                     gridApiRef.current = e.api as any;
                     gridColumnApiRef.current = e.columnApi;
+                    if(grid.loading) {
+                        gridApiRef.current?.showLoadingOverlay();
+                    }
                     sizeColumnsIfSpaceAvailable();
                     onGridReady();
                 }}
+                
                 rowHeight={42}
                 columnDefs={agColumns as any}
                 rowData={records}

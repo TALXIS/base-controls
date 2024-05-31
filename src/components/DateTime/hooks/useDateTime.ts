@@ -29,6 +29,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const behavior = boundValue.attributes.Behavior;
     const format = boundValue.attributes.Format;
     const dateFormattingInfo = context.userSettings.dateFormattingInfo;
+    
     const isDateTime = (() => {
         switch (format) {
             case 'DateAndTime':

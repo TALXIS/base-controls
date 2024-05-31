@@ -13,8 +13,9 @@ import { useColumnValidationController } from '../../../../validation/controller
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { useSelectionController } from '../../../../selection/controllers/useSelectionController';
 import { IEntityRecord } from '../../../../interfaces';
+import { ICellRendererParams } from '@ag-grid-community/core';
 
-interface ICellProps {
+interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     data: IEntityRecord;
     [key: string]: any;
@@ -60,8 +61,6 @@ const InternalReadOnlyCell = (props: ICellProps) => {
     const styles = getReadOnlyCellStyles(theme);
     const selection = useSelectionController();
 
-    console.log(grid.isNavigationEnabled);
-
     const renderLink = (props: ILinkProps, formattedValue: string): JSX.Element => {
         switch(column.dataType) {
             case DataType.LOOKUP_OWNER:
@@ -94,6 +93,11 @@ const InternalReadOnlyCell = (props: ICellProps) => {
             fileAttribute: column.key,
         }, true)
     }
+
+    const toggleSelection = (newState: boolean) => {
+        
+    }
+
     switch (column.dataType) {
         case DataType.SINGLE_LINE_EMAIL: {
             return renderLink({ href: `mailto:${formattedValue}` }, formattedValue);
@@ -155,8 +159,12 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         default: {
             if(column.key === '__checkbox') {
                 return <Checkbox
-                checked={props.node.selected}
-                onChange={(e, checked) => selection.toggle(record, checked!)} />
+                checked={props.node.isSelected()}
+                onChange={(e, checked) => {
+                    e?.stopPropagation()
+                    console.log(props.api.getSelectedNodes())
+                    selection.toggle(record, checked!)
+                }} />
             }
             if(column.key === '__ribbon') {
                 return <Commands record={record} />

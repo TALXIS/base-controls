@@ -14,7 +14,6 @@ interface ICell extends ICellEditorParams {
 }
 
 export const EditableCell = (props: ICell) => {
-    const grid = useGridInstance()
     const record = props.data;
     const column = props.baseColumn;
     const recordUpdateService = useRecordUpdateServiceController();

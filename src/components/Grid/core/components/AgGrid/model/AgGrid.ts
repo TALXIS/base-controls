@@ -40,7 +40,7 @@ export class AgGrid extends GridDependency {
                 },
                 headerComponentParams: {
                     baseColumn: column
-                },
+                },       
                 suppressKeyboardEvent: (params) => {
                     if (params.event.key !== 'Enter' || params.api.getEditingCells().length === 0) {
                         return false;

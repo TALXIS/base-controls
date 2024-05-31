@@ -75,6 +75,6 @@ export const gridTranslations: IGridTranslations = {
     "validation-url":  {1029: 'Neplatný formát webové adresy.', 1033: 'Invalid URL format.'},
     "validation-date": {1029: 'Neplatný formát datumu.', 1033: 'Invalid Date format.'},
     "validation-number": {1029: 'Neplatný formát čísla.', 1033: 'Invalid Number format.'},
-    
+    "no-name": {1029: '(Bez názvu)', 1033: '(No Name)'},
 };
    

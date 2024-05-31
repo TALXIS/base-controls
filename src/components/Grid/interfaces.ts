@@ -106,4 +106,5 @@ export interface IGridTranslations extends ITranslations {
     "validation-url": { [LCID: number]: string };
     "validation-date": { [LCID: number]: string };
     "validation-number": { [LCID: number]: string };
+    "no-name": { [LCID: number]: string };
 }

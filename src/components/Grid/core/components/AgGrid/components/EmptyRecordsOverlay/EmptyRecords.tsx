@@ -1,6 +1,6 @@
 import React from 'react';
 import {Image} from '@fluentui/react';
-import { useGridInstance } from '../../hooks/useGridInstance';
+import { useGridInstance } from '../../../../hooks/useGridInstance';
 import { Text } from '@fluentui/react/lib/Text';
 import { emptyRecordStyles } from './styles';
 

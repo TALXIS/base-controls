@@ -6,17 +6,21 @@ export const getGridStyles = (theme: ITheme, numOfRecords?: number) => {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
+            '--height-offset': '64px',
+            ':has(.ag-body-horizontal-scroll-viewport[style*="height: 0px"])': {
+                '--height-offset': '45px'
+            } ,
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
                 maxHeight: '100%',
                 '--ag-input-focus-border-color': 'transparent',
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
-                ':has(.ag-overlay:not(.ag-hidden)) .ag-body': {
-                    minHeight: 170
+                ':has(.ag-overlay:not(.ag-hidden))': {
+                    minHeight: 270
                 }
             },
             '.ag-root-wrapper.ag-layout-normal': {
-                height: numOfRecords ? `calc(${numOfRecords} * 42px + 64px)` : undefined,
+                height: numOfRecords ? `calc(${numOfRecords} * 42px + var(--height-offset))` : undefined,
             },
             '.ag-body': {
                 borderTop: `1px solid ${theme.semanticColors.bodyDivider}`

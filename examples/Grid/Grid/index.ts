@@ -74,7 +74,10 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
         ReactDOM.render(React.createElement(GridComponent, {
             context: context,
             parameters: {
-                ...context.parameters
+                ...context.parameters,
+                EnableEditing: {
+                    raw: true
+                }
             }
         } as IGrid), this._container);
     }

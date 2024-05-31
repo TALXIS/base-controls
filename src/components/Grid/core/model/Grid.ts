@@ -102,13 +102,14 @@ export class Grid {
     public get loading() {
         return this._dataset.loading;
     }
+
     public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
         const clickedRecord = this._records.find(x => x.getRecordId() === entityReference.id.guid);
         //we need to make sure the item we are opening gets selected in order for the
         //OnOpenRecord ribbon scripts to work correctly
         //if no record found we have clicked a lookup, no selection should be happening in that case
         if (clickedRecord) {
-            this.selection.toggle(clickedRecord, true, true);
+            this.selection.toggle(clickedRecord, true, true, true);
         }
         this._dataset.openDatasetItem(entityReference);
     }
@@ -124,7 +125,6 @@ export class Grid {
     }
     public async refreshColumns(): Promise<IGridColumn[]> {
         const gridColumns: IGridColumn[] = [];
-        let index = 0;
         for (const column of this._dataset.columns) {
             const sorted = this._dataset.sorting?.find(sort => sort.name === column.name);
             const entityAliasName = column.name?.includes('.') ? column.name.split('.')[0] : null;
@@ -168,7 +168,6 @@ export class Grid {
                 gridColumn.isFilterable = false;
                 gridColumn.isSortable = false;
             }
-            index++;
             gridColumns.push(gridColumn);
         }
         switch (this._props.parameters.SelectableRows?.raw) {
@@ -185,6 +184,7 @@ export class Grid {
         this._columns = gridColumns;
         return gridColumns;
     }
+
     public refreshRecords(): IEntityRecord[] {
         const records = [];
         for (const [_, record] of Object.entries(this._dataset.records)) {
@@ -223,7 +223,7 @@ export class Grid {
         if (column.isRequired) {
             return true;
         }
-        if (!this.parameters.EnableEditing) {
+        if (!this.parameters.EnableEditing?.raw) {
             return false;
         }
         const metadata = await this.metadata.get(column);

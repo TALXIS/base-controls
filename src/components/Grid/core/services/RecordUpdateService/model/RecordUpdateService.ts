@@ -65,7 +65,17 @@ export class RecordUpdateService extends GridDependency {
                         getNamedReference: () => deepCopiedRecord.getNamedReference(),
                         getOriginalValue: (columnKey: string) => deepCopiedRecord.getValue(columnKey),
                         getOriginalFormattedValue: (columnKey: string) => deepCopiedRecord.getFormattedValue(columnKey),
-                        getOriginalFormattedPrimaryNameValue: () => deepCopiedRecord.getFormattedValue(this._dataset.columns.find(x => x.isPrimary)!.name),
+                        getOriginalFormattedPrimaryNameValue: () => {
+                            let primaryColumn = this._dataset.columns.find(x => x.isPrimary);
+                            if(!primaryColumn) {
+                                primaryColumn = this._dataset.columns[0];
+                            }
+                            let value = deepCopiedRecord.getFormattedValue(primaryColumn.name);
+                            if(!value) {
+                                value = this._grid.labels["no-name"]();
+                            }
+                            return value;
+                        },
                         setValue: (columnKey: string, value: any) => {
                             const updatedRecord = this._updatedRecords.get(recordId);
                             let originalValue = updatedRecord?.getOriginalValue(columnKey);
