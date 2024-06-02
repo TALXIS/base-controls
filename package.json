@@ -1,5 +1,5 @@
 {
-  "name": "dominik/base-controls",
+  "name": "@talxis/base-controls",
   "version": "0.0.1",
   "description": "Set of React components that natively work with Power Apps Component Framework API's",
   "main": "dist/index.js",
