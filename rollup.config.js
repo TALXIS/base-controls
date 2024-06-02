@@ -29,7 +29,7 @@ export default [
             }),
             postcss(),
             multiInput(),
-            //terser()
+            terser()
         ],
     },
     {
