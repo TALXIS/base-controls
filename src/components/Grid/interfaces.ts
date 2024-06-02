@@ -22,6 +22,7 @@ export interface IGridParameters extends IParameters {
     EnableFiltering?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableSorting?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
+    IsNested?: Omit<ITwoOptionsProperty, 'attributes'>;
     SelectableRows?: IStringProperty & {
         raw: 'single' | 'multiple' | 'true' | 'single'
     }

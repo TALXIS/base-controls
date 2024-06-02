@@ -1,8 +1,8 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as ReactDOM from 'react-dom';
 import * as React from 'react';
-import { Grid as GridComponent } from '../../../src/components/Grid/Grid';
-import { IGrid } from "../../../src/components/Grid/interfaces";
+import { Grid as GridComponent } from '../../../dist/components/Grid/Grid';
+import { IGrid } from "../../../dist/components/Grid/interfaces";
 
 export class Grid implements ComponentFramework.StandardControl<IInputs, IOutputs> {
     private _container: HTMLDivElement;

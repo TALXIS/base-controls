@@ -55,11 +55,15 @@ export const ReadOnlyCell = (props: ICellProps) => {
 const InternalReadOnlyCell = (props: ICellProps) => {
     const grid = useGridInstance();
     const column = props.baseColumn;
-    const record = props.data;
-    const formattedValue = record.getFormattedValue(column.key);
     const theme = useTheme();
     const styles = getReadOnlyCellStyles(theme);
     const selection = useSelectionController();
+    const record: IEntityRecord = (() => {
+        //this is so we can load the updated record values from state
+        const updatedRecord = grid.recordUpdateService.record(props.data.getRecordId()).get() as any;
+        return updatedRecord ?? props.data;
+    })();
+    const formattedValue = record.getFormattedValue(column.key);
 
     const renderLink = (props: ILinkProps, formattedValue: string): JSX.Element => {
         switch(column.dataType) {
@@ -92,10 +96,6 @@ const InternalReadOnlyCell = (props: ICellProps) => {
             recordId: record.getRecordId(),
             fileAttribute: column.key,
         }, true)
-    }
-
-    const toggleSelection = (newState: boolean) => {
-        
     }
 
     switch (column.dataType) {

@@ -102,6 +102,12 @@ export class Grid {
     public get loading() {
         return this._dataset.loading;
     }
+    public get state() {
+        return this._props.state;
+    }
+    public get isNested() {
+        return this.parameters.IsNested?.raw === true;
+    }
 
     public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
         const clickedRecord = this._records.find(x => x.getRecordId() === entityReference.id.guid);

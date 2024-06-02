@@ -30,6 +30,9 @@ export const RecordGrids = (props: IRecordGrids) => {
             EnableNavigation: {
                 raw: false
             },
+            IsNested: {
+                raw: true
+            },
             Grid: {
                 ...grid.dataset,
                 sorting: [],

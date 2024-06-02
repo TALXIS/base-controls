@@ -1,6 +1,6 @@
-import { AgGridReact } from "@ag-grid-community/react/lib/agGridReact";
+import { AgGridReact } from '@ag-grid-community/react';
 import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
-import { ColumnApi, GridApi } from "@ag-grid-community/core";
+import { ColumnApi, GridApi, GridState } from "@ag-grid-community/core";
 import { useEffect, useRef } from "react";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridInstance } from "../../hooks/useGridInstance";
@@ -11,6 +11,13 @@ import { Paging } from "../../../paging/components/Paging/Paging";
 import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
 import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
+import { useStateValues } from '@talxis/react-components/dist/hooks';
+import { usePagingController } from '../../../paging/controllers/usePagingController';
+import { IUpdatedRecord } from '../../services/RecordUpdateService/model/RecordUpdateService';
+
+interface IAgGridState extends GridState {
+    '__updatedRecords'?: IUpdatedRecord[]
+}
 
 export const AgGrid = () => {
     const grid = useGridInstance();
@@ -20,8 +27,11 @@ export const AgGrid = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     //used for grid sizing - only the initial pageSize is relevant for this case
-    const pageSizeRef = useRef<number>(grid.paging.pageSize);
-    let { agColumns, records, onGridReady} = useAgGridController(gridApiRef);
+    let { agColumns, records, onGridReady } = useAgGridController(gridApiRef);
+    const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<IAgGridState>(grid.state as IAgGridState);
+    const pagingController = usePagingController();
+    const pageSizeRef = useRef<number>(pagingController.pageSize);
+    const firstRenderRef = useRef(true);
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -50,21 +60,39 @@ export const AgGrid = () => {
             }
         })
         return () => {
-            console.log(gridApiRef.current)
-            gridApiRef.current.getState()
+            if (!gridApiRef.current || grid.isNested) {
+                return;
+            }
+            stateValuesRef.current.__updatedRecords = grid.recordUpdateService.updatedRecords;
+            grid.pcfContext.mode.setControlState(getNewStateValues());
         }
     }, []);
 
     useEffect(() => {
-        if(!gridApiRef.current) {
+        const onBeforeUnload = (ev: BeforeUnloadEvent) => {
+            if(grid.recordUpdateService.isDirty) {
+                ev.preventDefault();
+                return 'Unsaved changes!'
+            }
+        }
+        window.addEventListener('beforeunload', onBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', onBeforeUnload);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!gridApiRef.current) {
             return;
         }
-        if(grid.loading) {
+        if (grid.loading) {
             gridApiRef.current.showLoadingOverlay();
             return;
         }
         gridApiRef.current.hideOverlay()
     }, [grid.loading]);
+
+
 
     const getColumnsWidth = () => {
         let width = 0;
@@ -82,18 +110,25 @@ export const AgGrid = () => {
     const sizeColumnsIfSpaceAvailable = () => {
         const totalWidth = getColumnsWidth();
         const availableWidth = getAvailableWidth();
-        if(availableWidth > totalWidth) {
+        if (availableWidth > totalWidth) {
             gridApiRef.current!.sizeColumnsToFit();
         }
     }
 
     const getGridHeight = () => {
-        if(pageSizeRef.current < grid.records.length) {
+        if (pageSizeRef.current < grid.records.length) {
             return pageSizeRef.current;
         }
         return grid.records.length;
     }
 
+    useEffect(() => {
+        if (firstRenderRef.current) {
+            firstRenderRef.current = false;
+            return;
+        }
+        gridApiRef.current?.ensureIndexVisible(0)
+    }, [pagingController.pageNumber]);
 
     const styles = getGridStyles(theme, getGridHeight());
     return (
@@ -117,7 +152,7 @@ export const AgGrid = () => {
                 onRowSelected={(e) => {
                     //prevent infinite loop since we are also setting the rows
                     //when the selection comes from above
-                    if(e.source.includes('api')) {
+                    if (e.source.includes('api')) {
                         return;
                     }
                     selection.toggle(e.data!, e.node.isSelected()!)
@@ -128,7 +163,7 @@ export const AgGrid = () => {
                     }
                 }}
                 onCellMouseOver={(e) => {
-                    if(e.colDef.colId === '__checkbox') {
+                    if (e.colDef.colId === '__checkbox') {
                         gridApiRef.current?.setSuppressRowClickSelection(true);
                     }
                 }}
@@ -139,13 +174,23 @@ export const AgGrid = () => {
                 onGridReady={(e) => {
                     gridApiRef.current = e.api as any;
                     gridColumnApiRef.current = e.columnApi;
-                    if(grid.loading) {
+                    if (grid.loading) {
                         gridApiRef.current?.showLoadingOverlay();
                     }
+                    setDefaultStateValues({
+                        ...e.api.getState(),
+                        __updatedRecords: []
+                    });
                     sizeColumnsIfSpaceAvailable();
                     onGridReady();
                 }}
-                
+                initialState={!grid.isNested ? stateValuesRef.current : undefined}
+                onStateUpdated={(e) => {
+                    if (grid.isNested) {
+                        return;
+                    }
+                    stateValuesRef.current = e.state
+                }}
                 rowHeight={42}
                 columnDefs={agColumns as any}
                 rowData={records}

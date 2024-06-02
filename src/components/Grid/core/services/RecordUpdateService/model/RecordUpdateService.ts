@@ -22,6 +22,39 @@ export class RecordUpdateService extends GridDependency {
     private _updatedRecords: Map<string, IUpdatedRecord> = new Map();
     private _internalRecordMap: Map<string, IEntityRecord> = new Map();
 
+    constructor(grid: Grid) {
+        super(grid);
+        const updatedRecordsFromState: IUpdatedRecord[] | undefined = this._grid.state?.['__updatedRecords'];
+        //@ts-ignore - getRecordId could be undefined if it comes from serialized state
+        if(updatedRecordsFromState && updatedRecordsFromState?.length > 0 && updatedRecordsFromState[0].getRecordId) {
+            this._updatedRecords = new Map(updatedRecordsFromState.map(x => {
+                const originalClear = x.clear;
+                const originalSetValue = x.setValue;
+                const originalSave = x.save;
+                x.clear = () => {
+                    this._updatedRecords.delete(x.getRecordId());
+                    originalClear();
+                    this._pcfContext.factory.requestRender();
+                }
+                x.save = async () => {
+                    const result = await originalSave();
+                    if(result) {
+                        this._updatedRecords.delete(x.getRecordId());
+                    }
+                    [...x.columns.values()].map(col =>  {
+                        this._internalRecordMap.get(x.getRecordId())?.setValue(col.name, x.getValue(col.name));
+                    })
+                    return result;
+                }
+                x.setValue = (columnName: string, value: any) => {
+                    originalSetValue(columnName, value);
+                    this._pcfContext.factory.requestRender();
+                }
+                return [x.getRecordId(), x]
+            }))
+        }
+    }
+
     public get updatedRecords() {
         if (this._isReadOnlyChangeEditor() && this._updatedRecords.size === 0) {
             const record = this._grid.records[0];
@@ -97,8 +130,12 @@ export class RecordUpdateService extends GridDependency {
                             return result;
                         },
                         clear: () => {
+                            const updatedRecord = this._updatedRecords.get(recordId);
+                            const columns = [...updatedRecord!.columns.values()];
                             this._updatedRecords.delete(recordId);
-                            this._internalRecordMap.get(recordId)?.setValue(columnKey, deepCopiedRecord.getValue(columnKey));
+                            for(const column of columns) {
+                                this._internalRecordMap.get(recordId)?.setValue(column.name, deepCopiedRecord.getValue(column.name));
+                            }
                         },
                         save: async () => {
                             try {
@@ -128,7 +165,7 @@ export class RecordUpdateService extends GridDependency {
                             this._updatedRecords.delete(recordId);
                         }
                     }
-                    this._internalRecordMap.get(recordId)?.setValue(columnKey, value);
+                    updatedRecord?.setValue(columnKey, value);
                 }
             }
         }

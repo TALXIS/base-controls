@@ -7,6 +7,7 @@ import { useRecordUpdateServiceController } from '../../../services/RecordUpdate
 import { Component } from '../../Component/Component';
 import { ICellEditorParams } from '@ag-grid-community/core';
 import numeral from "numeral";
+import { IEntityRecord } from '../../../../interfaces';
 
 interface ICell extends ICellEditorParams {
     baseColumn: IGridColumn;
@@ -14,13 +15,18 @@ interface ICell extends ICellEditorParams {
 }
 
 export const EditableCell = (props: ICell) => {
-    const record = props.data;
+    const grid = useGridInstance();
     const column = props.baseColumn;
     const recordUpdateService = useRecordUpdateServiceController();
     const mountedRef = React.useRef(true);
-    const valueRef = React.useRef(props.data.getValue(column.key));
-    const [value, setValue] = React.useState(valueRef.current);
     const hasBeenUpdatedRef = React.useRef<boolean>(false);
+    const record: IEntityRecord = (() => {
+        //this is so we can load the updated record values from state
+        const updatedRecord = grid.recordUpdateService.record(props.data.getRecordId()).get() as any;
+        return updatedRecord ?? props.data;
+    })();
+    const valueRef = React.useRef(record.getValue(column.key));
+    const [value, setValue] = React.useState(valueRef.current);
 
     React.useEffect(() => {
         return () => {
