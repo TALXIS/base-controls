@@ -34,7 +34,7 @@ export const AgGrid = () => {
     const firstRenderRef = useRef(true);
 
     useEffect(() => {
-        document.addEventListener('click', (e) => {
+        const globalClickHandler = (e: MouseEvent) => {
             const hasAncestorWithClass = (element: HTMLElement, className: string): boolean => {
                 let parent = element;
                 while (!parent.classList.contains('ag-theme-balham')) {
@@ -58,8 +58,10 @@ export const AgGrid = () => {
             }
             catch (err) {
             }
-        })
+        }
+        document.addEventListener('click', globalClickHandler)
         return () => {
+            document.removeEventListener('click', globalClickHandler);
             if (!gridApiRef.current || grid.isNested) {
                 return;
             }
@@ -92,6 +94,14 @@ export const AgGrid = () => {
         gridApiRef.current.hideOverlay()
     }, [grid.loading]);
 
+    useEffect(() => {
+        if (firstRenderRef.current) {
+            firstRenderRef.current = false;
+            return;
+        }
+        gridApiRef.current?.ensureIndexVisible(0)
+    }, [pagingController.pageNumber]);
+
 
 
     const getColumnsWidth = () => {
@@ -121,14 +131,6 @@ export const AgGrid = () => {
         }
         return grid.records.length;
     }
-
-    useEffect(() => {
-        if (firstRenderRef.current) {
-            firstRenderRef.current = false;
-            return;
-        }
-        gridApiRef.current?.ensureIndexVisible(0)
-    }, [pagingController.pageNumber]);
 
     const styles = getGridStyles(theme, getGridHeight());
     return (

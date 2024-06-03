@@ -5,7 +5,12 @@ export const emptyRecordStyles = mergeStyleSets({
         display: 'flex',
         flexDirection: 'column',
         gap: 10,
-        alignItems: 'center'
+        alignItems: 'center',
+        position: 'relative',
+        top: 18
+    },
+    icon: {
+        fontSize: 46
     },
     image: {
         'img': {

@@ -176,16 +176,12 @@ export class Grid {
             }
             gridColumns.push(gridColumn);
         }
-        switch (this._props.parameters.SelectableRows?.raw) {
-            case 'single':
-            case 'multiple':
-            case 'true': {
-                gridColumns.unshift({
-                    key: '__checkbox',
-                    attributeName: '__checkbox',
-                    width: 45,
-                })
-            }
+        if(this.selection.type !== undefined) {
+            gridColumns.unshift({
+                key: '__checkbox',
+                attributeName: '__checkbox',
+                width: 45,
+            })
         }
         this._columns = gridColumns;
         return gridColumns;

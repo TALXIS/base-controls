@@ -40,16 +40,10 @@ export class Selection extends GridDependency {
         return this.selectedRecordIds.length === this._dataset.sortedRecordIds.length;
     }
     public get type() {
-        switch (this._grid.props.parameters.SelectableRows?.raw) {
-            case 'single':
-            case 'true': {
-                return 'single';
-            }
-            case 'multiple': {
-                return 'multiple';
-            }
+        if(this._grid.props.parameters.SelectableRows?.raw === 'none') {
+            return undefined;
         }
-        return undefined;
+        return this._grid.props.parameters.SelectableRows?.raw;
     }
 
     public clear() {

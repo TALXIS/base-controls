@@ -15,7 +15,7 @@ export const getGridStyles = (theme: ITheme, numOfRecords?: number) => {
                 maxHeight: '100%',
                 '--ag-input-focus-border-color': 'transparent',
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
-                ':has(.ag-overlay:not(.ag-hidden))': {
+                ':has(.ag-overlay:not(.ag-hidden) .TALXIS__grid__empty-records)': {
                     minHeight: 270
                 }
             },
@@ -64,7 +64,7 @@ export const getGridStyles = (theme: ITheme, numOfRecords?: number) => {
             '.ag-cell-focus:has([data-is-valid="false"])': {
                 border: '1px solid red !important;'
             },
-            ':global(.TALXIS__combobox__root, [class*="TALXIS__textfield__root"], [class*="TALXIS__tag-picker__root"])': {
+            '.TALXIS__combobox__root, [class*="TALXIS__textfield__root"], [class*="TALXIS__tag-picker__root"]': {
                 padding: '0px !important'
             }
         }
