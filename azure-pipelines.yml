@@ -37,23 +37,6 @@ steps:
     command: 'publish'
     workingDir: '$(Build.SourcesDirectory)'
     publishEndpoint: 'NPM - networg-npm'
-- task: Npm@1
-  inputs:
-    command: 'custom'
-    workingDir: '$(Build.SourcesDirectory)'
-    customCommand: 'run build-documentation'
-  displayName: 'Building Documentation'
-- script: |
-    cd $(Build.SourcesDirectory)/storybook-static
-    git config --global init.defaultBranch main
-    git config --global --add --bool push.autoSetupRemote true
-    git init
-    git config --global user.name "Azure Pipelines"
-    git config --global user.email "azdo@service.thenetw.org"
-    git add .
-    git commit -m "Publishing to GitHub Pages"
-    git push -f https://$(GITHUB_PAT)@github.com/TALXIS/docs-int0015-sharedcomponents.git
-  displayName: 'Publishing Documentation'
 
 
 
