@@ -7,3 +7,8 @@ azure-pipelines.yml
 package-lock.json
 rollup.config.js
 tsconfig.json
+.vscode
+.env
+.eslintrc
+.gitignore
+.yalcignore
