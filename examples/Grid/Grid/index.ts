@@ -2,14 +2,13 @@ import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as ReactDOM from 'react-dom';
 import * as React from 'react';
 import { Grid as GridComponent } from '../../../dist/components/Grid/Grid';
-import { IGrid, IGridParameters } from "../../../dist/components/Grid/interfaces";
+import { Mock } from "./mock";
+import { IGrid } from "../../../dist/components/Grid/interfaces";
 
 export class Grid implements ComponentFramework.StandardControl<IInputs, IOutputs> {
     private _container: HTMLDivElement;
-    private _selectedRecordIds: string[] = [];
-    constructor() {
-
-    }
+    private _state: ComponentFramework.Dictionary;
+    private _mock: Mock;
 
     /**
      * Used to initialize the control instance. Controls can kick off remote server calls and other initialization actions here.
@@ -21,6 +20,11 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
      */
     public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement): void {
         this._container = container;
+        this._state = state;
+        //@ts-ignore - internal prop, specifies if the control is running in harness
+        if(context.factory._customControlProperties?.controlId === 'TestControl') {
+            this._mock = new Mock(this);
+        }
     }
 
     /**
@@ -28,55 +32,33 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
      * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void {
-        if (window.location.port === '8181') {
-            context.factory.requestRender = () => {
-                this.updateView(context);
-            };
-            //@ts-ignore - inject
-            context.utils.getEntityMetadata = () => {
-                return {
-                    Attributes: {
-                        get: () => {
-                            return {
-                                attributeDescriptor: {
-                                    RequiredLevel: 2,
-                                    IsValidForUpdate: true
-                                }
-                            };
-                        }
-                    }
-                };
-            };
-            context.parameters.Grid = {
-                ...context.parameters.Grid,
-                columns: [...context.parameters.Grid.columns],
-                sorting: context.parameters.Grid.sorting ?? [],
-                //@ts-ignore - not part of types
-                paging: {...context.parameters.Grid.paging, pageNumber: 1, pageSize: 25},
-                refresh: () => {
-                    this.updateView(context);
-                },
-                getSelectedRecordIds: () => {
-                    return this._selectedRecordIds;
-                },
-                setSelectedRecordIds: (ids: string[]) => {
-                    this._selectedRecordIds = ids;
-                    this.updateView(context);
-                }
-            };
-            for(const [key, value] of Object.entries(context.parameters.Grid.records)) {
-                //@ts-ignore / misssing implementation
-                context.parameters.Grid.records[key].setValue = () => {
-                    context.factory.requestRender();
-                };
-            }
+        const parameters = context.parameters;
+        if(this._mock) {
+            this._mock.injectDatasetApis(context);
         }
         ReactDOM.render(React.createElement(GridComponent, {
-            context: context,
+            context: context as any,
+            state: this._state,
             parameters: {
-                ...context.parameters,
+                Grid: parameters.Grid,
+                EnableEditing: {
+                    raw: parameters.EnableEditing.raw === 'true'
+                },
+                EnablePagination: {
+                    raw: parameters.EnablePagination.raw === 'false' ? false : true
+                },
+                EnableFiltering: {
+                    raw: parameters.EnableFiltering.raw === 'false' ? false : true
+                },
+                EnableSorting: {
+                    raw: parameters.EnableSorting.raw === 'false' ? false : true
+                },
+                EnableNavigation: {
+                    raw: parameters.EnableNavigation.raw  === 'false' ? false : true
+                },
+                SelectableRows: parameters.SelectableRows,
             }
-        } as any), this._container);
+        } as IGrid), this._container);
     }
 
     /**
@@ -92,6 +74,9 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
      * i.e. cancelling any pending remote calls, removing listeners, etc.
      */
     public destroy(): void {
-        // Add code to cleanup control if necessary
+        if(!this._container) {
+            return;
+        }
+        ReactDOM.unmountComponentAtNode(this._container);
     }
 }

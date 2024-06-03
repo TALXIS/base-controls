@@ -38,6 +38,10 @@ export const RecordGrids = (props: IRecordGrids) => {
             EnableNavigation: {
                 raw: false
             },
+            SelectableRows: {
+                type: 'static',
+                raw: 'none'
+            },
             Grid: {
                 ...grid.dataset,
                 sorting: [],

@@ -55,7 +55,7 @@
     "react-dom": "^16.8.6 || ^17.0.2",
     "use-debounce": "^10.0.1",
     "validator": "^13.11.9",
-    "@talxis/react-components": "^1.2404.1"
+    "@talxis/react-components": "1.2406.1"
   },
   "scripts": {
     "build": "rollup -c",
