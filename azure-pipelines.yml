@@ -34,9 +34,10 @@ steps:
 - task: Npm@1
   displayName: 'Publishing NPM package'
   inputs:
-    command: 'publish'
+    command: 'custom'
     workingDir: '$(Build.SourcesDirectory)'
-    publishEndpoint: 'NPM - networg-npm'
+    customCommand: 'publish --access public'
+    customEndpoint: 'NPM - networg-npm'
 
 
 
