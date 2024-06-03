@@ -12,3 +12,4 @@ tsconfig.json
 .eslintrc
 .gitignore
 .yalcignore
+examples
