@@ -76,7 +76,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         if (!isDirty) {
             return;
         }
-        console.log(`Change detected, triggering notifyOutputChanged on component ${name}.`);
+        //console.log(`Change detected, triggering notifyOutputChanged on component ${name}.`);
         props.onNotifyOutputChanged?.(outputs);
     };
     return [labels, onNotifyOutputChanged];

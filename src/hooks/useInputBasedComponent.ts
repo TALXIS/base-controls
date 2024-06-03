@@ -26,7 +26,7 @@ interface IComponentOptions<TTranslations> {
  * be triggered when the user looses focus on the component (`onBlur` event).
  * @returns {[]} The hook returns an array with three props. First `value` prop is a value that will will always be in sync with the value that comes from the `value` parameter. 
  * Use this for displaying the up-to-date value to the user.
- * Second prop contains the translated string for this component
+ * Second prop contains the translations for this component.
  * 
  * Third prop is a method that can be used to change the current value. The new value will get propagated to the `value` variable returned from this hook. This method wont propagate the value to the framework.
  * 
@@ -49,7 +49,7 @@ export const useInputBasedComponent = <TValue, TParameters extends IInputParamet
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
         setValue(formattedValue ?? rawValue);
-        console.log(`Updating component ${name} with new value: ${formattedValue ?? rawValue}`);
+        //console.log(`Updating component ${name} with new value: ${formattedValue ?? rawValue}`);
     }, [rawValue]);
 
     useEffect(() => {
