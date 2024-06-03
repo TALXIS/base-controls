@@ -75,9 +75,6 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
             context: context,
             parameters: {
                 ...context.parameters,
-                EnableEditing: {
-                    raw: true
-                }
             }
         } as any), this._container);
     }

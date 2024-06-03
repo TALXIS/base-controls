@@ -1,6 +1,6 @@
 import numeral from "numeral";
 
-export class NumeralPCF {
+export class Numeral {
     public static decimal(formatting: ComponentFramework.UserSettingApi.NumberFormattingInfo) {
         const locale = {
             ordinal: (num: number) => {
@@ -24,7 +24,7 @@ export class NumeralPCF {
             numeral.register('locale', '__pcfcustomdecimal', locale);
         }
         else {
-            numeral.locales['__pcfcustomdecima'] = locale;
+            numeral.locales['__pcfcustomdecimal'] = locale;
         }
         numeral.locale('__pcfcustomdecimal');
     }

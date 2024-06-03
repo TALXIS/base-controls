@@ -6,7 +6,7 @@ export const getRecordGridStyles = (theme: ITheme) => {
             borderRadius: 5,
             padding: 8,
             paddingTop: 10,
-            gap: 15,
+            gap: 25,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',

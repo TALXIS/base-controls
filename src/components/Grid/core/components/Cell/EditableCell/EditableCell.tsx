@@ -1,12 +1,10 @@
 import * as React from 'react';
-import { NumeralPCF } from '../../../../../../utils/NumeralPCF';
 import { DataType } from '../../../enums/DataType';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { useRecordUpdateServiceController } from '../../../services/RecordUpdateService/controllers/useRecordUpdateServiceController';
 import { Component } from '../../Component/Component';
 import { ICellEditorParams } from '@ag-grid-community/core';
-import numeral from "numeral";
 import { IEntityRecord } from '../../../../interfaces';
 
 interface ICell extends ICellEditorParams {

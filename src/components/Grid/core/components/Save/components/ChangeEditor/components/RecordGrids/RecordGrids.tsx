@@ -16,7 +16,15 @@ export const RecordGrids = (props: IRecordGrids) => {
     const record = { ...props.record };
     const styles = getRecordGridStyles(useTheme());
     const sharedProps: IGrid = {
-        context: grid.pcfContext,
+        context: {
+            ...grid.pcfContext,
+            mode: {
+                ...grid.pcfContext.mode,
+                //needed so the nested grids to do not interfere with the state of parent grid
+                setControlState: (state: ComponentFramework.Dictionary) => false
+            }
+        },
+        state: {},
         parameters: {
             EnableFiltering: {
                 raw: false
@@ -29,9 +37,6 @@ export const RecordGrids = (props: IRecordGrids) => {
             },
             EnableNavigation: {
                 raw: false
-            },
-            IsNested: {
-                raw: true
             },
             Grid: {
                 ...grid.dataset,

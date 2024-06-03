@@ -34,7 +34,6 @@ export class OptionSet implements ComponentFramework.StandardControl<IInputs, IO
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
-        console.log(context.parameters.value);
         ReactDOM.render(React.createElement(OptionSetComponent as any, {
             context: context as any,
             parameters: {

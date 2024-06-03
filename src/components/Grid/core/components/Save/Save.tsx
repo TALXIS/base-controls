@@ -1,4 +1,4 @@
-import { CommandBar, CommandBarButton, MessageBar, MessageBarType, Spinner, SpinnerSize } from "@fluentui/react";
+import { CommandBarButton, MessageBar, MessageBarType, Spinner, SpinnerSize } from "@fluentui/react";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { useSave } from "./hooks/useSave";
 import React, { useState } from 'react';
@@ -15,13 +15,11 @@ export const Save = () => {
     const [changeEditorOpened, setChangeEditorOpened] = useState<boolean>(false);
 
     const onMessageClick = () => {
-        console.log('click')
         if (!isDirty) {
-            //return;
+            return;
         }
         setChangeEditorOpened(true);
     }
-
     return (
         <>
             <div onClick={onMessageClick} className={styles.root} data-dirty={isDirty}>

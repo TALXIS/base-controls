@@ -105,10 +105,7 @@ export class Grid {
     public get state() {
         return this._props.state;
     }
-    public get isNested() {
-        return this.parameters.IsNested?.raw === true;
-    }
-
+    
     public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
         const clickedRecord = this._records.find(x => x.getRecordId() === entityReference.id.guid);
         //we need to make sure the item we are opening gets selected in order for the

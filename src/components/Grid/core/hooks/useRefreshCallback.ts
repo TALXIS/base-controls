@@ -8,7 +8,6 @@ export const useRefreshCallback = (model: GridDependency | Promise<GridDependenc
             const _model = await model;
             _model.addRefreshCallback(id, refreshCallback);
         })();
-        console.log('refresh callback added')
         return () => {
             (async () => {
                 const _model = await model;

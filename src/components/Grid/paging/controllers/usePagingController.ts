@@ -1,6 +1,7 @@
 import { useGridInstance } from "../../core/hooks/useGridInstance"
 
 interface IPagingController {
+    isEnabled: boolean,
     pageNumber: number,
     pageSize: number,
     totalResultCount: number,
@@ -25,6 +26,7 @@ export const usePagingController = (): IPagingController => {
             hasNextPage: paging.hasNextPage,
             pageFirstRecordOrder: paging.pageFirstRecordOrder,
             pageLastRecordOrder: paging.pageLastRecordOrder,
+            isEnabled: paging.isEnabled,
             loadExactPage: (pageNumber: number) => paging.loadExactPage(pageNumber),
             loadNextPage: () => paging.loadNextPage(),
             loadPreviousPage: () => paging.loadPreviousPage(),

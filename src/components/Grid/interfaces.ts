@@ -22,7 +22,6 @@ export interface IGridParameters extends IParameters {
     EnableFiltering?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableSorting?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
-    IsNested?: Omit<ITwoOptionsProperty, 'attributes'>;
     SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
     Grid: IDatasetProperty;
 }

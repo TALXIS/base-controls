@@ -12,7 +12,6 @@ export interface IColumnHeader {
 }
 
 export const ColumnHeader = (props: IColumnHeader) => {
-    console.log(props);
     const grid = useGridInstance();
     const column = props.baseColumn;
     const [columnHeaderContextualMenuProps, setColumnHeaderContextualMenuProps] = useState<ISortingContextualMenu | null>(null);

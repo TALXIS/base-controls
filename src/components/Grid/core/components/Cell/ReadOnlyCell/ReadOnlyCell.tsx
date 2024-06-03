@@ -162,7 +162,6 @@ const InternalReadOnlyCell = (props: ICellProps) => {
                 checked={props.node.isSelected()}
                 onChange={(e, checked) => {
                     e?.stopPropagation()
-                    console.log(props.api.getSelectedNodes())
                     selection.toggle(record, checked!)
                 }} />
             }

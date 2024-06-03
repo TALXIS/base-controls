@@ -25,6 +25,10 @@ export class Paging extends GridDependency {
         return this.pageNumber * this.pageSize;
     }
 
+    public get isEnabled() {
+        return this._grid.parameters.EnablePagination?.raw !== false
+    }
+
     public loadNextPage() {
         this.loadExactPage(this.pageNumber + 1)
     }

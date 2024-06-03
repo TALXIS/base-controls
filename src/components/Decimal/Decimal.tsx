@@ -3,7 +3,7 @@ import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
 import { IDecimal, IDecimalOutputs, IDecimalParameters, IDecimalTranslations } from "./interfaces";
 import React, { useEffect } from "react";
 import numeral from "numeral";
-import { NumeralPCF } from "../../utils/NumeralPCF";
+import { Numeral } from "../../utils/Numeral";
 
 export const Decimal = (props: IDecimal) => {
     const context = props.context;
@@ -37,11 +37,11 @@ export const Decimal = (props: IDecimal) => {
         }
     
         let regex: RegExp;
-        NumeralPCF.decimal(numberFormatting);
+        Numeral.decimal(numberFormatting);
         if (props.parameters.value.type === 'Decimal') {
             regex = new RegExp('^[' + '\\d' + escapeRegExp(numberFormatting.numberDecimalSeparator) + escapeRegExp(numberFormatting.numberGroupSeparator) + '\\s' + escapeRegExp(numberFormatting.negativeSign) + ']+$');
         } else if (props.parameters.value.type === 'Currency') {
-            NumeralPCF.currency(numberFormatting);
+            Numeral.currency(numberFormatting);
             regex = new RegExp(
                 '^\\s*' + 
                 '(?:' + escapeRegExp(numberFormatting.currencySymbol) + '\\s*)?' + 

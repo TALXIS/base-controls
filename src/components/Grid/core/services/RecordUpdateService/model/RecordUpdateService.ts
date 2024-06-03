@@ -1,7 +1,7 @@
 import equal from "fast-deep-equal/es6";
 import { cloneDeep } from "lodash";
 import numeral from "numeral";
-import { NumeralPCF } from "../../../../../../utils/NumeralPCF";
+import { Numeral } from "../../../../../../utils/Numeral";
 import { IEntityColumn, IEntityRecord } from "../../../../interfaces";
 import { ColumnValidation } from "../../../../validation/model/ColumnValidation";
 import { DataType } from "../../../enums/DataType";
@@ -207,7 +207,7 @@ export class RecordUpdateService extends GridDependency {
         //skip in special case for currency
         //PCF has no info about the currency, which sometimes make it to ouput change
         if(column?.dataType === DataType.CURRENCY) {
-            NumeralPCF.currency(this._grid.pcfContext.userSettings.numberFormattingInfo);
+            Numeral.currency(this._grid.pcfContext.userSettings.numberFormattingInfo);
             newValue = numeral(newValue).value();
             if(newValue === oldValue) {
                 return true

@@ -5,11 +5,13 @@ import { DataType } from "../../../enums/DataType";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 
 export class AgGrid extends GridDependency {
-    private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>
+    private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
+    private _initialPageSize: number;
 
     constructor(grid: Grid, gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>) {
         super(grid);
         this._gridApiRef = gridApiRef;
+        this._initialPageSize = grid.paging.pageSize;
     }
     public get columns() {
         const agColumns: ColDef[] = [];
@@ -63,6 +65,22 @@ export class AgGrid extends GridDependency {
             agColumns.push(agColumn)
         }
         return agColumns;
+    }
+    public get maxNumberOfVisibleRecords() {
+        if (this._initialPageSize < this._grid.records.length) {
+            return this._initialPageSize;
+        }
+        return this._grid.records.length;
+    }
+    public getTotalColumnsWidth() {
+        if(!this._gridApi) {
+            return 0;
+        }
+        let width = 0;
+        for (const column of this._gridApi.getAllGridColumns()) {
+            width = width + column.getActualWidth();
+        }
+        return width;
     }
     public selectRows() {
         if (!this._gridApi) {

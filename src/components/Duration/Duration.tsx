@@ -6,7 +6,7 @@ import { IComboBoxOption } from '@fluentui/react';
 import { durationOptions } from '../../sandbox/shared/durationList';
 import { UserSettings } from '../../sandbox/mock/UserSettings';
 import numeral from "numeral";
-import { NumeralPCF } from '../../utils/NumeralPCF';
+import { Numeral } from '../../utils/Numeral';
 import { getDefaultDurationTranslations } from './translations';
 
 export const Duration = (props: IDuration) => {
@@ -69,7 +69,7 @@ export const Duration = (props: IDuration) => {
     };
 
     const parseNumber = (input: string): number | undefined => {
-        NumeralPCF.decimal(numberFormatting);
+        Numeral.decimal(numberFormatting);
         return numeral(input).value() ?? undefined;
     };
 
