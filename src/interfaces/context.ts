@@ -3,7 +3,7 @@ export interface IOutputs {
 }
 
 export interface IComponent<TParameters, TOutputs, TTranslations> {
-    context: ComponentFramework.Context<TParameters>;
+    context: ComponentFramework.Context<any>;
     parameters: TParameters;
     translations?: TTranslations;
     state?: ComponentFramework.Dictionary;

@@ -149,14 +149,13 @@ export class Grid {
                 isPrimary: column.isPrimary,
                 dataType: column.dataType as DataType,
                 displayName: column.displayName,
-                //comes from extended
+                isEditable: column.isEditable,
                 isFilterable: this._isColumnFilterable(column),
                 isRequired: column.isRequired,
                 isSortable: this._isColumnSortable(column),
                 isSorted: sorted ? true : false,
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
                 width: column.visualSizeFactor,
-                //comes from extended
                 isResizable: column.isResizable ?? true,
             } as IGridColumn;
 
@@ -195,8 +194,8 @@ export class Grid {
 
     private async _isColumnEditable(column: IGridColumn): Promise<boolean> {
         //top priority, overriden through props
-        if (column.isEditable) {
-            return true;
+        if (typeof column.isEditable === 'boolean') {
+            return column.isEditable
         }
         //only allow editing if specifically allowed
         if (!this._props.parameters.EnableEditing?.raw) {
@@ -219,8 +218,8 @@ export class Grid {
     }
 
     private async _isColumnRequired(column: IGridColumn) {
-        if (column.isRequired) {
-            return true;
+        if (typeof column.isRequired === 'boolean') {
+            return column.isRequired;
         }
         if (!this.parameters.EnableEditing?.raw) {
             return false;
