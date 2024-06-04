@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useComponent } from "../../../hooks";
 import { StringProps } from "../../../types";
 import { IEntity, ILookup, ILookupTranslations } from "../interfaces";
@@ -64,6 +64,9 @@ export const useLookup = (props: ILookup): [
 
     }
     const getSearchResults = async (query: string): Promise<ComponentFramework.LookupValue[]> => {
+        if(props.onSearch) {  
+            return props.onSearch(selectedEntity ? [selectedEntity?.entityName] : targets, query);
+        }
         const fetchXmlMap = new Map<string, Promise<string>>();
         if(selectedEntity) {
             fetchXmlMap.set(selectedEntity.entityName, getSearchFetchXml(selectedEntity.entityName, query))
