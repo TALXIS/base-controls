@@ -54,9 +54,18 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
                     raw: parameters.EnableSorting.raw === 'false' ? false : true
                 },
                 EnableNavigation: {
-                    raw: parameters.EnableNavigation.raw  === 'false' ? false : true
+                    raw: parameters.EnableNavigation.raw === 'false' ? false : true
                 },
-                SelectableRows: parameters.SelectableRows,
+                UseContainerAsHeight: {
+                    raw: parameters.UseContainerAsHeight?.raw === 'true'
+                },
+                EnableOptionSetColors: {
+                    raw: parameters.EnableOptionSetColors?.raw === 'true'
+                },
+                InlineRibbonButtonIds: {
+                    raw: parameters.InlineRibbonButtonIds?.raw
+                },
+                SelectableRows: this._getSelectableRowsParameter(parameters.SelectableRows)
             }
         } as IGrid), this._container);
     }
@@ -78,5 +87,24 @@ export class Grid implements ComponentFramework.StandardControl<IInputs, IOutput
             return;
         }
         ReactDOM.unmountComponentAtNode(this._container);
+    }
+    private _getSelectableRowsParameter(selectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">) {
+        switch (selectableRows?.raw) {
+            //@ts-ignore - legacy binding support
+            case 'true': {
+                return {
+                    ...selectableRows,
+                    raw: 'multiple'
+                };
+            }
+            //@ts-ignore - legacy binding support
+            case 'false': {
+                return {
+                    ...selectableRows,
+                    raw: 'none'
+                };
+            }
+        }
+        return selectableRows;
     }
 }

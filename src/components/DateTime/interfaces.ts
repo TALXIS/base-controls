@@ -15,6 +15,7 @@ export interface IDateTimeOutputs extends IOutputs {
 export interface IDateTimeTranslations extends ITranslations {
     time?: {[LCID: number]: string}
     goToToday?: {[LCID: number]: string}
+    invalidTimeInput?: {[LCID: number]: string}
     days?: {[LCID: number]: string[]} | string[];
     months?: {[LCID: number]: string[]} | string[];
     shortDays?: {[LCID: number]: string[]} | string[];

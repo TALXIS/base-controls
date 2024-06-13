@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { IComponent, IOutputs, ITranslations } from "../interfaces/context";
-import { useComponent } from "./useComponent";
+import { IComponentController, useComponent } from "./useComponent";
 import React from 'react';
 import { IInputParameters } from "../interfaces/parameters";
 import { StringProps } from "../types";
@@ -34,17 +34,17 @@ interface IComponentOptions<TTranslations> {
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
 
-export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, options?: IComponentOptions<TTranslations>): [
-    TValue,
-    Required<StringProps<TTranslations>>,
-    (value: TValue) => void,
-    (outputs: TOutputs) => void,
-] => {
+interface IInputBasedComponentController<TValue, TTranslations, TOutputs> extends IComponentController<TTranslations, TOutputs> {
+    value: TValue,
+    setValue: (value: TValue) => void
+}
+
+export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, options?: IComponentOptions<TTranslations>): IInputBasedComponentController<TValue, TTranslations, TOutputs> => {
     const {formatter, valueExtractor} = {...options};
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
-    const [labels, onNotifyOutputChanged] = useComponent(name, props, options?.defaultTranslations);
+    const {labels, sizing, onNotifyOutputChanged} = useComponent(name, props, options?.defaultTranslations);
 
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
@@ -65,7 +65,11 @@ export const useInputBasedComponent = <TValue, TParameters extends IInputParamet
             }
         };
     }, []);
-
-    return [value, labels, setValue, onNotifyOutputChanged];
-
+    return {
+        value,
+        labels,
+        sizing,
+        onNotifyOutputChanged,
+        setValue
+    }
 };

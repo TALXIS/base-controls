@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { ITextField } from "../interfaces";
 
-export const useTextField = (props: ITextField, ref: React.RefObject<HTMLDivElement>): [number | undefined] => {
+export const useTextFieldHeight = (ref: React.RefObject<HTMLDivElement>, initialHeight?: number, isMultiline?: boolean): [number | undefined] => {
     const getInitialHeight = () => {
-        if (props.context.mode.allocatedHeight) {
-            return props.context.mode.allocatedHeight;
+        if (initialHeight) {
+            return initialHeight;
         }
-        if (props.parameters.IsMultiLine?.raw) {
+        if (isMultiline) {
             return 80;
         }
         return undefined;
@@ -17,7 +16,7 @@ export const useTextField = (props: ITextField, ref: React.RefObject<HTMLDivElem
     const firstRenderRef = useRef<boolean>(true);
     
     useEffect(() => {
-        if (!props.parameters.IsMultiLine?.raw) {
+        if (!isMultiline) {
             return;
         }
         const resizeObserver = new ResizeObserver(() => {

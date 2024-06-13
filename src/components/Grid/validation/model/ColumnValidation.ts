@@ -30,6 +30,7 @@ export class ColumnValidation extends GridDependency {
         switch (this._column.dataType) {
             case DataType.WHOLE_NONE:
             case DataType.DECIMAL:
+            case DataType.CURRENCY:
             {
                 value = `${value}`;
                 if (!isNumeric(value)) {

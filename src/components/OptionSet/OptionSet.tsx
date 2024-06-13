@@ -6,7 +6,7 @@ import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import React, { useEffect, useRef } from 'react';
 
 export const OptionSet = (props: IOptionSet) => {
-    const [labels, onNotifyOutputChanged] = useComponent('OptionSet', props);
+    const {sizing, onNotifyOutputChanged} = useComponent('OptionSet', props);
     const componentRef = useRef<IComboBox>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -44,8 +44,8 @@ export const OptionSet = (props: IOptionSet) => {
         useComboBoxAsMenuWidth
         styles={{
             root: {
-                height: context.mode.allocatedHeight || undefined,
-                width: context.mode.allocatedWidth || undefined,
+                height: sizing.height,
+                width: sizing.width,
                 display: 'flex',
                 alignItems: 'center',
             },

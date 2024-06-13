@@ -8,8 +8,9 @@ import { useGridInstance } from "../../../hooks/useGridInstance";
 export const useCommands = (record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord): [
     ICommandBarItemProps[] | null
 ] => {
-
-    const dataset = useGridInstance().dataset
+    const grid = useGridInstance();
+    const dataset = grid.dataset;
+    console.log('rendering ribbon')
     const [commandBarItems, setCommandBarItems] = useState<ICommandBarItemProps[] | null>(null);
     useEffect(() => {
         (async () => {
@@ -22,9 +23,9 @@ export const useCommands = (record: ComponentFramework.PropertyHelper.DataSetApi
         if(!dataset.retrieveRecordCommand) {
             return []
         }
-        const commands = await dataset.retrieveRecordCommand([record.getRecordId()]);
+        const commands = await dataset.retrieveRecordCommand([record.getRecordId()], grid.inlineRibbonButtonIds);
         for (const command of commands) {
-            if (!command.shouldBeVisible) {
+            if (!command.shouldBeVisible /* || (command.__isInline !== undefined && command.__isInline === false */) {
                 continue;
             }
             items.push({

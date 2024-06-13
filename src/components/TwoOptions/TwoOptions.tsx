@@ -7,7 +7,7 @@ export const TwoOptions = (props: ITwoOptions) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const options = boundValue.attributes.Options;
-    const [labels, onNotifyOutputChanged] = useComponent('TwoOptions', props);
+    const {sizing, onNotifyOutputChanged} = useComponent('TwoOptions', props);
     const context = props.context;
     const componentRef = useRef<any>(null);
     
@@ -26,8 +26,8 @@ export const TwoOptions = (props: ITwoOptions) => {
     return <Toggle
     styles={{
         root: {
-            height: context.mode.allocatedHeight || undefined,
-            width: context.mode.allocatedWidth || undefined,
+            height: sizing.height,
+            width: sizing.width
         },
         container: {
             alignItems: 'center'

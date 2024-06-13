@@ -1,6 +1,13 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getGridStyles = (theme: ITheme, numOfRecords?: number) => {
+const getGridHeight = (numOfRecords: number, useContainerAsHeight: boolean) => {
+    if(useContainerAsHeight) {
+        return '100%';
+    }
+    return `calc(${numOfRecords} * 42px + var(--height-offset))`
+}
+
+export const getGridStyles = (theme: ITheme, numOfRecords: number, useContainerAsHeight: boolean) => {
     return mergeStyleSets({
         root: {
             height: '100%',
@@ -15,12 +22,12 @@ export const getGridStyles = (theme: ITheme, numOfRecords?: number) => {
                 maxHeight: '100%',
                 '--ag-input-focus-border-color': 'transparent',
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
-                ':has(.ag-overlay:not(.ag-hidden) .TALXIS__grid__empty-records)': {
+                ':has(.ag-overlay:not(.ag-hidden) .TALXIS__grid__empty-records), :has(.ag-center-cols-container:empty)': {
                     minHeight: 270
                 }
             },
             '.ag-root-wrapper.ag-layout-normal': {
-                height: numOfRecords ? `calc(${numOfRecords} * 42px + var(--height-offset))` : undefined,
+                height: getGridHeight(numOfRecords, useContainerAsHeight)
             },
             '.ag-body': {
                 borderTop: `1px solid ${theme.semanticColors.bodyDivider}`

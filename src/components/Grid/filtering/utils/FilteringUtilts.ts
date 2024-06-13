@@ -37,6 +37,7 @@ export class FilteringUtils {
                                 case DatasetConditionOperator.GreaterEqual:
                                 case DatasetConditionOperator.LessThan:
                                 case DatasetConditionOperator.LessEqual:
+                                case DatasetConditionOperator.NotNull:
                                 case DatasetConditionOperator.Null:
                                     return true;
                                 default:
@@ -65,6 +66,7 @@ export class FilteringUtils {
                                 case DatasetConditionOperator.LastYear:
                                 case DatasetConditionOperator.LastXDays:
                                 case DatasetConditionOperator.LastXMonths:
+                                case DatasetConditionOperator.NotNull:
                                 case DatasetConditionOperator.Null:
                                     return true;
                                 default:
@@ -136,6 +138,7 @@ export class FilteringUtils {
                             case DatasetConditionOperator.Last7Days:
                             case DatasetConditionOperator.LastMonth:
                             case DatasetConditionOperator.LastYear:
+                            case DatasetConditionOperator.Next7Days:
                                 return true;
                             default:
                                 return false;

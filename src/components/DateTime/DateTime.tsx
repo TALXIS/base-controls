@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import { Calendar } from "./components/Calendar";
 import { DatePicker } from "@talxis/react-components/dist/components/DatePicker";
 import React from 'react';
+import { useComponentSizing } from "../../hooks/useComponentSizing";
 
 export const DateTime = (componentProps: IDateTime) => {
     const ref = useRef<HTMLDivElement>(null);
@@ -17,6 +18,7 @@ export const DateTime = (componentProps: IDateTime) => {
     const context = componentProps.context;
     const parameters = componentProps.parameters;
     const [date, stringDate, isDateTime, patterns, labels, setStringDate, selectDate, clearDate] = useDateTime(componentProps, ref);
+    const {height, width} = useComponentSizing(componentProps.context.mode);
 
     useEffect(() => {
         if(componentProps.parameters.AutoFocus?.raw === true) {
@@ -54,7 +56,10 @@ export const DateTime = (componentProps: IDateTime) => {
                             visible: isDateTime && !parameters.value.errorMessage,
                             useHour12: patterns.shortTimePattern.endsWith('A'),
                             onChange: (e, date) => selectDate(undefined, dayjs(date).format('HH:mm')),
-                            defaultValue: date
+                            defaultValue: date,
+                            strings: {
+                                invalidInputErrorMessage: labels.invalidTimeInput()
+                            }
                         }} />
                 }
                 textField={{
@@ -67,8 +72,8 @@ export const DateTime = (componentProps: IDateTime) => {
                     errorMessage: parameters.value.errorMessage,
                     styles:{
                         fieldGroup: {
-                            height: context.mode.allocatedHeight || undefined,
-                            width: context.mode.allocatedWidth || undefined
+                            height: height,
+                            width: width
                         }
                     },
                     //@ts-ignore - TODO: fix types in shared components

@@ -1,5 +1,6 @@
 import { IDatasetProperty } from "../../../../interfaces";
 import { StringProps } from "../../../../types";
+import { RIBBON_COLUMN_KEY } from "../../constants";
 import { Filtering } from "../../filtering/model/Filtering";
 import { IEntityColumn, IEntityRecord, IGrid, IGridTranslations } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
@@ -105,8 +106,25 @@ export class Grid {
     public get state() {
         return this._props.state;
     }
-    
+    public get useContainerAsHeight() {
+        return this.parameters.UseContainerAsHeight?.raw === true;
+    }
+    public get enableOptionSetColors() {
+        return this.parameters.EnableOptionSetColors?.raw === true;
+    }
+    public get linking() {
+        return this.dataset.linking;
+    }
+    public get inlineRibbonButtonIds() {
+        const idString = this.parameters.InlineRibbonButtonIds?.raw;
+        if (!idString) {
+            return undefined;
+        }
+        return idString.split(',');
+    }
+
     public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
+        this._dataset.openDatasetItem(entityReference);
         const clickedRecord = this._records.find(x => x.getRecordId() === entityReference.id.guid);
         //we need to make sure the item we are opening gets selected in order for the
         //OnOpenRecord ribbon scripts to work correctly
@@ -114,7 +132,6 @@ export class Grid {
         if (clickedRecord) {
             this.selection.toggle(clickedRecord, true, true, true);
         }
-        this._dataset.openDatasetItem(entityReference);
     }
 
     public updateDependencies(props: IGrid): void {
@@ -132,6 +149,7 @@ export class Grid {
             const sorted = this._dataset.sorting?.find(sort => sort.name === column.name);
             const entityAliasName = column.name?.includes('.') ? column.name.split('.')[0] : null;
             const attributeName = entityAliasName ? column.name.split('.')[1] : column.name;
+            const key = entityAliasName ? `${entityAliasName}.${attributeName}` : attributeName;
             switch (column.dataType) {
                 case DataType.FILE:
                 case DataType.IMAGE: {
@@ -155,7 +173,7 @@ export class Grid {
                 isSortable: this._isColumnSortable(column),
                 isSorted: sorted ? true : false,
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
-                width: column.visualSizeFactor,
+                width: this.state?.columnSizing?.columnSizingModel?.find((x: any) => x.colId === key).width || column.visualSizeFactor,
                 isResizable: column.isResizable ?? true,
             } as IGridColumn;
 
@@ -164,19 +182,22 @@ export class Grid {
             gridColumn.isEditable = await this._isColumnEditable(gridColumn);
             gridColumn.isRequired = await this._isColumnRequired(gridColumn);
 
-            if (gridColumn.displayName?.startsWith('__ribbon')) {
-                gridColumn.key = '__ribbon',
-                    gridColumn.displayName.split('__ribbon$')?.[1]
+            if (gridColumn.key === RIBBON_COLUMN_KEY) {
                 gridColumn.isFilterable = false;
                 gridColumn.isSortable = false;
             }
             gridColumns.push(gridColumn);
         }
-        if(this.selection.type !== undefined) {
+/*         gridColumns.unshift({
+            key: RIBBON_COLUMN_KEY,
+            attributeName: RIBBON_COLUMN_KEY,
+        }) */
+        if (this.selection.type !== undefined) {
             gridColumns.unshift({
                 key: '__checkbox',
                 attributeName: '__checkbox',
                 width: 45,
+                isResizable: false
             })
         }
         this._columns = gridColumns;
@@ -214,7 +235,7 @@ export class Grid {
         }
         const metadata = await this._pcfContext.utils.getEntityMetadata(this._dataset.getTargetEntityType(), [column.attributeName]);
         //IsEditable is not available in Power Apps
-        return metadata.Attributes.get(column.attributeName).attributeDescriptor.IsValidForUpdate
+        return metadata.Attributes.get(column.attributeName)?.attributeDescriptor.IsValidForUpdate ?? false;
     }
 
     private async _isColumnRequired(column: IGridColumn) {
@@ -225,7 +246,7 @@ export class Grid {
             return false;
         }
         const metadata = await this.metadata.get(column);
-        const requiredLevel = metadata.Attributes.get(column.attributeName).attributeDescriptor.RequiredLevel;
+        const requiredLevel = metadata.Attributes.get(column.attributeName)?.attributeDescriptor.RequiredLevel;
         if (requiredLevel === 1 || requiredLevel === 2) {
             return true;
         }
@@ -234,6 +255,11 @@ export class Grid {
     private _isColumnSortable(column: IEntityColumn) {
         if (this._props.parameters.EnableSorting?.raw === false) {
             return false;
+        }
+        switch (column.dataType) {
+            case DataType.IMAGE: {
+                return false;
+            }
         }
         return !column.disableSorting;
     }

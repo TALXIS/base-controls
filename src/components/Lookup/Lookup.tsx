@@ -11,6 +11,7 @@ import { IBasePicker } from "@fluentui/react/lib/components/pickers/BasePicker.t
 import { ITag } from "@fluentui/react/lib/components/pickers/TagPicker/TagPicker.types";
 import { RecordCreator } from "./components/RecordCreator";
 import { useFocusIn } from "../../hooks/useFocusIn";
+import { useComponentSizing } from "../../hooks/useComponentSizing";
 
 export const Lookup = (props: ILookup) => {
     const context = props.context;
@@ -18,7 +19,8 @@ export const Lookup = (props: ILookup) => {
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
     const theme = useTheme();
-    const styles = getLookupStyles(theme, context.mode.allocatedHeight, itemLimit === 1);
+    const {height} = useComponentSizing(props.context.mode);
+    const styles = getLookupStyles(theme,itemLimit === 1, height);
     const [value, entities, labels, records, selectEntity, getSearchResults] = useLookup(props);
     const mouseOver = useMouseOver(ref);
     const isFocused = useFocusIn(ref);
@@ -120,6 +122,7 @@ export const Lookup = (props: ILookup) => {
                     componentRef={componentRef}
                     resolveDelay={200}
                     stackItems={itemLimit === 1}
+                    errorMessage={props.parameters.value.errorMessage}
                     pickerCalloutProps={{
                         className: styles.suggestions,
                     }}

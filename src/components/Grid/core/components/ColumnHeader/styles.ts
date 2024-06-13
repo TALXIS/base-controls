@@ -10,7 +10,8 @@ export const getColumnHeaderStyles = (theme: ITheme) => {
             paddingRight: 10,
             '.ms-Button-flexContainer': {
                 justifyContent: 'flex-start',
-                gap: 2
+                gap: 2,
+                pointerEvents: 'none'
             }
         },
         labelWrapper: {

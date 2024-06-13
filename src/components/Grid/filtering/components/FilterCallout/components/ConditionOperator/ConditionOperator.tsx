@@ -24,6 +24,7 @@ export const ConditionOperator = (props: IConditionOperator) => {
             case DataType.WHOLE_NONE:
             case DataType.DECIMAL:
             case DataType.FP:
+            case DataType.WHOLE_DURATION:
             case DataType.CURRENCY:
                 operators = operatorUtils.numberOperators;
                 break;

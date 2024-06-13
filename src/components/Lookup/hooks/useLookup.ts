@@ -21,7 +21,7 @@ export const useLookup = (props: ILookup): [
     const targets = props.parameters.value.attributes.Targets;
     const boundValue = props.parameters.value.raw;
     const context = props.context;
-    const [labels, notifyOutputChanged] = useComponent('Lookup', props, lookupTranslations);
+    const {labels, onNotifyOutputChanged} = useComponent('Lookup', props, lookupTranslations);
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
     
     const [entities, setEntities] = useState<IEntity[]>(() => {
@@ -47,7 +47,7 @@ export const useLookup = (props: ILookup): [
     }
 
     const selectRecords = (records: ComponentFramework.LookupValue[] | undefined) => {
-        notifyOutputChanged({
+        onNotifyOutputChanged({
             value: records
         })
     }
@@ -79,7 +79,7 @@ export const useLookup = (props: ILookup): [
         await Promise.all(fetchXmlMap.values());
         const responsePromiseMap = new Map<string, Promise<ComponentFramework.WebApi.RetrieveMultipleResponse>>()
         for (const [entityName, fetchXml] of fetchXmlMap) {
-            responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?fetchXml=${encodeURIComponent((await fetchXml))}`))
+            responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?$top=25&fetchXml=${encodeURIComponent((await fetchXml))}`))
         }
         await Promise.all(responsePromiseMap.values());
         const result: ComponentFramework.LookupValue[] = [];
@@ -104,7 +104,7 @@ export const useLookup = (props: ILookup): [
         if (!result.savedEntityReference) {
             return;
         }
-        notifyOutputChanged({
+        onNotifyOutputChanged({
             value: result.savedEntityReference
         })
     }
@@ -112,7 +112,7 @@ export const useLookup = (props: ILookup): [
     const deselectRecord = (record: ComponentFramework.LookupValue) => {
         const map = new Map<string, ComponentFramework.LookupValue>(boundValue.map(value => [value.id, value]));
         map.delete(record.id);
-        notifyOutputChanged({
+        onNotifyOutputChanged({
             value: [...map.values()]
         })
     }

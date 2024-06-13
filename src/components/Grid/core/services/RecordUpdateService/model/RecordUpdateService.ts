@@ -110,15 +110,6 @@ export class RecordUpdateService extends GridDependency {
                             return value;
                         },
                         setValue: (columnKey: string, value: any) => {
-                            const updatedRecord = this._updatedRecords.get(recordId);
-                            let originalValue = updatedRecord?.getOriginalValue(columnKey);
-                            //if the new change is equal to the original record state, clear the internal dirty state
-                            if(originalValue == value || equal(value, originalValue)) {
-                                updatedRecord?.columns.delete(columnKey);
-                                if(updatedRecord?.columns.size === 0) {
-                                    this._updatedRecords.delete(recordId);
-                                }
-                            }
                             this._internalRecordMap.get(recordId)?.setValue(columnKey, value);
                         },
                         isValid: (columnKey: string) => {
@@ -159,12 +150,6 @@ export class RecordUpdateService extends GridDependency {
                 }
                 if (!doNotPropagateToDatasetRecord) {
                     const updatedRecord = this._updatedRecords.get(recordId);
-                    if(this._isEqual(columnKey, updatedRecord?.getOriginalValue(columnKey)!, value)) {
-                        updatedRecord?.columns.delete(columnKey);
-                        if(updatedRecord?.columns.size === 0) {
-                            this._updatedRecords.delete(recordId);
-                        }
-                    }
                     updatedRecord?.setValue(columnKey, value);
                 }
             }

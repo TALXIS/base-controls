@@ -1,36 +1,57 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest>
-  <control namespace="TALXIS.PCF" constructor="Grid" version="5.0.1" display-name-key="TALXIS Grid" description-key="" control-type="standard">
+  <control namespace="TALXIS.PCF" constructor="Grid" version="5.0.1" display-name-key="TALXIS Grid"
+    description-key="" control-type="standard">
     <data-set name="Grid" display-name-key="">
     </data-set>
-    <property name="EnableEditing" display-name-key="Enable Editing" description-key="" of-type="Enum" usage="input">
+    <property name="EnableEditing" display-name-key="Enable Editing" description-key=""
+      of-type="Enum" usage="input">
       <value name="Yes" display-name-key="Yes" description-key="">true</value>
       <value name="No" default="true" display-name-key="No" description-key="">false</value>
     </property>
-    <property name="EnablePagination" display-name-key="Enable Pagination" description-key="EnablePagination_Description_Key" of-type="Enum" usage="input">
+    <property name="EnablePagination" display-name-key="Enable Pagination" description-key=""
+      of-type="Enum" usage="input">
       <value name="Yes" default="true" display-name-key="Yes" description-key="">true</value>
       <value name="No" display-name-key="No" description-key="">false</value>
     </property>
-    <property name="EnableFiltering" display-name-key="Enable Filtering" description-key="EnableFiltering_Description_Key" of-type="Enum" usage="input">
+    <property name="EnableFiltering" display-name-key="Enable Filtering" description-key=""
+      of-type="Enum" usage="input">
       <value name="Yes" default="true" display-name-key="Yes" description-key="">true</value>
       <value name="No" display-name-key="No" description-key="">false</value>
     </property>
-    <property name="EnableSorting" display-name-key="Enable Sorting" description-key="EnableSorting_Description_Key" of-type="Enum" usage="input">
+    <property name="EnableSorting" display-name-key="Enable Sorting" description-key=""
+      of-type="Enum" usage="input">
       <value name="Yes" default="true" display-name-key="Yes" description-key="">true</value>
       <value name="No" display-name-key="No" description-key="">false</value>
     </property>
-    <property name="EnableNavigation" display-name-key="Enable Navigation" description-key="EnableNavigation_Description_Key" of-type="Enum" usage="input">
+    <property name="EnableNavigation" display-name-key="Enable Navigation" description-key=""
+      of-type="Enum" usage="input">
       <value name="Yes" default="true" display-name-key="Yes" description-key="">true</value>
       <value name="No" display-name-key="No" description-key="">false</value>
     </property>
-    <property name="SelectableRows" display-name-key="Selectable Rows" description-key="SelectableRows_Description_Key" of-type="Enum" usage="input">
+    <property name="EnableOptionSetColors" display-name-key="Enable OptionSet colors"
+      description-key=""
+      of-type="Enum" usage="input">
+      <value name="Yes" display-name-key="Yes" description-key="">true</value>
+      <value name="No" default="true" display-name-key="No" description-key="">false</value>
+    </property>
+    <property name="UseContainerAsHeight" display-name-key="Use container as height"
+      description-key="" of-type="Enum" usage="input">
+      <value name="Yes" display-name-key="Yes" description-key="">true</value>
+      <value name="No" default="true" display-name-key="No" description-key="">false</value>
+    </property>
+    <property name="SelectableRows" display-name-key="Selectable Rows" description-key=""
+      of-type="Enum" usage="input">
       <value name="None" display-name-key="None" description-key="">none</value>
       <value name="Single" default="true" display-name-key="Single" description-key="">single</value>
       <value name="Multiple" display-name-key="Multiple" description-key="">multiple</value>
     </property>
+    <property name="InlineRibbonButtonIds" display-name-key="Inline ribbon button ids"
+    description-key="List of comma separated button ids that will show up in the grid, example: Mscrm.Example1,Mscrm.Example2. Keep in mind that a column named _talxis_gridRibbonButtons also needs to be present on the view in order for the ribbon to show."
+    usage="input" of-type="SingleLine.Text" required="false" />
 
     <resources>
-      <code path="index.ts" order="1"/>
+      <code path="index.ts" order="1" />
     </resources>
     <feature-usage>
       <uses-feature name="Device.captureAudio" required="true" />

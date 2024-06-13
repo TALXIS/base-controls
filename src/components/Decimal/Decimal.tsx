@@ -4,6 +4,7 @@ import { IDecimal, IDecimalOutputs, IDecimalParameters, IDecimalTranslations } f
 import React, { useEffect } from "react";
 import numeral from "numeral";
 import { Numeral } from "../../utils/Numeral";
+import { CURRENCY_NEGATIVE_PATTERN, CURRENCY_POSITIVE_PATTERN, NUMBER_NEGATIVE_PATTERN } from "../../constants";
 
 export const Decimal = (props: IDecimal) => {
     const context = props.context;
@@ -21,10 +22,25 @@ export const Decimal = (props: IDecimal) => {
         if (props.parameters.value.type === 'Decimal') {
             return context.formatting.formatDecimal(parseFloat(value as string), boundValue.attributes?.Precision);
         }
-        if(props.parameters.value.type === 'Currency') {
+        if (props.parameters.value.type === 'Currency') {
             return props.parameters.value.formatted;
         }
         return context.formatting.formatInteger(parseInt(value as string));
+    };
+
+    const createNumberPattern = (pattern: string, numberPattern: string) => {
+        return new RegExp(`^${escapeRegExp(pattern).replace('n', numberPattern)}$`.replace(/\s/g, ''));
+    };
+
+    const createCurrencyPattern = (pattern: string, numberPattern: string) => {
+        const escapedPattern = escapeRegExp(pattern);
+        const escapedCurrencySymbolPattern = `(${escapeRegExp(numberFormatting.currencySymbol)})?`;
+        const finalPattern = escapedPattern.replace('\\$', escapedCurrencySymbolPattern).replace('n', numberPattern);
+        return new RegExp(`^${finalPattern.replace(/\s/g, '')}$`);
+    };
+
+    const escapeRegExp = (string: string) => {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     };
 
     const extractNumericPart = (str: any): number | undefined => {
@@ -32,41 +48,51 @@ export const Decimal = (props: IDecimal) => {
         // It only tries to parse the number based on the current user format
         // This means that the value will also pass if the user inputs his own currency even though
         // the currency is different on the field
-        const escapeRegExp = (string: string) => {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escaping utility function
+        if(typeof str === 'number') {
+            return str;
         }
-    
-        let regex: RegExp;
+        str = str?.replace(/\s/g, '');
         Numeral.decimal(numberFormatting);
-        if (props.parameters.value.type === 'Decimal') {
-            regex = new RegExp('^[' + '\\d' + escapeRegExp(numberFormatting.numberDecimalSeparator) + escapeRegExp(numberFormatting.numberGroupSeparator) + '\\s' + escapeRegExp(numberFormatting.negativeSign) + ']+$');
-        } else if (props.parameters.value.type === 'Currency') {
-            Numeral.currency(numberFormatting);
-            regex = new RegExp(
-                '^\\s*' + 
-                '(?:' + escapeRegExp(numberFormatting.currencySymbol) + '\\s*)?' + 
-                '[' +
-                '\\d' + 
-                escapeRegExp(numberFormatting.currencyDecimalSeparator) +
-                escapeRegExp(numberFormatting.currencyGroupSeparator) +
-                '\\s' + 
-                escapeRegExp(numberFormatting.negativeSign) + 
-                ']*' +
-                '(?:\\s*' + escapeRegExp(numberFormatting.currencySymbol) + ')?' +
-                '\\s*$'
-            );
-        } else {
-            regex = new RegExp('^[' + '\\d' + escapeRegExp(numberFormatting.numberGroupSeparator) + '\\s' + escapeRegExp(numberFormatting.negativeSign) + ']+$');
+        let positivePattern: any;
+        let negativePattern: any;
+
+        switch (props.parameters.value.type) {
+            case 'Whole.None': {
+                const numberPattern = `\\d{1,}(${numberFormatting.numberGroupSeparator}\\d{1,})*`;
+                positivePattern = createNumberPattern('n', numberPattern);
+                negativePattern = createNumberPattern(NUMBER_NEGATIVE_PATTERN[numberFormatting.numberNegativePattern], numberPattern);
+                break;
+            }
+            case 'Decimal': {
+                const numberPattern = `\\d{1,}(${numberFormatting.numberGroupSeparator}\\d{1,})*(\\${numberFormatting.numberDecimalSeparator}\\d+)?`;
+                positivePattern = createNumberPattern('n', numberPattern);
+                negativePattern = createNumberPattern(NUMBER_NEGATIVE_PATTERN[numberFormatting.numberNegativePattern], numberPattern);
+                break;
+            }
+            case 'Currency': {
+                Numeral.currency(numberFormatting);
+                const numberPattern = `\\d{1,}(${numberFormatting.currencyGroupSeparator}\\d{1,})*(\\${numberFormatting.currencyDecimalSeparator}\\d+)?`;
+                positivePattern = createCurrencyPattern(CURRENCY_POSITIVE_PATTERN[numberFormatting.currencyPositivePattern], numberPattern);
+                negativePattern = createCurrencyPattern(CURRENCY_NEGATIVE_PATTERN[numberFormatting.currencyNegativePattern], numberPattern);
+                break;
+            }
         }
-        if (regex.test(str)) {
+        if (positivePattern.test(str)) {
             return numeral(str).value() ?? undefined;
+        }
+        if (negativePattern.test(str)) {
+            const value = numeral(str).value()!;
+            if (value > 0) {
+                return value * -1;
+            }
+            return value;
         }
         return str; // Return undefined if no numeric part is extracted
     };
-    
-    
-    
-    const [value, labels, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs, IDecimalTranslations>('Decimal', props, {
+
+
+
+    const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs, IDecimalTranslations>('Decimal', props, {
         formatter: formatter,
         valueExtractor: extractNumericPart
     });
@@ -79,8 +105,8 @@ export const Decimal = (props: IDecimal) => {
             errorMessage={boundValue.errorMessage}
             styles={{
                 fieldGroup: {
-                    height: context.mode.allocatedHeight || undefined,
-                    width: context.mode.allocatedWidth || undefined
+                    height: sizing.height,
+                    width: sizing.width
                 }
             }}
             deleteButtonProps={

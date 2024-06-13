@@ -40,6 +40,9 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                 additionalParameters={{
                     MultipleEnabled: {
                         raw: true
+                    },
+                    IsInlineNewEnabled: {
+                        raw: false
                     }
                 }}
             />

@@ -10,6 +10,10 @@ export const getDefaultDateTimeTranslations = (dateFormattingInfo: ComponentFram
             1029: 'Přejít na dnešek',
             1033: 'Go to today'
         },
+        invalidTimeInput: {
+            1029: 'Neplatný časový formát.',
+            1033: 'Invalid time format.'
+        },
         days: dateFormattingInfo.dayNames,
         months: dateFormattingInfo.monthNames,
         shortDays: dateFormattingInfo.shortestDayNames,

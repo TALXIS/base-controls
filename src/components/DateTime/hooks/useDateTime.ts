@@ -73,18 +73,18 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         return context.formatting.formatDateShort(date);
     };
 
-    const [dateStringValue, labels, setDateStringValue, notifyOutputChanged] = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations>('DateTime', props, {
+    const {value, labels, setValue, onNotifyOutputChanged} = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations>('DateTime', props, {
         formatter: formatDate,
         defaultTranslations: getDefaultDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
     });
 
     useEffect(() => {
         const onBlur = () => {
-            if (formatDate(boundValue.raw) === dateStringValue) {
+            if (formatDate(boundValue.raw) === value) {
                 return;
             }
-            notifyOutputChanged({
-                value: dateExtractor(dateStringValue!) as any
+            onNotifyOutputChanged({
+                value: dateExtractor(value!) as any
             });
         };
         const input = ref.current?.querySelector('input');
@@ -92,7 +92,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         return () => {
             input?.removeEventListener('blur', onBlur);
         };
-    }, [dateStringValue]);
+    }, [value]);
 
     const getDate = (): Date | undefined => {
         if (boundValue.raw instanceof Date) {
@@ -120,7 +120,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     };
 
     const clearDate = () => {
-        notifyOutputChanged({
+        onNotifyOutputChanged({
             value: undefined
         });
     };
@@ -135,10 +135,10 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         const [hours, minutes] = _time.split(':');
         dayjsDate = dayjsDate.hour(parseInt(hours));
         dayjsDate = dayjsDate.minute(parseInt(minutes));
-        notifyOutputChanged({
+        onNotifyOutputChanged({
             value: dayjsDate.toDate()
         });
     };
 
-    return [getDate(), dateStringValue, isDateTime, { shortDatePattern, shortTimePattern }, labels, setDateStringValue, selectDate, clearDate];
+    return [getDate(), value, isDateTime, { shortDatePattern, shortTimePattern }, labels, setValue, selectDate, clearDate];
 };

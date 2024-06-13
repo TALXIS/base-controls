@@ -15,6 +15,7 @@ export class ConditionComponentValue {
 
     public get column() {
         const _column = {...this._columnFilterConditionController.column};
+        _column.isRequired = false;
         //always needs to be required for filter values if non valid value is present
         if(!this._columnFilterConditionController.value.valid) {
             _column.isRequired = true;

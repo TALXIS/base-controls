@@ -1,7 +1,7 @@
 import { AgGridReact } from '@ag-grid-community/react';
 import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
-import { GridApi} from "@ag-grid-community/core";
-import { useRef } from "react";
+import { ColumnMovedEvent, GridApi} from "@ag-grid-community/core";
+import { useEffect, useRef } from "react";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
@@ -12,6 +12,8 @@ import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
 import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { usePagingController } from '../../../paging/controllers/usePagingController';
+import { CHECKBOX_COLUMN_KEY} from '../../../constants';
+import { IEntityRecord } from '../../../interfaces';
 
 export const AgGrid = () => {
     const grid = useGridInstance();
@@ -21,7 +23,7 @@ export const AgGrid = () => {
     const theme = useTheme();
     let { agColumns, records, maxNumberOfVisibleRecords, stateRef, getTotalColumnsWidth, onGridReady } = useAgGridController(gridApiRef);
     const pagingController = usePagingController();
-    const styles = getGridStyles(theme, maxNumberOfVisibleRecords);
+    const styles = getGridStyles(theme, maxNumberOfVisibleRecords, grid.useContainerAsHeight);
 
     const getAvailableWidth = () => {
         const rootWrapper = containerRef.current?.querySelector('.ag-root-wrapper');
@@ -35,11 +37,26 @@ export const AgGrid = () => {
         }
     }
 
+    const updateColumnOrder = (e: ColumnMovedEvent<IEntityRecord, any>) => {
+        const columOrder = e.api.getState().columnOrder?.orderedColIds.filter(colId => {
+            switch(colId) {
+                case CHECKBOX_COLUMN_KEY:
+            }
+            return true;
+        });
+        if(!columOrder) {
+            return;
+        }
+        //@ts-ignore - typings
+        grid.pcfContext.factory.fireEvent('__updateColumnOrder', columOrder)
+    }
     return (
         <div 
             ref={containerRef} 
             className={`${styles.root} ag-theme-balham`}
             >
+            {agColumns.length > 0 && 
+            <>
             {((grid.isEditable && grid.parameters.ChangeEditorMode?.raw !== 'edit') || grid.parameters.ChangeEditorMode?.raw === 'read') &&
                 <Save />
             }
@@ -52,15 +69,20 @@ export const AgGrid = () => {
             }
             <AgGridReact
                 animateRows
-                rowBuffer={0}
                 rowSelection={grid.selection.type}
                 noRowsOverlayComponent={EmptyRecords}
                 loadingOverlayComponent={LoadingOverlay}
+                suppressDragLeaveHidesColumns
+                onColumnMoved={(e) => {
+                    if(e.finished) {
+                        updateColumnOrder(e);
+                    }
+                }}
                 reactiveCustomComponents
                 onRowSelected={(e) => {
                     //prevent infinite loop since we are also setting the rows
                     //when the selection comes from above
-                    if (e.source.includes('api')) {
+                    if (e.source.includes('api') || e.source === 'gridInitializing') {
                         return;
                     }
                     selection.toggle(e.data!, e.node.isSelected()!)
@@ -88,7 +110,10 @@ export const AgGrid = () => {
                     onGridReady();
                 }}
                 initialState={stateRef.current}
-                onStateUpdated={(e) => stateRef.current = e.state}
+                onStateUpdated={(e) => stateRef.current = {
+                    ...stateRef.current,
+                    ...e.state
+                }}
                 rowHeight={42}
                 columnDefs={agColumns as any}
                 rowData={records}
@@ -97,6 +122,8 @@ export const AgGrid = () => {
             {pagingController.isEnabled &&
                 <Paging />
             }
+            </>
+        }
         </div>
     );
 }

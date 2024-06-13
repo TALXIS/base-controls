@@ -95,7 +95,7 @@ export const Duration = (props: IDuration) => {
 
     const comboBoxOptions: IComboBoxOption[] = presetOptions();
 
-    const [value, labels, setValue, onNotifyOutputChanged] = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs, IDurationTranslations>('Duration', props, {
+    const {value, labels, sizing, setValue, onNotifyOutputChanged} = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs, IDurationTranslations>('Duration', props, {
         formatter: formatter,
         valueExtractor: valueExtractor,
         defaultTranslations: getDefaultDurationTranslations(),
@@ -116,8 +116,8 @@ export const Duration = (props: IDuration) => {
                 text={value ?? ''}
                 styles={{
                     root: {
-                        height: context.mode.allocatedHeight || undefined,
-                        width: context.mode.allocatedWidth || undefined,
+                        height: sizing.height,
+                        width: sizing.width,
                         display: 'flex',
                         alignItems: 'center',
                     },

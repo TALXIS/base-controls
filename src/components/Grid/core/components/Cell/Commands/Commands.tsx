@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useCommands } from './useCommands';
 import { CommandBar } from '@talxis/react-components/dist/components/CommandBar';
-import { commandStyles } from './styles';
-import { CommandBarButton } from '@fluentui/react';
+import { commandStyles, getCommandsLoadingStyles } from './styles';
+import { useTheme } from '@fluentui/react';
 
 interface ICommands {
     record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
@@ -10,8 +10,13 @@ interface ICommands {
 
 export const Commands = ({ record }: ICommands) => {
     const [items] = useCommands(record);
+    const loadingStyles = getCommandsLoadingStyles(useTheme());
     if (!items) {
-        return <></>
+        return <div className={loadingStyles.loading}>
+            {Array.from(Array(3).keys()).map((x) =>
+                <div key={x} className={loadingStyles.loadingLine} />
+            )}
+        </div>
     }
     if (items?.length > 0) {
         return <CommandBar className={commandStyles.talxisRoot} overflowButtonProps={{
@@ -25,8 +30,8 @@ export const Commands = ({ record }: ICommands) => {
             root: commandStyles.root,
 
         }} items={[]}
-        farItems={items}
-         />;
+            farItems={items}
+        />;
     }
     return <></>;
 };

@@ -6,7 +6,7 @@ import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import React, { useEffect, useRef } from 'react';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
-    const [labels, onNotifyOutputChanged] = useComponent('MultiSelectOptionSet', props);
+    const {sizing, onNotifyOutputChanged} = useComponent('MultiSelectOptionSet', props);
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const componentRef = useRef<IComboBox>(null);
@@ -60,8 +60,8 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         useComboBoxAsMenuWidth
         styles={{
             root: {
-                height: context.mode.allocatedHeight || undefined,
-                width: context.mode.allocatedWidth || undefined,
+                height: sizing.height,
+                width: sizing.width,
                 display: 'flex',
                 alignItems: 'center',
             },

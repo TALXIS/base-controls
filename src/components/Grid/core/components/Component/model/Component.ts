@@ -54,7 +54,7 @@ export class Component extends GridDependency {
                             getAllViews: async (entityName: string) => {
                                 if (!Component._lookupSavedQueriesCache.get(entityName)) {
                                     Component._lookupSavedQueriesCache.set(entityName, new Promise(async (resolve) => {
-                                        const response = await this._pcfContext.webAPI.retrieveMultipleRecords('savedquery', `?$filter=returnedtypecode eq '${entityName}' and querytype eq 64&$select=name,savedqueryid,fetchxml`);
+                                        const response = await this._pcfContext.webAPI.retrieveMultipleRecords('savedquery', `?$filter=returnedtypecode eq '${entityName}' and querytype eq 64 and isdefault eq true&$select=name,savedqueryid,fetchxml`);
                                         resolve(response.entities[0])
                                     }))
                                 }

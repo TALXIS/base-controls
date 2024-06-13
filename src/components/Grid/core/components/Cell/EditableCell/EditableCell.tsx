@@ -132,6 +132,9 @@ export const EditableCell = (props: ICell) => {
             },
             EnableNavigation: {
                 raw: false
+            },
+            IsInlineNewEnabled: {
+                raw: false
             }
         }}
     />

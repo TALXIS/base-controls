@@ -22,13 +22,14 @@ interface IAgGridController {
     agColumns: ColDef[],
     records: IEntityRecord[],
     maxNumberOfVisibleRecords: number;
-    stateRef:  React.MutableRefObject<IAgGridState>
+    stateRef: React.MutableRefObject<IAgGridState>
     getTotalColumnsWidth: () => number,
     onGridReady: () => void;
 }
 
 interface IAgGridState extends GridState {
-    '__updatedRecords'?: IUpdatedRecord[]
+    '__updatedRecords'?: IUpdatedRecord[];
+    initialPageSize?: number;
 }
 
 export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>): IAgGridController => {
@@ -41,14 +42,16 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<IAgGridState>(grid.state as IAgGridState);
     //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
     const [agRecords] = useDebounce(records, 0);
-    
+    gridApiRef.current?.refreshCells();
+
     useEffect(() => {
         if (!agGridReadyRef.current) {
             return;
         }
         agGrid.selectRows();
+        gridApiRef.current?.refreshHeader();
     }, [grid.dataset.getSelectedRecordIds().join('')]);
-    
+
     useEffect(() => {
         if (columns.length === 0) {
             return;
@@ -67,6 +70,7 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
         setAgColumns(_agColumns);
     }, [columns]);
 
+    //this might be very Portal centric
     useEffect(() => {
         if (!gridApiRef.current) {
             return;
@@ -75,8 +79,14 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
             gridApiRef.current.showLoadingOverlay();
             return;
         }
-        gridApiRef.current.hideOverlay()
+        gridApiRef.current.hideOverlay();
+        setTimeout(() => {
+            if (grid.records.length === 0) {
+                gridApiRef.current?.showNoRowsOverlay();
+            }
+        }, 0);
     }, [grid.loading]);
+
 
     useEffect(() => {
         if (!gridApiRef.current) {
@@ -87,7 +97,7 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
 
     useEffect(() => {
         const onBeforeUnload = (ev: BeforeUnloadEvent) => {
-            if(grid.recordUpdateService.isDirty) {
+            if (grid.recordUpdateService.isDirty) {
                 ev.preventDefault();
                 return 'Unsaved changes!'
             }
@@ -99,12 +109,39 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
                 return;
             }
             stateValuesRef.current.__updatedRecords = grid.recordUpdateService.updatedRecords;
+            if(grid.paging.pageSize !== agGrid.initialPageSize) {
+                stateValuesRef.current.initialPageSize = agGrid.initialPageSize; 
+            }
             grid.pcfContext.mode.setControlState(getNewStateValues());
         }
     }, []);
 
-//TODO: find a better way to achieve this
-useEffect(() => {
+    //this can be replaced with native functionality if we decide to use ag grid enterprise
+    useEffect(() => {
+        const onKeyDownHandler = async (event: KeyboardEvent) => {
+            // if control key(windows) or command key(iOS) + S key is clicked
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
+                const cell = gridApiRef.current?.getFocusedCell();
+                if (!cell) {
+                    return;
+                }
+                const row = gridApiRef.current?.getDisplayedRowAtIndex(cell.rowIndex);
+                const formattedValue = gridApiRef.current?.getCellValue({
+                    rowNode: row!,
+                    colKey: cell.column.getColId(),
+                    useFormatter: true
+                })
+                navigator.clipboard.writeText(formattedValue ?? "");
+            }
+        }
+        window.addEventListener('keydown', onKeyDownHandler)
+        return () => {
+            window.removeEventListener('keydown', onKeyDownHandler);
+        }
+    }, []);
+
+    //TODO: find a better way to achieve this
+    useEffect(() => {
         const globalClickHandler = (e: MouseEvent) => {
             const hasAncestorWithClass = (element: HTMLElement, className: string): boolean => {
                 let parent = element;
@@ -135,11 +172,12 @@ useEffect(() => {
             document.removeEventListener('click', globalClickHandler);
         }
     }, []);
-    
+
     const onGridReady = () => {
         agGridReadyRef.current = true;
         setDefaultStateValues({
             ...gridApiRef.current!.getState(),
+            initialPageSize: undefined,
             __updatedRecords: []
         });
         agGrid.selectRows();

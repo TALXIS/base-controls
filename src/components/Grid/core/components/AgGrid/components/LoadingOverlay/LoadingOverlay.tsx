@@ -1,7 +1,10 @@
-import { SpinnerSize } from '@fluentui/react';
-import { Spinner } from '@fluentui/react/lib/components/Spinner/Spinner';
+import { useTheme } from '@fluentui/react';
 import React from 'react';
+import { getLoadingOverlayStyles } from './styles';
 
 export const LoadingOverlay = () => {
-    return <Spinner size={SpinnerSize.large} />
+    const styles = getLoadingOverlayStyles(useTheme());
+    return <div className={styles.root}>
+        <div className={styles.tail} />
+    </div>
 }

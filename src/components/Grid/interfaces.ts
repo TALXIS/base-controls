@@ -22,6 +22,9 @@ export interface IGridParameters extends IParameters {
     EnableFiltering?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableSorting?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableOptionSetColors?:  Omit<ITwoOptionsProperty, 'attributes'>;
+    UseContainerAsHeight?: Omit<ITwoOptionsProperty, 'attributes'>;
+    InlineRibbonButtonIds?: IStringProperty;
     SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
     Grid: IDatasetProperty;
 }
@@ -105,4 +108,5 @@ export interface IGridTranslations extends ITranslations {
     "validation-date": { [LCID: number]: string };
     "validation-number": { [LCID: number]: string };
     "no-name": { [LCID: number]: string };
+    "download": { [LCID: number]: string };
 }

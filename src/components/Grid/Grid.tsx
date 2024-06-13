@@ -10,15 +10,16 @@ import { gridTranslations } from './translations';
 export const GridContext = createContext<IGridContext>(null as any);
 
 export const Grid = (props: IGrid) => {
-    const [labels, notifyOutputChanged] = useComponent('Grid', props, gridTranslations);
-    const grid = useMemo(() => new GridModel(props, labels), []);
-    grid.updateDependencies(props);
-    
+    const {labels} = useComponent('Grid', props, gridTranslations);
+    const providerValue: IGridContext = useMemo(() => {
+        return {
+            gridInstance: new GridModel(props, labels)
+        }
+    }, [])
+    providerValue.gridInstance.updateDependencies(props);
     return (
-        <GridContext.Provider value={{
-            gridInstance: grid
-        }}>
-        <AgGrid />
+        <GridContext.Provider value={providerValue}>
+            <AgGrid />
         </GridContext.Provider>
     )
 }

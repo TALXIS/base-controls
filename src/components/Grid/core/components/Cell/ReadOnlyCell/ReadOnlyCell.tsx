@@ -14,6 +14,8 @@ import { useGridInstance } from '../../../hooks/useGridInstance';
 import { useSelectionController } from '../../../../selection/controllers/useSelectionController';
 import { IEntityRecord } from '../../../../interfaces';
 import { ICellRendererParams } from '@ag-grid-community/core';
+import { RIBBON_COLUMN_KEY } from '../../../../constants';
+import { useRerender } from '../../../hooks/useRerender';
 
 interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
@@ -42,7 +44,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
                 <div className={styles.cellContent}>
                     <InternalReadOnlyCell {...props} />
                 </div>
-                {!isValid && !grid.loading && <Icon styles={{
+                {!isValid && <Icon styles={{
                     root: {
                         color: theme.semanticColors.errorIcon
                     }
@@ -53,6 +55,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
 };
 
 const InternalReadOnlyCell = (props: ICellProps) => {
+    const [_, rerender] = useRerender();
     const grid = useGridInstance();
     const column = props.baseColumn;
     const theme = useTheme();
@@ -64,6 +67,10 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         return updatedRecord ?? props.data;
     })();
     const formattedValue = record.getFormattedValue(column.key);
+
+    React.useEffect(() => {
+        //rerender();
+    }, [record.getValue(column.key)])
 
     const renderLink = (props: ILinkProps, formattedValue: string): JSX.Element => {
         switch(column.dataType) {
@@ -128,7 +135,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
                     {
                         renderLink({
                             onClick: downloadFile
-                        }, 'Download')
+                        }, grid.labels.download())
                     }
                 </div>
             )
@@ -151,10 +158,13 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         case DataType.OPTIONSET:
         case DataType.MULTI_SELECT_OPTIONSET:
         case DataType.TWO_OPTIONS: {
-            return <ReadOnlyOptionSet
+            if(grid.enableOptionSetColors) {
+                return <ReadOnlyOptionSet
                 column={column}
                 record={record}
                 defaultRender={renderText} />
+            }
+            return renderText();
         }
         default: {
             if(column.key === '__checkbox') {
@@ -165,7 +175,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
                     selection.toggle(record, checked!)
                 }} />
             }
-            if(column.key === '__ribbon') {
+            if(column.key === RIBBON_COLUMN_KEY) {
                 return <Commands record={record} />
             }
             return renderText()

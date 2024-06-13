@@ -5,16 +5,24 @@ import { IComponent, IOutputs, IParameters, ITranslations } from "../interfaces"
 import { merge } from 'merge-anything';
 import { StringProps } from "../types";
 import { Liquid } from "liquidjs";
+import { useComponentSizing } from "./useComponentSizing";
 
+
+export interface IComponentController<TTranslations, TOutputs> {
+    labels: Required<StringProps<TTranslations>>,
+    sizing: {
+        width?: number,
+        height?: number
+    },
+    onNotifyOutputChanged: (outputs: TOutputs) => void,
+}
 /**
  * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
-export const useComponent = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, defaultTranslations?: TTranslations): [
-    Required<StringProps<TTranslations>>,
-    (outputs: TOutputs) => void,
-] => {
+export const useComponent = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, defaultTranslations?: TTranslations): IComponentController<TTranslations, TOutputs> => {
     const parametersRef = useRef<TParameters>(props.parameters);
+    const sizing = useComponentSizing(props.context.mode);
     const liquid = useMemo(() => new Liquid(), []);
     const labels = useMemo(() => {
         const mergedTranslations = merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations;
@@ -79,5 +87,9 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         //console.log(`Change detected, triggering notifyOutputChanged on component ${name}.`);
         props.onNotifyOutputChanged?.(outputs);
     };
-    return [labels, onNotifyOutputChanged];
+    return {
+        labels,
+        sizing,
+        onNotifyOutputChanged
+    }
 };

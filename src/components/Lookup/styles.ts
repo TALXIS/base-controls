@@ -31,14 +31,14 @@ export const getTargetSelectorStyles = (theme: ITheme) => {
     })
 }
 
-const getHeight = (height: number) => {
+const getHeight = (height?: number) => {
     if(height === -1 || height === 0) {
         return undefined;
     }
     return height;
 }
 
-export const getLookupStyles = (theme: ITheme, height: number, isSingleSelect: boolean) => {
+export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?: number) => {
     const _height = getHeight(height);
     return mergeStyleSets({
         root: {
