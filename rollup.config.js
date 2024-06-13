@@ -29,12 +29,14 @@ export default [
             }),
             postcss(),
             multiInput(),
-            terser()
+            terser({
+                keep_classnames: true,
+            })
         ],
     },
     {
         input: ['dist/index.d.ts'],
-        output: [{ file: 'dist/index.d.ts', format: "esm"}],
+        output: [{ file: 'dist/index.d.ts', format: "esm" }],
         external: [/\.css$/],
         plugins: [
             dts(),
