@@ -18,7 +18,14 @@ export class Condition extends GridDependency {
 
     constructor(grid: Grid, column: IGridColumn) {
         super(grid);
-        this._column = column;
+        this._column = {...column};
+        switch(this._column.dataType) {
+            //this will skip regex validation since it is not desirable during filtering (we have contains and stuff)
+            case DataType.SINGLE_LINE_EMAIL:
+            case DataType.SINGLE_LINE_URL: {
+                this._column.dataType = DataType.SINGLE_LINE_TEXT;
+            }
+        }
         return new Proxy(this, {
             get: (target, prop) => {
                 if(prop !== 'init') {
@@ -184,14 +191,6 @@ export class Condition extends GridDependency {
                 }
                 return `${attributeName}name`
             }
-/*             case DataType.LOOKUP_OWNER:
-            case DataType.LOOKUP_SIMPLE: {
-                if (undecorate) {
-                    return attributeName;
-                }
-                const metadata = await this._grid.metadata.get(this._column);
-                return `${this._column.attributeName}${metadata.PrimaryNameAttribute}`;
-            } */
             default: {
                 return attributeName;
             }

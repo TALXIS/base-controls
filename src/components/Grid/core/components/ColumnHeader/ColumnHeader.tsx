@@ -39,6 +39,21 @@ export const ColumnHeader = (props: IColumnHeader) => {
             }
         });
     }
+    const preventDismissOnEvent = (e: Event | React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element> | React.FocusEvent<Element, Element>) => {
+        if(e.type !== 'scroll') {
+            return false;
+        }
+        const target = e.target  as HTMLElement;
+        //check for vertical scroll
+        if (target?.classList?.contains('ag-body-viewport') || target?.classList?.contains('ag-body-vertical-scroll-viewport')) {
+            return true;
+        }
+        //ios outputs horizontal scroll if focused in callout btn which would result in dismiss of callout
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            return true;
+        }
+        return false;
+    }
     return (
         <>
             <CommandBarButton
@@ -60,10 +75,15 @@ export const ColumnHeader = (props: IColumnHeader) => {
                 </div>
             </CommandBarButton>
             {columnHeaderContextualMenuProps &&
-                <SortingContextualMenu target={buttonRef} {...columnHeaderContextualMenuProps} />
+                <SortingContextualMenu 
+                    target={buttonRef}
+                    calloutProps={{
+                        preventDismissOnEvent: preventDismissOnEvent
+                    }} 
+                    {...columnHeaderContextualMenuProps} />
             }
             {filterCalloutProps &&
-                <FilterCallout target={buttonRef} {...filterCalloutProps} />
+                <FilterCallout preventDismissOnEvent={preventDismissOnEvent} target={buttonRef} {...filterCalloutProps} />
             }
         </>
     )

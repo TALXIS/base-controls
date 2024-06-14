@@ -23,7 +23,13 @@ export const Decimal = (props: IDecimal) => {
             return context.formatting.formatDecimal(parseFloat(value as string), boundValue.attributes?.Precision);
         }
         if (props.parameters.value.type === 'Currency') {
-            return props.parameters.value.formatted;
+            //the layer above has information about the symbol, so we can use the formatted string
+            if(props.parameters.value.formatted) {
+                return props.parameters.value.formatted;
+            }
+            if(typeof value === 'number') {
+                return context.formatting.formatCurrency(value);
+            }
         }
         return context.formatting.formatInteger(parseInt(value as string));
     };

@@ -26,6 +26,12 @@ export class ConditionComponentValue {
                 _column.dataType = DataType.MULTI_SELECT_OPTIONSET;
                 break;
             }
+            //skip this validation because operators like contains should not fail on regexes
+            case DataType.SINGLE_LINE_EMAIL:
+            case DataType.SINGLE_LINE_URL: {
+                _column.dataType = DataType.SINGLE_LINE_TEXT;
+                break;
+            }
             //In Power Apps, DateTime fields filters do not allow setting filters for time, only for the date
             case DataType.DATE_AND_TIME_DATE_AND_TIME: {
                 _column.dataType = DataType.DATE_AND_TIME_DATE_ONLY;
