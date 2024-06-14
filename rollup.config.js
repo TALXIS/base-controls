@@ -29,9 +29,9 @@ export default [
             }),
             postcss(),
             multiInput(),
-            /* terser({
+            terser({
                 keep_classnames: true,
-            }) */
+            })
         ],
     },
     {
