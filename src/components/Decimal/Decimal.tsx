@@ -28,7 +28,7 @@ export const Decimal = (props: IDecimal) => {
                 return props.parameters.value.formatted;
             }
             if(typeof value === 'number') {
-                return context.formatting.formatCurrency(value);
+                return context.formatting.formatDecimal(value, boundValue.attributes?.Precision);
             }
         }
         return context.formatting.formatInteger(parseInt(value as string));
