@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Dialog as DialogBase } from '@fluentui/react/lib/Dialog';
+import { Dialog as DialogBase } from '@fluentui/react';
 import { IDialogProps } from './interfaces';
 import { defaultProps } from './Constants';
 import { getRootStyles } from './Styles';

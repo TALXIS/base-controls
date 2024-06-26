@@ -1,7 +1,7 @@
 import React from 'react';
 import {Icon} from '@fluentui/react';
 import { useGridInstance } from '../../../../hooks/useGridInstance';
-import { Text } from '@fluentui/react/lib/Text';
+import { Text } from '@fluentui/react';
 import { emptyRecordStyles } from './styles';
 
 export const EmptyRecords = () => {

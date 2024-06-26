@@ -1,4 +1,4 @@
-import { IDialogProps as IDialogPropsBase } from '@fluentui/react/lib/Dialog';
+import { IDialogProps as IDialogPropsBase } from '@fluentui/react';
 
 export interface IDialogProps extends IDialogPropsBase {
     width?: number | string;

@@ -1,5 +1,5 @@
 import { ComboBox, CommandBarButton, ContextualMenuItemType, IComboBoxOption, IContextualMenuItem, useTheme } from '@fluentui/react';
-import { CommandBar } from '@fluentui/react/lib/components/CommandBar/CommandBar';
+import { CommandBar } from '@fluentui/react';
 import React from 'react';
 import { useGridInstance } from '../../../core/hooks/useGridInstance';
 import { usePagingController } from '../../controllers/usePagingController';

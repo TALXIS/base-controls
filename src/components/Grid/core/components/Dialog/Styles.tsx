@@ -1,4 +1,4 @@
-import { mergeStyles, getTheme } from "@fluentui/react/lib/Styling";
+import { mergeStyles, getTheme } from "@fluentui/react";
 import { IDialogProps } from './interfaces/index';
 
 export const getRootStyles = (props: IDialogProps): string => {
