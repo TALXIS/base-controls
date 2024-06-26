@@ -1,19 +1,18 @@
 import { ICalendarProps } from "@fluentui/react/lib/components/Calendar/Calendar.types";
 import { IAutofill } from "@fluentui/react/lib/components/pickers/AutoFill/BaseAutoFill.types";
-import { ITimePickerProps } from "@fluentui/react/lib/components/TimePicker/TimePicker.types";
 import { useTheme } from "@fluentui/react/lib/utilities/ThemeProvider/useTheme";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
 import { getDateTimeStyles } from "../styles";
-import { TimePicker } from "@talxis/react-components/dist/components/TimePicker";
+import { ITimePickerProps, TimePicker } from "@talxis/react-components/dist/components/TimePicker";
 import { Text } from '@fluentui/react/lib/Text';
 import dayjs from "dayjs";
 import React from 'react';
-import { FocusTrapZone } from "@fluentui/react";
 
 interface IInternalTimePickerProps extends ITimePickerProps {
     visible: boolean;
     timeFormat: string;
+    underlined?: boolean;
 }
 
 interface IInternalCalendarProps extends ICalendarProps {

@@ -120,6 +120,7 @@ export const Lookup = (props: ILookup) => {
         <div className={styles.root} ref={ref}>
                 <TagPicker
                     componentRef={componentRef}
+                    underlined={props.parameters.Underlined?.raw}
                     resolveDelay={200}
                     stackItems={itemLimit === 1}
                     errorMessage={props.parameters.value.errorMessage}
@@ -153,6 +154,7 @@ export const Lookup = (props: ILookup) => {
                         }))
                     }}
                     searchBtnProps={{
+                        key: 'search',
                         iconProps: {
                             iconName: 'Search'
                         }

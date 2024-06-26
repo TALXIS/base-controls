@@ -8,7 +8,7 @@ export const getDateTimeStyles = (theme: ITheme) => {
             }
         },
         calendarCallout: {
-            '.TALXIS__timepicker__root': {
+            '[class*="TALXIS__timepicker__root"]': {
                 padding: 12,
                 'label': {
                     paddingTop: 0

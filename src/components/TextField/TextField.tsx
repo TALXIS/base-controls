@@ -9,15 +9,17 @@ export const TextField = (props: ITextField) => {
     const context = props.context;
     const parameters = props.parameters;
     const boundValue = parameters.value;
+    const isMultiline = parameters.value.type === 'Multiple';
     const ref = useRef<HTMLDivElement>(null);
     const {value, sizing, setValue, onNotifyOutputChanged} = useInputBasedComponent<string | undefined, ITextFieldParameters, ITextFieldOutputs, ITextFieldTranslations>('TextField', props);
-    const [height] = useTextFieldHeight(ref, sizing.height, props.parameters.IsMultiLine?.raw);
+    const [height] = useTextFieldHeight(ref, sizing.height, isMultiline);
 
     return (
         <TextFieldBase
+            underlined={parameters.Underlined?.raw}
             readOnly={context.mode.isControlDisabled}
             //TODO: should be inherited by the type, eg TextArea = multiline
-            multiline={parameters.IsMultiLine?.raw}
+            multiline={isMultiline}
             resizable={parameters.isResizable?.raw}
             autoFocus={parameters.AutoFocus?.raw}
             elementRef={ref}

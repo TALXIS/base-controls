@@ -29,6 +29,7 @@ export const DateTime = (componentProps: IDateTime) => {
         <div ref={ref}>
             <DatePicker
                 className={styles.datePicker}
+                underlined={parameters.Underlined?.raw}
                 componentRef={datePickerRef}
                 keepCalendarOpenAfterDaySelect={isDateTime}
                 allowTextInput
@@ -49,6 +50,7 @@ export const DateTime = (componentProps: IDateTime) => {
                             shortMonths: JSON.parse(labels.shortMonths())
                         }}
                         timePickerProps={{
+                            underlined: parameters.Underlined?.raw,
                             autoComplete: "off",
                             autoCapitalize: "off",
                             timeFormat: patterns.shortTimePattern,

@@ -1,11 +1,11 @@
 import { IWholeNumberProperty } from "../../interfaces";
 import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
-import { IBaseParameters } from "../../interfaces/parameters";
+import { IBaseParameters, IInputParameters } from "../../interfaces/parameters";
 
 export interface IDuration extends IComponent<IDurationParameters, IDurationOutputs, IDurationTranslations> {
 }
 
-export interface IDurationParameters extends IBaseParameters {
+export interface IDurationParameters extends IInputParameters {
     value: IWholeNumberProperty;
 }
 

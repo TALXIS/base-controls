@@ -105,6 +105,7 @@ export const Decimal = (props: IDecimal) => {
 
     return (
         <TextField
+            underlined={parameters.Underlined?.raw}
             readOnly={context.mode.isControlDisabled}
             autoFocus={parameters.AutoFocus?.raw}
             borderless={parameters.EnableBorder?.raw === false}

@@ -6,7 +6,7 @@ import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import React, { useEffect, useRef } from 'react';
 
 export const OptionSet = (props: IOptionSet) => {
-    const {sizing, onNotifyOutputChanged} = useComponent('OptionSet', props);
+    const { sizing, onNotifyOutputChanged } = useComponent('OptionSet', props);
     const componentRef = useRef<IComboBox>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -34,7 +34,8 @@ export const OptionSet = (props: IOptionSet) => {
     }, []);
 
     return <ComboBox
-        componentRef={componentRef}
+        ref={componentRef}
+        underlined={parameters.Underlined?.raw}
         borderless={parameters.EnableBorder?.raw === false}
         options={comboBoxOptions}
         readOnly={context.mode.isControlDisabled}
@@ -53,14 +54,21 @@ export const OptionSet = (props: IOptionSet) => {
                 maxHeight: '300px !important'
             }
         }}
-        deleteButtonProps={{
+        clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
+            key: 'copy',
+            showOnlyOnHover: true,
+            iconProps: {
+                iconName: 'Copy'
+            }
+        } : undefined}
+        deleteButtonProps={parameters.EnableDeleteButton?.raw === true ? {
             key: 'delete',
             showOnlyOnHover: true,
             iconProps: {
                 iconName: 'Delete'
             },
             onClick: (e, value) => { handleChange(null); }
-        }}
+        } : undefined}
         onChange={(e, option) => handleChange(option)}
     />;
 };

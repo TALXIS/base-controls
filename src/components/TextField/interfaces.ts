@@ -6,7 +6,6 @@ export interface ITextField extends IComponent<ITextFieldParameters, ITextFieldO
 }
 
 export interface ITextFieldParameters extends IInputParameters {
-    IsMultiLine?: ITwoOptionsProperty;
     isResizable?: ITwoOptionsProperty;
     value: IStringProperty;
 }

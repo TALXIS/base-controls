@@ -45,12 +45,13 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     }, []);
 
     return <ComboBox
-        componentRef={componentRef}
+        ref={componentRef}
         borderless={parameters.EnableBorder?.raw === false}
         options={comboBoxOptions}
         allowFreeInput={true}
         multiSelect
         autoComplete="on"
+        underlined={parameters.Underlined?.raw}
         autofill={parameters.AutoFocus?.raw === true ? {
             autoFocus: true
         }: undefined}
@@ -69,7 +70,14 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
                 maxHeight: '300px !important'
             }
         }}
-        deleteButtonProps={{
+        clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
+            key: 'copy',
+            showOnlyOnHover: true,
+            iconProps: {
+                iconName: 'Copy'
+            }
+        } : undefined}
+        deleteButtonProps={props.parameters.EnableDeleteButton?.raw === true ? {
             key: 'delete',
             showOnlyOnHover: false,
             iconProps: {
@@ -78,6 +86,6 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
             onClick: (e, value) => {
                 handleChange(null);
             }
-        }}
+        } : undefined}
         onChange={(e, option) => handleChange(option)} />;
 };
