@@ -1,6 +1,6 @@
-import { ICalendarProps } from "@fluentui/react/lib/components/Calendar/Calendar.types";
-import { IAutofill } from "@fluentui/react/lib/components/pickers/AutoFill/BaseAutoFill.types";
-import { useTheme } from "@fluentui/react/lib/utilities/ThemeProvider/useTheme";
+import { ICalendarProps } from "@fluentui/react";
+import { IAutofill } from "@fluentui/react";
+import { useTheme } from "@fluentui/react";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
 import { getDateTimeStyles } from "../styles";
