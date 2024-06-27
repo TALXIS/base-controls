@@ -35,12 +35,6 @@ export const Calendar = (props: IInternalCalendarProps) => {
         return dayjs(props.timePickerProps.defaultValue).format(props.timePickerProps.timeFormat);
     };
 
-    useEffect(() => {
-        //hack to focus the selected date for keyboard support
-        const day = document.querySelector('.ms-CalendarDay-daySelected') as HTMLButtonElement;
-        day?.focus();
-    }, [props]);
-
     return (
         <div className={styles.calendarCallout}>
             <CalendarBase {...props} />

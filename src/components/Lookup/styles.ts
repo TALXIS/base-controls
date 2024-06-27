@@ -42,28 +42,20 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
     const _height = getHeight(height);
     return mergeStyleSets({
         root: {
-            '[class*="TALXIS__tag-picker__search-btn"][class*="TALXIS__tag-picker__search-btn"]': {
-                top: 0,
-                bottom: 0,
-                margin: `auto 0`,
-                right: 5
-            },
-
             '[data-navigation-enabled="true"]': {
-                '> span > div > span': {
+                '.ms-Button-label': {
                     color: theme.semanticColors.link,
-                    cursor: 'pointer',
                 },
                 ':hover': {
                     textDecoration: 'underline',
                     cursor: 'pointer !important'
                 }
             },
-            '.ms-BasePicker-itemsWrapper .ms-CommandBar': {
+            '.ms-BasePicker-itemsWrapper .ms-CommandBar.ms-CommandBar': {
                 height: _height && isSingleSelect ? _height - 6 : undefined
             },
             '.ms-BasePicker-text': {
-                minHeight: _height ?? 36,
+                minHeight: _height ?? 32,
                 height: 'min-content',
                 paddingRight: !isSingleSelect ? 36 : undefined,
                 alignItems: 'baseline',
@@ -77,6 +69,9 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
                 '::after': {
                     inset: '0px !important'
                 }
+            },
+            '.TALXIS__input-buttons__root': {
+                height: _height && `${_height - 3}px !important`
             }
         },
         suggestions: {

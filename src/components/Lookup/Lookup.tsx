@@ -182,8 +182,7 @@ export const Lookup = (props: ILookup) => {
                                     styles: {
                                         root: {
                                             fontSize: 12,
-                                            width: 16,
-                                            color: `${theme.palette.black} !important`
+                                            width: 16
                                         }
                                     }
                                 },

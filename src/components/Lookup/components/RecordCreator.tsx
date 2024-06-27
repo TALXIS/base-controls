@@ -1,7 +1,7 @@
 
 //@ts-nocheck - typescript
 import { ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
-import { CommandBarButton } from "@fluentui/react/lib/components/Button/CommandBarButton/CommandBarButton";
+import { CommandBarButton } from "@fluentui/react";
 import { IEntity, ILookupTranslations } from "../interfaces";
 import { getLookupStyles } from "../styles";
 import { StringProps } from '../../../types';
