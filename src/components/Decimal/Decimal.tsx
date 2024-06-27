@@ -12,26 +12,21 @@ export const Decimal = (props: IDecimal) => {
     const boundValue = parameters.value;
     const numberFormatting = context.userSettings.numberFormattingInfo;
 
-    const formatter = (value: string | number | null): string | undefined => {
-        if (value == null) {
-            return undefined;
-        }
-        if (isNaN(value as number)) {
-            return value as string;
-        }
-        if (props.parameters.value.type === 'Decimal') {
-            return context.formatting.formatDecimal(parseFloat(value as string), boundValue.attributes?.Precision);
-        }
-        if (props.parameters.value.type === 'Currency') {
-            //the layer above has information about the symbol, so we can use the formatted string
-            if(props.parameters.value.formatted) {
-                return props.parameters.value.formatted;
-            }
-            if(typeof value === 'number') {
+    const formatter = (value: string | number | null): string | undefined | null => {
+        if (typeof value === 'number') {
+            if (props.parameters.value.type === 'Decimal') {
                 return context.formatting.formatDecimal(value, boundValue.attributes?.Precision);
             }
+            if (props.parameters.value.type === 'Currency') {
+                //the layer above has information about the symbol, so we can use the formatted string
+                if (props.parameters.value.formatted) {
+                    return props.parameters.value.formatted;
+                }
+                return context.formatting.formatDecimal(value, boundValue.attributes?.Precision);
+            }
+            return context.formatting.formatInteger(value);
         }
-        return context.formatting.formatInteger(parseInt(value as string));
+        return value;
     };
 
     const createNumberPattern = (pattern: string, numberPattern: string) => {
@@ -54,7 +49,7 @@ export const Decimal = (props: IDecimal) => {
         // It only tries to parse the number based on the current user format
         // This means that the value will also pass if the user inputs his own currency even though
         // the currency is different on the field
-        if(typeof str === 'number') {
+        if (typeof str === 'number') {
             return str;
         }
         str = str?.replace(/\s/g, '');

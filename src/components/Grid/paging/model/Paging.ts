@@ -22,7 +22,11 @@ export class Paging extends GridDependency {
     }
 
     public get pageLastRecordOrder() {
-        return this.pageNumber * this.pageSize;
+        const size = this.pageNumber * this.pageSize;
+        if(size > this.totalResultCount) {
+            return this.totalResultCount;
+        } 
+        return size;
     }
 
     public get isEnabled() {
