@@ -68,14 +68,23 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;
         for (let [key, outputValue] of Object.entries(outputs)) {
-            const parameterValue = parametersRef.current[key]?.raw;
+            let parameterValue = parametersRef.current[key]?.raw;
             if (!deepEqual(parameterValue, outputValue)) {
-                if(outputValue === "") {
-                    outputValue = null;
+                if(outputValue === null) {
+                    outputValue = undefined;
+                    //@ts-ignore
+                    outputs[key] = undefined;
                 }
-                // handles undefined X null
-                if (parameterValue == outputValue) {
-                    continue;
+                if(outputValue === "") {
+                    outputValue = undefined
+                    //@ts-ignore
+                    outputs[key] = undefined;
+                }
+                if(parameterValue === null) {
+                    parameterValue = undefined;
+                }
+                if(parameterValue === outputValue) {
+                    continue
                 }
                 isDirty = true;
                 break;

@@ -20,28 +20,30 @@ export const Duration = (props: IDuration) => {
 
     const formatter = (value: number | null) => {
         //all duration formatting should happen here
-        if (value === null) return null;
-        const durationInMilliseconds = value * 60000;
-        const units = value < 60 ? ['m'] : value >= 1440 ? ['d'] : ['h'];
-        const options = {
-            units: units,
-            maxDecimalPoints: 2,
-            language: language.slice(0, language.indexOf("-")),
-            decimal: context.userSettings.numberFormattingInfo.numberDecimalSeparator,
-            fallbacks: ["en"]
-        };
-        return humanizeDuration(durationInMilliseconds, options);
+        if (typeof value === 'number') {
+            const durationInMilliseconds = value * 60000;
+            const units = value < 60 ? ['m'] : value >= 1440 ? ['d'] : ['h'];
+            const options = {
+                units: units,
+                maxDecimalPoints: 2,
+                language: language.slice(0, language.indexOf("-")),
+                decimal: context.userSettings.numberFormattingInfo.numberDecimalSeparator,
+                fallbacks: ["en"]
+            };
+            return humanizeDuration(durationInMilliseconds, options);
+        }
+        return value;
     };
 
-    const valueExtractor = (str: string | null): number | undefined => {
+    const valueExtractor = (str: string | null): number | undefined | string => {
         //extraction of number of minutes from formatted string should happen here
-       // parsing because labels are string that represent array of strings
-        const minuteLabels= JSON.parse(labels.minute());
-        const minutesLabels= JSON.parse(labels.minutes());
-        const hourLabels= JSON.parse(labels.hour());
-        const hoursLabels= JSON.parse(labels.hours());
-        const dayLabels= JSON.parse(labels.day());
-        const daysLabels= JSON.parse(labels.days());
+        // parsing because labels are string that represent array of strings
+        const minuteLabels = JSON.parse(labels.minute());
+        const minutesLabels = JSON.parse(labels.minutes());
+        const hourLabels = JSON.parse(labels.hour());
+        const hoursLabels = JSON.parse(labels.hours());
+        const dayLabels = JSON.parse(labels.day());
+        const daysLabels = JSON.parse(labels.days());
         const minuteRegex = new RegExp("^(" + minuteLabels.join('|') + ")\\s|\\s(" + minuteLabels.join('|') + ")$|^(" + minutesLabels.join('|') + ")\\s|\\s(" + minutesLabels.join('|') + ")$", "i");
         const hourRegex = new RegExp("^(" + hourLabels.join('|') + ")\\s|\\s(" + hourLabels.join('|') + ")$|^(" + hoursLabels.join('|') + ")\\s|\\s(" + hoursLabels.join('|') + ")$", "i");
         const dayRegex = new RegExp("^(" + dayLabels.join('|') + ")\\s|\\s(" + dayLabels.join('|') + ")$|^(" + daysLabels.join('|') + ")\\s|\\s(" + daysLabels.join('|') + ")$", "i");
@@ -63,7 +65,7 @@ export const Duration = (props: IDuration) => {
             if (parsedNumber && !isNaN(parsedNumber)) {
                 return getDurationInMinutes(parsedNumber, unit);
             }
-            return NaN;
+            return str;
         }
         return undefined;
     };
@@ -95,50 +97,51 @@ export const Duration = (props: IDuration) => {
 
     const comboBoxOptions: IComboBoxOption[] = presetOptions();
 
-    const {value, labels, sizing, setValue, onNotifyOutputChanged} = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs, IDurationTranslations>('Duration', props, {
+    const { value, labels, sizing, setValue, onNotifyOutputChanged } = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs, IDurationTranslations>('Duration', props, {
         formatter: formatter,
         valueExtractor: valueExtractor,
         defaultTranslations: getDefaultDurationTranslations(),
     });
 
     return (
-            <ComboBox
-                borderless={parameters.EnableBorder?.raw === false}
-                underlined={parameters.Underlined?.raw}
-                options={comboBoxOptions}
-                allowFreeInput={true}
-                autoComplete='on'
-                autofill={parameters.AutoFocus?.raw === true ? {
-                    autoFocus: true
-                } : undefined}
-                readOnly={context.mode.isControlDisabled}
-                useComboBoxAsMenuWidth
-                errorMessage={boundValue.errorMessage}
-                text={value ?? ''}
-                styles={{
-                    root: {
-                        height: sizing.height,
-                        width: sizing.width,
-                        display: 'flex',
-                        alignItems: 'center',
-                    },
-                    callout: {
-                        height: 300
-                    }
-                }}
-                onInputValueChange={(text) => {
-                    setValue(text ?? '');
-                }}
-                onBlur={(event) => {
-                    onNotifyOutputChanged({
-                        value: valueExtractor(value)
-                    });
-                }}
-                onChange={(e, value) => {
-                    onNotifyOutputChanged({
-                        value: valueExtractor(value?.text ?? '')
-                    });
-                }}
-            />
+        <ComboBox
+            borderless={parameters.EnableBorder?.raw === false}
+            options={comboBoxOptions}
+            allowFreeInput={true}
+            autoComplete='on'
+            autofill={parameters.AutoFocus?.raw === true ? {
+                autoFocus: true
+            } : undefined}
+            readOnly={context.mode.isControlDisabled}
+            useComboBoxAsMenuWidth
+            errorMessage={boundValue.errorMessage}
+            text={value ?? ''}
+            styles={{
+                root: {
+                    height: sizing.height,
+                    width: sizing.width,
+                    display: 'flex',
+                    alignItems: 'center',
+                },
+                callout: {
+                    height: 300
+                }
+            }}
+            onInputValueChange={(text) => {
+                setValue(text ?? '');
+            }}
+            onBlur={(event) => {
+                onNotifyOutputChanged({
+                    //any is needed here because we can return string in case of error values
+                    value: valueExtractor(value) as any
+                });
+            }}
+            onChange={(e, value) => {
+                onNotifyOutputChanged({
+                    //any is needed here because we can return string in case of error values
+                    value: valueExtractor(value?.text ?? '') as any
+                });
+            }}
+        />
     );
 };

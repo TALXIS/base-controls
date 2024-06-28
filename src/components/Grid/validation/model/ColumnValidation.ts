@@ -10,7 +10,7 @@ import { Grid } from "../../core/model/Grid";
 export class ColumnValidation extends GridDependency {
     private _column: IGridColumn;
     private _forceNullCheck: boolean;
-    
+
     constructor(grid: Grid, column: IGridColumn, forceNullCheck?: boolean) {
         super(grid);
         this._column = column;
@@ -18,23 +18,22 @@ export class ColumnValidation extends GridDependency {
     }
     public validate(value: any): [boolean, string] {
         const isNull = this._isNull(value);
-        if((this._column.isRequired || this._forceNullCheck)) {
-            if(isNull) {
+        if ((this._column.isRequired || this._forceNullCheck)) {
+            if (isNull) {
                 return [false, this._labels["validation-input-value"]()]
             }
         }
         //can be null
-        else if(isNull) {
+        else if (isNull) {
             return [true, ""]
         }
         switch (this._column.dataType) {
             case DataType.WHOLE_NONE:
             case DataType.DECIMAL:
             case DataType.CURRENCY:
-            {
-                value = `${value}`;
-                if (!isNumeric(value)) {
-                    return [false, 'Invalid input!'];
+            case DataType.WHOLE_DURATION: {
+                if (typeof value === 'string') {
+                    return [false, this._labels["validation-number"]()]
                 }
                 break;
             }
@@ -55,13 +54,13 @@ export class ColumnValidation extends GridDependency {
             case DataType.DATE_AND_TIME_DATE_AND_TIME:
             case DataType.DATE_AND_TIME_DATE_ONLY: {
                 const date = dayjs(value);
-                if(!date.isValid()) {
+                if (!date.isValid()) {
                     return [false, this._labels["validation-date"]()]
                 }
                 break;
             }
             default: {
-                if(!value) {
+                if (!value) {
                     return [false, this._labels["validation-input-value"]()]
                 }
             }
@@ -69,7 +68,13 @@ export class ColumnValidation extends GridDependency {
         return [true, ""];
     }
     private _isNull(value: any) {
-        if(!value) {
+        if(value === undefined) {
+            return true;
+        }
+        if (value === null) {
+            return true;
+        }
+        if(value === "") {
             return true;
         }
         if(value?.length === 0) {
