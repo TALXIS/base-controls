@@ -30,7 +30,7 @@ export const DateTime = (componentProps: IDateTime) => {
             <DatePicker
                 className={styles.datePicker}
                 underlined={parameters.Underlined?.raw}
-                ref={datePickerRef}
+                componentRef={datePickerRef}
                 keepCalendarOpenAfterDaySelect={isDateTime}
                 allowTextInput
                 calendarProps={{

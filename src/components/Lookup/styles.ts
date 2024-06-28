@@ -45,6 +45,8 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
             '[data-navigation-enabled="true"]': {
                 '.ms-Button-label': {
                     color: theme.semanticColors.link,
+                    fontWeight: 600,
+                    marginLeft: 2
                 },
                 ':hover': {
                     textDecoration: 'underline',
@@ -63,12 +65,6 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
                 'input': {
                     alignSelf: 'center'
                 },
-                '.hover-only': {
-                    animationName: 'none'
-                },
-                '::after': {
-                    inset: '0px !important'
-                }
             },
             '.TALXIS__input-buttons__root': {
                 height: _height && `${_height - 3}px !important`

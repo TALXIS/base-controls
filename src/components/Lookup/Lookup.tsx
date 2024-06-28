@@ -43,7 +43,9 @@ export const Lookup = (props: ILookup) => {
     useEffect(() => {
         const onKeyPress = (ev: KeyboardEvent) => {
             if (ev.key === 'Backspace') {
+                console.log(componentRef)
                 const picker = ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]');
+                console.log(ref.current);
                 if ((document.activeElement === picker) && value.length === 1) {
                     records.select(undefined);
                     setTimeout(() => {
@@ -68,7 +70,7 @@ export const Lookup = (props: ILookup) => {
     const focus = () => {
         if(componentRef.current?.items?.length === itemLimit) {
             //@ts-ignore
-            ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]').focus();
+            ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]')?.focus();
             return;
         }
         componentRef.current?.focusInput();
@@ -119,7 +121,7 @@ export const Lookup = (props: ILookup) => {
     return (
         <div className={styles.root} ref={ref}>
                 <TagPicker
-                    componentRef={componentRef}
+                    ref={componentRef}
                     underlined={props.parameters.Underlined?.raw}
                     resolveDelay={200}
                     stackItems={itemLimit === 1}
@@ -143,7 +145,7 @@ export const Lookup = (props: ILookup) => {
                             }
                         </>
                     }}
-                    transparent={!isComponentActive() && itemLimit === 1}
+                    transparent={itemLimit === 1}
                     onChange={(items) => {
                         records.select(items?.map(item => {
                             return {
