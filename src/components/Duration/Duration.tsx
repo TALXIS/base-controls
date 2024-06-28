@@ -107,6 +107,7 @@ export const Duration = (props: IDuration) => {
         <ComboBox
             borderless={parameters.EnableBorder?.raw === false}
             options={comboBoxOptions}
+            underlined={parameters.Underlined?.raw}
             allowFreeInput={true}
             autoComplete='on'
             autofill={parameters.AutoFocus?.raw === true ? {
