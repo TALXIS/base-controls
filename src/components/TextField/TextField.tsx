@@ -14,6 +14,8 @@ export const TextField = (props: ITextField) => {
     const {value, sizing, setValue, onNotifyOutputChanged} = useInputBasedComponent<string | undefined, ITextFieldParameters, ITextFieldOutputs, ITextFieldTranslations>('TextField', props);
     const [height] = useTextFieldHeight(ref, sizing.height, isMultiline);
 
+    console.log(context);
+
     return (
         <TextFieldBase
             underlined={parameters.Underlined?.raw}

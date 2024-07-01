@@ -35,6 +35,7 @@ export const TwoOptions = (props: ITwoOptions) => {
     }}
     checked={boundValue.raw}
     componentRef={componentRef}
+    disabled={context.mode.isControlDisabled}
     inlineLabel
     onText={options.find(option=>option.Value ===1)?.Label || 'Yes'}
     offText={options.find(option=>option.Value ===0)?.Label || 'No'}

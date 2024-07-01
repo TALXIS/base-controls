@@ -32,6 +32,7 @@ export const DateTime = (componentProps: IDateTime) => {
                 underlined={parameters.Underlined?.raw}
                 componentRef={datePickerRef}
                 keepCalendarOpenAfterDaySelect={isDateTime}
+                readOnly={context.mode.isControlDisabled}
                 allowTextInput
                 calendarProps={{
                     //needs to be here as the internal picker does not call the function passed in calendarAs

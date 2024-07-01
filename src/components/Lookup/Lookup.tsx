@@ -123,6 +123,7 @@ export const Lookup = (props: ILookup) => {
                 <TagPicker
                     ref={componentRef}
                     underlined={props.parameters.Underlined?.raw}
+                    readOnly={context.mode.isControlDisabled}
                     resolveDelay={200}
                     stackItems={itemLimit === 1}
                     errorMessage={props.parameters.value.errorMessage}
