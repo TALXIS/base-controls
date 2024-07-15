@@ -1,6 +1,5 @@
-import isNumeric from "validator/lib/isNumeric";
-import isEmail from "validator/lib/isEmail";
-import isURL from "validator/lib/isURL";
+import isEmail from "validator/es/lib/isEmail";
+import isURL from "validator/es/lib/isURL";
 import dayjs from "dayjs";
 import { DataType } from "../../core/enums/DataType";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";

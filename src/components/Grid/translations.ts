@@ -1,6 +1,4 @@
-import { IGridTranslations } from "./interfaces";
-
-export const gridTranslations: IGridTranslations = {
+export const gridTranslations = {
     "condition-none": { 1029: "Žádná", 1033: "None" },
     "condition-equal": { 1029: "Je rovno", 1033: "Equals" },
     "condition-notequal": { 1029: "Není rovno", 1033: "Does not equal" },

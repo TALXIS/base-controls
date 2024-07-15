@@ -1,8 +1,8 @@
 import { IMultiSelectOptionSetProperty } from "../../interfaces";
-import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
-import { IBaseParameters, IInputParameters } from "../../interfaces/parameters";
+import { IComponent, IOutputs } from "../../interfaces/context";
+import { IInputParameters } from "../../interfaces/parameters";
 
-export interface IMultiSelectOptionSet extends IComponent<IMultiSelectOptionSetParameters, IMultiSelectOptionSetOutputs, ITranslations> {
+export interface IMultiSelectOptionSet extends IComponent<IMultiSelectOptionSetParameters, IMultiSelectOptionSetOutputs, any> {
 }
 
 export interface IMultiSelectOptionSetParameters extends IInputParameters {

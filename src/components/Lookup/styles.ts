@@ -44,7 +44,7 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
         root: {
             '[data-navigation-enabled="true"]': {
                 '.ms-Button-label': {
-                    color: theme.semanticColors.link,
+                    color: `${theme.semanticColors.link} !important`,
                     fontWeight: 600,
                     marginLeft: 2
                 },

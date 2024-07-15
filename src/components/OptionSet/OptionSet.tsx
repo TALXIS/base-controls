@@ -1,12 +1,12 @@
 
 import { IOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
-import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
+import { ComboBox } from "@talxis/react-components";
 import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import React, { useEffect, useRef } from 'react';
 
 export const OptionSet = (props: IOptionSet) => {
-    const { sizing, onNotifyOutputChanged } = useComponent('OptionSet', props);
+    const { sizing, onNotifyOutputChanged, theme} = useComponent('OptionSet', props);
     const componentRef = useRef<IComboBox>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -34,15 +34,16 @@ export const OptionSet = (props: IOptionSet) => {
     }, []);
 
     return <ComboBox
-        ref={componentRef}
-        underlined={parameters.Underlined?.raw}
-        borderless={parameters.EnableBorder?.raw === false}
+        componentRef={componentRef}
+        theme={theme}
+        underlined={theme.effects.underlined}
         options={comboBoxOptions}
         readOnly={context.mode.isControlDisabled}
         //the defaultValue comes in the raw prop directly, no need to look at it
         selectedKey={boundValue.raw?.toString() ?? -1}
         errorMessage={boundValue.errorMessage}
         useComboBoxAsMenuWidth
+        hideErrorMessage={!parameters.ShowErrorMessage?.raw}
         styles={{
             root: {
                 height: sizing.height,

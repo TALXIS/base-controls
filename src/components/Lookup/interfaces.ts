@@ -1,8 +1,9 @@
 import { ILookupProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
 import { IBaseParameters } from "../../interfaces/parameters";
+import { lookupTranslations } from "./translations";
 
-export interface ILookup extends IComponent<ILookupParameters, ILookupOutputs, ILookupTranslations> {
+export interface ILookup extends IComponent<ILookupParameters, ILookupOutputs, Partial<ITranslations<typeof lookupTranslations>>> {
     /**
      * If provided, the Lookup will use the returned values of this function to display search results.
      * @param {any} entityNames An array of entity names that he Lookup is currently targeting.
@@ -22,16 +23,6 @@ export interface ILookupParameters extends IBaseParameters {
 export interface ILookupOutputs extends IOutputs {
     value?: ComponentFramework.LookupValue[]
 }
-
-export interface ILookupTranslations extends ITranslations {
-    search: {[LCID: number]: string};
-    newRecord: {[LCID: number]: string};
-    searching: {[LCID: number]: string};
-    noRecordsFound: {[LCID: number]: string};
-    resultsFrom: {[LCID: number]: string};
-    noName: {[LCID: number]: string};
-}
-
 export interface IMetadata extends ComponentFramework.PropertyHelper.EntityMetadata {
     DisplayName: string;
     PrimaryNameAttribute: string;

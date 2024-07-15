@@ -14,8 +14,6 @@ export interface IComponent<TParameters, TOutputs, TTranslations> {
     onNotifyOutputChanged?: (outputs: TOutputs) => void;
 }
 
-export interface ITranslations {
-    [key: string]: {
-        [LCID: number]: string | string[]
-    } | undefined
+export type ITranslations<T> = {
+    [Property in keyof T]: T[Property] extends string[] ? string[] : string
 }

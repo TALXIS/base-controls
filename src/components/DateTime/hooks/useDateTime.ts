@@ -1,27 +1,30 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { useInputBasedComponent } from "../../../hooks/useInputBasedComponent";
-import { IDateTime, IDateTimeOutputs, IDateTimeParameters, IDateTimeTranslations } from "../interfaces";
+import { IDateTime, IDateTimeOutputs, IDateTimeParameters} from "../interfaces";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "../translations";
-import { StringProps } from "../../../types";
+import { ITheme, ITranslation } from "../../../hooks";
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
 export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElement>): [
-    Date | undefined,
-    string | undefined,
     boolean,
+    ITheme,
+    ITranslation<Required<IDateTime>['translations']>,
+    {
+        get: () => Date | undefined;
+        getFormatted: () => string | undefined;
+        set: (date?: Date, time?: string) => void;
+        setDateString: (value: string | undefined) => void;
+        clear: () => void;
+    },
     {
         shortDatePattern: string
         shortTimePattern: string;
+        fullDateTimePattern: string;
     },
-    Required<StringProps<IDateTimeTranslations>>,
-    (value: string | undefined) => void,
-    (date: Date | undefined, time?: string) => void,
-    () => void
-
 ] => {
 
     const boundValue = props.parameters.value;
@@ -29,6 +32,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const behavior = boundValue.attributes.Behavior;
     const format = boundValue.attributes.Format;
     const dateFormattingInfo = context.userSettings.dateFormattingInfo;
+    const lastValidDateRef = useRef<Date | undefined>(undefined);
     
     const isDateTime = (() => {
         switch (format) {
@@ -54,35 +58,24 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         return shortDatePattern;
     })();
 
-    const formatDate = (date: Date | undefined | null | string): string | undefined => {
-        if (date == undefined) {
-            return undefined;
-        }
-        if (typeof date === 'string') {
-            const dayjsDate = dayjs(date, formatting);
-            //error situation
-            if (!dayjsDate.isValid()) {
-                return date;
+    const formatDate = (date: Date | undefined | null | string): string | undefined | null => {
+        if (date instanceof Date) {
+            if (isDateTime) {
+                //should handle the time zone conversion
+                return context.formatting.formatTime(date, behavior);
             }
-            date = dayjsDate.toDate();
+            return context.formatting.formatDateShort(date);
         }
-        if (isDateTime) {
-            //should handle the time zone conversion
-            return context.formatting.formatTime(date, behavior);
-        }
-        return context.formatting.formatDateShort(date);
+        return date;
     };
 
-    const {value, labels, setValue, onNotifyOutputChanged} = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations>('DateTime', props, {
+    const {value, labels, theme, setValue, onNotifyOutputChanged} = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
         formatter: formatDate,
         defaultTranslations: getDefaultDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
     });
 
     useEffect(() => {
         const onBlur = () => {
-            if (formatDate(boundValue.raw) === value) {
-                return;
-            }
             onNotifyOutputChanged({
                 value: dateExtractor(value!) as any
             });
@@ -94,6 +87,12 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         };
     }, [value]);
 
+    useEffect(() => {
+        if (boundValue.raw instanceof Date) {
+            lastValidDateRef.current = boundValue.raw;
+        }
+    }, [boundValue.raw]);
+
     const getDate = (): Date | undefined => {
         if (boundValue.raw instanceof Date) {
             if (behavior === 3) {
@@ -104,7 +103,9 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             }
             return boundValue.raw;
         }
-        //this scenario should only happen in cases of error or null value
+        if(boundValue.error) {
+            return lastValidDateRef.current;
+        }
         return undefined;
     };
 
@@ -112,7 +113,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         if (value instanceof Date) {
             return value;
         }
-        const dayjsDate = dayjs(value, formatting);
+        const dayjsDate = dayjs(value, formatting, true);
         if (!dayjsDate.isValid()) {
             return value;
         }
@@ -127,18 +128,36 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const selectDate = (date?: Date, time?: string) => {
         let dayjsDate = dayjs(date ?? getDate());
-        let _time = time;
         //date selected from calendar, keep the original time
-        if (!_time) {
-            _time = dayjs(getDate()).format('HH:mm');
+        if (!time) {
+            time = dayjs(getDate()).format(shortTimePattern);
         }
-        const [hours, minutes] = _time.split(':');
-        dayjsDate = dayjsDate.hour(parseInt(hours));
-        dayjsDate = dayjsDate.minute(parseInt(minutes));
+        const dayjsTime = dayjs(time, shortTimePattern, true);
+        let invalidDateString;
+        if(!dayjsTime.isValid()) {
+            invalidDateString = `${dayjsDate.format(shortDatePattern)} ${time}`
+        }
+        dayjsDate = dayjsDate.hour(dayjsTime.hour());
+        dayjsDate = dayjsDate.minute(dayjsTime.minute());
         onNotifyOutputChanged({
-            value: dayjsDate.toDate()
+            value: dateExtractor(invalidDateString ?? dayjsDate.toDate()) as any
         });
     };
-
-    return [getDate(), value, isDateTime, { shortDatePattern, shortTimePattern }, labels, setValue, selectDate, clearDate];
+    return [
+        isDateTime,
+        theme,
+        labels,
+        {
+            get: getDate,
+            clear: clearDate,
+            getFormatted: () => value,
+            set: selectDate,
+            setDateString: setValue
+        },
+        {
+            shortDatePattern: shortDatePattern,
+            shortTimePattern: shortTimePattern,
+            fullDateTimePattern: `${shortDatePattern} ${shortTimePattern}`
+        }
+    ]
 };

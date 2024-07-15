@@ -1,8 +1,7 @@
 import { IDatasetProperty } from "../../../../interfaces";
-import { StringProps } from "../../../../types";
 import { RIBBON_COLUMN_KEY } from "../../constants";
 import { Filtering } from "../../filtering/model/Filtering";
-import { IEntityColumn, IEntityRecord, IGrid, IGridTranslations } from "../../interfaces";
+import { IEntityColumn, IEntityRecord, IGrid } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
@@ -17,7 +16,8 @@ export class Grid {
     private _pcfContext: ComponentFramework.Context<any>;
     private _columns: IGridColumn[] = [];
     private _records: IEntityRecord[] = [];
-    private _labels: Required<StringProps<IGridTranslations>>;
+    //TODO: fix
+    private _labels: any;
     private _shouldRerender: boolean = false;
     //TODO: the dependencies might not have fully loaded grid
     //need to make sure that the grid is initialized before creating them
@@ -29,7 +29,7 @@ export class Grid {
         selection: Selection,
         paging: Paging
     };
-    constructor(props: IGrid, labels: Required<StringProps<IGridTranslations>>) {
+    constructor(props: IGrid, labels: any) {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;

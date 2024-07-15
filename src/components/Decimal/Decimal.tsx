@@ -1,12 +1,15 @@
-import { TextField } from "@talxis/react-components/dist/components/TextField";
+import { TextField } from "@talxis/react-components";
 import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
-import { IDecimal, IDecimalOutputs, IDecimalParameters, IDecimalTranslations } from "./interfaces";
-import React, { useEffect } from "react";
+import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
+import React, { useEffect, useMemo, useRef } from "react";
 import numeral from "numeral";
 import { Numeral } from "../../utils/Numeral";
 import { CURRENCY_NEGATIVE_PATTERN, CURRENCY_POSITIVE_PATTERN, NUMBER_NEGATIVE_PATTERN } from "../../constants";
+import { ICommandBarItemProps } from "@fluentui/react";
+import { ArrowButtons, IArrowButtons } from "./components/ArrowButtons";
 
 export const Decimal = (props: IDecimal) => {
+    const arrowButtonsRef = useRef<IArrowButtons>(null);
     const context = props.context;
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -22,7 +25,7 @@ export const Decimal = (props: IDecimal) => {
                 if (props.parameters.value.formatted) {
                     return props.parameters.value.formatted;
                 }
-                return context.formatting.formatDecimal(value, boundValue.attributes?.Precision);
+                return context.formatting.formatCurrency(value, boundValue.attributes?.Precision);
             }
             return context.formatting.formatInteger(value);
         }
@@ -44,15 +47,15 @@ export const Decimal = (props: IDecimal) => {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     };
 
-    const extractNumericPart = (str: any): number | undefined => {
+    const extractNumericPart = (value: any): number | undefined => {
         // Currency control just sends the string up and lets the framework decide whether the value is correct
         // It only tries to parse the number based on the current user format
         // This means that the value will also pass if the user inputs his own currency even though
         // the currency is different on the field
-        if (typeof str === 'number') {
-            return str;
+        if (typeof value === 'number') {
+            return value
         }
-        str = str?.replace(/\s/g, '');
+        const str = value?.replace(/\s/g, '');
         Numeral.decimal(numberFormatting);
         let positivePattern: any;
         let negativePattern: any;
@@ -88,20 +91,86 @@ export const Decimal = (props: IDecimal) => {
             }
             return value;
         }
-        return str; // Return undefined if no numeric part is extracted
+        return value;
     };
 
-
-
-    const { value, sizing, setValue, onNotifyOutputChanged } = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs, IDecimalTranslations>('Decimal', props, {
+    const { value, sizing, theme, setValue, onNotifyOutputChanged } = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs, any>('Decimal', props, {
         formatter: formatter,
         valueExtractor: extractNumericPart
     });
 
+    const getSuffixItems = (): ICommandBarItemProps[] | undefined => {
+        if(context.mode.isControlDisabled || parameters.EnableSpinButton?.raw === false) {
+            return undefined;
+        }
+        return [
+            {
+                key: 'arrows',
+                onRender: () => <ArrowButtons
+                    ref={arrowButtonsRef} 
+                    onDecrement={() => makeStep('decrement')} 
+                    onIncrement={() => makeStep('increment')}  />
+            }
+        ]
+    }
+
+    const makeStep = (type: 'increment' | 'decrement') => {
+        const value = boundValue.raw ?? 0;
+        if(typeof value !== 'number') {
+            return;
+        }
+        const precision = Math.pow(10, boundValue.attributes?.Precision ?? 0);
+        const adjustment = type === 'increment' ? 1 : -1;
+        const newValue = parseFloat(((value) + adjustment / precision).toFixed(boundValue.attributes?.Precision ?? 0));
+        onNotifyOutputChanged({value: newValue });
+
+    }
+
+    const onKeyDown = (e:  React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        if(context.mode.isControlDisabled) {
+            return;
+        }
+        switch(e.key) {
+            case 'ArrowDown': {
+                e.preventDefault();
+                makeStep('decrement');
+                arrowButtonsRef.current?.setActiveBtn('down');
+                break;
+            }
+            case 'ArrowUp': {
+                e.preventDefault();
+                makeStep('increment');
+                arrowButtonsRef.current?.setActiveBtn('up');
+                break;
+            }
+        }
+    }
+
+    const getInputMode = () => {
+        switch(props.parameters.value.type) {
+            case 'Whole.None': {
+                return 'numeric';
+            }
+            case 'Decimal':
+            case 'Currency': {
+                return 'decimal';
+            }
+        }
+    }
+    useEffect(() => {
+        if(boundValue.type === 'Currency') {
+            setValue(boundValue.formatted);
+        }
+    }, [boundValue.formatted]);
+
     return (
         <TextField
-            underlined={props.parameters.Underlined?.raw}
+            underlined={theme.effects.underlined}
+            theme={theme}
+            hideErrorMessage={!parameters.ShowErrorMessage?.raw}
             readOnly={context.mode.isControlDisabled}
+            inputMode={useMemo(() => getInputMode(), [props.parameters.value.type])}
+            suffixItems={getSuffixItems()}
             autoFocus={parameters.AutoFocus?.raw}
             borderless={parameters.EnableBorder?.raw === false}
             errorMessage={boundValue.errorMessage}
@@ -143,6 +212,7 @@ export const Decimal = (props: IDecimal) => {
             onChange={(e, value) => {
                 setValue(value);
             }}
+            onKeyDown={onKeyDown}
         />
     );
 };

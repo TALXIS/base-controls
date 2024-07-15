@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import { GridContext } from "../../Grid"
+import { GridContext } from "../../GridContext";
 import { Grid } from "../model/Grid";
 
 export const useGridInstance = (): Grid => {

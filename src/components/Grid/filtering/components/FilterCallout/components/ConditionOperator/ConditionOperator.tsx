@@ -1,4 +1,4 @@
-import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
+import { ComboBox } from "@talxis/react-components";
 import { DataType } from '../../../../../core/enums/DataType';
 import { IComboBoxOption } from '@fluentui/react';
 import { FilteringUtils } from '../../../../utils/FilteringUtilts';

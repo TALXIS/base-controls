@@ -1,7 +1,7 @@
-import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
+import { ComboBox } from "@talxis/react-components";
 import React, { useEffect } from 'react';
 import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
-import { IDuration, IDurationOutputs, IDurationParameters, IDurationTranslations } from './interfaces';
+import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBoxOption } from '@fluentui/react';
 import { durationOptions } from '../../sandbox/shared/durationList';
 import { UserSettings } from '../../sandbox/mock/UserSettings';
@@ -97,7 +97,7 @@ export const Duration = (props: IDuration) => {
 
     const comboBoxOptions: IComboBoxOption[] = presetOptions();
 
-    const { value, labels, sizing, setValue, onNotifyOutputChanged } = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs, IDurationTranslations>('Duration', props, {
+    const { value, labels, sizing, setValue, onNotifyOutputChanged, theme } = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs,  Required<IDuration>['translations']>('Duration', props, {
         formatter: formatter,
         valueExtractor: valueExtractor,
         defaultTranslations: getDefaultDurationTranslations(),
@@ -105,9 +105,10 @@ export const Duration = (props: IDuration) => {
 
     return (
         <ComboBox
-            borderless={parameters.EnableBorder?.raw === false}
             options={comboBoxOptions}
-            underlined={parameters.Underlined?.raw}
+            hideErrorMessage={!parameters.ShowErrorMessage?.raw}
+            underlined={theme.effects.underlined}
+            theme={theme}
             allowFreeInput={true}
             autoComplete='on'
             autofill={parameters.AutoFocus?.raw === true ? {

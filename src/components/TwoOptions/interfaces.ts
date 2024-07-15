@@ -1,8 +1,8 @@
 import { ITwoOptionsProperty } from "../../interfaces";
-import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
+import { IComponent, IOutputs } from "../../interfaces/context";
 import { IBaseParameters } from "../../interfaces/parameters";
 
-export interface ITwoOptions extends IComponent<ITwoOptionsParameters, ITwoOptionsOutputs, ITwoOptionsTranslations> {
+export interface ITwoOptions extends IComponent<ITwoOptionsParameters, ITwoOptionsOutputs, any> {
 }
 
 export interface ITwoOptionsParameters extends IBaseParameters {
@@ -11,7 +11,4 @@ export interface ITwoOptionsParameters extends IBaseParameters {
 
 export interface ITwoOptionsOutputs extends IOutputs {
     value?: boolean;
-}
-export interface ITwoOptionsTranslations extends ITranslations {
-
 }

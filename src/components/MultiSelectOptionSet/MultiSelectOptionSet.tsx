@@ -1,12 +1,12 @@
 
 import { IMultiSelectOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
-import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
+import { ComboBox } from "@talxis/react-components";
 import { IComboBox, IComboBoxOption } from '@fluentui/react';
 import React, { useEffect, useRef } from 'react';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
-    const {sizing, onNotifyOutputChanged} = useComponent('MultiSelectOptionSet', props);
+    const {sizing, onNotifyOutputChanged, theme} = useComponent('MultiSelectOptionSet', props);
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const componentRef = useRef<IComboBox>(null);
@@ -45,13 +45,13 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     }, []);
 
     return <ComboBox
-        ref={componentRef}
-        borderless={parameters.EnableBorder?.raw === false}
+        componentRef={componentRef}
         options={comboBoxOptions}
         allowFreeInput={true}
         multiSelect
         autoComplete="on"
-        underlined={parameters.Underlined?.raw}
+        theme={theme}
+        underlined={theme.effects.underlined}
         autofill={parameters.AutoFocus?.raw === true ? {
             autoFocus: true
         }: undefined}
@@ -59,6 +59,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         errorMessage={boundValue.errorMessage}
         selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : [-1]}
         useComboBoxAsMenuWidth
+        hideErrorMessage={!parameters.ShowErrorMessage?.raw}
         styles={{
             root: {
                 height: sizing.height,

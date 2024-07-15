@@ -13,7 +13,11 @@ export interface IInputParameters extends IBaseParameters {
     NotifyOutputChangedOnUnmount?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableCopyButton?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableDeleteButton?: Omit<ITwoOptionsProperty, 'attributes'>;
-    Underlined?: Omit<ITwoOptionsProperty, 'attributes'>
+    /**
+     * Shows the error message within the control. By default, the error is represented only by red outline.
+     */
+    ShowErrorMessage?: Omit<ITwoOptionsProperty, 'attributes'>;
+
 }
 
 export interface IBaseParameters extends IParameters {

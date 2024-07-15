@@ -1,27 +1,27 @@
 
 import { IDateTime } from "./interfaces";
-import { IDatePicker, useTheme } from "@fluentui/react";
+import { IDatePicker } from "@fluentui/react";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
-import dayjs from 'dayjs';
 import { Calendar } from "./components/Calendar";
-import { DatePicker } from "@talxis/react-components/dist/components/DatePicker";
+import { DatePicker } from "@talxis/react-components";
 import React from 'react';
 import { useComponentSizing } from "../../hooks/useComponentSizing";
+import dayjs from "dayjs";
 
 export const DateTime = (componentProps: IDateTime) => {
     const ref = useRef<HTMLDivElement>(null);
     const datePickerRef = useRef<IDatePicker>(null);
-    const theme = useTheme();
-    const styles = getDateTimeStyles(theme);
     const context = componentProps.context;
     const parameters = componentProps.parameters;
-    const [date, stringDate, isDateTime, patterns, labels, setStringDate, selectDate, clearDate] = useDateTime(componentProps, ref);
-    const {height, width} = useComponentSizing(componentProps.context.mode);
+    const [isDateTime, theme, labels, date, patterns] = useDateTime(componentProps, ref);
+    const styles = getDateTimeStyles(theme);
+    const { height, width } = useComponentSizing(componentProps.context.mode);
+    const lastInputedTimeString = useRef<string>();
 
     useEffect(() => {
-        if(componentProps.parameters.AutoFocus?.raw === true) {
+        if (componentProps.parameters.AutoFocus?.raw === true) {
             datePickerRef.current?.showDatePickerPopup();
         }
     }, []);
@@ -29,20 +29,23 @@ export const DateTime = (componentProps: IDateTime) => {
         <div ref={ref}>
             <DatePicker
                 className={styles.datePicker}
-                underlined={parameters.Underlined?.raw}
+                theme={theme}
+                underlined={theme.effects.underlined}
                 componentRef={datePickerRef}
+                hideErrorMessage={!parameters.ShowErrorMessage?.raw}
                 keepCalendarOpenAfterDaySelect={isDateTime}
                 readOnly={context.mode.isControlDisabled}
                 allowTextInput
                 calendarProps={{
                     //needs to be here as the internal picker does not call the function passed in calendarAs
-                    onSelectDate: (date) => selectDate(date),
+                    onSelectDate: (newDate) => date.set(newDate),
                 }}
                 // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
                 minDate={new Date('1753-01-01T00:00:00.000Z')}
                 firstDayOfWeek={componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek}
                 calendarAs={(props) =>
                     <Calendar {...props}
+                        theme={theme}
                         strings={{
                             goToToday: labels.goToToday(),
                             days: JSON.parse(labels.days()),
@@ -51,29 +54,47 @@ export const DateTime = (componentProps: IDateTime) => {
                             shortMonths: JSON.parse(labels.shortMonths())
                         }}
                         timePickerProps={{
-                            underlined: parameters.Underlined?.raw,
+                            theme: theme,
+                            underlined: theme.effects.underlined,
+                            dateTimeFormat: patterns.fullDateTimePattern,
                             autoComplete: "off",
                             autoCapitalize: "off",
                             timeFormat: patterns.shortTimePattern,
                             label: labels.time(),
-                            visible: isDateTime && !parameters.value.errorMessage,
+                            visible: isDateTime,
+                            errorMessage: labels.invalidTimeInput(),
+                            lastInputedTimeString: lastInputedTimeString.current,
                             useHour12: patterns.shortTimePattern.endsWith('A'),
-                            onChange: (e, date) => selectDate(undefined, dayjs(date).format('HH:mm')),
-                            defaultValue: date,
+                            onChange: (time) => {
+                                date.set(undefined, time);
+                                lastInputedTimeString.current = time;
+                            },
+                            value: date.get(),
+                            formattedDateTime: date.getFormatted() ?? "",
                             strings: {
                                 invalidInputErrorMessage: labels.invalidTimeInput()
                             }
                         }} />
                 }
+                errorMessage={parameters.value.errorMessage}
                 textField={{
-                    value: stringDate ?? "",
-                    onChange: (e, value) => setStringDate(value),
+                    theme: theme,
+                    underlined: theme.effects.underlined,
+                    value: date.getFormatted() ?? "",
+                    onChange: (e, value) => {
+                        if(isDateTime) {
+                            const datePart = dayjs(value, patterns.shortDatePattern).format(patterns.shortDatePattern);
+                            const time = value?.split(datePart).pop()?.substring(1);
+                            console.log(time)
+                            lastInputedTimeString.current = time;
+                        }
+                        date.setDateString(value)
+                    },
                     placeholder: '---',
                     onNotifyValidationResult: () => null,
                     noValidate: true,
                     borderless: parameters.EnableBorder?.raw === false,
-                    errorMessage: parameters.value.errorMessage,
-                    styles:{
+                    styles: {
                         fieldGroup: {
                             height: height,
                             width: width
@@ -82,7 +103,7 @@ export const DateTime = (componentProps: IDateTime) => {
                     //@ts-ignore - TODO: fix types in shared components
                     deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
                         key: 'Delete',
-                        onClick: clearDate,
+                        onClick: date.clear,
                         showOnlyOnHover: true,
                         iconProps: {
                             iconName: 'Cancel'
@@ -98,8 +119,9 @@ export const DateTime = (componentProps: IDateTime) => {
                 }
                 }
                 //undefined will break the calendar => it wont reflect date change in it's UI
-                value={date ?? new Date()}
+                value={date.get() ?? new Date()}
             />
         </div>
     );
 };
+

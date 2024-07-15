@@ -1,6 +1,4 @@
-import { IDateTimeTranslations } from "./interfaces";
-
-export const getDefaultDateTimeTranslations = (dateFormattingInfo: ComponentFramework.UserSettingApi.DateFormattingInfo): Required<IDateTimeTranslations> => {
+export const getDefaultDateTimeTranslations = (dateFormattingInfo: ComponentFramework.UserSettingApi.DateFormattingInfo) => {
     return {
         time: {
             1029: 'Čas',
@@ -18,5 +16,5 @@ export const getDefaultDateTimeTranslations = (dateFormattingInfo: ComponentFram
         months: dateFormattingInfo.monthNames,
         shortDays: dateFormattingInfo.shortestDayNames,
         shortMonths: dateFormattingInfo.abbreviatedMonthNames,
-    };
+    }
 };

@@ -1,23 +1,16 @@
 import { IDateTimeProperty } from "../../interfaces";
 import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
-import { IBaseParameters, IInputParameters } from "../../interfaces/parameters";
+import { IInputParameters } from "../../interfaces/parameters";
+import { getDefaultDateTimeTranslations } from "./translations";
 
-export interface IDateTime extends IComponent<IDateTimeParameters, IDateTimeOutputs, IDateTimeTranslations> {
+
+
+export interface IDateTime extends IComponent<IDateTimeParameters, IDateTimeOutputs, Partial<ITranslations<ReturnType<typeof getDefaultDateTimeTranslations>>>> {
 }
-
 export interface IDateTimeParameters extends IInputParameters {
     value: IDateTimeProperty;
 }
 
 export interface IDateTimeOutputs extends IOutputs {
     value?: Date;
-}
-export interface IDateTimeTranslations extends ITranslations {
-    time?: {[LCID: number]: string}
-    goToToday?: {[LCID: number]: string}
-    invalidTimeInput?: {[LCID: number]: string}
-    days?: {[LCID: number]: string[]} | string[];
-    months?: {[LCID: number]: string[]} | string[];
-    shortDays?: {[LCID: number]: string[]} | string[];
-    shortMonths?: {[LCID: number]: string[]} | string[];
 }

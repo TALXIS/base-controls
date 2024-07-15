@@ -1,32 +1,50 @@
 import { useEffect, useMemo, useRef } from "react";
 import React from 'react';
 import deepEqual from 'fast-deep-equal/es6';
-import { IComponent, IOutputs, IParameters, ITranslations } from "../interfaces";
+import { IComponent, IOutputs, IParameters } from "../interfaces";
 import { merge } from 'merge-anything';
-import { StringProps } from "../types";
 import { Liquid } from "liquidjs";
 import { useComponentSizing } from "./useComponentSizing";
+import { createV8Theme } from "@fluentui/react-migration-v8-v9";
+import { getTheme as fluentGetTheme, ITheme as FluentITheme } from '@fluentui/react';
+
+export type ITranslation<T> = {
+    [Property in keyof Required<T>]: (variables?: any) => string
+};
+
+export interface IDefaultTranslations {
+    [LCID: number]: string | string[];
+    [key: string]: any;
+}
 
 
 export interface IComponentController<TTranslations, TOutputs> {
-    labels: Required<StringProps<TTranslations>>,
+    labels: Required<ITranslation<TTranslations>>,
     sizing: {
         width?: number,
         height?: number
     },
+    theme: ITheme;
     onNotifyOutputChanged: (outputs: TOutputs) => void,
+}
+
+export interface ITheme extends FluentITheme {
+    effects: FluentITheme['effects'] & {
+        underlined: boolean;
+    }
 }
 /**
  * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
-export const useComponent = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, defaultTranslations?: TTranslations): IComponentController<TTranslations, TOutputs> => {
+export const useComponent = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, defaultTranslations?: IDefaultTranslations): IComponentController<TTranslations, TOutputs> => {
     const parametersRef = useRef<TParameters>(props.parameters);
     const sizing = useComponentSizing(props.context.mode);
+    const context = props.context;
     const liquid = useMemo(() => new Liquid(), []);
     const labels = useMemo(() => {
         const mergedTranslations = merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations;
-        return new Proxy(mergedTranslations, {
+        return new Proxy(mergedTranslations as any, {
             get(target, key) {
                 return (variables: any) => getLabel(key as string, mergedTranslations, variables)
             }
@@ -39,11 +57,12 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
 
     const getLabel = (key: string, translations: TTranslations, variables?: any): string | string[] => {
         const strigify = (value: string | string[]) => {
-            if(typeof value === 'string') {
+            if (typeof value === 'string') {
                 return value;
             }
             return JSON.stringify(value);
         };
+        //@ts-ignore
         const translation = translations[key];
         if (!translation) {
             console.error(`Translation for the ${key} label of the ${name} component has not been defined!`);
@@ -65,25 +84,47 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         return liquid.parseAndRenderSync(strigify(label), variables);
     };
 
+    const getTheme = (): ITheme => {
+        if (!context.fluentDesignLanguage) {
+            return {
+                ...fluentGetTheme(), effects: {
+                    ...fluentGetTheme().effects,
+                    underlined: false
+                }
+            }
+        }
+        const v8Theme = createV8Theme(context.fluentDesignLanguage!.brand, context.fluentDesignLanguage!.tokenTheme);
+        for (const key of Object.keys(v8Theme.components!)) {
+            v8Theme.components![key] = {}
+        }
+        v8Theme.semanticColors.menuBackground = context.fluentDesignLanguage.isDarkTheme ? 'black' : 'white'
+        return {
+            ...v8Theme, effects: {
+                ...v8Theme.effects,
+                underlined: context.fluentDesignLanguage?.tokenTheme
+            }
+        }
+    }
+
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;
         for (let [key, outputValue] of Object.entries(outputs)) {
             let parameterValue = parametersRef.current[key]?.raw;
             if (!deepEqual(parameterValue, outputValue)) {
-                if(outputValue === null) {
+                if (outputValue === null) {
                     outputValue = undefined;
                     //@ts-ignore
                     outputs[key] = undefined;
                 }
-                if(outputValue === "") {
+                if (outputValue === "") {
                     outputValue = undefined
                     //@ts-ignore
                     outputs[key] = undefined;
                 }
-                if(parameterValue === null) {
+                if (parameterValue === null) {
                     parameterValue = undefined;
                 }
-                if(parameterValue === outputValue) {
+                if (parameterValue === outputValue) {
                     continue
                 }
                 isDirty = true;
@@ -99,6 +140,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
     return {
         labels,
         sizing,
+        theme: useMemo(() => getTheme(), []),
         onNotifyOutputChanged
     }
 };

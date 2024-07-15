@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useCommands } from './useCommands';
-import { CommandBar } from '@talxis/react-components/dist/components/CommandBar';
+import { CommandBar } from "@talxis/react-components";
 import { commandStyles, getCommandsLoadingStyles } from './styles';
 import { useTheme } from '@fluentui/react';
 

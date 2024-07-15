@@ -1,8 +1,9 @@
 import { IWholeNumberProperty } from "../../interfaces";
 import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
-import { IBaseParameters, IInputParameters } from "../../interfaces/parameters";
+import { IInputParameters } from "../../interfaces/parameters";
+import { getDefaultDurationTranslations } from "./translations";
 
-export interface IDuration extends IComponent<IDurationParameters, IDurationOutputs, IDurationTranslations> {
+export interface IDuration extends IComponent<IDurationParameters, IDurationOutputs, Partial<ITranslations<ReturnType<typeof getDefaultDurationTranslations>>>> {
 }
 
 export interface IDurationParameters extends IInputParameters {
@@ -11,12 +12,4 @@ export interface IDurationParameters extends IInputParameters {
 
 export interface IDurationOutputs extends IOutputs {
     value?: number
-}
-export interface IDurationTranslations extends ITranslations {
-    minute?: {[LCID: number]: string []}
-    minutes?: {[LCID: number]: string[]}
-    hour?: {[LCID: number]: string[]}
-    hours?: {[LCID: number]: string[]}
-    day?: {[LCID: number]: string[]}
-    days?: {[LCID: number]: string[]}
 }

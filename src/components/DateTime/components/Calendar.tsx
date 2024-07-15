@@ -1,18 +1,20 @@
-import { ICalendarProps } from "@fluentui/react";
-import { IAutofill } from "@fluentui/react";
+import { ICalendarProps, IComboBox } from "@fluentui/react";
 import { useTheme } from "@fluentui/react";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
 import { getDateTimeStyles } from "../styles";
-import { ITimePickerProps, TimePicker } from "@talxis/react-components/dist/components/TimePicker";
-import { Text } from '@fluentui/react/lib/Text';
+import { ITimePickerProps, TimePicker } from "@talxis/react-components";
 import dayjs from "dayjs";
 import React from 'react';
 
-interface IInternalTimePickerProps extends ITimePickerProps {
+interface IInternalTimePickerProps extends Omit<ITimePickerProps, 'onChange' | 'defaultValue'> {
+    formattedDateTime: string;
     visible: boolean;
     timeFormat: string;
+    dateTimeFormat: string;
     underlined?: boolean;
+    lastInputedTimeString?: string;
+    onChange: (time?: string) => void;
 }
 
 interface IInternalCalendarProps extends ICalendarProps {
@@ -20,53 +22,76 @@ interface IInternalCalendarProps extends ICalendarProps {
 }
 
 export const Calendar = (props: IInternalCalendarProps) => {
+    const timePickerProps = props.timePickerProps;
+    const formattedDateTime = timePickerProps.formattedDateTime;
     const theme = useTheme();
     const styles = getDateTimeStyles(theme);
-    const timePickerRef = useRef<IAutofill>(null);
-    const [isTimePickerControlled, setIsTimePickerControlled] = useState<boolean>(true);
-    useEffect(() => {
-        //@ts-ignore - we need to use the internal method to display exact time, otherwise the shown value would always get rounded to the next 15 min
-        timePickerRef.current?._updateValue(getFormattedTime());
-        setIsTimePickerControlled(false);
-
-    }, [props.timePickerProps.defaultValue]);
+    const timePickerRef = useRef<IComboBox>(null);
+    const [error, setError] = useState(false);
 
     const getFormattedTime = () => {
-        return dayjs(props.timePickerProps.defaultValue).format(props.timePickerProps.timeFormat);
+        const dayjsDate = dayjs(formattedDateTime, timePickerProps.dateTimeFormat, true);
+        if (!dayjsDate.isValid()) {
+            return timePickerProps.lastInputedTimeString;
+        }
+        return dayjsDate.format(timePickerProps.timeFormat) ?? "";
     };
+
+    const onChange = (event: React.FormEvent<IComboBox>, time: Date) => {
+        const dayjsDate = dayjs(time);
+        let timeValue;
+        if (!dayjsDate.isValid()) {
+            //@ts-ignore - need to access internals to properly show error values
+            timeValue = timePickerRef.current.state.currentPendingValue;
+        }
+        else {
+            timeValue = dayjsDate.format(timePickerProps.timeFormat);
+        }
+        //@ts-ignore - need to access internals to properly show error values
+        timePickerProps.onChange(timeValue);
+
+    }
+
+    useEffect(() => {
+        setError(false);
+        if (!timePickerProps.visible) {
+            return;
+        }
+        const formattedTime = getFormattedTime();
+        //@ts-ignore - need to access internals to properly show error values
+        timePickerRef.current.setState({
+            currentPendingValue: getFormattedTime()
+        })
+        if(!formattedTime || !formattedDateTime) {
+            return;
+        }
+        const time = dayjs(formattedTime, timePickerProps.timeFormat, true);
+        if (!time.isValid()) {
+            setError(true);
+        }
+    }, [formattedDateTime]);
+
 
     return (
         <div className={styles.calendarCallout}>
-            <CalendarBase {...props} />
+            <CalendarBase {...props} value={props.value} />
             <hr />
-            {props.timePickerProps.visible &&
+            {timePickerProps.visible &&
                 <TimePicker
-                    {...props.timePickerProps}
-                    onChange={(e, time) => {
-                        setIsTimePickerControlled(true);
-                        props.timePickerProps.onChange!(e, time);
-                    }}
-                    defaultValue={dayjs(new Date()).startOf('day').toDate()}
+                    {...timePickerProps}
+                    errorMessage={error ? timePickerProps.errorMessage : undefined}
+                    componentRef={timePickerRef}
+                    onFormatDate={(date) => dayjs(date).format(timePickerProps.timeFormat)}
+                    onChange={onChange}
                     useComboBoxAsMenuWidth
                     styles={{
                         callout: {
                             maxHeight: '300px !important'
                         }
                     }}
-                    autofill={{
-                        componentRef: timePickerRef,
-                        //hack to prevent blinking on prop updates
-                        value: isTimePickerControlled ? getFormattedTime() : undefined
-                    }}
-                    buttonIconProps={{
-                        iconName: 'Clock'
-                    }}
-                    onRenderOption={(option) => {
-                        //the timepicker displays 24 instead of 00 during the option displaying for some reason
-                        return <Text>{option?.text.replace('24', '00')}</Text>;
-                    }}
                     increments={15}
-                    allowFreeform />
+                    allowFreeform
+                />
             }
         </div>
     );

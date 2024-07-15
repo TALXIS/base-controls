@@ -1,6 +1,4 @@
-import { ILookupTranslations } from "./interfaces";
-
-export const lookupTranslations: ILookupTranslations = {
+export const lookupTranslations = {
     search: {
         1033: "Search",
         1029: "Vyhledejte"
@@ -24,5 +22,9 @@ export const lookupTranslations: ILookupTranslations = {
     noName: {
         1033: "(No Name)",
         1029: "(Bez názvu)"
+    },
+    placeholder: {
+        1033: "Search",
+        1029: "Vyhledejte"
     }
 }

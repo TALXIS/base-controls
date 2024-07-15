@@ -1,9 +1,9 @@
 
 import { ILookup } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
-import React, { useEffect, useRef } from 'react';
-import { useTheme } from "@fluentui/react";
-import { IItemProps, TagPicker } from "@talxis/react-components/dist/components/TagPicker";
+import React, { useEffect, useRef, useState } from 'react';
+import { ThemeProvider, useTheme } from "@fluentui/react";
+import { IItemProps, TagPicker } from "@talxis/react-components";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
 import { getLookupStyles } from "./styles";
@@ -18,17 +18,18 @@ export const Lookup = (props: ILookup) => {
     const ref = useRef<HTMLDivElement>(null);
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
-    const theme = useTheme();
     const {height} = useComponentSizing(props.context.mode);
+    const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props);
     const styles = getLookupStyles(theme,itemLimit === 1, height);
-    const [value, entities, labels, records, selectEntity, getSearchResults] = useLookup(props);
     const mouseOver = useMouseOver(ref);
-    const isFocused = useFocusIn(ref);
+    const isFocused = useFocusIn(ref, 100);
     const firstRenderRef = useRef(true);
     const shouldFocusRef = useRef(false);
+    const [placeholder, setPlaceholder] = useState('---');
 
 
     useEffect(() => {
+        console.log(componentRef.current)
         if (firstRenderRef.current) {
             firstRenderRef.current = false;
             return;
@@ -42,10 +43,11 @@ export const Lookup = (props: ILookup) => {
 
     useEffect(() => {
         const onKeyPress = (ev: KeyboardEvent) => {
+            if(context.mode.isControlDisabled) {
+                return;
+            }
             if (ev.key === 'Backspace') {
-                console.log(componentRef)
                 const picker = ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]');
-                console.log(ref.current);
                 if ((document.activeElement === picker) && value.length === 1) {
                     records.select(undefined);
                     setTimeout(() => {
@@ -55,7 +57,6 @@ export const Lookup = (props: ILookup) => {
             }
         }
         document.addEventListener('keydown', onKeyPress)
-
         return () => {
             document.removeEventListener('keydown', onKeyPress);
         }
@@ -119,16 +120,34 @@ export const Lookup = (props: ILookup) => {
         return suggestions;
     }
     return (
-        <div className={styles.root} ref={ref}>
+        <ThemeProvider applyTo="none" theme={theme} className={styles.root} ref={ref}>
                 <TagPicker
                     ref={componentRef}
-                    underlined={props.parameters.Underlined?.raw}
+                    //underlined={props.parameters.Underlined?.raw}
+                    underlined={theme.effects.underlined}
+                    theme={theme}
                     readOnly={context.mode.isControlDisabled}
                     resolveDelay={200}
                     stackItems={itemLimit === 1}
                     errorMessage={props.parameters.value.errorMessage}
+                    hideErrorMessage={!props.parameters.ShowErrorMessage?.raw}
                     pickerCalloutProps={{
-                        className: styles.suggestions,
+                        layerProps: {
+                            eventBubblingEnabled: true
+                        },
+                        className: styles.suggestions
+                    }}
+                    inputProps={{
+                        placeholder: placeholder,
+                        onMouseEnter: () => {
+                            if(context.mode.isControlDisabled) {
+                                return;
+                            }
+                            setPlaceholder( `${labels.placeholder()} ${props.parameters.value.attributes.DisplayName}`,);
+                        },
+                        onMouseLeave: () => {
+                            setPlaceholder("---");
+                        }
                     }}
                     pickerSuggestionsProps={{
                         loadingText: labels.searching(),
@@ -201,6 +220,6 @@ export const Lookup = (props: ILookup) => {
                     })}
                     itemLimit={itemLimit}
                     onResolveSuggestions={onResolveSuggestions} />
-        </div>
+        </ThemeProvider>
     )
 };
