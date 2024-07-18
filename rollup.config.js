@@ -28,7 +28,9 @@ const externalDeps = [
 export default [
     {
         input: [
-            'src/index.ts'
+            'src/**/*.tsx',
+            'src/**/*.ts',
+            '!src/sandbox/**',
         ],
         output: [
             {
