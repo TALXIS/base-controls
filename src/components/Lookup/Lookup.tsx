@@ -125,7 +125,6 @@ export const Lookup = (props: ILookup) => {
                     ref={componentRef}
                     //underlined={props.parameters.Underlined?.raw}
                     underlined={theme.effects.underlined}
-                    theme={theme}
                     readOnly={context.mode.isControlDisabled}
                     resolveDelay={200}
                     stackItems={itemLimit === 1}

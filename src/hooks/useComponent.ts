@@ -5,8 +5,7 @@ import { IComponent, IOutputs, IParameters } from "../interfaces";
 import { merge } from 'merge-anything';
 import { Liquid } from "liquidjs";
 import { useComponentSizing } from "./useComponentSizing";
-import { createV8Theme } from "@fluentui/react-migration-v8-v9";
-import { getTheme as fluentGetTheme, ITheme as FluentITheme } from '@fluentui/react';
+import { ITheme, useControlTheme } from "./useControlTheme";
 
 export type ITranslation<T> = {
     [Property in keyof Required<T>]: (variables?: any) => string
@@ -26,12 +25,6 @@ export interface IComponentController<TTranslations, TOutputs> {
     },
     theme: ITheme;
     onNotifyOutputChanged: (outputs: TOutputs) => void,
-}
-
-export interface ITheme extends FluentITheme {
-    effects: FluentITheme['effects'] & {
-        underlined: boolean;
-    }
 }
 /**
  * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
@@ -84,28 +77,6 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         return liquid.parseAndRenderSync(strigify(label), variables);
     };
 
-    const getTheme = (): ITheme => {
-        if (!context.fluentDesignLanguage) {
-            return {
-                ...fluentGetTheme(), effects: {
-                    ...fluentGetTheme().effects,
-                    underlined: false
-                }
-            }
-        }
-        const v8Theme = createV8Theme(context.fluentDesignLanguage!.brand, context.fluentDesignLanguage!.tokenTheme);
-        for (const key of Object.keys(v8Theme.components!)) {
-            v8Theme.components![key] = {}
-        }
-        v8Theme.semanticColors.menuBackground = context.fluentDesignLanguage.isDarkTheme ? 'black' : 'white'
-        return {
-            ...v8Theme, effects: {
-                ...v8Theme.effects,
-                underlined: context.fluentDesignLanguage?.tokenTheme
-            }
-        }
-    }
-
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;
         for (let [key, outputValue] of Object.entries(outputs)) {
@@ -140,7 +111,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
     return {
         labels,
         sizing,
-        theme: useMemo(() => getTheme(), []),
+        theme: useControlTheme(context.fluentDesignLanguage),
         onNotifyOutputChanged
     }
 };

@@ -1,6 +1,6 @@
 
 import { IDateTime } from "./interfaces";
-import { IDatePicker } from "@fluentui/react";
+import { IDatePicker, ThemeProvider } from "@fluentui/react";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
@@ -26,10 +26,9 @@ export const DateTime = (componentProps: IDateTime) => {
         }
     }, []);
     return (
-        <div ref={ref}>
+        <ThemeProvider theme={theme} applyTo="none" ref={ref}>
             <DatePicker
                 className={styles.datePicker}
-                theme={theme}
                 underlined={theme.effects.underlined}
                 componentRef={datePickerRef}
                 hideErrorMessage={!parameters.ShowErrorMessage?.raw}
@@ -45,7 +44,6 @@ export const DateTime = (componentProps: IDateTime) => {
                 firstDayOfWeek={componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek}
                 calendarAs={(props) =>
                     <Calendar {...props}
-                        theme={theme}
                         strings={{
                             goToToday: labels.goToToday(),
                             days: JSON.parse(labels.days()),
@@ -54,7 +52,6 @@ export const DateTime = (componentProps: IDateTime) => {
                             shortMonths: JSON.parse(labels.shortMonths())
                         }}
                         timePickerProps={{
-                            theme: theme,
                             underlined: theme.effects.underlined,
                             dateTimeFormat: patterns.fullDateTimePattern,
                             autoComplete: "off",
@@ -78,7 +75,6 @@ export const DateTime = (componentProps: IDateTime) => {
                 }
                 errorMessage={parameters.value.errorMessage}
                 textField={{
-                    theme: theme,
                     underlined: theme.effects.underlined,
                     value: date.getFormatted() ?? "",
                     onChange: (e, value) => {
@@ -121,7 +117,7 @@ export const DateTime = (componentProps: IDateTime) => {
                 //undefined will break the calendar => it wont reflect date change in it's UI
                 value={date.get() ?? new Date()}
             />
-        </div>
+        </ThemeProvider>
     );
 };
 

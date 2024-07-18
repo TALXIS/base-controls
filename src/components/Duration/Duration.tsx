@@ -2,7 +2,7 @@ import { ComboBox } from "@talxis/react-components";
 import React, { useEffect } from 'react';
 import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
-import { IComboBoxOption } from '@fluentui/react';
+import { IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { durationOptions } from '../../sandbox/shared/durationList';
 import { UserSettings } from '../../sandbox/mock/UserSettings';
 import numeral from "numeral";
@@ -104,11 +104,11 @@ export const Duration = (props: IDuration) => {
     });
 
     return (
+        <ThemeProvider theme={theme} applyTo="none">
         <ComboBox
             options={comboBoxOptions}
             hideErrorMessage={!parameters.ShowErrorMessage?.raw}
             underlined={theme.effects.underlined}
-            theme={theme}
             allowFreeInput={true}
             autoComplete='on'
             autofill={parameters.AutoFocus?.raw === true ? {
@@ -145,5 +145,6 @@ export const Duration = (props: IDuration) => {
                 });
             }}
         />
+        </ThemeProvider>
     );
 };

@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import numeral from "numeral";
 import { Numeral } from "../../utils/Numeral";
 import { CURRENCY_NEGATIVE_PATTERN, CURRENCY_POSITIVE_PATTERN, NUMBER_NEGATIVE_PATTERN } from "../../constants";
-import { ICommandBarItemProps } from "@fluentui/react";
+import { ICommandBarItemProps, ThemeProvider } from "@fluentui/react";
 import { ArrowButtons, IArrowButtons } from "./components/ArrowButtons";
 
 export const Decimal = (props: IDecimal) => {
@@ -164,9 +164,9 @@ export const Decimal = (props: IDecimal) => {
     }, [boundValue.formatted]);
 
     return (
+        <ThemeProvider theme={theme} applyTo="none">
         <TextField
             underlined={theme.effects.underlined}
-            theme={theme}
             hideErrorMessage={!parameters.ShowErrorMessage?.raw}
             readOnly={context.mode.isControlDisabled}
             inputMode={useMemo(() => getInputMode(), [props.parameters.value.type])}
@@ -214,5 +214,6 @@ export const Decimal = (props: IDecimal) => {
             }}
             onKeyDown={onKeyDown}
         />
+        </ThemeProvider>
     );
 };

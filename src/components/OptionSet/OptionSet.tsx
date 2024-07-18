@@ -2,11 +2,11 @@
 import { IOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
 import { ComboBox } from "@talxis/react-components";
-import { IComboBox, IComboBoxOption } from '@fluentui/react';
+import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import React, { useEffect, useRef } from 'react';
 
 export const OptionSet = (props: IOptionSet) => {
-    const { sizing, onNotifyOutputChanged, theme} = useComponent('OptionSet', props);
+    const { sizing, onNotifyOutputChanged, theme } = useComponent('OptionSet', props);
     const componentRef = useRef<IComboBox>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
@@ -33,43 +33,44 @@ export const OptionSet = (props: IOptionSet) => {
         }
     }, []);
 
-    return <ComboBox
-        componentRef={componentRef}
-        theme={theme}
-        underlined={theme.effects.underlined}
-        options={comboBoxOptions}
-        readOnly={context.mode.isControlDisabled}
-        //the defaultValue comes in the raw prop directly, no need to look at it
-        selectedKey={boundValue.raw?.toString() ?? -1}
-        errorMessage={boundValue.errorMessage}
-        useComboBoxAsMenuWidth
-        hideErrorMessage={!parameters.ShowErrorMessage?.raw}
-        styles={{
-            root: {
-                height: sizing.height,
-                width: sizing.width,
-                display: 'flex',
-                alignItems: 'center',
-            },
-            callout: {
-                maxHeight: '300px !important'
-            }
-        }}
-        clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
-            key: 'copy',
-            showOnlyOnHover: true,
-            iconProps: {
-                iconName: 'Copy'
-            }
-        } : undefined}
-        deleteButtonProps={parameters.EnableDeleteButton?.raw === true ? {
-            key: 'delete',
-            showOnlyOnHover: true,
-            iconProps: {
-                iconName: 'Delete'
-            },
-            onClick: (e, value) => { handleChange(null); }
-        } : undefined}
-        onChange={(e, option) => handleChange(option)}
-    />;
+    return (
+        <ThemeProvider theme={theme} applyTo="none">
+            <ComboBox
+                componentRef={componentRef}
+                underlined={theme.effects.underlined}
+                options={comboBoxOptions}
+                readOnly={context.mode.isControlDisabled}
+                //the defaultValue comes in the raw prop directly, no need to look at it
+                selectedKey={boundValue.raw?.toString() ?? -1}
+                errorMessage={boundValue.errorMessage}
+                useComboBoxAsMenuWidth
+                hideErrorMessage={!parameters.ShowErrorMessage?.raw}
+                styles={{
+                    root: {
+                        height: sizing.height,
+                        width: sizing.width,
+                        display: 'flex',
+                        alignItems: 'center',
+                    },
+                    callout: {
+                        maxHeight: '300px !important'
+                    }
+                }}
+                clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
+                    key: 'copy',
+                    showOnlyOnHover: true,
+                    iconProps: {
+                        iconName: 'Copy'
+                    }
+                } : undefined}
+                deleteButtonProps={parameters.EnableDeleteButton?.raw === true ? {
+                    key: 'delete',
+                    showOnlyOnHover: true,
+                    iconProps: {
+                        iconName: 'Delete'
+                    },
+                    onClick: (e, value) => { handleChange(null); }
+                } : undefined}
+                onChange={(e, option) => handleChange(option)}
+            /></ThemeProvider>);
 };

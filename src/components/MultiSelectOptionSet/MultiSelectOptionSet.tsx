@@ -2,11 +2,11 @@
 import { IMultiSelectOptionSet } from './interfaces';
 import { useComponent } from '../../hooks';
 import { ComboBox } from "@talxis/react-components";
-import { IComboBox, IComboBoxOption } from '@fluentui/react';
+import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import React, { useEffect, useRef } from 'react';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
-    const {sizing, onNotifyOutputChanged, theme} = useComponent('MultiSelectOptionSet', props);
+    const { sizing, onNotifyOutputChanged, theme } = useComponent('MultiSelectOptionSet', props);
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const componentRef = useRef<IComboBox>(null);
@@ -18,7 +18,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     }));
 
     const handleChange = (option?: IComboBoxOption | null): void => {
-        if(!option) {
+        if (!option) {
             onNotifyOutputChanged({
                 value: undefined
             });
@@ -32,7 +32,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
             updatedSelectedKeys.delete(+optionKey);
         }
         const updatedSelectedKeysArray = Array.from(updatedSelectedKeys);
-        
+
         onNotifyOutputChanged({
             value: updatedSelectedKeysArray.map(key => +key)
         });
@@ -44,49 +44,53 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         }
     }, []);
 
-    return <ComboBox
-        componentRef={componentRef}
-        options={comboBoxOptions}
-        allowFreeInput={true}
-        multiSelect
-        autoComplete="on"
-        theme={theme}
-        underlined={theme.effects.underlined}
-        autofill={parameters.AutoFocus?.raw === true ? {
-            autoFocus: true
-        }: undefined}
-        readOnly={context.mode.isControlDisabled}
-        errorMessage={boundValue.errorMessage}
-        selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : [-1]}
-        useComboBoxAsMenuWidth
-        hideErrorMessage={!parameters.ShowErrorMessage?.raw}
-        styles={{
-            root: {
-                height: sizing.height,
-                width: sizing.width,
-                display: 'flex',
-                alignItems: 'center',
-            },
-            callout: {
-                maxHeight: '300px !important'
-            }
-        }}
-        clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
-            key: 'copy',
-            showOnlyOnHover: true,
-            iconProps: {
-                iconName: 'Copy'
-            }
-        } : undefined}
-        deleteButtonProps={props.parameters.EnableDeleteButton?.raw === true ? {
-            key: 'delete',
-            showOnlyOnHover: false,
-            iconProps: {
-                iconName: 'Delete'
-            },
-            onClick: (e, value) => {
-                handleChange(null);
-            }
-        } : undefined}
-        onChange={(e, option) => handleChange(option)} />;
+    return (
+        <ThemeProvider theme={theme} applyTo="none">
+            <ComboBox
+                componentRef={componentRef}
+                options={comboBoxOptions}
+                allowFreeInput={true}
+                multiSelect
+                autoComplete="on"
+                theme={theme}
+                underlined={theme.effects.underlined}
+                autofill={parameters.AutoFocus?.raw === true ? {
+                    autoFocus: true
+                } : undefined}
+                readOnly={context.mode.isControlDisabled}
+                errorMessage={boundValue.errorMessage}
+                selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : [-1]}
+                useComboBoxAsMenuWidth
+                hideErrorMessage={!parameters.ShowErrorMessage?.raw}
+                styles={{
+                    root: {
+                        height: sizing.height,
+                        width: sizing.width,
+                        display: 'flex',
+                        alignItems: 'center',
+                    },
+                    callout: {
+                        maxHeight: '300px !important'
+                    }
+                }}
+                clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
+                    key: 'copy',
+                    showOnlyOnHover: true,
+                    iconProps: {
+                        iconName: 'Copy'
+                    }
+                } : undefined}
+                deleteButtonProps={props.parameters.EnableDeleteButton?.raw === true ? {
+                    key: 'delete',
+                    showOnlyOnHover: false,
+                    iconProps: {
+                        iconName: 'Delete'
+                    },
+                    onClick: (e, value) => {
+                        handleChange(null);
+                    }
+                } : undefined}
+                onChange={(e, option) => handleChange(option)} />
+        </ThemeProvider>
+    );
 };
