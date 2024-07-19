@@ -31,6 +31,9 @@ const externalDeps = [
     'validator/es/lib/isEmail',
     'lodash',
     'tslib',
+    '@ag-grid-community/client-side-row-model',
+    '@ag-grid-community/react',
+    '@ag-grid-community/core',
     '@ag-grid-community/styles',
     '@ag-grid-community/styles/ag-grid.css',
     '@ag-grid-community/styles/ag-theme-balham.css'
@@ -67,9 +70,9 @@ export default [
             }),
             postcss(),
             multiInput(),
-            terser({
+          /*   terser({
                 keep_classnames: true,
-            }),
+            }), */
             visualizer(),
         ],
     },

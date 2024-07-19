@@ -5,7 +5,8 @@ import { IComponent, IOutputs, IParameters } from "../interfaces";
 import { merge } from 'merge-anything';
 import { Liquid } from "liquidjs";
 import { useComponentSizing } from "./useComponentSizing";
-import { ITheme, useControlTheme } from "./useControlTheme";
+import { useControlTheme } from "./useControlTheme";
+import { ITheme } from "../interfaces/theme";
 
 export type ITranslation<T> = {
     [Property in keyof Required<T>]: (variables?: any) => string
