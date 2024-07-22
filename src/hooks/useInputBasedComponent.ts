@@ -38,7 +38,7 @@ interface IInputBasedComponentController<TValue, TTranslations, TOutputs> extend
     setValue: (value: TValue) => void
 }
 
-export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, options?: IComponentOptions): IInputBasedComponentController<TValue, TTranslations, TOutputs> => {
+export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations, any>, options?: IComponentOptions): IInputBasedComponentController<TValue, TTranslations, TOutputs> => {
     const {formatter, valueExtractor} = {...options};
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);

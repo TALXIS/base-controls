@@ -7,7 +7,7 @@ import { IGridColumn } from "../../../interfaces/IGridColumn";
 
 interface IComponentController {
     column: IGridColumn;
-    componentProps: IComponent<any, any, any>;
+    componentProps: IComponent<any, any, any, any>;
 }
 
 export const useComponentController = (props: IComponentProps): IComponentController | undefined => {

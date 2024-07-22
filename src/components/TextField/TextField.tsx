@@ -1,4 +1,4 @@
-import { TextField as TextFieldBase } from "@talxis/react-components";
+import { ITextFieldProps, TextField as TextFieldBase } from "@talxis/react-components";
 import { useMemo, useRef } from 'react';
 import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
@@ -67,51 +67,53 @@ export const TextField = (props: ITextField) => {
         return undefined;
     }
 
+    let componentProps: ITextFieldProps = {
+        underlined: theme.effects.underlined,
+        readOnly: context.mode.isControlDisabled,
+        resizable: false,
+        type: useMemo(() => getInputType(), [boundValue.type]),
+        multiline: parameters.value.type === 'Multiple',
+        autoFocus: parameters.AutoFocus?.raw,
+        elementRef: ref,
+        styles: {
+            fieldGroup: {
+                height: sizing.height,
+                width: sizing.width
+            }
+        },
+        borderless: parameters.EnableBorder?.raw === false,
+        errorMessage: boundValue.errorMessage,
+        hideErrorMessage: !parameters.ShowErrorMessage?.raw,
+        suffixItems: useMemo(() => getSuffixItems(), [boundValue.raw, boundValue.error]),
+        deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
+            key: 'delete',
+            showOnlyOnHover: true,
+            iconProps: {
+                iconName: 'Delete'
+            },
+            onClick: () => setValue(undefined)
+        } : undefined,
+        clickToCopyProps: parameters.EnableCopyButton?.raw === true ? {
+            key: 'copy',
+            showOnlyOnHover: true,
+            iconProps: {
+                iconName: 'Copy'
+            }
+        } : undefined,
+        value: value ?? "",
+        onBlur: () => {
+            onNotifyOutputChanged({
+                value: value ?? undefined
+            });
+        },
+        onChange: (e, value) => {
+            setValue(value);
+        }
+    };
+    componentProps = {...componentProps, ...props.onOverrideComponentProps?.(componentProps)}
     return (
         <ThemeProvider applyTo="none" theme={theme}>
-            <TextFieldBase
-                underlined={theme.effects.underlined}
-                readOnly={context.mode.isControlDisabled}
-                resizable={false}
-                type={useMemo(() => getInputType(), [boundValue.type])}
-                multiline={parameters.value.type === 'Multiple'}
-                autoFocus={parameters.AutoFocus?.raw}
-                elementRef={ref}
-                styles={{
-                    fieldGroup: {
-                        height: sizing.height,
-                        width: sizing.width
-                    }
-                }}
-                borderless={parameters.EnableBorder?.raw === false}
-                errorMessage={boundValue.errorMessage}
-                hideErrorMessage={!parameters.ShowErrorMessage?.raw}
-                suffixItems={useMemo(() => getSuffixItems(), [boundValue.raw, boundValue.error])}
-                deleteButtonProps={parameters.EnableDeleteButton?.raw === true ? {
-                    key: 'delete',
-                    showOnlyOnHover: true,
-                    iconProps: {
-                        iconName: 'Delete'
-                    },
-                    onClick: () => setValue(undefined)
-                } : undefined}
-                clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
-                    key: 'copy',
-                    showOnlyOnHover: true,
-                    iconProps: {
-                        iconName: 'Copy'
-                    }
-                } : undefined}
-                value={value ?? ""}
-                onBlur={() => {
-                    onNotifyOutputChanged({
-                        value: value ?? undefined
-                    });
-                }}
-                onChange={(e, value) => {
-                    setValue(value);
-                }} />
+            <TextFieldBase {...componentProps} />
         </ThemeProvider>
-
     );
 };

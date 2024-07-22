@@ -1,8 +1,9 @@
+import { ITextFieldProps } from "@talxis/react-components";
 import { IStringProperty, ITwoOptionsProperty } from "../../interfaces";
-import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
+import { IComponent, IOutputs } from "../../interfaces/context";
 import { IInputParameters } from "../../interfaces/parameters";
 
-export interface ITextField extends IComponent<ITextFieldParameters, ITextFieldOutputs, any> {
+export interface ITextField extends IComponent<ITextFieldParameters, ITextFieldOutputs, any, ITextFieldProps> {
 }
 
 export interface ITextFieldParameters extends IInputParameters {

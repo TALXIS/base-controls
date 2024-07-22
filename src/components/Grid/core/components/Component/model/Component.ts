@@ -36,7 +36,7 @@ export class Component extends GridDependency {
     private _debouncedGetLookupValue = debounce(this._getLookupValue.bind(this), 50);
     private static _lookupSavedQueriesCache = new Map<string, Promise<ComponentFramework.WebApi.Entity>>;
 
-    public async getControlProps(props: IComponentProps): Promise<IComponent<any, any, any>> {
+    public async getControlProps(props: IComponentProps): Promise<IComponent<any, any, any, any>> {
         const { column, value, onNotifyOutputChanged, additionalParameters, formattedValue } = { ...props };
         const [isValid, validationErrorMessage] = new ColumnValidation(this._grid, props.column).validate(value);
         switch (column.dataType) {

@@ -1,9 +1,10 @@
+import { ITagPickerProps } from "@talxis/react-components";
 import { ILookupProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
 import { IBaseParameters } from "../../interfaces/parameters";
 import { lookupTranslations } from "./translations";
 
-export interface ILookup extends IComponent<ILookupParameters, ILookupOutputs, Partial<ITranslations<typeof lookupTranslations>>> {
+export interface ILookup extends IComponent<ILookupParameters, ILookupOutputs, Partial<ITranslations<typeof lookupTranslations>>, ITagPickerProps> {
     /**
      * If provided, the Lookup will use the returned values of this function to display search results.
      * @param {any} entityNames An array of entity names that he Lookup is currently targeting.

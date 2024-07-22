@@ -31,7 +31,7 @@ export interface IComponentController<TTranslations, TOutputs> {
  * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
-export const useComponent = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, defaultTranslations?: IDefaultTranslations): IComponentController<TTranslations, TOutputs> => {
+export const useComponent = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations, any>, defaultTranslations?: IDefaultTranslations): IComponentController<TTranslations, TOutputs> => {
     const parametersRef = useRef<TParameters>(props.parameters);
     const sizing = useComponentSizing(props.context.mode);
     const context = props.context;

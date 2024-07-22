@@ -1,10 +1,11 @@
+import { AgGridReactProps } from "@ag-grid-community/react";
 import { ITranslation } from "../../hooks";
 import { IDatasetProperty, IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IComponent, IOutputs } from "../../interfaces/context";
 import { gridTranslations } from "./translations";
 
 
-export interface IGrid extends IComponent<IGridParameters, IGridOutputs, Partial<ITranslation<typeof gridTranslations>>> {
+export interface IGrid extends IComponent<IGridParameters, IGridOutputs, Partial<ITranslation<typeof gridTranslations>>, AgGridReactProps> {
 
 }
 
