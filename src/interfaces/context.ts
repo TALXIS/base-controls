@@ -13,9 +13,9 @@ export interface IComponent<TParameters, TOutputs, TTranslations, TComponentProp
     */
     onNotifyOutputChanged?: (outputs: TOutputs) => void;
     /**
-    * This method allows you to override the props of the internal component that the control uses for rendering UI.
+    * Allows you to override the props of the internal component that the control uses for UI rendering. Might not work on every control. ONLY USE WHEN ABSOLUTELY NECESSARY AND CONSULT YOUR INTENTIONS WITH BRY!
     */
-    onOverrideComponentProps?: (props: TComponentProps) => TComponentProps; 
+    onOverrideComponentProps?: (props: TComponentProps) => Partial<TComponentProps>; 
 }
 
 export type ITranslations<T> = {

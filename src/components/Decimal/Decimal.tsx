@@ -1,4 +1,4 @@
-import { TextField } from "@talxis/react-components";
+import { ITextFieldProps, TextField } from "@talxis/react-components";
 import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
 import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
 import React, { useEffect, useMemo, useRef } from "react";
@@ -100,37 +100,37 @@ export const Decimal = (props: IDecimal) => {
     });
 
     const getSuffixItems = (): ICommandBarItemProps[] | undefined => {
-        if(context.mode.isControlDisabled || parameters.EnableSpinButton?.raw === false) {
+        if (context.mode.isControlDisabled || parameters.EnableSpinButton?.raw === false) {
             return undefined;
         }
         return [
             {
                 key: 'arrows',
                 onRender: () => <ArrowButtons
-                    ref={arrowButtonsRef} 
-                    onDecrement={() => makeStep('decrement')} 
-                    onIncrement={() => makeStep('increment')}  />
+                    ref={arrowButtonsRef}
+                    onDecrement={() => makeStep('decrement')}
+                    onIncrement={() => makeStep('increment')} />
             }
         ]
     }
 
     const makeStep = (type: 'increment' | 'decrement') => {
         const value = boundValue.raw ?? 0;
-        if(typeof value !== 'number') {
+        if (typeof value !== 'number') {
             return;
         }
         const precision = Math.pow(10, boundValue.attributes?.Precision ?? 0);
         const adjustment = type === 'increment' ? 1 : -1;
         const newValue = parseFloat(((value) + adjustment / precision).toFixed(boundValue.attributes?.Precision ?? 0));
-        onNotifyOutputChanged({value: newValue });
+        onNotifyOutputChanged({ value: newValue });
 
     }
 
-    const onKeyDown = (e:  React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        if(context.mode.isControlDisabled) {
+    const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        if (context.mode.isControlDisabled) {
             return;
         }
-        switch(e.key) {
+        switch (e.key) {
             case 'ArrowDown': {
                 e.preventDefault();
                 makeStep('decrement');
@@ -147,7 +147,7 @@ export const Decimal = (props: IDecimal) => {
     }
 
     const getInputMode = () => {
-        switch(props.parameters.value.type) {
+        switch (props.parameters.value.type) {
             case 'Whole.None': {
                 return 'numeric';
             }
@@ -158,62 +158,60 @@ export const Decimal = (props: IDecimal) => {
         }
     }
     useEffect(() => {
-        if(boundValue.type === 'Currency') {
+        if (boundValue.type === 'Currency') {
             setValue(boundValue.formatted);
         }
     }, [boundValue.formatted]);
 
+    let componentProps: ITextFieldProps = {
+        underlined: theme.effects.underlined,
+        hideErrorMessage: !parameters.ShowErrorMessage?.raw,
+        readOnly: context.mode.isControlDisabled,
+        inputMode: useMemo(() => getInputMode(), [props.parameters.value.type]),
+        suffixItems: getSuffixItems(),
+        autoFocus: parameters.AutoFocus?.raw,
+        borderless: parameters.EnableBorder?.raw === false,
+        errorMessage: boundValue.errorMessage,
+        styles: {
+            fieldGroup: {
+                height: sizing.height,
+                width: sizing.width
+            }
+        },
+        deleteButtonProps: parameters.EnableDeleteButton?.raw === true
+            ? {
+                key: "delete",
+                showOnlyOnHover: true,
+                iconProps: {
+                    iconName: "Delete",
+                },
+                onClick: () => setValue(undefined),
+            }
+            : undefined,
+        clickToCopyProps: parameters.EnableCopyButton?.raw === true
+            ? {
+                key: "copy",
+                showOnlyOnHover: true,
+                iconProps: {
+                    iconName: "Copy",
+                },
+            }
+            : undefined,
+        value: value ?? "",
+        onBlur: (event) => {
+            onNotifyOutputChanged({
+                value: extractNumericPart(event.target.value)
+            });
+        },
+        onChange: (e, value) => {
+            setValue(value);
+        },
+        onKeyDown: onKeyDown,
+    };
+    componentProps = {...componentProps, ...props.onOverrideComponentProps?.(componentProps)}
     return (
         <ThemeProvider theme={theme} applyTo="none">
-        <TextField
-            underlined={theme.effects.underlined}
-            hideErrorMessage={!parameters.ShowErrorMessage?.raw}
-            readOnly={context.mode.isControlDisabled}
-            inputMode={useMemo(() => getInputMode(), [props.parameters.value.type])}
-            suffixItems={getSuffixItems()}
-            autoFocus={parameters.AutoFocus?.raw}
-            borderless={parameters.EnableBorder?.raw === false}
-            errorMessage={boundValue.errorMessage}
-            styles={{
-                fieldGroup: {
-                    height: sizing.height,
-                    width: sizing.width
-                }
-            }}
-            deleteButtonProps={
-                parameters.EnableDeleteButton?.raw === true
-                    ? {
-                        key: "delete",
-                        showOnlyOnHover: true,
-                        iconProps: {
-                            iconName: "Delete",
-                        },
-                        onClick: () => setValue(undefined),
-                    }
-                    : undefined
-            }
-            clickToCopyProps={
-                parameters.EnableCopyButton?.raw === true
-                    ? {
-                        key: "copy",
-                        showOnlyOnHover: true,
-                        iconProps: {
-                            iconName: "Copy",
-                        },
-                    }
-                    : undefined
-            }
-            value={value ?? ""}
-            onBlur={(event) => {
-                onNotifyOutputChanged({
-                    value: extractNumericPart(event.target.value)
-                });
-            }}
-            onChange={(e, value) => {
-                setValue(value);
-            }}
-            onKeyDown={onKeyDown}
-        />
+            <TextField {...componentProps} />
         </ThemeProvider>
     );
 };

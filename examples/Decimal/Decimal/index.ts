@@ -42,6 +42,20 @@ export class Decimal implements ComponentFramework.StandardControl<IInputs, IOut
             onNotifyOutputChanged: (outputs) => {
                 this._outputs = outputs;
                 this._notifyOutputChanged();
+            },
+            onOverrideComponentProps: (props) => {
+                return {
+                    prefix: '420',
+                    suffixItems: [...props.suffixItems!, {
+                        key: 'test',
+                        iconProps: {
+                            iconName: 'Home'
+                        },
+                        onClick: () => {
+                            alert('custom btn clicked!')
+                        }
+                    }]
+                }
             }
         } as IDecimal), this._container);
     }

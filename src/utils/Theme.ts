@@ -15,7 +15,7 @@ export const getControlTheme = (fluentDesignLanguage?: ComponentFramework.Fluent
         return {
             ...fluentTheme, effects: {
                 ...fluentTheme.effects,
-                underlined: true
+                underlined: false
             }
         }
     }

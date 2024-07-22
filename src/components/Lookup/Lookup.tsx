@@ -3,7 +3,7 @@ import { ILookup } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useRef, useState } from 'react';
 import { ThemeProvider, useTheme } from "@fluentui/react";
-import { IItemProps, TagPicker } from "@talxis/react-components";
+import { IItemProps, ITagPickerProps, TagPicker } from "@talxis/react-components";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
 import { getLookupStyles } from "./styles";
@@ -119,106 +119,119 @@ export const Lookup = (props: ILookup) => {
         }
         return suggestions;
     }
+
+    let componentProps: ITagPickerProps = {
+        ref: componentRef,
+        underlined: theme.effects.underlined,
+        readOnly: context.mode.isControlDisabled,
+        resolveDelay: 200,
+        stackItems: itemLimit === 1,
+        errorMessage: props.parameters.value.errorMessage,
+        hideErrorMessage: !props.parameters.ShowErrorMessage?.raw,
+        pickerCalloutProps: {
+            layerProps: {
+                eventBubblingEnabled: true
+            },
+            className: styles.suggestions
+        },
+        inputProps: {
+            placeholder: placeholder,
+            onMouseEnter: () => {
+                if (context.mode.isControlDisabled) {
+                    return;
+                }
+                setPlaceholder(`${labels.placeholder()} ${props.parameters.value.attributes.DisplayName}`);
+            },
+            onMouseLeave: () => {
+                setPlaceholder("---");
+            }
+        },
+        pickerSuggestionsProps: {
+            loadingText: labels.searching(),
+            noResultsFoundText: labels.noRecordsFound(),
+            // @ts-ignore
+            suggestionsHeaderText: (
+                <>
+                    {props.parameters.IsInlineNewEnabled?.raw !== false && (
+                        <RecordCreator labels={labels} entities={entities} onCreateRecord={records.create} />
+                    )}
+                    {props.parameters.value.attributes.Targets.length > 1 && (
+                        <TargetSelector
+                            labels={labels}
+                            entities={entities}
+                            onEntitySelected={(entityName) => {
+                                selectEntity(entityName);
+                            }}
+                        />
+                    )}
+                </>
+            )
+        },
+        transparent: itemLimit === 1,
+        onChange: (items) => {
+            records.select(
+                items?.map((item) => {
+                    return {
+                        entityType: item['data-entity'],
+                        id: item.key,
+                        name: item.text
+                    };
+                })
+            );
+        },
+        searchBtnProps: {
+            key: 'search',
+            iconProps: {
+                iconName: 'Search'
+            }
+        },
+        selectedItems: value.map((lookup) => {
+            return {
+                key: lookup.id,
+                text: lookup.name || labels.noName(),
+                'data-entity': lookup.entityType,
+                'data-navigation-enabled': props.parameters.EnableNavigation?.raw !== false,
+                onClick: () => {
+                    if (props.parameters.EnableNavigation?.raw === false) {
+                        return;
+                    }
+                    context.navigation.openForm({
+                        entityName: lookup.entityType,
+                        entityId: lookup.id
+                    });
+                },
+                deleteButtonProps:
+                    isComponentActive() || itemLimit > 1
+                        ? {
+                              key: 'delete',
+                              iconProps: {
+                                  iconName: 'ChromeClose',
+                                  styles: {
+                                      root: {
+                                          fontSize: 12,
+                                          width: 16
+                                      }
+                                  }
+                              },
+                              onClick: () => {
+                                  shouldFocusRef.current = false;
+                                  records.deselect(lookup);
+                                  setTimeout(() => {
+                                      focus();
+                                  }, 200);
+                              }
+                          }
+                        : undefined
+            };
+        }),
+        itemLimit: itemLimit,
+        onResolveSuggestions: onResolveSuggestions
+    };
+    componentProps = {...componentProps, ...props.onOverrideComponentProps?.(componentProps)}
+    
     return (
         <ThemeProvider applyTo="none" theme={theme} className={styles.root} ref={ref}>
-                <TagPicker
-                    ref={componentRef}
-                    //underlined={props.parameters.Underlined?.raw}
-                    underlined={theme.effects.underlined}
-                    readOnly={context.mode.isControlDisabled}
-                    resolveDelay={200}
-                    stackItems={itemLimit === 1}
-                    errorMessage={props.parameters.value.errorMessage}
-                    hideErrorMessage={!props.parameters.ShowErrorMessage?.raw}
-                    pickerCalloutProps={{
-                        layerProps: {
-                            eventBubblingEnabled: true
-                        },
-                        className: styles.suggestions
-                    }}
-                    inputProps={{
-                        placeholder: placeholder,
-                        onMouseEnter: () => {
-                            if(context.mode.isControlDisabled) {
-                                return;
-                            }
-                            setPlaceholder( `${labels.placeholder()} ${props.parameters.value.attributes.DisplayName}`,);
-                        },
-                        onMouseLeave: () => {
-                            setPlaceholder("---");
-                        }
-                    }}
-                    pickerSuggestionsProps={{
-                        loadingText: labels.searching(),
-                        noResultsFoundText: labels.noRecordsFound(),
-                        //@ts-ignore
-                        suggestionsHeaderText: <>
-                            {props.parameters.IsInlineNewEnabled?.raw !== false &&
-                                <RecordCreator labels={labels} entities={entities} onCreateRecord={records.create} />
-                            }
-                            {props.parameters.value.attributes.Targets.length > 1 &&
-                                <TargetSelector labels={labels} entities={entities} onEntitySelected={(entityName) => {
-                                    selectEntity(entityName);
-
-                                }} />
-                            }
-                        </>
-                    }}
-                    transparent={itemLimit === 1}
-                    onChange={(items) => {
-                        records.select(items?.map(item => {
-                            return {
-                                entityType: item['data-entity'],
-                                id: item.key,
-                                name: item.text
-                            }
-                        }))
-                    }}
-                    searchBtnProps={{
-                        key: 'search',
-                        iconProps: {
-                            iconName: 'Search'
-                        }
-                    }}
-                    selectedItems={value.map(lookup => {
-                        return {
-                            key: lookup.id,
-                            text: lookup.name || labels.noName(),
-                            'data-entity': lookup.entityType,
-                            'data-navigation-enabled': props.parameters.EnableNavigation?.raw !== false,
-                            onClick: () => {
-                                if (props.parameters.EnableNavigation?.raw === false) {
-                                    return;
-                                }
-                                context.navigation.openForm({
-                                    entityName: lookup.entityType,
-                                    entityId: lookup.id
-                                })
-                            },
-
-                            deleteButtonProps: isComponentActive() || itemLimit > 1 ? {
-                                key: 'delete',
-                                iconProps: {
-                                    iconName: 'ChromeClose',
-                                    styles: {
-                                        root: {
-                                            fontSize: 12,
-                                            width: 16
-                                        }
-                                    }
-                                },
-                                onClick: () => {
-                                    shouldFocusRef.current = false;
-                                    records.deselect(lookup);
-                                    setTimeout(() => {
-                                        focus()
-                                    }, 200)
-                                }
-                            } : undefined
-                        }
-                    })}
-                    itemLimit={itemLimit}
-                    onResolveSuggestions={onResolveSuggestions} />
+            <TagPicker {...componentProps} />
         </ThemeProvider>
-    )
+    );
 };
