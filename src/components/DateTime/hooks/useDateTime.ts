@@ -5,7 +5,8 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "../translations";
-import { ITheme, ITranslation } from "../../../hooks";
+import {ITranslation } from "../../../hooks";
+import { ITheme } from "../../../interfaces/theme";
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 

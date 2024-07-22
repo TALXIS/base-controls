@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ITheme, ITranslation, useComponent } from "../../../hooks";
+import { ITranslation, useComponent } from "../../../hooks";
+import { ITheme } from "../../../interfaces/theme";
 import { IEntity, ILookup } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";

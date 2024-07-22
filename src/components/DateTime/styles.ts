@@ -21,7 +21,7 @@ export const getDateTimeStyles = (theme: ITheme) => {
                 margin: 0,
                 border: 'none',
                 height: 1,
-                backgroundColor: theme.semanticColors.bodyDivider
+                backgroundColor: theme.semanticColors.menuDivider
             },
             '[class^="monthAndYear"], [class*="weekDayLabelCell"]': {
                 animationDuration: '0s'
