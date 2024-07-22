@@ -1,20 +1,17 @@
+import { ITextFieldProps } from "@talxis/react-components";
 import { IStringProperty, ITwoOptionsProperty } from "../../interfaces";
-import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
+import { IControl, IOutputs } from "../../interfaces/context";
 import { IInputParameters } from "../../interfaces/parameters";
 
-export interface ITextField extends IComponent<ITextFieldParameters, ITextFieldOutputs, ITextFieldTranslations> {
+export interface ITextField extends IControl<ITextFieldParameters, ITextFieldOutputs, any, ITextFieldProps> {
 }
 
 export interface ITextFieldParameters extends IInputParameters {
-    IsMultiLine?: ITwoOptionsProperty;
     isResizable?: ITwoOptionsProperty;
+    EnableTypeSuffix?: ITwoOptionsProperty;
     value: IStringProperty;
 }
 
 export interface ITextFieldOutputs extends IOutputs {
     value?: string;
-}
-
-export interface ITextFieldTranslations extends ITranslations {
-
 }

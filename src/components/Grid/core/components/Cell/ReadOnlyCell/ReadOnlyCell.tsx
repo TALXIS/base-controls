@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { ILinkProps } from '@fluentui/react/lib/components/Link/Link.types';
-import { Link } from '@fluentui/react/lib/components/Link/Link';
-import { Text } from '@fluentui/react/lib/Text';
+import { ILinkProps } from '@fluentui/react';
+import { Link } from '@fluentui/react';
+import { Text } from '@fluentui/react';
 import { getReadOnlyCellStyles } from './styles';
 import { Commands } from '../Commands/Commands';
 import { Checkbox, Icon, TooltipHost, useTheme, Image } from '@fluentui/react';

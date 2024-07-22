@@ -10,7 +10,6 @@ export const useCommands = (record: ComponentFramework.PropertyHelper.DataSetApi
 ] => {
     const grid = useGridInstance();
     const dataset = grid.dataset;
-    console.log('rendering ribbon')
     const [commandBarItems, setCommandBarItems] = useState<ICommandBarItemProps[] | null>(null);
     useEffect(() => {
         (async () => {

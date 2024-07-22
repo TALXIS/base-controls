@@ -1,27 +1,28 @@
 import { useState } from "react";
-import { useComponent } from "../../../hooks";
-import { StringProps } from "../../../types";
-import { IEntity, ILookup, ILookupTranslations } from "../interfaces";
+import { ITranslation, useControl } from "../../../hooks";
+import { ITheme } from "../../../interfaces/theme";
+import { IEntity, ILookup } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
 
 export const useLookup = (props: ILookup): [
     ComponentFramework.LookupValue[],
     IEntity[],
-    Required<StringProps<ILookupTranslations>>,
+    ITranslation<Required<ILookup>['translations']>,
     {
         create: (entityName: string) => void,
         select: (record: ComponentFramework.LookupValue[] | undefined) => void,
         deselect: (record: ComponentFramework.LookupValue) => void,
     },
     (entityName: string | null) => void,
-    (query: string) => Promise<ComponentFramework.LookupValue[]>
+    (query: string) => Promise<ComponentFramework.LookupValue[]>,
+    ITheme
 ] => {
 
     const targets = props.parameters.value.attributes.Targets;
     const boundValue = props.parameters.value.raw;
     const context = props.context;
-    const {labels, onNotifyOutputChanged} = useComponent('Lookup', props, lookupTranslations);
+    const {labels, theme, onNotifyOutputChanged} = useControl('Lookup', props, lookupTranslations);
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
     
     const [entities, setEntities] = useState<IEntity[]>(() => {
@@ -124,6 +125,7 @@ export const useLookup = (props: ILookup): [
             select: selectRecords
         },
         selectEntity,
-        getSearchResults
+        getSearchResults,
+        theme
     ];
 };

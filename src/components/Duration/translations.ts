@@ -1,6 +1,5 @@
-import { IDurationTranslations } from "./interfaces";
 
-export const getDefaultDurationTranslations = (): Required<IDurationTranslations> => {
+export const getDefaultDurationTranslations = () => {
     return {
         minute: {
             1029: ['min','minuta', 'minuty', 'minute', 'minutu', 'minutě', 'minutou', 'minuta', 'minuty', 'minute', 'minutu', 'minute', 'minutou'],

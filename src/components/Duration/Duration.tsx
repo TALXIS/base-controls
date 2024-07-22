@@ -1,8 +1,8 @@
-import { ComboBox } from '@talxis/react-components/dist/components/ComboBox';
+import { ComboBox } from "@talxis/react-components";
 import React, { useEffect } from 'react';
-import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
-import { IDuration, IDurationOutputs, IDurationParameters, IDurationTranslations } from './interfaces';
-import { IComboBoxOption } from '@fluentui/react';
+import { useInputBasedControl } from '../../hooks/useInputBasedControl';
+import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
+import { IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { durationOptions } from '../../sandbox/shared/durationList';
 import { UserSettings } from '../../sandbox/mock/UserSettings';
 import numeral from "numeral";
@@ -97,16 +97,18 @@ export const Duration = (props: IDuration) => {
 
     const comboBoxOptions: IComboBoxOption[] = presetOptions();
 
-    const { value, labels, sizing, setValue, onNotifyOutputChanged } = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs, IDurationTranslations>('Duration', props, {
+    const { value, labels, sizing, setValue, onNotifyOutputChanged, theme } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs,  Required<IDuration>['translations']>('Duration', props, {
         formatter: formatter,
         valueExtractor: valueExtractor,
         defaultTranslations: getDefaultDurationTranslations(),
     });
 
     return (
+        <ThemeProvider theme={theme} applyTo="none">
         <ComboBox
-            borderless={parameters.EnableBorder?.raw === false}
             options={comboBoxOptions}
+            hideErrorMessage={!parameters.ShowErrorMessage?.raw}
+            underlined={theme.effects.underlined}
             allowFreeInput={true}
             autoComplete='on'
             autofill={parameters.AutoFocus?.raw === true ? {
@@ -143,5 +145,6 @@ export const Duration = (props: IDuration) => {
                 });
             }}
         />
+        </ThemeProvider>
     );
 };

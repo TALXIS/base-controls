@@ -1,32 +1,44 @@
 import { useEffect, useMemo, useRef } from "react";
 import React from 'react';
 import deepEqual from 'fast-deep-equal/es6';
-import { IComponent, IOutputs, IParameters, ITranslations } from "../interfaces";
+import { IControl, IOutputs, IParameters } from "../interfaces";
 import { merge } from 'merge-anything';
-import { StringProps } from "../types";
 import { Liquid } from "liquidjs";
-import { useComponentSizing } from "./useComponentSizing";
+import { useControlTheme } from "./useControlTheme";
+import { ITheme } from "../interfaces/theme";
+import { useControlSizing } from "./useControlSizing";
+
+export type ITranslation<T> = {
+    [Property in keyof Required<T>]: (variables?: any) => string
+};
+
+export interface IDefaultTranslations {
+    [LCID: number]: string | string[];
+    [key: string]: any;
+}
 
 
-export interface IComponentController<TTranslations, TOutputs> {
-    labels: Required<StringProps<TTranslations>>,
+export interface IControlController<TTranslations, TOutputs> {
+    labels: Required<ITranslation<TTranslations>>,
     sizing: {
         width?: number,
         height?: number
     },
+    theme: ITheme;
     onNotifyOutputChanged: (outputs: TOutputs) => void,
 }
 /**
  * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
-export const useComponent = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, defaultTranslations?: TTranslations): IComponentController<TTranslations, TOutputs> => {
+export const useControl = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IControl<TParameters, TOutputs, TTranslations, any>, defaultTranslations?: IDefaultTranslations): IControlController<TTranslations, TOutputs> => {
     const parametersRef = useRef<TParameters>(props.parameters);
-    const sizing = useComponentSizing(props.context.mode);
+    const sizing = useControlSizing(props.context.mode);
+    const context = props.context;
     const liquid = useMemo(() => new Liquid(), []);
     const labels = useMemo(() => {
         const mergedTranslations = merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations;
-        return new Proxy(mergedTranslations, {
+        return new Proxy(mergedTranslations as any, {
             get(target, key) {
                 return (variables: any) => getLabel(key as string, mergedTranslations, variables)
             }
@@ -39,14 +51,15 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
 
     const getLabel = (key: string, translations: TTranslations, variables?: any): string | string[] => {
         const strigify = (value: string | string[]) => {
-            if(typeof value === 'string') {
+            if (typeof value === 'string') {
                 return value;
             }
             return JSON.stringify(value);
         };
+        //@ts-ignore
         const translation = translations[key];
         if (!translation) {
-            console.error(`Translation for the ${key} label of the ${name} component has not been defined!`);
+            console.error(`Translation for the ${key} label of the ${name} control has not been defined!`);
             return key;
         }
         if (typeof translation === 'string' || Array.isArray(translation)) {
@@ -54,11 +67,11 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         }
         let label = translation[props.context.userSettings.languageId];
         if (!label) {
-            console.info(`Translation for the ${key} label of the ${name} component has not been found. Using default Czech label instead.`);
+            console.info(`Translation for the ${key} label of the ${name} control has not been found. Using default Czech label instead.`);
             label = translation[1029];
         }
         if (!label) {
-            console.error(`Translation for the ${key} label of the ${name} component does not exists neither for Czech language and current LCID.`);
+            console.error(`Translation for the ${key} label of the ${name} control does not exists neither for Czech language and current LCID.`);
             label = key;
         }
 
@@ -70,20 +83,20 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         for (let [key, outputValue] of Object.entries(outputs)) {
             let parameterValue = parametersRef.current[key]?.raw;
             if (!deepEqual(parameterValue, outputValue)) {
-                if(outputValue === null) {
+                if (outputValue === null) {
                     outputValue = undefined;
                     //@ts-ignore
                     outputs[key] = undefined;
                 }
-                if(outputValue === "") {
+                if (outputValue === "") {
                     outputValue = undefined
                     //@ts-ignore
                     outputs[key] = undefined;
                 }
-                if(parameterValue === null) {
+                if (parameterValue === null) {
                     parameterValue = undefined;
                 }
-                if(parameterValue === outputValue) {
+                if (parameterValue === outputValue) {
                     continue
                 }
                 isDirty = true;
@@ -93,12 +106,13 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         if (!isDirty) {
             return;
         }
-        //console.log(`Change detected, triggering notifyOutputChanged on component ${name}.`);
+        //console.log(`Change detected, triggering notifyOutputChanged on control ${name}.`);
         props.onNotifyOutputChanged?.(outputs);
     };
     return {
         labels,
         sizing,
+        theme: useControlTheme(context.fluentDesignLanguage),
         onNotifyOutputChanged
     }
 };

@@ -3,7 +3,7 @@ import equal from 'fast-deep-equal/es6';
 import { IEntityRecord } from "../../interfaces";
 import { Grid } from "../model/Grid";
 import { IGridColumn } from "../interfaces/IGridColumn";
-import { GridContext } from "../../Grid";
+import { GridContext } from "../../GridContext";
 
 interface IGridController {
     columns: IGridColumn[],

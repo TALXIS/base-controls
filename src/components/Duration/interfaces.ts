@@ -1,22 +1,16 @@
+import { IComboBoxProps } from "@talxis/react-components";
 import { IWholeNumberProperty } from "../../interfaces";
-import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
-import { IBaseParameters } from "../../interfaces/parameters";
+import { IControl, IOutputs, ITranslations } from "../../interfaces/context";
+import { IInputParameters } from "../../interfaces/parameters";
+import { getDefaultDurationTranslations } from "./translations";
 
-export interface IDuration extends IComponent<IDurationParameters, IDurationOutputs, IDurationTranslations> {
+export interface IDuration extends IControl<IDurationParameters, IDurationOutputs, Partial<ITranslations<ReturnType<typeof getDefaultDurationTranslations>>>, IComboBoxProps> {
 }
 
-export interface IDurationParameters extends IBaseParameters {
+export interface IDurationParameters extends IInputParameters {
     value: IWholeNumberProperty;
 }
 
 export interface IDurationOutputs extends IOutputs {
     value?: number
-}
-export interface IDurationTranslations extends ITranslations {
-    minute?: {[LCID: number]: string []}
-    minutes?: {[LCID: number]: string[]}
-    hour?: {[LCID: number]: string[]}
-    hours?: {[LCID: number]: string[]}
-    day?: {[LCID: number]: string[]}
-    days?: {[LCID: number]: string[]}
 }

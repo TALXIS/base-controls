@@ -1,13 +1,12 @@
 import React from 'react';
-import { IEntity, ILookupTranslations } from '../interfaces';
+import { IEntity } from '../interfaces';
 import { Text } from '@fluentui/react/lib/Text';
 import { Link, useTheme } from '@fluentui/react';
-import { getLookupStyles, getTargetSelectorStyles } from '../styles';
-import { StringProps } from '../../../types';
+import { getTargetSelectorStyles } from '../styles';
 import { useLoadedEntities } from '../hooks/useLoadedEntities';
 
 interface ITargetSelector {
-    labels: Required<StringProps<ILookupTranslations>>,
+    labels: any;
     entities: IEntity[];
     onEntitySelected: (entityName: string | null) => void;
 }

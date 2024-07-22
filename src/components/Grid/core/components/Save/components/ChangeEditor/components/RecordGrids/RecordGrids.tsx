@@ -2,9 +2,9 @@ import React from 'react';
 import { Grid } from '../../../../../../../Grid';
 import { useGridInstance } from '../../../../../../hooks/useGridInstance';
 import { IUpdatedRecord } from '../../../../../../services/RecordUpdateService/model/RecordUpdateService';
-import { Text } from '@fluentui/react/lib/Text';
+import { Text } from '@fluentui/react';
 import { IEntityColumn, IEntityRecord, IGrid, IGridParameters } from '../../../../../../../interfaces';
-import { Icon } from '@fluentui/react/lib/components/Icon/Icon';
+import { Icon } from '@fluentui/react';
 import { getRecordGridStyles } from './styles';
 import { useTheme } from '@fluentui/react';
 

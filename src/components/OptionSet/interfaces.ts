@@ -1,17 +1,15 @@
+import { IComboBoxProps } from "@talxis/react-components";
 import { IOptionSetProperty } from "../../interfaces";
-import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
-import { IBaseParameters } from "../../interfaces/parameters";
+import { IControl, IOutputs} from "../../interfaces/context";
+import { IInputParameters } from "../../interfaces/parameters";
 
-export interface IOptionSet extends IComponent<IOptionSetParameters, IOptionSetOutputs, IOptionSetTranslations> {
+export interface IOptionSet extends IControl<IOptionSetParameters, IOptionSetOutputs, any, IComboBoxProps> {
 }
 
-export interface IOptionSetParameters extends IBaseParameters {
+export interface IOptionSetParameters extends IInputParameters {
     value: IOptionSetProperty;
 }
 
 export interface IOptionSetOutputs extends IOutputs {
     value?: number
-}
-export interface IOptionSetTranslations extends ITranslations {
-
 }

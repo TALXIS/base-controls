@@ -1,6 +1,6 @@
 import React, { ReactElement } from "react";
 import { useEffect, useState } from "react";
-import { Text } from '@fluentui/react/lib/Text';
+import { Text } from '@fluentui/react';
 import { optionSetStyles } from "./styles";
 import color from 'color';
 import { useTheme } from "@fluentui/react";

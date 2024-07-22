@@ -2,7 +2,7 @@ export interface IOutputs {
     [key: string]: any
 }
 
-export interface IComponent<TParameters, TOutputs, TTranslations> {
+export interface IControl<TParameters, TOutputs, TTranslations, TComponentProps> {
     context: ComponentFramework.Context<any>;
     parameters: TParameters;
     translations?: TTranslations;
@@ -12,10 +12,12 @@ export interface IComponent<TParameters, TOutputs, TTranslations> {
     * Exceptions are input based component where it fires on the blur event.
     */
     onNotifyOutputChanged?: (outputs: TOutputs) => void;
+    /**
+    * Allows you to override the props of the internal component that the control uses for UI rendering. Might not work on every control. ONLY USE WHEN ABSOLUTELY NECESSARY AND CONSULT YOUR INTENTIONS WITH BRY!
+    */
+    onOverrideComponentProps?: (props: TComponentProps) => Partial<TComponentProps>; 
 }
 
-export interface ITranslations {
-    [key: string]: {
-        [LCID: number]: string | string[]
-    } | undefined
+export type ITranslations<T> = {
+    [Property in keyof T]: T[Property] extends string[] ? string[] : string
 }

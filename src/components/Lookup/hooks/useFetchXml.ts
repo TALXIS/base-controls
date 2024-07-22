@@ -1,6 +1,6 @@
 import { useRef } from "react"
 import { IEntity } from "../interfaces";
-import { Sdk } from "../lib";
+import { FetchXmlBuilder } from "@talxis/client-libraries";
 
 export const useFetchXml = (context: ComponentFramework.Context<any>): [
     (viewId: string) => Promise<string>,
@@ -21,9 +21,9 @@ export const useFetchXml = (context: ComponentFramework.Context<any>): [
             return fetchXml
         }
         const metadata = await entity.metadata;
-        const xmlObject = Sdk.FetchXml.fetch.fromXml(fetchXml);
-        xmlObject.entity.addFilter(new Sdk.FetchXml.filter(Sdk.FetchXml.FilterType.Or, [
-            new Sdk.FetchXml.condition(metadata.PrimaryNameAttribute, Sdk.FetchXml.Operator.Like, [new Sdk.FetchXml.value(`%${query}%`)])
+        const xmlObject = FetchXmlBuilder.fetch.fromXml(fetchXml);
+        xmlObject.entity.addFilter(new FetchXmlBuilder.filter(FetchXmlBuilder.FilterType.Or, [
+            new FetchXmlBuilder.condition(metadata.PrimaryNameAttribute, FetchXmlBuilder.Operator.Like, [new FetchXmlBuilder.value(`%${query}%`)])
         ]))
         return xmlObject.toXml();
     }

@@ -8,7 +8,7 @@ export const getDateTimeStyles = (theme: ITheme) => {
             }
         },
         calendarCallout: {
-            '.TALXIS__timepicker__root': {
+            '[class*="TALXIS__timepicker__root"]': {
                 padding: 12,
                 'label': {
                     paddingTop: 0
@@ -21,13 +21,10 @@ export const getDateTimeStyles = (theme: ITheme) => {
                 margin: 0,
                 border: 'none',
                 height: 1,
-                backgroundColor: theme.semanticColors.bodyDivider
+                backgroundColor: theme.semanticColors.menuDivider
             },
             '[class^="monthAndYear"], [class*="weekDayLabelCell"]': {
                 animationDuration: '0s'
-            },
-            '[class^="dayCell"]:focus': {
-               outline: `solid 1px !important`
             },
             '.ms-DatePicker': {
                 animationDuration: '0s'

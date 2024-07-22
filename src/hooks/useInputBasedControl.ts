@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { IComponent, IOutputs, ITranslations } from "../interfaces/context";
-import { IComponentController, useComponent } from "./useComponent";
+import { IControl, IOutputs } from "../interfaces/context";
+import { IControlController, IDefaultTranslations, useControl } from "./useControl";
 import React from 'react';
 import { IInputParameters } from "../interfaces/parameters";
-import { StringProps } from "../types";
 
 /**
  * Description
  * @param {any} value:any
  * @returns {any}
  */
-interface IComponentOptions<TTranslations> {
-    defaultTranslations?: TTranslations,
+interface IControlOptions {
+    defaultTranslations?: IDefaultTranslations;
     /**
      * Formatting function that will format the bound value every time a new one comes from the props.
      */
@@ -34,17 +33,17 @@ interface IComponentOptions<TTranslations> {
  * The method will notify the framework only if the provided output differs from the current inputs.
  */
 
-interface IInputBasedComponentController<TValue, TTranslations, TOutputs> extends IComponentController<TTranslations, TOutputs> {
+interface IInputBasedControlController<TValue, TTranslations, TOutputs> extends IControlController<TTranslations, TOutputs> {
     value: TValue,
     setValue: (value: TValue) => void
 }
 
-export const useInputBasedComponent = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations extends ITranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations>, options?: IComponentOptions<TTranslations>): IInputBasedComponentController<TValue, TTranslations, TOutputs> => {
+export const useInputBasedControl = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IControl<TParameters, TOutputs, TTranslations, any>, options?: IControlOptions): IInputBasedControlController<TValue, TTranslations, TOutputs> => {
     const {formatter, valueExtractor} = {...options};
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
-    const {labels, sizing, onNotifyOutputChanged} = useComponent(name, props, options?.defaultTranslations);
+    const {labels, sizing, theme, onNotifyOutputChanged} = useControl(name, props, options?.defaultTranslations);
 
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
@@ -69,6 +68,7 @@ export const useInputBasedComponent = <TValue, TParameters extends IInputParamet
         value,
         labels,
         sizing,
+        theme,
         onNotifyOutputChanged,
         setValue
     }

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Callout, IconButton, PrimaryButton, Button, ICalloutProps } from '@fluentui/react';
-import { Text } from '@fluentui/react/lib/Text';
+import { Text } from '@fluentui/react';
 import { filterCalloutStyles } from './styles';
 import { IColumnFilterConditionController, useColumnFilterConditionController } from '../../controller/useColumnFilterConditionController';
 import { IGridColumn } from '../../../core/interfaces/IGridColumn';

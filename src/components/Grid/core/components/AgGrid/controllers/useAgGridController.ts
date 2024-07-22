@@ -14,7 +14,7 @@ import { useDebounce } from 'use-debounce';
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { usePagingController } from "../../../../paging/controllers/usePagingController";
-import { useStateValues } from "@talxis/react-components/dist/hooks";
+import { useStateValues } from "@talxis/react-components";
 import { IUpdatedRecord } from "../../../services/RecordUpdateService/model/RecordUpdateService";
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 

@@ -1,20 +1,18 @@
-import { IDecimalNumberProperty } from "../../interfaces";
+import { IDecimalNumberProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IInputParameters } from "../../interfaces/parameters";
-import { IComponent, IOutputs, ITranslations } from "../../interfaces/context";
+import { IControl, IOutputs } from "../../interfaces/context";
+import { ITextFieldProps } from "@talxis/react-components";
 
-export interface IDecimal extends IComponent<IDecimalParameters, IDecimalOutputs, IDecimalTranslations> {
+export interface IDecimal extends IControl<IDecimalParameters, IDecimalOutputs, any, ITextFieldProps> {
     
 }
 
 export interface IDecimalParameters extends IInputParameters {
     //bound parameter
     value: IDecimalNumberProperty;
+    EnableSpinButton?: ITwoOptionsProperty;
 }
 
 export interface IDecimalOutputs extends IOutputs {
     value?: number;
-}
-
-export interface IDecimalTranslations extends ITranslations {
-
 }
