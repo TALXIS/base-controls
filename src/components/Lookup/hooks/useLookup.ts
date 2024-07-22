@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ITranslation, useComponent } from "../../../hooks";
+import { ITranslation, useControl } from "../../../hooks";
 import { ITheme } from "../../../interfaces/theme";
 import { IEntity, ILookup } from "../interfaces";
 import { lookupTranslations } from "../translations";
@@ -22,7 +22,7 @@ export const useLookup = (props: ILookup): [
     const targets = props.parameters.value.attributes.Targets;
     const boundValue = props.parameters.value.raw;
     const context = props.context;
-    const {labels, theme, onNotifyOutputChanged} = useComponent('Lookup', props, lookupTranslations);
+    const {labels, theme, onNotifyOutputChanged} = useControl('Lookup', props, lookupTranslations);
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
     
     const [entities, setEntities] = useState<IEntity[]>(() => {

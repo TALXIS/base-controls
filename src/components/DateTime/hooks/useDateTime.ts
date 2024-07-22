@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useInputBasedComponent } from "../../../hooks/useInputBasedComponent";
+import { useInputBasedControl } from "../../../hooks/useInputBasedControl";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters} from "../interfaces";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -70,7 +70,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         return date;
     };
 
-    const {value, labels, theme, setValue, onNotifyOutputChanged} = useInputBasedComponent<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
+    const {value, labels, theme, setValue, onNotifyOutputChanged} = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
         formatter: formatDate,
         defaultTranslations: getDefaultDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
     });

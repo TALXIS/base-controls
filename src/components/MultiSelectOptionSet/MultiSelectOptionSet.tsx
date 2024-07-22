@@ -1,12 +1,12 @@
 
 import { IMultiSelectOptionSet } from './interfaces';
-import { useComponent } from '../../hooks';
+import { useControl } from '../../hooks';
 import { ComboBox } from "@talxis/react-components";
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import React, { useEffect, useRef } from 'react';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
-    const { sizing, onNotifyOutputChanged, theme } = useComponent('MultiSelectOptionSet', props);
+    const { sizing, onNotifyOutputChanged, theme } = useControl('MultiSelectOptionSet', props);
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const componentRef = useRef<IComboBox>(null);

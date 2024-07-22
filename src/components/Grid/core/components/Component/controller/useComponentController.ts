@@ -1,19 +1,19 @@
 import { useEffect, useMemo,useRef,useState } from "react"
-import { IComponentProps } from "../Component";
+import { IControlProps } from "../Component";
 import { Component } from '../model/Component';
 import { useGridInstance } from "../../../hooks/useGridInstance";
-import { IComponent } from "../../../../../../interfaces/context";
+import { IControl } from "../../../../../../interfaces/context";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 
-interface IComponentController {
+interface IControlController {
     column: IGridColumn;
-    componentProps: IComponent<any, any, any, any>;
+    componentProps: IControl<any, any, any, any>;
 }
 
-export const useComponentController = (props: IComponentProps): IComponentController | undefined => {
+export const useComponentController = (props: IControlProps): IControlController | undefined => {
     const grid = useGridInstance();
     const component = useMemo(() => new Component(grid), []);
-    const [controller, setController] = useState<IComponentController>();
+    const [controller, setController] = useState<IControlController>();
     const mountedRef = useRef<boolean>(true);
     
     useEffect(() => {

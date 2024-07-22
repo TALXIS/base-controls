@@ -1,5 +1,5 @@
 import { Toggle } from '@fluentui/react';
-import { useComponent } from '../../hooks';
+import { useControl } from '../../hooks';
 import { ITwoOptions } from './interfaces';
 import React, { useEffect, useRef } from 'react';
 
@@ -7,7 +7,7 @@ export const TwoOptions = (props: ITwoOptions) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const options = boundValue.attributes.Options;
-    const {sizing, onNotifyOutputChanged, theme} = useComponent('TwoOptions', props);
+    const {sizing, onNotifyOutputChanged, theme} = useControl('TwoOptions', props);
     const context = props.context;
     const componentRef = useRef<any>(null);
     

@@ -12,7 +12,7 @@ import { IGridColumn } from "../../interfaces/IGridColumn";
 import { useComponentController } from "./controller/useComponentController";
 import React from 'react';
 
-export interface IComponentProps {
+export interface IControlProps {
     column: IGridColumn;
     value: any;
     formattedValue?: string;
@@ -20,7 +20,7 @@ export interface IComponentProps {
     additionalParameters?: IParameters;
 }
 
-export const Component = (props: IComponentProps) => {
+export const Component = (props: IControlProps) => {
     const controller = useComponentController(props);
     const {column, componentProps} = {...controller};
     if(!column) {

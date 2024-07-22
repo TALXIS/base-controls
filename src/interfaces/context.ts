@@ -2,7 +2,7 @@ export interface IOutputs {
     [key: string]: any
 }
 
-export interface IComponent<TParameters, TOutputs, TTranslations, TComponentProps> {
+export interface IControl<TParameters, TOutputs, TTranslations, TComponentProps> {
     context: ComponentFramework.Context<any>;
     parameters: TParameters;
     translations?: TTranslations;

@@ -1,6 +1,6 @@
 import { ComboBox } from "@talxis/react-components";
 import React, { useEffect } from 'react';
-import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
+import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { durationOptions } from '../../sandbox/shared/durationList';
@@ -97,7 +97,7 @@ export const Duration = (props: IDuration) => {
 
     const comboBoxOptions: IComboBoxOption[] = presetOptions();
 
-    const { value, labels, sizing, setValue, onNotifyOutputChanged, theme } = useInputBasedComponent<string | null, IDurationParameters, IDurationOutputs,  Required<IDuration>['translations']>('Duration', props, {
+    const { value, labels, sizing, setValue, onNotifyOutputChanged, theme } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs,  Required<IDuration>['translations']>('Duration', props, {
         formatter: formatter,
         valueExtractor: valueExtractor,
         defaultTranslations: getDefaultDurationTranslations(),

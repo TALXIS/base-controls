@@ -7,7 +7,7 @@ import { useDateTime } from "./hooks/useDateTime";
 import { Calendar } from "./components/Calendar";
 import { DatePicker } from "@talxis/react-components";
 import React from 'react';
-import { useComponentSizing } from "../../hooks/useComponentSizing";
+import { useControlSizing } from "../../hooks/useControlSizing";
 import dayjs from "dayjs";
 
 export const DateTime = (componentProps: IDateTime) => {
@@ -17,7 +17,7 @@ export const DateTime = (componentProps: IDateTime) => {
     const parameters = componentProps.parameters;
     const [isDateTime, theme, labels, date, patterns] = useDateTime(componentProps, ref);
     const styles = getDateTimeStyles(theme);
-    const { height, width } = useComponentSizing(componentProps.context.mode);
+    const { height, width } = useControlSizing(componentProps.context.mode);
     const lastInputedTimeString = useRef<string>();
 
     useEffect(() => {

@@ -1,6 +1,6 @@
 import { ITextFieldProps, TextField as TextFieldBase } from "@talxis/react-components";
 import { useMemo, useRef } from 'react';
-import { useInputBasedComponent } from '../../hooks/useInputBasedComponent';
+import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
 import React from 'react';
 import { ICommandBarItemProps, ThemeProvider } from '@fluentui/react';
@@ -10,7 +10,7 @@ export const TextField = (props: ITextField) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const ref = useRef<HTMLDivElement>(null);
-    const { value, sizing, theme, setValue, onNotifyOutputChanged } = useInputBasedComponent<string | undefined, ITextFieldParameters, ITextFieldOutputs, any>('TextField', props);
+    const { value, sizing, theme, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, ITextFieldParameters, ITextFieldOutputs, any>('TextField', props);
 
     const getInputType = () => {
         switch (boundValue.type) {

@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef } from "react";
 import React from 'react';
 import deepEqual from 'fast-deep-equal/es6';
-import { IComponent, IOutputs, IParameters } from "../interfaces";
+import { IControl, IOutputs, IParameters } from "../interfaces";
 import { merge } from 'merge-anything';
 import { Liquid } from "liquidjs";
-import { useComponentSizing } from "./useComponentSizing";
 import { useControlTheme } from "./useControlTheme";
 import { ITheme } from "../interfaces/theme";
+import { useControlSizing } from "./useControlSizing";
 
 export type ITranslation<T> = {
     [Property in keyof Required<T>]: (variables?: any) => string
@@ -18,7 +18,7 @@ export interface IDefaultTranslations {
 }
 
 
-export interface IComponentController<TTranslations, TOutputs> {
+export interface IControlController<TTranslations, TOutputs> {
     labels: Required<ITranslation<TTranslations>>,
     sizing: {
         width?: number,
@@ -31,9 +31,9 @@ export interface IComponentController<TTranslations, TOutputs> {
  * Provides automatic checking if the given outputs are different from the provided inputs. Use the provided method any time you want
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
-export const useComponent = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IComponent<TParameters, TOutputs, TTranslations, any>, defaultTranslations?: IDefaultTranslations): IComponentController<TTranslations, TOutputs> => {
+export const useControl = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IControl<TParameters, TOutputs, TTranslations, any>, defaultTranslations?: IDefaultTranslations): IControlController<TTranslations, TOutputs> => {
     const parametersRef = useRef<TParameters>(props.parameters);
-    const sizing = useComponentSizing(props.context.mode);
+    const sizing = useControlSizing(props.context.mode);
     const context = props.context;
     const liquid = useMemo(() => new Liquid(), []);
     const labels = useMemo(() => {
@@ -59,7 +59,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         //@ts-ignore
         const translation = translations[key];
         if (!translation) {
-            console.error(`Translation for the ${key} label of the ${name} component has not been defined!`);
+            console.error(`Translation for the ${key} label of the ${name} control has not been defined!`);
             return key;
         }
         if (typeof translation === 'string' || Array.isArray(translation)) {
@@ -67,11 +67,11 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         }
         let label = translation[props.context.userSettings.languageId];
         if (!label) {
-            console.info(`Translation for the ${key} label of the ${name} component has not been found. Using default Czech label instead.`);
+            console.info(`Translation for the ${key} label of the ${name} control has not been found. Using default Czech label instead.`);
             label = translation[1029];
         }
         if (!label) {
-            console.error(`Translation for the ${key} label of the ${name} component does not exists neither for Czech language and current LCID.`);
+            console.error(`Translation for the ${key} label of the ${name} control does not exists neither for Czech language and current LCID.`);
             label = key;
         }
 
@@ -106,7 +106,7 @@ export const useComponent = <TParameters extends IParameters, TOutputs extends I
         if (!isDirty) {
             return;
         }
-        //console.log(`Change detected, triggering notifyOutputChanged on component ${name}.`);
+        //console.log(`Change detected, triggering notifyOutputChanged on control ${name}.`);
         props.onNotifyOutputChanged?.(outputs);
     };
     return {

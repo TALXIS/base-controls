@@ -1,9 +1,9 @@
 import { IDecimalNumberProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IInputParameters } from "../../interfaces/parameters";
-import { IComponent, IOutputs } from "../../interfaces/context";
+import { IControl, IOutputs } from "../../interfaces/context";
 import { ITextFieldProps } from "@talxis/react-components";
 
-export interface IDecimal extends IComponent<IDecimalParameters, IDecimalOutputs, any, ITextFieldProps> {
+export interface IDecimal extends IControl<IDecimalParameters, IDecimalOutputs, any, ITextFieldProps> {
     
 }
 

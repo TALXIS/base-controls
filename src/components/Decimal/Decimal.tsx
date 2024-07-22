@@ -1,5 +1,5 @@
 import { ITextFieldProps, TextField } from "@talxis/react-components";
-import { useInputBasedComponent } from "../../hooks/useInputBasedComponent";
+import { useInputBasedControl } from "../../hooks/useInputBasedControl";
 import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
 import React, { useEffect, useMemo, useRef } from "react";
 import numeral from "numeral";
@@ -94,7 +94,7 @@ export const Decimal = (props: IDecimal) => {
         return value;
     };
 
-    const { value, sizing, theme, setValue, onNotifyOutputChanged } = useInputBasedComponent<string | undefined, IDecimalParameters, IDecimalOutputs, any>('Decimal', props, {
+    const { value, sizing, theme, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDecimalParameters, IDecimalOutputs, any>('Decimal', props, {
         formatter: formatter,
         valueExtractor: extractNumericPart
     });

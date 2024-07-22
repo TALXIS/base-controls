@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useComponent } from "../../hooks"
+import { useControl } from "../../hooks"
 import { IGridContext } from "./core/interfaces/IGridContext";
 import { Grid as GridModel } from "./core/model/Grid";
 import { IGrid } from "./interfaces";
@@ -9,7 +9,7 @@ import { gridTranslations } from './translations';
 import { GridContext } from "./GridContext";
 
 export const Grid = (props: IGrid) => {
-    const {labels} = useComponent('Grid', props, gridTranslations);
+    const {labels} = useControl('Grid', props, gridTranslations);
     const providerValue: IGridContext = useMemo(() => {
         return {
             gridInstance: new GridModel(props, labels)

@@ -1,5 +1,5 @@
 
-export const useComponentSizing = (mode: ComponentFramework.Mode): {
+export const useControlSizing = (mode: ComponentFramework.Mode): {
     height?: number,
     width?: number
 } => {

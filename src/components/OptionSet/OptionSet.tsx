@@ -1,12 +1,12 @@
 
 import { IOptionSet } from './interfaces';
-import { useComponent } from '../../hooks';
+import { useControl } from '../../hooks';
 import { ComboBox } from "@talxis/react-components";
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import React, { useEffect, useRef } from 'react';
 
 export const OptionSet = (props: IOptionSet) => {
-    const { sizing, onNotifyOutputChanged, theme } = useComponent('OptionSet', props);
+    const { sizing, onNotifyOutputChanged, theme } = useControl('OptionSet', props);
     const componentRef = useRef<IComboBox>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
