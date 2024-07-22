@@ -66,13 +66,12 @@ export default [
             resolve(),
             typescript({
                 tsconfig: './tsconfig.json',
-                emitDeclarationOnly: true
             }),
             postcss(),
             multiInput(),
-          /*   terser({
+            terser({
                 keep_classnames: true,
-            }), */
+            }),
             visualizer(),
         ],
     },
