@@ -29,7 +29,6 @@ export const Lookup = (props: ILookup) => {
 
 
     useEffect(() => {
-        console.log(componentRef.current)
         if (firstRenderRef.current) {
             firstRenderRef.current = false;
             return;

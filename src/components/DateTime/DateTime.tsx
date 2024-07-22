@@ -81,7 +81,6 @@ export const DateTime = (componentProps: IDateTime) => {
                         if(isDateTime) {
                             const datePart = dayjs(value, patterns.shortDatePattern).format(patterns.shortDatePattern);
                             const time = value?.split(datePart).pop()?.substring(1);
-                            console.log(time)
                             lastInputedTimeString.current = time;
                         }
                         date.setDateString(value)
