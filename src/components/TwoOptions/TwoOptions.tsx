@@ -24,7 +24,7 @@ export const TwoOptions = (props: ITwoOptions) => {
     };
 
     return (
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={theme} applyTo='none'>
             <Toggle
                 styles={{
                     root: {

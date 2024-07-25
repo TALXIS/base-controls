@@ -173,7 +173,7 @@ export class Grid {
                 isSortable: this._isColumnSortable(column),
                 isSorted: sorted ? true : false,
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
-                width: this.state?.columnSizing?.columnSizingModel?.find((x: any) => x.colId === key).width || column.visualSizeFactor,
+                width: this.state?.columnSizing?.columnSizingModel?.find((x: any) => x.colId === key)?.width || column.visualSizeFactor,
                 isResizable: column.isResizable ?? true,
             } as IGridColumn;
 

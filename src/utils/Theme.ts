@@ -47,6 +47,7 @@ export const normalizeComponentStyling = (theme: ITheme) => {
             styles: (props: IToggleStyleProps) => {
                 return {
                     pill: {
+                        backgroundColor: !props.checked ? theme.semanticColors.inputBackground : undefined,
                         ':hover': {
                             borderColor: !props.checked ? props.theme.semanticColors.smallInputBorder : undefined
                         },

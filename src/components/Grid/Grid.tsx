@@ -27,7 +27,7 @@ export const Grid = (props: IGrid) => {
     const theme = useControlTheme(props.context.fluentDesignLanguage);
     return (
         <GridContext.Provider value={providerValue}>
-            <ThemeProvider className={`talxis__gridControl__root ${styles.root}`} theme={theme} applyTo='none'>
+            <ThemeProvider className={`talxis__gridControl ${styles.root}`} theme={theme} applyTo='none'>
                 <AgGrid />
             </ThemeProvider>
         </GridContext.Provider>

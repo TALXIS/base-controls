@@ -6,6 +6,7 @@ import { useRecordUpdateServiceController } from '../../../services/RecordUpdate
 import { Component } from '../../Component/Component';
 import { ICellEditorParams } from '@ag-grid-community/core';
 import { IEntityRecord } from '../../../../interfaces';
+import { useTheme } from '@fluentui/react';
 
 interface ICell extends ICellEditorParams {
     baseColumn: IGridColumn;
@@ -25,6 +26,7 @@ export const EditableCell = (props: ICell) => {
     })();
     const valueRef = React.useRef(record.getValue(column.key));
     const [value, setValue] = React.useState(valueRef.current);
+    const theme = useTheme();
 
     React.useEffect(() => {
         return () => {
@@ -123,18 +125,35 @@ export const EditableCell = (props: ICell) => {
         value={getComponentValue(value)}
         formattedValue={record.getFormattedValue(column.key)}
         onNotifyOutputChanged={onNotifyOutputChanged}
-        additionalParameters={{
-            AutoFocus: {
-                raw: true
-            },
-            Height: {
-                raw: 41
-            },
-            EnableNavigation: {
-                raw: false
-            },
-            IsInlineNewEnabled: {
-                raw: false
+        onOverrideControlProps={(props) => {
+            return {
+                ...props,
+                context: {
+                    ...props.context,
+                    mode: {
+                        ...props.context.mode,
+                        allocatedHeight: 41
+                    },
+                    fluentDesignLanguage: props.context.fluentDesignLanguage ? {
+                        ...props.context.fluentDesignLanguage,
+                        tokenTheme: {
+                            ...props.context.fluentDesignLanguage.tokenTheme,
+                            underlined: false,
+                        }
+                    } : undefined
+                },
+                parameters: {
+                    ...props.parameters,
+                    AutoFocus: {
+                        raw: true
+                    },
+                    EnableNavigation: {
+                        raw: false
+                    },
+                    IsInlineNewEnabled: {
+                        raw: false
+                    }
+                }
             }
         }}
     />

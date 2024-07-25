@@ -41,6 +41,7 @@ const getHeight = (height?: number) => {
 export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?: number) => {
     const _height = getHeight(height);
     return mergeStyleSets({
+        displayName: 'talxis__lookupControl',
         root: {
             '[data-navigation-enabled="true"]': {
                 '.ms-Button-label': {

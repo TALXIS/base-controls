@@ -37,8 +37,9 @@ export class Component extends GridDependency {
     private static _lookupSavedQueriesCache = new Map<string, Promise<ComponentFramework.WebApi.Entity>>;
 
     public async getControlProps(props: IControlProps): Promise<IControl<any, any, any, any>> {
-        const { column, value, onNotifyOutputChanged, additionalParameters, formattedValue } = { ...props };
+        const { column, value, onNotifyOutputChanged, formattedValue } = { ...props };
         const [isValid, validationErrorMessage] = new ColumnValidation(this._grid, props.column).validate(value);
+        const onOverrideControlProps = props?.onOverrideControlProps ?? ((props: IControl<any, any, any, any>) => props);
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_OWNER: {
@@ -48,17 +49,18 @@ export class Component extends GridDependency {
                     targets.push('systemuser', 'team')
                 }
                 const result = {
-                    context: this._getInjectedContext(additionalParameters),
+                    context: this._pcfContext,
                     parameters: {
                         value: {
-                            getAllViews: async (entityName: string) => {
-                                if (!Component._lookupSavedQueriesCache.get(entityName)) {
-                                    Component._lookupSavedQueriesCache.set(entityName, new Promise(async (resolve) => {
-                                        const response = await this._pcfContext.webAPI.retrieveMultipleRecords('savedquery', `?$filter=returnedtypecode eq '${entityName}' and querytype eq 64 and isdefault eq true&$select=name,savedqueryid,fetchxml`);
+                            getAllViews: async (entityName: string, __queryType: number = 64) => {
+                                const cacheKey = `${entityName}_${__queryType}`
+                                if (!Component._lookupSavedQueriesCache.get(cacheKey)) {
+                                    Component._lookupSavedQueriesCache.set(cacheKey, new Promise(async (resolve) => {
+                                        const response = await this._pcfContext.webAPI.retrieveMultipleRecords('savedquery', `?$filter=returnedtypecode eq '${entityName}' and querytype eq ${__queryType} and isdefault eq true&$select=name,savedqueryid,fetchxml`);
                                         resolve(response.entities[0])
                                     }))
                                 }
-                                const result = await Component._lookupSavedQueriesCache.get(entityName)!;
+                                const result = await Component._lookupSavedQueriesCache.get(cacheKey)!;
                                 return [
                                     {
                                         isDefault: true,
@@ -70,23 +72,23 @@ export class Component extends GridDependency {
                             },
                             raw: await this._debouncedGetLookupValue(targets, value),
                             attributes: {
-                                Targets: targets
+                                Targets: targets,
+                                DisplayName: columnMetadata.DisplayName
                             },
                             error: !isValid,
                             errorMessage: validationErrorMessage,
-                        },
-                        ...additionalParameters
+                        }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
 
                 } as ILookup;
-                return result;
+                return onOverrideControlProps(result);
             }
             case DataType.TWO_OPTIONS: {
                 const twoOptionsValue = value as boolean | undefined | null;
                 const [defaultValue, options] = await this._grid.metadata.getOptions(column)
-                return {
-                    context: this._getInjectedContext(additionalParameters),
+                return onOverrideControlProps({
+                    context: this._pcfContext,
                     parameters: {
                         value: {
                             raw: twoOptionsValue === true ? true : false,
@@ -95,17 +97,16 @@ export class Component extends GridDependency {
                             attributes: {
                                 Options: options
                             }
-                        },
-                        ...additionalParameters
+                        }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
-                } as ITwoOptions
+                } as ITwoOptions)
             }
             case DataType.OPTIONSET: {
                 const optionSetValue = value as number | null | undefined;
                 const [defaultValue, options] = await this._grid.metadata.getOptions(column)
-                return {
-                    context: this._getInjectedContext(additionalParameters),
+                return onOverrideControlProps({
+                    context: this._pcfContext,
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
@@ -115,16 +116,15 @@ export class Component extends GridDependency {
                                 Options: options
                             }
                         },
-                        ...additionalParameters
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
-                } as IOptionSet;
+                } as IOptionSet);
             }
             case DataType.MULTI_SELECT_OPTIONSET: {
                 const [defaultValue, options] = await this._grid.metadata.getOptions(column)
                 const optionSetValue = value as number[] | null | undefined;
-                return {
-                    context: this._getInjectedContext(additionalParameters),
+                return onOverrideControlProps({
+                    context: this._pcfContext,
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
@@ -133,19 +133,18 @@ export class Component extends GridDependency {
                             attributes: {
                                 Options: options
                             }
-                        },
-                        ...additionalParameters
+                        }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
-                } as IMultiSelectOptionSet
+                } as IMultiSelectOptionSet);
             }
             case DataType.DATE_AND_TIME_DATE_AND_TIME:
             case DataType.DATE_AND_TIME_DATE_ONLY: {
                 const dateTimeValue = value as Date | null | undefined;
                 const metadata = await this._grid.metadata.get(column);
                 const date = dayjs(dateTimeValue);
-                return {
-                    context: this._getInjectedContext(additionalParameters),
+                return onOverrideControlProps({
+                    context: this._pcfContext,
                     parameters: {
                         value: {
                             raw: date.isValid() ? date.toDate() : dateTimeValue,
@@ -155,11 +154,10 @@ export class Component extends GridDependency {
                                 Behavior: metadata.Attributes.get(column.attributeName).Behavior,
                                 Format: column.dataType
                             }
-                        },
-                        ...additionalParameters
+                        }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
-                } as IDateTime;
+                } as IDateTime);
             }
             case DataType.WHOLE_NONE:
             case DataType.DECIMAL:
@@ -168,8 +166,8 @@ export class Component extends GridDependency {
                 const decimalValue = value as number | null | undefined
                 const metadata = await this._grid.metadata.get(column);
                 const precision = metadata.Attributes.get(column.attributeName).Precision;
-                return {
-                    context: this._getInjectedContext(additionalParameters),
+                return onOverrideControlProps({
+                    context: this._pcfContext,
                     parameters: {
                         value: {
                             raw: decimalValue ?? null,
@@ -184,16 +182,15 @@ export class Component extends GridDependency {
                         },
                         NotifyOutputChangedOnUnmount: {
                             raw: true,
-                        },
-                        ...additionalParameters
+                        }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
 
-                } as IDecimal;
+                } as IDecimal);
             }
             default: {
-                return {
-                    context: this._getInjectedContext(additionalParameters),
+                return onOverrideControlProps({
+                    context: this._pcfContext,
                     parameters: {
                         isResizable: {
                             raw: false
@@ -205,21 +202,10 @@ export class Component extends GridDependency {
                             raw: value,
                             error: !isValid,
                             errorMessage: validationErrorMessage
-                        },
-                        ...additionalParameters
+                        }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
-                } as ITextField
-            }
-        }
-    }
-    private _getInjectedContext(additionalParameters?: IParameters) {
-        return {
-            ...this._pcfContext,
-            mode: {
-                ...this._pcfContext.mode,
-                allocatedHeight: additionalParameters?.Height?.raw ?? this._pcfContext.mode.allocatedHeight,
-                allocatedWidth: additionalParameters?.Width?.raw ?? this._pcfContext.mode.allocatedWidth
+                } as ITextField);
             }
         }
     }
