@@ -112,7 +112,7 @@ export const TextField = (props: ITextField) => {
     };
     componentProps = {...componentProps, ...props.onOverrideComponentProps?.(componentProps)}
     return (
-        <ThemeProvider applyTo="none" theme={theme}>
+        <ThemeProvider style={parameters.value.type === 'Multiple' ? {height: '100%'} : undefined} applyTo="none" theme={theme}>
             <TextFieldBase {...componentProps} />
         </ThemeProvider>
     );

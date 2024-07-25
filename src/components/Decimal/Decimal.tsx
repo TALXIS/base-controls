@@ -100,7 +100,7 @@ export const Decimal = (props: IDecimal) => {
     });
 
     const getSuffixItems = (): ICommandBarItemProps[] | undefined => {
-        if (context.mode.isControlDisabled || parameters.EnableSpinButton?.raw === false) {
+        if (context.mode.isControlDisabled || !parameters.EnableSpinButton?.raw) {
             return undefined;
         }
         return [

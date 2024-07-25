@@ -21,6 +21,8 @@ export const getGridStyles = (theme: ITheme, numOfRecords: number, useContainerA
             '.ag-root-wrapper': {
                 maxHeight: '100%',
                 '--ag-input-focus-border-color': 'transparent',
+                '--ag-selected-row-background-color': theme.palette.themeLighter,
+                '--ag-range-selection-border-color': theme.palette.themePrimary,
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
                 ':has(.ag-overlay:not(.ag-hidden) .TALXIS__grid__empty-records), :has(.ag-center-cols-container:empty)': {
                     minHeight: 270

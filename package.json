@@ -48,7 +48,7 @@
     "build-documentation": "build-storybook",
     "lint": "eslint \"./src/**\"",
     "lint:fix": "eslint \"./src/**\" --fix",
-    "yalc": "rollup -c && yalc publish"
+    "yalc": "rollup -c && yalc publish --sig"
   },
   "eslintConfig": {
     "extends": [

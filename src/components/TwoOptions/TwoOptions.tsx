@@ -1,4 +1,4 @@
-import { Toggle } from '@fluentui/react';
+import { ThemeProvider, Toggle } from '@fluentui/react';
 import { useControl } from '../../hooks';
 import { ITwoOptions } from './interfaces';
 import React, { useEffect, useRef } from 'react';
@@ -7,12 +7,12 @@ export const TwoOptions = (props: ITwoOptions) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const options = boundValue.attributes.Options;
-    const {sizing, onNotifyOutputChanged, theme} = useControl('TwoOptions', props);
+    const { sizing, onNotifyOutputChanged, theme } = useControl('TwoOptions', props);
     const context = props.context;
     const componentRef = useRef<any>(null);
-    
+
     useEffect(() => {
-        if(parameters.AutoFocus?.raw === true) {
+        if (parameters.AutoFocus?.raw === true) {
             componentRef.current.focus();
         }
     }, []);
@@ -22,25 +22,29 @@ export const TwoOptions = (props: ITwoOptions) => {
             value: value
         });
     };
-    
-    return <Toggle
-    styles={{
-        root: {
-            height: sizing.height,
-            width: sizing.width,
-            marginBottom: 0,
-        },
-        container: {
-            alignItems: 'center'
-        }
-    }}
-    theme={theme}
-    checked={boundValue.raw}
-    componentRef={componentRef}
-    disabled={context.mode.isControlDisabled}
-    inlineLabel
-    onText={options.find(option=>option.Value ===1)?.Label || 'Yes'}
-    offText={options.find(option=>option.Value ===0)?.Label || 'No'}
-    onChange={(e, value) => handleChange(value)}
-/>;
+
+    return (
+        <ThemeProvider theme={theme}>
+            <Toggle
+                styles={{
+                    root: {
+                        height: sizing.height,
+                        width: sizing.width,
+                        marginBottom: 0,
+                    },
+                    container: {
+                        alignItems: 'center'
+                    }
+                }}
+                theme={theme}
+                checked={boundValue.raw}
+                componentRef={componentRef}
+                disabled={context.mode.isControlDisabled}
+                inlineLabel
+                onText={options.find(option => option.Value === 1)?.Label || 'Yes'}
+                offText={options.find(option => option.Value === 0)?.Label || 'No'}
+                onChange={(e, value) => handleChange(value)}
+            />
+        </ThemeProvider>
+    )
 };

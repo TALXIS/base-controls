@@ -43,6 +43,9 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                     },
                     IsInlineNewEnabled: {
                         raw: false
+                    },
+                    ShowErrorMessage: {
+                        raw: true
                     }
                 }}
             />
