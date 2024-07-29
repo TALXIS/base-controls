@@ -17,7 +17,7 @@ interface IInternalTimePickerProps extends Omit<ITimePickerProps, 'onChange' | '
     onChange: (time?: string) => void;
 }
 
-interface IInternalCalendarProps extends ICalendarProps {
+export interface IInternalCalendarProps extends ICalendarProps {
     timePickerProps: IInternalTimePickerProps;
 }
 
