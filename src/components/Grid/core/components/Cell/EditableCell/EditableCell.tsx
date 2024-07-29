@@ -58,6 +58,7 @@ export const EditableCell = (props: ICell) => {
                 break;
             }
             case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER:
             case DataType.LOOKUP_OWNER: {
                 if(value && !Array.isArray(value)) {
                     value = [value];
@@ -82,6 +83,7 @@ export const EditableCell = (props: ICell) => {
                 break;
             }
             case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER:
             case DataType.LOOKUP_OWNER: {
                 value = value?.map((x: any) => {
                     return {
@@ -110,7 +112,8 @@ export const EditableCell = (props: ICell) => {
                 return;
             }
             case DataType.LOOKUP_OWNER:
-            case DataType.LOOKUP_SIMPLE: {
+            case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER: {
                 if(value?.length > 0) {
                     props.stopEditing();
                     return;

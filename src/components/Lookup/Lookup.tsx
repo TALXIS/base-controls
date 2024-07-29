@@ -2,8 +2,8 @@
 import { ILookup } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useRef, useState } from 'react';
-import { ThemeProvider, useTheme } from "@fluentui/react";
-import { IItemProps, ITagPickerProps, TagPicker } from "@talxis/react-components";
+import { ThemeProvider } from "@fluentui/react";
+import { IItemProps, TagPicker } from "@talxis/react-components";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
 import { getLookupStyles } from "./styles";
@@ -26,6 +26,7 @@ export const Lookup = (props: ILookup) => {
     const firstRenderRef = useRef(true);
     const shouldFocusRef = useRef(false);
     const [placeholder, setPlaceholder] = useState('---');
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
 
     useEffect(() => {
@@ -119,8 +120,7 @@ export const Lookup = (props: ILookup) => {
         }
         return suggestions;
     }
-
-    let componentProps: ITagPickerProps = {
+    const componentProps = onOverrideComponentProps({
         ref: componentRef,
         underlined: theme.effects.underlined,
         readOnly: context.mode.isControlDisabled,
@@ -227,8 +227,7 @@ export const Lookup = (props: ILookup) => {
         }),
         itemLimit: itemLimit,
         onResolveSuggestions: onResolveSuggestions
-    };
-    componentProps = { ...componentProps, ...props.onOverrideComponentProps?.(componentProps) }
+    });
 
     return (
         <ThemeProvider applyTo="none" theme={theme} className={`talxis__lookupControl ${styles.root}`} ref={ref}>

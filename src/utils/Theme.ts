@@ -16,6 +16,11 @@ export const getControlTheme = (fluentDesignLanguage?: ComponentFramework.Fluent
             ...fluentTheme, effects: {
                 ...fluentTheme.effects,
                 underlined: false
+            },
+            semanticColors: {
+                ...fluentTheme.semanticColors,
+                inputBorder: 'transparent',
+                inputBorderHovered: fluentTheme.palette.black,
             }
         }
     }
@@ -26,7 +31,7 @@ export const getControlTheme = (fluentDesignLanguage?: ComponentFramework.Fluent
     v8Theme.semanticColors.inputText = fluentDesignLanguage.tokenTheme.inputText ?? v8Theme.semanticColors.inputText;
     v8Theme.semanticColors.inputPlaceholderText = fluentDesignLanguage.tokenTheme.inputPlaceholderText ?? v8Theme.semanticColors.inputText
     v8Theme.semanticColors.inputTextHovered = fluentDesignLanguage.tokenTheme.inputTextHovered ?? v8Theme.semanticColors.inputText;
-    v8Theme.effects.underlined = fluentDesignLanguage.tokenTheme.underlined ?? false;
+    v8Theme.effects.underlined = fluentDesignLanguage.tokenTheme.underlined ?? true;
     return normalizeComponentStyling(v8Theme);
 }
 

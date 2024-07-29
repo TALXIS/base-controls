@@ -47,7 +47,8 @@ export const Component = (props: IControlProps) => {
             return <Decimal {...componentProps!} />
         }
         case DataType.LOOKUP_SIMPLE:
-        case DataType.LOOKUP_OWNER: {
+        case DataType.LOOKUP_OWNER:
+        case DataType.LOOKUP_CUSTOMER: {
             return <Lookup {...componentProps!} />
         }
         case DataType.WHOLE_DURATION: {

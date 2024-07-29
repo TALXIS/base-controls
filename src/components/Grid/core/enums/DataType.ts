@@ -16,6 +16,7 @@ export enum DataType {
     TWO_OPTIONS = 'TwoOptions',
     LOOKUP_SIMPLE = 'Lookup.Simple',
     LOOKUP_OWNER = 'Lookup.Owner',
+    LOOKUP_CUSTOMER = 'Lookup.Customer',
     // Not supported in pcf dataset - https://learn.microsoft.com/en-us/power-apps/developer/component-framework/manifest-schema-reference/property-set#value-elements-that-are-not-supported
     WHOLE_LANGUAGE = 'Whole.Language',
     WHOLE_DURATION = 'Whole.Duration',

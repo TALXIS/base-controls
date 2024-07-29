@@ -42,7 +42,8 @@ export class Component extends GridDependency {
         const onOverrideControlProps = props?.onOverrideControlProps ?? ((props: IControl<any, any, any, any>) => props);
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:
-            case DataType.LOOKUP_OWNER: {
+            case DataType.LOOKUP_OWNER:
+            case DataType.LOOKUP_CUSTOMER: {
                 const columnMetadata = await this._grid.metadata.get(column);
                 const targets = columnMetadata.Attributes.get(column.attributeName).attributeDescriptor.Targets ?? [];
                 if (column.dataType === DataType.LOOKUP_OWNER) {
