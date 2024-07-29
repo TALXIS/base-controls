@@ -54,7 +54,7 @@ export const DateTime = (componentProps: IDateTime) => {
                 keepCalendarOpenAfterDaySelect={isDateTime}
                 readOnly={context.mode.isControlDisabled}
                 //disable so the user cannot input restricted Dates
-                allowTextInput={!parameters.RestrictedDates && !parameters.RestrictedDaysOfWeek}
+                allowTextInput={!parameters.RestrictedDates?.raw && !parameters.RestrictedDaysOfWeek?.raw}
                 // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
                 minDate={new Date('1753-01-01T00:00:00.000Z')}
                 firstDayOfWeek={componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek}
