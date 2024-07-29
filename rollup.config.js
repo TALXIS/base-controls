@@ -72,7 +72,7 @@ export default [
             terser({
                 keep_classnames: true,
             }),
-            visualizer(),
+            //visualizer(),
         ],
     },
     {

@@ -11,13 +11,14 @@ import { DataType } from "../../enums/DataType";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { useComponentController } from "./controller/useComponentController";
 import React from 'react';
+import { IControl } from "../../../../../interfaces/context";
 
 export interface IControlProps {
     column: IGridColumn;
     value: any;
     formattedValue?: string;
     onNotifyOutputChanged: (value: any) => void;
-    additionalParameters?: IParameters;
+    onOverrideControlProps?: (props: IControl<any, any, any, any>) => IControl<any, any, any, any>;
 }
 
 export const Component = (props: IControlProps) => {
@@ -46,7 +47,8 @@ export const Component = (props: IControlProps) => {
             return <Decimal {...componentProps!} />
         }
         case DataType.LOOKUP_SIMPLE:
-        case DataType.LOOKUP_OWNER: {
+        case DataType.LOOKUP_OWNER:
+        case DataType.LOOKUP_CUSTOMER: {
             return <Lookup {...componentProps!} />
         }
         case DataType.WHOLE_DURATION: {

@@ -1,4 +1,4 @@
-import { createTheme, getTheme } from '@fluentui/react';
+import { createTheme, getTheme, ICheckboxStyleProps, IToggleStyleProps } from '@fluentui/react';
 import { createV8Theme } from '@fluentui/react-migration-v8-v9';
 import { ITheme } from '../interfaces/theme';
 
@@ -16,6 +16,10 @@ export const getControlTheme = (fluentDesignLanguage?: ComponentFramework.Fluent
             ...fluentTheme, effects: {
                 ...fluentTheme.effects,
                 underlined: false
+            },
+            semanticColors: {
+                ...fluentTheme.semanticColors,
+                inputBorder: 'transparent',
             }
         }
     }
@@ -25,24 +29,37 @@ export const getControlTheme = (fluentDesignLanguage?: ComponentFramework.Fluent
     v8Theme.semanticColors.inputBorderHovered = fluentDesignLanguage.tokenTheme.inputBorderHovered ?? v8Theme.semanticColors.inputBorder;
     v8Theme.semanticColors.inputText = fluentDesignLanguage.tokenTheme.inputText ?? v8Theme.semanticColors.inputText;
     v8Theme.semanticColors.inputPlaceholderText = fluentDesignLanguage.tokenTheme.inputPlaceholderText ?? v8Theme.semanticColors.inputText
-    v8Theme.semanticColors.inputTextHovered = v8Theme.semanticColors.inputText;
-    v8Theme.effects.underlined = fluentDesignLanguage.tokenTheme.underlined ?? false;
+    v8Theme.semanticColors.inputTextHovered = fluentDesignLanguage.tokenTheme.inputTextHovered ?? v8Theme.semanticColors.inputText;
+    v8Theme.effects.underlined = fluentDesignLanguage.tokenTheme.underlined ?? true;
+    return normalizeComponentStyling(v8Theme);
+}
 
-    v8Theme.components = {
+export const normalizeComponentStyling = (theme: ITheme) => {
+    theme.components = {
         Checkbox: {
-            styles: {
-                root: {
-                    ':hover .ms-Checkbox-checkbox': {
-                        borderColor: 'inherit'
+            styles: (props: ICheckboxStyleProps) => {
+                return {
+                    root: {
+                        ':hover .ms-Checkbox-checkbox': {
+                            borderColor: !props.checked ? 'inherit' : undefined
+                        }
                     }
                 }
             }
+        },
+        Toggle: {
+            styles: (props: IToggleStyleProps) => {
+                return {
+                    pill: {
+                        backgroundColor: !props.checked ? theme.semanticColors.inputBackground : undefined,
+                        ':hover': {
+                            borderColor: !props.checked ? props.theme.semanticColors.smallInputBorder : undefined
+                        },
+                    }
+                };
+            }
         }
     };
-    return normalizeLayerComponentColors(v8Theme);
-}
-
-export const normalizeLayerComponentColors = (theme: ITheme) => {
     const originalSemanticColors = { ...theme.semanticColors };
     const baseTheme = lightTheme;
     for (const key of Object.keys(baseTheme.semanticColors)) {

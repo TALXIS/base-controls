@@ -75,7 +75,8 @@ const InternalReadOnlyCell = (props: ICellProps) => {
     const renderLink = (props: ILinkProps, formattedValue: string): JSX.Element => {
         switch(column.dataType) {
             case DataType.LOOKUP_OWNER:
-            case DataType.LOOKUP_SIMPLE: {
+            case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER: {
                 if(!grid.isNavigationEnabled) {
                     return renderText();
                 }
@@ -121,7 +122,8 @@ const InternalReadOnlyCell = (props: ICellProps) => {
             }, formattedValue);
         }
         case DataType.LOOKUP_SIMPLE:
-        case DataType.LOOKUP_OWNER: {
+        case DataType.LOOKUP_OWNER:
+        case DataType.LOOKUP_CUSTOMER: {
             return renderLink({
                 onClick: () => grid.openDatasetItem(record.getValue(column.key) as any)
             }, formattedValue);

@@ -60,7 +60,8 @@ export class ConditionComponentValue {
                 return value.map((x: string) => parseInt(x))
             }
             case DataType.LOOKUP_OWNER:
-            case DataType.LOOKUP_SIMPLE: {
+            case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER: {
                 if (typeof value === 'string') {
                     value = [value];
                 }
@@ -104,7 +105,8 @@ export class ConditionComponentValue {
                 return;
             }
             case DataType.LOOKUP_OWNER:
-            case DataType.LOOKUP_SIMPLE: {
+            case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER: {
                 if(value?.length > 1) {
                     value = value.map((x: ComponentFramework.LookupValue) => x.id);
                     break;

@@ -1,4 +1,4 @@
-import { ITextFieldProps, TextField } from "@talxis/react-components";
+import { TextField } from "@talxis/react-components";
 import { useInputBasedControl } from "../../hooks/useInputBasedControl";
 import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
 import React, { useEffect, useMemo, useRef } from "react";
@@ -14,6 +14,7 @@ export const Decimal = (props: IDecimal) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const numberFormatting = context.userSettings.numberFormattingInfo;
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const formatter = (value: string | number | null): string | undefined | null => {
         if (typeof value === 'number') {
@@ -100,7 +101,7 @@ export const Decimal = (props: IDecimal) => {
     });
 
     const getSuffixItems = (): ICommandBarItemProps[] | undefined => {
-        if (context.mode.isControlDisabled || parameters.EnableSpinButton?.raw === false) {
+        if (context.mode.isControlDisabled || !parameters.EnableSpinButton?.raw) {
             return undefined;
         }
         return [
@@ -163,7 +164,7 @@ export const Decimal = (props: IDecimal) => {
         }
     }, [boundValue.formatted]);
 
-    let componentProps: ITextFieldProps = {
+    const componentProps = onOverrideComponentProps({
         underlined: theme.effects.underlined,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
         readOnly: context.mode.isControlDisabled,
@@ -207,8 +208,7 @@ export const Decimal = (props: IDecimal) => {
             setValue(value);
         },
         onKeyDown: onKeyDown,
-    };
-    componentProps = {...componentProps, ...props.onOverrideComponentProps?.(componentProps)}
+    });
     return (
         <ThemeProvider theme={theme} applyTo="none">
             <TextField {...componentProps} />

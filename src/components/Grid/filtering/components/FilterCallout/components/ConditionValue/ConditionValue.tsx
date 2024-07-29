@@ -37,12 +37,27 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                 column={column}
                 value={conditionComponentValue.get()}
                 onNotifyOutputChanged={(value) => conditionComponentValue.set(value)}
-                additionalParameters={{
-                    MultipleEnabled: {
-                        raw: true
-                    },
-                    IsInlineNewEnabled: {
-                        raw: false
+                onOverrideControlProps={(props) => {
+                    return {
+                        ...props,
+                        parameters: {
+                            ...props.parameters,
+                            MultipleEnabled: {
+                                raw: true
+                            },
+                            IsInlineNewEnabled: {
+                                raw: false
+                            },
+                            ShowErrorMessage: {
+                                raw: true
+                            },
+                            value: {
+                                ...props.parameters.value,
+                                getAllViews: async (entityName: string) => {
+                                    return props.parameters.value.getAllViews(entityName, 1);
+                                }
+                            }
+                        }
                     }
                 }}
             />

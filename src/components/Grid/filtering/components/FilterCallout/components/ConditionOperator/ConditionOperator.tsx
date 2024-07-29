@@ -1,12 +1,13 @@
 import { ComboBox } from "@talxis/react-components";
 import { DataType } from '../../../../../core/enums/DataType';
-import { IComboBoxOption } from '@fluentui/react';
+import { IComboBoxOption, useTheme } from '@fluentui/react';
 import { FilteringUtils } from '../../../../utils/FilteringUtilts';
 import { useGridInstance } from '../../../../../core/hooks/useGridInstance';
 import { useColumnFilterConditionController } from '../../../../controller/useColumnFilterConditionController';
 import { IGridColumn } from '../../../../../core/interfaces/IGridColumn';
 import { DatasetConditionOperator } from '../../../../../core/enums/ConditionOperator';
 import React from 'react';
+import { ITheme } from "../../../../../../../interfaces/theme";
 
 interface IConditionOperator {
     column: IGridColumn;
@@ -16,6 +17,7 @@ export const ConditionOperator = (props: IConditionOperator) => {
     const operatorUtils = FilteringUtils.condition().operator();
     const grid = useGridInstance();
     const condition = useColumnFilterConditionController(column);
+    const theme: ITheme = useTheme();
 
     //TODO: add missing text operator (begins with, ends with)
     const getOptions = (): IComboBoxOption[] => {
@@ -52,6 +54,7 @@ export const ConditionOperator = (props: IConditionOperator) => {
     }
     return <ComboBox
         {...props}
+        underlined={theme.effects.underlined}
         selectedKey={condition.operator.get()}
         shouldRestoreFocus={false}
         options={getOptions()}

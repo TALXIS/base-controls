@@ -37,7 +37,10 @@ export class Duration implements ComponentFramework.StandardControl<IInputs, IOu
         ReactDOM.render(React.createElement(DurationComponent as any, {
             context: context,
             parameters: {
-                value: context.parameters.value
+                value: context.parameters.value,
+                AutoFocus: {
+                    raw: true
+                }
             },
             onNotifyOutputChanged: (outputs) => {
                 this._outputs = outputs;

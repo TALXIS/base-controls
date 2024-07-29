@@ -1,8 +1,8 @@
 import { ComboBox } from "@talxis/react-components";
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
-import { IComboBoxOption, ThemeProvider } from '@fluentui/react';
+import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { durationOptions } from '../../sandbox/shared/durationList';
 import { UserSettings } from '../../sandbox/mock/UserSettings';
 import numeral from "numeral";
@@ -12,6 +12,7 @@ import { getDefaultDurationTranslations } from './translations';
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
+    const componentRef = useRef<IComboBox>(null);
     const context = props.context;
     const humanizeDuration = require("humanize-duration");
     const formattingInfo = context.userSettings as UserSettings;
@@ -103,9 +104,16 @@ export const Duration = (props: IDuration) => {
         defaultTranslations: getDefaultDurationTranslations(),
     });
 
+    useEffect(() => {
+        if (parameters.AutoFocus?.raw) {
+            componentRef.current?.focus(true);
+        }
+    }, []);
+
     return (
         <ThemeProvider theme={theme} applyTo="none">
         <ComboBox
+            componentRef={componentRef}
             options={comboBoxOptions}
             hideErrorMessage={!parameters.ShowErrorMessage?.raw}
             underlined={theme.effects.underlined}

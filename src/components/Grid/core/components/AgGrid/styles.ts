@@ -21,6 +21,8 @@ export const getGridStyles = (theme: ITheme, numOfRecords: number, useContainerA
             '.ag-root-wrapper': {
                 maxHeight: '100%',
                 '--ag-input-focus-border-color': 'transparent',
+                '--ag-selected-row-background-color': theme.palette.themeLighter,
+                '--ag-range-selection-border-color': theme.palette.themePrimary,
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
                 ':has(.ag-overlay:not(.ag-hidden) .TALXIS__grid__empty-records), :has(.ag-center-cols-container:empty)': {
                     minHeight: 270
@@ -50,8 +52,20 @@ export const getGridStyles = (theme: ITheme, numOfRecords: number, useContainerA
                 overflow: 'visible',
                 top: -1,
                 backgroundColor: 'transparent',
-                'input': {
+
+                '*:not(.ms-ComboBox)>input': {
                     paddingLeft: 10
+                },
+                '.ms-ComboBox>input': {
+                    paddingLeft: 2
+                },
+                '.talxis__lookupControl': {
+                    '.ms-BasePicker-itemsWrapper': {
+                        padding: 0,
+                        '.ms-CommandBar': {
+                            height: '100%'
+                        }
+                    },
                 },
                 '.TALXIS__error-message__root': {
                     display: 'none'
@@ -71,9 +85,6 @@ export const getGridStyles = (theme: ITheme, numOfRecords: number, useContainerA
             '.ag-cell-focus:has([data-is-valid="false"])': {
                 border: '1px solid red !important;'
             },
-            '.TALXIS__combobox__root, [class*="TALXIS__textfield__root"], [class*="TALXIS__tag-picker__root"]': {
-                padding: '0px !important'
-            }
         }
     })
 }

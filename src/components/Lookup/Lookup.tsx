@@ -2,8 +2,8 @@
 import { ILookup } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useRef, useState } from 'react';
-import { ThemeProvider, useTheme } from "@fluentui/react";
-import { IItemProps, ITagPickerProps, TagPicker } from "@talxis/react-components";
+import { ThemeProvider } from "@fluentui/react";
+import { IItemProps, TagPicker } from "@talxis/react-components";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
 import { getLookupStyles } from "./styles";
@@ -18,14 +18,15 @@ export const Lookup = (props: ILookup) => {
     const ref = useRef<HTMLDivElement>(null);
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
-    const {height} = useControlSizing(props.context.mode);
+    const { height } = useControlSizing(props.context.mode);
     const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props);
-    const styles = getLookupStyles(theme,itemLimit === 1, height);
+    const styles = getLookupStyles(theme, itemLimit === 1, height);
     const mouseOver = useMouseOver(ref);
     const isFocused = useFocusIn(ref, 100);
     const firstRenderRef = useRef(true);
     const shouldFocusRef = useRef(false);
     const [placeholder, setPlaceholder] = useState('---');
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
 
     useEffect(() => {
@@ -42,7 +43,7 @@ export const Lookup = (props: ILookup) => {
 
     useEffect(() => {
         const onKeyPress = (ev: KeyboardEvent) => {
-            if(context.mode.isControlDisabled) {
+            if (context.mode.isControlDisabled) {
                 return;
             }
             if (ev.key === 'Backspace') {
@@ -62,15 +63,16 @@ export const Lookup = (props: ILookup) => {
     }, [value]);
 
     useEffect(() => {
-        if(props.parameters.AutoFocus?.raw === true) {
+        if (props.parameters.AutoFocus?.raw === true) {
             focus();
         }
     }, []);
 
     const focus = () => {
         if(componentRef.current?.items?.length === itemLimit) {
-            //@ts-ignore
-            ref.current?.querySelector('[class*="TALXIS__tag-picker__root"]')?.focus();
+            const el = ref.current?.querySelector(':scope>div') as HTMLDivElement;
+            el?.click();
+            el?.focus();
             return;
         }
         componentRef.current?.focusInput();
@@ -104,8 +106,8 @@ export const Lookup = (props: ILookup) => {
         //TODO: onResolveSuggestions gets called when the record gets selected resulting in unnecessary call
         const results = await getSearchResults(filter);
         const suggestions: IItemProps[] = [];
-        for(const result of results) {
-            if(selectedItems?.find(x => x.key === result.id)) {
+        for (const result of results) {
+            if (selectedItems?.find(x => x.key === result.id)) {
                 continue;
             }
             const metadata = await entities.find(x => x.entityName === result.entityType)?.metadata;
@@ -118,8 +120,7 @@ export const Lookup = (props: ILookup) => {
         }
         return suggestions;
     }
-
-    let componentProps: ITagPickerProps = {
+    const componentProps = onOverrideComponentProps({
         ref: componentRef,
         underlined: theme.effects.underlined,
         readOnly: context.mode.isControlDisabled,
@@ -133,6 +134,7 @@ export const Lookup = (props: ILookup) => {
             },
             className: styles.suggestions
         },
+
         inputProps: {
             placeholder: placeholder,
             onMouseEnter: () => {
@@ -202,34 +204,33 @@ export const Lookup = (props: ILookup) => {
                 deleteButtonProps:
                     isComponentActive() || itemLimit > 1
                         ? {
-                              key: 'delete',
-                              iconProps: {
-                                  iconName: 'ChromeClose',
-                                  styles: {
-                                      root: {
-                                          fontSize: 12,
-                                          width: 16
-                                      }
-                                  }
-                              },
-                              onClick: () => {
-                                  shouldFocusRef.current = false;
-                                  records.deselect(lookup);
-                                  setTimeout(() => {
-                                      focus();
-                                  }, 200);
-                              }
-                          }
+                            key: 'delete',
+                            iconProps: {
+                                iconName: 'ChromeClose',
+                                styles: {
+                                    root: {
+                                        fontSize: 12,
+                                        width: 16
+                                    }
+                                }
+                            },
+                            onClick: () => {
+                                shouldFocusRef.current = false;
+                                records.deselect(lookup);
+                                setTimeout(() => {
+                                    focus();
+                                }, 200);
+                            }
+                        }
                         : undefined
             };
         }),
         itemLimit: itemLimit,
         onResolveSuggestions: onResolveSuggestions
-    };
-    componentProps = {...componentProps, ...props.onOverrideComponentProps?.(componentProps)}
-    
+    });
+
     return (
-        <ThemeProvider applyTo="none" theme={theme} className={styles.root} ref={ref}>
+        <ThemeProvider applyTo="none" theme={theme} className={`talxis__lookupControl ${styles.root}`} ref={ref}>
             <TagPicker {...componentProps} />
         </ThemeProvider>
     );

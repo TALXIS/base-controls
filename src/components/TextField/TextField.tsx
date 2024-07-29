@@ -10,6 +10,7 @@ export const TextField = (props: ITextField) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const ref = useRef<HTMLDivElement>(null);
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const { value, sizing, theme, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, ITextFieldParameters, ITextFieldOutputs, any>('TextField', props);
 
     const getInputType = () => {
@@ -66,8 +67,7 @@ export const TextField = (props: ITextField) => {
         }
         return undefined;
     }
-
-    let componentProps: ITextFieldProps = {
+    const componentProps = onOverrideComponentProps({
         underlined: theme.effects.underlined,
         readOnly: context.mode.isControlDisabled,
         resizable: false,
@@ -109,10 +109,9 @@ export const TextField = (props: ITextField) => {
         onChange: (e, value) => {
             setValue(value);
         }
-    };
-    componentProps = {...componentProps, ...props.onOverrideComponentProps?.(componentProps)}
+    })
     return (
-        <ThemeProvider applyTo="none" theme={theme}>
+        <ThemeProvider style={parameters.value.type === 'Multiple' ? { height: '100%' } : undefined} applyTo="none" theme={theme}>
             <TextFieldBase {...componentProps} />
         </ThemeProvider>
     );

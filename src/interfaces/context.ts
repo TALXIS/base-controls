@@ -15,7 +15,7 @@ export interface IControl<TParameters, TOutputs, TTranslations, TComponentProps>
     /**
     * Allows you to override the props of the internal component that the control uses for UI rendering. Might not work on every control. ONLY USE WHEN ABSOLUTELY NECESSARY AND CONSULT YOUR INTENTIONS WITH BRY!
     */
-    onOverrideComponentProps?: (props: TComponentProps) => Partial<TComponentProps>; 
+    onOverrideComponentProps?: (props: TComponentProps) => TComponentProps; 
 }
 
 export type ITranslations<T> = {

@@ -130,6 +130,7 @@ export class Condition extends GridDependency {
                         case DataType.TWO_OPTIONS:
                         case DataType.LOOKUP_SIMPLE:
                         case DataType.LOOKUP_OWNER:
+                        case DataType.LOOKUP_CUSTOMER:
                         case DataType.DATE_AND_TIME_DATE_AND_TIME:
                         case DataType.DATE_AND_TIME_DATE_ONLY: {
                             this._conditionExpression!.value = ""
@@ -179,7 +180,8 @@ export class Condition extends GridDependency {
             case DataType.OPTIONSET:
             case DataType.TWO_OPTIONS:
             case DataType.LOOKUP_OWNER:
-            case DataType.LOOKUP_SIMPLE: {
+            case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER: {
                 if (undecorate) {
                     if (attributeName.endsWith('name')) {
                         return attributeName.slice(0, -4);
@@ -231,7 +233,8 @@ export class Condition extends GridDependency {
             case DataType.OPTIONSET:
             case DataType.TWO_OPTIONS:
             case DataType.LOOKUP_OWNER:
-            case DataType.LOOKUP_SIMPLE: {
+            case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER: {
                 //we need to switch the operators based on the number of selected options
                 if (typeof value !== 'string') {
                     if(undecorate) {

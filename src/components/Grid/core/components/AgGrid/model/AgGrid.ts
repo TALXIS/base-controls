@@ -52,6 +52,7 @@ export class AgGrid extends GridDependency {
                         case DataType.DATE_AND_TIME_DATE_ONLY:
                         case DataType.LOOKUP_OWNER:
                         case DataType.LOOKUP_SIMPLE:
+                        case DataType.LOOKUP_CUSTOMER:
                         case DataType.MULTI_SELECT_OPTIONSET:
                         case DataType.OPTIONSET:
                         case DataType.TWO_OPTIONS:
