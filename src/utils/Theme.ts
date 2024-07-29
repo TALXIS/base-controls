@@ -20,7 +20,6 @@ export const getControlTheme = (fluentDesignLanguage?: ComponentFramework.Fluent
             semanticColors: {
                 ...fluentTheme.semanticColors,
                 inputBorder: 'transparent',
-                inputBorderHovered: fluentTheme.palette.black,
             }
         }
     }
