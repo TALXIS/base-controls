@@ -48,6 +48,9 @@ export class DateTime implements ComponentFramework.StandardControl<IInputs, IOu
                 value: context.parameters.value,
                 AutoFocus: {
                     raw: true
+                },
+                RestrictedDaysOfWeek: {
+                    raw: JSON.stringify([6,0])
                 }
             },
             onNotifyOutputChanged: (outputs) => {

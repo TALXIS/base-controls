@@ -1,6 +1,6 @@
 
 import { IDateTime } from "./interfaces";
-import { IDatePicker, ThemeProvider } from "@fluentui/react";
+import { DateRangeType, ICalendarDayGridStyles, IDatePicker, IProcessedStyleSet, ThemeProvider } from "@fluentui/react";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
@@ -25,6 +25,25 @@ export const DateTime = (componentProps: IDateTime) => {
             datePickerRef.current?.showDatePickerPopup();
         }
     }, []);
+
+    const getRestrictedDates = (): Date[] | undefined => {
+        if(!parameters.RestrictedDates?.raw) {
+            return undefined;
+        }
+        return JSON.parse(parameters.RestrictedDates?.raw).map((x: string) => new Date(x))
+    }
+    const onOverrideDayCellProps = (element: HTMLElement, date: Date, classNames: IProcessedStyleSet<ICalendarDayGridStyles>) => {
+        if(!element || !parameters.RestrictedDaysOfWeek?.raw) {
+            return;
+        }
+        const weekDaysToExclude: number[] = JSON.parse(parameters.RestrictedDaysOfWeek.raw);
+        if(weekDaysToExclude.includes(date.getDay())) {
+            element.setAttribute('data-is-focusable', 'false');
+            element.classList?.add(classNames.dayOutsideBounds!);
+            (element.children[0] as HTMLButtonElement).disabled = true;
+        }
+    }
+
     return (
         <ThemeProvider theme={theme} applyTo="none" ref={ref}>
             <DatePicker
@@ -34,16 +53,20 @@ export const DateTime = (componentProps: IDateTime) => {
                 hideErrorMessage={!parameters.ShowErrorMessage?.raw}
                 keepCalendarOpenAfterDaySelect={isDateTime}
                 readOnly={context.mode.isControlDisabled}
-                allowTextInput
-                calendarProps={{
-                    //needs to be here as the internal picker does not call the function passed in calendarAs
-                    onSelectDate: (newDate) => date.set(newDate),
-                }}
+                //disable so the user cannot input restricted Dates
+                allowTextInput={!parameters.RestrictedDates && !parameters.RestrictedDaysOfWeek}
                 // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
                 minDate={new Date('1753-01-01T00:00:00.000Z')}
                 firstDayOfWeek={componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek}
                 calendarAs={(props) =>
                     <Calendar {...props}
+                        onSelectDate={(newDate) => date.set(newDate)}
+                        isMonthPickerVisible={parameters.EnableMonthPicker?.raw !== false}
+                        isDayPickerVisible={parameters.EnableDayPicker?.raw !== false}
+                        calendarDayProps={{
+                            restrictedDates: getRestrictedDates(),
+                            customDayCellRef: onOverrideDayCellProps
+                        }}
                         strings={{
                             goToToday: labels.goToToday(),
                             days: JSON.parse(labels.days()),
