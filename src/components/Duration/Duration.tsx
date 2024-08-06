@@ -3,11 +3,10 @@ import React, { useEffect, useRef } from 'react';
 import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
-import { durationOptions } from '../../sandbox/shared/durationList';
-import { UserSettings } from '../../sandbox/mock/UserSettings';
 import numeral from "numeral";
 import { Numeral } from '../../utils/Numeral';
 import { getDefaultDurationTranslations } from './translations';
+import { durationOptions } from "./durationOptions";
 
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
@@ -15,7 +14,8 @@ export const Duration = (props: IDuration) => {
     const componentRef = useRef<IComboBox>(null);
     const context = props.context;
     const humanizeDuration = require("humanize-duration");
-    const formattingInfo = context.userSettings as UserSettings;
+    const formattingInfo = context.userSettings;
+    //@ts-ignore - locale is part of UserSettings
     const language = formattingInfo.locale;
     const numberFormatting = context.userSettings.numberFormattingInfo;
 
