@@ -25,14 +25,6 @@ export class DateTime implements ComponentFramework.StandardControl<IInputs, IOu
     public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container:HTMLDivElement): void
     {
         this._notifyOutputChanged = notifyOutputChanged;
-        const formatTime = context.formatting.formatTime(new Date(), 0);
-        const formatDateShort = context.formatting.formatDateShort(new Date(), true);
-        const formatDateLong = context.formatting.formatDateLong(new Date());
-        const formatDateYearMonth = context.formatting.formatDateYearMonth(new Date());
-        const formatDateLongAbbreviated = context.formatting.formatDateLongAbbreviated(new Date());
-        const formatDateAsFilterString = context.formatting.formatDateAsFilterStringInUTC(new Date(), true);
-        const t = context.formatting.getWeekOfYear(new Date());
-        const lan = context.formatting.formatLanguage(1029);
         this._container = container;
         // Add control initialization code
     }
@@ -48,6 +40,9 @@ export class DateTime implements ComponentFramework.StandardControl<IInputs, IOu
                 value: context.parameters.value,
                 AutoFocus: {
                     raw: true
+                },
+                RestrictedDaysOfWeek: {
+                    raw: JSON.stringify([6,0])
                 }
             },
             onNotifyOutputChanged: (outputs) => {

@@ -9,7 +9,6 @@ export const TextField = (props: ITextField) => {
     const context = props.context;
     const parameters = props.parameters;
     const boundValue = parameters.value;
-    const ref = useRef<HTMLDivElement>(null);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const { value, sizing, theme, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, ITextFieldParameters, ITextFieldOutputs, any>('TextField', props);
 
@@ -74,7 +73,6 @@ export const TextField = (props: ITextField) => {
         type: useMemo(() => getInputType(), [boundValue.type]),
         multiline: parameters.value.type === 'Multiple',
         autoFocus: parameters.AutoFocus?.raw,
-        elementRef: ref,
         styles: {
             fieldGroup: {
                 height: sizing.height,
@@ -84,7 +82,7 @@ export const TextField = (props: ITextField) => {
         borderless: parameters.EnableBorder?.raw === false,
         errorMessage: boundValue.errorMessage,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
-        suffixItems: useMemo(() => getSuffixItems(), [boundValue.raw, boundValue.error]),
+        suffixItems: useMemo(() => getSuffixItems(), [boundValue.raw, boundValue.error, parameters.EnableTypeSuffix?.raw]),
         deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
             key: 'delete',
             showOnlyOnHover: true,

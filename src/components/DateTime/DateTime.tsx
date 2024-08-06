@@ -1,10 +1,10 @@
 
 import { IDateTime } from "./interfaces";
-import { IDatePicker, ThemeProvider } from "@fluentui/react";
+import { DateRangeType, ICalendarDayGridStyles, IDatePicker, IProcessedStyleSet, ThemeProvider } from "@fluentui/react";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
-import { Calendar } from "./components/Calendar";
+import { Calendar, IInternalCalendarProps } from "./components/Calendar";
 import { DatePicker } from "@talxis/react-components";
 import React from 'react';
 import { useControlSizing } from "../../hooks/useControlSizing";
@@ -25,6 +25,25 @@ export const DateTime = (componentProps: IDateTime) => {
             datePickerRef.current?.showDatePickerPopup();
         }
     }, []);
+
+    const getRestrictedDates = (): Date[] | undefined => {
+        if(!parameters.RestrictedDates?.raw) {
+            return undefined;
+        }
+        return JSON.parse(parameters.RestrictedDates?.raw).map((x: string) => new Date(x))
+    }
+    const onOverrideDayCellProps = (element: HTMLElement, date: Date, classNames: IProcessedStyleSet<ICalendarDayGridStyles>) => {
+        if(!element || !parameters.RestrictedDaysOfWeek?.raw) {
+            return;
+        }
+        const weekDaysToExclude: number[] = JSON.parse(parameters.RestrictedDaysOfWeek.raw);
+        if(weekDaysToExclude.includes(date.getDay())) {
+            element.setAttribute('data-is-focusable', 'false');
+            element.classList?.add(classNames.dayOutsideBounds!);
+            (element.children[0] as HTMLButtonElement).disabled = true;
+        }
+    }
+
     return (
         <ThemeProvider theme={theme} applyTo="none" ref={ref}>
             <DatePicker
@@ -34,24 +53,31 @@ export const DateTime = (componentProps: IDateTime) => {
                 hideErrorMessage={!parameters.ShowErrorMessage?.raw}
                 keepCalendarOpenAfterDaySelect={isDateTime}
                 readOnly={context.mode.isControlDisabled}
-                allowTextInput
-                calendarProps={{
-                    //needs to be here as the internal picker does not call the function passed in calendarAs
-                    onSelectDate: (newDate) => date.set(newDate),
-                }}
+                //@ts-ignore - this is a hack to close the calendar when dates get selected on date only fields
+                onSelectDate={isDateTime ? undefined : (newDate) => date.set(newDate!)}
+                //disable so the user cannot input restricted Dates
+                allowTextInput={!parameters.RestrictedDates?.raw && !parameters.RestrictedDaysOfWeek?.raw}
                 // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
                 minDate={new Date('1753-01-01T00:00:00.000Z')}
                 firstDayOfWeek={componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek}
                 calendarAs={(props) =>
-                    <Calendar {...props}
-                        strings={{
+                {
+                    const calendarProps: IInternalCalendarProps = {
+                        ...props,
+                        isMonthPickerVisible: parameters.EnableMonthPicker?.raw !== false,
+                        isDayPickerVisible: parameters.EnableDayPicker?.raw !== false,
+                        calendarDayProps: {
+                            restrictedDates: getRestrictedDates(),
+                            customDayCellRef: onOverrideDayCellProps
+                        },
+                        strings: {
                             goToToday: labels.goToToday(),
                             days: JSON.parse(labels.days()),
                             months: JSON.parse(labels.months()),
                             shortDays: JSON.parse(labels.shortDays()),
                             shortMonths: JSON.parse(labels.shortMonths())
-                        }}
-                        timePickerProps={{
+                        },
+                        timePickerProps: {
                             underlined: theme.effects.underlined,
                             dateTimeFormat: patterns.fullDateTimePattern,
                             autoComplete: "off",
@@ -62,7 +88,7 @@ export const DateTime = (componentProps: IDateTime) => {
                             errorMessage: labels.invalidTimeInput(),
                             lastInputedTimeString: lastInputedTimeString.current,
                             useHour12: patterns.shortTimePattern.endsWith('A'),
-                            onChange: (time) => {
+                            onChange: (time?: string) => {
                                 date.set(undefined, time);
                                 lastInputedTimeString.current = time;
                             },
@@ -71,7 +97,13 @@ export const DateTime = (componentProps: IDateTime) => {
                             strings: {
                                 invalidInputErrorMessage: labels.invalidTimeInput()
                             }
-                        }} />
+                        }
+                    };
+                    if(isDateTime) {
+                        calendarProps.onSelectDate = (newDate) => date.set(newDate)
+                    }
+                   return <Calendar {...calendarProps} />
+                    }
                 }
                 errorMessage={parameters.value.errorMessage}
                 textField={{
