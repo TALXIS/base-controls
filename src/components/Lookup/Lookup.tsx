@@ -206,13 +206,7 @@ export const Lookup = (props: ILookup) => {
                         ? {
                             key: 'delete',
                             iconProps: {
-                                iconName: 'ChromeClose',
-                                styles: {
-                                    root: {
-                                        fontSize: 12,
-                                        width: 16
-                                    }
-                                }
+                                iconName: 'Cancel',
                             },
                             onClick: () => {
                                 shouldFocusRef.current = false;

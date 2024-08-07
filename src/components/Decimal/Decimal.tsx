@@ -184,7 +184,7 @@ export const Decimal = (props: IDecimal) => {
                 key: "delete",
                 showOnlyOnHover: true,
                 iconProps: {
-                    iconName: "Delete",
+                    iconName: "Cancel",
                 },
                 onClick: () => setValue(undefined),
             }

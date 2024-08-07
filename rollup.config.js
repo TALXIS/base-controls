@@ -47,7 +47,8 @@ export default [
             {
                 dir: 'dist',
                 format: 'esm',
-                preserveModules: true
+                preserveModules: true,
+                sourcemap: true
             }
         ],
         external(id) {
@@ -64,6 +65,8 @@ export default [
             resolve(),
             typescript({
                 tsconfig: './tsconfig.json',
+                sourceMap: true,
+                inlineSources: true,
             }),
             postcss(),
             //visualizer(),

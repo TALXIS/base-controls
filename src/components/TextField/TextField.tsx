@@ -87,7 +87,7 @@ export const TextField = (props: ITextField) => {
             key: 'delete',
             showOnlyOnHover: true,
             iconProps: {
-                iconName: 'Delete'
+                iconName: 'Cancel'
             },
             onClick: () => setValue(undefined)
         } : undefined,

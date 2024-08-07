@@ -84,7 +84,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
                     key: 'delete',
                     showOnlyOnHover: false,
                     iconProps: {
-                        iconName: 'Delete'
+                        iconName: 'Cancel'
                     },
                     onClick: (e, value) => {
                         handleChange(null);

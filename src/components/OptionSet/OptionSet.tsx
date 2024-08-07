@@ -67,7 +67,7 @@ export const OptionSet = (props: IOptionSet) => {
                     key: 'delete',
                     showOnlyOnHover: true,
                     iconProps: {
-                        iconName: 'Delete'
+                        iconName: 'Cencel'
                     },
                     onClick: (e, value) => { handleChange(null); }
                 } : undefined}
