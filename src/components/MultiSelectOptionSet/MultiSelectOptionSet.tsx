@@ -53,7 +53,6 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
                 multiSelect
                 autoComplete="on"
                 theme={theme}
-                underlined={theme.effects.underlined}
                 autofill={parameters.AutoFocus?.raw === true ? {
                     autoFocus: true
                 } : undefined}

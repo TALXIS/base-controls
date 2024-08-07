@@ -116,7 +116,6 @@ export const Duration = (props: IDuration) => {
             componentRef={componentRef}
             options={comboBoxOptions}
             hideErrorMessage={!parameters.ShowErrorMessage?.raw}
-            underlined={theme.effects.underlined}
             allowFreeInput={true}
             autoComplete='on'
             autofill={parameters.AutoFocus?.raw === true ? {
