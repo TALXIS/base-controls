@@ -1,12 +1,13 @@
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import { visualizer } from "rollup-plugin-visualizer";
-import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import dts from 'rollup-plugin-dts';
 import resolve from '@rollup/plugin-node-resolve';
-import multiInput from 'rollup-plugin-multi-input';
 import del from 'rollup-plugin-delete';
+import { glob } from 'glob';
+
+const inputs = glob.sync("src/**/index.ts");
 
 const externalDeps = [
     '@talxis/react-components',
@@ -41,15 +42,13 @@ const externalDeps = [
 
 export default [
     {
-        input: [
-            'src/**/*.tsx',
-            'src/**/*.ts',
-            '!src/sandbox/**',
-        ],
+        input: inputs,
         output: [
             {
                 dir: 'dist',
                 format: 'esm',
+                preserveModules: true,
+                sourcemap: true
             }
         ],
         external(id) {
@@ -66,12 +65,10 @@ export default [
             resolve(),
             typescript({
                 tsconfig: './tsconfig.json',
+                sourceMap: true,
+                inlineSources: true,
             }),
             postcss(),
-            multiInput(),
-            terser({
-                keep_classnames: true,
-            }),
             //visualizer(),
         ],
     },

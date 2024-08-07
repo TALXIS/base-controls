@@ -10,7 +10,7 @@ export interface IDecimal extends IControl<IDecimalParameters, IDecimalOutputs, 
 export interface IDecimalParameters extends IInputParameters {
     //bound parameter
     value: IDecimalNumberProperty;
-    EnableSpinButton?: ITwoOptionsProperty;
+    EnableSpinButton?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface IDecimalOutputs extends IOutputs {

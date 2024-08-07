@@ -54,7 +54,6 @@ export const ConditionOperator = (props: IConditionOperator) => {
     }
     return <ComboBox
         {...props}
-        underlined={theme.effects.underlined}
         selectedKey={condition.operator.get()}
         shouldRestoreFocus={false}
         options={getOptions()}

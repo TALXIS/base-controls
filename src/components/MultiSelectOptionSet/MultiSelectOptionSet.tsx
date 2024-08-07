@@ -53,7 +53,6 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
                 multiSelect
                 autoComplete="on"
                 theme={theme}
-                underlined={theme.effects.underlined}
                 autofill={parameters.AutoFocus?.raw === true ? {
                     autoFocus: true
                 } : undefined}
@@ -84,7 +83,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
                     key: 'delete',
                     showOnlyOnHover: false,
                     iconProps: {
-                        iconName: 'Delete'
+                        iconName: 'Cancel'
                     },
                     onClick: (e, value) => {
                         handleChange(null);

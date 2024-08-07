@@ -37,7 +37,10 @@ export class Decimal implements ComponentFramework.StandardControl<IInputs, IOut
         ReactDOM.render(React.createElement(DecimalComponent as any, {
             context: context,
             parameters: {
-                value: context.parameters.value
+                value: context.parameters.value,
+                EnableDeleteButton: {
+                    raw: true
+                }
             },
             onNotifyOutputChanged: (outputs) => {
                 this._outputs = outputs;

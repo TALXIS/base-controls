@@ -37,7 +37,6 @@ export const OptionSet = (props: IOptionSet) => {
         <ThemeProvider theme={theme} applyTo="none">
             <ComboBox
                 componentRef={componentRef}
-                underlined={theme.effects.underlined}
                 options={comboBoxOptions}
                 readOnly={context.mode.isControlDisabled}
                 //the defaultValue comes in the raw prop directly, no need to look at it
@@ -67,7 +66,7 @@ export const OptionSet = (props: IOptionSet) => {
                     key: 'delete',
                     showOnlyOnHover: true,
                     iconProps: {
-                        iconName: 'Delete'
+                        iconName: 'Cencel'
                     },
                     onClick: (e, value) => { handleChange(null); }
                 } : undefined}
