@@ -12,7 +12,6 @@ interface IInternalTimePickerProps extends Omit<ITimePickerProps, 'onChange' | '
     visible: boolean;
     timeFormat: string;
     dateTimeFormat: string;
-    underlined?: boolean;
     lastInputedTimeString?: string;
     onChange: (time?: string) => void;
 }

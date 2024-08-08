@@ -165,13 +165,11 @@ export const Decimal = (props: IDecimal) => {
     }, [boundValue.formatted]);
 
     const componentProps = onOverrideComponentProps({
-        underlined: theme.effects.underlined,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
         readOnly: context.mode.isControlDisabled,
         inputMode: useMemo(() => getInputMode(), [props.parameters.value.type]),
         suffixItems: getSuffixItems(),
         autoFocus: parameters.AutoFocus?.raw,
-        borderless: parameters.EnableBorder?.raw === false,
         errorMessage: boundValue.errorMessage,
         styles: {
             fieldGroup: {

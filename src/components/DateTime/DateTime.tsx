@@ -1,6 +1,6 @@
 
 import { IDateTime } from "./interfaces";
-import { DateRangeType, ICalendarDayGridStyles, IDatePicker, IProcessedStyleSet, ThemeProvider } from "@fluentui/react";
+import { ICalendarDayGridStyles, IDatePicker, IProcessedStyleSet, ThemeProvider } from "@fluentui/react";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
@@ -48,7 +48,6 @@ export const DateTime = (componentProps: IDateTime) => {
         <ThemeProvider theme={theme} applyTo="none" ref={ref}>
             <DatePicker
                 className={styles.datePicker}
-                underlined={theme.effects.underlined}
                 componentRef={datePickerRef}
                 hideErrorMessage={!parameters.ShowErrorMessage?.raw}
                 keepCalendarOpenAfterDaySelect={isDateTime}
@@ -60,6 +59,21 @@ export const DateTime = (componentProps: IDateTime) => {
                 // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
                 minDate={new Date('1753-01-01T00:00:00.000Z')}
                 firstDayOfWeek={componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek}
+                deleteButtonProps={parameters.EnableDeleteButton?.raw === true ? {
+                    key: 'Delete',
+                    showOnlyOnHover: true,
+                    iconProps: {
+                        iconName: 'Cancel'
+                    },
+                    onClick: () => date.clear()
+                } : undefined}
+                clickToCopyProps={ parameters.EnableCopyButton?.raw === true ? {
+                    key: 'copy',
+                    showOnlyOnHover: true,
+                    iconProps: {
+                        iconName: 'Copy'
+                    }
+                } : undefined}
                 calendarAs={(props) =>
                 {
                     const calendarProps: IInternalCalendarProps = {
@@ -70,6 +84,7 @@ export const DateTime = (componentProps: IDateTime) => {
                             restrictedDates: getRestrictedDates(),
                             customDayCellRef: onOverrideDayCellProps
                         },
+                        value: date.get(),
                         strings: {
                             goToToday: labels.goToToday(),
                             days: JSON.parse(labels.days()),
@@ -78,7 +93,6 @@ export const DateTime = (componentProps: IDateTime) => {
                             shortMonths: JSON.parse(labels.shortMonths())
                         },
                         timePickerProps: {
-                            underlined: theme.effects.underlined,
                             dateTimeFormat: patterns.fullDateTimePattern,
                             autoComplete: "off",
                             autoCapitalize: "off",
@@ -107,7 +121,6 @@ export const DateTime = (componentProps: IDateTime) => {
                 }
                 errorMessage={parameters.value.errorMessage}
                 textField={{
-                    underlined: theme.effects.underlined,
                     value: date.getFormatted() ?? "",
                     onChange: (e, value) => {
                         if(isDateTime) {
@@ -120,33 +133,15 @@ export const DateTime = (componentProps: IDateTime) => {
                     placeholder: '---',
                     onNotifyValidationResult: () => null,
                     noValidate: true,
-                    borderless: parameters.EnableBorder?.raw === false,
                     styles: {
                         fieldGroup: {
                             height: height,
                             width: width
                         }
-                    },
-                    //@ts-ignore - TODO: fix types in shared components
-                    deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
-                        key: 'Delete',
-                        onClick: date.clear,
-                        showOnlyOnHover: true,
-                        iconProps: {
-                            iconName: 'Cancel'
-                        }
-                    } : undefined,
-                    clickToCopyProps: parameters.EnableCopyButton?.raw === true ? {
-                        key: 'copy',
-                        showOnlyOnHover: true,
-                        iconProps: {
-                            iconName: 'Copy'
-                        }
-                    } : undefined
+                    }
                 }
                 }
-                //undefined will break the calendar => it wont reflect date change in it's UI
-                value={date.get() ?? new Date()}
+                value={date.get() ?? undefined}
             />
         </ThemeProvider>
     );

@@ -67,7 +67,6 @@ export const TextField = (props: ITextField) => {
         return undefined;
     }
     const componentProps = onOverrideComponentProps({
-        underlined: theme.effects.underlined,
         readOnly: context.mode.isControlDisabled,
         resizable: false,
         type: useMemo(() => getInputType(), [boundValue.type]),
@@ -79,7 +78,6 @@ export const TextField = (props: ITextField) => {
                 width: sizing.width
             }
         },
-        borderless: parameters.EnableBorder?.raw === false,
         errorMessage: boundValue.errorMessage,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
         suffixItems: useMemo(() => getSuffixItems(), [boundValue.raw, boundValue.error, parameters.EnableTypeSuffix?.raw]),

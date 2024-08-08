@@ -128,6 +128,11 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     };
 
     const selectDate = (date?: Date, time?: string) => {
+        //onSelectDate can trigger on initial click with empty date, do not continue in this case
+        //for clearing dates, date.clear should be used
+        if(!date && !time) {
+            return;
+        }
         let dayjsDate = dayjs(date ?? getDate());
         //date selected from calendar, keep the original time
         if (!time) {

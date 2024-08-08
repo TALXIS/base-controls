@@ -21,8 +21,6 @@ export interface IInputParameters extends IBaseParameters {
 }
 
 export interface IBaseParameters extends IParameters {
-    /** default `true`    */
-    EnableBorder?: Omit<ITwoOptionsProperty, 'attributes'>;
     /**
     * Decides whether the input should get focus on first render.
     */

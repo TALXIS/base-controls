@@ -122,7 +122,6 @@ export const Lookup = (props: ILookup) => {
     }
     const componentProps = onOverrideComponentProps({
         ref: componentRef,
-        underlined: theme.effects.underlined,
         readOnly: context.mode.isControlDisabled,
         resolveDelay: 200,
         stackItems: itemLimit === 1,
@@ -184,7 +183,8 @@ export const Lookup = (props: ILookup) => {
             key: 'search',
             iconProps: {
                 iconName: 'Search'
-            }
+            },
+            showOnlyOnHover: true
         },
         selectedItems: value.map((lookup) => {
             return {
@@ -220,6 +220,7 @@ export const Lookup = (props: ILookup) => {
             };
         }),
         itemLimit: itemLimit,
+        onEmptyResolveSuggestions: (selectedItems) => onResolveSuggestions("", selectedItems as any) as any,
         onResolveSuggestions: onResolveSuggestions
     });
 

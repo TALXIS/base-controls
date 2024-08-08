@@ -58,7 +58,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
                 } : undefined}
                 readOnly={context.mode.isControlDisabled}
                 errorMessage={boundValue.errorMessage}
-                selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : [-1]}
+                selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : null}
                 useComboBoxAsMenuWidth
                 hideErrorMessage={!parameters.ShowErrorMessage?.raw}
                 styles={{
@@ -81,7 +81,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
                 } : undefined}
                 deleteButtonProps={props.parameters.EnableDeleteButton?.raw === true ? {
                     key: 'delete',
-                    showOnlyOnHover: false,
+                    showOnlyOnHover: true,
                     iconProps: {
                         iconName: 'Cancel'
                     },

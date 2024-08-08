@@ -39,8 +39,7 @@ export const OptionSet = (props: IOptionSet) => {
                 componentRef={componentRef}
                 options={comboBoxOptions}
                 readOnly={context.mode.isControlDisabled}
-                //the defaultValue comes in the raw prop directly, no need to look at it
-                selectedKey={boundValue.raw?.toString() ?? -1}
+                selectedKey={boundValue.raw?.toString() ?? null}
                 errorMessage={boundValue.errorMessage}
                 useComboBoxAsMenuWidth
                 hideErrorMessage={!parameters.ShowErrorMessage?.raw}
