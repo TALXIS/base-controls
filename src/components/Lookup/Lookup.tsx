@@ -220,7 +220,7 @@ export const Lookup = (props: ILookup) => {
             };
         }),
         itemLimit: itemLimit,
-        onEmptyResolveSuggestions: (selectedItems) => onResolveSuggestions("", selectedItems as any) as any,
+        onEmptyResolveSuggestions: !context.mode.isControlDisabled ? (selectedItems) => onResolveSuggestions("", selectedItems as IItemProps[]) as any : undefined,
         onResolveSuggestions: onResolveSuggestions
     });
 
