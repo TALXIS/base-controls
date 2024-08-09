@@ -23,7 +23,7 @@ export class Paging extends GridDependency {
 
     public get pageLastRecordOrder() {
         const size = this.pageNumber * this.pageSize;
-        if(size > this.totalResultCount) {
+        if(size > this.totalResultCount && this.totalResultCount !== -1) {
             return this.totalResultCount;
         } 
         return size;
