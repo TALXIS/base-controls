@@ -116,7 +116,13 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         }
         const dayjsDate = dayjs(value, formatting, true);
         if (!dayjsDate.isValid()) {
-            return value;
+            const dayJsDateNoWhiteSpace = dayjs(value?.replaceAll(' ', ''), formatting.replaceAll(' ', ''));
+            if(!dayJsDateNoWhiteSpace.isValid()) {
+                return value;
+            }
+            else {
+                return dayJsDateNoWhiteSpace.toDate();
+            }
         }
         return dayjsDate.toDate();
     };
