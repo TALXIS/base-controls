@@ -146,6 +146,9 @@ export class Grid {
     public async refreshColumns(): Promise<IGridColumn[]> {
         const gridColumns: IGridColumn[] = [];
         for (const column of this._dataset.columns) {
+            if(column.isHidden) {
+                continue;
+            }
             const sorted = this._dataset.sorting?.find(sort => sort.name === column.name);
             const entityAliasName = column.name?.includes('.') ? column.name.split('.')[0] : null;
             const attributeName = entityAliasName ? column.name.split('.')[1] : column.name;
