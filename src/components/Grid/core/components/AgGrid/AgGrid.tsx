@@ -47,8 +47,13 @@ export const AgGrid = () => {
         if(!columOrder) {
             return;
         }
-        //@ts-ignore - typings
-        grid.pcfContext.factory.fireEvent('__updateColumnOrder', columOrder)
+        //@ts-ignore: typings
+        grid.pcfContext.factory.fireEvent('__clearColumns');
+        const orderedColumns = grid.dataset.columns.sort((a, b) => {
+            return columOrder.indexOf(a.name) - columOrder.indexOf(b.name);
+         });
+         const t = 'a';
+        //grid.pcfContext.factory.fireEvent('__updateColumnOrder', columOrder)
     }
     return (
         <div 
