@@ -15,9 +15,9 @@ export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Par
 }
 
 export interface ILookupParameters extends IBaseParameters {
-    IsInlineNewEnabled?: ITwoOptionsProperty;
-    MultipleEnabled?: ITwoOptionsProperty;
-    EnableNavigation?: ITwoOptionsProperty;
+    IsInlineNewEnabled?: Omit<ITwoOptionsProperty, 'attributes'>;
+    MultipleEnabled?:  Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
     value: ILookupProperty;
 }
 

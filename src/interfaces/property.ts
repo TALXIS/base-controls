@@ -63,20 +63,11 @@ export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramew
         Targets: string[]
     };
     /**
-     * Returns the default lookup viewId. Works only for Microsoft PCF's
-     */
-    getDefaultViewId: (entityName: string) => string,
-    /**
      * Gets all views for entity (including non-lookup ones).
      */
     getAllViews: (entityName: string) => Promise<{
-        isAvailableInOffline: boolean;
         isDefault: boolean;
-        isPinned: boolean;
-        isUserView: boolean;
-        relatedEntityName: string;
         viewId: string;
-        viewName: string;
         fetchXml?: string;
     }[]>
 }
