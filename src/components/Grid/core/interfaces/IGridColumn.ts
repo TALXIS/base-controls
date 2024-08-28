@@ -15,5 +15,6 @@ export interface IGridColumn {
     isEditable?: boolean;
     isResizable?: boolean;
     isRequired?: boolean;
+    isHidden?: boolean;
     width?: number;
 }

@@ -178,6 +178,7 @@ export class Grid {
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
                 width: this.state?.columnSizing?.columnSizingModel?.find((x: any) => x.colId === key)?.width || column.visualSizeFactor,
                 isResizable: column.isResizable ?? true,
+                isHidden: column.isHidden
             } as IGridColumn;
 
             const condition = await this.filtering.condition(gridColumn);

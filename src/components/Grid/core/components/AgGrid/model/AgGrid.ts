@@ -20,6 +20,7 @@ export class AgGrid extends GridDependency {
                 colId: column.key,
                 field: column.key,
                 headerName: column.displayName,
+                hide: column.isHidden,
                 initialWidth: column.width,
                 sortable: column.isSortable,
                 editable: column.isEditable,
