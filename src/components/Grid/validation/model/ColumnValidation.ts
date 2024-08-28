@@ -43,6 +43,12 @@ export class ColumnValidation extends GridDependency {
                 }
                 break;
             }
+            case DataType.OPTIONSET: {
+                if(typeof value === 'number') {
+                    return [true, ""];
+                }
+                break;
+            }
             case DataType.SINGLE_LINE_URL: {
                 value = `${value}`;
                 if (!isURL(value)) {
