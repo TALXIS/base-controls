@@ -44,6 +44,9 @@ export const AgGrid = () => {
             //column order from Grid currently not supported in Power Apps
             return;
         }
+        if(e.type !== 'uiColumnMoved') {
+            return;
+        }
         const sortedIds = e.api.getState().columnOrder?.orderedColIds;
         if (!sortedIds) {
             return;
