@@ -67,7 +67,7 @@ export const AgGrid = () => {
             //@ts-ignore - portal accepts metadata
             await grid.dataset.addColumn!(col.name, col.alias, col)
         }
-        grid.dataset.refresh();
+        grid.pcfContext.factory.requestRender();
     }
 
     const updateColumnVisualSizeFactor = async (e: ColumnResizedEvent<IEntityRecord, any>): Promise<void> => {
