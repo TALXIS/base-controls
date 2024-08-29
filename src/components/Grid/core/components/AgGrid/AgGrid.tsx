@@ -39,7 +39,18 @@ export const AgGrid = () => {
     }
 
     const updateColumnOrder = async (e: ColumnMovedEvent<IEntityRecord, any>) => {
+        const columOrder = e.api.getState().columnOrder?.orderedColIds.filter(colId => {
+            switch(colId) {
+                case CHECKBOX_COLUMN_KEY:
+            }
+            return true;
+        });
+        if(!columOrder) {
+            return;
+        }
         //@ts-ignore - typings
+        grid.pcfContext.factory.fireEvent('__updateColumnOrder', columOrder)
+        /* //@ts-ignore - typings
         if (!window.TALXIS?.Portal) {
             //column order from Grid currently not supported in Power Apps
             return;
@@ -67,11 +78,11 @@ export const AgGrid = () => {
             //@ts-ignore - portal accepts metadata
             await grid.dataset.addColumn!(col.name, col.alias, col)
         }
-        grid.pcfContext.factory.requestRender();
+        grid.pcfContext.factory.requestRender(); */
     }
 
     const updateColumnVisualSizeFactor = async (e: ColumnResizedEvent<IEntityRecord, any>): Promise<void> => {
-        if(e.source !== 'uiColumnResized') {
+        /* if(e.source !== 'uiColumnResized') {
             return;
         }
         //@ts-ignore - typings
@@ -96,7 +107,7 @@ export const AgGrid = () => {
                 await grid.dataset.addColumn!(col.name, col.alias, col);
             }
             grid.pcfContext.factory.requestRender();
-        }, 200);
+        }, 200); */
     }
     return (
         <div

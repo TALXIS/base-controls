@@ -7,13 +7,13 @@ import numeral from "numeral";
 import { Numeral } from '../../utils/Numeral';
 import { getDefaultDurationTranslations } from './translations';
 import { durationOptions } from "./durationOptions";
+import humanizeDuration, { Unit } from "humanize-duration";
 
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const componentRef = useRef<IComboBox>(null);
     const context = props.context;
-    const humanizeDuration = require("humanize-duration");
     const formattingInfo = context.userSettings;
     //@ts-ignore - locale is part of UserSettings
     const language = formattingInfo.locale;
@@ -23,7 +23,7 @@ export const Duration = (props: IDuration) => {
         //all duration formatting should happen here
         if (typeof value === 'number') {
             const durationInMilliseconds = value * 60000;
-            const units = value < 60 ? ['m'] : value >= 1440 ? ['d'] : ['h'];
+            const units: Unit[] = value < 60 ? ['m'] : value >= 1440 ? ['d'] : ['h'];
             const options = {
                 units: units,
                 maxDecimalPoints: 2,
@@ -91,7 +91,7 @@ export const Duration = (props: IDuration) => {
     const presetOptions = (): IComboBoxOption[] => {
         const formattedOptions = durationOptions.map(option => ({
             key: option.Value.toString(),
-            text: formatter(parseInt(option.Label)),
+            text: formatter(parseInt(option.Label)) ?? "",
         }));
         return formattedOptions;
     };
