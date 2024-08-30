@@ -19,10 +19,10 @@ optimizeDeps: {
     exclude: ['@talxis/base-controls']
 }
 ```
-1. Delete `node_modules`
-1. Run `npm install`
-1. Run `npm link @talxis/base-controls`
-1. Run `npm start`
+7. Delete `node_modules`
+8. Run `npm install`
+9. Run `npm link @talxis/base-controls`
+10. Run `npm start`
 
 These steps only need to be done once. If you want to see any future changes you made in Base Control package, you need to run `npm run build` in Base Control root directory and Portal will automatically reload with your changes applied.
 
