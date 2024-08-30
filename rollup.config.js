@@ -55,6 +55,9 @@ export default [
             if (externalDeps.includes(id)) {
                 return true;
             }
+            if(id.startsWith('@talxis')) {
+                return true;
+            }
             if (id.startsWith('@fluentui')) {
                 return true;
             }

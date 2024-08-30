@@ -1,18 +1,30 @@
-# Building the components locally
+# Running the controls in local PCF harness
 
 1. Run `npm install` inside the root directory.
-1. Run `npm run sandbox`. This will run the sandbox environment located in `src/sandbox`,
-where you can import and test all of the components (the source code for all components is located in `src/components`).
-1. Optionally, you can run `npm run documentation` to view the current documentation for existing components and use it for testing purposes.
+1. Navigate to `examples` folder which contains a PCF wrapper for each Base Control.
+1. Navigate to the desired control folder and run `npm install` again.
+1. Run `npm start watch`. This will open the local PCF harness. If you make any changes in the Base Control being used by the wrapper, it will automatically re-build the PCF and show your changes.
 
-# Testing the components locally in Portal
+# Running the controls in Portal
 
-1. Run `npm i yalc -g` (only needed once)
-1. Navigate to the shared components root directory.
+1. Navigate to the root directory.
+1. Run `npm install`.
 1. Run `npm run build`.
-1. Run `yalc publish`.
-1. Go to the Portal.Web.Frontend directory and run `yalc add @talxis/react-components`. This will replace the NPM package in `package.json` with the locally built version.
-1. Run the Portal.
+1. Run `npm link`.
+1. Go to `Portal.Web.Frontend` directory.
+1. Add the following prop in the `vite.config.mts` file under `defineConfig`:
 
-If you want to see the latest changes applied, repeat steps 2 and 3 and run `yalc update` in the `Portal.Web.Frontend` directory.
-**Don't forget to revert the `package.json` file to the original version before pushing any changes to the Portal repo!**
+```typescript
+optimizeDeps: {
+    exclude: ['@talxis/base-controls']
+}
+```
+1. Delete `node_modules`
+1. Run `npm install`
+1. Run `npm link @talxis/base-controls`
+1. Run `npm start`
+
+These steps only need to be done once. If you want to see any future changes you made in Base Control package, you need to run `npm run build` in Base Control root directory and Portal will automatically reload with your changes applied.
+
+> **_NOTE:_**  If Portal starts to complain that there is a mismatch in React versions, you need to delete the `react` and `react-dom` packages from the `node_modules` folder in Base Controls
+
