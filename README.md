@@ -26,5 +26,7 @@ optimizeDeps: {
 
 These steps only need to be done once. If you want to see any future changes you made in Base Control package, you need to run `npm run build` in Base Control root directory and Portal will automatically reload with your changes applied.
 
+**Don't forget to revert the `vite.config.mts` file to the original version before pushing any changes to the Portal repo!**
+
 > **_NOTE:_**  If Portal starts to complain that there is a mismatch in React versions, you need to delete the `react` and `react-dom` packages from the `node_modules` folder in Base Controls
 
