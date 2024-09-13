@@ -9,13 +9,12 @@ import Color from 'color';
 
 export const OptionSet = (props: IOptionSet) => {
     const { sizing, onNotifyOutputChanged, theme } = useControl('OptionSet', props);
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const componentRef = useRef<IComboBox>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const { Options } = parameters.value.attributes;
     const context = props.context;
-    const [inputBackground, setInputBackground] = useState<string>(theme.semanticColors.inputBackground);
-    const [inputText, setInputText] = useState<string>(theme.semanticColors.inputText);
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
@@ -25,19 +24,21 @@ export const OptionSet = (props: IOptionSet) => {
         if (parameters.AutoFocus?.raw) {
             componentRef.current?.focus(true);
         }
-        if (parameters.EnableOptionSetColors?.raw && boundValue.raw?.toString()) {
-            setColor(boundValue.raw?.toString())
-        }
     }, []);
 
     const customTokenTheme = createV9Theme(theme);
 
     const overridenFluentDesignLanguage = React.useMemo(() => {
+        const isColorEnabled = props.parameters.EnableOptionSetColors?.raw;
+        const color = boundValue.attributes.Options.find(x => x.Value === boundValue.raw)?.Color;
+        const inputBackground = isColorEnabled && color ? color : theme.semanticColors.inputBackground;
+        const textColor = isColorEnabled && color ? Color(color).luminosity() > 0.5 ? theme.palette.black : theme.palette.white : theme.semanticColors.inputText;
+
         return {
             brand: createBrandVariants(theme.palette),
-            tokenTheme: { ...customTokenTheme, inputBackground: inputBackground, inputText: inputText }
+            tokenTheme: { ...customTokenTheme, inputBackground: inputBackground, inputText: textColor }
         }
-    }, [inputBackground, inputText, customTokenTheme]);
+    }, [customTokenTheme]);
 
     const overridenTheme = useControlTheme(overridenFluentDesignLanguage);
 
@@ -46,29 +47,9 @@ export const OptionSet = (props: IOptionSet) => {
         if (option) {
             value = parseInt(option.key as string);
         }
-        if (parameters.EnableOptionSetColors?.raw) {
-            setColor(option?.key ?? null);
-        }
         onNotifyOutputChanged({
             value: value
         });
-    };
-
-    const setColor = (key: string | number | null) => {
-        const selectedOption = Options.find(item => item.Value.toString() === key);
-        const defaultBackground = theme.semanticColors.inputBackground;
-        const defaultText = theme.semanticColors.inputText;
-
-        if (!selectedOption?.Color) {
-            setInputBackground(defaultBackground);
-            setInputText(defaultText);
-            return;
-        }
-
-        setInputBackground(selectedOption.Color);
-        const luminance = Color(selectedOption.Color).luminosity();
-        const textColor = luminance > 0.5 ? overridenTheme.palette.black : overridenTheme.palette.white;
-        setInputText(textColor);
     };
 
     const onRenderOption = (option: IComboBoxOption | undefined) => {
@@ -84,68 +65,78 @@ export const OptionSet = (props: IOptionSet) => {
         );
     };
 
+    const componentProps = onOverrideComponentProps({
+        componentRef: componentRef,
+        options: comboBoxOptions,
+        readOnly: context.mode.isControlDisabled,
+        selectedKey: boundValue.raw?.toString() ?? null,
+        errorMessage: boundValue.errorMessage,
+        useComboBoxAsMenuWidth: true,
+        hideErrorMessage: !parameters.ShowErrorMessage?.raw,
+        styles: {
+            root: {
+                height: sizing.height,
+                width: sizing.width,
+                display: 'flex',
+                alignItems: 'center',
+                ...(parameters.EnableOptionSetColors?.raw && {
+                    '.ms-Icon': {
+                        color: `${overridenTheme.semanticColors.inputText} !important`,
+                    },
+                }),
+            },
+            callout: {
+                maxHeight: '300px !important',
+            },
+        },
+        ...(parameters.EnableCopyButton?.raw === true && {
+            clickToCopyProps: {
+                key: 'copy',
+                showOnlyOnHover: true,
+                iconProps: {
+                    iconName: 'Copy',
+                    ...(parameters.EnableOptionSetColors?.raw && {
+                        styles: {
+                            root: {
+                                color: `${overridenTheme.semanticColors.inputText} !important`,
+                                ':hover': {
+                                    color: `${overridenTheme.semanticColors.inputText} !important`,
+                                },
+                            },
+                        },
+                    }),
+                },
+            },
+        }),
+        ...(parameters.EnableDeleteButton?.raw === true && {
+            deleteButtonProps: {
+                key: 'delete',
+                showOnlyOnHover: true,
+                iconProps: {
+                    iconName: 'Cancel',
+                    ...(parameters.EnableOptionSetColors?.raw && {
+                        styles: {
+                            root: {
+                                color: `${overridenTheme.semanticColors.inputText} !important`,
+                                ':hover': {
+                                    color: `${overridenTheme.semanticColors.inputText} !important`,
+                                },
+                            },
+                        },
+                    }),
+                },
+                onClick: (e, value) => {
+                    handleChange(null);
+                },
+            },
+        }),
+        onChange: (e, option) => handleChange(option),
+        onRenderOption: onRenderOption,
+    });
+
     return (
         <ThemeProvider theme={overridenTheme} applyTo="none">
             <ComboBox
-                componentRef={componentRef}
-                options={comboBoxOptions}
-                readOnly={context.mode.isControlDisabled}
-                selectedKey={boundValue.raw?.toString() ?? null}
-                errorMessage={boundValue.errorMessage}
-                useComboBoxAsMenuWidth
-                hideErrorMessage={!parameters.ShowErrorMessage?.raw}
-                styles={{
-                    root: {
-                        height: sizing.height,
-                        width: sizing.width,
-                        display: 'flex',
-                        alignItems: 'center',
-                        ...(parameters.EnableOptionSetColors?.raw && {
-                            '.ms-Icon': {
-                                color: `${inputText} !important`,
-                            },
-                        }),
-                    },
-                    callout: {
-                        maxHeight: '300px !important'
-                    },
-                }}
-                clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
-                    key: 'copy',
-                    showOnlyOnHover: true,
-                    iconProps: {
-                        iconName: 'Copy',
-                        ...(parameters.EnableOptionSetColors?.raw && {
-                            styles: {
-                                root: {
-                                    color: `${inputText} !important`,
-                                    ':hover': {
-                                        color: `${inputText} !important`,
-                                    },
-                                },
-                            },
-                        })
-                    }
-                } : undefined}
-                deleteButtonProps={parameters.EnableDeleteButton?.raw === true ? {
-                    key: 'delete',
-                    showOnlyOnHover: true,
-                    iconProps: {
-                        iconName: 'Cancel',
-                        ...(parameters.EnableOptionSetColors?.raw && {
-                            styles: {
-                                root: {
-                                    color: `${inputText} !important`,
-                                    ':hover': {
-                                        color: `${inputText} !important`,
-                                    },
-                                },
-                            },
-                        })
-                    },
-                    onClick: (e, value) => { handleChange(null); }
-                } : undefined}
-                onChange={(e, option) => handleChange(option)}
-                onRenderOption={onRenderOption}
-            /></ThemeProvider>);
+                {...componentProps} />
+        </ThemeProvider>);
 };
