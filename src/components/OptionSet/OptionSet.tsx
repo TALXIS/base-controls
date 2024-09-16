@@ -14,33 +14,6 @@ export const OptionSet = (props: IOptionSet) => {
     const componentRef = useRef<IComboBox>(null);
     const parameters = props.parameters;
     const boundValue = parameters.value;
-    parameters.value.attributes.Options = [
-        {
-            "Label": "Option 1",
-            Value: 1,
-            "Color": ""
-        },
-        {
-            "Label": "Option 2",
-            Value: 2,
-            "Color": "#33FF57"
-        },
-        {
-            "Label": "Option 3",
-            Value: 3,
-            "Color": "#3357FF"
-        },
-        {
-            "Label": "Option 4",
-            Value: 4,
-            "Color": "#F0A500"
-        },
-        {
-            "Label": "Option 5",
-            Value: 5,
-            "Color": "#8A2BE2"
-        }
-    ];
     const { Options } = parameters.value.attributes;
     const context = props.context;
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
@@ -75,8 +48,6 @@ export const OptionSet = (props: IOptionSet) => {
     }, [boundValue.raw]);
 
     const overridenTheme = useControlTheme(overridenFluentDesignLanguage);
-    overridenTheme.semanticColors.successIcon = '#ffffff';
-    overridenTheme.palette.themeDarkAlt = '#ffffff';
     const handleChange = (option?: IComboBoxOption | null): void => {
         let value = undefined;
         if (option) {
@@ -138,6 +109,17 @@ export const OptionSet = (props: IOptionSet) => {
                 onClick: (e, value) => {
                     handleChange(null);
                 },
+            },
+        }),
+        ...(parameters.EnableOptionSetColors?.raw === true && {
+            affixThemeOverride: {
+                semanticColors: {
+                    successIcon: overridenTheme.semanticColors.inputText,
+                    infoIcon: overridenTheme.semanticColors.inputText
+                },
+                palette: {
+                    themeDarkAlt: overridenTheme.semanticColors.inputText
+                }
             },
         }),
         onChange: (e, option) => handleChange(option),
