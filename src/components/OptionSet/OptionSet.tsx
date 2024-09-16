@@ -1,13 +1,15 @@
 
 import { IOptionSet } from './interfaces';
-import { useControl, useControlTheme } from '../../hooks';
+import { useControl } from '../../hooks';
 import { ComboBox } from "@talxis/react-components";
 import { IComboBox, IComboBoxOption, Icon, ThemeProvider } from '@fluentui/react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { createBrandVariants, createV9Theme } from '@fluentui/react-migration-v8-v9';
 import Color from 'color';
 import { ThemeDesigner } from '@talxis/react-components/dist/utilities/ThemeDesigner';
-
+import { Text } from '@fluentui/react';
+import { getOptionSetComponentStyles } from './styles';
+import { getControlTheme } from '../../utils';
 export const OptionSet = (props: IOptionSet) => {
     const { sizing, onNotifyOutputChanged, theme } = useControl('OptionSet', props);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
@@ -30,6 +32,9 @@ export const OptionSet = (props: IOptionSet) => {
     const overridenFluentDesignLanguage = React.useMemo(() => {
         const isColorEnabled = props.parameters.EnableOptionSetColors?.raw;
         const color = boundValue.attributes.Options.find(x => x.Value === boundValue.raw)?.Color;
+        if (!isColorEnabled || !color) {
+            return props.context.fluentDesignLanguage;
+        }
         const inputBackground = isColorEnabled && color ? color : theme.semanticColors.inputBackground;
         const textColor = isColorEnabled && color ? Color(color).luminosity() > 0.5 ? '#000000' : '#ffffff' : theme.semanticColors.inputText;
 
@@ -47,7 +52,8 @@ export const OptionSet = (props: IOptionSet) => {
         }
     }, [boundValue.raw]);
 
-    const overridenTheme = useControlTheme(overridenFluentDesignLanguage);
+    const overridenTheme = useMemo(() => getControlTheme(overridenFluentDesignLanguage), [overridenFluentDesignLanguage])
+    const styles = React.useMemo(() => getOptionSetComponentStyles(overridenTheme), [overridenTheme]);
     const handleChange = (option?: IComboBoxOption | null): void => {
         let value = undefined;
         if (option) {
@@ -64,9 +70,9 @@ export const OptionSet = (props: IOptionSet) => {
         return (
             <div>
                 {parameters.EnableOptionSetColors?.raw && (
-                    <Icon styles={{ root: { color: color ? color : 'transparent', marginRight: '8px', fontSize: '12px' } }} iconName={'CircleFill'} aria-hidden="true" />
+                    <Icon className={styles.cicrleIconStyle} styles={{ root: { color: color ? color : 'transparent' } }} iconName={'CircleFill'} aria-hidden="true" />
                 )}
-                <span>{option.text}</span>
+                <Text>{option.text}</Text>
             </div>
         );
     };
