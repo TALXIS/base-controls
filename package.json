@@ -50,15 +50,7 @@
     "build": "rollup -c",
     "documentation": "start-storybook -p 6006",
     "build-documentation": "build-storybook",
-    "lint": "eslint \"./src/**\"",
-    "lint:fix": "eslint \"./src/**\" --fix",
     "yalc": "rollup -c && yalc publish --sig"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -80,7 +72,7 @@
     "@fluentui/react": "^8.119.1",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
     "@talxis/client-libraries": "1.2407.2",
-    "@talxis/react-components": "1.2408.10",
+    "@talxis/react-components": "^1.2409.8",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
     "external-svg-loader": "^1.7.1",
