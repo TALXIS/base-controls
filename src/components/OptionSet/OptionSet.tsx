@@ -2,60 +2,36 @@
 import { IOptionSet } from './interfaces';
 import { useControl } from '../../hooks';
 import { ComboBox, ColorfulOption } from "@talxis/react-components";
-import { IComboBox, IComboBoxOption, ThemeProvider, Text } from '@fluentui/react';
-import React, { useEffect, useMemo, useRef } from 'react';
-import { createBrandVariants, createV9Theme } from '@fluentui/react-migration-v8-v9';
-import Color from 'color';
-import { ThemeDesigner } from '@talxis/react-components/dist/utilities/ThemeDesigner';
-import { getControlTheme } from '../../utils';
+import { IComboBox, IComboBoxOption, Icon, ThemeProvider } from '@fluentui/react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useComboBoxTheme } from './useComboBoxTheme';
+import { getComboBoxStyles } from './styles';
+import { getOptionStyles } from '@fluentui/react/lib/components/ComboBox/ComboBox.styles';
+import React from 'react';
+
 export const OptionSet = (props: IOptionSet) => {
-    const { sizing, onNotifyOutputChanged, theme } = useControl('OptionSet', props);
-    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const componentRef = useRef<IComboBox>(null);
+    const { sizing, onNotifyOutputChanged, theme } = useControl('OptionSet', props);
+    const styles = useMemo(() => getComboBoxStyles(sizing.width, sizing.height), [sizing.width, sizing.height]);
+    const [colorFeatureEnabled, overridenTheme] = useComboBoxTheme(props, theme);
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const { Options } = parameters.value.attributes;
     const context = props.context;
-    const isEnabledBackgroundColor = useRef(false);
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
+        title: option.Label
     }));
 
     useEffect(() => {
         if (parameters.AutoFocus?.raw) {
             componentRef.current?.focus(true);
         }
-
-        if (Options.find((option) => option.Color)) {
-            isEnabledBackgroundColor.current = true;
-        }
     }, []);
 
-    const overridenFluentDesignLanguage = React.useMemo(() => {
-        const isColorEnabled = props.parameters.EnableOptionSetColors?.raw;
-        const color = boundValue.attributes.Options.find(x => x.Value === boundValue.raw)?.Color;
-        if (!isColorEnabled || !color) {
-            return props.context.fluentDesignLanguage;
-        }
-        const inputBackground = isColorEnabled && color ? color : theme.semanticColors.inputBackground;
-        const textColor = isColorEnabled && color ? Color(color).luminosity() > 0.5 ? '#000000' : '#ffffff' : theme.semanticColors.inputText;
-
-        const primaryColor = textColor == '#000000' ? Color(inputBackground).darken(0.5).hex() : Color(inputBackground).lighten(0.5).hex();
-        const customV8Theme = ThemeDesigner.generateTheme({
-            primaryColor: primaryColor,
-            backgroundColor: theme.semanticColors.bodyBackground,
-            textColor: textColor
-        });
-
-        const customTokenTheme = createV9Theme(customV8Theme);
-        return {
-            brand: createBrandVariants(customV8Theme.palette),
-            tokenTheme: { ...customTokenTheme, inputBackground: inputBackground, inputText: textColor }
-        }
-    }, [boundValue.raw]);
-
-    const overridenTheme = useMemo(() => getControlTheme(overridenFluentDesignLanguage), [overridenFluentDesignLanguage])
     const handleChange = (option?: IComboBoxOption | null): void => {
         let value = undefined;
         if (option) {
@@ -66,22 +42,12 @@ export const OptionSet = (props: IOptionSet) => {
         });
     };
 
-    const onRenderOption = (option: IComboBoxOption | undefined) => {
-        if (!option) return null;
+    const onRenderColorfulOption = (option: IComboBoxOption | undefined) => {
+        if (!option) {
+            return null;
+        }
         const color = Options.find(item => item.Value.toString() === option.key)?.Color;
-        return (
-            <div>
-                {parameters.EnableOptionSetColors?.raw && isEnabledBackgroundColor.current ? (
-                    <ColorfulOption
-                        label={option.text}
-                        color={color ?? ''}
-                    />
-                ) : (
-                    <Text>{option.text}</Text>
-                )}
-            </div>
-        );
-
+        return <ColorfulOption label={option.text} color={color} />
     };
 
     const componentProps = onOverrideComponentProps({
@@ -92,17 +58,7 @@ export const OptionSet = (props: IOptionSet) => {
         errorMessage: boundValue.errorMessage,
         useComboBoxAsMenuWidth: true,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
-        styles: {
-            root: {
-                height: sizing.height,
-                width: sizing.width,
-                display: 'flex',
-                alignItems: 'center',
-            },
-            callout: {
-                maxHeight: '300px !important',
-            },
-        },
+        styles: { root: styles.root, callout: styles.callout },
         ...(parameters.EnableCopyButton?.raw === true && {
             clickToCopyProps: {
                 key: 'copy',
@@ -136,7 +92,7 @@ export const OptionSet = (props: IOptionSet) => {
             },
         }),
         onChange: (e, option) => handleChange(option),
-        onRenderOption: onRenderOption,
+        onRenderOption: colorFeatureEnabled ? onRenderColorfulOption : undefined,
     });
 
     return (

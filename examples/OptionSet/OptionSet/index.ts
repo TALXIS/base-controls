@@ -37,6 +37,9 @@ export class OptionSet implements ComponentFramework.StandardControl<IInputs, IO
                 AutoFocus: {
                     raw: true
                 },
+                EnableOptionSetColors: {
+                    raw: true
+                }
             },
             onNotifyOutputChanged: (outputs) => {
                 this._outputs = outputs;
