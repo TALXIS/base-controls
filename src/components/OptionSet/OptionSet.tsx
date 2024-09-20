@@ -1,14 +1,12 @@
 
 import { IOptionSet } from './interfaces';
 import { useControl } from '../../hooks';
-import { ComboBox } from "@talxis/react-components";
-import { IComboBox, IComboBoxOption, Icon, ThemeProvider } from '@fluentui/react';
+import { ComboBox, ColorfulOption } from "@talxis/react-components";
+import { IComboBox, IComboBoxOption, ThemeProvider, Text } from '@fluentui/react';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { createBrandVariants, createV9Theme } from '@fluentui/react-migration-v8-v9';
 import Color from 'color';
 import { ThemeDesigner } from '@talxis/react-components/dist/utilities/ThemeDesigner';
-import { Text } from '@fluentui/react';
-import { getOptionSetComponentStyles } from './styles';
 import { getControlTheme } from '../../utils';
 export const OptionSet = (props: IOptionSet) => {
     const { sizing, onNotifyOutputChanged, theme } = useControl('OptionSet', props);
@@ -18,6 +16,7 @@ export const OptionSet = (props: IOptionSet) => {
     const boundValue = parameters.value;
     const { Options } = parameters.value.attributes;
     const context = props.context;
+    const isEnabledBackgroundColor = useRef(false);
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
@@ -26,6 +25,10 @@ export const OptionSet = (props: IOptionSet) => {
     useEffect(() => {
         if (parameters.AutoFocus?.raw) {
             componentRef.current?.focus(true);
+        }
+
+        if (Options.find((option) => option.Color)) {
+            isEnabledBackgroundColor.current = true;
         }
     }, []);
 
@@ -53,7 +56,6 @@ export const OptionSet = (props: IOptionSet) => {
     }, [boundValue.raw]);
 
     const overridenTheme = useMemo(() => getControlTheme(overridenFluentDesignLanguage), [overridenFluentDesignLanguage])
-    const styles = React.useMemo(() => getOptionSetComponentStyles(overridenTheme), [overridenTheme]);
     const handleChange = (option?: IComboBoxOption | null): void => {
         let value = undefined;
         if (option) {
@@ -69,12 +71,17 @@ export const OptionSet = (props: IOptionSet) => {
         const color = Options.find(item => item.Value.toString() === option.key)?.Color;
         return (
             <div>
-                {parameters.EnableOptionSetColors?.raw && (
-                    <Icon className={styles.cicrleIconStyle} styles={{ root: { color: color ? color : 'transparent' } }} iconName={'CircleFill'} aria-hidden="true" />
+                {parameters.EnableOptionSetColors?.raw && isEnabledBackgroundColor.current ? (
+                    <ColorfulOption
+                        label={option.text}
+                        color={color ?? ''}
+                    />
+                ) : (
+                    <Text>{option.text}</Text>
                 )}
-                <Text>{option.text}</Text>
             </div>
         );
+
     };
 
     const componentProps = onOverrideComponentProps({
