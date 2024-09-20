@@ -6,7 +6,6 @@ import { IComboBox, IComboBoxOption, Icon, ThemeProvider } from '@fluentui/react
 import { useEffect, useMemo, useRef } from 'react';
 import { useComboBoxTheme } from './useComboBoxTheme';
 import { getComboBoxStyles } from './styles';
-import { getOptionStyles } from '@fluentui/react/lib/components/ComboBox/ComboBox.styles';
 import React from 'react';
 
 export const OptionSet = (props: IOptionSet) => {
