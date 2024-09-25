@@ -32,6 +32,9 @@ const externalDeps = [
     'validator/es/lib/isEmail',
     'lodash',
     'tslib',
+    'style-loader',
+    'css-loader',
+    'sass-loader',
     '@ag-grid-community/client-side-row-model',
     '@ag-grid-community/react',
     '@ag-grid-community/core',
@@ -72,7 +75,7 @@ export default [
                 inlineSources: true,
             }),
             postcss(),
-            //visualizer(),
+            visualizer(),
         ],
     },
     {
