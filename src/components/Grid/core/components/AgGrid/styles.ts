@@ -1,22 +1,18 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-const getGridHeight = (numOfRecords: number, useContainerAsHeight: boolean) => {
-    if(useContainerAsHeight) {
-        return '100%';
+const getGridHeight = (height: string) => {
+    if(height === '100%') {
+        return height;
     }
-    return `calc(${numOfRecords} * 42px + var(--height-offset))`
+    return `calc(${height} + 45px)`
 }
 
-export const getGridStyles = (theme: ITheme, numOfRecords: number, useContainerAsHeight: boolean) => {
+export const getGridStyles = (theme: ITheme, height: string) => {
     return mergeStyleSets({
         root: {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            '--height-offset': '64px',
-            ':has(.ag-body-horizontal-scroll-viewport[style*="height: 0px"])': {
-                '--height-offset': '45px'
-            } ,
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
                 maxHeight: '100%',
@@ -24,12 +20,9 @@ export const getGridStyles = (theme: ITheme, numOfRecords: number, useContainerA
                 '--ag-selected-row-background-color': theme.palette.themeLighter,
                 '--ag-range-selection-border-color': theme.palette.themePrimary,
                 borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
-                ':has(.ag-overlay:not(.ag-hidden) .TALXIS__grid__empty-records), :has(.ag-center-cols-container:empty)': {
-                    minHeight: 270
-                }
             },
             '.ag-root-wrapper.ag-layout-normal': {
-                height: getGridHeight(numOfRecords, useContainerAsHeight)
+                height: getGridHeight(height)
             },
             '.ag-body': {
                 borderTop: `1px solid ${theme.semanticColors.bodyDivider}`

@@ -14,6 +14,7 @@ import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { usePagingController } from '../../../paging/controllers/usePagingController';
 import { CHECKBOX_COLUMN_KEY } from '../../../constants';
 import { IEntityRecord } from '../../../interfaces';
+import { ROW_HEIGHT } from '../../constants';
 
 export const AgGrid = () => {
     const grid = useGridInstance();
@@ -21,9 +22,9 @@ export const AgGrid = () => {
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
-    let { agColumns, records, maxNumberOfVisibleRecords, stateRef, getTotalColumnsWidth, onGridReady } = useAgGridController(gridApiRef);
+    let { agColumns, records, stateRef, getTotalColumnsWidth, onGridReady } = useAgGridController(gridApiRef);
     const pagingController = usePagingController();
-    const styles = getGridStyles(theme, maxNumberOfVisibleRecords, grid.useContainerAsHeight);
+    const styles = getGridStyles(theme, grid.height);
     const resizeTimeOutRef = useRef<NodeJS.Timeout>();
 
     const getAvailableWidth = () => {
@@ -129,8 +130,8 @@ export const AgGrid = () => {
                     <AgGridReact
                         animateRows
                         rowSelection={grid.selection.type}
-                        noRowsOverlayComponent={EmptyRecords}
-                        loadingOverlayComponent={LoadingOverlay}
+                        noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
+                        loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
                         suppressDragLeaveHidesColumns
                         onColumnResized={(e) => updateColumnVisualSizeFactor(e)}
                         onColumnMoved={(e) => {
@@ -174,7 +175,7 @@ export const AgGrid = () => {
                             ...stateRef.current,
                             ...e.state
                         }}
-                        rowHeight={42}
+                        rowHeight={ROW_HEIGHT}
                         columnDefs={agColumns as any}
                         rowData={records}
                     >

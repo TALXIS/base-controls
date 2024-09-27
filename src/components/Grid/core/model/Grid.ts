@@ -5,8 +5,10 @@ import { IEntityColumn, IEntityRecord, IGrid } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
+import { ROW_HEIGHT } from "../constants";
 import { DataType } from "../enums/DataType";
 import { IGridColumn } from "../interfaces/IGridColumn";
+import { KeyHoldListener } from "../services/KeyListener";
 import { RecordUpdateService } from "../services/RecordUpdateService/model/RecordUpdateService";
 import { Metadata } from "./Metadata";
 
@@ -29,11 +31,16 @@ export class Grid {
         selection: Selection,
         paging: Paging
     };
-    constructor(props: IGrid, labels: any) {
+    public readonly height: string;
+    public readonly keyHoldListener: KeyHoldListener;
+
+    constructor(props: IGrid, labels: any, keyHoldListener: KeyHoldListener) {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
         this._labels = labels;
+        this.keyHoldListener = keyHoldListener;
+        this.height = this._getHeight();
 
         this._dependencies = {
             recordUpdateService: new RecordUpdateService(this),
@@ -272,5 +279,16 @@ export class Grid {
             return false;
         }
         return column.isFilterable ?? true;
+    }
+    private _getHeight(): string {
+        if(this.parameters.Height?.raw) {
+            return this.parameters.Height?.raw;
+        }
+        if(this._dataset.paging.pageSize > 50) {
+            //do not allow render of more than 50, we need the AgGrid virtualization to kick in at that point
+            //user can scroll in their container
+            return `${50 * ROW_HEIGHT}px`
+        }
+        return `${this._dataset.paging.pageSize * ROW_HEIGHT}px`
     }
 }

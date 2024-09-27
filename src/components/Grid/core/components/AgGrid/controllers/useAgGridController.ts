@@ -21,7 +21,6 @@ ModuleRegistry.registerModules([ClientSideRowModelModule]);
 interface IAgGridController {
     agColumns: ColDef[],
     records: IEntityRecord[],
-    maxNumberOfVisibleRecords: number;
     stateRef: React.MutableRefObject<IAgGridState>
     getTotalColumnsWidth: () => number,
     onGridReady: () => void;
@@ -109,9 +108,6 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
                 return;
             }
             stateValuesRef.current.__updatedRecords = grid.recordUpdateService.updatedRecords;
-            if(grid.paging.pageSize !== agGrid.initialPageSize) {
-                stateValuesRef.current.initialPageSize = agGrid.initialPageSize; 
-            }
             grid.pcfContext.mode.setControlState(getNewStateValues());
         }
     }, []);
@@ -186,7 +182,6 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     return {
         agColumns: agColumns,
         records: agRecords,
-        maxNumberOfVisibleRecords: agGrid.maxNumberOfVisibleRecords,
         stateRef: stateValuesRef,
         getTotalColumnsWidth: () => agGrid.getTotalColumnsWidth(),
         onGridReady: onGridReady

@@ -6,12 +6,10 @@ import { IGridColumn } from "../../../interfaces/IGridColumn";
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
-    public readonly initialPageSize: number;
 
     constructor(grid: Grid, gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>) {
         super(grid);
         this._gridApiRef = gridApiRef;
-        this.initialPageSize = grid.state?.initialPageSize ?? grid.paging.pageSize;
     }
     public get columns() {
         const agColumns: ColDef[] = [];
@@ -67,12 +65,6 @@ export class AgGrid extends GridDependency {
             agColumns.push(agColumn)
         }
         return agColumns;
-    }
-    public get maxNumberOfVisibleRecords() {
-        if (this.initialPageSize < this._grid.records.length) {
-            return this.initialPageSize;
-        }
-        return this._grid.records.length;
     }
     public getTotalColumnsWidth() {
         if(!this._gridApi) {

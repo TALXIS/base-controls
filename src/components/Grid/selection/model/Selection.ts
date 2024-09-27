@@ -4,7 +4,7 @@ export class Selection extends GridDependency {
     private _selectedRecordIdsSet: Set<string> = new Set<string>();
     private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-    public toggle(record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord, newState: boolean, clearExistingSelection?: boolean, disableDebounce?: boolean) {
+    public async toggle(record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord, newState: boolean, clearExistingSelection?: boolean, disableDebounce?: boolean): Promise<void> {
         const recordId = record.getRecordId();
         if(!this.debounceTimer) {
             this._selectedRecordIdsSet = new Set(this.selectedRecordIds);
@@ -29,9 +29,12 @@ export class Selection extends GridDependency {
             this._setSelectedRecords();
             return;
         }
-        this.debounceTimer = setTimeout(() => {
-            this._setSelectedRecords();
-        }, 0);
+        return new Promise((resolve) => {
+            this.debounceTimer = setTimeout(() => {
+                this._setSelectedRecords();
+                resolve();
+            }, 0);
+        })
     }
     public get selectedRecordIds() {
         return this._dataset.getSelectedRecordIds();

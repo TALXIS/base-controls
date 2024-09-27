@@ -8,7 +8,8 @@ interface IPagingController {
     hasPreviousPage: boolean,
     hasNextPage: boolean,
     pageFirstRecordOrder: number,
-    pageLastRecordOrder: number,
+    pageLastRecordOrder: string
+    formattedTotalResultCount: string,
     loadNextPage: () => void,
     loadPreviousPage: () => void,
     loadExactPage: (pageNumber: number) => void,
@@ -22,6 +23,7 @@ export const usePagingController = (): IPagingController => {
         pageNumber: paging.pageNumber,
             pageSize: paging.pageSize,
             totalResultCount: paging.totalResultCount,
+            formattedTotalResultCount: paging.formattedTotalResultCount,
             hasPreviousPage: paging.hasPreviousPage,
             hasNextPage: paging.hasNextPage,
             pageFirstRecordOrder: paging.pageFirstRecordOrder,
