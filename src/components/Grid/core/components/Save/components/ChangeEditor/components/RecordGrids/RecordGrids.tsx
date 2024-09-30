@@ -46,6 +46,8 @@ export const RecordGrids = (props: IRecordGrids) => {
                 ...grid.dataset,
                 sorting: [],
                 columns: [...record.columns.values()],
+                sortedRecordIds: [record.getRecordId()],
+                getTargetEntityType: () => grid.dataset.getTargetEntityType(),
                 filtering: {
                     ...grid.dataset.filtering,
                     getFilter: () => {

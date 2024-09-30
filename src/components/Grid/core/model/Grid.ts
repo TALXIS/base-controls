@@ -17,10 +17,10 @@ export class Grid {
     private _dataset: IDatasetProperty
     private _pcfContext: ComponentFramework.Context<any>;
     private _columns: IGridColumn[] = [];
-    private _records: IEntityRecord[] = [];
     //TODO: fix
     private _labels: any;
     private _shouldRerender: boolean = false;
+    private _records: IEntityRecord[] = [];
     //TODO: the dependencies might not have fully loaded grid
     //need to make sure that the grid is initialized before creating them
     private _dependencies: {
@@ -84,7 +84,7 @@ export class Grid {
         return this._columns;
     }
     public get records() {
-        return this._records;
+        return this._records
     }
     public get recordUpdateService() {
         return this._dependencies.recordUpdateService;
@@ -132,7 +132,7 @@ export class Grid {
 
     public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
         this._dataset.openDatasetItem(entityReference);
-        const clickedRecord = this._records.find(x => x.getRecordId() === entityReference.id.guid);
+        const clickedRecord = this.records.find(x => x.getRecordId() === entityReference.id.guid);
         //we need to make sure the item we are opening gets selected in order for the
         //OnOpenRecord ribbon scripts to work correctly
         //if no record found we have clicked a lookup, no selection should be happening in that case
@@ -145,6 +145,7 @@ export class Grid {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
+        this._records = Object.entries(this._dataset.records).map(x => x[1]);
         for (const [key, dependency] of Object.entries(this._dependencies)) {
             dependency.onDependenciesUpdated()
         }
@@ -215,15 +216,6 @@ export class Grid {
         return gridColumns;
     }
 
-    public refreshRecords(): IEntityRecord[] {
-        const records = [];
-        for (const [_, record] of Object.entries(this._dataset.records)) {
-            records.push(record);
-        }
-        this._records = records;
-        return records
-    }
-
     private async _isColumnEditable(column: IGridColumn): Promise<boolean> {
         //top priority, overriden through props
         if (typeof column.isEditable === 'boolean') {
@@ -287,7 +279,7 @@ export class Grid {
         if(this._dataset.paging.pageSize > 50) {
             //do not allow render of more than 50, we need the AgGrid virtualization to kick in at that point
             //user can scroll in their container
-            return `${50 * ROW_HEIGHT}px`
+            return `${10 * ROW_HEIGHT}px`
         }
         return `${this._dataset.paging.pageSize * ROW_HEIGHT}px`
     }

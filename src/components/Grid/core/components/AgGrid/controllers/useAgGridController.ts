@@ -36,12 +36,11 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     const pagingController = usePagingController();
     const agGridReadyRef = useRef<boolean>(false);
     const agGrid = useMemo(() => new AgGrid(grid, gridApiRef), [])
-    const { columns, records } = useGridController();
+    const { columns } = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<IAgGridState>(grid.state as IAgGridState);
     //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
-    const [agRecords] = useDebounce(records, 0);
-    gridApiRef.current?.refreshCells();
+    const [agRecords] = useDebounce(grid.records, 0);
 
     useEffect(() => {
         if (!agGridReadyRef.current) {

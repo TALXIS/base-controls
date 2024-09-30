@@ -22,7 +22,7 @@ export const AgGrid = () => {
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
-    let { agColumns, records, stateRef, getTotalColumnsWidth, onGridReady } = useAgGridController(gridApiRef);
+    let { agColumns, stateRef, getTotalColumnsWidth, onGridReady } = useAgGridController(gridApiRef);
     const pagingController = usePagingController();
     const styles = getGridStyles(theme, grid.height);
     const resizeTimeOutRef = useRef<NodeJS.Timeout>();
@@ -177,7 +177,7 @@ export const AgGrid = () => {
                         }}
                         rowHeight={ROW_HEIGHT}
                         columnDefs={agColumns as any}
-                        rowData={records}
+                        rowData={grid.records}
                     >
                     </AgGridReact>
                     {pagingController.isEnabled &&
