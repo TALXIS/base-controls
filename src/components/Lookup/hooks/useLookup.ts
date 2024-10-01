@@ -60,7 +60,7 @@ export const useLookup = (props: ILookup): [
         viewIdCallBack(response.viewId);
         let fetchXml = response?.fetchXml
         if(!fetchXml) {
-            fetchXml = (await getFetchXml(response.viewId)).fetchXml;
+            fetchXml = (await getFetchXml(response.viewId)).fetchxml;
         }
         return applyLookupQuery(entities.find(x => x.entityName === entityName)!, fetchXml, query);
 
@@ -87,13 +87,13 @@ export const useLookup = (props: ILookup): [
         await Promise.all(responsePromiseMap.values());
         const result: (ComponentFramework.LookupValue & {entityData: {[key: string]: any}, layout: ILayout})[] = [];
         for (const [entityName, response] of responsePromiseMap) {
-            const layout: ILayout = JSON.parse((await getFetchXml(entityViewIdMap.get(entityName)!)).layoutJson);
+            const layout: ILayout = JSON.parse((await getFetchXml(entityViewIdMap.get(entityName)!)).layoutjson ?? "{}");
             for (const entity of (await response).entities) {
                 const entityMetadata = await entities.find(x => x.entityName === entityName)!.metadata;
                 result.push({
                     entityType: entityName,
                     id: entity[entityMetadata.PrimaryIdAttribute],
-                    name: entity[layout.Rows[0].Cells[0].Name],
+                    name: entity[layout.Rows?.[0]?.Cells?.[0]?.Name] ?? entity[entityMetadata.PrimaryNameAttribute] ?? labels.noName(),
                     entityData: entity,
                     layout: layout
                 });
