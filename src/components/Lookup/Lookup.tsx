@@ -1,5 +1,5 @@
 
-import { ILookup } from "./interfaces";
+import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useRef, useState } from 'react';
 import { ThemeProvider } from "@fluentui/react";
@@ -12,6 +12,7 @@ import { ITag } from "@fluentui/react/lib/components/pickers/TagPicker/TagPicker
 import { RecordCreator } from "./components/RecordCreator";
 import { useFocusIn } from "../../hooks/useFocusIn";
 import { useControlSizing } from "../../hooks/useControlSizing";
+import dayjs from "dayjs";
 
 export const Lookup = (props: ILookup) => {
     const context = props.context;
@@ -69,7 +70,7 @@ export const Lookup = (props: ILookup) => {
     }, []);
 
     const focus = () => {
-        if(componentRef.current?.items?.length === itemLimit) {
+        if (componentRef.current?.items?.length === itemLimit) {
             const el = ref.current?.querySelector(':scope>div') as HTMLDivElement;
             el?.click();
             el?.focus();
@@ -102,6 +103,26 @@ export const Lookup = (props: ILookup) => {
         return mouseOver || isFocused;
     }
 
+    const getSecondaryName = (result: ComponentFramework.LookupValue & {
+        entityData: {
+            [key: string]: any;
+        };
+        layout: ILayout;
+    }, metadata?: IMetadata) => {
+        //polymorphic, selected all
+        if (!entities.find(x => x.selected)) {
+            return metadata?.DisplayName;
+        }
+        else {
+            let text: string | undefined = result.entityData[result.layout?.Rows?.[0]?.Cells?.[1]?.Name];
+            const dateRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/;
+            if(text?.match(dateRegex)) {
+                text = props.context.formatting.formatTime(dayjs(text).toDate(), 1);
+            }
+            return text;
+        }
+    }
+
     const onResolveSuggestions = async (filter: string, selectedItems?: IItemProps[] | undefined): Promise<IItemProps[]> => {
         //TODO: onResolveSuggestions gets called when the record gets selected resulting in unnecessary call
         const results = await getSearchResults(filter);
@@ -113,8 +134,8 @@ export const Lookup = (props: ILookup) => {
             const metadata = await entities.find(x => x.entityName === result.entityType)?.metadata;
             suggestions.push({
                 key: result.id,
-                text: result.name || labels.noName(),
-                secondaryText: metadata?.DisplayName,
+                text: result.name,
+                secondaryText: getSecondaryName(result, metadata),
                 'data-entity': result.entityType
             })
         }

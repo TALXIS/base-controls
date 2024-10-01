@@ -3,18 +3,19 @@ import { IEntity } from "../interfaces";
 import { FetchXmlBuilder } from "@talxis/client-libraries";
 
 export const useFetchXml = (context: ComponentFramework.Context<any>): [
-    (viewId: string) => Promise<string>,
+    (viewId: string) => Promise<{fetchxml: string, layoutjson: string}>,
     (entity: IEntity, fetchXml: string, query: string) => Promise<string>
 ] => {
     const cachedFetchXml = useRef<{
-        [viewId: string]: Promise<ComponentFramework.WebApi.Entity>
+        [viewId: string]: Promise<any>
     }>({});
 
-    const get = async (viewId: string): Promise<string> => {
+    const get = async (viewId: string): Promise<{fetchxml: string, layoutjson: string}> => {
         if (!cachedFetchXml.current[viewId]) {
-            cachedFetchXml.current[viewId] = context.webAPI.retrieveRecord('savedquery', viewId, '?$select=fetchxml');
+            cachedFetchXml.current[viewId] = context.webAPI.retrieveRecord('savedquery', viewId, '?$select=fetchxml,layoutjson');
         }
-        return (await cachedFetchXml.current[viewId]).fetchxml;
+
+        return cachedFetchXml.current[viewId];
     }
     const applyLookupQuery = async (entity: IEntity, fetchXml: string, query: string): Promise<string> => {
         if (!query) {
