@@ -109,8 +109,8 @@ export const Lookup = (props: ILookup) => {
         };
         layout: ILayout;
     }, metadata?: IMetadata) => {
-        //polymorphic
-        if (entities.find(x => !x.selected)) {
+        //polymorphic, selected all
+        if (!entities.find(x => x.selected)) {
             return metadata?.DisplayName;
         }
         else {
