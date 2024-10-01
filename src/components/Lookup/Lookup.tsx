@@ -114,7 +114,7 @@ export const Lookup = (props: ILookup) => {
             suggestions.push({
                 key: result.id,
                 text: result.name || labels.noName(),
-                secondaryText: metadata?.DisplayName,
+                secondaryText: entities.length > 1 ? metadata?.DisplayName : result.entityData[result.layout.Rows[0].Cells[1].Name],
                 'data-entity': result.entityType
             })
         }

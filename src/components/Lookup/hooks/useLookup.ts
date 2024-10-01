@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ITranslation, useControl } from "../../../hooks";
 import { ITheme } from "../../../interfaces/theme";
-import { IEntity, ILookup } from "../interfaces";
+import { IEntity, ILayout, ILookup } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
 
@@ -15,7 +15,7 @@ export const useLookup = (props: ILookup): [
         deselect: (record: ComponentFramework.LookupValue) => void,
     },
     (entityName: string | null) => void,
-    (query: string) => Promise<ComponentFramework.LookupValue[]>,
+    (query: string) => Promise<(ComponentFramework.LookupValue & {entityData: {[key: string]: any}, layout: ILayout})[]>,
     ITheme
 ] => {
 
@@ -52,29 +52,31 @@ export const useLookup = (props: ILookup): [
             value: records
         })
     }
-    const getSearchFetchXml = async (entityName: string, query: string): Promise<string> => {
+    const getSearchFetchXml = async (entityName: string, query: string, viewIdCallBack: (id: string) => void): Promise<string> => {
         const response = (await props.parameters.value.getAllViews(entityName)).find(x => x.isDefault);
         if (!response?.viewId) {
             throw new Error(`Entity ${entityName} does not have a default view id!`);
         }
+        viewIdCallBack(response.viewId);
         let fetchXml = response?.fetchXml
         if(!fetchXml) {
-            fetchXml = await getFetchXml(response.viewId)
+            fetchXml = (await getFetchXml(response.viewId)).fetchXml;
         }
         return applyLookupQuery(entities.find(x => x.entityName === entityName)!, fetchXml, query);
 
     }
-    const getSearchResults = async (query: string): Promise<ComponentFramework.LookupValue[]> => {
+    const getSearchResults = async (query: string): Promise<(ComponentFramework.LookupValue & {entityData: {[key: string]: any}, layout: ILayout})[]> => {
         if(props.onSearch) {  
-            return props.onSearch(selectedEntity ? [selectedEntity?.entityName] : targets, query);
+            return props.onSearch(selectedEntity ? [selectedEntity?.entityName] : targets, query) as any;
         }
         const fetchXmlMap = new Map<string, Promise<string>>();
+        const entityViewIdMap = new Map<string, string>();
         if(selectedEntity) {
-            fetchXmlMap.set(selectedEntity.entityName, getSearchFetchXml(selectedEntity.entityName, query))
+            fetchXmlMap.set(selectedEntity.entityName, getSearchFetchXml(selectedEntity.entityName, query, (viewId) => entityViewIdMap.set(selectedEntity.entityName, viewId)))
         }
         else {
             for (const entity of targets) {
-                fetchXmlMap.set(entity, getSearchFetchXml(entity, query))
+                fetchXmlMap.set(entity, getSearchFetchXml(entity, query, (viewId) => entityViewIdMap.set(entity, viewId)))
             }
         }
         await Promise.all(fetchXmlMap.values());
@@ -83,14 +85,17 @@ export const useLookup = (props: ILookup): [
             responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?$top=25&fetchXml=${encodeURIComponent((await fetchXml))}`))
         }
         await Promise.all(responsePromiseMap.values());
-        const result: ComponentFramework.LookupValue[] = [];
+        const result: (ComponentFramework.LookupValue & {entityData: {[key: string]: any}, layout: ILayout})[] = [];
         for (const [entityName, response] of responsePromiseMap) {
+            const layout: ILayout = JSON.parse((await getFetchXml(entityViewIdMap.get(entityName)!)).layoutJson);
             for (const entity of (await response).entities) {
                 const entityMetadata = await entities.find(x => x.entityName === entityName)!.metadata;
                 result.push({
                     entityType: entityName,
                     id: entity[entityMetadata.PrimaryIdAttribute],
-                    name: entity[entityMetadata.PrimaryNameAttribute]
+                    name: entity[layout.Rows[0].Cells[0].Name],
+                    entityData: entity,
+                    layout: layout
                 });
             }
         }

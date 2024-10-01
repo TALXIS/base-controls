@@ -35,3 +35,38 @@ export interface IEntity {
     selected: boolean;
     metadata: Promise<IMetadata>
 }
+
+export interface ILayout {
+    Name: string;
+    Object: number;
+    Rows: IRow[];
+    CustomControlDescriptions: any[];
+    Jump: string;
+    Select: boolean;
+    Icon: boolean;
+    Preview: boolean;
+    IconRenderer: string;
+}
+
+interface IRow {
+    Name: string;
+    Id: string;
+    Cells: ICell[];
+    MultiObjectIdField: string;
+    LayoutStyle: string;
+}
+
+interface ICell {
+    Name: string;
+    Width: number;
+    RelatedEntityName: string;
+    IsHidden: boolean;
+    ImageProviderWebresource: string;
+    ImageProviderFunctionName: string;
+    DisableSorting?: boolean;
+    AddedBy?: string;
+    Desc?: string;
+    CellType?: string;
+    DisableMetaDataBinding?: boolean;
+    LabelId?: string;
+}
