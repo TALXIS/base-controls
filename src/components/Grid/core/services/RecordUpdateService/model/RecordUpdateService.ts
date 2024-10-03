@@ -181,7 +181,7 @@ export class RecordUpdateService extends GridDependency {
             if (!gridColumn.entityAliasName) {
                 return x.name === gridColumn.attributeName;
             }
-            return x.name === gridColumn.attributeName && x.alias === gridColumn.entityAliasName;
+            return x.name === gridColumn.key;
         })!;
     }
     private _isReadOnlyChangeEditor() {

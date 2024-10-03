@@ -17,6 +17,10 @@ export class Grid {
     private _dataset: IDatasetProperty
     private _pcfContext: ComponentFramework.Context<any>;
     private _columns: IGridColumn[] = [];
+    //used for optimization
+    private _previousRecordsReference:  {
+        [id: string]: IEntityRecord;
+    } = {};
     //TODO: fix
     private _labels: any;
     private _shouldRerender: boolean = false;
@@ -145,7 +149,11 @@ export class Grid {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
-        this._records = Object.entries(this._dataset.records).map(x => x[1]);
+        //THIS COULD MAKE GRID STOP WORKING IN POWER APPS!
+        if(this._previousRecordsReference !== this._dataset.records) {
+            this._records = Object.values(this._dataset.records);
+            this._previousRecordsReference = this._dataset.records;
+        }
         for (const [key, dependency] of Object.entries(this._dependencies)) {
             dependency.onDependenciesUpdated()
         }
@@ -225,10 +233,6 @@ export class Grid {
         if (!this._props.parameters.EnableEditing?.raw) {
             return false;
         }
-        //we are not supporting editing for linked entities
-        if (column.entityAliasName) {
-            return false;
-        }
         //these field types do not support editing
         switch (column.dataType) {
             case DataType.FILE:
@@ -279,7 +283,7 @@ export class Grid {
         if(this._dataset.paging.pageSize > 50) {
             //do not allow render of more than 50, we need the AgGrid virtualization to kick in at that point
             //user can scroll in their container
-            return `${10 * ROW_HEIGHT}px`
+            return `${8 * ROW_HEIGHT}px`
         }
         return `${this._dataset.paging.pageSize * ROW_HEIGHT}px`
     }

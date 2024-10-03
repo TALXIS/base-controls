@@ -72,7 +72,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         record.setValue = (columnName, value) => {
             originalSetValue(columnName, value);
             //so changes propagate when changing values
-            //we cannot guarantee a rerender from above because of performance optiomizations
+            //we cannot guarantee a rerender from above because of performance optimizations
             const node = props.api.getRowNode(record.getRecordId());
             if (!node) {
                 return;

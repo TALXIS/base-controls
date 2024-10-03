@@ -43,6 +43,12 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     const [agRecords] = useDebounce(grid.records, 0);
 
     useEffect(() => {
+        gridApiRef.current?.refreshCells({
+            rowNodes: gridApiRef.current?.getRenderedNodes()
+        });
+    }, [grid.records])
+
+    useEffect(() => {
         if (!agGridReadyRef.current) {
             return;
         }

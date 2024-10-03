@@ -11,13 +11,13 @@ export const DatasetRenderer = (props: IDatasetRenderer) => {
     const [query, setQuery] = useState<string | undefined>("");
     const dataset = props.parameters.Grid;
     const injectedContextRef = useRef(props.context);
-
-    useMemo(() => {
-        dataset.refresh();
-    }, []);
     useMemo(() => {
         //@ts-ignore - need to edit the types
         injectedContextRef.current = dataset.injectContext(props.context);
+    }, [props.context]);
+
+    useMemo(() => {
+        dataset.refresh();
     }, []);
 
     const onSearch = (query?: string) => {

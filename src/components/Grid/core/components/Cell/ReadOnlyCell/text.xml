@@ -1,0 +1,14 @@
+<fetch version="1.0" output-format="xml-platform" mapping="logical"
+    savedqueryid="e7fd92c2-b080-ef11-ac21-000d3ab79fa7" returntotalrecordcount="true" page="1"
+    count="50" no-lock="false">
+    <entity name="talxis_field">
+        <attribute name="statecode" />
+        <attribute name="talxis_name" />
+        <attribute name="talxis_fieldid" />
+        <link-entity alias="a_c4bd140738b741c89b6b80fd6cdb5627" name="talxis_parentfield"
+            to="talxis_parentfield" from="talxis_parentfieldid" link-type="outer" visible="false">
+            <attribute name="talxis_name" />
+            <attribute name="statecode" />
+        </link-entity>
+    </entity>
+</fetch>
