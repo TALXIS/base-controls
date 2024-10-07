@@ -7,25 +7,23 @@ import { OptionSet } from '../OptionSet';
 export const TwoOptions = (props: ITwoOptions) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
-    const [isColorFeatureEnabled, setIsColorFeatureEnabled] = useState(false);
     const options = boundValue.attributes.Options;
     const { sizing, onNotifyOutputChanged, theme } = useControl('TwoOptions', props);
     const context = props.context;
     const componentRef = useRef<any>(null);
 
     useEffect(() => {
-        if (props.parameters.EnableOptionSetColors?.raw && options.find(x => x.Color)) {
-            setIsColorFeatureEnabled(true);
-        } else {
-            setIsColorFeatureEnabled(false);
-        }
-    }, [boundValue.attributes]);
-
-    useEffect(() => {
         if (parameters.AutoFocus?.raw === true) {
             componentRef.current?.focus();
         }
     }, []);
+
+    const isColorFeatureEnabled = () => {
+        if (props.parameters.EnableOptionSetColors?.raw && options.find(x => x.Color)) {
+            return true;
+        }
+        return false;
+    }
 
     const handleChange = (value: boolean | undefined): void => {
         onNotifyOutputChanged({
@@ -35,21 +33,21 @@ export const TwoOptions = (props: ITwoOptions) => {
 
     return (
         <ThemeProvider theme={theme} applyTo='none'>
-            {isColorFeatureEnabled ? (
+            {isColorFeatureEnabled() ? (
                 <OptionSet
                     context={props.context}
                     parameters={{
                         value: {
-                            raw: boundValue.raw ? 1 : 0,
+                            raw: boundValue.raw !== null ? boundValue.raw ? 1 : 0 : boundValue.raw,
                             //@ts-ignore - typings
                             attributes: boundValue.attributes
                         },
                         EnableOptionSetColors: {
-                            raw: isColorFeatureEnabled
+                            raw: true
                         },
                     }}
                     onNotifyOutputChanged={(outputs) => {
-                        handleChange(outputs.value ? true : false);
+                        handleChange(outputs.value == 1 ? true : outputs.value == 0 ? false : undefined);
                     }}
                 />
             ) : (
