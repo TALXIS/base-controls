@@ -19,6 +19,12 @@
     </external-service-usage>
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
     <property name="value" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type="TwoOptions" usage="bound" required="true" />
+     <property name="EnableOptionSetColors" display-name-key="Enable OptionSet colors"
+      description-key=""
+      of-type="Enum" usage="input">
+      <value name="Yes" display-name-key="Yes" description-key="">true</value>
+      <value name="No" default="true" display-name-key="No" description-key="">false</value>
+    </property>
     <!--
       Property node's of-type attribute can be of-type-group attribute.
       Example:

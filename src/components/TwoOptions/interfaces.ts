@@ -7,7 +7,8 @@ export interface ITwoOptions extends IControl<ITwoOptionsParameters, ITwoOptions
 }
 
 export interface ITwoOptionsParameters extends IBaseParameters {
-    value: ITwoOptionsProperty
+    value: ITwoOptionsProperty;
+    EnableOptionSetColors?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface ITwoOptionsOutputs extends IOutputs {
