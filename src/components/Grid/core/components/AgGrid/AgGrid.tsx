@@ -40,22 +40,6 @@ export const AgGrid = () => {
     }
 
     const updateColumnOrder = async (e: ColumnMovedEvent<IEntityRecord, any>) => {
-        const columOrder = e.api.getState().columnOrder?.orderedColIds.filter(colId => {
-            switch(colId) {
-                case CHECKBOX_COLUMN_KEY:
-            }
-            return true;
-        });
-        if(!columOrder) {
-            return;
-        }
-        //@ts-ignore - typings
-        grid.pcfContext.factory.fireEvent('__updateColumnOrder', columOrder)
-        /* //@ts-ignore - typings
-        if (!window.TALXIS?.Portal) {
-            //column order from Grid currently not supported in Power Apps
-            return;
-        }
         if(e.type === 'gridOptionsChanged') {
             return;
         }
@@ -73,22 +57,13 @@ export const AgGrid = () => {
             const bIndex = idIndexMap.has(b.name) ? idIndexMap.get(b.name)! : sortedIds.length;
             return aIndex - bIndex;
         });
-        //@ts-ignore: typings
-        grid.pcfContext.factory.fireEvent('__clearColumns');
-        for (const col of orderedColumns) {
-            //@ts-ignore - portal accepts metadata
-            await grid.dataset.addColumn!(col.name, col.alias, col)
-        }
-        grid.pcfContext.factory.requestRender(); */
+        //@ts-ignore
+        grid.dataset.setColumns?.(orderedColumns);
+        grid.dataset.paging.loadExactPage(grid.paging.pageNumber);
     }
 
     const updateColumnVisualSizeFactor = async (e: ColumnResizedEvent<IEntityRecord, any>): Promise<void> => {
-        /* if(e.source !== 'uiColumnResized') {
-            return;
-        }
-        //@ts-ignore - typings
-        if (!window.TALXIS?.Portal) {
-            //column order from Grid currently not supported in Power Apps
+        if(e.source !== 'uiColumnResized') {
             return;
         }
         clearTimeout(resizeTimeOutRef.current)
@@ -98,17 +73,14 @@ export const AgGrid = () => {
                 return;
             }
             const columns = grid.dataset.columns;
-            //@ts-ignore: typings
-            grid.pcfContext.factory.fireEvent('__clearColumns');
-            for (const { ...col } of columns) {
-                if (col.name === resizedColumnKey) {
-                    col.visualSizeFactor = e.column?.getActualWidth()!
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].name === resizedColumnKey) {
+                    columns[i].visualSizeFactor = e.column?.getActualWidth()!
                 }
-                //@ts-ignore - portal accepts metadata
-                await grid.dataset.addColumn!(col.name, col.alias, col);
             }
-            grid.pcfContext.factory.requestRender();
-        }, 200); */
+            //@ts-ignore
+            grid.dataset.setColumns?.(columns);
+        }, 200);
     }
     return (
         <div

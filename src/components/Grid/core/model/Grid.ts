@@ -21,7 +21,7 @@ export class Grid {
     private _previousRecordsReference:  {
         [id: string]: IEntityRecord;
     } = {};
-    //TODO: fix
+    //TODO: fix types
     private _labels: any;
     private _shouldRerender: boolean = false;
     private _records: IEntityRecord[] = [];
@@ -35,7 +35,8 @@ export class Grid {
         selection: Selection,
         paging: Paging
     };
-    public readonly height: string;
+    private _maxHeight: number;
+    private _minHeight: number = 150;
     public readonly keyHoldListener: KeyHoldListener;
 
     constructor(props: IGrid, labels: any, keyHoldListener: KeyHoldListener) {
@@ -44,7 +45,6 @@ export class Grid {
         this._pcfContext = props.context;
         this._labels = labels;
         this.keyHoldListener = keyHoldListener;
-        this.height = this._getHeight();
 
         this._dependencies = {
             recordUpdateService: new RecordUpdateService(this),
@@ -54,6 +54,7 @@ export class Grid {
             sorting: new Sorting(this),
             paging: new Paging(this)
         }
+        this._maxHeight = this._getMaxHeight();
 
     };
     public get isNavigationEnabled() {
@@ -132,6 +133,24 @@ export class Grid {
             return undefined;
         }
         return idString.split(',');
+    }
+
+    public get height() {
+        let height = this._maxHeight;
+        if(this.parameters.Height?.raw) {
+            return this.parameters.Height?.raw;
+        }
+        if(this._records.length === 0) {
+            height = this._minHeight;
+        }
+        else if(this._records.length <= this.paging.pageSize) {
+            height = this._records.length * ROW_HEIGHT;
+        }
+        if(height > this._maxHeight) {
+            height = this._maxHeight;
+        }
+        return `${height}px`;
+
     }
 
     public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
@@ -240,7 +259,7 @@ export class Grid {
                 return false;
             }
         }
-        const metadata = await this._pcfContext.utils.getEntityMetadata(this._dataset.getTargetEntityType(), [column.attributeName]);
+        const metadata = await this.metadata.get(column);
         //IsEditable is not available in Power Apps
         return metadata.Attributes.get(column.attributeName)?.attributeDescriptor.IsValidForUpdate ?? false;
     }
@@ -260,6 +279,9 @@ export class Grid {
         return false;
     }
     private _isColumnSortable(column: IEntityColumn) {
+        if(column.name.endsWith('__virtual')) {
+            return false;
+        }
         if (this._props.parameters.EnableSorting?.raw === false) {
             return false;
         }
@@ -271,20 +293,19 @@ export class Grid {
         return !column.disableSorting;
     }
     private _isColumnFilterable(column: IEntityColumn) {
+        if(column.name.endsWith('__virtual')) {
+            return false;
+        }
         if (this.props.parameters.EnableFiltering?.raw === false) {
             return false;
         }
         return column.isFilterable ?? true;
     }
-    private _getHeight(): string {
-        if(this.parameters.Height?.raw) {
-            return this.parameters.Height?.raw;
+    private _getMaxHeight(): number {
+        let maxHeight = this._dataset.paging.pageSize * ROW_HEIGHT;
+        if(maxHeight > 600) {
+            maxHeight = 600;
         }
-        if(this._dataset.paging.pageSize > 50) {
-            //do not allow render of more than 50, we need the AgGrid virtualization to kick in at that point
-            //user can scroll in their container
-            return `${8 * ROW_HEIGHT}px`
-        }
-        return `${this._dataset.paging.pageSize * ROW_HEIGHT}px`
+        return maxHeight;
     }
 }

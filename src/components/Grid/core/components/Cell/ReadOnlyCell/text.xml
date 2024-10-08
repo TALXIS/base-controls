@@ -1,14 +1,18 @@
-<fetch version="1.0" output-format="xml-platform" mapping="logical"
-    savedqueryid="e7fd92c2-b080-ef11-ac21-000d3ab79fa7" returntotalrecordcount="true" page="1"
-    count="50" no-lock="false">
-    <entity name="talxis_field">
-        <attribute name="statecode" />
+<fetch version="1.0" output-format="xml-platform" mapping="logical" count="100" page="1"
+    savedqueryid="723283a1-ad84-ef11-ac21-6045bd91c897">
+    <entity name="talxis_parentfield">
         <attribute name="talxis_name" />
-        <attribute name="talxis_fieldid" />
-        <link-entity alias="a_c4bd140738b741c89b6b80fd6cdb5627" name="talxis_parentfield"
-            to="talxis_parentfield" from="talxis_parentfieldid" link-type="outer" visible="false">
-            <attribute name="talxis_name" />
-            <attribute name="statecode" />
+        <attribute name="talxis_field" />
+        <attribute name="talxis_currency" />
+        <attribute name="transactioncurrencyid" />
+        <attribute name="talxis_parentfieldid" />
+        <link-entity alias="a_6d6f336f8e0a44ac87596557ffb2ff91" from="talxis_fieldid"
+            link-type="outer" name="talxis_field" to="talxis_field" visible="false">
+            <attribute name="talxis_optionset" />
+            <attribute name="talxis_currency" />
+            <attribute name="talxis_decimal" />
+            <attribute name="talxis_wholeduration" />
+            <attribute name="transactioncurrencyid" />
         </link-entity>
     </entity>
 </fetch>

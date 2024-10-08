@@ -30,7 +30,7 @@ export interface IGridParameters extends IParameters {
     Height?: IStringProperty;
     UseContainerAsHeight?: Omit<ITwoOptionsProperty, 'attributes'>;
     InlineRibbonButtonIds?: IStringProperty;
-    SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
+    SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;
     Grid: IDatasetProperty;
 }
 

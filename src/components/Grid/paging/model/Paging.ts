@@ -18,6 +18,9 @@ export class Paging extends GridDependency {
         return this._dataset.paging.hasNextPage;
     }
     public get pageFirstRecordOrder() {
+        if(this._dataset.sortedRecordIds.length === 0) {
+            return 0;
+        }
         return (this.pageNumber - 1) * this.pageSize + (this.totalResultCount === 0 ? 0 : 1);
     }
     public get formattedTotalResultCount(): string {

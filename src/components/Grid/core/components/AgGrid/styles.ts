@@ -4,7 +4,7 @@ const getGridHeight = (height: string) => {
     if(height === '100%') {
         return height;
     }
-    return `calc(${height} + 45px)`
+    return `calc(${height} + var(--height-offset))`;
 }
 
 export const getGridStyles = (theme: ITheme, height: string) => {
@@ -13,6 +13,10 @@ export const getGridStyles = (theme: ITheme, height: string) => {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
+            '--height-offset': '64px',
+            ':has(.ag-body-horizontal-scroll-viewport[style*="height: 0px"])': {
+                '--height-offset': '45px'
+            } ,
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
                 maxHeight: '100%',
