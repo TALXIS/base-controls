@@ -28,7 +28,6 @@ export interface IGridParameters extends IParameters {
     EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableOptionSetColors?:  Omit<ITwoOptionsProperty, 'attributes'>;
     Height?: IStringProperty;
-    UseContainerAsHeight?: Omit<ITwoOptionsProperty, 'attributes'>;
     InlineRibbonButtonIds?: IStringProperty;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;
     Grid: IDatasetProperty;
