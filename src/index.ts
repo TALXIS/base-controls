@@ -10,4 +10,3 @@ export * from './components/OptionSet';
 export * from './components/TextField';
 export * from './components/TwoOptions';
 export * from './components/DatasetControl';
-export * from './utils/Numeral';

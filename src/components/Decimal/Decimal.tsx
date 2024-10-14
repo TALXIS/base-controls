@@ -3,10 +3,10 @@ import { useInputBasedControl } from "../../hooks/useInputBasedControl";
 import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
 import React, { useEffect, useMemo, useRef } from "react";
 import numeral from "numeral";
-import { Numeral } from "../../utils/Numeral";
 import { CURRENCY_NEGATIVE_PATTERN, CURRENCY_POSITIVE_PATTERN, NUMBER_NEGATIVE_PATTERN } from "../../constants";
 import { ICommandBarItemProps, ThemeProvider } from "@fluentui/react";
 import { ArrowButtons, IArrowButtons } from "./components/ArrowButtons";
+import { Numeral } from "@talxis/client-libraries";
 
 export const Decimal = (props: IDecimal) => {
     const arrowButtonsRef = useRef<IArrowButtons>(null);
