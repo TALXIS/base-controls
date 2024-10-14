@@ -66,11 +66,12 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         return updatedRecord ?? props.data;
     })();
     const formattedValue = record.getFormattedValue(column.key);
-    const originalSetValue = record.setValue;
+    const originalSetValue = record.setValue
 
     React.useEffect(() => {
         record.setValue = (columnName, value) => {
             originalSetValue(columnName, value);
+            grid.pcfContext.factory.requestRender();
             //so changes propagate when changing values
             //we cannot guarantee a rerender from above because of performance optimizations
             const node = props.api.getRowNode(record.getRecordId());

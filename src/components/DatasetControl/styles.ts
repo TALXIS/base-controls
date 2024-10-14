@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react"
 
-export const getDatasetRendererStyles = () => {
+export const getDatasetControlStyles = () => {
     return mergeStyleSets({
         root: {
             display: 'flex',

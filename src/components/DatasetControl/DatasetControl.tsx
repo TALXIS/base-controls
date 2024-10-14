@@ -4,22 +4,29 @@ import { useControl } from "../../hooks";
 import { IDatasetRenderer } from "./interfaces";
 import { ThemeProvider } from "@fluentui/react";
 import { TextField } from "@talxis/react-components";
-import { datasetTranslations } from "./translations";
-import { getDatasetRendererStyles } from "./styles";
+import { datasetControlTranslations } from "./translations";
+import { getDatasetControlStyles } from "./styles";
 
-export const DatasetRenderer = (props: IDatasetRenderer) => {
-    const { labels, theme } = useControl('DatasetRenderer', props, datasetTranslations);
+export const DatasetControl = (props: IDatasetRenderer) => {
+    const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
     const [query, setQuery] = useState<string | undefined>("");
     const dataset = props.parameters.Grid;
     const injectedContextRef = useRef(props.context);
-    const styles = useMemo(() => getDatasetRendererStyles(), []);
+    const styles = useMemo(() => getDatasetControlStyles(), []);
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+
+    //we need to have a way to customize the init behavior from above
+    const componentProps = onOverrideComponentProps({
+        onDatasetInit: () => dataset.refresh()
+    })
+
     useMemo(() => {
         //@ts-ignore - need to edit the types
         injectedContextRef.current = dataset.injectContext(props.context);
     }, [props.context]);
 
     useMemo(() => {
-        dataset.refresh();
+        componentProps.onDatasetInit();
     }, []);
 
     const onSearch = (query?: string) => {

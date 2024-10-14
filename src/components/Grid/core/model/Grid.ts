@@ -37,6 +37,7 @@ export class Grid {
     };
     private _maxHeight: number;
     private _minHeight: number = 150;
+    private _initialPageSize: number;
     public readonly keyHoldListener: KeyHoldListener;
 
     constructor(props: IGrid, labels: any, keyHoldListener: KeyHoldListener) {
@@ -54,6 +55,7 @@ export class Grid {
             sorting: new Sorting(this),
             paging: new Paging(this)
         }
+        this._initialPageSize = this.paging.pageSize;
         this._maxHeight = this._getMaxHeight();
 
     };
@@ -143,7 +145,7 @@ export class Grid {
         if(this._records.length === 0) {
             height = this._minHeight;
         }
-        else if(this._records.length <= this.paging.pageSize) {
+        else if(this._records.length <= this._initialPageSize) {
             height = this._records.length * ROW_HEIGHT;
         }
         if(height > this._maxHeight) {
@@ -302,7 +304,7 @@ export class Grid {
         return column.isFilterable ?? true;
     }
     private _getMaxHeight(): number {
-        let maxHeight = this._dataset.paging.pageSize * ROW_HEIGHT;
+        let maxHeight = this._initialPageSize * ROW_HEIGHT;
         if(maxHeight > 600) {
             maxHeight = 600;
         }
