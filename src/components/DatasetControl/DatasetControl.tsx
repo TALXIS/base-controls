@@ -1,13 +1,13 @@
 import { useMemo, useRef, useState } from "react";
 import { Grid } from "../Grid";
 import { useControl } from "../../hooks";
-import { IDatasetRenderer } from "./interfaces";
 import { ThemeProvider } from "@fluentui/react";
 import { TextField } from "@talxis/react-components";
 import { datasetControlTranslations } from "./translations";
 import { getDatasetControlStyles } from "./styles";
+import { IDatasetControl } from "./interfaces";
 
-export const DatasetControl = (props: IDatasetRenderer) => {
+export const DatasetControl = (props: IDatasetControl) => {
     const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
     const [query, setQuery] = useState<string | undefined>("");
     const dataset = props.parameters.Grid;
