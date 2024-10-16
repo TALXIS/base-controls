@@ -5,8 +5,10 @@ import { IEntityColumn, IEntityRecord, IGrid } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
+import { ROW_HEIGHT } from "../constants";
 import { DataType } from "../enums/DataType";
 import { IGridColumn } from "../interfaces/IGridColumn";
+import { KeyHoldListener } from "../services/KeyListener";
 import { RecordUpdateService } from "../services/RecordUpdateService/model/RecordUpdateService";
 import { Metadata } from "./Metadata";
 
@@ -15,10 +17,14 @@ export class Grid {
     private _dataset: IDatasetProperty
     private _pcfContext: ComponentFramework.Context<any>;
     private _columns: IGridColumn[] = [];
-    private _records: IEntityRecord[] = [];
-    //TODO: fix
+    //used for optimization
+    private _previousRecordsReference:  {
+        [id: string]: IEntityRecord;
+    } = {};
+    //TODO: fix types
     private _labels: any;
     private _shouldRerender: boolean = false;
+    private _records: IEntityRecord[] = [];
     //TODO: the dependencies might not have fully loaded grid
     //need to make sure that the grid is initialized before creating them
     private _dependencies: {
@@ -29,11 +35,17 @@ export class Grid {
         selection: Selection,
         paging: Paging
     };
-    constructor(props: IGrid, labels: any) {
+    private _maxHeight: number;
+    private _minHeight: number = 150;
+    private _initialPageSize: number;
+    public readonly keyHoldListener: KeyHoldListener;
+
+    constructor(props: IGrid, labels: any, keyHoldListener: KeyHoldListener) {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
         this._labels = labels;
+        this.keyHoldListener = keyHoldListener;
 
         this._dependencies = {
             recordUpdateService: new RecordUpdateService(this),
@@ -43,6 +55,8 @@ export class Grid {
             sorting: new Sorting(this),
             paging: new Paging(this)
         }
+        this._initialPageSize = this.paging.pageSize;
+        this._maxHeight = this._getMaxHeight();
 
     };
     public get isNavigationEnabled() {
@@ -77,7 +91,7 @@ export class Grid {
         return this._columns;
     }
     public get records() {
-        return this._records;
+        return this._records
     }
     public get recordUpdateService() {
         return this._dependencies.recordUpdateService;
@@ -123,9 +137,27 @@ export class Grid {
         return idString.split(',');
     }
 
+    public get height() {
+        let height = this._maxHeight;
+        if(this.parameters.Height?.raw) {
+            return this.parameters.Height?.raw;
+        }
+        if(this._records.length === 0) {
+            height = this._minHeight;
+        }
+        else if(this._records.length <= this._initialPageSize) {
+            height = this._records.length * ROW_HEIGHT;
+        }
+        if(height > this._maxHeight) {
+            height = this._maxHeight;
+        }
+        return `${height}px`;
+
+    }
+
     public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
         this._dataset.openDatasetItem(entityReference);
-        const clickedRecord = this._records.find(x => x.getRecordId() === entityReference.id.guid);
+        const clickedRecord = this.records.find(x => x.getRecordId() === entityReference.id.guid);
         //we need to make sure the item we are opening gets selected in order for the
         //OnOpenRecord ribbon scripts to work correctly
         //if no record found we have clicked a lookup, no selection should be happening in that case
@@ -138,6 +170,11 @@ export class Grid {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
+        //THIS COULD MAKE GRID STOP WORKING IN POWER APPS!
+        if(this._previousRecordsReference !== this._dataset.records) {
+            this._records = Object.values(this._dataset.records);
+            this._previousRecordsReference = this._dataset.records;
+        }
         for (const [key, dependency] of Object.entries(this._dependencies)) {
             dependency.onDependenciesUpdated()
         }
@@ -208,15 +245,6 @@ export class Grid {
         return gridColumns;
     }
 
-    public refreshRecords(): IEntityRecord[] {
-        const records = [];
-        for (const [_, record] of Object.entries(this._dataset.records)) {
-            records.push(record);
-        }
-        this._records = records;
-        return records
-    }
-
     private async _isColumnEditable(column: IGridColumn): Promise<boolean> {
         //top priority, overriden through props
         if (typeof column.isEditable === 'boolean') {
@@ -226,10 +254,6 @@ export class Grid {
         if (!this._props.parameters.EnableEditing?.raw) {
             return false;
         }
-        //we are not supporting editing for linked entities
-        if (column.entityAliasName) {
-            return false;
-        }
         //these field types do not support editing
         switch (column.dataType) {
             case DataType.FILE:
@@ -237,7 +261,7 @@ export class Grid {
                 return false;
             }
         }
-        const metadata = await this._pcfContext.utils.getEntityMetadata(this._dataset.getTargetEntityType(), [column.attributeName]);
+        const metadata = await this.metadata.get(column);
         //IsEditable is not available in Power Apps
         return metadata.Attributes.get(column.attributeName)?.attributeDescriptor.IsValidForUpdate ?? false;
     }
@@ -257,6 +281,9 @@ export class Grid {
         return false;
     }
     private _isColumnSortable(column: IEntityColumn) {
+        if(column.name.endsWith('__virtual')) {
+            return false;
+        }
         if (this._props.parameters.EnableSorting?.raw === false) {
             return false;
         }
@@ -268,9 +295,19 @@ export class Grid {
         return !column.disableSorting;
     }
     private _isColumnFilterable(column: IEntityColumn) {
+        if(column.name.endsWith('__virtual')) {
+            return false;
+        }
         if (this.props.parameters.EnableFiltering?.raw === false) {
             return false;
         }
         return column.isFilterable ?? true;
+    }
+    private _getMaxHeight(): number {
+        let maxHeight = this._initialPageSize * ROW_HEIGHT;
+        if(maxHeight > 600) {
+            maxHeight = 600;
+        }
+        return maxHeight;
     }
 }

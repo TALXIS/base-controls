@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import { IControl } from "../../../../../../interfaces/context";
-import { IParameters } from "../../../../../../interfaces/parameters";
 import { IDateTime } from "../../../../../DateTime/interfaces";
 import { IDecimal } from "../../../../../Decimal/interfaces";
 import { ILookup } from "../../../../../Lookup/interfaces";
@@ -46,8 +45,13 @@ export class Component extends GridDependency {
             case DataType.LOOKUP_CUSTOMER: {
                 const columnMetadata = await this._grid.metadata.get(column);
                 const targets = columnMetadata.Attributes.get(column.attributeName).attributeDescriptor.Targets ?? [];
-                if (column.dataType === DataType.LOOKUP_OWNER) {
+                //@ts-ignore - typings
+                if (column.dataType === DataType.LOOKUP_OWNER && window.TALXIS.Portal) {
                     targets.push('systemuser', 'team')
+                }
+                let displayName = "";
+                if(targets.length === 1) {
+                    displayName = (await this._pcfContext.utils.getEntityMetadata(targets[0])).DisplayName;
                 }
                 const result = {
                     context: this._pcfContext,
@@ -74,7 +78,7 @@ export class Component extends GridDependency {
                             raw: await this._debouncedGetLookupValue(targets, value),
                             attributes: {
                                 Targets: targets,
-                                DisplayName: columnMetadata.DisplayName
+                                DisplayName: displayName
                             },
                             error: !isValid,
                             errorMessage: validationErrorMessage,

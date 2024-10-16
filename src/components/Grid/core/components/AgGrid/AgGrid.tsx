@@ -14,6 +14,7 @@ import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { usePagingController } from '../../../paging/controllers/usePagingController';
 import { CHECKBOX_COLUMN_KEY } from '../../../constants';
 import { IEntityRecord } from '../../../interfaces';
+import { ROW_HEIGHT } from '../../constants';
 
 export const AgGrid = () => {
     const grid = useGridInstance();
@@ -21,9 +22,9 @@ export const AgGrid = () => {
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
-    let { agColumns, records, maxNumberOfVisibleRecords, stateRef, getTotalColumnsWidth, onGridReady } = useAgGridController(gridApiRef);
+    let { agColumns, stateRef, getTotalColumnsWidth, onGridReady } = useAgGridController(gridApiRef);
     const pagingController = usePagingController();
-    const styles = getGridStyles(theme, maxNumberOfVisibleRecords, grid.useContainerAsHeight);
+    const styles = getGridStyles(theme, grid.height);
     const resizeTimeOutRef = useRef<NodeJS.Timeout>();
 
     const getAvailableWidth = () => {
@@ -39,22 +40,6 @@ export const AgGrid = () => {
     }
 
     const updateColumnOrder = async (e: ColumnMovedEvent<IEntityRecord, any>) => {
-        const columOrder = e.api.getState().columnOrder?.orderedColIds.filter(colId => {
-            switch(colId) {
-                case CHECKBOX_COLUMN_KEY:
-            }
-            return true;
-        });
-        if(!columOrder) {
-            return;
-        }
-        //@ts-ignore - typings
-        grid.pcfContext.factory.fireEvent('__updateColumnOrder', columOrder)
-        /* //@ts-ignore - typings
-        if (!window.TALXIS?.Portal) {
-            //column order from Grid currently not supported in Power Apps
-            return;
-        }
         if(e.type === 'gridOptionsChanged') {
             return;
         }
@@ -72,22 +57,13 @@ export const AgGrid = () => {
             const bIndex = idIndexMap.has(b.name) ? idIndexMap.get(b.name)! : sortedIds.length;
             return aIndex - bIndex;
         });
-        //@ts-ignore: typings
-        grid.pcfContext.factory.fireEvent('__clearColumns');
-        for (const col of orderedColumns) {
-            //@ts-ignore - portal accepts metadata
-            await grid.dataset.addColumn!(col.name, col.alias, col)
-        }
-        grid.pcfContext.factory.requestRender(); */
+        //@ts-ignore
+        grid.dataset.setColumns?.(orderedColumns);
+        grid.dataset.paging.loadExactPage(grid.paging.pageNumber);
     }
 
     const updateColumnVisualSizeFactor = async (e: ColumnResizedEvent<IEntityRecord, any>): Promise<void> => {
-        /* if(e.source !== 'uiColumnResized') {
-            return;
-        }
-        //@ts-ignore - typings
-        if (!window.TALXIS?.Portal) {
-            //column order from Grid currently not supported in Power Apps
+        if(e.source !== 'uiColumnResized') {
             return;
         }
         clearTimeout(resizeTimeOutRef.current)
@@ -97,17 +73,14 @@ export const AgGrid = () => {
                 return;
             }
             const columns = grid.dataset.columns;
-            //@ts-ignore: typings
-            grid.pcfContext.factory.fireEvent('__clearColumns');
-            for (const { ...col } of columns) {
-                if (col.name === resizedColumnKey) {
-                    col.visualSizeFactor = e.column?.getActualWidth()!
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].name === resizedColumnKey) {
+                    columns[i].visualSizeFactor = e.column?.getActualWidth()!
                 }
-                //@ts-ignore - portal accepts metadata
-                await grid.dataset.addColumn!(col.name, col.alias, col);
             }
-            grid.pcfContext.factory.requestRender();
-        }, 200); */
+            //@ts-ignore
+            grid.dataset.setColumns?.(columns);
+        }, 200);
     }
     return (
         <div
@@ -129,8 +102,8 @@ export const AgGrid = () => {
                     <AgGridReact
                         animateRows
                         rowSelection={grid.selection.type}
-                        noRowsOverlayComponent={EmptyRecords}
-                        loadingOverlayComponent={LoadingOverlay}
+                        noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
+                        loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
                         suppressDragLeaveHidesColumns
                         onColumnResized={(e) => updateColumnVisualSizeFactor(e)}
                         onColumnMoved={(e) => {
@@ -174,9 +147,9 @@ export const AgGrid = () => {
                             ...stateRef.current,
                             ...e.state
                         }}
-                        rowHeight={42}
+                        rowHeight={ROW_HEIGHT}
                         columnDefs={agColumns as any}
-                        rowData={records}
+                        rowData={grid.records}
                     >
                     </AgGridReact>
                     {pagingController.isEnabled &&

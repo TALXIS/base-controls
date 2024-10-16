@@ -1,17 +1,20 @@
-# Running the controls in local PCF harness
+# Running locally build package in PCF
 
 1. Run `npm install` inside the root directory.
-1. Navigate to `examples` folder which contains a PCF wrapper for each Base Control.
-1. Navigate to the desired control folder and run `npm install` again.
-1. Run `npm start watch`. This will open the local PCF harness. If you make any changes in the Base Control being used by the wrapper, it will automatically re-build the PCF and show your changes.
+1. Run `npm run build`.
+1. Run `pnpm link --global`
+1. Navigate to the PCF root directory
+1. Run `pnpm link --global @talxis/base-controls`
+1. Run `npm start watch`.
 
-# Running the controls in Portal
+If you make any changes in the package and re-build it with `npm run build`, it will automatically re-build the PCF and show your changes.
 
-1. Navigate to the root directory.
-1. Run `npm install`.
+# Running locally build package in Portal
+
+1. Run `npm install` inside the root directory.
 1. Run `npm run build`.
 1. Run `npm link`.
-1. Go to `Portal.Web.Frontend` directory.
+1. Navigate to the `Portal.Web.Frontend` directory.
 1. Add the following prop in the `vite.config.mts` file under `defineConfig`:
 
 ```typescript
@@ -19,14 +22,20 @@ optimizeDeps: {
     exclude: ['@talxis/base-controls']
 }
 ```
-7. Delete `node_modules`
 8. Run `npm install`
 9. Run `npm link @talxis/base-controls`
 10. Run `npm start`
 
-These steps only need to be done once. If you want to see any future changes you made in Base Control package, you need to run `npm run build` in Base Control root directory and Portal will automatically reload with your changes applied.
+These steps only need to be done once. If you want to see any future changes you made in the package, you need to run `npm run build` in package root directory and Portal will automatically reload with your changes applied.
 
 **Don't forget to revert the `vite.config.mts` file to the original version before pushing any changes to the Portal repo!**
 
-> **_NOTE:_**  If Portal starts to complain that there is a mismatch in React versions, you need to delete the `react` and `react-dom` packages from the `node_modules` folder in Base Controls
+## Troubleshooting
+
+If your PCF/Portal builds, but you get an `Hooks can only be called inside of the body of a function component` error during runtime, you need to link the version of React from your PCF/Portal to the package:
+
+1. Navigate to the root directory.
+2. Run `npm` link `<path-to-react> <path-to-react-dom>`
+
+Easiest way to do this is drag the `react` and `react-dom` folders from your PCF/Portal `node_modules` folder into the terminal window where you write the `npm link` command.
 

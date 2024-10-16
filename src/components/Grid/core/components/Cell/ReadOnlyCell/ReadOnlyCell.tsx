@@ -26,7 +26,7 @@ interface ICellProps extends ICellRendererParams {
 export const ReadOnlyCell = (props: ICellProps) => {
     const grid = useGridInstance();
     const column = props.baseColumn;
-    const record = props.data; 
+    const record = props.data;
     const theme = useTheme();
     const styles = getReadOnlyCellStyles(theme);
     const tooltipId = React.useMemo(() => Math.random().toString(), []);
@@ -55,7 +55,6 @@ export const ReadOnlyCell = (props: ICellProps) => {
 };
 
 const InternalReadOnlyCell = (props: ICellProps) => {
-    const [_, rerender] = useRerender();
     const grid = useGridInstance();
     const column = props.baseColumn;
     const theme = useTheme();
@@ -67,17 +66,31 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         return updatedRecord ?? props.data;
     })();
     const formattedValue = record.getFormattedValue(column.key);
+    const originalSetValue = record.setValue
 
     React.useEffect(() => {
-        //rerender();
-    }, [record.getValue(column.key)])
+        record.setValue = (columnName, value) => {
+            originalSetValue(columnName, value);
+            grid.pcfContext.factory.requestRender();
+            //so changes propagate when changing values
+            //we cannot guarantee a rerender from above because of performance optimizations
+            const node = props.api.getRowNode(record.getRecordId());
+            if (!node) {
+                return;
+            }
+            props.api.refreshCells({
+                rowNodes: [node],
+                force: true
+            })
+        }
+    }, []);
 
     const renderLink = (props: ILinkProps, formattedValue: string): JSX.Element => {
-        switch(column.dataType) {
+        switch (column.dataType) {
             case DataType.LOOKUP_OWNER:
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_CUSTOMER: {
-                if(!grid.isNavigationEnabled) {
+                if (!grid.isNavigationEnabled) {
                     return renderText();
                 }
             }
@@ -161,24 +174,24 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         case DataType.OPTIONSET:
         case DataType.MULTI_SELECT_OPTIONSET:
         case DataType.TWO_OPTIONS: {
-            if(grid.enableOptionSetColors) {
+            if (grid.enableOptionSetColors) {
                 return <ReadOnlyOptionSet
-                column={column}
-                record={record}
-                defaultRender={renderText} />
+                    column={column}
+                    record={record}
+                    defaultRender={renderText} />
             }
             return renderText();
         }
         default: {
-            if(column.key === '__checkbox') {
+            if (column.key === '__checkbox') {
                 return <Checkbox
-                checked={props.node.isSelected()}
-                onChange={(e, checked) => {
-                    e?.stopPropagation()
-                    selection.toggle(record, checked!)
-                }} />
+                    checked={props.node.isSelected()}
+                    onChange={(e, checked) => {
+                        e?.stopPropagation()
+                        selection.toggle(record, checked!)
+                    }} />
             }
-            if(column.key === RIBBON_COLUMN_KEY) {
+            if (column.key === RIBBON_COLUMN_KEY) {
                 return <Commands record={record} />
             }
             return renderText()

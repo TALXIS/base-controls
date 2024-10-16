@@ -9,4 +9,4 @@ export * from './components/MultiSelectOptionSet';
 export * from './components/OptionSet';
 export * from './components/TextField';
 export * from './components/TwoOptions';
-export * from './utils/Numeral';
+export * from './components/DatasetControl';

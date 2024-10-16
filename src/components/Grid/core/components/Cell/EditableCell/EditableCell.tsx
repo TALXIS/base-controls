@@ -26,7 +26,6 @@ export const EditableCell = (props: ICell) => {
     })();
     const valueRef = React.useRef(record.getValue(column.key));
     const [value, setValue] = React.useState(valueRef.current);
-    const theme = useTheme();
 
     React.useEffect(() => {
         return () => {

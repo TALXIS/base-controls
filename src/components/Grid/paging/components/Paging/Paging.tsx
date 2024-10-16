@@ -22,11 +22,17 @@ export const Paging = () => {
             }
         })
     }
+    const getPagingLabel = () => {
+        if(paging.totalResultCount === undefined) {
+            return labels['paging-pages']({ start: paging.pageFirstRecordOrder, end: paging.pageLastRecordOrder})
+        }
+        return `${labels['paging-pages']({ start: paging.pageFirstRecordOrder, end: paging.pageLastRecordOrder})} ${labels['paging-pages-totalcount']({recordcount: paging.formattedTotalResultCount})}`
+    }
     return (
         <div className={styles.root}>
             <div className={styles.pageSizeBtnWrapper}>
                 <CommandBarButton
-                    text={labels['paging-pages']({ start: paging.pageFirstRecordOrder, end: paging.pageLastRecordOrder, recordcount: paging.totalResultCount >= 0 ? paging.totalResultCount : "5000+" })}
+                    text={getPagingLabel()}
                     menuProps={{
                         items: [
                             {

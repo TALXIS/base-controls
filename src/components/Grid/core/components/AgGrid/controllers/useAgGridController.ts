@@ -21,7 +21,6 @@ ModuleRegistry.registerModules([ClientSideRowModelModule]);
 interface IAgGridController {
     agColumns: ColDef[],
     records: IEntityRecord[],
-    maxNumberOfVisibleRecords: number;
     stateRef: React.MutableRefObject<IAgGridState>
     getTotalColumnsWidth: () => number,
     onGridReady: () => void;
@@ -37,12 +36,17 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     const pagingController = usePagingController();
     const agGridReadyRef = useRef<boolean>(false);
     const agGrid = useMemo(() => new AgGrid(grid, gridApiRef), [])
-    const { columns, records } = useGridController();
+    const { columns } = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<IAgGridState>(grid.state as IAgGridState);
     //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
-    const [agRecords] = useDebounce(records, 0);
-    gridApiRef.current?.refreshCells();
+    const [agRecords] = useDebounce(grid.records, 0);
+
+    useEffect(() => {
+        gridApiRef.current?.refreshCells({
+            rowNodes: gridApiRef.current?.getRenderedNodes()
+        });
+    }, [grid.records])
 
     useEffect(() => {
         if (!agGridReadyRef.current) {
@@ -109,9 +113,6 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
                 return;
             }
             stateValuesRef.current.__updatedRecords = grid.recordUpdateService.updatedRecords;
-            if(grid.paging.pageSize !== agGrid.initialPageSize) {
-                stateValuesRef.current.initialPageSize = agGrid.initialPageSize; 
-            }
             grid.pcfContext.mode.setControlState(getNewStateValues());
         }
     }, []);
@@ -186,7 +187,6 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     return {
         agColumns: agColumns,
         records: agRecords,
-        maxNumberOfVisibleRecords: agGrid.maxNumberOfVisibleRecords,
         stateRef: stateValuesRef,
         getTotalColumnsWidth: () => agGrid.getTotalColumnsWidth(),
         onGridReady: onGridReady

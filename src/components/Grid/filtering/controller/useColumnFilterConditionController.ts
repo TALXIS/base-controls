@@ -2,9 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { DatasetConditionOperator } from "../../core/enums/ConditionOperator";
 import { useGridInstance } from "../../core/hooks/useGridInstance"
 import { useRefreshCallback } from "../../core/hooks/useRefreshCallback";
-import { useRerender } from "../../core/hooks/useRerender";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
-import { Condition } from "../model/Condition";
 
 export interface IColumnFilterConditionController {
     isAppliedToDataset: boolean,

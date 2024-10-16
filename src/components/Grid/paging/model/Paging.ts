@@ -18,15 +18,33 @@ export class Paging extends GridDependency {
         return this._dataset.paging.hasNextPage;
     }
     public get pageFirstRecordOrder() {
+        if(this._dataset.sortedRecordIds.length === 0) {
+            return 0;
+        }
         return (this.pageNumber - 1) * this.pageSize + (this.totalResultCount === 0 ? 0 : 1);
     }
+    public get formattedTotalResultCount(): string {
+        if(this.totalResultCount === undefined) {
+            return '';
+        }
+        if(this.totalResultCount === -1) {
+            return '5000+';
+        }
+        return this.totalResultCount.toString();
+    }
+    public get pageLastRecordOrder(): string {
+        const count = this.pageNumber * this.pageSize;
+        if(this.totalResultCount === undefined) {
+            if(this.hasNextPage) {
+                return `${count}+`;
+            }
+            return `${count - this.pageSize + this._dataset.sortedRecordIds.length}`
 
-    public get pageLastRecordOrder() {
-        const size = this.pageNumber * this.pageSize;
-        if(size > this.totalResultCount && this.totalResultCount !== -1) {
-            return this.totalResultCount;
+        }
+        if(count > this.totalResultCount && this.totalResultCount !== -1) {
+            return this.totalResultCount.toString();
         } 
-        return size;
+        return count.toString();
     }
 
     public get isEnabled() {

@@ -1,12 +1,12 @@
 import equal from "fast-deep-equal/es6";
 import { cloneDeep } from "lodash";
 import numeral from "numeral";
-import { Numeral } from "../../../../../../utils/Numeral";
 import { IEntityColumn, IEntityRecord } from "../../../../interfaces";
 import { ColumnValidation } from "../../../../validation/model/ColumnValidation";
 import { DataType } from "../../../enums/DataType";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
+import { Numeral } from "@talxis/client-libraries";
 
 export interface IUpdatedRecord extends Omit<IEntityRecord, 'save'> {
     columns: Map<string, IEntityColumn>,
@@ -181,7 +181,7 @@ export class RecordUpdateService extends GridDependency {
             if (!gridColumn.entityAliasName) {
                 return x.name === gridColumn.attributeName;
             }
-            return x.name === gridColumn.attributeName && x.alias === gridColumn.entityAliasName;
+            return x.name === gridColumn.key;
         })!;
     }
     private _isReadOnlyChangeEditor() {

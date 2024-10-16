@@ -4,10 +4,10 @@ import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import numeral from "numeral";
-import { Numeral } from '../../utils/Numeral';
 import { getDefaultDurationTranslations } from './translations';
 import { durationOptions } from "./durationOptions";
 import humanizeDuration, { Unit } from "humanize-duration";
+import { Numeral } from "@talxis/client-libraries";
 
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
