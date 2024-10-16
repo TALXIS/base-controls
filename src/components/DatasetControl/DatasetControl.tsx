@@ -6,14 +6,18 @@ import { TextField } from "@talxis/react-components";
 import { datasetControlTranslations } from "./translations";
 import { getDatasetControlStyles } from "./styles";
 import { IDatasetControl } from "./interfaces";
+import { useRerender } from "./hooks/useRerender";
 
 export const DatasetControl = (props: IDatasetControl) => {
     const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
     const [query, setQuery] = useState<string | undefined>("");
+    const rerender = useRerender();
     const dataset = props.parameters.Grid;
     const injectedContextRef = useRef(props.context);
     const styles = useMemo(() => getDatasetControlStyles(), []);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+    //@ts-ignore - need to edit the types
+    dataset._setRenderer(() => rerender());
 
     //we need to have a way to customize the init behavior from above
     const componentProps = onOverrideComponentProps({
