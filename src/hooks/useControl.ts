@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef } from "react";
 import React from 'react';
-import deepEqual from 'fast-deep-equal/es6';
 import { IControl, IOutputs, IParameters } from "../interfaces";
 import { merge } from 'merge-anything';
 import { Liquid } from "liquidjs";
 import { useControlTheme } from "./useControlTheme";
 import { ITheme } from "../interfaces/theme";
 import { useControlSizing } from "./useControlSizing";
+
+const deepEqual = require('fast-deep-equal/react');
 
 export type ITranslation<T> = {
     [Property in keyof Required<T>]: (variables?: any) => string

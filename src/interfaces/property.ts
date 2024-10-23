@@ -1,5 +1,3 @@
-import { IEntityColumn, IEntityRecord } from "../components/Grid/interfaces";
-
 type ExcludedProps = Pick<ComponentFramework.PropertyTypes.Property, 'formatted'>;
 
 export interface IProperty extends Omit<Partial<ComponentFramework.PropertyTypes.Property>, keyof ExcludedProps | 'attributes'> {
@@ -70,33 +68,4 @@ export interface ILookupProperty extends IProperty, Omit<Partial<ComponentFramew
         viewId: string;
         fetchXml?: string;
     }[]>
-}
-
-export interface IDatasetProperty extends IProperty, Omit<ComponentFramework.PropertyTypes.DataSet, 'error' | 'errorMessage'> {
-    columns: IEntityColumn[],
-    records: {
-        [id: string]: IEntityRecord;
-    }
-    paging: ComponentFramework.PropertyHelper.DataSetApi.Paging & {
-        pageNumber: number
-    }
-    retrieveRecordCommand: (recordIds: string[], specificCommands?: string[], filterByPriority?: boolean, useNestedFormat?: boolean, refreshAllRules?: boolean) => {
-        canExecute: boolean;
-        /**
-        * Seems to be always empty - buttons present in Flyout and SplitButton are put on first level (the array of buttons is flattened).
-        */
-        children: any[];
-        commandId: string;
-        commandButtonId: string;
-        controlType: any;
-        icon: string;
-        label: string;
-        shouldBeVisible: boolean;
-        tooltip: string;
-        /**
-        * Temp portal property
-        */
-        __isInline?: boolean;
-        execute: () => Promise<void>;
-    }[]
 }

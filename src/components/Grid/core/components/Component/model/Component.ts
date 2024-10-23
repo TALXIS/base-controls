@@ -11,6 +11,7 @@ import { ColumnValidation } from "../../../../validation/model/ColumnValidation"
 import { DataType } from "../../../enums/DataType";
 import { GridDependency } from "../../../model/GridDependency";
 import { IControlProps } from "../Component";
+import { Attribute } from "@talxis/client-libraries";
 
 const debounce = (func: (...args: any[]) => Promise<any>, wait: number) => {
     let timeout: NodeJS.Timeout | null = null;
@@ -39,12 +40,13 @@ export class Component extends GridDependency {
         const { column, value, onNotifyOutputChanged, formattedValue } = { ...props };
         const [isValid, validationErrorMessage] = new ColumnValidation(this._grid, props.column).validate(value);
         const onOverrideControlProps = props?.onOverrideControlProps ?? ((props: IControl<any, any, any, any>) => props);
+        const attributeName = Attribute.GetNameFromAlias(column.name);
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_OWNER:
             case DataType.LOOKUP_CUSTOMER: {
-                const columnMetadata = await this._grid.metadata.get(column);
-                const targets = columnMetadata.Attributes.get(column.attributeName).attributeDescriptor.Targets ?? [];
+                const columnMetadata = await this._grid.metadata.get(column.name);
+                const targets = columnMetadata.Attributes.get(attributeName).attributeDescriptor.Targets ?? [];
                 //@ts-ignore - typings
                 if (column.dataType === DataType.LOOKUP_OWNER && window.TALXIS.Portal) {
                     targets.push('systemuser', 'team')
@@ -91,7 +93,7 @@ export class Component extends GridDependency {
             }
             case DataType.TWO_OPTIONS: {
                 const twoOptionsValue = value as boolean | undefined | null;
-                const [defaultValue, options] = await this._grid.metadata.getOptions(column)
+                const [defaultValue, options] = await this._grid.metadata.getOptions(column.name)
                 return onOverrideControlProps({
                     context: this._pcfContext,
                     parameters: {
@@ -109,7 +111,7 @@ export class Component extends GridDependency {
             }
             case DataType.OPTIONSET: {
                 const optionSetValue = value as number | null | undefined;
-                const [defaultValue, options] = await this._grid.metadata.getOptions(column)
+                const [defaultValue, options] = await this._grid.metadata.getOptions(column.name)
                 return onOverrideControlProps({
                     context: this._pcfContext,
                     parameters: {
@@ -126,7 +128,7 @@ export class Component extends GridDependency {
                 } as IOptionSet);
             }
             case DataType.MULTI_SELECT_OPTIONSET: {
-                const [defaultValue, options] = await this._grid.metadata.getOptions(column)
+                const [defaultValue, options] = await this._grid.metadata.getOptions(column.name)
                 const optionSetValue = value as number[] | null | undefined;
                 return onOverrideControlProps({
                     context: this._pcfContext,
@@ -146,7 +148,7 @@ export class Component extends GridDependency {
             case DataType.DATE_AND_TIME_DATE_AND_TIME:
             case DataType.DATE_AND_TIME_DATE_ONLY: {
                 const dateTimeValue = value as Date | null | undefined;
-                const metadata = await this._grid.metadata.get(column);
+                const metadata = await this._grid.metadata.get(column.name);
                 const date = dayjs(dateTimeValue);
                 return onOverrideControlProps({
                     context: this._pcfContext,
@@ -156,7 +158,7 @@ export class Component extends GridDependency {
                             error: !isValid,
                             errorMessage: validationErrorMessage,
                             attributes: {
-                                Behavior: metadata.Attributes.get(column.attributeName).Behavior,
+                                Behavior: metadata.Attributes.get(attributeName).Behavior,
                                 Format: column.dataType
                             }
                         }
@@ -169,8 +171,8 @@ export class Component extends GridDependency {
             case DataType.CURRENCY:
             case DataType.WHOLE_DURATION: {
                 const decimalValue = value as number | null | undefined
-                const metadata = await this._grid.metadata.get(column);
-                const precision = metadata.Attributes.get(column.attributeName).Precision;
+                const metadata = await this._grid.metadata.get(column.name);
+                const precision = metadata.Attributes.get(attributeName).Precision;
                 return onOverrideControlProps({
                     context: this._pcfContext,
                     parameters: {

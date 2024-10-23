@@ -1,18 +1,17 @@
 import equal from "fast-deep-equal/es6";
 import { cloneDeep } from "lodash";
 import numeral from "numeral";
-import { IEntityColumn, IEntityRecord } from "../../../../interfaces";
 import { ColumnValidation } from "../../../../validation/model/ColumnValidation";
 import { DataType } from "../../../enums/DataType";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
-import { Numeral } from "@talxis/client-libraries";
+import { IColumn, IRecord, Numeral } from "@talxis/client-libraries";
 
-export interface IUpdatedRecord extends Omit<IEntityRecord, 'save'> {
-    columns: Map<string, IEntityColumn>,
-    isValid: (columnKey: string) => boolean,
-    getOriginalValue: (columnKey: string) => any;
-    getOriginalFormattedValue: (columnKey: string) => any;
+export interface IUpdatedRecord extends Omit<IRecord, 'save'> {
+    columns: Map<string, IColumn>,
+    isValid: (columnName: string) => boolean,
+    getOriginalValue: (columnName: string) => any;
+    getOriginalFormattedValue: (columnName: string) => any;
     getOriginalFormattedPrimaryNameValue: () => any;
     save: () => Promise<boolean>,
     clear: () => void;
@@ -20,7 +19,7 @@ export interface IUpdatedRecord extends Omit<IEntityRecord, 'save'> {
 
 export class RecordUpdateService extends GridDependency {
     private _updatedRecords: Map<string, IUpdatedRecord> = new Map();
-    private _internalRecordMap: Map<string, IEntityRecord> = new Map();
+    private _internalRecordMap: Map<string, IRecord> = new Map();
 
     constructor(grid: Grid) {
         super(grid);
@@ -59,7 +58,7 @@ export class RecordUpdateService extends GridDependency {
         if (this._isReadOnlyChangeEditor() && this._updatedRecords.size === 0) {
             const record = this._grid.records[0];
             for (const column of this._grid.columns) {
-                this.record(record.getRecordId()).setValue(column.key, record.getValue(column.key), true);
+                this.record(record.getRecordId()).setValue(column.name, record.getValue(column.name), true);
             }
         }
         return [...this._updatedRecords.values()];
@@ -83,21 +82,21 @@ export class RecordUpdateService extends GridDependency {
     public record(recordId: string) {
         return {
             get: () => this._updatedRecords.get(recordId),
-            setValue: (columnKey: string, value: any, doNotPropagateToDatasetRecord?: boolean) => {
-                if(!doNotPropagateToDatasetRecord && this._isEqual(columnKey, this._internalRecordMap.get(recordId)!.getValue(columnKey), value)) {
+            setValue: (columnName: string, value: any, doNotPropagateToDatasetRecord?: boolean) => {
+                if(!doNotPropagateToDatasetRecord && this._isEqual(columnName, this._internalRecordMap.get(recordId)!.getValue(columnName), value)) {
                     return;
                 }
                 const updatedRecord = this._updatedRecords.get(recordId);
                 if (!updatedRecord) {
                     const deepCopiedRecord = cloneDeep(this._internalRecordMap.get(recordId)!);
                     this._updatedRecords.set(recordId, {
-                        columns: new Map([[columnKey, this._getEntityColumnByKey(columnKey)]]),
+                        columns: new Map([[columnName, this._getColumnByName(columnName)]]),
                         getRecordId: () => recordId,
-                        getValue: (columnKey: string) => this._internalRecordMap.get(recordId)?.getValue(columnKey)!,
-                        getFormattedValue: (columnKey: string) => this._internalRecordMap.get(recordId)?.getFormattedValue(columnKey)!,
+                        getValue: (columnName: string) => this._internalRecordMap.get(recordId)?.getValue(columnName)!,
+                        getFormattedValue: (columnName: string) => this._internalRecordMap.get(recordId)?.getFormattedValue(columnName)!,
                         getNamedReference: () => deepCopiedRecord.getNamedReference(),
-                        getOriginalValue: (columnKey: string) => deepCopiedRecord.getValue(columnKey),
-                        getOriginalFormattedValue: (columnKey: string) => deepCopiedRecord.getFormattedValue(columnKey),
+                        getOriginalValue: (columnName: string) => deepCopiedRecord.getValue(columnName),
+                        getOriginalFormattedValue: (columnName: string) => deepCopiedRecord.getFormattedValue(columnName),
                         getOriginalFormattedPrimaryNameValue: () => {
                             let primaryColumn = this._dataset.columns.find(x => x.isPrimary);
                             if(!primaryColumn) {
@@ -109,15 +108,16 @@ export class RecordUpdateService extends GridDependency {
                             }
                             return value;
                         },
-                        setValue: (columnKey: string, value: any) => {
-                            this._internalRecordMap.get(recordId)?.setValue(columnKey, value);
+                        setValue: (columnName: string, value: any) => {
+                            this._internalRecordMap.get(recordId)?.setValue(columnName, value);
+                            this._pcfContext.factory.requestRender()
                         },
-                        isValid: (columnKey: string) => {
-                            const column = this._grid.columns.find(x => x.key === columnKey);
+                        isValid: (columnName: string) => {
+                            const column = this._grid.columns.find(x => x.name === columnName);
                             if(!column) {
                                 return true;
                             }
-                            const [result, message] = new ColumnValidation(this._grid, column).validate(this._internalRecordMap.get(recordId)?.getValue(columnKey)!)
+                            const [result, message] = new ColumnValidation(this._grid, column).validate(this._internalRecordMap.get(recordId)?.getValue(columnName)!)
                             return result;
                         },
                         clear: () => {
@@ -143,14 +143,14 @@ export class RecordUpdateService extends GridDependency {
                             }
                             return true;
                         }
-                    })
+                    } as any)
                 }
                 else {
-                    updatedRecord.columns.set(columnKey, this._getEntityColumnByKey(columnKey))
+                    updatedRecord.columns.set(columnName, this._getColumnByName(columnName))
                 }
                 if (!doNotPropagateToDatasetRecord) {
                     const updatedRecord = this._updatedRecords.get(recordId);
-                    updatedRecord?.setValue(columnKey, value);
+                    updatedRecord?.setValue(columnName, value);
                 }
             }
         }
@@ -168,6 +168,7 @@ export class RecordUpdateService extends GridDependency {
         for (const record of this._updatedRecords.values()) {
             record.clear();
         }
+        this._pcfContext.factory.requestRender();
     }
 
     public onDependenciesUpdated(): void {
@@ -175,20 +176,14 @@ export class RecordUpdateService extends GridDependency {
             this._internalRecordMap.set(recordId, record);
         }
     }
-    private _getEntityColumnByKey(columnKey: string) {
-        const gridColumn = this._grid.columns.find(x => x.key === columnKey)!;
-        return this._dataset.columns.find(x => {
-            if (!gridColumn.entityAliasName) {
-                return x.name === gridColumn.attributeName;
-            }
-            return x.name === gridColumn.key;
-        })!;
+    private _getColumnByName(columnName: string) {
+        return this._grid.columns.find(x => x.name === columnName)!;
     }
     private _isReadOnlyChangeEditor() {
         return this._grid.props.parameters.ChangeEditorMode?.raw === 'read';
     }
-    private _isEqual(columnKey: string, oldValue: any, newValue: any) {
-        const column = this._grid.columns.find(x => x.key === columnKey);
+    private _isEqual(columnName: string, oldValue: any, newValue: any) {
+        const column = this._grid.columns.find(x => x.name === columnName);
         //skip in special case for currency
         //PCF has no info about the currency, which sometimes make it to ouput change
         if(column?.dataType === DataType.CURRENCY) {

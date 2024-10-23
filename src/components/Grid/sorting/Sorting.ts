@@ -3,15 +3,15 @@ import { GridDependency } from "../core/model/GridDependency";
 export class Sorting extends GridDependency {
     public get(column: IGridColumn) {
         return {
-            value: this._dataset.sorting.find(x => x.name === column.key),
+            value: this._dataset.sorting.find(x => x.name === column.name),
             sort: (direction: ComponentFramework.PropertyHelper.DataSetApi.Types.SortDirection) => {
                 const sortMap: Map<string, ComponentFramework.PropertyHelper.DataSetApi.SortStatus> = new Map(this._dataset.sorting.map(x => [x.name, x]));
                 //TODO: have explicit parameter to always do multisort?
                 if(this._grid.keyHoldListener.getHeldKey() !== 'Shift') {
                     sortMap.clear();
                 }
-                sortMap.set(column.key, {
-                    name: column.key,
+                sortMap.set(column.name, {
+                    name: column.name,
                     sortDirection: direction
                 })
                 //Power Apps only allows setting of sorting like this - https://stackoverflow.com/questions/1232040/how-do-i-empty-an-array-in-javascript

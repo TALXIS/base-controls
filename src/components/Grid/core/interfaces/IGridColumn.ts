@@ -1,20 +1,11 @@
-import { DataType } from "../enums/DataType";
+import { IColumn } from "@talxis/client-libraries";
 
-export interface IGridColumn {
-    key: string;
-    attributeName: string;
-    isPrimary?: boolean;
-    dataType?: DataType;
-    displayName?: string;
-    entityAliasName?: string;
-    isFilterable?: boolean;
-    isSortable?: boolean;
-    isSorted?: boolean;
-    isFiltered?: boolean;
-    isSortedDescending?: boolean;
-    isEditable?: boolean;
-    isResizable?: boolean;
-    isRequired?: boolean;
-    isHidden?: boolean;
-    width?: number;
+export interface IGridColumn extends IColumn {
+    isRequired: boolean;
+    isEditable: boolean;
+    isFilterable: boolean;
+    isSorted: boolean;
+    isFiltered: boolean;
+    isSortedDescending: boolean;
+    isResizable: boolean;
 }

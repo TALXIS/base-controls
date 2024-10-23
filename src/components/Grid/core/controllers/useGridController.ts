@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react"
 import equal from 'fast-deep-equal/es6';
-import { IEntityRecord } from "../../interfaces";
 import { Grid } from "../model/Grid";
 import { IGridColumn } from "../interfaces/IGridColumn";
 import { GridContext } from "../../GridContext";

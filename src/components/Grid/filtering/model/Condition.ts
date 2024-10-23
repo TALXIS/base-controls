@@ -1,3 +1,4 @@
+import { Attribute } from "@talxis/client-libraries";
 import { DatasetConditionOperator } from "../../core/enums/ConditionOperator";
 import { DataType } from "../../core/enums/DataType";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
@@ -272,10 +273,12 @@ export class Condition extends GridDependency {
     }
 
     private _getDefault(): ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression {
+        const entityAliasName = Attribute.GetLinkedEntityAlias(this._column.name);
+        const attributeName = Attribute.GetNameFromAlias(this._column.name);
         const cond: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression = {
-            attributeName: this._column.attributeName,
+            attributeName: attributeName,
             conditionOperator: DatasetConditionOperator.Equal,
-            entityAliasName: this._column.entityAliasName,
+            entityAliasName: entityAliasName ?? "",
             value: ""
         }
         switch (this._column.dataType) {
@@ -300,9 +303,10 @@ export class Condition extends GridDependency {
     }
     private async  _getConditionFromFilterExpression(): Promise<[Map<string, ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression>, string]> {
         const map = new Map<string, ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression>(this._filterExpression.conditions.map(x => [x.attributeName, x]));
+        const attributeName = Attribute.GetNameFromAlias(this._column.name);
         for (const cond of map.values()) {
             const conditionAttributeName = await this._attributeNameDecorator(cond.conditionOperator, cond.attributeName, true);
-            if(conditionAttributeName === this._column.attributeName) {
+            if(conditionAttributeName === attributeName) {
                 return [map, cond.attributeName]
             }
         }

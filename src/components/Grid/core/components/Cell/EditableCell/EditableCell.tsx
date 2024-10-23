@@ -5,8 +5,7 @@ import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { useRecordUpdateServiceController } from '../../../services/RecordUpdateService/controllers/useRecordUpdateServiceController';
 import { Component } from '../../Component/Component';
 import { ICellEditorParams } from '@ag-grid-community/core';
-import { IEntityRecord } from '../../../../interfaces';
-import { useTheme } from '@fluentui/react';
+import { IRecord } from '@talxis/client-libraries';
 
 interface ICell extends ICellEditorParams {
     baseColumn: IGridColumn;
@@ -19,12 +18,12 @@ export const EditableCell = (props: ICell) => {
     const recordUpdateService = useRecordUpdateServiceController();
     const mountedRef = React.useRef(true);
     const hasBeenUpdatedRef = React.useRef<boolean>(false);
-    const record: IEntityRecord = (() => {
+    const record: IRecord = (() => {
         //this is so we can load the updated record values from state
         const updatedRecord = grid.recordUpdateService.record(props.data.getRecordId()).get() as any;
         return updatedRecord ?? props.data;
     })();
-    const valueRef = React.useRef(record.getValue(column.key));
+    const valueRef = React.useRef(record.getValue(column.name));
     const [value, setValue] = React.useState(valueRef.current);
 
     React.useEffect(() => {
@@ -33,7 +32,7 @@ export const EditableCell = (props: ICell) => {
             if (!hasBeenUpdatedRef.current) {
                 return;
             }
-            recordUpdateService.record(record.getRecordId()).setValue(column.key, getRecordValue(valueRef.current))
+            recordUpdateService.record(record.getRecordId()).setValue(column.name, getRecordValue(valueRef.current))
         }
     }, []);
 
@@ -101,7 +100,7 @@ export const EditableCell = (props: ICell) => {
         valueRef.current = value;
         hasBeenUpdatedRef.current = true;
         if(!mountedRef.current) {
-            recordUpdateService.record(record.getRecordId()).setValue(column.key, getRecordValue(valueRef.current))
+            recordUpdateService.record(record.getRecordId()).setValue(column.name, getRecordValue(valueRef.current))
             return;
         }
         switch(column.dataType) {
@@ -125,7 +124,7 @@ export const EditableCell = (props: ICell) => {
     return <Component
         column={column}
         value={getComponentValue(value)}
-        formattedValue={record.getFormattedValue(column.key)}
+        formattedValue={record.getFormattedValue(column.name) ?? undefined}
         onNotifyOutputChanged={onNotifyOutputChanged}
         onOverrideControlProps={(props) => {
             return {

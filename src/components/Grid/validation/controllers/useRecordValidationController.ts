@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useGridInstance } from "../../core/hooks/useGridInstance";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
 import { ColumnValidation } from "../model/ColumnValidation";
+import { IRecord } from "@talxis/client-libraries";
 
 interface IRecordValidation {
     column: IGridColumn;
-    record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
+    record: IRecord;
 }
 
 export const useColumnValidationController = (props: IRecordValidation): [boolean, string] => {
@@ -22,10 +23,10 @@ export const useColumnValidationController = (props: IRecordValidation): [boolea
             //we are not doing validation for non-editable columns
             return;
         }
-        const [isValid, errorMessage] = columnValidation.validate(record.getValue(column.key));
+        const [isValid, errorMessage] = columnValidation.validate(record.getValue(column.name));
         setIsValid(isValid);
         setErrorMessage(errorMessage);
-    }, [record.getValue(column.key)]);
+    }, [record.getValue(column.name)]);
 
     return [isValid, errorMessage];
 }

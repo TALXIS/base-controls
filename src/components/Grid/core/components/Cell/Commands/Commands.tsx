@@ -3,9 +3,10 @@ import { useCommands } from './useCommands';
 import { CommandBar } from "@talxis/react-components";
 import { commandStyles, getCommandsLoadingStyles } from './styles';
 import { useTheme } from '@fluentui/react';
+import { IRecord } from '@talxis/client-libraries';
 
 interface ICommands {
-    record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
+    record: IRecord
 }
 
 export const Commands = ({ record }: ICommands) => {

@@ -1,30 +1,30 @@
-import { IDatasetProperty } from "../../../../interfaces";
-import { RIBBON_COLUMN_KEY } from "../../constants";
+import { Attribute, Constants, DataTypes, IColumn, IDataset, IRecord } from "@talxis/client-libraries";
 import { Filtering } from "../../filtering/model/Filtering";
-import { IEntityColumn, IEntityRecord, IGrid } from "../../interfaces";
+import { IGrid } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
 import { ROW_HEIGHT } from "../constants";
 import { DataType } from "../enums/DataType";
-import { IGridColumn } from "../interfaces/IGridColumn";
 import { KeyHoldListener } from "../services/KeyListener";
 import { RecordUpdateService } from "../services/RecordUpdateService/model/RecordUpdateService";
 import { Metadata } from "./Metadata";
+import { CHECKBOX_COLUMN_KEY } from "../../constants";
+import { IGridColumn } from "../interfaces/IGridColumn";
 
 export class Grid {
     private _props: IGrid;
-    private _dataset: IDatasetProperty
+    private _dataset: IDataset
     private _pcfContext: ComponentFramework.Context<any>;
     private _columns: IGridColumn[] = [];
     //used for optimization
-    private _previousRecordsReference:  {
-        [id: string]: IEntityRecord;
+    private _previousRecordsReference: {
+        [id: string]: IRecord;
     } = {};
     //TODO: fix types
     private _labels: any;
     private _shouldRerender: boolean = false;
-    private _records: IEntityRecord[] = [];
+    private _records: IRecord[] = [];
     //TODO: the dependencies might not have fully loaded grid
     //need to make sure that the grid is initialized before creating them
     private _dependencies: {
@@ -139,16 +139,16 @@ export class Grid {
 
     public get height() {
         let height = this._maxHeight;
-        if(this.parameters.Height?.raw) {
+        if (this.parameters.Height?.raw) {
             return this.parameters.Height?.raw;
         }
-        if(this._records.length === 0) {
+        if (this._records.length === 0) {
             height = this._minHeight;
         }
-        else if(this._records.length <= this._initialPageSize) {
+        else if (this._records.length <= this._initialPageSize) {
             height = this._records.length * ROW_HEIGHT;
         }
-        if(height > this._maxHeight) {
+        if (height > this._maxHeight) {
             height = this._maxHeight;
         }
         return `${height}px`;
@@ -171,87 +171,62 @@ export class Grid {
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
         //THIS COULD MAKE GRID STOP WORKING IN POWER APPS!
-        if(this._previousRecordsReference !== this._dataset.records) {
+        if (this._previousRecordsReference !== this._dataset.records) {
             this._records = Object.values(this._dataset.records);
             this._previousRecordsReference = this._dataset.records;
         }
-        for (const [key, dependency] of Object.entries(this._dependencies)) {
-            dependency.onDependenciesUpdated()
-        }
+        Object.values(this._dependencies).map(dep => {
+            dep.onDependenciesUpdated()
+        })
         this._shouldRerender = !this.shouldRerender;
     }
     public async refreshColumns(): Promise<IGridColumn[]> {
         const gridColumns: IGridColumn[] = [];
         for (const column of this._dataset.columns) {
-            if(column.isHidden) {
-                continue;
-            }
             const sorted = this._dataset.sorting?.find(sort => sort.name === column.name);
-            const entityAliasName = column.name?.includes('.') ? column.name.split('.')[0] : null;
-            const attributeName = entityAliasName ? column.name.split('.')[1] : column.name;
-            const key = entityAliasName ? `${entityAliasName}.${attributeName}` : attributeName;
-            switch (column.dataType) {
-                case DataType.FILE:
-                case DataType.IMAGE: {
-                    if (entityAliasName) {
-                        //we do not support file fields with linked entities
-                        //the getValue API throws an error in Power Apps
-                        continue;
-                    }
-                }
-            }
-            const gridColumn = {
-                entityAliasName: entityAliasName,
-                attributeName: attributeName,
-                key: entityAliasName ? `${entityAliasName}.${attributeName}` : attributeName,
-                isPrimary: column.isPrimary,
-                dataType: column.dataType as DataType,
-                displayName: column.displayName,
-                isEditable: column.isEditable,
-                isFilterable: this._isColumnFilterable(column),
-                isRequired: column.isRequired,
-                isSortable: this._isColumnSortable(column),
-                isSorted: sorted ? true : false,
+            const gridColumn: IGridColumn = {
+                ...column,
+                isEditable: await this._isColumnEditable(column),
+                isRequired: await this._isColumnRequired(column),
+                isFilterable: await this._isColumnFilterable(column),
+                disableSorting: !this._isColumnSortable(column),
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
-                width: this.state?.columnSizing?.columnSizingModel?.find((x: any) => x.colId === key)?.width || column.visualSizeFactor,
-                isResizable: column.isResizable ?? true,
-                isHidden: column.isHidden
-            } as IGridColumn;
-
+                isResizable: true,
+                isSorted: sorted ? true : false,
+                isFiltered: false
+            }
             const condition = await this.filtering.condition(gridColumn);
             gridColumn.isFiltered = condition.isAppliedToDataset;
-            gridColumn.isEditable = await this._isColumnEditable(gridColumn);
-            gridColumn.isRequired = await this._isColumnRequired(gridColumn);
-
-            if (gridColumn.key === RIBBON_COLUMN_KEY) {
-                gridColumn.isFilterable = false;
-                gridColumn.isSortable = false;
-            }
             gridColumns.push(gridColumn);
         }
-/*         gridColumns.unshift({
-            key: RIBBON_COLUMN_KEY,
-            attributeName: RIBBON_COLUMN_KEY,
-        }) */
         if (this.selection.type !== undefined) {
             gridColumns.unshift({
-                key: '__checkbox',
-                attributeName: '__checkbox',
-                width: 45,
-                isResizable: false
-            })
+                name: CHECKBOX_COLUMN_KEY,
+                alias: CHECKBOX_COLUMN_KEY,
+                dataType: DataTypes.SingleLineText,
+                displayName: '',
+                isEditable: true,
+                isFilterable: false,
+                isFiltered: false,
+                isRequired: false,
+                isResizable: false,
+                disableSorting: true,
+                isSorted: false,
+                isSortedDescending: false,
+                order: 0,
+                visualSizeFactor: 45,
+            });
         }
         this._columns = gridColumns;
         return gridColumns;
     }
 
-    private async _isColumnEditable(column: IGridColumn): Promise<boolean> {
-        //top priority, overriden through props
-        if (typeof column.isEditable === 'boolean') {
-            return column.isEditable
-        }
+    private async _isColumnEditable(column: IColumn): Promise<boolean> {
         //only allow editing if specifically allowed
         if (!this._props.parameters.EnableEditing?.raw) {
+            return false;
+        }
+        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             return false;
         }
         //these field types do not support editing
@@ -261,30 +236,34 @@ export class Grid {
                 return false;
             }
         }
-        const metadata = await this.metadata.get(column);
-        //IsEditable is not available in Power Apps
-        return metadata.Attributes.get(column.attributeName)?.attributeDescriptor.IsValidForUpdate ?? false;
+        const attributeName = Attribute.GetNameFromAlias(column.name);
+        const metadata = await this.metadata.get(column.name);
+        return metadata.Attributes.get(attributeName)?.attributeDescriptor?.IsValidForUpdate ?? false;
     }
 
-    private async _isColumnRequired(column: IGridColumn) {
-        if (typeof column.isRequired === 'boolean') {
-            return column.isRequired;
-        }
+    private async _isColumnRequired(column: IColumn): Promise<boolean> {
         if (!this.parameters.EnableEditing?.raw) {
             return false;
         }
-        const metadata = await this.metadata.get(column);
-        const requiredLevel = metadata.Attributes.get(column.attributeName)?.attributeDescriptor.RequiredLevel;
+        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+            return false;
+        }
+        const metadata = await this.metadata.get(column.name);
+        const attributeName = Attribute.GetNameFromAlias(column.name);
+        const requiredLevel = metadata.Attributes.get(attributeName)?.attributeDescriptor?.RequiredLevel;
         if (requiredLevel === 1 || requiredLevel === 2) {
             return true;
         }
         return false;
     }
-    private _isColumnSortable(column: IEntityColumn) {
-        if(column.name.endsWith('__virtual')) {
+    private _isColumnSortable(column: IColumn): boolean {
+        if (column.name.endsWith('__virtual')) {
             return false;
         }
         if (this._props.parameters.EnableSorting?.raw === false) {
+            return false;
+        }
+        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             return false;
         }
         switch (column.dataType) {
@@ -292,20 +271,28 @@ export class Grid {
                 return false;
             }
         }
+        if(column.disableSorting === undefined) {
+            return true;
+        }
         return !column.disableSorting;
     }
-    private _isColumnFilterable(column: IEntityColumn) {
-        if(column.name.endsWith('__virtual')) {
+    private async _isColumnFilterable(column: IColumn): Promise<boolean> {
+        if (column.name.endsWith('__virtual')) {
             return false;
         }
         if (this.props.parameters.EnableFiltering?.raw === false) {
             return false;
         }
-        return column.isFilterable ?? true;
+        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+            return false;
+        }
+        const metadata = await this.metadata.get(column.name);
+        const attributeName = Attribute.GetNameFromAlias(column.name);
+        return metadata.Attributes.get(attributeName)?.attributeDescriptor?.isFilterable ?? true;
     }
     private _getMaxHeight(): number {
         let maxHeight = this._initialPageSize * ROW_HEIGHT;
-        if(maxHeight > 600) {
+        if (maxHeight > 600) {
             maxHeight = 600;
         }
         return maxHeight;

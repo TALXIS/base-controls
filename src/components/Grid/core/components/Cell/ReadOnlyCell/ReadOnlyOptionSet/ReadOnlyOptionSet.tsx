@@ -7,10 +7,11 @@ import { useTheme } from "@fluentui/react";
 import { IGridColumn } from "../../../../interfaces/IGridColumn";
 import { useGridInstance } from "../../../../hooks/useGridInstance";
 import { DataType } from "../../../../enums/DataType";
+import { IRecord } from "@talxis/client-libraries";
 
 interface IReadOnlyOptionSet {
     column: IGridColumn;
-    record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
+    record: IRecord
     defaultRender: () => ReactElement
 }
 
@@ -24,8 +25,8 @@ export const ReadOnlyOptionSet = (props: IReadOnlyOptionSet) => {
     useEffect(() => {
         (async () => {
             const getOptions = async (): Promise<ComponentFramework.PropertyHelper.OptionMetadata[]> => {
-                const [defaultValue, options] = await grid.metadata.getOptions(column);
-                let value: any = record.getValue(column.key);
+                const [defaultValue, options] = await grid.metadata.getOptions(column.name);
+                let value: any = record.getValue(column.name);
                 if (column.dataType === DataType.OPTIONSET) {
                     value = value ? [parseInt(value)] : null;
                 }
@@ -40,7 +41,7 @@ export const ReadOnlyOptionSet = (props: IReadOnlyOptionSet) => {
             const results = await getOptions();
             setOptions(results);
         })();
-    }, [record.getValue(column.key)]);
+    }, [record.getValue(column.name)]);
 
     //options not loaded yet
     if (options === null) {

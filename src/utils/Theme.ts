@@ -36,6 +36,32 @@ export const getControlTheme = (fluentDesignLanguage?: ComponentFramework.Fluent
 
 export const normalizeComponentStyling = (theme: ITheme) => {
     theme.components = {
+        //@ts-ignore
+        CommandBarButton: {
+            styles: {
+                root: {
+                    backgroundColor: 'transparent'
+                },
+                rootHovered: {
+                    backgroundColor: theme.semanticColors.buttonBackgroundHovered
+                },
+                rootPressed: {
+                    backgroundColor: theme.semanticColors.buttonBackgroundPressed
+                },
+                rootExpanded: {
+                    backgroundColor: theme.semanticColors.buttonBackgroundHovered
+                },
+                rootChecked: {
+                    backgroundColor: theme.semanticColors.buttonBackgroundChecked
+                },
+                rootCheckedPressed: {
+                    backgroundColor: theme.semanticColors.buttonBackgroundPressed
+                },
+                rootExpandedHovered: {
+                    backgroundColor: theme.semanticColors.buttonBackgroundPressed
+                }
+            }
+        },
         Checkbox: {
             styles: (props: ICheckboxStyleProps) => {
                 return {

@@ -4,8 +4,9 @@ import { Icon } from './Icon';
 import React from "react";
 import { commandStyles } from "./styles";
 import { useGridInstance } from "../../../hooks/useGridInstance";
+import { IRecord } from "@talxis/client-libraries";
 
-export const useCommands = (record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord): [
+export const useCommands = (record: IRecord): [
     ICommandBarItemProps[] | null
 ] => {
     const grid = useGridInstance();
@@ -19,9 +20,11 @@ export const useCommands = (record: ComponentFramework.PropertyHelper.DataSetApi
 
     const getCommandBarItems = async () => {
         const items: ICommandBarItemProps[] = [];
+        //@ts-ignore
         if(!dataset.retrieveRecordCommand) {
             return []
         }
+        //@ts-ignore
         const commands = await dataset.retrieveRecordCommand([record.getRecordId()], grid.inlineRibbonButtonIds);
         for (const command of commands) {
             if (!command.shouldBeVisible /* || (command.__isInline !== undefined && command.__isInline === false */) {

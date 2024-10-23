@@ -1,6 +1,5 @@
 import { ColDef, GridApi, GridState } from "@ag-grid-community/core";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { IEntityRecord } from "../../../../interfaces";
 import { useGridController } from "../../../controllers/useGridController"
 import { useGridInstance } from "../../../hooks/useGridInstance";
 import { EditableCell } from "../../Cell/EditableCell/EditableCell";
@@ -16,11 +15,13 @@ import "@ag-grid-community/styles/ag-theme-balham.css";
 import { usePagingController } from "../../../../paging/controllers/usePagingController";
 import { useStateValues } from "@talxis/react-components";
 import { IUpdatedRecord } from "../../../services/RecordUpdateService/model/RecordUpdateService";
+import { IRecord } from "@talxis/client-libraries";
+import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 interface IAgGridController {
     agColumns: ColDef[],
-    records: IEntityRecord[],
+    records: IRecord[],
     stateRef: React.MutableRefObject<IAgGridState>
     getTotalColumnsWidth: () => number,
     onGridReady: () => void;
@@ -42,11 +43,14 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
     const [agRecords] = useDebounce(grid.records, 0);
 
-    useEffect(() => {
+    setTimeout(() => {
+        //set timeout to prevent ag grid from refreshing when another refresh is in progress
+        //debounce
         gridApiRef.current?.refreshCells({
-            rowNodes: gridApiRef.current?.getRenderedNodes()
+            rowNodes: gridApiRef.current?.getRenderedNodes(),
+            force: true
         });
-    }, [grid.records])
+    }, 0);
 
     useEffect(() => {
         if (!agGridReadyRef.current) {
@@ -66,7 +70,7 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
             agColumn.cellEditor = EditableCell;
             agColumn.headerComponent = ColumnHeader;
 
-            if (agColumn.field === '__checkbox') {
+            if (agColumn.field === CHECKBOX_COLUMN_KEY) {
                 agColumn.lockPosition = 'left';
                 agColumn.headerComponent = GlobalCheckBox
             }

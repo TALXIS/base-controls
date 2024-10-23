@@ -13,7 +13,7 @@ export class Filtering extends GridDependency {
             }
             const expression = await condition.getExpression();
             if (condition.isAppliedToDataset || condition.isRemoved) {
-                filterExpression.conditions = this._filterExpression.conditions.filter(cond => this._getColumnKeyFromCondition(cond) !== condition.column.key);
+                filterExpression.conditions = this._filterExpression.conditions.filter(cond => this._getColumnKeyFromCondition(cond) !== condition.column.name);
             }
             if (!condition.isRemoved) {
                 filterExpression.conditions.push(expression)
@@ -30,7 +30,7 @@ export class Filtering extends GridDependency {
     }
 
     public async condition(column: IGridColumn): Promise<Condition> {
-        const columnKey = column.key
+        const columnKey = column.name
         if (!this._conditions.get(columnKey)) {
             this._conditions.set(columnKey, new Condition(this._grid, column))
         }
@@ -40,14 +40,14 @@ export class Filtering extends GridDependency {
                     return async () => {
                         const saveResult = await target.save();
                         if (saveResult) {
-                            this._conditions.delete(target.column.key);
+                            this._conditions.delete(target.column.name);
                             this._dataset.refresh();
                         }
                         return saveResult;
                     };
                 }
                 if(prop === 'clear') {
-                    this._conditions.delete(target.column.key);
+                    this._conditions.delete(target.column.name);
                 }
                 //@ts-ignore
                 if (typeof target[prop] === 'function') {
