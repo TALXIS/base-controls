@@ -30,7 +30,6 @@ export const ReadOnlyCell = (props: ICellProps) => {
     const theme = useTheme();
     const styles = React.useMemo(() => getReadOnlyCellStyles(theme), [theme]);
     const selection = useSelectionController();
-    const requireLevel = record.getRequiredLevel?.(column.name);
     const notifications = record.ui?.getNotifications(column.name);
     const notificationRef = React.useRef<INotificationsRef>(null);
 

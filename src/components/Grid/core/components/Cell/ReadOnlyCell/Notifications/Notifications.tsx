@@ -87,10 +87,6 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
         setSelectedNotification(notification);
     }
 
-    const onRenderButton = () => {
-
-    }
-
     return <div className={`${styles.root}${props.className ? ` ${props.className}` : ''}`}>
         <ThemeProvider theme={overridenTheme} applyTo="none">
             <CommandBar theme={overridenTheme} id={iconId} componentRef={commandBarRef} items={notifications.map(x => {
