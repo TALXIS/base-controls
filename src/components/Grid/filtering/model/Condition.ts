@@ -1,10 +1,9 @@
-import { Attribute } from "@talxis/client-libraries";
+import { Attribute, MemoryDataProvider } from "@talxis/client-libraries";
 import { DatasetConditionOperator } from "../../core/enums/ConditionOperator";
 import { DataType } from "../../core/enums/DataType";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
 import { Grid } from "../../core/model/Grid";
 import { GridDependency } from "../../core/model/GridDependency";
-import { ColumnValidation } from "../../validation/model/ColumnValidation";
 import { FilteringUtils } from "../utils/FilteringUtilts";
 
 export class Condition extends GridDependency {
@@ -151,8 +150,16 @@ export class Condition extends GridDependency {
                 if(this._conditionUtils.operator(this.operator.get()).doesNotAllowValue) {
                     return true;
                 }
-                const [result, errorMessage] = await new ColumnValidation(this._grid, this._column, true).validate(await this.value.get());
-                return result;
+                const memoryProvider = new MemoryDataProvider([{
+                    [this._column.name]: await this.value.get()
+                }], [this._column], {
+                    entityMetadata: {
+                        PrimaryIdAttribute: this._column.name
+                    }
+                });
+                const record = memoryProvider.refresh()[0];
+                record.setRequiredLevel('required', this.column.name);
+                return record.isValid(this._column.name).result
             }
         }
     }

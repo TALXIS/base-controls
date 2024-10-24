@@ -9,7 +9,6 @@ import { Constants, FileAttribute, IRecord } from '@talxis/client-libraries';
 import { ReadOnlyOptionSet } from './ReadOnlyOptionSet/ReadOnlyOptionSet';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { DataType } from '../../../enums/DataType';
-import { useColumnValidationController } from '../../../../validation/controllers/useRecordValidationController';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { useSelectionController } from '../../../../selection/controllers/useSelectionController';
 import { ICellRendererParams } from '@ag-grid-community/core';
@@ -32,6 +31,8 @@ export const ReadOnlyCell = (props: ICellProps) => {
     const selection = useSelectionController();
     const notifications = record.ui?.getNotifications(column.name);
     const notificationRef = React.useRef<INotificationsRef>(null);
+    //TODO: only do this if editable
+    const validation = record.isValid?.(column.name)
 
     const MemoizedNotifications = React.useMemo(() => {
         return React.memo(Notifications, (prevProps, nextProps) => {
@@ -50,11 +51,6 @@ export const ReadOnlyCell = (props: ICellProps) => {
         }
     }, 10)
 
-    const [isValid, errorMessage] = useColumnValidationController({
-        column: column,
-        record: record,
-    });
-
     debounceNotificationRemeasure();
 
     const shouldShowNotEditableNotification = (): boolean => {
@@ -69,7 +65,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
         if (notifications && notifications.length > 0) {
             count++
         }
-        if (!isValid) {
+        if (validation?.result === false) {
             count++;
         }
         if (shouldShowNotEditableNotification()) {
@@ -79,7 +75,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     }
 
     const shouldRenderNotificationsWrapper = (): boolean => {
-        if (!isValid) {
+        if (validation?.result === false) {
             return true;
         }
         if (shouldShowNotEditableNotification()) {
@@ -123,7 +119,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     return (
         <div style={{
             '--test': `${calculateNotificationsWrapperMinWidth()}px`
-        } as React.CSSProperties} className={styles.root} data-is-valid={isValid}>
+        } as React.CSSProperties} className={styles.root} data-is-valid={!validation || validation.result === true}>
             <div className={styles.cellContentWrapper}>
                 <div className={styles.cellContent}>
                     <InternalReadOnlyCell {...props} />
@@ -134,14 +130,14 @@ export const ReadOnlyCell = (props: ICellProps) => {
                     {notifications && notifications.length > 0 &&
                         <MemoizedNotifications className={styles.notifications} ref={notificationRef} notifications={notifications} />
                     }
-                    {!isValid &&
+                    {validation?.result === false &&
                         <MemoizedNotifications notifications={[
                             {
                                 notificationLevel: 'ERROR',
                                 messages: [],
                                 iconName: 'Error',
                                 uniqueId: column.name,
-                                title: errorMessage,
+                                title: validation.errorMessages[0],
                                 compact: true
                             }
                         ]} />

@@ -19,6 +19,7 @@ export const useSave = (): ISave => {
     const labels = grid.labels;
     const controller = useRecordUpdateServiceController();
     const [isSaving, setIsSaving] = useState<boolean>(false);
+    const hasInvalidRecords = grid.dataset.hasInvalidRecords?.() ?? false;
 
     const save = async (): Promise<boolean> => {
         setIsSaving(true);
@@ -37,7 +38,7 @@ export const useSave = (): ISave => {
         }
         if (controller.isDirty) {
             return {
-                disabled: (controller.hasInvalidRecords || grid.props.parameters.ChangeEditorMode?.error) ? true : false,
+                disabled: (hasInvalidRecords || grid.props.parameters.ChangeEditorMode?.error) ? true : false,
                 iconName: 'Save',
                 text: labels["saving-save"]()
 

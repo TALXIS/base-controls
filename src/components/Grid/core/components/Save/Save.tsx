@@ -10,9 +10,10 @@ export const Save = () => {
     const grid = useGridInstance();
     const labels = grid.labels;
     const styles = getSaveStyles();
-    const { isDirty, updatedRecords, hasInvalidRecords, clearAll } = useRecordUpdateServiceController();
+    const { isDirty, updatedRecords, clearAll } = useRecordUpdateServiceController();
     const { isSaving, saveBtnProps, save } = useSave();
     const [changeEditorOpened, setChangeEditorOpened] = useState<boolean>(false);
+    const hasInvalidRecords = grid.dataset.hasInvalidRecords?.() ?? false;
 
     const onMessageClick = () => {
         if (!isDirty) {

@@ -7,11 +7,11 @@ import { IMultiSelectOptionSet } from "../../../../../MultiSelectOptionSet/inter
 import { IOptionSet } from "../../../../../OptionSet/interfaces";
 import { ITextField } from "../../../../../TextField/interfaces";
 import { ITwoOptions } from "../../../../../TwoOptions/interfaces";
-import { ColumnValidation } from "../../../../validation/model/ColumnValidation";
 import { DataType } from "../../../enums/DataType";
 import { GridDependency } from "../../../model/GridDependency";
 import { IControlProps } from "../Component";
 import { Attribute } from "@talxis/client-libraries";
+import { IGridColumn } from "../../../interfaces/IGridColumn";
 
 const debounce = (func: (...args: any[]) => Promise<any>, wait: number) => {
     let timeout: NodeJS.Timeout | null = null;
@@ -37,8 +37,10 @@ export class Component extends GridDependency {
     private static _lookupSavedQueriesCache = new Map<string, Promise<ComponentFramework.WebApi.Entity>>;
 
     public async getControlProps(props: IControlProps): Promise<IControl<any, any, any, any>> {
-        const { column, value, onNotifyOutputChanged, formattedValue } = { ...props };
-        const [isValid, validationErrorMessage] = new ColumnValidation(this._grid, props.column).validate(value);
+        const { column, onNotifyOutputChanged, record} = { ...props };
+        const value = this._getComponentValue(column, record.getValue(column.name));
+        const formattedValue = record.getFormattedValue(column.name);
+        const validation = record.isValid?.(column.name);
         const onOverrideControlProps = props?.onOverrideControlProps ?? ((props: IControl<any, any, any, any>) => props);
         const attributeName = Attribute.GetNameFromAlias(column.name);
         switch (column.dataType) {
@@ -82,11 +84,11 @@ export class Component extends GridDependency {
                                 Targets: targets,
                                 DisplayName: displayName
                             },
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error: validation?.result === false,
+                            errorMessage: validation?.errorMessages[0] ?? "",
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
+                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
 
                 } as ILookup;
                 return onOverrideControlProps(result);
@@ -99,14 +101,14 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: twoOptionsValue === true ? true : false,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error: validation?.result === false,
+                            errorMessage: validation?.errorMessages[0] ?? "",
                             attributes: {
                                 Options: options
                             }
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
+                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
                 } as ITwoOptions)
             }
             case DataType.OPTIONSET: {
@@ -117,14 +119,14 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error:  validation?.result === false,
+                            errorMessage: validation?.errorMessages[0] ?? "",
                             attributes: {
                                 Options: options
                             }
                         },
                     },
-                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
+                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
                 } as IOptionSet);
             }
             case DataType.MULTI_SELECT_OPTIONSET: {
@@ -135,14 +137,14 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error:  validation?.result === false,
+                            errorMessage: validation?.errorMessages[0] ?? "",
                             attributes: {
                                 Options: options
                             }
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
+                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
                 } as IMultiSelectOptionSet);
             }
             case DataType.DATE_AND_TIME_DATE_AND_TIME:
@@ -155,15 +157,15 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: date.isValid() ? date.toDate() : dateTimeValue,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error: validation?.result === false,
+                            errorMessage: validation?.errorMessages[0] ?? "",
                             attributes: {
                                 Behavior: metadata.Attributes.get(attributeName).Behavior,
                                 Format: column.dataType
                             }
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
+                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
                 } as IDateTime);
             }
             case DataType.WHOLE_NONE:
@@ -178,10 +180,10 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: decimalValue ?? null,
-                            error: !isValid,
+                            error: validation?.result === false,
                             //formatted value is only used for currency => there is no way to get the currency symbol so the formatCurrency method is useless
                             formatted: formattedValue,
-                            errorMessage: validationErrorMessage,
+                            errorMessage: validation?.errorMessages[0] ?? "",
                             type: column.dataType,
                             attributes: {
                                 Precision: precision
@@ -191,7 +193,7 @@ export class Component extends GridDependency {
                             raw: true,
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
+                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
 
                 } as IDecimal);
             }
@@ -207,11 +209,11 @@ export class Component extends GridDependency {
                         },
                         value: {
                             raw: value,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage
+                            error:  validation?.result === false,
+                            errorMessage: validation?.errorMessages[0] ?? ""
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
+                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
                 } as ITextField);
             }
         }
@@ -235,6 +237,62 @@ export class Component extends GridDependency {
                         continue;
                     }
                 }
+            }
+        }
+        return value;
+    }
+
+    private _getComponentValue(column: IGridColumn, value: any) {
+        switch(column.dataType) {
+            case DataType.TWO_OPTIONS: {
+                value = value === '1' ? true : false
+                break;
+            }
+            case DataType.OPTIONSET: {
+                value = value ? parseInt(value) : null;
+                break;
+
+            }
+            case DataType.MULTI_SELECT_OPTIONSET: {
+                value = value ? value.split(',').map((value: string) => parseInt(value)) : null;
+                break;
+            }
+            case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER:
+            case DataType.LOOKUP_OWNER: {
+                if(value && !Array.isArray(value)) {
+                    value = [value];
+                }
+                value = value?.map((x: any) => {
+                    return {
+                        entityType: x.etn,
+                        id: x.id.guid,
+                        name: x.name
+                    }
+                })
+                break;
+            }
+        }
+        return value;
+    }
+
+    private _getRecordValue(column: IGridColumn, value: any): any {
+        switch (column.dataType) {
+            case DataType.TWO_OPTIONS: {
+                value = value === true ? '1' : '0';
+                break;
+            }
+            case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER:
+            case DataType.LOOKUP_OWNER: {
+                value = value?.map((x: any) => {
+                    return {
+                        entityName: x.entityType,
+                        name: x.name,
+                        id: x.id
+                    }
+                })?.[0];
+                break;
             }
         }
         return value;

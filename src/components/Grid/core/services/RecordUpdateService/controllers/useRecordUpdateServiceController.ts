@@ -3,7 +3,6 @@ import { IUpdatedRecord } from "../model/RecordUpdateService";
 
 interface IRecordUpdateServiceController {
     isDirty: boolean,
-    hasInvalidRecords: boolean
     updatedRecords: IUpdatedRecord[];
     saveAll: () => Promise<boolean>;
     clearAll: () => void,
@@ -19,7 +18,6 @@ export const useRecordUpdateServiceController = (): IRecordUpdateServiceControll
     
     return {
         isDirty: recordUpdateService.isDirty,
-        hasInvalidRecords: recordUpdateService.hasInvalidRecords,
         updatedRecords: [...recordUpdateService.updatedRecords.values()],
         saveAll: () => recordUpdateService.saveAll(),
         clearAll: () => recordUpdateService.clearAll(),

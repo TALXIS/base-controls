@@ -6,7 +6,7 @@ import { TextField } from "@talxis/react-components";
 import { datasetControlTranslations } from "./translations";
 import { getDatasetControlStyles } from "./styles";
 import { IDatasetControl } from "./interfaces";
-import { useRerender } from "./hooks/useRerender";
+import { useRerender } from "../../hooks/useRerender";
 
 export const DatasetControl = (props: IDatasetControl) => {
     const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);

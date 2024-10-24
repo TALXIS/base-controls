@@ -1,13 +1,12 @@
 import equal from "fast-deep-equal/es6";
 import { cloneDeep } from "lodash";
 import numeral from "numeral";
-import { ColumnValidation } from "../../../../validation/model/ColumnValidation";
 import { DataType } from "../../../enums/DataType";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 import { IColumn, IRecord, Numeral } from "@talxis/client-libraries";
 
-export interface IUpdatedRecord extends Omit<IRecord, 'save'> {
+export interface IUpdatedRecord extends Omit<IRecord, 'save' | 'isValid'> {
     columns: Map<string, IColumn>,
     isValid: (columnName: string) => boolean,
     getOriginalValue: (columnName: string) => any;
@@ -68,16 +67,6 @@ export class RecordUpdateService extends GridDependency {
         return this._updatedRecords.size > 0;
     }
 
-    public get hasInvalidRecords() {
-        return [...this._updatedRecords.values()].find(x => {
-            for(const column of x.columns.values()) {
-                if(!x.isValid(column.name)) {
-                    return true;
-                }
-            }
-            return false;
-        }) ? true : false;
-    }
 
     public record(recordId: string) {
         return {
@@ -117,8 +106,8 @@ export class RecordUpdateService extends GridDependency {
                             if(!column) {
                                 return true;
                             }
-                            const [result, message] = new ColumnValidation(this._grid, column).validate(this._internalRecordMap.get(recordId)?.getValue(columnName)!)
-                            return result;
+                            const validation = this._internalRecordMap.get(recordId)!.isValid?.(columnName);
+                            return validation?.result ?? true;
                         },
                         clear: () => {
                             const updatedRecord = this._updatedRecords.get(recordId);
