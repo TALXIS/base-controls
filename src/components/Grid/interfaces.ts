@@ -1,23 +1,13 @@
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { ITranslation } from "../../hooks";
-import { IDatasetProperty, IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
+import { IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
 import { gridTranslations } from "./translations";
+import { IDataset } from "@talxis/client-libraries";
 
 
 export interface IGrid extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof gridTranslations>>, AgGridReactProps> {
 
-}
-
-export interface IEntityColumn extends ComponentFramework.PropertyHelper.DataSetApi.Column {
-    isResizable?: boolean;
-    isFilterable?: boolean;
-    isEditable?: boolean;
-    isRequired?: boolean;
-}
-export interface IEntityRecord extends ComponentFramework.PropertyHelper.DataSetApi.EntityRecord {
-    setValue: (columnName: string, value: any) => void;
-    save: () => Promise<void>;
 }
 
 export interface IGridParameters extends IParameters {
@@ -30,7 +20,7 @@ export interface IGridParameters extends IParameters {
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;
-    Grid: IDatasetProperty;
+    Grid: IDataset
 }
 
 export interface IGridOutputs extends IOutputs {

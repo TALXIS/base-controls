@@ -1,11 +1,11 @@
+import { IRecord } from "@talxis/client-libraries";
 import { useGridInstance } from "../../core/hooks/useGridInstance";
-import { IEntityRecord } from "../../interfaces";
 
 interface ISelectionController {
     type: "multiple" | "single" | undefined;
     selectedRecordIds: string[];
     allRecordsSelected: boolean;
-    toggle: (record: IEntityRecord, state: boolean) => void;
+    toggle: (record: IRecord, state: boolean) => void;
     clear: () => void;
     selectAll: () => void;
 }
@@ -23,7 +23,7 @@ export const useSelectionController = (): ISelectionController => {
         type: selection.type,
         selectedRecordIds: selection.selectedRecordIds,
         allRecordsSelected: selection.allRecordsSelected,
-        toggle: (record: IEntityRecord, state: boolean) => renderDecorator(() => selection.toggle(record, state)),
+        toggle: (record: IRecord, state: boolean) => renderDecorator(() => selection.toggle(record, state)),
         clear: () => renderDecorator(() => selection.clear()),
         selectAll: () => renderDecorator(() => selection.selectAll()),
     };

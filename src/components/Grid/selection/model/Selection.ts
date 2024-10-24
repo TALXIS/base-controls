@@ -1,10 +1,11 @@
+import { IRecord } from "@talxis/client-libraries";
 import { GridDependency } from "../../core/model/GridDependency";
 
 export class Selection extends GridDependency {
     private _selectedRecordIdsSet: Set<string> = new Set<string>();
     private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-    public async toggle(record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord, newState: boolean, clearExistingSelection?: boolean, disableDebounce?: boolean): Promise<void> {
+    public async toggle(record: IRecord, newState: boolean, clearExistingSelection?: boolean, disableDebounce?: boolean): Promise<void> {
         const recordId = record.getRecordId();
         if(!this.debounceTimer) {
             this._selectedRecordIdsSet = new Set(this.selectedRecordIds);

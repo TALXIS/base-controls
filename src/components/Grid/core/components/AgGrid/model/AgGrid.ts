@@ -1,8 +1,10 @@
-import { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
+import { ColDef, EditableCallbackParams, GridApi, IRowNode } from "@ag-grid-community/core";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 import { DataType } from "../../../enums/DataType";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
+import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
+import { IRecord } from "@talxis/client-libraries";
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
@@ -15,23 +17,23 @@ export class AgGrid extends GridDependency {
         const agColumns: ColDef[] = [];
         for (const column of this._grid.columns) {
             const agColumn: ColDef = {
-                colId: column.key,
-                field: column.key,
+                colId: column.name,
+                field: column.name,
                 headerName: column.displayName,
                 hide: column.isHidden,
-                initialWidth: column.width,
-                sortable: column.isSortable,
-                editable: column.isEditable,
+                initialWidth: column.visualSizeFactor,
+                sortable: !column.disableSorting,
+                editable: (p) => this._isColumnEditable(column, p), 
                 resizable: column.isResizable,
                 suppressMovable: this._grid.props.parameters.ChangeEditorMode ? true : undefined,
                 autoHeaderHeight: true,
-                suppressSizeToFit: column.key === '__checkbox',
+                suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
                 cellClass: this._getCellClassName(column),
                 valueFormatter: (p) => {
-                    return p.data.getFormattedValue(column.key)
+                    return p.data.getFormattedValue(column.name)
                 },
                 valueGetter: (p) => {
-                    return p.data.getValue(column.key)
+                    return p.data.getValue(column.name)
                 },
                 cellRendererParams: {
                     baseColumn: column
@@ -41,7 +43,7 @@ export class AgGrid extends GridDependency {
                 },
                 headerComponentParams: {
                     baseColumn: column
-                },     
+                },
                 suppressKeyboardEvent: (params) => {
                     if (params.event.key !== 'Enter' || params.api.getEditingCells().length === 0) {
                         return false;
@@ -67,7 +69,7 @@ export class AgGrid extends GridDependency {
         return agColumns;
     }
     public getTotalColumnsWidth() {
-        if(!this._gridApi) {
+        if (!this._gridApi) {
             return 0;
         }
         let width = 0;
@@ -92,7 +94,7 @@ export class AgGrid extends GridDependency {
             newValue: true
         });
         this._gridApi.refreshCells({
-            columns: ['__checkbox'],
+            columns: [CHECKBOX_COLUMN_KEY],
             force: true
         })
     }
@@ -108,5 +110,16 @@ export class AgGrid extends GridDependency {
             }
         }
         return 'talxis-cell-align-left';
+    }
+
+    private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
+        if (!column.isEditable || params.data?.ui?.isLoading(column.name) === true) {
+            return false;
+        }
+        const isEditable = params.data?.ui?.isEditable(column.name);
+        if (isEditable === undefined) {
+            return true;
+        }
+        return isEditable;
     }
 }

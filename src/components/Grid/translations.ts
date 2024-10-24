@@ -76,5 +76,6 @@ export const gridTranslations = {
     "validation-number": {1029: 'Neplatný formát čísla.', 1033: 'Invalid Number format.'},
     "no-name": {1029: '(Bez názvu)', 1033: '(No Name)'},
     "download": {1029: 'Stáhnout', 1033: 'Download'},
+    "value-not-editable": {1029: 'Tuto hodnotu nelze upravit.', 1033: 'This value cannot be edited.'}
 };
    

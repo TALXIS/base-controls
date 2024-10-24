@@ -3,10 +3,11 @@ import { Grid } from '../../../../../../../Grid';
 import { useGridInstance } from '../../../../../../hooks/useGridInstance';
 import { IUpdatedRecord } from '../../../../../../services/RecordUpdateService/model/RecordUpdateService';
 import { Text } from '@fluentui/react';
-import { IEntityColumn, IEntityRecord, IGrid, IGridParameters } from '../../../../../../../interfaces';
+import { IGrid, IGridParameters } from '../../../../../../../interfaces';
 import { Icon } from '@fluentui/react';
 import { getRecordGridStyles } from './styles';
 import { useTheme } from '@fluentui/react';
+import { IColumn, IRecord } from '@talxis/client-libraries';
 
 interface IRecordGrids {
     record: IUpdatedRecord;
@@ -42,6 +43,9 @@ export const RecordGrids = (props: IRecordGrids) => {
                 type: 'static',
                 raw: 'none'
             },
+            EnableOptionSetColors: {
+                raw: grid.parameters.EnableOptionSetColors?.raw ?? false
+            },
             Grid: {
                 ...grid.dataset,
                 sorting: [],
@@ -68,7 +72,7 @@ export const RecordGrids = (props: IRecordGrids) => {
     }
 
     const invalidColumns = (() => {
-        const columns: IEntityColumn[] = [];
+        const columns: IColumn[] = [];
         for(const column of record.columns.values()) {
             if(!record.isValid(column.name)) {
                 columns.push(column);
@@ -79,7 +83,8 @@ export const RecordGrids = (props: IRecordGrids) => {
 
     const hasInvalidColumn = invalidColumns.length > 0;
 
-    const getOriginalRecord = (record: IUpdatedRecord): IEntityRecord => {
+    const getOriginalRecord = (record: IUpdatedRecord): IRecord => {
+        //@ts-ignore
         return {
             getFormattedValue: (columnKey: string) => record.getOriginalFormattedValue(columnKey),
             getRecordId: () => record.getRecordId(),
@@ -99,7 +104,8 @@ export const RecordGrids = (props: IRecordGrids) => {
             }
         }
     }
-    const getUpdatedRecord = (record: IUpdatedRecord): IEntityRecord => {
+    const getUpdatedRecord = (record: IUpdatedRecord): IRecord => {
+        //@ts-ignore
         return {
             getFormattedValue: (columnKey: string) => record.getFormattedValue(columnKey),
             getRecordId: () => record.getRecordId(),

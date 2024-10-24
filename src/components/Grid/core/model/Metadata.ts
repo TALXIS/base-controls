@@ -1,20 +1,23 @@
-import { IGridColumn } from "../interfaces/IGridColumn";
+import { Attribute } from "@talxis/client-libraries";
 import { GridDependency } from "./GridDependency";
 
 export class Metadata extends GridDependency {
-    public async get(column: IGridColumn): Promise<ComponentFramework.PropertyHelper.EntityMetadata> {
-        if(column.entityAliasName) {
-            const linkedEntity = this._grid.dataset.linking.getLinkedEntities().find(x => x.alias === column.entityAliasName)!;
-            return await this._grid.pcfContext.utils.getEntityMetadata(linkedEntity.name, [column.attributeName]);
+    public async get(columnName: string): Promise<ComponentFramework.PropertyHelper.EntityMetadata> {
+        const entityAliasName = Attribute.GetLinkedEntityAlias(columnName);
+        const attributeName = Attribute.GetNameFromAlias(columnName);
+        if(entityAliasName) {
+            const linkedEntity = this._grid.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!;
+            return await this._grid.pcfContext.utils.getEntityMetadata(linkedEntity.name, [attributeName]);
         }
         else {
-            return await this._grid.pcfContext.utils.getEntityMetadata(this._grid.dataset.getTargetEntityType(), [column.attributeName]);
+            return await this._grid.pcfContext.utils.getEntityMetadata(this._grid.dataset.getTargetEntityType(), [attributeName]);
         }
     }
-    public async getOptions(column: IGridColumn): Promise<[number | boolean, ComponentFramework.PropertyHelper.OptionMetadata[]]> {
-        const columnMetadata = await this.get(column);
-        const options = columnMetadata.Attributes.get(column.attributeName).attributeDescriptor.OptionSet as ComponentFramework.PropertyHelper.OptionMetadata[]
-        const defaultValue = columnMetadata.Attributes.get(column.attributeName).DefaultFormValue as number | boolean;
+    public async getOptions(columnName: string): Promise<[number | boolean, ComponentFramework.PropertyHelper.OptionMetadata[]]> {
+        const columnMetadata = await this.get(columnName);
+        const attributeName = Attribute.GetNameFromAlias(columnName);
+        const options = columnMetadata.Attributes.get(attributeName).attributeDescriptor.OptionSet as ComponentFramework.PropertyHelper.OptionMetadata[]
+        const defaultValue = columnMetadata.Attributes.get(attributeName).DefaultFormValue as number | boolean;
         return [defaultValue, options];
     }
 }

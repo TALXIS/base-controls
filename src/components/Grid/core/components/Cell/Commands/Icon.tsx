@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import { memo } from 'react';
 import 'external-svg-loader';
 import { commandStyles } from './styles';
 

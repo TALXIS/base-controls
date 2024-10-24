@@ -1,25 +1,25 @@
 import * as React from 'react';
-import { ILinkProps } from '@fluentui/react';
+import { ILinkProps, Shimmer } from '@fluentui/react';
 import { Link } from '@fluentui/react';
 import { Text } from '@fluentui/react';
 import { getReadOnlyCellStyles } from './styles';
 import { Commands } from '../Commands/Commands';
-import { Checkbox, Icon, TooltipHost, useTheme, Image } from '@fluentui/react';
-import { FileAttribute } from '@talxis/client-libraries';
+import { Checkbox, Icon, useTheme, Image } from '@fluentui/react';
+import { Constants, FileAttribute, IRecord } from '@talxis/client-libraries';
 import { ReadOnlyOptionSet } from './ReadOnlyOptionSet/ReadOnlyOptionSet';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { DataType } from '../../../enums/DataType';
 import { useColumnValidationController } from '../../../../validation/controllers/useRecordValidationController';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { useSelectionController } from '../../../../selection/controllers/useSelectionController';
-import { IEntityRecord } from '../../../../interfaces';
 import { ICellRendererParams } from '@ag-grid-community/core';
-import { RIBBON_COLUMN_KEY } from '../../../../constants';
-import { useRerender } from '../../../hooks/useRerender';
+import { CHECKBOX_COLUMN_KEY } from '../../../../constants';
+import { INotificationsRef, Notifications } from './Notifications/Notifications';
+import { useDebouncedCallback } from 'use-debounce';
 
 interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
-    data: IEntityRecord;
+    data: IRecord;
     [key: string]: any;
 }
 
@@ -28,29 +28,138 @@ export const ReadOnlyCell = (props: ICellProps) => {
     const column = props.baseColumn;
     const record = props.data;
     const theme = useTheme();
-    const styles = getReadOnlyCellStyles(theme);
-    const tooltipId = React.useMemo(() => Math.random().toString(), []);
+    const styles = React.useMemo(() => getReadOnlyCellStyles(theme), [theme]);
+    const selection = useSelectionController();
+    const notifications = record.ui?.getNotifications(column.name);
+    const notificationRef = React.useRef<INotificationsRef>(null);
+
+    const MemoizedNotifications = React.useMemo(() => {
+        return React.memo(Notifications, (prevProps, nextProps) => {
+            const previousIds = prevProps.notifications.map(x => x.uniqueId).join(';');
+            const nextIds = nextProps.notifications.map(x => x.uniqueId).join(';');
+            if (previousIds !== nextIds) {
+                return false;
+            }
+            return true;
+        });
+    }, []);
+
+    const debounceNotificationRemeasure = useDebouncedCallback(() => {
+        if (notifications && notifications.length > 0) {
+            notificationRef.current?.remeasureCommandBar();
+        }
+    }, 10)
 
     const [isValid, errorMessage] = useColumnValidationController({
         column: column,
         record: record,
-    })
+    });
+
+    debounceNotificationRemeasure();
+
+    const shouldShowNotEditableNotification = (): boolean => {
+        if (column.isEditable && record.ui?.isEditable(column.name) === false) {
+            return true;
+        }
+        return false;
+    }
+
+    const calculateNotificationsWrapperMinWidth = (): number => {
+        let count = 0;
+        if (notifications && notifications.length > 0) {
+            count++
+        }
+        if (!isValid) {
+            count++;
+        }
+        if (shouldShowNotEditableNotification()) {
+            count++;
+        }
+        return count * 40;
+    }
+
+    const shouldRenderNotificationsWrapper = (): boolean => {
+        if (!isValid) {
+            return true;
+        }
+        if (shouldShowNotEditableNotification()) {
+            return true;
+        }
+        if (notifications && notifications.length > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    React.useEffect(() => {
+        const resizeObserver = new ResizeObserver(() => {
+            debounceNotificationRemeasure();
+        })
+        resizeObserver.observe(props.eGridCell);
+    }, []);
+
+
+    if (record.ui?.isLoading(column.name)) {
+        return <Shimmer className={styles.loading} />
+    }
+    switch (column.name) {
+        case CHECKBOX_COLUMN_KEY: {
+            return <div className={styles.cellContent}>
+                <Checkbox
+                    checked={props.node.isSelected()}
+                    onChange={(e, checked) => {
+                        e?.stopPropagation()
+                        selection.toggle(record, checked!)
+                    }} />
+            </div>
+        }
+        case Constants.RIBBON_BUTTONS_COLUMN_NAME: {
+            return <div className={styles.cellContent}>
+                <Commands record={record} />
+            </div>
+        }
+    }
 
     return (
-        <TooltipHost
-            id={tooltipId}
-            content={!isValid && !grid.loading ? errorMessage : undefined}>
-            <div className={styles.root} data-is-valid={isValid}>
+        <div style={{
+            '--test': `${calculateNotificationsWrapperMinWidth()}px`
+        } as React.CSSProperties} className={styles.root} data-is-valid={isValid}>
+            <div className={styles.cellContentWrapper}>
                 <div className={styles.cellContent}>
                     <InternalReadOnlyCell {...props} />
                 </div>
-                {!isValid && <Icon styles={{
-                    root: {
-                        color: theme.semanticColors.errorIcon
-                    }
-                }} iconName='Error' />}
             </div>
-        </TooltipHost>
+            {shouldRenderNotificationsWrapper() &&
+                <div className={styles.notificationsWrapper}>
+                    {notifications && notifications.length > 0 &&
+                        <MemoizedNotifications className={styles.notifications} ref={notificationRef} notifications={notifications} />
+                    }
+                    {!isValid &&
+                        <MemoizedNotifications notifications={[
+                            {
+                                notificationLevel: 'ERROR',
+                                messages: [],
+                                iconName: 'Error',
+                                uniqueId: column.name,
+                                title: errorMessage,
+                                compact: true
+                            }
+                        ]} />
+                    }
+                    {
+                        shouldShowNotEditableNotification() &&
+                        <MemoizedNotifications className={styles.uneditableNotification} notifications={[{
+                            iconName: 'Uneditable',
+                            notificationLevel: 'RECOMMENDATION',
+                            uniqueId: column.name,
+                            title: grid.labels['value-not-editable'](),
+                            compact: true,
+                            messages: []
+                        }]} />
+                    }
+                </div>
+            }
+        </div>
     )
 };
 
@@ -59,33 +168,14 @@ const InternalReadOnlyCell = (props: ICellProps) => {
     const column = props.baseColumn;
     const theme = useTheme();
     const styles = getReadOnlyCellStyles(theme);
-    const selection = useSelectionController();
-    const record: IEntityRecord = (() => {
+    const record: IRecord = (() => {
         //this is so we can load the updated record values from state
         const updatedRecord = grid.recordUpdateService.record(props.data.getRecordId()).get() as any;
         return updatedRecord ?? props.data;
     })();
-    const formattedValue = record.getFormattedValue(column.key);
-    const originalSetValue = record.setValue
+    const formattedValue = record.getFormattedValue(column.name);
 
-    React.useEffect(() => {
-        record.setValue = (columnName, value) => {
-            originalSetValue(columnName, value);
-            grid.pcfContext.factory.requestRender();
-            //so changes propagate when changing values
-            //we cannot guarantee a rerender from above because of performance optimizations
-            const node = props.api.getRowNode(record.getRecordId());
-            if (!node) {
-                return;
-            }
-            props.api.refreshCells({
-                rowNodes: [node],
-                force: true
-            })
-        }
-    }, []);
-
-    const renderLink = (props: ILinkProps, formattedValue: string): JSX.Element => {
+    const renderLink = (props: ILinkProps, formattedValue: string | null): JSX.Element => {
         switch (column.dataType) {
             case DataType.LOOKUP_OWNER:
             case DataType.LOOKUP_SIMPLE:
@@ -94,6 +184,9 @@ const InternalReadOnlyCell = (props: ICellProps) => {
                     return renderText();
                 }
             }
+        }
+        if (!formattedValue) {
+            return <></>
         }
         return (
             <Link {...props} className={styles.link} title={formattedValue}>
@@ -107,7 +200,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
                 onClick: () => grid.openDatasetItem(record.getNamedReference())
             }, formattedValue);
         }
-        return <Text className={`${styles.text} talxis-cell-text`} title={formattedValue}>{formattedValue}</Text>
+        return <Text className={`${styles.text} talxis-cell-text`} title={formattedValue!}>{formattedValue}</Text>
     }
     const downloadFile = () => {
         const storage = new FileAttribute(grid.pcfContext.webAPI);
@@ -116,7 +209,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
             //@ts-ignore - PowerApps do not follow the typings
             entityName: namedReference.etn ?? namedReference.entityName,
             recordId: record.getRecordId(),
-            fileAttribute: column.key,
+            fileAttribute: column.name,
         }, true)
     }
 
@@ -129,7 +222,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         }
         case DataType.SINGLE_LINE_URL: {
             return renderLink({
-                href: formattedValue,
+                href: formattedValue ?? "",
                 target: '_blank',
                 rel: 'noopener noreferrer'
             }, formattedValue);
@@ -138,7 +231,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         case DataType.LOOKUP_OWNER:
         case DataType.LOOKUP_CUSTOMER: {
             return renderLink({
-                onClick: () => grid.openDatasetItem(record.getValue(column.key) as any)
+                onClick: () => grid.openDatasetItem(record.getValue(column.name) as any)
             }, formattedValue);
         }
         case DataType.FILE: {
@@ -183,17 +276,6 @@ const InternalReadOnlyCell = (props: ICellProps) => {
             return renderText();
         }
         default: {
-            if (column.key === '__checkbox') {
-                return <Checkbox
-                    checked={props.node.isSelected()}
-                    onChange={(e, checked) => {
-                        e?.stopPropagation()
-                        selection.toggle(record, checked!)
-                    }} />
-            }
-            if (column.key === RIBBON_COLUMN_KEY) {
-                return <Commands record={record} />
-            }
             return renderText()
         }
 

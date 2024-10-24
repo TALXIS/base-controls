@@ -1,2 +1,1 @@
-export const CHECKBOX_COLUMN_KEY = '__checkbox';
-export const RIBBON_COLUMN_KEY = '_talxis_gridRibbonButtons';
+export const CHECKBOX_COLUMN_KEY = '__checkbox__virtual';

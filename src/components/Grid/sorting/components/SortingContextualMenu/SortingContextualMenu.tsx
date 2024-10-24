@@ -13,7 +13,6 @@ export interface ISortingContextualMenu extends Omit<IContextualMenuProps, 'item
 }
 
 export const SortingContextualMenu = (props: ISortingContextualMenu) => {
-
     const grid = useGridInstance();
     const labels = grid.labels;
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
@@ -29,7 +28,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
     }, [condition]);
 
     const getTwoOptionsSortLabel = async (isDesc?: boolean) => {
-        const [defaultValue, options] = await grid.metadata.getOptions(column);
+        const [defaultValue, options] = await grid.metadata.getOptions(column.name);
         if(!isDesc) {
             return `${options[0].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[1].Label}`
         }
@@ -73,7 +72,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
             {
                 key: 'sort_asc',
                 checked: column.isSorted && !column.isSortedDescending,
-                disabled: !column.isSortable || column.dataType === DataType.MULTI_SELECT_OPTIONSET,
+                disabled: column.disableSorting || column.dataType === DataType.MULTI_SELECT_OPTIONSET,
                 text: await getLabel(),
                 className: styles.item,
                 iconProps: {
@@ -84,7 +83,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
             {
                 key: 'sort_desc',
                 checked: column.isSorted && column.isSortedDescending,
-                disabled: !column.isSortable || column.dataType === DataType.MULTI_SELECT_OPTIONSET,
+                disabled: column.disableSorting || column.dataType === DataType.MULTI_SELECT_OPTIONSET,
                 text: await getLabel(true),
                 className: styles.item,
                 iconProps: {

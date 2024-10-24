@@ -1,20 +1,19 @@
 import { AgGridReact } from '@ag-grid-community/react';
 import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
 import { ColumnMovedEvent, ColumnResizedEvent, GridApi } from "@ag-grid-community/core";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
-import React from 'react';
 import { useAgGridController } from "./controllers/useAgGridController";
 import { Paging } from "../../../paging/components/Paging/Paging";
 import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
 import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { usePagingController } from '../../../paging/controllers/usePagingController';
-import { CHECKBOX_COLUMN_KEY } from '../../../constants';
-import { IEntityRecord } from '../../../interfaces';
 import { ROW_HEIGHT } from '../../constants';
+import { IRecord } from '@talxis/client-libraries';
+import { CHECKBOX_COLUMN_KEY } from '../../../constants';
 
 export const AgGrid = () => {
     const grid = useGridInstance();
@@ -39,7 +38,7 @@ export const AgGrid = () => {
         }
     }
 
-    const updateColumnOrder = async (e: ColumnMovedEvent<IEntityRecord, any>) => {
+    const updateColumnOrder = async (e: ColumnMovedEvent<IRecord, any>) => {
         if(e.type === 'gridOptionsChanged') {
             return;
         }
@@ -57,12 +56,11 @@ export const AgGrid = () => {
             const bIndex = idIndexMap.has(b.name) ? idIndexMap.get(b.name)! : sortedIds.length;
             return aIndex - bIndex;
         });
-        //@ts-ignore
         grid.dataset.setColumns?.(orderedColumns);
         grid.dataset.paging.loadExactPage(grid.paging.pageNumber);
     }
 
-    const updateColumnVisualSizeFactor = async (e: ColumnResizedEvent<IEntityRecord, any>): Promise<void> => {
+    const updateColumnVisualSizeFactor = async (e: ColumnResizedEvent<IRecord, any>): Promise<void> => {
         if(e.source !== 'uiColumnResized') {
             return;
         }
@@ -78,7 +76,6 @@ export const AgGrid = () => {
                     columns[i].visualSizeFactor = e.column?.getActualWidth()!
                 }
             }
-            //@ts-ignore
             grid.dataset.setColumns?.(columns);
         }, 200);
     }
@@ -126,7 +123,7 @@ export const AgGrid = () => {
                             }
                         }}
                         onCellMouseOver={(e) => {
-                            if (e.colDef.colId === '__checkbox') {
+                            if (e.colDef.colId === CHECKBOX_COLUMN_KEY) {
                                 gridApiRef.current?.setGridOption('suppressRowClickSelection', true)
                             }
                         }}

@@ -16,7 +16,6 @@ export const DatasetControl = (props: IDatasetControl) => {
     const injectedContextRef = useRef(props.context);
     const styles = useMemo(() => getDatasetControlStyles(), []);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    //@ts-ignore - need to edit the types
     dataset._setRenderer(() => rerender());
 
     //we need to have a way to customize the init behavior from above
@@ -25,8 +24,7 @@ export const DatasetControl = (props: IDatasetControl) => {
     })
 
     useMemo(() => {
-        //@ts-ignore - need to edit the types
-        injectedContextRef.current = dataset.injectContext(props.context);
+        injectedContextRef.current = dataset._patchContext(props.context);
     }, [props.context]);
 
     useMemo(() => {
@@ -34,8 +32,7 @@ export const DatasetControl = (props: IDatasetControl) => {
     }, []);
 
     const onSearch = (query?: string) => {
-        //@ts-ignore - need to edit the types
-        dataset.setSearchQuery(query);
+        dataset.setSearchQuery(query ?? "");
         dataset.refresh();
     }
 
@@ -45,7 +42,6 @@ export const DatasetControl = (props: IDatasetControl) => {
                 <TextField
                     className={styles.quickFind}
                     value={query}
-                    //@ts-ignore - displaycollectionanem is string
                     placeholder={`${labels.search()} ${dataset.getMetadata()?.DisplayCollectionName ?? labels.records()}...`}
                     deleteButtonProps={query ? {
                         key: 'delete',
