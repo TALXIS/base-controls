@@ -113,10 +113,10 @@ export class AgGrid extends GridDependency {
     }
 
     private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
-        if (!column.isEditable || params.data?.ui?.isLoading(column.name) === true) {
+        if (!column.isEditable || params.data?.isLoading?.(column.name) === true) {
             return false;
         }
-        const isEditable = params.data?.ui?.isEditable(column.name);
+        const isEditable = params.data?.isDisabled?.(column.name);
         if (isEditable === undefined) {
             return true;
         }

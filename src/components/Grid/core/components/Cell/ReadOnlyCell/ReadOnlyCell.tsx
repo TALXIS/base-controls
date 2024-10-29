@@ -54,7 +54,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     debounceNotificationRemeasure();
 
     const shouldShowNotEditableNotification = (): boolean => {
-        if (column.isEditable && record.ui?.isEditable(column.name) === false) {
+        if (column.isEditable && record.isDisabled?.(column.name) === false) {
             return true;
         }
         return false;
@@ -65,7 +65,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
         if (notifications && notifications.length > 0) {
             count++
         }
-        if (validation?.result === false) {
+        if (validation?.error === false) {
             count++;
         }
         if (shouldShowNotEditableNotification()) {
@@ -75,7 +75,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     }
 
     const shouldRenderNotificationsWrapper = (): boolean => {
-        if (validation?.result === false) {
+        if (validation?.error === false) {
             return true;
         }
         if (shouldShowNotEditableNotification()) {
@@ -95,7 +95,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     }, []);
 
 
-    if (record.ui?.isLoading(column.name)) {
+    if (record.isLoading?.(column.name)) {
         return <Shimmer className={styles.loading} />
     }
     switch (column.name) {
@@ -119,7 +119,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     return (
         <div style={{
             '--test': `${calculateNotificationsWrapperMinWidth()}px`
-        } as React.CSSProperties} className={styles.root} data-is-valid={!validation || validation.result === true}>
+        } as React.CSSProperties} className={styles.root} data-is-valid={!validation || validation.error === true}>
             <div className={styles.cellContentWrapper}>
                 <div className={styles.cellContent}>
                     <InternalReadOnlyCell {...props} />
@@ -130,14 +130,14 @@ export const ReadOnlyCell = (props: ICellProps) => {
                     {notifications && notifications.length > 0 &&
                         <MemoizedNotifications className={styles.notifications} ref={notificationRef} notifications={notifications} />
                     }
-                    {validation?.result === false &&
+                    {validation?.error === true &&
                         <MemoizedNotifications notifications={[
                             {
                                 notificationLevel: 'ERROR',
                                 messages: [],
                                 iconName: 'Error',
                                 uniqueId: column.name,
-                                title: validation.errorMessages[0],
+                                title: validation.errorMessage,
                                 compact: true
                             }
                         ]} />

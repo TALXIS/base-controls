@@ -158,8 +158,8 @@ export class Condition extends GridDependency {
                     }
                 });
                 const record = memoryProvider.refresh()[0];
-                record.setRequiredLevel('required', this.column.name);
-                return record.isValid(this._column.name).result
+                record.setRequiredLevel(this.column.name, 'required');
+                return record.isValid(this._column.name).error
             }
         }
     }

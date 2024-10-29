@@ -107,7 +107,7 @@ export class RecordUpdateService extends GridDependency {
                                 return true;
                             }
                             const validation = this._internalRecordMap.get(recordId)!.isValid?.(columnName);
-                            return validation?.result ?? true;
+                            return validation?.error ?? true;
                         },
                         clear: () => {
                             const updatedRecord = this._updatedRecords.get(recordId);

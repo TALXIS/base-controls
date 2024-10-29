@@ -84,8 +84,8 @@ export class Component extends GridDependency {
                                 Targets: targets,
                                 DisplayName: displayName
                             },
-                            error: validation?.result === false,
-                            errorMessage: validation?.errorMessages[0] ?? "",
+                            error: validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                         }
                     },
                     onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
@@ -101,8 +101,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: twoOptionsValue === true ? true : false,
-                            error: validation?.result === false,
-                            errorMessage: validation?.errorMessages[0] ?? "",
+                            error: validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                             attributes: {
                                 Options: options
                             }
@@ -119,8 +119,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
-                            error:  validation?.result === false,
-                            errorMessage: validation?.errorMessages[0] ?? "",
+                            error:  validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                             attributes: {
                                 Options: options
                             }
@@ -137,8 +137,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
-                            error:  validation?.result === false,
-                            errorMessage: validation?.errorMessages[0] ?? "",
+                            error:  validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                             attributes: {
                                 Options: options
                             }
@@ -157,8 +157,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: date.isValid() ? date.toDate() : dateTimeValue,
-                            error: validation?.result === false,
-                            errorMessage: validation?.errorMessages[0] ?? "",
+                            error: validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                             attributes: {
                                 Behavior: metadata.Attributes.get(attributeName).Behavior,
                                 Format: column.dataType
@@ -180,10 +180,10 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: decimalValue ?? null,
-                            error: validation?.result === false,
+                            error: validation?.error === false,
                             //formatted value is only used for currency => there is no way to get the currency symbol so the formatCurrency method is useless
                             formatted: formattedValue,
-                            errorMessage: validation?.errorMessages[0] ?? "",
+                            errorMessage: validation?.errorMessage ?? "",
                             type: column.dataType,
                             attributes: {
                                 Precision: precision
@@ -209,8 +209,8 @@ export class Component extends GridDependency {
                         },
                         value: {
                             raw: value,
-                            error:  validation?.result === false,
-                            errorMessage: validation?.errorMessages[0] ?? ""
+                            error:  validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? ""
                         }
                     },
                     onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))

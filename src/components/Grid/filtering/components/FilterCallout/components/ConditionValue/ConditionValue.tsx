@@ -47,7 +47,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
             input?.focus()
         }
         if(!firstRenderRef.current) {
-            record.setRequiredLevel('required', column.name)
+            record.setRequiredLevel(column.name, 'required')
         }
         if(firstRenderRef.current) {
             firstRenderRef.current = false;
@@ -56,7 +56,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
 
     useEffect(() => {
         if(!controller.value.valid) {
-            record.setRequiredLevel('required', column.name);
+            record.setRequiredLevel(column.name, 'required');
             rerender();
         }
     }, [controller.value.valid])
