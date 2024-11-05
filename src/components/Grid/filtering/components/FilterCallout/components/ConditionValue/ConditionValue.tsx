@@ -3,7 +3,7 @@ import { Component } from "../../../../../core/components/Component/Component";
 import { IGridColumn } from "../../../../../core/interfaces/IGridColumn";
 import { IColumnFilterConditionController, useColumnFilterConditionController } from "../../../../controller/useColumnFilterConditionController";
 import { ConditionComponentValue } from "./model/ConditionComponentValue";
-import { MemoryDataProvider } from "@talxis/client-libraries";
+import { DataTypes, MemoryDataProvider } from "@talxis/client-libraries";
 import { useRerender } from "../../../../../../../hooks/useRerender";
 
 interface IConditionValue {
@@ -29,10 +29,18 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
 
     const record = useMemo(() => {
         const memoryProvider = new MemoryDataProvider([{
-            [column.name]: conditionComponentValue.get()
-        }], [column], {
+            [column.name]: conditionComponentValue.get(),
+            id: 'id'
+        }], [column, {
+            name: 'id',
+            displayName: '',
+            dataType: DataTypes.SingleLineText,
+            alias: 'id',
+            order: 0,
+            visualSizeFactor: 0
+        }], {
             entityMetadata: {
-                PrimaryIdAttribute: column.name
+                PrimaryIdAttribute: 'id'
             }
         });
         const record = memoryProvider.refresh()[0];
@@ -47,7 +55,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
             input?.focus()
         }
         if(!firstRenderRef.current) {
-            record.setRequiredLevel(column.name, 'required')
+            record.setRequiredLevelExpression(column.name, () => 'required');
         }
         if(firstRenderRef.current) {
             firstRenderRef.current = false;
@@ -56,7 +64,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
 
     useEffect(() => {
         if(!controller.value.valid) {
-            record.setRequiredLevel(column.name, 'required');
+            record.setRequiredLevelExpression(column.name, () => 'required');
             rerender();
         }
     }, [controller.value.valid])

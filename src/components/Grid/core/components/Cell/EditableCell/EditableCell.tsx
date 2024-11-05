@@ -1,10 +1,10 @@
-import * as React from 'react';
 import { DataType } from '../../../enums/DataType';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
-import { useRecordUpdateServiceController } from '../../../services/RecordUpdateService/controllers/useRecordUpdateServiceController';
 import { Component } from '../../Component/Component';
 import { ICellEditorParams } from '@ag-grid-community/core';
 import { IRecord } from '@talxis/client-libraries';
+import { useGridInstance } from '../../../hooks/useGridInstance';
+import { useRerender } from '../../../../../../hooks/useRerender';
 
 interface ICell extends ICellEditorParams {
     baseColumn: IGridColumn;
@@ -12,45 +12,29 @@ interface ICell extends ICellEditorParams {
 }
 
 export const EditableCell = (props: ICell) => {
+    const grid = useGridInstance();
     const column = props.baseColumn;
-    const recordUpdateService = useRecordUpdateServiceController();
-    const mountedRef = React.useRef(true);
-    const hasBeenUpdatedRef = React.useRef<boolean>(false);
     const record = props.data;
-    const valueRef = React.useRef(record.getValue(column.name));
-
-    React.useEffect(() => {
-        return () => {
-            mountedRef.current = false;
-            if (!hasBeenUpdatedRef.current) {
-                return;
-            }
-            recordUpdateService.record(record.getRecordId()).setValue(column.name, valueRef.current)
-        }
-    }, []);
+    const rerender = useRerender();
 
     const onNotifyOutputChanged = (value: any) => {
-        valueRef.current = value;
-        hasBeenUpdatedRef.current = true;
-        if(!mountedRef.current) {
-            recordUpdateService.record(record.getRecordId()).setValue(column.name, valueRef.current)
-            return;
-        }
         switch(column.dataType) {
             case DataType.OPTIONSET:
             case DataType.DATE_AND_TIME_DATE_ONLY: {
                 props.stopEditing();
-                return;
+                break;
             }
             case DataType.LOOKUP_OWNER:
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_CUSTOMER: {
                 if(value?.length > 0) {
                     props.stopEditing();
-                    return;
                 }
+                break;
             }
         }
+        grid.changeTracker.setValue(column.name, value, record)
+        rerender();
     }
 
     return <Component

@@ -151,15 +151,23 @@ export class Condition extends GridDependency {
                     return true;
                 }
                 const memoryProvider = new MemoryDataProvider([{
+                    id: 'id',
                     [this._column.name]: await this.value.get()
-                }], [this._column], {
+                }], [this._column, {
+                    name: 'id',
+                    displayName: '',
+                    dataType: DataType.SINGLE_LINE_TEXT,
+                    alias: 'id',
+                    order: 0,
+                    visualSizeFactor: 0
+                }], {
                     entityMetadata: {
-                        PrimaryIdAttribute: this._column.name
+                        PrimaryIdAttribute: 'id'
                     }
                 });
                 const record = memoryProvider.refresh()[0];
-                record.setRequiredLevel(this.column.name, 'required');
-                return record.isValid(this._column.name).error
+                record.setRequiredLevelExpression(this._column.name, () => 'required');
+                return !record.getColumnInfo(this._column.name).error
             }
         }
     }

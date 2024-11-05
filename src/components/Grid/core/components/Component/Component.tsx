@@ -1,4 +1,3 @@
-import { IParameters } from "../../../../../interfaces/parameters";
 import { DateTime } from "../../../../DateTime/DateTime";
 import { Decimal } from "../../../../Decimal/Decimal";
 import { Lookup } from "../../../../Lookup/Lookup";

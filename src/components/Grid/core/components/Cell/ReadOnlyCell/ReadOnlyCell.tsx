@@ -23,17 +23,22 @@ interface ICellProps extends ICellRendererParams {
 }
 
 export const ReadOnlyCell = (props: ICellProps) => {
-    const grid = useGridInstance();
+    const selection = useSelectionController();
     const column = props.baseColumn;
     const record = props.data;
     const theme = useTheme();
     const styles = React.useMemo(() => getReadOnlyCellStyles(theme), [theme]);
-    const selection = useSelectionController();
-    const notifications = record.ui?.getNotifications(column.name);
-    const notificationRef = React.useRef<INotificationsRef>(null);
-    //TODO: only do this if editable
-    const validation = record.isValid?.(column.name)
 
+    if(column.name === CHECKBOX_COLUMN_KEY) {
+        return <div className={styles.cellContent}>
+        <Checkbox
+            checked={props.node.isSelected()}
+            onChange={(e, checked) => {
+                e?.stopPropagation()
+                selection.toggle(record, checked!)
+            }} />
+    </div>
+    }
     const MemoizedNotifications = React.useMemo(() => {
         return React.memo(Notifications, (prevProps, nextProps) => {
             const previousIds = prevProps.notifications.map(x => x.uniqueId).join(';');
@@ -44,6 +49,12 @@ export const ReadOnlyCell = (props: ICellProps) => {
             return true;
         });
     }, []);
+    
+    const grid = useGridInstance();
+    const notifications = record.getNotifications?.(column.name);
+    const notificationRef = React.useRef<INotificationsRef>(null);
+    //TODO: only do this if editable
+    const validation = record.getColumnInfo(column.name);
 
     const debounceNotificationRemeasure = useDebouncedCallback(() => {
         if (notifications && notifications.length > 0) {
@@ -54,7 +65,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     debounceNotificationRemeasure();
 
     const shouldShowNotEditableNotification = (): boolean => {
-        if (column.isEditable && record.isDisabled?.(column.name) === false) {
+        if (column.isEditable && !record.getColumnInfo(column.name).security.editable) {
             return true;
         }
         return false;
@@ -65,7 +76,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
         if (notifications && notifications.length > 0) {
             count++
         }
-        if (validation?.error === false) {
+        if (validation?.error === true) {
             count++;
         }
         if (shouldShowNotEditableNotification()) {
@@ -75,7 +86,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     }
 
     const shouldRenderNotificationsWrapper = (): boolean => {
-        if (validation?.error === false) {
+        if (validation?.error === true) {
             return true;
         }
         if (shouldShowNotEditableNotification()) {
@@ -98,28 +109,15 @@ export const ReadOnlyCell = (props: ICellProps) => {
     if (record.isLoading?.(column.name)) {
         return <Shimmer className={styles.loading} />
     }
-    switch (column.name) {
-        case CHECKBOX_COLUMN_KEY: {
-            return <div className={styles.cellContent}>
-                <Checkbox
-                    checked={props.node.isSelected()}
-                    onChange={(e, checked) => {
-                        e?.stopPropagation()
-                        selection.toggle(record, checked!)
-                    }} />
-            </div>
-        }
-        case Constants.RIBBON_BUTTONS_COLUMN_NAME: {
-            return <div className={styles.cellContent}>
-                <Commands record={record} />
-            </div>
-        }
+    if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+        return <div className={styles.cellContent}>
+        <Commands record={record} />
+    </div>
     }
-
     return (
         <div style={{
             '--test': `${calculateNotificationsWrapperMinWidth()}px`
-        } as React.CSSProperties} className={styles.root} data-is-valid={!validation || validation.error === true}>
+        } as React.CSSProperties} className={styles.root} data-is-valid={!validation || validation.error === false}>
             <div className={styles.cellContentWrapper}>
                 <div className={styles.cellContent}>
                     <InternalReadOnlyCell {...props} />
@@ -164,11 +162,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
     const column = props.baseColumn;
     const theme = useTheme();
     const styles = getReadOnlyCellStyles(theme);
-    const record: IRecord = (() => {
-        //this is so we can load the updated record values from state
-        const updatedRecord = grid.recordUpdateService.record(props.data.getRecordId()).get() as any;
-        return updatedRecord ?? props.data;
-    })();
+    const record = props.data;
     const formattedValue = record.getFormattedValue(column.name);
 
     const renderLink = (props: ILinkProps, formattedValue: string | null): JSX.Element => {

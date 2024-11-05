@@ -1,5 +1,5 @@
 import { AgGridReact } from '@ag-grid-community/react';
-import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
+import { CommandBarButton, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
 import { ColumnMovedEvent, ColumnResizedEvent, GridApi } from "@ag-grid-community/core";
 import { useRef } from "react";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
@@ -39,7 +39,7 @@ export const AgGrid = () => {
     }
 
     const updateColumnOrder = async (e: ColumnMovedEvent<IRecord, any>) => {
-        if(e.type === 'gridOptionsChanged') {
+        if (e.type === 'gridOptionsChanged') {
             return;
         }
         const sortedIds = e.api.getState().columnOrder?.orderedColIds;
@@ -61,7 +61,7 @@ export const AgGrid = () => {
     }
 
     const updateColumnVisualSizeFactor = async (e: ColumnResizedEvent<IRecord, any>): Promise<void> => {
-        if(e.source !== 'uiColumnResized') {
+        if (e.source !== 'uiColumnResized') {
             return;
         }
         clearTimeout(resizeTimeOutRef.current)
@@ -86,7 +86,7 @@ export const AgGrid = () => {
         >
             {agColumns.length > 0 &&
                 <>
-                    {((grid.isEditable && grid.parameters.ChangeEditorMode?.raw !== 'edit') || grid.parameters.ChangeEditorMode?.raw === 'read') &&
+                    {grid.isEditable && grid.parameters.EnableTopMessageBar?.raw !== false && grid.changeTracker.isDirty() &&
                         <Save />
                     }
                     {grid.error &&

@@ -14,7 +14,6 @@ import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { usePagingController } from "../../../../paging/controllers/usePagingController";
 import { useStateValues } from "@talxis/react-components";
-import { IUpdatedRecord } from "../../../services/RecordUpdateService/model/RecordUpdateService";
 import { IRecord } from "@talxis/client-libraries";
 import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
@@ -28,7 +27,7 @@ interface IAgGridController {
 }
 
 interface IAgGridState extends GridState {
-    '__updatedRecords'?: IUpdatedRecord[];
+    '__updatedRecords'?: any;
     initialPageSize?: number;
 }
 
@@ -104,7 +103,7 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     }, [pagingController.pageNumber]);
 
     useEffect(() => {
-        const onBeforeUnload = (ev: BeforeUnloadEvent) => {
+/*         const onBeforeUnload = (ev: BeforeUnloadEvent) => {
             if (grid.recordUpdateService.isDirty) {
                 ev.preventDefault();
                 return 'Unsaved changes!'
@@ -118,7 +117,7 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
             }
             stateValuesRef.current.__updatedRecords = grid.recordUpdateService.updatedRecords;
             grid.pcfContext.mode.setControlState(getNewStateValues());
-        }
+        } */
     }, []);
 
     //this can be replaced with native functionality if we decide to use ag grid enterprise

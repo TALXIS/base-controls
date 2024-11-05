@@ -7,10 +7,10 @@ import { Sorting } from "../../sorting/Sorting";
 import { ROW_HEIGHT } from "../constants";
 import { DataType } from "../enums/DataType";
 import { KeyHoldListener } from "../services/KeyListener";
-import { RecordUpdateService } from "../services/RecordUpdateService/model/RecordUpdateService";
 import { Metadata } from "./Metadata";
 import { CHECKBOX_COLUMN_KEY } from "../../constants";
 import { IGridColumn } from "../interfaces/IGridColumn";
+import { ChangeTracker } from "../services/ChangeTracker";
 
 export class Grid {
     private _props: IGrid;
@@ -28,12 +28,12 @@ export class Grid {
     //TODO: the dependencies might not have fully loaded grid
     //need to make sure that the grid is initialized before creating them
     private _dependencies: {
-        recordUpdateService: RecordUpdateService,
         filtering: Filtering,
         sorting: Sorting,
         metadata: Metadata,
         selection: Selection,
-        paging: Paging
+        paging: Paging,
+        changeTracker: ChangeTracker
     };
     private _maxHeight: number;
     private _minHeight: number = 150;
@@ -48,12 +48,12 @@ export class Grid {
         this.keyHoldListener = keyHoldListener;
 
         this._dependencies = {
-            recordUpdateService: new RecordUpdateService(this),
             filtering: new Filtering(this),
             selection: new Selection(this),
             metadata: new Metadata(this),
             sorting: new Sorting(this),
-            paging: new Paging(this)
+            paging: new Paging(this),
+            changeTracker: new ChangeTracker(this)
         }
         this._initialPageSize = this.paging.pageSize;
         this._maxHeight = this._getMaxHeight();
@@ -93,9 +93,6 @@ export class Grid {
     public get records() {
         return this._records
     }
-    public get recordUpdateService() {
-        return this._dependencies.recordUpdateService;
-    }
     public get sorting() {
         return this._dependencies.sorting;
     }
@@ -110,6 +107,9 @@ export class Grid {
     }
     public get paging() {
         return this._dependencies.paging;
+    }
+    public get changeTracker() {
+        return this._dependencies.changeTracker;
     }
     public get shouldRerender() {
         return this._shouldRerender;

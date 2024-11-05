@@ -40,7 +40,7 @@ export class Component extends GridDependency {
         const { column, onNotifyOutputChanged, record} = { ...props };
         const value = this._getComponentValue(column, record.getValue(column.name));
         const formattedValue = record.getFormattedValue(column.name);
-        const validation = record.isValid?.(column.name);
+        const validation = record.getColumnInfo(column.name);
         const onOverrideControlProps = props?.onOverrideControlProps ?? ((props: IControl<any, any, any, any>) => props);
         const attributeName = Attribute.GetNameFromAlias(column.name);
         switch (column.dataType) {
@@ -88,7 +88,7 @@ export class Component extends GridDependency {
                             errorMessage: validation?.errorMessage ?? "",
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
+                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(this._getRecordValue(column, outputs.value))
 
                 } as ILookup;
                 return onOverrideControlProps(result);
@@ -108,7 +108,7 @@ export class Component extends GridDependency {
                             }
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
+                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(this._getRecordValue(column, outputs.value))
                 } as ITwoOptions)
             }
             case DataType.OPTIONSET: {
@@ -126,7 +126,7 @@ export class Component extends GridDependency {
                             }
                         },
                     },
-                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
+                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(this._getRecordValue(column, outputs.value))
                 } as IOptionSet);
             }
             case DataType.MULTI_SELECT_OPTIONSET: {
@@ -144,7 +144,7 @@ export class Component extends GridDependency {
                             }
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
+                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(this._getRecordValue(column, outputs.value))
                 } as IMultiSelectOptionSet);
             }
             case DataType.DATE_AND_TIME_DATE_AND_TIME:
@@ -165,7 +165,7 @@ export class Component extends GridDependency {
                             }
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
+                    
                 } as IDateTime);
             }
             case DataType.WHOLE_NONE:
@@ -193,7 +193,7 @@ export class Component extends GridDependency {
                             raw: true,
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
+                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(this._getRecordValue(column, outputs.value))
 
                 } as IDecimal);
             }
@@ -213,7 +213,7 @@ export class Component extends GridDependency {
                             errorMessage: validation?.errorMessage ?? ""
                         }
                     },
-                    onNotifyOutputChanged: (outputs) => this._getRecordValue(column, onNotifyOutputChanged(outputs.value))
+                    onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(this._getRecordValue(column, outputs.value))
                 } as ITextField);
             }
         }
@@ -275,7 +275,7 @@ export class Component extends GridDependency {
         }
         return value;
     }
-
+    //this is just so the setValue API in Power Apps accepts the values that come from the components
     private _getRecordValue(column: IGridColumn, value: any): any {
         switch (column.dataType) {
             case DataType.TWO_OPTIONS: {
@@ -291,7 +291,7 @@ export class Component extends GridDependency {
                         name: x.name,
                         id: x.id
                     }
-                })?.[0];
+                });
                 break;
             }
         }
