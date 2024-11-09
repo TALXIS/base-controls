@@ -10,7 +10,6 @@ import { KeyHoldListener } from "../services/KeyListener";
 import { Metadata } from "./Metadata";
 import { CHECKBOX_COLUMN_KEY } from "../../constants";
 import { IGridColumn } from "../interfaces/IGridColumn";
-import { ChangeTracker } from "../services/ChangeTracker";
 
 export class Grid {
     private _props: IGrid;
@@ -33,7 +32,6 @@ export class Grid {
         metadata: Metadata,
         selection: Selection,
         paging: Paging,
-        changeTracker: ChangeTracker
     };
     private _maxHeight: number;
     private _minHeight: number = 150;
@@ -53,7 +51,6 @@ export class Grid {
             metadata: new Metadata(this),
             sorting: new Sorting(this),
             paging: new Paging(this),
-            changeTracker: new ChangeTracker(this)
         }
         this._initialPageSize = this.paging.pageSize;
         this._maxHeight = this._getMaxHeight();
@@ -107,9 +104,6 @@ export class Grid {
     }
     public get paging() {
         return this._dependencies.paging;
-    }
-    public get changeTracker() {
-        return this._dependencies.changeTracker;
     }
     public get shouldRerender() {
         return this._shouldRerender;

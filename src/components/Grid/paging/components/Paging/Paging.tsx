@@ -6,7 +6,8 @@ import { usePagingController } from '../../controllers/usePagingController';
 import { getPagingStyles } from './styles';
 
 export const Paging = () => {
-    const labels = useGridInstance().labels;
+    const grid = useGridInstance();
+    const labels = grid.labels;
     const paging = usePagingController();
     const styles = getPagingStyles(useTheme());
 
@@ -32,6 +33,7 @@ export const Paging = () => {
         <div className={styles.root}>
             <div className={styles.pageSizeBtnWrapper}>
                 <CommandBarButton
+                    disabled={grid.dataset.loading}
                     text={getPagingLabel()}
                     menuProps={{
                         items: [
@@ -56,13 +58,13 @@ export const Paging = () => {
                     key: 'FirstPage',
                     iconOnly: true,
                     iconProps: { iconName: 'DoubleChevronLeft' },
-                    disabled: !paging.hasPreviousPage,
+                    disabled: !paging.hasPreviousPage || grid.dataset.loading,
                     onClick: () => paging.reset()
                 }, {
                     key: 'PreviousPage',
                     iconOnly: true,
                     iconProps: { iconName: 'Back' },
-                    disabled: !paging.hasPreviousPage,
+                    disabled: !paging.hasPreviousPage || grid.dataset.loading,
                     onClick: () => paging.loadPreviousPage()
                 }, {
                     key: 'CurrentPage',
@@ -73,7 +75,7 @@ export const Paging = () => {
                     key: 'NextPage',
                     iconOnly: true,
                     iconProps: { iconName: 'Forward' },
-                    disabled: !paging.hasNextPage,
+                    disabled: !paging.hasNextPage || grid.dataset.loading,
                     onClick: () => paging.loadNextPage()
                 }]}
             />

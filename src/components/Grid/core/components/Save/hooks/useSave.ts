@@ -7,20 +7,14 @@ interface ISave {
     save: () => Promise<boolean>
 }
 
-export const useSave = (dataset?: IDataset): ISave => {
+export const useSave = (): ISave => {
     const grid = useGridInstance();
     const [isSaving, setIsSaving] = useState<boolean>(false);
 
     const save = async (): Promise<boolean> => {
         setIsSaving(true);
-        if(dataset) {
-            await dataset.save();
-        }
-        else {
-            await grid.dataset.save();
-        };
+        await grid.dataset.paging.loadExactPage(grid.paging.pageNumber, true);
         setIsSaving(false);
-        grid.paging.loadExactPage(grid.paging.pageNumber);
         return true;
     }
 

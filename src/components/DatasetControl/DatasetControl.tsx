@@ -35,7 +35,6 @@ export const DatasetControl = (props: IDatasetControl) => {
         dataset.setSearchQuery(query ?? "");
         dataset.refresh();
     }
-
     return (
         <ThemeProvider theme={theme} applyTo="none" className={styles.root}>
             {props.parameters.EnableQuickFind?.raw &&

@@ -4,36 +4,33 @@ import { useSave } from "./hooks/useSave";
 import { useState } from 'react';
 import { getSaveStyles } from "./styles";
 import { ChangeEditor } from "./components/ChangeEditor/ChangeEditor";
-import { withButtonLoading } from "@talxis/react-components";
 
-const CommandBarButtonWithLoading = withButtonLoading(CommandBarButton);
 
 export const Save = () => {
     const grid = useGridInstance();
     const labels = grid.labels;
-    const styles = getSaveStyles();
+    const styles = getSaveStyles(grid.parameters.EnableChangeEditor?.raw !== false);
     const { isSaving, save } = useSave();
     const [changeEditorOpened, setChangeEditorOpened] = useState<boolean>(false);
-    const hasInvalidRecords = !grid.changeTracker.isValid();
-    const isDirty = grid.changeTracker.isDirty();
-    const numOfChanges = grid.changeTracker.getChanges().size;
+    const hasInvalidRecords = grid.dataset.hasInvalidChanges()
+    const isDirty = grid.dataset.isDirty();
+    const numOfChanges = Object.keys(grid.dataset.getChanges()).length;
 
     const onMessageClick = () => {
-        if (!isDirty || isSaving) {
+        if (!isDirty || isSaving || grid.parameters.EnableChangeEditor?.raw === false) {
             return;
         }
         setChangeEditorOpened(true);
     }
     return (
         <>
-            <div onClick={onMessageClick} className={styles.root} data-dirty={isDirty}>
+            <div onClick={onMessageClick} className={`${styles.root} talxis__grid-control__notification-bar`}>
                 <MessageBar
                     messageBarType={!hasInvalidRecords ? MessageBarType.info : MessageBarType.error}
                     actions={
                         <div className={styles.actions}>
-                            <CommandBarButtonWithLoading
-                                isLoading={isSaving}
-                                disabled={hasInvalidRecords}
+                            <CommandBarButton
+                                disabled={hasInvalidRecords || grid.dataset.loading}
                                 text={isSaving ? grid.labels["saving-saving"]() : undefined}
                                 iconProps={{
                                     iconName: 'Save',
@@ -44,29 +41,30 @@ export const Save = () => {
                                 }}
                             />
                             <CommandBarButton
-                                text={grid.labels['saving-discard-all']()}
-                                disabled={isSaving}
+                                text={grid.labels['saving-discard-changes']()}
+                                disabled={isSaving || grid.dataset.loading}
                                 iconProps={{
                                     iconName: 'EraseTool'
                                 }}
                                 onClick={async (e) => {
                                     e.stopPropagation();
-                                    const response = await grid.pcfContext.navigation.openConfirmDialog({
-                                        text: grid.labels['saving-discard-all-confirmation']()
-                                    });
-                                    if (response.confirmed) {
-                                        grid.changeTracker.clearChanges();
+                                    if (window.confirm(grid.labels['saving-discard-all-confirmation']())) {
+                                        grid.dataset.clearChanges();
                                         grid.pcfContext.factory.requestRender();
                                     }
                                 }}
                             />
                         </div>
                     } isMultiline={false}>
-                    {isDirty &&
-                        <span className={styles.notificationText} dangerouslySetInnerHTML={{
-                            __html: labels["saving-changenotification"]({ numOfChanges: numOfChanges })
-                        }}></span>
-                    }
+                    <span className={styles.notificationText} dangerouslySetInnerHTML={{
+                        __html: (() => {
+                            let message = labels["saving-changenotification"]({ numOfChanges: numOfChanges })
+                            if (grid.parameters.EnableChangeEditor?.raw !== false) {
+                                message += ` ${grid.labels['saving-clickreview']()}`
+                            }
+                            return message;
+                        })()
+                    }}></span>
                 </MessageBar>
             </div>
             {changeEditorOpened &&
@@ -76,6 +74,7 @@ export const Save = () => {
                         return;
                     }
                     setChangeEditorOpened(false);
+                    grid.dataset.paging.loadExactPage(grid.dataset.paging.pageNumber);
                 }} />
             }
         </>

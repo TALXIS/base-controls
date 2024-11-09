@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getChangeGridStyles = (theme: ITheme) => {
+export const getChangeGridStyles = (theme: ITheme, recordName: string) => {
     return mergeStyleSets({
         commandBar: {
             borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`
@@ -12,6 +12,22 @@ export const getChangeGridStyles = (theme: ITheme) => {
                 },
                 '[data-icon-name="Uneditable"]': {
                     display: 'none'
+                }
+            },
+            '.talxis__grid-control__notification-bar': {
+                '.ms-MessageBar-icon': {
+                    display: 'none'
+                },
+                '[class^="notificationText"]': {
+                    display: 'none'
+                },
+                '.ms-MessageBar-innerText': {
+                    fontWeight: 600,
+                    fontSize: 16,
+                    '::after': {
+                        content: `"${recordName}"`,
+                        display: 'block'
+                    }
                 }
             }
         },

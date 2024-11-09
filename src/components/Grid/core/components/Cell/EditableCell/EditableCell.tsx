@@ -20,7 +20,8 @@ export const EditableCell = (props: ICell) => {
     const onNotifyOutputChanged = (value: any) => {
         switch(column.dataType) {
             case DataType.OPTIONSET:
-            case DataType.DATE_AND_TIME_DATE_ONLY: {
+            case DataType.DATE_AND_TIME_DATE_ONLY:
+            case DataType.WHOLE_DURATION: {
                 props.stopEditing();
                 break;
             }
@@ -33,7 +34,8 @@ export const EditableCell = (props: ICell) => {
                 break;
             }
         }
-        grid.changeTracker.setValue(column.name, value, record)
+        record.setValue(column.name, value);
+        grid.pcfContext.factory.requestRender();
         rerender();
     }
 

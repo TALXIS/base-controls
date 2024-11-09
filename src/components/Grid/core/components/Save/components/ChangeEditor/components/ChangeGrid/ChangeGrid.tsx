@@ -1,29 +1,60 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useGridInstance } from "../../../../../../hooks/useGridInstance";
-import { Dataset, DataTypes, IColumn, MemoryDataProvider } from "@talxis/client-libraries";
+import {
+    Dataset,
+    DataTypes,
+    IColumn,
+    IDataset,
+    IRecordChange,
+    MemoryDataProvider,
+} from "@talxis/client-libraries";
 import { DatasetControl } from "../../../../../../../../DatasetControl";
-import { CommandBarButton, useTheme } from "@fluentui/react";
-import { CommandBar, withButtonLoading } from "@talxis/react-components";
+import { useTheme } from "@fluentui/react";
 import { getChangeGridStyles } from "./styles";
-import { useSave } from "../../../../hooks/useSave";
-import { IInternalRecordChange } from "../../../../../../services/ChangeTracker";
+import { useDebouncedCallback } from "use-debounce";
 
 interface IChangeGrid {
-    recordChange: IInternalRecordChange
-    isSavingAll: boolean;
+    recordChange: IRecordChange;
+    onDatasetReady: (dataset: IDataset) => void;
+    onDatasetDestroyed: (dataset: IDataset) => void;
+    onIsSaving: (value: boolean) => void;
 }
 
-const CommandBarButtonWithLoading = withButtonLoading(CommandBarButton);
-
 export const ChangeGrid = (props: IChangeGrid) => {
-    const fieldChanges = props.recordChange.columns;
+    const fieldChangesRef = useRef(props.recordChange.columns);
+    fieldChangesRef.current = props.recordChange.columns;
     const baseRecord = props.recordChange.record;
     const grid = useGridInstance();
-    const changedColumns = fieldChanges.map((change) => {
+    const changedColumns = fieldChangesRef.current.map((change) => {
         return grid.dataset.columns.find((x) => change.columnName === x.name)!;
     });
+
+    const recordPrimaryName = (() => {
+        let result;
+        const primaryColumn = grid.dataset.columns.find((col) => col.isPrimary);
+        if (primaryColumn) {
+            result = baseRecord.getFormattedValue(primaryColumn.name);
+        } else {
+            const firstTextColumn = grid.dataset.columns.find(
+                (col) => col.dataType === DataTypes.SingleLineText
+            );
+            if (firstTextColumn) {
+                result = baseRecord.getFormattedValue(firstTextColumn.name);
+            }
+        }
+        return result ?? grid.labels["no-name"]();
+    })();
+
     const theme = useTheme();
-    const styles = useMemo(() => getChangeGridStyles(theme), [theme]);
+    const styles = useMemo(() => getChangeGridStyles(theme, recordPrimaryName), [theme, recordPrimaryName]);
+
+    useEffect(() => {
+        props.onDatasetReady(dataset);
+        return () => {
+            props.onDatasetDestroyed(dataset);
+            grid.pcfContext.factory.requestRender()
+        }
+    }, []);
 
     const getColumns = (): IColumn[] => {
         const virtualColumns: IColumn[] = [
@@ -52,12 +83,12 @@ export const ChangeGrid = (props: IChangeGrid) => {
         const memoryProvider = new MemoryDataProvider(
             [
                 {
-                    ...baseRecord.getRawData?.()!,
                     id__virtual: "original",
+                    'valueDesc__virtual': grid.labels["original-value"](),
                 },
                 {
-                    ...baseRecord.getRawData?.()!,
                     id__virtual: "new",
+                    'valueDesc__virtual': grid.labels["new-value"](),
                 },
             ],
             getColumns(),
@@ -68,25 +99,31 @@ export const ChangeGrid = (props: IChangeGrid) => {
             }
         );
         const dataset = new Dataset(memoryProvider);
-        dataset.addEventListener("onRecordLoaded", (record) => {
-            if (record.getRecordId() === "original") {
-                changedColumns.map((col) => {
-                    record.setDisabledExpression?.(col.name, () => true);
+
+        dataset.addEventListener('onRecordLoaded', (record) => {
+            const recordId = record.getRecordId();
+            changedColumns.map(col => {
+                const change = fieldChangesRef.current.find(x => x.columnName === col.name);
+                record.setCurrencySymbolExpression?.(col.name, () => baseRecord.getCurrencySymbol(col.name))
+                if (recordId === 'new') {
                     record.setValueExpression?.(col.name, () => {
-                        return fieldChanges.find(x => x.columnName === col.name)?.originalValue;
+                        //this happens if we have removed a change
+                        if (!change) {
+                            return baseRecord.getValue(col.name);
+                        }
+                        return change.originalValue;
                     })
-                }
-                );
-            }
-            //new values record
-            else {
-                changedColumns.map((col) => {
+                    if(!change) {
+                        record.setValue(col.name, record.getValue(col.name))
+                    }
+                    else {
+                        record.setValue(col.name, change.currentValue);
+                    }
                     record.setNotificationsExpression?.(col.name, () => {
-                        const buttons = [];
-                        if (!isSavingAllRef.current && !isSavingRef.current) {
-                            buttons.push({
+                        return [
+                            {
                                 uniqueId: "clear",
-                                title: grid.labels['saving-discard'](),
+                                title: grid.labels["saving-discard"](),
                                 iconName: "EraseTool",
                                 compact: true,
                                 messages: [],
@@ -94,142 +131,63 @@ export const ChangeGrid = (props: IChangeGrid) => {
                                     {
                                         actions: [
                                             () => {
-                                                record.setValue(
-                                                    col.name,
-                                                    dataset.records.original.getValue(col.name)
-                                                );
-                                                grid.changeTracker.clearChanges(baseRecord.getRecordId(), col.name);
+                                                baseRecord.clearChanges(col.name);
+                                                record.setValue(col.name, baseRecord.getValue(col.name))
                                                 grid.pcfContext.factory.requestRender();
                                             },
                                         ],
                                     },
                                 ],
-                            });
+                            }
+                        ]
+                    })
+                    record.setValidationExpression?.(col.name, () => baseRecord.getColumnInfo(col.name))
+                }
+                else if (recordId === 'original') {
+                    record.setDisabledExpression?.(col.name, () => true);
+                    record.setValueExpression?.(col.name, () => {
+                        //this happens if we have removed a change
+                        if (!change) {
+                            return baseRecord.getValue(col.name);
                         }
-                        return buttons;
-                    });
-                    record.setDisabledExpression?.(col.name, () => false);
-                    record.setRequiredLevelExpression?.(col.name, () => {
-                        return baseRecord.getColumnInfo(col.name).security.requiredLevel ?? 'none';
-                    });
-                    record.setValidationExpression?.(col.name, () => {
-                        return baseRecord.getColumnInfo(col.name);
-                    });
-                });
-            }
-        });
+                        return change.originalValue;
+                    })
+                }
+            });
+        })
+
+        dataset.addEventListener('onRecordValueChanged', (record, columnName) => {
+            baseRecord.setValue(columnName, record.getValue(columnName));
+            grid.pcfContext.factory.requestRender();
+
+        })
+        dataset.addEventListener('onChangesCleared', () => {
+            baseRecord.clearChanges();
+            grid.pcfContext.factory.requestRender();
+        })
+        dataset.addEventListener('onSave', async () => {
+            props.onIsSaving(true);
+            await baseRecord.save();
+            baseRecord.clearChanges();
+            props.onIsSaving(false);
+            grid.pcfContext.factory.requestRender();
+        })
         return dataset;
     };
     const dataset = useMemo(() => getDataset(), []);
-    const { isSaving, save } = useSave(dataset);
-    const isSavingAll = props.isSavingAll;
-    const isSavingAllRef = useRef(isSavingAll);
-    const isSavingRef = useRef(isSaving);
-    isSavingRef.current = isSaving;
-    isSavingAllRef.current = isSavingAll;
-
-    const getRecordPrimaryName = () => {
-        let result;
-        const primaryColumn = grid.dataset.columns.find((col) => col.isPrimary);
-        if (primaryColumn) {
-            result = baseRecord.getFormattedValue(primaryColumn.name);
-        } else {
-            const firstTextColumn = grid.dataset.columns.find(
-                (col) => col.dataType === DataTypes.SingleLineText
-            );
-            if (firstTextColumn) {
-                result = baseRecord.getFormattedValue(firstTextColumn.name);
-            }
-        }
-        return result ?? grid.labels["no-name"];
-    };
-
     return (
         <div className={styles.root}>
-            <CommandBar
-                className={styles.commandBar}
-                items={[
-                    {
-                        key: "name",
-                        text: getRecordPrimaryName(),
-                        className: styles.recordName,
-                        disabled: true,
-                    },
-                ]}
-                farItems={[
-                    {
-                        key: "save",
-                        commandBarButtonAs: (props) => {
-                            return <CommandBarButtonWithLoading
-                                disabled={!grid.changeTracker.isValid(baseRecord.getRecordId()) || isSavingAll}
-                                title={grid.labels['saving-save-changes']()}
-                                text={isSaving ? grid.labels['saving-saving']() : undefined}
-                                iconProps={{
-                                    iconName: 'Save'
-                                }}
-                                isLoading={isSaving}
-                                onClick={() => save()}
-                            />
-                        },
-                    },
-                    {
-                        key: "remove",
-                        disabled: isSaving || isSavingAll,
-                        text: grid.labels['saving-discard-changes'](),
-                        onClick: () => {
-                            grid.changeTracker.clearChanges(baseRecord.getRecordId());
-                            grid.pcfContext.factory.requestRender();
-                        },
-                        iconProps: {
-                            iconName: "EraseTool",
-                        },
-                    },
-                ]}
-            />
             <DatasetControl
-                context={grid.pcfContext}
-                onOverrideComponentProps={(props) => {
-                    return {
-                        ...props,
-                        onDatasetInit: async () => {
-                            await dataset.refresh();
-                            dataset.records["original"].setValue(
-                                "valueDesc__virtual",
-                                grid.labels["original-value"]()
-                            );
-                            dataset.records["new"].setValue(
-                                "valueDesc__virtual",
-                                grid.labels["new-value"]()
-                            );
-                            changedColumns.map((col) => {
-                                dataset.records["new"].setValue(
-                                    col.name,
-                                    fieldChanges.find((x) => x.columnName === col.name)
-                                        ?.currentValue
-                                );
-                            });
-                            dataset.render();
-                            dataset
-                                .getDataProvider()
-                                .addEventListener(
-                                    "onCellValueChanged",
-                                    (record, columnName) => {
-                                        baseRecord.setValue(
-                                            columnName,
-                                            record.getValue(columnName)
-                                        );
-                                        grid.pcfContext.factory.requestRender();
-                                    }
-                                );
-                        },
-                    };
+                context={{
+                    ...grid.pcfContext,
+                    parameters: {
+                        ...grid.pcfContext.parameters,
+                        Grid: dataset,
+                    },
                 }}
                 parameters={{
                     Grid: dataset,
                     EnablePagination: {
-                        raw: false,
-                    },
-                    EnableTopMessageBar: {
                         raw: false,
                     },
                     EnableFiltering: {
@@ -244,6 +202,9 @@ export const ChangeGrid = (props: IChangeGrid) => {
                     EnableOptionSetColors: grid.parameters.EnableOptionSetColors,
                     EnableSorting: {
                         raw: false,
+                    },
+                    EnableChangeEditor: {
+                        raw: false
                     },
                     SelectableRows: {
                         raw: "none",
