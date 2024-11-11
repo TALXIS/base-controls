@@ -34,7 +34,13 @@ export const EditableCell = (props: ICell) => {
                 break;
             }
         }
-        record.setValue(column.name, value);
+        if(grid.parameters.EnableMultiEdit?.raw && grid.dataset.getSelectedRecordIds().includes(record.getRecordId())) {
+            const records = grid.records.filter(record => grid.dataset.getSelectedRecordIds().includes(record.getRecordId()))
+            records.map(record => record.setValue(column.name, value))
+        }
+        else {
+            record.setValue(column.name, value);
+        }
         grid.pcfContext.factory.requestRender();
         rerender();
     }

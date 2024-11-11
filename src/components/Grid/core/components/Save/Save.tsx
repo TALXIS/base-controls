@@ -1,6 +1,5 @@
 import { CommandBarButton, MessageBar, MessageBarType } from "@fluentui/react";
 import { useGridInstance } from "../../hooks/useGridInstance";
-import { useSave } from "./hooks/useSave";
 import { useState } from 'react';
 import { getSaveStyles } from "./styles";
 import { ChangeEditor } from "./components/ChangeEditor/ChangeEditor";
@@ -10,11 +9,11 @@ export const Save = () => {
     const grid = useGridInstance();
     const labels = grid.labels;
     const styles = getSaveStyles(grid.parameters.EnableChangeEditor?.raw !== false);
-    const { isSaving, save } = useSave();
+    const [isSaving, setIsSaving] = useState(false);
     const [changeEditorOpened, setChangeEditorOpened] = useState<boolean>(false);
-    const hasInvalidRecords = grid.dataset.hasInvalidChanges()
-    const isDirty = grid.dataset.isDirty();
-    const numOfChanges = Object.keys(grid.dataset.getChanges()).length;
+    const hasInvalidRecords = grid.dataset.hasInvalidChanges?.()
+    const isDirty = grid.dataset.isDirty?.();
+    const numOfChanges = Object.keys(grid.dataset.getChanges?.() ?? []).length;
 
     const onMessageClick = () => {
         if (!isDirty || isSaving || grid.parameters.EnableChangeEditor?.raw === false) {
@@ -35,9 +34,11 @@ export const Save = () => {
                                 iconProps={{
                                     iconName: 'Save',
                                 }}
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                     e.stopPropagation()
-                                    save();
+                                    setIsSaving(true);
+                                    await grid.dataset.paging.loadExactPage(grid.paging.pageNumber, true);
+                                    setIsSaving(false);
                                 }}
                             />
                             <CommandBarButton
@@ -49,7 +50,7 @@ export const Save = () => {
                                 onClick={async (e) => {
                                     e.stopPropagation();
                                     if (window.confirm(grid.labels['saving-discard-all-confirmation']())) {
-                                        grid.dataset.clearChanges();
+                                        grid.dataset.clearChanges?.();
                                         grid.pcfContext.factory.requestRender();
                                     }
                                 }}
@@ -68,13 +69,15 @@ export const Save = () => {
                 </MessageBar>
             </div>
             {changeEditorOpened &&
-                <ChangeEditor onDismiss={(e) => {
+                <ChangeEditor onDismiss={(e, shouldRefresh) => {
                     //@ts-ignore
                     if (e?.code === 'Escape') {
                         return;
                     }
                     setChangeEditorOpened(false);
-                    grid.dataset.paging.loadExactPage(grid.dataset.paging.pageNumber);
+                    if(shouldRefresh) {
+                        grid.dataset.paging.loadExactPage(grid.dataset.paging.pageNumber);
+                    }
                 }} />
             }
         </>

@@ -10,7 +10,7 @@ export const GlobalCheckBox = () => {
     const styles = getGlobalCheckboxStyles(theme);
     const selection = useSelectionController();
     if(grid.dataset.sortedRecordIds.length === 0) {
-        return <></>
+        return <>sizeColumnsIfSpaceAvailable</>
     }
     return (
         <div className={styles.root}>

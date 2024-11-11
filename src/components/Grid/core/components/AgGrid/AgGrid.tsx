@@ -86,7 +86,7 @@ export const AgGrid = () => {
         >
             {agColumns.length > 0 &&
                 <>
-                    {grid.isEditable && grid.dataset.isDirty() &&
+                    {grid.isEditable && grid.dataset.isDirty?.() &&
                         <Save />
                     }
                     {grid.error &&

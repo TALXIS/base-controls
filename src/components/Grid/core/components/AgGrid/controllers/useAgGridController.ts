@@ -2,20 +2,15 @@ import { ColDef, GridApi, GridState } from "@ag-grid-community/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridController } from "../../../controllers/useGridController"
 import { useGridInstance } from "../../../hooks/useGridInstance";
-import { EditableCell } from "../../Cell/EditableCell/EditableCell";
-import { ReadOnlyCell } from "../../Cell/ReadOnlyCell/ReadOnlyCell";
-import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
-import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { AgGrid } from "../model/AgGrid";
 import { ModuleRegistry } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { useDebounce } from 'use-debounce';
+import { useDebounce, useDebouncedCallback } from 'use-debounce';
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { usePagingController } from "../../../../paging/controllers/usePagingController";
 import { useStateValues } from "@talxis/react-components";
 import { IRecord } from "@talxis/client-libraries";
-import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 interface IAgGridController {
@@ -39,42 +34,22 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
     const { columns } = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<IAgGridState>(grid.state as IAgGridState);
-    //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
+     //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
     const [agRecords] = useDebounce(grid.records, 0);
-
-    setTimeout(() => {
-        //set timeout to prevent ag grid from refreshing when another refresh is in progress
-        //debounce
+    
+    const debouncedRefresh = useDebouncedCallback(() => {
         gridApiRef.current?.refreshCells({
             rowNodes: gridApiRef.current?.getRenderedNodes(),
             force: true
         });
-    }, 0);
-
-    useEffect(() => {
-        if (!agGridReadyRef.current) {
-            return;
-        }
         agGrid.selectRows();
         gridApiRef.current?.refreshHeader();
-    }, [grid.dataset.getSelectedRecordIds().join('')]);
+    });
+
+    debouncedRefresh();
 
     useEffect(() => {
-        if (columns.length === 0) {
-            return;
-        }
-        const _agColumns = agGrid.columns;
-        for (const agColumn of _agColumns) {
-            agColumn.cellRenderer = ReadOnlyCell;
-            agColumn.cellEditor = EditableCell;
-            agColumn.headerComponent = ColumnHeader;
-
-            if (agColumn.field === CHECKBOX_COLUMN_KEY) {
-                agColumn.lockPosition = 'left';
-                agColumn.headerComponent = GlobalCheckBox
-            }
-        }
-        setAgColumns(_agColumns);
+        setAgColumns(agGrid.columns);
     }, [columns]);
 
     //this might be very Portal centric

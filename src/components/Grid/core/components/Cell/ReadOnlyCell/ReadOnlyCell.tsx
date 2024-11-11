@@ -221,7 +221,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         case DataType.LOOKUP_OWNER:
         case DataType.LOOKUP_CUSTOMER: {
             return renderLink({
-                onClick: () => grid.openDatasetItem(record.getValue(column.name) as any)
+                onClick: () => grid.openDatasetItem(record.getValue(column.name)[0])
             }, formattedValue);
         }
         case DataType.FILE: {

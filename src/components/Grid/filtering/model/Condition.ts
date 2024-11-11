@@ -166,7 +166,7 @@ export class Condition extends GridDependency {
                     }
                 });
                 const record = memoryProvider.refresh()[0];
-                record.setRequiredLevelExpression(this._column.name, () => 'required');
+                record.expressions?.setRequiredLevelExpression(this._column.name, () => 'required');
                 return !record.getColumnInfo(this._column.name).error
             }
         }

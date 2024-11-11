@@ -5,6 +5,10 @@ import { DataType } from "../../../enums/DataType";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
 import { IRecord } from "@talxis/client-libraries";
+import { ReadOnlyCell } from "../../Cell/ReadOnlyCell/ReadOnlyCell";
+import { EditableCell } from "../../Cell/EditableCell/EditableCell";
+import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
+import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
@@ -28,6 +32,9 @@ export class AgGrid extends GridDependency {
                 autoHeaderHeight: true,
                 suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
                 cellClass: this._getCellClassName(column),
+                cellRenderer: ReadOnlyCell,
+                cellEditor: EditableCell,
+                headerComponent: ColumnHeader,
                 valueFormatter: (p) => {
                     if(column.name === CHECKBOX_COLUMN_KEY) {
                         return null;
@@ -68,6 +75,10 @@ export class AgGrid extends GridDependency {
                     }
                     return false;
                 },
+            }
+            if(agColumn.field === CHECKBOX_COLUMN_KEY) {
+                agColumn.lockPosition = 'left';
+                agColumn.headerComponent = GlobalCheckBox
             }
             agColumns.push(agColumn)
         }

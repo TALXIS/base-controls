@@ -6,27 +6,32 @@ import { ChangeGrid } from "./components/ChangeGrid/ChangeGrid";
 import { useEffect, useRef, useState } from "react";
 import { IDataset } from "@talxis/client-libraries";
 
-export const ChangeEditor = (props: IDialogProps) => {
+interface IChangeDialogProps extends IDialogProps {
+    onDismiss: (ev?: React.MouseEvent<HTMLButtonElement>, shoulRefreshGrid?: boolean) => void;
+}
+
+export const ChangeEditor = (props: IChangeDialogProps) => {
     const grid = useGridInstance();
-    const recordChanges = grid.dataset.getChanges();
+    const recordChanges = grid.dataset.getChanges?.() ?? [];
     const labels = grid.labels;
     const [activeSaveOperationsCount, setActiveSaveOperationsCount] = useState(0);
     const styles = getChangeEditorStyles(useTheme());
     const datasetsRef = useRef<Set<IDataset>>(new Set());
+    const shouldRefreshOnDismissRef = useRef(false);
 
     const onDismiss = (ev?: React.MouseEvent<HTMLButtonElement>) => {
         //do not close the dialog if we have pending save operations
         if (activeSaveOperationsCount > 0) {
             return;
         }
-        props.onDismiss?.();
+        props.onDismiss?.(ev, shouldRefreshOnDismissRef.current);
     }
 
     const isSaveDisabled = () => {
         if (activeSaveOperationsCount > 0) {
             return true;
         }
-        if ([...datasetsRef.current.values()].find(x => x.hasInvalidChanges())) {
+        if ([...datasetsRef.current.values()].find(x => x.hasInvalidChanges?.())) {
             return true;
         }
         return false;
@@ -34,9 +39,15 @@ export const ChangeEditor = (props: IDialogProps) => {
 
     useEffect(() => {
         return () => {
-            props.onDismiss?.();
+            props.onDismiss?.(undefined, shouldRefreshOnDismissRef.current);
         }
     }, []);
+
+    useEffect(() => {
+        if(activeSaveOperationsCount > 0) {
+            shouldRefreshOnDismissRef.current = true;
+        }
+    }, [activeSaveOperationsCount])
     return <Dialog
         {...props}
         onDismiss={onDismiss}
@@ -73,8 +84,8 @@ export const ChangeEditor = (props: IDialogProps) => {
                 text={activeSaveOperationsCount > 0 ? grid.labels['saving-saving']() : grid.labels['saving-save-all']()}
                 onClick={async () => {
                     setActiveSaveOperationsCount(count => count + 1);
-                    await Promise.all([...datasetsRef.current.values()].map(dataset => dataset.save()));
-                    grid.dataset.clearChanges();
+                    await Promise.all([...datasetsRef.current.values()].map(dataset => dataset.save?.()));
+                    grid.dataset.clearChanges?.();
                     setActiveSaveOperationsCount(count => count - 1);
                 }}
             />
@@ -83,7 +94,7 @@ export const ChangeEditor = (props: IDialogProps) => {
                 disabled={activeSaveOperationsCount > 0}
                 onClick={async () => {
                     if (window.confirm(grid.labels['saving-discard-all-confirmation']())) {
-                        grid.dataset.clearChanges();
+                        grid.dataset.clearChanges?.();
                         grid.pcfContext.factory.requestRender();
                     }
                 }}

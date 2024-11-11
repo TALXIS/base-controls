@@ -11,7 +11,6 @@ import {
 import { DatasetControl } from "../../../../../../../../DatasetControl";
 import { useTheme } from "@fluentui/react";
 import { getChangeGridStyles } from "./styles";
-import { useDebouncedCallback } from "use-debounce";
 
 interface IChangeGrid {
     recordChange: IRecordChange;
@@ -104,9 +103,9 @@ export const ChangeGrid = (props: IChangeGrid) => {
             const recordId = record.getRecordId();
             changedColumns.map(col => {
                 const change = fieldChangesRef.current.find(x => x.columnName === col.name);
-                record.setCurrencySymbolExpression?.(col.name, () => baseRecord.getCurrencySymbol(col.name))
+                record.expressions?.setCurrencySymbolExpression?.(col.name, () => baseRecord.getCurrencySymbol?.(col.name) ?? "")
                 if (recordId === 'new') {
-                    record.setValueExpression?.(col.name, () => {
+                    record.expressions?.setValueExpression?.(col.name, () => {
                         //this happens if we have removed a change
                         if (!change) {
                             return baseRecord.getValue(col.name);
@@ -119,7 +118,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
                     else {
                         record.setValue(col.name, change.currentValue);
                     }
-                    record.setNotificationsExpression?.(col.name, () => {
+                    record.expressions?.setNotificationsExpression?.(col.name, () => {
                         return [
                             {
                                 uniqueId: "clear",
@@ -131,7 +130,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
                                     {
                                         actions: [
                                             () => {
-                                                baseRecord.clearChanges(col.name);
+                                                baseRecord.clearChanges?.(col.name);
                                                 record.setValue(col.name, baseRecord.getValue(col.name))
                                                 grid.pcfContext.factory.requestRender();
                                             },
@@ -141,11 +140,11 @@ export const ChangeGrid = (props: IChangeGrid) => {
                             }
                         ]
                     })
-                    record.setValidationExpression?.(col.name, () => baseRecord.getColumnInfo(col.name))
+                    record.expressions?.setValidationExpression?.(col.name, () => baseRecord.getColumnInfo(col.name))
                 }
                 else if (recordId === 'original') {
-                    record.setDisabledExpression?.(col.name, () => true);
-                    record.setValueExpression?.(col.name, () => {
+                    record.expressions?.setDisabledExpression?.(col.name, () => true);
+                    record.expressions?.setValueExpression?.(col.name, () => {
                         //this happens if we have removed a change
                         if (!change) {
                             return baseRecord.getValue(col.name);
@@ -157,18 +156,17 @@ export const ChangeGrid = (props: IChangeGrid) => {
         })
 
         dataset.addEventListener('onRecordValueChanged', (record, columnName) => {
-            baseRecord.setValue(columnName, record.getValue(columnName));
-            grid.pcfContext.factory.requestRender();
-
+            baseRecord.setValue(columnName, record.getValue(columnName)); 
+            grid.pcfContext.factory.requestRender();    
         })
         dataset.addEventListener('onChangesCleared', () => {
-            baseRecord.clearChanges();
+            baseRecord.clearChanges?.();
             grid.pcfContext.factory.requestRender();
         })
         dataset.addEventListener('onSave', async () => {
             props.onIsSaving(true);
             await baseRecord.save();
-            baseRecord.clearChanges();
+            baseRecord.clearChanges?.();
             props.onIsSaving(false);
             grid.pcfContext.factory.requestRender();
         })
