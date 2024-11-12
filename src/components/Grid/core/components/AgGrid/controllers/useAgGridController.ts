@@ -44,7 +44,7 @@ export const useAgGridController = (gridApiRef: React.MutableRefObject<GridApi<C
         });
         agGrid.selectRows();
         gridApiRef.current?.refreshHeader();
-    });
+    }, 0);
 
     debouncedRefresh();
 

@@ -118,7 +118,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
                     else {
                         record.setValue(col.name, change.currentValue);
                     }
-                    record.expressions?.setNotificationsExpression?.(col.name, () => {
+                    record.expressions?.ui.setNotificationsExpression?.(col.name, () => {
                         return [
                             {
                                 uniqueId: "clear",

@@ -211,6 +211,7 @@ export class Component extends GridDependency {
                         },
                         value: {
                             raw: value,
+                            type: column.dataType,
                             error:  validation?.error === false,
                             errorMessage: validation?.errorMessage ?? ""
                         }

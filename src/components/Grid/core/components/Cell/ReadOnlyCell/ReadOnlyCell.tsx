@@ -51,7 +51,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     }, []);
     
     const grid = useGridInstance();
-    const notifications = record.getNotifications?.(column.name);
+    const notifications = record.ui.getNotifications?.(column.name);
     const notificationRef = React.useRef<INotificationsRef>(null);
     //TODO: only do this if editable
     const validation = record.getColumnInfo(column.name);
@@ -106,7 +106,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     }, []);
 
 
-    if (record.isLoading?.(column.name)) {
+    if (record.ui?.isLoading(column.name)) {
         return <Shimmer className={styles.loading} />
     }
     if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {

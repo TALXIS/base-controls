@@ -5,6 +5,7 @@ import { ICellEditorParams } from '@ag-grid-community/core';
 import { IRecord } from '@talxis/client-libraries';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { useRerender } from '../../../../../../hooks/useRerender';
+import { ROW_HEIGHT } from '../../../constants';
 
 interface ICell extends ICellEditorParams {
     baseColumn: IGridColumn;
@@ -56,7 +57,13 @@ export const EditableCell = (props: ICell) => {
                     ...props.context,
                     mode: {
                         ...props.context.mode,
-                        allocatedHeight: 41
+                        allocatedHeight: (() => {
+                            let height = record.ui?.getHeight(null);
+                            if(!height) {
+                                height = ROW_HEIGHT;
+                            }
+                            return height - 1
+                        })()
                     },
                     fluentDesignLanguage: props.context.fluentDesignLanguage ? {
                         ...props.context.fluentDesignLanguage,

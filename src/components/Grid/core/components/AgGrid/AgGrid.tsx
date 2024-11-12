@@ -11,9 +11,9 @@ import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
 import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { usePagingController } from '../../../paging/controllers/usePagingController';
-import { ROW_HEIGHT } from '../../constants';
 import { IRecord } from '@talxis/client-libraries';
 import { CHECKBOX_COLUMN_KEY } from '../../../constants';
+import { ROW_HEIGHT } from '../../constants';
 
 export const AgGrid = () => {
     const grid = useGridInstance();
@@ -144,9 +144,14 @@ export const AgGrid = () => {
                             ...stateRef.current,
                             ...e.state
                         }}
-                        rowHeight={ROW_HEIGHT}
+                        suppressAnimationFrame
                         columnDefs={agColumns as any}
                         rowData={grid.records}
+                        rowHeight={ROW_HEIGHT}
+                        getRowHeight={(params) => {
+                            return params?.data?.ui?.getHeight(null) ?? 42
+                        }}
+
                     >
                     </AgGridReact>
                     {pagingController.isEnabled &&
