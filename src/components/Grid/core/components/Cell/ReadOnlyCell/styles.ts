@@ -1,4 +1,4 @@
-import { ITheme, mergeStyleSets, keyframes } from "@fluentui/react";
+import { ITheme, mergeStyleSets, keyframes, mergeStyles } from "@fluentui/react";
 
 const shimmer = keyframes({
     '100%': {
@@ -26,7 +26,7 @@ export const getReadOnlyCellStyles = (theme: ITheme) => {
         text: {
             fontSize: 14,
             overflow: 'hidden',
-            textOverflow: 'ellipsis'
+            textOverflow: 'ellipsis',
         },
         link: {
             fontSize: 14,
@@ -101,5 +101,24 @@ export const getReadOnlyCellStyles = (theme: ITheme) => {
             backgroundSize: '1000px 100%',
             background: `linear-gradient(to right, color-mix(in oklab, ${theme.palette.white}, ${theme.palette.black} 8%) 4%, color-mix(in oklab, ${theme.palette.white}, ${theme.palette.black} 5%) 25%, color-mix(in oklab, ${theme.palette.white}, ${theme.palette.black} 8%) 36%)`
         },
+        multiline: {
+            alignSelf: 'baseline',
+            whiteSpace: 'normal'
+        }
+    })
+}
+
+export const getMultilineStyle = (height: number) => {
+    const clamp = Math.floor(height / 20);
+    return mergeStyles({
+        alignSelf: 'baseline',
+        whiteSpace: 'normal',
+        display: '-webkit-box',
+        textAlign: 'left',
+        overflowWrap: 'break-word',
+        lineHeight: "1.2",
+        paddingTop: 2,
+        '-webkit-line-clamp': clamp.toString(),
+        '-webkit-box-orient': 'vertical'
     })
 }

@@ -7,7 +7,6 @@ import { datasetControlTranslations } from "./translations";
 import { getDatasetControlStyles } from "./styles";
 import { IDatasetControl } from "./interfaces";
 import { useRerender } from "../../hooks/useRerender";
-import { useDebouncedCallback } from "use-debounce";
 
 export const DatasetControl = (props: IDatasetControl) => {
     const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
@@ -17,9 +16,8 @@ export const DatasetControl = (props: IDatasetControl) => {
     const injectedContextRef = useRef(props.context);
     const styles = useMemo(() => getDatasetControlStyles(), []);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    const debouncedRender = useDebouncedCallback(() => rerender(), 0)
     //@ts-ignore - private property
-    dataset._setRenderer(() => debouncedRender());
+    dataset._setRenderer(() => rerender());
 
     //we need to have a way to customize the init behavior from above
     const componentProps = onOverrideComponentProps({

@@ -64,7 +64,7 @@ export const gridTranslations = {
     "paging-pages": { 1029: "{{start}} - {{end}}", 1033: "{{start}} - {{end}}" },
     "paging-pages-totalcount": { 1029: "z {{recordcount}}", 1033: "of {{recordcount}}" },
     "norecordsfound": { 1029: 'Nenašli jsme nic, co by se zde dalo zobrazit.', 1033: 'No records found.' },
-    "saving-changenotification": { 1029: "Počet upravených záznamů: <b>{{numOfChanges}}</b>. Klikněte <u>zde</u> pro jejich zobrazení.", 1033: "Number of updated records: <b>{{numOfChanges}}</b>." },
+    "saving-changenotification": { 1029: "Počet upravených záznamů: <b>{{numOfChanges}}</b>.", 1033: "Number of updated records: <b>{{numOfChanges}}</b>." },
     "saving-clickreview": {1029: "Klikněte <u>zde</u> pro jejich zobrazení.", 1033: "Click <u>here</u> to review"},
     "saving-save": { 1029: "Uložit", 1033: "Save" },
     "saving-saving": { 1029: "Ukládání...", 1033: "Saving..." },
@@ -84,7 +84,7 @@ export const gridTranslations = {
     "no-name": { 1029: '(Bez názvu)', 1033: '(No Name)' },
     "download": { 1029: 'Stáhnout', 1033: 'Download' },
     "value-not-editable": { 1029: 'Tuto hodnotu nelze upravit.', 1033: 'This value cannot be edited.' },
-    "original-value": { 1029: 'Původní hodnota.', 1033: 'Previous value' },
-    "new-value": { 1029: 'Nová hodnota.', 1033: 'New value' }
+    "original-value": { 1029: 'Původní hodnota', 1033: 'Previous value' },
+    "new-value": { 1029: 'Nová hodnota', 1033: 'New value' }
 };
 

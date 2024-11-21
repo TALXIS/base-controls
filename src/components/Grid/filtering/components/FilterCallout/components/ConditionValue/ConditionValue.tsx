@@ -28,21 +28,33 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
     const rerender = useRerender();
 
     const record = useMemo(() => {
-        const memoryProvider = new MemoryDataProvider([{
-            [column.name]: conditionComponentValue.get(),
-            id: 'id'
-        }], [column, {
-            name: 'id',
-            displayName: '',
-            dataType: DataTypes.SingleLineText,
-            alias: 'id',
-            order: 0,
-            visualSizeFactor: 0
-        }], {
-            entityMetadata: {
-                PrimaryIdAttribute: 'id'
+        const memoryProvider = new MemoryDataProvider(
+            [
+                {
+                    [column.name]: conditionComponentValue.get() ?? undefined,
+                    id: "id",
+                },
+            ],
+            [
+                {
+                    ...column,
+                    metadata: { ...(column.metadata as any), RequiredLevel: 0 },
+                },
+                {
+                    name: "id",
+                    displayName: "",
+                    dataType: DataTypes.SingleLineText,
+                    alias: "id",
+                    order: 0,
+                    visualSizeFactor: 0,
+                },
+            ],
+            {
+                entityMetadata: {
+                    PrimaryIdAttribute: "id",
+                },
             }
-        });
+        );
         const record = memoryProvider.refresh()[0];
         return record;
     }, []);
@@ -54,16 +66,16 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
             const input = componentContainerRef.current?.querySelector('input')
             input?.focus()
         }
-        if(!firstRenderRef.current) {
+        if (!firstRenderRef.current) {
             record.expressions?.setRequiredLevelExpression(column.name, () => 'required');
         }
-        if(firstRenderRef.current) {
+        if (firstRenderRef.current) {
             firstRenderRef.current = false;
         }
     }, [conditionComponentValue.get()])
 
     useEffect(() => {
-        if(!controller.value.valid) {
+        if (!controller.value.valid) {
             record?.expressions?.setRequiredLevelExpression(column.name, () => 'required');
             rerender();
         }

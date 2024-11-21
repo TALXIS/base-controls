@@ -4,12 +4,13 @@ import { IGrid } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
-import { ROW_HEIGHT } from "../constants";
 import { DataType } from "../enums/DataType";
 import { KeyHoldListener } from "../services/KeyListener";
 import { Metadata } from "./Metadata";
 import { CHECKBOX_COLUMN_KEY } from "../../constants";
 import { IGridColumn } from "../interfaces/IGridColumn";
+
+const DEFAULT_ROW_HEIGHT = 42;
 
 export class Grid {
     private _props: IGrid;
@@ -131,6 +132,14 @@ export class Grid {
         return idString.split(',');
     }
 
+    public get rowHeight() {
+        let height = this.parameters.RowHeight?.raw;
+        if(!height) {
+            height = DEFAULT_ROW_HEIGHT;
+        }
+        return height;
+    }
+
     public get height() {
         let height = this._maxHeight;
         if (this.parameters.Height?.raw) {
@@ -140,7 +149,7 @@ export class Grid {
             height = this._minHeight;
         }
         else if (this._records.length <= this._initialPageSize) {
-            height = this._records.length * ROW_HEIGHT;
+            height = this._records.length * this.rowHeight;
         }
         if (height > this._maxHeight) {
             height = this._maxHeight;
@@ -285,7 +294,7 @@ export class Grid {
         return metadata.Attributes.get(attributeName)?.attributeDescriptor?.isFilterable ?? true;
     }
     private _getMaxHeight(): number {
-        let maxHeight = this._initialPageSize * ROW_HEIGHT;
+        let maxHeight = this._initialPageSize * this.rowHeight;
         if (maxHeight > 600) {
             maxHeight = 600;
         }

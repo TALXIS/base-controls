@@ -2,10 +2,10 @@ import * as React from 'react';
 import { ILinkProps, Shimmer } from '@fluentui/react';
 import { Link } from '@fluentui/react';
 import { Text } from '@fluentui/react';
-import { getReadOnlyCellStyles } from './styles';
+import { getMultilineStyle, getReadOnlyCellStyles } from './styles';
 import { Commands } from '../Commands/Commands';
 import { Checkbox, Icon, useTheme, Image } from '@fluentui/react';
-import { Constants, FileAttribute, IRecord } from '@talxis/client-libraries';
+import { Constants, DataTypes, FileAttribute, IRecord } from '@talxis/client-libraries';
 import { ReadOnlyOptionSet } from './ReadOnlyOptionSet/ReadOnlyOptionSet';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { DataType } from '../../../enums/DataType';
@@ -178,8 +178,15 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         if (!formattedValue) {
             return <></>
         }
+        let className = styles.link;
+        switch(column.dataType) {
+            case DataTypes.Multiple:
+            case DataTypes.SingleLineTextArea: {
+               className += ` ${getMultilineStyle(props.node.rowHeight!)}`
+            }
+        }
         return (
-            <Link {...props} className={styles.link} title={formattedValue}>
+            <Link {...props} className={className} title={formattedValue}>
                 {formattedValue}
             </Link>
         );
@@ -190,7 +197,14 @@ const InternalReadOnlyCell = (props: ICellProps) => {
                 onClick: () => grid.openDatasetItem(record.getNamedReference())
             }, formattedValue);
         }
-        return <Text className={`${styles.text} talxis-cell-text`} title={formattedValue!}>{formattedValue}</Text>
+        let className = `${styles.text} talxis-cell-text`
+        switch(column.dataType) {
+            case DataTypes.Multiple:
+            case DataTypes.SingleLineTextArea: {
+               className += ` ${getMultilineStyle(props.node.rowHeight!)}`
+            }
+        }
+        return <Text className={className} title={formattedValue!}>{formattedValue}</Text>
     }
     const downloadFile = () => {
         const storage = new FileAttribute(grid.pcfContext.webAPI);

@@ -41,7 +41,11 @@ export class Component extends GridDependency {
         const value = this._getComponentValue(column, record.getValue(column.name));
         const formattedValue = record.getFormattedValue(column.name);
         const validation = record.getColumnInfo(column.name);
-        const onOverrideControlProps = props?.onOverrideControlProps ?? ((props: IControl<any, any, any, any>) => props);
+        const onOverrideControlProps = (passedProps: IControl<any, any, any, any>): any => {
+            const overridenProps = props?.onOverrideControlProps?.(passedProps) ?? passedProps;
+            overridenProps.parameters = record.ui?.getCellEditorParameters(column.name, overridenProps.parameters) ?? overridenProps.parameters;
+            return overridenProps;
+        }
         const attributeName = Attribute.GetNameFromAlias(column.name);
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:
@@ -270,7 +274,7 @@ export class Component extends GridDependency {
                 if(value && !Array.isArray(value)) {
                     value = [value];
                 }
-                value = value?.map((x: ComponentFramework.EntityReference) => Sanitizer.Lookup.GetLookupValue(x))
+                value = value?.map((x: ComponentFramework.EntityReference) => Sanitizer.Lookup.getLookupValue(x))
                 break;
             }
         }

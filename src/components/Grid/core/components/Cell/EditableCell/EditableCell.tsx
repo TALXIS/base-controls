@@ -5,17 +5,16 @@ import { ICellEditorParams } from '@ag-grid-community/core';
 import { IRecord } from '@talxis/client-libraries';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { useRerender } from '../../../../../../hooks/useRerender';
-import { ROW_HEIGHT } from '../../../constants';
 
 interface ICell extends ICellEditorParams {
     baseColumn: IGridColumn;
     data: IRecord
 }
 
-export const EditableCell = (props: ICell) => {
+export const EditableCell = (editableCellProps: ICell) => {
     const grid = useGridInstance();
-    const column = props.baseColumn;
-    const record = props.data;
+    const column = editableCellProps.baseColumn;
+    const record = editableCellProps.data;
     const rerender = useRerender();
 
     const onNotifyOutputChanged = (value: any) => {
@@ -23,27 +22,32 @@ export const EditableCell = (props: ICell) => {
             case DataType.OPTIONSET:
             case DataType.DATE_AND_TIME_DATE_ONLY:
             case DataType.WHOLE_DURATION: {
-                props.stopEditing();
+                editableCellProps.stopEditing();
                 break;
             }
             case DataType.LOOKUP_OWNER:
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_CUSTOMER: {
                 if(value?.length > 0) {
-                    props.stopEditing();
+                    editableCellProps.stopEditing();
                 }
                 break;
             }
         }
         if(grid.parameters.EnableMultiEdit?.raw && grid.dataset.getSelectedRecordIds().includes(record.getRecordId())) {
             const records = grid.records.filter(record => grid.dataset.getSelectedRecordIds().includes(record.getRecordId()))
-            records.map(record => record.setValue(column.name, value))
+            records.map(record => setValue(record, value))
         }
         else {
-            record.setValue(column.name, value);
+            setValue(record, value)
         }
         grid.pcfContext.factory.requestRender();
         rerender();
+    }
+
+    const setValue = (record: IRecord, value: any) => {
+        record.setValue(column.name, value);
+        editableCellProps.api.resetRowHeights();
     }
 
     return <Component
@@ -58,11 +62,7 @@ export const EditableCell = (props: ICell) => {
                     mode: {
                         ...props.context.mode,
                         allocatedHeight: (() => {
-                            let height = record.ui?.getHeight(null);
-                            if(!height) {
-                                height = ROW_HEIGHT;
-                            }
-                            return height - 1
+                            return editableCellProps.node.rowHeight!
                         })()
                     },
                     fluentDesignLanguage: props.context.fluentDesignLanguage ? {
@@ -82,6 +82,9 @@ export const EditableCell = (props: ICell) => {
                         raw: false
                     },
                     IsInlineNewEnabled: {
+                        raw: false
+                    },
+                    EnableTypeSuffix: {
                         raw: false
                     }
                 }

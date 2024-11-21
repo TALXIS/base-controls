@@ -152,8 +152,8 @@ export class Condition extends GridDependency {
                 }
                 const memoryProvider = new MemoryDataProvider([{
                     id: 'id',
-                    [this._column.name]: await this.value.get()
-                }], [this._column, {
+                    [this._column.name]: await this.value.get() ?? undefined
+                }], [{...this._column, metadata: {...this._column.metadata as any, RequiredLevel: 0}}, {
                     name: 'id',
                     displayName: '',
                     dataType: DataType.SINGLE_LINE_TEXT,

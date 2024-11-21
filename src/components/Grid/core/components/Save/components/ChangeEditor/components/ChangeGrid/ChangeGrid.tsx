@@ -98,12 +98,14 @@ export const ChangeGrid = (props: IChangeGrid) => {
             }
         );
         const dataset = new Dataset(memoryProvider);
+        grid.dataset.linking.getLinkedEntities().map(x => dataset.linking.addLinkedEntity(x))
 
         dataset.addEventListener('onRecordLoaded', (record) => {
             const recordId = record.getRecordId();
             changedColumns.map(col => {
                 const change = fieldChangesRef.current.find(x => x.columnName === col.name);
-                record.expressions?.setCurrencySymbolExpression?.(col.name, () => baseRecord.getCurrencySymbol?.(col.name) ?? "")
+                record.expressions?.setCurrencySymbolExpression(col.name, () => baseRecord.getCurrencySymbol?.(col.name) ?? "");
+                record.expressions?.ui.setCellEditorParametersExpression(col.name, (parameters) => baseRecord.ui.getCellEditorParameters(col.name, parameters))
                 if (recordId === 'new') {
                     record.expressions?.setValueExpression?.(col.name, () => {
                         //this happens if we have removed a change
