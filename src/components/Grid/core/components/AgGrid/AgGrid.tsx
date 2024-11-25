@@ -34,23 +34,18 @@ export const AgGrid = () => {
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<GridState>(grid.state as GridState);
     //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
     const [records] = useDebounce(grid.records, 0);
+    const userChangedColumnSizeRef = useRef(false);
 
     const debouncedRefresh = useDebouncedCallback(() => {
         gridApiRef.current?.refreshCells({
             rowNodes: gridApiRef.current?.getRenderedNodes(),
             force: true
         });
-        sizeColumnsIfSpaceAvailable();
-        gridApiRef.current?.refreshHeader();
+        grid.refreshGlobalCheckBox();
         agGrid.selectRows();
     }, 0);
 
     debouncedRefresh();
-
-    useEffect(() => {
-        agGrid.selectRows();
-    }, [records]);
-
 
     const onGridReady = () => {
         agGridReadyRef.current = true;
@@ -64,13 +59,15 @@ export const AgGrid = () => {
         agGrid.selectRows();
     }
 
+
     const getAvailableWidth = () => {
         const rootWrapper = containerRef.current?.querySelector('.ag-root-wrapper');
         return rootWrapper?.clientWidth ?? 0;
     }
 
     const sizeColumnsIfSpaceAvailable = () => {
-        if(!gridApiRef.current) {
+        //do not autosize if user manually adjusted the column width
+        if(!gridApiRef.current || userChangedColumnSizeRef.current) {
             return;
         }
         const availableWidth = getAvailableWidth();
@@ -173,6 +170,7 @@ export const AgGrid = () => {
                 columns[i].visualSizeFactor = e.column?.getActualWidth()!
             }
         }
+        userChangedColumnSizeRef.current = true;
         grid.dataset.setColumns?.(columns);
         gridApiRef.current?.resetRowHeights();
         grid.pcfContext.factory.requestRender()
@@ -203,6 +201,14 @@ export const AgGrid = () => {
             grid.pcfContext.mode.setControlState(getNewStateValues());
         }
     }, []);
+
+    useEffect(() => {
+        agGrid.selectRows();
+    }, [records]);
+
+    useEffect(() => {
+        sizeColumnsIfSpaceAvailable();
+    }, [columns]);
 
 
     return (
@@ -262,7 +268,7 @@ export const AgGrid = () => {
                             if (grid.loading) {
                                 gridApiRef.current?.showLoadingOverlay();
                             }
-                            sizeColumnsIfSpaceAvailable()
+                            sizeColumnsIfSpaceAvailable();
                             onGridReady();
                         }}
                         initialState={stateValuesRef.current}

@@ -37,6 +37,8 @@ export class Grid {
     private _maxHeight: number;
     private _minHeight: number = 150;
     private _initialPageSize: number;
+    //this is temp, should be moved to AgGrid class, useAgGridInstance should also be created, similar to useGridInstance
+    private _refreshGlobalCheckBox: () => void = () => {};
     public readonly keyHoldListener: KeyHoldListener;
 
     constructor(props: IGrid, labels: any, keyHoldListener: KeyHoldListener) {
@@ -222,6 +224,14 @@ export class Grid {
         }
         this._columns = gridColumns;
         return gridColumns;
+    }
+
+    public setRefreshGlobalCheckBox(refreshGlobalCheckBox: () => void) {
+        this._refreshGlobalCheckBox = refreshGlobalCheckBox;
+    }
+
+    public refreshGlobalCheckBox() {
+        this._refreshGlobalCheckBox();
     }
 
     private async _isColumnEditable(column: IColumn): Promise<boolean> {
