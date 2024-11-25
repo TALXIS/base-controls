@@ -89,7 +89,7 @@ export class AgGrid extends GridDependency {
             return 0;
         }
         let width = 0;
-        for (const column of this._gridApi.getAllGridColumns()) {
+        for (const column of this._gridApi.getAllDisplayedColumns()) {
             width = width + column.getActualWidth();
         }
         return width;

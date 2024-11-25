@@ -40,6 +40,7 @@ export const AgGrid = () => {
             rowNodes: gridApiRef.current?.getRenderedNodes(),
             force: true
         });
+        sizeColumnsIfSpaceAvailable();
         gridApiRef.current?.refreshHeader();
         agGrid.selectRows();
     }, 0);
@@ -69,6 +70,9 @@ export const AgGrid = () => {
     }
 
     const sizeColumnsIfSpaceAvailable = () => {
+        if(!gridApiRef.current) {
+            return;
+        }
         const availableWidth = getAvailableWidth();
         if (availableWidth > agGrid.getTotalColumnsWidth()) {
             gridApiRef.current!.sizeColumnsToFit();
@@ -258,7 +262,7 @@ export const AgGrid = () => {
                             if (grid.loading) {
                                 gridApiRef.current?.showLoadingOverlay();
                             }
-                            sizeColumnsIfSpaceAvailable();
+                            sizeColumnsIfSpaceAvailable()
                             onGridReady();
                         }}
                         initialState={stateValuesRef.current}
