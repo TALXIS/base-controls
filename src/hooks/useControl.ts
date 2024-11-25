@@ -5,8 +5,7 @@ import { Liquid } from "liquidjs";
 import { useControlTheme } from "./useControlTheme";
 import { ITheme } from "../interfaces/theme";
 import { useControlSizing } from "./useControlSizing";
-
-const deepEqual = require('fast-deep-equal/react');
+import deepEqual from 'fast-deep-equal/es6';
 
 export type ITranslation<T> = {
     [Property in keyof Required<T>]: (variables?: any) => string
@@ -82,7 +81,6 @@ export const useControl = <TParameters extends IParameters, TOutputs extends IOu
         let isDirty = false;
         for (let [key, outputValue] of Object.entries(outputs)) {
             let parameterValue = parametersRef.current[key]?.raw;
-            //@ts-ignore - types
             if (!deepEqual(parameterValue, outputValue)) {
                 if (outputValue === null) {
                     outputValue = undefined;
