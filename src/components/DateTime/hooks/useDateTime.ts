@@ -3,12 +3,11 @@ import { useInputBasedControl } from "../../../hooks/useInputBasedControl";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters} from "../interfaces";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "../translations";
 import {ITranslation } from "../../../hooks";
 import { ITheme } from "../../../interfaces/theme";
 
-
-const customParseFormat = require("dayjs/plugin/customParseFormat");
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
