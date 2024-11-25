@@ -1,4 +1,3 @@
-import { IParameters } from "../../../../../interfaces/parameters";
 import { DateTime } from "../../../../DateTime/DateTime";
 import { Decimal } from "../../../../Decimal/Decimal";
 import { Lookup } from "../../../../Lookup/Lookup";
@@ -10,13 +9,12 @@ import { Duration } from "../../../../Duration/Duration";
 import { DataType } from "../../enums/DataType";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { useComponentController } from "./controller/useComponentController";
-import React from 'react';
 import { IControl } from "../../../../../interfaces/context";
+import { IRecord } from "@talxis/client-libraries";
 
 export interface IControlProps {
     column: IGridColumn;
-    value: any;
-    formattedValue?: string;
+    record: IRecord
     onNotifyOutputChanged: (value: any) => void;
     onOverrideControlProps?: (props: IControl<any, any, any, any>) => IControl<any, any, any, any>;
 }

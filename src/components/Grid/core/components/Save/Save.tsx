@@ -1,70 +1,83 @@
-import { CommandBarButton, MessageBar, MessageBarType, Spinner, SpinnerSize } from "@fluentui/react";
+import { CommandBarButton, MessageBar, MessageBarType } from "@fluentui/react";
 import { useGridInstance } from "../../hooks/useGridInstance";
-import { useSave } from "./hooks/useSave";
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { getSaveStyles } from "./styles";
 import { ChangeEditor } from "./components/ChangeEditor/ChangeEditor";
-import { useRecordUpdateServiceController } from "../../services/RecordUpdateService/controllers/useRecordUpdateServiceController";
+
 
 export const Save = () => {
     const grid = useGridInstance();
     const labels = grid.labels;
-    const styles = getSaveStyles();
-    const { isDirty, updatedRecords, hasInvalidRecords, clearAll } = useRecordUpdateServiceController();
-    const { isSaving, saveBtnProps, save } = useSave();
+    const styles = getSaveStyles(grid.parameters.EnableChangeEditor?.raw !== false);
+    const [isSaving, setIsSaving] = useState(false);
     const [changeEditorOpened, setChangeEditorOpened] = useState<boolean>(false);
+    const hasInvalidRecords = grid.dataset.hasInvalidChanges?.()
+    const isDirty = grid.dataset.isDirty?.();
+    const numOfChanges = Object.keys(grid.dataset.getChanges?.() ?? []).length;
 
     const onMessageClick = () => {
-        if (!isDirty) {
+        if (!isDirty || isSaving || grid.parameters.EnableChangeEditor?.raw === false) {
             return;
         }
         setChangeEditorOpened(true);
     }
     return (
         <>
-            <div onClick={onMessageClick} className={styles.root} data-dirty={isDirty}>
+            <div onClick={onMessageClick} className={`${styles.root} talxis__grid-control__notification-bar`}>
                 <MessageBar
                     messageBarType={!hasInvalidRecords ? MessageBarType.info : MessageBarType.error}
                     actions={
                         <div className={styles.actions}>
                             <CommandBarButton
-                                text={isSaving ? saveBtnProps.text : undefined}
-                                disabled={saveBtnProps.disabled}
-                                onRenderIcon={isSaving ? () => <Spinner size={SpinnerSize.small} /> : undefined}
+                                disabled={hasInvalidRecords || grid.dataset.loading}
+                                text={isSaving ? grid.labels["saving-saving"]() : undefined}
                                 iconProps={{
-                                    iconName: saveBtnProps.iconName,
+                                    iconName: 'Save',
                                 }}
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                     e.stopPropagation()
-                                    save();
+                                    setIsSaving(true);
+                                    await grid.dataset.paging.loadExactPage(grid.paging.pageNumber, true);
+                                    setIsSaving(false);
                                 }}
                             />
                             <CommandBarButton
-                                disabled={saveBtnProps.disabled && !hasInvalidRecords && !grid.props.parameters.ChangeEditorMode}
+                                text={grid.labels['saving-discard-changes']()}
+                                disabled={isSaving || grid.dataset.loading}
                                 iconProps={{
-                                    iconName: 'Delete'
+                                    iconName: 'EraseTool'
                                 }}
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                     e.stopPropagation();
-                                    clearAll();
+                                    if (window.confirm(grid.labels['saving-discard-all-confirmation']())) {
+                                        grid.dataset.clearChanges?.();
+                                        grid.pcfContext.factory.requestRender();
+                                    }
                                 }}
                             />
                         </div>
                     } isMultiline={false}>
-                    {isDirty &&
-                        <span className={styles.notificationText} dangerouslySetInnerHTML={{
-                            __html: labels["saving-changenotification"]({ numOfChanges: updatedRecords.length })
-                        }}></span>
-                    }
+                    <span className={styles.notificationText} dangerouslySetInnerHTML={{
+                        __html: (() => {
+                            let message = labels["saving-changenotification"]({ numOfChanges: numOfChanges })
+                            if (grid.parameters.EnableChangeEditor?.raw !== false) {
+                                message += ` ${grid.labels['saving-clickreview']()}`
+                            }
+                            return message;
+                        })()
+                    }}></span>
                 </MessageBar>
             </div>
             {changeEditorOpened &&
-                <ChangeEditor onDismiss={(e) => {
+                <ChangeEditor onDismiss={(e, shouldRefresh) => {
                     //@ts-ignore
-                    if(e?.code === 'Escape') {
+                    if (e?.code === 'Escape') {
                         return;
                     }
                     setChangeEditorOpened(false);
+                    if(shouldRefresh) {
+                        grid.dataset.paging.loadExactPage(grid.dataset.paging.pageNumber);
+                    }
                 }} />
             }
         </>

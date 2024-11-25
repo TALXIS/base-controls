@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react"
 
-export const getSaveStyles = () => {
+export const getSaveStyles = (enableChangeEditor: boolean) => {
     return mergeStyleSets({
         root: {
             '&[data-dirty="false"]': {
@@ -20,9 +20,7 @@ export const getSaveStyles = () => {
             '.ms-MessageBar-innerText': {
                 textAlign: 'left'
             },
-            '&[data-dirty="true"]': {
-                cursor: 'pointer'
-            }
+            cursor: enableChangeEditor ? 'pointer' : undefined
         },
         notificationText: {
             whiteSpace: 'normal',

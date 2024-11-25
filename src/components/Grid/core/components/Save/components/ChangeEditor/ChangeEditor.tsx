@@ -1,29 +1,56 @@
-import { DialogFooter, IDialogProps, PrimaryButton, Spinner, SpinnerSize, useTheme } from "@fluentui/react";
-import { useEffect } from 'react';
+import { DefaultButton, DialogFooter, IDialogProps, PrimaryButton, useTheme } from "@fluentui/react";
 import { useGridInstance } from "../../../../hooks/useGridInstance";
-import { useRecordUpdateServiceController } from "../../../../services/RecordUpdateService/controllers/useRecordUpdateServiceController";
 import Dialog from "../../../Dialog";
-import { RecordGrids } from "./components/RecordGrids/RecordGrids";
 import { getChangeEditorStyles } from "./styles";
-import { useSave } from "../../hooks/useSave";
+import { ChangeGrid } from "./components/ChangeGrid/ChangeGrid";
+import { useEffect, useRef, useState } from "react";
+import { IDataset } from "@talxis/client-libraries";
 
-export const ChangeEditor = (props: IDialogProps) => {
+interface IChangeDialogProps extends IDialogProps {
+    onDismiss: (ev?: React.MouseEvent<HTMLButtonElement>, shoulRefreshGrid?: boolean) => void;
+}
+
+export const ChangeEditor = (props: IChangeDialogProps) => {
     const grid = useGridInstance();
+    const recordChanges = grid.dataset.getChanges?.() ?? [];
     const labels = grid.labels;
-    const controller = useRecordUpdateServiceController();
-    const { isSaving, saveBtnProps, save } = useSave();
-    const updatedRecords = controller.updatedRecords;
-
+    const [activeSaveOperationsCount, setActiveSaveOperationsCount] = useState(0);
     const styles = getChangeEditorStyles(useTheme());
-    useEffect(() => {
-        if (updatedRecords.length === 0) {
-            props.onDismiss?.();
+    const datasetsRef = useRef<Set<IDataset>>(new Set());
+    const shouldRefreshOnDismissRef = useRef(false);
+
+    const onDismiss = (ev?: React.MouseEvent<HTMLButtonElement>) => {
+        //do not close the dialog if we have pending save operations
+        if (activeSaveOperationsCount > 0) {
+            return;
         }
-    }, [updatedRecords]);
+        props.onDismiss?.(ev, shouldRefreshOnDismissRef.current);
+    }
 
+    const isSaveDisabled = () => {
+        if (activeSaveOperationsCount > 0) {
+            return true;
+        }
+        if ([...datasetsRef.current.values()].find(x => x.hasInvalidChanges?.())) {
+            return true;
+        }
+        return false;
+    }
 
+    useEffect(() => {
+        return () => {
+            props.onDismiss?.(undefined, shouldRefreshOnDismissRef.current);
+        }
+    }, []);
+
+    useEffect(() => {
+        if(activeSaveOperationsCount > 0) {
+            shouldRefreshOnDismissRef.current = true;
+        }
+    }, [activeSaveOperationsCount])
     return <Dialog
         {...props}
+        onDismiss={onDismiss}
         width={1000}
         minWidth={'80%'}
         modalProps={{
@@ -36,24 +63,42 @@ export const ChangeEditor = (props: IDialogProps) => {
         dialogContentProps={{
             showCloseButton: true,
             title: labels["saving-changepreview-title"]({
-                numOfChanges: updatedRecords.length
+                numOfChanges: Object.keys(recordChanges).length
             })
         }}
         hidden={false}>
-            <div className={styles.recordGrids}>
-                {updatedRecords.map(record => <RecordGrids key={record.getRecordId()} record={record} />)}
-            </div>
+        <div className={styles.recordGrids}>
+            {Object.values(recordChanges).map(recordChange => <ChangeGrid
+                onDatasetDestroyed={(dataset) => datasetsRef.current.delete(dataset)}
+                onDatasetReady={(dataset) => datasetsRef.current.add(dataset)}
+                onIsSaving={(value) => {
+                    setActiveSaveOperationsCount(count => value ? count + 1 : count - 1);
+                }}
+                key={recordChange.record.getRecordId()}
+                recordChange={recordChange} />)}
+        </div>
         <DialogFooter>
             <PrimaryButton
                 className={styles.saveBtn}
-                text={saveBtnProps.text}
-                disabled={saveBtnProps.disabled}
-                onClick={() => save()}
-            >
-                {isSaving &&
-                    <Spinner size={SpinnerSize.small} />
-                }
-            </PrimaryButton>
+                disabled={isSaveDisabled()}
+                text={activeSaveOperationsCount > 0 ? grid.labels['saving-saving']() : grid.labels['saving-save-all']()}
+                onClick={async () => {
+                    setActiveSaveOperationsCount(count => count + 1);
+                    await Promise.all([...datasetsRef.current.values()].map(dataset => dataset.save?.()));
+                    grid.dataset.clearChanges?.();
+                    setActiveSaveOperationsCount(count => count - 1);
+                }}
+            />
+            <DefaultButton
+                text={grid.labels['saving-discard-all']()}
+                disabled={activeSaveOperationsCount > 0}
+                onClick={async () => {
+                    if (window.confirm(grid.labels['saving-discard-all-confirmation']())) {
+                        grid.dataset.clearChanges?.();
+                        grid.pcfContext.factory.requestRender();
+                    }
+                }}
+            />
         </DialogFooter>
     </Dialog>
 }

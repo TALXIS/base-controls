@@ -7,11 +7,11 @@ import { IMultiSelectOptionSet } from "../../../../../MultiSelectOptionSet/inter
 import { IOptionSet } from "../../../../../OptionSet/interfaces";
 import { ITextField } from "../../../../../TextField/interfaces";
 import { ITwoOptions } from "../../../../../TwoOptions/interfaces";
-import { ColumnValidation } from "../../../../validation/model/ColumnValidation";
 import { DataType } from "../../../enums/DataType";
 import { GridDependency } from "../../../model/GridDependency";
 import { IControlProps } from "../Component";
-import { Attribute } from "@talxis/client-libraries";
+import { Attribute, DataTypes, Sanitizer } from "@talxis/client-libraries";
+import { IGridColumn } from "../../../interfaces/IGridColumn";
 
 const debounce = (func: (...args: any[]) => Promise<any>, wait: number) => {
     let timeout: NodeJS.Timeout | null = null;
@@ -37,9 +37,15 @@ export class Component extends GridDependency {
     private static _lookupSavedQueriesCache = new Map<string, Promise<ComponentFramework.WebApi.Entity>>;
 
     public async getControlProps(props: IControlProps): Promise<IControl<any, any, any, any>> {
-        const { column, value, onNotifyOutputChanged, formattedValue } = { ...props };
-        const [isValid, validationErrorMessage] = new ColumnValidation(this._grid, props.column).validate(value);
-        const onOverrideControlProps = props?.onOverrideControlProps ?? ((props: IControl<any, any, any, any>) => props);
+        const { column, onNotifyOutputChanged, record} = { ...props };
+        const value = this._getComponentValue(column, record.getValue(column.name));
+        const formattedValue = record.getFormattedValue(column.name);
+        const validation = record.getColumnInfo(column.name);
+        const onOverrideControlProps = (passedProps: IControl<any, any, any, any>): any => {
+            const overridenProps = props?.onOverrideControlProps?.(passedProps) ?? passedProps;
+            overridenProps.parameters = record.ui?.getCellEditorParameters(column.name, overridenProps.parameters) ?? overridenProps.parameters;
+            return overridenProps;
+        }
         const attributeName = Attribute.GetNameFromAlias(column.name);
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:
@@ -82,8 +88,8 @@ export class Component extends GridDependency {
                                 Targets: targets,
                                 DisplayName: displayName
                             },
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error: validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                         }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
@@ -99,8 +105,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: twoOptionsValue === true ? true : false,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error: validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                             attributes: {
                                 Options: options
                             }
@@ -117,8 +123,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error:  validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                             attributes: {
                                 Options: options
                             }
@@ -135,8 +141,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: optionSetValue ?? null,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error:  validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                             attributes: {
                                 Options: options
                             }
@@ -155,8 +161,8 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: date.isValid() ? date.toDate() : dateTimeValue,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage,
+                            error: validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? "",
                             attributes: {
                                 Behavior: metadata.Attributes.get(attributeName).Behavior,
                                 Format: column.dataType
@@ -164,6 +170,7 @@ export class Component extends GridDependency {
                         }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
+                    
                 } as IDateTime);
             }
             case DataType.WHOLE_NONE:
@@ -178,17 +185,18 @@ export class Component extends GridDependency {
                     parameters: {
                         value: {
                             raw: decimalValue ?? null,
-                            error: !isValid,
+                            error: validation?.error === false,
                             //formatted value is only used for currency => there is no way to get the currency symbol so the formatCurrency method is useless
                             formatted: formattedValue,
-                            errorMessage: validationErrorMessage,
+                            errorMessage: validation?.errorMessage ?? "",
                             type: column.dataType,
                             attributes: {
                                 Precision: precision
                             }
                         },
                         NotifyOutputChangedOnUnmount: {
-                            raw: true,
+                            //duration is ComboBox => no need to do this
+                            raw: column.dataType !== DataType.WHOLE_DURATION,
                         }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
@@ -207,8 +215,9 @@ export class Component extends GridDependency {
                         },
                         value: {
                             raw: value,
-                            error: !isValid,
-                            errorMessage: validationErrorMessage
+                            type: column.dataType,
+                            error:  validation?.error === false,
+                            errorMessage: validation?.errorMessage ?? ""
                         }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)
@@ -235,6 +244,38 @@ export class Component extends GridDependency {
                         continue;
                     }
                 }
+            }
+        }
+        return value;
+    }
+
+
+    //map because getValue API does not return values 1:1 to PCF bindings
+    private _getComponentValue(column: IGridColumn, value: any) {
+        switch(column.dataType) {
+            //getValue always returns string for TwoOptions
+            case DataTypes.TwoOptions: {
+                value = value == '1' ? true : false
+                break;
+            }
+            //getValue always returns string for OptionSet
+            case DataType.OPTIONSET: {
+                value = value ? parseInt(value) : null;
+                break;
+            }
+            case DataType.MULTI_SELECT_OPTIONSET: {
+                value = value ? value.split(',').map((x: string) => parseInt(x)) : null;
+                break;
+            }
+            case DataType.LOOKUP_SIMPLE:
+            case DataType.LOOKUP_CUSTOMER:
+            case DataType.LOOKUP_OWNER: {
+                //our implementation returns array, Power Apps returns object
+                if(value && !Array.isArray(value)) {
+                    value = [value];
+                }
+                value = value?.map((x: ComponentFramework.EntityReference) => Sanitizer.Lookup.getLookupValue(x))
+                break;
             }
         }
         return value;

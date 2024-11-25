@@ -28,7 +28,10 @@ export class ConditionComponentValue {
             }
             //skip this validation because operators like contains should not fail on regexes
             case DataType.SINGLE_LINE_EMAIL:
-            case DataType.SINGLE_LINE_URL: {
+            case DataType.SINGLE_LINE_URL:
+            //use single line text field for filters on multiple
+            case DataType.MULTIPLE:
+            case DataType.SINGLE_LINE_TEXT_AREA: {
                 _column.dataType = DataType.SINGLE_LINE_TEXT;
                 break;
             }

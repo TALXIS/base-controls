@@ -5,6 +5,10 @@ import { DataType } from "../../../enums/DataType";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
 import { IRecord } from "@talxis/client-libraries";
+import { ReadOnlyCell } from "../../Cell/ReadOnlyCell/ReadOnlyCell";
+import { EditableCell } from "../../Cell/EditableCell/EditableCell";
+import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
+import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
@@ -25,14 +29,22 @@ export class AgGrid extends GridDependency {
                 sortable: !column.disableSorting,
                 editable: (p) => this._isColumnEditable(column, p), 
                 resizable: column.isResizable,
-                suppressMovable: this._grid.props.parameters.ChangeEditorMode ? true : undefined,
                 autoHeaderHeight: true,
                 suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
                 cellClass: this._getCellClassName(column),
+                cellRenderer: ReadOnlyCell,
+                cellEditor: EditableCell,
+                headerComponent: ColumnHeader,
                 valueFormatter: (p) => {
+                    if(column.name === CHECKBOX_COLUMN_KEY) {
+                        return null;
+                    }
                     return p.data.getFormattedValue(column.name)
                 },
                 valueGetter: (p) => {
+                    if(column.name === CHECKBOX_COLUMN_KEY) {
+                        return null;
+                    }
                     return p.data.getValue(column.name)
                 },
                 cellRendererParams: {
@@ -63,6 +75,10 @@ export class AgGrid extends GridDependency {
                     }
                     return false;
                 },
+            }
+            if(agColumn.field === CHECKBOX_COLUMN_KEY) {
+                agColumn.lockPosition = 'left';
+                agColumn.headerComponent = GlobalCheckBox
             }
             agColumns.push(agColumn)
         }
@@ -113,13 +129,9 @@ export class AgGrid extends GridDependency {
     }
 
     private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
-        if (!column.isEditable || params.data?.ui?.isLoading(column.name) === true) {
+        if (!this._grid.parameters.EnableEditing?.raw || params.data?.ui.isLoading?.(column.name) === true) {
             return false;
         }
-        const isEditable = params.data?.ui?.isEditable(column.name);
-        if (isEditable === undefined) {
-            return true;
-        }
-        return isEditable;
+        return params.data?.getColumnInfo(column.name).security.editable ?? true;
     }
 }

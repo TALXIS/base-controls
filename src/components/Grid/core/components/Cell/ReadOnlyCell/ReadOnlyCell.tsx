@@ -2,14 +2,13 @@ import * as React from 'react';
 import { ILinkProps, Shimmer } from '@fluentui/react';
 import { Link } from '@fluentui/react';
 import { Text } from '@fluentui/react';
-import { getReadOnlyCellStyles } from './styles';
+import { getMultilineStyle, getReadOnlyCellStyles } from './styles';
 import { Commands } from '../Commands/Commands';
 import { Checkbox, Icon, useTheme, Image } from '@fluentui/react';
-import { Constants, FileAttribute, IRecord } from '@talxis/client-libraries';
+import { Constants, DataTypes, FileAttribute, IRecord } from '@talxis/client-libraries';
 import { ReadOnlyOptionSet } from './ReadOnlyOptionSet/ReadOnlyOptionSet';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { DataType } from '../../../enums/DataType';
-import { useColumnValidationController } from '../../../../validation/controllers/useRecordValidationController';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { useSelectionController } from '../../../../selection/controllers/useSelectionController';
 import { ICellRendererParams } from '@ag-grid-community/core';
@@ -24,15 +23,22 @@ interface ICellProps extends ICellRendererParams {
 }
 
 export const ReadOnlyCell = (props: ICellProps) => {
-    const grid = useGridInstance();
+    const selection = useSelectionController();
     const column = props.baseColumn;
     const record = props.data;
     const theme = useTheme();
     const styles = React.useMemo(() => getReadOnlyCellStyles(theme), [theme]);
-    const selection = useSelectionController();
-    const notifications = record.ui?.getNotifications(column.name);
-    const notificationRef = React.useRef<INotificationsRef>(null);
 
+    if(column.name === CHECKBOX_COLUMN_KEY) {
+        return <div className={styles.cellContent}>
+        <Checkbox
+            checked={props.node.isSelected()}
+            onChange={(e, checked) => {
+                e?.stopPropagation()
+                selection.toggle(record, checked!)
+            }} />
+    </div>
+    }
     const MemoizedNotifications = React.useMemo(() => {
         return React.memo(Notifications, (prevProps, nextProps) => {
             const previousIds = prevProps.notifications.map(x => x.uniqueId).join(';');
@@ -43,6 +49,12 @@ export const ReadOnlyCell = (props: ICellProps) => {
             return true;
         });
     }, []);
+    
+    const grid = useGridInstance();
+    const notifications = record.ui.getNotifications?.(column.name);
+    const notificationRef = React.useRef<INotificationsRef>(null);
+    //TODO: only do this if editable
+    const validation = record.getColumnInfo(column.name);
 
     const debounceNotificationRemeasure = useDebouncedCallback(() => {
         if (notifications && notifications.length > 0) {
@@ -50,15 +62,10 @@ export const ReadOnlyCell = (props: ICellProps) => {
         }
     }, 10)
 
-    const [isValid, errorMessage] = useColumnValidationController({
-        column: column,
-        record: record,
-    });
-
     debounceNotificationRemeasure();
 
     const shouldShowNotEditableNotification = (): boolean => {
-        if (column.isEditable && record.ui?.isEditable(column.name) === false) {
+        if (column.isEditable && !record.getColumnInfo(column.name).security.editable) {
             return true;
         }
         return false;
@@ -69,7 +76,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
         if (notifications && notifications.length > 0) {
             count++
         }
-        if (!isValid) {
+        if (validation?.error === true) {
             count++;
         }
         if (shouldShowNotEditableNotification()) {
@@ -79,7 +86,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
     }
 
     const shouldRenderNotificationsWrapper = (): boolean => {
-        if (!isValid) {
+        if (validation?.error === true) {
             return true;
         }
         if (shouldShowNotEditableNotification()) {
@@ -102,28 +109,15 @@ export const ReadOnlyCell = (props: ICellProps) => {
     if (record.ui?.isLoading(column.name)) {
         return <Shimmer className={styles.loading} />
     }
-    switch (column.name) {
-        case CHECKBOX_COLUMN_KEY: {
-            return <div className={styles.cellContent}>
-                <Checkbox
-                    checked={props.node.isSelected()}
-                    onChange={(e, checked) => {
-                        e?.stopPropagation()
-                        selection.toggle(record, checked!)
-                    }} />
-            </div>
-        }
-        case Constants.RIBBON_BUTTONS_COLUMN_NAME: {
-            return <div className={styles.cellContent}>
-                <Commands record={record} />
-            </div>
-        }
+    if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+        return <div className={styles.cellContent}>
+        <Commands record={record} />
+    </div>
     }
-
     return (
         <div style={{
             '--test': `${calculateNotificationsWrapperMinWidth()}px`
-        } as React.CSSProperties} className={styles.root} data-is-valid={isValid}>
+        } as React.CSSProperties} className={styles.root} data-is-valid={!validation || validation.error === false}>
             <div className={styles.cellContentWrapper}>
                 <div className={styles.cellContent}>
                     <InternalReadOnlyCell {...props} />
@@ -134,14 +128,14 @@ export const ReadOnlyCell = (props: ICellProps) => {
                     {notifications && notifications.length > 0 &&
                         <MemoizedNotifications className={styles.notifications} ref={notificationRef} notifications={notifications} />
                     }
-                    {!isValid &&
+                    {validation?.error === true &&
                         <MemoizedNotifications notifications={[
                             {
                                 notificationLevel: 'ERROR',
                                 messages: [],
                                 iconName: 'Error',
                                 uniqueId: column.name,
-                                title: errorMessage,
+                                title: validation.errorMessage,
                                 compact: true
                             }
                         ]} />
@@ -168,11 +162,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
     const column = props.baseColumn;
     const theme = useTheme();
     const styles = getReadOnlyCellStyles(theme);
-    const record: IRecord = (() => {
-        //this is so we can load the updated record values from state
-        const updatedRecord = grid.recordUpdateService.record(props.data.getRecordId()).get() as any;
-        return updatedRecord ?? props.data;
-    })();
+    const record = props.data;
     const formattedValue = record.getFormattedValue(column.name);
 
     const renderLink = (props: ILinkProps, formattedValue: string | null): JSX.Element => {
@@ -188,8 +178,15 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         if (!formattedValue) {
             return <></>
         }
+        let className = styles.link;
+        switch(column.dataType) {
+            case DataTypes.Multiple:
+            case DataTypes.SingleLineTextArea: {
+               className += ` ${getMultilineStyle(props.node.rowHeight!)}`
+            }
+        }
         return (
-            <Link {...props} className={styles.link} title={formattedValue}>
+            <Link {...props} className={className} title={formattedValue}>
                 {formattedValue}
             </Link>
         );
@@ -200,7 +197,14 @@ const InternalReadOnlyCell = (props: ICellProps) => {
                 onClick: () => grid.openDatasetItem(record.getNamedReference())
             }, formattedValue);
         }
-        return <Text className={`${styles.text} talxis-cell-text`} title={formattedValue!}>{formattedValue}</Text>
+        let className = `${styles.text} talxis-cell-text`
+        switch(column.dataType) {
+            case DataTypes.Multiple:
+            case DataTypes.SingleLineTextArea: {
+               className += ` ${getMultilineStyle(props.node.rowHeight!)}`
+            }
+        }
+        return <Text className={className} title={formattedValue!}>{formattedValue}</Text>
     }
     const downloadFile = () => {
         const storage = new FileAttribute(grid.pcfContext.webAPI);
@@ -231,7 +235,7 @@ const InternalReadOnlyCell = (props: ICellProps) => {
         case DataType.LOOKUP_OWNER:
         case DataType.LOOKUP_CUSTOMER: {
             return renderLink({
-                onClick: () => grid.openDatasetItem(record.getValue(column.name) as any)
+                onClick: () => grid.openDatasetItem(record.getValue(column.name)[0])
             }, formattedValue);
         }
         case DataType.FILE: {

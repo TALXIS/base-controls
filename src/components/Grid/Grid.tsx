@@ -25,6 +25,7 @@ export const Grid = (props: IGrid) => {
             gridInstance: new GridModel(props, labels, keyHoldListener)
         }
     }, [])
+    
     providerValue.gridInstance.updateDependencies(props);
     const theme = useControlTheme(props.context.fluentDesignLanguage);
 

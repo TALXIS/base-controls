@@ -6,7 +6,7 @@ import { TextField } from "@talxis/react-components";
 import { datasetControlTranslations } from "./translations";
 import { getDatasetControlStyles } from "./styles";
 import { IDatasetControl } from "./interfaces";
-import { useRerender } from "./hooks/useRerender";
+import { useRerender } from "../../hooks/useRerender";
 
 export const DatasetControl = (props: IDatasetControl) => {
     const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
@@ -16,6 +16,7 @@ export const DatasetControl = (props: IDatasetControl) => {
     const injectedContextRef = useRef(props.context);
     const styles = useMemo(() => getDatasetControlStyles(), []);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+    //@ts-ignore - private property
     dataset._setRenderer(() => rerender());
 
     //we need to have a way to customize the init behavior from above
@@ -24,6 +25,7 @@ export const DatasetControl = (props: IDatasetControl) => {
     })
 
     useMemo(() => {
+        //@ts-ignore - private property
         injectedContextRef.current = dataset._patchContext(props.context);
     }, [props.context]);
 
@@ -32,10 +34,9 @@ export const DatasetControl = (props: IDatasetControl) => {
     }, []);
 
     const onSearch = (query?: string) => {
-        dataset.setSearchQuery(query ?? "");
+        dataset.setSearchQuery?.(query ?? "");
         dataset.refresh();
     }
-
     return (
         <ThemeProvider theme={theme} applyTo="none" className={styles.root}>
             {props.parameters.EnableQuickFind?.raw &&
@@ -67,7 +68,9 @@ export const DatasetControl = (props: IDatasetControl) => {
                     }}
                     onChange={(e, newValue) => setQuery(newValue)} />
             }
-            <Grid {...props} context={injectedContextRef.current} />
+            <Grid 
+            {...props} 
+            context={injectedContextRef.current} />
         </ThemeProvider>
     )
 }

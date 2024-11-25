@@ -1,6 +1,6 @@
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { ITranslation } from "../../hooks";
-import { IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
+import { IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
 import { gridTranslations } from "./translations";
 import { IDataset } from "@talxis/client-libraries";
@@ -17,6 +17,9 @@ export interface IGridParameters extends IParameters {
     EnableSorting?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableOptionSetColors?:  Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableChangeEditor?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableMultiEdit?: Omit<ITwoOptionsProperty, 'attributes'>;
+    RowHeight?: Omit<IWholeNumberProperty, 'attributes'>
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;

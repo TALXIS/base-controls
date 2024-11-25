@@ -17,7 +17,6 @@ export const ConditionOperator = (props: IConditionOperator) => {
     const operatorUtils = FilteringUtils.condition().operator();
     const grid = useGridInstance();
     const condition = useColumnFilterConditionController(column);
-    const theme: ITheme = useTheme();
 
     //TODO: add missing text operator (begins with, ends with)
     const getOptions = (): IComboBoxOption[] => {

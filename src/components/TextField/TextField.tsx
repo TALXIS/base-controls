@@ -1,9 +1,9 @@
-import { ITextFieldProps, TextField as TextFieldBase } from "@talxis/react-components";
-import { useMemo, useRef } from 'react';
+import { TextField as TextFieldBase } from "@talxis/react-components";
 import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
 import React from 'react';
 import { ICommandBarItemProps, ThemeProvider } from '@fluentui/react';
+import { DataTypes } from "@talxis/client-libraries";
 
 export const TextField = (props: ITextField) => {
     const context = props.context;
@@ -66,11 +66,22 @@ export const TextField = (props: ITextField) => {
         }
         return undefined;
     }
+
+    const isTextArea = (() => {
+        switch(parameters.value.type) {
+            case DataTypes.Multiple:
+            case DataTypes.SingleLineTextArea: {
+                return true;
+            }
+        }
+        return false;
+    })()
+
     const componentProps = onOverrideComponentProps({
         readOnly: context.mode.isControlDisabled,
         resizable: false,
-        type: useMemo(() => getInputType(), [boundValue.type]),
-        multiline: parameters.value.type === 'Multiple',
+        type: getInputType(),
+        multiline: isTextArea,
         autoFocus: parameters.AutoFocus?.raw,
         styles: {
             fieldGroup: {
@@ -80,7 +91,7 @@ export const TextField = (props: ITextField) => {
         },
         errorMessage: boundValue.errorMessage,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
-        suffixItems: useMemo(() => getSuffixItems(), [boundValue.raw, boundValue.error, parameters.EnableTypeSuffix?.raw]),
+        suffixItems: getSuffixItems(),
         deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
             key: 'delete',
             showOnlyOnHover: true,
@@ -107,7 +118,7 @@ export const TextField = (props: ITextField) => {
         }
     })
     return (
-        <ThemeProvider style={parameters.value.type === 'Multiple' ? { height: '100%' } : undefined} applyTo="none" theme={theme}>
+        <ThemeProvider style={isTextArea ? { height: '100%' } : undefined} applyTo="none" theme={theme}>
             <TextFieldBase {...componentProps} />
         </ThemeProvider>
     );

@@ -85,32 +85,39 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
             return;
         }
         setSelectedNotification(notification);
-    }
+    };
+
+    const getCommandBarItem = (notification: IAddControlNotificationOptions) => {
+        const icon = getIconName(notification);
+        return {
+            key: notification.uniqueId,
+            text: notification.title,
+            title: notification.title,
+            onClick: () => onNotificationClick(notification),
+            buttonStyles: {
+                textContainer: {
+                    display: notification.compact ? 'none' : undefined
+                }
+            },
+            iconProps: notification ? {
+                iconName: icon,
+                styles: {
+                    root: {
+                        color: notification.notificationLevel === 'ERROR' ? `${theme.semanticColors.errorIcon} !important` : undefined
+                    }
+                }
+            } : undefined
+        }
+    };
 
     return <div className={`${styles.root}${props.className ? ` ${props.className}` : ''}`}>
         <ThemeProvider theme={overridenTheme} applyTo="none">
-            <CommandBar theme={overridenTheme} id={iconId} componentRef={commandBarRef} items={notifications.map(x => {
-                const icon = getIconName(x);
-                return {
-                    key: x.uniqueId,
-                    text: x.title,
-                    title: x.title,
-                    onClick: () => onNotificationClick(x),
-                    buttonStyles: {
-                        textContainer: {
-                            display: x.compact ? 'none' : undefined
-                        }
-                    },
-                    iconProps: icon ? {
-                        iconName: icon,
-                        styles: {
-                            root: {
-                                color: x.notificationLevel === 'ERROR' ? `${theme.semanticColors.errorIcon} !important` : undefined
-                            }
-                        }
-                    } : undefined
-                }
-            })} />
+            <CommandBar
+                overflowItems={notifications.filter(x => x.renderedInOverflow).map(y => getCommandBarItem(y))}
+                theme={overridenTheme}
+                id={iconId}
+                componentRef={commandBarRef}
+                items={notifications.filter(x => !x.renderedInOverflow).map(y => getCommandBarItem(y))} />
         </ThemeProvider>
         {selectedNotification &&
             <Callout
