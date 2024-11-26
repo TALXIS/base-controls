@@ -210,7 +210,7 @@ export class Grid {
                 alias: CHECKBOX_COLUMN_KEY,
                 dataType: DataTypes.SingleLineText,
                 displayName: '',
-                isEditable: true,
+                isEditable: false,
                 isFilterable: false,
                 isFiltered: false,
                 isRequired: false,
