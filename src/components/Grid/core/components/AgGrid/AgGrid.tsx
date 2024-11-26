@@ -207,7 +207,10 @@ export const AgGrid = () => {
     }, [records]);
 
     useEffect(() => {
-        sizeColumnsIfSpaceAvailable();
+        //need to wait for next tick so ag grid has the columns ready
+        setTimeout(() => {
+            sizeColumnsIfSpaceAvailable();
+        }, 0)
     }, [columns]);
 
 
