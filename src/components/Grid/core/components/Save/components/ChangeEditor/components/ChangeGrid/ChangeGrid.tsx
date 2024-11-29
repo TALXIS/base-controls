@@ -157,7 +157,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
             });
         })
 
-        dataset.addEventListener('onRecordValueChanged', (record, columnName) => {
+        dataset.addEventListener('onRecordColumnValueChanged', (record, columnName) => {
             baseRecord.setValue(columnName, record.getValue(columnName)); 
             grid.pcfContext.factory.requestRender();    
         })

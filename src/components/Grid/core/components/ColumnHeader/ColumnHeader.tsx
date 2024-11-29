@@ -62,7 +62,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
                 className={columnHeaderStyles.root}
                 onClick={onClick}
             >
-                {grid.isEditable && !column.isEditable && <Icon className={columnHeaderStyles.editIcon} iconName='Uneditable' />}
+                {grid.isEditable && !column.isEditable && column.type !== 'action' && <Icon className={columnHeaderStyles.editIcon} iconName='Uneditable' />}
                 <div className={columnHeaderStyles.labelWrapper}>
                     <Label className={columnHeaderStyles.label}>{column.displayName}</Label>
                     {column.isRequired &&

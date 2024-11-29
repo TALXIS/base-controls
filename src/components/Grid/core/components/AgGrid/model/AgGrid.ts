@@ -30,6 +30,7 @@ export class AgGrid extends GridDependency {
                 editable: (p) => this._isColumnEditable(column, p), 
                 resizable: column.isResizable,
                 autoHeaderHeight: true,
+                suppressMovable: column.isDraggable === false ? true : false,
                 suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
                 cellClass: this._getCellClassName(column),
                 cellRenderer: ReadOnlyCell,
