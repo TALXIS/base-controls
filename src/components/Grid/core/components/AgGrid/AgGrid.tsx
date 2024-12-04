@@ -185,10 +185,6 @@ export const AgGrid = () => {
     }, []);
 
     useEffect(() => {
-        setAgColumns(agGrid.columns);
-    }, [columns]);
-
-    useEffect(() => {
         toggleOverlay();
         gridApiRef.current?.ensureIndexVisible(0)
     }, [grid.loading]);
@@ -209,9 +205,13 @@ export const AgGrid = () => {
     useEffect(() => {
         //need to wait for next tick so ag grid has the columns ready
         setTimeout(() => {
-            sizeColumnsIfSpaceAvailable();
+            setAgColumns(agGrid.columns);
         }, 0)
     }, [columns]);
+
+    useEffect(() => {
+        sizeColumnsIfSpaceAvailable();
+    }, [agColumns])
 
 
     return (
