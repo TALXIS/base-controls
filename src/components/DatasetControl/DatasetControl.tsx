@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Grid } from "../Grid";
 import { useControl } from "../../hooks";
 import { ThemeProvider } from "@fluentui/react";
@@ -32,6 +32,10 @@ export const DatasetControl = (props: IDatasetControl) => {
     useMemo(() => {
         componentProps.onDatasetInit();
     }, []);
+
+    useEffect(() => {
+        setQuery(dataset.getSearchQuery?.() ?? '');
+    }, [dataset.getSearchQuery?.()])
 
     const onSearch = (query?: string) => {
         dataset.setSearchQuery?.(query ?? "");

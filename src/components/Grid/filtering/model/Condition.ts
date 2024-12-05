@@ -153,18 +153,18 @@ export class Condition extends GridDependency {
                 const memoryProvider = new MemoryDataProvider([{
                     id: 'id',
                     [this._column.name]: await this.value.get() ?? undefined
-                }], [{...this._column, metadata: {...this._column.metadata as any, RequiredLevel: 0}}, {
+                }])
+                memoryProvider.setColumns([{...this._column, metadata: {...this._column.metadata as any, RequiredLevel: 0}}, {
                     name: 'id',
                     displayName: '',
                     dataType: DataType.SINGLE_LINE_TEXT,
                     alias: 'id',
                     order: 0,
                     visualSizeFactor: 0
-                }], {
-                    entityMetadata: {
-                        PrimaryIdAttribute: 'id'
-                    }
-                });
+                }]);
+                memoryProvider.setMetadata({
+                    PrimaryIdAttribute: 'id'
+                })
                 const record = memoryProvider.refresh()[0];
                 record.expressions?.setRequiredLevelExpression(this._column.name, () => 'required');
                 return !record.getColumnInfo(this._column.name).error
