@@ -24,6 +24,7 @@ export const AgGrid = () => {
     const grid = useGridInstance();
     const selection = useSelectionController();
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
+    const containerWidthRef = useRef(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const styles = getGridStyles(theme, grid.height);
@@ -45,6 +46,10 @@ export const AgGrid = () => {
         agGrid.selectRows();
     }, 0);
 
+    const debouncedSetAgColumns = useDebouncedCallback(() => {
+        setAgColumns(agGrid.columns);
+    }, 0);
+
     debouncedRefresh();
 
     const onGridReady = () => {
@@ -60,18 +65,12 @@ export const AgGrid = () => {
     }
 
 
-    const getAvailableWidth = () => {
-        const rootWrapper = containerRef.current?.querySelector('.ag-root-wrapper');
-        return rootWrapper?.clientWidth ?? 0;
-    }
-
     const sizeColumnsIfSpaceAvailable = () => {
         //do not autosize if user manually adjusted the column width
-        if(!gridApiRef.current || userChangedColumnSizeRef.current) {
+        if (!gridApiRef.current || userChangedColumnSizeRef.current) {
             return;
         }
-        const availableWidth = getAvailableWidth();
-        if (availableWidth > agGrid.getTotalColumnsWidth()) {
+        if (getCurrentContainerWidth() > grid.getTotalVisibleColumnsWidth()) {
             gridApiRef.current!.sizeColumnsToFit();
         }
     }
@@ -156,6 +155,10 @@ export const AgGrid = () => {
         }, 0);
     }
 
+    const getCurrentContainerWidth = (): number => {
+        return containerWidthRef.current ?? containerRef.current?.clientWidth
+    }
+
     const updateColumnVisualSizeFactor = useDebouncedCallback((e: ColumnResizedEvent<IRecord, any>) => {
         if (e.source !== 'uiColumnResized') {
             return;
@@ -186,7 +189,9 @@ export const AgGrid = () => {
 
     useEffect(() => {
         toggleOverlay();
-        gridApiRef.current?.ensureIndexVisible(0)
+        if (records.length > 0) {
+            gridApiRef.current?.ensureIndexVisible(0)
+        }
     }, [grid.loading]);
 
 
@@ -203,99 +208,98 @@ export const AgGrid = () => {
     }, [records]);
 
     useEffect(() => {
-        //need to wait for next tick so ag grid has the columns ready
-        setTimeout(() => {
-            setAgColumns(agGrid.columns);
-        }, 0)
+        debouncedSetAgColumns();
     }, [columns]);
 
     useEffect(() => {
-        sizeColumnsIfSpaceAvailable();
-    }, [agColumns])
-
+        sizeColumnsIfSpaceAvailable()
+    }, [agColumns]);
 
     return (
         <div
             ref={containerRef}
             className={`${styles.root} ag-theme-balham`}
         >
-            {agColumns.length > 0 &&
-                <>
-                    {grid.isEditable && grid.dataset.isDirty?.() &&
-                        <Save />
+            {grid.isEditable && grid.dataset.isDirty?.() &&
+                <Save />
+            }
+            {grid.error &&
+                <MessageBar messageBarType={MessageBarType.error}>
+                    <span dangerouslySetInnerHTML={{
+                        __html: grid.errorMessage!
+                    }} />
+                </MessageBar>
+            }
+            <AgGridReact
+                animateRows
+                rowSelection={grid.selection.type}
+                noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
+                loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
+                suppressDragLeaveHidesColumns
+                onColumnResized={(e) => updateColumnVisualSizeFactor(e)}
+                onColumnMoved={(e) => {
+                    if (e.finished) {
+                        updateColumnOrder(e);
                     }
-                    {grid.error &&
-                        <MessageBar messageBarType={MessageBarType.error}>
-                            <span dangerouslySetInnerHTML={{
-                                __html: grid.errorMessage!
-                            }} />
-                        </MessageBar>
+                }}
+                reactiveCustomComponents
+                onRowSelected={(e) => {
+                    //prevent infinite loop since we are also setting the rows
+                    //when the selection comes from above
+                    if (e.source.includes('api') || e.source === 'gridInitializing') {
+                        return;
                     }
-                    <AgGridReact
-                        animateRows
-                        rowSelection={grid.selection.type}
-                        noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
-                        loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
-                        suppressDragLeaveHidesColumns
-                        onColumnResized={(e) => updateColumnVisualSizeFactor(e)}
-                        onColumnMoved={(e) => {
-                            if (e.finished) {
-                                updateColumnOrder(e);
-                            }
-                        }}
-                        reactiveCustomComponents
-                        onRowSelected={(e) => {
-                            //prevent infinite loop since we are also setting the rows
-                            //when the selection comes from above
-                            if (e.source.includes('api') || e.source === 'gridInitializing') {
-                                return;
-                            }
-                            selection.toggle(e.data!, e.node.isSelected()!)
-                        }}
-                        onCellDoubleClicked={(e) => {
-                            if (grid.isNavigationEnabled && !grid.isEditable) {
-                                grid.openDatasetItem(e.data!.getNamedReference())
-                            }
-                        }}
-                        onCellMouseOver={(e) => {
-                            if (e.colDef.colId === CHECKBOX_COLUMN_KEY) {
-                                gridApiRef.current?.setGridOption('suppressRowClickSelection', true)
-                            }
-                        }}
-                        onCellMouseOut={(e) => {
-                            gridApiRef.current?.setGridOption('suppressRowClickSelection', false)
-                        }}
-                        getRowId={(params) => params.data.getRecordId()}
-                        onGridReady={(e) => {
-                            gridApiRef.current = e.api as any;
-                            if (grid.loading) {
-                                gridApiRef.current?.showLoadingOverlay();
-                            }
-                            sizeColumnsIfSpaceAvailable();
-                            onGridReady();
-                        }}
-                        initialState={stateValuesRef.current}
-                        onStateUpdated={(e) => stateValuesRef.current = {
-                            ...stateValuesRef.current,
-                            ...e.state
-                        }}
-                        suppressAnimationFrame
-                        columnDefs={agColumns as any}
-                        rowData={records}
-                        getRowHeight={(params) => {
-                            const columnWidths: { [name: string]: number } = {};
-                            params.api.getAllGridColumns().map(col => {
-                                columnWidths[col.getColId()] = col.getActualWidth()
-                            })
-                            return params?.data?.ui?.getHeight(columnWidths, grid.rowHeight)
-                        }}
+                    selection.toggle(e.data!, e.node.isSelected()!)
+                }}
+                onCellDoubleClicked={(e) => {
+                    if (grid.isNavigationEnabled && !grid.isEditable) {
+                        grid.openDatasetItem(e.data!.getNamedReference())
+                    }
+                }}
+                onCellMouseOver={(e) => {
+                    if (e.colDef.colId === CHECKBOX_COLUMN_KEY) {
+                        gridApiRef.current?.setGridOption('suppressRowClickSelection', true)
+                    }
+                }}
+                onCellMouseOut={(e) => {
+                    gridApiRef.current?.setGridOption('suppressRowClickSelection', false)
+                }}
+                getRowId={(params) => params.data.getRecordId()}
+                onGridReady={(e) => {
+                    gridApiRef.current = e.api as any;
+                    if (grid.loading) {
+                        gridApiRef.current?.showLoadingOverlay();
+                    }
+                    onGridReady();
+                }}
+                onGridSizeChanged={(e) => {
+                    containerWidthRef.current = e.clientWidth;
+                    sizeColumnsIfSpaceAvailable();
+                }}
+                onFirstDataRendered={(e) => {
+                    sizeColumnsIfSpaceAvailable();
+                }}
+                
+                initialState={stateValuesRef.current}
+                onStateUpdated={(e) => stateValuesRef.current = {
+                    ...stateValuesRef.current,
+                    ...e.state
+                }}
+                suppressAnimationFrame
+                columnDefs={agColumns as any}
+                rowData={records}
+                getRowHeight={(params) => {
+                    const columnWidths: { [name: string]: number } = {};
+                    params.api.getAllGridColumns().map(col => {
+                        columnWidths[col.getColId()] = col.getActualWidth()
+                    })
+                    return params?.data?.ui?.getHeight(columnWidths, grid.rowHeight)
+                }}
 
-                    >
-                    </AgGridReact>
-                    {grid.paging.isEnabled &&
-                        <Paging />
-                    }
-                </>
+            >
+            </AgGridReact>
+            {grid.paging.isEnabled &&
+                <Paging />
             }
         </div>
     );

@@ -234,6 +234,14 @@ export class Grid {
         this._refreshGlobalCheckBox();
     }
 
+    public getTotalVisibleColumnsWidth(): number {
+        let totalWidth = 0;
+        this._columns.filter(x => !x.isHidden).map(col => {
+            totalWidth = totalWidth + col.visualSizeFactor;
+        })
+        return totalWidth;
+    }
+
     private async _isColumnEditable(column: IColumn): Promise<boolean> {
         //only allow editing if specifically allowed
         if (!this._props.parameters.EnableEditing?.raw) {
