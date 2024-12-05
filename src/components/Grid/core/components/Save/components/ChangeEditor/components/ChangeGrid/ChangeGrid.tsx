@@ -89,14 +89,12 @@ export const ChangeGrid = (props: IChangeGrid) => {
                     id__virtual: "new",
                     'valueDesc__virtual': grid.labels["new-value"](),
                 },
-            ],
-            getColumns(),
-            {
-                entityMetadata: {
-                    PrimaryIdAttribute: "id__virtual",
-                },
-            }
+            ]
         );
+        memoryProvider.setColumns(getColumns());
+        memoryProvider.setMetadata({
+            PrimaryIdAttribute: "id__virtual"
+        })
         const dataset = new Dataset(memoryProvider);
         grid.dataset.linking.getLinkedEntities().map(x => dataset.linking.addLinkedEntity(x))
 
@@ -165,7 +163,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
             baseRecord.clearChanges?.();
             grid.pcfContext.factory.requestRender();
         })
-        dataset.addEventListener('onSave', async () => {
+        dataset.addEventListener('onRecordSave', async () => {
             props.onIsSaving(true);
             await baseRecord.save();
             baseRecord.clearChanges?.();

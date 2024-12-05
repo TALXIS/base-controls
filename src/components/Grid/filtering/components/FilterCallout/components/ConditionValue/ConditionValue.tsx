@@ -34,27 +34,25 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                     [column.name]: conditionComponentValue.get() ?? undefined,
                     id: "id",
                 },
-            ],
-            [
-                {
-                    ...column,
-                    metadata: { ...(column.metadata as any), RequiredLevel: 0 },
-                },
-                {
-                    name: "id",
-                    displayName: "",
-                    dataType: DataTypes.SingleLineText,
-                    alias: "id",
-                    order: 0,
-                    visualSizeFactor: 0,
-                },
-            ],
-            {
-                entityMetadata: {
-                    PrimaryIdAttribute: "id",
-                },
-            }
+            ]
         );
+        memoryProvider.setColumns([
+            {
+                ...column,
+                metadata: { ...(column.metadata as any), RequiredLevel: 0 },
+            },
+            {
+                name: "id",
+                displayName: "",
+                dataType: DataTypes.SingleLineText,
+                alias: "id",
+                order: 0,
+                visualSizeFactor: 0,
+            },
+        ]);
+        memoryProvider.setMetadata({
+            PrimaryIdAttribute: "id"
+        })
         const record = memoryProvider.refresh()[0];
         return record;
     }, []);
