@@ -27,7 +27,7 @@ export const useCommands = (record: IRecord): [
         //@ts-ignore
         const commands = await dataset.retrieveRecordCommand([record.getRecordId()], grid.inlineRibbonButtonIds);
         for (const command of commands) {
-            if (!command.shouldBeVisible /* || (command.__isInline !== undefined && command.__isInline === false */) {
+            if (!command.shouldBeVisible || (command.__isInline !== undefined && command.__isInline === false)) {
                 continue;
             }
             items.push({
