@@ -7,8 +7,8 @@ export interface ITextField extends IControl<ITextFieldParameters, ITextFieldOut
 }
 
 export interface ITextFieldParameters extends IInputParameters {
-    isResizable?: ITwoOptionsProperty;
-    EnableTypeSuffix?: ITwoOptionsProperty;
+    isResizable?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableTypeSuffix?: Omit<ITwoOptionsProperty, 'attributes'>;
     value: IStringProperty;
 }
 

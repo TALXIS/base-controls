@@ -1,53 +1,40 @@
-import React, { ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { ReactElement } from "react";
 import { Text } from '@fluentui/react';
 import { optionSetStyles } from "./styles";
 import color from 'color';
 import { useTheme } from "@fluentui/react";
-import { IGridColumn } from "../../../../interfaces/IGridColumn";
-import { useGridInstance } from "../../../../hooks/useGridInstance";
 import { DataType } from "../../../../enums/DataType";
-import { IRecord } from "@talxis/client-libraries";
+import { IMultiSelectOptionSet } from "../../../../../../MultiSelectOptionSet";
+import { IOptionSet } from "../../../../../../OptionSet";
+import { ITwoOptions } from "../../../../../../TwoOptions";
 
 interface IReadOnlyOptionSet {
-    column: IGridColumn;
-    record: IRecord
+    controlProps: IMultiSelectOptionSet | IOptionSet | ITwoOptions
     defaultRender: () => ReactElement
 }
 
 export const ReadOnlyOptionSet = (props: IReadOnlyOptionSet) => {
-    const grid = useGridInstance();
-    const { record, column, defaultRender } = { ...props }
-    const [options, setOptions] = useState<ComponentFramework.PropertyHelper.OptionMetadata[] | null>(null);
+    const { defaultRender } = { ...props }
+    const valueParameter = props.controlProps.parameters.value;
+    const allOptions = props.controlProps.parameters.value.attributes.Options;
+    const dataType = valueParameter.type as DataType;
     const theme = useTheme();
     const defaultColor = theme.palette.neutralLight;
 
-    useEffect(() => {
-        (async () => {
-            const getOptions = async (): Promise<ComponentFramework.PropertyHelper.OptionMetadata[]> => {
-                const [defaultValue, options] = await grid.metadata.getOptions(column.name);
-                let value: any = record.getValue(column.name);
-                if (column.dataType === DataType.OPTIONSET) {
-                    value = value ? [parseInt(value)] : null;
-                }
-                if (column.dataType === DataType.MULTI_SELECT_OPTIONSET) {
-                    value = value ? value.split(',').map((value: string) => parseInt(value)) : null;
-                }
-                if (column.dataType === DataType.TWO_OPTIONS) {
-                    value = [parseInt(value)];
-                }
-                return options.filter(option => value?.includes(option.Value)) ?? [];
-            }
-            const results = await getOptions();
-            setOptions(results);
-        })();
-    }, [record.getValue(column.name)]);
+    const options = (() => {
+        let value: any = valueParameter.raw;
+        if (dataType === DataType.OPTIONSET) {
+            value = value ? [parseInt(value)] : null;
+        }
+        if (dataType === DataType.MULTI_SELECT_OPTIONSET) {
+            value = value ? value.split(',').map((value: string) => parseInt(value)) : null;
+        }
+        if (dataType === DataType.TWO_OPTIONS) {
+            value = [parseInt(value)];
+        }
+        return allOptions.filter(option => value?.includes(option.Value)) ?? [];
+    })();
 
-    //options not loaded yet
-    if (options === null) {
-        return <></>
-    }
-    //options loaded but either no value selected or no colors are present
     if (options.length === 0 || !options.find(x => x.Color)) {
         return defaultRender();
     }
