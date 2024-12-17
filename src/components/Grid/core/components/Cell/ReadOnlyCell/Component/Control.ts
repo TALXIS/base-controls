@@ -1,63 +1,250 @@
-import { ControlHandler } from "./ControlHandler";
+import { DataType, DataTypes, IFieldValidationResult, Manifest, PromiseCache } from "@talxis/client-libraries";
+import { Property } from "../Properties/Property";
+import { TextProperty } from "../Properties/TextProperty";
+import { OptionSetProperty } from "../Properties/OptionSetProperty";
+import { IControl, IProperty } from "../../../../../../../interfaces";
 
-interface IEntityMetadata {
-    entityName?: string;
-    linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[];
+
+const manifestCache = new PromiseCache();
+
+export interface IBinding {
+    type: DataType;
+    isStatic: boolean;
+    metadata?: {
+        enitityName: string;
+        attributeName: string;
+    },
+    valueGetter: () => any;
+    validator?: (value: any) => IFieldValidationResult
 }
 
-export interface IControlOptions {
-    controlHandler: ControlHandler,
-    onNotifyOuputChanged: (value: any) => void;
-    entityMetadata?: IEntityMetadata;
+export interface IOptions {
+    bindings: {
+        [name: string]: IBinding;
+    },
+    /**
+    * PCF Context of parent control using this class. It will be used as base for nested control PCF context.
+    */
+    parentPcfContext: ComponentFramework.Context<any, any>;
+
+    /**
+     * Container element into which the control will be rendered in.
+     */
+    containerElement: HTMLDivElement;
+
+    /**
+     * Custom PCF to be rendered, if not provided you will get Base Control props.
+     */
+    callbacks?: {
+        //TODO: type based on the provided bindings?
+        onNotifyOutputChanged?: (outputs: any) => void;
+        onInit?: () => void;
+        onGetCustomControlName?: () => string | undefined;
+        onIsControlDisabled?: () => boolean;
+    },
+    overrides?: {
+        onRender?: (isCustomControl: boolean) => ((container: HTMLDivElement, props: IControl<any, any, any, any>) => void) | undefined;
+        onUnmount?: (isCustomControl: boolean) => ((container: HTMLDivElement) => void) | undefined;
+        onGetProps?: () => ((props: IControl<any, any, any, any>) => IControl<any, any, any, any>) | undefined
+    }
 }
 
-export abstract class Control {
-    protected _controlHandler: ControlHandler;
-    protected _onNotifyOutputChanged: (value: any) => void;
-    protected _entityMetadata?: IEntityMetadata;
-    private _controlId: string;
-    private _initialized: boolean = false;
+export class Control {
+    private _options: IOptions;
+    private _properties: Map<string, Property> = new Map();
+    private _customControlName: string = '';
+    private _customControlInstance: ComponentFramework.StandardControl<any, any> | null = null;
+    private _customControlContext: ComponentFramework.Context<any, any> | null = null;
+    private _customControlId: string = '';
+    private _manifest: Manifest | null = null;
 
-    constructor(options: IControlOptions) {
-        this._controlHandler = options.controlHandler;
-        this._onNotifyOutputChanged = options.onNotifyOuputChanged;
-        this._entityMetadata = options.entityMetadata;
-        this._controlId = crypto.randomUUID();
+    constructor(options: IOptions) {
+        this._options = options;
+        this._init();
     }
 
-    public abstract getProps(): any;
-    public abstract init(): Promise<boolean>
-
-    public render() {
-        const properties: any = {
-            controlstates: {
-                // This is the only implemented controlState parameter
-                isControlDisabled: false,
-            },
-            parameters: this._getParameters()
-        };
-        if(!this._initialized) {
-            const component = (this._controlHandler.getParentContext() as any).factory.createComponent('talxis_TALXIS.PCF.ColorPicker', this._controlId, properties);
-            (this._controlHandler.getParentContext() as any).factory.bindDOMElement(component, this._controlHandler.getContainerElement());
+    public getProps(): IControl<any, any, any, any> {
+        const parameters: { [name: string]: IProperty } = {};
+        [...this._properties.entries()].map(([name, prop]) => {
+            parameters[name] = prop.getParameter()
+        })
+        const props: IControl<any, any, any, any> = {
+            context: this._options.parentPcfContext,
+            parameters: parameters,
+            onNotifyOutputChanged: (outputs) => this._options.callbacks?.onNotifyOutputChanged?.(outputs),
         }
-        this._initialized = true;
+        const override = this._options.overrides?.onGetProps?.();
+        if(override) {
+            return override(props);
+        }
+        return props;
+    }
+    public async render() {
+        const currentCustomControlName = this._options.callbacks?.onGetCustomControlName?.() ?? '';
+        //if we detect change in PCF name, unmount it first
+        if(currentCustomControlName !== this._customControlName) {
+            this.unmount();
+        }
+        const override = this._options.overrides?.onRender?.(!!currentCustomControlName);
+        if (override) {
+            return override(this._options.containerElement, this.getProps());
+        }
+
+        //if the PCF name changed, reinitialize
+        if(currentCustomControlName !== this._customControlName) {
+            this._customControlName = currentCustomControlName;
+            this._customControlId = crypto.randomUUID();
+            this._manifest = await this._getManifest(this._customControlName);
+            const properties: any = {
+                controlstates: {
+                    // This is the only implemented controlState parameter
+                    isControlDisabled: this._options.callbacks?.onIsControlDisabled?.() ?? false
+                },
+                parameters: this._getCustomControlParameters(this._manifest),
+                childeventlisteners: [{
+                    eventname: "onEvent",
+                    eventhandler: (object: any) => {
+                        this._customControlInstance = object.instance;
+                        this._customControlContext = object.context;
+                        this._patchContext(object.context, this._manifest!);
+                    }
+                }]
+            };
+            const component = (this._options.parentPcfContext as any).factory.createComponent(this._customControlName, this._customControlId, properties);
+            (this._options.parentPcfContext as any).factory.bindDOMElement(component, this._options.containerElement);
+        }
+        //the PCF did not change, just call updateView
+        else {
+            this._customControlInstance?.updateView?.(this._patchContext(this._customControlContext!, this._manifest!))
+        }
     }
 
-    private _getParameters() {
-        const parameters = this._controlHandler.getColumn().parameters;
-        let result: {[name: string]: any} = {};
-        Object.entries(parameters).map(([name, parameter]) => {
-            result[name] = {
-                Static: parameter.static,
-                Primary: false,
-                //need to fetch manifest for this to work properly
-                Type: parameter.static ? parameter.type : this._controlHandler.getColumn().dataType,
-                Value: parameter.static ? parameter.value : this._controlHandler.getBindingValue(),
-                Usage: parameter.static ? 0 : 3,
-                Callback: (value: any) => {
+    //TODO: unify this
+    public unmount() {
+        const override = this._options.overrides?.onUnmount?.(!!this._customControlName);
+        if (override) {
+            override(this._options.containerElement);
+        }
+        (this._options.parentPcfContext as any).factory.unbindDOMComponent(this._customControlId);
+        this._customControlName = '';
+    }
 
+    private async _init() {
+        const promises: Promise<boolean>[] = [];
+        Object.entries(this._options.bindings).map(([name, binding]) => {
+            const propertyInstance = this._getPropertyInstance(binding);
+            promises.push(propertyInstance.init());
+            this._properties.set(name, propertyInstance);
+        })
+        await Promise.all(promises);
+        this._options.callbacks?.onInit?.()
+    }
+    private _getPropertyInstance(binding: IBinding) {
+        switch (binding.type) {
+            case DataTypes.LookupSimple:
+            case DataTypes.LookupOwner:
+            case DataTypes.LookupCustomer: {
+                return new TextProperty(binding, this._options);
+            }
+
+            case DataTypes.TwoOptions:
+            case DataTypes.OptionSet:
+            case DataTypes.MultiSelectOptionSet: {
+                return new OptionSetProperty(binding, this._options);
+            }
+            case DataTypes.DateAndTimeDateAndTime:
+            case DataTypes.DateAndTimeDateOnly: {
+                return new TextProperty(binding, this._options);
+            }
+            case DataTypes.WholeNone:
+            case DataTypes.Decimal:
+            case DataTypes.Currency:
+            case DataTypes.WholeDuration: {
+                return new TextProperty(binding, this._options);
+            }
+            default: {
+                return new TextProperty(binding, this._options);
+            }
+        }
+    }
+    private async _getManifest(controlName: string) {
+        return manifestCache.get(controlName, async () => {
+            const result = await this._options.parentPcfContext.webAPI.retrieveMultipleRecords('customcontrol', `?$select=name,manifest&$filter=name eq '${controlName}'`);
+            const manifestXmlString = result.entities[0].manifest;
+            return new Manifest(manifestXmlString);
+        })
+    }
+    private _getCustomControlParameters(manifest: Manifest) {
+        let result: { [name: string]: any } = {};
+        const bindingParameters = this.getProps().parameters;
+        [...manifest.control.properties.values()].map(property => {
+            result[property.name] = {
+                Static: property.usage === 'input',
+                Primary: property.isBindingProperty,
+                //if no ofType is present, there is a type group and we need to get the type from the passed parameters above
+                Type: property.ofType ?? bindingParameters[property.name]?.type ?? 'SingleLine.Text',
+                //if static, we take the value that came from the parameter above
+                Value: (() => {
+                    if(bindingParameters[property.name]?.raw) {
+                        return bindingParameters[property.name]?.raw
+                    }
+                    //if this is a binding, get the value of first bound parameter no matter the name
+                    if(property.isBindingProperty) {
+                        const bindingName = Object.entries(this._options.bindings).find(([name, binding]) => !binding.isStatic)?.[0]
+                        if(!bindingName) {
+                            throw Error('Missing binding!');
+                        }
+                        return bindingParameters[bindingName].raw;
+                    }
+                    return property.defaultValue;
+                })(),
+                Usage: (() => {
+                    switch(property.usage) {
+                        case 'bound': {
+                            return 3
+                        }
+                        case 'input':
+                        case 'output': {
+                            return 0
+                        }
+                    }
+                })(),
+                Callback: () => {
+                    this._options.callbacks?.onNotifyOutputChanged?.(this._customControlInstance?.getOutputs?.());
                 }
             }
         })
+        return result;
+    }
+    private _patchContext(context: ComponentFramework.Context<any, any>, manifest: Manifest) {
+        const props = this.getProps();
+        const parameters = props.parameters;
+        const contextParameters = context.parameters;
+        //context.mode = props.context.mode;
+        //context.mode.isControlDisabled = this._options.callbacks?.onIsControlDisabled?.() ?? false;
+        Object.defineProperty(context, 'mode', {
+            get: () => {
+                return props.context.mode;
+            },
+            set: () => {}
+        });
+        Object.defineProperty(context, 'fluentDesignLanguage', {
+            get: () => {
+                return props.context.fluentDesignLanguage
+            },
+            set: () => {}
+        })
+        Object.defineProperty(context, 'parameters', {
+            get: () => {
+                return {
+                    ...contextParameters,
+                    ...parameters
+                }
+            },
+            set: () => {
+
+            }
+        })
+        return context;
     }
 }

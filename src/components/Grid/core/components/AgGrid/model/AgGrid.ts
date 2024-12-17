@@ -1,4 +1,4 @@
-import { ColDef, EditableCallbackParams, GridApi, IRowNode } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, GridApi, IRowNode } from "@ag-grid-community/core";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 import { DataType } from "../../../enums/DataType";
@@ -12,6 +12,7 @@ import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
+    private _currentlyEditingCellId: string = '';
 
     constructor(grid: Grid, gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>) {
         super(grid);
@@ -27,14 +28,13 @@ export class AgGrid extends GridDependency {
                 hide: column.isHidden,
                 initialWidth: column.visualSizeFactor,
                 sortable: !column.disableSorting,
-                editable: (p) => this._isColumnEditable(column, p), 
                 resizable: column.isResizable,
                 autoHeaderHeight: true,
                 suppressMovable: column.isDraggable === false ? true : false,
                 suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
                 cellClass: this._getCellClassName(column),
                 cellRenderer: ReadOnlyCell,
-                cellEditor: EditableCell,
+                onCellDoubleClicked: (e) => this._onCellDoubleClicked(column, e),
                 headerComponent: ColumnHeader,
                 valueFormatter: (p) => {
                     if(column.name === CHECKBOX_COLUMN_KEY) {
@@ -115,6 +115,16 @@ export class AgGrid extends GridDependency {
             force: true
         })
     }
+    public isCellBeingEdited(node: IRowNode<IRecord>, columnName: string) {
+        return `${node.id}_${columnName}` === this._currentlyEditingCellId;
+    }
+    public stopEditing() {
+        this._currentlyEditingCellId = '';
+        //TODO: optimize
+        this._gridApi?.refreshCells({
+            force: true
+        })
+    }
     private get _gridApi() {
         return this._gridApiRef.current;
     }
@@ -129,10 +139,19 @@ export class AgGrid extends GridDependency {
         return 'talxis-cell-align-left';
     }
 
-    private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
-        if (!this._grid.parameters.EnableEditing?.raw || params.data?.ui.isLoading?.(column.name) === true) {
+    private _isColumnEditable(column: IGridColumn, record: IRecord): boolean {
+        if (!this._grid.parameters.EnableEditing?.raw || record?.ui.isLoading?.(column.name) === true) {
             return false;
         }
-        return params.data?.getColumnInfo(column.name).security.editable ?? true;
+        return record?.getColumnInfo(column.name).security.editable ?? true;
+    }
+    
+    private _onCellDoubleClicked(column: IGridColumn, event: CellDoubleClickedEvent<any, any>) {
+        if(this._isColumnEditable(column, event.data)) {
+            this._currentlyEditingCellId = `${event.node.id}_${column.name}`;
+            this._gridApi?.refreshCells({
+                force: true
+            })
+        }
     }
 }

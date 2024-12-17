@@ -1,7 +1,7 @@
 import { AgGridReact } from '@ag-grid-community/react';
 import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
 import { ColDef, ColumnMovedEvent, ColumnResizedEvent, GridApi, GridState, ModuleRegistry } from "@ag-grid-community/core";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
@@ -20,6 +20,8 @@ import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
+export const AgGridContext = createContext<AgGridModel>(null as any);
+
 export const AgGrid = () => {
     const grid = useGridInstance();
     const selection = useSelectionController();
@@ -29,7 +31,8 @@ export const AgGrid = () => {
     const theme = useTheme();
     const styles = getGridStyles(theme, grid.height);
     const agGridReadyRef = useRef<boolean>(false);
-    const agGrid = useMemo(() => new AgGridModel(grid, gridApiRef), [])
+    const agGrid = useMemo(() => new AgGridModel(grid, gridApiRef), []);
+    const agGridProviderValue = useMemo(() => agGrid, []);
     const { columns } = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<GridState>(grid.state as GridState);
@@ -116,7 +119,7 @@ export const AgGrid = () => {
         };
         try {
             if (!hasAncestorWithClass(e.target as HTMLElement, 'ag-cell')) {
-                gridApiRef.current?.stopEditing();
+                agGrid.stopEditing();
             }
         }
         catch (err) {
@@ -216,6 +219,7 @@ export const AgGrid = () => {
     }, [agColumns]);
 
     return (
+        <AgGridContext.Provider value={agGridProviderValue}>
         <div
             ref={containerRef}
             className={`${styles.root} ag-theme-balham`}
@@ -302,5 +306,6 @@ export const AgGrid = () => {
                 <Paging />
             }
         </div>
+        </AgGridContext.Provider>
     );
 }

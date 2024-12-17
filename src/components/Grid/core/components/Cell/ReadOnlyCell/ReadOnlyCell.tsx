@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { ILinkProps, Shimmer } from '@fluentui/react';
+import { ILinkProps, Shimmer, TextField } from '@fluentui/react';
 import { Link } from '@fluentui/react';
 import { Text } from '@fluentui/react';
 import { getMultilineStyle, getReadOnlyCellStyles } from './styles';
 import { Commands } from '../Commands/Commands';
 import { Checkbox, Icon, useTheme, Image } from '@fluentui/react';
-import { Constants, DataTypes, FileAttribute, IColumn, IRecord } from '@talxis/client-libraries';
+import { Attribute, Constants, DataTypes, FileAttribute, IColumn, IRecord } from '@talxis/client-libraries';
 import { ReadOnlyOptionSet } from './ReadOnlyOptionSet/ReadOnlyOptionSet';
 import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { DataType } from '../../../enums/DataType';
@@ -17,9 +17,11 @@ import { INotificationsRef, Notifications } from './Notifications/Notifications'
 import { useDebouncedCallback } from 'use-debounce';
 import { useState } from 'react';
 import { IControl } from '../../../../../../interfaces';
-import { ControlHandler } from './Component/ControlHandler';
 import ReactDOM from 'react-dom';
 import { Grid } from '../../../model/Grid';
+import { AgGridContext } from '../../AgGrid/AgGrid';
+import { Control, IBinding } from './Component/Control';
+import { EditableCell } from '../EditableCell/EditableCell';
 
 interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
@@ -125,7 +127,7 @@ export const ReadOnlyCell = (props: ICellProps) => {
         } as React.CSSProperties} className={styles.root} data-is-valid={!validation || validation.error === false}>
             <div className={styles.cellContentWrapper}>
                 <div className={styles.cellContent}>
-                    <Test {...props} />
+                    <CellContent {...props} />
                     {/*                     <InternalReadOnlyCell {...props} /> */}
                 </div>
             </div>
@@ -163,68 +165,167 @@ export const ReadOnlyCell = (props: ICellProps) => {
     )
 };
 
-const Test = (props: ICellProps) => {
+const CellContent = (props: ICellProps) => {
     const column = props.baseColumn;
     const grid = useGridInstance();
     const record = props.data;
     const [initialized, setIsInitialized] = useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const controlHandlerRef = React.useRef<ControlHandler>();
+    const controlRef = React.useRef<Control>();
+    const agGridContext = React.useContext(AgGridContext);
 
-    const createControlHandlerInstance = () => {
-        return new ControlHandler({
-            controlName: column.control?.name ?? 'gridNative',
-            column: {
-                name: column.name,
-                dataType: column.dataType as any,
-                parameters: column.control?.parameters ?? {}
-            },
-            parentPcfContext: grid.pcfContext,
+    const isBeingEdited = (): boolean => {
+        return agGridContext.isCellBeingEdited(props.node, column.name);
+    }
+
+    const getControl = () => {
+        const controls = column.controls;
+        const controlForBoth = controls?.find(control => control.appliesTo === 'both');
+        if (controlForBoth) {
+            return controlForBoth;
+        }
+        if (isBeingEdited()) {
+            return controls?.find(control => control.appliesTo === 'cellEditor');
+        }
+        return controls?.find(control => control.appliesTo === 'cellRenderer');
+    }
+
+    const getBindings = (): {[name: string]: IBinding} => {
+        const bindings: {[name: string]: IBinding} = {
+            'value': {
+                isStatic: false,
+                type: column.dataType as any,
+                valueGetter: () => record.getValue(column.name),
+                metadata: {
+                    attributeName: Attribute.GetNameFromAlias(column.name),
+                    enitityName: (() => {
+                        const entityAliasName = Attribute.GetLinkedEntityAlias(column.name);
+                        if(!entityAliasName) {
+                            return grid.dataset.getTargetEntityType()
+                        }
+                        return grid.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
+                    })()
+                }
+            }
+        }
+        const control = getControl()
+        if(control?.bindings) {
+            Object.entries(control.bindings).map(([name, binding]) => {
+                bindings[name] = {
+                    isStatic: true,
+                    type: binding.type!,
+                    valueGetter: () => binding.value,
+                }
+            })
+        }
+        return bindings;
+    }
+
+    const createControlInstance = () => {
+        return new Control({
+            bindings: getBindings(),
             containerElement: containerRef.current!,
-            valueGetter: () => record.getValue(column.name),
-            formattedValueGetter: () => record.getFormattedValue(column.name),
+            parentPcfContext: grid.pcfContext,
             callbacks: {
-                onGetValidationResult: () => {
-                    return {
-                        error: false,
-                        errorMessage: ''
-                    }
-                },
                 onInit: () => setIsInitialized(true),
-                onNotifyOutputChanged: () => { }
+                onGetCustomControlName: () => getControl()?.name,
+                onIsControlDisabled: () => !isBeingEdited(),
+                onNotifyOutputChanged: (outputs) => console.log(outputs)
             },
             overrides: {
-                onOverrideRender: !column.control ? (container, controlProps) => {
-                    ReactDOM.render(React.createElement(InternalReadOnlyCell, {
-                        cellProps: props,
-                        controlProps: controlProps,
-                        column: column,
-                        record: record,
-                        grid: grid,
-                    }), container);
-                } : undefined
-            },
-            entityMetadata: {
-                entityName: grid.dataset.getTargetEntityType(),
-                linking: grid.dataset.linking.getLinkedEntities()
+                onRender: (isCustomControl) => {
+                    if(isCustomControl) {
+                        return undefined;
+                    }
+                    return (container, controlProps) => {
+                        if(isBeingEdited()) {
+                            return ReactDOM.render(React.createElement(TextField), container)
+                        }
+                        return ReactDOM.render(React.createElement(InternalReadOnlyCell, {
+                            cellProps: props,
+                            controlProps: controlProps,
+                            column: column,
+                            record: record,
+                            grid: grid,
+                        }), container);
+                    }
+                },
+                onUnmount: (isCustomControl) => {
+                    //if is custom control or no custom control is about to be mounted
+                    if(isCustomControl || !getControl()?.name) {
+                        return undefined;
+                    }
+                    return (container) => {
+                        ReactDOM.unmountComponentAtNode(container)
+                    }
+                },
+                onGetProps: () => {
+                    return (props) => {
+                        return {
+                            ...props,
+                            context: {
+                                ...props.context,
+                                mode: Object.create(props.context.mode, {
+                                    allocatedHeight: {
+                                        value: 41
+                                    }
+                                }),
+                                fluentDesignLanguage: props.context.fluentDesignLanguage ? {
+                                    ...props.context.fluentDesignLanguage,
+                                    tokenTheme: {
+                                        ...props.context.fluentDesignLanguage.tokenTheme,
+                                        underlined: false,
+                                    }
+                                } : undefined
+                            },
+                            parameters: {
+                                ...props.parameters,
+                                AutoFocus: {
+                                    raw: true
+                                },
+                                EnableNavigation: {
+                                    raw: false
+                                },
+                                IsInlineNewEnabled: {
+                                    raw: false
+                                },
+                                EnableTypeSuffix: {
+                                    raw: false
+                                }
+                            }
+                        }
+                    }
+                }
             }
         })
     }
+    
 
     React.useEffect(() => {
-        controlHandlerRef.current = createControlHandlerInstance();
-        controlHandlerRef.current.init();
+        controlRef.current = createControlInstance();
+        return () => {
+            controlRef.current?.unmount();
+        }
     }, []);
 
     React.useEffect(() => {
-        if (!initialized) {
+        if(!initialized) {
             return;
         }
-        controlHandlerRef.current?.render();
-    }, [initialized, record.getFormattedValue(column.name)])
+        controlRef.current?.render();
+    }, [initialized]);
 
-    return <div ref={containerRef} />
 
+    React.useEffect(() => {
+        if(!initialized) {
+            return;
+        }
+        controlRef.current?.render();
+    }, [isBeingEdited()])
+
+    return (
+        <div ref={containerRef} />
+    )
 }
 
 interface IInternalCellProps {
@@ -238,10 +339,10 @@ interface IInternalCellProps {
 const InternalReadOnlyCell = (props: IInternalCellProps) => {
     const cellProps = props.cellProps;
     const value = props.controlProps.parameters.value.raw;
-    const formattedValue = props.controlProps.parameters.value.formatted ?? null;
     const grid = props.grid;
     const column = props.column;
     const record = props.record;
+    const formattedValue = record.getFormattedValue(column.name)
     const theme = useTheme();
     const styles = getReadOnlyCellStyles(theme);
 
