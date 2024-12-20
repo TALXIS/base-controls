@@ -2,7 +2,7 @@ import { DataType, DataTypes, IFieldValidationResult, Manifest, PromiseCache } f
 import { Property } from "../Properties/Property";
 import { TextProperty } from "../Properties/TextProperty";
 import { OptionSetProperty } from "../Properties/OptionSetProperty";
-import { IControl, IProperty } from "../../../../../../../interfaces";
+import { IControl, IParameters, IProperty } from "../../../../../../../interfaces";
 
 
 const manifestCache = new PromiseCache();
@@ -15,7 +15,8 @@ export interface IBinding {
         attributeName: string;
     },
     valueGetter: () => any;
-    validator?: (value: any) => IFieldValidationResult
+    validator?: (value: any) => IFieldValidationResult;
+    onNotifyOutputChanged?: (newValue: any) => void;
 }
 
 export interface IOptions {
@@ -36,8 +37,6 @@ export interface IOptions {
      * Custom PCF to be rendered, if not provided you will get Base Control props.
      */
     callbacks?: {
-        //TODO: type based on the provided bindings?
-        onNotifyOutputChanged?: (outputs: any) => void;
         onInit?: () => void;
         onGetCustomControlName?: () => string | undefined;
         onIsControlDisabled?: () => boolean;
@@ -63,7 +62,7 @@ export class Control {
         this._init();
     }
 
-    public getProps(): IControl<any, any, any, any> {
+    public getProps(): IControl<IParameters, any, any, any> {
         const parameters: { [name: string]: IProperty } = {};
         [...this._properties.entries()].map(([name, prop]) => {
             parameters[name] = prop.getParameter()
@@ -71,10 +70,14 @@ export class Control {
         const props: IControl<any, any, any, any> = {
             context: this._options.parentPcfContext,
             parameters: parameters,
-            onNotifyOutputChanged: (outputs) => this._options.callbacks?.onNotifyOutputChanged?.(outputs),
+            onNotifyOutputChanged: (outputs: any) => {
+                Object.entries(outputs).map(([name, output]) => {
+                    this._options.bindings[name]?.onNotifyOutputChanged?.(output)
+                })
+            }
         }
         const override = this._options.overrides?.onGetProps?.();
-        if(override) {
+        if (override) {
             return override(props);
         }
         return props;
@@ -82,7 +85,7 @@ export class Control {
     public async render() {
         const currentCustomControlName = this._options.callbacks?.onGetCustomControlName?.() ?? '';
         //if we detect change in PCF name, unmount it first
-        if(currentCustomControlName !== this._customControlName) {
+        if (currentCustomControlName !== this._customControlName) {
             this.unmount();
         }
         const override = this._options.overrides?.onRender?.(!!currentCustomControlName);
@@ -91,14 +94,14 @@ export class Control {
         }
 
         //if the PCF name changed, reinitialize
-        if(currentCustomControlName !== this._customControlName) {
+        if (currentCustomControlName !== this._customControlName) {
             this._customControlName = currentCustomControlName;
             this._customControlId = crypto.randomUUID();
             this._manifest = await this._getManifest(this._customControlName);
             const properties: any = {
                 controlstates: {
                     // This is the only implemented controlState parameter
-                    isControlDisabled: this._options.callbacks?.onIsControlDisabled?.() ?? false
+                    isControlDisabled: false
                 },
                 parameters: this._getCustomControlParameters(this._manifest),
                 childeventlisteners: [{
@@ -115,6 +118,9 @@ export class Control {
         }
         //the PCF did not change, just call updateView
         else {
+            if(!this._customControlInstance) {
+                console.error(`Custom control ${this._customControlName} does not expose it's instance through fire event. Please add fireEvent to init() to avoid unintentional behavior.`)
+            }
             this._customControlInstance?.updateView?.(this._patchContext(this._customControlContext!, this._manifest!))
         }
     }
@@ -177,7 +183,8 @@ export class Control {
     private _getCustomControlParameters(manifest: Manifest) {
         let result: { [name: string]: any } = {};
         const bindingParameters = this.getProps().parameters;
-        [...manifest.control.properties.values()].map(property => {
+        const manifestProperties = [...manifest.control.properties.values()];
+        manifestProperties.map(property => {
             result[property.name] = {
                 Static: property.usage === 'input',
                 Primary: property.isBindingProperty,
@@ -185,21 +192,21 @@ export class Control {
                 Type: property.ofType ?? bindingParameters[property.name]?.type ?? 'SingleLine.Text',
                 //if static, we take the value that came from the parameter above
                 Value: (() => {
-                    if(bindingParameters[property.name]?.raw) {
+                    if (bindingParameters[property.name]?.raw) {
                         return bindingParameters[property.name]?.raw
                     }
                     //if this is a binding, get the value of first bound parameter no matter the name
-                    if(property.isBindingProperty) {
+                    if (property.isBindingProperty) {
                         const bindingName = Object.entries(this._options.bindings).find(([name, binding]) => !binding.isStatic)?.[0]
-                        if(!bindingName) {
+                        if (!bindingName) {
                             throw Error('Missing binding!');
                         }
-                        return bindingParameters[bindingName].raw;
+                        return bindingParameters[bindingName]!.raw;
                     }
                     return property.defaultValue;
                 })(),
                 Usage: (() => {
-                    switch(property.usage) {
+                    switch (property.usage) {
                         case 'bound': {
                             return 3
                         }
@@ -209,8 +216,29 @@ export class Control {
                         }
                     }
                 })(),
-                Callback: () => {
-                    this._options.callbacks?.onNotifyOutputChanged?.(this._customControlInstance?.getOutputs?.());
+                Callback: (value: any) => {
+                    let binding = this._options.bindings[property.name];
+                    if(!binding) {
+                        const foundBindingName = Object.entries(this._options.bindings).find(([name, binding]) => !binding.isStatic)?.[0];
+                        if(!foundBindingName) {
+                            throw new Error('Missing binding!');
+                        }
+                        binding = this._options.bindings[foundBindingName];
+                    }
+                    binding.onNotifyOutputChanged?.(value)
+                }
+            }
+        })
+        //parameters that are not in PCF manifest, but have been set either through bindings or override
+        //only static parameters supported like this
+        Object.entries(bindingParameters).map(([name, par]) => {
+            if (!manifestProperties.find(prop => prop.name === name)) {
+                result[name] = {
+                    Static: true,
+                    Primary: false,
+                    Type: par?.type,
+                    Value: par?.raw,
+                    Usage: 0,
                 }
             }
         })
@@ -226,13 +254,13 @@ export class Control {
             get: () => {
                 return props.context.mode;
             },
-            set: () => {}
+            set: () => { }
         });
         Object.defineProperty(context, 'fluentDesignLanguage', {
             get: () => {
                 return props.context.fluentDesignLanguage
             },
-            set: () => {}
+            set: () => { }
         })
         Object.defineProperty(context, 'parameters', {
             get: () => {

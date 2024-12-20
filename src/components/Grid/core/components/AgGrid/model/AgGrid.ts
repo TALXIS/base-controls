@@ -1,22 +1,25 @@
-import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, GridApi, IRowNode } from "@ag-grid-community/core";
+import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, EditableCallbackParams, GridApi, IRowNode } from "@ag-grid-community/core";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 import { DataType } from "../../../enums/DataType";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
 import { IRecord } from "@talxis/client-libraries";
-import { ReadOnlyCell } from "../../Cell/ReadOnlyCell/ReadOnlyCell";
-import { EditableCell } from "../../Cell/EditableCell/EditableCell";
 import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
+import { Cell } from "../../Cell/Cell";
+import { ITheme, mergeStyles } from "@fluentui/react";
+import Color from 'color';
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
     private _currentlyEditingCellId: string = '';
+    private _theme: ITheme
 
-    constructor(grid: Grid, gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>) {
+    constructor(grid: Grid, gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>, theme: ITheme) {
         super(grid);
         this._gridApiRef = gridApiRef;
+        this._theme = theme;
     }
     public get columns() {
         const agColumns: ColDef[] = [];
@@ -32,8 +35,8 @@ export class AgGrid extends GridDependency {
                 autoHeaderHeight: true,
                 suppressMovable: column.isDraggable === false ? true : false,
                 suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
-                cellClass: this._getCellClassName(column),
-                cellRenderer: ReadOnlyCell,
+                cellStyle: (params) => this._getCellStyles(params),
+                cellRenderer: Cell,
                 onCellDoubleClicked: (e) => this._onCellDoubleClicked(column, e),
                 headerComponent: ColumnHeader,
                 valueFormatter: (p) => {
@@ -125,19 +128,31 @@ export class AgGrid extends GridDependency {
             force: true
         })
     }
+
+    public getCellBackgroundColor(params: CellClassParams<IRecord, any>): string {
+        let color = params.data?.ui.getFormatting('text');
+        if(!color) {
+            if(params.node!.rowIndex! % 2 === 0) {
+                //even
+                color = this._theme.palette.white
+            }
+            else {
+                const colorLib = new Color(this._theme.palette.neutralLighter);
+                color = colorLib.lighten(0.04).hex();
+            }
+        }
+        return color;
+    }
     private get _gridApi() {
         return this._gridApiRef.current;
     }
-    private _getCellClassName(column: IGridColumn) {
-        switch (column.dataType) {
-            case DataType.CURRENCY:
-            case DataType.DECIMAL:
-            case DataType.WHOLE_NONE: {
-                return 'talxis-cell-align-right';
-            }
+
+    private _getCellStyles(params: CellClassParams<IRecord, any>): CellStyle {
+        return {
+            backgroundColor: this.getCellBackgroundColor(params)
         }
-        return 'talxis-cell-align-left';
     }
+
 
     private _isColumnEditable(column: IGridColumn, record: IRecord): boolean {
         if (!this._grid.parameters.EnableEditing?.raw || record?.ui.isLoading?.(column.name) === true) {

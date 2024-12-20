@@ -1,4 +1,6 @@
+import { RowClassParams } from "@ag-grid-community/core";
 import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { IRecord } from "@talxis/client-libraries";
 
 const getGridHeight = (height: string) => {
     if(height === '100%') {
@@ -21,15 +23,26 @@ export const getGridStyles = (theme: ITheme, height: string) => {
             '.ag-root-wrapper': {
                 maxHeight: '100%',
                 '--ag-input-focus-border-color': 'transparent',
-                '--ag-selected-row-background-color': theme.palette.themeLighter,
+                '--ag-selected-row-background-color': theme.palette.black,
                 '--ag-range-selection-border-color': theme.palette.themePrimary,
-                borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
+                '--ag-row-hover-color': theme.palette.black,
+                '--ag-row-border-color': theme.semanticColors.menuDivider,
+                borderBottom: `1px solid ${theme.semanticColors.menuDivider}`,
+                '.ag-row::before': {
+                    zIndex: 1
+                },
+                '.ag-row-hover::before': {
+                    opacity: 0.05
+                },
+                '.ag-row-selected::before': {
+                    opacity: 0.1
+                }
             },
             '.ag-root-wrapper.ag-layout-normal': {
                 height: getGridHeight(height)
             },
             '.ag-body': {
-                borderTop: `1px solid ${theme.semanticColors.bodyDivider}`
+                borderTop: `1px solid ${theme.semanticColors.menuDivider}`
             },
             '.ag-header-viewport': {
                 backgroundColor: `${theme.semanticColors.bodyBackground}`
@@ -84,4 +97,11 @@ export const getGridStyles = (theme: ITheme, height: string) => {
             },
         }
     })
+}
+export const getRowStyle = (params: RowClassParams<IRecord, any>) => {
+    if(!params.node.isSelected()) {
+        return {
+            border: 'none'
+        }
+    }
 }

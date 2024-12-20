@@ -3,7 +3,7 @@ import { getNotificationIconStyles } from "./styles";
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { IAddControlNotificationOptions, IControlNotificationAction } from "@talxis/client-libraries";
 import { CommandBar } from "@talxis/react-components";
-import { useThemeOverride } from "../../../../../../../hooks/useThemeOverride";
+import { useThemeOverride } from "../../../../../../hooks/useThemeOverride";
 
 interface INotifications {
     notifications: IAddControlNotificationOptions[],

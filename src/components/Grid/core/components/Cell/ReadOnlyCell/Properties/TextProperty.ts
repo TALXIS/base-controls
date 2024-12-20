@@ -13,7 +13,7 @@ export class TextProperty extends Property {
             error: validation.error,
             errorMessage: validation.errorMessage,
             formatted: value,
-            type: this.dataType
+            type: this.dataType,
         }
     }
 }

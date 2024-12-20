@@ -13,7 +13,6 @@ import { useGridInstance } from '../../../hooks/useGridInstance';
 import { useSelectionController } from '../../../../selection/controllers/useSelectionController';
 import { ICellRendererParams } from '@ag-grid-community/core';
 import { CHECKBOX_COLUMN_KEY } from '../../../../constants';
-import { INotificationsRef, Notifications } from './Notifications/Notifications';
 import { useDebouncedCallback } from 'use-debounce';
 import { useState } from 'react';
 import { IControl } from '../../../../../../interfaces';
@@ -21,15 +20,13 @@ import ReactDOM from 'react-dom';
 import { Grid } from '../../../model/Grid';
 import { AgGridContext } from '../../AgGrid/AgGrid';
 import { Control, IBinding } from './Component/Control';
-import { EditableCell } from '../EditableCell/EditableCell';
 
 interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     data: IRecord;
-    [key: string]: any;
 }
 
-export const ReadOnlyCell = (props: ICellProps) => {
+export const Cell = (props: ICellProps) => {
     const selection = useSelectionController();
     const column = props.baseColumn;
     const record = props.data;
@@ -46,26 +43,16 @@ export const ReadOnlyCell = (props: ICellProps) => {
                 }} />
         </div>
     }
-    const MemoizedNotifications = React.useMemo(() => {
-        return React.memo(Notifications, (prevProps, nextProps) => {
-            const previousIds = prevProps.notifications.map(x => x.uniqueId).join(';');
-            const nextIds = nextProps.notifications.map(x => x.uniqueId).join(';');
-            if (previousIds !== nextIds) {
-                return false;
-            }
-            return true;
-        });
-    }, []);
+
 
     const grid = useGridInstance();
     const notifications = record.ui.getNotifications?.(column.name);
-    const notificationRef = React.useRef<INotificationsRef>(null);
     //TODO: only do this if editable
     const validation = record.getColumnInfo(column.name);
 
     const debounceNotificationRemeasure = useDebouncedCallback(() => {
         if (notifications && notifications.length > 0) {
-            notificationRef.current?.remeasureCommandBar();
+
         }
     }, 10)
 
@@ -131,39 +118,9 @@ export const ReadOnlyCell = (props: ICellProps) => {
                     {/*                     <InternalReadOnlyCell {...props} /> */}
                 </div>
             </div>
-            {shouldRenderNotificationsWrapper() &&
-                <div className={styles.notificationsWrapper}>
-                    {notifications && notifications.length > 0 &&
-                        <MemoizedNotifications className={styles.notifications} ref={notificationRef} notifications={notifications} />
-                    }
-                    {validation?.error === true &&
-                        <MemoizedNotifications notifications={[
-                            {
-                                notificationLevel: 'ERROR',
-                                messages: [],
-                                iconName: 'Error',
-                                uniqueId: column.name,
-                                title: validation.errorMessage,
-                                compact: true
-                            }
-                        ]} />
-                    }
-                    {
-                        shouldShowNotEditableNotification() &&
-                        <MemoizedNotifications className={styles.uneditableNotification} notifications={[{
-                            iconName: 'Uneditable',
-                            notificationLevel: 'RECOMMENDATION',
-                            uniqueId: column.name,
-                            title: grid.labels['value-not-editable'](),
-                            compact: true,
-                            messages: []
-                        }]} />
-                    }
-                </div>
-            }
         </div>
     )
-};
+}
 
 const CellContent = (props: ICellProps) => {
     const column = props.baseColumn;
@@ -173,6 +130,10 @@ const CellContent = (props: ICellProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const controlRef = React.useRef<Control>();
     const agGridContext = React.useContext(AgGridContext);
+
+    if(initialized) {
+        controlRef.current?.render();
+    }
 
     const isBeingEdited = (): boolean => {
         return agGridContext.isCellBeingEdited(props.node, column.name);
@@ -196,6 +157,10 @@ const CellContent = (props: ICellProps) => {
                 isStatic: false,
                 type: column.dataType as any,
                 valueGetter: () => record.getValue(column.name),
+                onNotifyOutputChanged: (value) => {
+                    record.setValue(column.name, value);
+                    grid.pcfContext.factory.requestRender();
+                },
                 metadata: {
                     attributeName: Attribute.GetNameFromAlias(column.name),
                     enitityName: (() => {
@@ -230,7 +195,6 @@ const CellContent = (props: ICellProps) => {
                 onInit: () => setIsInitialized(true),
                 onGetCustomControlName: () => getControl()?.name,
                 onIsControlDisabled: () => !isBeingEdited(),
-                onNotifyOutputChanged: (outputs) => console.log(outputs)
             },
             overrides: {
                 onRender: (isCustomControl) => {
@@ -274,6 +238,7 @@ const CellContent = (props: ICellProps) => {
                                     ...props.context.fluentDesignLanguage,
                                     tokenTheme: {
                                         ...props.context.fluentDesignLanguage.tokenTheme,
+                                        inputBackground: column.name === 'text' ? record.getValue(column.name) : undefined,
                                         underlined: false,
                                     }
                                 } : undefined
@@ -308,23 +273,9 @@ const CellContent = (props: ICellProps) => {
         }
     }, []);
 
-    React.useEffect(() => {
-        if(!initialized) {
-            return;
-        }
-        controlRef.current?.render();
-    }, [initialized]);
-
-
-    React.useEffect(() => {
-        if(!initialized) {
-            return;
-        }
-        controlRef.current?.render();
-    }, [isBeingEdited()])
 
     return (
-        <div ref={containerRef} />
+        <div style={{flexGrow: 1}} ref={containerRef} />
     )
 }
 

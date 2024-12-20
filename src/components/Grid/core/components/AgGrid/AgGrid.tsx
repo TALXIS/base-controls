@@ -4,7 +4,7 @@ import { ColDef, ColumnMovedEvent, ColumnResizedEvent, GridApi, GridState, Modul
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridInstance } from "../../hooks/useGridInstance";
-import { getGridStyles } from "./styles";
+import { getGridStyles, getRowStyle } from "./styles";
 import { Paging } from "../../../paging/components/Paging/Paging";
 import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
@@ -31,7 +31,7 @@ export const AgGrid = () => {
     const theme = useTheme();
     const styles = getGridStyles(theme, grid.height);
     const agGridReadyRef = useRef<boolean>(false);
-    const agGrid = useMemo(() => new AgGridModel(grid, gridApiRef), []);
+    const agGrid = useMemo(() => new AgGridModel(grid, gridApiRef, theme), []);
     const agGridProviderValue = useMemo(() => agGrid, []);
     const { columns } = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
