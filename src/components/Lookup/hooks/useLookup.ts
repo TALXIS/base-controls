@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { ITranslation, useControl } from "../../../hooks";
-import { ITheme } from "../../../interfaces/theme";
 import { IEntity, ILayout, ILookup } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
+import { ITheme } from "@talxis/react-components";
 
 export const useLookup = (props: ILookup): [
     ComponentFramework.LookupValue[],

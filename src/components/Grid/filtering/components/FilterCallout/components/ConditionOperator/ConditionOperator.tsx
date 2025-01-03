@@ -7,7 +7,6 @@ import { useColumnFilterConditionController } from '../../../../controller/useCo
 import { IGridColumn } from '../../../../../core/interfaces/IGridColumn';
 import { DatasetConditionOperator } from '../../../../../core/enums/ConditionOperator';
 import React from 'react';
-import { ITheme } from "../../../../../../../interfaces/theme";
 
 interface IConditionOperator {
     column: IGridColumn;

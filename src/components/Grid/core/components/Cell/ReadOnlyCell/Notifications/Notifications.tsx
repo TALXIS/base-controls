@@ -2,8 +2,7 @@ import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ICom
 import { getNotificationIconStyles } from "./styles";
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { IAddControlNotificationOptions, IControlNotificationAction } from "@talxis/client-libraries";
-import { CommandBar } from "@talxis/react-components";
-import { useThemeOverride } from "../../../../../../../hooks/useThemeOverride";
+import { CommandBar, useThemeGenerator } from "@talxis/react-components";
 
 interface INotifications {
     notifications: IAddControlNotificationOptions[],
@@ -22,7 +21,7 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
     const iconId = useMemo(() => `icon${crypto.randomUUID()}`, []);
     const [selectedNotification, setSelectedNotification] = useState<IAddControlNotificationOptions | null>(null);
     const commandBarRef = useRef<ICommandBar>(null);
-    const overridenTheme = useThemeOverride(theme.palette.themePrimary, 'transparent', theme.semanticColors.bodyText)
+    const overridenTheme = useThemeGenerator(theme.palette.themePrimary, 'transparent', theme.semanticColors.bodyText);
 
     useImperativeHandle(ref, () => {
         return {
