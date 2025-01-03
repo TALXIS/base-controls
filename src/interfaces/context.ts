@@ -5,7 +5,7 @@ export interface IOutputs {
 }
 
 export interface IContext extends ComponentFramework.Context<any> {
-    fluentDesignLanguage: IFluentDesignState;
+    fluentDesignLanguage?: IFluentDesignState;
 }
 
 export interface IControl<TParameters, TOutputs, TTranslations, TComponentProps> {
