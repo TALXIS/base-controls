@@ -73,7 +73,7 @@
     "@fluentui/react": "<=8.121.5",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
     "@talxis/client-libraries": "1.2412.2",
-    "@talxis/react-components": "^1.2411.2",
+    "@talxis/react-components": "^1.2501.8",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
     "external-svg-loader": "^1.7.1",

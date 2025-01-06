@@ -3,4 +3,4 @@ export * from './useControlSizing';
 export * from './useFocusIn';
 export * from './useInputBasedControl';
 export * from './useMouseOver';
-export * from './useControlTheme';
+export * from '../utils/theme/hooks/useControlTheme';

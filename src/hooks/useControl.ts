@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef } from "react";
 import { IControl, IOutputs, IParameters } from "../interfaces";
 import { merge } from 'merge-anything';
 import { Liquid } from "liquidjs";
-import { useControlTheme } from "./useControlTheme";
-import { ITheme } from "../interfaces/theme";
+import { useControlTheme } from "../utils/theme/hooks/useControlTheme";
 import { useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
+import { ITheme } from "@talxis/react-components";
 
 export type ITranslation<T> = {
     [Property in keyof Required<T>]: (variables?: any) => string

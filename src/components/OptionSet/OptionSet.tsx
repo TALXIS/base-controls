@@ -2,7 +2,7 @@
 import { IOptionSet } from './interfaces';
 import { useControl } from '../../hooks';
 import { ComboBox, ColorfulOption } from "@talxis/react-components";
-import { IComboBox, IComboBoxOption, Icon, ThemeProvider } from '@fluentui/react';
+import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useComboBoxTheme } from './useComboBoxTheme';
 import { getComboBoxStyles } from './styles';
@@ -58,6 +58,10 @@ export const OptionSet = (props: IOptionSet) => {
         useComboBoxAsMenuWidth: true,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
         styles: { root: styles.root, callout: styles.callout },
+        onRenderContainer: (props, defaultRender) => <ThemeProvider theme={theme}>{defaultRender?.(props)}</ThemeProvider>,
+        calloutProps: {
+            theme: theme
+        },
         ...(parameters.EnableCopyButton?.raw === true && {
             clickToCopyProps: {
                 key: 'copy',
@@ -77,17 +81,6 @@ export const OptionSet = (props: IOptionSet) => {
                 onClick: (e, value) => {
                     handleChange(null);
                 },
-            },
-        }),
-        ...(parameters.EnableOptionSetColors?.raw === true && {
-            affixThemeOverride: {
-                semanticColors: {
-                    successIcon: overridenTheme.semanticColors.inputText,
-                    infoIcon: overridenTheme.semanticColors.inputText
-                },
-                palette: {
-                    themeDarkAlt: overridenTheme.semanticColors.inputText
-                }
             },
         }),
         onChange: (e, option) => handleChange(option),
