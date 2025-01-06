@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { getControlTheme } from "../utils/theme/getControlTheme";
 import { ITheme } from "@fluentui/react";
+import { ControlTheme, IFluentDesignState } from "../ControlTheme";
 
-export const useControlTheme = (fluentDesignLanguage?: ComponentFramework.FluentDesignState): ITheme => {
+export const useControlTheme = (fluentDesignLanguage?: IFluentDesignState): ITheme => {
     const primaryColor = fluentDesignLanguage?.tokenTheme.colorCompoundBrandForeground1;
     const backgroundColor = fluentDesignLanguage?.tokenTheme.colorNeutralBackground1;
     const textColor = fluentDesignLanguage?.tokenTheme.colorNeutralForeground1;
 
-    return useMemo(() => getControlTheme(fluentDesignLanguage), [primaryColor, backgroundColor, textColor]);
+    return useMemo(() => ControlTheme.GetV8ThemeFromFluentDesignLanguage(fluentDesignLanguage), [primaryColor, backgroundColor, textColor]);
 };

@@ -1,2 +1,1 @@
-export * from './getControlTheme';
-export * from './interfaces';
+export * from './ControlTheme';
