@@ -1,9 +1,9 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
-import { Constants, IRecord, Theming } from "@talxis/client-libraries";
+import { Constants, IRecord, MemoryCache } from "@talxis/client-libraries";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
-import { Checkbox, Shimmer, ThemeProvider, useTheme } from "@fluentui/react";
-import { ReactElement, useMemo } from "react";
+import { Checkbox, ITheme, Shimmer, ThemeProvider } from "@fluentui/react";
+import { useMemo } from "react";
 import { getCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
@@ -12,35 +12,34 @@ import { INotificationsRef, Notifications } from "./Notifications/Notifications"
 import { useDebouncedCallback } from "use-debounce";
 import { Commands } from "./Commands/Commands";
 import { AgGridContext } from "../AgGrid/AgGrid";
-import { ThemeDesigner } from "@talxis/react-components/dist/utilities/ThemeDesigner";
-
-function getRandomHexColor() {
-    const hexChars = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += hexChars[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
+import { useThemeGenerator } from "@talxis/react-components";
+import { useCachedThemeGenerator } from "./useCachedThemeGenerator";
 
 interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     data: IRecord;
 }
 
+const ThemeCache = new MemoryCache();
+
 export const Cell = (props: ICellProps) => {
     const agGridContext = React.useContext(AgGridContext);
     const selection = useSelectionController();
     const column = props.baseColumn;
     const record = props.data;
-    const baseTheme = useTheme();
-    const cellBackgroundColor = agGridContext.getCellBackgroundColor(props as any);
-    const theme = Theming.GenerateThemeV8(baseTheme.palette.themePrimary, cellBackgroundColor, 'black')
-
+    const customFormatting = agGridContext.getCellFormatting(props as any);
+    const theme = useCachedThemeGenerator(customFormatting.primaryColor, customFormatting.backgroundColor, customFormatting.textColor);
     const styles = useMemo(() => getCellStyles(), []);
     const grid = useGridInstance();
     const notifications = record.ui.getNotifications?.('text');
     const notificationRef = React.useRef<INotificationsRef>(null);
+    const override: ITheme = {
+        fonts: {
+            medium: {
+                fontWeight: 600
+            }
+        }
+    }
     const validation = record.getColumnInfo('text');
 
     const MemoizedNotifications = React.useMemo(() => {

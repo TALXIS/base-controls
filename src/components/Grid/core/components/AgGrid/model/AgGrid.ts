@@ -4,12 +4,12 @@ import { GridDependency } from "../../../model/GridDependency";
 import { DataType } from "../../../enums/DataType";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
-import { IRecord } from "@talxis/client-libraries";
+import { ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
 import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 import { Cell } from "../../Cell/Cell";
-import { ITheme, mergeStyles } from "@fluentui/react";
-import Color from 'color';
+import { ITheme} from "@fluentui/react";
+import { Theming } from "@talxis/react-components";
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
@@ -121,6 +121,7 @@ export class AgGrid extends GridDependency {
     public isCellBeingEdited(node: IRowNode<IRecord>, columnName: string) {
         return `${node.id}_${columnName}` === this._currentlyEditingCellId;
     }
+    
     public stopEditing() {
         this._currentlyEditingCellId = '';
         //TODO: optimize
@@ -129,27 +130,28 @@ export class AgGrid extends GridDependency {
         })
     }
 
-    public getCellBackgroundColor(params: CellClassParams<IRecord, any>): string {
-        let color = params.data?.ui.getFormatting('text');
-        if(!color) {
-            if(params.node!.rowIndex! % 2 === 0) {
-                //even
-                color = this._theme.palette.white
-            }
-            else {
-                const colorLib = new Color(this._theme.palette.neutralLighter);
-                color = colorLib.lighten(0.04).hex();
-            }
+    public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
+        const formatting = params.data?.ui.getCustomFormatting('text') ?? {};
+        if(!formatting.backgroundColor) {
+            //set colors for even/odd
+            formatting.backgroundColor = params.node!.rowIndex! % 2 === 0 ? this._theme.palette.white : this._theme.palette.neutralLighter;
         }
-        return color;
+        if(!formatting.primaryColor) {
+            formatting.primaryColor = this._theme.palette.themePrimary;
+        }
+        if(!formatting.textColor) {
+            formatting.textColor = Theming.GetTextColorForBackground(formatting.backgroundColor);
+        }
+        return formatting as any;
     }
+
     private get _gridApi() {
         return this._gridApiRef.current;
     }
 
     private _getCellStyles(params: CellClassParams<IRecord, any>): CellStyle {
         return {
-            backgroundColor: this.getCellBackgroundColor(params)
+            backgroundColor: this.getCellFormatting(params).backgroundColor
         }
     }
 
