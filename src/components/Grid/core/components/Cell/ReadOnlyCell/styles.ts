@@ -43,13 +43,6 @@ export const getReadOnlyCellStyles = (theme: ITheme) => {
                 width: 32
             }
         },
-        cellContent: {
-            flex: 1,
-            display: 'flex',
-            overflow: 'hidden',
-            alignItems: 'center',
-            height: '100%',
-        },
         cellContentWrapper: {
             display: 'flex',
             height: '100%',

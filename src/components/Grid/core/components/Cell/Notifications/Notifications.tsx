@@ -1,8 +1,9 @@
-import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ICommandBar, ThemeProvider } from "@fluentui/react"
+import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ICommandBar, ThemeProvider, getTheme } from "@fluentui/react"
 import { getNotificationIconStyles } from "./styles";
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { IAddControlNotificationOptions, IControlNotificationAction } from "@talxis/client-libraries";
 import { CommandBar, useThemeGenerator } from "@talxis/react-components";
+import { useGridInstance } from "../../../hooks/useGridInstance";
 
 interface INotifications {
     notifications: IAddControlNotificationOptions[],
@@ -13,16 +14,15 @@ export interface INotificationsRef {
     remeasureCommandBar: () => void;
 }
 
-
 export const Notifications = forwardRef<INotificationsRef, INotifications>((props, ref) => {
     const { notifications } = { ...props };
+    const grid = useGridInstance();
     const theme = useTheme();
     const styles = getNotificationIconStyles(theme);
     const iconId = useMemo(() => `icon${crypto.randomUUID()}`, []);
     const [selectedNotification, setSelectedNotification] = useState<IAddControlNotificationOptions | null>(null);
     const commandBarRef = useRef<ICommandBar>(null);
-    const overridenTheme = useThemeGenerator(theme.palette.themePrimary, 'transparent', theme.semanticColors.bodyText);
-
+    const overridenTheme = useThemeGenerator(theme.semanticColors.bodyText, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText);
     useImperativeHandle(ref, () => {
         return {
             remeasureCommandBar: () => {
@@ -109,28 +109,49 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
         }
     };
 
+    const getContextualMenuColors = () => {
+        const tokenTheme = grid.pcfContext.fluentDesignLanguage?.tokenTheme;
+        if (!tokenTheme) {
+            return {
+                primaryColor: getTheme().palette.themePrimary,
+                backgroundColor: getTheme().semanticColors.bodyBackground,
+                textColor: getTheme().semanticColors.bodyText
+            }
+        }
+        return {
+            primaryColor: tokenTheme.colorBrandForeground1,
+            backgroundColor: tokenTheme.colorNeutralBackground1,
+            bodyText: tokenTheme.colorNeutralForeground1
+        }
+    }
+    const contextualMenuColors = getContextualMenuColors();
+    const contextualMenuTheme = useThemeGenerator(contextualMenuColors.primaryColor, contextualMenuColors.backgroundColor, contextualMenuColors.bodyText);
+
     return <div className={`${styles.root}${props.className ? ` ${props.className}` : ''}`}>
         <ThemeProvider theme={overridenTheme} applyTo="none">
             <CommandBar
                 overflowItems={notifications.filter(x => x.renderedInOverflow).map(y => getCommandBarItem(y))}
-                theme={overridenTheme}
+                contextualMenuTheme={contextualMenuTheme}
                 id={iconId}
                 componentRef={commandBarRef}
                 items={notifications.filter(x => !x.renderedInOverflow).map(y => getCommandBarItem(y))} />
         </ThemeProvider>
         {selectedNotification &&
             <Callout
+                theme={contextualMenuTheme}
                 hidden={!selectedNotification}
                 className={styles.callout}
                 onDismiss={() => setSelectedNotification(null)}
                 target={`#${iconId}`}>
-                {selectedNotification.title &&
-                    <Text title={selectedNotification.title} className={styles.calloutTitle} variant={selectedNotification.messages.length > 0 ? 'xLarge' : undefined}>{selectedNotification.title}</Text>
-                }
-                <Text>{selectedNotification.messages[0]}</Text>
-                {selectedNotification.actions &&
-                    renderActions(selectedNotification.actions)
-                }
+                <ThemeProvider className={styles.calloutContent} theme={contextualMenuTheme}>
+                    {selectedNotification.title &&
+                        <Text title={selectedNotification.title} className={styles.calloutTitle} variant={selectedNotification.messages.length > 0 ? 'xLarge' : undefined}>{selectedNotification.title}</Text>
+                    }
+                    <Text>{selectedNotification.messages[0]}</Text>
+                    {selectedNotification.actions &&
+                        renderActions(selectedNotification.actions)
+                    }
+                </ThemeProvider>
             </Callout>
         }
     </div>

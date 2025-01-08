@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react"
 
-export const getCellStyles = () => {
+export const getCellStyles = (isRightAlignedColumn: boolean, notificationsMinWidth: number) => {
     return mergeStyleSets({
         cellWrapper: {
             flex: 1,
@@ -12,12 +12,24 @@ export const getCellStyles = () => {
         shimmerWrapper: {
             height: 10
         },
-        notifications: {
-
+        notificationWrapper: {
+            display: 'flex',
+            flexGrow: 1,
+            flexShrink: 0,
+            flexBasis: 0,
+            minWidth: notificationsMinWidth,
+            alignItems: 'center',
+            overflow: 'hidden',
+            order: isRightAlignedColumn ? 1 : undefined,
+            justifyContent: isRightAlignedColumn ? 'flex-start' : 'flex-end',
+            '.ms-CommandBar .ms-CommandBar-primaryCommand': {
+                justifyContent: isRightAlignedColumn ? 'flex-start' : undefined
+            }
         },
-        cellContent: {
+        notifications: {
+            minWidth: 0,
             flex: 1,
-            textAlign: 'initial'
+            order: isRightAlignedColumn ? 2 : undefined
         }
     })
 }

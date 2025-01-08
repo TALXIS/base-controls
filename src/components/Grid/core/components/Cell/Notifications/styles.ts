@@ -5,13 +5,13 @@ export const getNotificationIconStyles = (theme: ITheme) => {
         callout: {
             width: 320,
             padding: '20px 24px',
-            '.ms-Callout-main': {
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 20,
-                '.ms-CommandBar-primaryCommand': {
-                    gap: 10
-                }
+        },
+        calloutContent: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 20,
+            '.ms-CommandBar-primaryCommand': {
+                gap: 10
             }
         },
         calloutTitle: {

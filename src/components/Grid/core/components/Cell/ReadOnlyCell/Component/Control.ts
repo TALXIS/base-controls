@@ -40,6 +40,7 @@ export interface IOptions {
         onInit?: () => void;
         onGetCustomControlName?: () => string | undefined;
         onIsControlDisabled?: () => boolean;
+
     },
     overrides?: {
         onRender?: (isCustomControl: boolean) => ((container: HTMLDivElement, props: IControl<any, any, any, any>) => void) | undefined;
@@ -68,7 +69,9 @@ export class Control {
             parameters[name] = prop.getParameter()
         })
         const props: IControl<any, any, any, any> = {
-            context: this._options.parentPcfContext,
+            context: {
+                ...this._options.parentPcfContext 
+            },
             parameters: parameters,
             onNotifyOutputChanged: (outputs: any) => {
                 Object.entries(outputs).map(([name, output]) => {

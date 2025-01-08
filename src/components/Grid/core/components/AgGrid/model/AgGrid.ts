@@ -142,6 +142,9 @@ export class AgGrid extends GridDependency {
         if(!formatting.textColor) {
             formatting.textColor = Theming.GetTextColorForBackground(formatting.backgroundColor);
         }
+        if(!formatting.className) {
+            formatting.className = '';
+        }
         return formatting as any;
     }
 
@@ -150,8 +153,10 @@ export class AgGrid extends GridDependency {
     }
 
     private _getCellStyles(params: CellClassParams<IRecord, any>): CellStyle {
+        const color = this.getCellFormatting(params).backgroundColor
         return {
-            backgroundColor: this.getCellFormatting(params).backgroundColor
+            backgroundColor: color,
+            border: `1px solid ${color}`
         }
     }
 

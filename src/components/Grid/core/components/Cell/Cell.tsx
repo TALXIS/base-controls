@@ -1,8 +1,8 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
-import { Constants, IRecord, MemoryCache } from "@talxis/client-libraries";
+import { Constants, DataTypes, IRecord } from "@talxis/client-libraries";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
-import { Checkbox, ITheme, Shimmer, ThemeProvider } from "@fluentui/react";
+import { Checkbox, Shimmer, ThemeProvider } from "@fluentui/react";
 import { useMemo } from "react";
 import { getCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
@@ -12,34 +12,26 @@ import { INotificationsRef, Notifications } from "./Notifications/Notifications"
 import { useDebouncedCallback } from "use-debounce";
 import { Commands } from "./Commands/Commands";
 import { AgGridContext } from "../AgGrid/AgGrid";
+import { CellContent } from "./CellContent/CellContent";
+import { Text } from '@fluentui/react';
 import { useThemeGenerator } from "@talxis/react-components";
-import { useCachedThemeGenerator } from "./useCachedThemeGenerator";
 
-interface ICellProps extends ICellRendererParams {
+export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     data: IRecord;
 }
 
-const ThemeCache = new MemoryCache();
 
 export const Cell = (props: ICellProps) => {
     const agGridContext = React.useContext(AgGridContext);
     const selection = useSelectionController();
     const column = props.baseColumn;
     const record = props.data;
-    const customFormatting = agGridContext.getCellFormatting(props as any);
-    const theme = useCachedThemeGenerator(customFormatting.primaryColor, customFormatting.backgroundColor, customFormatting.textColor);
-    const styles = useMemo(() => getCellStyles(), []);
+    const cellFormatting = agGridContext.getCellFormatting(props as any);
+    const theme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
     const grid = useGridInstance();
     const notifications = record.ui.getNotifications?.('text');
     const notificationRef = React.useRef<INotificationsRef>(null);
-    const override: ITheme = {
-        fonts: {
-            medium: {
-                fontWeight: 600
-            }
-        }
-    }
     const validation = record.getColumnInfo('text');
 
     const MemoizedNotifications = React.useMemo(() => {
@@ -57,16 +49,15 @@ export const Cell = (props: ICellProps) => {
         if (notifications && notifications.length > 0) {
             notificationRef.current?.remeasureCommandBar();
         }
-    }, 10);
+    }, 100);
 
-    const shouldShowNotEditableNotification = (): boolean => {
+    const shouldShowNotEditableNotification = () => {
         if (column.isEditable && !record.getColumnInfo('text').security.editable) {
             return true;
         }
         return false;
     }
-
-    const calculateNotificationsWrapperMinWidth = (): number => {
+    const getNotificationWrapperMinWidth = () => {
         let count = 0;
         if (notifications && notifications.length > 0) {
             count++
@@ -78,6 +69,21 @@ export const Cell = (props: ICellProps) => {
             count++;
         }
         return count * 40;
+    }
+
+    const isCellBeingEdited = () => {
+        return agGridContext.isCellBeingEdited(props.node, 'text');
+    };
+
+    const isRightAlignedColumn = () => {
+        switch (props.baseColumn.dataType) {
+            case DataTypes.WholeNone:
+            case DataTypes.Decimal:
+            case DataTypes.Currency: {
+                return true;
+            }
+        }
+        return false;
     }
 
     const shouldRenderNotificationsWrapper = (): boolean => {
@@ -94,10 +100,6 @@ export const Cell = (props: ICellProps) => {
             return true;
         }
         return false;
-    }
-
-    const isCellBeingEdited = (): boolean => {
-        return agGridContext.isCellBeingEdited(props.node, 'text');
     }
 
     const renderContent = (): JSX.Element => {
@@ -127,7 +129,8 @@ export const Cell = (props: ICellProps) => {
             default: {
                 return (
                     <>
-                        <div className={styles.cellContent}>dynamic cell content</div>
+                        <Text>{record.getFormattedValue(column.name)}</Text>
+                       {/*  <CellContent {...props} isRightAlignedColumn={isRightAlignedColumn()} /> */}
                         {shouldRenderNotificationsWrapper() &&
                             renderNotifications()
                         }
@@ -140,9 +143,9 @@ export const Cell = (props: ICellProps) => {
 
     const renderNotifications = (): JSX.Element => {
         return (
-            <div className={styles.notifications}>
+            <div className={styles.notificationWrapper}>
                 {notifications && notifications.length > 0 &&
-                    <MemoizedNotifications ref={notificationRef} notifications={notifications} />
+                    <MemoizedNotifications ref={notificationRef} className={styles.notifications} notifications={notifications} />
                 }
                 {validation?.error === true &&
                     <MemoizedNotifications notifications={[
@@ -169,6 +172,10 @@ export const Cell = (props: ICellProps) => {
             </div>
         );
     }
+
+    const notificationWrapperMinWidth = getNotificationWrapperMinWidth();
+    const styles = useMemo(() => getCellStyles(isRightAlignedColumn(), notificationWrapperMinWidth), [notificationWrapperMinWidth]);
+
     debounceNotificationRemeasure();
 
     React.useEffect(() => {
@@ -178,7 +185,7 @@ export const Cell = (props: ICellProps) => {
         resizeObserver.observe(props.eGridCell);
     }, []);
 
-    return <ThemeProvider className={styles.cellWrapper} theme={theme}>
+    return <ThemeProvider className={`${styles.cellWrapper}${cellFormatting.className ? ` ${cellFormatting.className}` : ''}`} theme={theme}>
         {renderContent()}
     </ThemeProvider>
 }

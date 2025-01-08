@@ -27,6 +27,7 @@ export const getGridStyles = (theme: ITheme, height: string) => {
                 '--ag-range-selection-border-color': theme.palette.themePrimary,
                 '--ag-row-hover-color': theme.palette.black,
                 '--ag-row-border-color': theme.semanticColors.menuDivider,
+                '--ag-cell-horizontal-padding': 0,
                 borderBottom: `1px solid ${theme.semanticColors.menuDivider}`,
                 '.ag-row::before': {
                     zIndex: 1
@@ -81,20 +82,12 @@ export const getGridStyles = (theme: ITheme, height: string) => {
                     display: 'none'
                 }
             },
-            '.talxis-cell-align-right': {
-                '[class^="cellContent"]': {
-                    justifyContent: 'flex-end',
-                },
-                '.talxis-cell-text, input': {
-                    textAlign: 'right'
-                },
-                'input': {
-                    paddingRight: 10
-                }
-            },
             '.ag-cell-focus:has([data-is-valid="false"])': {
                 border: '1px solid red !important;'
             },
+            '.ag-cell-focus:not(.ag-cell-range-selected):focus-within': {
+                borderColor: `${theme.palette.themePrimary} !important`
+            }
         }
     })
 }
