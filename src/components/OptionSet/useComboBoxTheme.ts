@@ -43,7 +43,7 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
      */
     const getThemeOverride = (colorFeatureEnabled: boolean) => {
         if(!colorFeatureEnabled || !selectedOptionColor) {
-            return props.context.fluentDesignLanguage?.tokenTheme?.fluentV8Overrides;
+            return props.context.fluentDesignLanguage?.v8FluentOverrides;
         }
         return undefined;
     }

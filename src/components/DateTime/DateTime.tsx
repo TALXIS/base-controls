@@ -6,7 +6,6 @@ import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
 import { Calendar, IInternalCalendarProps } from "./components/Calendar";
 import { DatePicker } from "@talxis/react-components";
-import React from 'react';
 import { useControlSizing } from "../../hooks/useControlSizing";
 import dayjs from "dayjs";
 
@@ -111,7 +110,8 @@ export const DateTime = (componentProps: IDateTime) => {
                             strings: {
                                 invalidInputErrorMessage: labels.invalidTimeInput()
                             }
-                        }
+                        },
+                        theme: componentProps.context.fluentDesignLanguage?.applicationTheme
                     };
                     if(isDateTime) {
                         calendarProps.onSelectDate = (newDate) => date.set(newDate)

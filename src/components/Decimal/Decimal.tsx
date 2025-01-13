@@ -56,6 +56,9 @@ export const Decimal = (props: IDecimal) => {
         if (typeof value === 'number') {
             return value
         }
+        if(value === initialFormattedValue) {
+            return boundValue.raw as number;
+        }
         const str = value?.replace(/\s/g, '');
         Numeral.decimal(numberFormatting);
         let positivePattern: any;
@@ -99,6 +102,7 @@ export const Decimal = (props: IDecimal) => {
         formatter: formatter,
         valueExtractor: extractNumericPart
     });
+    const initialFormattedValue = useMemo(() => value, []);
 
     const getSuffixItems = (): ICommandBarItemProps[] | undefined => {
         if (context.mode.isControlDisabled || !parameters.EnableSpinButton?.raw) {

@@ -12,6 +12,8 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const componentRef = useRef<IComboBox>(null);
     const { Options } = parameters.value.attributes;
     const context = props.context;
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
@@ -44,52 +46,58 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         }
     }, []);
 
+    const componentProps = onOverrideComponentProps({
+        componentRef: componentRef,
+        options: comboBoxOptions,
+        allowFreeInput: true,
+        multiSelect: true,
+        autoComplete: "on",
+        autofill: parameters.AutoFocus?.raw === true ? {
+            autoFocus: true
+        } : undefined,
+        onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
+        calloutProps: {
+            theme: props.context.fluentDesignLanguage?.applicationTheme
+        },
+        readOnly: context.mode.isControlDisabled,
+        errorMessage: boundValue.errorMessage,
+        selectedKey: boundValue.raw ? boundValue.raw.map(key => key.toString()) : null,
+        useComboBoxAsMenuWidth: true,
+        hideErrorMessage: !parameters.ShowErrorMessage?.raw,
+        styles: {
+            root: {
+                height: sizing.height,
+                width: sizing.width,
+                display: 'flex',
+                alignItems: 'center',
+            },
+            callout: {
+                maxHeight: '300px !important'
+            }
+        },
+        clickToCopyProps: parameters.EnableCopyButton?.raw === true ? {
+            key: 'copy',
+            showOnlyOnHover: true,
+            iconProps: {
+                iconName: 'Copy'
+            }
+        } : undefined,
+        deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
+            key: 'delete',
+            showOnlyOnHover: true,
+            iconProps: {
+                iconName: 'Cancel'
+            },
+            onClick: (e, value) => {
+                handleChange(null);
+            }
+        } : undefined,
+        onChange: (e, option) => handleChange(option),
+    });
+
     return (
         <ThemeProvider theme={theme} applyTo="none">
-            <ComboBox
-                componentRef={componentRef}
-                options={comboBoxOptions}
-                allowFreeInput={true}
-                multiSelect
-                autoComplete="on"
-                theme={theme}
-                autofill={parameters.AutoFocus?.raw === true ? {
-                    autoFocus: true
-                } : undefined}
-                readOnly={context.mode.isControlDisabled}
-                errorMessage={boundValue.errorMessage}
-                selectedKey={boundValue.raw ? boundValue.raw.map(key => key.toString()) : null}
-                useComboBoxAsMenuWidth
-                hideErrorMessage={!parameters.ShowErrorMessage?.raw}
-                styles={{
-                    root: {
-                        height: sizing.height,
-                        width: sizing.width,
-                        display: 'flex',
-                        alignItems: 'center',
-                    },
-                    callout: {
-                        maxHeight: '300px !important'
-                    }
-                }}
-                clickToCopyProps={parameters.EnableCopyButton?.raw === true ? {
-                    key: 'copy',
-                    showOnlyOnHover: true,
-                    iconProps: {
-                        iconName: 'Copy'
-                    }
-                } : undefined}
-                deleteButtonProps={props.parameters.EnableDeleteButton?.raw === true ? {
-                    key: 'delete',
-                    showOnlyOnHover: true,
-                    iconProps: {
-                        iconName: 'Cancel'
-                    },
-                    onClick: (e, value) => {
-                        handleChange(null);
-                    }
-                } : undefined}
-                onChange={(e, option) => handleChange(option)} />
+            <ComboBox {...componentProps} />
         </ThemeProvider>
     );
 };

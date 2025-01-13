@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react"
 
-export const getCellStyles = (isRightAlignedColumn: boolean, notificationsMinWidth: number) => {
+export const getCellStyles = (columnAlignment: 'left' | 'center' | 'right', notificationsMinWidth: number, hasNotifications: boolean, isEditing: boolean) => {
     return mergeStyleSets({
         cellWrapper: {
             flex: 1,
@@ -8,28 +8,30 @@ export const getCellStyles = (isRightAlignedColumn: boolean, notificationsMinWid
             overflow: 'hidden',
             alignItems: 'center',
             height: '100%',
+            marginLeft: isEditing ? - 1 : undefined,
+            marginRight: isEditing ? - 1 : undefined
         },
         shimmerWrapper: {
             height: 10
         },
         notificationWrapper: {
             display: 'flex',
-            flexGrow: 1,
+            flexGrow: hasNotifications ? 1 : undefined,
             flexShrink: 0,
             flexBasis: 0,
             minWidth: notificationsMinWidth,
             alignItems: 'center',
             overflow: 'hidden',
-            order: isRightAlignedColumn ? 1 : undefined,
-            justifyContent: isRightAlignedColumn ? 'flex-start' : 'flex-end',
+            order: columnAlignment === 'right' ? 1 : undefined,
+            justifyContent: columnAlignment === 'right' ? 'flex-start' : 'flex-end',
             '.ms-CommandBar .ms-CommandBar-primaryCommand': {
-                justifyContent: isRightAlignedColumn ? 'flex-start' : undefined
+                justifyContent: columnAlignment === 'right' ? 'flex-start' : undefined
             }
         },
         notifications: {
             minWidth: 0,
             flex: 1,
-            order: isRightAlignedColumn ? 2 : undefined
+            order: columnAlignment === 'right'? 2 : undefined
         }
     })
 }

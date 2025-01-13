@@ -3,6 +3,11 @@ import { Property } from "../Properties/Property";
 import { TextProperty } from "../Properties/TextProperty";
 import { OptionSetProperty } from "../Properties/OptionSetProperty";
 import { IControl, IParameters, IProperty } from "../../../../../../../interfaces";
+import { ControlTheme, IFluentDesignState } from "../../../../../../../utils";
+import { getTheme } from "@fluentui/react";
+import { NumberProperty } from "../Properties/NumberProperty";
+import { DateProperty } from "../Properties/DateProperty";
+import { LookupProperty } from "../Properties/LookupProperty";
 
 
 const manifestCache = new PromiseCache();
@@ -70,7 +75,9 @@ export class Control {
         })
         const props: IControl<any, any, any, any> = {
             context: {
-                ...this._options.parentPcfContext 
+                ...this._options.parentPcfContext,
+                parameters: parameters,
+                fluentDesignLanguage: this._getFluentDesignLanguage(this._options.parentPcfContext.fluentDesignLanguage)
             },
             parameters: parameters,
             onNotifyOutputChanged: (outputs: any) => {
@@ -85,6 +92,7 @@ export class Control {
         }
         return props;
     }
+
     public async render() {
         const currentCustomControlName = this._options.callbacks?.onGetCustomControlName?.() ?? '';
         //if we detect change in PCF name, unmount it first
@@ -104,7 +112,7 @@ export class Control {
             const properties: any = {
                 controlstates: {
                     // This is the only implemented controlState parameter
-                    isControlDisabled: false
+                    isControlDisabled: true
                 },
                 parameters: this._getCustomControlParameters(this._manifest),
                 childeventlisteners: [{
@@ -121,7 +129,7 @@ export class Control {
         }
         //the PCF did not change, just call updateView
         else {
-            if(!this._customControlInstance) {
+            if (!this._customControlInstance) {
                 console.error(`Custom control ${this._customControlName} does not expose it's instance through fire event. Please add fireEvent to init() to avoid unintentional behavior.`)
             }
             this._customControlInstance?.updateView?.(this._patchContext(this._customControlContext!, this._manifest!))
@@ -148,14 +156,9 @@ export class Control {
         await Promise.all(promises);
         this._options.callbacks?.onInit?.()
     }
+
     private _getPropertyInstance(binding: IBinding) {
         switch (binding.type) {
-            case DataTypes.LookupSimple:
-            case DataTypes.LookupOwner:
-            case DataTypes.LookupCustomer: {
-                return new TextProperty(binding, this._options);
-            }
-
             case DataTypes.TwoOptions:
             case DataTypes.OptionSet:
             case DataTypes.MultiSelectOptionSet: {
@@ -163,13 +166,19 @@ export class Control {
             }
             case DataTypes.DateAndTimeDateAndTime:
             case DataTypes.DateAndTimeDateOnly: {
-                return new TextProperty(binding, this._options);
+                return new DateProperty(binding, this._options);
             }
             case DataTypes.WholeNone:
             case DataTypes.Decimal:
             case DataTypes.Currency:
             case DataTypes.WholeDuration: {
-                return new TextProperty(binding, this._options);
+                return new NumberProperty(binding, this._options);
+            }
+            case DataTypes.LookupSimple:
+            case DataTypes.LookupOwner:
+            case DataTypes.LookupCustomer:
+            case DataTypes.LookupRegarding: {
+                return new LookupProperty(binding, this._options);
             }
             default: {
                 return new TextProperty(binding, this._options);
@@ -221,9 +230,9 @@ export class Control {
                 })(),
                 Callback: (value: any) => {
                     let binding = this._options.bindings[property.name];
-                    if(!binding) {
+                    if (!binding) {
                         const foundBindingName = Object.entries(this._options.bindings).find(([name, binding]) => !binding.isStatic)?.[0];
-                        if(!foundBindingName) {
+                        if (!foundBindingName) {
                             throw new Error('Missing binding!');
                         }
                         binding = this._options.bindings[foundBindingName];
@@ -277,5 +286,12 @@ export class Control {
             }
         })
         return context;
+    }
+    private _getFluentDesignLanguage(fluentDesignLanguage?: IFluentDesignState): IFluentDesignState {
+        const v8Theme = ControlTheme.GetV8ThemeFromFluentDesignLanguage(fluentDesignLanguage);
+        return ControlTheme.GenerateFluentDesignLanguage(v8Theme.palette.themePrimary, v8Theme.semanticColors.bodyBackground, v8Theme.semanticColors.bodyText, {
+            v8FluentOverrides: fluentDesignLanguage?.v8FluentOverrides,
+            applicationTheme: fluentDesignLanguage?.applicationTheme ?? v8Theme
+        })
     }
 }

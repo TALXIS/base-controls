@@ -4,7 +4,7 @@ import { ColDef, ColumnMovedEvent, ColumnResizedEvent, GridApi, GridState, Modul
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridInstance } from "../../hooks/useGridInstance";
-import { getGridStyles, getRowStyle } from "./styles";
+import { getGridStyles } from "./styles";
 import { Paging } from "../../../paging/components/Paging/Paging";
 import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
@@ -101,7 +101,7 @@ export const AgGrid = () => {
     }
 
     const globalClickHandler = useCallback((e: MouseEvent) => {
-        const hasAncestorWithClass = (element: HTMLElement, className: string): boolean => {
+/*         const hasAncestorWithClass = (element: HTMLElement, className: string): boolean => {
             let parent = element;
             while (!parent.classList.contains('ag-theme-balham')) {
                 if (parent.classList.contains(className)) {
@@ -119,11 +119,11 @@ export const AgGrid = () => {
         };
         try {
             if (!hasAncestorWithClass(e.target as HTMLElement, 'ag-cell')) {
-                agGrid.stopEditing();
+                gridApiRef.current?.stopEditing();
             }
         }
         catch (err) {
-        }
+        } */
     }, []);
 
     const copyCellValue = useCallback((event: KeyboardEvent) => {

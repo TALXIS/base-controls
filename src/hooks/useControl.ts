@@ -6,6 +6,7 @@ import { useControlTheme } from "../utils/theme/hooks/useControlTheme";
 import { useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
 import { ITheme } from "@talxis/react-components";
+import dayjs from "dayjs";
 
 export type ITranslation<T> = {
     [Property in keyof Required<T>]: (variables?: any) => string
@@ -81,6 +82,9 @@ export const useControl = <TParameters extends IParameters, TOutputs extends IOu
         let isDirty = false;
         for (let [key, outputValue] of Object.entries(outputs)) {
             let parameterValue = parametersRef.current[key]?.raw;
+            if(parameterValue instanceof Date) {
+                parameterValue = dayjs(parameterValue).startOf('minute').toDate();
+            }
             if (!deepEqual(parameterValue, outputValue)) {
                 if (outputValue === null) {
                     outputValue = undefined;
@@ -108,6 +112,7 @@ export const useControl = <TParameters extends IParameters, TOutputs extends IOu
         //console.log(`Change detected, triggering notifyOutputChanged on control ${name}.`);
         props.onNotifyOutputChanged?.(outputs);
     };
+    
     return {
         labels,
         sizing,

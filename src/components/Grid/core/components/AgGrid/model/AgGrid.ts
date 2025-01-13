@@ -10,10 +10,12 @@ import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 import { Cell } from "../../Cell/Cell";
 import { ITheme} from "@fluentui/react";
 import { Theming } from "@talxis/react-components";
+import { getEditableCell } from "../../Cell/getEditableCell";
+
+const EditableCell = getEditableCell();
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
-    private _currentlyEditingCellId: string = '';
     private _theme: ITheme
 
     constructor(grid: Grid, gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>, theme: ITheme) {
@@ -37,7 +39,9 @@ export class AgGrid extends GridDependency {
                 suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
                 cellStyle: (params) => this._getCellStyles(params),
                 cellRenderer: Cell,
-                onCellDoubleClicked: (e) => this._onCellDoubleClicked(column, e),
+                cellEditor: EditableCell,
+                editable: (p) => this._isColumnEditable(column, p), 
+                //onCellDoubleClicked: (e) => this._onCellDoubleClicked(column, e),
                 headerComponent: ColumnHeader,
                 valueFormatter: (p) => {
                     if(column.name === CHECKBOX_COLUMN_KEY) {
@@ -60,7 +64,7 @@ export class AgGrid extends GridDependency {
                 headerComponentParams: {
                     baseColumn: column
                 },
-                suppressKeyboardEvent: (params) => {
+/*                 suppressKeyboardEvent: (params) => {
                     if (params.event.key !== 'Enter' || params.api.getEditingCells().length === 0) {
                         return false;
                     }
@@ -78,7 +82,7 @@ export class AgGrid extends GridDependency {
                         }
                     }
                     return false;
-                },
+                }, */
             }
             if(agColumn.field === CHECKBOX_COLUMN_KEY) {
                 agColumn.lockPosition = 'left';
@@ -118,23 +122,13 @@ export class AgGrid extends GridDependency {
             force: true
         })
     }
-    public isCellBeingEdited(node: IRowNode<IRecord>, columnName: string) {
-        return `${node.id}_${columnName}` === this._currentlyEditingCellId;
-    }
-    
-    public stopEditing() {
-        this._currentlyEditingCellId = '';
-        //TODO: optimize
-        this._gridApi?.refreshCells({
-            force: true
-        })
-    }
-
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
-        const formatting = params.data?.ui.getCustomFormatting('text') ?? {};
+        const formatting = params.data?.ui.getCustomFormatting(params.colDef.colId!) ?? {};
+        const isEven = params.node!.rowIndex! % 2 === 0;
+        const defaultBackgroundColor = isEven ? this._theme.palette.white : this._theme.palette.neutralLighterAlt;
         if(!formatting.backgroundColor) {
             //set colors for even/odd
-            formatting.backgroundColor = params.node!.rowIndex! % 2 === 0 ? this._theme.palette.white : this._theme.palette.neutralLighter;
+            formatting.backgroundColor = defaultBackgroundColor;
         }
         if(!formatting.primaryColor) {
             formatting.primaryColor = this._theme.palette.themePrimary;
@@ -145,6 +139,9 @@ export class AgGrid extends GridDependency {
         if(!formatting.className) {
             formatting.className = '';
         }
+        if(!formatting.themeOverride) {
+            formatting.themeOverride = {};
+        }
         return formatting as any;
     }
 
@@ -153,27 +150,17 @@ export class AgGrid extends GridDependency {
     }
 
     private _getCellStyles(params: CellClassParams<IRecord, any>): CellStyle {
-        const color = this.getCellFormatting(params).backgroundColor
+        const color = this.getCellFormatting(params).backgroundColor;
         return {
-            backgroundColor: color,
-            border: `1px solid ${color}`
+            backgroundColor: color
         }
     }
 
 
-    private _isColumnEditable(column: IGridColumn, record: IRecord): boolean {
-        if (!this._grid.parameters.EnableEditing?.raw || record?.ui.isLoading?.(column.name) === true) {
+    private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
+        if (!this._grid.parameters.EnableEditing?.raw || params.data?.ui.isLoading?.(column.name) === true) {
             return false;
         }
-        return record?.getColumnInfo(column.name).security.editable ?? true;
-    }
-    
-    private _onCellDoubleClicked(column: IGridColumn, event: CellDoubleClickedEvent<any, any>) {
-        if(this._isColumnEditable(column, event.data)) {
-            this._currentlyEditingCellId = `${event.node.id}_${column.name}`;
-            this._gridApi?.refreshCells({
-                force: true
-            })
-        }
+        return params.data?.getColumnInfo(column.name).security.editable ?? true;
     }
 }

@@ -58,9 +58,9 @@ export const OptionSet = (props: IOptionSet) => {
         useComboBoxAsMenuWidth: true,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
         styles: { root: styles.root, callout: styles.callout },
-        onRenderContainer: (props, defaultRender) => <ThemeProvider theme={theme}>{defaultRender?.(props)}</ThemeProvider>,
+        onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
         calloutProps: {
-            theme: theme
+            theme: props.context.fluentDesignLanguage?.applicationTheme
         },
         ...(parameters.EnableCopyButton?.raw === true && {
             clickToCopyProps: {
