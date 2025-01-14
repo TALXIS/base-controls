@@ -36,6 +36,9 @@ export class AgGrid extends GridDependency {
                 cellRenderer: ReadOnlyCell,
                 cellEditor: EditableCell,
                 headerComponent: ColumnHeader,
+                onCellClicked: (event) => {
+                    this._grid.dataset.fireEventListeners?.('onRecordColumnClick', event.data, column.name);
+                },
                 valueFormatter: (p) => {
                     if(column.name === CHECKBOX_COLUMN_KEY) {
                         return null;
