@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { IGridColumn } from "../../../../../core/interfaces/IGridColumn";
 import { IColumnFilterConditionController, useColumnFilterConditionController } from "../../../../controller/useColumnFilterConditionController";
 import { ConditionComponentValue } from "./model/ConditionComponentValue";
@@ -44,7 +44,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
         if (!controller.value.valid) {
             return true;
         }
-        if (!firstRenderRef.current && !conditionComponentValue.get() && previousOperator !== controllerRef.current.operator.get()) {
+        if (!firstRenderRef.current && conditionComponentValue.get() === null && previousOperator !== controllerRef.current.operator.get()) {
             return true;
         }
         return false;
@@ -59,6 +59,9 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
             EnableTypeSuffix: {
                 raw: false
             },
+            MultipleEnabled: {
+                raw: true
+            }
         };
         if (shouldShowErrorRef.current) {
             result.value = {
@@ -67,9 +70,16 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                 errorMessage: "I need a value!"
             }
         }
-        if (!conditionComponentValue.get()) {
+        if (!conditionComponentValue.get() === null) {
             result.AutoFocus = {
                 raw: true
+            }
+        }
+        result.value = {
+            ...result.value,
+            getAllViews: async (entityName: string) => {
+                //Might go to infinite loop
+                return result.value.getAllViews(entityName, 1);
             }
         }
         return result;
@@ -114,36 +124,4 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
             }}
         />
     </div>
-    /*     return (
-            <div ref={componentContainerRef}>
-                <Component
-                    column={column}
-                    record={record}
-                    onNotifyOutputChanged={(value) => conditionComponentValue.set(value)}
-                    onOverrideControlProps={(props) => {
-                        return {
-                            ...props,
-                            parameters: {
-                                ...props.parameters,
-                                MultipleEnabled: {
-                                    raw: true
-                                },
-                                IsInlineNewEnabled: {
-                                    raw: false
-                                },
-                                ShowErrorMessage: {
-                                    raw: true
-                                },
-                                value: {
-                                    ...props.parameters.value,
-                                    getAllViews: async (entityName: string) => {
-                                        return props.parameters.value.getAllViews(entityName, 1);
-                                    }
-                                }
-                            }
-                        }
-                    }}
-                />
-            </div>
-        ) */
 }
