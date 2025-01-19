@@ -1,6 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react"
+import { IColumn } from "@talxis/client-libraries"
 
-export const getCellStyles = (columnAlignment: 'left' | 'center' | 'right', notificationsMinWidth: number, hasNotifications: boolean, isEditing: boolean) => {
+export const getCellStyles = (columnAlignment: IColumn['alignment'], notificationsMinWidth: number, shouldNotificationsGrow: boolean, isEditing: boolean) => {
     return mergeStyleSets({
         cellWrapper: {
             flex: 1,
@@ -16,9 +17,10 @@ export const getCellStyles = (columnAlignment: 'left' | 'center' | 'right', noti
         },
         notificationWrapper: {
             display: 'flex',
-            flexGrow: hasNotifications ? 1 : undefined,
-            flexShrink: 0,
-            flexBasis: 0,
+            //not when has notifications, but if we are rendering the overflow button
+            flexGrow: shouldNotificationsGrow ? 1 : undefined,
+            flexShrink: 1,
+            flexBasis: 'auto',
             minWidth: notificationsMinWidth,
             alignItems: 'center',
             overflow: 'hidden',

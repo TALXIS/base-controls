@@ -1,63 +1,59 @@
 import * as React from 'react';
-import { Attribute, DataType, IAddControlNotificationOptions, Sanitizer } from '@talxis/client-libraries';
+import { Attribute, DataType, IColumn, IColumnInfo, ICustomColumnControl, ICustomColumnFormatting, Sanitizer } from '@talxis/client-libraries';
 import { useGridInstance } from '../../../hooks/useGridInstance';
-import { useState } from 'react';
-import ReactDOM from 'react-dom';
-import { AgGridContext } from '../../AgGrid/AgGrid';
-import { GridCellLabel } from '../../../../../GridCellRenderer/GridCellRenderer';
 import { ICellProps } from '../Cell';
-import { Control, IBinding } from '../ReadOnlyCell/Component/Control';
-import { ITextFieldStyles, useTheme } from '@fluentui/react';
+import { IComboBoxStyles, IDatePickerStyles, IIconProps, ITextFieldStyles, useTheme } from '@fluentui/react';
 import { getCellContentStyles } from './styles';
-import { ControlTheme, IFluentDesignState } from '../../../../../../utils';
+import { BaseControls, ControlTheme, IFluentDesignState } from '../../../../../../utils';
 import { merge } from 'merge-anything';
-import { Theming, useRerender } from '@talxis/react-components';
-import { TextField } from '../../../../../TextField';
-import { IControl } from '../../../../../../interfaces';
-import { TwoOptions } from '../../../../../TwoOptions';
-import { OptionSet } from '../../../../../OptionSet';
-import { MultiSelectOptionSet } from '../../../../../MultiSelectOptionSet';
-import { DateTime } from '../../../../../DateTime';
-import { Decimal } from '../../../../../Decimal';
-import { Lookup } from '../../../../../Lookup';
-import { Duration } from '../../../../../Duration';
+import { useRerender } from '@talxis/react-components';
+import { NestedControlRenderer } from '../../../../../NestedControl/NestedControlRenderer';
+import { IBinding } from '../../../../../NestedControl';
 
 interface ICellContentProps extends ICellProps {
-    columnAlignment: 'left' | 'center' | 'right';
-    notifications: IAddControlNotificationOptions[];
+    columnAlignment: Required<IColumn['alignment']>;
+    columnInfo: IColumnInfo;
+    fillAllAvailableSpace: boolean;
+    cellFormatting: Required<ICustomColumnFormatting>;
 }
 
 
 export const CellContent = (props: ICellContentProps) => {
+    const { columnAlignment, fillAllAvailableSpace, cellFormatting } = { ...props };
     const column = props.baseColumn;
-    const dataType: DataType = column.dataType as DataType;
+    const dataType: DataType = props.baseColumn.dataType as DataType;
     const grid = useGridInstance();
     const record = props.data;
-    const [initialized, setIsInitialized] = useState(false);
-    const containerRef = React.useRef<HTMLDivElement>(null);
-    const controlRef = React.useRef<Control>();
-    const agGridContext = React.useContext(AgGridContext);
-    const styles = React.useMemo(() => getCellContentStyles(props.columnAlignment, props.notifications.length > 0), [props.columnAlignment, props.notifications.length > 0]);
+    const columnInfo = props.columnInfo
+    const styles = React.useMemo(() => getCellContentStyles(props.columnAlignment, fillAllAvailableSpace), [props.columnAlignment, fillAllAvailableSpace]);
     const cellTheme = useTheme();
     const cellThemeRef = React.useRef(cellTheme);
     cellThemeRef.current = cellTheme;
     const rerender = useRerender();
+    const customControls = columnInfo.customControls;
 
-    const cellFormatting = agGridContext.getCellFormatting(props as any);
+    const getControl = (): ICustomColumnControl => {
+        const appliesToValue = props.editing ? 'editor' : 'renderer';
+        const customControl = customControls.find(
+            control => control.appliesTo === 'both' || control.appliesTo === appliesToValue
+        );
+        if (customControl) {
+            return customControl;
+        }
+        const defaultControl: Partial<ICustomColumnControl> = {
+            name: props.editing ? BaseControls.GetControlNameForDataType(dataType) : 'GridCellRenderer',
+            appliesTo: 'both',
+        };
+    
+        return defaultControl as ICustomColumnControl;
+    };
 
-    if (initialized) {
-        controlRef.current?.render();
-    }
-    const getControl = () => {
-        const controls = column.controls;
-        const controlForBoth = controls?.find(control => control.appliesTo === 'both');
-        if (controlForBoth) {
-            return controlForBoth;
+    const getColumnEntityName = () => {
+        const entityAliasName = Attribute.GetLinkedEntityAlias(column.name);
+        if (!entityAliasName) {
+            return grid.dataset.getTargetEntityType()
         }
-        if (props.editing) {
-            return controls?.find(control => control.appliesTo === 'cellEditor');
-        }
-        return controls?.find(control => control.appliesTo === 'cellRenderer');
+        return grid.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
     }
 
     const getBindings = (): { [name: string]: IBinding } => {
@@ -65,31 +61,28 @@ export const CellContent = (props: ICellContentProps) => {
             'value': {
                 isStatic: false,
                 type: column.dataType as any,
-                valueGetter: () => getBindingValue(),
+                value: getBindingValue(),
+                error: columnInfo.error,
+                errorMessage: columnInfo.errorMessage,
                 onNotifyOutputChanged: (value) => {
                     record.setValue(column.name, value);
-                    rerender();
-                    grid.pcfContext.factory.requestRender();
+                    setTimeout(() => {
+                        rerender();
+                        grid.pcfContext.factory.requestRender()
+                    }, 0);
                 },
                 metadata: {
                     attributeName: Attribute.GetNameFromAlias(column.name),
-                    enitityName: (() => {
-                        const entityAliasName = Attribute.GetLinkedEntityAlias(column.name);
-                        if (!entityAliasName) {
-                            return grid.dataset.getTargetEntityType()
-                        }
-                        return grid.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
-                    })()
+                    enitityName: getColumnEntityName()
                 }
             }
         }
-        const control = getControl()
-        if (control?.bindings) {
-            Object.entries(control.bindings).map(([name, binding]) => {
+        if (currentControl?.bindings) {
+            Object.entries(currentControl.bindings).map(([name, binding]) => {
                 bindings[name] = {
                     isStatic: true,
                     type: binding.type!,
-                    valueGetter: () => binding.value,
+                    value: binding.value
                 }
             })
         }
@@ -106,9 +99,10 @@ export const CellContent = (props: ICellContentProps) => {
                         inputBorderHovered: 'transparent',
                         inputBackground: cellThemeRef.current.semanticColors.bodyBackground,
                         focusBorder: 'transparent',
+                        disabledBorder: 'transparent',
                         inputFocusBorderAlt: 'transparent',
                         errorText: 'transparent'
-                        
+
                     },
                     effects: {
                         underlined: false
@@ -121,6 +115,28 @@ export const CellContent = (props: ICellContentProps) => {
                                         textAlign: props.columnAlignment
                                     }
                                 } as ITextFieldStyles
+                            }
+                        },
+                        'ComboBox': {
+                            styles: () => {
+                                return {
+                                    input: {
+                                        textAlign: props.columnAlignment === 'right' ? 'right' : undefined,
+                                        paddingRight: props.columnAlignment === 'right' ? 8 : undefined,
+                                    }
+                                } as IComboBoxStyles
+                            }
+                        },
+                        'DatePicker': {
+                            styles: () => {
+                                return {
+                                    root: {
+                                        '.ms-TextField-field': {
+                                            paddingRight: props.columnAlignment === 'right' ? 8 : undefined,
+                                            textAlign: props.columnAlignment === 'right' ? 'right' : 'left'
+                                        }
+                                    } as any
+                                } as IDatePickerStyles
                             }
                         }
                     }
@@ -164,44 +180,6 @@ export const CellContent = (props: ICellContentProps) => {
         return value;
     }
 
-    const renderBaseControl = (controlProps: IControl<any, any, any, any>, container: HTMLDivElement) => {
-        if (props.editing) {
-            switch (column.dataType as DataType) {
-                case 'Decimal':
-                case 'Whole.None':
-                case 'Currency': {
-                    return ReactDOM.render(React.createElement(Decimal, controlProps), container);
-                }
-                case 'TwoOptions': {
-                    return ReactDOM.render(React.createElement(TwoOptions, controlProps), container);
-                }
-                case 'OptionSet': {
-                    return ReactDOM.render(React.createElement(OptionSet, controlProps), container);
-                }
-                case 'MultiSelectPicklist': {
-                    return ReactDOM.render(React.createElement(MultiSelectOptionSet, controlProps), container);
-                }
-                case 'DateAndTime.DateAndTime':
-                case 'DateAndTime.DateOnly': {
-                    return ReactDOM.render(React.createElement(DateTime, controlProps), container);
-                }
-                case 'Lookup.Simple':
-                case 'Lookup.Owner':
-                case 'Lookup.Customer':
-                case 'Lookup.Regarding': {
-                    return ReactDOM.render(React.createElement(Lookup, controlProps), container);
-                }
-                case 'Whole.Duration': {
-                    return ReactDOM.render(React.createElement(Duration, controlProps), container);
-                }
-                default: {
-                    return ReactDOM.render(React.createElement(TextField, controlProps), container);
-                }
-            }
-        }
-        return ReactDOM.render(React.createElement(GridCellLabel, controlProps), container);
-    }
-
     const getParameters = () => {
         const parameters: any = {
             Dataset: grid.dataset
@@ -213,7 +191,7 @@ export const CellContent = (props: ICellContentProps) => {
             raw: grid.isNavigationEnabled
         }
         parameters.ColumnAlignment = {
-            raw: props.columnAlignment
+            raw: columnAlignment
         }
         parameters.IsPrimaryColumn = {
             raw: column.isPrimary
@@ -224,6 +202,23 @@ export const CellContent = (props: ICellContentProps) => {
         if (props.editing) {
             parameters.AutoFocus = {
                 raw: true
+            }
+        }
+        if (!props.editing) {
+            const prefixIcon: IIconProps = {
+                iconName: 'Warning',
+                title: 'WARNING',
+                styles: {
+                    root: {
+                        color: 'orange'
+                    }
+                }
+            }
+            /*              parameters.PrefixIcon = {
+                            raw: JSON.stringify(prefixIcon)
+                        } */
+            parameters.SuffixIcon = {
+                raw: JSON.stringify(prefixIcon)
             }
         }
         switch (dataType) {
@@ -248,7 +243,7 @@ export const CellContent = (props: ICellContentProps) => {
             case 'TwoOptions':
             case 'MultiSelectPicklist': {
                 parameters.EnableOptionSetColors = {
-                    raw: grid.enableOptionSetColors
+                    raw: true
                 }
                 break;
             }
@@ -256,32 +251,21 @@ export const CellContent = (props: ICellContentProps) => {
         return parameters;
 
     }
+    const currentControl = getControl();
 
-    const createControlInstance = () => {
-        return new Control({
-            bindings: getBindings(),
-            containerElement: containerRef.current!,
-            parentPcfContext: grid.pcfContext,
-            callbacks: {
-                onInit: () => setIsInitialized(true),
-                onGetCustomControlName: () => getControl()?.name,
-                onIsControlDisabled: () => !props.editing,
-            },
-            overrides: {
-                onRender: (isCustomControl) => {
-                    if (isCustomControl) {
-                        return undefined;
-                    }
-                    return (container, controlProps) => renderBaseControl(controlProps, container)
-                },
-                onUnmount: (isCustomControl) => {
-                    if (isCustomControl) {
-                        return undefined;
-                    }
-                    return (container) => {
-                        ReactDOM.unmountComponentAtNode(container)
-                    }
-                },
+    return <NestedControlRenderer
+        context={grid.pcfContext}
+        parameters={{
+            ControlName: currentControl.name,
+            Bindings: getBindings(),
+            ControlStates: {
+                isControlDisabled: !props.editing
+            }
+        }}
+        onOverrideComponentProps={(props) => {
+            return {
+                ...props,
+                rootClassName: styles.cellContent,
                 onGetProps: () => {
                     return (controlProps) => {
                         const parameters = getParameters();
@@ -293,10 +277,7 @@ export const CellContent = (props: ICellContentProps) => {
                                     allocatedHeight: {
                                         value: 39
                                     },
-                                    isControlDisabled: {
-                                        value: !props.editing
-                                    }
-                                    
+
                                 }),
                                 parameters: {
                                     ...controlProps.parameters,
@@ -312,18 +293,6 @@ export const CellContent = (props: ICellContentProps) => {
                     }
                 }
             }
-        })
-    }
-
-    React.useEffect(() => {
-        controlRef.current = createControlInstance();
-        return () => {
-            controlRef.current?.unmount();
-        }
-    }, []);
-
-
-    return (
-        <div className={styles.cellContent} ref={containerRef} />
-    )
+        }}
+    />
 }

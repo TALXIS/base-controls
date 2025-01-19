@@ -63,26 +63,7 @@ export class AgGrid extends GridDependency {
                 },
                 headerComponentParams: {
                     baseColumn: column
-                },
-/*                 suppressKeyboardEvent: (params) => {
-                    if (params.event.key !== 'Enter' || params.api.getEditingCells().length === 0) {
-                        return false;
-                    }
-                    switch (column.dataType) {
-                        case DataType.DATE_AND_TIME_DATE_AND_TIME:
-                        case DataType.DATE_AND_TIME_DATE_ONLY:
-                        case DataType.LOOKUP_OWNER:
-                        case DataType.LOOKUP_SIMPLE:
-                        case DataType.LOOKUP_CUSTOMER:
-                        case DataType.MULTI_SELECT_OPTIONSET:
-                        case DataType.OPTIONSET:
-                        case DataType.TWO_OPTIONS:
-                        case DataType.WHOLE_DURATION: {
-                            return true;
-                        }
-                    }
-                    return false;
-                }, */
+                }
             }
             if(agColumn.field === CHECKBOX_COLUMN_KEY) {
                 agColumn.lockPosition = 'left';
@@ -123,7 +104,7 @@ export class AgGrid extends GridDependency {
         })
     }
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
-        const formatting = params.data?.ui.getCustomFormatting(params.colDef.colId!) ?? {};
+        const formatting = params.data?.getColumnInfo(params.colDef.colId!).customFormatting ?? {};
         const isEven = params.node!.rowIndex! % 2 === 0;
         const defaultBackgroundColor = isEven ? this._theme.palette.white : this._theme.palette.neutralLighterAlt;
         if(!formatting.backgroundColor) {

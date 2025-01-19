@@ -100,32 +100,6 @@ export const AgGrid = () => {
         grid.pcfContext.factory.requestRender()
     }
 
-    const globalClickHandler = useCallback((e: MouseEvent) => {
-/*         const hasAncestorWithClass = (element: HTMLElement, className: string): boolean => {
-            let parent = element;
-            while (!parent.classList.contains('ag-theme-balham')) {
-                if (parent.classList.contains(className)) {
-                    return true;
-                }
-                if (parent.tagName === 'HTML') {
-                    return false;
-                }
-                parent = parent.parentElement!;
-                if (!parent) {
-                    return true;
-                }
-            }
-            return false;
-        };
-        try {
-            if (!hasAncestorWithClass(e.target as HTMLElement, 'ag-cell')) {
-                gridApiRef.current?.stopEditing();
-            }
-        }
-        catch (err) {
-        } */
-    }, []);
-
     const copyCellValue = useCallback((event: KeyboardEvent) => {
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
             const cell = gridApiRef.current?.getFocusedCell();
@@ -181,15 +155,7 @@ export const AgGrid = () => {
         gridApiRef.current?.resetRowHeights();
         grid.pcfContext.factory.requestRender()
     }, 200);
-
-    //TODO: find a better way to achieve this
-    useEffect(() => {
-        document.addEventListener('click', globalClickHandler)
-        return () => {
-            document.removeEventListener('click', globalClickHandler);
-        }
-    }, []);
-
+    
     useEffect(() => {
         toggleOverlay();
         if (records.length > 0) {

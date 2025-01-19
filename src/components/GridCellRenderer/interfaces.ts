@@ -1,4 +1,4 @@
-import { IColumn, IDataset } from "@talxis/client-libraries";
+import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
 import { IControl, IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
 
@@ -7,11 +7,12 @@ export interface IGridCellRenderer extends IControl<IGridCellRendererParameters,
 
 export interface IGridCellRendererParameters extends IParameters {
     value: any;
-    ColumnAlignment: Omit<ComponentFramework.PropertyTypes.EnumProperty<"left" | "center" | "right">, 'type'>;
-    EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
-    Prefix?: IStringProperty;
-    Suffix?: IStringProperty;
+    ColumnAlignment?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"left" | "center" | "right">, 'type'>;
+    EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
+    PrefixIcon?: IStringProperty;
+    SuffixIcon?: IStringProperty
     Column: IColumn
     Dataset: IDataset;
-    Record: any
+    //@ts-ignore - typings
+    Record: IRecord
 }

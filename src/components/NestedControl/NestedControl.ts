@@ -1,13 +1,13 @@
-import { DataType, DataTypes, IFieldValidationResult, Manifest, PromiseCache } from "@talxis/client-libraries";
-import { Property } from "../Properties/Property";
-import { TextProperty } from "../Properties/TextProperty";
-import { OptionSetProperty } from "../Properties/OptionSetProperty";
-import { IControl, IParameters, IProperty } from "../../../../../../../interfaces";
-import { ControlTheme, IFluentDesignState } from "../../../../../../../utils";
-import { getTheme } from "@fluentui/react";
-import { NumberProperty } from "../Properties/NumberProperty";
-import { DateProperty } from "../Properties/DateProperty";
-import { LookupProperty } from "../Properties/LookupProperty";
+import { DataType, DataTypes, PromiseCache } from "@talxis/client-libraries";
+import { Property } from "./properties/Property";
+import { TextProperty } from "./properties/TextProperty";
+import { OptionSetProperty } from "./properties/OptionSetProperty";
+import { NumberProperty } from "./properties/NumberProperty";
+import { DateProperty } from "./properties/DateProperty";
+import { LookupProperty } from "./properties/LookupProperty";
+import { IControl, IParameters, IProperty } from "../../interfaces";
+import { ControlTheme, IFluentDesignState } from "../../utils";
+import { Manifest } from "./manifest";
 
 
 const manifestCache = new PromiseCache();
@@ -15,19 +15,25 @@ const manifestCache = new PromiseCache();
 export interface IBinding {
     type: DataType;
     isStatic: boolean;
+    value: any;
+    error?: boolean;
+    errorMessage?: string;
     metadata?: {
         enitityName: string;
         attributeName: string;
     },
-    valueGetter: () => any;
-    validator?: (value: any) => IFieldValidationResult;
     onNotifyOutputChanged?: (newValue: any) => void;
 }
 
+export interface IControlStates {
+    isControlDisabled?: boolean;
+}
+
 export interface IOptions {
-    bindings: {
-        [name: string]: IBinding;
-    },
+    onGetControlName: () => string;
+    onGetBindings: () => {
+        [key: string]: IBinding;
+    }
     /**
     * PCF Context of parent control using this class. It will be used as base for nested control PCF context.
     */
@@ -43,18 +49,17 @@ export interface IOptions {
      */
     callbacks?: {
         onInit?: () => void;
-        onGetCustomControlName?: () => string | undefined;
-        onIsControlDisabled?: () => boolean;
-
+        onGetControlStates?: () => IControlStates | undefined
+        onNotifyOutputChanged?: (ouputs: any) => void;
     },
     overrides?: {
-        onRender?: (isCustomControl: boolean) => ((container: HTMLDivElement, props: IControl<any, any, any, any>) => void) | undefined;
-        onUnmount?: (isCustomControl: boolean) => ((container: HTMLDivElement) => void) | undefined;
-        onGetProps?: () => ((props: IControl<any, any, any, any>) => IControl<any, any, any, any>) | undefined
+        onGetProps?: () => ((props: IControl<any, any, any, any>) => IControl<any, any, any, any>) | undefined,
+        onRender?: () => ((container: HTMLDivElement, props: IControl<any, any, any, any>) => void) | undefined;
+        onUnmount?: () => ((container: HTMLDivElement) => void) | undefined;
     }
 }
 
-export class Control {
+export class NestedControl {
     private _options: IOptions;
     private _properties: Map<string, Property> = new Map();
     private _customControlName: string = '';
@@ -71,19 +76,30 @@ export class Control {
     public getProps(): IControl<IParameters, any, any, any> {
         const parameters: { [name: string]: IProperty } = {};
         [...this._properties.entries()].map(([name, prop]) => {
-            parameters[name] = prop.getParameter()
+            parameters[name] = {
+                ...prop.getParameter(),
+                error: this._options.onGetBindings()[name].error ?? false,
+                errorMessage: this._options.onGetBindings()[name].errorMessage ?? null,
+                type: prop.dataType
+            };
         })
         const props: IControl<any, any, any, any> = {
             context: {
                 ...this._options.parentPcfContext,
                 parameters: parameters,
+                mode:  Object.create(this._options.parentPcfContext.mode, {
+                    isControlDisabled: {
+                        value: this?._options.callbacks?.onGetControlStates?.()?.isControlDisabled ?? false
+                    }
+                }),
                 fluentDesignLanguage: this._getFluentDesignLanguage(this._options.parentPcfContext.fluentDesignLanguage)
             },
             parameters: parameters,
             onNotifyOutputChanged: (outputs: any) => {
                 Object.entries(outputs).map(([name, output]) => {
-                    this._options.bindings[name]?.onNotifyOutputChanged?.(output)
+                    this._options.onGetBindings()[name]?.onNotifyOutputChanged?.(output)
                 })
+                this._options.callbacks?.onNotifyOutputChanged?.(outputs);
             }
         }
         const override = this._options.overrides?.onGetProps?.();
@@ -94,26 +110,22 @@ export class Control {
     }
 
     public async render() {
-        const currentCustomControlName = this._options.callbacks?.onGetCustomControlName?.() ?? '';
+        const currentCustomControlName = this._options.onGetControlName() ?? '';
         //if we detect change in PCF name, unmount it first
         if (currentCustomControlName !== this._customControlName) {
             this.unmount();
         }
-        const override = this._options.overrides?.onRender?.(!!currentCustomControlName);
+        const override = this._options.overrides?.onRender?.();
         if (override) {
             return override(this._options.containerElement, this.getProps());
         }
-
         //if the PCF name changed, reinitialize
         if (currentCustomControlName !== this._customControlName) {
             this._customControlName = currentCustomControlName;
             this._customControlId = crypto.randomUUID();
             this._manifest = await this._getManifest(this._customControlName);
             const properties: any = {
-                controlstates: {
-                    // This is the only implemented controlState parameter
-                    isControlDisabled: true
-                },
+                controlstates: this._options.callbacks?.onGetControlStates?.() ?? {}, 
                 parameters: this._getCustomControlParameters(this._manifest),
                 childeventlisteners: [{
                     eventname: "onEvent",
@@ -138,7 +150,7 @@ export class Control {
 
     //TODO: unify this
     public unmount() {
-        const override = this._options.overrides?.onUnmount?.(!!this._customControlName);
+        const override = this._options.overrides?.onUnmount?.();
         if (override) {
             override(this._options.containerElement);
         }
@@ -147,9 +159,11 @@ export class Control {
     }
 
     private async _init() {
+        this._customControlName = this._options.onGetControlName();
         const promises: Promise<boolean>[] = [];
-        Object.entries(this._options.bindings).map(([name, binding]) => {
-            const propertyInstance = this._getPropertyInstance(binding);
+        Object.entries(this._options.onGetBindings()).map(([name, binding]) => {
+            const getBinding = () => this._options.onGetBindings()[name];
+            const propertyInstance = this._getPropertyInstance(getBinding);
             promises.push(propertyInstance.init());
             this._properties.set(name, propertyInstance);
         })
@@ -157,31 +171,31 @@ export class Control {
         this._options.callbacks?.onInit?.()
     }
 
-    private _getPropertyInstance(binding: IBinding) {
-        switch (binding.type) {
+    private _getPropertyInstance(onGetBinding: () => IBinding) {
+        switch (onGetBinding().type) {
             case DataTypes.TwoOptions:
             case DataTypes.OptionSet:
             case DataTypes.MultiSelectOptionSet: {
-                return new OptionSetProperty(binding, this._options);
+                return new OptionSetProperty(this._options, onGetBinding);
             }
             case DataTypes.DateAndTimeDateAndTime:
             case DataTypes.DateAndTimeDateOnly: {
-                return new DateProperty(binding, this._options);
+                return new DateProperty(this._options, onGetBinding);
             }
             case DataTypes.WholeNone:
             case DataTypes.Decimal:
             case DataTypes.Currency:
             case DataTypes.WholeDuration: {
-                return new NumberProperty(binding, this._options);
+                return new NumberProperty(this._options, onGetBinding);
             }
             case DataTypes.LookupSimple:
             case DataTypes.LookupOwner:
             case DataTypes.LookupCustomer:
             case DataTypes.LookupRegarding: {
-                return new LookupProperty(binding, this._options);
+                return new LookupProperty(this._options, onGetBinding);
             }
             default: {
-                return new TextProperty(binding, this._options);
+                return new TextProperty(this._options, onGetBinding);
             }
         }
     }
@@ -209,7 +223,7 @@ export class Control {
                     }
                     //if this is a binding, get the value of first bound parameter no matter the name
                     if (property.isBindingProperty) {
-                        const bindingName = Object.entries(this._options.bindings).find(([name, binding]) => !binding.isStatic)?.[0]
+                        const bindingName = Object.entries(this._options.onGetBindings()).find(([name, binding]) => !binding.isStatic)?.[0]
                         if (!bindingName) {
                             throw Error('Missing binding!');
                         }
@@ -229,15 +243,16 @@ export class Control {
                     }
                 })(),
                 Callback: (value: any) => {
-                    let binding = this._options.bindings[property.name];
+                    let binding = this._options.onGetBindings()[property.name];
                     if (!binding) {
-                        const foundBindingName = Object.entries(this._options.bindings).find(([name, binding]) => !binding.isStatic)?.[0];
+                        const foundBindingName = Object.entries(this._options.onGetBindings()).find(([name, binding]) => !binding.isStatic)?.[0];
                         if (!foundBindingName) {
                             throw new Error('Missing binding!');
                         }
-                        binding = this._options.bindings[foundBindingName];
+                        binding = this._options.onGetBindings()[foundBindingName];
                     }
-                    binding.onNotifyOutputChanged?.(value)
+                    //binding.onNotifyOutputChanged?.(value);
+                    //this._options.callbacks?.onNotifyOutputChanged?.();
                 }
             }
         })

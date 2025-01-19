@@ -1,9 +1,9 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
-import { Constants, DataTypes, IRecord } from "@talxis/client-libraries";
+import { Constants, DataTypes, IColumn, IRecord } from "@talxis/client-libraries";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
-import { Checkbox, getTheme, Shimmer, ThemeProvider } from "@fluentui/react";
-import { useMemo } from "react";
+import { Checkbox, Shimmer, ThemeProvider } from "@fluentui/react";
+import { useMemo, useState } from "react";
 import { getCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
@@ -32,10 +32,9 @@ export const Cell = (props: ICellProps) => {
     const grid = useGridInstance();
     const notifications = record.ui.getNotifications?.(column.name);
     const notificationRef = React.useRef<INotificationsRef>(null);
-    const validation = {
-        error: true,
-        errorMessage: 'test'
-    }
+    const notificationWrapperRef = React.useRef<HTMLDivElement>(null);
+    const [shouldNotificationsFillAvailableSpace, setShouldNotificationsFillAvailableSpace] = useState(false);
+    const columnInfo = record.getColumnInfo(column.name)
 
     const MemoizedNotifications = React.useMemo(() => {
         return React.memo(Notifications, (prevProps, nextProps) => {
@@ -65,7 +64,7 @@ export const Cell = (props: ICellProps) => {
         if (notifications && notifications.length > 0) {
             count++
         }
-        if (validation?.error === true) {
+        if (columnInfo?.error === true) {
             count++;
         }
         if (shouldShowNotEditableNotification()) {
@@ -78,7 +77,10 @@ export const Cell = (props: ICellProps) => {
         return !!props.editing
     };
 
-    const getColumnAlignment = (): 'left' | 'center' | 'right' => {
+    const getColumnAlignment = (): Required<IColumn['alignment']> => {
+        if (column.alignment) {
+            return column.alignment;
+        }
         switch (props.baseColumn.dataType) {
             case DataTypes.WholeNone:
             case DataTypes.Decimal:
@@ -88,11 +90,12 @@ export const Cell = (props: ICellProps) => {
         }
         return 'left';
     }
-    const shouldRenderNotificationsWrapper = (): boolean => {
+
+    const getShouldRenderNotificationsWrapper = (): boolean => {
         if (isCellBeingEdited()) {
             return false;
         }
-        if (validation?.error === true) {
+        if (columnInfo?.error === true) {
             return true;
         }
         if (shouldShowNotEditableNotification()) {
@@ -132,9 +135,11 @@ export const Cell = (props: ICellProps) => {
                 return (
                     <>
                         <CellContent {...props}
-                            notifications={notifications}
-                            columnAlignment={columnAlignment} />
-                        {shouldRenderNotificationsWrapper() &&
+                            fillAllAvailableSpace={!shouldNotificationsFillAvailableSpace}
+                            columnAlignment={columnAlignment}
+                            columnInfo={columnInfo}
+                            cellFormatting={cellFormatting} />
+                        {shouldRenderNotificationsWrapper &&
                             renderNotifications()
                         }
                     </>
@@ -146,9 +151,14 @@ export const Cell = (props: ICellProps) => {
 
     const renderNotifications = (): JSX.Element => {
         return (
-            <div className={styles.notificationWrapper}>
+            <div ref={notificationWrapperRef} className={styles.notificationWrapper}>
                 {notifications && notifications.length > 0 &&
-                    <MemoizedNotifications ref={notificationRef} className={styles.notifications} notifications={notifications} />
+                    <MemoizedNotifications
+                        ref={notificationRef}
+                        className={styles.notifications}
+                        notifications={notifications}
+                        onShouldNotificationsFillAvailableSpace={(value) => setShouldNotificationsFillAvailableSpace(value)}
+                    />
                 }
                 {shouldShowNotEditableNotification() &&
                     <MemoizedNotifications notifications={[{
@@ -160,14 +170,14 @@ export const Cell = (props: ICellProps) => {
                         messages: []
                     }]} />
                 }
-                {validation?.error === true &&
+                {columnInfo?.error === true &&
                     <MemoizedNotifications notifications={[
                         {
                             notificationLevel: 'ERROR',
                             messages: [],
                             iconName: 'Error',
                             uniqueId: column.name,
-                            title: validation.errorMessage,
+                            title: columnInfo.errorMessage,
                             compact: true
                         }
                     ]} />
@@ -184,9 +194,12 @@ export const Cell = (props: ICellProps) => {
         return className;
     }
 
+    const shouldRenderNotificationsWrapper = getShouldRenderNotificationsWrapper();
     const notificationWrapperMinWidth = getNotificationWrapperMinWidth();
     const columnAlignment = getColumnAlignment();
-    const styles = useMemo(() => getCellStyles(columnAlignment, notificationWrapperMinWidth, notifications.length > 0, isCellBeingEdited()), [notificationWrapperMinWidth, columnAlignment, notifications.length > 0, isCellBeingEdited()]);
+    const styles = useMemo(() => getCellStyles(
+        columnAlignment, notificationWrapperMinWidth, shouldNotificationsFillAvailableSpace, isCellBeingEdited()
+    ), [notificationWrapperMinWidth, columnAlignment, shouldNotificationsFillAvailableSpace, isCellBeingEdited()]);
 
     debounceNotificationRemeasure();
 
@@ -197,7 +210,7 @@ export const Cell = (props: ICellProps) => {
         resizeObserver.observe(props.eGridCell);
     }, []);
 
-    return <ThemeProvider className={getClassName()} data-is-valid={!validation.error} theme={cellTheme}>
+    return <ThemeProvider className={getClassName()} data-is-valid={!columnInfo.error} theme={cellTheme}>
         {renderContent()}
     </ThemeProvider>
 }

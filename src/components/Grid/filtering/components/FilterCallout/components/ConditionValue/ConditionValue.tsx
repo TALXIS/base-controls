@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useRef } from "react";
-import { Component } from "../../../../../core/components/Component/Component";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { IGridColumn } from "../../../../../core/interfaces/IGridColumn";
 import { IColumnFilterConditionController, useColumnFilterConditionController } from "../../../../controller/useColumnFilterConditionController";
 import { ConditionComponentValue } from "./model/ConditionComponentValue";
-import { DataTypes, MemoryDataProvider } from "@talxis/client-libraries";
-import { useRerender } from "../../../../../../../hooks/useRerender";
+import { Attribute, DataType } from "@talxis/client-libraries";
+import { NestedControlRenderer } from "../../../../../../NestedControl/NestedControlRenderer";
+import { useGridInstance } from "../../../../../core/hooks/useGridInstance";
+import { BaseControls } from "../../../../../../../utils";
+import { usePrevious } from "../../../../../../../hooks/usePrevious";
 
 interface IConditionValue {
     column: IGridColumn;
@@ -12,104 +14,136 @@ interface IConditionValue {
 
 export const ConditionValue = (props: IConditionValue) => {
     const condition = useColumnFilterConditionController(props.column);
+
     if (!condition) {
         return <></>
     }
+
     return <InternalConditionValue {...condition} />
 }
 
 const InternalConditionValue = (controller: IColumnFilterConditionController) => {
     const componentContainerRef = useRef<HTMLDivElement>(null);
-    const controllerRef = useRef<IColumnFilterConditionController>(controller);
     const firstRenderRef = useRef(true);
+    const controllerRef = useRef<IColumnFilterConditionController>(controller);
     controllerRef.current = controller;
     const conditionComponentValue = useMemo(() => new ConditionComponentValue(controllerRef), []);
     const column = conditionComponentValue.column;
-    const rerender = useRerender();
+    const grid = useGridInstance();
+    const previousOperator = usePrevious(controllerRef.current.operator.get());
 
-    const record = useMemo(() => {
-        const memoryProvider = new MemoryDataProvider(
-            [
-                {
-                    [column.name]: conditionComponentValue.get() ?? undefined,
-                    id: "id",
-                },
-            ]
-        );
-        memoryProvider.setColumns([
-            {
-                ...column,
-                metadata: { ...(column.metadata as any), RequiredLevel: 0 },
+    const getColumnEntityName = () => {
+        const entityAliasName = Attribute.GetLinkedEntityAlias(column.name);
+        if (!entityAliasName) {
+            return grid.dataset.getTargetEntityType();
+        }
+        return grid.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
+    }
+
+    const getShouldShowError = (): boolean => {
+        if (!controller.value.valid) {
+            return true;
+        }
+        if (!firstRenderRef.current && !conditionComponentValue.get() && previousOperator !== controllerRef.current.operator.get()) {
+            return true;
+        }
+        return false;
+    }
+
+    const getParameters = (parameters: any) => {
+        const result = {
+            ...parameters,
+            ShowErrorMessage: {
+                raw: true
             },
-            {
-                name: "id",
-                displayName: "",
-                dataType: DataTypes.SingleLineText,
-                alias: "id",
-                order: 0,
-                visualSizeFactor: 0,
+            EnableTypeSuffix: {
+                raw: false
             },
-        ]);
-        memoryProvider.setMetadata({
-            PrimaryIdAttribute: "id"
-        })
-        const record = memoryProvider.refresh()[0];
-        return record;
+        };
+        if (shouldShowErrorRef.current) {
+            result.value = {
+                ...result.value,
+                error: true,
+                errorMessage: "I need a value!"
+            }
+        }
+        if (!conditionComponentValue.get()) {
+            result.AutoFocus = {
+                raw: true
+            }
+        }
+        return result;
+    }
+    const shouldShowErrorRef = useRef(true);
+    shouldShowErrorRef.current = getShouldShowError();
+
+    useEffect(() => {
+        firstRenderRef.current = false;
     }, []);
 
-    record.setValue(column.name, conditionComponentValue.get())
-
-    useEffect(() => {
-        if (conditionComponentValue.get() === null) {
-            const input = componentContainerRef.current?.querySelector('input')
-            input?.focus()
-        }
-        if (!firstRenderRef.current) {
-            record.expressions?.setRequiredLevelExpression(column.name, () => 'required');
-        }
-        if (firstRenderRef.current) {
-            firstRenderRef.current = false;
-        }
-    }, [conditionComponentValue.get()])
-
-    useEffect(() => {
-        if (!controller.value.valid) {
-            record?.expressions?.setRequiredLevelExpression(column.name, () => 'required');
-            rerender();
-        }
-    }, [controller.value.valid])
-
-
-    return (
-        <div ref={componentContainerRef}>
-            <Component
-                column={column}
-                record={record}
-                onNotifyOutputChanged={(value) => conditionComponentValue.set(value)}
-                onOverrideControlProps={(props) => {
-                    return {
-                        ...props,
-                        parameters: {
-                            ...props.parameters,
-                            MultipleEnabled: {
-                                raw: true
-                            },
-                            IsInlineNewEnabled: {
-                                raw: false
-                            },
-                            ShowErrorMessage: {
-                                raw: true
-                            },
-                            value: {
-                                ...props.parameters.value,
-                                getAllViews: async (entityName: string) => {
-                                    return props.parameters.value.getAllViews(entityName, 1);
-                                }
+    return <div ref={componentContainerRef}>
+        <NestedControlRenderer
+            context={grid.pcfContext}
+            parameters={{
+                ControlName: BaseControls.GetControlNameForDataType(column.dataType as DataType),
+                Bindings: {
+                    value: {
+                        isStatic: false,
+                        type: column.dataType as DataType,
+                        value: conditionComponentValue.get(),
+                        onNotifyOutputChanged: (value) => conditionComponentValue.set(value),
+                        metadata: {
+                            attributeName: Attribute.GetNameFromAlias(column.name),
+                            enitityName: getColumnEntityName()
+                        }
+                    },
+                },
+            }}
+            onOverrideComponentProps={(props) => {
+                return {
+                    ...props,
+                    onGetProps: () => {
+                        return (props) => {
+                            return {
+                                ...props,
+                                parameters: getParameters(props.parameters)
                             }
                         }
                     }
-                }}
-            />
-        </div>
-    )
+                }
+            }}
+        />
+    </div>
+    /*     return (
+            <div ref={componentContainerRef}>
+                <Component
+                    column={column}
+                    record={record}
+                    onNotifyOutputChanged={(value) => conditionComponentValue.set(value)}
+                    onOverrideControlProps={(props) => {
+                        return {
+                            ...props,
+                            parameters: {
+                                ...props.parameters,
+                                MultipleEnabled: {
+                                    raw: true
+                                },
+                                IsInlineNewEnabled: {
+                                    raw: false
+                                },
+                                ShowErrorMessage: {
+                                    raw: true
+                                },
+                                value: {
+                                    ...props.parameters.value,
+                                    getAllViews: async (entityName: string) => {
+                                        return props.parameters.value.getAllViews(entityName, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }}
+                />
+            </div>
+        ) */
 }

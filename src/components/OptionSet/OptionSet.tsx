@@ -45,7 +45,7 @@ export const OptionSet = (props: IOptionSet) => {
         if (!option) {
             return null;
         }
-        const color = Options.find(item => item.Value.toString() === option.key)?.Color;
+        const color = Options.find(item => item.Value.toString() === option.key)?.Color ?? theme.palette.neutralLight
         return <ColorfulOption label={option.text} color={color} />
     };
 

@@ -1,4 +1,4 @@
-import { Icon, ILinkProps, Image, ITextProps, Link, ThemeProvider } from "@fluentui/react";
+import { Icon, IIconProps, ILinkProps, Image, ITextProps, Link, ThemeProvider } from "@fluentui/react";
 import { useControl } from "../../hooks";
 import { Text as FluentText } from '@fluentui/react';
 import { useMemo } from "react";
@@ -8,16 +8,19 @@ import { OptionSet } from './OptionSet';
 import { IGridCellRenderer } from "./interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
 
-export const GridCellLabel = (props: IGridCellRenderer) => {
+export const GridCellRenderer = (props: IGridCellRenderer) => {
     const dataset = props.parameters.Dataset;
     const record: IRecord = props.parameters.Record;
     const column = props.parameters.Column;
+    const columnAlignment = props.parameters.ColumnAlignment?.raw;
     const { theme, labels } = useControl('GridCellLabel', props, getDefaultGridRendererTranslations());
-    const styles = useMemo(() => getGridCellLabelStyles(props.parameters.ColumnAlignment.raw), []);
+    const styles = useMemo(() => getGridCellLabelStyles(columnAlignment ?? 'left'), [columnAlignment]);
     const dataType: DataType = props.parameters.value.type as DataType;
     const value: string = props.parameters.value.raw ?? '';
     const formattedValue: string = props.parameters.value.formatted || value;
-    const isNavigationEnabled = props.parameters.EnableNavigation.raw
+    const isNavigationEnabled = props.parameters.EnableNavigation?.raw ?? true;
+    const prefixIcon = props.parameters.PrefixIcon?.raw
+    const suffixIcon = props.parameters.SuffixIcon?.raw;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const getLinkProps = (): ILinkProps => {
@@ -76,7 +79,8 @@ export const GridCellLabel = (props: IGridCellRenderer) => {
                 return <Link {...getLinkProps()}>{formattedValue}</Link>
             }
             case DataTypes.OptionSet:
-            case DataTypes.MultiSelectOptionSet: {
+            case DataTypes.MultiSelectOptionSet:
+            case DataTypes.TwoOptions: {
                 return <OptionSet context={props.context} parameters={{ ...props.parameters }} />
             }
             case DataTypes.File: {
@@ -106,24 +110,49 @@ export const GridCellLabel = (props: IGridCellRenderer) => {
         }, true)
     }
 
+    const getIconProps = (json?: string | null): IIconProps | undefined => {
+        if (!json) {
+            return undefined;
+        }
+        return JSON.parse(json);
+    }
+
     const componentProps = onOverrideComponentProps({
         linkProps: {
             rel: 'noopener noreferrer'
         }
     });
 
+    const prefixIconProps = getIconProps(prefixIcon);
+    const suffixIconProps = getIconProps(suffixIcon);
+
     return <ThemeProvider className={styles.root} theme={theme}>
-        {renderContent()}
+        {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
+        <div className={styles.contentWrapper}>
+            {renderContent()}
+        </div>
+        {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
     </ThemeProvider>
 }
 
 export const DefaultContentRenderer = (props: ITextProps) => {
     const styles = useMemo(() => getDefaultContentRendererStyles(), []);
     return <FluentText
-        className={`${styles.content}${props.className ? ` ${props.className}` : ''}`}
-        {...props}>
+        {...props}
+        className={getClassNames([props.className, styles.content])}
+        title={props.title ?? props.children as string}>
         {props.children}
     </FluentText>
+}
+
+const getClassNames = (classes: (string | undefined)[]): string | undefined => {
+    let classNames = '';
+    classes.map(className => {
+        if (className) {
+            classNames += ` ${className}`;
+        }
+    })
+    return classNames || undefined;
 }
 
 

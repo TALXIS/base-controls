@@ -1,25 +1,17 @@
-import { PromiseCache } from "@talxis/client-libraries";
-import { ILookupProperty } from "../../../../../../../interfaces";
-import { FieldValue } from "../Component/FieldValue";
+import { FieldValue, PromiseCache } from "@talxis/client-libraries";
 import { Property } from "./Property";
+import { ILookupProperty } from "../../../interfaces";
 
 const LookupCache = new PromiseCache()
 
 export class LookupProperty extends Property {
-    public async init(): Promise<boolean> {
-        return true;
-    }
     public getParameter(): ILookupProperty {
         const value = this.getValue();
-        const validation = this.getValidationResult();
         const formattedValue = new FieldValue(value, this.dataType).getFormattedValue();
         
         return {
             raw: value,
-            error: validation.error,
-            errorMessage: validation.errorMessage,
             formatted: formattedValue ?? undefined,
-            type: this.dataType,
             getAllViews: (entityName: string) => this._getAllViews(entityName),
             attributes: <any>this.attributeMetadata ?? {
                 Targets: [],

@@ -8,5 +8,5 @@ export interface IOutputs {
 }
 
 export interface IParameters {
-    [key: string]: IProperty | undefined;
+    [key: string]: IProperty | undefined | any;
 }

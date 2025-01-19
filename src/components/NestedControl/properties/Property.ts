@@ -1,14 +1,13 @@
 import { IAttributeMetadata, IFieldValidationResult } from "@talxis/client-libraries";
-import { IBinding, IOptions } from "../Component/Control";
+import { IBinding, IOptions } from "../NestedControl";
 
 export abstract class Property {
-
-    private _binding;
+    private _onGetBinding: () => IBinding;
     private _parentPcfContext: ComponentFramework.Context<any, any>;
     private _attributeMetadata: IAttributeMetadata | undefined;
 
-    constructor(binding: IBinding, options: IOptions) {
-        this._binding = binding;
+    constructor(options: IOptions, onGetBinding: () => IBinding) {
+        this._onGetBinding = onGetBinding;
         this._parentPcfContext = options.parentPcfContext;
     }
     public async init(): Promise<boolean> {
@@ -33,9 +32,12 @@ export abstract class Property {
         return this._binding.type;
     }
     public getValidationResult(): IFieldValidationResult {
-        return this._binding.validator?.(this._binding.valueGetter()) ?? {error: true, errorMessage: 'Forced Error'}
+        return {error: false, errorMessage: ''};
     }
     public getValue(): any {
-        return this._binding.valueGetter();
+        return this._binding.value;
+    }
+    private get _binding() {
+        return this._onGetBinding();
     }
 }

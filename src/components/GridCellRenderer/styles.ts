@@ -1,6 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react"
+import { IColumn } from "@talxis/client-libraries";
 
-export const getGridCellLabelStyles = (columnAlignment: 'left' | 'center' | 'right') => {
+export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment']) => {
     return mergeStyleSets({
         root: {
             display: 'flex',
@@ -8,14 +9,20 @@ export const getGridCellLabelStyles = (columnAlignment: 'left' | 'center' | 'rig
             height: '100%',
             paddingLeft: 10,
             paddingRight: 10,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            justifyContent: getJustifyContent(columnAlignment)
+            justifyContent: getJustifyContent(columnAlignment),
+            gap: 10,
         },
         fileWrapper: {
             display: 'flex',
             gap: 3,
-            overflow: 'hidden'
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+        },
+        contentWrapper: {
+            flexGrow: 1,
+            textAlign: columnAlignment,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
         },
         fileImage: {
             marginRight: 5,
@@ -25,8 +32,14 @@ export const getGridCellLabelStyles = (columnAlignment: 'left' | 'center' | 'rig
             }
         },
         link: {
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
+            maxWidth: '100%',
+            //overflow: 'hidden',
+            //textOverflow: 'ellipsis',
+        },
+        icon: {
+            'img': {
+                width: 20
+            }
         }
     })
 }
@@ -35,12 +48,13 @@ export const getDefaultContentRendererStyles = () => {
     return mergeStyleSets({
         content: {
             overflow: 'hidden',
-            textOverflow: 'ellipsis'
+            textOverflow: 'ellipsis',
+            flexGrow: 1
         }
     });
 }
 
-const getJustifyContent = (columnAlignment: 'left' | 'center' | 'right') => {
+const getJustifyContent = (columnAlignment: IColumn['alignment']) => {
     switch (columnAlignment) {
         case 'left': {
             return 'flex-start';

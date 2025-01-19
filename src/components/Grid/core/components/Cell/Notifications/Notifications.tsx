@@ -1,12 +1,14 @@
 import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ICommandBar, ThemeProvider, getTheme } from "@fluentui/react"
 import { getNotificationIconStyles } from "./styles";
-import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { IAddControlNotificationOptions, IControlNotificationAction } from "@talxis/client-libraries";
 import { CommandBar, useThemeGenerator } from "@talxis/react-components";
 import { useGridInstance } from "../../../hooks/useGridInstance";
+import { useDebouncedCallback } from "use-debounce";
 
 interface INotifications {
     notifications: IAddControlNotificationOptions[],
+    onShouldNotificationsFillAvailableSpace?: (value: boolean) => void;
     className?: string;
 }
 
@@ -23,13 +25,6 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
     const [selectedNotification, setSelectedNotification] = useState<IAddControlNotificationOptions | null>(null);
     const commandBarRef = useRef<ICommandBar>(null);
     const overridenTheme = useThemeGenerator(theme.semanticColors.bodyText, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText);
-    useImperativeHandle(ref, () => {
-        return {
-            remeasureCommandBar: () => {
-                commandBarRef.current?.remeasure();
-            }
-        }
-    })
 
     const getIconName = (notification: IAddControlNotificationOptions): string | undefined => {
         if (notification.iconName) {
@@ -124,12 +119,26 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
             bodyText: tokenTheme.colorNeutralForeground1
         }
     }
+
+    const debouncedShouldGrowCallback = useDebouncedCallback((shouldGrow: boolean) => {
+        props.onShouldNotificationsFillAvailableSpace?.(shouldGrow);
+    }, 0);
+
+    useImperativeHandle(ref, () => {
+        return {
+            remeasureCommandBar: () => {
+                commandBarRef.current?.remeasure();
+            }
+        }
+    })
     const contextualMenuColors = getContextualMenuColors();
     const contextualMenuTheme = useThemeGenerator(contextualMenuColors.primaryColor, contextualMenuColors.backgroundColor, contextualMenuColors.bodyText);
 
     return <div className={`${styles.root}${props.className ? ` ${props.className}` : ''}`}>
         <ThemeProvider theme={overridenTheme} applyTo="none">
             <CommandBar
+                onDataGrown={() => debouncedShouldGrowCallback(false)}
+                onDataReduced={() => debouncedShouldGrowCallback(true)}
                 overflowItems={notifications.filter(x => x.renderedInOverflow).map(y => getCommandBarItem(y))}
                 contextualMenuTheme={contextualMenuTheme}
                 id={iconId}

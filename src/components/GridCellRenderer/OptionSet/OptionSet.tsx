@@ -3,7 +3,7 @@ import { IOptionSet } from "../../OptionSet"
 import { DefaultContentRenderer } from "../GridCellRenderer";
 import { IMultiSelectOptionSet } from "../../MultiSelectOptionSet";
 import { ITwoOptions } from "../../TwoOptions";
-import { ThemeProvider } from "@fluentui/react";
+import { ThemeProvider, useTheme } from "@fluentui/react";
 import { Theming, useThemeGenerator } from "@talxis/react-components";
 import { Text } from '@fluentui/react';
 import { IContext } from "../../../interfaces";
@@ -50,13 +50,15 @@ export const OptionSet = (props: IOptionSet | IMultiSelectOptionSet | ITwoOption
 }
 
 const ColorfulOption = (props: { option: ComponentFramework.PropertyHelper.OptionMetadata, context: IContext }) => {
+    const theme = useTheme();
     const option = props.option;
-    const textColor = Theming.GetTextColorForBackground(option.Color);
+    const backgroundColor = option.Color ?? theme.palette.neutralLight;
+    const textColor = Theming.GetTextColorForBackground(backgroundColor);
     const styles = useMemo(() => getColorfulOptionStyles(), []);
-    const theme = useThemeGenerator(textColor, option.Color, textColor, props.context.fluentDesignLanguage?.v8FluentOverrides);
+    const optionTheme = useThemeGenerator(textColor, backgroundColor, textColor, props.context.fluentDesignLanguage?.v8FluentOverrides);
 
     return (
-        <ThemeProvider className={styles.option} theme={theme}>
+        <ThemeProvider className={styles.option} theme={optionTheme}>
             <Text>{option.Label}</Text>
         </ThemeProvider>
     )
