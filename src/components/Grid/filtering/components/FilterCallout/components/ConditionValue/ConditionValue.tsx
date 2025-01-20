@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { IGridColumn } from "../../../../../core/interfaces/IGridColumn";
 import { IColumnFilterConditionController, useColumnFilterConditionController } from "../../../../controller/useColumnFilterConditionController";
 import { ConditionComponentValue } from "./model/ConditionComponentValue";
@@ -14,8 +14,22 @@ interface IConditionValue {
 
 export const ConditionValue = (props: IConditionValue) => {
     const condition = useColumnFilterConditionController(props.column);
+    const [shouldRemount, setShouldRemount] = useState(false);
+    const value = condition?.value.get();
 
-    if (!condition) {
+    useEffect(() => {
+        if(value === null) {
+            setShouldRemount(true)
+        }
+    }, [value]);
+
+    useEffect(() => {
+        if(shouldRemount) {
+            setShouldRemount(false);
+        }
+    }, [shouldRemount]);
+
+    if (!condition || shouldRemount) {
         return <></>
     }
 
@@ -26,19 +40,12 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
     const componentContainerRef = useRef<HTMLDivElement>(null);
     const firstRenderRef = useRef(true);
     const controllerRef = useRef<IColumnFilterConditionController>(controller);
+    const mountedRef = useRef(true);
     controllerRef.current = controller;
     const conditionComponentValue = useMemo(() => new ConditionComponentValue(controllerRef), []);
     const column = conditionComponentValue.column;
     const grid = useGridInstance();
     const previousOperator = usePrevious(controllerRef.current.operator.get());
-
-    const getColumnEntityName = () => {
-        const entityAliasName = Attribute.GetLinkedEntityAlias(column.name);
-        if (!entityAliasName) {
-            return grid.dataset.getTargetEntityType();
-        }
-        return grid.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
-    }
 
     const getShouldShowError = (): boolean => {
         if (!controller.value.valid) {
@@ -70,7 +77,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                 errorMessage: "I need a value!"
             }
         }
-        if (!conditionComponentValue.get() === null) {
+        if (conditionComponentValue.get() === null) {
             result.AutoFocus = {
                 raw: true
             }
@@ -89,6 +96,9 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
 
     useEffect(() => {
         firstRenderRef.current = false;
+        return () => {
+            mountedRef.current = false;
+        }
     }, []);
 
     return <div ref={componentContainerRef}>
@@ -101,10 +111,15 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                         isStatic: false,
                         type: column.dataType as DataType,
                         value: conditionComponentValue.get(),
-                        onNotifyOutputChanged: (value) => conditionComponentValue.set(value),
+                        onNotifyOutputChanged: (value) => {
+                            if(!mountedRef.current) {
+                                return;
+                            }
+                            conditionComponentValue.set(value);
+                        },
                         metadata: {
                             attributeName: Attribute.GetNameFromAlias(column.name),
-                            enitityName: getColumnEntityName()
+                            enitityName: column.getEntityName()
                         }
                     },
                 },

@@ -208,6 +208,7 @@ export const Cell = (props: ICellProps) => {
             debounceNotificationRemeasure();
         })
         resizeObserver.observe(props.eGridCell);
+        return () => resizeObserver.disconnect();
     }, []);
 
     return <ThemeProvider className={getClassName()} data-is-valid={!columnInfo.error} theme={cellTheme}>

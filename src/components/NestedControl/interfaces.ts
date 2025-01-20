@@ -17,6 +17,7 @@ export interface INestedControlRendererParameters extends IParameters {
 
 export interface INestedControlRendererComponentProps {
     rootClassName?: string;
+    controlContainerClassName?: string
     onGetProps: () => ((props: IControl<any, any, any, any>) => IControl<any, any, any, any>) | undefined
     onOverrideBaseControlProps: (props: any) => any;   
 }

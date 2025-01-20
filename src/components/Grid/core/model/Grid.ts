@@ -198,7 +198,8 @@ export class Grid {
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
                 isResizable: true,
                 isSorted: sorted ? true : false,
-                isFiltered: false
+                isFiltered: false,
+                getEntityName: () => this._getColumnEntityName(column.name)
             }
             const condition = await this.filtering.condition(gridColumn);
             gridColumn.isFiltered = condition.isAppliedToDataset;
@@ -220,6 +221,7 @@ export class Grid {
                 isSortedDescending: false,
                 order: 0,
                 visualSizeFactor: 45,
+                getEntityName: () => this._getColumnEntityName(CHECKBOX_COLUMN_KEY)
             });
         }
         this._columns = gridColumns;
@@ -317,5 +319,12 @@ export class Grid {
             maxHeight = 600;
         }
         return maxHeight;
+    }
+    private _getColumnEntityName(columnName: string) {
+        const entityAliasName = Attribute.GetLinkedEntityAlias(columnName);
+        if (!entityAliasName) {
+            return this.dataset.getTargetEntityType();
+        }
+        return this.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
     }
 }

@@ -48,14 +48,6 @@ export const CellContent = (props: ICellContentProps) => {
         return defaultControl as ICustomColumnControl;
     };
 
-    const getColumnEntityName = () => {
-        const entityAliasName = Attribute.GetLinkedEntityAlias(column.name);
-        if (!entityAliasName) {
-            return grid.dataset.getTargetEntityType()
-        }
-        return grid.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
-    }
-
     const getBindings = (): { [name: string]: IBinding } => {
         const bindings: { [name: string]: IBinding } = {
             'value': {
@@ -73,7 +65,7 @@ export const CellContent = (props: ICellContentProps) => {
                 },
                 metadata: {
                     attributeName: Attribute.GetNameFromAlias(column.name),
-                    enitityName: getColumnEntityName()
+                    enitityName: column.getEntityName()
                 }
             }
         }
@@ -252,6 +244,12 @@ export const CellContent = (props: ICellContentProps) => {
 
     }
     const currentControl = getControl();
+
+    React.useEffect(() => {
+        return () => {
+            console.log('unmount')
+        }
+    }, []);
 
     return <NestedControlRenderer
         context={grid.pcfContext}
