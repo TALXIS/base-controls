@@ -1,8 +1,9 @@
 import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
 import { IControl, IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
+import { IIconProps, IImageProps, ILinkProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 
-export interface IGridCellRenderer extends IControl<IGridCellRendererParameters, {}, ReturnType<typeof getDefaultGridRendererTranslations>, any> {
+export interface IGridCellRenderer extends IControl<IGridCellRendererParameters, {}, ReturnType<typeof getDefaultGridRendererTranslations>, IGridCellRendererComponentProps> {
 }
 
 export interface IGridCellRendererParameters extends IParameters {
@@ -15,4 +16,30 @@ export interface IGridCellRendererParameters extends IParameters {
     Dataset: IDataset;
     //@ts-ignore - typings
     Record: IRecord
+}
+
+export interface IOptionSetProps {
+    containerProps: React.HTMLAttributes<HTMLDivElement>;
+    onGetOptionProps: (props: IOptionProps) => IOptionProps
+}
+
+export interface IOptionProps {
+    containerProps: ThemeProviderProps;
+    option: ComponentFramework.PropertyHelper.OptionMetadata;
+    textProps: ITextProps;
+}
+
+export interface IGridCellRendererComponentProps {
+    onGetOptionSetProps: (props: IOptionSetProps) => IOptionSetProps,
+    onGetLinkProps: (props: ILinkProps) => ILinkProps;
+    rootContainerProps: ThemeProviderProps;
+    contentWrapperProps: React.HTMLAttributes<HTMLDivElement>;
+    textProps: ITextProps;
+    fileProps: {
+        containerProps: React.HTMLAttributes<HTMLDivElement>;
+        iconProps: IIconProps;
+        imageProps: Omit<IImageProps, 'src'> & {
+            onGetSrc: (src: string) => string
+        }
+    }
 }

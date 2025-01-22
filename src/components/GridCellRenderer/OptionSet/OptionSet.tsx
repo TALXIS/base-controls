@@ -9,13 +9,22 @@ import { Text } from '@fluentui/react';
 import { IContext } from "../../../interfaces";
 import { useMemo } from "react";
 import { getColorfulOptionStyles, getOptionSetStyles } from "./styles";
+import { useComponentProps } from "../useComponentProps";
+import { IOptionSetProps } from "../interfaces";
 
 export const OptionSet = (props: IOptionSet | IMultiSelectOptionSet | ITwoOptions) => {
     const dataType: DataType = props.parameters.value.type as DataType;
     const options = props.parameters.value.attributes.Options;
-    const formattedValue = props.parameters.value.formatted ?? '';
     const value: any = props.parameters.value.raw;
     const styles = useMemo(() => getOptionSetStyles(), []);
+    const componentProps = useComponentProps();
+
+    const optionSetProps = componentProps.onGetOptionSetProps({
+        containerProps: {
+            className: styles.root
+        },
+        onGetOptionProps: (props) => props
+    })
 
     const shouldRenderDefaultLabel = () => {
         if (!props.parameters.EnableOptionSetColors?.raw || !options.some(option => option.Color)) {
@@ -40,16 +49,24 @@ export const OptionSet = (props: IOptionSet | IMultiSelectOptionSet | ITwoOption
     }
 
     if (shouldRenderDefaultLabel()) {
-        return <DefaultContentRenderer>{formattedValue}</DefaultContentRenderer>
+        return <DefaultContentRenderer />
     }
-    return (<div className={styles.root}>
+    return (<div {...optionSetProps.containerProps}>
         {getSelectedOptions().map(option => {
-            return <ColorfulOption key={option.Value} option={option} context={props.context} />
+            return <ColorfulOption
+                key={option.Value}
+                optionSetProps={optionSetProps}
+                option={option}
+                context={props.context} />
         })}
     </div>)
 }
 
-const ColorfulOption = (props: { option: ComponentFramework.PropertyHelper.OptionMetadata, context: IContext }) => {
+const ColorfulOption = (props: {
+    option: ComponentFramework.PropertyHelper.OptionMetadata,
+    context: IContext;
+    optionSetProps: IOptionSetProps
+}) => {
     const theme = useTheme();
     const option = props.option;
     const backgroundColor = option.Color ?? theme.palette.neutralLight;
@@ -57,9 +74,20 @@ const ColorfulOption = (props: { option: ComponentFramework.PropertyHelper.Optio
     const styles = useMemo(() => getColorfulOptionStyles(), []);
     const optionTheme = useThemeGenerator(textColor, backgroundColor, textColor, props.context.fluentDesignLanguage?.v8FluentOverrides);
 
+    const optionProps = props.optionSetProps.onGetOptionProps({
+        containerProps: {
+            className: styles.option,
+            theme: optionTheme
+        },
+        option: option,
+        textProps: {
+            children: option.Label
+        }
+    })
+
     return (
-        <ThemeProvider className={styles.option} theme={optionTheme}>
-            <Text>{option.Label}</Text>
+        <ThemeProvider {...optionProps.containerProps}>
+            <Text {...optionProps.textProps}>{optionProps.textProps.children}</Text>
         </ThemeProvider>
     )
 }

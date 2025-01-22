@@ -11,6 +11,7 @@ import { Manifest } from "./manifest";
 
 
 const manifestCache = new PromiseCache();
+const LOADED_CONTROLS = new Set<string>();
 
 export interface IBinding {
     type: DataType;
@@ -19,7 +20,7 @@ export interface IBinding {
     error?: boolean;
     errorMessage?: string;
     metadata?: {
-        enitityName: string;
+        entityName: string;
         attributeName: string;
     },
     onNotifyOutputChanged?: (newValue: any) => void;
@@ -51,6 +52,7 @@ export interface IOptions {
         onInit?: () => void;
         onGetControlStates?: () => IControlStates | undefined
         onNotifyOutputChanged?: (ouputs: any) => void;
+        onControlLoaded?: () => void
     },
     overrides?: {
         onGetProps?: () => ((props: IControl<any, any, any, any>) => IControl<any, any, any, any>) | undefined,
@@ -62,11 +64,13 @@ export interface IOptions {
 export class NestedControl {
     private _options: IOptions;
     private _properties: Map<string, Property> = new Map();
-    private _customControlName: string = '';
+    private _renderedCustomControlName: string = '';
     private _customControlInstance: ComponentFramework.StandardControl<any, any> | null = null;
     private _customControlContext: ComponentFramework.Context<any, any> | null = null;
     private _customControlId: string = '';
     private _manifest: Manifest | null = null;
+    private _loading: boolean = false;
+    private _mutationObserver = new MutationObserver((mutations) => this._checkIfControlLoadedToDom(mutations, this._manifest!));
 
     constructor(options: IOptions) {
         this._options = options;
@@ -109,10 +113,13 @@ export class NestedControl {
         return props;
     }
 
+    public isLoading() {
+        return this._loading;
+    }
+
     public async render() {
-        const currentCustomControlName = this._options.onGetControlName() ?? '';
         //if we detect change in PCF name, unmount it first
-        if (currentCustomControlName !== this._customControlName) {
+        if (this._renderedCustomControlName && this._options.onGetControlName() !== this._renderedCustomControlName) {
             this.unmount();
         }
         const override = this._options.overrides?.onRender?.();
@@ -120,15 +127,19 @@ export class NestedControl {
             return override(this._options.containerElement, this.getProps());
         }
         //if the PCF name changed, reinitialize
-        if (currentCustomControlName !== this._customControlName) {
-            this._customControlName = currentCustomControlName;
+        if (this._options.onGetControlName() !== this._renderedCustomControlName) {
+            this._renderedCustomControlName = this._options.onGetControlName();
+            if(!LOADED_CONTROLS.has(this._renderedCustomControlName)) {
+                this._loading = true;
+            }
+            this._mutationObserver.observe(this._options.containerElement, { childList: true, subtree: true });
             this._customControlId = crypto.randomUUID();
-            this._manifest = await this._getManifest(this._customControlName);
+            this._manifest = await this._getManifest(this._renderedCustomControlName);
             const properties: any = {
                 controlstates: this._options.callbacks?.onGetControlStates?.() ?? {}, 
                 parameters: this._getCustomControlParameters(this._manifest),
                 childeventlisteners: [{
-                    eventname: "onEvent",
+                    eventname: "onInit",
                     eventhandler: (object: any) => {
                         this._customControlInstance = object.instance;
                         this._customControlContext = object.context;
@@ -136,14 +147,11 @@ export class NestedControl {
                     }
                 }]
             };
-            const component = (this._options.parentPcfContext as any).factory.createComponent(this._customControlName, this._customControlId, properties);
+            const component = (this._options.parentPcfContext as any).factory.createComponent(this._renderedCustomControlName, this._customControlId, properties);
             (this._options.parentPcfContext as any).factory.bindDOMElement(component, this._options.containerElement);
         }
         //the PCF did not change, just call updateView
         else {
-            if (!this._customControlInstance) {
-                console.error(`Custom control ${this._customControlName} does not expose it's instance through fire event. Please add fireEvent to init() to avoid unintentional behavior.`)
-            }
             this._customControlInstance?.updateView?.(this._patchContext(this._customControlContext!, this._manifest!))
         }
     }
@@ -154,12 +162,32 @@ export class NestedControl {
         if (override) {
             override(this._options.containerElement);
         }
-        (this._options.parentPcfContext as any).factory.unbindDOMComponent(this._customControlId);
-        this._customControlName = '';
+        this._customControlInstance?.destroy();
+        this._renderedCustomControlName = '';
+        this._mutationObserver.disconnect();
+    }
+
+    private _getCustomControlNameWithoutPrefix() {
+        const parts = this._renderedCustomControlName.split('_');
+        return parts[1] ?? parts[0];
+    }
+
+    private _checkIfControlLoadedToDom(mutations: MutationRecord[], manifest: Manifest) {
+        mutations.map(mutation => {
+            const target = mutation.target as HTMLElement;
+            if(target.classList.contains(this._getCustomControlNameWithoutPrefix())) {
+                this._loading = false;
+                this._options.callbacks?.onControlLoaded?.();
+                LOADED_CONTROLS.add(this._renderedCustomControlName);
+                this._mutationObserver.disconnect();
+                if(!this._customControlInstance) {
+                    console.error(`Custom control ${this._renderedCustomControlName} does not expose it's instance through fireEvent. Please add fireEvent to init() to avoid unintentional behavior.`);
+                }
+            }
+        });
     }
 
     private async _init() {
-        this._customControlName = this._options.onGetControlName();
         const promises: Promise<boolean>[] = [];
         Object.entries(this._options.onGetBindings()).map(([name, binding]) => {
             const getBinding = () => this._options.onGetBindings()[name];
@@ -167,6 +195,11 @@ export class NestedControl {
             promises.push(propertyInstance.init());
             this._properties.set(name, propertyInstance);
         })
+/*          await new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(null)
+            }, 2000);
+        }) */
         await Promise.all(promises);
         this._options.callbacks?.onInit?.()
     }
@@ -242,6 +275,25 @@ export class NestedControl {
                         }
                     }
                 })(),
+                Attributes: (() => {
+/*                     const binding = this._options.onGetBindings()[property.name];
+                    if(binding?.metadata) {
+                        return {
+                            EntityLogicalName: binding.metadata.entityName,
+                            LogicalName: binding.metadata.attributeName
+                        }
+                    }
+                    if(property.isBindingProperty) {
+                        const binding = Object.values(this._options.onGetBindings()).find(binding => !binding.isStatic);
+                        if(binding?.metadata) {
+                            return {
+                                EntityLogicalName: binding.metadata.entityName,
+                                LogicalName: binding.metadata.attributeName
+                            }
+                        }
+                    }
+                    return undefined; */
+                })(),
                 Callback: (value: any) => {
                     let binding = this._options.onGetBindings()[property.name];
                     if (!binding) {
@@ -251,7 +303,7 @@ export class NestedControl {
                         }
                         binding = this._options.onGetBindings()[foundBindingName];
                     }
-                    //binding.onNotifyOutputChanged?.(value);
+                    binding.onNotifyOutputChanged?.(value);
                     //this._options.callbacks?.onNotifyOutputChanged?.();
                 }
             }
@@ -275,8 +327,6 @@ export class NestedControl {
         const props = this.getProps();
         const parameters = props.parameters;
         const contextParameters = context.parameters;
-        //context.mode = props.context.mode;
-        //context.mode.isControlDisabled = this._options.callbacks?.onIsControlDisabled?.() ?? false;
         Object.defineProperty(context, 'mode', {
             get: () => {
                 return props.context.mode;

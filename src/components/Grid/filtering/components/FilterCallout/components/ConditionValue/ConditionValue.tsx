@@ -119,7 +119,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                         },
                         metadata: {
                             attributeName: Attribute.GetNameFromAlias(column.name),
-                            enitityName: column.getEntityName()
+                            entityName: column.getEntityName()
                         }
                     },
                 },
@@ -127,7 +127,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
             onOverrideComponentProps={(props) => {
                 return {
                     ...props,
-                    onGetProps: () => {
+                    onOverrideControlProps: () => {
                         return (props) => {
                             return {
                                 ...props,

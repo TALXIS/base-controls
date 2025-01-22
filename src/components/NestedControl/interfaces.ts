@@ -1,3 +1,4 @@
+import { IShimmerProps, ISpinnerProps } from "@fluentui/react";
 import { IParameters } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
 import { IBinding, IControlStates } from "./NestedControl";
@@ -12,14 +13,20 @@ export interface INestedControlRendererParameters extends IParameters {
     Bindings: {
         [key: string]: IBinding
     }
+    LoadingType?: 'spinner' | 'shimmer'
     ControlStates?: IControlStates;
 }
 
 export interface INestedControlRendererComponentProps {
-    rootClassName?: string;
-    controlContainerClassName?: string
-    onGetProps: () => ((props: IControl<any, any, any, any>) => IControl<any, any, any, any>) | undefined
-    onOverrideBaseControlProps: (props: any) => any;   
+    loadingProps: {
+        spinnerProps: ISpinnerProps;
+        shimmerProps: IShimmerProps;
+        containerProps: React.HTMLAttributes<HTMLDivElement>;
+
+    }
+    rootContainerProps: React.HTMLAttributes<HTMLDivElement>;
+    controlContainerProps: React.HTMLAttributes<HTMLDivElement>;
+    onOverrideControlProps: () => ((props: IControl<any, any, any, any>) => IControl<any, any, any, any>) | undefined
 }
 
 

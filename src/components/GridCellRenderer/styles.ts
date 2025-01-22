@@ -1,5 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react"
 import { IColumn } from "@talxis/client-libraries";
+import { ITheme } from "@talxis/react-components";
 
 export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment']) => {
     return mergeStyleSets({
@@ -33,8 +34,6 @@ export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment']) =>
         },
         link: {
             maxWidth: '100%',
-            //overflow: 'hidden',
-            //textOverflow: 'ellipsis',
         },
         icon: {
             'img': {
@@ -44,12 +43,15 @@ export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment']) =>
     })
 }
 
-export const getDefaultContentRendererStyles = () => {
+export const getDefaultContentRendererStyles = (theme: ITheme) => {
     return mergeStyleSets({
         content: {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             flexGrow: 1
+        },
+        placeholder: {
+            color: theme.semanticColors.inputPlaceholderText
         }
     });
 }

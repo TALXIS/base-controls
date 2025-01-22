@@ -23,6 +23,7 @@ export class Control {
         this._createProperties(controlElement);
         this._createTypeGroups(controlElement);
     }
+    
     private _createProperties(controlElement: Element) {
         const propertyElements = controlElement.querySelectorAll(':scope>property');
         let bindingPropertyFound = false;

@@ -9,6 +9,16 @@ export const getCellContentStyles = (columnAlignment: IColumn['alignment'], fill
             minWidth: 0,
             overflow: 'hidden',
             flexGrow: fillAllAvailableSpace ? 1 : undefined
+        },
+        loadingWrapper: {
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: 10,
+            paddingRight: 10
+        },
+        shimmerWrapper: {
+            height: 10
         }
     })
 }

@@ -1,19 +1,12 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getNestedControlStyles = () => {
+export const getNestedControlStyles = (isBaseControl: boolean) => {
     return mergeStyleSets({
-        loadingWrapper: {
-            paddingLeft: 10,
-            paddingRight: 10,
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center'
+        customControlContainer: {
+            display: isBaseControl ? 'none' : undefined
         },
         shimmerRoot: {
             flexGrow: 1
         },
-        shimmerWrapper: {
-            height: 10
-        }
     })
 }

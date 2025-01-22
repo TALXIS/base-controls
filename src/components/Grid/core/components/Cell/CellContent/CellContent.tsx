@@ -17,7 +17,6 @@ interface ICellContentProps extends ICellProps {
     cellFormatting: Required<ICustomColumnFormatting>;
 }
 
-
 export const CellContent = (props: ICellContentProps) => {
     const { columnAlignment, fillAllAvailableSpace, cellFormatting } = { ...props };
     const column = props.baseColumn;
@@ -65,7 +64,7 @@ export const CellContent = (props: ICellContentProps) => {
                 },
                 metadata: {
                     attributeName: Attribute.GetNameFromAlias(column.name),
-                    enitityName: column.getEntityName()
+                    entityName: column.getEntityName()
                 }
             }
         }
@@ -206,12 +205,6 @@ export const CellContent = (props: ICellContentProps) => {
                     }
                 }
             }
-            /*              parameters.PrefixIcon = {
-                            raw: JSON.stringify(prefixIcon)
-                        } */
-            parameters.SuffixIcon = {
-                raw: JSON.stringify(prefixIcon)
-            }
         }
         switch (dataType) {
             case 'Lookup.Customer':
@@ -244,17 +237,12 @@ export const CellContent = (props: ICellContentProps) => {
 
     }
     const currentControl = getControl();
-
-    React.useEffect(() => {
-        return () => {
-            console.log('unmount')
-        }
-    }, []);
-
+    
     return <NestedControlRenderer
         context={grid.pcfContext}
         parameters={{
             ControlName: currentControl.name,
+            LoadingType: 'shimmer',
             Bindings: getBindings(),
             ControlStates: {
                 isControlDisabled: !props.editing
@@ -263,8 +251,25 @@ export const CellContent = (props: ICellContentProps) => {
         onOverrideComponentProps={(props) => {
             return {
                 ...props,
-                rootClassName: styles.cellContent,
-                onGetProps: () => {
+                rootContainerProps: {
+                    ...props.rootContainerProps,
+                    className: styles.cellContent
+                },
+                loadingProps: {
+                    ...props.loadingProps,
+                    shimmerProps: {
+                        ...props.loadingProps.shimmerProps,
+                        styles: {
+                            ...props.loadingProps.shimmerProps.styles,
+                            shimmerWrapper: styles.shimmerWrapper
+                        }
+                    },
+                    containerProps: {
+                        ...props.loadingProps.containerProps,
+                        className: styles.loadingWrapper
+                    }
+                },
+                onOverrideControlProps: () => {
                     return (controlProps) => {
                         const parameters = getParameters();
                         return {
