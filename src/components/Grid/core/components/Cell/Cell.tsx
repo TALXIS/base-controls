@@ -2,7 +2,7 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { Constants, DataTypes, IColumn, IRecord } from "@talxis/client-libraries";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
-import { Checkbox, Shimmer, ThemeProvider } from "@fluentui/react";
+import { Checkbox, Shimmer, ThemeProvider, useTheme } from "@fluentui/react";
 import { useMemo, useState } from "react";
 import { getCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
@@ -28,7 +28,7 @@ export const Cell = (props: ICellProps) => {
     const column = props.baseColumn;
     const record = props.data;
     const cellFormatting = agGridContext.getCellFormatting(props as any);
-    const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
+    const cellTheme = useTheme();
     const grid = useGridInstance();
     const columnInfo = record.getColumnInfo(column.name)
     const notifications = columnInfo.ui.getNotifications();

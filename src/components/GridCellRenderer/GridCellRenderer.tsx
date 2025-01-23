@@ -24,7 +24,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const defaultContentRendererStyles = useMemo(() => getDefaultContentRendererStyles(theme), [theme]);
     const dataType: DataType = props.parameters.value.type as DataType;
     const value: string = props.parameters.value.raw;
-    const formattedValue: string = props.parameters.value.formatted || value;
+    const formattedValue: string = props.parameters.value.formatted;
     const isNavigationEnabled = props.parameters.EnableNavigation.raw;
     const prefixIcon = props.parameters.PrefixIcon?.raw
     const suffixIcon = props.parameters.SuffixIcon?.raw;

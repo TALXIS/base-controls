@@ -9,6 +9,7 @@ import { merge } from 'merge-anything';
 import { useRerender } from '@talxis/react-components';
 import { NestedControlRenderer } from '../../../../../NestedControl/NestedControlRenderer';
 import { IBinding } from '../../../../../NestedControl';
+import { TextField } from '../../../../../TextField';
 
 interface ICellContentProps extends ICellProps {
     columnAlignment: Required<IColumn['alignment']>;
@@ -60,7 +61,7 @@ export const CellContent = (props: ICellContentProps) => {
                     record.setValue(column.name, value);
                     setTimeout(() => {
                         rerender();
-                        grid.pcfContext.factory.requestRender()
+                        //grid.pcfContext.factory.requestRender()
                     }, 0);
                 },
                 metadata: {
@@ -241,6 +242,9 @@ export const CellContent = (props: ICellContentProps) => {
 
     }
     const currentControl = getControl();
+
+    return <div>test</div>
+
     
     return <NestedControlRenderer
         context={grid.pcfContext}

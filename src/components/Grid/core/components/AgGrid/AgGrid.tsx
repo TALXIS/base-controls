@@ -53,6 +53,7 @@ export const AgGrid = () => {
         setAgColumns(agGrid.columns);
     }, 0);
 
+
     debouncedRefresh();
 
     const onGridReady = () => {
@@ -173,12 +174,13 @@ export const AgGrid = () => {
     }, []);
 
     useEffect(() => {
+        debouncedSetAgColumns()
+    }, [columns]);
+
+    useEffect(() => {
         agGrid.selectRows();
     }, [records]);
 
-    useEffect(() => {
-        debouncedSetAgColumns();
-    }, [columns]);
 
     useEffect(() => {
         sizeColumnsIfSpaceAvailable()
@@ -202,6 +204,7 @@ export const AgGrid = () => {
             }
             <AgGridReact
                 animateRows
+                debounceVerticalScrollbar
                 rowSelection={grid.selection.type}
                 noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
                 loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
