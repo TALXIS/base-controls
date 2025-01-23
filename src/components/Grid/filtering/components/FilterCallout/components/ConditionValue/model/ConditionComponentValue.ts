@@ -3,21 +3,27 @@ import { DatasetConditionOperator } from "../../../../../../core/enums/Condition
 import { DataType } from "../../../../../../core/enums/DataType";
 import { IColumnFilterConditionController } from "../../../../../controller/useColumnFilterConditionController";
 import { FilteringUtils } from "../../../../../utils/FilteringUtilts";
+import { Attribute, PromiseCache } from "@talxis/client-libraries";
+import { Grid } from "../../../../../../core/model/Grid";
+
+const LookupIdMetadataCache = new PromiseCache();
 
 export class ConditionComponentValue {
     //needs to be ref to keep the current reference
     private _columnFilterConditionControllerRef: React.MutableRefObject<IColumnFilterConditionController>;
     private _conditionUtils = FilteringUtils.condition();
+    private _grid: Grid;
 
-    constructor(columnFilterConditionControllerRef: React.MutableRefObject<IColumnFilterConditionController>) {
+    constructor(columnFilterConditionControllerRef: React.MutableRefObject<IColumnFilterConditionController>, grid: Grid) {
         this._columnFilterConditionControllerRef = columnFilterConditionControllerRef;
+        this._grid = grid;
     }
 
     public get column() {
-        const _column = {...this._columnFilterConditionController.column};
+        const _column = { ...this._columnFilterConditionController.column };
         _column.isRequired = false;
         //always needs to be required for filter values if non valid value is present
-        if(!this._columnFilterConditionController.value.valid) {
+        if (!this._columnFilterConditionController.value.valid) {
             _column.isRequired = true;
         }
         switch (this._columnFilterConditionController.column.dataType) {
@@ -50,7 +56,7 @@ export class ConditionComponentValue {
         }
         return _column;
     }
-    public get() {
+    public async get() {
         let value = this._value.get();
         if (!value) {
             return null;
@@ -68,13 +74,9 @@ export class ConditionComponentValue {
                 if (typeof value === 'string') {
                     value = [value];
                 }
-                return value.map((x: string) => {
-                    return {
-                        entityType: "",
-                        name: "",
-                        id: x
-                    } as ComponentFramework.LookupValue;
-                })
+                return Promise.all(value.map((id: string) => {
+                    return this._getLookupValue(id);
+                }))
             }
         }
         return value;
@@ -83,10 +85,10 @@ export class ConditionComponentValue {
         switch (this.column.dataType) {
             case DataType.DATE_AND_TIME_DATE_AND_TIME:
             case DataType.DATE_AND_TIME_DATE_ONLY: {
-                if(value instanceof Date) {
+                if (value instanceof Date) {
 
-                     //the column of date time is always converted to Date column in Power Apps
-                     value = dayjs(value).format('YYYY-MM-DD');
+                    //the column of date time is always converted to Date column in Power Apps
+                    value = dayjs(value).format('YYYY-MM-DD');
                 }
                 break;
             }
@@ -110,7 +112,7 @@ export class ConditionComponentValue {
             case DataType.LOOKUP_OWNER:
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_CUSTOMER: {
-                if(value?.length > 1) {
+                if (value?.length > 1) {
                     value = value.map((x: ComponentFramework.LookupValue) => x.id);
                     break;
                 }
@@ -128,5 +130,29 @@ export class ConditionComponentValue {
     }
     private get _operator() {
         return this._columnFilterConditionController.operator;
+    }
+
+    private async _getLookupValue(id: string): Promise<ComponentFramework.LookupValue> {
+        const entityName = this.column.getEntityName();
+        const attributeName = Attribute.GetNameFromAlias(this.column.name);
+        const metadata = await this._grid.pcfContext.utils.getEntityMetadata(entityName, [attributeName]);
+        const targets = metadata.Attributes.get(attributeName).attributeDescriptor.Targets ?? [];
+        //@ts-ignore - typings
+        return LookupIdMetadataCache.get(id, async () => {
+            for (const target of targets) {
+                try {
+                    const lookupEntityMetadata = await this._grid.pcfContext.utils.getEntityMetadata(target, []);
+                    const response = await this._grid.pcfContext.webAPI.retrieveRecord(target, id, `?$select=${lookupEntityMetadata.PrimaryNameAttribute}`);
+                    return {
+                        id: id,
+                        entityType: target,
+                        name: response[lookupEntityMetadata.PrimaryNameAttribute]
+                    } as ComponentFramework.LookupValue;
+                }
+                catch (err) {
+                    continue;
+                }
+            }
+        })
     }
 }

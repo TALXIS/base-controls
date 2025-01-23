@@ -1,5 +1,5 @@
 import { AgGridReact } from '@ag-grid-community/react';
-import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
+import { mergeStyles, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
 import { ColDef, ColumnMovedEvent, ColumnResizedEvent, GridApi, GridState, ModuleRegistry } from "@ag-grid-community/core";
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelectionController } from "../../../selection/controllers/useSelectionController";
@@ -29,7 +29,7 @@ export const AgGrid = () => {
     const containerWidthRef = useRef(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
-    const styles = getGridStyles(theme, grid.height);
+    const styles = useMemo(() => getGridStyles(theme, grid.height), [theme, grid.height]);
     const agGridReadyRef = useRef<boolean>(false);
     const agGrid = useMemo(() => new AgGridModel(grid, gridApiRef, theme), []);
     const agGridProviderValue = useMemo(() => agGrid, []);
@@ -221,6 +221,14 @@ export const AgGrid = () => {
                     }
                     selection.toggle(e.data!, e.node.isSelected()!)
                 }}
+                gridOptions={{
+                    getRowStyle: (params) => {
+                        const theme = params.rowIndex % 2 === 0 ? agGrid.evenRowCellTheme : agGrid.oddRowCellTheme;
+                        return {
+                            backgroundColor: theme.semanticColors.bodyBackground
+                        }
+                    },
+                }}
                 onCellDoubleClicked={(e) => {
                     if (grid.isNavigationEnabled && !grid.isEditable) {
                         grid.openDatasetItem(e.data!.getNamedReference())
@@ -263,7 +271,7 @@ export const AgGrid = () => {
                     params.api.getAllGridColumns().map(col => {
                         columnWidths[col.getColId()] = col.getActualWidth()
                     })
-                    return params?.data?.ui?.getHeight(columnWidths, grid.rowHeight)
+                    return params?.data?.getHeight?.(columnWidths, grid.rowHeight) ?? grid.rowHeight;
                 }}
 
             >

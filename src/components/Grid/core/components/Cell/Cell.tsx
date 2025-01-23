@@ -30,11 +30,11 @@ export const Cell = (props: ICellProps) => {
     const cellFormatting = agGridContext.getCellFormatting(props as any);
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
     const grid = useGridInstance();
-    const notifications = record.ui.getNotifications?.(column.name);
+    const columnInfo = record.getColumnInfo(column.name)
+    const notifications = columnInfo.ui.getNotifications();
     const notificationRef = React.useRef<INotificationsRef>(null);
     const notificationWrapperRef = React.useRef<HTMLDivElement>(null);
     const [shouldNotificationsFillAvailableSpace, setShouldNotificationsFillAvailableSpace] = useState(false);
-    const columnInfo = record.getColumnInfo(column.name)
 
     const MemoizedNotifications = React.useMemo(() => {
         return React.memo(Notifications, (prevProps, nextProps) => {
@@ -108,7 +108,7 @@ export const Cell = (props: ICellProps) => {
     }
 
     const renderContent = (): JSX.Element => {
-        if (record.ui?.isLoading(column.name)) {
+        if (columnInfo.ui.isLoading()) {
             return (
                 <Shimmer styles={{
                     shimmerWrapper: styles.shimmerWrapper

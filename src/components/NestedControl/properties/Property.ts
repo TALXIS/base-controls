@@ -1,4 +1,4 @@
-import { IAttributeMetadata, IFieldValidationResult } from "@talxis/client-libraries";
+import { IAttributeMetadata} from "@talxis/client-libraries";
 import { IBinding, IOptions } from "../NestedControl";
 
 export abstract class Property {
@@ -25,14 +25,11 @@ export abstract class Property {
     public get parentPcfContext() {
         return this._parentPcfContext;
     }
-    public get attributeMetadata(): IAttributeMetadata | undefined {
+    public get attributeMetadata(): any | undefined {
         return this._attributeMetadata;
     }
     public get dataType() {
         return this._binding.type;
-    }
-    public getValidationResult(): IFieldValidationResult {
-        return {error: false, errorMessage: ''};
     }
     public getValue(): any {
         return this._binding.value;

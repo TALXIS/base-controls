@@ -57,6 +57,9 @@ export const getGridStyles = (theme: ITheme, height: string) => {
                 paddingRight: 0,
                 backgroundColor: `${theme.semanticColors.bodyBackground} !important`
             },
+            '.ag-cell:not(.ag-cell-focus)': {
+               borderWidth: 0
+            },
             '.ag-cell-inline-editing': {
                 borderWidth: `2px !important`,
             },

@@ -103,7 +103,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
             changedColumns.map(col => {
                 const change = fieldChangesRef.current.find(x => x.columnName === col.name);
                 record.expressions?.setCurrencySymbolExpression(col.name, () => baseRecord.getCurrencySymbol?.(col.name) ?? "");
-                record.expressions?.ui.setCellEditorParametersExpression(col.name, (parameters) => baseRecord.ui.getCellEditorParameters(col.name, parameters))
+                record.expressions?.ui.setCellEditorParametersExpression(col.name, (parameters) => baseRecord.getColumnInfo(col.name).ui.getCellEditorParameters(parameters))
                 if (recordId === 'new') {
                     record.expressions?.setValueExpression?.(col.name, () => {
                         //this happens if we have removed a change

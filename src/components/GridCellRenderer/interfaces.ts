@@ -8,13 +8,13 @@ export interface IGridCellRenderer extends IControl<IGridCellRendererParameters,
 
 export interface IGridCellRendererParameters extends IParameters {
     value: any;
-    ColumnAlignment?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"left" | "center" | "right">, 'type'>;
-    EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
+    ColumnAlignment: Omit<ComponentFramework.PropertyTypes.EnumProperty<"left" | "center" | "right">, 'type'>;
+    CellType: Omit<ComponentFramework.PropertyTypes.EnumProperty<"renderer" | "editor">, 'type'>;
+    EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
     PrefixIcon?: IStringProperty;
     SuffixIcon?: IStringProperty
-    Column: IColumn
+    Column: IColumn;
     Dataset: IDataset;
-    //@ts-ignore - typings
     Record: IRecord
 }
 

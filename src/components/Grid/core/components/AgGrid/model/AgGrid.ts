@@ -1,10 +1,9 @@
-import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, EditableCallbackParams, GridApi, IRowNode } from "@ag-grid-community/core";
+import { CellClassParams, ColDef, EditableCallbackParams, GridApi, IRowNode, SuppressKeyboardEventParams } from "@ag-grid-community/core";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
-import { DataType } from "../../../enums/DataType";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
-import { ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
+import { DataTypes, ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
 import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 import { Cell } from "../../Cell/Cell";
@@ -16,12 +15,16 @@ const EditableCell = getEditableCell();
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
-    private _theme: ITheme
+    private _theme: ITheme;
+    public readonly oddRowCellTheme: ITheme;
+    public readonly evenRowCellTheme: ITheme;
 
     constructor(grid: Grid, gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>, theme: ITheme) {
         super(grid);
         this._gridApiRef = gridApiRef;
         this._theme = theme;
+        this.oddRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.neutralLighterAlt, this._theme.semanticColors.bodyText);
+        this.evenRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.white, this._theme.semanticColors.bodyText);
     }
     public get columns() {
         const agColumns: ColDef[] = [];
@@ -37,11 +40,10 @@ export class AgGrid extends GridDependency {
                 autoHeaderHeight: true,
                 suppressMovable: column.isDraggable === false ? true : false,
                 suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
-                cellStyle: (params) => this._getCellStyles(params),
+                suppressKeyboardEvent: (params) => this._suppressKeyboardEvent(params, column),
                 cellRenderer: Cell,
                 cellEditor: EditableCell,
                 editable: (p) => this._isColumnEditable(column, p), 
-                //onCellDoubleClicked: (e) => this._onCellDoubleClicked(column, e),
                 headerComponent: ColumnHeader,
                 valueFormatter: (p) => {
                     if(column.name === CHECKBOX_COLUMN_KEY) {
@@ -104,9 +106,9 @@ export class AgGrid extends GridDependency {
         })
     }
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
-        const formatting = params.data?.getColumnInfo(params.colDef.colId!).customFormatting ?? {};
         const isEven = params.node!.rowIndex! % 2 === 0;
-        const defaultBackgroundColor = isEven ? this._theme.palette.white : this._theme.palette.neutralLighterAlt;
+        const formatting = params.data!.getColumnInfo(params.colDef.colId!).ui.getCustomFormatting(isEven ? this.evenRowCellTheme : this.oddRowCellTheme);
+        const defaultBackgroundColor = isEven ? this.evenRowCellTheme.semanticColors.bodyBackground : this.oddRowCellTheme.semanticColors.bodyBackground;
         if(!formatting.backgroundColor) {
             //set colors for even/odd
             formatting.backgroundColor = defaultBackgroundColor;
@@ -123,25 +125,21 @@ export class AgGrid extends GridDependency {
         if(!formatting.themeOverride) {
             formatting.themeOverride = {};
         }
-        return formatting as any;
+        return formatting as Required<ICustomColumnFormatting>;
     }
 
     private get _gridApi() {
         return this._gridApiRef.current;
     }
 
-    private _getCellStyles(params: CellClassParams<IRecord, any>): CellStyle {
-        const color = this.getCellFormatting(params).backgroundColor;
-        return {
-            backgroundColor: color
-        }
-    }
-
-
     private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
-        if (!this._grid.parameters.EnableEditing?.raw || params.data?.ui.isLoading?.(column.name) === true) {
+        if (!this._grid.parameters.EnableEditing?.raw || params.data?.getColumnInfo(column.name).ui.isLoading() === true) {
             return false;
         }
         return params.data?.getColumnInfo(column.name).security.editable ?? true;
+    }
+
+    private _suppressKeyboardEvent(params: SuppressKeyboardEventParams<IRecord, any>, column: IGridColumn) {
+        return false;
     }
 }

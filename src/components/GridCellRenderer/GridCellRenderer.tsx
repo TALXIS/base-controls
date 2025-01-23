@@ -18,14 +18,14 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const dataset = props.parameters.Dataset;
     const record: IRecord = props.parameters.Record;
     const column = props.parameters.Column;
-    const columnAlignment = props.parameters.ColumnAlignment?.raw;
+    const columnAlignment = props.parameters.ColumnAlignment.raw;
     const { theme, labels } = useControl('GridCellLabel', props, getDefaultGridRendererTranslations());
     const styles = useMemo(() => getGridCellLabelStyles(columnAlignment ?? 'left'), [columnAlignment]);
     const defaultContentRendererStyles = useMemo(() => getDefaultContentRendererStyles(theme), [theme]);
     const dataType: DataType = props.parameters.value.type as DataType;
-    const value: string = props.parameters.value.raw ?? '';
+    const value: string = props.parameters.value.raw;
     const formattedValue: string = props.parameters.value.formatted || value;
-    const isNavigationEnabled = props.parameters.EnableNavigation?.raw ?? true;
+    const isNavigationEnabled = props.parameters.EnableNavigation.raw;
     const prefixIcon = props.parameters.PrefixIcon?.raw
     const suffixIcon = props.parameters.SuffixIcon?.raw;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);

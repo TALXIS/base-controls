@@ -7,6 +7,7 @@ import { NestedControlRenderer } from "../../../../../../NestedControl/NestedCon
 import { useGridInstance } from "../../../../../core/hooks/useGridInstance";
 import { BaseControls } from "../../../../../../../utils";
 import { usePrevious } from "../../../../../../../hooks/usePrevious";
+import { IBinding } from "../../../../../../NestedControl";
 
 interface IConditionValue {
     column: IGridColumn;
@@ -42,9 +43,9 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
     const controllerRef = useRef<IColumnFilterConditionController>(controller);
     const mountedRef = useRef(true);
     controllerRef.current = controller;
-    const conditionComponentValue = useMemo(() => new ConditionComponentValue(controllerRef), []);
-    const column = conditionComponentValue.column;
     const grid = useGridInstance();
+    const conditionComponentValue = useMemo(() => new ConditionComponentValue(controllerRef, grid), []);
+    const column = conditionComponentValue.column;
     const previousOperator = usePrevious(controllerRef.current.operator.get());
 
     const getShouldShowError = (): boolean => {
@@ -68,6 +69,9 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
             },
             MultipleEnabled: {
                 raw: true
+            },
+            IsInlineNewEnabled: {
+                raw: false
             }
         };
         if (shouldShowErrorRef.current) {
@@ -82,15 +86,41 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                 raw: true
             }
         }
+        const originalGetAllViews = result.value.getAllViews;
         result.value = {
             ...result.value,
             getAllViews: async (entityName: string) => {
-                //Might go to infinite loop
-                return result.value.getAllViews(entityName, 1);
+                return originalGetAllViews(entityName, 1);
             }
         }
         return result;
     }
+
+    const getBindings = () => {
+        const binding: IBinding = {
+            isStatic: false,
+            type: column.dataType as DataType,
+            value: conditionComponentValue.get(),
+            onNotifyOutputChanged: (value: any) => {
+                if(!mountedRef.current) {
+                    return;
+                }
+                conditionComponentValue.set(value);
+            },
+            metadata: {
+                attributeName: Attribute.GetNameFromAlias(column.name),
+                entityName: column.getEntityName()
+            }
+        }
+        if(shouldShowErrorRef.current) {
+            binding.error = true;
+            binding.errorMessage = 'I need a value!';
+        }
+        return {
+            value: binding
+        }
+    }
+
     const shouldShowErrorRef = useRef(true);
     shouldShowErrorRef.current = getShouldShowError();
 
@@ -106,23 +136,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
             context={grid.pcfContext}
             parameters={{
                 ControlName: BaseControls.GetControlNameForDataType(column.dataType as DataType),
-                Bindings: {
-                    value: {
-                        isStatic: false,
-                        type: column.dataType as DataType,
-                        value: conditionComponentValue.get(),
-                        onNotifyOutputChanged: (value) => {
-                            if(!mountedRef.current) {
-                                return;
-                            }
-                            conditionComponentValue.set(value);
-                        },
-                        metadata: {
-                            attributeName: Attribute.GetNameFromAlias(column.name),
-                            entityName: column.getEntityName()
-                        }
-                    },
-                },
+                Bindings: getBindings()
             }}
             onOverrideComponentProps={(props) => {
                 return {

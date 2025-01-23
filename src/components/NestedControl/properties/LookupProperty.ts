@@ -2,27 +2,28 @@ import { FieldValue, PromiseCache } from "@talxis/client-libraries";
 import { Property } from "./Property";
 import { ILookupProperty } from "../../../interfaces";
 
-const LookupCache = new PromiseCache()
+const LookupCache = new PromiseCache();
 
 export class LookupProperty extends Property {
+
     public getParameter(): ILookupProperty {
-        const value = this.getValue();
+        const value = this.getValue() ?? [];
         const formattedValue = new FieldValue(value, this.dataType).getFormattedValue();
         
         return {
             raw: value,
             formatted: formattedValue ?? undefined,
-            getAllViews: (entityName: string) => this._getAllViews(entityName),
+            getAllViews: (entityName: string, __queryType?: number) => this._getAllViews(entityName, __queryType),
             attributes: <any>this.attributeMetadata ?? {
                 Targets: [],
             }
         }
     }
 
-    private async _getAllViews(entityName: string) {
-        const cacheKey = `${entityName}`;
+    private async _getAllViews(entityName: string, __queryType: number = 64) {
+        const cacheKey = `${entityName}_${__queryType}`
         const result = await LookupCache.get(cacheKey, async () => {
-            const response = await this.parentPcfContext.webAPI.retrieveMultipleRecords('savedquery', `?$filter=returnedtypecode eq '${entityName}' and querytype eq 64 and isdefault eq true&$select=name,savedqueryid,fetchxml`);
+            const response = await this.parentPcfContext.webAPI.retrieveMultipleRecords('savedquery', `?$filter=returnedtypecode eq '${entityName}' and querytype eq ${__queryType} and isdefault eq true&$select=name,savedqueryid,fetchxml`);
             return response.entities[0];
         })
         return [

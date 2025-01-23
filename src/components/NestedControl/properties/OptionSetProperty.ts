@@ -14,6 +14,7 @@ export class OptionSetProperty extends Property {
             raw: value ?? null,
             formatted: formattedValue ?? undefined,
             attributes: {
+                ...this.attributeMetadata,
                 Options: this.attributeMetadata?.OptionSet ?? []
             }
         }

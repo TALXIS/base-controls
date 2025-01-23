@@ -22,6 +22,7 @@ export const CellContent = (props: ICellContentProps) => {
     const column = props.baseColumn;
     const dataType: DataType = props.baseColumn.dataType as DataType;
     const grid = useGridInstance();
+    const datasetColumn = React.useMemo(() => grid.dataset.columns.find(x => x.name === column.name), [column.name]);
     const record = props.data;
     const columnInfo = props.columnInfo
     const styles = React.useMemo(() => getCellContentStyles(props.columnAlignment, fillAllAvailableSpace), [props.columnAlignment, fillAllAvailableSpace]);
@@ -29,7 +30,7 @@ export const CellContent = (props: ICellContentProps) => {
     const cellThemeRef = React.useRef(cellTheme);
     cellThemeRef.current = cellTheme;
     const rerender = useRerender();
-    const customControls = columnInfo.customControls;
+    const customControls = columnInfo.ui.getCustomControls();
 
     const getControl = (): ICustomColumnControl => {
         const appliesToValue = props.editing ? 'editor' : 'renderer';
@@ -176,7 +177,7 @@ export const CellContent = (props: ICellContentProps) => {
             Dataset: grid.dataset
         }
         parameters.Record = record;
-        parameters.Column = column;
+        parameters.Column = datasetColumn
 
         parameters.EnableNavigation = {
             raw: grid.isNavigationEnabled
@@ -189,6 +190,9 @@ export const CellContent = (props: ICellContentProps) => {
         }
         parameters.ShowErrorMessage = {
             raw: false
+        }
+        parameters.CellType = {
+            raw: props.editing ? 'editor' : 'renderer'
         }
         if (props.editing) {
             parameters.AutoFocus = {
@@ -288,10 +292,10 @@ export const CellContent = (props: ICellContentProps) => {
                                 },
                                 fluentDesignLanguage: getFluentDesignLanguage(controlProps.context.fluentDesignLanguage)
                             },
-                            parameters: {
+                            parameters: record.getColumnInfo(column.name).ui.getControlParameters({
                                 ...controlProps.parameters,
                                 ...parameters
-                            }
+                            })
                         }
                     }
                 }

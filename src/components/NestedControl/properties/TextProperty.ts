@@ -7,6 +7,7 @@ export class TextProperty extends Property {
         return {
             raw: value,
             formatted: value,
+            attributes: this.attributeMetadata
         }
     }
 }
