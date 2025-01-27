@@ -111,7 +111,10 @@ export const useLookup = (props: ILookup): [
             return;
         }
         onNotifyOutputChanged({
-            value: result.savedEntityReference
+            value: [
+                ...boundValue,
+                ...result.savedEntityReference
+            ]
         })
     }
 
