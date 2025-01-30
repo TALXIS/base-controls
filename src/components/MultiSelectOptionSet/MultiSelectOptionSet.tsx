@@ -12,6 +12,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const componentRef = useRef<IComboBox>(null);
     const { Options } = parameters.value.attributes;
     const context = props.context;
+    const applicationTheme = props.context.fluentDesignLanguage?.applicationTheme;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
@@ -56,9 +57,9 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
             autoFocus: true
         } : undefined,
         onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
-        calloutProps: {
-            theme: props.context.fluentDesignLanguage?.applicationTheme
-        },
+        calloutProps: applicationTheme ? {
+            theme: applicationTheme
+        } : undefined,
         readOnly: context.mode.isControlDisabled,
         errorMessage: boundValue.errorMessage,
         selectedKey: boundValue.raw ? boundValue.raw.map(key => key.toString()) : null,
@@ -97,7 +98,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
 
     return (
         <ThemeProvider theme={theme} applyTo="none">
-            <ComboBox {...componentProps} />
+            <ComboBox {...componentProps}/>
         </ThemeProvider>
     );
 };

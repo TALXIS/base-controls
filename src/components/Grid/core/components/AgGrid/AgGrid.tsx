@@ -1,8 +1,7 @@
 import { AgGridReact } from '@ag-grid-community/react';
-import { mergeStyles, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
+import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
 import { ColDef, ColumnMovedEvent, ColumnResizedEvent, GridApi, GridState, ModuleRegistry } from "@ag-grid-community/core";
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSelectionController } from "../../../selection/controllers/useSelectionController";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
 import { Paging } from "../../../paging/components/Paging/Paging";
@@ -10,7 +9,6 @@ import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
 import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { IRecord } from '@talxis/client-libraries';
-import { CHECKBOX_COLUMN_KEY } from '../../../constants';
 import { useDebounce, useDebouncedCallback } from 'use-debounce';
 import { useGridController } from '../../controllers/useGridController';
 import { useStateValues } from '@talxis/react-components';
@@ -24,7 +22,6 @@ export const AgGridContext = createContext<AgGridModel>(null as any);
 
 export const AgGrid = () => {
     const grid = useGridInstance();
-    const selection = useSelectionController();
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     const containerWidthRef = useRef(0);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -41,12 +38,11 @@ export const AgGrid = () => {
     const userChangedColumnSizeRef = useRef(false);
 
     const debouncedRefresh = useDebouncedCallback(() => {
+        agGrid.refreshRowSelection(true);
         gridApiRef.current?.refreshCells({
             rowNodes: gridApiRef.current?.getRenderedNodes(),
             force: true
         });
-        grid.refreshGlobalCheckBox();
-        agGrid.selectRows();
     }, 0);
 
     const debouncedSetAgColumns = useDebouncedCallback(() => {
@@ -65,7 +61,7 @@ export const AgGrid = () => {
             },
             ...gridApiRef.current!.getState(),
         });
-        agGrid.selectRows();
+        //agGrid.refreshRowSelection();
     }
 
 
@@ -178,11 +174,6 @@ export const AgGrid = () => {
     }, [columns]);
 
     useEffect(() => {
-        agGrid.selectRows();
-    }, [records]);
-
-
-    useEffect(() => {
         sizeColumnsIfSpaceAvailable()
     }, [agColumns]);
 
@@ -203,8 +194,7 @@ export const AgGrid = () => {
                 </MessageBar>
             }
             <AgGridReact
-                animateRows
-                debounceVerticalScrollbar
+                animateRows={false}
                 rowSelection={grid.selection.type}
                 noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
                 loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
@@ -216,13 +206,12 @@ export const AgGrid = () => {
                     }
                 }}
                 reactiveCustomComponents
-                onRowSelected={(e) => {
-                    //prevent infinite loop since we are also setting the rows
-                    //when the selection comes from above
-                    if (e.source.includes('api') || e.source === 'gridInitializing') {
+                onSelectionChanged={(e) => {
+                    if(e.source.includes('api')) {
                         return;
                     }
-                    selection.toggle(e.data!, e.node.isSelected()!)
+                    grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
+                    agGrid.refreshRowSelection();
                 }}
                 gridOptions={{
                     getRowStyle: (params) => {
@@ -236,14 +225,6 @@ export const AgGrid = () => {
                     if (grid.isNavigationEnabled && !grid.isEditable) {
                         grid.openDatasetItem(e.data!.getNamedReference())
                     }
-                }}
-                onCellMouseOver={(e) => {
-                    if (e.colDef.colId === CHECKBOX_COLUMN_KEY) {
-                        gridApiRef.current?.setGridOption('suppressRowClickSelection', true)
-                    }
-                }}
-                onCellMouseOut={(e) => {
-                    gridApiRef.current?.setGridOption('suppressRowClickSelection', false)
                 }}
                 getRowId={(params) => params.data.getRecordId()}
                 onGridReady={(e) => {
@@ -266,7 +247,7 @@ export const AgGrid = () => {
                     ...stateValuesRef.current,
                     ...e.state
                 }}
-                suppressAnimationFrame
+                //suppressAnimationFrame
                 columnDefs={agColumns as any}
                 rowData={records}
                 getRowHeight={(params) => {
@@ -274,7 +255,8 @@ export const AgGrid = () => {
                     params.api.getAllGridColumns().map(col => {
                         columnWidths[col.getColId()] = col.getActualWidth()
                     })
-                    return params?.data?.getHeight?.(columnWidths, grid.rowHeight) ?? grid.rowHeight;
+                    console.log(params?.data?.getHeight?.(columnWidths, grid.rowHeight))
+                    return params?.data?.getHeight?.(columnWidths, grid.rowHeight) ?? grid.rowHeight
                 }}
 
             >

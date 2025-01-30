@@ -6,9 +6,6 @@ export const getDatasetControlStyles = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: 15
-        },
-        quickFind: {
-            //alignSelf: 'flex-end'
         }
     });
 }

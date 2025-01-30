@@ -1,13 +1,14 @@
 import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ICommandBar, ThemeProvider, getTheme } from "@fluentui/react"
 import { getNotificationIconStyles } from "./styles";
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { IAddControlNotificationOptions, IControlNotificationAction } from "@talxis/client-libraries";
+import { IAddControlNotificationOptions, IControlNotificationAction, ICustomColumnFormatting } from "@talxis/client-libraries";
 import { CommandBar, useThemeGenerator } from "@talxis/react-components";
 import { useGridInstance } from "../../../hooks/useGridInstance";
 import { useDebouncedCallback } from "use-debounce";
 
 interface INotifications {
     notifications: IAddControlNotificationOptions[],
+    formatting: Required<ICustomColumnFormatting>
     onShouldNotificationsFillAvailableSpace?: (value: boolean) => void;
     className?: string;
 }
@@ -17,14 +18,14 @@ export interface INotificationsRef {
 }
 
 export const Notifications = forwardRef<INotificationsRef, INotifications>((props, ref) => {
-    const { notifications } = { ...props };
+    const { notifications, formatting } = { ...props };
     const grid = useGridInstance();
     const theme = useTheme();
     const styles = getNotificationIconStyles(theme);
     const iconId = useMemo(() => `icon${crypto.randomUUID()}`, []);
     const [selectedNotification, setSelectedNotification] = useState<IAddControlNotificationOptions | null>(null);
     const commandBarRef = useRef<ICommandBar>(null);
-    const overridenTheme = useThemeGenerator(theme.semanticColors.bodyText, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText);
+    const overridenTheme = useThemeGenerator(theme.semanticColors.bodyText, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText, formatting.themeOverride);
 
     const getIconName = (notification: IAddControlNotificationOptions): string | undefined => {
         if (notification.iconName) {

@@ -20,7 +20,7 @@ export const getGridStyles = (theme: ITheme, height: string) => {
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
                 maxHeight: '100%',
-                '--ag-selected-row-background-color': theme.palette.black,
+                '--ag-selected-row-background-color': theme.palette.themePrimary,
                 '--ag-range-selection-border-color': theme.palette.themePrimary,
                 '--ag-row-hover-color': theme.palette.black,
                 '--ag-row-border-color': theme.semanticColors.menuDivider,
@@ -31,10 +31,10 @@ export const getGridStyles = (theme: ITheme, height: string) => {
                     zIndex: 1
                 },
                 '.ag-row-hover::before': {
-                    opacity: 0.05
+                    opacity: 0.1
                 },
                 '.ag-row-selected::before': {
-                    opacity: 0.1
+                    opacity: 0.2
                 }
             },
             '.ag-root-wrapper.ag-layout-normal': {
@@ -57,14 +57,25 @@ export const getGridStyles = (theme: ITheme, height: string) => {
                 paddingRight: 0,
                 backgroundColor: `${theme.semanticColors.bodyBackground} !important`
             },
-            '.ag-cell:not(.ag-cell-focus)': {
-               borderWidth: 0
+            '.ag-cell': {
+                border: 'none !important',
+                borderRadius: 0
             },
-            '.ag-cell-inline-editing': {
-                borderWidth: `2px !important`,
+            '.ag-cell-focus': {
+                zIndex: 2,
+                '::after': {
+                    content: "''",
+                    position: 'absolute',
+                    inset: '-1px',
+                    border: `3px solid ${theme.semanticColors.inputFocusBorderAlt}`,
+                    borderRadius: theme.effects.roundedCorner2,
+                    pointerEvents: 'none'
+                }
             },
             '.ag-cell-focus:has([data-is-valid="false"])': {
-                borderColor: `${theme.semanticColors.errorIcon} !important`
+                '::after': {
+                    borderColor: `${theme.semanticColors.errorIcon} !important`
+                }
             },
         }
     })

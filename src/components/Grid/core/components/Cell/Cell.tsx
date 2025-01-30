@@ -1,10 +1,9 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
-import { Constants, DataTypes, IColumn, IRecord } from "@talxis/client-libraries";
-import { useSelectionController } from "../../../selection/controllers/useSelectionController";
-import { Checkbox, Shimmer, ThemeProvider, useTheme } from "@fluentui/react";
+import { Constants, DataTypes, IColumn, ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
+import { Checkbox, Shimmer, ThemeProvider } from "@fluentui/react";
 import { useMemo, useState } from "react";
-import { getCellStyles } from "./styles";
+import { getCellStyles, getInnerCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import React from "react";
@@ -14,6 +13,7 @@ import { Commands } from "./Commands/Commands";
 import { AgGridContext } from "../AgGrid/AgGrid";
 import { CellContent } from "./CellContent/CellContent";
 import { useThemeGenerator } from "@talxis/react-components";
+import { getClassNames } from "../../../../../utils/styling/getClassNames";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
@@ -21,14 +21,47 @@ export interface ICellProps extends ICellRendererParams {
     data: IRecord;
 }
 
+interface IInternalCellProps extends ICellProps {
+    cellFormatting: Required<ICustomColumnFormatting>
+}
 
 export const Cell = (props: ICellProps) => {
     const agGridContext = React.useContext(AgGridContext);
-    const selection = useSelectionController();
-    const column = props.baseColumn;
+    const styles = useMemo(() => getCellStyles(), [])
     const record = props.data;
     const cellFormatting = agGridContext.getCellFormatting(props as any);
-    const cellTheme = useTheme();
+    const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
+    const grid = useGridInstance();
+
+    const renderContent = () => {
+        switch (props.baseColumn.name) {
+            case CHECKBOX_COLUMN_KEY: {
+                return (
+                    <Checkbox
+                        checked={props.node.isSelected()}
+                        styles={{
+                            checkbox: styles.checkbox
+                        }}
+                        onChange={(e, checked) => {
+                            grid.selection.toggle(record, checked!);
+                            agGridContext.refreshRowSelection();
+                        }} />
+                );
+            }
+            default: {
+                return <InternalCell {...props} cellFormatting={cellFormatting} />
+            }
+        }
+    }
+    return <ThemeProvider className={getClassNames([styles.cellRoot, cellFormatting.className])} theme={cellTheme}>
+        {renderContent()}
+    </ThemeProvider>
+}
+
+
+export const InternalCell = (props: IInternalCellProps) => {
+    const column = props.baseColumn;
+    const record = props.data;
     const grid = useGridInstance();
     const columnInfo = record.getColumnInfo(column.name)
     const notifications = columnInfo.ui.getNotifications();
@@ -116,16 +149,6 @@ export const Cell = (props: ICellProps) => {
             );
         }
         switch (column.name) {
-            case CHECKBOX_COLUMN_KEY: {
-                return (
-                    <Checkbox
-                        checked={props.node.isSelected()}
-                        onChange={(e, checked) => {
-                            e?.stopPropagation()
-                            selection.toggle(record, checked!)
-                        }} />
-                );
-            }
             case Constants.RIBBON_BUTTONS_COLUMN_NAME: {
                 return (
                     <Commands record={record} />
@@ -138,7 +161,7 @@ export const Cell = (props: ICellProps) => {
                             fillAllAvailableSpace={!shouldNotificationsFillAvailableSpace}
                             columnAlignment={columnAlignment}
                             columnInfo={columnInfo}
-                            cellFormatting={cellFormatting} />
+                            cellFormatting={props.cellFormatting} />
                         {shouldRenderNotificationsWrapper &&
                             renderNotifications()
                         }
@@ -155,12 +178,13 @@ export const Cell = (props: ICellProps) => {
                 {notifications && notifications.length > 0 &&
                     <MemoizedNotifications
                         ref={notificationRef}
+                        formatting={props.cellFormatting}
                         className={styles.notifications}
                         notifications={notifications}
                         onShouldNotificationsFillAvailableSpace={(value) => setShouldNotificationsFillAvailableSpace(value)}
                     />
                 }
-                {shouldShowNotEditableNotification() &&
+                {true &&
                     <MemoizedNotifications notifications={[{
                         iconName: 'Uneditable',
                         notificationLevel: 'RECOMMENDATION',
@@ -168,7 +192,8 @@ export const Cell = (props: ICellProps) => {
                         title: grid.labels['value-not-editable'](),
                         compact: true,
                         messages: []
-                    }]} />
+                    }]}
+                    formatting={props.cellFormatting} />
                 }
                 {columnInfo?.error === true &&
                     <MemoizedNotifications notifications={[
@@ -180,24 +205,18 @@ export const Cell = (props: ICellProps) => {
                             title: columnInfo.errorMessage,
                             compact: true
                         }
-                    ]} />
+                    ]}
+                    formatting={props.cellFormatting}
+                     />
                 }
             </div>
         );
     }
 
-    const getClassName = () => {
-        let className = styles.cellWrapper;
-        if (cellFormatting.className) {
-            className += ` ${cellFormatting.className}`;
-        }
-        return className;
-    }
-
     const shouldRenderNotificationsWrapper = getShouldRenderNotificationsWrapper();
     const notificationWrapperMinWidth = getNotificationWrapperMinWidth();
     const columnAlignment = getColumnAlignment();
-    const styles = useMemo(() => getCellStyles(
+    const styles = useMemo(() => getInnerCellStyles(
         columnAlignment, notificationWrapperMinWidth, shouldNotificationsFillAvailableSpace, isCellBeingEdited()
     ), [notificationWrapperMinWidth, columnAlignment, shouldNotificationsFillAvailableSpace, isCellBeingEdited()]);
 
@@ -211,7 +230,7 @@ export const Cell = (props: ICellProps) => {
         return () => resizeObserver.disconnect();
     }, []);
 
-    return <ThemeProvider className={getClassName()} data-is-valid={!columnInfo.error} theme={cellTheme}>
+    return <div className={styles.innerCellRoot} data-is-valid={!columnInfo.error}>
         {renderContent()}
-    </ThemeProvider>
+    </div>
 }

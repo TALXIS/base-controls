@@ -1,8 +1,7 @@
-import React, { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { NestedControl } from './NestedControl';
 import { INestedControlRenderer, INestedControlRendererComponentProps, INestedControlRendererParameters } from './interfaces';
 import { TextField } from '../TextField';
-import { IControl } from '../../interfaces';
 import { Decimal } from '../Decimal';
 import { Duration } from '../Duration';
 import { TwoOptions } from '../TwoOptions';
@@ -11,10 +10,12 @@ import { MultiSelectOptionSet } from '../MultiSelectOptionSet';
 import { Lookup } from '../Lookup';
 import { OptionSet } from '../OptionSet';
 import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
-import { BaseControls } from '../../utils';
+import { BaseControls, ThemeWrapper } from '../../utils';
 import { getNestedControlStyles } from './styles';
 import { Spinner, useRerender } from '@talxis/react-components';
-import { Shimmer, SpinnerSize } from '@fluentui/react';
+import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } from '@fluentui/react';
+import ReactDOM from 'react-dom';
+import { IControl } from '../../interfaces';
 
 export const NestedControlRenderer = (__props: INestedControlRenderer) => {
     const controlRef = useRef<NestedControl>();
@@ -33,6 +34,7 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
     componentPropsRef.current = onOverrideComponentProps({
         rootContainerProps: {},
         controlContainerProps: {},
+        overridenControlContainerProps: {},
         loadingProps: {
             containerProps: {},
             spinnerProps: {
@@ -44,13 +46,52 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
                 }
             },
         },
-        onOverrideControlProps: () => { return (props) => props },
+        onOverrideRender: (props, defaultRender) => defaultRender(),
+        onOverrideControlProps: (props) => props,
     })
 
-    //if the ref is set, the control has been initialized
-    if (controlRef.current) {
-        controlRef.current?.render();
+    const getBaseControl = (): any => {
+        switch (propsRef.current.parameters.ControlName) {
+            case 'TextField':
+                return TextField
+            case 'OptionSet':
+                return OptionSet;
+            case 'Lookup':
+                return Lookup;
+            case 'MultiSelectOptionSet':
+                return MultiSelectOptionSet;
+            case 'TwoOptions':
+                return TwoOptions;
+            case 'DateTime':
+                return DateTime;
+            case 'Decimal':
+                return Decimal;
+            case 'Duration':
+                return Duration;
+            case 'GridCellRenderer':
+                return GridCellRenderer;
+            default:
+                return GridCellRenderer;
+        }
+    };
+
+    const onRender = (controlProps: IControl<any, any, any, any>, container: HTMLDivElement, defaultRender: () => Promise<void>, componentToRender?: React.ReactElement) => {
+        if (!componentToRender && BaseControls.IsBaseControl(propsRef.current.parameters.ControlName)) {
+            componentToRender = React.createElement(getBaseControl(), { ...controlProps });
+        }
+        if (componentToRender) {
+            return ReactDOM.render(React.createElement(
+                ThemeWrapper,
+                {
+                    ...componentPropsRef.current?.overridenControlContainerProps,
+                    fluentDesignLanguage: controlProps.context.fluentDesignLanguage
+                },
+                componentToRender
+            ), container);
+        }
+        return defaultRender();
     }
+
     const createControlInstance = () => {
         const instance = new NestedControl({
             containerElement: internalControlRendererRef.current?.getContainer()!,
@@ -64,44 +105,52 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
                     controlRef.current = instance;
                     rerender();
                 },
-                onControlLoaded: () => internalControlRendererRef.current?.rerender(),
+                onControlStateChanged: () => internalControlRendererRef.current?.rerender(),
                 onGetControlStates: () => propsRef.current.parameters.ControlStates,
             },
             overrides: {
                 onGetProps: componentPropsRef.current?.onOverrideControlProps,
-                onRender: () => {
-                    if (BaseControls.IsBaseControl(propsRef.current.parameters.ControlName)) {
-                        return () => { }
+                onRender: async (controlProps, container, defaultRender) => {
+                    let component = componentPropsRef.current?.onOverrideRender!(controlProps, () => {
+                        onRender(controlProps, container, defaultRender)
+                    })
+                    //default render has been triggered
+                    if (!component) {
+                        return;
                     }
-                    return undefined;
+                    return onRender(controlProps, container, defaultRender, component);
                 },
-                onUnmount: () => {
-                    if (BaseControls.IsBaseControl(propsRef.current.parameters.ControlName)) {
-                        return () => { }
+                onUnmount: (isPcfComponent, container, defaultUnmount) => {
+                    if (isPcfComponent) {
+                        return defaultUnmount();
                     }
-                    return undefined;
+                    return ReactDOM.unmountComponentAtNode(container);
                 }
             }
         })
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
         createControlInstance();
         return () => {
             controlRef.current?.unmount();
         }
     }, []);
 
+    useEffect(() => {
+        //if the ref is set, the control has been initialized
+        if (controlRef.current) {
+            controlRef.current?.render();
+        }
+    })
     return <InternalNestedControlRenderer
         ref={internalControlRendererRef}
         control={controlRef.current}
         parameters={propsRef.current.parameters}
-        componentProps={componentPropsRef.current}
-        isBaseControl={isBaseControl} />
+        componentProps={componentPropsRef.current} />
 }
 
 interface IInternalNestedControlRendererProps {
-    isBaseControl: boolean;
     parameters: INestedControlRendererParameters;
     componentProps: INestedControlRendererComponentProps;
     loadingType?: 'spinner' | 'shimmer';
@@ -117,8 +166,11 @@ interface IInternalNestedControlRendererRef {
 
 const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererRef, IInternalNestedControlRendererProps>((props, ref) => {
     //once control is defined, it is initialized
-    const { control, isBaseControl, parameters, componentProps } = props;
+    const { control, parameters, componentProps } = props;
     const customControlContainerRef = useRef<HTMLDivElement>(null);
+    //defer loading to next render so we don't show it in cases where the control loads straight way, this prevents loading flicker
+    const [canShowLoading, setCanShowLoading] = useState(false);
+    const errorMessage = control?.getErrorMessage();
     const rerender = useRerender();
 
     useImperativeHandle(ref, () => {
@@ -128,31 +180,6 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
         }
     })
 
-    const renderBaseControl = (controlProps: IControl<any, any, any, any>) => {
-        switch (parameters.ControlName) {
-            case 'TextField':
-                return <TextField {...controlProps} />
-            case 'OptionSet':
-                return <OptionSet {...controlProps} />
-            case 'Lookup':
-                return <Lookup {...controlProps} />
-            case 'MultiSelectOptionSet':
-                return <MultiSelectOptionSet {...controlProps} />
-            case 'TwoOptions':
-                return <TwoOptions {...controlProps} />
-            case 'DateTime':
-                return <DateTime {...controlProps} />
-            case 'Decimal':
-                return <Decimal {...controlProps} />
-            case 'Duration':
-                return <Duration {...controlProps} />;
-            case 'GridCellRenderer':
-                return <GridCellRenderer {...controlProps} />
-            default:
-                return null;
-        }
-    };
-
     const renderLoading = () => {
         if (parameters.LoadingType === 'shimmer') {
             return <Shimmer {...componentProps.loadingProps.shimmerProps} />
@@ -160,11 +187,30 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
         return <Spinner {...componentProps.loadingProps.spinnerProps} />
     }
 
+    useEffect(() => {
+        setCanShowLoading(true)
+    }, [])
+
     return (
         <div {...componentProps.rootContainerProps}>
-            {(!control || control.isLoading()) && <div {...componentProps.loadingProps.containerProps}>{renderLoading()}</div>
+            {(!control || control.isLoading()) && canShowLoading && <div {...componentProps.loadingProps.containerProps}>{renderLoading()}</div>
             }
-            {control && isBaseControl && renderBaseControl(control.getProps())}
+            {errorMessage &&
+                <MessageBar styles={{
+                    root: {
+                        height: '100%'
+                    },
+                    content: {
+                        alignItems: 'center'
+                    }
+                }} messageBarType={MessageBarType.error} isMultiline={false} actions={<div>
+                    <MessageBarButton onClick={() => window.Xrm.Navigation.openErrorDialog({
+                        message: errorMessage
+                    })}>Details</MessageBarButton>
+                </div>}>
+                    Component <b>{parameters.ControlName}</b> failed to load.
+                </MessageBar>
+            }
             <div ref={customControlContainerRef} {...componentProps.controlContainerProps} />
         </div>)
 })

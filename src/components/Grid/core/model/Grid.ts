@@ -167,7 +167,7 @@ export class Grid {
         //OnOpenRecord ribbon scripts to work correctly
         //if no record found we have clicked a lookup, no selection should be happening in that case
         if (clickedRecord) {
-            this.selection.toggle(clickedRecord, true, true, true);
+            this.selection.toggle(clickedRecord, true);
         }
     }
 
@@ -175,7 +175,6 @@ export class Grid {
         this._props = props;
         this._dataset = props.parameters.Grid;
         this._pcfContext = props.context;
-        //THIS COULD MAKE GRID STOP WORKING IN POWER APPS!
         if (this._previousRecordsReference !== this._dataset.records) {
             this._records = Object.values(this._dataset.records);
             this._previousRecordsReference = this._dataset.records;
@@ -226,14 +225,6 @@ export class Grid {
         }
         this._columns = gridColumns;
         return gridColumns;
-    }
-
-    public setRefreshGlobalCheckBox(refreshGlobalCheckBox: () => void) {
-        this._refreshGlobalCheckBox = refreshGlobalCheckBox;
-    }
-
-    public refreshGlobalCheckBox() {
-        this._refreshGlobalCheckBox();
     }
 
     public getTotalVisibleColumnsWidth(): number {

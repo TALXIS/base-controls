@@ -13,7 +13,7 @@ export const useGridController = (gridInstance?: Grid): IGridController => {
     const [columns, setColumns] = useState<IGridColumn[]>(grid.columns);
 
     const preprocessColumns = (columns: IGridColumn[]): any[] => {
-        return columns.map(({ getEntityName, ...rest }) => rest);
+        return columns.map(({ getEntityName, metadata, ...rest }) => rest);
     };
     
 
@@ -21,10 +21,7 @@ export const useGridController = (gridInstance?: Grid): IGridController => {
     useEffect(() => {
         (async () => {
             const newColumns = await grid.refreshColumns();
-            console.log(newColumns);
             if(!equal(preprocessColumns(newColumns), preprocessColumns(columns))) {
-                console.log(columns);
-                console.log(newColumns);
                 setColumns(newColumns);
             }
         })();

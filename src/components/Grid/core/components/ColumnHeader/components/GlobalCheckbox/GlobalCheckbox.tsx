@@ -1,20 +1,20 @@
 import { Checkbox, useTheme } from "@fluentui/react";
-import React, { useMemo, useState } from "react";
-import { useSelectionController } from "../../../../../selection/controllers/useSelectionController";
+import { useContext, useMemo } from "react";
 import { useGridInstance } from "../../../../hooks/useGridInstance";
 import { getGlobalCheckboxStyles } from "./styles";
-import { useRerender } from "../../../../../../../hooks/useRerender";
+import { AgGridContext } from "../../../AgGrid/AgGrid";
+import { useRerender } from "@talxis/react-components";
 
 export const GlobalCheckBox = () => {
     const grid = useGridInstance();
     const theme = useTheme();
     const styles = getGlobalCheckboxStyles(theme);
-    const selection = useSelectionController();
-    //TODO: why does useRerender not work?
-    const [_, rerender] = useState(0)
+    const rerender = useRerender();
+    const selection = grid.selection;
+    const agGrid = useContext(AgGridContext);
 
     useMemo(() => {
-        grid.setRefreshGlobalCheckBox(() => rerender((previous) => previous + 1))
+        agGrid.setRefreshGlobalCheckBoxCallback(() => rerender());
     }, []);
 
     if(grid.dataset.sortedRecordIds.length === 0) {
@@ -25,13 +25,18 @@ export const GlobalCheckBox = () => {
             {selection.type === 'multiple' &&
                 <Checkbox
                     checked={selection.allRecordsSelected}
+                    styles={{
+                        checkbox: styles.checkbox
+                    }}
                     indeterminate={selection.selectedRecordIds.length > 0 && !selection.allRecordsSelected}
                     onChange={(e, checked) => {
                         if(checked) {
-                            selection.selectAll()
-                            return;
+                            selection.selectAll();
                         }
-                        selection.clear();
+                        else {
+                            selection.clear();
+                        }
+                        agGrid.refreshRowSelection();
                     }} />
             }
         </div>

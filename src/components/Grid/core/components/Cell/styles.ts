@@ -1,9 +1,25 @@
 import { mergeStyleSets } from "@fluentui/react"
 import { IColumn } from "@talxis/client-libraries"
 
-export const getCellStyles = (columnAlignment: IColumn['alignment'], notificationsMinWidth: number, shouldNotificationsGrow: boolean, isEditing: boolean) => {
+
+export const getCellStyles = () => {
     return mergeStyleSets({
-        cellWrapper: {
+        cellRoot: {
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        checkbox: {
+            marginRight: 0.5
+        }
+    })
+}
+
+export const getInnerCellStyles = (columnAlignment: IColumn['alignment'], notificationsMinWidth: number, shouldNotificationsGrow: boolean, isEditing: boolean) => {
+    return mergeStyleSets({
+        innerCellRoot: {
             flex: 1,
             display: 'flex',
             overflow: 'hidden',
@@ -12,6 +28,7 @@ export const getCellStyles = (columnAlignment: IColumn['alignment'], notificatio
             marginLeft: isEditing ? - 1 : undefined,
             marginRight: isEditing ? - 1 : undefined
         },
+
         shimmerWrapper: {
             height: 10
         },

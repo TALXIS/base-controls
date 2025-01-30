@@ -4,7 +4,6 @@ import { IGridContext } from "./core/interfaces/IGridContext";
 import { Grid as GridModel } from "./core/model/Grid";
 import { IGrid } from "./interfaces";
 import { AgGrid } from './core/components/AgGrid/AgGrid';
-import React from 'react';
 import { gridTranslations } from './translations';
 import { GridContext } from "./GridContext";
 import { mergeStyleSets, ThemeProvider } from "@fluentui/react";

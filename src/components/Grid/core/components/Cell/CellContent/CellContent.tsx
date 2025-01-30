@@ -2,14 +2,14 @@ import * as React from 'react';
 import { Attribute, DataType, IColumn, IColumnInfo, ICustomColumnControl, ICustomColumnFormatting, Sanitizer } from '@talxis/client-libraries';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { ICellProps } from '../Cell';
-import { IComboBoxStyles, IDatePickerStyles, IIconProps, ITextFieldStyles, useTheme } from '@fluentui/react';
+import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, ProgressIndicator, Spinner, TextField, useTheme } from '@fluentui/react';
 import { getCellContentStyles } from './styles';
 import { BaseControls, ControlTheme, IFluentDesignState } from '../../../../../../utils';
 import { merge } from 'merge-anything';
 import { useRerender } from '@talxis/react-components';
 import { NestedControlRenderer } from '../../../../../NestedControl/NestedControlRenderer';
 import { IBinding } from '../../../../../NestedControl';
-import { TextField } from '../../../../../TextField';
+import { GridCellRenderer } from '../../../../../GridCellRenderer/GridCellRenderer';
 
 interface ICellContentProps extends ICellProps {
     columnAlignment: Required<IColumn['alignment']>;
@@ -19,8 +19,9 @@ interface ICellContentProps extends ICellProps {
 }
 
 export const CellContent = (props: ICellContentProps) => {
-    const { columnAlignment, fillAllAvailableSpace, cellFormatting } = { ...props };
+    const { columnAlignment, fillAllAvailableSpace, cellFormatting, node } = { ...props };
     const column = props.baseColumn;
+    const mountedRef = React.useRef(true);
     const dataType: DataType = props.baseColumn.dataType as DataType;
     const grid = useGridInstance();
     const datasetColumn = React.useMemo(() => grid.dataset.columns.find(x => x.name === column.name), [column.name]);
@@ -32,6 +33,8 @@ export const CellContent = (props: ICellContentProps) => {
     cellThemeRef.current = cellTheme;
     const rerender = useRerender();
     const customControls = columnInfo.ui.getCustomControls();
+    //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
+    const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
 
     const getControl = (): ICustomColumnControl => {
         const appliesToValue = props.editing ? 'editor' : 'renderer';
@@ -45,7 +48,7 @@ export const CellContent = (props: ICellContentProps) => {
             name: props.editing ? BaseControls.GetControlNameForDataType(dataType) : 'GridCellRenderer',
             appliesTo: 'both',
         };
-    
+
         return defaultControl as ICustomColumnControl;
     };
 
@@ -60,9 +63,10 @@ export const CellContent = (props: ICellContentProps) => {
                 onNotifyOutputChanged: (value) => {
                     record.setValue(column.name, value);
                     setTimeout(() => {
-                        rerender();
-                        //grid.pcfContext.factory.requestRender()
-                    }, 0);
+                        if(mountedRef.current) {
+                            rerender();
+                        }
+                    }, 0)
                 },
                 metadata: {
                     attributeName: Attribute.GetNameFromAlias(column.name),
@@ -200,17 +204,6 @@ export const CellContent = (props: ICellContentProps) => {
                 raw: true
             }
         }
-        if (!props.editing) {
-            const prefixIcon: IIconProps = {
-                iconName: 'Warning',
-                title: 'WARNING',
-                styles: {
-                    root: {
-                        color: 'orange'
-                    }
-                }
-            }
-        }
         switch (dataType) {
             case 'Lookup.Customer':
             case 'Lookup.Owner':
@@ -243,9 +236,39 @@ export const CellContent = (props: ICellContentProps) => {
     }
     const currentControl = getControl();
 
-    return <div>test</div>
+    const onCellEditingStopped = React.useCallback(() => {
+        const changes = record.getChanges?.(column.name);
+        if (changes && changes.length > 0) {
+            grid.pcfContext.factory.requestRender();
+        }
+    }, []);
 
-    
+    React.useEffect(() => {
+        if (!props.editing) {
+            return;
+        }
+        props.api.addEventListener('cellEditingStopped', onCellEditingStopped);
+        return () => {
+            if (!props.editing) {
+                return;
+            }
+            setTimeout(() => {
+                props.api.removeEventListener('cellEditingStopped', onCellEditingStopped);
+            }, 0);
+        }
+    }, [props.editing]);
+
+    React.useEffect(() => {
+        setShouldRenderNestedControl(true);
+        return () => {
+            mountedRef.current = false;
+        }
+    }, []);
+
+    if(!shouldRenderNestedControl) {
+        return <></>
+    }
+
     return <NestedControlRenderer
         context={grid.pcfContext}
         parameters={{
@@ -261,7 +284,13 @@ export const CellContent = (props: ICellContentProps) => {
                 ...props,
                 rootContainerProps: {
                     ...props.rootContainerProps,
-                    className: styles.cellContent
+                    className: styles.controlRoot
+                },
+                controlContainerProps: {
+                    className: styles.controlContainer
+                },
+                overridenControlContainerProps: {
+                    className: styles.overridenControlContainer
                 },
                 loadingProps: {
                     ...props.loadingProps,
@@ -277,16 +306,15 @@ export const CellContent = (props: ICellContentProps) => {
                         className: styles.loadingWrapper
                     }
                 },
-                onOverrideControlProps: () => {
-                    return (controlProps) => {
-                        const parameters = getParameters();
+                onOverrideControlProps: (controlProps) => {
+                    const parameters = getParameters();
                         return {
                             ...controlProps,
                             context: {
                                 ...controlProps.context,
                                 mode: Object.create(controlProps.context.mode, {
                                     allocatedHeight: {
-                                        value: 39
+                                        value: (node.rowHeight ?? grid.rowHeight) - 1
                                     },
 
                                 }),
@@ -301,7 +329,6 @@ export const CellContent = (props: ICellContentProps) => {
                                 ...parameters
                             })
                         }
-                    }
                 }
             }
         }}

@@ -7,7 +7,7 @@ import { DataTypes, ICustomColumnFormatting, IRecord } from "@talxis/client-libr
 import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 import { Cell } from "../../Cell/Cell";
-import { ITheme} from "@fluentui/react";
+import { ITheme } from "@fluentui/react";
 import { Theming } from "@talxis/react-components";
 import { getEditableCell } from "../../Cell/getEditableCell";
 
@@ -16,6 +16,7 @@ const EditableCell = getEditableCell();
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
     private _theme: ITheme;
+    private _refreshGlobalCheckBox: () => void = () => {};
     public readonly oddRowCellTheme: ITheme;
     public readonly evenRowCellTheme: ITheme;
 
@@ -43,16 +44,16 @@ export class AgGrid extends GridDependency {
                 suppressKeyboardEvent: (params) => this._suppressKeyboardEvent(params, column),
                 cellRenderer: Cell,
                 cellEditor: EditableCell,
-                editable: (p) => this._isColumnEditable(column, p), 
+                editable: (p) => this._isColumnEditable(column, p),
                 headerComponent: ColumnHeader,
                 valueFormatter: (p) => {
-                    if(column.name === CHECKBOX_COLUMN_KEY) {
+                    if (column.name === CHECKBOX_COLUMN_KEY) {
                         return null;
                     }
                     return p.data.getFormattedValue(column.name)
                 },
                 valueGetter: (p) => {
-                    if(column.name === CHECKBOX_COLUMN_KEY) {
+                    if (column.name === CHECKBOX_COLUMN_KEY) {
                         return null;
                     }
                     return p.data.getValue(column.name)
@@ -67,7 +68,7 @@ export class AgGrid extends GridDependency {
                     baseColumn: column
                 }
             }
-            if(agColumn.field === CHECKBOX_COLUMN_KEY) {
+            if (agColumn.field === CHECKBOX_COLUMN_KEY) {
                 agColumn.lockPosition = 'left';
                 agColumn.headerComponent = GlobalCheckBox
             }
@@ -85,7 +86,7 @@ export class AgGrid extends GridDependency {
         }
         return width;
     }
-    public selectRows() {
+    public refreshRowSelection(disableCellRefresh?: boolean) {
         if (!this._gridApi) {
             return;
         }
@@ -98,34 +99,59 @@ export class AgGrid extends GridDependency {
         });
         this._gridApi.setNodesSelected({
             nodes: nodesToSelect,
-            newValue: true
+            newValue: true,
         });
-        this._gridApi.refreshCells({
-            columns: [CHECKBOX_COLUMN_KEY],
-            force: true
-        })
+        if(!disableCellRefresh) {
+            this._gridApi.refreshCells({
+                columns: [CHECKBOX_COLUMN_KEY],
+                force: true,
+            })
+        }
+        this._refreshGlobalCheckBox();
     }
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
         const isEven = params.node!.rowIndex! % 2 === 0;
-        const formatting = params.data!.getColumnInfo(params.colDef.colId!).ui.getCustomFormatting(isEven ? this.evenRowCellTheme : this.oddRowCellTheme);
+        //set colors for even/odd
         const defaultBackgroundColor = isEven ? this.evenRowCellTheme.semanticColors.bodyBackground : this.oddRowCellTheme.semanticColors.bodyBackground;
-        if(!formatting.backgroundColor) {
-            //set colors for even/odd
-            formatting.backgroundColor = defaultBackgroundColor;
+        switch (params.colDef.colId) {
+            case CHECKBOX_COLUMN_KEY: {
+                return {
+                    primaryColor: this._theme.palette.themePrimary,
+                    backgroundColor: defaultBackgroundColor,
+                    textColor: Theming.GetTextColorForBackground(defaultBackgroundColor),
+                    className: '',
+                    themeOverride: {}
+                }
+            }
+            default: {
+
+            }
         }
-        if(!formatting.primaryColor) {
-            formatting.primaryColor = this._theme.palette.themePrimary;
+        switch (params.colDef.colId) {
+            default: {
+                const formatting = params.data!.getColumnInfo(params.colDef.colId!).ui.getCustomFormatting(isEven ? this.evenRowCellTheme : this.oddRowCellTheme) ?? {}
+                if (!formatting.backgroundColor) {
+                    formatting.backgroundColor = defaultBackgroundColor;
+                }
+                if (!formatting.primaryColor) {
+                    formatting.primaryColor = this._theme.palette.themePrimary;
+                }
+                if (!formatting.textColor) {
+                    formatting.textColor = Theming.GetTextColorForBackground(formatting.backgroundColor);
+                }
+                if (!formatting.className) {
+                    formatting.className = '';
+                }
+                if (!formatting.themeOverride) {
+                    formatting.themeOverride = {};
+                }
+                return formatting as Required<ICustomColumnFormatting>;
+            }
         }
-        if(!formatting.textColor) {
-            formatting.textColor = Theming.GetTextColorForBackground(formatting.backgroundColor);
-        }
-        if(!formatting.className) {
-            formatting.className = '';
-        }
-        if(!formatting.themeOverride) {
-            formatting.themeOverride = {};
-        }
-        return formatting as Required<ICustomColumnFormatting>;
+    }
+
+    public setRefreshGlobalCheckBoxCallback(callback: () => void) {
+        this._refreshGlobalCheckBox = callback;
     }
 
     private get _gridApi() {
@@ -133,6 +159,9 @@ export class AgGrid extends GridDependency {
     }
 
     private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
+        if(column.name === CHECKBOX_COLUMN_KEY) {
+            return false;
+        }
         if (!this._grid.parameters.EnableEditing?.raw || params.data?.getColumnInfo(column.name).ui.isLoading() === true) {
             return false;
         }
@@ -140,6 +169,23 @@ export class AgGrid extends GridDependency {
     }
 
     private _suppressKeyboardEvent(params: SuppressKeyboardEventParams<IRecord, any>, column: IGridColumn) {
+        if (params.event.key !== 'Enter' || params.api.getEditingCells().length === 0) {
+            return false;
+        }
+        switch (column.dataType) {
+            case DataTypes.DateAndTimeDateAndTime:
+            case DataTypes.DateAndTimeDateOnly:
+            case DataTypes.LookupOwner:
+            case DataTypes.LookupCustomer:
+            case DataTypes.LookupRegarding:
+            case DataTypes.LookupSimple:
+            case DataTypes.MultiSelectOptionSet:
+            case DataTypes.OptionSet:
+            case DataTypes.TwoOptions:
+            case DataTypes.WholeDuration: {
+                return true;
+            }
+        }
         return false;
     }
 }
