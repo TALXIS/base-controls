@@ -16,9 +16,11 @@ import { Spinner, useRerender } from '@talxis/react-components';
 import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } from '@fluentui/react';
 import ReactDOM from 'react-dom';
 import { IControl } from '../../interfaces';
+import { useControl } from '../../hooks';
 
 export const NestedControlRenderer = (__props: INestedControlRenderer) => {
     const controlRef = useRef<NestedControl>();
+    const { onNotifyOutputChanged } = useControl('NestedControlRenderer', __props);
     const internalControlRendererRef = useRef<IInternalNestedControlRendererRef>(null);
     const propsRef = useRef<INestedControlRenderer>({} as any);
     propsRef.current = __props;
@@ -104,21 +106,17 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
                 onInit: () => {
                     controlRef.current = instance;
                     rerender();
+                  
                 },
                 onControlStateChanged: () => internalControlRendererRef.current?.rerender(),
                 onGetControlStates: () => propsRef.current.parameters.ControlStates,
+                onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs)
             },
             overrides: {
                 onGetProps: componentPropsRef.current?.onOverrideControlProps,
-                onRender: async (controlProps, container, defaultRender) => {
-                    let component = componentPropsRef.current?.onOverrideRender!(controlProps, () => {
-                        onRender(controlProps, container, defaultRender)
-                    })
-                    //default render has been triggered
-                    if (!component) {
-                        return;
-                    }
-                    return onRender(controlProps, container, defaultRender, component);
+                onRender: (controlProps, container, defaultRender) => {
+                    const component = componentPropsRef.current?.onOverrideRender!(controlProps, () => {})
+                    return onRender(controlProps, container, defaultRender, component ?? undefined);
                 },
                 onUnmount: (isPcfComponent, container, defaultUnmount) => {
                     if (isPcfComponent) {
@@ -168,9 +166,9 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
     //once control is defined, it is initialized
     const { control, parameters, componentProps } = props;
     const customControlContainerRef = useRef<HTMLDivElement>(null);
+    const errorMessage = control?.getErrorMessage();
     //defer loading to next render so we don't show it in cases where the control loads straight way, this prevents loading flicker
     const [canShowLoading, setCanShowLoading] = useState(false);
-    const errorMessage = control?.getErrorMessage();
     const rerender = useRerender();
 
     useImperativeHandle(ref, () => {
@@ -186,7 +184,6 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
         }
         return <Spinner {...componentProps.loadingProps.spinnerProps} />
     }
-
     useEffect(() => {
         setCanShowLoading(true)
     }, [])
