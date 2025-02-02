@@ -20,8 +20,9 @@ export interface IBinding {
     error?: boolean;
     errorMessage?: string;
     metadata?: {
-        entityName: string;
-        attributeName: string;
+        entityName?: string;
+        attributeName?: string;
+        onOverrideMetadata?: (metadata: any) => any 
     },
     onNotifyOutputChanged?: (newValue: any) => void;
 }
@@ -236,11 +237,6 @@ export class NestedControl {
             promises.push(propertyInstance.init());
             this._properties.set(name, propertyInstance);
         })
-        /*          await new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve(null)
-                    }, 2000);
-                }) */
         await Promise.all(promises);
         this._options.callbacks?.onInit?.()
     }

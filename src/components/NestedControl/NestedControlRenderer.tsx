@@ -36,6 +36,9 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
     componentPropsRef.current = onOverrideComponentProps({
         rootContainerProps: {},
         controlContainerProps: {},
+        messageBarProps: {
+            messageBarType: MessageBarType.error,
+        },
         overridenControlContainerProps: {},
         loadingProps: {
             containerProps: {},
@@ -45,6 +48,9 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
             shimmerProps: {
                 styles: {
                     root: styles.shimmerRoot,
+                    shimmerWrapper: {
+                        height: 32
+                    }
                 }
             },
         },
@@ -81,6 +87,9 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
         if (!componentToRender && BaseControls.IsBaseControl(propsRef.current.parameters.ControlName)) {
             componentToRender = React.createElement(getBaseControl(), { ...controlProps });
         }
+        console.log(componentToRender)
+        //componentToRender = React.createElement(ProgressIndicator);
+        console.log(componentToRender)
         if (componentToRender) {
             return ReactDOM.render(React.createElement(
                 ThemeWrapper,
@@ -100,13 +109,12 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
             parentPcfContext: propsRef.current.context,
             onGetControlName: () => propsRef.current.parameters.ControlName,
             onGetBindings: () => {
-                return propsRef.current.parameters.Bindings;
+                return propsRef.current.parameters.Bindings ?? {};
             },
             callbacks: {
                 onInit: () => {
                     controlRef.current = instance;
                     rerender();
-                  
                 },
                 onControlStateChanged: () => internalControlRendererRef.current?.rerender(),
                 onGetControlStates: () => propsRef.current.parameters.ControlStates,
@@ -115,7 +123,7 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
             overrides: {
                 onGetProps: componentPropsRef.current?.onOverrideControlProps,
                 onRender: (controlProps, container, defaultRender) => {
-                    const component = componentPropsRef.current?.onOverrideRender!(controlProps, () => {})
+                    const component = componentPropsRef.current?.onOverrideRender!(controlProps, () => { })
                     return onRender(controlProps, container, defaultRender, component ?? undefined);
                 },
                 onUnmount: (isPcfComponent, container, defaultUnmount) => {
@@ -180,31 +188,26 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
 
     const renderLoading = () => {
         if (parameters.LoadingType === 'shimmer') {
-            return <Shimmer {...componentProps.loadingProps.shimmerProps} />
+            return <Shimmer {...componentProps?.loadingProps?.shimmerProps} />
         }
-        return <Spinner {...componentProps.loadingProps.spinnerProps} />
+        return <Spinner {...componentProps?.loadingProps?.spinnerProps} />
     }
     useEffect(() => {
-        setCanShowLoading(true)
+        if (parameters.LoadingType !== 'none') {
+            setCanShowLoading(true)
+        }
     }, [])
 
     return (
         <div {...componentProps.rootContainerProps}>
-            {(!control || control.isLoading()) && canShowLoading && <div {...componentProps.loadingProps.containerProps}>{renderLoading()}</div>
+            {(!control || control.isLoading()) && canShowLoading && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>
             }
             {errorMessage &&
-                <MessageBar styles={{
-                    root: {
-                        height: '100%'
-                    },
-                    content: {
-                        alignItems: 'center'
-                    }
-                }} messageBarType={MessageBarType.error} isMultiline={false} actions={<div>
+                <MessageBar messageBarType={MessageBarType.error} isMultiline={false} actions={<div>
                     <MessageBarButton onClick={() => window.Xrm.Navigation.openErrorDialog({
                         message: errorMessage
                     })}>Details</MessageBarButton>
-                </div>}>
+                </div>} {...componentProps?.messageBarProps}>
                     Component <b>{parameters.ControlName}</b> failed to load.
                 </MessageBar>
             }

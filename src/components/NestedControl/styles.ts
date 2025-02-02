@@ -8,5 +8,8 @@ export const getNestedControlStyles = (isBaseControl: boolean) => {
         shimmerRoot: {
             flexGrow: 1
         },
+        shimmerWrapper: {
+            height: 32
+        }
     })
 }

@@ -135,12 +135,12 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             className: styles.root
         },
         contentWrapperProps: {
-            className: styles.contentWrapper
+            className: styles.contentWrapper,
         },
         textProps: {
             className: getClassNames([defaultContentRendererStyles.content, !formattedValue ? defaultContentRendererStyles.placeholder : undefined]),
             title: formattedValue,
-            children: formattedValue || '---',
+            children: column.type === 'action' ? '' : (formattedValue || '---')
         },
         fileProps: {
             containerProps: {
@@ -172,7 +172,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
         <ComponentPropsContext.Provider value={componentPropsProviderValue}>
         {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
         <div {...componentProps.contentWrapperProps}>
-            {renderContent()}
+            {componentProps.contentWrapperProps.children ?? renderContent()}
         </div>
         {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
         </ComponentPropsContext.Provider>

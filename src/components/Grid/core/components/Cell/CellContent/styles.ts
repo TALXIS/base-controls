@@ -26,6 +26,12 @@ export const getCellContentStyles = (columnAlignment: IColumn['alignment'], fill
         },
         shimmerWrapper: {
             height: 10
+        },
+        errorMessageRoot: {
+            height: '100%'
+        },
+        errorMessageContent: {
+            alignItems: 'center'
         }
     })
 }

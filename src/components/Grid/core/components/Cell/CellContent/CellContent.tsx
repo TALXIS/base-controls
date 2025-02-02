@@ -2,14 +2,13 @@ import * as React from 'react';
 import { Attribute, DataType, IColumn, IColumnInfo, ICustomColumnControl, ICustomColumnFormatting, Sanitizer } from '@talxis/client-libraries';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { ICellProps } from '../Cell';
-import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, ProgressIndicator, Spinner, TextField, useTheme } from '@fluentui/react';
+import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, useTheme } from '@fluentui/react';
 import { getCellContentStyles } from './styles';
 import { BaseControls, ControlTheme, IFluentDesignState } from '../../../../../../utils';
 import { merge } from 'merge-anything';
 import { useRerender } from '@talxis/react-components';
 import { NestedControlRenderer } from '../../../../../NestedControl/NestedControlRenderer';
 import { IBinding } from '../../../../../NestedControl';
-import { GridCellRenderer } from '../../../../../GridCellRenderer/GridCellRenderer';
 
 interface ICellContentProps extends ICellProps {
     columnAlignment: Required<IColumn['alignment']>;
@@ -65,6 +64,10 @@ export const CellContent = (props: ICellContentProps) => {
                     setTimeout(() => {
                         if(mountedRef.current) {
                             rerender();
+                        }
+                        //allow cell renderer to update the grid
+                        if(!props.editing) {
+                            grid.pcfContext.factory.requestRender();
                         }
                     }, 0)
                 },
@@ -182,7 +185,7 @@ export const CellContent = (props: ICellContentProps) => {
             Dataset: grid.dataset
         }
         parameters.Record = record;
-        parameters.Column = datasetColumn
+        parameters.Column = datasetColumn;
 
         parameters.EnableNavigation = {
             raw: grid.isNavigationEnabled
@@ -226,7 +229,7 @@ export const CellContent = (props: ICellContentProps) => {
             case 'TwoOptions':
             case 'MultiSelectPicklist': {
                 parameters.EnableOptionSetColors = {
-                    raw: true
+                    raw: grid.enableOptionSetColors
                 }
                 break;
             }
@@ -292,20 +295,27 @@ export const CellContent = (props: ICellContentProps) => {
                 overridenControlContainerProps: {
                     className: styles.overridenControlContainer
                 },
+                messageBarProps: {
+                    styles: {
+                        root: styles.errorMessageRoot,
+                        content: styles.errorMessageContent
+                    }
+                },
                 loadingProps: {
                     ...props.loadingProps,
                     shimmerProps: {
-                        ...props.loadingProps.shimmerProps,
+                        ...props.loadingProps?.shimmerProps,
                         styles: {
-                            ...props.loadingProps.shimmerProps.styles,
+                            ...props.loadingProps?.shimmerProps?.styles,
                             shimmerWrapper: styles.shimmerWrapper
                         }
                     },
                     containerProps: {
-                        ...props.loadingProps.containerProps,
+                        ...props.loadingProps?.containerProps,
                         className: styles.loadingWrapper
                     }
                 },
+                onOverrideRender: (controlProps, defaultRender) => { return columnInfo.ui.getCustomControlComponent(controlProps, defaultRender)},
                 onOverrideControlProps: (controlProps) => {
                     const parameters = getParameters();
                         return {

@@ -1,4 +1,4 @@
-import { IShimmerProps, ISpinnerProps, ThemeProviderProps } from "@fluentui/react";
+import { IMessageBar, IShimmerProps, ISpinnerProps, ThemeProviderProps } from "@fluentui/react";
 import { IParameters } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
 import { IBinding, IControlStates } from "./NestedControl";
@@ -9,11 +9,23 @@ export interface INestedControlRenderer extends IControl<INestedControlRendererP
 }
 
 export interface INestedControlRendererParameters extends IParameters {
+    /**
+     * Name of the control to be rendered. Can either be a custom PCF or Base Control.
+     */
     ControlName: ControlNameOptions
-    Bindings: {
+    /**
+     * Bindings that will be passed to the control.
+     */
+    Bindings?: {
         [key: string]: IBinding
     }
-    LoadingType?: 'spinner' | 'shimmer'
+    /**
+     * Type of loading that will appear before the control is loaded into the page.
+     */
+    LoadingType?: 'spinner' | 'shimmer' | 'none'
+    /**
+     * Can be used to set whether the control is disabled or not.
+     */
     ControlStates?: IControlStates;
 }
 
@@ -22,8 +34,11 @@ export interface INestedControlRendererComponentProps {
         spinnerProps: ISpinnerProps;
         shimmerProps: IShimmerProps;
         containerProps: React.HTMLAttributes<HTMLDivElement>;
-
     }
+    /**
+     * Props for the message bar displaying error message.
+     */
+    messageBarProps: IMessageBar
     /**
      * Props for top level container. Wraps the control and other elements like loading.
      */
@@ -38,11 +53,11 @@ export interface INestedControlRendererComponentProps {
      */
     overridenControlContainerProps: ThemeProviderProps;
 
-    onOverrideControlProps?: (props: IControl<any, any, any, any>) => IControl<any, any, any, any>
+    onOverrideControlProps: (props: IControl<any, any, any, any>) => IControl<any, any, any, any>
     /**
-     * Allows you to override the default PCF render. If you return undefined, the default renderer will be used.
+     * Allows you to override the default PCF render.
      */
-    onOverrideRender?: (props: IControl<any, any, any, any>, defaultRender: () => void) => React.ReactElement | void;
+    onOverrideRender: (props: IControl<any, any, any, any>, defaultRender: () => void) => React.ReactElement | void;
 }
 
 

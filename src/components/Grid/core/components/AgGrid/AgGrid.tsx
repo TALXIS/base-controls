@@ -38,6 +38,9 @@ export const AgGrid = () => {
     const userChangedColumnSizeRef = useRef(false);
 
     const debouncedRefresh = useDebouncedCallback(() => {
+        if (grid.loading) {
+            return;
+        }
         agGrid.refreshRowSelection(true);
         gridApiRef.current?.refreshCells({
             rowNodes: gridApiRef.current?.getRenderedNodes(),
@@ -152,7 +155,7 @@ export const AgGrid = () => {
         gridApiRef.current?.resetRowHeights();
         grid.pcfContext.factory.requestRender()
     }, 200);
-    
+
     useEffect(() => {
         toggleOverlay();
         if (records.length > 0) {
@@ -179,92 +182,92 @@ export const AgGrid = () => {
 
     return (
         <AgGridContext.Provider value={agGridProviderValue}>
-        <div
-            ref={containerRef}
-            className={`${styles.root} ag-theme-balham`}
-        >
-            {grid.isEditable && grid.dataset.isDirty?.() &&
-                <Save />
-            }
-            {grid.error &&
-                <MessageBar messageBarType={MessageBarType.error}>
-                    <span dangerouslySetInnerHTML={{
-                        __html: grid.errorMessage!
-                    }} />
-                </MessageBar>
-            }
-            <AgGridReact
-                animateRows={false}
-                rowSelection={grid.selection.type}
-                noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
-                loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
-                suppressDragLeaveHidesColumns
-                onColumnResized={(e) => updateColumnVisualSizeFactor(e)}
-                onColumnMoved={(e) => {
-                    if (e.finished) {
-                        updateColumnOrder(e);
-                    }
-                }}
-                reactiveCustomComponents
-                onSelectionChanged={(e) => {
-                    if(e.source.includes('api')) {
-                        return;
-                    }
-                    grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
-                    agGrid.refreshRowSelection();
-                }}
-                gridOptions={{
-                    getRowStyle: (params) => {
-                        const theme = params.rowIndex % 2 === 0 ? agGrid.evenRowCellTheme : agGrid.oddRowCellTheme;
-                        return {
-                            backgroundColor: theme.semanticColors.bodyBackground
-                        }
-                    },
-                }}
-                onCellDoubleClicked={(e) => {
-                    if (grid.isNavigationEnabled && !grid.isEditable) {
-                        grid.openDatasetItem(e.data!.getNamedReference())
-                    }
-                }}
-                getRowId={(params) => params.data.getRecordId()}
-                onGridReady={(e) => {
-                    gridApiRef.current = e.api as any;
-                    if (grid.loading) {
-                        gridApiRef.current?.showLoadingOverlay();
-                    }
-                    onGridReady();
-                }}
-                onGridSizeChanged={(e) => {
-                    containerWidthRef.current = e.clientWidth;
-                    sizeColumnsIfSpaceAvailable();
-                }}
-                onFirstDataRendered={(e) => {
-                    sizeColumnsIfSpaceAvailable();
-                }}
-                
-                initialState={stateValuesRef.current}
-                onStateUpdated={(e) => stateValuesRef.current = {
-                    ...stateValuesRef.current,
-                    ...e.state
-                }}
-                //suppressAnimationFrame
-                columnDefs={agColumns as any}
-                rowData={records}
-                getRowHeight={(params) => {
-                    const columnWidths: { [name: string]: number } = {};
-                    params.api.getAllGridColumns().map(col => {
-                        columnWidths[col.getColId()] = col.getActualWidth()
-                    })
-                    console.log(params?.data?.getHeight?.(columnWidths, grid.rowHeight))
-                    return params?.data?.getHeight?.(columnWidths, grid.rowHeight) ?? grid.rowHeight
-                }}
-
+            <div
+                ref={containerRef}
+                className={`${styles.root} ag-theme-balham`}
             >
-            </AgGridReact>
-            {grid.paging.isEnabled &&
-                <Paging />
-            }
-        </div>
+                {grid.isEditable && grid.dataset.isDirty?.() &&
+                    <Save />
+                }
+                {grid.error &&
+                    <MessageBar messageBarType={MessageBarType.error}>
+                        <span dangerouslySetInnerHTML={{
+                            __html: grid.errorMessage!
+                        }} />
+                    </MessageBar>
+                }
+                <AgGridReact
+                    animateRows={false}
+                    rowSelection={grid.selection.type}
+                    noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
+                    loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
+                    suppressDragLeaveHidesColumns
+                    onColumnResized={(e) => updateColumnVisualSizeFactor(e)}
+                    onColumnMoved={(e) => {
+                        if (e.finished) {
+                            updateColumnOrder(e);
+                        }
+                    }}
+                    reactiveCustomComponents
+                    onSelectionChanged={(e) => {
+                        if (e.source.includes('api')) {
+                            return;
+                        }
+                        grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
+                        agGrid.refreshRowSelection();
+                    }}
+                    gridOptions={{
+                        getRowStyle: (params) => {
+                            const theme = params.rowIndex % 2 === 0 ? agGrid.evenRowCellTheme : agGrid.oddRowCellTheme;
+                            return {
+                                backgroundColor: theme.semanticColors.bodyBackground
+                            }
+                        },
+                    }}
+                    onCellDoubleClicked={(e) => {
+                        if (grid.isNavigationEnabled && !grid.isEditable) {
+                            grid.openDatasetItem(e.data!.getNamedReference())
+                        }
+                    }}
+                    getRowId={(params) => params.data.getRecordId()}
+                    onGridReady={(e) => {
+                        gridApiRef.current = e.api as any;
+                        if (grid.loading) {
+                            gridApiRef.current?.showLoadingOverlay();
+                        }
+                        onGridReady();
+                    }}
+                    onGridSizeChanged={(e) => {
+                        containerWidthRef.current = e.clientWidth;
+                        sizeColumnsIfSpaceAvailable();
+                    }}
+                    onFirstDataRendered={(e) => {
+                        sizeColumnsIfSpaceAvailable();
+                    }}
+
+                    initialState={stateValuesRef.current}
+                    onStateUpdated={(e) => stateValuesRef.current = {
+                        ...stateValuesRef.current,
+                        ...e.state
+                    }}
+                    //suppressAnimationFrame
+                    columnDefs={agColumns as any}
+                    rowData={records}
+                    getRowHeight={(params) => {
+                        const columnWidths: { [name: string]: number } = {};
+                        params.api.getAllGridColumns().map(col => {
+                            columnWidths[col.getColId()] = col.getActualWidth()
+                        })
+                        console.log(params?.data?.getHeight?.(columnWidths, grid.rowHeight))
+                        return params?.data?.getHeight?.(columnWidths, grid.rowHeight) ?? grid.rowHeight
+                    }}
+
+                >
+                </AgGridReact>
+                {grid.paging.isEnabled &&
+                    <Paging />
+                }
+            </div>
         </AgGridContext.Provider>
     );
 }

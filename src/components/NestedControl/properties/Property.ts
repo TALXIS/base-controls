@@ -4,7 +4,7 @@ import { IBinding, IOptions } from "../NestedControl";
 export abstract class Property {
     private _onGetBinding: () => IBinding;
     private _parentPcfContext: ComponentFramework.Context<any, any>;
-    private _attributeMetadata: IAttributeMetadata | undefined;
+    private _attributeMetadata: IAttributeMetadata = {} as any;
 
     constructor(options: IOptions, onGetBinding: () => IBinding) {
         this._onGetBinding = onGetBinding;
@@ -15,8 +15,13 @@ export abstract class Property {
         if(!bindingMetadata) {
             return true;
         }
-        const metadata =  await this.parentPcfContext.utils.getEntityMetadata(bindingMetadata.entityName, [bindingMetadata.attributeName]);
-        this._attributeMetadata = metadata.Attributes.get(bindingMetadata.attributeName).attributeDescriptor
+        if(bindingMetadata.attributeName && bindingMetadata.entityName) {
+            const metadata = await this.parentPcfContext.utils.getEntityMetadata(bindingMetadata.entityName, [bindingMetadata.attributeName]);
+            this._attributeMetadata = metadata.Attributes.get(bindingMetadata.attributeName).attributeDescriptor ?? {};
+        }
+        if(bindingMetadata.onOverrideMetadata) {
+            this._attributeMetadata = bindingMetadata.onOverrideMetadata(this._attributeMetadata);
+        }
         return true;
     };
     
@@ -25,7 +30,7 @@ export abstract class Property {
     public get parentPcfContext() {
         return this._parentPcfContext;
     }
-    public get attributeMetadata(): any | undefined {
+    public get attributeMetadata(): any {
         return this._attributeMetadata;
     }
     public get dataType() {
