@@ -10,10 +10,10 @@ import React from "react";
 import { INotificationsRef, Notifications } from "./Notifications/Notifications";
 import { useDebouncedCallback } from "use-debounce";
 import { Commands } from "./Commands/Commands";
-import { AgGridContext } from "../AgGrid/AgGrid";
 import { CellContent } from "./CellContent/CellContent";
 import { useThemeGenerator } from "@talxis/react-components";
 import { getClassNames } from "../../../../../utils/styling/getClassNames";
+import { AgGridContext } from "../AgGrid/context";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
@@ -87,6 +87,7 @@ export const InternalCell = (props: IInternalCellProps) => {
     }, 100)
 
     const shouldShowNotEditableNotification = () => {
+        console.log(column, record.getColumnInfo(column.name).security.editable)
         if (column.isEditable && !record.getColumnInfo(column.name).security.editable) {
             return true;
         }
@@ -184,7 +185,7 @@ export const InternalCell = (props: IInternalCellProps) => {
                         onShouldNotificationsFillAvailableSpace={(value) => setShouldNotificationsFillAvailableSpace(value)}
                     />
                 }
-                {true &&
+                {shouldShowNotEditableNotification() &&
                     <MemoizedNotifications notifications={[{
                         iconName: 'Uneditable',
                         notificationLevel: 'RECOMMENDATION',

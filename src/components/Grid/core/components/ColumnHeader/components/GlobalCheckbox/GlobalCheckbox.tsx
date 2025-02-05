@@ -2,8 +2,8 @@ import { Checkbox, useTheme } from "@fluentui/react";
 import { useContext, useMemo } from "react";
 import { useGridInstance } from "../../../../hooks/useGridInstance";
 import { getGlobalCheckboxStyles } from "./styles";
-import { AgGridContext } from "../../../AgGrid/AgGrid";
 import { useRerender } from "@talxis/react-components";
+import { AgGridContext } from "../../../AgGrid/context";
 
 export const GlobalCheckBox = () => {
     const grid = useGridInstance();

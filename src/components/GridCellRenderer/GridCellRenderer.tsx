@@ -5,15 +5,11 @@ import { createContext, useMemo } from "react";
 import { getDefaultContentRendererStyles, getGridCellLabelStyles } from "./styles";
 import { DataType, DataTypes, FileAttribute, IRecord } from "@talxis/client-libraries";
 import { OptionSet } from './OptionSet';
-import { IGridCellRenderer, IGridCellRendererComponentProps } from "./interfaces";
+import { IGridCellRenderer } from "./interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
-import { useComponentProps } from "./useComponentProps";
+import { ComponentPropsContext, useComponentProps } from "./useComponentProps";
 import { getClassNames } from "../../utils/styling/getClassNames";
-
-export const ComponentPropsContext = createContext<{
-    current: IGridCellRendererComponentProps
-}>({} as any);
-
+import { DefaultContentRenderer } from "./DefaultContentRenderer/DefaultContentRenderer";
 
 export const GridCellRenderer = (props: IGridCellRenderer) => {
     const dataset = props.parameters.Dataset;
@@ -177,13 +173,6 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
         {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
         </ComponentPropsContext.Provider>
     </ThemeProvider>
-}
-
-export const DefaultContentRenderer = () => {
-    const componentProps = useComponentProps();
-    return <FluentText {...componentProps.textProps}>
-        {componentProps.textProps.children}
-    </FluentText>
 }
 
 

@@ -87,9 +87,6 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
         if (!componentToRender && BaseControls.IsBaseControl(propsRef.current.parameters.ControlName)) {
             componentToRender = React.createElement(getBaseControl(), { ...controlProps });
         }
-        console.log(componentToRender)
-        //componentToRender = React.createElement(ProgressIndicator);
-        console.log(componentToRender)
         if (componentToRender) {
             return ReactDOM.render(React.createElement(
                 ThemeWrapper,

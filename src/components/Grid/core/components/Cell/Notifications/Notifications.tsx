@@ -1,6 +1,6 @@
 import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ICommandBar, ThemeProvider, getTheme } from "@fluentui/react"
 import { getNotificationIconStyles } from "./styles";
-import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { IAddControlNotificationOptions, IControlNotificationAction, ICustomColumnFormatting } from "@talxis/client-libraries";
 import { CommandBar, useThemeGenerator } from "@talxis/react-components";
 import { useGridInstance } from "../../../hooks/useGridInstance";

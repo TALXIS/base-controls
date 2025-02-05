@@ -1,6 +1,5 @@
 import { DataType } from "@talxis/client-libraries";
 import { IOptionSet } from "../../OptionSet"
-import { DefaultContentRenderer } from "../GridCellRenderer";
 import { IMultiSelectOptionSet } from "../../MultiSelectOptionSet";
 import { ITwoOptions } from "../../TwoOptions";
 import { ThemeProvider, useTheme } from "@fluentui/react";
@@ -11,6 +10,7 @@ import { useMemo } from "react";
 import { getColorfulOptionStyles, getOptionSetStyles } from "./styles";
 import { useComponentProps } from "../useComponentProps";
 import { IOptionSetProps } from "../interfaces";
+import { DefaultContentRenderer } from "../DefaultContentRenderer/DefaultContentRenderer";
 
 export const OptionSet = (props: IOptionSet | IMultiSelectOptionSet | ITwoOptions) => {
     const dataType: DataType = props.parameters.value.type as DataType;

@@ -16,9 +16,8 @@ import { AgGrid as AgGridModel } from './model/AgGrid';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
+import { AgGridContext } from './context';
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
-
-export const AgGridContext = createContext<AgGridModel>(null as any);
 
 export const AgGrid = () => {
     const grid = useGridInstance();
