@@ -3,7 +3,7 @@ import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
 import { ICommandBarItemProps, ThemeProvider } from '@fluentui/react';
 import { DataTypes } from "@talxis/client-libraries";
-import { NestedControlRenderer } from "../NestedControl/NestedControlRenderer";
+import { NestedControlRenderer } from "../NestedControlRenderer/NestedControlRenderer";
 
 export const TextField = (props: ITextField) => {
     const context = props.context;

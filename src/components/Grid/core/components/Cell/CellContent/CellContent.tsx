@@ -7,8 +7,8 @@ import { getCellContentStyles } from './styles';
 import { BaseControls, ControlTheme, IFluentDesignState } from '../../../../../../utils';
 import { merge } from 'merge-anything';
 import { useRerender } from '@talxis/react-components';
-import { NestedControlRenderer } from '../../../../../NestedControl/NestedControlRenderer';
-import { IBinding } from '../../../../../NestedControl';
+import { NestedControlRenderer } from '../../../../../NestedControlRenderer/NestedControlRenderer';
+import { IBinding } from '../../../../../NestedControlRenderer/NestedControl';
 
 interface ICellContentProps extends ICellProps {
     columnAlignment: Required<IColumn['alignment']>;
