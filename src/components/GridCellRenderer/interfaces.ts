@@ -37,7 +37,9 @@ export interface IGridCellRendererComponentProps {
     textProps: ITextProps;
     fileProps: {
         containerProps: React.HTMLAttributes<HTMLDivElement>;
-        iconProps: IIconProps;
+        iconProps: Omit<IIconProps, 'iconName'> & {
+            onGetIconName: (iconName: string) => string
+        };
         imageProps: Omit<IImageProps, 'src'> & {
             onGetSrc: (src: string) => string
         }

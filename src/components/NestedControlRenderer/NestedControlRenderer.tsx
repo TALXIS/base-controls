@@ -88,21 +88,14 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
             componentToRender = React.createElement(getBaseControl(), { ...controlProps });
         }
         if (componentToRender) {
-            return ReactDOM.render(React.createElement(
-                ThemeWrapper,
-                {
-                    ...componentPropsRef.current?.overridenControlContainerProps,
-                    fluentDesignLanguage: controlProps.context.fluentDesignLanguage
-                },
-                componentToRender
-            ), container);
+            return ReactDOM.render(componentToRender, container);
         }
         return defaultRender();
     }
 
     const createControlInstance = () => {
         const instance = new NestedControl({
-            containerElement: internalControlRendererRef.current?.getContainer()!,
+            containerElement: document.createElement('div'),
             parentPcfContext: propsRef.current.context,
             onGetControlName: () => propsRef.current.parameters.ControlName,
             onGetBindings: () => {
@@ -194,7 +187,6 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
             setCanShowLoading(true)
         }
     }, [])
-
     return (
         <div {...componentProps.rootContainerProps}>
             {(!control || control.isLoading()) && canShowLoading && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>

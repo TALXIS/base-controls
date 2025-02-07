@@ -7,6 +7,11 @@ export interface IStringProperty extends IProperty, Partial<ComponentFramework.P
     raw: string | null;
 }
 
+export interface IFileProperty extends IProperty {
+    raw: ComponentFramework.FileObject | null;
+    formatted: string;
+}
+
 export interface ITwoOptionsProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.TwoOptionsProperty>, 'attributes'> {
     raw: boolean,
     attributes: Omit<Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata>, 'DefaultValue'> & {

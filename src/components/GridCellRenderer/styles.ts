@@ -15,7 +15,7 @@ export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment'], da
         },
         fileWrapper: {
             display: 'flex',
-            gap: 3,
+            gap: 5,
             overflow: 'hidden',
             textOverflow: 'ellipsis'
         },
@@ -34,12 +34,17 @@ export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment'], da
         },
         link: {
             maxWidth: '100%',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
             ...(isMultiple(dataType) ? getMultilineStyles(rowHeight, theme) : {})
         },
         icon: {
             'img': {
                 width: 20
             }
+        },
+        fileIcon: {
+            fontSize: 18
         }
     })
 }

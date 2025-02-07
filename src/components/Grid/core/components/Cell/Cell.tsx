@@ -2,7 +2,7 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { Constants, DataTypes, IColumn, ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
 import { Checkbox, Shimmer, ThemeProvider } from "@fluentui/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getCellStyles, getInnerCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
@@ -24,6 +24,7 @@ export interface ICellProps extends ICellRendererParams {
 interface IInternalCellProps extends ICellProps {
     cellFormatting: Required<ICustomColumnFormatting>
 }
+
 
 export const Cell = (props: ICellProps) => {
     const agGridContext = React.useContext(AgGridContext);
@@ -87,7 +88,6 @@ export const InternalCell = (props: IInternalCellProps) => {
     }, 100)
 
     const shouldShowNotEditableNotification = () => {
-        console.log(column, record.getColumnInfo(column.name).security.editable)
         if (column.isEditable && !record.getColumnInfo(column.name).security.editable) {
             return true;
         }
@@ -230,6 +230,13 @@ export const InternalCell = (props: IInternalCellProps) => {
         resizeObserver.observe(props.eGridCell);
         return () => resizeObserver.disconnect();
     }, []);
+
+    useEffect(() => {
+        return () => {
+            console.log('unmount')
+        }
+    }, []);
+
 
     return <div className={styles.innerCellRoot} data-is-valid={!columnInfo.error}>
         {renderContent()}

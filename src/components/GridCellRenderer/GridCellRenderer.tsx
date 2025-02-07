@@ -1,15 +1,14 @@
 import { Icon, IIconProps, ILinkProps, Image, Link, ThemeProvider } from "@fluentui/react";
 import { useControl } from "../../hooks";
-import { Text as FluentText } from '@fluentui/react';
-import { createContext, useMemo } from "react";
+import { useMemo } from "react";
 import { getDefaultContentRendererStyles, getGridCellLabelStyles } from "./styles";
 import { DataType, DataTypes, FileAttribute, IRecord } from "@talxis/client-libraries";
 import { OptionSet } from './OptionSet';
 import { IGridCellRenderer } from "./interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
-import { ComponentPropsContext, useComponentProps } from "./useComponentProps";
+import { ComponentPropsContext } from "./useComponentProps";
 import { getClassNames } from "../../utils/styling/getClassNames";
-import { DefaultContentRenderer } from "./DefaultContentRenderer/DefaultContentRenderer";
+import { DefaultContentRenderer } from "./DefaultContentRenderer";
 
 export const GridCellRenderer = (props: IGridCellRenderer) => {
     const dataset = props.parameters.Dataset;
@@ -17,10 +16,10 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const column = props.parameters.Column;
     const columnAlignment = props.parameters.ColumnAlignment.raw;
     const dataType: DataType = props.parameters.value.type as DataType;
-    const { theme, labels, sizing } = useControl('GridCellLabel', props, getDefaultGridRendererTranslations());
+    const { theme, sizing } = useControl('GridCellLabel', props, getDefaultGridRendererTranslations());
     const styles = useMemo(() => getGridCellLabelStyles(columnAlignment ?? 'left', dataType, sizing.height!, theme), [columnAlignment, dataType, sizing.height, theme]);
     const defaultContentRendererStyles = useMemo(() => getDefaultContentRendererStyles(theme, dataType, sizing.height!), [theme, dataType, sizing.height]);
-    const value: string = props.parameters.value.raw;
+    const value = props.parameters.value.raw;
     const formattedValue: string = props.parameters.value.formatted;
     const isNavigationEnabled = props.parameters.EnableNavigation.raw;
     const prefixIcon = props.parameters.PrefixIcon?.raw
@@ -50,8 +49,12 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             }
             case DataTypes.Image:
             case DataTypes.File: {
-                props.onClick = () => downloadFile();
-                props.children = labels.download();
+                props.href = value.fileUrl;
+                props.download = value.fileName;
+                if(dataType === 'Image') {
+                    props.title = value.fileName;
+                    props.children = value.fileName;
+                }
                 break;
             }
             //primary navigation link
@@ -62,6 +65,42 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             }
         }
         return props;
+    }
+
+    const getIconNameForMimeType = (mimeType?: string) => {
+        if(!mimeType) {
+            return 'Attach';
+        }
+        const icon_classes: any = {
+            image: "Photo2",
+            audio: "MusicNote",
+            video: "Video",
+            "application/pdf": "PDF",
+            "application/msword": "WordDocument",
+            "application/vnd.ms-word": "WordDocument",
+            "application/vnd.oasis.opendocument.text": "WordDocument",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml": "WordDocument",
+            "application/vnd.ms-excel": "ExcelDocument",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml": "ExcelDocument",
+            "application/vnd.oasis.opendocument.spreadsheet": "ExcelDocument",
+            "application/vnd.ms-powerpoint": "PowerPointDocument",
+            "application/vnd.openxmlformats-officedocument.presentationml": "PowerPointDocument",
+            "application/vnd.oasis.opendocument.presentation": "PowerPointDocument",
+            "text/plain": "TextDocument",
+            "text/html": "FileCode",
+            "application/json": "FileCode",
+            // Archives
+            "application/gzip": "ZipFolder",
+            "application/zip": "ZipFolder"
+        };
+
+        if (icon_classes[mimeType]) {
+            return icon_classes[mimeType];
+        }
+        else if (icon_classes[mimeType.split("/")[0]]) {
+            return icon_classes[mimeType.split("/")[0]];
+        }
+        return 'Attach';
     }
 
     const renderContent = () => {
@@ -90,30 +129,19 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             case DataTypes.File: {
                 const linkProps = componentProps.onGetLinkProps(getLinkProps());
                 return (<div {...componentProps.fileProps.containerProps}>
-                    <Icon {...componentProps.fileProps.iconProps} />
+                    <Icon {...componentProps.fileProps.iconProps} iconName={componentProps.fileProps.iconProps.onGetIconName(getIconNameForMimeType(value.mimeType))} />
                     <Link {...linkProps}>{linkProps.children}</Link>
                 </div>);
             }
             case DataTypes.Image: {
                 const linkProps = componentProps.onGetLinkProps(getLinkProps());
                 return (<div {...componentProps.fileProps.containerProps}>
-                    <Image {...componentProps.fileProps.imageProps} src={componentProps.fileProps.imageProps.onGetSrc(`data:image/png;base64,${formattedValue}`)} />
+                    <Image {...componentProps.fileProps.imageProps} src={componentProps.fileProps.imageProps.onGetSrc(value.thumbnailUrl)} />
                     <Link {...linkProps}>{linkProps.children}</Link>
                 </div>);
             }
         }
         return <DefaultContentRenderer />
-    }
-
-    const downloadFile = () => {
-        const storage = new FileAttribute(props.context.webAPI);
-        const namedReference = record.getNamedReference();
-        storage.downloadFileFromAttribute({
-            //@ts-ignore - PowerApps do not follow the typings
-            entityName: namedReference.etn ?? namedReference.entityName,
-            recordId: record.getRecordId(),
-            fileAttribute: column.name,
-        }, true)
     }
 
     const getIconProps = (json?: string | null): IIconProps | undefined => {
@@ -143,7 +171,8 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
                 className: styles.fileWrapper
             },
             iconProps: {
-                iconName: 'Attach'
+                className: styles.fileIcon,
+                onGetIconName: (iconName) => iconName
             },
             imageProps: {
                 className: styles.fileImage,
@@ -163,14 +192,14 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     //it can cover a lot of cases where otherwise custom PCF would be needed
     const prefixIconProps = getIconProps(prefixIcon);
     const suffixIconProps = getIconProps(suffixIcon)
-    
+
     return <ThemeProvider {...componentProps.rootContainerProps} theme={theme}>
         <ComponentPropsContext.Provider value={componentPropsProviderValue}>
-        {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
-        <div {...componentProps.contentWrapperProps}>
-            {componentProps.contentWrapperProps.children ?? renderContent()}
-        </div>
-        {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
+            {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
+            <div {...componentProps.contentWrapperProps}>
+                {componentProps.contentWrapperProps.children ?? renderContent()}
+            </div>
+            {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
         </ComponentPropsContext.Provider>
     </ThemeProvider>
 }

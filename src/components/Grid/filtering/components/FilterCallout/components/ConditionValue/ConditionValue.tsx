@@ -53,7 +53,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
         memoryProvider.setMetadata({
             PrimaryIdAttribute: "id"
         })
-        const record = memoryProvider.refresh()[0];
+        const record = memoryProvider.refreshSync()[0];
         return record;
     }, []);
 

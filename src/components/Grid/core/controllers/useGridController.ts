@@ -25,7 +25,7 @@ export const useGridController = (gridInstance?: Grid): IGridController => {
                 setColumns(newColumns);
             }
         })();
-    }, [grid.shouldRerender]);
+    }, [grid.loading]);
     return {
         columns
     }

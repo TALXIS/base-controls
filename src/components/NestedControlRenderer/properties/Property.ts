@@ -15,7 +15,7 @@ export abstract class Property {
         if(!bindingMetadata) {
             return true;
         }
-        if(bindingMetadata.attributeName && bindingMetadata.entityName) {
+        if(typeof bindingMetadata.attributeName === 'string' && typeof bindingMetadata.entityName === 'string') {
             const metadata = await this.parentPcfContext.utils.getEntityMetadata(bindingMetadata.entityName, [bindingMetadata.attributeName]);
             this._attributeMetadata = metadata.Attributes.get(bindingMetadata.attributeName).attributeDescriptor ?? {};
         }

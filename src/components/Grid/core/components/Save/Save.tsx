@@ -70,13 +70,12 @@ export const Save = () => {
             </div>
             {changeEditorOpened &&
                 <ChangeEditor onDismiss={(e, shouldRefresh) => {
-                    //@ts-ignore
-                    if (e?.code === 'Escape') {
-                        return;
-                    }
                     setChangeEditorOpened(false);
                     if(shouldRefresh) {
                         grid.dataset.paging.loadExactPage(grid.dataset.paging.pageNumber);
+                    }
+                    else {
+                        grid.pcfContext.factory.requestRender();
                     }
                 }} />
             }

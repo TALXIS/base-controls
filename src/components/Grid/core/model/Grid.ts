@@ -230,7 +230,7 @@ export class Grid {
     public getTotalVisibleColumnsWidth(): number {
         let totalWidth = 0;
         this._columns.filter(x => !x.isHidden).map(col => {
-            totalWidth = totalWidth + col.visualSizeFactor;
+            totalWidth = totalWidth + (col.visualSizeFactor ?? 0);
         })
         return totalWidth;
     }

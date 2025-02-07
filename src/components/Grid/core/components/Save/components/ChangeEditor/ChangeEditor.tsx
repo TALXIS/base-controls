@@ -5,6 +5,7 @@ import { getChangeEditorStyles } from "./styles";
 import { ChangeGrid } from "./components/ChangeGrid/ChangeGrid";
 import { useEffect, useRef, useState } from "react";
 import { IDataset } from "@talxis/client-libraries";
+import { useRerender } from "@talxis/react-components";
 
 interface IChangeDialogProps extends IDialogProps {
     onDismiss: (ev?: React.MouseEvent<HTMLButtonElement>, shoulRefreshGrid?: boolean) => void;
@@ -18,8 +19,13 @@ export const ChangeEditor = (props: IChangeDialogProps) => {
     const styles = getChangeEditorStyles(useTheme());
     const datasetsRef = useRef<Set<IDataset>>(new Set());
     const shouldRefreshOnDismissRef = useRef(false);
+    const rerender = useRerender();
 
     const onDismiss = (ev?: React.MouseEvent<HTMLButtonElement>) => {
+        //@ts-ignore
+        if (ev?.code === 'Escape') {
+            return;
+        }
         //do not close the dialog if we have pending save operations
         if (activeSaveOperationsCount > 0) {
             return;
@@ -44,7 +50,7 @@ export const ChangeEditor = (props: IChangeDialogProps) => {
     }, []);
 
     useEffect(() => {
-        if(activeSaveOperationsCount > 0) {
+        if (activeSaveOperationsCount > 0) {
             shouldRefreshOnDismissRef.current = true;
         }
     }, [activeSaveOperationsCount])
@@ -74,6 +80,7 @@ export const ChangeEditor = (props: IChangeDialogProps) => {
                 onIsSaving={(value) => {
                     setActiveSaveOperationsCount(count => value ? count + 1 : count - 1);
                 }}
+                onRequestRender={() => rerender()}
                 key={recordChange.record.getRecordId()}
                 recordChange={recordChange} />)}
         </div>
@@ -92,10 +99,10 @@ export const ChangeEditor = (props: IChangeDialogProps) => {
             <DefaultButton
                 text={grid.labels['saving-discard-all']()}
                 disabled={activeSaveOperationsCount > 0}
-                onClick={async () => {
+                onClick={async (e) => {
                     if (window.confirm(grid.labels['saving-discard-all-confirmation']())) {
                         grid.dataset.clearChanges?.();
-                        grid.pcfContext.factory.requestRender();
+                        props.onDismiss(e as any, shouldRefreshOnDismissRef.current);
                     }
                 }}
             />

@@ -8,6 +8,7 @@ import { LookupProperty } from "./properties/LookupProperty";
 import { IControl, IParameters, IProperty } from "../../interfaces";
 import { ControlTheme, IFluentDesignState } from "../../utils";
 import { Manifest } from "./manifest";
+import { FileProperty } from "./properties/FileProperty";
 
 
 const manifestCache = new PromiseCache();
@@ -84,7 +85,7 @@ export class NestedControl {
     }
 
     public getProps(): IControl<IParameters, any, any, any> {
-        const parameters: { [name: string]: IProperty } = {};
+/*         const parameters: { [name: string]: IProperty } = {};
         [...this._properties.entries()].map(([name, prop]) => {
             parameters[name] = {
                 ...prop.getParameter(),
@@ -92,8 +93,8 @@ export class NestedControl {
                 errorMessage: this._options.onGetBindings()[name].errorMessage ?? null,
                 type: prop.dataType
             };
-        })
-        const props: IControl<any, any, any, any> = {
+        }) */
+        /* const props: IControl<any, any, any, any> = {
             context: {
                 ...this._options.parentPcfContext,
                 parameters: parameters,
@@ -112,7 +113,14 @@ export class NestedControl {
                 this._options.callbacks?.onNotifyOutputChanged?.(outputs);
             }
         }
-        return this._overrideDecorator(() => props, this._options.overrides?.onGetProps, () => [props] as any);
+        return this._overrideDecorator(() => props, this._options.overrides?.onGetProps, () => [props] as any); */
+        return {
+            context: this._options.parentPcfContext,
+            parameters: {
+
+            },
+
+        }
     }
 
     public isLoading() {
@@ -165,6 +173,7 @@ export class NestedControl {
         this._mutationObserver.disconnect();
     }
     private async _render(): Promise<void> {
+        return;
         if (!this._lastRenderedControlName) {
             this._errorMessage = '';
             this._pendingInitialRender = true;
@@ -230,6 +239,8 @@ export class NestedControl {
     }
 
     private async _init() {
+        this._options.callbacks?.onInit?.()
+        return;
         const promises: Promise<boolean>[] = [];
         Object.entries(this._options.onGetBindings()).map(([name, binding]) => {
             const getBinding = () => this._options.onGetBindings()[name];
@@ -263,6 +274,10 @@ export class NestedControl {
             case DataTypes.LookupCustomer:
             case DataTypes.LookupRegarding: {
                 return new LookupProperty(this._options, onGetBinding);
+            }
+            case DataTypes.File:
+            case DataTypes.Image: {
+                return new FileProperty(this._options, onGetBinding)
             }
             default: {
                 return new TextProperty(this._options, onGetBinding);

@@ -11,12 +11,15 @@ import {
 import { DatasetControl } from "../../../../../../../../DatasetControl";
 import { useTheme } from "@fluentui/react";
 import { getChangeGridStyles } from "./styles";
+import React from "react";
+import { AgGridContext } from "../../../../../AgGrid/context";
 
 interface IChangeGrid {
     recordChange: IRecordChange;
     onDatasetReady: (dataset: IDataset) => void;
     onDatasetDestroyed: (dataset: IDataset) => void;
     onIsSaving: (value: boolean) => void;
+    onRequestRender: () => void;
 }
 
 export const ChangeGrid = (props: IChangeGrid) => {
@@ -27,6 +30,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
     const changedColumns = fieldChangesRef.current.map((change) => {
         return grid.dataset.columns.find((x) => change.columnName === x.name)!;
     });
+    const agGridContext = React.useContext(AgGridContext);
 
     const recordPrimaryName = (() => {
         let result;
@@ -51,7 +55,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
         props.onDatasetReady(dataset);
         return () => {
             props.onDatasetDestroyed(dataset);
-            grid.pcfContext.factory.requestRender()
+            agGridContext.rerender();
         }
     }, []);
 
@@ -136,7 +140,6 @@ export const ChangeGrid = (props: IChangeGrid) => {
                                             () => {
                                                 baseRecord.clearChanges?.(col.name);
                                                 record.setValue(col.name, baseRecord.getValue(col.name))
-                                                grid.pcfContext.factory.requestRender();
                                             },
                                         ],
                                     },
@@ -161,18 +164,18 @@ export const ChangeGrid = (props: IChangeGrid) => {
 
         dataset.addEventListener('onRecordColumnValueChanged', (record, columnName) => {
             baseRecord.setValue(columnName, record.getValue(columnName)); 
-            grid.pcfContext.factory.requestRender();    
+            props.onRequestRender(); 
         })
         dataset.addEventListener('onChangesCleared', () => {
             baseRecord.clearChanges?.();
-            grid.pcfContext.factory.requestRender();
+            props.onRequestRender();
         })
         dataset.addEventListener('onRecordSave', async () => {
             props.onIsSaving(true);
             await baseRecord.save();
             baseRecord.clearChanges?.();
             props.onIsSaving(false);
-            grid.pcfContext.factory.requestRender();
+            props.onRequestRender();
         })
         return dataset;
     };

@@ -11,7 +11,7 @@ import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { IRecord } from '@talxis/client-libraries';
 import { useDebounce, useDebouncedCallback } from 'use-debounce';
 import { useGridController } from '../../controllers/useGridController';
-import { useStateValues } from '@talxis/react-components';
+import { useRerender, useStateValues } from '@talxis/react-components';
 import { AgGrid as AgGridModel } from './model/AgGrid';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import "@ag-grid-community/styles/ag-grid.css";
@@ -35,8 +35,21 @@ export const AgGrid = () => {
     //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
     const [records] = useDebounce(grid.records, 0);
     const userChangedColumnSizeRef = useRef(false);
+    const rerender = useRerender();
+    const innerRerenderRef = useRef(false);
 
-    const debouncedRefresh = useDebouncedCallback(() => {
+    const refreshGrid = () => {
+        if (grid.loading || gridApiRef.current?.applyTransaction) {
+            return;
+        }
+        agGrid.refreshRowSelection(true);
+        gridApiRef.current?.refreshCells({
+            rowNodes: gridApiRef.current?.getRenderedNodes(),
+            force: true
+        });
+    }
+
+/*     const debouncedRefresh = useDebouncedCallback(() => {
         if (grid.loading) {
             return;
         }
@@ -45,14 +58,16 @@ export const AgGrid = () => {
             rowNodes: gridApiRef.current?.getRenderedNodes(),
             force: true
         });
-    }, 0);
+    }, 0); */
 
     const debouncedSetAgColumns = useDebouncedCallback(() => {
         setAgColumns(agGrid.columns);
     }, 0);
 
-
-    debouncedRefresh();
+    if (!innerRerenderRef.current) {
+        //refreshGrid();
+        //debouncedRefresh();
+    }
 
     const onGridReady = () => {
         agGridReadyRef.current = true;
@@ -96,7 +111,6 @@ export const AgGrid = () => {
             return aIndex - bIndex;
         });
         grid.dataset.setColumns?.(orderedColumns);
-        grid.pcfContext.factory.requestRender()
     }
 
     const copyCellValue = useCallback((event: KeyboardEvent) => {
@@ -152,13 +166,13 @@ export const AgGrid = () => {
         userChangedColumnSizeRef.current = true;
         grid.dataset.setColumns?.(columns);
         gridApiRef.current?.resetRowHeights();
-        grid.pcfContext.factory.requestRender()
+
     }, 200);
 
     useEffect(() => {
         toggleOverlay();
         if (records.length > 0) {
-            gridApiRef.current?.ensureIndexVisible(0)
+            //gridApiRef.current?.ensureIndexVisible(0)
         }
     }, [grid.loading]);
 
@@ -166,6 +180,10 @@ export const AgGrid = () => {
     useEffect(() => {
         //this can be replaced with native functionality if we decide to use ag grid enterprise
         grid.keyHoldListener.addOnKeyDownHandler((event) => copyCellValue(event));
+        agGrid.setRerenderCallback(() => {
+            innerRerenderRef.current = true;
+            rerender();
+        });
         return () => {
             grid.pcfContext.mode.setControlState(getNewStateValues());
         }
@@ -179,8 +197,11 @@ export const AgGrid = () => {
         sizeColumnsIfSpaceAvailable()
     }, [agColumns]);
 
+    innerRerenderRef.current = false;
+
     return (
         <AgGridContext.Provider value={agGridProviderValue}>
+            <button onClick={() => rerender}>rerender</button>
             <div
                 ref={containerRef}
                 className={`${styles.root} ag-theme-balham`}
@@ -257,7 +278,6 @@ export const AgGrid = () => {
                         params.api.getAllGridColumns().map(col => {
                             columnWidths[col.getColId()] = col.getActualWidth()
                         })
-                        console.log(params?.data?.getHeight?.(columnWidths, grid.rowHeight))
                         return params?.data?.getHeight?.(columnWidths, grid.rowHeight) ?? grid.rowHeight
                     }}
 

@@ -17,6 +17,7 @@ export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
     private _theme: ITheme;
     private _refreshGlobalCheckBox: () => void = () => {};
+    private _rerenderCallback: () => void = () => {};
     public readonly oddRowCellTheme: ITheme;
     public readonly evenRowCellTheme: ITheme;
 
@@ -150,8 +151,16 @@ export class AgGrid extends GridDependency {
         }
     }
 
+    public rerender() {
+        this._rerenderCallback();
+    }
+
     public setRefreshGlobalCheckBoxCallback(callback: () => void) {
         this._refreshGlobalCheckBox = callback;
+    }
+
+    public setRerenderCallback(callback: () => void) {
+        this._rerenderCallback = callback;
     }
 
     private get _gridApi() {
