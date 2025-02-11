@@ -16,7 +16,6 @@ export const useGridController = (gridInstance?: Grid): IGridController => {
         return columns.map(({ getEntityName, metadata, ...rest }) => rest);
     };
     
-
     //only change columns and records reference if there is a change
     useEffect(() => {
         (async () => {
@@ -26,6 +25,10 @@ export const useGridController = (gridInstance?: Grid): IGridController => {
             }
         })();
     }, [grid.loading]);
+
+    useEffect(() => {
+
+    }, [columns]);
     return {
         columns
     }

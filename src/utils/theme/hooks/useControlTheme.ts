@@ -7,5 +7,7 @@ export const useControlTheme = (fluentDesignLanguage?: IFluentDesignState): IThe
     const backgroundColor = fluentDesignLanguage?.tokenTheme.colorNeutralBackground1;
     const textColor = fluentDesignLanguage?.tokenTheme.colorNeutralForeground1;
 
+    return ControlTheme.GetV8ThemeFromFluentDesignLanguage(fluentDesignLanguage);
+
     return useMemo(() => ControlTheme.GetV8ThemeFromFluentDesignLanguage(fluentDesignLanguage), [primaryColor, backgroundColor, textColor]);
 };

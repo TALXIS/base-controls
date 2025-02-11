@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Attribute, DataType, IColumn, IColumnInfo, ICustomColumnControl, ICustomColumnFormatting, Sanitizer } from '@talxis/client-libraries';
+import { Attribute, DataType, IColumn, IColumnInfo, ICustomColumnControl, Sanitizer } from '@talxis/client-libraries';
 import { useGridInstance } from '../../../hooks/useGridInstance';
 import { ICellProps } from '../Cell';
 import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, useTheme } from '@fluentui/react';
@@ -12,26 +12,26 @@ import { IBinding } from '../../../../../NestedControlRenderer/NestedControl';
 
 interface ICellContentProps extends ICellProps {
     columnAlignment: Required<IColumn['alignment']>;
-    columnInfo: IColumnInfo;
     fillAllAvailableSpace: boolean;
-    cellFormatting: Required<ICustomColumnFormatting>;
 }
 
 export const CellContent = (props: ICellContentProps) => {
-    const { columnAlignment, fillAllAvailableSpace, cellFormatting, node } = { ...props };
+    const { columnAlignment, fillAllAvailableSpace, node } = { ...props };
     const column = props.baseColumn;
+    const cellFormatting = props.value.customFormatting;
     const mountedRef = React.useRef(true);
     const dataType: DataType = props.baseColumn.dataType as DataType;
     const grid = useGridInstance();
     const datasetColumn = React.useMemo(() => grid.dataset.columns.find(x => x.name === column.name), [column.name]);
     const record = props.data;
-    const columnInfo = props.columnInfo
     const styles = React.useMemo(() => getCellContentStyles(props.columnAlignment, fillAllAvailableSpace), [props.columnAlignment, fillAllAvailableSpace]);
     const cellTheme = useTheme();
     const cellThemeRef = React.useRef(cellTheme);
     cellThemeRef.current = cellTheme;
     const rerender = useRerender();
-    const customControls = columnInfo.ui.getCustomControls();
+    const customControls = props.value.customControls;
+    const error = props.value.error;
+    const errorMessage = props.value.errorMessage;
     //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
 
@@ -57,8 +57,8 @@ export const CellContent = (props: ICellContentProps) => {
                 isStatic: false,
                 type: column.dataType as any,
                 value: getBindingValue(),
-                error: columnInfo.error,
-                errorMessage: columnInfo.errorMessage,
+                error: error,
+                errorMessage: errorMessage,
                 onNotifyOutputChanged: (value) => {
                     record.setValue(column.name, value);
                     setTimeout(() => {
@@ -315,7 +315,7 @@ export const CellContent = (props: ICellContentProps) => {
                         className: styles.loadingWrapper
                     }
                 },
-                onOverrideRender: (controlProps, defaultRender) => { return columnInfo.ui.getCustomControlComponent(controlProps, defaultRender)},
+                onOverrideRender: (controlProps, defaultRender) => { return record.getColumnInfo(column.name).ui.getCustomControlComponent(controlProps, defaultRender)},
                 onOverrideControlProps: (controlProps) => {
                     const parameters = getParameters();
                         return {

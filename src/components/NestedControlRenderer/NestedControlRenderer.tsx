@@ -88,15 +88,22 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
             componentToRender = React.createElement(getBaseControl(), { ...controlProps });
         }
         if (componentToRender) {
-            return ReactDOM.render(componentToRender, container);
+            return ReactDOM.render(React.createElement(
+                ThemeWrapper,
+                {
+                    ...componentPropsRef.current?.overridenControlContainerProps,
+                    fluentDesignLanguage: controlProps.context.fluentDesignLanguage
+                },
+                componentToRender
+            ), container);
         }
         return defaultRender();
     }
 
     const createControlInstance = () => {
         const instance = new NestedControl({
-            containerElement: document.createElement('div'),
             parentPcfContext: propsRef.current.context,
+            onGetContainerElement: () => internalControlRendererRef.current!.getContainer(),
             onGetControlName: () => propsRef.current.parameters.ControlName,
             onGetBindings: () => {
                 return propsRef.current.parameters.Bindings ?? {};
@@ -168,6 +175,7 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
     //defer loading to next render so we don't show it in cases where the control loads straight way, this prevents loading flicker
     const [canShowLoading, setCanShowLoading] = useState(false);
     const rerender = useRerender();
+    console.log(control);
 
     useImperativeHandle(ref, () => {
         return {

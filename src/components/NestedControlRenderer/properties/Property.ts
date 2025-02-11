@@ -10,6 +10,10 @@ export abstract class Property {
         this._onGetBinding = onGetBinding;
         this._parentPcfContext = options.parentPcfContext;
     }
+    public abstract getParameter(): any;
+
+
+    //this init will be sync if onOverrideMetadata was provided and no attributeName and entityName has been provided
     public async init(): Promise<boolean> {
         const bindingMetadata = this._binding.metadata;
         if(!bindingMetadata) {
@@ -25,7 +29,6 @@ export abstract class Property {
         return true;
     };
     
-    public abstract getParameter(): any;
 
     public get parentPcfContext() {
         return this._parentPcfContext;

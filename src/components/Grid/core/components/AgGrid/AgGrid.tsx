@@ -36,37 +36,24 @@ export const AgGrid = () => {
     const [records] = useDebounce(grid.records, 0);
     const userChangedColumnSizeRef = useRef(false);
     const rerender = useRerender();
-    const innerRerenderRef = useRef(false);
+    const innerRerenderRef = useRef(true);
 
-    const refreshGrid = () => {
-        if (grid.loading || gridApiRef.current?.applyTransaction) {
-            return;
-        }
-        agGrid.refreshRowSelection(true);
-        gridApiRef.current?.refreshCells({
-            rowNodes: gridApiRef.current?.getRenderedNodes(),
-            force: true
-        });
-    }
-
-/*     const debouncedRefresh = useDebouncedCallback(() => {
+    const debouncedRefresh = useDebouncedCallback(() => {
         if (grid.loading) {
             return;
         }
         agGrid.refreshRowSelection(true);
         gridApiRef.current?.refreshCells({
             rowNodes: gridApiRef.current?.getRenderedNodes(),
-            force: true
         });
-    }, 0); */
+    }, 0);
 
     const debouncedSetAgColumns = useDebouncedCallback(() => {
-        setAgColumns(agGrid.columns);
+        setAgColumns(agGrid.getColumns());
     }, 0);
 
     if (!innerRerenderRef.current) {
-        //refreshGrid();
-        //debouncedRefresh();
+        debouncedRefresh();
     }
 
     const onGridReady = () => {
@@ -272,6 +259,7 @@ export const AgGrid = () => {
                     }}
                     //suppressAnimationFrame
                     columnDefs={agColumns as any}
+                    
                     rowData={records}
                     getRowHeight={(params) => {
                         const columnWidths: { [name: string]: number } = {};
@@ -280,7 +268,6 @@ export const AgGrid = () => {
                         })
                         return params?.data?.getHeight?.(columnWidths, grid.rowHeight) ?? grid.rowHeight
                     }}
-
                 >
                 </AgGridReact>
                 {grid.paging.isEnabled &&

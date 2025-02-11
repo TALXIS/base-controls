@@ -14,23 +14,23 @@ import { CellContent } from "./CellContent/CellContent";
 import { useThemeGenerator } from "@talxis/react-components";
 import { getClassNames } from "../../../../../utils/styling/getClassNames";
 import { AgGridContext } from "../AgGrid/context";
+import { IValues } from "../AgGrid/model/Comparator";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     editing?: boolean;
     data: IRecord;
+    value: IValues
 }
 
-interface IInternalCellProps extends ICellProps {
-    cellFormatting: Required<ICustomColumnFormatting>
-}
 
 
 export const Cell = (props: ICellProps) => {
+    console.log('outside');
     const agGridContext = React.useContext(AgGridContext);
-    const styles = useMemo(() => getCellStyles(), [])
     const record = props.data;
-    const cellFormatting = agGridContext.getCellFormatting(props as any);
+    const styles = useMemo(() => getCellStyles(), [])
+    const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
     const grid = useGridInstance();
 
@@ -50,22 +50,33 @@ export const Cell = (props: ICellProps) => {
                 );
             }
             default: {
-                return <InternalCell {...props} cellFormatting={cellFormatting} />
+                return <InternalCell {...props} />
             }
         }
     }
+
+    useEffect(() => {
+        return () => {
+            console.log('unmount')
+        }
+    }, []);
+
     return <ThemeProvider className={getClassNames([styles.cellRoot, cellFormatting.className])} theme={cellTheme}>
         {renderContent()}
     </ThemeProvider>
 }
 
 
-export const InternalCell = (props: IInternalCellProps) => {
+export const InternalCell = (props: ICellProps) => {
+    console.log('internal');
     const column = props.baseColumn;
     const record = props.data;
+    const formatting = props.value.customFormatting;
     const grid = useGridInstance();
-    const columnInfo = record.getColumnInfo(column.name)
-    const notifications = columnInfo.ui.getNotifications();
+    const error = props.value.error;
+    const notifications = props.value.notifications;
+    const isLoading = props.value.loading;
+    const errorMessage = props.value.errorMessage;
     const notificationRef = React.useRef<INotificationsRef>(null);
     const notificationWrapperRef = React.useRef<HTMLDivElement>(null);
     const [shouldNotificationsFillAvailableSpace, setShouldNotificationsFillAvailableSpace] = useState(false);
@@ -98,7 +109,7 @@ export const InternalCell = (props: IInternalCellProps) => {
         if (notifications && notifications.length > 0) {
             count++
         }
-        if (columnInfo?.error === true) {
+        if (error === true) {
             count++;
         }
         if (shouldShowNotEditableNotification()) {
@@ -129,7 +140,7 @@ export const InternalCell = (props: IInternalCellProps) => {
         if (isCellBeingEdited()) {
             return false;
         }
-        if (columnInfo?.error === true) {
+        if (error === true) {
             return true;
         }
         if (shouldShowNotEditableNotification()) {
@@ -142,7 +153,7 @@ export const InternalCell = (props: IInternalCellProps) => {
     }
 
     const renderContent = (): JSX.Element => {
-        if (columnInfo.ui.isLoading()) {
+        if (isLoading) {
             return (
                 <Shimmer styles={{
                     shimmerWrapper: styles.shimmerWrapper
@@ -160,9 +171,7 @@ export const InternalCell = (props: IInternalCellProps) => {
                     <>
                         <CellContent {...props}
                             fillAllAvailableSpace={!shouldNotificationsFillAvailableSpace}
-                            columnAlignment={columnAlignment}
-                            columnInfo={columnInfo}
-                            cellFormatting={props.cellFormatting} />
+                            columnAlignment={columnAlignment} />
                         {shouldRenderNotificationsWrapper &&
                             renderNotifications()
                         }
@@ -179,7 +188,7 @@ export const InternalCell = (props: IInternalCellProps) => {
                 {notifications && notifications.length > 0 &&
                     <MemoizedNotifications
                         ref={notificationRef}
-                        formatting={props.cellFormatting}
+                        formatting={formatting}
                         className={styles.notifications}
                         notifications={notifications}
                         onShouldNotificationsFillAvailableSpace={(value) => setShouldNotificationsFillAvailableSpace(value)}
@@ -194,20 +203,20 @@ export const InternalCell = (props: IInternalCellProps) => {
                         compact: true,
                         messages: []
                     }]}
-                    formatting={props.cellFormatting} />
+                    formatting={formatting} />
                 }
-                {columnInfo?.error === true &&
+                {error === true &&
                     <MemoizedNotifications notifications={[
                         {
                             notificationLevel: 'ERROR',
                             messages: [],
                             iconName: 'Error',
                             uniqueId: column.name,
-                            title: columnInfo.errorMessage,
+                            title: errorMessage,
                             compact: true
                         }
                     ]}
-                    formatting={props.cellFormatting}
+                    formatting={formatting}
                      />
                 }
             </div>
@@ -231,14 +240,8 @@ export const InternalCell = (props: IInternalCellProps) => {
         return () => resizeObserver.disconnect();
     }, []);
 
-    useEffect(() => {
-        return () => {
-            console.log('unmount')
-        }
-    }, []);
 
-
-    return <div className={styles.innerCellRoot} data-is-valid={!columnInfo.error}>
+    return <div className={styles.innerCellRoot} data-is-valid={!error}>
         {renderContent()}
     </div>
 }

@@ -190,9 +190,9 @@ export class Grid {
             const sorted = this._dataset.sorting?.find(sort => sort.name === column.name);
             const gridColumn: IGridColumn = {
                 ...column,
-                isEditable: await this._isColumnEditable(column),
-                isRequired: await this._isColumnRequired(column),
-                isFilterable: await this._isColumnFilterable(column),
+                isEditable: this._isColumnEditable(column),
+                isRequired: this._isColumnRequired(column),
+                isFilterable: this._isColumnFilterable(column),
                 disableSorting: !this._isColumnSortable(column),
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
                 isResizable: true,
@@ -235,7 +235,7 @@ export class Grid {
         return totalWidth;
     }
 
-    private async _isColumnEditable(column: IColumn): Promise<boolean> {
+    private _isColumnEditable(column: IColumn): boolean {
         //only allow editing if specifically allowed
         if (!this._props.parameters.EnableEditing?.raw) {
             return false;
@@ -250,21 +250,17 @@ export class Grid {
                 return false;
             }
         }
-        const attributeName = Attribute.GetNameFromAlias(column.name);
-        const metadata = await this.metadata.get(column.name);
-        return metadata.Attributes.get(attributeName)?.attributeDescriptor?.IsValidForUpdate ?? false;
+        return column.metadata?.IsValidForUpdate ?? false;
     }
 
-    private async _isColumnRequired(column: IColumn): Promise<boolean> {
+    private _isColumnRequired(column: IColumn): boolean {
         if (!this.parameters.EnableEditing?.raw) {
             return false;
         }
         if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             return false;
         }
-        const metadata = await this.metadata.get(column.name);
-        const attributeName = Attribute.GetNameFromAlias(column.name);
-        const requiredLevel = metadata.Attributes.get(attributeName)?.attributeDescriptor?.RequiredLevel;
+        const requiredLevel = column.metadata?.RequiredLevel;
         if (requiredLevel === 1 || requiredLevel === 2) {
             return true;
         }
@@ -290,7 +286,7 @@ export class Grid {
         }
         return !column.disableSorting;
     }
-    private async _isColumnFilterable(column: IColumn): Promise<boolean> {
+    private _isColumnFilterable(column: IColumn): boolean {
         if (column.name.endsWith('__virtual')) {
             return false;
         }
@@ -300,9 +296,7 @@ export class Grid {
         if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             return false;
         }
-        const metadata = await this.metadata.get(column.name);
-        const attributeName = Attribute.GetNameFromAlias(column.name);
-        return metadata.Attributes.get(attributeName)?.attributeDescriptor?.isFilterable ?? true;
+        return column.metadata?.isFilterable ?? true;
     }
     private _getMaxHeight(): number {
         let maxHeight = this._initialPageSize * this.rowHeight;
