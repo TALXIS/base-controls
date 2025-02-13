@@ -172,7 +172,6 @@ export const AgGrid = () => {
             rerender();
         });
         return () => {
-            alert('unmount');
             gridApiRef.current?.destroy();
             grid.pcfContext.mode.setControlState(getNewStateValues());
         }

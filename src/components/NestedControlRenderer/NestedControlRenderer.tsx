@@ -86,19 +86,17 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
 
     const onRender = (controlProps: IControl<any, any, any, any>, container: HTMLDivElement, defaultRender: () => Promise<void>, componentToRender?: React.ReactElement) => {
         if (!componentToRender && BaseControls.IsBaseControl(propsRef.current.parameters.ControlName)) {
-            componentToRender = React.createElement(Rating);
+            componentToRender = React.createElement(getBaseControl(), controlProps);
         }
         if (componentToRender) {
-            if (componentToRender) {
-                return ReactDOM.render(React.createElement(
-                    ThemeWrapper,
-                    {
-                        ...componentPropsRef.current?.overridenControlContainerProps,
-                        fluentDesignLanguage: controlProps.context.fluentDesignLanguage
-                    },
-                    componentToRender
-                ), container);
-            }
+            return ReactDOM.render(React.createElement(
+                ThemeWrapper,
+                {
+                    ...componentPropsRef.current?.overridenControlContainerProps,
+                    fluentDesignLanguage: controlProps.context.fluentDesignLanguage
+                },
+                componentToRender
+            ), container);
         }
         return defaultRender();
     }

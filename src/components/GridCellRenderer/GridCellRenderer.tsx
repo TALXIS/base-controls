@@ -193,7 +193,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const prefixIconProps = getIconProps(prefixIcon);
     const suffixIconProps = getIconProps(suffixIcon)
 
-    return <ThemeProvider {...componentProps.rootContainerProps} theme={theme}>
+    return <ThemeProvider theme={theme}>
         <ComponentPropsContext.Provider value={componentPropsProviderValue}>
             {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
             <div {...componentProps.contentWrapperProps}>
