@@ -1,21 +1,32 @@
-import { CellClassParams, ColDef, EditableCallbackParams, GridApi, IRowNode, SuppressKeyboardEventParams } from "@ag-grid-community/core";
+import { CellClassParams, ColDef, EditableCallbackParams, GridApi, IRowNode, RowNode, SuppressKeyboardEventParams } from "@ag-grid-community/core";
 import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
-import { DataType, DataTypes, IColumn, IColumnInfo, ICustomColumnControl, ICustomColumnFormatting, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { DataType, DataTypes, IAddControlNotificationOptions, IColumn, IColumnInfo, ICustomColumnControl, ICustomColumnFormatting, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 import { Cell } from "../../Cell/Cell";
-import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, ITheme } from "@fluentui/react";
+import { ITheme } from "@fluentui/react";
 import { Theming } from "@talxis/react-components";
-import { getEditableCell } from "../../Cell/getEditableCell";
-import { Comparator, IValues } from "./Comparator";
+import { Comparator } from "./Comparator";
 import { IBinding, NestedControl } from "../../../../../NestedControlRenderer/NestedControl";
-import { BaseControls, ControlTheme, IFluentDesignState } from "../../../../../../utils";
-import { merge } from "merge-anything";
+import { BaseControls } from "../../../../../../utils";
 
-const EditableCell = getEditableCell();
+export interface ICellValues {
+    notifications: IAddControlNotificationOptions[];
+    customFormatting: Required<ICustomColumnFormatting>;
+    customControls: ICustomColumnControl[];
+    loading: boolean;
+    value: any;
+    error: boolean;
+    height: number;
+    errorMessage: string;
+    parameters: any;
+    columnAlignment: Required<IColumn['alignment']>
+    editing: boolean;
+    editable: boolean;
+}
 
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
@@ -49,7 +60,7 @@ export class AgGrid extends GridDependency {
                 suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
                 suppressKeyboardEvent: (params) => this._suppressKeyboardEvent(params, column),
                 cellRenderer: Cell,
-                cellEditor: EditableCell,
+                cellEditor: Cell,
                 editable: (p) => this._isColumnEditable(column, p),
                 headerComponent: ColumnHeader,
                 valueFormatter: (p) => {
@@ -64,53 +75,36 @@ export class AgGrid extends GridDependency {
                             customFormatting: this.getCellFormatting(p)
                         }
                     }
+                    let editing: boolean = false;
                     const record = p.data as IRecord;
                     const columnInfo = p.data!.getColumnInfo(column.name) as IColumnInfo;
-                    const node = p.node;
+                    //i hate this, there is no other way to get the information if we are in edit mode or not
+                    if (p.api.getEditingCells() > 0 || Error().stack!.includes('startEditing')) {
+                        editing = true;
+                    }
+
                     const values = {
                         notifications: columnInfo.ui.getNotifications(),
                         value: p.data!.getValue(column.name),
                         customFormatting: this.getCellFormatting(p),
                         customControls: columnInfo.ui.getCustomControls(),
-                        height: columnInfo.ui.getHeight(p.column.getActualWidth(), this._grid.rowHeight),
-                        //controlParameters: columnInfo.ui.getControlParameters(),
+                        height: 42,
                         error: columnInfo.error,
                         loading: columnInfo.ui.isLoading(),
-                        errorMessage: columnInfo.errorMessage
-                    } as IValues;
+                        errorMessage: columnInfo.errorMessage,
+                        editable: columnInfo.security.editable,
+                        editing: editing,
+                    } as ICellValues;
 
                     const control = new NestedControl({
-                        onGetBindings: () => this._getBindings(values as any, p.data, column),
-                        onGetControlName: () => this._getControl(false, column, values).name,
+                        onGetBindings: () => this.getBindings(record, column, editing),
                         parentPcfContext: this._grid.pcfContext,
-                        overrides: {
-                            onGetProps: (controlProps) => {
-                                const parameters = this._getParameters(record, column, false);
-                                return {
-                                    ...controlProps,
-                                    context: {
-                                        ...controlProps.context,
-                                        mode: Object.create(controlProps.context.mode, {
-                                            allocatedHeight: {
-                                                value: (node.rowHeight ?? this._grid.rowHeight) - 1
-                                            },
-
-                                        }),
-                                        parameters: {
-                                            ...controlProps.parameters,
-                                            ...parameters
-                                        },
-                                        fluentDesignLanguage: this._getFluentDesignLanguage(column, values, controlProps.context.fluentDesignLanguage)
-                                    },
-                                    parameters: record.getColumnInfo(column.name).ui.getControlParameters({
-                                        ...controlProps.parameters,
-                                        ...parameters
-                                    })
-                                }
-                            }
-                        }
                     });
-                    console.log(control.getProps());
+                    const parameters = record.getColumnInfo(column.name).ui.getControlParameters({
+                        ...control.getParameters(),
+                        ...this.getParameters(record, column, editing)
+                    })
+                    values.parameters = this._filterParameters(parameters);
                     return values;
                 },
                 equals: (valueA, valueB) => {
@@ -119,8 +113,11 @@ export class AgGrid extends GridDependency {
                 cellRendererParams: {
                     baseColumn: column
                 },
-                cellEditorParams: {
-                    baseColumn: column,
+                cellEditorParams: () => {
+                    return {
+                        baseColumn: column,
+                        editing: true
+                    }
                 },
                 headerComponentParams: {
                     baseColumn: column
@@ -175,6 +172,7 @@ export class AgGrid extends GridDependency {
         switch (params.colDef.colId) {
             case CHECKBOX_COLUMN_KEY: {
                 return {
+                    key: 'key',
                     primaryColor: this._theme.palette.themePrimary,
                     backgroundColor: defaultBackgroundColor,
                     textColor: Theming.GetTextColorForBackground(defaultBackgroundColor),
@@ -203,6 +201,9 @@ export class AgGrid extends GridDependency {
                 }
                 if (!formatting.themeOverride) {
                     formatting.themeOverride = {};
+                }
+                if (!formatting.key) {
+                    formatting.key = 'key';
                 }
                 return formatting as Required<ICustomColumnFormatting>;
             }
@@ -256,32 +257,31 @@ export class AgGrid extends GridDependency {
         return false;
     }
 
-    private _getBindings(values: IValues, record: IRecord, column: IColumn) {
+    public onNotifyOutputChanged(record: IRecord, column: IColumn, editing: boolean, newValue: any, rerenderCell: () => void) {
+        record.setValue(column.name, newValue);
+        if(!editing) {
+            this._grid.pcfContext.factory.requestRender();
+            return;
+        }
+        rerenderCell();
+    }
+
+    public getBindings(record: IRecord, column: IColumn, editing: boolean) {
+        const columnInfo = record.getColumnInfo(column.name);
         const bindings: { [name: string]: IBinding } = {
             'value': {
                 isStatic: false,
                 type: column.dataType as any,
-                value: this._getBindingValue(values, column),
-                error: values.error,
-                errorMessage: values.errorMessage,
-                onNotifyOutputChanged: (value) => {
-                    /* record.setValue(column.name, value);
-                    setTimeout(() => {
-                        if(mountedRef.current) {
-                            rerender();
-                        }
-                        //allow cell renderer to update the grid
-                        if(!props.editing) {
-                            grid.pcfContext.factory.requestRender();
-                        }
-                    }, 0) */
-                },
+                value: this._getBindingValue(record, column),
+                error: columnInfo.error,
+                errorMessage: columnInfo.errorMessage,
+                onNotifyOutputChanged: () => { },
                 metadata: {
                     onOverrideMetadata: () => column.metadata
                 }
             }
         }
-        const control = this._getControl(false, column, values)
+        const control = this.getControl(column, record, editing)
         if (control?.bindings) {
             Object.entries(control.bindings).map(([name, binding]) => {
                 bindings[name] = {
@@ -294,9 +294,10 @@ export class AgGrid extends GridDependency {
         return bindings;
     }
 
-    private _getControl(editing: boolean, column: IColumn, values: IValues) {
+    public getControl(column: IColumn, record: IRecord, editing: boolean) {
+        const customControls = record.getColumnInfo(column.name).ui.getCustomControls();
         const appliesToValue = editing ? 'editor' : 'renderer';
-        const customControl = values.customControls.find(
+        const customControl = customControls.find(
             control => control.appliesTo === 'both' || control.appliesTo === appliesToValue
         );
         if (customControl) {
@@ -310,39 +311,7 @@ export class AgGrid extends GridDependency {
         return defaultControl as ICustomColumnControl;
     }
 
-    private _getBindingValue(values: IValues, column: IColumn) {
-        let value = values.value;
-        switch (column.dataType) {
-            //getValue always returns string for TwoOptions
-            case 'TwoOptions': {
-                value = value == '1' ? true : false
-                break;
-            }
-            //getValue always returns string for OptionSet
-            case 'OptionSet': {
-                value = value ? parseInt(value) : null;
-                break;
-            }
-            case 'MultiSelectPicklist': {
-                value = value ? value.split(',').map((x: string) => parseInt(x)) : null;
-                break;
-            }
-            case 'Lookup.Simple':
-            case 'Lookup.Customer':
-            case 'Lookup.Owner':
-            case 'Lookup.Regarding': {
-                //our implementation returns array, Power Apps returns object
-                if (value && !Array.isArray(value)) {
-                    value = [value];
-                }
-                value = value?.map((x: ComponentFramework.EntityReference) => Sanitizer.Lookup.getLookupValue(x))
-                break;
-            }
-        }
-        return value;
-    }
-
-    private _getParameters(record: IRecord, column: IColumn, editing: boolean) {
+    public getParameters(record: IRecord, column: IColumn, editing: boolean) {
         const parameters: any = {
             Dataset: this._grid.dataset
         }
@@ -353,7 +322,7 @@ export class AgGrid extends GridDependency {
             raw: this._grid.isNavigationEnabled
         }
         parameters.ColumnAlignment = {
-            raw: this._getColumnAlignment(column)
+            raw: this.getColumnAlignment(column)
         }
         parameters.IsPrimaryColumn = {
             raw: column.isPrimary
@@ -398,70 +367,7 @@ export class AgGrid extends GridDependency {
         }
         return parameters;
     }
-
-    private _getFluentDesignLanguage(column: IColumn, values: IValues, fluentDesignLanguage?: IFluentDesignState) {
-        const formatting = values.customFormatting;
-        const theme = Theming.GenerateThemeV8(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, formatting.themeOverride)
-        const mergedOverrides = merge(fluentDesignLanguage?.v8FluentOverrides ?? {}, formatting.themeOverride);
-        const columnAlignment = this._getColumnAlignment(column);
-        const result = ControlTheme.GenerateFluentDesignLanguage(theme.palette.themePrimary, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText, {
-            v8FluentOverrides: merge(
-                {
-                    semanticColors: {
-                        inputBorder: 'transparent',
-                        inputBorderHovered: 'transparent',
-                        inputBackground: theme.semanticColors.bodyBackground,
-                        focusBorder: 'transparent',
-                        disabledBorder: 'transparent',
-                        inputFocusBorderAlt: 'transparent',
-                        errorText: 'transparent'
-
-                    },
-                    effects: {
-                        underlined: false
-                    },
-                    components: {
-                        'TextField': {
-                            styles: () => {
-                                return {
-                                    field: {
-                                        textAlign: columnAlignment
-                                    }
-                                } as ITextFieldStyles
-                            }
-                        },
-                        'ComboBox': {
-                            styles: () => {
-                                return {
-                                    input: {
-                                        textAlign: columnAlignment === 'right' ? 'right' : undefined,
-                                        paddingRight: columnAlignment === 'right' ? 8 : undefined,
-                                    }
-                                } as IComboBoxStyles
-                            }
-                        },
-                        'DatePicker': {
-                            styles: () => {
-                                return {
-                                    root: {
-                                        '.ms-TextField-field': {
-                                            paddingRight: columnAlignment === 'right' ? 8 : undefined,
-                                            textAlign: columnAlignment === 'right' ? 'right' : 'left'
-                                        }
-                                    } as any
-                                } as IDatePickerStyles
-                            }
-                        }
-                    }
-                },
-                mergedOverrides
-            ),
-            applicationTheme: fluentDesignLanguage?.applicationTheme
-        })
-        return result;
-    }
-
-    private _getColumnAlignment(column: IColumn) {
+    public getColumnAlignment(column: IColumn) {
         if (column.alignment) {
             return column.alignment;
         }
@@ -473,5 +379,51 @@ export class AgGrid extends GridDependency {
             }
         }
         return 'left';
+    }
+
+    private _getBindingValue(record: IRecord, column: IColumn) {
+        let value = record.getValue(column.name);
+        switch (column.dataType) {
+            //getValue always returns string for TwoOptions
+            case 'TwoOptions': {
+                value = value == '1' ? true : false
+                break;
+            }
+            //getValue always returns string for OptionSet
+            case 'OptionSet': {
+                value = value ? parseInt(value) : null;
+                break;
+            }
+            case 'MultiSelectPicklist': {
+                value = value ? value.split(',').map((x: string) => parseInt(x)) : null;
+                break;
+            }
+            case 'Lookup.Simple':
+            case 'Lookup.Customer':
+            case 'Lookup.Owner':
+            case 'Lookup.Regarding': {
+                //our implementation returns array, Power Apps returns object
+                if (value && !Array.isArray(value)) {
+                    value = [value];
+                }
+                value = value?.map((x: ComponentFramework.EntityReference) => Sanitizer.Lookup.getLookupValue(x))
+                break;
+            }
+        }
+        return value;
+    }
+
+    private _filterParameters(params: any) {
+        if (!params) return {};
+        const { Dataset, Record, Column, ...filteredParams } = params;
+        Object.values(filteredParams).map((parameter: any) => {
+            parameter.attributes = {};
+            Object.entries(parameter).map(([key, value]) => {
+                if (typeof value === 'function') {
+                    parameter[key] = undefined;
+                }
+            })
+        })
+        return filteredParams;
     }
 }

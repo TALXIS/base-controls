@@ -50,7 +50,7 @@ export interface IOptions {
     onGetContainerElement?: () => HTMLDivElement;
     onGetControlName?: () => string;
     callbacks?: {
-        onInit?: () => void;
+        onInit?: (instance: NestedControl) => void;
         onGetControlStates?: () => IControlStates | undefined
         onNotifyOutputChanged?: (ouputs: any) => void;
         /**
@@ -82,17 +82,9 @@ export class NestedControl {
         this._options = options;
         this._init();
     }
-
+    
     public getProps(): IControl<IParameters, any, any, any> {
-        const parameters: { [name: string]: IProperty } = {};
-        [...this._properties.entries()].map(([name, prop]) => {
-            parameters[name] = {
-                ...prop.getParameter(),
-                error: this._options.onGetBindings()[name].error ?? false,
-                errorMessage: this._options.onGetBindings()[name].errorMessage ?? null,
-                type: prop.dataType
-            };
-        })
+        const parameters: { [name: string]: IProperty } = this.getParameters();
         const props: IControl<any, any, any, any> = {
             context: {
                 ...this._options.parentPcfContext,
@@ -112,7 +104,21 @@ export class NestedControl {
                 this._options.callbacks?.onNotifyOutputChanged?.(outputs);
             }
         }
-        return this._overrideDecorator(() => props, this._options.overrides?.onGetProps, () => [props] as any);
+        const result = this._overrideDecorator(() => props, this._options.overrides?.onGetProps, () => [props] as any);
+        return result;
+    }
+
+    public getParameters() {
+        const parameters: { [name: string]: IProperty } = {};
+        [...this._properties.entries()].map(([name, prop]) => {
+            parameters[name] = {
+                ...prop.getParameter(),
+                error: this._options.onGetBindings()[name].error ?? false,
+                errorMessage: this._options.onGetBindings()[name].errorMessage ?? null,
+                type: prop.dataType
+            };
+        })
+        return parameters;
     }
 
     public isLoading() {
@@ -157,6 +163,10 @@ export class NestedControl {
             throw new Error("Cannot render control if it's name is not specified!");
         }
         return controlName;
+    }
+
+    public getBindings() {
+        return this._options.onGetBindings();
     }
 
     private _overrideDecorator<T extends any[], K>(defaultMethod: () => K | Promise<K>, override?: (...args: T) => any, getOverrideArgs?: () => T) {
@@ -264,7 +274,7 @@ export class NestedControl {
         if (promises.length > 0) {
             await Promise.all(promises);
         }
-        this._options.callbacks?.onInit?.()
+        this._options.callbacks?.onInit?.(this)
     }
 
     private _getPropertyInstance(onGetBinding: () => IBinding) {
@@ -384,7 +394,7 @@ export class NestedControl {
                     const boundBindings = Object.entries(this._options.onGetBindings()).filter(([key, binding]) => !binding.isStatic);
                     const outputs: any = {};
                     boundBindings.map(([key, binding]) => {
-                        outputs[key] = key === property.name ? value : this.getProps().parameters[bindingName].raw
+                        outputs[key] = key === bindingName ? value : this.getProps().parameters[bindingName].raw
                     })
                     this._options.callbacks?.onNotifyOutputChanged?.(outputs)
                 }

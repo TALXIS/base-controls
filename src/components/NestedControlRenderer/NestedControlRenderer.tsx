@@ -13,14 +13,12 @@ import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
 import { BaseControls, ThemeWrapper } from '../../utils';
 import { getNestedControlStyles } from './styles';
 import { Spinner, useRerender } from '@talxis/react-components';
-import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } from '@fluentui/react';
+import { MessageBar, MessageBarButton, MessageBarType, Rating, Shimmer, SpinnerSize } from '@fluentui/react';
 import ReactDOM from 'react-dom';
 import { IControl } from '../../interfaces';
-import { useControl } from '../../hooks';
 
 export const NestedControlRenderer = (__props: INestedControlRenderer) => {
     const controlRef = useRef<NestedControl>();
-    const { onNotifyOutputChanged } = useControl('NestedControlRenderer', __props);
     const internalControlRendererRef = useRef<IInternalNestedControlRendererRef>(null);
     const propsRef = useRef<INestedControlRenderer>({} as any);
     propsRef.current = __props;
@@ -32,6 +30,9 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
 
     const styles = useMemo(() => getNestedControlStyles(isBaseControl), [isBaseControl]);
     const componentPropsRef = useRef<INestedControlRendererComponentProps>();
+    const mountedRef = useRef(false);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const testRef = useRef<HTMLDivElement>();
 
     componentPropsRef.current = onOverrideComponentProps({
         rootContainerProps: {},
@@ -85,37 +86,43 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
 
     const onRender = (controlProps: IControl<any, any, any, any>, container: HTMLDivElement, defaultRender: () => Promise<void>, componentToRender?: React.ReactElement) => {
         if (!componentToRender && BaseControls.IsBaseControl(propsRef.current.parameters.ControlName)) {
-            componentToRender = React.createElement(getBaseControl(), { ...controlProps });
+            componentToRender = React.createElement(Rating);
         }
         if (componentToRender) {
-            return ReactDOM.render(React.createElement(
-                ThemeWrapper,
-                {
-                    ...componentPropsRef.current?.overridenControlContainerProps,
-                    fluentDesignLanguage: controlProps.context.fluentDesignLanguage
-                },
-                componentToRender
-            ), container);
+            if (componentToRender) {
+                return ReactDOM.render(React.createElement(
+                    ThemeWrapper,
+                    {
+                        ...componentPropsRef.current?.overridenControlContainerProps,
+                        fluentDesignLanguage: controlProps.context.fluentDesignLanguage
+                    },
+                    componentToRender
+                ), container);
+            }
         }
         return defaultRender();
     }
 
     const createControlInstance = () => {
-        const instance = new NestedControl({
+        new NestedControl({
             parentPcfContext: propsRef.current.context,
-            onGetContainerElement: () => internalControlRendererRef.current!.getContainer(),
+            onGetContainerElement: () => testRef.current!,
             onGetControlName: () => propsRef.current.parameters.ControlName,
             onGetBindings: () => {
                 return propsRef.current.parameters.Bindings ?? {};
             },
             callbacks: {
-                onInit: () => {
+                //onInit could either by sync or async
+                onInit: (instance) => {
                     controlRef.current = instance;
-                    rerender();
+                    //if we are already mounted, we need to rerender
+                    if(mountedRef.current) {
+                        rerender();
+                    }
                 },
                 onControlStateChanged: () => internalControlRendererRef.current?.rerender(),
                 onGetControlStates: () => propsRef.current.parameters.ControlStates,
-                onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs)
+                onNotifyOutputChanged: (outputs) => propsRef.current.onNotifyOutputChanged?.(outputs)
             },
             overrides: {
                 onGetProps: componentPropsRef.current?.onOverrideControlProps,
@@ -127,16 +134,24 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
                     if (isPcfComponent) {
                         return defaultUnmount();
                     }
-                    return ReactDOM.unmountComponentAtNode(container);
+                    ReactDOM.unmountComponentAtNode(container);
+                    containerRef.current = null;
                 }
             }
         })
-    }
 
-    useEffect(() => {
+    }
+    useMemo(() => {
         createControlInstance();
+    }, []);
+
+useEffect(() => {
+        mountedRef.current = true;
+        testRef.current = containerRef.current!;
+        //containerRef.current = internalControlRendererRef.current!.getContainer();
         return () => {
-            controlRef.current?.unmount();
+            ReactDOM.unmountComponentAtNode(testRef.current!)
+            //controlRef.current?.unmount();
         }
     }, []);
 
@@ -146,6 +161,9 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
             controlRef.current?.render();
         }
     })
+
+    return <div ref={containerRef} className='CONTAINER'></div>
+    
     return <InternalNestedControlRenderer
         ref={internalControlRendererRef}
         control={controlRef.current}
@@ -175,7 +193,6 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
     //defer loading to next render so we don't show it in cases where the control loads straight way, this prevents loading flicker
     const [canShowLoading, setCanShowLoading] = useState(false);
     const rerender = useRerender();
-    console.log(control);
 
     useImperativeHandle(ref, () => {
         return {

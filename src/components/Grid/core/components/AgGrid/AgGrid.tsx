@@ -1,7 +1,7 @@
 import { AgGridReact } from '@ag-grid-community/react';
 import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
 import { ColDef, ColumnMovedEvent, ColumnResizedEvent, GridApi, GridState, ModuleRegistry } from "@ag-grid-community/core";
-import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
 import { Paging } from "../../../paging/components/Paging/Paging";
@@ -65,7 +65,7 @@ export const AgGrid = () => {
             },
             ...gridApiRef.current!.getState(),
         });
-        //agGrid.refreshRowSelection();
+        agGrid.refreshRowSelection();
     }
 
 
@@ -159,7 +159,7 @@ export const AgGrid = () => {
     useEffect(() => {
         toggleOverlay();
         if (records.length > 0) {
-            //gridApiRef.current?.ensureIndexVisible(0)
+            gridApiRef.current?.ensureIndexVisible(0)
         }
     }, [grid.loading]);
 
@@ -172,6 +172,8 @@ export const AgGrid = () => {
             rerender();
         });
         return () => {
+            alert('unmount');
+            gridApiRef.current?.destroy();
             grid.pcfContext.mode.setControlState(getNewStateValues());
         }
     }, []);
@@ -188,7 +190,6 @@ export const AgGrid = () => {
 
     return (
         <AgGridContext.Provider value={agGridProviderValue}>
-            <button onClick={() => rerender}>rerender</button>
             <div
                 ref={containerRef}
                 className={`${styles.root} ag-theme-balham`}
@@ -251,17 +252,18 @@ export const AgGrid = () => {
                     onFirstDataRendered={(e) => {
                         sizeColumnsIfSpaceAvailable();
                     }}
-
+                    onCellEditingStopped={() => {
+                        grid.pcfContext.factory.requestRender();
+                    }}
                     initialState={stateValuesRef.current}
                     onStateUpdated={(e) => stateValuesRef.current = {
                         ...stateValuesRef.current,
                         ...e.state
                     }}
-                    //suppressAnimationFrame
                     columnDefs={agColumns as any}
-                    
                     rowData={records}
                     getRowHeight={(params) => {
+                        return grid.rowHeight;
                         const columnWidths: { [name: string]: number } = {};
                         params.api.getAllGridColumns().map(col => {
                             columnWidths[col.getColId()] = col.getActualWidth()

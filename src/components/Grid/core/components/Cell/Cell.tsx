@@ -1,8 +1,8 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
-import { Constants, DataTypes, IColumn, ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
+import { Constants, IRecord } from "@talxis/client-libraries";
 import { Checkbox, Shimmer, ThemeProvider } from "@fluentui/react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { getCellStyles, getInnerCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
@@ -11,22 +11,18 @@ import { INotificationsRef, Notifications } from "./Notifications/Notifications"
 import { useDebouncedCallback } from "use-debounce";
 import { Commands } from "./Commands/Commands";
 import { CellContent } from "./CellContent/CellContent";
-import { useThemeGenerator } from "@talxis/react-components";
 import { getClassNames } from "../../../../../utils/styling/getClassNames";
 import { AgGridContext } from "../AgGrid/context";
-import { IValues } from "../AgGrid/model/Comparator";
+import { ICellValues } from "../AgGrid/model/AgGrid";
+import { useThemeGenerator } from "@talxis/react-components";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     editing?: boolean;
     data: IRecord;
-    value: IValues
+    value: ICellValues
 }
-
-
-
 export const Cell = (props: ICellProps) => {
-    console.log('outside');
     const agGridContext = React.useContext(AgGridContext);
     const record = props.data;
     const styles = useMemo(() => getCellStyles(), [])
@@ -55,12 +51,6 @@ export const Cell = (props: ICellProps) => {
         }
     }
 
-    useEffect(() => {
-        return () => {
-            console.log('unmount')
-        }
-    }, []);
-
     return <ThemeProvider className={getClassNames([styles.cellRoot, cellFormatting.className])} theme={cellTheme}>
         {renderContent()}
     </ThemeProvider>
@@ -68,7 +58,6 @@ export const Cell = (props: ICellProps) => {
 
 
 export const InternalCell = (props: ICellProps) => {
-    console.log('internal');
     const column = props.baseColumn;
     const record = props.data;
     const formatting = props.value.customFormatting;
@@ -122,20 +111,6 @@ export const InternalCell = (props: ICellProps) => {
         return !!props.editing
     };
 
-    const getColumnAlignment = (): Required<IColumn['alignment']> => {
-        if (column.alignment) {
-            return column.alignment;
-        }
-        switch (props.baseColumn.dataType) {
-            case DataTypes.WholeNone:
-            case DataTypes.Decimal:
-            case DataTypes.Currency: {
-                return 'right';
-            }
-        }
-        return 'left';
-    }
-
     const getShouldRenderNotificationsWrapper = (): boolean => {
         if (isCellBeingEdited()) {
             return false;
@@ -170,8 +145,7 @@ export const InternalCell = (props: ICellProps) => {
                 return (
                     <>
                         <CellContent {...props}
-                            fillAllAvailableSpace={!shouldNotificationsFillAvailableSpace}
-                            columnAlignment={columnAlignment} />
+                            fillAllAvailableSpace={!shouldNotificationsFillAvailableSpace} />
                         {shouldRenderNotificationsWrapper &&
                             renderNotifications()
                         }
@@ -225,10 +199,9 @@ export const InternalCell = (props: ICellProps) => {
 
     const shouldRenderNotificationsWrapper = getShouldRenderNotificationsWrapper();
     const notificationWrapperMinWidth = getNotificationWrapperMinWidth();
-    const columnAlignment = getColumnAlignment();
     const styles = useMemo(() => getInnerCellStyles(
-        columnAlignment, notificationWrapperMinWidth, shouldNotificationsFillAvailableSpace, isCellBeingEdited()
-    ), [notificationWrapperMinWidth, columnAlignment, shouldNotificationsFillAvailableSpace, isCellBeingEdited()]);
+        props.value.columnAlignment, notificationWrapperMinWidth, shouldNotificationsFillAvailableSpace, isCellBeingEdited()
+    ), [notificationWrapperMinWidth, props.value.columnAlignment, shouldNotificationsFillAvailableSpace, isCellBeingEdited()]);
 
     debounceNotificationRemeasure();
 
@@ -237,7 +210,9 @@ export const InternalCell = (props: ICellProps) => {
             debounceNotificationRemeasure();
         })
         resizeObserver.observe(props.eGridCell);
-        return () => resizeObserver.disconnect();
+        return () => {
+            resizeObserver.disconnect()
+        };
     }, []);
 
 

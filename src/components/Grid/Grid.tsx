@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useControl, useControlTheme } from "../../hooks"
 import { IGridContext } from "./core/interfaces/IGridContext";
 import { Grid as GridModel } from "./core/model/Grid";
@@ -19,6 +19,7 @@ const styles = mergeStyleSets({
 export const Grid = (props: IGrid) => {
     const { labels } = useControl('Grid', props, gridTranslations);
     const keyHoldListener = useMemo(() => new KeyHoldListener(), []);
+    const [isMounted, setIsMounted] = useState(true);
     const providerValue: IGridContext = useMemo(() => {
         return {
             gridInstance: new GridModel(props, labels, keyHoldListener)
@@ -33,11 +34,18 @@ export const Grid = (props: IGrid) => {
             keyHoldListener.destroy();
         }
     }, []);
+    
     return (
+        <div>
+            <button onClick={() => setIsMounted(false)}>unmount</button>
+            <button onClick={() => setIsMounted(true)}>mount</button>
+        {isMounted &&
         <GridContext.Provider value={providerValue}>
             <ThemeProvider className={`talxis__gridControl ${styles.root}`} theme={theme} applyTo='none'>
                 <AgGrid />
             </ThemeProvider>
         </GridContext.Provider>
+        }
+        </div>
     )
 }
