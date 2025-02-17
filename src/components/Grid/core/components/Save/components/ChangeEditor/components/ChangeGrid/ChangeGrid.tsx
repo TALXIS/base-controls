@@ -110,8 +110,8 @@ export const ChangeGrid = (props: IChangeGrid) => {
                 record.expressions?.ui.setCellEditorParametersExpression(col.name, (parameters) => baseRecord.getColumnInfo(col.name).ui.getCellEditorParameters(parameters));
                 record.expressions?.ui.setCustomFormattingExpression(col.name, (cellTheme) => baseRecord.getColumnInfo(col.name).ui.getCustomFormatting(cellTheme));
                 record.expressions?.ui.setControlParametersExpression(col.name, (parameters) => baseRecord.getColumnInfo(col.name).ui.getControlParameters(parameters));
-                record.expressions?.ui.setCustomControlsExpression(col.name, () => baseRecord.getColumnInfo(col.name).ui.getCustomControls());
-                record.expressions?.ui.setCustomControlComponentExpression(col.name, (controlProps, defaultRender) => baseRecord.getColumnInfo(col.name).ui.getCustomControlComponent(controlProps, defaultRender))
+                record.expressions?.ui.setCustomControlsExpression(col.name, (defaultCustomControls) => baseRecord.getColumnInfo(col.name).ui.getCustomControls(defaultCustomControls));
+                record.expressions?.ui.setCustomControlComponentExpression(col.name, () => baseRecord.getColumnInfo(col.name).ui.getCustomControlComponent())
                 if (recordId === 'new') {
                     record.expressions?.setValueExpression?.(col.name, () => {
                         //this happens if we have removed a change

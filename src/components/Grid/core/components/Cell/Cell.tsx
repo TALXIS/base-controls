@@ -11,14 +11,13 @@ import { INotificationsRef, Notifications } from "./Notifications/Notifications"
 import { useDebouncedCallback } from "use-debounce";
 import { Commands } from "./Commands/Commands";
 import { CellContent } from "./CellContent/CellContent";
-import { getClassNames } from "../../../../../utils/styling/getClassNames";
 import { AgGridContext } from "../AgGrid/context";
 import { ICellValues } from "../AgGrid/model/AgGrid";
-import { useThemeGenerator } from "@talxis/react-components";
+import { getClassNames, useThemeGenerator } from "@talxis/react-components";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
-    editing?: boolean;
+    editing: boolean;
     data: IRecord;
     value: ICellValues
 }
@@ -29,6 +28,7 @@ export const Cell = (props: ICellProps) => {
     const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
     const grid = useGridInstance();
+    console.log(props.baseColumn.name)
 
     const renderContent = () => {
         switch (props.baseColumn.name) {
@@ -51,7 +51,7 @@ export const Cell = (props: ICellProps) => {
         }
     }
 
-    return <ThemeProvider className={getClassNames([styles.cellRoot, cellFormatting.className])} theme={cellTheme}>
+    return <ThemeProvider theme={cellTheme} className={getClassNames([styles.cellRoot, cellFormatting.className])}>
         {renderContent()}
     </ThemeProvider>
 }
@@ -107,12 +107,8 @@ export const InternalCell = (props: ICellProps) => {
         return count * 40;
     }
 
-    const isCellBeingEdited = (): boolean => {
-        return !!props.editing
-    };
-
     const getShouldRenderNotificationsWrapper = (): boolean => {
-        if (isCellBeingEdited()) {
+        if (props.editing) {
             return false;
         }
         if (error === true) {
@@ -200,8 +196,8 @@ export const InternalCell = (props: ICellProps) => {
     const shouldRenderNotificationsWrapper = getShouldRenderNotificationsWrapper();
     const notificationWrapperMinWidth = getNotificationWrapperMinWidth();
     const styles = useMemo(() => getInnerCellStyles(
-        props.value.columnAlignment, notificationWrapperMinWidth, shouldNotificationsFillAvailableSpace, isCellBeingEdited()
-    ), [notificationWrapperMinWidth, props.value.columnAlignment, shouldNotificationsFillAvailableSpace, isCellBeingEdited()]);
+        props.value.columnAlignment, notificationWrapperMinWidth, shouldNotificationsFillAvailableSpace, props.editing
+    ), [notificationWrapperMinWidth, props.value.columnAlignment, shouldNotificationsFillAvailableSpace, props.editing]);
 
     debounceNotificationRemeasure();
 

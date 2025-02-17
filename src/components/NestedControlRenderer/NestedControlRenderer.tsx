@@ -32,7 +32,6 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
     const componentPropsRef = useRef<INestedControlRendererComponentProps>();
     const mountedRef = useRef(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const testRef = useRef<HTMLDivElement>();
 
     componentPropsRef.current = onOverrideComponentProps({
         rootContainerProps: {},
@@ -104,7 +103,7 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
     const createControlInstance = () => {
         new NestedControl({
             parentPcfContext: propsRef.current.context,
-            onGetContainerElement: () => testRef.current!,
+            onGetContainerElement: () => containerRef.current!,
             onGetControlName: () => propsRef.current.parameters.ControlName,
             onGetBindings: () => {
                 return propsRef.current.parameters.Bindings ?? {};
@@ -114,7 +113,7 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
                 onInit: (instance) => {
                     controlRef.current = instance;
                     //if we are already mounted, we need to rerender
-                    if(mountedRef.current) {
+                    if (mountedRef.current) {
                         rerender();
                     }
                 },
@@ -133,7 +132,6 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
                         return defaultUnmount();
                     }
                     ReactDOM.unmountComponentAtNode(container);
-                    containerRef.current = null;
                 }
             }
         })
@@ -143,13 +141,13 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
         createControlInstance();
     }, []);
 
-useEffect(() => {
+    useEffect(() => {
         mountedRef.current = true;
-        testRef.current = containerRef.current!;
-        //containerRef.current = internalControlRendererRef.current!.getContainer();
+        containerRef.current = internalControlRendererRef.current!.getContainer()
         return () => {
-            ReactDOM.unmountComponentAtNode(testRef.current!)
-            //controlRef.current?.unmount();
+            controlRef.current?.unmount();
+            containerRef.current = null;
+            controlRef.current = undefined;
         }
     }, []);
 
@@ -160,8 +158,6 @@ useEffect(() => {
         }
     })
 
-    return <div ref={containerRef} className='CONTAINER'></div>
-    
     return <InternalNestedControlRenderer
         ref={internalControlRendererRef}
         control={controlRef.current}
@@ -188,8 +184,6 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
     const { control, parameters, componentProps } = props;
     const customControlContainerRef = useRef<HTMLDivElement>(null);
     const errorMessage = control?.getErrorMessage();
-    //defer loading to next render so we don't show it in cases where the control loads straight way, this prevents loading flicker
-    const [canShowLoading, setCanShowLoading] = useState(false);
     const rerender = useRerender();
 
     useImperativeHandle(ref, () => {
@@ -205,14 +199,9 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
         }
         return <Spinner {...componentProps?.loadingProps?.spinnerProps} />
     }
-    useEffect(() => {
-        if (parameters.LoadingType !== 'none') {
-            setCanShowLoading(true)
-        }
-    }, [])
     return (
         <div {...componentProps.rootContainerProps}>
-            {(!control || control.isLoading()) && canShowLoading && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>
+            {(!control || control.isLoading()) && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>
             }
             {errorMessage &&
                 <MessageBar messageBarType={MessageBarType.error} isMultiline={false} actions={<div>

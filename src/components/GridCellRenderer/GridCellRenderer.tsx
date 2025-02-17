@@ -7,8 +7,8 @@ import { OptionSet } from './OptionSet';
 import { IGridCellRenderer } from "./interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
 import { ComponentPropsContext } from "./useComponentProps";
-import { getClassNames } from "../../utils/styling/getClassNames";
 import { DefaultContentRenderer } from "./DefaultContentRenderer";
+import { getClassNames } from "@talxis/react-components";
 
 export const GridCellRenderer = (props: IGridCellRenderer) => {
     const dataset = props.parameters.Dataset;
@@ -193,7 +193,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const prefixIconProps = getIconProps(prefixIcon);
     const suffixIconProps = getIconProps(suffixIcon)
 
-    return <ThemeProvider theme={theme}>
+    return <ThemeProvider {...componentProps.rootContainerProps}>
         <ComponentPropsContext.Provider value={componentPropsProviderValue}>
             {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
             <div {...componentProps.contentWrapperProps}>

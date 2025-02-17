@@ -16,16 +16,30 @@ const styles = mergeStyleSets({
     }
 });
 
-export const Grid = (props: IGrid) => {
+export const Grid = (props: any) => {
+    const [isMounted, setIsMounted] = useState(true);
+    return <div>
+        <button onClick={() => {
+            //@ts-ignore - a
+            props.parameters.Grid.destroy();
+            setIsMounted(false);
+        }}>unmount</button>
+        <button onClick={() => setIsMounted(true)}>mount</button>
+        {isMounted &&
+            <Grid2 {...props} />
+        }
+    </div>
+}
+
+export const Grid2 = (props: IGrid) => {
     const { labels } = useControl('Grid', props, gridTranslations);
     const keyHoldListener = useMemo(() => new KeyHoldListener(), []);
-    const [isMounted, setIsMounted] = useState(true);
     const providerValue: IGridContext = useMemo(() => {
         return {
             gridInstance: new GridModel(props, labels, keyHoldListener)
         }
     }, [])
-    
+
     providerValue.gridInstance.updateDependencies(props);
     const theme = useControlTheme(props.context.fluentDesignLanguage);
 
@@ -34,18 +48,13 @@ export const Grid = (props: IGrid) => {
             keyHoldListener.destroy();
         }
     }, []);
-    
+
     return (
-        <div>
-            <button onClick={() => setIsMounted(false)}>unmount</button>
-            <button onClick={() => setIsMounted(true)}>mount</button>
-        {isMounted &&
         <GridContext.Provider value={providerValue}>
             <ThemeProvider className={`talxis__gridControl ${styles.root}`} theme={theme} applyTo='none'>
                 <AgGrid />
             </ThemeProvider>
         </GridContext.Provider>
-        }
-        </div>
+
     )
 }

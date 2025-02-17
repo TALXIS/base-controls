@@ -3,7 +3,7 @@ import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
-import { DataType, DataTypes, IAddControlNotificationOptions, IColumn, IColumnInfo, ICustomColumnControl, ICustomColumnFormatting, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { DataType, DataTypes, IAddControlNotificationOptions, IColumn, IColumnInfo, ICustomColumnComponent, ICustomColumnControl, ICustomColumnFormatting, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 import { Cell } from "../../Cell/Cell";
@@ -16,7 +16,8 @@ import { BaseControls } from "../../../../../../utils";
 export interface ICellValues {
     notifications: IAddControlNotificationOptions[];
     customFormatting: Required<ICustomColumnFormatting>;
-    customControls: ICustomColumnControl[];
+    customControl: ICustomColumnControl;
+    customComponent: ICustomColumnComponent;
     loading: boolean;
     value: any;
     error: boolean;
@@ -78,29 +79,30 @@ export class AgGrid extends GridDependency {
                     let editing: boolean = false;
                     const record = p.data as IRecord;
                     const columnInfo = p.data!.getColumnInfo(column.name) as IColumnInfo;
+                    const customControl = this.getControl(column, record, editing);
                     //i hate this, there is no other way to get the information if we are in edit mode or not
                     if (p.api.getEditingCells() > 0 || Error().stack!.includes('startEditing')) {
                         editing = true;
                     }
-
                     const values = {
                         notifications: columnInfo.ui.getNotifications(),
                         value: p.data!.getValue(column.name),
                         customFormatting: this.getCellFormatting(p),
-                        customControls: columnInfo.ui.getCustomControls(),
+                        customControl: customControl,
                         height: 42,
                         error: columnInfo.error,
                         loading: columnInfo.ui.isLoading(),
                         errorMessage: columnInfo.errorMessage,
                         editable: columnInfo.security.editable,
                         editing: editing,
+                        customComponent: columnInfo.ui.getCustomControlComponent()
                     } as ICellValues;
 
                     const control = new NestedControl({
-                        onGetBindings: () => this.getBindings(record, column, editing),
+                        onGetBindings: () => this.getBindings(record, column, editing, customControl),
                         parentPcfContext: this._grid.pcfContext,
                     });
-                    const parameters = record.getColumnInfo(column.name).ui.getControlParameters({
+                    const parameters = columnInfo.ui.getControlParameters({
                         ...control.getParameters(),
                         ...this.getParameters(record, column, editing)
                     })
@@ -111,13 +113,12 @@ export class AgGrid extends GridDependency {
                     return this._comparator.isEqual(valueA, valueB);
                 },
                 cellRendererParams: {
-                    baseColumn: column
+                    baseColumn: column,
+                    editing: false
                 },
-                cellEditorParams: () => {
-                    return {
-                        baseColumn: column,
-                        editing: true
-                    }
+                cellEditorParams: {
+                    baseColumn: column,
+                    editing: true
                 },
                 headerComponentParams: {
                     baseColumn: column
@@ -172,7 +173,6 @@ export class AgGrid extends GridDependency {
         switch (params.colDef.colId) {
             case CHECKBOX_COLUMN_KEY: {
                 return {
-                    key: 'key',
                     primaryColor: this._theme.palette.themePrimary,
                     backgroundColor: defaultBackgroundColor,
                     textColor: Theming.GetTextColorForBackground(defaultBackgroundColor),
@@ -201,9 +201,6 @@ export class AgGrid extends GridDependency {
                 }
                 if (!formatting.themeOverride) {
                     formatting.themeOverride = {};
-                }
-                if (!formatting.key) {
-                    formatting.key = 'key';
                 }
                 return formatting as Required<ICustomColumnFormatting>;
             }
@@ -263,10 +260,12 @@ export class AgGrid extends GridDependency {
             this._grid.pcfContext.factory.requestRender();
             return;
         }
-        rerenderCell();
+        setTimeout(() => {
+            rerenderCell();
+        }, 0);
     }
 
-    public getBindings(record: IRecord, column: IColumn, editing: boolean) {
+    public getBindings(record: IRecord, column: IColumn, editing: boolean, control: ICustomColumnControl) {
         const columnInfo = record.getColumnInfo(column.name);
         const bindings: { [name: string]: IBinding } = {
             'value': {
@@ -281,8 +280,7 @@ export class AgGrid extends GridDependency {
                 }
             }
         }
-        const control = this.getControl(column, record, editing)
-        if (control?.bindings) {
+        if (control.bindings) {
             Object.entries(control.bindings).map(([name, binding]) => {
                 bindings[name] = {
                     isStatic: true,
@@ -295,7 +293,11 @@ export class AgGrid extends GridDependency {
     }
 
     public getControl(column: IColumn, record: IRecord, editing: boolean) {
-        const customControls = record.getColumnInfo(column.name).ui.getCustomControls();
+        const defaultControl: ICustomColumnControl = {
+            name: editing ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : 'GridCellRenderer',
+            appliesTo: 'both',
+        };
+        const customControls = record.getColumnInfo(column.name).ui.getCustomControls([defaultControl]);
         const appliesToValue = editing ? 'editor' : 'renderer';
         const customControl = customControls.find(
             control => control.appliesTo === 'both' || control.appliesTo === appliesToValue
@@ -303,10 +305,6 @@ export class AgGrid extends GridDependency {
         if (customControl) {
             return customControl;
         }
-        const defaultControl: Partial<ICustomColumnControl> = {
-            name: editing ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : 'GridCellRenderer',
-            appliesTo: 'both',
-        };
 
         return defaultControl as ICustomColumnControl;
     }

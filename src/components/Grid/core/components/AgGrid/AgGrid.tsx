@@ -32,7 +32,7 @@ export const AgGrid = () => {
     const { columns } = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<GridState>(grid.state as GridState);
-    //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-grid/ag-grid/issues/6013
+    //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-gid/ag-grid/issues/6013
     const [records] = useDebounce(grid.records, 0);
     const userChangedColumnSizeRef = useRef(false);
     const rerender = useRerender();

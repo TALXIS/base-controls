@@ -1,4 +1,4 @@
-import { IStyle, mergeStyleSets } from "@fluentui/react"
+import { mergeStyleSets } from "@fluentui/react"
 import { DataType, IColumn } from "@talxis/client-libraries";
 import { ITheme } from "@talxis/react-components";
 

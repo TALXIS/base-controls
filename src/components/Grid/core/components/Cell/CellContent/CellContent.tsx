@@ -8,7 +8,6 @@ import { ControlTheme, IFluentDesignState } from '../../../../../../utils';
 import { merge } from 'merge-anything';
 import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles } from '@fluentui/react';
 import { useRerender } from '@talxis/react-components';
-import { DataTypes } from '@talxis/client-libraries';
 
 interface ICellContentProps extends ICellProps {
     fillAllAvailableSpace: boolean;
@@ -17,7 +16,6 @@ interface ICellContentProps extends ICellProps {
 export const CellContent = (props: ICellContentProps) => {
     const { fillAllAvailableSpace } = { ...props };
     const column = props.baseColumn;
-    const editing = !!props.editing
     const mountedRef = React.useRef(false);
     const rerender = useRerender();
     const valueRef = React.useRef(props.value);
@@ -51,37 +49,33 @@ export const CellContent = (props: ICellContentProps) => {
                     effects: {
                         underlined: false
                     },
+
                     components: {
                         'TextField': {
-                            styles: () => {
-                                return {
-                                    field: {
-                                        textAlign: columnAlignment
-                                    }
-                                } as ITextFieldStyles
-                            }
+                            styles: {
+                                field: {
+                                    textAlign: columnAlignment
+                                }
+                                
+                            } as ITextFieldStyles
                         },
                         'ComboBox': {
-                            styles: () => {
-                                return {
-                                    input: {
-                                        textAlign: columnAlignment === 'right' ? 'right' : undefined,
-                                        paddingRight: columnAlignment === 'right' ? 8 : undefined,
-                                    }
-                                } as IComboBoxStyles
-                            }
+                            styles: {
+                                input: {
+                                    textAlign: columnAlignment === 'right' ? 'right' : undefined,
+                                    paddingRight: columnAlignment === 'right' ? 8 : undefined,
+                                }
+                            } as IComboBoxStyles
                         },
                         'DatePicker': {
-                            styles: () => {
-                                return {
-                                    root: {
-                                        '.ms-TextField-field': {
-                                            paddingRight: columnAlignment === 'right' ? 8 : undefined,
-                                            textAlign: columnAlignment === 'right' ? 'right' : 'left'
-                                        }
-                                    } as any
-                                } as IDatePickerStyles
-                            }
+                            styles: {
+                                root: {
+                                    '.ms-TextField-field': {
+                                        paddingRight: columnAlignment === 'right' ? 8 : undefined,
+                                        textAlign: columnAlignment === 'right' ? 'right' : 'left'
+                                    }
+                                } as any
+                            } as IDatePickerStyles
                         }
                     }
                 },
@@ -108,21 +102,21 @@ export const CellContent = (props: ICellContentProps) => {
     return <NestedControlRenderer
         context={grid.pcfContext}
         parameters={{
-            ControlName: agGrid.getControl(column, record, editing).name,
+            ControlName: agGrid.getControl(column, record, props.editing).name,
             LoadingType: 'shimmer',
-            Bindings: agGrid.getBindings(record, column, !!props.editing),
+            Bindings: agGrid.getBindings(record, column, props.editing, valueRef.current.customControl),
             ControlStates: {
                 isControlDisabled: !props.editing
             }
         }}
         onNotifyOutputChanged={(outputs) => {
-            agGrid.onNotifyOutputChanged(record, column, editing, outputs.value, () => rerender())
+            agGrid.onNotifyOutputChanged(record, column, props.editing, outputs.value, () => rerender())
         }}
-        onOverrideComponentProps={(props) => {
+        onOverrideComponentProps={(componentProps) => {
             return {
-                ...props,
+                ...componentProps,
                 rootContainerProps: {
-                    ...props.rootContainerProps,
+                    ...componentProps.rootContainerProps,
                     className: styles.controlRoot
                 },
                 controlContainerProps: {
@@ -138,22 +132,22 @@ export const CellContent = (props: ICellContentProps) => {
                     }
                 },
                 loadingProps: {
-                    ...props.loadingProps,
+                    ...componentProps.loadingProps,
                     shimmerProps: {
-                        ...props.loadingProps?.shimmerProps,
+                        ...componentProps.loadingProps.shimmerProps,
                         styles: {
-                            ...props.loadingProps?.shimmerProps?.styles,
+                            ...componentProps.loadingProps?.shimmerProps?.styles,
                             shimmerWrapper: styles.shimmerWrapper
                         }
                     },
                     containerProps: {
-                        ...props.loadingProps?.containerProps,
+                        ...componentProps.loadingProps?.containerProps,
                         className: styles.loadingWrapper
                     }
                 },
-                onOverrideRender: (controlProps, defaultRender) => { return record.getColumnInfo(column.name).ui.getCustomControlComponent(controlProps, defaultRender) },
+                onOverrideRender: (controlProps, defaultRender) => { return valueRef.current.customComponent.component(controlProps, defaultRender) },
                 onOverrideControlProps: (controlProps) => {
-                    const parameters = agGrid.getParameters(record, column, editing)
+                    const parameters = agGrid.getParameters(record, column, props.editing)
                     return {
                         ...controlProps,
                         context: {

@@ -1,7 +1,7 @@
-import { getTheme } from "@fluentui/react";
-import { ITheme, Theming } from "@talxis/react-components";
+import { getTheme, ITheme } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
 import { createBrandVariants, createV9Theme } from "@fluentui/react-migration-v8-v9";
+import { Theming } from "@talxis/react-components";
 
 export interface IFluentDesignState extends ComponentFramework.FluentDesignState {
     /**
