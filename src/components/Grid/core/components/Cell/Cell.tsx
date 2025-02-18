@@ -2,18 +2,17 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { Constants, IRecord } from "@talxis/client-libraries";
 import { Checkbox, Shimmer, ThemeProvider } from "@fluentui/react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { getCellStyles, getInnerCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import React from "react";
 import { INotificationsRef, Notifications } from "./Notifications/Notifications";
-import { useDebouncedCallback } from "use-debounce";
 import { Commands } from "./Commands/Commands";
 import { CellContent } from "./CellContent/CellContent";
 import { AgGridContext } from "../AgGrid/context";
 import { ICellValues } from "../AgGrid/model/AgGrid";
-import { getClassNames, useThemeGenerator } from "@talxis/react-components";
+import { getClassNames, useResizeObserver, useThemeGenerator } from "@talxis/react-components";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
@@ -28,7 +27,6 @@ export const Cell = (props: ICellProps) => {
     const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
     const grid = useGridInstance();
-    console.log(props.baseColumn.name)
 
     const renderContent = () => {
         switch (props.baseColumn.name) {
@@ -68,24 +66,8 @@ export const InternalCell = (props: ICellProps) => {
     const errorMessage = props.value.errorMessage;
     const notificationRef = React.useRef<INotificationsRef>(null);
     const notificationWrapperRef = React.useRef<HTMLDivElement>(null);
+    const isGridObservedRef = useRef(false);
     const [shouldNotificationsFillAvailableSpace, setShouldNotificationsFillAvailableSpace] = useState(false);
-
-    const MemoizedNotifications = React.useMemo(() => {
-        return React.memo(Notifications, (prevProps, nextProps) => {
-            const previousIds = prevProps.notifications.map(x => x.uniqueId).join(';');
-            const nextIds = nextProps.notifications.map(x => x.uniqueId).join(';');
-            if (previousIds !== nextIds) {
-                return false;
-            }
-            return true;
-        });
-    }, []);
-
-    const debounceNotificationRemeasure = useDebouncedCallback(() => {
-        if (notifications && notifications.length > 0) {
-            notificationRef.current?.remeasureCommandBar();
-        }
-    }, 100)
 
     const shouldShowNotEditableNotification = () => {
         if (column.isEditable && !record.getColumnInfo(column.name).security.editable) {
@@ -156,7 +138,7 @@ export const InternalCell = (props: ICellProps) => {
         return (
             <div ref={notificationWrapperRef} className={styles.notificationWrapper}>
                 {notifications && notifications.length > 0 &&
-                    <MemoizedNotifications
+                    <Notifications
                         ref={notificationRef}
                         formatting={formatting}
                         className={styles.notifications}
@@ -165,7 +147,7 @@ export const InternalCell = (props: ICellProps) => {
                     />
                 }
                 {shouldShowNotEditableNotification() &&
-                    <MemoizedNotifications notifications={[{
+                    <Notifications notifications={[{
                         iconName: 'Uneditable',
                         notificationLevel: 'RECOMMENDATION',
                         uniqueId: column.name,
@@ -175,8 +157,8 @@ export const InternalCell = (props: ICellProps) => {
                     }]}
                     formatting={formatting} />
                 }
-                {error === true &&
-                    <MemoizedNotifications notifications={[
+                {error &&
+                    <Notifications notifications={[
                         {
                             notificationLevel: 'ERROR',
                             messages: [],
@@ -199,17 +181,18 @@ export const InternalCell = (props: ICellProps) => {
         props.value.columnAlignment, notificationWrapperMinWidth, shouldNotificationsFillAvailableSpace, props.editing
     ), [notificationWrapperMinWidth, props.value.columnAlignment, shouldNotificationsFillAvailableSpace, props.editing]);
 
-    debounceNotificationRemeasure();
+    const observeCell = useResizeObserver(() => {
+        if (notifications && notifications.length > 0) {
+            notificationRef.current?.remeasureCommandBar();
+        }
+    });
 
     React.useEffect(() => {
-        const resizeObserver = new ResizeObserver(() => {
-            debounceNotificationRemeasure();
-        })
-        resizeObserver.observe(props.eGridCell);
-        return () => {
-            resizeObserver.disconnect()
-        };
-    }, []);
+        if(notifications.length > 0 && !isGridObservedRef.current) {
+            observeCell(props.eGridCell);
+            isGridObservedRef.current = true;
+        }
+    }, [notifications]);
 
 
     return <div className={styles.innerCellRoot} data-is-valid={!error}>

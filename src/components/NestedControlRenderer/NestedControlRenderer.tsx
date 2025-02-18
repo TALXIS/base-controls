@@ -55,6 +55,7 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
             },
         },
         onOverrideRender: (props, defaultRender) => defaultRender(),
+        onAfterComponentRendered: (control) => { },
         onOverrideControlProps: (props) => props,
     })
 
@@ -88,7 +89,7 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
             componentToRender = React.createElement(getBaseControl(), controlProps);
         }
         if (componentToRender) {
-            return ReactDOM.render(React.createElement(
+            const component = ReactDOM.render(React.createElement(
                 ThemeWrapper,
                 {
                     ...componentPropsRef.current?.overridenControlContainerProps,
@@ -96,8 +97,12 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
                 },
                 componentToRender
             ), container);
+            componentPropsRef.current?.onAfterComponentRendered(controlRef.current!);
+            return component;
         }
-        return defaultRender();
+        const component = defaultRender();
+        componentPropsRef.current?.onAfterComponentRendered(controlRef.current!);
+        return component;
     }
 
     const createControlInstance = () => {
@@ -133,7 +138,8 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
                     }
                     ReactDOM.unmountComponentAtNode(container);
                 }
-            }
+            },
+            doNotUnmountComponentFromDOM: propsRef.current.parameters.__DoNotUnmountComponentFromDOM?.raw
         })
 
     }

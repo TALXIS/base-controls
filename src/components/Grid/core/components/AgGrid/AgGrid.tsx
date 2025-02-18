@@ -1,7 +1,7 @@
 import { AgGridReact } from '@ag-grid-community/react';
 import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
-import { ColDef, ColumnMovedEvent, ColumnResizedEvent, GridApi, GridState, ModuleRegistry } from "@ag-grid-community/core";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ColDef, ColumnResizedEvent, GridApi, GridState, ModuleRegistry } from "@ag-grid-community/core";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
 import { Paging } from "../../../paging/components/Paging/Paging";
@@ -39,18 +39,17 @@ export const AgGrid = () => {
     const innerRerenderRef = useRef(true);
 
     const debouncedRefresh = useDebouncedCallback(() => {
-        if (grid.loading) {
-            return;
-        }
-        agGrid.refreshRowSelection(true);
-        gridApiRef.current?.refreshCells({
-            rowNodes: gridApiRef.current?.getRenderedNodes(),
-        });
+        agGrid.refresh();
     }, 0);
 
     const debouncedSetAgColumns = useDebouncedCallback(() => {
         setAgColumns(agGrid.getColumns());
     }, 0);
+
+    const debounceUpdateVisualSizeFactor = useDebouncedCallback((e: ColumnResizedEvent<IRecord, any>) => {
+        userChangedColumnSizeRef.current = true;
+        agGrid.updateColumnVisualSizeFactor(e);
+    }, 200);
 
     if (!innerRerenderRef.current) {
         debouncedRefresh();
@@ -68,7 +67,6 @@ export const AgGrid = () => {
         agGrid.refreshRowSelection();
     }
 
-
     const sizeColumnsIfSpaceAvailable = () => {
         //do not autosize if user manually adjusted the column width
         if (!gridApiRef.current || userChangedColumnSizeRef.current) {
@@ -79,100 +77,23 @@ export const AgGrid = () => {
         }
     }
 
-    const updateColumnOrder = async (e: ColumnMovedEvent<IRecord, any>) => {
-        if (e.type === 'gridOptionsChanged') {
-            return;
-        }
-        const sortedIds = e.api.getState().columnOrder?.orderedColIds;
-        if (!sortedIds) {
-            return;
-        }
-        const idIndexMap = new Map<string, number>();
-        sortedIds.forEach((id, index) => {
-            idIndexMap.set(id, index);
-        });
-
-        const orderedColumns = [...grid.dataset.columns].sort((a, b) => {
-            const aIndex = idIndexMap.has(a.name) ? idIndexMap.get(a.name)! : sortedIds.length;
-            const bIndex = idIndexMap.has(b.name) ? idIndexMap.get(b.name)! : sortedIds.length;
-            return aIndex - bIndex;
-        });
-        grid.dataset.setColumns?.(orderedColumns);
-    }
-
-    const copyCellValue = useCallback((event: KeyboardEvent) => {
-        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
-            const cell = gridApiRef.current?.getFocusedCell();
-            if (!cell) {
-                return;
-            }
-            const row = gridApiRef.current?.getDisplayedRowAtIndex(cell.rowIndex);
-            const formattedValue = gridApiRef.current?.getCellValue({
-                rowNode: row!,
-                colKey: cell.column.getColId(),
-                useFormatter: true
-            })
-            navigator.clipboard.writeText(formattedValue ?? "");
-        }
-    }, []);
-
-    const toggleOverlay = () => {
-        if (!gridApiRef.current) {
-            return;
-        }
-        if (grid.loading) {
-            gridApiRef.current.showLoadingOverlay();
-            return;
-        }
-        gridApiRef.current.hideOverlay();
-        setTimeout(() => {
-            if (grid.records.length === 0) {
-                gridApiRef.current?.showNoRowsOverlay();
-            }
-        }, 0);
-    }
-
     const getCurrentContainerWidth = (): number => {
         return containerWidthRef.current ?? containerRef.current?.clientWidth
     }
 
-    const updateColumnVisualSizeFactor = useDebouncedCallback((e: ColumnResizedEvent<IRecord, any>) => {
-        if (e.source !== 'uiColumnResized') {
-            return;
-        }
-        const resizedColumnKey = grid.dataset.columns.find(x => x.name === e.column?.getId())?.name;
-        if (!resizedColumnKey) {
-            return;
-        }
-        const columns = grid.dataset.columns;
-        for (let i = 0; i < columns.length; i++) {
-            if (columns[i].name === resizedColumnKey) {
-                columns[i].visualSizeFactor = e.column?.getActualWidth()!
-            }
-        }
-        userChangedColumnSizeRef.current = true;
-        grid.dataset.setColumns?.(columns);
-        gridApiRef.current?.resetRowHeights();
-
-    }, 200);
-
     useEffect(() => {
-        toggleOverlay();
-        if (records.length > 0) {
-            gridApiRef.current?.ensureIndexVisible(0)
-        }
+        agGrid.toggleOverlay();
     }, [grid.loading]);
 
 
     useEffect(() => {
         //this can be replaced with native functionality if we decide to use ag grid enterprise
-        grid.keyHoldListener.addOnKeyDownHandler((event) => copyCellValue(event));
+        grid.keyHoldListener.addOnKeyDownHandler((event) => agGrid.copyCellValue(event));
         agGrid.setRerenderCallback(() => {
             innerRerenderRef.current = true;
             rerender();
         });
         return () => {
-            gridApiRef.current?.destroy();
             grid.pcfContext.mode.setControlState(getNewStateValues());
         }
     }, []);
@@ -209,12 +130,8 @@ export const AgGrid = () => {
                     noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
                     loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
                     suppressDragLeaveHidesColumns
-                    onColumnResized={(e) => updateColumnVisualSizeFactor(e)}
-                    onColumnMoved={(e) => {
-                        if (e.finished) {
-                            updateColumnOrder(e);
-                        }
-                    }}
+                    onColumnResized={(e) => debounceUpdateVisualSizeFactor(e)}
+                    onColumnMoved={(e) => agGrid.updateColumnOrder(e)}
                     reactiveCustomComponents
                     onSelectionChanged={(e) => {
                         if (e.source.includes('api')) {
@@ -261,14 +178,7 @@ export const AgGrid = () => {
                     }}
                     columnDefs={agColumns as any}
                     rowData={records}
-                    getRowHeight={(params) => {
-                        return grid.rowHeight;
-                        const columnWidths: { [name: string]: number } = {};
-                        params.api.getAllGridColumns().map(col => {
-                            columnWidths[col.getColId()] = col.getActualWidth()
-                        })
-                        return params?.data?.getHeight?.(columnWidths, grid.rowHeight) ?? grid.rowHeight
-                    }}
+                    getRowHeight={(params) => agGrid.getRowHeight(params.data!)}
                 >
                 </AgGridReact>
                 {grid.paging.isEnabled &&

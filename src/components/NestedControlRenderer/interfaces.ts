@@ -1,7 +1,7 @@
 import { IMessageBar, IShimmerProps, ISpinnerProps, ThemeProviderProps } from "@fluentui/react";
-import { IParameters } from "../../interfaces";
+import { IParameters, ITwoOptionsProperty } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
-import { IBinding, IControlStates } from "./NestedControl";
+import { IBinding, IControlStates, NestedControl } from "./NestedControl";
 
 type ControlNameOptions = 'TextField' | 'OptionSet' | 'MultiSelectOptionSet' | 'Lookup' | 'Decimal' | 'Duration' | 'DateTime' | 'GridCellRenderer' | (string & {});
 
@@ -27,6 +27,12 @@ export interface INestedControlRendererParameters extends IParameters {
      * Can be used to set whether the control is disabled or not.
      */
     ControlStates?: IControlStates;
+
+
+    /**
+     * Internal property, do not use.
+     */
+    __DoNotUnmountComponentFromDOM?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface INestedControlRendererComponentProps {
@@ -53,11 +59,20 @@ export interface INestedControlRendererComponentProps {
      */
     overridenControlContainerProps: ThemeProviderProps;
 
+    /**
+     * Allows you to override the generated control props.
+     */
     onOverrideControlProps: (props: IControl<any, any, any, any>) => IControl<any, any, any, any>
     /**
-     * Allows you to override the default PCF render.
+     * Allows you to override the default control render.
      */
     onOverrideRender: (props: IControl<any, any, any, any>, defaultRender: () => void) => React.ReactElement | void;
+
+    /**
+     * Runs when the control has been fully initialized
+     */
+    onAfterComponentRendered: (control: NestedControl) => void;
+
 }
 
 

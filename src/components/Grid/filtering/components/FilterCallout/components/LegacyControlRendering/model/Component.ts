@@ -51,8 +51,8 @@ export class Component extends GridDependency {
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_OWNER:
             case DataType.LOOKUP_CUSTOMER: {
-                const columnMetadata = await this._grid.metadata.get(column.name);
-                const targets = columnMetadata.Attributes.get(attributeName).attributeDescriptor.Targets ?? [];
+                const columnMetadata = column.metadata
+                const targets = columnMetadata?.Targets ?? [];
                 //@ts-ignore - typings
                 if (column.dataType === DataType.LOOKUP_OWNER && window.TALXIS.Portal) {
                     targets.push('systemuser', 'team')
@@ -99,7 +99,7 @@ export class Component extends GridDependency {
             }
             case DataType.TWO_OPTIONS: {
                 const twoOptionsValue = value as boolean | undefined | null;
-                const [defaultValue, options] = await this._grid.metadata.getOptions(column.name)
+                const options = column.metadata?.OptionSet ?? [];
                 return onOverrideControlProps({
                     context: this._pcfContext,
                     parameters: {
@@ -117,7 +117,7 @@ export class Component extends GridDependency {
             }
             case DataType.OPTIONSET: {
                 const optionSetValue = value as number | null | undefined;
-                const [defaultValue, options] = await this._grid.metadata.getOptions(column.name)
+                const options = column.metadata?.OptionSet ?? [];
                 return onOverrideControlProps({
                     context: this._pcfContext,
                     parameters: {
@@ -134,7 +134,7 @@ export class Component extends GridDependency {
                 } as IOptionSet);
             }
             case DataType.MULTI_SELECT_OPTIONSET: {
-                const [defaultValue, options] = await this._grid.metadata.getOptions(column.name)
+                const options = column.metadata?.OptionSet ?? [];
                 const optionSetValue = value as number[] | null | undefined;
                 return onOverrideControlProps({
                     context: this._pcfContext,
@@ -154,7 +154,7 @@ export class Component extends GridDependency {
             case DataType.DATE_AND_TIME_DATE_AND_TIME:
             case DataType.DATE_AND_TIME_DATE_ONLY: {
                 const dateTimeValue = value as Date | null | undefined;
-                const metadata = await this._grid.metadata.get(column.name);
+                const metadata = column.metadata;
                 const date = dayjs(dateTimeValue);
                 return onOverrideControlProps({
                     context: this._pcfContext,
@@ -164,7 +164,7 @@ export class Component extends GridDependency {
                             error: validation?.error === false,
                             errorMessage: validation?.errorMessage ?? "",
                             attributes: {
-                                Behavior: metadata.Attributes.get(attributeName).Behavior,
+                                Behavior: metadata?.Behavior,
                                 Format: column.dataType
                             }
                         }
@@ -178,8 +178,8 @@ export class Component extends GridDependency {
             case DataType.CURRENCY:
             case DataType.WHOLE_DURATION: {
                 const decimalValue = value as number | null | undefined
-                const metadata = await this._grid.metadata.get(column.name);
-                const precision = metadata.Attributes.get(attributeName).Precision;
+                const metadata = column.metadata
+                const precision = metadata?.Precision;
                 return onOverrideControlProps({
                     context: this._pcfContext,
                     parameters: {

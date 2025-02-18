@@ -45,7 +45,7 @@ export const Grid2 = (props: IGrid) => {
 
     useEffect(() => {
         return () => {
-            keyHoldListener.destroy();
+            providerValue.gridInstance.destroy();
         }
     }, []);
 

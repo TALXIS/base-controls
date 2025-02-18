@@ -53,6 +53,7 @@ export interface IOptions {
         onInit?: (instance: NestedControl) => void;
         onGetControlStates?: () => IControlStates | undefined
         onNotifyOutputChanged?: (ouputs: any) => void;
+        
         /**
          * Triggers when the control changes a state that should be visible in control renderer UI (for example loading)
          */
@@ -63,6 +64,7 @@ export interface IOptions {
         onRender?: (props: IControl<any, any, any, any>, container: HTMLDivElement, defaultRender: () => Promise<void>) => void;
         onUnmount?: (isPcfComponent: boolean, container: HTMLDivElement, defaultUnmount: () => void) => void;
     }
+    doNotUnmountComponentFromDOM?: boolean;
 }
 
 export class NestedControl {
@@ -79,14 +81,15 @@ export class NestedControl {
     private _props: IControl<IParameters, any, any, any> | undefined;
     private _mutationObserver: MutationObserver | null = new MutationObserver((mutations) => this._checkIfControlLoadedToDom(mutations));
     private _destroyed: boolean = false;
+    private _container: HTMLDivElement | null = null;
 
     constructor(options: IOptions) {
         this._options = options;
         this._init();
     }
-    
+
     public getProps(): IControl<IParameters, any, any, any> {
-        if(!this._props) {
+        if (!this._props) {
             return this.refreshProps()
         }
         return this._props;
@@ -117,7 +120,6 @@ export class NestedControl {
         this._props = result;
         return result;
     }
-
 
     public getParameters() {
         const parameters: { [name: string]: IProperty } = {};
@@ -151,7 +153,7 @@ export class NestedControl {
         }
         try {
             await this._overrideDecorator(async () => this._render(), this.getOptions().overrides?.onRender, () => [this.getProps(), this.getContainer(), async () => this._render()] as any);
-            if(this._destroyed) {
+            if (this._destroyed) {
                 return;
             }
             this._lastRenderedControlName = this.getControlName();
@@ -166,6 +168,8 @@ export class NestedControl {
         this._mutationObserver?.disconnect();
         this._mutationObserver = null;
         this._props = undefined;
+        this._customControlInstance = null;
+        this._customControlContext = null;
         this._properties.clear();
     }
     public getErrorMessage(): string {
@@ -173,16 +177,23 @@ export class NestedControl {
     }
 
     public getContainer() {
-        const container = this.getOptions().onGetContainerElement?.();
-        if(!container) {
-            throw new Error('Cannot render control if no container is specified!');
+        let container = this.getOptions().onGetContainerElement?.();
+        if(container) {
+            this._container = container;
+            return container;
         }
-        return container;
+        if(this._container) {
+            return this._container;
+        }
+        if (!container && this._container) {
+            return this._container;
+        }
+        throw new Error('Cannot render control if no container is specified!');
     }
 
     public getControlName() {
         const controlName = this.getOptions().onGetControlName?.();
-        if(!controlName) {
+        if (!controlName) {
             throw new Error("Cannot render control if it's name is not specified!");
         }
         return controlName;
@@ -192,6 +203,13 @@ export class NestedControl {
         return this.getOptions().onGetBindings();
     }
 
+    public getCustomControlId() {
+        return this._customControlId;
+    }
+
+    public isCustomPcfComponent() {
+        return !!this._customControlId;
+    }
     private _overrideDecorator<T extends any[], K>(defaultMethod: () => K | Promise<K>, override?: (...args: T) => any, getOverrideArgs?: () => T) {
         if (override && getOverrideArgs) {
             return override(...getOverrideArgs());
@@ -208,10 +226,9 @@ export class NestedControl {
     }
 
     private _unmount() {
-        this._customControlInstance?.destroy();
-        this._customControlInstance = null;
+        (this.getOptions().parentPcfContext as any).factory.unbindDOMComponent(this._customControlId);
         this._customControlId = '';
-        this._customControlContext = null;
+        this._container = null;
     }
     private async _render(): Promise<void> {
         if (!this._lastRenderedControlName) {
@@ -266,7 +283,7 @@ export class NestedControl {
                 this._loading = false;
                 LOADED_CONTROLS.add(this._lastRenderedControlName);
                 this._mutationObserver?.disconnect();
-                if (!this._customControlInstance) {
+                if (false) {
                     //TODO: call unmount, but make it so unbindDOMComponent always gets triggered there unless specified not to from above
                     (this.getOptions().parentPcfContext as any).factory.unbindDOMComponent(this._customControlId);
                     this._triggerError(`Custom control ${this._lastRenderedControlName} does not expose it's instance through fireEvent. Please add fireEvent to init() to avoid unintentional behavior.`)

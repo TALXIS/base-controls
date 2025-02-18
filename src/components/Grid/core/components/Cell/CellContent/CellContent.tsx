@@ -23,7 +23,6 @@ export const CellContent = (props: ICellContentProps) => {
     const grid = useGridInstance();
     const record = props.data;
     const node = props.node;
-    const agGrid = React.useContext(AgGridContext);
     const styles = React.useMemo(() => getCellContentStyles(props.value.columnAlignment, fillAllAvailableSpace), [props.value.columnAlignment, fillAllAvailableSpace]);
     //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
@@ -32,7 +31,7 @@ export const CellContent = (props: ICellContentProps) => {
         const formatting = valueRef.current.customFormatting;
         const mergedOverrides = merge(fluentDesignLanguage?.v8FluentOverrides ?? {}, formatting.themeOverride);
 
-        const columnAlignment = agGrid.getColumnAlignment(column);
+        const columnAlignment = grid.getColumnAlignment(column);
         const result = ControlTheme.GenerateFluentDesignLanguage(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, {
             v8FluentOverrides: merge(
                 {
@@ -102,15 +101,18 @@ export const CellContent = (props: ICellContentProps) => {
     return <NestedControlRenderer
         context={grid.pcfContext}
         parameters={{
-            ControlName: agGrid.getControl(column, record, props.editing).name,
+            ControlName: grid.getControl(column, record, props.editing).name,
             LoadingType: 'shimmer',
-            Bindings: agGrid.getBindings(record, column, props.editing, valueRef.current.customControl),
+            Bindings: grid.getBindings(record, column, props.editing, valueRef.current.customControl),
             ControlStates: {
                 isControlDisabled: !props.editing
+            },
+            __DoNotUnmountComponentFromDOM: {
+                raw: true
             }
         }}
         onNotifyOutputChanged={(outputs) => {
-            agGrid.onNotifyOutputChanged(record, column, props.editing, outputs.value, () => rerender())
+            grid.onNotifyOutputChanged(record, column, props.editing, outputs.value, () => rerender())
         }}
         onOverrideComponentProps={(componentProps) => {
             return {
@@ -146,8 +148,11 @@ export const CellContent = (props: ICellContentProps) => {
                     }
                 },
                 onOverrideRender: (controlProps, defaultRender) => { return valueRef.current.customComponent.component(controlProps, defaultRender) },
+                onAfterComponentRendered: (control) => {
+                    console.log(control);
+                },
                 onOverrideControlProps: (controlProps) => {
-                    const parameters = agGrid.getParameters(record, column, props.editing)
+                    const parameters = grid.getParameters(record, column, props.editing)
                     return {
                         ...controlProps,
                         context: {

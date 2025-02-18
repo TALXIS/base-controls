@@ -1,14 +1,14 @@
-import { Attribute, Constants, DataTypes, IColumn, IDataset, IRecord } from "@talxis/client-libraries";
+import { Attribute, Constants, DataType, DataTypes, IColumn, ICustomColumnControl, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { Filtering } from "../../filtering/model/Filtering";
 import { IGrid } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
-import { DataType } from "../enums/DataType";
 import { KeyHoldListener } from "../services/KeyListener";
-import { Metadata } from "./Metadata";
 import { CHECKBOX_COLUMN_KEY } from "../../constants";
 import { IGridColumn } from "../interfaces/IGridColumn";
+import { BaseControls } from "../../../../utils";
+import { IBinding, NestedControl } from "../../../NestedControlRenderer/NestedControl";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
@@ -30,15 +30,13 @@ export class Grid {
     private _dependencies: {
         filtering: Filtering,
         sorting: Sorting,
-        metadata: Metadata,
         selection: Selection,
         paging: Paging,
     };
     private _maxHeight: number;
     private _minHeight: number = 150;
     private _initialPageSize: number;
-    //this is temp, should be moved to AgGrid class, useAgGridInstance should also be created, similar to useGridInstance
-    private _refreshGlobalCheckBox: () => void = () => {};
+    private _customControlUnmountCallbacks: (() => void)[] = [];
     public readonly keyHoldListener: KeyHoldListener;
 
     constructor(props: IGrid, labels: any, keyHoldListener: KeyHoldListener) {
@@ -51,7 +49,6 @@ export class Grid {
         this._dependencies = {
             filtering: new Filtering(this),
             selection: new Selection(this),
-            metadata: new Metadata(this),
             sorting: new Sorting(this),
             paging: new Paging(this),
         }
@@ -95,9 +92,6 @@ export class Grid {
     }
     public get sorting() {
         return this._dependencies.sorting;
-    }
-    public get metadata() {
-        return this._dependencies.metadata;
     }
     public get filtering() {
         return this._dependencies.filtering;
@@ -235,6 +229,177 @@ export class Grid {
         return totalWidth;
     }
 
+    public onNotifyOutputChanged(record: IRecord, column: IColumn, editing: boolean, newValue: any, rerenderCell: () => void) {
+        record.setValue(column.name, newValue);
+        if(!editing) {
+            this.pcfContext.factory.requestRender();
+            return;
+        }
+        setTimeout(() => {
+            rerenderCell();
+        }, 0);
+    }
+
+    public getBindings(record: IRecord, column: IColumn, editing: boolean, control: ICustomColumnControl) {
+        const columnInfo = record.getColumnInfo(column.name);
+        const bindings: { [name: string]: IBinding } = {
+            'value': {
+                isStatic: false,
+                type: column.dataType as any,
+                value: this._getBindingValue(record, column),
+                error: columnInfo.error,
+                errorMessage: columnInfo.errorMessage,
+                onNotifyOutputChanged: () => { },
+                metadata: {
+                    onOverrideMetadata: () => column.metadata
+                }
+            }
+        }
+        if (control.bindings) {
+            Object.entries(control.bindings).map(([name, binding]) => {
+                bindings[name] = {
+                    isStatic: true,
+                    type: binding.type!,
+                    value: binding.value
+                }
+            })
+        }
+        return bindings;
+    }
+
+    public getControl(column: IColumn, record: IRecord, editing: boolean) {
+        const defaultControl: ICustomColumnControl = {
+            name: true ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : 'GridCellRenderer',
+            appliesTo: 'both',
+        };
+        const customControls = record.getColumnInfo(column.name).ui.getCustomControls([defaultControl]);
+        const appliesToValue = editing ? 'editor' : 'renderer';
+        const customControl = customControls.find(
+            control => control.appliesTo === 'both' || control.appliesTo === appliesToValue
+        );
+        if (customControl) {
+            return customControl;
+        }
+
+        return defaultControl as ICustomColumnControl;
+    }
+
+    public getParameters(record: IRecord, column: IColumn, editing: boolean) {
+        const parameters: any = {
+            Dataset: this.dataset
+        }
+        parameters.Record = record;
+        parameters.Column = column
+
+        parameters.EnableNavigation = {
+            raw: this.isNavigationEnabled
+        }
+        parameters.ColumnAlignment = {
+            raw: this.getColumnAlignment(column)
+        }
+        parameters.IsPrimaryColumn = {
+            raw: column.isPrimary
+        }
+        parameters.ShowErrorMessage = {
+            raw: false
+        }
+        parameters.CellType = {
+            raw: editing ? 'editor' : 'renderer'
+        }
+        if (editing) {
+            parameters.AutoFocus = {
+                raw: true
+            }
+        }
+        switch (column.dataType) {
+            case 'Lookup.Customer':
+            case 'Lookup.Owner':
+            case 'Lookup.Regarding':
+            case 'Lookup.Simple': {
+                parameters.IsInlineNewEnabled = {
+                    raw: false
+                }
+                break;
+            }
+            case 'SingleLine.Email':
+            case 'SingleLine.Phone':
+            case 'SingleLine.URL': {
+                parameters.EnableTypeSuffix = {
+                    raw: false
+                }
+                break;
+            }
+            case 'OptionSet':
+            case 'TwoOptions':
+            case 'MultiSelectPicklist': {
+                parameters.EnableOptionSetColors = {
+                    raw: this.enableOptionSetColors
+                }
+                break;
+            }
+        }
+        return parameters;
+    }
+    public getColumnAlignment(column: IColumn) {
+        if (column.alignment) {
+            return column.alignment;
+        }
+        switch (column.dataType) {
+            case DataTypes.WholeNone:
+            case DataTypes.Decimal:
+            case DataTypes.Currency: {
+                return 'right';
+            }
+        }
+        return 'left';
+    }
+
+    public addCustomControlUnmountCallback(callback: () => void) {
+        this._customControlUnmountCallbacks.push(callback);
+    }
+
+    public destroy() {
+        this._customControlUnmountCallbacks.map(unmount => unmount());
+        this._customControlUnmountCallbacks.length = 0;
+        this._customControlUnmountCallbacks = [];
+        this._previousRecordsReference = {};
+        this._records.length = 0;
+        this._records = [];
+        this.keyHoldListener.destroy();
+    }
+
+    private _getBindingValue(record: IRecord, column: IColumn) {
+        let value = record.getValue(column.name);
+        switch (column.dataType) {
+            //getValue always returns string for TwoOptions
+            case 'TwoOptions': {
+                value = value == '1' ? true : false
+                break;
+            }
+            //getValue always returns string for OptionSet
+            case 'OptionSet': {
+                value = value ? parseInt(value) : null;
+                break;
+            }
+            case 'MultiSelectPicklist': {
+                value = value ? value.split(',').map((x: string) => parseInt(x)) : null;
+                break;
+            }
+            case 'Lookup.Simple':
+            case 'Lookup.Customer':
+            case 'Lookup.Owner':
+            case 'Lookup.Regarding': {
+                //our implementation returns array, Power Apps returns object
+                if (value && !Array.isArray(value)) {
+                    value = [value];
+                }
+                value = value?.map((x: ComponentFramework.EntityReference) => Sanitizer.Lookup.getLookupValue(x))
+                break;
+            }
+        }
+        return value;
+    }
+
     private _isColumnEditable(column: IColumn): boolean {
         //only allow editing if specifically allowed
         if (!this._props.parameters.EnableEditing?.raw) {
@@ -245,8 +410,8 @@ export class Grid {
         }
         //these field types do not support editing
         switch (column.dataType) {
-            case DataType.FILE:
-            case DataType.IMAGE: {
+            case DataTypes.File:
+            case DataTypes.Image: {
                 return false;
             }
         }
@@ -277,7 +442,7 @@ export class Grid {
             return false;
         }
         switch (column.dataType) {
-            case DataType.IMAGE: {
+            case DataTypes.Image: {
                 return false;
             }
         }
