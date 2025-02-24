@@ -1,21 +1,20 @@
 import { Checkbox, useTheme } from "@fluentui/react";
-import { useContext, useMemo } from "react";
+import { useContext } from "react";
 import { useGridInstance } from "../../../../hooks/useGridInstance";
 import { getGlobalCheckboxStyles } from "./styles";
-import { useRerender } from "@talxis/react-components";
 import { AgGridContext } from "../../../AgGrid/context";
 
-export const GlobalCheckBox = () => {
+interface IGlobalCheckBox {
+    checkboxState: 'checked' | 'unchecked' | 'intermediate'
+}
+
+export const GlobalCheckBox = (props: IGlobalCheckBox) => {
     const grid = useGridInstance();
     const theme = useTheme();
     const styles = getGlobalCheckboxStyles(theme);
-    const rerender = useRerender();
     const selection = grid.selection;
     const agGrid = useContext(AgGridContext);
-
-    useMemo(() => {
-        agGrid.setRefreshGlobalCheckBoxCallback(() => rerender());
-    }, []);
+    const checkboxState = props.checkboxState;
 
     if(grid.dataset.sortedRecordIds.length === 0) {
         return <></>
@@ -24,11 +23,11 @@ export const GlobalCheckBox = () => {
         <div className={styles.root}>
             {selection.type === 'multiple' &&
                 <Checkbox
-                    checked={selection.allRecordsSelected}
+                    checked={checkboxState === 'checked'}
                     styles={{
                         checkbox: styles.checkbox
                     }}
-                    indeterminate={selection.selectedRecordIds.length > 0 && !selection.allRecordsSelected}
+                    indeterminate={checkboxState === 'intermediate'}
                     onChange={(e, checked) => {
                         if(checked) {
                             selection.selectAll();

@@ -1,80 +1,139 @@
-import { IMessageBar, IShimmerProps, ISpinnerProps, ThemeProviderProps } from "@fluentui/react";
-import { IParameters, ITwoOptionsProperty } from "../../interfaces";
+import { IButtonProps, IMessageBar, IShimmerProps, ISpinnerProps } from "@fluentui/react";
+import { IParameters } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
-import { IBinding, IControlStates, NestedControl } from "./NestedControl";
+import { NestedControl } from "./NestedControl";
+import { DataType } from "@talxis/client-libraries";
+import { getDefaultNestedControlRendererTranslations } from "./translations";
 
 type ControlNameOptions = 'TextField' | 'OptionSet' | 'MultiSelectOptionSet' | 'Lookup' | 'Decimal' | 'Duration' | 'DateTime' | 'GridCellRenderer' | (string & {});
 
-export interface INestedControlRenderer extends IControl<INestedControlRendererParameters, IOutputs, any, INestedControlRendererComponentProps> {
+export interface INestedControlRenderer extends IControl<INestedControlRendererParameters, IOutputs, ReturnType<typeof getDefaultNestedControlRendererTranslations>, INestedControlRendererComponentProps> {
 }
 
 export interface INestedControlRendererParameters extends IParameters {
     /**
-     * Name of the control to be rendered. Can either be a custom PCF or Base Control.
+     * Specifies the name of the control to be rendered. This can be either a custom PCF control or a base control.
      */
-    ControlName: ControlNameOptions
+    ControlName: ControlNameOptions;
+
     /**
-     * Bindings that will be passed to the control.
+     * Optional bindings that will be passed to the control. These bindings provide data and metadata to the control.
      */
     Bindings?: {
         [key: string]: IBinding
-    }
+    };
+
     /**
-     * Type of loading that will appear before the control is loaded into the page.
+     * Specifies the type of loading indicator to display before the control is fully loaded.
+     * Options include 'spinner', 'shimmer', or 'none' for no loading indicator.
      */
-    LoadingType?: 'spinner' | 'shimmer' | 'none'
+    LoadingType?: 'spinner' | 'shimmer' | 'none';
+
     /**
-     * Can be used to set whether the control is disabled or not.
+     * Optional configuration to set the control's state, such as enabling or disabling the control.
      */
     ControlStates?: IControlStates;
-
-
-    /**
-     * Internal property, do not use.
-     */
-    __DoNotUnmountComponentFromDOM?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface INestedControlRendererComponentProps {
+    /**
+     * Props for the loading indicator that appears before the control is fully loaded.
+     */
     loadingProps: {
         spinnerProps: ISpinnerProps;
         shimmerProps: IShimmerProps;
         containerProps: React.HTMLAttributes<HTMLDivElement>;
-    }
+    };
+
     /**
-     * Props for the message bar displaying error message.
+     * Props for the message bar that displays error messages.
      */
-    messageBarProps: IMessageBar
+    messageBarProps: IMessageBar & {
+        buttonProps: IButtonProps;
+    }
+
     /**
-     * Props for top level container. Wraps the control and other elements like loading.
+     * Props for the top-level container that wraps the control and other elements like the loading indicator.
      */
     rootContainerProps: React.HTMLAttributes<HTMLDivElement>;
+
     /**
-     * Props for container used to render the control.
+     * Props for the container used to render the control.
      */
     controlContainerProps: React.HTMLAttributes<HTMLDivElement>;
-    /**
-     * If you override the control render, additional container is created to create a ThemeProvider so your override is rendered with correct theming applied.
-     * You can use this property to assign additional properties to this container.
-     */
-    overridenControlContainerProps: ThemeProviderProps;
 
     /**
-     * Allows you to override the generated control props.
+     * Callback function that allows you to override the generated control props.
      */
-    onOverrideControlProps: (props: IControl<any, any, any, any>) => IControl<any, any, any, any>
-    /**
-     * Allows you to override the default control render.
-     */
-    onOverrideRender: (props: IControl<any, any, any, any>, defaultRender: () => void) => React.ReactElement | void;
+    onOverrideControlProps: (props: IControl<any, any, any, any>) => IControl<any, any, any, any>;
 
     /**
-     * Runs when the control has been fully initialized
+     * Callback function that allows you to override the default control render.
      */
-    onAfterComponentRendered: (control: NestedControl) => void;
+    onOverrideRender: (control: NestedControl, isCustomPcfComponent: boolean, defaultRender: () => void) => void;
 
+    /**
+     * Callback function that allows you to override the default control unmount behavior.
+     */
+    onOverrideUnmount: (control: NestedControl, defaultUnmount: () => void) => void;
 }
 
+export interface IBinding {
+    /**
+     * The data type of the binding.
+     */
+    type: DataType;
 
+    /**
+     * Indicates whether the binding is static or bound.
+     */
+    isStatic: boolean;
 
+    /**
+     * The value of the binding.
+     */
+    value: any;
 
+    /**
+     * Indicates whether the binding has an error.
+     */
+    error?: boolean;
+
+    /**
+     * The error message associated with the binding, if any.
+     */
+    errorMessage?: string;
+
+    /**
+     * Optional metadata for the binding.
+     */
+    metadata?: {
+        /**
+         * The entity name associated with the binding.
+         */
+        entityName?: string;
+
+        /**
+         * The logical name of the attribute associated with the binding.
+         */
+        attributeName?: string;
+
+        /**
+         * Callback function to override the metadata for the binding.
+         * Always return the spread metadata attribute to ensure proper merging.
+         */
+        onOverrideMetadata?: (metadata: any) => any
+    };
+
+    /**
+     * Callback function to notify when the binding's output value changes.
+     */
+    onNotifyOutputChanged?: (newValue: any) => void;
+}
+
+export interface IControlStates {
+    /**
+     * Indicates whether the control is disabled.
+     */
+    isControlDisabled?: boolean;
+}

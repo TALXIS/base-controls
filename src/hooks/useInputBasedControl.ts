@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { IControl, IOutputs } from "../interfaces/context";
-import { IControlController, IDefaultTranslations, useControl } from "./useControl";
+import { IControlController, useControl } from "./useControl";
 import { IInputParameters } from "../interfaces/parameters";
+import { IDefaultTranslations } from "./useControlLabels";
 
 /**
  * Description

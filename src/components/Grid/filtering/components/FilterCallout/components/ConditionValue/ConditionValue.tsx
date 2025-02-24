@@ -3,8 +3,8 @@ import { IGridColumn } from "../../../../../core/interfaces/IGridColumn";
 import { IColumnFilterConditionController, useColumnFilterConditionController } from "../../../../controller/useColumnFilterConditionController";
 import { ConditionComponentValue } from "./model/ConditionComponentValue";
 import { DataTypes, MemoryDataProvider } from "@talxis/client-libraries";
-import { useRerender } from "../../../../../../../hooks/useRerender";
 import { Component } from "../LegacyControlRendering/Component";
+import { useRerender } from "@talxis/react-components";
 
 interface IConditionValue {
     column: IGridColumn;

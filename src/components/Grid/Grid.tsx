@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useControl, useControlTheme } from "../../hooks"
 import { IGridContext } from "./core/interfaces/IGridContext";
 import { Grid as GridModel } from "./core/model/Grid";
@@ -16,22 +16,8 @@ const styles = mergeStyleSets({
     }
 });
 
-export const Grid = (props: any) => {
-    const [isMounted, setIsMounted] = useState(true);
-    return <div>
-        <button onClick={() => {
-            //@ts-ignore - a
-            props.parameters.Grid.destroy();
-            setIsMounted(false);
-        }}>unmount</button>
-        <button onClick={() => setIsMounted(true)}>mount</button>
-        {isMounted &&
-            <Grid2 {...props} />
-        }
-    </div>
-}
 
-export const Grid2 = (props: IGrid) => {
+export const Grid = (props: IGrid) => {
     const { labels } = useControl('Grid', props, gridTranslations);
     const keyHoldListener = useMemo(() => new KeyHoldListener(), []);
     const providerValue: IGridContext = useMemo(() => {

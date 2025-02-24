@@ -2,7 +2,7 @@ import { Icon, IIconProps, ILinkProps, Image, Link, ThemeProvider } from "@fluen
 import { useControl } from "../../hooks";
 import { useMemo } from "react";
 import { getDefaultContentRendererStyles, getGridCellLabelStyles } from "./styles";
-import { DataType, DataTypes, FileAttribute, IRecord } from "@talxis/client-libraries";
+import { DataType, DataTypes, FileAttribute, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { OptionSet } from './OptionSet';
 import { IGridCellRenderer } from "./interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
@@ -54,6 +54,15 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
                 if(dataType === 'Image') {
                     props.title = value.fileName;
                     props.children = value.fileName;
+                }
+                break;
+            }
+            case DataTypes.LookupCustomer:
+            case DataTypes.LookupOwner:
+            case DataTypes.LookupSimple:
+            case DataTypes.LookupRegarding: {
+                props.onClick = () => {
+                    dataset.openDatasetItem(Sanitizer.Lookup.getEntityReference(value[0]))
                 }
                 break;
             }

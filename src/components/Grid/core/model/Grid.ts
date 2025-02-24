@@ -1,4 +1,4 @@
-import { Attribute, Constants, DataType, DataTypes, IColumn, ICustomColumnControl, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { Attribute, Client, Constants, DataType, DataTypes, IColumn, ICustomColumnControl, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { Filtering } from "../../filtering/model/Filtering";
 import { IGrid } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
@@ -8,7 +8,7 @@ import { KeyHoldListener } from "../services/KeyListener";
 import { CHECKBOX_COLUMN_KEY } from "../../constants";
 import { IGridColumn } from "../interfaces/IGridColumn";
 import { BaseControls } from "../../../../utils";
-import { IBinding, NestedControl } from "../../../NestedControlRenderer/NestedControl";
+import { IBinding } from "../../../NestedControlRenderer/interfaces";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
@@ -36,7 +36,9 @@ export class Grid {
     private _maxHeight: number;
     private _minHeight: number = 150;
     private _initialPageSize: number;
-    private _customControlUnmountCallbacks: (() => void)[] = [];
+    private _usesNestedPcfs: boolean = false;
+    private _client = new Client();
+
     public readonly keyHoldListener: KeyHoldListener;
 
     constructor(props: IGrid, labels: any, keyHoldListener: KeyHoldListener) {
@@ -154,6 +156,10 @@ export class Grid {
 
     }
 
+    public getClient() {
+        return this._client;
+    }
+
     public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
         this._dataset.openDatasetItem(entityReference);
         const clickedRecord = this.records.find(x => x.getRecordId() === entityReference.id.guid);
@@ -240,6 +246,10 @@ export class Grid {
         }, 0);
     }
 
+    public setUsesNestedPcfs() {
+        this._usesNestedPcfs = true;
+    }
+
     public getBindings(record: IRecord, column: IColumn, editing: boolean, control: ICustomColumnControl) {
         const columnInfo = record.getColumnInfo(column.name);
         const bindings: { [name: string]: IBinding } = {
@@ -269,7 +279,7 @@ export class Grid {
 
     public getControl(column: IColumn, record: IRecord, editing: boolean) {
         const defaultControl: ICustomColumnControl = {
-            name: true ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : 'GridCellRenderer',
+            name: editing ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : 'GridCellRenderer',
             appliesTo: 'both',
         };
         const customControls = record.getColumnInfo(column.name).ui.getCustomControls([defaultControl]);
@@ -354,18 +364,15 @@ export class Grid {
         return 'left';
     }
 
-    public addCustomControlUnmountCallback(callback: () => void) {
-        this._customControlUnmountCallbacks.push(callback);
-    }
-
     public destroy() {
-        this._customControlUnmountCallbacks.map(unmount => unmount());
-        this._customControlUnmountCallbacks.length = 0;
-        this._customControlUnmountCallbacks = [];
         this._previousRecordsReference = {};
         this._records.length = 0;
-        this._records = [];
         this.keyHoldListener.destroy();
+        //@ts-ignore - internal types
+        //if any nested PCF has been loaded and we are in Power Apps, do a page refresh to prevent memory leaks
+        if(this._usesNestedPcfs && !this._client.isTalxisPortal()) {
+            //location.reload();
+        }
     }
 
     private _getBindingValue(record: IRecord, column: IColumn) {

@@ -1,5 +1,6 @@
 import { IAttributeMetadata} from "@talxis/client-libraries";
-import { IBinding, IOptions } from "../NestedControl";
+import { IOptions } from "../NestedControl";
+import { IBinding } from "../interfaces";
 
 export abstract class Property {
     private _onGetBinding: () => IBinding;
@@ -11,7 +12,6 @@ export abstract class Property {
         this._parentPcfContext = options.parentPcfContext;
     }
     public abstract getParameter(): any;
-
 
     //this init will be sync if onOverrideMetadata was provided and no attributeName and entityName has been provided
     public async init(): Promise<boolean> {

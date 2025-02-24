@@ -1,0 +1,10 @@
+[{"name": "talxis_name","controls": [{
+    "name": "dominik_TALXIS.PCF.DEBUG.ColorPicker",
+    "appliesTo": "renderer",
+    "bindings": {
+        "clickToCopyEnabled": {
+            "type": "SingleLine.Text",
+            "value": "true"
+        }
+    }
+}]}]

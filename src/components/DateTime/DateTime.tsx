@@ -111,7 +111,7 @@ export const DateTime = (componentProps: IDateTime) => {
                                 invalidInputErrorMessage: labels.invalidTimeInput()
                             }
                         },
-                        theme: componentProps.context.fluentDesignLanguage?.applicationTheme
+                        theme: componentProps.context.fluentDesignLanguage?.applicationTheme ?? theme
                     };
                     if(isDateTime) {
                         calendarProps.onSelectDate = (newDate) => date.set(newDate)

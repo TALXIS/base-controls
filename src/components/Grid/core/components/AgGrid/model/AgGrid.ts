@@ -31,7 +31,6 @@ export interface ICellValues {
 export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
     private _theme: ITheme;
-    private _refreshGlobalCheckBox: () => void = () => { };
     private _rerenderCallback: () => void = () => { };
     private _comparator: Comparator = new Comparator();
     public readonly oddRowCellTheme: ITheme;
@@ -121,11 +120,16 @@ export class AgGrid extends GridDependency {
                 },
                 headerComponentParams: {
                     baseColumn: column
-                }
+                },
             }
             if (agColumn.field === CHECKBOX_COLUMN_KEY) {
                 agColumn.lockPosition = 'left';
-                agColumn.headerComponent = GlobalCheckBox
+                agColumn.headerComponent = GlobalCheckBox;
+                agColumn.headerComponentParams = () => {
+                    return {
+                        checkboxState: this._getGlobalCheckBoxState()
+                    }
+                }
             }
             agColumns.push(agColumn)
         }
@@ -253,7 +257,7 @@ export class AgGrid extends GridDependency {
                 force: true,
             })
         }
-        this._refreshGlobalCheckBox();
+        this._gridApi.refreshHeader()
     }
 
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
@@ -298,10 +302,6 @@ export class AgGrid extends GridDependency {
     }
 
 
-    public setRefreshGlobalCheckBoxCallback(callback: () => void) {
-        this._refreshGlobalCheckBox = callback;
-    }
-
     public setRerenderCallback(callback: () => void) {
         this._rerenderCallback = callback;
     }
@@ -322,6 +322,16 @@ export class AgGrid extends GridDependency {
             return false;
         }
         return params.data?.getColumnInfo(column.name).security.editable ?? true;
+    }
+
+    private _getGlobalCheckBoxState(): 'unchecked' | 'checked' | 'intermediate' {
+        if(this._grid.selection.allRecordsSelected) {
+            return 'checked';
+        }
+        if(this._grid.dataset.getSelectedRecordIds().length > 0) {
+            return 'intermediate';
+        }
+        return 'unchecked';
     }
 
     private _suppressKeyboardEvent(params: SuppressKeyboardEventParams<IRecord, any>, column: IGridColumn) {

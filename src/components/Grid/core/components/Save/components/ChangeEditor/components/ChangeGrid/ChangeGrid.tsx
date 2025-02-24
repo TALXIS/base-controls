@@ -104,6 +104,18 @@ export const ChangeGrid = (props: IChangeGrid) => {
 
         dataset.addEventListener('onRecordLoaded', (record) => {
             const recordId = record.getRecordId();
+            record.expressions.ui.setCustomFormattingExpression('valueDesc__virtual', (cellTheme) => {
+                return {
+                    themeOverride: {
+                        fonts: {
+                            medium: {
+                                fontSize: 16,
+                                fontWeight: 600
+                            }
+                        }
+                    }
+                }
+            })
             changedColumns.map(col => {
                 const change = fieldChangesRef.current.find(x => x.columnName === col.name);
                 record.expressions?.setCurrencySymbolExpression(col.name, () => baseRecord.getCurrencySymbol?.(col.name) ?? "");

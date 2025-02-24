@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { NestedControl } from './NestedControl';
 import { INestedControlRenderer, INestedControlRendererComponentProps, INestedControlRendererParameters } from './interfaces';
 import { TextField } from '../TextField';
@@ -10,36 +10,57 @@ import { MultiSelectOptionSet } from '../MultiSelectOptionSet';
 import { Lookup } from '../Lookup';
 import { OptionSet } from '../OptionSet';
 import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
-import { BaseControls, ThemeWrapper } from '../../utils';
+import { BaseControls } from '../../utils';
 import { getNestedControlStyles } from './styles';
 import { Spinner, useRerender } from '@talxis/react-components';
-import { MessageBar, MessageBarButton, MessageBarType, Rating, Shimmer, SpinnerSize } from '@fluentui/react';
+import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } from '@fluentui/react';
 import ReactDOM from 'react-dom';
-import { IControl } from '../../interfaces';
+import { useControlLabels } from '../../hooks';
+import { getDefaultNestedControlRendererTranslations } from './translations';
 
-export const NestedControlRenderer = (__props: INestedControlRenderer) => {
-    const controlRef = useRef<NestedControl>();
-    const internalControlRendererRef = useRef<IInternalNestedControlRendererRef>(null);
-    const propsRef = useRef<INestedControlRenderer>({} as any);
-    propsRef.current = __props;
-    const onOverrideComponentProps = __props.onOverrideComponentProps ?? ((props) => props);
+interface IRef {
+    control: NestedControl | null;
+    props: INestedControlRenderer;
+    controlName: string;
+    componentProps: INestedControlRendererComponentProps;
+    isBaseControl: boolean;
+    mounted: boolean;
+    controlContainer: HTMLDivElement | null;
+}
+
+export const NestedControlRenderer = (props: INestedControlRenderer) => {
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+    const labels = useControlLabels({
+        translations: props.translations,
+        languageId : props.context.userSettings.languageId,
+        defaultTranslations: getDefaultNestedControlRendererTranslations()
+    })
     const rerender = useRerender();
     const isBaseControl = useMemo(() => {
-        return BaseControls.IsBaseControl(propsRef.current.parameters.ControlName);
-    }, [propsRef.current.parameters.ControlName]);
+        return BaseControls.IsBaseControl(props.parameters.ControlName);
+    }, [props.parameters.ControlName]);
 
     const styles = useMemo(() => getNestedControlStyles(isBaseControl), [isBaseControl]);
-    const componentPropsRef = useRef<INestedControlRendererComponentProps>();
-    const mountedRef = useRef(false);
-    const containerRef = useRef<HTMLDivElement | null>(null);
+    const internalControlRendererRef = useRef<IInternalNestedControlRendererRef>(null);
+    const ref = useRef<Partial<IRef>>();
+    
+    ref.current = {
+        ...ref.current,
+        props: props,
+        isBaseControl: isBaseControl,
+        controlName: props.parameters.ControlName 
+    }
 
-    componentPropsRef.current = onOverrideComponentProps({
+    ref.current.componentProps = onOverrideComponentProps({
         rootContainerProps: {},
         controlContainerProps: {},
         messageBarProps: {
+            //@ts-ignore - typescript
             messageBarType: MessageBarType.error,
+            buttonProps: {
+                className: styles.messageBarBtn
+            }
         },
-        overridenControlContainerProps: {},
         loadingProps: {
             containerProps: {},
             spinnerProps: {
@@ -54,13 +75,17 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
                 }
             },
         },
-        onOverrideRender: (props, defaultRender) => defaultRender(),
-        onAfterComponentRendered: (control) => { },
+        onOverrideRender: (control, isCustomPcfComponent, defaultRender) => defaultRender(),
+        onOverrideUnmount: (control, defaultUnmount) => defaultUnmount(),
         onOverrideControlProps: (props) => props,
-    })
+    });
+
+    const getRef = (): IRef => {
+        return ref.current as any;
+    }
 
     const getBaseControl = (): any => {
-        switch (propsRef.current.parameters.ControlName) {
+        switch (getRef().controlName) {
             case 'TextField':
                 return TextField
             case 'OptionSet':
@@ -84,62 +109,53 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
         }
     };
 
-    const onRender = (controlProps: IControl<any, any, any, any>, container: HTMLDivElement, defaultRender: () => Promise<void>, componentToRender?: React.ReactElement) => {
-        if (!componentToRender && BaseControls.IsBaseControl(propsRef.current.parameters.ControlName)) {
-            componentToRender = React.createElement(getBaseControl(), controlProps);
+    const onRender = (control: NestedControl, defaultRender: () => Promise<void>) => {
+        if (getRef().isBaseControl) {
+            const controlProps = control.getProps();
+            return ReactDOM.render(React.createElement(getBaseControl(), controlProps), control.getContainer());
         }
-        if (componentToRender) {
-            const component = ReactDOM.render(React.createElement(
-                ThemeWrapper,
-                {
-                    ...componentPropsRef.current?.overridenControlContainerProps,
-                    fluentDesignLanguage: controlProps.context.fluentDesignLanguage
-                },
-                componentToRender
-            ), container);
-            componentPropsRef.current?.onAfterComponentRendered(controlRef.current!);
-            return component;
+        return defaultRender();
+    }
+
+    const onUmount = (control: NestedControl, defaultUnmount: () => void) => {
+        if (control.isMountedPcfComponent()) {
+            return defaultUnmount();
         }
-        const component = defaultRender();
-        componentPropsRef.current?.onAfterComponentRendered(controlRef.current!);
-        return component;
+        return ReactDOM.unmountComponentAtNode(control.getContainer())
     }
 
     const createControlInstance = () => {
         new NestedControl({
-            parentPcfContext: propsRef.current.context,
-            onGetContainerElement: () => containerRef.current!,
-            onGetControlName: () => propsRef.current.parameters.ControlName,
+            parentPcfContext: getRef().props.context,
+            onGetContainerElement: () => getRef().controlContainer!,
+            onGetControlName: () => getRef().controlName,
             onGetBindings: () => {
-                return propsRef.current.parameters.Bindings ?? {};
+                return getRef().props.parameters.Bindings ?? {};
             },
             callbacks: {
                 //onInit could either by sync or async
                 onInit: (instance) => {
-                    controlRef.current = instance;
+                    getRef().control = instance;
                     //if we are already mounted, we need to rerender
-                    if (mountedRef.current) {
+                    if (getRef().mounted) {
                         rerender();
                     }
                 },
                 onControlStateChanged: () => internalControlRendererRef.current?.rerender(),
-                onGetControlStates: () => propsRef.current.parameters.ControlStates,
-                onNotifyOutputChanged: (outputs) => propsRef.current.onNotifyOutputChanged?.(outputs)
+                onGetControlStates: () => getRef().props.parameters.ControlStates,
+                onNotifyOutputChanged: (outputs) => getRef().props.onNotifyOutputChanged?.(outputs)
             },
             overrides: {
-                onGetProps: componentPropsRef.current?.onOverrideControlProps,
-                onRender: (controlProps, container, defaultRender) => {
-                    const component = componentPropsRef.current?.onOverrideRender!(controlProps, () => { })
-                    return onRender(controlProps, container, defaultRender, component ?? undefined);
+                onGetProps: getRef().componentProps.onOverrideControlProps,
+                onRender: (control: NestedControl, defaultRender) => {
+                    getRef().componentProps.onOverrideRender(control, !getRef().isBaseControl, () => {
+                        onRender(control, defaultRender);
+                    })
                 },
-                onUnmount: (isPcfComponent, container, defaultUnmount) => {
-                    if (isPcfComponent) {
-                        return defaultUnmount();
-                    }
-                    ReactDOM.unmountComponentAtNode(container);
+                onUnmount: (control, defaultUnmount) => {
+                    getRef().componentProps.onOverrideUnmount(control, () => onUmount(control, defaultUnmount))
                 }
             },
-            doNotUnmountComponentFromDOM: propsRef.current.parameters.__DoNotUnmountComponentFromDOM?.raw
         })
 
     }
@@ -148,32 +164,33 @@ export const NestedControlRenderer = (__props: INestedControlRenderer) => {
     }, []);
 
     useEffect(() => {
-        mountedRef.current = true;
-        containerRef.current = internalControlRendererRef.current!.getContainer()
+        const ref = getRef();
+        ref.mounted = true;
+        ref.controlContainer = internalControlRendererRef.current!.getContainer();
         return () => {
-            controlRef.current?.unmount();
-            containerRef.current = null;
-            controlRef.current = undefined;
+            const ref = getRef();
+            ref.control?.unmount();
+            ref.controlContainer = null;
+            ref.control = null;
         }
     }, []);
 
     useEffect(() => {
-        //if the ref is set, the control has been initialized
-        if (controlRef.current) {
-            controlRef.current?.render();
-        }
+        getRef().control?.render();
     })
 
     return <InternalNestedControlRenderer
         ref={internalControlRendererRef}
-        control={controlRef.current}
-        parameters={propsRef.current.parameters}
-        componentProps={componentPropsRef.current} />
+        labels={labels}
+        control={getRef().control ?? undefined}
+        parameters={getRef().props.parameters}
+        componentProps={getRef().componentProps} />
 }
 
 interface IInternalNestedControlRendererProps {
     parameters: INestedControlRendererParameters;
     componentProps: INestedControlRendererComponentProps;
+    labels: any;
     loadingType?: 'spinner' | 'shimmer';
     control?: NestedControl;
 
@@ -187,7 +204,7 @@ interface IInternalNestedControlRendererRef {
 
 const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererRef, IInternalNestedControlRendererProps>((props, ref) => {
     //once control is defined, it is initialized
-    const { control, parameters, componentProps } = props;
+    const { control, parameters, componentProps, labels } = props;
     const customControlContainerRef = useRef<HTMLDivElement>(null);
     const errorMessage = control?.getErrorMessage();
     const rerender = useRerender();
@@ -205,17 +222,26 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
         }
         return <Spinner {...componentProps?.loadingProps?.spinnerProps} />
     }
+
+    const onShowErrorDialog = () => {
+        if(window.Xrm?.Navigation) {
+            window.Xrm.Navigation.openErrorDialog({
+                message: errorMessage
+            })
+            return;
+        }
+        alert(errorMessage);
+    }
+
     return (
         <div {...componentProps.rootContainerProps}>
             {(!control || control.isLoading()) && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>
             }
             {errorMessage &&
                 <MessageBar messageBarType={MessageBarType.error} isMultiline={false} actions={<div>
-                    <MessageBarButton onClick={() => window.Xrm.Navigation.openErrorDialog({
-                        message: errorMessage
-                    })}>Details</MessageBarButton>
+                    <MessageBarButton className={componentProps.messageBarProps.buttonProps.className} onClick={() => onShowErrorDialog()}>{labels.detail()}</MessageBarButton>
                 </div>} {...componentProps?.messageBarProps}>
-                    Component <b>{parameters.ControlName}</b> failed to load.
+                    {labels.control()} <b>{parameters.ControlName}</b> {labels.failedToLoad()}.
                 </MessageBar>
             }
             <div ref={customControlContainerRef} {...componentProps.controlContainerProps} />

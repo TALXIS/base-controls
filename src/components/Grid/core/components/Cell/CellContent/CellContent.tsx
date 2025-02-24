@@ -3,10 +3,9 @@ import { useGridInstance } from '../../../hooks/useGridInstance';
 import { ICellProps } from '../Cell';
 import { getCellContentStyles } from './styles';
 import { NestedControlRenderer } from '../../../../../NestedControlRenderer/NestedControlRenderer';
-import { AgGridContext } from '../../AgGrid/context';
 import { ControlTheme, IFluentDesignState } from '../../../../../../utils';
 import { merge } from 'merge-anything';
-import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles } from '@fluentui/react';
+import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, useTheme } from '@fluentui/react';
 import { useRerender } from '@talxis/react-components';
 
 interface ICellContentProps extends ICellProps {
@@ -23,6 +22,8 @@ export const CellContent = (props: ICellContentProps) => {
     const grid = useGridInstance();
     const record = props.data;
     const node = props.node;
+    const themeRef = React.useRef(useTheme());
+    themeRef.current = useTheme();
     const styles = React.useMemo(() => getCellContentStyles(props.value.columnAlignment, fillAllAvailableSpace), [props.value.columnAlignment, fillAllAvailableSpace]);
     //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
@@ -128,6 +129,7 @@ export const CellContent = (props: ICellContentProps) => {
                     className: styles.overridenControlContainer
                 },
                 messageBarProps: {
+                    ...componentProps.messageBarProps,
                     styles: {
                         root: styles.errorMessageRoot,
                         content: styles.errorMessageContent
@@ -147,9 +149,27 @@ export const CellContent = (props: ICellContentProps) => {
                         className: styles.loadingWrapper
                     }
                 },
-                onOverrideRender: (controlProps, defaultRender) => { return valueRef.current.customComponent.component(controlProps, defaultRender) },
-                onAfterComponentRendered: (control) => {
-                    console.log(control);
+                onOverrideRender: (control, isCustomPcfComponent, defaultRender) => {
+                    if(isCustomPcfComponent) {
+                        grid.setUsesNestedPcfs();
+                    }
+                    if(valueRef.current.customComponent) {
+                        return valueRef.current.customComponent.onRender(control.getProps(), themeRef.current, control.getContainer())
+                    }
+                    return defaultRender();
+                 },
+                onOverrideUnmount: (control, defaultUnmount) => {
+                    if(valueRef.current.customComponent) {
+                        return valueRef.current.customComponent.onUnmount(control.getContainer());
+                    }
+                    //@ts-ignore - internal types
+                    //skip the unmounting for custom PCF's in Power Apps
+                    // PCF unmount in Power Apps causes other nested PCF's to reinitialize which causes flickering
+                    //umounting of nested PCF's happens on grid destroy to prevent memory leaks (currently done by refreshing the page as no better method was found)
+                    if(control.isMountedPcfComponent() && !grid.getClient().isTalxisPortal()) {
+                        return;
+                    }
+                    return defaultUnmount();
                 },
                 onOverrideControlProps: (controlProps) => {
                     const parameters = grid.getParameters(record, column, props.editing)
