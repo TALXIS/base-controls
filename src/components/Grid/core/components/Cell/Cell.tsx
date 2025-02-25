@@ -1,22 +1,23 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { Constants, IRecord } from "@talxis/client-libraries";
-import { Checkbox, Shimmer, ThemeProvider } from "@fluentui/react";
-import { useMemo, useRef, useState } from "react";
+import { Checkbox, ITooltipHostProps, Shimmer, ThemeProvider, useTheme } from "@fluentui/react";
+import { useMemo } from "react";
 import { getCellStyles, getInnerCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import React from "react";
-import { INotificationsRef, Notifications } from "./Notifications/Notifications";
+import { Notifications } from "./Notifications/Notifications";
 import { Commands } from "./Commands/Commands";
 import { CellContent } from "./CellContent/CellContent";
 import { AgGridContext } from "../AgGrid/context";
 import { ICellValues } from "../AgGrid/model/AgGrid";
-import { getClassNames, useResizeObserver, useThemeGenerator } from "@talxis/react-components";
+import { getClassNames, ICommandBarItemProps, useThemeGenerator } from "@talxis/react-components";
+import { useControlTheme } from "../../../../../utils";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
-    editing: boolean;
+    isCellEditor: boolean;
     data: IRecord;
     value: ICellValues
 }
@@ -64,10 +65,8 @@ export const InternalCell = (props: ICellProps) => {
     const notifications = props.value.notifications;
     const isLoading = props.value.loading;
     const errorMessage = props.value.errorMessage;
-    const notificationRef = React.useRef<INotificationsRef>(null);
-    const notificationWrapperRef = React.useRef<HTMLDivElement>(null);
-    const isGridObservedRef = useRef(false);
-    const [shouldNotificationsFillAvailableSpace, setShouldNotificationsFillAvailableSpace] = useState(false);
+    const theme = useTheme();
+    const applicationTheme = useControlTheme(grid.pcfContext.fluentDesignLanguage);
 
     const shouldShowNotEditableNotification = () => {
         if (column.isEditable && !record.getColumnInfo(column.name).security.editable) {
@@ -75,22 +74,9 @@ export const InternalCell = (props: ICellProps) => {
         }
         return false;
     }
-    const getNotificationWrapperMinWidth = () => {
-        let count = 0;
-        if (notifications && notifications.length > 0) {
-            count++
-        }
-        if (error === true) {
-            count++;
-        }
-        if (shouldShowNotEditableNotification()) {
-            count++;
-        }
-        return count * 40;
-    }
 
-    const getShouldRenderNotificationsWrapper = (): boolean => {
-        if (props.editing) {
+    const getShouldRenderNotifications = (): boolean => {
+        if (props.isCellEditor) {
             return false;
         }
         if (error === true) {
@@ -122,9 +108,10 @@ export const InternalCell = (props: ICellProps) => {
             default: {
                 return (
                     <>
-                        <CellContent {...props}
-                            fillAllAvailableSpace={!shouldNotificationsFillAvailableSpace} />
-                        {shouldRenderNotificationsWrapper &&
+                        {column.type !== 'action' &&
+                            <CellContent {...props} />
+                        }
+                        {shouldRenderNotifications &&
                             renderNotifications()
                         }
                     </>
@@ -134,65 +121,60 @@ export const InternalCell = (props: ICellProps) => {
         }
     }
 
-    const renderNotifications = (): JSX.Element => {
-        return (
-            <div ref={notificationWrapperRef} className={styles.notificationWrapper}>
-                {notifications && notifications.length > 0 &&
-                    <Notifications
-                        ref={notificationRef}
-                        formatting={formatting}
-                        className={styles.notifications}
-                        notifications={notifications}
-                        onShouldNotificationsFillAvailableSpace={(value) => setShouldNotificationsFillAvailableSpace(value)}
-                    />
+    const getFarNotifications = (): ICommandBarItemProps[] => {
+        const result: ICommandBarItemProps[] = [];
+        const tooltipProps: ITooltipHostProps = {
+            tooltipProps: {
+                theme: applicationTheme
+            },
+            calloutProps: {
+                theme: applicationTheme,
+            }
+        }
+        if (shouldShowNotEditableNotification()) {
+            result.push({
+                key: 'noteditable',
+                text: grid.labels['value-not-editable'](),
+                iconOnly: true,
+                disabled: true,
+                tooltipHostProps: tooltipProps,
+                iconProps: {
+                    iconName: 'Uneditable',
+                    styles: {
+                        root: styles.uneditableIconRoot
+                    }
                 }
-                {shouldShowNotEditableNotification() &&
-                    <Notifications notifications={[{
-                        iconName: 'Uneditable',
-                        notificationLevel: 'RECOMMENDATION',
-                        uniqueId: column.name,
-                        title: grid.labels['value-not-editable'](),
-                        compact: true,
-                        messages: []
-                    }]}
-                    formatting={formatting} />
+            })
+        }
+        if (error) {
+            result.push({
+                key: 'error',
+                iconOnly: true,
+                disabled: true,
+                text: errorMessage,
+                tooltipHostProps: tooltipProps,
+                iconProps: {
+                    iconName: 'Error',
+                    styles: {
+                        root: styles.errorIconRoot
+                    }
                 }
-                {error &&
-                    <Notifications notifications={[
-                        {
-                            notificationLevel: 'ERROR',
-                            messages: [],
-                            iconName: 'Error',
-                            uniqueId: column.name,
-                            title: errorMessage,
-                            compact: true
-                        }
-                    ]}
-                    formatting={formatting}
-                     />
-                }
-            </div>
-        );
+            })
+        }
+        return result;
     }
 
-    const shouldRenderNotificationsWrapper = getShouldRenderNotificationsWrapper();
-    const notificationWrapperMinWidth = getNotificationWrapperMinWidth();
-    const styles = useMemo(() => getInnerCellStyles(
-        props.value.columnAlignment, notificationWrapperMinWidth, shouldNotificationsFillAvailableSpace, props.editing
-    ), [notificationWrapperMinWidth, props.value.columnAlignment, shouldNotificationsFillAvailableSpace, props.editing]);
+    const renderNotifications = (): JSX.Element => {
+        return <Notifications
+            formatting={formatting}
+            isActionColumn={column.type === 'action'}
+            columnAlignment={props.value.columnAlignment}
+            notifications={notifications}
+            farItems={getFarNotifications()} />
+    }
 
-    const observeCell = useResizeObserver(() => {
-        if (notifications && notifications.length > 0) {
-            notificationRef.current?.remeasureCommandBar();
-        }
-    });
-
-    React.useEffect(() => {
-        if(notifications.length > 0 && !isGridObservedRef.current) {
-            observeCell(props.eGridCell);
-            isGridObservedRef.current = true;
-        }
-    }, [notifications]);
+    const shouldRenderNotifications = getShouldRenderNotifications();
+    const styles = useMemo(() => getInnerCellStyles(props.isCellEditor, theme, props.value.columnAlignment), [props.isCellEditor, theme, props.value.columnAlignment]);
 
 
     return <div className={styles.innerCellRoot} data-is-valid={!error}>

@@ -3,7 +3,7 @@ import { Grid } from "../../../model/Grid";
 import { GridDependency } from "../../../model/GridDependency";
 import { IGridColumn } from "../../../interfaces/IGridColumn";
 import { CHECKBOX_COLUMN_KEY } from "../../../../constants";
-import { DataTypes, IAddControlNotificationOptions, IColumn, IColumnInfo, ICustomColumnComponent, ICustomColumnControl, ICustomColumnFormatting, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { DataTypes, IAddControlNotificationOptions, IColumn, IColumnInfo, IControlParameters, ICustomColumnComponent, ICustomColumnControl, ICustomColumnFormatting, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 import { Cell } from "../../Cell/Cell";
@@ -22,10 +22,11 @@ export interface ICellValues {
     error: boolean;
     height: number;
     errorMessage: string;
-    parameters: any;
+    parameters: IControlParameters;
     columnAlignment: Required<IColumn['alignment']>
     editing: boolean;
     editable: boolean;
+    disabled: boolean;
 }
 
 export class AgGrid extends GridDependency {
@@ -77,9 +78,20 @@ export class AgGrid extends GridDependency {
                     let editing: boolean = false;
                     const record = p.data as IRecord;
                     const columnInfo = p.data!.getColumnInfo(column.name) as IColumnInfo;
-                    const customControl = this._grid.getControl(column, record, editing);
                     //i hate this, there is no other way to get the information if we are in edit mode or not
                     if (p.api.getEditingCells() > 0 || Error().stack!.includes('startEditing')) {
+                        editing = true;
+                    }
+                    const customControl = this._grid.getControl(column, record, editing || !!column.oneClickEdit);
+                    const control = new NestedControl({
+                        onGetBindings: () => this._grid.getBindings(record, column, customControl),
+                        parentPcfContext: this._grid.pcfContext,
+                    });
+                    const parameters = columnInfo.ui.getControlParameters({
+                        ...control.getParameters(),
+                        ...this._grid.getParameters(record, column, editing),
+                    })
+                    if(column.oneClickEdit) {
                         editing = true;
                     }
                     const values = {
@@ -93,18 +105,10 @@ export class AgGrid extends GridDependency {
                         errorMessage: columnInfo.errorMessage,
                         editable: columnInfo.security.editable,
                         editing: editing,
+                        parameters: parameters,
+                        columnAlignment: this._grid.getColumnAlignment(column),
                         customComponent: columnInfo.ui.getCustomControlComponent()
                     } as ICellValues;
-
-                    const control = new NestedControl({
-                        onGetBindings: () => this._grid.getBindings(record, column, editing, customControl),
-                        parentPcfContext: this._grid.pcfContext,
-                    });
-                    const parameters = columnInfo.ui.getControlParameters({
-                        ...control.getParameters(),
-                        ...this._grid.getParameters(record, column, editing)
-                    })
-                    values.parameters = this._filterParameters(parameters);
                     return values;
                 },
                 equals: (valueA, valueB) => {
@@ -112,11 +116,11 @@ export class AgGrid extends GridDependency {
                 },
                 cellRendererParams: {
                     baseColumn: column,
-                    editing: false
+                    isCellEditor: false
                 },
                 cellEditorParams: {
                     baseColumn: column,
-                    editing: true
+                    isCellEditor: true
                 },
                 headerComponentParams: {
                     baseColumn: column
@@ -241,16 +245,23 @@ export class AgGrid extends GridDependency {
             return;
         }
         const nodesToSelect: IRowNode[] = [];
-        this._gridApi.deselectAll();
+        const nodesToDeselect: IRowNode[] = [];
         this._gridApi.forEachNode((node: IRowNode) => {
             if (this._grid.dataset.getSelectedRecordIds().includes(node.data.getRecordId())) {
                 nodesToSelect.push(node);
+            }
+            else {
+                nodesToDeselect.push(node);
             }
         });
         this._gridApi.setNodesSelected({
             nodes: nodesToSelect,
             newValue: true,
         });
+        this._gridApi.setNodesSelected({
+            nodes: nodesToDeselect,
+            newValue: false
+        })
         if (!disableCellRefresh) {
             this._gridApi.refreshCells({
                 columns: [CHECKBOX_COLUMN_KEY],
@@ -315,20 +326,26 @@ export class AgGrid extends GridDependency {
     }
 
     private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
+        const columnInfo = params.data?.getColumnInfo(column.name);
         if (column.name === CHECKBOX_COLUMN_KEY) {
             return false;
         }
-        if (!this._grid.parameters.EnableEditing?.raw || params.data?.getColumnInfo(column.name).ui.isLoading() === true) {
+        if (!this._grid.parameters.EnableEditing?.raw || columnInfo?.ui.isLoading() === true) {
             return false;
         }
-        return params.data?.getColumnInfo(column.name).security.editable ?? true;
+        //disable ag grid cell editor if oneClickEdit is enabled
+        //editor control will be used in cell renderer
+        if(column.oneClickEdit) {
+            return false;
+        }
+        return columnInfo?.security.editable ?? true;
     }
 
     private _getGlobalCheckBoxState(): 'unchecked' | 'checked' | 'intermediate' {
-        if(this._grid.selection.allRecordsSelected) {
+        if (this._grid.selection.allRecordsSelected) {
             return 'checked';
         }
-        if(this._grid.dataset.getSelectedRecordIds().length > 0) {
+        if (this._grid.dataset.getSelectedRecordIds().length > 0) {
             return 'intermediate';
         }
         return 'unchecked';
@@ -353,19 +370,5 @@ export class AgGrid extends GridDependency {
             }
         }
         return false;
-    }
-
-    private _filterParameters(params: any) {
-        if (!params) return {};
-        const { Dataset, Record, Column, ...filteredParams } = params;
-        Object.values(filteredParams).map((parameter: any) => {
-            parameter.attributes = {};
-            Object.entries(parameter).map(([key, value]) => {
-                if (typeof value === 'function') {
-                    parameter[key] = undefined;
-                }
-            })
-        })
-        return filteredParams;
     }
 }

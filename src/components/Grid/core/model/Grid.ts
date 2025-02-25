@@ -250,7 +250,7 @@ export class Grid {
         this._usesNestedPcfs = true;
     }
 
-    public getBindings(record: IRecord, column: IColumn, editing: boolean, control: ICustomColumnControl) {
+    public getBindings(record: IRecord, column: IColumn, control: ICustomColumnControl) {
         const columnInfo = record.getColumnInfo(column.name);
         const bindings: { [name: string]: IBinding } = {
             'value': {
@@ -360,6 +360,9 @@ export class Grid {
             case DataTypes.Currency: {
                 return 'right';
             }
+        }
+        if(column.type === 'action') {
+            return 'right';
         }
         return 'left';
     }

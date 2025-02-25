@@ -1,6 +1,8 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react"
+import { mergeStyleSets } from "@fluentui/react"
+import { IColumn } from "@talxis/client-libraries"
+import { getJustifyContent } from "../styles"
 
-export const getNotificationIconStyles = (theme: ITheme) => {
+export const getNotificationStyles = (isActionColumn: boolean, columnAlignment: Required<IColumn['alignment']>) => {
     return mergeStyleSets({
         callout: {
             width: 320,
@@ -18,22 +20,25 @@ export const getNotificationIconStyles = (theme: ITheme) => {
             overflow: 'hidden',
             textOverflow: 'ellipsis'
         },
-        link: {
+        calloutLink: {
             'i': {
                 position: 'relative',
                 top: 1,
                 marginRight: 3
             }
         },
-        buttons: {
+        calloutButtons: {
             display: 'flex',
             justifyContent: 'flex-end',
             gap: 8
         },
-        root: {
-            '.ms-CommandBar-primaryCommand': {
-                justifyContent: 'flex-end'
-            }
+        notificationsRoot: {
+            minWidth: isActionColumn ? 0 : undefined,
+            flex: isActionColumn ? 1 : undefined,
+        },
+        notificationsPrimarySet: {
+            order: 2,
+            justifyContent: isActionColumn ? getJustifyContent(columnAlignment) : undefined
         }
     })
 }

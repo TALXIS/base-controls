@@ -1,14 +1,14 @@
 import { mergeStyleSets } from "@fluentui/react"
 import { IColumn } from "@talxis/client-libraries"
 
-export const getCellContentStyles = (columnAlignment: IColumn['alignment'], fillAllAvailableSpace: boolean) => {
+export const getCellContentStyles = (columnAlignment: IColumn['alignment']) => {
     return mergeStyleSets({
         controlRoot: {
             height: '100%',
             order: columnAlignment === 'right' ? 2 : undefined,
             minWidth: 0,
             overflow: 'hidden',
-            flexGrow: fillAllAvailableSpace ? 1 : undefined,
+            flexGrow: 1,
             border: '2px solid transparent',
         },
         controlContainer: {

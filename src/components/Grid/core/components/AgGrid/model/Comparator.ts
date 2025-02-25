@@ -1,4 +1,4 @@
-import { IAddControlNotificationOptions, ICustomColumnComponent, ICustomColumnControl, ICustomColumnFormatting } from "@talxis/client-libraries";
+import { IAddControlNotificationOptions, ICustomColumnComponent, ICustomColumnFormatting } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { ICellValues } from "./AgGrid";
 
@@ -11,7 +11,10 @@ export class Comparator {
         if (!this._isEqual(oldValues?.height, newValues?.height)) {
             return false;
         }
-        if (!this._isEqual(oldValues?.parameters, newValues?.parameters)) {
+        if (!this._isEqual(oldValues?.columnAlignment, newValues?.columnAlignment)) {
+            return false;
+        }
+        if (!this._isEqual(this._filterParameters(oldValues?.parameters), this._filterParameters(newValues?.parameters))) {
             return false;
         }
         if (!this._areNotificationsEqual(oldValues?.notifications ?? [], newValues?.notifications ?? [])) {
@@ -35,7 +38,7 @@ export class Comparator {
         if (!this._isEqual(oldValues?.loading, newValues?.loading)) {
             return false;
         }
-        if(!this._isEqual(this._parseCustomComponent(oldValues?.customComponent), this._parseCustomComponent(newValues?.customComponent))) {
+        if (!this._isEqual(this._parseCustomComponent(oldValues?.customComponent), this._parseCustomComponent(newValues?.customComponent))) {
             return false;
         }
         return true;
@@ -55,7 +58,7 @@ export class Comparator {
 
     //ignore the components folder when calculating the diff
     private _parseFormatting(formatting?: ICustomColumnFormatting) {
-        if(formatting?.themeOverride) {
+        if (formatting?.themeOverride) {
             return {
                 ...formatting,
                 themeOverride: {
@@ -65,6 +68,23 @@ export class Comparator {
             }
         }
         return formatting;
+    }
+
+    private _filterParameters(params: any) {
+        if (!params) return {};
+        const { Dataset, Record, Column, ...filteredParams } = params;
+        let paramsToCompare: any = {};
+        Object.entries(filteredParams).map(([key, parameter]: any) => {
+            paramsToCompare[key] = { ...parameter };
+            delete paramsToCompare[key].attributes;
+            Object.entries(paramsToCompare[key]).map(([attributePropKey, value]) => {
+                if (typeof value === 'function') {
+                    delete paramsToCompare[key][attributePropKey];
+                }
+            })
+
+        })
+        return paramsToCompare;
     }
 
     private _parseCustomComponent(component?: ICustomColumnComponent) {

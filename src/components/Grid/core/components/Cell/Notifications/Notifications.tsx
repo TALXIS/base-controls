@@ -1,38 +1,34 @@
-import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ICommandBar, ThemeProvider, getTheme } from "@fluentui/react"
-import { getNotificationIconStyles } from "./styles";
-import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { IAddControlNotificationOptions, IControlNotificationAction, ICustomColumnFormatting } from "@talxis/client-libraries";
-import { CommandBar, useThemeGenerator } from "@talxis/react-components";
+import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ICommandBar, ThemeProvider, ICommandBarItemProps } from "@fluentui/react"
+import { getNotificationStyles } from "./styles";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { IAddControlNotificationOptions, IColumn, IControlNotificationAction, ICustomColumnFormatting } from "@talxis/client-libraries";
+import { CommandBar, useResizeObserver, useThemeGenerator } from "@talxis/react-components";
 import { useGridInstance } from "../../../hooks/useGridInstance";
-import { useDebouncedCallback } from "use-debounce";
+import { useControlTheme } from "../../../../../../utils";
 
 interface INotifications {
     notifications: IAddControlNotificationOptions[],
-    formatting: Required<ICustomColumnFormatting>
-    onShouldNotificationsFillAvailableSpace?: (value: boolean) => void;
-    className?: string;
+    formatting: Required<ICustomColumnFormatting>,
+    isActionColumn: boolean;
+    columnAlignment: IColumn['alignment'],
+    farItems?: ICommandBarItemProps[]
 }
 
-export interface INotificationsRef {
-    remeasureCommandBar: () => void;
-}
 
-export const Notifications = forwardRef<INotificationsRef, INotifications>((props, ref) => {
-    const { notifications, formatting } = { ...props };
+export const Notifications = (props: INotifications) => {
+    const { notifications, formatting, farItems, isActionColumn, columnAlignment } = { ...props };
     const grid = useGridInstance();
     const theme = useTheme();
-    const styles = getNotificationIconStyles(theme);
+    const styles = getNotificationStyles(isActionColumn, columnAlignment);
     const iconId = useMemo(() => `icon${crypto.randomUUID()}`, []);
     const [selectedNotification, setSelectedNotification] = useState<IAddControlNotificationOptions | null>(null);
     const commandBarRef = useRef<ICommandBar>(null);
-    const overridenTheme = useThemeGenerator(theme.semanticColors.bodyText, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText, formatting.themeOverride);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    const getIconName = (notification: IAddControlNotificationOptions): string | undefined => {
-        if (notification.iconName) {
-            return notification.iconName;
-        }
-        return notification.notificationLevel === 'ERROR' ? 'Error' : undefined;
-    }
+    const observe = useResizeObserver(() => {
+        commandBarRef.current?.remeasure();
+    })
+    const overridenTheme = useThemeGenerator(theme.semanticColors.bodyText, theme.semanticColors.bodyBackground, theme.semanticColors.bodyText, formatting.themeOverride);
 
     const renderActionButton = (action: IControlNotificationAction, buttonType: 'primary' | 'default') => {
         const Button = buttonType === 'primary' ? PrimaryButton : DefaultButton;
@@ -50,7 +46,7 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
         }
         //render actions as buttons
         if (actions.length < 3) {
-            return <div className={styles.buttons}>
+            return <div className={styles.calloutButtons}>
                 {actions.map((action, i) => renderActionButton(action, i === 0 ? 'primary' : 'default'))}
             </div>
         }
@@ -58,7 +54,7 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
             return {
                 key: i.toString(),
                 text: action.message,
-                commandBarButtonAs: () => <Link onClick={() => action.actions.map(callback => callback())} className={styles.link}>
+                commandBarButtonAs: () => <Link onClick={() => action.actions.map(callback => callback())} className={styles.calloutLink}>
                     {action.iconName &&
                         <Icon iconName={action.iconName} />
                     }
@@ -82,69 +78,63 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
         setSelectedNotification(notification);
     };
 
-    const getCommandBarItem = (notification: IAddControlNotificationOptions) => {
-        const icon = getIconName(notification);
-        return {
-            key: notification.uniqueId,
-            text: notification.title,
-            title: notification.title,
-            onClick: () => onNotificationClick(notification),
-            buttonStyles: {
-                textContainer: {
-                    display: notification.compact ? 'none' : undefined
-                }
-            },
-            iconProps: notification ? {
-                iconName: icon,
-                styles: {
-                    root: {
-                        color: notification.notificationLevel === 'ERROR' ? `${theme.semanticColors.errorIcon} !important` : undefined
-                    }
-                }
-            } : undefined
-        }
-    };
 
-    const getContextualMenuColors = () => {
-        const tokenTheme = grid.pcfContext.fluentDesignLanguage?.tokenTheme;
-        if (!tokenTheme) {
-            return {
-                primaryColor: getTheme().palette.themePrimary,
-                backgroundColor: getTheme().semanticColors.bodyBackground,
-                textColor: getTheme().semanticColors.bodyText
+    const getCommandBarItems = (): { items: ICommandBarItemProps[], overflowItems: ICommandBarItemProps[] } => {
+        const items: ICommandBarItemProps[] = [];
+        const overflowItems: ICommandBarItemProps[] = [];
+
+        notifications.map(notification => {
+            //@ts-ignore - types
+            const item: ICommandBarItemProps = {
+                key: notification.uniqueId,
+                text: notification.text,
+                //@ts-ignore - types
+                iconProps: notification.iconName ? {
+                    //@ts-ignore - types
+                    iconName: notification.iconName,
+                    ...notification.buttonProps?.iconProps
+                } : undefined,
+                ...notification.buttonProps,
+                onClick: (e) => {
+                    notification.buttonProps?.onClick?.(e);
+                    onNotificationClick(notification);
+                }
             }
-        }
+            if (notification.buttonProps?.renderedInOverflow) {
+                overflowItems.push(item);
+            }
+            else {
+                items.push(item);
+            }
+        })
         return {
-            primaryColor: tokenTheme.colorBrandForeground1,
-            backgroundColor: tokenTheme.colorNeutralBackground1,
-            bodyText: tokenTheme.colorNeutralForeground1
+            items: items,
+            overflowItems: overflowItems
         }
     }
 
-    const debouncedShouldGrowCallback = useDebouncedCallback((shouldGrow: boolean) => {
-        props.onShouldNotificationsFillAvailableSpace?.(shouldGrow);
-    }, 0);
+    const contextualMenuTheme = useControlTheme(grid.pcfContext.fluentDesignLanguage);
+    const { items, overflowItems } = getCommandBarItems();
 
-    useImperativeHandle(ref, () => {
-        return {
-            remeasureCommandBar: () => {
-                commandBarRef.current?.remeasure();
-            }
+    useEffect(() => {
+        if (isActionColumn) {
+            observe(containerRef.current!);
         }
-    })
-    const contextualMenuColors = getContextualMenuColors();
-    const contextualMenuTheme = useThemeGenerator(contextualMenuColors.primaryColor, contextualMenuColors.backgroundColor, contextualMenuColors.bodyText);
+    }, [isActionColumn]);
 
-    return <div className={`${styles.root}${props.className ? ` ${props.className}` : ''}`}>
-        <ThemeProvider theme={overridenTheme} applyTo="none">
+
+    return <div ref={containerRef} className={styles.notificationsRoot}>
+        <ThemeProvider theme={overridenTheme}>
             <CommandBar
-                onDataGrown={() => debouncedShouldGrowCallback(false)}
-                onDataReduced={() => debouncedShouldGrowCallback(true)}
-                overflowItems={notifications.filter(x => x.renderedInOverflow).map(y => getCommandBarItem(y))}
                 contextualMenuTheme={contextualMenuTheme}
                 id={iconId}
                 componentRef={commandBarRef}
-                items={notifications.filter(x => !x.renderedInOverflow).map(y => getCommandBarItem(y))} />
+                styles={{
+                    primarySet: styles.notificationsPrimarySet
+                }}
+                items={items}
+                overflowItems={overflowItems}
+                farItems={farItems} />
         </ThemeProvider>
         {selectedNotification &&
             <Callout
@@ -154,8 +144,8 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
                 onDismiss={() => setSelectedNotification(null)}
                 target={`#${iconId}`}>
                 <ThemeProvider className={styles.calloutContent} theme={contextualMenuTheme}>
-                    {selectedNotification.title &&
-                        <Text title={selectedNotification.title} className={styles.calloutTitle} variant={selectedNotification.messages.length > 0 ? 'xLarge' : undefined}>{selectedNotification.title}</Text>
+                    {selectedNotification.text &&
+                        <Text title={selectedNotification.text} className={styles.calloutTitle} variant={selectedNotification.messages.length > 0 ? 'xLarge' : undefined}>{selectedNotification.text}</Text>
                     }
                     <Text>{selectedNotification.messages[0]}</Text>
                     {selectedNotification.actions &&
@@ -165,4 +155,4 @@ export const Notifications = forwardRef<INotificationsRef, INotifications>((prop
             </Callout>
         }
     </div>
-});
+}

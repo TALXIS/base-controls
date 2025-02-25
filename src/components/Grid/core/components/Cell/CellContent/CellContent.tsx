@@ -5,17 +5,13 @@ import { getCellContentStyles } from './styles';
 import { NestedControlRenderer } from '../../../../../NestedControlRenderer/NestedControlRenderer';
 import { ControlTheme, IFluentDesignState } from '../../../../../../utils';
 import { merge } from 'merge-anything';
-import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, useTheme } from '@fluentui/react';
+import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles, useTheme } from '@fluentui/react';
 import { useRerender } from '@talxis/react-components';
+import { getJustifyContent } from '../styles';
 
-interface ICellContentProps extends ICellProps {
-    fillAllAvailableSpace: boolean;
-}
 
-export const CellContent = (props: ICellContentProps) => {
-    const { fillAllAvailableSpace } = { ...props };
+export const CellContent = (props: ICellProps) => {
     const column = props.baseColumn;
-    const mountedRef = React.useRef(false);
     const rerender = useRerender();
     const valueRef = React.useRef(props.value);
     valueRef.current = props.value;
@@ -24,15 +20,16 @@ export const CellContent = (props: ICellContentProps) => {
     const node = props.node;
     const themeRef = React.useRef(useTheme());
     themeRef.current = useTheme();
-    const styles = React.useMemo(() => getCellContentStyles(props.value.columnAlignment, fillAllAvailableSpace), [props.value.columnAlignment, fillAllAvailableSpace]);
+    const styles = React.useMemo(() => getCellContentStyles(valueRef.current.columnAlignment), [valueRef.current.columnAlignment]);
     //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
+
+    console.log(column.name);
 
     const getFluentDesignLanguage = (fluentDesignLanguage?: IFluentDesignState) => {
         const formatting = valueRef.current.customFormatting;
         const mergedOverrides = merge(fluentDesignLanguage?.v8FluentOverrides ?? {}, formatting.themeOverride);
-
-        const columnAlignment = grid.getColumnAlignment(column);
+        const columnAlignment = valueRef.current.columnAlignment;
         const result = ControlTheme.GenerateFluentDesignLanguage(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, {
             v8FluentOverrides: merge(
                 {
@@ -76,6 +73,13 @@ export const CellContent = (props: ICellContentProps) => {
                                     }
                                 } as any
                             } as IDatePickerStyles
+                        },
+                        'Toggle': {
+                            styles: {
+                                root: {
+                                    justifyContent: getJustifyContent(columnAlignment)
+                                }
+                            } as IToggleStyles
                         }
                     }
                 },
@@ -88,13 +92,8 @@ export const CellContent = (props: ICellContentProps) => {
 
 
     React.useEffect(() => {
-        mountedRef.current = true;
         setShouldRenderNestedControl(true);
-        return () => {
-            mountedRef.current = false;
-        }
     }, []);
-
     if(!shouldRenderNestedControl) {
         return <></>
     }
@@ -102,18 +101,15 @@ export const CellContent = (props: ICellContentProps) => {
     return <NestedControlRenderer
         context={grid.pcfContext}
         parameters={{
-            ControlName: grid.getControl(column, record, props.editing).name,
+            ControlName: valueRef.current.customControl.name,
             LoadingType: 'shimmer',
-            Bindings: grid.getBindings(record, column, props.editing, valueRef.current.customControl),
+            Bindings: grid.getBindings(record, column, valueRef.current.customControl),
             ControlStates: {
-                isControlDisabled: !props.editing
+                isControlDisabled: !valueRef.current.editable
             },
-            __DoNotUnmountComponentFromDOM: {
-                raw: true
-            }
         }}
         onNotifyOutputChanged={(outputs) => {
-            grid.onNotifyOutputChanged(record, column, props.editing, outputs.value, () => rerender())
+            grid.onNotifyOutputChanged(record, column, props.isCellEditor, outputs.value, () => rerender())
         }}
         onOverrideComponentProps={(componentProps) => {
             return {
@@ -172,27 +168,27 @@ export const CellContent = (props: ICellContentProps) => {
                     return defaultUnmount();
                 },
                 onOverrideControlProps: (controlProps) => {
-                    const parameters = grid.getParameters(record, column, props.editing)
-                    return {
+                    //here we always need to fetch the latest parameters
+                    //we still might have old one's cached in valueRef
+                    const columnInfo = record.getColumnInfo(column.name);
+                    const parameters = columnInfo.ui.getControlParameters({
+                        ...controlProps.parameters,
+                        ...grid.getParameters(record, column, props.isCellEditor)
+                    })
+                    return { 
                         ...controlProps,
                         context: {
                             ...controlProps.context,
                             mode: Object.create(controlProps.context.mode, {
                                 allocatedHeight: {
-                                    value: (node.rowHeight ?? grid.rowHeight) - 1
+                                    value: node.rowHeight! - 1
                                 },
 
                             }),
-                            parameters: {
-                                ...controlProps.parameters,
-                                ...parameters
-                            },
+                            parameters: parameters,
                             fluentDesignLanguage: getFluentDesignLanguage(controlProps.context.fluentDesignLanguage)
                         },
-                        parameters: record.getColumnInfo(column.name).ui.getControlParameters({
-                            ...controlProps.parameters,
-                            ...parameters
-                        })
+                        parameters: parameters
                     }
                 }
             }

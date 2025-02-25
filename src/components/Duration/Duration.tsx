@@ -140,7 +140,7 @@ export const Duration = (props: IDuration) => {
             }
         },
         calloutProps: {
-            theme: props.context.fluentDesignLanguage?.applicationTheme
+            theme: props.context.fluentDesignLanguage?.applicationTheme ?? theme
         },
         onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
         onInputValueChange: (text) => {
