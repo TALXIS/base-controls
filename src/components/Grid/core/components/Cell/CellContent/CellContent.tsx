@@ -14,6 +14,7 @@ export const CellContent = (props: ICellProps) => {
     const column = props.baseColumn;
     const rerender = useRerender();
     const valueRef = React.useRef(props.value);
+    const mountedRef = React.useRef(false);
     valueRef.current = props.value;
     const grid = useGridInstance();
     const record = props.data;
@@ -92,7 +93,11 @@ export const CellContent = (props: ICellProps) => {
 
 
     React.useEffect(() => {
+        mountedRef.current = true;
         setShouldRenderNestedControl(true);
+        return () => {
+            mountedRef.current = false;
+        }
     }, []);
     if(!shouldRenderNestedControl) {
         return <></>
@@ -109,7 +114,13 @@ export const CellContent = (props: ICellProps) => {
             },
         }}
         onNotifyOutputChanged={(outputs) => {
-            grid.onNotifyOutputChanged(record, column, props.isCellEditor, outputs.value, () => rerender())
+            let isEditing = props.isCellEditor;
+            //if we are not mounted, set editing to true so requestRender gets run
+            //if this is not present, a PCF editor might trigger this too late and we would not see the current value in renderer until next
+            if(!mountedRef.current) {
+                isEditing = false;
+            }
+            grid.onNotifyOutputChanged(record, column, isEditing, outputs.value, () => rerender())
         }}
         onOverrideComponentProps={(componentProps) => {
             return {

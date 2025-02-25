@@ -66,11 +66,12 @@ export class NestedControl {
     private _props: IControl<IParameters, any, any, any> | undefined;
     private _mutationObserver: MutationObserver | null = new MutationObserver((mutations) => this._checkIfControlLoadedToDom(mutations));
     private _destroyed: boolean = false;
+    private _initialized: boolean = false;
     private _container: HTMLDivElement | null = null;
 
     constructor(options: IOptions) {
         this._options = options;
-        this._init();
+        this._getPropertiesFromBindings()
     }
 
     public getProps(): IControl<IParameters, any, any, any> {
@@ -109,12 +110,16 @@ export class NestedControl {
     public getParameters() {
         const parameters: { [name: string]: IProperty } = {};
         [...this._properties.entries()].map(([name, prop]) => {
-            parameters[name] = {
-                ...prop.getParameter(),
-                error: this.getOptions().onGetBindings()[name].error ?? false,
-                errorMessage: this.getOptions().onGetBindings()[name].errorMessage ?? null,
-                type: prop.dataType
-            };
+            const binding = this.getOptions().onGetBindings()[name];
+            //binding might not exist if we have switched controls
+            if (binding) {
+                parameters[name] = {
+                    ...prop.getParameter(),
+                    error: binding.error ?? false,
+                    errorMessage: binding.errorMessage ?? null,
+                    type: prop.dataType
+                };
+            }
         })
         return parameters;
     }
@@ -135,6 +140,7 @@ export class NestedControl {
         if (this._pendingInitialRender || this._destroyed) {
             return;
         }
+        await this._getPropertiesFromBindings();
         this.refreshProps();
         //if we detect a change in name, unmount the component before render
         if (this._lastRenderedControlName && this._lastRenderedControlName !== this.getControlName()) {
@@ -296,25 +302,30 @@ export class NestedControl {
         });
     }
 
-    private async _init() {
+    private async _getPropertiesFromBindings() {
         const promises: Promise<boolean>[] = [];
         Object.entries(this.getOptions().onGetBindings()).map(([name, binding]) => {
-            const getBinding = () => this.getOptions().onGetBindings()[name];
-            const propertyInstance = this._getPropertyInstance(getBinding);
-            const metadata = getBinding()?.metadata;
-            //push to promise only if we need to fetch the metadata asynchronously
-            if (metadata?.attributeName && metadata.entityName) {
-                promises.push(propertyInstance.init());
+            if (!this._properties.get(name)) {
+                const getBinding = () => this.getOptions().onGetBindings()[name];
+                const propertyInstance = this._getPropertyInstance(getBinding);
+                const metadata = getBinding()?.metadata;
+                //push to promise only if we need to fetch the metadata asynchronously
+                if (metadata?.attributeName && metadata.entityName) {
+                    promises.push(propertyInstance.init());
+                }
+                else {
+                    propertyInstance.init();
+                }
+                this._properties.set(name, propertyInstance);
             }
-            else {
-                propertyInstance.init();
-            }
-            this._properties.set(name, propertyInstance);
         })
         if (promises.length > 0) {
             await Promise.all(promises);
         }
-        this.getOptions().callbacks?.onInit?.(this)
+        if(!this._initialized) {
+            this._initialized = true;
+            this.getOptions().callbacks?.onInit?.(this)
+        }
     }
 
     private _getPropertyInstance(onGetBinding: () => IBinding) {
