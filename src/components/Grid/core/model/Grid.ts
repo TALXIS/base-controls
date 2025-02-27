@@ -263,6 +263,11 @@ export class Grid {
                 metadata: {
                     onOverrideMetadata: () => column.metadata
                 }
+            },
+            'IsCellCustomizer': {
+                isStatic: true,
+                type: DataTypes.TwoOptions,
+                value: true
             }
         }
         if (control.bindings) {

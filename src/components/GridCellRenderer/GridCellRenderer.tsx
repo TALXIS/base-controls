@@ -1,17 +1,20 @@
-import { Icon, IIconProps, ILinkProps, Image, Link, ThemeProvider } from "@fluentui/react";
+import { Icon, IIconProps, ILinkProps, Image, Link, SpinnerSize, ThemeProvider } from "@fluentui/react";
 import { useControl } from "../../hooks";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getDefaultContentRendererStyles, getGridCellLabelStyles } from "./styles";
-import { DataType, DataTypes, FileAttribute, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { Attribute, Client, DataType, DataTypes, FetchXmlDataProvider, FileAttribute, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { OptionSet } from './OptionSet';
 import { IGridCellRenderer } from "./interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
 import { ComponentPropsContext } from "./useComponentProps";
 import { DefaultContentRenderer } from "./DefaultContentRenderer";
-import { getClassNames } from "@talxis/react-components";
+import { getClassNames, Spinner } from "@talxis/react-components";
+
+const client = new Client();
 
 export const GridCellRenderer = (props: IGridCellRenderer) => {
     const dataset = props.parameters.Dataset;
+    const context = props.context;
     const record: IRecord = props.parameters.Record;
     const column = props.parameters.Column;
     const columnAlignment = props.parameters.ColumnAlignment.raw;
@@ -25,13 +28,15 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const prefixIcon = props.parameters.PrefixIcon?.raw
     const suffixIcon = props.parameters.SuffixIcon?.raw;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+    const [downloadInProgress, setIsDownloadInProgress] = useState(false);
 
     const getLinkProps = (): ILinkProps => {
         const props: ILinkProps = {
             title: formattedValue,
             className: styles.link,
             rel: 'noopener noreferrer',
-            children: formattedValue
+            children: formattedValue,
+            disabled: downloadInProgress
         }
         switch (dataType) {
             case DataTypes.SingleLineEmail: {
@@ -51,9 +56,12 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             case DataTypes.File: {
                 props.href = value.fileUrl;
                 props.download = value.fileName;
-                if(dataType === 'Image') {
+                if (dataType === 'Image') {
                     props.title = value.fileName;
                     props.children = value.fileName;
+                }
+                if (shouldUsePortalDownload()) {
+                    props.onClick = (e) => downloadPortalFile(e);
                 }
                 break;
             }
@@ -76,8 +84,10 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
         return props;
     }
 
+
+    //matching could be improved
     const getIconNameForMimeType = (mimeType?: string) => {
-        if(!mimeType) {
+        if (!mimeType) {
             return 'Attach';
         }
         const icon_classes: any = {
@@ -135,22 +145,41 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             case DataTypes.TwoOptions: {
                 return <OptionSet context={props.context} parameters={{ ...props.parameters }} />
             }
-            case DataTypes.File: {
-                const linkProps = componentProps.onGetLinkProps(getLinkProps());
-                return (<div {...componentProps.fileProps.containerProps}>
-                    <Icon {...componentProps.fileProps.iconProps} iconName={componentProps.fileProps.iconProps.onGetIconName(getIconNameForMimeType(value.mimeType))} />
-                    <Link {...linkProps}>{linkProps.children}</Link>
-                </div>);
-            }
+            case DataTypes.File:
             case DataTypes.Image: {
-                const linkProps = componentProps.onGetLinkProps(getLinkProps());
-                return (<div {...componentProps.fileProps.containerProps}>
-                    <Image {...componentProps.fileProps.imageProps} src={componentProps.fileProps.imageProps.onGetSrc(value.thumbnailUrl)} />
-                    <Link {...linkProps}>{linkProps.children}</Link>
-                </div>);
+                return renderFileLink(dataType === 'Image');
             }
         }
         return <DefaultContentRenderer />
+    }
+
+    const shouldUsePortalDownload = () => {
+        const isFetchXmlDataProvider = dataset.getDataProvider() instanceof FetchXmlDataProvider;
+        //only use portal download if within portal, uses fetch xml provider and is not virtual column
+        if(client.isTalxisPortal() && isFetchXmlDataProvider && !column.name.endsWith('__virtual')) {
+            return true;
+        }
+        return false;
+    }
+
+    const renderFileLink = (isImage?: boolean) => {
+        const linkProps = componentProps.onGetLinkProps(getLinkProps());
+        return (<div {...componentProps.fileProps.containerProps}>
+            {!downloadInProgress &&
+                <>
+                    {!isImage &&
+                        <Icon {...componentProps.fileProps.iconProps} iconName={componentProps.fileProps.iconProps.onGetIconName(getIconNameForMimeType(value.mimeType))} />
+                    }
+                    {isImage &&
+                        <Image {...componentProps.fileProps.imageProps} src={getThumbnailUrl()} />
+                     }
+                </>
+            }
+            {downloadInProgress &&
+                <Spinner {...componentProps.fileProps.loadingProps.spinnerProps} />
+            }
+            <Link {...linkProps}>{linkProps.children}</Link>
+        </div>);
     }
 
     const getIconProps = (json?: string | null): IIconProps | undefined => {
@@ -158,6 +187,39 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             return undefined;
         }
         return JSON.parse(json);
+    }
+
+    const getThumbnailUrl = () => {
+        let src = value.thumbnailUrl;
+        if (client.isTalxisPortal()) {
+            src = `data:${value.mimeType};base64,${value.fileContent}`
+        }
+        return componentProps.fileProps.imageProps.onGetSrc(src);
+    }
+
+    const downloadPortalFile = async (e: React.MouseEvent<HTMLAnchorElement | HTMLElement | HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault();
+        setIsDownloadInProgress(true);
+        const storage = new FileAttribute(context.webAPI);
+        let entityName = dataset.getTargetEntityType();
+        let recordId = record.getRecordId();
+        let attributeName = Attribute.GetNameFromAlias(column.name);
+        const entityAliasName = Attribute.GetLinkedEntityAlias(column.name);
+
+        if (entityAliasName) {
+            entityName = dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
+            const entityMetadata = await context.utils.getEntityMetadata(entityName, []);
+            recordId = record.getRawData()![`${entityAliasName}.${entityMetadata.PrimaryIdAttribute}`];
+        }
+        await storage.downloadFileFromAttribute({
+            entityName: entityName,
+            recordId: recordId,
+            fileAttribute: attributeName
+        }, true, undefined, {
+            fileName: value.fileName,
+            fileSizeInBytes: value.fileSize
+        })
+        setIsDownloadInProgress(false);
     }
 
     const componentProps = onOverrideComponentProps({
@@ -186,6 +248,14 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             imageProps: {
                 className: styles.fileImage,
                 onGetSrc: (src) => src
+            },
+            loadingProps: {
+                spinnerProps: {
+                    size: SpinnerSize.small,
+                    styles: {
+                        circle: styles.loadingSpinnerCircle
+                    }
+                }
             }
         }
     });

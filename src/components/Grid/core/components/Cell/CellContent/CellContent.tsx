@@ -8,7 +8,10 @@ import { merge } from 'merge-anything';
 import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles, useTheme } from '@fluentui/react';
 import { useRerender } from '@talxis/react-components';
 import { getJustifyContent } from '../styles';
+import { useDebouncedCallback } from 'use-debounce';
+import { Client } from '@talxis/client-libraries';
 
+const client = new Client();
 
 export const CellContent = (props: ICellProps) => {
     const column = props.baseColumn;
@@ -24,8 +27,6 @@ export const CellContent = (props: ICellProps) => {
     const styles = React.useMemo(() => getCellContentStyles(valueRef.current.columnAlignment), [valueRef.current.columnAlignment]);
     //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
-
-    console.log(column.name);
 
     const getFluentDesignLanguage = (fluentDesignLanguage?: IFluentDesignState) => {
         const formatting = valueRef.current.customFormatting;
@@ -91,6 +92,16 @@ export const CellContent = (props: ICellProps) => {
         return result;
     }
 
+    const onNotifyOutputChanged = (outputs: any) => {
+        let isEditing = props.isCellEditor;
+        //if we are not mounted, set editing to true so requestRender gets run
+        //if this is not present, a PCF editor might trigger this too late and we would not see the current value in renderer until next
+        if(!mountedRef.current) {
+            isEditing = false;
+        }
+        grid.onNotifyOutputChanged(record, column, isEditing, outputs.value, () => rerender())
+    }
+    const debouncedNotifyOutputChanged = useDebouncedCallback((outputs) => onNotifyOutputChanged(outputs), 100);
 
     React.useEffect(() => {
         mountedRef.current = true;
@@ -114,13 +125,14 @@ export const CellContent = (props: ICellProps) => {
             },
         }}
         onNotifyOutputChanged={(outputs) => {
-            let isEditing = props.isCellEditor;
-            //if we are not mounted, set editing to true so requestRender gets run
-            //if this is not present, a PCF editor might trigger this too late and we would not see the current value in renderer until next
-            if(!mountedRef.current) {
-                isEditing = false;
+            //talxis portal does not have debounce for notifyoutput
+            //Power Apps does a debounce of 100ms
+            if(column.oneClickEdit && client.isTalxisPortal()) {
+                debouncedNotifyOutputChanged(outputs);
             }
-            grid.onNotifyOutputChanged(record, column, isEditing, outputs.value, () => rerender())
+            else {
+                onNotifyOutputChanged(outputs);
+            }
         }}
         onOverrideComponentProps={(componentProps) => {
             return {

@@ -1,7 +1,7 @@
 import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
 import { IControl, IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
-import { IIconProps, IImageProps, ILinkProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
+import { IIconProps, IImageProps, ILinkProps, ISpinnerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 
 export interface IGridCellRenderer extends IControl<IGridCellRendererParameters, {}, ReturnType<typeof getDefaultGridRendererTranslations>, IGridCellRendererComponentProps> {
 }
@@ -42,6 +42,9 @@ export interface IGridCellRendererComponentProps {
         };
         imageProps: Omit<IImageProps, 'src'> & {
             onGetSrc: (src: string) => string
+        },
+        loadingProps: {
+            spinnerProps: ISpinnerProps;
         }
     }
 }

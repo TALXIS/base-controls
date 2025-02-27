@@ -18,6 +18,9 @@ export const useGridController = (gridInstance?: Grid): IGridController => {
     
     //only change columns and records reference if there is a change
     useEffect(() => {
+        if(grid.loading) {
+            return;
+        }
         (async () => {
             const newColumns = await grid.refreshColumns();
             if(!equal(preprocessColumns(newColumns), preprocessColumns(columns))) {
@@ -26,9 +29,6 @@ export const useGridController = (gridInstance?: Grid): IGridController => {
         })();
     }, [grid.loading]);
 
-    useEffect(() => {
-
-    }, [columns]);
     return {
         columns
     }

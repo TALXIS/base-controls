@@ -1,5 +1,5 @@
 import { AgGridReact } from '@ag-grid-community/react';
-import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
+import { Checkbox, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
 import { ColDef, ColumnResizedEvent, GridApi, GridState, ModuleRegistry } from "@ag-grid-community/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
@@ -43,10 +43,14 @@ export const AgGrid = () => {
     }, 0);
 
     const debouncedSetAgColumns = useDebouncedCallback(() => {
+        innerRerenderRef.current = true;
         setAgColumns(agGrid.getColumns());
     }, 0);
 
     const debounceUpdateVisualSizeFactor = useDebouncedCallback((e: ColumnResizedEvent<IRecord, any>) => {
+        if (e.source !== 'uiColumnResized') {
+            return;
+        }
         userChangedColumnSizeRef.current = true;
         agGrid.updateColumnVisualSizeFactor(e);
     }, 200);
@@ -64,7 +68,6 @@ export const AgGrid = () => {
             },
             ...gridApiRef.current!.getState(),
         });
-        agGrid.refreshRowSelection();
     }
 
     const sizeColumnsIfSpaceAvailable = () => {
@@ -99,7 +102,7 @@ export const AgGrid = () => {
     }, []);
 
     useEffect(() => {
-        debouncedSetAgColumns()
+        debouncedSetAgColumns();
     }, [columns]);
 
     useEffect(() => {
@@ -167,6 +170,7 @@ export const AgGrid = () => {
                     }}
                     onFirstDataRendered={(e) => {
                         sizeColumnsIfSpaceAvailable();
+                        agGrid.refreshRowSelection();
                     }}
                     onCellEditingStopped={() => {
                         grid.pcfContext.factory.requestRender();

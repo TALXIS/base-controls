@@ -59,7 +59,6 @@ export class NestedControl {
     private _lastRenderedControlName: string = '';
     private _hasCustomPcfBeenMounted: boolean = false;
     private _customControlInstance: ComponentFramework.StandardControl<any, any> | null = null;
-    private _customControlContext: ComponentFramework.Context<any, any> | null = null;
     private _customControlId: string = '';
     private _manifest: Manifest | null = null;
     private _loading: boolean = false;
@@ -68,6 +67,7 @@ export class NestedControl {
     private _destroyed: boolean = false;
     private _initialized: boolean = false;
     private _container: HTMLDivElement | null = null;
+    private _hasControlBeenPatched: boolean = false;
 
     constructor(options: IOptions) {
         this._options = options;
@@ -92,6 +92,10 @@ export class NestedControl {
                         value: this.getOptions().callbacks?.onGetControlStates?.()?.isControlDisabled ?? false
                     }
                 }),
+                factory: {
+                    ...this.getOptions().parentPcfContext.factory,
+                    requestRender: () => this.render()
+                },
                 fluentDesignLanguage: this._getFluentDesignLanguage(this.getOptions().parentPcfContext.fluentDesignLanguage)
             },
             parameters: parameters,
@@ -141,6 +145,9 @@ export class NestedControl {
             return;
         }
         await this._getPropertiesFromBindings();
+        if(this._destroyed) {
+            return;
+        }
         this.refreshProps();
         //if we detect a change in name, unmount the component before render
         if (this._lastRenderedControlName && this._lastRenderedControlName !== this.getControlName()) {
@@ -164,12 +171,12 @@ export class NestedControl {
         this._overrideDecorator(() => this._unmount(), this.getOptions().overrides?.onUnmount, () => [this, () => this._unmount()] as any)
         this._lastRenderedControlName = '';
         this._hasCustomPcfBeenMounted = false;
+        this._hasControlBeenPatched = false;
         this._customControlId = '';
         this._mutationObserver?.disconnect();
         if (!softUnmount) {
             this._mutationObserver = null;
             this._customControlInstance = null;
-            this._customControlContext = null;
             this._props = undefined;
             this._container = null;
             this._properties.clear();
@@ -252,13 +259,12 @@ export class NestedControl {
                 }
                 const properties: any = {
                     controlstates: this.getOptions().callbacks?.onGetControlStates?.() ?? {},
-                    parameters: this._getCustomControlParameters(this._manifest),
+                    parameters: this._getCustomControlParameters(this._manifest!),
                     childeventlisteners: [{
                         eventname: "onInit",
                         eventhandler: (object: any) => {
                             this._customControlInstance = object.instance;
-                            this._customControlContext = object.context;
-                            this._patchContext(object.context, this._manifest!);
+                            this._patchUpdateView(this._customControlInstance!, this._manifest!);
                         }
                     }]
                 };
@@ -275,7 +281,7 @@ export class NestedControl {
         }
         //the PCF did not change, just call updateView
         else {
-            this._customControlInstance?.updateView?.(this._patchContext(this._customControlContext!, this._manifest!))
+            this._customControlInstance?.updateView?.(this.getProps().context)
         }
     }
 
@@ -453,43 +459,34 @@ export class NestedControl {
         })
         return result;
     }
-    private _patchContext(context: ComponentFramework.Context<any, any>, manifest: Manifest) {
-        const props = this.getProps();
-        const parameters = props.parameters;
-        const contextParameters = context.parameters;
+    private _patchUpdateView(control: ComponentFramework.StandardControl<any, any>, manifest: Manifest) {
+        if(this._hasControlBeenPatched) {
+            return;
+        }
+        let originalContext: ComponentFramework.Context<any, any> | null = null;
+        const originalUpdateView = control.updateView.bind(control);
+        control.updateView = (context) => {
+            if(!originalContext) {
+                originalContext = context;
+            }
+            originalUpdateView(this._patchContext(manifest, originalContext));
+        }
+        this._hasControlBeenPatched = true;
+    }
+    private _patchContext(manifest: Manifest, originalContext: ComponentFramework.Context<any, any>) {
+        const context = this.getProps().context;
+        const contextParameters = originalContext.parameters;
+        const parameters = this.getProps().parameters;
         const manifestBindingProperty = this._getManifestPrimaryBinding(manifest);
         const primaryBindingName = this._getPrimaryBindingName();
+        context.resources = originalContext.resources;
+        context.events = originalContext.events;
+        context.parameters = {
+            ...contextParameters,
+            ...parameters,
+            [manifestBindingProperty.name]: parameters[primaryBindingName]
+        }
 
-        Object.defineProperty(context, 'mode', {
-            get: () => {
-                return props.context.mode;
-            },
-            set: () => { }
-        });
-        Object.defineProperty(context, 'fluentDesignLanguage', {
-            get: () => {
-                return props.context.fluentDesignLanguage
-            },
-            set: () => { }
-        })
-        Object.defineProperty(context, 'parameters', {
-            get: () => {
-                return {
-                    ...contextParameters,
-                    ...parameters,
-                    [manifestBindingProperty.name]: parameters[primaryBindingName]
-                }
-            },
-            set: () => {
-            }
-        })
-        Object.defineProperty(context.factory, 'requestRender', {
-            configurable: true,
-            get: () => {
-                return () => this.render();
-            },
-            set: () => { }
-        })
         return context;
     }
     private _getFluentDesignLanguage(fluentDesignLanguage?: IFluentDesignState): IFluentDesignState {

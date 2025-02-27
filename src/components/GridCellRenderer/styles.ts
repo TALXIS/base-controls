@@ -17,7 +17,8 @@ export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment'], da
             display: 'flex',
             gap: 5,
             overflow: 'hidden',
-            textOverflow: 'ellipsis'
+            textOverflow: 'ellipsis',
+            alignItems: 'center'
         },
         contentWrapper: {
             flexGrow: 1,
@@ -45,6 +46,10 @@ export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment'], da
         },
         fileIcon: {
             fontSize: 18
+        },
+        loadingSpinnerCircle: {
+            width: 20,
+            height: 20
         }
     })
 }

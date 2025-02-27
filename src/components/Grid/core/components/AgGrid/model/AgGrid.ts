@@ -69,48 +69,7 @@ export class AgGrid extends GridDependency {
                     }
                     return p.data.getFormattedValue(column.name)
                 },
-                valueGetter: (p: any) => {
-                    if (column.name === CHECKBOX_COLUMN_KEY) {
-                        return {
-                            customFormatting: this.getCellFormatting(p)
-                        }
-                    }
-                    let editing: boolean = false;
-                    const record = p.data as IRecord;
-                    const columnInfo = p.data!.getColumnInfo(column.name) as IColumnInfo;
-                    //i hate this, there is no other way to get the information if we are in edit mode or not
-                    if (p.api.getEditingCells() > 0 || Error().stack!.includes('startEditing')) {
-                        editing = true;
-                    }
-                    const customControl = this._grid.getControl(column, record, editing || !!column.oneClickEdit);
-                    const control = new NestedControl({
-                        onGetBindings: () => this._grid.getBindings(record, column, customControl),
-                        parentPcfContext: this._grid.pcfContext,
-                    });
-                    const parameters = columnInfo.ui.getControlParameters({
-                        ...control.getParameters(),
-                        ...this._grid.getParameters(record, column, editing),
-                    })
-                    if(column.oneClickEdit) {
-                        editing = true;
-                    }
-                    const values = {
-                        notifications: columnInfo.ui.getNotifications(),
-                        value: p.data!.getValue(column.name),
-                        customFormatting: this.getCellFormatting(p),
-                        customControl: customControl,
-                        height: columnInfo.ui.getHeight(p.api.getColumn(column.name).getActualWidth(), this._grid.rowHeight),
-                        error: columnInfo.error,
-                        loading: columnInfo.ui.isLoading(),
-                        errorMessage: columnInfo.errorMessage,
-                        editable: columnInfo.security.editable,
-                        editing: editing,
-                        parameters: parameters,
-                        columnAlignment: this._grid.getColumnAlignment(column),
-                        customComponent: columnInfo.ui.getCustomControlComponent()
-                    } as ICellValues;
-                    return values;
-                },
+                valueGetter: (p: any) => this._getValue(p, column),
                 equals: (valueA, valueB) => {
                     return this._comparator.isEqual(valueA, valueB);
                 },
@@ -148,7 +107,6 @@ export class AgGrid extends GridDependency {
         this._gridApi?.refreshCells({
             rowNodes: this._gridApi.getRenderedNodes()
         });
-        this.refreshRowSelection(true);
     }
 
     public updateColumnOrder(e: ColumnMovedEvent<IRecord, any>) {
@@ -173,9 +131,6 @@ export class AgGrid extends GridDependency {
     }
 
     public updateColumnVisualSizeFactor(e: ColumnResizedEvent<IRecord, any>) {
-        if (e.source !== 'uiColumnResized') {
-            return;
-        }
         const resizedColumnKey = this._grid.dataset.columns.find(x => x.name === e.column?.getId())?.name;
         if (!resizedColumnKey) {
             return;
@@ -240,7 +195,7 @@ export class AgGrid extends GridDependency {
         }
         return width;
     }
-    public refreshRowSelection(disableCellRefresh?: boolean) {
+    public refreshRowSelection() {
         if (!this._gridApi) {
             return;
         }
@@ -262,12 +217,10 @@ export class AgGrid extends GridDependency {
             nodes: nodesToDeselect,
             newValue: false
         })
-        if (!disableCellRefresh) {
-            this._gridApi.refreshCells({
-                columns: [CHECKBOX_COLUMN_KEY],
-                force: true,
-            })
-        }
+        this._gridApi.refreshCells({
+            columns: [CHECKBOX_COLUMN_KEY],
+            force: true,
+        })
         this._gridApi.refreshHeader()
     }
 
@@ -335,7 +288,7 @@ export class AgGrid extends GridDependency {
         }
         //disable ag grid cell editor if oneClickEdit is enabled
         //editor control will be used in cell renderer
-        if(column.oneClickEdit) {
+        if (column.oneClickEdit) {
             return false;
         }
         return columnInfo?.security.editable ?? true;
@@ -371,4 +324,47 @@ export class AgGrid extends GridDependency {
         }
         return false;
     }
+
+    private _getValue(p: any, column: IGridColumn) {
+            if (column.name === CHECKBOX_COLUMN_KEY) {
+                return {
+                    customFormatting: this.getCellFormatting(p)
+                }
+            }
+            let editing: boolean = false;
+            const record = p.data as IRecord;
+            const columnInfo = p.data!.getColumnInfo(column.name) as IColumnInfo;
+            //i hate this, there is no other way to get the information if we are in edit mode or not
+            if (p.api.getEditingCells() > 0 || Error().stack!.includes('startEditing')) {
+                editing = true;
+            }
+            const customControl = this._grid.getControl(column, record, editing || !!column.oneClickEdit);
+            const control = new NestedControl({
+                onGetBindings: () => this._grid.getBindings(record, column, customControl),
+                parentPcfContext: this._grid.pcfContext,
+            });
+            const parameters = columnInfo.ui.getControlParameters({
+                ...control.getParameters(),
+                ...this._grid.getParameters(record, column, editing),
+            })
+            if (column.oneClickEdit) {
+                editing = true;
+            }
+            const values = {
+                notifications: columnInfo.ui.getNotifications(),
+                value: p.data!.getValue(column.name),
+                customFormatting: this.getCellFormatting(p),
+                customControl: customControl,
+                height: columnInfo.ui.getHeight(p.api.getColumn(column.name).getActualWidth(), this._grid.rowHeight),
+                error: columnInfo.error,
+                loading: columnInfo.ui.isLoading(),
+                errorMessage: columnInfo.errorMessage,
+                editable: columnInfo.security.editable,
+                editing: editing,
+                parameters: parameters,
+                columnAlignment: this._grid.getColumnAlignment(column),
+                customComponent: columnInfo.ui.getCustomControlComponent()
+            } as ICellValues;
+            return values;
+        }
 }

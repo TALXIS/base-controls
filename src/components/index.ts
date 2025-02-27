@@ -10,3 +10,4 @@ export * from './NestedControlRenderer';
 export * from './OptionSet';
 export * from './TextField';
 export * from './TwoOptions';
+export * from './Duration';

@@ -24,6 +24,18 @@ export const DatasetControl = (props: IDatasetControl) => {
     onDatasetInit: () => dataset.refresh()
   });
 
+  const renderErrorMessageBar = (onReset?: () => void) => {
+    <MessageBar
+      isMultiline={false}
+      actions={<MessageBarButton className={styles.messageBarBtn} text={labels.reload()} onClick={() => {
+        onReset?.();
+        dataset.refresh();
+      }} />}
+      messageBarType={MessageBarType.error}>
+      {dataset.errorMessage || labels.generalError()}
+    </MessageBar>
+  }
+
   useMemo(() => {
     //@ts-ignore - private property
     injectedContextRef.current = dataset._patchContext(props.context);
@@ -39,19 +51,11 @@ export const DatasetControl = (props: IDatasetControl) => {
       {props.parameters.EnableQuickFind?.raw &&
         <QuickFind dataset={dataset} labels={labels} />
       }
-      <ErrorBoundary fallback={(resetError: () => void) =>
-        <MessageBar
-          isMultiline={false}
-          actions={<MessageBarButton className={styles.messageBarBtn} text={labels.reload()} onClick={() => {
-            resetError();
-            dataset.refresh();
-          }} />}
-          messageBarType={MessageBarType.error}>
-          {dataset.errorMessage || labels.generalError()}
-        </MessageBar>}>
-          <Grid
-            {...props}
-            context={injectedContextRef.current} />
+{/*       {dataset.error && renderErrorMessageBar()} */}
+      <ErrorBoundary fallback={(resetError: () => void) => { renderErrorMessageBar(() => resetError()) }}>
+        <Grid
+          {...props}
+          context={injectedContextRef.current} />
       </ErrorBoundary>
     </ThemeProvider>
   )
