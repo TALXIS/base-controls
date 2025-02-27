@@ -32,7 +32,7 @@
     "@types/validator": "^13.11.9",
     "@types/xrm": "^9.0.81",
     "babel-loader": "^8.2.3",
-    "esbuild": "^0.13.9",
+    "esbuild": "^0.25.0",
     "glob": "^11.0.0",
     "postcss": "^8.3.11",
     "rollup": "^2.58.1",
