@@ -70,7 +70,6 @@
     "@ag-grid-community/core": "^31.3.2",
     "@ag-grid-community/react": "^31.3.2",
     "@ag-grid-community/styles": "^31.3.2",
-    "@fluentui/react": "<=8.121.5",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
     "@talxis/client-libraries": "^1.2502.2",
     "@talxis/react-components": "^1.2502.7",
@@ -82,9 +81,14 @@
     "liquidjs": "^9.43.0",
     "merge-anything": "^5.1.7",
     "numeral": "^2.0.6",
-    "react": "^16.8.6 || ^17.0.2",
-    "react-dom": "^16.8.6 || ^17.0.2",
     "use-debounce": "^10.0.1",
     "validator": "^13.11.9"
+  },
+  "peerDependencies": {
+    "react": "^16.8.6 || ^17.0.2",
+    "react-dom": "^16.8.6 || ^17.0.2",
+    "@talxis/react-components": "^1.2502.5",
+    "@talxis/client-libraries": "^1.2502.2",
+    "@fluentui/react": "<=8.121.5"
   }
 }
