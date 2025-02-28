@@ -10,6 +10,7 @@ import { useRerender } from '@talxis/react-components';
 import { getJustifyContent } from '../styles';
 import { useDebouncedCallback } from 'use-debounce';
 import { Client } from '@talxis/client-libraries';
+import { AgGridContext } from '../../AgGrid/context';
 
 const client = new Client();
 
@@ -20,6 +21,7 @@ export const CellContent = (props: ICellProps) => {
     const mountedRef = React.useRef(false);
     valueRef.current = props.value;
     const grid = useGridInstance();
+    const agGrid = React.useContext(AgGridContext);
     const record = props.data;
     const node = props.node;
     const themeRef = React.useRef(useTheme());
@@ -29,7 +31,8 @@ export const CellContent = (props: ICellProps) => {
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
 
     const getFluentDesignLanguage = (fluentDesignLanguage?: IFluentDesignState) => {
-        const formatting = valueRef.current.customFormatting;
+        //@ts-ignore
+        const formatting = agGrid.getCellFormatting(props);
         const mergedOverrides = merge(fluentDesignLanguage?.v8FluentOverrides ?? {}, formatting.themeOverride);
         const columnAlignment = valueRef.current.columnAlignment;
         const result = ControlTheme.GenerateFluentDesignLanguage(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, {

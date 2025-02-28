@@ -1,15 +1,12 @@
 import { Checkbox, ThemeProvider, useTheme } from "@fluentui/react";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { useGridInstance } from "../../../../hooks/useGridInstance";
 import { getGlobalCheckboxStyles } from "./styles";
 import { AgGridContext } from "../../../AgGrid/context";
-import { Theming, useThemeGenerator } from "@talxis/react-components";
+import { Theming, useRerender, useThemeGenerator } from "@talxis/react-components";
 
-interface IGlobalCheckBox {
-    checkboxState: 'checked' | 'unchecked' | 'intermediate'
-}
 
-export const GlobalCheckBox = (props: IGlobalCheckBox) => {
+export const GlobalCheckBox = () => {
     const grid = useGridInstance();
     const baseTheme = useTheme();
     const theme = useThemeGenerator(
@@ -22,7 +19,23 @@ export const GlobalCheckBox = (props: IGlobalCheckBox) => {
     const styles = getGlobalCheckboxStyles(theme);
     const selection = grid.selection;
     const agGrid = useContext(AgGridContext);
-    const checkboxState = props.checkboxState;
+    const rerender = useRerender();
+
+    const getCheckBoxState = () => {
+        if (grid.selection.allRecordsSelected) {
+            return 'checked';
+        }
+        if (grid.dataset.getSelectedRecordIds().length > 0) {
+            return 'intermediate';
+        }
+        return 'unchecked';
+    }
+
+    const checkboxState = getCheckBoxState();
+
+    useEffect(() => {
+        agGrid.setGlobalCheckBoxRenderer(() => rerender())
+    }, []);
 
     if (grid.dataset.sortedRecordIds.length === 0) {
         return <></>

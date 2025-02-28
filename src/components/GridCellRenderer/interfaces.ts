@@ -13,9 +13,15 @@ export interface IGridCellRendererParameters extends IParameters {
     EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
     PrefixIcon?: IStringProperty;
     SuffixIcon?: IStringProperty
-    Column: IColumn;
-    Dataset: IDataset;
-    Record: IRecord
+    Column: {
+        raw: IColumn;
+    }
+    Dataset: {
+        raw: IDataset
+    }
+    Record:  {
+        raw: IRecord
+    }
 }
 
 export interface IOptionSetProps {

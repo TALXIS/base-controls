@@ -21,7 +21,14 @@ export const DatasetControl = (props: IDatasetControl) => {
 
   //we need to have a way to customize the init behavior from above
   const componentProps = onOverrideComponentProps({
-    onDatasetInit: () => dataset.refresh()
+    onDatasetInit: () => {
+      if (dataset.paging.pageNumber > 1) {
+        dataset.paging.loadExactPage(dataset.paging.pageNumber)
+      }
+      else {
+        dataset.refresh();
+      }
+    }
   });
 
   const renderErrorMessageBar = (onReset?: () => void) => {
@@ -51,7 +58,7 @@ export const DatasetControl = (props: IDatasetControl) => {
       {props.parameters.EnableQuickFind?.raw &&
         <QuickFind dataset={dataset} labels={labels} />
       }
-{/*       {dataset.error && renderErrorMessageBar()} */}
+      {/*       {dataset.error && renderErrorMessageBar()} */}
       <ErrorBoundary fallback={(resetError: () => void) => { renderErrorMessageBar(() => resetError()) }}>
         <Grid
           {...props}

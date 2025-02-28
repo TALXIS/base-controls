@@ -1,10 +1,11 @@
 import { NestedControl } from "./NestedControl";
 
 export class NestedControlError extends Error {
-    constructor(message: string, control: NestedControl) {
-        super(message);
+    constructor(error: Omit<Error, 'name'>, control: NestedControl) {
+        super(error.message)
         this.name = 'NestedControlError';
-        control.setError(message);
+        this.stack = error.stack;
+        control.setError(error.message);
         control.setLoading(false);
         control.getOptions().callbacks?.onControlStateChanged?.();
     }

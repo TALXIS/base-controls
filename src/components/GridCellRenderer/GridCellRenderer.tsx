@@ -13,10 +13,10 @@ import { getClassNames, Spinner } from "@talxis/react-components";
 const client = new Client();
 
 export const GridCellRenderer = (props: IGridCellRenderer) => {
-    const dataset = props.parameters.Dataset;
+    const dataset = props.parameters.Dataset.raw;
     const context = props.context;
-    const record: IRecord = props.parameters.Record;
-    const column = props.parameters.Column;
+    const record: IRecord = props.parameters.Record.raw;
+    const column = props.parameters.Column.raw;
     const columnAlignment = props.parameters.ColumnAlignment.raw;
     const dataType: DataType = props.parameters.value.type as DataType;
     const { theme, sizing } = useControl('GridCellLabel', props, getDefaultGridRendererTranslations());

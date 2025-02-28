@@ -33,6 +33,7 @@ export class AgGrid extends GridDependency {
     private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
     private _theme: ITheme;
     private _rerenderCallback: () => void = () => { };
+    private _rerenderGlobalCheckBox: () => void = () => {};
     private _comparator: Comparator = new Comparator();
     public readonly oddRowCellTheme: ITheme;
     public readonly evenRowCellTheme: ITheme;
@@ -88,11 +89,6 @@ export class AgGrid extends GridDependency {
             if (agColumn.field === CHECKBOX_COLUMN_KEY) {
                 agColumn.lockPosition = 'left';
                 agColumn.headerComponent = GlobalCheckBox;
-                agColumn.headerComponentParams = () => {
-                    return {
-                        checkboxState: this._getGlobalCheckBoxState()
-                    }
-                }
             }
             agColumns.push(agColumn)
         }
@@ -107,6 +103,10 @@ export class AgGrid extends GridDependency {
         this._gridApi?.refreshCells({
             rowNodes: this._gridApi.getRenderedNodes()
         });
+    }
+
+    public setGlobalCheckBoxRenderer(renderer: () => void) {
+        this._rerenderGlobalCheckBox = renderer;
     }
 
     public updateColumnOrder(e: ColumnMovedEvent<IRecord, any>) {
@@ -221,7 +221,7 @@ export class AgGrid extends GridDependency {
             columns: [CHECKBOX_COLUMN_KEY],
             force: true,
         })
-        this._gridApi.refreshHeader()
+        this._rerenderGlobalCheckBox();
     }
 
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
@@ -293,17 +293,6 @@ export class AgGrid extends GridDependency {
         }
         return columnInfo?.security.editable ?? true;
     }
-
-    private _getGlobalCheckBoxState(): 'unchecked' | 'checked' | 'intermediate' {
-        if (this._grid.selection.allRecordsSelected) {
-            return 'checked';
-        }
-        if (this._grid.dataset.getSelectedRecordIds().length > 0) {
-            return 'intermediate';
-        }
-        return 'unchecked';
-    }
-
     private _suppressKeyboardEvent(params: SuppressKeyboardEventParams<IRecord, any>, column: IGridColumn) {
         if (params.event.key !== 'Enter' || params.api.getEditingCells().length === 0) {
             return false;

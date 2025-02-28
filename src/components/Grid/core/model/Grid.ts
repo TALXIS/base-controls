@@ -132,7 +132,7 @@ export class Grid {
 
     public get rowHeight() {
         let height = this.parameters.RowHeight?.raw;
-        if(!height) {
+        if (!height) {
             height = DEFAULT_ROW_HEIGHT;
         }
         return height;
@@ -237,7 +237,7 @@ export class Grid {
 
     public onNotifyOutputChanged(record: IRecord, column: IColumn, editing: boolean, newValue: any, rerenderCell: () => void) {
         record.setValue(column.name, newValue);
-        if(!editing) {
+        if (!editing) {
             this.pcfContext.factory.requestRender();
             return;
         }
@@ -301,29 +301,43 @@ export class Grid {
 
     public getParameters(record: IRecord, column: IColumn, editing: boolean) {
         const parameters: any = {
-            Dataset: this.dataset
+            Dataset: {
+                raw: this.dataset,
+                type: DataTypes.Object
+            },
+            Record: {
+                raw: record,
+                type: DataTypes.Object
+            },
+            Column: {
+                raw: column,
+                type: DataTypes.Object
+            }
         }
-        parameters.Record = record;
-        parameters.Column = column
-
         parameters.EnableNavigation = {
-            raw: this.isNavigationEnabled
+            raw: this.isNavigationEnabled,
+            type: DataTypes.TwoOptions
         }
         parameters.ColumnAlignment = {
-            raw: this.getColumnAlignment(column)
+            raw: this.getColumnAlignment(column),
+            type: DataTypes.SingleLineText
         }
         parameters.IsPrimaryColumn = {
-            raw: column.isPrimary
+            raw: column.isPrimary,
+            type: DataTypes.TwoOptions
         }
         parameters.ShowErrorMessage = {
-            raw: false
+            raw: false,
+            type: DataTypes.TwoOptions
         }
         parameters.CellType = {
-            raw: editing ? 'editor' : 'renderer'
+            raw: editing ? 'editor' : 'renderer',
+            type: DataTypes.SingleLineText
         }
         if (editing) {
             parameters.AutoFocus = {
-                raw: true
+                raw: true,
+                type: DataTypes.TwoOptions
             }
         }
         switch (column.dataType) {
@@ -332,7 +346,8 @@ export class Grid {
             case 'Lookup.Regarding':
             case 'Lookup.Simple': {
                 parameters.IsInlineNewEnabled = {
-                    raw: false
+                    raw: false,
+                    type: DataTypes.TwoOptions
                 }
                 break;
             }
@@ -340,7 +355,8 @@ export class Grid {
             case 'SingleLine.Phone':
             case 'SingleLine.URL': {
                 parameters.EnableTypeSuffix = {
-                    raw: false
+                    raw: false,
+                    type: DataTypes.TwoOptions
                 }
                 break;
             }
@@ -348,7 +364,8 @@ export class Grid {
             case 'TwoOptions':
             case 'MultiSelectPicklist': {
                 parameters.EnableOptionSetColors = {
-                    raw: this.enableOptionSetColors
+                    raw: this.enableOptionSetColors,
+                    type: DataTypes.TwoOptions
                 }
                 break;
             }
@@ -366,7 +383,7 @@ export class Grid {
                 return 'right';
             }
         }
-        if(column.type === 'action') {
+        if (column.type === 'action') {
             return 'right';
         }
         return 'left';
@@ -378,7 +395,7 @@ export class Grid {
         this.keyHoldListener.destroy();
         //@ts-ignore - internal types
         //if any nested PCF has been loaded and we are in Power Apps, do a page refresh to prevent memory leaks
-        if(this._usesNestedPcfs && !this._client.isTalxisPortal()) {
+        if (this._usesNestedPcfs && !this._client.isTalxisPortal()) {
             //location.reload();
         }
     }
@@ -461,7 +478,7 @@ export class Grid {
                 return false;
             }
         }
-        if(column.disableSorting === undefined) {
+        if (column.disableSorting === undefined) {
             return true;
         }
         return !column.disableSorting;
