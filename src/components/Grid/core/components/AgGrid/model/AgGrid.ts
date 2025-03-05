@@ -15,7 +15,7 @@ import { NestedControl } from "../../../../../NestedControlRenderer/NestedContro
 export interface ICellValues {
     notifications: IAddControlNotificationOptions[];
     customFormatting: Required<ICustomColumnFormatting>;
-    customControl: ICustomColumnControl;
+    customControl: Required<ICustomColumnControl>;
     customComponent: ICustomColumnComponent;
     loading: boolean;
     value: any;

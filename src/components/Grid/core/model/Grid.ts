@@ -9,6 +9,7 @@ import { CHECKBOX_COLUMN_KEY } from "../../constants";
 import { IGridColumn } from "../interfaces/IGridColumn";
 import { BaseControls } from "../../../../utils";
 import { IBinding } from "../../../NestedControlRenderer/interfaces";
+import { merge } from "merge-anything";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
@@ -282,10 +283,11 @@ export class Grid {
         return bindings;
     }
 
-    public getControl(column: IColumn, record: IRecord, editing: boolean) {
-        const defaultControl: ICustomColumnControl = {
+    public getControl(column: IColumn, record: IRecord, editing: boolean): Required<ICustomColumnControl> {
+        const defaultControl: Required<ICustomColumnControl> = {
             name: editing ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : 'GridCellRenderer',
             appliesTo: 'both',
+            bindings: {}
         };
         const customControls = record.getColumnInfo(column.name).ui.getCustomControls([defaultControl]);
         const appliesToValue = editing ? 'editor' : 'renderer';
@@ -293,10 +295,10 @@ export class Grid {
             control => control.appliesTo === 'both' || control.appliesTo === appliesToValue
         );
         if (customControl) {
-            return customControl;
+            return merge(defaultControl, customControl) as Required<ICustomColumnControl>;
         }
 
-        return defaultControl as ICustomColumnControl;
+        return defaultControl;
     }
 
     public getParameters(record: IRecord, column: IColumn, editing: boolean) {
