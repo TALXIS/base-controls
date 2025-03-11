@@ -28,7 +28,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
     }, [condition]);
 
     const getTwoOptionsSortLabel = async (isDesc?: boolean) => {
-        const [defaultValue, options] = await grid.metadata.getOptions(column.name);
+        const options = column.metadata?.OptionSet ?? [];
         if(!isDesc) {
             return `${options[0].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[1].Label}`
         }

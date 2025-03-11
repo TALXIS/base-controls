@@ -1,21 +1,11 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { IControl, IOutputs, IParameters } from "../interfaces";
-import { merge } from 'merge-anything';
-import { Liquid } from "liquidjs";
 import { useControlTheme } from "../utils/theme/hooks/useControlTheme";
 import { useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
 import { ITheme } from "@talxis/react-components";
-
-export type ITranslation<T> = {
-    [Property in keyof Required<T>]: (variables?: any) => string
-};
-
-export interface IDefaultTranslations {
-    [LCID: number]: string | string[];
-    [key: string]: any;
-}
-
+import dayjs from "dayjs";
+import { IDefaultTranslations, ITranslation, useControlLabels } from "./useControlLabels";
 
 export interface IControlController<TTranslations, TOutputs> {
     labels: Required<ITranslation<TTranslations>>,
@@ -31,56 +21,26 @@ export interface IControlController<TTranslations, TOutputs> {
  * to notify the framework that you wish to write changes. The hook will notify the framework only if the provided output differs from the current inputs.
  */
 export const useControl = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IControl<TParameters, TOutputs, TTranslations, any>, defaultTranslations?: IDefaultTranslations): IControlController<TTranslations, TOutputs> => {
+    const context = props.context;
     const parametersRef = useRef<TParameters>(props.parameters);
     const sizing = useControlSizing(props.context.mode);
-    const context = props.context;
-    const liquid = useMemo(() => new Liquid(), []);
-    const labels = useMemo(() => {
-        const mergedTranslations = merge(defaultTranslations ?? {}, props.translations ?? {}) as TTranslations;
-        return new Proxy(mergedTranslations as any, {
-            get(target, key) {
-                return (variables: any) => getLabel(key as string, mergedTranslations, variables)
-            }
-        }) as any;
-    }, []);
+    const labels = useControlLabels({
+        languageId: context.userSettings.languageId,
+        translations: props.translations,
+        defaultTranslations
+    });
 
     useEffect(() => {
         parametersRef.current = props.parameters;
     }, [props.parameters]);
 
-    const getLabel = (key: string, translations: TTranslations, variables?: any): string | string[] => {
-        const strigify = (value: string | string[]) => {
-            if (typeof value === 'string') {
-                return value;
-            }
-            return JSON.stringify(value);
-        };
-        //@ts-ignore
-        const translation = translations[key];
-        if (!translation) {
-            console.error(`Translation for the ${key} label of the ${name} control has not been defined!`);
-            return key;
-        }
-        if (typeof translation === 'string' || Array.isArray(translation)) {
-            return strigify(translation);
-        }
-        let label = translation[props.context.userSettings.languageId];
-        if (!label) {
-            console.info(`Translation for the ${key} label of the ${name} control has not been found. Using default Czech label instead.`);
-            label = translation[1029];
-        }
-        if (!label) {
-            console.error(`Translation for the ${key} label of the ${name} control does not exists neither for Czech language and current LCID.`);
-            label = key;
-        }
-
-        return liquid.parseAndRenderSync(strigify(label), variables);
-    };
-
     const onNotifyOutputChanged = (outputs: TOutputs) => {
         let isDirty = false;
         for (let [key, outputValue] of Object.entries(outputs)) {
             let parameterValue = parametersRef.current[key]?.raw;
+            if(parameterValue instanceof Date) {
+                parameterValue = dayjs(parameterValue).startOf('minute').toDate();
+            }
             if (!deepEqual(parameterValue, outputValue)) {
                 if (outputValue === null) {
                     outputValue = undefined;
@@ -108,6 +68,7 @@ export const useControl = <TParameters extends IParameters, TOutputs extends IOu
         //console.log(`Change detected, triggering notifyOutputChanged on control ${name}.`);
         props.onNotifyOutputChanged?.(outputs);
     };
+    
     return {
         labels,
         sizing,

@@ -6,7 +6,7 @@ import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useComboBoxTheme } from './useComboBoxTheme';
 import { getComboBoxStyles } from './styles';
-import React from 'react';
+
 
 export const OptionSet = (props: IOptionSet) => {
     const componentRef = useRef<IComboBox>(null);
@@ -45,7 +45,7 @@ export const OptionSet = (props: IOptionSet) => {
         if (!option) {
             return null;
         }
-        const color = Options.find(item => item.Value.toString() === option.key)?.Color;
+        const color = Options.find(item => item.Value.toString() === option.key)?.Color ?? theme.palette.neutralLight
         return <ColorfulOption label={option.text} color={color} />
     };
 
@@ -58,9 +58,9 @@ export const OptionSet = (props: IOptionSet) => {
         useComboBoxAsMenuWidth: true,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
         styles: { root: styles.root, callout: styles.callout },
-        onRenderContainer: (props, defaultRender) => <ThemeProvider theme={theme}>{defaultRender?.(props)}</ThemeProvider>,
+        onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
         calloutProps: {
-            theme: theme
+            theme: props.context.fluentDesignLanguage?.applicationTheme
         },
         ...(parameters.EnableCopyButton?.raw === true && {
             clickToCopyProps: {

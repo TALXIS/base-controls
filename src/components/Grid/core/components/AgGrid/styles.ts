@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
 const getGridHeight = (height: string) => {
-    if(height === '100%') {
+    if (height === '100%') {
         return height;
     }
     return `calc(${height} + var(--height-offset))`;
@@ -16,20 +16,32 @@ export const getGridStyles = (theme: ITheme, height: string) => {
             '--height-offset': '64px',
             ':has(.ag-body-horizontal-scroll-viewport[style*="height: 0px"])': {
                 '--height-offset': '45px'
-            } ,
+            },
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
                 maxHeight: '100%',
-                '--ag-input-focus-border-color': 'transparent',
-                '--ag-selected-row-background-color': theme.palette.themeLighter,
+                '--ag-selected-row-background-color': theme.palette.themePrimary,
                 '--ag-range-selection-border-color': theme.palette.themePrimary,
-                borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
+                '--ag-row-hover-color': theme.palette.black,
+                '--ag-row-border-color': theme.semanticColors.menuDivider,
+                '--ag-cell-horizontal-padding': 0,
+                '--ag-input-focus-border-color': theme.semanticColors.inputFocusBorderAlt,
+                borderBottom: `1px solid ${theme.semanticColors.menuDivider}`,
+                '.ag-row::before': {
+                    zIndex: 1
+                },
+                '.ag-row-hover::before': {
+                    opacity: 0.1
+                },
+                '.ag-row-selected::before': {
+                    opacity: 0.2
+                }
             },
             '.ag-root-wrapper.ag-layout-normal': {
                 height: getGridHeight(height)
             },
             '.ag-body': {
-                borderTop: `1px solid ${theme.semanticColors.bodyDivider}`
+                borderTop: `1px solid ${theme.semanticColors.menuDivider}`
             },
             '.ag-header-viewport': {
                 backgroundColor: `${theme.semanticColors.bodyBackground}`
@@ -45,43 +57,26 @@ export const getGridStyles = (theme: ITheme, height: string) => {
                 paddingRight: 0,
                 backgroundColor: `${theme.semanticColors.bodyBackground} !important`
             },
-            '.ag-cell-inline-editing': {
-                overflow: 'visible',
-                top: -1,
-                backgroundColor: 'transparent',
-
-                '*:not(.ms-ComboBox)>input': {
-                    paddingLeft: 10
-                },
-                '.ms-ComboBox>input': {
-                    paddingLeft: 2
-                },
-                '.talxis__lookupControl': {
-                    '.ms-BasePicker-itemsWrapper': {
-                        padding: 0,
-                        '.ms-CommandBar': {
-                            height: '100%'
-                        }
-                    },
-                },
-                '.TALXIS__error-message__root': {
-                    display: 'none'
-                }
+            '.ag-cell': {
+                border: 'none !important',
+                borderRadius: 0
             },
-            '.talxis-cell-align-right': {
-                '[class^="cellContent"]': {
-                    justifyContent: 'flex-end',
-                },
-                '.talxis-cell-text, input': {
-                    textAlign: 'right'
-                },
-                'input': {
-                    paddingRight: 10
+            '.ag-cell-focus': {
+                zIndex: 2,
+                '::after': {
+                    content: "''",
+                    position: 'absolute',
+                    inset: '-1px',
+                    border: `3px solid ${theme.semanticColors.inputFocusBorderAlt}`,
+                    borderRadius: theme.effects.roundedCorner2,
+                    pointerEvents: 'none'
                 }
             },
             '.ag-cell-focus:has([data-is-valid="false"])': {
-                border: '1px solid red !important;'
+                '::after': {
+                    borderColor: `${theme.semanticColors.errorIcon} !important`
+                }
             },
         }
     })
-}
+};

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { CommandBarButton, Icon, Label, useTheme } from '@fluentui/react';
 import { FilterCallout, IFilterCallout } from '../../../filtering/components/FilterCallout/FilterCallout';
 import { IGridColumn } from '../../interfaces/IGridColumn';
@@ -16,7 +16,8 @@ export const ColumnHeader = (props: IColumnHeader) => {
     const column = props.baseColumn;
     const [columnHeaderContextualMenuProps, setColumnHeaderContextualMenuProps] = useState<ISortingContextualMenu | null>(null);
     const [filterCalloutProps, setFilterCalloutProps] = useState<IFilterCallout | null>(null);
-    const columnHeaderStyles = getColumnHeaderStyles(useTheme());
+    const theme = useTheme();
+    const columnHeaderStyles = useMemo(() => getColumnHeaderStyles(theme, column.alignment), [theme, column.alignment])
     const buttonRef = useRef<HTMLElement>(null);
 
     const onClick = () => {

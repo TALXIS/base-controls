@@ -165,7 +165,7 @@ export class Condition extends GridDependency {
                 memoryProvider.setMetadata({
                     PrimaryIdAttribute: 'id'
                 })
-                const record = memoryProvider.refresh()[0];
+                const record = memoryProvider.refreshSync()[0];
                 record.expressions?.setRequiredLevelExpression(this._column.name, () => 'required');
                 return !record.getColumnInfo(this._column.name).error
             }

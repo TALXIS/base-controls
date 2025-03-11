@@ -1,42 +1,26 @@
-import { IRecord } from "@talxis/client-libraries";
 import { GridDependency } from "../../core/model/GridDependency";
 
 export class Selection extends GridDependency {
     private _selectedRecordIdsSet: Set<string> = new Set<string>();
-    private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-    public async toggle(record: IRecord, newState: boolean, clearExistingSelection?: boolean, disableDebounce?: boolean): Promise<void> {
-        const recordId = record.getRecordId();
-        if(!this.debounceTimer) {
-            this._selectedRecordIdsSet = new Set(this.selectedRecordIds);
+    public toggle(recordId: string, clearExistingSelection?: boolean) {
+        this._selectedRecordIdsSet = new Set(this.selectedRecordIds);
+        if(clearExistingSelection || this.type === 'single') {
+            this._selectedRecordIdsSet.clear()
         }
-        if (clearExistingSelection) {
-            this._selectedRecordIdsSet.clear();
-        }
-        if (newState === false) {
+        if(this._selectedRecordIdsSet.has(recordId)) {
             this._selectedRecordIdsSet.delete(recordId);
         }
         else {
-            if (this.type === 'single') {
-                this._selectedRecordIdsSet.clear();
-            }
             this._selectedRecordIdsSet.add(recordId);
         }
-
-        if (this.debounceTimer !== null) {
-            clearTimeout(this.debounceTimer);
-        }
-        if(disableDebounce) {
-            this._setSelectedRecords();
-            return;
-        }
-        return new Promise((resolve) => {
-            this.debounceTimer = setTimeout(() => {
-                this._setSelectedRecords();
-                resolve();
-            }, 0);
-        })
+        this._setSelectedRecords();
     }
+
+    public setSelectedRecordIds(ids: string[]) {
+        this._dataset.setSelectedRecordIds(ids);
+    }
+
     public get selectedRecordIds() {
         return this._dataset.getSelectedRecordIds();
     }
@@ -64,7 +48,5 @@ export class Selection extends GridDependency {
     }
     private _setSelectedRecords() {
         this._grid.dataset.setSelectedRecordIds([...this._selectedRecordIdsSet.values()]);
-        this.debounceTimer = null; // Reset debounce timer after execution
-        this._selectedRecordIdsSet = new Set();
     }
 }

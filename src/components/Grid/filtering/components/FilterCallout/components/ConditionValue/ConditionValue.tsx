@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Component } from "../../../../../core/components/Component/Component";
 import { IGridColumn } from "../../../../../core/interfaces/IGridColumn";
 import { IColumnFilterConditionController, useColumnFilterConditionController } from "../../../../controller/useColumnFilterConditionController";
 import { ConditionComponentValue } from "./model/ConditionComponentValue";
 import { DataTypes, MemoryDataProvider } from "@talxis/client-libraries";
-import { useRerender } from "../../../../../../../hooks/useRerender";
+import { Component } from "../LegacyControlRendering/Component";
+import { useRerender } from "@talxis/react-components";
 
 interface IConditionValue {
     column: IGridColumn;
@@ -53,7 +53,7 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
         memoryProvider.setMetadata({
             PrimaryIdAttribute: "id"
         })
-        const record = memoryProvider.refresh()[0];
+        const record = memoryProvider.refreshSync()[0];
         return record;
     }, []);
 

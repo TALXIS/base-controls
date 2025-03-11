@@ -7,8 +7,8 @@ export const getDatasetControlStyles = () => {
             flexDirection: 'column',
             gap: 15
         },
-        quickFind: {
-            //alignSelf: 'flex-end'
+        messageBarBtn: {
+            minHeight: 'inherit'
         }
     });
 }

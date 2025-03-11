@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { IControl, IOutputs } from "../interfaces/context";
-import { IControlController, IDefaultTranslations, useControl } from "./useControl";
-import React from 'react';
+import { IControlController, useControl } from "./useControl";
 import { IInputParameters } from "../interfaces/parameters";
+import { IDefaultTranslations } from "./useControlLabels";
 
 /**
  * Description
@@ -39,11 +39,11 @@ interface IInputBasedControlController<TValue, TTranslations, TOutputs> extends 
 }
 
 export const useInputBasedControl = <TValue, TParameters extends IInputParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IControl<TParameters, TOutputs, TTranslations, any>, options?: IControlOptions): IInputBasedControlController<TValue, TTranslations, TOutputs> => {
-    const {formatter, valueExtractor} = {...options};
+    const { formatter, valueExtractor } = { ...options };
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
-    const {labels, sizing, theme, onNotifyOutputChanged} = useControl(name, props, options?.defaultTranslations);
+    const { labels, sizing, theme, onNotifyOutputChanged } = useControl(name, props, options?.defaultTranslations);
 
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
@@ -54,14 +54,12 @@ export const useInputBasedControl = <TValue, TParameters extends IInputParameter
     useEffect(() => {
         valueRef.current = value;
     }, [value]);
-    
+
     useEffect(() => {
         return () => {
-            if(props.parameters.NotifyOutputChangedOnUnmount?.raw === true) {
-                onNotifyOutputChanged({
-                    value: valueExtractor?.(valueRef.current) ?? valueRef.current
-                } as any);
-            }
+            onNotifyOutputChanged({
+                value: valueExtractor?.(valueRef.current) ?? valueRef.current
+            } as any);
         };
     }, []);
     return {

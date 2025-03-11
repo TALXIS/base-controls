@@ -11,12 +11,15 @@ import {
 import { DatasetControl } from "../../../../../../../../DatasetControl";
 import { useTheme } from "@fluentui/react";
 import { getChangeGridStyles } from "./styles";
+import React from "react";
+import { AgGridContext } from "../../../../../AgGrid/context";
 
 interface IChangeGrid {
     recordChange: IRecordChange;
     onDatasetReady: (dataset: IDataset) => void;
     onDatasetDestroyed: (dataset: IDataset) => void;
     onIsSaving: (value: boolean) => void;
+    onRequestRender: () => void;
 }
 
 export const ChangeGrid = (props: IChangeGrid) => {
@@ -27,6 +30,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
     const changedColumns = fieldChangesRef.current.map((change) => {
         return grid.dataset.columns.find((x) => change.columnName === x.name)!;
     });
+    const agGridContext = React.useContext(AgGridContext);
 
     const recordPrimaryName = (() => {
         let result;
@@ -51,7 +55,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
         props.onDatasetReady(dataset);
         return () => {
             props.onDatasetDestroyed(dataset);
-            grid.pcfContext.factory.requestRender()
+            agGridContext.rerender();
         }
     }, []);
 
@@ -96,14 +100,32 @@ export const ChangeGrid = (props: IChangeGrid) => {
             PrimaryIdAttribute: "id__virtual"
         })
         const dataset = new Dataset(memoryProvider);
+        dataset.isValid = () => {
+            return baseRecord.isValid()
+        }
         grid.dataset.linking.getLinkedEntities().map(x => dataset.linking.addLinkedEntity(x))
 
         dataset.addEventListener('onRecordLoaded', (record) => {
             const recordId = record.getRecordId();
+            record.expressions.ui.setCustomFormattingExpression('valueDesc__virtual', (cellTheme) => {
+                return {
+                    themeOverride: {
+                        fonts: {
+                            medium: {
+                                fontWeight: 600
+                            }
+                        }
+                    }
+                }
+            })
             changedColumns.map(col => {
                 const change = fieldChangesRef.current.find(x => x.columnName === col.name);
                 record.expressions?.setCurrencySymbolExpression(col.name, () => baseRecord.getCurrencySymbol?.(col.name) ?? "");
-                record.expressions?.ui.setCellEditorParametersExpression(col.name, (parameters) => baseRecord.ui.getCellEditorParameters(col.name, parameters))
+                //we need to store the previous values somewhere, in changes?
+                //record.expressions?.ui.setCustomFormattingExpression(col.name, (cellTheme) => baseRecord.getColumnInfo(col.name).ui.getCustomFormatting(cellTheme));
+                record.expressions?.ui.setControlParametersExpression(col.name, (parameters) => baseRecord.getColumnInfo(col.name).ui.getControlParameters(parameters));
+                record.expressions?.ui.setCustomControlsExpression(col.name, (defaultCustomControls) => baseRecord.getColumnInfo(col.name).ui.getCustomControls(defaultCustomControls));
+                record.expressions?.ui.setCustomControlComponentExpression(col.name, () => baseRecord.getColumnInfo(col.name).ui.getCustomControlComponent())
                 if (recordId === 'new') {
                     record.expressions?.setValueExpression?.(col.name, () => {
                         //this happens if we have removed a change
@@ -132,7 +154,6 @@ export const ChangeGrid = (props: IChangeGrid) => {
                                             () => {
                                                 baseRecord.clearChanges?.(col.name);
                                                 record.setValue(col.name, baseRecord.getValue(col.name))
-                                                grid.pcfContext.factory.requestRender();
                                             },
                                         ],
                                     },
@@ -157,18 +178,18 @@ export const ChangeGrid = (props: IChangeGrid) => {
 
         dataset.addEventListener('onRecordColumnValueChanged', (record, columnName) => {
             baseRecord.setValue(columnName, record.getValue(columnName)); 
-            grid.pcfContext.factory.requestRender();    
+            props.onRequestRender(); 
         })
         dataset.addEventListener('onChangesCleared', () => {
             baseRecord.clearChanges?.();
-            grid.pcfContext.factory.requestRender();
+            props.onRequestRender();
         })
         dataset.addEventListener('onRecordSave', async () => {
             props.onIsSaving(true);
             await baseRecord.save();
             baseRecord.clearChanges?.();
             props.onIsSaving(false);
-            grid.pcfContext.factory.requestRender();
+            props.onRequestRender();
         })
         return dataset;
     };

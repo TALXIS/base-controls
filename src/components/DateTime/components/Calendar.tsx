@@ -1,4 +1,4 @@
-import { ICalendarProps, IComboBox } from "@fluentui/react";
+import { ICalendarProps, IComboBox, ITheme, ThemeProvider } from "@fluentui/react";
 import { useTheme } from "@fluentui/react";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +13,7 @@ interface IInternalTimePickerProps extends Omit<ITimePickerProps, 'onChange' | '
     timeFormat: string;
     dateTimeFormat: string;
     lastInputedTimeString?: string;
+    theme?: ITheme
     onChange: (time?: string) => void;
 }
 
@@ -72,7 +73,7 @@ export const Calendar = (props: IInternalCalendarProps) => {
 
 
     return (
-        <div className={styles.calendarCallout}>
+        <ThemeProvider theme={props.theme} className={styles.calendarCallout}>
             <CalendarBase {...props} value={props.value} />
             <hr />
             {timePickerProps.visible &&
@@ -82,6 +83,8 @@ export const Calendar = (props: IInternalCalendarProps) => {
                     componentRef={timePickerRef}
                     onFormatDate={(date) => dayjs(date).format(timePickerProps.timeFormat)}
                     onChange={onChange}
+                    allowFreeform
+                    onClick={() => timePickerRef.current?.focus(true)}
                     useComboBoxAsMenuWidth
                     styles={{
                         callout: {
@@ -89,9 +92,8 @@ export const Calendar = (props: IInternalCalendarProps) => {
                         }
                     }}
                     increments={15}
-                    allowFreeform
                 />
             }
-        </div>
+        </ThemeProvider>
     );
 };

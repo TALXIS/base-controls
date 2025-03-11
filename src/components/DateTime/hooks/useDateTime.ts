@@ -32,7 +32,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const boundValue = props.parameters.value;
     const context = props.context;
     const behavior = boundValue.attributes.Behavior;
-    const format = boundValue.attributes.Format;
+    const format = boundValue.attributes.Format ?? boundValue.type;
     const dateFormattingInfo = context.userSettings.dateFormattingInfo;
     const lastValidDateRef = useRef<Date | undefined>(undefined);
     
@@ -70,24 +70,6 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         }
         return date;
     };
-
-    const {value, labels, theme, setValue, onNotifyOutputChanged} = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
-        formatter: formatDate,
-        defaultTranslations: getDefaultDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
-    });
-
-    useEffect(() => {
-        const onBlur = () => {
-            onNotifyOutputChanged({
-                value: dateExtractor(value!) as any
-            });
-        };
-        const input = ref.current?.querySelector('input');
-        input?.addEventListener('blur', onBlur);
-        return () => {
-            input?.removeEventListener('blur', onBlur);
-        };
-    }, [value]);
 
     useEffect(() => {
         if (boundValue.raw instanceof Date) {
@@ -156,6 +138,26 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             value: dateExtractor(invalidDateString ?? dayjsDate.toDate()) as any
         });
     };
+    const {value, labels, theme, setValue, onNotifyOutputChanged} = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
+        formatter: formatDate,
+        valueExtractor: dateExtractor,
+        defaultTranslations: getDefaultDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
+    });
+
+
+    useEffect(() => {
+        const onBlur = () => {
+            onNotifyOutputChanged({
+                value: dateExtractor(value!) as any
+            });
+        };
+        const input = ref.current?.querySelector('input');
+        input?.addEventListener('blur', onBlur);
+        return () => {
+            input?.removeEventListener('blur', onBlur);
+        };
+    }, [value]);
+
     return [
         isDateTime,
         theme,

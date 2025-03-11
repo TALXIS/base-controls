@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { ITheme } from "@fluentui/react";
 import { ControlTheme, IFluentDesignState } from "../ControlTheme";
+import { ITheme } from "@talxis/react-components";
 
 export const useControlTheme = (fluentDesignLanguage?: IFluentDesignState): ITheme => {
     const primaryColor = fluentDesignLanguage?.tokenTheme.colorCompoundBrandForeground1;

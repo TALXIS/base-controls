@@ -37,6 +37,7 @@ export const TwoOptions = (props: ITwoOptions) => {
                 <OptionSet
                     context={props.context}
                     parameters={{
+                        ...parameters as any,
                         value: {
                             raw: boundValue.raw !== null ? boundValue.raw ? 1 : 0 : boundValue.raw,
                             //@ts-ignore - typings
@@ -44,7 +45,7 @@ export const TwoOptions = (props: ITwoOptions) => {
                         },
                         EnableOptionSetColors: {
                             raw: true
-                        },
+                        }
                     }}
                     onNotifyOutputChanged={(outputs) => {
                         handleChange(outputs.value == 1 ? true : outputs.value == 0 ? false : undefined);

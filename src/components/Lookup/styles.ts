@@ -71,13 +71,6 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
                 height: _height && `${_height - 3}px !important`
             }
         },
-        suggestions: {
-            '.ms-Suggestions-title': {
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-            }
-        },
         createRecordBtn: {
             height: 38,
             width: '100%',
@@ -96,3 +89,25 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
         }
     });
 }
+
+export const getSuggestionsCalloutStyles = (theme: ITheme) => {
+    return mergeStyleSets({
+        suggestionsCallout: {
+            '.ms-Suggestions-title': {
+                padding: 0,
+                display: 'flex',
+                flexDirection: 'column',
+            }
+        },
+        suggestionsContainer: {
+            '.ms-Suggestions-item': {
+                ':hover': {
+                    backgroundColor: theme.semanticColors.buttonBackgroundHovered
+                },
+                '>.ms-Button--command[aria-selected="true"]': {
+                    backgroundColor: theme.semanticColors.buttonBackgroundPressed
+                }
+            }
+        },
+    })
+}   

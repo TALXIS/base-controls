@@ -11,7 +11,7 @@ export const Save = () => {
     const styles = getSaveStyles(grid.parameters.EnableChangeEditor?.raw !== false);
     const [isSaving, setIsSaving] = useState(false);
     const [changeEditorOpened, setChangeEditorOpened] = useState<boolean>(false);
-    const hasInvalidRecords = grid.dataset.hasInvalidChanges?.()
+    const isDatasetValid = grid.dataset.isValid() && !grid.dataset.hasInvalidChanges();
     const isDirty = grid.dataset.isDirty?.();
     const numOfChanges = Object.keys(grid.dataset.getChanges?.() ?? []).length;
 
@@ -25,11 +25,11 @@ export const Save = () => {
         <>
             <div onClick={onMessageClick} className={`${styles.root} talxis__grid-control__notification-bar`}>
                 <MessageBar
-                    messageBarType={!hasInvalidRecords ? MessageBarType.info : MessageBarType.error}
+                    messageBarType={isDatasetValid ? MessageBarType.info : MessageBarType.error}
                     actions={
                         <div className={styles.actions}>
                             <CommandBarButton
-                                disabled={hasInvalidRecords || grid.dataset.loading}
+                                disabled={!isDatasetValid || grid.dataset.loading}
                                 text={isSaving ? grid.labels["saving-saving"]() : undefined}
                                 iconProps={{
                                     iconName: 'Save',
@@ -70,13 +70,12 @@ export const Save = () => {
             </div>
             {changeEditorOpened &&
                 <ChangeEditor onDismiss={(e, shouldRefresh) => {
-                    //@ts-ignore
-                    if (e?.code === 'Escape') {
-                        return;
-                    }
                     setChangeEditorOpened(false);
                     if(shouldRefresh) {
                         grid.dataset.paging.loadExactPage(grid.dataset.paging.pageNumber);
+                    }
+                    else {
+                        grid.pcfContext.factory.requestRender();
                     }
                 }} />
             }

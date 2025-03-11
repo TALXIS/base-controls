@@ -1,12 +1,12 @@
 
 import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeProvider } from "@fluentui/react";
 import { IItemProps, TagPicker } from "@talxis/react-components";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
-import { getLookupStyles } from "./styles";
+import { getLookupStyles, getSuggestionsCalloutStyles } from "./styles";
 import { IBasePicker } from "@fluentui/react/lib/components/pickers/BasePicker.types";
 import { ITag } from "@fluentui/react/lib/components/pickers/TagPicker/TagPicker.types";
 import { RecordCreator } from "./components/RecordCreator";
@@ -22,6 +22,8 @@ export const Lookup = (props: ILookup) => {
     const { height } = useControlSizing(props.context.mode);
     const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props);
     const styles = getLookupStyles(theme, itemLimit === 1, height);
+    const suggestionsCalloutTheme = props.context.fluentDesignLanguage?.applicationTheme ?? theme;
+    const suggestionsCalloutStyles = useMemo(() => getSuggestionsCalloutStyles(suggestionsCalloutTheme), [suggestionsCalloutTheme])
     const mouseOver = useMouseOver(ref);
     const isFocused = useFocusIn(ref, 100);
     const firstRenderRef = useRef(true);
@@ -152,9 +154,10 @@ export const Lookup = (props: ILookup) => {
             layerProps: {
                 eventBubblingEnabled: true
             },
-            className: styles.suggestions
+            className: suggestionsCalloutStyles.suggestionsCallout,
+            theme: suggestionsCalloutTheme,
+            
         },
-
         inputProps: {
             placeholder: placeholder,
             onMouseEnter: () => {
@@ -166,10 +169,13 @@ export const Lookup = (props: ILookup) => {
             onMouseLeave: () => {
                 setPlaceholder("---");
             }
+
         },
         pickerSuggestionsProps: {
             loadingText: labels.searching(),
+            theme: suggestionsCalloutTheme,
             noResultsFoundText: labels.noRecordsFound(),
+            className: suggestionsCalloutStyles.suggestionsContainer,
             // @ts-ignore
             suggestionsHeaderText: (
                 <>

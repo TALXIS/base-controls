@@ -1,6 +1,8 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { IColumn } from "@talxis/client-libraries";
+import { getJustifyContent } from "../Cell/styles";
 
-export const getColumnHeaderStyles = (theme: ITheme) => {
+export const getColumnHeaderStyles = (theme: ITheme, columnAlignment: Required<IColumn['alignment']>) => {
     return mergeStyleSets({
         root: {
             width: '100%',
@@ -19,7 +21,8 @@ export const getColumnHeaderStyles = (theme: ITheme) => {
         labelWrapper: {
             flex: 1,
             display: 'flex',
-            minWidth: 0
+            minWidth: 0,
+            justifyContent: getJustifyContent(columnAlignment)
         },
         label: {
             overflow: 'hidden',

@@ -1,5 +1,5 @@
 import { ComboBox } from "@talxis/react-components";
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
@@ -18,6 +18,7 @@ export const Duration = (props: IDuration) => {
     //@ts-ignore - locale is part of UserSettings
     const language = formattingInfo.locale;
     const numberFormatting = context.userSettings.numberFormattingInfo;
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const formatter = (value: number | null) => {
         //all duration formatting should happen here
@@ -39,6 +40,9 @@ export const Duration = (props: IDuration) => {
     const valueExtractor = (str: string | null): number | undefined | string => {
         //extraction of number of minutes from formatted string should happen here
         // parsing because labels are string that represent array of strings
+        if(initialFormattedValue === str) {
+            return boundValue.raw as number;
+        }
         const minuteLabels = JSON.parse(labels.minute());
         const minutesLabels = JSON.parse(labels.minutes());
         const hourLabels = JSON.parse(labels.hour());
@@ -98,11 +102,13 @@ export const Duration = (props: IDuration) => {
 
     const comboBoxOptions: IComboBoxOption[] = presetOptions();
 
-    const { value, labels, sizing, setValue, onNotifyOutputChanged, theme } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs,  Required<IDuration>['translations']>('Duration', props, {
+    const { value, labels, sizing, setValue, onNotifyOutputChanged, theme } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs, Required<IDuration>['translations']>('Duration', props, {
         formatter: formatter,
         valueExtractor: valueExtractor,
         defaultTranslations: getDefaultDurationTranslations(),
     });
+
+    const initialFormattedValue = useMemo(() => value, [])
 
     useEffect(() => {
         if (parameters.AutoFocus?.raw) {
@@ -110,48 +116,53 @@ export const Duration = (props: IDuration) => {
         }
     }, []);
 
+    const componentProps = onOverrideComponentProps({
+        componentRef,
+        options: comboBoxOptions,
+        hideErrorMessage: !parameters.ShowErrorMessage?.raw,
+
+        allowFreeInput: true,
+        autoComplete: 'on',
+        autofill: parameters.AutoFocus?.raw === true ? { autoFocus: true } : undefined,
+        readOnly: context.mode.isControlDisabled,
+        useComboBoxAsMenuWidth: true,
+        errorMessage: boundValue.errorMessage,
+        text: value ?? '',
+        styles: {
+            root: {
+                height: sizing.height,
+                width: sizing.width,
+                display: 'flex',
+                alignItems: 'center',
+            },
+            callout: {
+                height: 300
+            }
+        },
+        calloutProps: {
+            theme: props.context.fluentDesignLanguage?.applicationTheme ?? theme
+        },
+        onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
+        onInputValueChange: (text) => {
+            setValue(text ?? '');
+        },
+        onBlur: (event) => {
+            onNotifyOutputChanged({
+                //any is needed here because we can return string in case of error values
+                value: valueExtractor(value) as any
+            });
+        },
+        onChange: (e, value) => {
+            onNotifyOutputChanged({
+                //any is needed here because we can return string in case of error values
+                value: valueExtractor(value?.text ?? '') as any
+            });
+        }
+    });
+
     return (
         <ThemeProvider theme={theme} applyTo="none">
-        <ComboBox
-            componentRef={componentRef}
-            options={comboBoxOptions}
-            hideErrorMessage={!parameters.ShowErrorMessage?.raw}
-            allowFreeInput={true}
-            autoComplete='on'
-            autofill={parameters.AutoFocus?.raw === true ? {
-                autoFocus: true
-            } : undefined}
-            readOnly={context.mode.isControlDisabled}
-            useComboBoxAsMenuWidth
-            errorMessage={boundValue.errorMessage}
-            text={value ?? ''}
-            styles={{
-                root: {
-                    height: sizing.height,
-                    width: sizing.width,
-                    display: 'flex',
-                    alignItems: 'center',
-                },
-                callout: {
-                    height: 300
-                }
-            }}
-            onInputValueChange={(text) => {
-                setValue(text ?? '');
-            }}
-            onBlur={(event) => {
-                onNotifyOutputChanged({
-                    //any is needed here because we can return string in case of error values
-                    value: valueExtractor(value) as any
-                });
-            }}
-            onChange={(e, value) => {
-                onNotifyOutputChanged({
-                    //any is needed here because we can return string in case of error values
-                    value: valueExtractor(value?.text ?? '') as any
-                });
-            }}
-        />
+            <ComboBox {...componentProps} />
         </ThemeProvider>
     );
 };

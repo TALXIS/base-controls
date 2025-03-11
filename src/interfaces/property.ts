@@ -7,6 +7,11 @@ export interface IStringProperty extends IProperty, Partial<ComponentFramework.P
     raw: string | null;
 }
 
+export interface IFileProperty extends IProperty {
+    raw: ComponentFramework.FileObject | null;
+    formatted: string;
+}
+
 export interface ITwoOptionsProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.TwoOptionsProperty>, 'attributes'> {
     raw: boolean,
     attributes: Omit<Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.OptionSetMetadata>, 'DefaultValue'> & {
@@ -23,6 +28,7 @@ export interface IDecimalNumberProperty extends IProperty, Omit<Partial<Componen
 
 export interface IWholeNumberProperty extends IProperty, Omit<Partial<ComponentFramework.PropertyTypes.WholeNumberProperty>, 'attributes'> {
     raw: number | null;
+    attributes?: Partial<ComponentFramework.PropertyHelper.FieldPropertyMetadata.DecimalNumberMetadata>
 }
 
 //@ts-ignore - IMEMode is mandatory, but no longer supported in modern browsers - https://learn.microsoft.com/en-us/power-apps/maker/data-platform/create-edit-field-portal
