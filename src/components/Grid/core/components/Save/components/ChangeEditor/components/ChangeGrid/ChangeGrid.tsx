@@ -100,6 +100,9 @@ export const ChangeGrid = (props: IChangeGrid) => {
             PrimaryIdAttribute: "id__virtual"
         })
         const dataset = new Dataset(memoryProvider);
+        dataset.isValid = () => {
+            return baseRecord.isValid()
+        }
         grid.dataset.linking.getLinkedEntities().map(x => dataset.linking.addLinkedEntity(x))
 
         dataset.addEventListener('onRecordLoaded', (record) => {

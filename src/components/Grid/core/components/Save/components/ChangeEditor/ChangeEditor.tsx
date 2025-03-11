@@ -37,10 +37,7 @@ export const ChangeEditor = (props: IChangeDialogProps) => {
         if (activeSaveOperationsCount > 0) {
             return true;
         }
-        if ([...datasetsRef.current.values()].find(x => x.hasInvalidChanges?.())) {
-            return true;
-        }
-        return false;
+        return !grid.dataset.isValid() || grid.dataset.hasInvalidChanges();
     }
 
     useEffect(() => {
@@ -80,7 +77,7 @@ export const ChangeEditor = (props: IChangeDialogProps) => {
                 onIsSaving={(value) => {
                     setActiveSaveOperationsCount(count => value ? count + 1 : count - 1);
                 }}
-                onRequestRender={() => rerender()}
+                onRequestRender={() => setTimeout(() => rerender(), 0)}
                 key={recordChange.record.getRecordId()}
                 recordChange={recordChange} />)}
         </div>

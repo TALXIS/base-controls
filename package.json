@@ -71,7 +71,7 @@
     "@ag-grid-community/react": "^31.3.2",
     "@ag-grid-community/styles": "^31.3.2",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
-    "@talxis/client-libraries": "^1.2502.2",
+    "@talxis/client-libraries": "^1.2503.2",
     "@talxis/react-components": "^1.2503.1",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",

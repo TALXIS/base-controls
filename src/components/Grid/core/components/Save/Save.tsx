@@ -11,7 +11,7 @@ export const Save = () => {
     const styles = getSaveStyles(grid.parameters.EnableChangeEditor?.raw !== false);
     const [isSaving, setIsSaving] = useState(false);
     const [changeEditorOpened, setChangeEditorOpened] = useState<boolean>(false);
-    const isDatasetValid = grid.dataset.isValid();
+    const isDatasetValid = grid.dataset.isValid() && !grid.dataset.hasInvalidChanges();
     const isDirty = grid.dataset.isDirty?.();
     const numOfChanges = Object.keys(grid.dataset.getChanges?.() ?? []).length;
 
