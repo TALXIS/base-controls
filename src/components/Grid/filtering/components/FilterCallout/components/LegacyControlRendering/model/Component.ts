@@ -41,11 +41,7 @@ export class Component extends GridDependency {
         const value = this._getComponentValue(column, record.getValue(column.name));
         const formattedValue = record.getFormattedValue(column.name);
         const validation = record.getColumnInfo(column.name);
-        const onOverrideControlProps = (passedProps: IControl<any, any, any, any>): any => {
-            const overridenProps = props?.onOverrideControlProps?.(passedProps) ?? passedProps;
-            overridenProps.parameters = record.getColumnInfo(column.name).ui.getCellEditorParameters(overridenProps.parameters) ?? overridenProps.parameters;
-            return overridenProps;
-        }
+        const onOverrideControlProps = (props: IControl<any, any, any, any>) => props;
         const attributeName = Attribute.GetNameFromAlias(column.name);
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:
