@@ -71,8 +71,6 @@
     "@ag-grid-community/react": "^31.3.2",
     "@ag-grid-community/styles": "^31.3.2",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
-    "@talxis/client-libraries": "^1.2503.2",
-    "@talxis/react-components": "^1.2503.1",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
     "external-svg-loader": "^1.7.1",
@@ -87,8 +85,8 @@
   "peerDependencies": {
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2",
-    "@talxis/react-components": "^1.2502.5",
-    "@talxis/client-libraries": "^1.2502.2",
+    "@talxis/react-components": "^1.2503.1",
+    "@talxis/client-libraries": "^1.2503.2",
     "@fluentui/react": "<=8.121.5"
   }
 }
