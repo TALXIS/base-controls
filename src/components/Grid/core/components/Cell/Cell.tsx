@@ -2,7 +2,7 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { Constants, IRecord } from "@talxis/client-libraries";
 import { Checkbox, ITooltipHostProps, Shimmer, ThemeProvider, useTheme } from "@fluentui/react";
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import { getCellStyles, getInnerCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
@@ -19,15 +19,15 @@ export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     isCellEditor: boolean;
     data: IRecord;
-    value: ICellValues
+    value: ICellValues;
 }
 export const Cell = (props: ICellProps) => {
-    const agGridContext = React.useContext(AgGridContext);
     const record = props.data;
     const styles = useMemo(() => getCellStyles(), [])
     const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
     const grid = useGridInstance();
+    const agGridContext = useContext(AgGridContext);
 
     const renderContent = () => {
         switch (props.baseColumn.name) {
@@ -39,8 +39,13 @@ export const Cell = (props: ICellProps) => {
                             checkbox: styles.checkbox
                         }}
                         onChange={(e, checked) => {
-                            grid.selection.toggle(record, checked!);
-                            agGridContext.refreshRowSelection();
+                            const selectedRecordIds = grid.dataset.getSelectedRecordIds();
+                            //if the record is the only selected, toggle the selection
+                            //this is because ag grid does not trigger the native selection event in this case
+                            if(selectedRecordIds.length === 1 && selectedRecordIds[0] === record.getRecordId()) {
+                                grid.selection.toggle(record.getRecordId());
+                                agGridContext.refreshRowSelection();
+                            }
                         }} />
                 );
             }
@@ -95,7 +100,8 @@ export const InternalCell = (props: ICellProps) => {
         if (isLoading) {
             return (
                 <Shimmer styles={{
-                    shimmerWrapper: styles.shimmerWrapper
+                    shimmerWrapper: styles.shimmerWrapper,
+                    root: styles.shimmerRoot
                 }} />
             );
         }

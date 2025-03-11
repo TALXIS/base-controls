@@ -46,6 +46,11 @@ export const getInnerCellStyles = (isEditing: boolean, theme: ITheme, columnAlig
         shimmerWrapper: {
             height: 10
         },
+        shimmerRoot: {
+            width: '100%',
+            paddingLeft: 10,
+            paddingRight: 10
+        },
         errorIconRoot: {
             color: `${theme.semanticColors.errorIcon} !important`
         },

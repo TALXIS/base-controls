@@ -17,6 +17,7 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { AgGridContext } from './context';
+import { CHECKBOX_COLUMN_KEY } from '../../../constants';
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 export const AgGrid = () => {
@@ -140,7 +141,14 @@ export const AgGrid = () => {
                         if (e.source.includes('api')) {
                             return;
                         }
-                        grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
+                        const cell = e.api.getFocusedCell()!;
+                        if (cell.column.getColId() === CHECKBOX_COLUMN_KEY) {
+                            const node = e.api.getSelectedNodes().find(node => node.rowIndex === cell.rowIndex);
+                            grid.selection.toggle(node!.id!);
+                        }
+                        else {
+                            grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
+                        }
                         agGrid.refreshRowSelection();
                     }}
                     gridOptions={{
@@ -153,7 +161,7 @@ export const AgGrid = () => {
                     }}
                     onCellDoubleClicked={(e) => {
                         if (grid.isNavigationEnabled && !grid.isEditable) {
-                            grid.openDatasetItem(e.data!.getNamedReference())
+                            grid.dataset.openDatasetItem(e.data!.getNamedReference())
                         }
                     }}
                     getRowId={(params) => params.data.getRecordId()}

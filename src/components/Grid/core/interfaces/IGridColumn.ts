@@ -8,5 +8,6 @@ export interface IGridColumn extends IColumn {
     isFiltered: boolean;
     isSortedDescending: boolean;
     isResizable: boolean;
+    alignment: IColumn['alignment'],
     getEntityName: () => string
 }

@@ -161,17 +161,6 @@ export class Grid {
         return this._client;
     }
 
-    public openDatasetItem(entityReference: ComponentFramework.EntityReference) {
-        this._dataset.openDatasetItem(entityReference);
-        const clickedRecord = this.records.find(x => x.getRecordId() === entityReference.id.guid);
-        //we need to make sure the item we are opening gets selected in order for the
-        //OnOpenRecord ribbon scripts to work correctly
-        //if no record found we have clicked a lookup, no selection should be happening in that case
-        if (clickedRecord) {
-            this.selection.toggle(clickedRecord, true);
-        }
-    }
-
     public updateDependencies(props: IGrid): void {
         this._props = props;
         this._dataset = props.parameters.Grid;
@@ -191,6 +180,7 @@ export class Grid {
             const sorted = this._dataset.sorting?.find(sort => sort.name === column.name);
             const gridColumn: IGridColumn = {
                 ...column,
+                alignment: this.getColumnAlignment(column),
                 isEditable: this._isColumnEditable(column),
                 isRequired: this._isColumnRequired(column),
                 isFilterable: this._isColumnFilterable(column),
@@ -210,6 +200,7 @@ export class Grid {
                 name: CHECKBOX_COLUMN_KEY,
                 alias: CHECKBOX_COLUMN_KEY,
                 dataType: DataTypes.SingleLineText,
+                alignment: 'center',
                 displayName: '',
                 isEditable: false,
                 isFilterable: false,
@@ -284,6 +275,17 @@ export class Grid {
     }
 
     public getControl(column: IColumn, record: IRecord, editing: boolean): Required<ICustomColumnControl> {
+        //file and image currently do not support editor, always force cell renderers
+        switch (column.dataType) {
+            case 'File':
+            case 'Image': {
+                return {
+                    name: 'GridCellRenderer',
+                    appliesTo: 'both',
+                    bindings: {}
+                }
+            }
+        }
         const defaultControl: Required<ICustomColumnControl> = {
             name: editing ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : 'GridCellRenderer',
             appliesTo: 'both',
@@ -301,7 +303,7 @@ export class Grid {
         return defaultControl;
     }
 
-    public getParameters(record: IRecord, column: IColumn, editing: boolean) {
+    public getParameters(record: IRecord, column: IGridColumn, editing: boolean) {
         const parameters: any = {
             Dataset: {
                 raw: this.dataset,
@@ -321,7 +323,7 @@ export class Grid {
             type: DataTypes.TwoOptions
         }
         parameters.ColumnAlignment = {
-            raw: this.getColumnAlignment(column),
+            raw: column.alignment,
             type: DataTypes.SingleLineText
         }
         parameters.IsPrimaryColumn = {

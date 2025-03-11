@@ -84,13 +84,19 @@ export const Notifications = (props: INotifications) => {
         const overflowItems: ICommandBarItemProps[] = [];
 
         notifications.map(notification => {
-            //@ts-ignore - types
             const item: ICommandBarItemProps = {
                 key: notification.uniqueId,
                 text: notification.text,
-                //@ts-ignore - types
+                tooltipHostProps: {
+                    ...notification.buttonProps?.tooltipHostProps,
+                    calloutProps: {
+                        theme: contextualMenuTheme
+                    },
+                    tooltipProps: {
+                        theme: contextualMenuTheme
+                    },
+                },
                 iconProps: notification.iconName ? {
-                    //@ts-ignore - types
                     iconName: notification.iconName,
                     ...notification.buttonProps?.iconProps
                 } : undefined,

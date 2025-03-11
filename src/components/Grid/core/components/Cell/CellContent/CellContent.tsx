@@ -4,8 +4,7 @@ import { ICellProps } from '../Cell';
 import { getCellContentStyles } from './styles';
 import { NestedControlRenderer } from '../../../../../NestedControlRenderer/NestedControlRenderer';
 import { ControlTheme, IFluentDesignState } from '../../../../../../utils';
-import { merge } from 'merge-anything';
-import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles, useTheme } from '@fluentui/react';
+import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles, merge, useTheme } from '@fluentui/react';
 import { useRerender } from '@talxis/react-components';
 import { getJustifyContent } from '../styles';
 import { useDebouncedCallback } from 'use-debounce';
@@ -15,11 +14,12 @@ import { AgGridContext } from '../../AgGrid/context';
 const client = new Client();
 
 export const CellContent = (props: ICellProps) => {
-    const column = props.baseColumn;
-    const rerender = useRerender();
-    const valueRef = React.useRef(props.value);
+    const columnRef = React.useRef(props.baseColumn);
     const mountedRef = React.useRef(false);
+    const valueRef = React.useRef(props.value);
+    columnRef.current = props.baseColumn;
     valueRef.current = props.value;
+    const rerender = useRerender();
     const grid = useGridInstance();
     const agGrid = React.useContext(AgGridContext);
     const record = props.data;
@@ -29,14 +29,17 @@ export const CellContent = (props: ICellProps) => {
     const styles = React.useMemo(() => getCellContentStyles(valueRef.current.columnAlignment), [valueRef.current.columnAlignment]);
     //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
+    const getColumn = () => {
+        return columnRef.current;
+    }
 
     const getFluentDesignLanguage = (fluentDesignLanguage?: IFluentDesignState) => {
         //@ts-ignore
         const formatting = agGrid.getCellFormatting(props);
-        const mergedOverrides = merge(fluentDesignLanguage?.v8FluentOverrides ?? {}, formatting.themeOverride);
+        const mergedOverrides: any = merge({}, fluentDesignLanguage?.v8FluentOverrides ?? {}, formatting.themeOverride);
         const columnAlignment = valueRef.current.columnAlignment;
         const result = ControlTheme.GenerateFluentDesignLanguage(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, {
-            v8FluentOverrides: merge(
+            v8FluentOverrides: merge({},
                 {
                     semanticColors: {
                         inputBorder: 'transparent',
@@ -102,7 +105,7 @@ export const CellContent = (props: ICellProps) => {
         if(!mountedRef.current) {
             isEditing = false;
         }
-        grid.onNotifyOutputChanged(record, column, isEditing, outputs.value, () => rerender())
+        grid.onNotifyOutputChanged(record, columnRef.current, isEditing, outputs.value, () => rerender())
     }
     const debouncedNotifyOutputChanged = useDebouncedCallback((outputs) => onNotifyOutputChanged(outputs), 100);
 
@@ -122,15 +125,15 @@ export const CellContent = (props: ICellProps) => {
         parameters={{
             ControlName: valueRef.current.customControl.name,
             LoadingType: 'shimmer',
-            Bindings: grid.getBindings(record, column, valueRef.current.customControl),
+            Bindings: grid.getBindings(record, getColumn(), valueRef.current.customControl),
             ControlStates: {
-                isControlDisabled: !valueRef.current.editable
+                isControlDisabled: !valueRef.current.editing
             },
         }}
         onNotifyOutputChanged={(outputs) => {
             //talxis portal does not have debounce for notifyoutput
             //Power Apps does a debounce of 100ms
-            if(column.oneClickEdit && client.isTalxisPortal()) {
+            if(getColumn().oneClickEdit && client.isTalxisPortal()) {
                 debouncedNotifyOutputChanged(outputs);
             }
             else {
@@ -196,10 +199,10 @@ export const CellContent = (props: ICellProps) => {
                 onOverrideControlProps: (controlProps) => {
                     //here we always need to fetch the latest parameters
                     //we still might have old one's cached in valueRef
-                    const columnInfo = record.getColumnInfo(column.name);
+                    const columnInfo = record.getColumnInfo(getColumn().name);
                     const parameters = columnInfo.ui.getControlParameters({
                         ...controlProps.parameters,
-                        ...grid.getParameters(record, column, props.isCellEditor)
+                        ...grid.getParameters(record, getColumn(), props.isCellEditor)
                     })
                     return { 
                         ...controlProps,

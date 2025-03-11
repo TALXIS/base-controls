@@ -7,7 +7,7 @@ export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment'], da
         root: {
             display: 'flex',
             alignItems: 'center',
-            height: '100%',
+            height: rowHeight + 1,
             paddingLeft: 8,
             paddingRight: 8,
             justifyContent: getJustifyContent(columnAlignment),

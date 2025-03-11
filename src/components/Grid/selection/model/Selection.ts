@@ -1,22 +1,24 @@
-import { IRecord } from "@talxis/client-libraries";
 import { GridDependency } from "../../core/model/GridDependency";
 
 export class Selection extends GridDependency {
     private _selectedRecordIdsSet: Set<string> = new Set<string>();
 
-    public async toggle(record: IRecord, selected: boolean, clearExistingSelection?: boolean): Promise<void> {
+    public toggle(recordId: string, clearExistingSelection?: boolean) {
         this._selectedRecordIdsSet = new Set(this.selectedRecordIds);
-        const recordId = record.getRecordId();
         if(clearExistingSelection || this.type === 'single') {
             this._selectedRecordIdsSet.clear()
         }
-        if(selected) {
-            this._selectedRecordIdsSet.add(recordId);
-        }
-        else {
+        if(this._selectedRecordIdsSet.has(recordId)) {
             this._selectedRecordIdsSet.delete(recordId);
         }
+        else {
+            this._selectedRecordIdsSet.add(recordId);
+        }
         this._setSelectedRecords();
+    }
+
+    public setSelectedRecordIds(ids: string[]) {
+        this._dataset.setSelectedRecordIds(ids);
     }
 
     public get selectedRecordIds() {
