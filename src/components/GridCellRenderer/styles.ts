@@ -82,6 +82,7 @@ const getJustifyContent = (columnAlignment: IColumn['alignment']) => {
 }
 
 const getMultilineStyles = (rowHeight: number, theme: ITheme) => {
+    rowHeight = rowHeight + 1;
     let fontSize = 20;
     const themeFontSize = theme.fonts.medium.fontSize;
     theme.fonts.medium.lineHeight
