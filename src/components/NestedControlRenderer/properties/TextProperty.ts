@@ -6,7 +6,7 @@ export class TextProperty extends Property {
         const value = this.getValue();
         return {
             raw: value,
-            formatted: value,
+            formatted: this.getFormattedValue(),
             attributes: this.attributeMetadata
         }
     }

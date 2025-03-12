@@ -95,6 +95,11 @@ export interface IBinding {
     value: any;
 
     /**
+     * Formatted value of the binding
+     */
+    formattedValue?: string | null
+
+    /**
      * Indicates whether the binding has an error.
      */
     error?: boolean;

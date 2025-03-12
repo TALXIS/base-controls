@@ -9,10 +9,9 @@ export class OptionSetProperty extends Property {
         if(this.dataType === DataTypes.TwoOptions) {
             value = value === true;
         }
-        const formattedValue = new FieldValue(value, this.dataType, this.attributeMetadata).getFormattedValue();
         return {
             raw: value ?? null,
-            formatted: formattedValue ?? undefined,
+            formatted: this.getFormattedValue(),
             attributes: {
                 ...this.attributeMetadata,
                 Options: this.attributeMetadata?.OptionSet ?? []

@@ -1,4 +1,4 @@
-import { IAttributeMetadata} from "@talxis/client-libraries";
+import { FieldValue, IAttributeMetadata} from "@talxis/client-libraries";
 import { IOptions } from "../NestedControl";
 import { IBinding } from "../interfaces";
 
@@ -41,6 +41,9 @@ export abstract class Property {
     }
     public getValue(): any {
         return this._binding.value;
+    }
+    public getFormattedValue(): string | undefined {
+        return this._binding.formattedValue ?? new FieldValue(this.getValue(), this.dataType, this._attributeMetadata).getFormattedValue() ?? undefined;
     }
     private get _binding() {
         return this._onGetBinding();
