@@ -117,9 +117,8 @@ export class NestedControl {
             const binding = this.getOptions().onGetBindings()[name];
             //binding might not exist if we have switched controls
             if (binding) {
-                const parameter = prop.getParameter();
                 parameters[name] = {
-                    ...parameter,
+                    ...prop.getParameter(),
                     error: binding.error ?? false,
                     errorMessage: binding.errorMessage ?? null,
                     type: prop.dataType
