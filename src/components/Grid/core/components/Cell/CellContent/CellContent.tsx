@@ -210,7 +210,7 @@ export const CellContent = (props: ICellProps) => {
                             ...controlProps.context,
                             mode: Object.create(controlProps.context.mode, {
                                 allocatedHeight: {
-                                    value: node.rowHeight!
+                                    value: node.rowHeight! - 1
                                 },
 
                             }),
