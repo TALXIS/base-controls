@@ -7,12 +7,10 @@ const LookupCache = new PromiseCache();
 export class LookupProperty extends Property {
 
     public getParameter(): ILookupProperty {
-        const value = this.getValue() ?? [];
-        const formattedValue = new FieldValue(value, this.dataType).getFormattedValue();
-        
+        const value = this.getValue() ?? [];        
         return {
             raw: value,
-            formatted: formattedValue ?? undefined,
+            formatted: this.getFormattedValue(),
             getAllViews: (entityName: string, __queryType?: number) => this._getAllViews(entityName, __queryType),
             attributes: <any>this.attributeMetadata ?? {
                 Targets: [],

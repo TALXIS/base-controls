@@ -249,6 +249,7 @@ export class Grid {
                 isStatic: false,
                 type: column.dataType as any,
                 value: this._getBindingValue(record, column),
+                formattedValue: record.getFormattedValue(column.name),
                 error: columnInfo.error,
                 errorMessage: columnInfo.errorMessage,
                 onNotifyOutputChanged: () => { },
