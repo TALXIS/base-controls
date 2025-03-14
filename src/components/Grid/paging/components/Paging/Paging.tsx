@@ -24,16 +24,16 @@ export const Paging = () => {
         })
     }
     const getPagingLabel = () => {
-        if(paging.totalResultCount === undefined) {
-            return labels['paging-pages']({ start: paging.pageFirstRecordOrder, end: paging.pageLastRecordOrder})
+        if (paging.totalResultCount === undefined) {
+            return labels['paging-pages']({ start: paging.pageFirstRecordOrder, end: paging.pageLastRecordOrder })
         }
-        return `${labels['paging-pages']({ start: paging.pageFirstRecordOrder, end: paging.pageLastRecordOrder})} ${labels['paging-pages-totalcount']({recordcount: paging.formattedTotalResultCount})}`
+        return `${labels['paging-pages']({ start: paging.pageFirstRecordOrder, end: paging.pageLastRecordOrder })} ${labels['paging-pages-totalcount']({ recordcount: paging.formattedTotalResultCount })}`
     }
     return (
         <div className={styles.root}>
             <div className={styles.pageSizeBtnWrapper}>
                 <CommandBarButton
-                    disabled={grid.dataset.loading}
+                    disabled={grid.dataset.loading || !grid.paging.isEnabled}
                     text={getPagingLabel()}
                     menuProps={{
                         items: [
@@ -51,34 +51,36 @@ export const Paging = () => {
                     }}
                 />
             </div>
-            <CommandBar
-                className={styles.pagination}
-                items={[]}
-                farItems={[{
-                    key: 'FirstPage',
-                    iconOnly: true,
-                    iconProps: { iconName: 'DoubleChevronLeft' },
-                    disabled: !paging.hasPreviousPage || grid.dataset.loading,
-                    onClick: () => paging.reset()
-                }, {
-                    key: 'PreviousPage',
-                    iconOnly: true,
-                    iconProps: { iconName: 'Back' },
-                    disabled: !paging.hasPreviousPage || grid.dataset.loading,
-                    onClick: () => paging.loadPreviousPage()
-                }, {
-                    key: 'CurrentPage',
-                    text: `${labels['paging-page']()} ${paging.pageNumber.toString()}`,
-                    className: styles.currentPageBtn,
-                    disabled: true,
-                }, {
-                    key: 'NextPage',
-                    iconOnly: true,
-                    iconProps: { iconName: 'Forward' },
-                    disabled: !paging.hasNextPage || grid.dataset.loading,
-                    onClick: () => paging.loadNextPage()
-                }]}
-            />
+            {grid.paging.isEnabled &&
+                <CommandBar
+                    className={styles.pagination}
+                    items={[]}
+                    farItems={[{
+                        key: 'FirstPage',
+                        iconOnly: true,
+                        iconProps: { iconName: 'DoubleChevronLeft' },
+                        disabled: !paging.hasPreviousPage || grid.dataset.loading,
+                        onClick: () => paging.reset()
+                    }, {
+                        key: 'PreviousPage',
+                        iconOnly: true,
+                        iconProps: { iconName: 'Back' },
+                        disabled: !paging.hasPreviousPage || grid.dataset.loading,
+                        onClick: () => paging.loadPreviousPage()
+                    }, {
+                        key: 'CurrentPage',
+                        text: `${labels['paging-page']()} ${paging.pageNumber.toString()}`,
+                        className: styles.currentPageBtn,
+                        disabled: true,
+                    }, {
+                        key: 'NextPage',
+                        iconOnly: true,
+                        iconProps: { iconName: 'Forward' },
+                        disabled: !paging.hasNextPage || grid.dataset.loading,
+                        onClick: () => paging.loadNextPage()
+                    }]}
+                />
+            }
         </div>
     )
 }

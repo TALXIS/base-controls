@@ -137,8 +137,11 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             case DataTypes.LookupOwner:
             case DataTypes.LookupSimple:
             case DataTypes.LookupRegarding: {
-                const linkProps = componentProps.onGetLinkProps(getLinkProps());
-                return <Link {...linkProps}>{linkProps.children}</Link>
+                if(isNavigationEnabled) {
+                    const linkProps = componentProps.onGetLinkProps(getLinkProps());
+                    return <Link {...linkProps}>{linkProps.children}</Link>
+                }
+                return <DefaultContentRenderer />
             }
             case DataTypes.OptionSet:
             case DataTypes.MultiSelectOptionSet:

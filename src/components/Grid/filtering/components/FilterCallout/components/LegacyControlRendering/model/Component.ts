@@ -32,6 +32,9 @@ const debounce = (func: (...args: any[]) => Promise<any>, wait: number) => {
     };
 };
 
+
+//deprecated, used for filters only
+//filters should be moved to NestedControlRenderer
 export class Component extends GridDependency {
     private _debouncedGetLookupValue = debounce(this._getLookupValue.bind(this), 50);
     private static _lookupSavedQueriesCache = new Map<string, Promise<ComponentFramework.WebApi.Entity>>;
@@ -41,8 +44,23 @@ export class Component extends GridDependency {
         const value = this._getComponentValue(column, record.getValue(column.name));
         const formattedValue = record.getFormattedValue(column.name);
         const validation = record.getColumnInfo(column.name);
-        const onOverrideControlProps = (props: IControl<any, any, any, any>) => props;
-        const attributeName = Attribute.GetNameFromAlias(column.name);
+        const onOverrideControlProps = (props: IControl<any, any, any, any>) => {
+            return {
+                ...props,
+                parameters: {
+                    ...props.parameters,
+                    MultipleEnabled: {
+                        raw: true
+                    },
+                    IsInlineNewEnabled: {
+                        raw: false
+                    },
+                    ShowErrorMessage: {
+                        raw: true
+                    }
+                }
+            }
+        };
         switch (column.dataType) {
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_OWNER:
@@ -61,7 +79,7 @@ export class Component extends GridDependency {
                     context: this._pcfContext,
                     parameters: {
                         value: {
-                            getAllViews: async (entityName: string, __queryType: number = 64) => {
+                            getAllViews: async (entityName: string, __queryType: number = 1) => {
                                 const cacheKey = `${entityName}_${__queryType}`
                                 if (!Component._lookupSavedQueriesCache.get(cacheKey)) {
                                     Component._lookupSavedQueriesCache.set(cacheKey, new Promise(async (resolve) => {
@@ -86,6 +104,15 @@ export class Component extends GridDependency {
                             },
                             error: validation?.error === false,
                             errorMessage: validation?.errorMessage ?? "",
+                        },
+                        MultipleEnabled: {
+                            raw: true
+                        },
+                        IsInlineNewEnabled: {
+                            raw: false
+                        },
+                        ShowErrorMessage: {
+                            raw: true
                         }
                     },
                     onNotifyOutputChanged: (outputs) => onNotifyOutputChanged(outputs.value)

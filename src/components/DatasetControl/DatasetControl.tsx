@@ -28,6 +28,10 @@ export const DatasetControl = (props: IDatasetControl) => {
       else {
         dataset.refresh();
       }
+    },
+    containerProps: {
+      theme: theme,
+      className: styles.root
     }
   });
 
@@ -54,7 +58,7 @@ export const DatasetControl = (props: IDatasetControl) => {
 
 
   return (
-    <ThemeProvider theme={theme} applyTo="none" className={styles.root}>
+    <ThemeProvider {...componentProps.containerProps} applyTo="none">
       {props.parameters.EnableQuickFind?.raw &&
         <QuickFind dataset={dataset} labels={labels} />
       }

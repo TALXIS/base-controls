@@ -193,9 +193,7 @@ export const AgGrid = () => {
                     getRowHeight={(params) => agGrid.getRowHeight(params.data!)}
                 >
                 </AgGridReact>
-                {grid.paging.isEnabled &&
-                    <Paging />
-                }
+                <Paging />
             </div>
         </AgGridContext.Provider>
     );
