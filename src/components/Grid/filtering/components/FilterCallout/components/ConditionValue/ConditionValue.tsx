@@ -34,7 +34,9 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                     [column.name]: conditionComponentValue.get() ?? undefined,
                     id: "id",
                 },
-            ]
+            ], {
+                PrimaryIdAttribute: "id"
+            }
         );
         memoryProvider.setColumns([
             {
@@ -50,9 +52,6 @@ const InternalConditionValue = (controller: IColumnFilterConditionController) =>
                 visualSizeFactor: 0,
             },
         ]);
-        memoryProvider.setMetadata({
-            PrimaryIdAttribute: "id"
-        })
         const record = memoryProvider.refreshSync()[0];
         return record;
     }, []);

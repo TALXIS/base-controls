@@ -93,12 +93,11 @@ export const ChangeGrid = (props: IChangeGrid) => {
                     id__virtual: "new",
                     'valueDesc__virtual': grid.labels["new-value"](),
                 },
-            ]
+            ], {
+                PrimaryIdAttribute: "id__virtual"
+            }
         );
         memoryProvider.setColumns(getColumns());
-        memoryProvider.setMetadata({
-            PrimaryIdAttribute: "id__virtual"
-        })
         const dataset = new Dataset(memoryProvider);
         dataset.isValid = () => {
             return baseRecord.isValid()

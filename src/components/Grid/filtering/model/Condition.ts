@@ -153,7 +153,7 @@ export class Condition extends GridDependency {
                 const memoryProvider = new MemoryDataProvider([{
                     id: 'id',
                     [this._column.name]: await this.value.get() ?? undefined
-                }])
+                }], {PrimaryIdAttribute: "id"})
                 memoryProvider.setColumns([{...this._column, metadata: {...this._column.metadata as any, RequiredLevel: 0}}, {
                     name: 'id',
                     displayName: '',
@@ -162,9 +162,6 @@ export class Condition extends GridDependency {
                     order: 0,
                     visualSizeFactor: 0
                 }]);
-                memoryProvider.setMetadata({
-                    PrimaryIdAttribute: 'id'
-                })
                 const record = memoryProvider.refreshSync()[0];
                 record.expressions?.setRequiredLevelExpression(this._column.name, () => 'required');
                 return !record.getColumnInfo(this._column.name).error
