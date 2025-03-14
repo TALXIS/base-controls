@@ -38,6 +38,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
         switch (column.dataType) {
             case DataType.WHOLE_NONE:
             case DataType.DECIMAL:
+            case DataType.WHOLE_DURATION:
             case DataType.FP:
             case DataType.CURRENCY: {
                 if (!isDesc) {
