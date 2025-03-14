@@ -14,7 +14,7 @@ export const DatasetControl = (props: IDatasetControl) => {
   const rerender = useRerender();
   const dataset = props.parameters.Grid;
   const injectedContextRef = useRef(props.context);
-  const styles = useMemo(() => getDatasetControlStyles(), []);
+  const styles = useMemo(() => getDatasetControlStyles(theme, props.parameters.Height?.raw), []);
   const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
   //@ts-ignore - private property
   dataset._setRenderer(() => rerender());
@@ -58,7 +58,7 @@ export const DatasetControl = (props: IDatasetControl) => {
 
 
   return (
-    <ThemeProvider {...componentProps.containerProps} applyTo="none">
+    <ThemeProvider {...componentProps.containerProps}>
       {props.parameters.EnableQuickFind?.raw &&
         <QuickFind dataset={dataset} labels={labels} />
       }
