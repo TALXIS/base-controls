@@ -114,9 +114,6 @@ export class Grid {
     public get state() {
         return this._props.state;
     }
-    public get useContainerAsHeight() {
-        return this.parameters.UseContainerAsHeight?.raw === true;
-    }
     public get enableOptionSetColors() {
         return this.parameters.EnableOptionSetColors?.raw === true;
     }
