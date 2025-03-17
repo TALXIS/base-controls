@@ -244,6 +244,6 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
                     {labels.control()} <b>{parameters.ControlName}</b> {labels.failedToLoad()}.
                 </MessageBar>
             }
-            <div ref={customControlContainerRef} {...componentProps.controlContainerProps} />
+            <div ref={customControlContainerRef} style={errorMessage ? {display: 'none'} : undefined} {...componentProps.controlContainerProps} />
         </div>)
 })
