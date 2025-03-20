@@ -5,7 +5,7 @@ import { MessageBar, MessageBarButton, MessageBarType, ThemeProvider } from "@fl
 import { datasetControlTranslations } from "./translations";
 import { getDatasetControlStyles } from "./styles";
 import { IDatasetControl } from "./interfaces";
-import { QuickFind } from "./QuickFind/QuickFind";
+import { IQuickFindProps, QuickFind } from "./QuickFind/QuickFind";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { useRerender } from "@talxis/react-components";
 
@@ -31,8 +31,13 @@ export const DatasetControl = (props: IDatasetControl) => {
     },
     containerProps: {
       theme: theme,
-      className: styles.root
-    }
+      className: styles.root,
+    },
+    headerProps: {
+      className: styles.header,
+      onRender: (renderQuickFind) => renderQuickFind(),
+      onGetQuickFindProps: (props) => props
+    },
   });
 
   const renderErrorMessageBar = (onReset?: () => void) => {
@@ -59,13 +64,15 @@ export const DatasetControl = (props: IDatasetControl) => {
 
   return (
     <ThemeProvider {...componentProps.containerProps}>
-      {props.parameters.EnableQuickFind?.raw &&
-        <QuickFind dataset={dataset} labels={labels} />
-      }
-      {/*       {dataset.error && renderErrorMessageBar()} */}
+      <div {...componentProps.headerProps}>
+        {componentProps.headerProps.onRender(() => {
+            return <QuickFind dataset={dataset} labels={labels} onGetQuickFindComponentProps={(props) => componentProps.headerProps.onGetQuickFindProps(props)} />
+        })}
+      </div>
       <ErrorBoundary fallback={(resetError: () => void) => { renderErrorMessageBar(() => resetError()) }}>
         <Grid
           {...props}
+          onOverrideComponentProps={(props) => props}
           context={injectedContextRef.current} />
       </ErrorBoundary>
     </ThemeProvider>
