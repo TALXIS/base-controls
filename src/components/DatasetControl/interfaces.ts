@@ -4,12 +4,19 @@ import { IControl, ITwoOptionsProperty } from "../../interfaces";
 import { IGridOutputs, IGridParameters } from "../Grid";
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
+import { ITextFieldProps } from "@talxis/react-components";
 
 
-
-export interface IDatasetControl extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, any & {
+export interface IDatasetControlComponentProps {
     onDatasetInit: () => void,
-    containerProps: ThemeProviderProps
-}> {
+    containerProps: ThemeProviderProps;
+    headerProps: React.HTMLAttributes<HTMLDivElement> & {
+        onRender: (renderQuickFind: () => React.ReactElement) => React.ReactElement;
+        onGetQuickFindProps: (props: ITextFieldProps) => ITextFieldProps
+    };
+}
+
+
+export interface IDatasetControl extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps> {
     EnableQuickFind?: Omit<ITwoOptionsProperty, 'attributes'>
 }
