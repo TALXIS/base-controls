@@ -10,7 +10,8 @@ import { ITextFieldProps } from "@talxis/react-components";
 export interface IDatasetControlComponentProps {
     onDatasetInit: () => void,
     containerProps: ThemeProviderProps;
-    headerProps: React.HTMLAttributes<HTMLDivElement> & {
+    headerProps: {
+        headerContainerProps: React.HTMLAttributes<HTMLDivElement>
         onRender: (renderQuickFind: () => React.ReactElement) => React.ReactElement;
         onGetQuickFindProps: (props: ITextFieldProps) => ITextFieldProps
     };

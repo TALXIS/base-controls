@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { Grid } from "../Grid";
 import { useControl } from "../../hooks";
 import { MessageBar, MessageBarButton, MessageBarType, ThemeProvider } from "@fluentui/react";
 import { datasetControlTranslations } from "./translations";
 import { getDatasetControlStyles } from "./styles";
 import { IDatasetControl } from "./interfaces";
-import { IQuickFindProps, QuickFind } from "./QuickFind/QuickFind";
+import { QuickFind } from "./QuickFind/QuickFind";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { useRerender } from "@talxis/react-components";
 
@@ -31,10 +31,10 @@ export const DatasetControl = (props: IDatasetControl) => {
     },
     containerProps: {
       theme: theme,
-      className: styles.root,
+      className: styles.datasetControlRoot,
     },
     headerProps: {
-      className: styles.header,
+      headerContainerProps: {},
       onRender: (renderQuickFind) => renderQuickFind(),
       onGetQuickFindProps: (props) => props
     },
@@ -64,9 +64,13 @@ export const DatasetControl = (props: IDatasetControl) => {
 
   return (
     <ThemeProvider {...componentProps.containerProps}>
-      <div {...componentProps.headerProps}>
+      <div {...componentProps.headerProps.headerContainerProps}>
         {componentProps.headerProps.onRender(() => {
-            return <QuickFind dataset={dataset} labels={labels} onGetQuickFindComponentProps={(props) => componentProps.headerProps.onGetQuickFindProps(props)} />
+          return <>
+            {props.parameters.EnableQuickFind?.raw &&
+              <QuickFind dataset={dataset} labels={labels} onGetQuickFindComponentProps={(props) => componentProps.headerProps.onGetQuickFindProps(props)} />
+            }
+          </>
         })}
       </div>
       <ErrorBoundary fallback={(resetError: () => void) => { renderErrorMessageBar(() => resetError()) }}>

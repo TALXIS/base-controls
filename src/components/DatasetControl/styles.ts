@@ -6,7 +6,7 @@ const client = new Client();
 
 export const getDatasetControlStyles = (theme: ITheme, height?: string | null) => {
     return mergeStyleSets({
-        root: {
+        datasetControlRoot: {
             display: 'flex',
             flexDirection: 'column',
             gap: 15,
