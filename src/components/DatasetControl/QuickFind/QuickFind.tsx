@@ -1,47 +1,54 @@
 import { IDataset } from "@talxis/client-libraries";
-import { ITextFieldProps, TextField } from "@talxis/react-components";
+import { ITextFieldProps, ITheme, TextField } from "@talxis/react-components";
 import { datasetControlTranslations } from "../translations";
 import { ITranslation } from "../../../hooks";
 import { useEffect, useState } from "react";
+import { ThemeProvider } from "@fluentui/react";
+import { IQuickFindProps } from "../interfaces";
 
-export interface IQuickFindProps {
+export interface IQuickFindComponentProps {
     labels: ITranslation<typeof datasetControlTranslations>
     dataset: IDataset;
-    onGetQuickFindComponentProps: (props: ITextFieldProps) => ITextFieldProps
+    theme: ITheme;
+    onGetQuickFindComponentProps: (props: IQuickFindProps) => IQuickFindProps;
 }
 
-export const QuickFind = (props: IQuickFindProps) => {
-    const {dataset, labels} = {...props};
+export const QuickFind = (props: IQuickFindComponentProps) => {
+    const { dataset, labels, theme } = { ...props };
     const [query, setQuery] = useState<string>('');
 
-    const componentProps = props.onGetQuickFindComponentProps({
-        value: query,
-        placeholder: `${labels.search()} ${dataset.getMetadata()?.DisplayCollectionName ?? labels.records()}...`,
-        onChange: (e, newValue) => setQuery(newValue ?? ''),
-        onKeyUp: (e) => {
-            if (e.key === 'Enter') {
-                onSearch(query);
-            }
+    const quickFindProps = props.onGetQuickFindComponentProps({
+        container: {
+            theme: theme
         },
-        deleteButtonProps: query ? {
-            key: 'delete',
-            iconProps: {
-                iconName: 'Cancel'
+        textFieldProps: {
+            value: query,
+            placeholder: `${labels.search()} ${dataset.getMetadata()?.DisplayCollectionName ?? labels.records()}...`,
+            onChange: (e, newValue) => setQuery(newValue ?? ''),
+            onKeyUp: (e) => {
+                if (e.key === 'Enter') {
+                    onSearch(query);
+                }
             },
-            onClick: () => {
-                setQuery("");
-                onSearch(undefined);
-            }
-        } : undefined,
-        suffixItems: [{
-            key: 'search',
-            iconProps: {
-                iconName: 'Search'
-            },
-            onClick: () => onSearch(query)
-        }]
-    });
-
+            deleteButtonProps: query ? {
+                key: 'delete',
+                iconProps: {
+                    iconName: 'Cancel'
+                },
+                onClick: () => {
+                    setQuery("");
+                    onSearch(undefined);
+                }
+            } : undefined,
+            suffixItems: [{
+                key: 'search',
+                iconProps: {
+                    iconName: 'Search'
+                },
+                onClick: () => onSearch(query)
+            }]
+        }
+    })
     const onSearch = (query?: string) => {
         dataset.setSearchQuery?.(query ?? "");
         dataset.refresh();
@@ -50,6 +57,6 @@ export const QuickFind = (props: IQuickFindProps) => {
     useEffect(() => {
         setQuery(dataset.getSearchQuery?.() ?? '');
     }, [dataset.getSearchQuery?.()])
-
-    return <TextField {...componentProps} />
+    //needs to be wrapped within ThemeProvider because the theme context can be lost if we are overriding the header render
+    return <ThemeProvider {...quickFindProps.container}><TextField {...quickFindProps.textFieldProps} /></ThemeProvider>
 }

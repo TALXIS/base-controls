@@ -68,7 +68,11 @@ export const DatasetControl = (props: IDatasetControl) => {
         {componentProps.headerProps.onRender(() => {
           return <>
             {props.parameters.EnableQuickFind?.raw &&
-              <QuickFind dataset={dataset} labels={labels} onGetQuickFindComponentProps={(props) => componentProps.headerProps.onGetQuickFindProps(props)} />
+              <QuickFind 
+                dataset={dataset} 
+                labels={labels} 
+                theme={theme}
+                onGetQuickFindComponentProps={(props) => componentProps.headerProps.onGetQuickFindProps(props)} />
             }
           </>
         })}

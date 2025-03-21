@@ -6,6 +6,11 @@ import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
 import { ITextFieldProps } from "@talxis/react-components";
 
+export interface IQuickFindProps {
+    textFieldProps: ITextFieldProps;
+    container: ThemeProviderProps;
+}
+
 
 export interface IDatasetControlComponentProps {
     onDatasetInit: () => void,
@@ -13,7 +18,7 @@ export interface IDatasetControlComponentProps {
     headerProps: {
         headerContainerProps: React.HTMLAttributes<HTMLDivElement>
         onRender: (renderQuickFind: () => React.ReactElement) => React.ReactElement;
-        onGetQuickFindProps: (props: ITextFieldProps) => ITextFieldProps
+        onGetQuickFindProps: (props: IQuickFindProps) => IQuickFindProps;
     };
 }
 
