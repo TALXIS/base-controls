@@ -38,6 +38,7 @@ export const DatasetControl = (props: IDatasetControl) => {
       onRender: (renderQuickFind) => renderQuickFind(),
       onGetQuickFindProps: (props) => props
     },
+    onOverrideControlProps: (props) => props
   });
 
   const renderErrorMessageBar = (onReset?: () => void) => {
@@ -77,12 +78,10 @@ export const DatasetControl = (props: IDatasetControl) => {
           </>
         })}
       </div>
-      <ErrorBoundary fallback={(resetError: () => void) => { renderErrorMessageBar(() => resetError()) }}>
         <Grid
           {...props}
-          onOverrideComponentProps={(props) => props}
+          onOverrideComponentProps={(props) => componentProps.onOverrideControlProps(props)}
           context={injectedContextRef.current} />
-      </ErrorBoundary>
     </ThemeProvider>
   )
 }

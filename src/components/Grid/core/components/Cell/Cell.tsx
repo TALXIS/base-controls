@@ -50,6 +50,9 @@ export const Cell = (props: ICellProps) => {
                 );
             }
             default: {
+                if(!record) {
+                    return <span></span>
+                }
                 return <InternalCell {...props} />
             }
         }

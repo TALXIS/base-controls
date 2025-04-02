@@ -18,9 +18,13 @@ import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { AgGridContext } from './context';
 import { CHECKBOX_COLUMN_KEY } from '../../../constants';
+import { IGrid } from '../../../interfaces';
+import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
+ModuleRegistry.registerModules([ClientSideRowModelModule, RowGroupingModule]);
 
-export const AgGrid = () => {
+
+export const AgGrid = (props: IGrid) => {
     const grid = useGridInstance();
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     const containerWidthRef = useRef(0);
@@ -38,6 +42,7 @@ export const AgGrid = () => {
     const userChangedColumnSizeRef = useRef(false);
     const rerender = useRerender();
     const innerRerenderRef = useRef(true);
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const debouncedRefresh = useDebouncedCallback(() => {
         agGrid.refresh();
@@ -112,6 +117,75 @@ export const AgGrid = () => {
 
     innerRerenderRef.current = false;
 
+    const componentProps = onOverrideComponentProps({
+        container: {},
+        pagingProps: {},
+        agGrid: {
+            animateRows: false,
+            rowSelection: grid.selection.type,
+            noRowsOverlayComponent: Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined,
+            loadingOverlayComponent: grid.loading ? LoadingOverlay : undefined,
+            suppressDragLeaveHidesColumns: true,
+            onColumnResized: (e) => debounceUpdateVisualSizeFactor(e),
+            onColumnMoved: (e) => agGrid.updateColumnOrder(e),
+            reactiveCustomComponents: true,
+            onSelectionChanged: (e) => {
+                if (e.source.includes('api')) {
+                    return;
+                }
+                const cell = e.api.getFocusedCell()!;
+                if (cell.column.getColId() === CHECKBOX_COLUMN_KEY) {
+                    const node = e.api.getSelectedNodes().find(node => node.rowIndex === cell.rowIndex);
+                    grid.selection.toggle(node!.id!);
+                }
+                else {
+                    grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
+                }
+                agGrid.refreshRowSelection();
+            },
+            gridOptions: {
+                getRowStyle: (params) => {
+                    const theme = params.rowIndex % 2 === 0 ? agGrid.evenRowCellTheme : agGrid.oddRowCellTheme;
+                    return {
+                        backgroundColor: theme.semanticColors.bodyBackground
+                    }
+                },
+            },
+            onCellDoubleClicked: (e) => {
+                if (grid.isNavigationEnabled && !grid.isEditable) {
+                    grid.dataset.openDatasetItem(e.data!.getNamedReference())
+                }
+            },
+            getRowId: (params) => params.data.getRecordId(),
+            onGridReady: (e) => {
+                gridApiRef.current = e.api as any;
+                if (grid.loading) {
+                    gridApiRef.current?.showLoadingOverlay();
+                }
+                onGridReady();
+            },
+            onGridSizeChanged: (e) => {
+                containerWidthRef.current = e.clientWidth;
+                sizeColumnsIfSpaceAvailable();
+            },
+            onFirstDataRendered: (e) => {
+                sizeColumnsIfSpaceAvailable();
+                agGrid.refreshRowSelection();
+            },
+            onCellEditingStopped: () => {
+                grid.pcfContext.factory.requestRender();
+            },
+            initialState: stateValuesRef.current,
+            onStateUpdated: (e) => stateValuesRef.current = {
+                ...stateValuesRef.current,
+                ...e.state
+            },
+            columnDefs: agColumns as any,
+            rowData: records,
+            getRowHeight: (params) => agGrid.getRowHeight(params.data!)
+        }
+    });
+
     return (
         <AgGridContext.Provider value={agGridProviderValue}>
             <div
@@ -128,70 +202,7 @@ export const AgGrid = () => {
                         }} />
                     </MessageBar>
                 }
-                <AgGridReact
-                    animateRows={false}
-                    rowSelection={grid.selection.type}
-                    noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
-                    loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
-                    suppressDragLeaveHidesColumns
-                    onColumnResized={(e) => debounceUpdateVisualSizeFactor(e)}
-                    onColumnMoved={(e) => agGrid.updateColumnOrder(e)}
-                    reactiveCustomComponents
-                    onSelectionChanged={(e) => {
-                        if (e.source.includes('api')) {
-                            return;
-                        }
-                        const cell = e.api.getFocusedCell()!;
-                        if (cell.column.getColId() === CHECKBOX_COLUMN_KEY) {
-                            const node = e.api.getSelectedNodes().find(node => node.rowIndex === cell.rowIndex);
-                            grid.selection.toggle(node!.id!);
-                        }
-                        else {
-                            grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
-                        }
-                        agGrid.refreshRowSelection();
-                    }}
-                    gridOptions={{
-                        getRowStyle: (params) => {
-                            const theme = params.rowIndex % 2 === 0 ? agGrid.evenRowCellTheme : agGrid.oddRowCellTheme;
-                            return {
-                                backgroundColor: theme.semanticColors.bodyBackground
-                            }
-                        },
-                    }}
-                    onCellDoubleClicked={(e) => {
-                        if (grid.isNavigationEnabled && !grid.isEditable) {
-                            grid.dataset.openDatasetItem(e.data!.getNamedReference())
-                        }
-                    }}
-                    getRowId={(params) => params.data.getRecordId()}
-                    onGridReady={(e) => {
-                        gridApiRef.current = e.api as any;
-                        if (grid.loading) {
-                            gridApiRef.current?.showLoadingOverlay();
-                        }
-                        onGridReady();
-                    }}
-                    onGridSizeChanged={(e) => {
-                        containerWidthRef.current = e.clientWidth;
-                        sizeColumnsIfSpaceAvailable();
-                    }}
-                    onFirstDataRendered={(e) => {
-                        sizeColumnsIfSpaceAvailable();
-                        agGrid.refreshRowSelection();
-                    }}
-                    onCellEditingStopped={() => {
-                        grid.pcfContext.factory.requestRender();
-                    }}
-                    initialState={stateValuesRef.current}
-                    onStateUpdated={(e) => stateValuesRef.current = {
-                        ...stateValuesRef.current,
-                        ...e.state
-                    }}
-                    columnDefs={agColumns as any}
-                    rowData={records}
-                    getRowHeight={(params) => agGrid.getRowHeight(params.data!)}
-                >
+                <AgGridReact {...componentProps.agGrid}>
                 </AgGridReact>
                 <Paging />
             </div>
