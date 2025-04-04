@@ -21,6 +21,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         set: (date?: Date, time?: string) => void;
         setDateString: (value: string | undefined) => void;
         clear: () => void;
+        parseDateString: (dateString: string) => Date | string;
     },
     {
         shortDatePattern: string
@@ -167,7 +168,8 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             clear: clearDate,
             getFormatted: () => value,
             set: selectDate,
-            setDateString: setValue
+            setDateString: setValue,
+            parseDateString: (dateString: string) => dateExtractor(dateString)
         },
         {
             shortDatePattern: shortDatePattern,

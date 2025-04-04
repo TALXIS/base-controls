@@ -56,6 +56,13 @@ export const DateTime = (componentProps: IDateTime) => {
         allowTextInput: !parameters.RestrictedDates?.raw && !parameters.RestrictedDaysOfWeek?.raw,
         // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
         minDate: new Date('1753-01-01T00:00:00.000Z'),
+        parseDateFromString: (dateString) => {
+            const parsedDate = date.parseDateString(dateString);
+            if (parsedDate instanceof Date) {
+                return parsedDate;
+            }
+            return null;
+        },
         firstDayOfWeek: componentProps.context.userSettings.dateFormattingInfo.firstDayOfWeek,
         deleteButtonProps: parameters.EnableDeleteButton?.raw === true ? {
             key: 'Delete',
