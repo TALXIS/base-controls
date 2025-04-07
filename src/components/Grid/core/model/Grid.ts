@@ -397,6 +397,7 @@ export class Grid {
         this.keyHoldListener.destroy();
         //@ts-ignore - internal types
         //if any nested PCF has been loaded and we are in Power Apps, do a page refresh to prevent memory leaks
+        //this should be moved to dataset control
         if (this._usesNestedPcfs && !this._client.isTalxisPortal()) {
             //location.reload();
         }

@@ -228,6 +228,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const componentProps = onOverrideComponentProps({
         onGetLinkProps: (props) => props,
         onGetOptionSetProps: (props) => props,
+        onRenderContent: (defaultRenderer) => defaultRenderer(),
         rootContainerProps: {
             theme: theme,
             className: styles.root
@@ -279,7 +280,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
         <ComponentPropsContext.Provider value={componentPropsProviderValue}>
             {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
             <div {...componentProps.contentWrapperProps}>
-                {componentProps.contentWrapperProps.children ?? renderContent()}
+                {componentProps.onRenderContent(() => renderContent())}
             </div>
             {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
         </ComponentPropsContext.Provider>

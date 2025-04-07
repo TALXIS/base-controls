@@ -236,7 +236,8 @@ export class AgGrid extends GridDependency {
     }
 
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
-        const isEven = params.node!.rowIndex! % 2 === 0;
+        //const isEven = params.node!.rowIndex! % 2 === 0;
+        const isEven = true;
         //set colors for even/odd
         const defaultBackgroundColor = isEven ? this.evenRowCellTheme.semanticColors.bodyBackground : this.oddRowCellTheme.semanticColors.bodyBackground;
         switch (params.colDef.colId) {
