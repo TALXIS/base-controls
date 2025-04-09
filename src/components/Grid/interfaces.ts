@@ -25,7 +25,8 @@ export interface IGridParameters extends IParameters {
     EnableOptionSetColors?:  Omit<ITwoOptionsProperty, 'attributes'>;
     EnableChangeEditor?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableMultiEdit?: Omit<ITwoOptionsProperty, 'attributes'>;
-    RowHeight?: Omit<IWholeNumberProperty, 'attributes'>
+    RowHeight?: Omit<IWholeNumberProperty, 'attributes'>;
+    EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;

@@ -145,7 +145,8 @@ export const AgGrid = (props: IGrid) => {
             },
             gridOptions: {
                 getRowStyle: (params) => {
-                    const theme = params.rowIndex % 2 === 0 ? agGrid.evenRowCellTheme : agGrid.oddRowCellTheme;
+                    //const theme = params.rowIndex % 2 === 0 ? agGrid.evenRowCellTheme : agGrid.oddRowCellTheme;
+                    const theme = agGrid.evenRowCellTheme;
                     return {
                         backgroundColor: theme.semanticColors.bodyBackground
                     }

@@ -7,7 +7,7 @@ import { DataTypes, IAddControlNotificationOptions, IColumn, IColumnInfo, IContr
 import { GlobalCheckBox } from "../../ColumnHeader/components/GlobalCheckbox/GlobalCheckbox";
 import { ColumnHeader } from "../../ColumnHeader/ColumnHeader";
 import { Cell } from "../../Cell/Cell";
-import { ITheme } from "@fluentui/react";
+import { ITheme, merge } from "@fluentui/react";
 import { Theming } from "@talxis/react-components";
 import { Comparator } from "./Comparator";
 import { NestedControl } from "../../../../../NestedControlRenderer/NestedControl";
@@ -238,50 +238,54 @@ export class AgGrid extends GridDependency {
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
         //const isEven = params.node!.rowIndex! % 2 === 0;
         const isEven = true;
-        //set colors for even/odd
         const defaultBackgroundColor = isEven ? this.evenRowCellTheme.semanticColors.bodyBackground : this.oddRowCellTheme.semanticColors.bodyBackground;
-        switch (params.colDef.colId) {
-            case CHECKBOX_COLUMN_KEY: {
-                return {
-                    primaryColor: this._theme.palette.themePrimary,
-                    backgroundColor: defaultBackgroundColor,
-                    textColor: Theming.GetTextColorForBackground(defaultBackgroundColor),
-                    className: '',
-                    themeOverride: {}
-                }
-            }
-        }
-        //grouping
-        if(!params.data) {
+        const colId = params.colDef.colId!;
+    
+        // Handle checkbox column specifically
+        if (colId === CHECKBOX_COLUMN_KEY) {
             return {
                 primaryColor: this._theme.palette.themePrimary,
                 backgroundColor: defaultBackgroundColor,
                 textColor: Theming.GetTextColorForBackground(defaultBackgroundColor),
                 className: '',
                 themeOverride: {}
+            };
+        }
+    
+        // Default formatting
+        const baseTheme = isEven ? this.evenRowCellTheme : this.oddRowCellTheme;
+        const customFormatting = params.data!.getColumnInfo(colId).ui.getCustomFormatting(baseTheme) ?? {};
+        
+        // Prepare the result with defaults
+        const result: Required<ICustomColumnFormatting> = {
+            backgroundColor: customFormatting.backgroundColor ?? defaultBackgroundColor,
+            primaryColor: customFormatting.primaryColor ?? this._theme.palette.themePrimary,
+            textColor: customFormatting.textColor ?? '',
+            className: customFormatting.className ?? '',
+            themeOverride: customFormatting.themeOverride ?? {}
+        };
+    
+        // Apply background-specific adjustments
+        if (result.backgroundColor !== defaultBackgroundColor) {
+            result.themeOverride = merge({}, {
+                fonts: {
+                    medium: {
+                        fontWeight: 600
+                    }
+                }
+            }, result.themeOverride);
+    
+            if (!customFormatting.primaryColor) {
+                result.primaryColor = Theming.GetTextColorForBackground(result.backgroundColor);
             }
         }
-        switch (params.colDef.colId) {
-            default: {
-                const formatting = params.data!.getColumnInfo(params.colDef.colId!).ui.getCustomFormatting(isEven ? this.evenRowCellTheme : this.oddRowCellTheme) ?? {}
-                if (!formatting.backgroundColor) {
-                    formatting.backgroundColor = defaultBackgroundColor;
-                }
-                if (!formatting.primaryColor) {
-                    formatting.primaryColor = this._theme.palette.themePrimary;
-                }
-                if (!formatting.textColor) {
-                    formatting.textColor = Theming.GetTextColorForBackground(formatting.backgroundColor);
-                }
-                if (!formatting.className) {
-                    formatting.className = '';
-                }
-                if (!formatting.themeOverride) {
-                    formatting.themeOverride = {};
-                }
-                return formatting as Required<ICustomColumnFormatting>;
-            }
+    
+        // Ensure text color is set
+        if (!result.textColor) {
+            result.textColor = Theming.GetTextColorForBackground(result.backgroundColor);
         }
+    
+        return result;
     }
 
 

@@ -86,7 +86,7 @@
   "peerDependencies": {
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2",
-    "@talxis/react-components": "^1.2503.1",
+    "@talxis/react-components": "^1.2503.4",
     "@talxis/client-libraries": "^1.2503.8",
     "@fluentui/react": "<=8.121.5"
   }

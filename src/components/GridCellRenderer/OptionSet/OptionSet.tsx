@@ -2,7 +2,7 @@ import { DataType } from "@talxis/client-libraries";
 import { IOptionSet } from "../../OptionSet"
 import { IMultiSelectOptionSet } from "../../MultiSelectOptionSet";
 import { ITwoOptions } from "../../TwoOptions";
-import { ThemeProvider, useTheme } from "@fluentui/react";
+import { PartialTheme, ThemeProvider, useTheme, merge } from "@fluentui/react";
 import { Theming, useThemeGenerator } from "@talxis/react-components";
 import { Text } from '@fluentui/react';
 import { IContext } from "../../../interfaces";
@@ -72,7 +72,13 @@ const ColorfulOption = (props: {
     const backgroundColor = option.Color ?? theme.palette.neutralLight;
     const textColor = Theming.GetTextColorForBackground(backgroundColor);
     const styles = useMemo(() => getColorfulOptionStyles(), []);
-    const optionTheme = useThemeGenerator(textColor, backgroundColor, textColor, props.context.fluentDesignLanguage?.v8FluentOverrides);
+    const optionTheme = useThemeGenerator(textColor, backgroundColor, textColor, merge({}, {
+        fonts: {
+            medium: {
+                fontWeight: 600
+            }
+        }
+    } as PartialTheme, props.context.fluentDesignLanguage?.v8FluentOverrides as PartialTheme));
 
     const optionProps = props.optionSetProps.onGetOptionProps({
         containerProps: {

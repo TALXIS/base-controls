@@ -35,7 +35,7 @@ export const Paging = () => {
                 <CommandBarButton
                     disabled={grid.dataset.loading || !grid.paging.isEnabled}
                     text={getPagingLabel()}
-                    menuProps={{
+                    menuProps={grid.parameters.EnablePageSizeSwitcher?.raw !== false ? {
                         items: [
                             {
                                 key: 'header',
@@ -48,7 +48,7 @@ export const Paging = () => {
                             },
                             ...getPageSizeOptions()
                         ]
-                    }}
+                    } : undefined}
                 />
             </div>
             {grid.paging.isEnabled &&
