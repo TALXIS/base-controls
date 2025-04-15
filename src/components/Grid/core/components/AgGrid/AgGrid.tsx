@@ -1,6 +1,6 @@
 import { AgGridReact } from '@ag-grid-community/react';
 import { Checkbox, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
-import { ColDef, ColumnResizedEvent, GridApi, GridState, ModuleRegistry } from "@ag-grid-community/core";
+import { ColDef, ColumnResizedEvent, GridApi, GridState, ModuleRegistry, SelectionChangedEvent } from "@ag-grid-community/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
@@ -62,7 +62,7 @@ export const AgGrid = (props: IGrid) => {
     }, 200);
 
     if (!innerRerenderRef.current) {
-        debouncedRefresh();
+        //debouncedRefresh();
     }
 
     const onGridReady = () => {
@@ -90,6 +90,13 @@ export const AgGrid = (props: IGrid) => {
         return containerWidthRef.current ?? containerRef.current?.clientWidth
     }
 
+    const onSelectionChanged = useDebouncedCallback((e: SelectionChangedEvent<any, any>) => {
+        if (e.source.includes('api')) {
+            return;
+        }
+        grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
+    }, 0);
+
     useEffect(() => {
         agGrid.toggleOverlay();
     }, [grid.loading]);
@@ -98,6 +105,7 @@ export const AgGrid = (props: IGrid) => {
     useEffect(() => {
         //this can be replaced with native functionality if we decide to use ag grid enterprise
         grid.keyHoldListener.addOnKeyDownHandler((event) => agGrid.copyCellValue(event));
+        
         agGrid.setRerenderCallback(() => {
             innerRerenderRef.current = true;
             rerender();
@@ -129,20 +137,8 @@ export const AgGrid = (props: IGrid) => {
             onColumnResized: (e) => debounceUpdateVisualSizeFactor(e),
             onColumnMoved: (e) => agGrid.updateColumnOrder(e),
             reactiveCustomComponents: true,
-            onSelectionChanged: (e) => {
-                if (e.source.includes('api')) {
-                    return;
-                }
-                const cell = e.api.getFocusedCell()!;
-                if (cell.column.getColId() === CHECKBOX_COLUMN_KEY) {
-                    const node = e.api.getSelectedNodes().find(node => node.rowIndex === cell.rowIndex);
-                    grid.selection.toggle(node!.id!);
-                }
-                else {
-                    grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
-                }
-                agGrid.refreshRowSelection();
-            },
+            //rowMultiSelectWithClick: true,
+            onSelectionChanged: onSelectionChanged,
             gridOptions: {
                 getRowStyle: (params) => {
                     //const theme = params.rowIndex % 2 === 0 ? agGrid.evenRowCellTheme : agGrid.oddRowCellTheme;

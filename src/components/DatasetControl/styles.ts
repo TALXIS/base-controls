@@ -13,6 +13,9 @@ export const getDatasetControlStyles = (theme: ITheme, height?: string | null) =
             ...(height === '100%' ? getFullHeightStyles(theme) : {})
 
         },
+        headerRoot: {
+            display: 'flex'
+        },
         messageBarBtn: {
             minHeight: 'inherit'
         }

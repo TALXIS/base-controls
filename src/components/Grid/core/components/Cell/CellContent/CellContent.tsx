@@ -61,7 +61,7 @@ export const CellContent = (props: ICellProps) => {
                                 field: {
                                     textAlign: columnAlignment
                                 }
-                                
+
                             } as ITextFieldStyles
                         },
                         'ComboBox': {
@@ -102,7 +102,7 @@ export const CellContent = (props: ICellProps) => {
         let isEditing = props.isCellEditor;
         //if we are not mounted, set editing to true so requestRender gets run
         //if this is not present, a PCF editor might trigger this too late and we would not see the current value in renderer until next
-        if(!mountedRef.current) {
+        if (!mountedRef.current) {
             isEditing = false;
         }
         grid.onNotifyOutputChanged(record, columnRef.current, isEditing, outputs.value, () => rerender())
@@ -116,7 +116,8 @@ export const CellContent = (props: ICellProps) => {
             mountedRef.current = false;
         }
     }, []);
-    if(!shouldRenderNestedControl) {
+
+    if (!shouldRenderNestedControl) {
         return <></>
     }
 
@@ -133,7 +134,7 @@ export const CellContent = (props: ICellProps) => {
         onNotifyOutputChanged={(outputs) => {
             //talxis portal does not have debounce for notifyoutput
             //Power Apps does a debounce of 100ms
-            if(getColumn().oneClickEdit && client.isTalxisPortal()) {
+            if (getColumn().oneClickEdit && client.isTalxisPortal()) {
                 debouncedNotifyOutputChanged(outputs);
             }
             else {
@@ -175,23 +176,35 @@ export const CellContent = (props: ICellProps) => {
                     }
                 },
                 onOverrideRender: (control, isCustomPcfComponent, defaultRender) => {
-                    if(isCustomPcfComponent) {
+                    if (isCustomPcfComponent) {
                         grid.setUsesNestedPcfs();
                     }
-                    if(valueRef.current.customComponent) {
-                        return valueRef.current.customComponent.onRender(control.getProps(), themeRef.current, control.getContainer())
+                    if (valueRef.current.customComponent) {
+                        const result = valueRef.current.customComponent.onRender(control.getProps(), themeRef.current, control.getContainer())
+                        //onRender can explicitly return null to force the grid to use native renderer
+                        //useful if the custom component is required only for renderer, but not for editor or vice versa
+                        if (result === null) {
+                            return defaultRender();
+                        }
+                        return result;
                     }
                     return defaultRender();
-                 },
+                },
                 onOverrideUnmount: (control, defaultUnmount) => {
-                    if(valueRef.current.customComponent) {
-                        return valueRef.current.customComponent.onUnmount(control.getContainer());
+                    if (valueRef.current.customComponent) {
+                        const result = valueRef.current.customComponent.onUnmount(control.getContainer());
+                        //onRender can explicitly return null to force the grid to use native renderer
+                        //useful if the custom component is required only for renderer, but not for editor or vice versa
+                        if (result === null) {
+                            return defaultUnmount();
+                        }
+                        return result;
                     }
                     //@ts-ignore - internal types
                     //skip the unmounting for custom PCF's in Power Apps
                     // PCF unmount in Power Apps causes other nested PCF's to reinitialize which causes flickering
                     //umounting of nested PCF's happens on grid destroy to prevent memory leaks (currently done by refreshing the page as no better method was found)
-                    if(control.isMountedPcfComponent() && !grid.getClient().isTalxisPortal()) {
+                    if (control.isMountedPcfComponent() && !grid.getClient().isTalxisPortal()) {
                         return;
                     }
                     return defaultUnmount();
@@ -204,7 +217,7 @@ export const CellContent = (props: ICellProps) => {
                         ...controlProps.parameters,
                         ...grid.getParameters(record, getColumn(), props.isCellEditor)
                     })
-                    return { 
+                    return {
                         ...controlProps,
                         context: {
                             ...controlProps.context,
