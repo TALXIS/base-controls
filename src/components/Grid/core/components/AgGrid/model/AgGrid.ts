@@ -42,6 +42,9 @@ export class AgGrid extends GridDependency {
         super(grid);
         this._gridApiRef = gridApiRef;
         this._theme = theme;
+        this._grid.dataset.addEventListener('onRecordsSelected', (ids) => {
+            this.refreshRowSelection();
+        })
         this.oddRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.neutralLighterAlt, this._theme.semanticColors.bodyText);
         this.evenRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.white, this._theme.semanticColors.bodyText);
     }
@@ -210,23 +213,14 @@ export class AgGrid extends GridDependency {
         if (!this._gridApi) {
             return;
         }
-        const nodesToSelect: IRowNode[] = [];
-        const nodesToDeselect: IRowNode[] = [];
-        this._gridApi.forEachNode((node: IRowNode) => {
-            if (this._grid.dataset.getSelectedRecordIds().includes(node.data.getRecordId())) {
-                nodesToSelect.push(node);
+        const selectedIdsSet = new Set(this._grid.dataset.getSelectedRecordIds().map(id => id));
+        this._gridApi.forEachNode(node => {
+            if(selectedIdsSet.has(node.id!)) {
+                node.setSelected(true);
             }
             else {
-                nodesToDeselect.push(node);
+                node.setSelected(false);
             }
-        });
-        this._gridApi.setNodesSelected({
-            nodes: nodesToSelect,
-            newValue: true,
-        });
-        this._gridApi.setNodesSelected({
-            nodes: nodesToDeselect,
-            newValue: false
         })
         this._gridApi.refreshCells({
             columns: [CHECKBOX_COLUMN_KEY],

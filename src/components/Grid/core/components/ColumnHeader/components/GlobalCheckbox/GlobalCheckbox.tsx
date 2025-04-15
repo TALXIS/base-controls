@@ -31,6 +31,15 @@ export const GlobalCheckBox = () => {
         return 'unchecked';
     }
 
+    const onChange = (checked?: boolean) => {
+        if (checked) {
+            selection.selectAll();
+        }
+        else {
+            selection.clear();
+        }
+    }
+
     const checkboxState = getCheckBoxState();
 
     useEffect(() => {
@@ -40,6 +49,7 @@ export const GlobalCheckBox = () => {
     if (grid.dataset.sortedRecordIds.length === 0) {
         return <></>
     }
+    console.log(checkboxState);
     return (
         <ThemeProvider theme={theme} className={styles.root}>
             {selection.type === 'multiple' &&
@@ -49,15 +59,7 @@ export const GlobalCheckBox = () => {
                         checkbox: styles.checkbox
                     }}
                     indeterminate={checkboxState === 'intermediate'}
-                    onChange={(e, checked) => {
-                        if (checked) {
-                            selection.selectAll();
-                        }
-                        else {
-                            selection.clear();
-                        }
-                        agGrid.refreshRowSelection();
-                    }} />
+                    onChange={(e, checked) => onChange(checked)} />
             }
         </ThemeProvider>
     )

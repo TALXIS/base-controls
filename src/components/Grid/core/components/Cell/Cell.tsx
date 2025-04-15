@@ -35,17 +35,11 @@ export const Cell = (props: ICellProps) => {
                 return (
                     <Checkbox
                         checked={props.node.isSelected()}
+                        onChange={(e, checked) => {
+                            grid.selection.toggle(props.node.id!);
+                        }}
                         styles={{
                             checkbox: styles.checkbox
-                        }}
-                        onChange={(e, checked) => {
-                            const selectedRecordIds = grid.dataset.getSelectedRecordIds();
-                            //if the record is the only selected, toggle the selection
-                            //this is because ag grid does not trigger the native selection event in this case
-                            if(selectedRecordIds.length === 1 && selectedRecordIds[0] === record.getRecordId()) {
-                                grid.selection.toggle(record.getRecordId());
-                                agGridContext.refreshRowSelection();
-                            }
                         }} />
                 );
             }

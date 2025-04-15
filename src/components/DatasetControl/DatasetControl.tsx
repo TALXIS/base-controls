@@ -34,7 +34,9 @@ export const DatasetControl = (props: IDatasetControl) => {
       className: styles.datasetControlRoot,
     },
     headerProps: {
-      headerContainerProps: {},
+      headerContainerProps: {
+        className: styles.headerRoot
+      },
       onRender: (renderQuickFind) => renderQuickFind(),
       onGetQuickFindProps: (props) => props
     },
