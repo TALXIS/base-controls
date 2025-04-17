@@ -39,6 +39,7 @@ export class Grid {
     private _initialPageSize: number;
     private _usesNestedPcfs: boolean = false;
     private _client = new Client();
+    private _isUpdateScheduled: boolean = false;
 
     public readonly keyHoldListener: KeyHoldListener;
 
@@ -165,11 +166,19 @@ export class Grid {
         if (this._previousRecordsReference !== this._dataset.records) {
             this._records = Object.values(this._dataset.records);
             this._previousRecordsReference = this._dataset.records;
+            this._isUpdateScheduled = true;
+            queueMicrotask(() => {
+                this._isUpdateScheduled = false;
+            })
         }
         Object.values(this._dependencies).map(dep => {
             dep.onDependenciesUpdated()
         })
         this._shouldRerender = !this.shouldRerender;
+    }
+
+    public isUpdateScheduled() {
+        return this._isUpdateScheduled
     }
     public async refreshColumns(): Promise<IGridColumn[]> {
         const gridColumns: IGridColumn[] = [];
