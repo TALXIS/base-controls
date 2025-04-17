@@ -37,21 +37,11 @@ export const AgGrid = (props: IGrid) => {
     const { columns } = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<GridState>(grid.state as GridState);
-    //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-gid/ag-grid/issues/6013
-    const [records] = useDebounce(grid.records, 0);
+    const records = grid.records;
     const userChangedColumnSizeRef = useRef(false);
     const rerender = useRerender();
     const innerRerenderRef = useRef(true);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-
-    const debouncedRefresh = useDebouncedCallback(() => {
-        agGrid.refresh();
-    }, 0);
-
-    const debouncedSetAgColumns = useDebouncedCallback(() => {
-        innerRerenderRef.current = true;
-        setAgColumns(agGrid.getColumns());
-    }, 0);
 
     const debounceUpdateVisualSizeFactor = useDebouncedCallback((e: ColumnResizedEvent<IRecord, any>) => {
         if (e.source !== 'uiColumnResized') {
@@ -61,8 +51,12 @@ export const AgGrid = (props: IGrid) => {
         agGrid.updateColumnVisualSizeFactor(e);
     }, 200);
 
-    if (!innerRerenderRef.current) {
-        //debouncedRefresh();
+    const debouncedRefresh = useDebouncedCallback(() => {
+        agGrid.refresh();
+    }, 0);
+
+    if (!grid.isUpdateScheduled()) {
+        debouncedRefresh();
     }
 
     const onGridReady = () => {
@@ -105,7 +99,7 @@ export const AgGrid = (props: IGrid) => {
     useEffect(() => {
         //this can be replaced with native functionality if we decide to use ag grid enterprise
         grid.keyHoldListener.addOnKeyDownHandler((event) => agGrid.copyCellValue(event));
-        
+
         agGrid.setRerenderCallback(() => {
             innerRerenderRef.current = true;
             rerender();
@@ -116,7 +110,7 @@ export const AgGrid = (props: IGrid) => {
     }, []);
 
     useEffect(() => {
-        debouncedSetAgColumns();
+        setAgColumns(agGrid.getColumns())
     }, [columns]);
 
     useEffect(() => {
