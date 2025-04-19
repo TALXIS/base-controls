@@ -278,7 +278,7 @@ export class AgGrid extends GridDependency {
     }
 
     public getDefaultCellBackgroundColor(isEven: boolean): string {
-        if(isEven || this._grid.isZebraEnabled) {
+        if(isEven || !this._grid.isZebraEnabled) {
             return this.evenRowCellTheme.semanticColors.bodyBackground;
         }
         return this.oddRowCellTheme.semanticColors.bodyBackground;
