@@ -227,7 +227,7 @@ export class AgGrid extends GridDependency {
 
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
         const isEven = params.node!.rowIndex! % 2 === 0;
-        const defaultBackgroundColor = this._getDefaultCellBackgroundColor(isEven);
+        const defaultBackgroundColor = this.getDefaultCellBackgroundColor(isEven);
         const colId = params.colDef.colId!;
     
         // Handle checkbox column specifically
@@ -277,7 +277,7 @@ export class AgGrid extends GridDependency {
         return result;
     }
 
-    private _getDefaultCellBackgroundColor(isEven: boolean): string {
+    public getDefaultCellBackgroundColor(isEven: boolean): string {
         if(isEven || this._grid.isZebraEnabled) {
             return this.evenRowCellTheme.semanticColors.bodyBackground;
         }
