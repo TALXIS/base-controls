@@ -341,12 +341,6 @@ export class AgGrid extends GridDependency {
         }
         let editing: boolean = false;
         const record = p.data as IRecord;
-        //not defined for grouping
-        if(!record) {
-            return {
-                customFormatting: this.getCellFormatting(p)
-            }
-        }
         const columnInfo = p.data!.getColumnInfo(column.name) as IColumnInfo;
         //i hate this, there is no other way to get the information if we are in edit mode or not
         if (p.api.getEditingCells() > 0 || Error().stack!.includes('startEditing')) {
