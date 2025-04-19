@@ -74,11 +74,7 @@ export class AgGrid extends GridDependency {
                     if (column.name === CHECKBOX_COLUMN_KEY) {
                         return null;
                     }
-                    //not defined for grouping
-                    if(!p.data) {
-                        return undefined;
-                    }
-                    return p.data.getFormattedValue(column.name)
+                    return p.data?.getFormattedValue(column.name)
                 },
                 valueGetter: (p: any) => this._getValue(p, column),
                 equals: (valueA, valueB) => {
@@ -230,9 +226,8 @@ export class AgGrid extends GridDependency {
     }
 
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
-        //const isEven = params.node!.rowIndex! % 2 === 0;
-        const isEven = true;
-        const defaultBackgroundColor = isEven ? this.evenRowCellTheme.semanticColors.bodyBackground : this.oddRowCellTheme.semanticColors.bodyBackground;
+        const isEven = params.node!.rowIndex! % 2 === 0;
+        const defaultBackgroundColor = this._getDefaultCellBackgroundColor(isEven);
         const colId = params.colDef.colId!;
     
         // Handle checkbox column specifically
@@ -280,6 +275,13 @@ export class AgGrid extends GridDependency {
         }
     
         return result;
+    }
+
+    private _getDefaultCellBackgroundColor(isEven: boolean): string {
+        if(isEven || this._grid.isZebraEnabled) {
+            return this.evenRowCellTheme.semanticColors.bodyBackground;
+        }
+        return this.oddRowCellTheme.semanticColors.bodyBackground;
     }
 
 

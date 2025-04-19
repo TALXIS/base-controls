@@ -121,6 +121,11 @@ export class Grid {
     public get linking() {
         return this.dataset.linking;
     }
+
+    public get isZebraEnabled() {
+        return this.parameters.EnableZebra?.raw !== false;
+    }
+
     public get inlineRibbonButtonIds() {
         const idString = this.parameters.InlineRibbonButtonIds?.raw;
         if (!idString) {
