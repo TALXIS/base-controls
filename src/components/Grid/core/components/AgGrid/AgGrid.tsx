@@ -1,5 +1,5 @@
 import { AgGridReact } from '@ag-grid-community/react';
-import { Checkbox, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
+import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
 import { ColDef, ColumnResizedEvent, GridApi, GridState, ModuleRegistry, SelectionChangedEvent } from "@ag-grid-community/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
@@ -9,7 +9,7 @@ import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
 import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { IRecord } from '@talxis/client-libraries';
-import { useDebounce, useDebouncedCallback } from 'use-debounce';
+import { useDebouncedCallback } from 'use-debounce';
 import { useGridController } from '../../controllers/useGridController';
 import { useRerender, useStateValues } from '@talxis/react-components';
 import { AgGrid as AgGridModel } from './model/AgGrid';
@@ -17,11 +17,9 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { AgGridContext } from './context';
-import { CHECKBOX_COLUMN_KEY } from '../../../constants';
 import { IGrid } from '../../../interfaces';
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
-ModuleRegistry.registerModules([ClientSideRowModelModule, RowGroupingModule]);
 
 
 export const AgGrid = (props: IGrid) => {
@@ -120,8 +118,12 @@ export const AgGrid = (props: IGrid) => {
     innerRerenderRef.current = false;
 
     const componentProps = onOverrideComponentProps({
-        container: {},
+        container: {
+            ref: containerRef,
+            className: `${styles.root} ag-theme-balham`
+        },
         pagingProps: {},
+        registerRowGroupingModule: false,
         agGrid: {
             animateRows: false,
             rowSelection: grid.selection.type,
@@ -136,7 +138,7 @@ export const AgGrid = (props: IGrid) => {
             gridOptions: {
                 getRowStyle: (params) => {
                     return {
-                        backgroundColor: agGrid.getDefaultCellBackgroundColor(params.rowIndex % 2 === 0)
+                        backgroundColor: agGrid.getDefaultCellTheme(params.node.childIndex % 2 === 0).semanticColors.bodyBackground
                     }
                 },
             },
@@ -175,12 +177,15 @@ export const AgGrid = (props: IGrid) => {
         }
     });
 
+    useMemo(() => {
+        if(componentProps.registerRowGroupingModule) {
+            ModuleRegistry.register(RowGroupingModule);
+        }
+    }, []);
+
     return (
         <AgGridContext.Provider value={agGridProviderValue}>
-            <div
-                ref={containerRef}
-                className={`${styles.root} ag-theme-balham`}
-            >
+            <div {...componentProps.container}>
                 {grid.isEditable && grid.dataset.isDirty?.() &&
                     <Save />
                 }

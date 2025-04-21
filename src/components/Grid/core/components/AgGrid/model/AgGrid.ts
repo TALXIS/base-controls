@@ -157,11 +157,14 @@ export class AgGrid extends GridDependency {
             return;
         }
         this._gridApi?.hideOverlay();
+        if (this._grid.records.length === 0) {
+            this._gridApi?.showNoRowsOverlay();
+        }
         setTimeout(() => {
             if (this._grid.records.length === 0) {
                 this._gridApi?.showNoRowsOverlay();
             }
-        })
+        }, 10)
         if (this._grid.records.length > 0) {
             this._gridApi?.ensureIndexVisible(0)
         }
@@ -226,12 +229,13 @@ export class AgGrid extends GridDependency {
     }
 
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
-        const isEven = params.node!.rowIndex! % 2 === 0;
-        const defaultBackgroundColor = this.getDefaultCellBackgroundColor(isEven);
+        const isEven = params.node!.childIndex! % 2 === 0;
+        const defaultTheme = this.getDefaultCellTheme(isEven);
+        const defaultBackgroundColor = defaultTheme.semanticColors.bodyBackground;
         const colId = params.colDef.colId!;
     
         // Handle checkbox column specifically
-        if (colId === CHECKBOX_COLUMN_KEY) {
+        if (colId === CHECKBOX_COLUMN_KEY || !params.data) {
             return {
                 primaryColor: this._theme.palette.themePrimary,
                 backgroundColor: defaultBackgroundColor,
@@ -241,9 +245,7 @@ export class AgGrid extends GridDependency {
             };
         }
     
-        // Default formatting
-        const baseTheme = isEven ? this.evenRowCellTheme : this.oddRowCellTheme;
-        const customFormatting = params.data!.getColumnInfo(colId).ui.getCustomFormatting(baseTheme) ?? {};
+        const customFormatting = params.data!.getColumnInfo(colId).ui.getCustomFormatting(defaultTheme) ?? {};
         
         // Prepare the result with defaults
         const result: Required<ICustomColumnFormatting> = {
@@ -277,11 +279,11 @@ export class AgGrid extends GridDependency {
         return result;
     }
 
-    public getDefaultCellBackgroundColor(isEven: boolean): string {
+    public getDefaultCellTheme(isEven: boolean): ITheme {
         if(isEven || !this._grid.isZebraEnabled) {
-            return this.evenRowCellTheme.semanticColors.bodyBackground;
+            return this.evenRowCellTheme;
         }
-        return this.oddRowCellTheme.semanticColors.bodyBackground;
+        return this.oddRowCellTheme;
     }
 
 
@@ -334,7 +336,7 @@ export class AgGrid extends GridDependency {
     }
 
     private _getValue(p: any, column: IGridColumn) {
-        if (column.name === CHECKBOX_COLUMN_KEY) {
+        if (column.name === CHECKBOX_COLUMN_KEY || !p.data) {
             return {
                 customFormatting: this.getCellFormatting(p)
             }

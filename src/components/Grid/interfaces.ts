@@ -4,11 +4,11 @@ import { IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty
 import { IControl, IOutputs } from "../../interfaces/context";
 import { gridTranslations } from "./translations";
 import { IDataset } from "@talxis/client-libraries";
-import { ThemeProviderProps } from "@fluentui/react";
 
 export interface IGridComponentProps {
     agGrid: AgGridReactProps;
-    container: ThemeProviderProps;
+    registerRowGroupingModule: boolean;
+    container: any;
     pagingProps: any;
 }
 

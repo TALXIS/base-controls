@@ -127,7 +127,8 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             return <DefaultContentRenderer />
         }
         if (column.isPrimary && isNavigationEnabled) {
-            return <Link {...componentProps.onGetLinkProps(getLinkProps())}>{formattedValue}</Link>
+            const linkProps = componentProps.onGetLinkProps(getLinkProps());
+            return <Link {...linkProps}>{linkProps.children}</Link>
         }
         switch (dataType) {
             case DataTypes.SingleLineEmail:
