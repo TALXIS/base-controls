@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { ITranslation, useControl } from "../../../hooks";
-import { IEntity, ILayout, ILookup } from "../interfaces";
+import { IEntity, IExtendedUseLookupProps, ILayout, ILookup } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
 import { ITheme } from "@talxis/react-components";
 
-export const useLookup = (props: ILookup): [
+export const useLookup = (props: ILookup, extendedProps?: IExtendedUseLookupProps): [
     ComponentFramework.LookupValue[],
     IEntity[],
     ITranslation<Required<ILookup>['translations']>,
@@ -15,16 +15,16 @@ export const useLookup = (props: ILookup): [
         deselect: (record: ComponentFramework.LookupValue) => void,
     },
     (entityName: string | null) => void,
-    (query: string) => Promise<(ComponentFramework.LookupValue & {entityData: {[key: string]: any}, layout: ILayout})[]>,
+    (query: string) => Promise<(ComponentFramework.LookupValue & { entityData: { [key: string]: any }, layout: ILayout })[]>,
     ITheme
 ] => {
 
     const targets = props.parameters.value.attributes.Targets;
     const boundValue = props.parameters.value.raw;
     const context = props.context;
-    const {labels, theme, onNotifyOutputChanged} = useControl('Lookup', props, lookupTranslations);
+    const { labels, theme, onNotifyOutputChanged } = useControl('Lookup', props, lookupTranslations);
     const [getFetchXml, applyLookupQuery] = useFetchXml(context);
-    
+
     const [entities, setEntities] = useState<IEntity[]>(() => {
         return targets.map(target => {
             return {
@@ -59,19 +59,19 @@ export const useLookup = (props: ILookup): [
         }
         viewIdCallBack(response.viewId);
         let fetchXml = response?.fetchXml
-        if(!fetchXml) {
+        if (!fetchXml) {
             fetchXml = (await getFetchXml(response.viewId)).fetchxml;
         }
         return applyLookupQuery(entities.find(x => x.entityName === entityName)!, fetchXml, query);
 
     }
-    const getSearchResults = async (query: string): Promise<(ComponentFramework.LookupValue & {entityData: {[key: string]: any}, layout: ILayout})[]> => {
-        if(props.onSearch) {  
+    const getSearchResults = async (query: string): Promise<(ComponentFramework.LookupValue & { entityData: { [key: string]: any }, layout: ILayout })[]> => {
+        if (props.onSearch) {
             return props.onSearch(selectedEntity ? [selectedEntity?.entityName] : targets, query) as any;
         }
         const fetchXmlMap = new Map<string, Promise<string>>();
         const entityViewIdMap = new Map<string, string>();
-        if(selectedEntity) {
+        if (selectedEntity) {
             fetchXmlMap.set(selectedEntity.entityName, getSearchFetchXml(selectedEntity.entityName, query, (viewId) => entityViewIdMap.set(selectedEntity.entityName, viewId)))
         }
         else {
@@ -85,7 +85,7 @@ export const useLookup = (props: ILookup): [
             responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?$top=25&fetchXml=${encodeURIComponent((await fetchXml))}`))
         }
         await Promise.all(responsePromiseMap.values());
-        const result: (ComponentFramework.LookupValue & {entityData: {[key: string]: any}, layout: ILayout})[] = [];
+        const result: (ComponentFramework.LookupValue & { entityData: { [key: string]: any }, layout: ILayout })[] = [];
         for (const [entityName, response] of responsePromiseMap) {
             const layout: ILayout = JSON.parse((await getFetchXml(entityViewIdMap.get(entityName)!)).layoutjson ?? "{}");
             for (const entity of (await response).entities) {
@@ -103,10 +103,13 @@ export const useLookup = (props: ILookup): [
     }
 
     const createRecord = async (entityName: string) => {
+        console.log('\ncreateRecord');
+        const formParameters = extendedProps?.onGetOnCreateFormParameters ? extendedProps.onGetOnCreateFormParameters() : undefined;
+        console.log('formParameters:', formParameters);
         const result = await context.navigation.openForm({
             entityName: entityName,
             useQuickCreateForm: true
-        });
+        }, formParameters);
         if (!result.savedEntityReference) {
             return;
         }
@@ -115,7 +118,7 @@ export const useLookup = (props: ILookup): [
                 ...boundValue,
                 ...result.savedEntityReference
             ]
-        })
+        });
     }
 
     const deselectRecord = (record: ComponentFramework.LookupValue) => {

@@ -4,7 +4,7 @@ import { IControl, IOutputs, ITranslations } from "../../interfaces/context";
 import { IBaseParameters } from "../../interfaces/parameters";
 import { lookupTranslations } from "./translations";
 
-export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Partial<ITranslations<typeof lookupTranslations>>, ITagPickerProps> {
+export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Partial<ITranslations<typeof lookupTranslations>>, ILookupComponentProps> {
     /**
      * If provided, the Lookup will use the returned values of this function to display search results.
      * @param {any} entityNames An array of entity names that he Lookup is currently targeting.
@@ -14,9 +14,13 @@ export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Par
     onSearch?: (entityNames: string[], query: string) => Promise<ComponentFramework.LookupValue[]>
 }
 
+export interface ILookupComponentProps extends ITagPickerProps {
+    onGetOnCreateFormParameters?: () => any | undefined;
+}
+
 export interface ILookupParameters extends IBaseParameters {
     IsInlineNewEnabled?: Omit<ITwoOptionsProperty, 'attributes'>;
-    MultipleEnabled?:  Omit<ITwoOptionsProperty, 'attributes'>;
+    MultipleEnabled?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
     value: ILookupProperty;
 }
@@ -46,6 +50,10 @@ export interface ILayout {
     Icon: boolean;
     Preview: boolean;
     IconRenderer: string;
+}
+
+export interface IExtendedUseLookupProps {
+    onGetOnCreateFormParameters?: ILookupComponentProps['onGetOnCreateFormParameters'];
 }
 
 interface IRow {

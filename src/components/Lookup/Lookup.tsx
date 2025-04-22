@@ -1,5 +1,5 @@
 
-import { ILayout, ILookup, IMetadata } from "./interfaces";
+import { IExtendedUseLookupProps, ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeProvider } from "@fluentui/react";
@@ -20,7 +20,10 @@ export const Lookup = (props: ILookup) => {
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
     const { height } = useControlSizing(props.context.mode);
-    const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props);
+    // Define extendedProps as useRef so we could pass values from componentProps to useLookup.
+    // It would create circular dependencies if we pass componentProps directly to useLookup.
+    const extendedProps = useRef<IExtendedUseLookupProps>({});
+    const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props, extendedProps.current);
     const styles = getLookupStyles(theme, itemLimit === 1, height);
     const suggestionsCalloutTheme = props.context.fluentDesignLanguage?.applicationTheme ?? theme;
     const suggestionsCalloutStyles = useMemo(() => getSuggestionsCalloutStyles(suggestionsCalloutTheme), [suggestionsCalloutTheme])
@@ -118,7 +121,7 @@ export const Lookup = (props: ILookup) => {
         else {
             let text: string | undefined = result.entityData[result.layout?.Rows?.[0]?.Cells?.[1]?.Name];
             const dateRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/;
-            if(typeof text === 'string' && text.match(dateRegex)) {
+            if (typeof text === 'string' && text.match(dateRegex)) {
                 text = props.context.formatting.formatTime(dayjs(text).toDate(), 1);
             }
             return text;
@@ -143,6 +146,7 @@ export const Lookup = (props: ILookup) => {
         }
         return suggestions;
     }
+
     const componentProps = onOverrideComponentProps({
         ref: componentRef,
         readOnly: context.mode.isControlDisabled,
@@ -156,7 +160,6 @@ export const Lookup = (props: ILookup) => {
             },
             className: suggestionsCalloutStyles.suggestionsCallout,
             theme: suggestionsCalloutTheme,
-            
         },
         inputProps: {
             placeholder: placeholder,
@@ -248,8 +251,10 @@ export const Lookup = (props: ILookup) => {
         }),
         itemLimit: itemLimit,
         onEmptyResolveSuggestions: !context.mode.isControlDisabled ? (selectedItems) => onResolveSuggestions("", selectedItems as IItemProps[]) as any : undefined,
-        onResolveSuggestions: onResolveSuggestions
+        onResolveSuggestions: onResolveSuggestions,
+        onGetOnCreateFormParameters: () => undefined,
     });
+    extendedProps.current = { ...componentProps };
 
     return (
         <ThemeProvider applyTo="none" theme={theme} className={`talxis__lookupControl ${styles.root}`} ref={ref}>
