@@ -1,6 +1,6 @@
 import { AgGridReact } from '@ag-grid-community/react';
-import { MessageBar, MessageBarType, useTheme } from "@fluentui/react";
-import { ColDef, ColumnResizedEvent, GridApi, GridState, ModuleRegistry, SelectionChangedEvent } from "@ag-grid-community/core";
+import { mergeStyles, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
+import { ColDef, ColumnResizedEvent, DomLayoutType, GridApi, GridState, ModuleRegistry, SelectionChangedEvent } from "@ag-grid-community/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
@@ -9,7 +9,7 @@ import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
 import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { IRecord } from '@talxis/client-libraries';
-import { useDebouncedCallback } from 'use-debounce';
+import { useDebounce, useDebouncedCallback } from 'use-debounce';
 import { useGridController } from '../../controllers/useGridController';
 import { useRerender, useStateValues } from '@talxis/react-components';
 import { AgGrid as AgGridModel } from './model/AgGrid';
@@ -28,7 +28,7 @@ export const AgGrid = (props: IGrid) => {
     const containerWidthRef = useRef(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
-    const styles = useMemo(() => getGridStyles(theme, grid.height), [theme, grid.height]);
+    const styles = useMemo(() => getGridStyles(theme), [theme]);
     const agGridReadyRef = useRef<boolean>(false);
     const agGrid = useMemo(() => new AgGridModel(grid, gridApiRef, theme), []);
     const agGridProviderValue = useMemo(() => agGrid, []);
@@ -36,10 +36,12 @@ export const AgGrid = (props: IGrid) => {
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<GridState>(grid.state as GridState);
     const records = grid.records;
+    const [debouncedGridHeight] = useDebounce(grid.getHeightSettings().height, 0);
     const userChangedColumnSizeRef = useRef(false);
     const rerender = useRerender();
     const innerRerenderRef = useRef(true);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+
 
     const debounceUpdateVisualSizeFactor = useDebouncedCallback((e: ColumnResizedEvent<IRecord, any>) => {
         if (e.source !== 'uiColumnResized') {
@@ -88,7 +90,7 @@ export const AgGrid = (props: IGrid) => {
         }
         grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
     }, 0);
-
+    
     useEffect(() => {
         agGrid.toggleOverlay();
     }, [grid.loading]);
@@ -108,7 +110,11 @@ export const AgGrid = (props: IGrid) => {
     }, []);
 
     useEffect(() => {
-        setAgColumns(agGrid.getColumns())
+        const columns = agGrid.getColumns();
+        if(columns.length === 0) {
+            return;
+        }
+        setAgColumns(columns)
     }, [columns]);
 
     useEffect(() => {
@@ -120,12 +126,15 @@ export const AgGrid = (props: IGrid) => {
     const componentProps = onOverrideComponentProps({
         container: {
             ref: containerRef,
-            className: `${styles.root} ag-theme-balham`
+            className: `${styles.root} ${mergeStyles({
+                height: debouncedGridHeight
+            })} ag-theme-balham`
         },
         pagingProps: {},
         registerRowGroupingModule: false,
         agGrid: {
             animateRows: false,
+            domLayout: grid.getHeightSettings().isAutoHeightEnabled ? 'autoHeight' : undefined,
             rowSelection: grid.selection.type,
             noRowsOverlayComponent: Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined,
             loadingOverlayComponent: grid.loading ? LoadingOverlay : undefined,

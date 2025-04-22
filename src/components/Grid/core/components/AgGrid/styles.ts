@@ -1,13 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { IGridHeightSettings } from "../../model/Grid";
 
-const getGridHeight = (height: string) => {
-    if (height === '100%') {
-        return height;
-    }
-    return `calc(${height} + var(--height-offset))`;
-}
-
-export const getGridStyles = (theme: ITheme, height: string) => {
+export const getGridStyles = (theme: ITheme) => {
     return mergeStyleSets({
         root: {
             height: '100%',
@@ -37,8 +31,8 @@ export const getGridStyles = (theme: ITheme, height: string) => {
                     opacity: 0.2
                 }
             },
-            '.ag-root-wrapper.ag-layout-normal': {
-                height: getGridHeight(height)
+            '.ag-root': {
+                minHeight: 180
             },
             '.ag-body': {
                 borderTop: `1px solid ${theme.semanticColors.menuDivider}`

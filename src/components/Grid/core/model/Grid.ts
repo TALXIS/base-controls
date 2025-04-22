@@ -13,6 +13,11 @@ import { merge } from "merge-anything";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
+export interface IGridHeightSettings {
+    isAutoHeightEnabled: boolean;
+    height?: string;
+}
+
 export class Grid {
     private _props: IGrid;
     private _dataset: IDataset
@@ -34,8 +39,6 @@ export class Grid {
         selection: Selection,
         paging: Paging,
     };
-    private _maxHeight: number;
-    private _minHeight: number = 150;
     private _initialPageSize: number;
     private _usesNestedPcfs: boolean = false;
     private _client = new Client();
@@ -57,7 +60,6 @@ export class Grid {
             paging: new Paging(this),
         }
         this._initialPageSize = this.paging.pageSize;
-        this._maxHeight = this._getMaxHeight();
 
     };
     public get isNavigationEnabled() {
@@ -142,21 +144,23 @@ export class Grid {
         return height;
     }
 
-    public get height() {
-        let height = this._maxHeight;
-        if (this.parameters.Height?.raw) {
-            return this.parameters.Height?.raw;
+    public getHeightSettings(): IGridHeightSettings {
+        if(this.parameters.Height?.raw) {
+            return {
+                isAutoHeightEnabled: false,
+                height: this.parameters.Height?.raw
+            }
         }
-        if (this._records.length === 0) {
-            height = this._minHeight;
+        if(this._records.length <= 50) {
+            return {
+                isAutoHeightEnabled: true
+            }
         }
-        else if (this._records.length <= this._initialPageSize) {
-            height = this._records.length * this.rowHeight;
+        return {
+            isAutoHeightEnabled: false,
+            height: `${this.rowHeight * 50}px`
         }
-        if (height > this._maxHeight) {
-            height = this._maxHeight;
-        }
-        return `${height}px`;
+
 
     }
 
@@ -413,7 +417,7 @@ export class Grid {
         //if any nested PCF has been loaded and we are in Power Apps, do a page refresh to prevent memory leaks
         //this should be moved to dataset control
         if (this._usesNestedPcfs && !this._client.isTalxisPortal()) {
-            //location.reload();
+            location.reload();
         }
     }
 
@@ -511,13 +515,6 @@ export class Grid {
             return false;
         }
         return column.metadata?.isFilterable ?? true;
-    }
-    private _getMaxHeight(): number {
-        let maxHeight = this._initialPageSize * this.rowHeight;
-        if (maxHeight > 600) {
-            maxHeight = 600;
-        }
-        return maxHeight;
     }
     private _getColumnEntityName(columnName: string) {
         const entityAliasName = Attribute.GetLinkedEntityAlias(columnName);
