@@ -15,7 +15,7 @@ export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Par
 }
 
 export interface ILookupComponentProps extends ITagPickerProps {
-    onGetOnCreateFormParameters?: () => any | undefined;
+    onGetOnCreateFormParameters?: () => { [key: string]: string } | undefined | Promise<{ [key: string]: string } | undefined>;
 }
 
 export interface ILookupParameters extends IBaseParameters {
@@ -52,7 +52,7 @@ export interface ILayout {
     IconRenderer: string;
 }
 
-export interface IExtendedUseLookupProps {
+export interface IUseLookupProps {
     onGetOnCreateFormParameters?: ILookupComponentProps['onGetOnCreateFormParameters'];
 }
 

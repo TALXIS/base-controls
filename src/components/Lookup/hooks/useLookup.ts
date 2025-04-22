@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { ITranslation, useControl } from "../../../hooks";
-import { IEntity, IExtendedUseLookupProps, ILayout, ILookup } from "../interfaces";
+import { IEntity, IUseLookupProps, ILayout, ILookup } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
 import { ITheme } from "@talxis/react-components";
 
-export const useLookup = (props: ILookup, extendedProps?: IExtendedUseLookupProps): [
+export const useLookup = (props: ILookup, extendedProps?: IUseLookupProps): [
     ComponentFramework.LookupValue[],
     IEntity[],
     ITranslation<Required<ILookup>['translations']>,
@@ -103,9 +103,9 @@ export const useLookup = (props: ILookup, extendedProps?: IExtendedUseLookupProp
     }
 
     const createRecord = async (entityName: string) => {
-        console.log('\ncreateRecord');
-        const formParameters = extendedProps?.onGetOnCreateFormParameters ? extendedProps.onGetOnCreateFormParameters() : undefined;
-        console.log('formParameters:', formParameters);
+        const formParameters = extendedProps?.onGetOnCreateFormParameters
+            ? (await extendedProps.onGetOnCreateFormParameters())
+            : undefined;
         const result = await context.navigation.openForm({
             entityName: entityName,
             useQuickCreateForm: true
