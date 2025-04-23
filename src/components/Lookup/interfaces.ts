@@ -4,18 +4,20 @@ import { IControl, IOutputs, ITranslations } from "../../interfaces/context";
 import { IBaseParameters } from "../../interfaces/parameters";
 import { lookupTranslations } from "./translations";
 
-export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Partial<ITranslations<typeof lookupTranslations>>, ILookupComponentProps> {
+export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Partial<ITranslations<typeof lookupTranslations>>, ITagPickerProps> {
     /**
      * If provided, the Lookup will use the returned values of this function to display search results.
      * @param {any} entityNames An array of entity names that he Lookup is currently targeting.
      * @param {any} query: User text input
      * @returns {any}
      */
-    onSearch?: (entityNames: string[], query: string) => Promise<ComponentFramework.LookupValue[]>
-}
-
-export interface ILookupComponentProps extends ITagPickerProps {
-    onGetOnCreateFormParameters?: () => { [key: string]: string } | undefined | Promise<{ [key: string]: string } | undefined>;
+    onSearch?: (entityNames: string[], query: string) => Promise<ComponentFramework.LookupValue[]>;
+    /**
+     * When new record is being created, this function is called beforehand and its return value is used to populate the form.
+     * @param {any} entityName The name of the entity that is being created.
+     * @returns 
+     */
+    onGetOnCreateFormParameters?: (entityName: string) => { [key: string]: string } | undefined | Promise<{ [key: string]: string } | undefined>;
 }
 
 export interface ILookupParameters extends IBaseParameters {
@@ -50,10 +52,6 @@ export interface ILayout {
     Icon: boolean;
     Preview: boolean;
     IconRenderer: string;
-}
-
-export interface IUseLookupProps {
-    onGetOnCreateFormParameters?: ILookupComponentProps['onGetOnCreateFormParameters'];
 }
 
 interface IRow {

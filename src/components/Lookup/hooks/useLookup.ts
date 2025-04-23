@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { ITranslation, useControl } from "../../../hooks";
-import { IEntity, IUseLookupProps, ILayout, ILookup } from "../interfaces";
+import { IEntity, ILayout, ILookup } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
 import { ITheme } from "@talxis/react-components";
 
-export const useLookup = (props: ILookup, extendedProps?: IUseLookupProps): [
+export const useLookup = (props: ILookup): [
     ComponentFramework.LookupValue[],
     IEntity[],
     ITranslation<Required<ILookup>['translations']>,
@@ -103,8 +103,8 @@ export const useLookup = (props: ILookup, extendedProps?: IUseLookupProps): [
     }
 
     const createRecord = async (entityName: string) => {
-        const formParameters = extendedProps?.onGetOnCreateFormParameters
-            ? (await extendedProps.onGetOnCreateFormParameters())
+        const formParameters = props.onGetOnCreateFormParameters
+            ? (await props.onGetOnCreateFormParameters(entityName))
             : undefined;
         const result = await context.navigation.openForm({
             entityName: entityName,

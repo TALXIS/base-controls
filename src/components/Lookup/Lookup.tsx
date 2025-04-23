@@ -1,5 +1,5 @@
 
-import { IUseLookupProps, ILayout, ILookup, IMetadata } from "./interfaces";
+import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeProvider } from "@fluentui/react";
@@ -20,10 +20,7 @@ export const Lookup = (props: ILookup) => {
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
     const { height } = useControlSizing(props.context.mode);
-    // Define useLookupProps as useRef so we could pass values from componentProps to useLookup.
-    // It would create circular dependencies if we pass componentProps directly to useLookup.
-    const useLookupProps = useRef<IUseLookupProps>({});
-    const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props, useLookupProps.current);
+    const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props);
     const styles = getLookupStyles(theme, itemLimit === 1, height);
     const suggestionsCalloutTheme = props.context.fluentDesignLanguage?.applicationTheme ?? theme;
     const suggestionsCalloutStyles = useMemo(() => getSuggestionsCalloutStyles(suggestionsCalloutTheme), [suggestionsCalloutTheme])
@@ -252,9 +249,7 @@ export const Lookup = (props: ILookup) => {
         itemLimit: itemLimit,
         onEmptyResolveSuggestions: !context.mode.isControlDisabled ? (selectedItems) => onResolveSuggestions("", selectedItems as IItemProps[]) as any : undefined,
         onResolveSuggestions: onResolveSuggestions,
-        onGetOnCreateFormParameters: () => undefined,
     });
-    useLookupProps.current = { ...componentProps };
 
     return (
         <ThemeProvider applyTo="none" theme={theme} className={`talxis__lookupControl ${styles.root}`} ref={ref}>
