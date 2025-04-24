@@ -11,12 +11,18 @@ export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Par
      * @param {any} query: User text input
      * @returns {any}
      */
-    onSearch?: (entityNames: string[], query: string) => Promise<ComponentFramework.LookupValue[]>
+    onSearch?: (entityNames: string[], query: string) => Promise<ComponentFramework.LookupValue[]>;
+    /**
+     * When new record is being created, this function is called beforehand and its return value is used to populate the form.
+     * @param {any} entityName The name of the entity that is being created.
+     * @returns 
+     */
+    onGetOnCreateFormParameters?: (entityName: string) => { [key: string]: string } | undefined;
 }
 
 export interface ILookupParameters extends IBaseParameters {
     IsInlineNewEnabled?: Omit<ITwoOptionsProperty, 'attributes'>;
-    MultipleEnabled?:  Omit<ITwoOptionsProperty, 'attributes'>;
+    MultipleEnabled?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
     value: ILookupProperty;
 }

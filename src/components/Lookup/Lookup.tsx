@@ -118,7 +118,7 @@ export const Lookup = (props: ILookup) => {
         else {
             let text: string | undefined = result.entityData[result.layout?.Rows?.[0]?.Cells?.[1]?.Name];
             const dateRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/;
-            if(typeof text === 'string' && text.match(dateRegex)) {
+            if (typeof text === 'string' && text.match(dateRegex)) {
                 text = props.context.formatting.formatTime(dayjs(text).toDate(), 1);
             }
             return text;
@@ -143,6 +143,7 @@ export const Lookup = (props: ILookup) => {
         }
         return suggestions;
     }
+
     const componentProps = onOverrideComponentProps({
         ref: componentRef,
         readOnly: context.mode.isControlDisabled,
@@ -156,7 +157,6 @@ export const Lookup = (props: ILookup) => {
             },
             className: suggestionsCalloutStyles.suggestionsCallout,
             theme: suggestionsCalloutTheme,
-            
         },
         inputProps: {
             placeholder: placeholder,
@@ -248,7 +248,7 @@ export const Lookup = (props: ILookup) => {
         }),
         itemLimit: itemLimit,
         onEmptyResolveSuggestions: !context.mode.isControlDisabled ? (selectedItems) => onResolveSuggestions("", selectedItems as IItemProps[]) as any : undefined,
-        onResolveSuggestions: onResolveSuggestions
+        onResolveSuggestions: onResolveSuggestions,
     });
 
     return (
