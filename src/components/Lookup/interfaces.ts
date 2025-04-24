@@ -17,7 +17,7 @@ export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Par
      * @param {any} entityName The name of the entity that is being created.
      * @returns 
      */
-    onGetOnCreateFormParameters?: (entityName: string) => { [key: string]: string } | undefined | Promise<{ [key: string]: string } | undefined>;
+    onGetOnCreateFormParameters?: (entityName: string) => { [key: string]: string } | undefined;
 }
 
 export interface ILookupParameters extends IBaseParameters {
