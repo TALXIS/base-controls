@@ -505,14 +505,15 @@ export class Grid {
         return !column.disableSorting;
     }
     private _isColumnFilterable(column: IColumn): boolean {
-/*         if (column.name.endsWith('__virtual')) {
-            return false;
-        } */
         if (this.props.parameters.EnableFiltering?.raw === false) {
             return false;
         }
         if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             return false;
+        }
+        //by default, do not make virtual columns filterable unless explicitly set
+        if(column.name.endsWith('__virtual')) {
+            return column.metadata?.isFilterable ?? false;
         }
         return column.metadata?.isFilterable ?? true;
     }
