@@ -505,9 +505,9 @@ export class Grid {
         return !column.disableSorting;
     }
     private _isColumnFilterable(column: IColumn): boolean {
-        if (column.name.endsWith('__virtual')) {
+/*         if (column.name.endsWith('__virtual')) {
             return false;
-        }
+        } */
         if (this.props.parameters.EnableFiltering?.raw === false) {
             return false;
         }
