@@ -300,7 +300,6 @@ export class NestedControl {
                     this._loading = false;
                     LOADED_CONTROLS.add(this._lastRenderedControlName);
                     this._mutationObserver?.disconnect();
-                    return this.getOptions().callbacks?.onControlStateChanged?.();
                     if (!this._customControlInstance) {
                         this._unmount();
                         throw new NestedControlError({

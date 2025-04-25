@@ -8,7 +8,6 @@ import { FilteringUtils } from "../utils/FilteringUtilts";
 
 export class Condition extends GridDependency {
     private _column: IGridColumn;
-    private _isAppliedToDataset: boolean = false;
     private _conditionExpression: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression = {} as any;
     private _isRemoved?: boolean;
     private _conditionUtils = FilteringUtils.condition();
@@ -51,7 +50,6 @@ export class Condition extends GridDependency {
                     this._conditionExpression = this._getDefault();
                 }
                 else {
-                    this._isAppliedToDataset = true;
                     this._conditionExpression = map.get(key)!;
                 }
                 this._conditionExpression.conditionOperator = this._operatorDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value, true) as any;
@@ -72,7 +70,10 @@ export class Condition extends GridDependency {
     }
 
     public get isAppliedToDataset() {
-        return this._isAppliedToDataset;
+        return !!this._dataset.filtering.getFilter()?.conditions.find(cond => {
+            const attributeName = cond.entityAliasName ? `${cond.entityAliasName}.${cond.attributeName}` : cond.attributeName;
+            return attributeName === this._column.name
+        })
     }
 
     public get isValid() {
@@ -94,7 +95,7 @@ export class Condition extends GridDependency {
             return false;
         }
         const filterExpression = this._filterExpression;
-        if (this._isAppliedToDataset || this._isRemoved) {
+        if (this.isAppliedToDataset || this._isRemoved) {
             const [map, key] = await this._getConditionFromFilterExpression();
             map.delete(key);
             filterExpression.conditions = [...map.values()];

@@ -4,11 +4,11 @@ import { IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty
 import { IControl, IOutputs } from "../../interfaces/context";
 import { gridTranslations } from "./translations";
 import { IDataset } from "@talxis/client-libraries";
-import { ThemeProviderProps } from "@fluentui/react";
 
 export interface IGridComponentProps {
     agGrid: AgGridReactProps;
-    container: ThemeProviderProps;
+    registerRowGroupingModule: boolean;
+    container: any;
     pagingProps: any;
 }
 
@@ -25,6 +25,7 @@ export interface IGridParameters extends IParameters {
     EnableOptionSetColors?:  Omit<ITwoOptionsProperty, 'attributes'>;
     EnableChangeEditor?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableMultiEdit?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableZebra?: Omit<ITwoOptionsProperty, 'attributes'>;
     RowHeight?: Omit<IWholeNumberProperty, 'attributes'>;
     EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
     Height?: IStringProperty;

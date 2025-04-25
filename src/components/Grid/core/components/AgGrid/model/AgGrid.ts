@@ -74,11 +74,7 @@ export class AgGrid extends GridDependency {
                     if (column.name === CHECKBOX_COLUMN_KEY) {
                         return null;
                     }
-                    //not defined for grouping
-                    if(!p.data) {
-                        return undefined;
-                    }
-                    return p.data.getFormattedValue(column.name)
+                    return p.data?.getFormattedValue(column.name)
                 },
                 valueGetter: (p: any) => this._getValue(p, column),
                 equals: (valueA, valueB) => {
@@ -156,19 +152,20 @@ export class AgGrid extends GridDependency {
     }
 
     public toggleOverlay() {
-        if (this._grid.loading) {
-            this._gridApi?.showLoadingOverlay();
-            return;
-        }
-        this._gridApi?.hideOverlay();
         setTimeout(() => {
+            this._gridApi?.hideOverlay();
+            if (this._grid.loading) {
+                this._gridApi?.showLoadingOverlay();
+                return;
+            }
             if (this._grid.records.length === 0) {
                 this._gridApi?.showNoRowsOverlay();
             }
-        })
-        if (this._grid.records.length > 0) {
-            this._gridApi?.ensureIndexVisible(0)
-        }
+    
+            if (this._grid.records.length > 0) {
+                this._gridApi?.ensureIndexVisible(0)
+            }
+        }, 100);
     }
 
     public copyCellValue(event: KeyboardEvent) {
@@ -230,13 +227,13 @@ export class AgGrid extends GridDependency {
     }
 
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
-        //const isEven = params.node!.rowIndex! % 2 === 0;
-        const isEven = true;
-        const defaultBackgroundColor = isEven ? this.evenRowCellTheme.semanticColors.bodyBackground : this.oddRowCellTheme.semanticColors.bodyBackground;
+        const isEven = params.node!.childIndex! % 2 === 0;
+        const defaultTheme = this.getDefaultCellTheme(isEven);
+        const defaultBackgroundColor = defaultTheme.semanticColors.bodyBackground;
         const colId = params.colDef.colId!;
     
         // Handle checkbox column specifically
-        if (colId === CHECKBOX_COLUMN_KEY) {
+        if (colId === CHECKBOX_COLUMN_KEY || !params.data) {
             return {
                 primaryColor: this._theme.palette.themePrimary,
                 backgroundColor: defaultBackgroundColor,
@@ -246,9 +243,7 @@ export class AgGrid extends GridDependency {
             };
         }
     
-        // Default formatting
-        const baseTheme = isEven ? this.evenRowCellTheme : this.oddRowCellTheme;
-        const customFormatting = params.data!.getColumnInfo(colId).ui.getCustomFormatting(baseTheme) ?? {};
+        const customFormatting = params.data!.getColumnInfo(colId).ui.getCustomFormatting(defaultTheme) ?? {};
         
         // Prepare the result with defaults
         const result: Required<ICustomColumnFormatting> = {
@@ -280,6 +275,13 @@ export class AgGrid extends GridDependency {
         }
     
         return result;
+    }
+
+    public getDefaultCellTheme(isEven: boolean): ITheme {
+        if(isEven || !this._grid.isZebraEnabled) {
+            return this.evenRowCellTheme;
+        }
+        return this.oddRowCellTheme;
     }
 
 
@@ -332,19 +334,13 @@ export class AgGrid extends GridDependency {
     }
 
     private _getValue(p: any, column: IGridColumn) {
-        if (column.name === CHECKBOX_COLUMN_KEY) {
+        if (column.name === CHECKBOX_COLUMN_KEY || !p.data) {
             return {
                 customFormatting: this.getCellFormatting(p)
             }
         }
         let editing: boolean = false;
         const record = p.data as IRecord;
-        //not defined for grouping
-        if(!record) {
-            return {
-                customFormatting: this.getCellFormatting(p)
-            }
-        }
         const columnInfo = p.data!.getColumnInfo(column.name) as IColumnInfo;
         //i hate this, there is no other way to get the information if we are in edit mode or not
         if (p.api.getEditingCells() > 0 || Error().stack!.includes('startEditing')) {

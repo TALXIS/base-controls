@@ -49,7 +49,6 @@ export const GlobalCheckBox = () => {
     if (grid.dataset.sortedRecordIds.length === 0) {
         return <></>
     }
-    console.log(checkboxState);
     return (
         <ThemeProvider theme={theme} className={styles.root}>
             {selection.type === 'multiple' &&
