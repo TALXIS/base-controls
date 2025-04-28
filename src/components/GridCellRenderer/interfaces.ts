@@ -38,6 +38,7 @@ export interface IOptionProps {
 export interface IGridCellRendererComponentProps {
     onGetOptionSetProps: (props: IOptionSetProps) => IOptionSetProps,
     onGetLinkProps: (props: ILinkProps) => ILinkProps;
+    onRenderContent: (defaultRenderer: () => JSX.Element) => JSX.Element, 
     rootContainerProps: ThemeProviderProps;
     contentWrapperProps: React.HTMLAttributes<HTMLDivElement>;
     textProps: ITextProps;

@@ -1,6 +1,6 @@
 import { AgGridReact } from '@ag-grid-community/react';
-import { Checkbox, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
-import { ColDef, ColumnResizedEvent, GridApi, GridState, ModuleRegistry } from "@ag-grid-community/core";
+import { mergeStyles, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
+import { ColDef, ColumnResizedEvent, DomLayoutType, GridApi, GridState, ModuleRegistry, SelectionChangedEvent } from "@ag-grid-community/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
@@ -17,36 +17,31 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { AgGridContext } from './context';
-import { CHECKBOX_COLUMN_KEY } from '../../../constants';
+import { IGrid } from '../../../interfaces';
+import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
-export const AgGrid = () => {
+
+export const AgGrid = (props: IGrid) => {
     const grid = useGridInstance();
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     const containerWidthRef = useRef(0);
     const containerRef = useRef<HTMLDivElement>(null);
     const theme = useTheme();
-    const styles = useMemo(() => getGridStyles(theme, grid.height), [theme, grid.height]);
+    const styles = useMemo(() => getGridStyles(theme), [theme]);
     const agGridReadyRef = useRef<boolean>(false);
     const agGrid = useMemo(() => new AgGridModel(grid, gridApiRef, theme), []);
     const agGridProviderValue = useMemo(() => agGrid, []);
     const { columns } = useGridController();
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<GridState>(grid.state as GridState);
-    //this is to prevent AgGrid from throwing errors in some rerender edge cases - https://github.com/ag-gid/ag-grid/issues/6013
-    const [records] = useDebounce(grid.records, 0);
+    const records = grid.records;
+    const [debouncedGridHeight] = useDebounce(grid.getHeightSettings().height, 0);
     const userChangedColumnSizeRef = useRef(false);
     const rerender = useRerender();
     const innerRerenderRef = useRef(true);
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
-    const debouncedRefresh = useDebouncedCallback(() => {
-        agGrid.refresh();
-    }, 0);
-
-    const debouncedSetAgColumns = useDebouncedCallback(() => {
-        innerRerenderRef.current = true;
-        setAgColumns(agGrid.getColumns());
-    }, 0);
 
     const debounceUpdateVisualSizeFactor = useDebouncedCallback((e: ColumnResizedEvent<IRecord, any>) => {
         if (e.source !== 'uiColumnResized') {
@@ -56,7 +51,11 @@ export const AgGrid = () => {
         agGrid.updateColumnVisualSizeFactor(e);
     }, 200);
 
-    if (!innerRerenderRef.current) {
+    const debouncedRefresh = useDebouncedCallback(() => {
+        agGrid.refresh();
+    }, 0);
+
+    if (!grid.isUpdateScheduled()) {
         debouncedRefresh();
     }
 
@@ -85,6 +84,13 @@ export const AgGrid = () => {
         return containerWidthRef.current ?? containerRef.current?.clientWidth
     }
 
+    const onSelectionChanged = useDebouncedCallback((e: SelectionChangedEvent<any, any>) => {
+        if (e.source.includes('api')) {
+            return;
+        }
+        grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
+    }, 0);
+    
     useEffect(() => {
         agGrid.toggleOverlay();
     }, [grid.loading]);
@@ -93,6 +99,7 @@ export const AgGrid = () => {
     useEffect(() => {
         //this can be replaced with native functionality if we decide to use ag grid enterprise
         grid.keyHoldListener.addOnKeyDownHandler((event) => agGrid.copyCellValue(event));
+
         agGrid.setRerenderCallback(() => {
             innerRerenderRef.current = true;
             rerender();
@@ -103,7 +110,11 @@ export const AgGrid = () => {
     }, []);
 
     useEffect(() => {
-        debouncedSetAgColumns();
+        const columns = agGrid.getColumns();
+        if(columns.length === 0) {
+            return;
+        }
+        setAgColumns(columns)
     }, [columns]);
 
     useEffect(() => {
@@ -112,12 +123,81 @@ export const AgGrid = () => {
 
     innerRerenderRef.current = false;
 
+    const componentProps = onOverrideComponentProps({
+        container: {
+            ref: containerRef,
+            className: `${styles.root} ${mergeStyles({
+                height: debouncedGridHeight
+            })} ag-theme-balham`
+        },
+        pagingProps: {},
+        registerRowGroupingModule: false,
+        agGrid: {
+            animateRows: false,
+            domLayout: grid.getHeightSettings().isAutoHeightEnabled ? 'autoHeight' : undefined,
+            rowSelection: grid.selection.type,
+            noRowsOverlayComponent: Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined,
+            loadingOverlayComponent: grid.loading ? LoadingOverlay : undefined,
+            suppressDragLeaveHidesColumns: true,
+            onColumnResized: (e) => debounceUpdateVisualSizeFactor(e),
+            onColumnMoved: (e) => agGrid.updateColumnOrder(e),
+            reactiveCustomComponents: true,
+            //rowMultiSelectWithClick: true,
+            onSelectionChanged: onSelectionChanged,
+            gridOptions: {
+                getRowStyle: (params) => {
+                    return {
+                        backgroundColor: agGrid.getDefaultCellTheme(params.node.childIndex % 2 === 0).semanticColors.bodyBackground
+                    }
+                },
+            },
+            onCellDoubleClicked: (e) => {
+                if (grid.isNavigationEnabled && !grid.isEditable) {
+                    grid.dataset.openDatasetItem(e.data!.getNamedReference())
+                }
+            },
+            getRowId: (params) => params.data.getRecordId(),
+            onGridReady: (e) => {
+                gridApiRef.current = e.api as any;
+                if (grid.loading) {
+                    gridApiRef.current?.showLoadingOverlay();
+                }
+                onGridReady();
+            },
+            onGridSizeChanged: (e) => {
+                containerWidthRef.current = e.clientWidth;
+                sizeColumnsIfSpaceAvailable();
+            },
+            onFirstDataRendered: (e) => {
+                sizeColumnsIfSpaceAvailable();
+                agGrid.refreshRowSelection();
+            },
+            onRowDataUpdated: () => {
+                agGrid.rerenderGlobalCheckBox();
+            },
+            onCellEditingStopped: () => {
+                grid.pcfContext.factory.requestRender();
+            },
+            initialState: stateValuesRef.current,
+            onStateUpdated: (e) => stateValuesRef.current = {
+                ...stateValuesRef.current,
+                ...e.state
+            },
+            columnDefs: agColumns as any,
+            rowData: records,
+            getRowHeight: (params) => agGrid.getRowHeight(params.data!)
+        }
+    });
+
+    useMemo(() => {
+        if(componentProps.registerRowGroupingModule) {
+            ModuleRegistry.register(RowGroupingModule);
+        }
+    }, []);
+
     return (
         <AgGridContext.Provider value={agGridProviderValue}>
-            <div
-                ref={containerRef}
-                className={`${styles.root} ag-theme-balham`}
-            >
+            <div {...componentProps.container}>
                 {grid.isEditable && grid.dataset.isDirty?.() &&
                     <Save />
                 }
@@ -128,70 +208,7 @@ export const AgGrid = () => {
                         }} />
                     </MessageBar>
                 }
-                <AgGridReact
-                    animateRows={false}
-                    rowSelection={grid.selection.type}
-                    noRowsOverlayComponent={Object.keys(grid.dataset.sortedRecordIds.length === 0) && !grid.loading ? EmptyRecords : undefined}
-                    loadingOverlayComponent={grid.loading ? LoadingOverlay : undefined}
-                    suppressDragLeaveHidesColumns
-                    onColumnResized={(e) => debounceUpdateVisualSizeFactor(e)}
-                    onColumnMoved={(e) => agGrid.updateColumnOrder(e)}
-                    reactiveCustomComponents
-                    onSelectionChanged={(e) => {
-                        if (e.source.includes('api')) {
-                            return;
-                        }
-                        const cell = e.api.getFocusedCell()!;
-                        if (cell.column.getColId() === CHECKBOX_COLUMN_KEY) {
-                            const node = e.api.getSelectedNodes().find(node => node.rowIndex === cell.rowIndex);
-                            grid.selection.toggle(node!.id!);
-                        }
-                        else {
-                            grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
-                        }
-                        agGrid.refreshRowSelection();
-                    }}
-                    gridOptions={{
-                        getRowStyle: (params) => {
-                            const theme = params.rowIndex % 2 === 0 ? agGrid.evenRowCellTheme : agGrid.oddRowCellTheme;
-                            return {
-                                backgroundColor: theme.semanticColors.bodyBackground
-                            }
-                        },
-                    }}
-                    onCellDoubleClicked={(e) => {
-                        if (grid.isNavigationEnabled && !grid.isEditable) {
-                            grid.dataset.openDatasetItem(e.data!.getNamedReference())
-                        }
-                    }}
-                    getRowId={(params) => params.data.getRecordId()}
-                    onGridReady={(e) => {
-                        gridApiRef.current = e.api as any;
-                        if (grid.loading) {
-                            gridApiRef.current?.showLoadingOverlay();
-                        }
-                        onGridReady();
-                    }}
-                    onGridSizeChanged={(e) => {
-                        containerWidthRef.current = e.clientWidth;
-                        sizeColumnsIfSpaceAvailable();
-                    }}
-                    onFirstDataRendered={(e) => {
-                        sizeColumnsIfSpaceAvailable();
-                        agGrid.refreshRowSelection();
-                    }}
-                    onCellEditingStopped={() => {
-                        grid.pcfContext.factory.requestRender();
-                    }}
-                    initialState={stateValuesRef.current}
-                    onStateUpdated={(e) => stateValuesRef.current = {
-                        ...stateValuesRef.current,
-                        ...e.state
-                    }}
-                    columnDefs={agColumns as any}
-                    rowData={records}
-                    getRowHeight={(params) => agGrid.getRowHeight(params.data!)}
-                >
+                <AgGridReact {...componentProps.agGrid}>
                 </AgGridReact>
                 <Paging />
             </div>

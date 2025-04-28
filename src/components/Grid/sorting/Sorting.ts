@@ -16,12 +16,11 @@ export class Sorting extends GridDependency {
                 })
                 //Power Apps only allows setting of sorting like this - https://stackoverflow.com/questions/1232040/how-do-i-empty-an-array-in-javascript
                 //this is so stupid
-                while (this._dataset.sorting.length) {
-                    this._dataset.sorting.pop()
-                }
-                for (const sort of sortMap.values()) {
-                    this._dataset.sorting.push(sort);
-                }
+                this._dataset.sorting = [...sortMap.values()];
+                this._dataset.refresh();
+            },
+            clear: () => {
+                this._dataset.sorting = this._dataset.sorting.filter(x => x.name !== column.name);
                 this._dataset.refresh();
             }
         }

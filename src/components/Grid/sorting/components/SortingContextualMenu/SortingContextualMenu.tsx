@@ -120,6 +120,19 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 }
             });
         }
+        if(grid.dataset.sorting.find(x => x.name === column.name)) {
+            items.push({
+                key: 'clear',
+                text: labels['filtersortmenu-clearsorting'](),
+                iconProps: {
+                    iconName: 'Cancel'
+                },
+                onClick: () => {
+                    sorting.clear();
+                }
+
+            })
+        }
         return items
     }
     return <ContextualMenu {...props} items={items} />;

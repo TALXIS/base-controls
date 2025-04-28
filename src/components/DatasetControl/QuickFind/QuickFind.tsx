@@ -2,9 +2,10 @@ import { IDataset } from "@talxis/client-libraries";
 import { ITextFieldProps, ITheme, TextField } from "@talxis/react-components";
 import { datasetControlTranslations } from "../translations";
 import { ITranslation } from "../../../hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ThemeProvider } from "@fluentui/react";
 import { IQuickFindProps } from "../interfaces";
+import { getQuickFindStyles } from "./styles";
 
 export interface IQuickFindComponentProps {
     labels: ITranslation<typeof datasetControlTranslations>
@@ -16,13 +17,18 @@ export interface IQuickFindComponentProps {
 export const QuickFind = (props: IQuickFindComponentProps) => {
     const { dataset, labels, theme } = { ...props };
     const [query, setQuery] = useState<string>('');
+    const styles = useMemo(() => getQuickFindStyles(), [])
 
     const quickFindProps = props.onGetQuickFindComponentProps({
         container: {
-            theme: theme
+            theme: theme,
+            className: styles.quickFindRoot
         },
         textFieldProps: {
             value: query,
+            styles: {
+                fieldGroup: styles.fieldGroup
+            },
             placeholder: `${labels.search()} ${dataset.getMetadata()?.DisplayCollectionName ?? labels.records()}...`,
             onChange: (e, newValue) => setQuery(newValue ?? ''),
             onKeyUp: (e) => {

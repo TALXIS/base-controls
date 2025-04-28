@@ -203,6 +203,20 @@ export const ChangeGrid = (props: IChangeGrid) => {
                         Grid: dataset,
                     },
                 }}
+                onOverrideComponentProps={(props) => {
+                    return {
+                        ...props,
+                        headerProps: {
+                            ...props.headerProps,
+                            headerContainerProps: {
+                                ...props.headerProps.headerContainerProps,
+                                style: {
+                                    display: 'none'
+                                }
+                            }
+                        }
+                    }
+                }}
                 parameters={{
                     Grid: dataset,
                     EnablePagination: {
@@ -227,6 +241,9 @@ export const ChangeGrid = (props: IChangeGrid) => {
                     SelectableRows: {
                         raw: "none",
                     },
+                    Height: {
+                        raw: '160px'
+                    }
                 }}
             />
         </div>

@@ -2,15 +2,13 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { Constants, IRecord } from "@talxis/client-libraries";
 import { Checkbox, ITooltipHostProps, Shimmer, ThemeProvider, useTheme } from "@fluentui/react";
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { getCellStyles, getInnerCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
-import React from "react";
 import { Notifications } from "./Notifications/Notifications";
 import { Commands } from "./Commands/Commands";
 import { CellContent } from "./CellContent/CellContent";
-import { AgGridContext } from "../AgGrid/context";
 import { ICellValues } from "../AgGrid/model/AgGrid";
 import { getClassNames, ICommandBarItemProps, useThemeGenerator } from "@talxis/react-components";
 import { useControlTheme } from "../../../../../utils";
@@ -27,7 +25,6 @@ export const Cell = (props: ICellProps) => {
     const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
     const grid = useGridInstance();
-    const agGridContext = useContext(AgGridContext);
 
     const renderContent = () => {
         switch (props.baseColumn.name) {
@@ -35,17 +32,11 @@ export const Cell = (props: ICellProps) => {
                 return (
                     <Checkbox
                         checked={props.node.isSelected()}
+                        onChange={(e, checked) => {
+                            grid.selection.toggle(props.node.id!);
+                        }}
                         styles={{
                             checkbox: styles.checkbox
-                        }}
-                        onChange={(e, checked) => {
-                            const selectedRecordIds = grid.dataset.getSelectedRecordIds();
-                            //if the record is the only selected, toggle the selection
-                            //this is because ag grid does not trigger the native selection event in this case
-                            if(selectedRecordIds.length === 1 && selectedRecordIds[0] === record.getRecordId()) {
-                                grid.selection.toggle(record.getRecordId());
-                                agGridContext.refreshRowSelection();
-                            }
                         }} />
                 );
             }

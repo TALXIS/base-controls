@@ -13,6 +13,11 @@ import { merge } from "merge-anything";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
+export interface IGridHeightSettings {
+    isAutoHeightEnabled: boolean;
+    height?: string;
+}
+
 export class Grid {
     private _props: IGrid;
     private _dataset: IDataset
@@ -34,11 +39,10 @@ export class Grid {
         selection: Selection,
         paging: Paging,
     };
-    private _maxHeight: number;
-    private _minHeight: number = 150;
     private _initialPageSize: number;
     private _usesNestedPcfs: boolean = false;
     private _client = new Client();
+    private _isUpdateScheduled: boolean = false;
 
     public readonly keyHoldListener: KeyHoldListener;
 
@@ -56,7 +60,6 @@ export class Grid {
             paging: new Paging(this),
         }
         this._initialPageSize = this.paging.pageSize;
-        this._maxHeight = this._getMaxHeight();
 
     };
     public get isNavigationEnabled() {
@@ -120,6 +123,11 @@ export class Grid {
     public get linking() {
         return this.dataset.linking;
     }
+
+    public get isZebraEnabled() {
+        return this.parameters.EnableZebra?.raw !== false;
+    }
+
     public get inlineRibbonButtonIds() {
         const idString = this.parameters.InlineRibbonButtonIds?.raw;
         if (!idString) {
@@ -136,21 +144,23 @@ export class Grid {
         return height;
     }
 
-    public get height() {
-        let height = this._maxHeight;
-        if (this.parameters.Height?.raw) {
-            return this.parameters.Height?.raw;
+    public getHeightSettings(): IGridHeightSettings {
+        if(this.parameters.Height?.raw) {
+            return {
+                isAutoHeightEnabled: false,
+                height: this.parameters.Height?.raw
+            }
         }
-        if (this._records.length === 0) {
-            height = this._minHeight;
+        if(this._records.length <= 50) {
+            return {
+                isAutoHeightEnabled: true
+            }
         }
-        else if (this._records.length <= this._initialPageSize) {
-            height = this._records.length * this.rowHeight;
+        return {
+            isAutoHeightEnabled: false,
+            height: `${this.rowHeight * 50}px`
         }
-        if (height > this._maxHeight) {
-            height = this._maxHeight;
-        }
-        return `${height}px`;
+
 
     }
 
@@ -165,11 +175,19 @@ export class Grid {
         if (this._previousRecordsReference !== this._dataset.records) {
             this._records = Object.values(this._dataset.records);
             this._previousRecordsReference = this._dataset.records;
+            this._isUpdateScheduled = true;
+            queueMicrotask(() => {
+                this._isUpdateScheduled = false;
+            })
         }
         Object.values(this._dependencies).map(dep => {
             dep.onDependenciesUpdated()
         })
         this._shouldRerender = !this.shouldRerender;
+    }
+
+    public isUpdateScheduled() {
+        return this._isUpdateScheduled
     }
     public async refreshColumns(): Promise<IGridColumn[]> {
         const gridColumns: IGridColumn[] = [];
@@ -397,8 +415,9 @@ export class Grid {
         this.keyHoldListener.destroy();
         //@ts-ignore - internal types
         //if any nested PCF has been loaded and we are in Power Apps, do a page refresh to prevent memory leaks
+        //this should be moved to dataset control
         if (this._usesNestedPcfs && !this._client.isTalxisPortal()) {
-            //location.reload();
+            location.reload();
         }
     }
 
@@ -486,23 +505,17 @@ export class Grid {
         return !column.disableSorting;
     }
     private _isColumnFilterable(column: IColumn): boolean {
-        if (column.name.endsWith('__virtual')) {
-            return false;
-        }
         if (this.props.parameters.EnableFiltering?.raw === false) {
             return false;
         }
         if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             return false;
         }
-        return column.metadata?.isFilterable ?? true;
-    }
-    private _getMaxHeight(): number {
-        let maxHeight = this._initialPageSize * this.rowHeight;
-        if (maxHeight > 600) {
-            maxHeight = 600;
+        //by default, do not make virtual columns filterable unless explicitly set
+        if(column.name.endsWith('__virtual')) {
+            return column.metadata?.isFilterable ?? false;
         }
-        return maxHeight;
+        return column.metadata?.isFilterable ?? true;
     }
     private _getColumnEntityName(columnName: string) {
         const entityAliasName = Attribute.GetLinkedEntityAlias(columnName);

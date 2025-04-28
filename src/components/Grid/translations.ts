@@ -55,6 +55,7 @@ export const gridTranslations = {
     "filtersortmenu-sorttwooption-joint": { 1029: "až", 1033: "to" },
     "filtersortmenu-filterby": { 1029: "Filtrovat podle", 1033: "Filter by" },
     "filtersortmenu-clearfilter": { 1029: "Vymazat filtr", 1033: "Clear filter" },
+    "filtersortmenu-clearsorting": { 1029: "Vymazat řazení", 1033: "Clear sorting" },
     "paging-of": { 1029: "z", 1033: "of" },
     "paging-firstpage": { 1029: "První strana", 1033: "First page" },
     "paging-previouspage": { 1029: "Předchozí", 1033: "Previous" },

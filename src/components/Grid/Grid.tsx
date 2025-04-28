@@ -38,7 +38,7 @@ export const Grid = (props: IGrid) => {
     return (
         <GridContext.Provider value={providerValue}>
             <ThemeProvider className={`talxis__gridControl ${styles.root}`} theme={theme} applyTo='none'>
-                <AgGrid />
+                <AgGrid {...props} />
             </ThemeProvider>
         </GridContext.Provider>
 

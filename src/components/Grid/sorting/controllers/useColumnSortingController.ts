@@ -5,6 +5,7 @@ import { IGridColumn } from "../../core/interfaces/IGridColumn";
 interface ISortingController {
     value: ComponentFramework.PropertyHelper.DataSetApi.SortStatus | undefined;
     sort: (sortDirection: ComponentFramework.PropertyHelper.DataSetApi.Types.SortDirection) => void;
+    clear: () => void;
 }
 
 export const useColumnSortingController = (column: IGridColumn): ISortingController => {
@@ -14,7 +15,8 @@ export const useColumnSortingController = (column: IGridColumn): ISortingControl
     const getController = (): ISortingController => {
         return {
             value: sorting.value,
-            sort: (direction) => sorting.sort(direction)
+            sort: (direction) => sorting.sort(direction),
+            clear: () => sorting.clear()
         }
     }
     const [controller, setController] = useState<ISortingController>(() => getController())

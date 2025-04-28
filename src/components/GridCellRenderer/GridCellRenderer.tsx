@@ -127,7 +127,8 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             return <DefaultContentRenderer />
         }
         if (column.isPrimary && isNavigationEnabled) {
-            return <Link {...componentProps.onGetLinkProps(getLinkProps())}>{formattedValue}</Link>
+            const linkProps = componentProps.onGetLinkProps(getLinkProps());
+            return <Link {...linkProps}>{linkProps.children}</Link>
         }
         switch (dataType) {
             case DataTypes.SingleLineEmail:
@@ -228,6 +229,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const componentProps = onOverrideComponentProps({
         onGetLinkProps: (props) => props,
         onGetOptionSetProps: (props) => props,
+        onRenderContent: (defaultRenderer) => defaultRenderer(),
         rootContainerProps: {
             theme: theme,
             className: styles.root
@@ -279,7 +281,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
         <ComponentPropsContext.Provider value={componentPropsProviderValue}>
             {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
             <div {...componentProps.contentWrapperProps}>
-                {componentProps.contentWrapperProps.children ?? renderContent()}
+                {componentProps.onRenderContent(() => renderContent())}
             </div>
             {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
         </ComponentPropsContext.Provider>

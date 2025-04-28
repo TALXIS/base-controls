@@ -5,8 +5,14 @@ import { IControl, IOutputs } from "../../interfaces/context";
 import { gridTranslations } from "./translations";
 import { IDataset } from "@talxis/client-libraries";
 
+export interface IGridComponentProps {
+    agGrid: AgGridReactProps;
+    registerRowGroupingModule: boolean;
+    container: any;
+    pagingProps: any;
+}
 
-export interface IGrid extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof gridTranslations>>, AgGridReactProps> {
+export interface IGrid extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof gridTranslations>>, IGridComponentProps> {
 
 }
 
@@ -19,7 +25,9 @@ export interface IGridParameters extends IParameters {
     EnableOptionSetColors?:  Omit<ITwoOptionsProperty, 'attributes'>;
     EnableChangeEditor?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableMultiEdit?: Omit<ITwoOptionsProperty, 'attributes'>;
-    RowHeight?: Omit<IWholeNumberProperty, 'attributes'>
+    EnableZebra?: Omit<ITwoOptionsProperty, 'attributes'>;
+    RowHeight?: Omit<IWholeNumberProperty, 'attributes'>;
+    EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;
