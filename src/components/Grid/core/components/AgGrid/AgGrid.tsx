@@ -172,6 +172,9 @@ export const AgGrid = (props: IGrid) => {
                 sizeColumnsIfSpaceAvailable();
                 agGrid.refreshRowSelection();
             },
+            onRowDataUpdated: () => {
+                agGrid.rerenderGlobalCheckBox();
+            },
             onCellEditingStopped: () => {
                 grid.pcfContext.factory.requestRender();
             },

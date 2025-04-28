@@ -115,6 +115,10 @@ export class AgGrid extends GridDependency {
         this._rerenderGlobalCheckBox = renderer;
     }
 
+    public rerenderGlobalCheckBox() {
+        this._rerenderGlobalCheckBox();
+    }
+
     public updateColumnOrder(e: ColumnMovedEvent<IRecord, any>) {
         if (e.type === 'gridOptionsChanged' || !e.finished) {
             return;
