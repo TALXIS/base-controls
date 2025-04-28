@@ -72,7 +72,13 @@ export class Condition extends GridDependency {
     public get isAppliedToDataset() {
         return !!this._dataset.filtering.getFilter()?.conditions.find(cond => {
             const attributeName = cond.entityAliasName ? `${cond.entityAliasName}.${cond.attributeName}` : cond.attributeName;
-            return attributeName === this._column.name
+            if(attributeName === this._column.name) {
+                return true;
+            }
+            if(attributeName === `${this._column.name}name`) {
+                return true;
+            }
+            return false;
         })
     }
 
