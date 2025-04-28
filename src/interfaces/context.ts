@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { IParameters } from ".";
 import { IFluentDesignState } from "../utils";
 
