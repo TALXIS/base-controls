@@ -10,6 +10,7 @@ export interface IGridComponentProps {
     registerRowGroupingModule: boolean;
     container: any;
     pagingProps: any;
+    licenseKey?: string;
 }
 
 export interface IGrid extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof gridTranslations>>, IGridComponentProps> {

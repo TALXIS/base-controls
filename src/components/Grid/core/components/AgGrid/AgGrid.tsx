@@ -19,6 +19,7 @@ import "@ag-grid-community/styles/ag-theme-balham.css";
 import { AgGridContext } from './context';
 import { IGrid } from '../../../interfaces';
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
+import { LicenseManager } from '@ag-grid-enterprise/core';
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 
@@ -192,6 +193,9 @@ export const AgGrid = (props: IGrid) => {
     useMemo(() => {
         if(componentProps.registerRowGroupingModule) {
             ModuleRegistry.register(RowGroupingModule);
+        }
+        if(componentProps.licenseKey) {
+            LicenseManager.setLicenseKey(componentProps.licenseKey);
         }
     }, []);
 

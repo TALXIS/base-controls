@@ -33,6 +33,7 @@ const externalDeps = [
     'lodash',
     'tslib',
     '@ag-grid-community/client-side-row-model',
+    "@ag-grid-enterprise/core",
     "@ag-grid-enterprise/row-grouping",
     '@ag-grid-community/react',
     '@ag-grid-community/core',
