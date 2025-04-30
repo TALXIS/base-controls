@@ -156,20 +156,9 @@ export class AgGrid extends GridDependency {
     }
 
     public toggleOverlay() {
-        setTimeout(() => {
-            this._gridApi?.hideOverlay();
-            if (this._grid.loading) {
-                this._gridApi?.showLoadingOverlay();
-                return;
-            }
-            if (this._grid.records.length === 0) {
-                this._gridApi?.showNoRowsOverlay();
-            }
-    
-            if (this._grid.records.length > 0) {
-                this._gridApi?.ensureIndexVisible(0)
-            }
-        }, 100);
+        if(this._grid.loading) {
+            this._gridApi?.showLoadingOverlay();
+        }
     }
 
     public copyCellValue(event: KeyboardEvent) {
