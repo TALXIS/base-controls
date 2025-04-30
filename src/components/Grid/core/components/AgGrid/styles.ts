@@ -7,10 +7,6 @@ export const getGridStyles = (theme: ITheme) => {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            '--height-offset': '64px',
-            ':has(.ag-body-horizontal-scroll-viewport[style*="height: 0px"])': {
-                '--height-offset': '45px'
-            },
             '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
                 maxHeight: '100%',
