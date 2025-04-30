@@ -151,14 +151,14 @@ export class Grid {
                 height: this.parameters.Height?.raw
             }
         }
-        if(this._records.length <= 15) {
+        if(this._records.length <= 50) {
             return {
                 isAutoHeightEnabled: true
             }
         }
         return {
             isAutoHeightEnabled: false,
-            height: `${this.rowHeight * 15}px`
+            height: `${this.rowHeight * 50}px`
         }
 
 
