@@ -37,7 +37,7 @@ export const AgGrid = (props: IGrid) => {
     const [agColumns, setAgColumns] = useState<ColDef[]>([]);
     const [stateValuesRef, getNewStateValues, setDefaultStateValues] = useStateValues<GridState>(grid.state as GridState);
     const records = grid.records;
-    const [debouncedGridHeight] = useDebounce(grid.getHeightSettings().height, 0);
+    const [gridHeight, setGridHeight] = useState<string | undefined>(grid.getHeightSettings().height);
     const userChangedColumnSizeRef = useRef(false);
     const rerender = useRerender();
     const innerRerenderRef = useRef(true);
@@ -122,13 +122,18 @@ export const AgGrid = (props: IGrid) => {
         sizeColumnsIfSpaceAvailable()
     }, [agColumns]);
 
+    useEffect(() => {
+        //we need to set the height of the grid after everything else is rendered to avoid the redraw rows error
+        setGridHeight(grid.getHeightSettings().height);
+    }, [records, agColumns])
+
     innerRerenderRef.current = false;
 
     const componentProps = onOverrideComponentProps({
         container: {
             ref: containerRef,
             className: `${styles.root} ${mergeStyles({
-                height: debouncedGridHeight
+                height: gridHeight
             })} ag-theme-balham`
         },
         pagingProps: {},
