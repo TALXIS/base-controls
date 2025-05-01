@@ -158,7 +158,8 @@ export class Grid {
         }
         return {
             isAutoHeightEnabled: false,
-            height: `${this.rowHeight * 15 + 5}px`
+            //+2 for header and footer
+            height: `${this.rowHeight * 17 + 5}px`
         }
 
 
