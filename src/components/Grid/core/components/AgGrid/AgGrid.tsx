@@ -94,6 +94,10 @@ export const AgGrid = (props: IGrid) => {
     
     useEffect(() => {
         agGrid.toggleOverlay();
+        //scroll to top when data is loaded
+        if(!grid.loading && grid.dataset.sortedRecordIds.length > 0) {
+            gridApiRef.current?.ensureIndexVisible(0);
+        }
     }, [grid.loading]);
 
 
