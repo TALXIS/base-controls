@@ -159,6 +159,13 @@ export class AgGrid extends GridDependency {
         if(this._grid.loading) {
             this._gridApi?.showLoadingOverlay();
         }
+        else {
+            setTimeout(() => {
+                if(this._grid.dataset.sortedRecordIds.length === 0) {
+                    this._gridApi?.showNoRowsOverlay();
+                }
+            }, 0);
+        }
     }
 
     public copyCellValue(event: KeyboardEvent) {
