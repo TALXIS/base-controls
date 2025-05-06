@@ -2,12 +2,11 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridColumn } from "../../interfaces/IGridColumn";
 import { Constants, IRecord } from "@talxis/client-libraries";
 import { Checkbox, ITooltipHostProps, Shimmer, ThemeProvider, useTheme } from "@fluentui/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getCellStyles, getInnerCellStyles } from "./styles";
 import { CHECKBOX_COLUMN_KEY } from "../../../constants";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { Notifications } from "./Notifications/Notifications";
-import { Commands } from "./Commands/Commands";
 import { CellContent } from "./CellContent/CellContent";
 import { ICellValues } from "../AgGrid/model/AgGrid";
 import { getClassNames, ICommandBarItemProps, useThemeGenerator } from "@talxis/react-components";
@@ -59,10 +58,10 @@ export const InternalCell = (props: ICellProps) => {
     const grid = useGridInstance();
     const error = props.value.error;
     const notifications = props.value.notifications;
-    const isLoading = props.value.loading;
     const errorMessage = props.value.errorMessage;
     const theme = useTheme();
     const applicationTheme = useControlTheme(grid.pcfContext.fluentDesignLanguage);
+    const [recordCommands, setRecordCommands] = useState(undefined);
 
     const shouldShowNotEditableNotification = () => {
         if (column.isEditable && !record.getColumnInfo(column.name).security.editable) {
@@ -88,7 +87,7 @@ export const InternalCell = (props: ICellProps) => {
     }
 
     const renderContent = (): JSX.Element => {
-        if (isLoading) {
+        if (isLoading()) {
             return (
                 <Shimmer styles={{
                     shimmerWrapper: styles.shimmerWrapper,
@@ -96,26 +95,16 @@ export const InternalCell = (props: ICellProps) => {
                 }} />
             );
         }
-        switch (column.name) {
-            case Constants.RIBBON_BUTTONS_COLUMN_NAME: {
-                return (
-                    <Commands record={record} />
-                )
-            }
-            default: {
-                return (
-                    <>
-                        {column.type !== 'action' &&
-                            <CellContent {...props} />
-                        }
-                        {shouldRenderNotifications &&
-                            renderNotifications()
-                        }
-                    </>
-                )
-            }
-
-        }
+        return (
+            <>
+                {(column.type !== 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) &&
+                    <CellContent {...props} recordCommands={recordCommands} />
+                }
+                {shouldRenderNotifications &&
+                    renderNotifications()
+                }
+            </>
+        )
     }
 
     const getFarNotifications = (): ICommandBarItemProps[] => {
@@ -170,9 +159,28 @@ export const InternalCell = (props: ICellProps) => {
             farItems={getFarNotifications()} />
     }
 
+    const isLoading = () => {
+        if(props.value.loading) {
+            return true;
+        }
+        if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME && !recordCommands) {
+            return true;
+
+        }
+        return false;
+    }
+
     const shouldRenderNotifications = getShouldRenderNotifications();
     const styles = useMemo(() => getInnerCellStyles(props.isCellEditor, theme, props.value.columnAlignment), [props.isCellEditor, theme, props.value.columnAlignment]);
 
+    useEffect(() => {
+        if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+            (async () => {
+                //@ts-ignore - typings
+                setRecordCommands(await grid.dataset.retrieveRecordCommand([record.getRecordId()], grid.inlineRibbonButtonIds));
+            })();
+        }
+    }, [record.getValue(column.name)]);
 
     return <div className={styles.innerCellRoot} data-is-valid={!error}>
         {renderContent()}

@@ -13,10 +13,16 @@ import { AgGridContext } from '../../AgGrid/context';
 
 const client = new Client();
 
-export const CellContent = (props: ICellProps) => {
+interface ICellContentProps extends ICellProps {
+    recordCommands?: any[];
+}
+
+
+export const CellContent = (props: ICellContentProps) => {
     const columnRef = React.useRef(props.baseColumn);
     const mountedRef = React.useRef(false);
     const valueRef = React.useRef(props.value);
+    const recordCommands = props.recordCommands;
     columnRef.current = props.baseColumn;
     valueRef.current = props.value;
     const rerender = useRerender();
@@ -215,7 +221,7 @@ export const CellContent = (props: ICellProps) => {
                     const columnInfo = record.getColumnInfo(getColumn().name);
                     const parameters = columnInfo.ui.getControlParameters({
                         ...controlProps.parameters,
-                        ...grid.getParameters(record, getColumn(), props.isCellEditor)
+                        ...grid.getParameters(record, getColumn(), props.isCellEditor, recordCommands)
                     })
                     return {
                         ...controlProps,

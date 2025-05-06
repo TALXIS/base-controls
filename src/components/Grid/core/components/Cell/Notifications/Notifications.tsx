@@ -1,8 +1,8 @@
-import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ICommandBar, ThemeProvider, ICommandBarItemProps } from "@fluentui/react"
+import { Icon, useTheme, Text, Callout, PrimaryButton, DefaultButton, Link, ThemeProvider, ICommandBar} from "@fluentui/react"
 import { getNotificationStyles } from "./styles";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IAddControlNotificationOptions, IColumn, IControlNotificationAction, ICustomColumnFormatting } from "@talxis/client-libraries";
-import { CommandBar, useResizeObserver, useThemeGenerator } from "@talxis/react-components";
+import { CommandBar, ICommandBarItemProps, ICommandBarProps, useResizeObserver, useThemeGenerator } from "@talxis/react-components";
 import { useGridInstance } from "../../../hooks/useGridInstance";
 import { useControlTheme } from "../../../../../../utils";
 
@@ -11,12 +11,14 @@ interface INotifications {
     formatting: Required<ICustomColumnFormatting>,
     isActionColumn: boolean;
     columnAlignment: IColumn['alignment'],
-    farItems?: ICommandBarItemProps[]
+    farItems?: ICommandBarItemProps[],
+    onOverrideCommandBarProps?: (props: ICommandBarProps) => ICommandBarProps;
 }
 
 
 export const Notifications = (props: INotifications) => {
     const { notifications, formatting, farItems, isActionColumn, columnAlignment } = { ...props };
+    const onOverrideCommandBarProps = props.onOverrideCommandBarProps ?? (commandBarProps => commandBarProps);
     const grid = useGridInstance();
     const theme = useTheme();
     const styles = getNotificationStyles(isActionColumn, columnAlignment);
@@ -128,19 +130,22 @@ export const Notifications = (props: INotifications) => {
         }
     }, [isActionColumn]);
 
+    const commandBarProps = onOverrideCommandBarProps({
+        contextualMenuTheme: contextualMenuTheme,
+        id: iconId,
+        componentRef: commandBarRef,
+        styles: {
+            primarySet: styles.notificationsPrimarySet
+        },
+        items: items,
+        overflowItems: overflowItems,
+        farItems: farItems
+    })
+
 
     return <div ref={containerRef} className={styles.notificationsRoot}>
         <ThemeProvider theme={overridenTheme}>
-            <CommandBar
-                contextualMenuTheme={contextualMenuTheme}
-                id={iconId}
-                componentRef={commandBarRef}
-                styles={{
-                    primarySet: styles.notificationsPrimarySet
-                }}
-                items={items}
-                overflowItems={overflowItems}
-                farItems={farItems} />
+            <CommandBar {...commandBarProps} />
         </ThemeProvider>
         {selectedNotification &&
             <Callout

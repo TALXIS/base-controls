@@ -202,6 +202,7 @@ export class Grid {
                 isFilterable: this._isColumnFilterable(column),
                 disableSorting: !this._isColumnSortable(column),
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
+                type: this._getColumnType(column),
                 isResizable: true,
                 isSorted: sorted ? true : false,
                 isFiltered: false,
@@ -320,7 +321,7 @@ export class Grid {
         return defaultControl;
     }
 
-    public getParameters(record: IRecord, column: IGridColumn, editing: boolean) {
+    public getParameters(record: IRecord, column: IGridColumn, editing: boolean, recordCommands?: any[]) {
         const parameters: any = {
             Dataset: {
                 raw: this.dataset,
@@ -359,6 +360,12 @@ export class Grid {
             parameters.AutoFocus = {
                 raw: true,
                 type: DataTypes.TwoOptions
+            }
+        }
+        if(recordCommands) {
+            parameters.RecordCommands = {
+                raw: recordCommands,
+                type: DataTypes.Object
             }
         }
         switch (column.dataType) {
@@ -404,7 +411,7 @@ export class Grid {
                 return 'right';
             }
         }
-        if (column.type === 'action') {
+        if (column.type === 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             return 'right';
         }
         return 'left';
@@ -524,5 +531,15 @@ export class Grid {
             return this.dataset.getTargetEntityType();
         }
         return this.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
+    }
+
+    private _getColumnType(column: IColumn) {
+        if(column.type) {
+            return column.type;
+        }
+        if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+            return 'action';
+        }
+        return undefined;
     }
 }

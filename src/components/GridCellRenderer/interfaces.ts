@@ -2,6 +2,24 @@ import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
 import { IControl, IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
 import { IIconProps, IImageProps, ILinkProps, ISpinnerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
+import { ICommandBarProps } from "@talxis/react-components";
+
+export interface ICommand {
+    canExecute: boolean;
+
+    /**
+     * Seems to be always empty - buttons present in Flyout and SplitButton are put on first level (the array of buttons is flattened).
+     */
+    children: any[];
+    commandId: string;
+    commandButtonId: string;
+    controlType: any;
+    icon: string;
+    label: string;
+    shouldBeVisible: boolean;
+    tooltip: string;
+    execute: () => Promise<void>;
+}
 
 export interface IGridCellRenderer extends IControl<IGridCellRendererParameters, {}, ReturnType<typeof getDefaultGridRendererTranslations>, IGridCellRendererComponentProps> {
 }
@@ -22,6 +40,9 @@ export interface IGridCellRendererParameters extends IParameters {
     Record:  {
         raw: IRecord
     }
+    RecordCommands?: {
+        raw: ICommand[];
+    }
 }
 
 export interface IOptionSetProps {
@@ -35,9 +56,15 @@ export interface IOptionProps {
     textProps: ITextProps;
 }
 
+export interface IRecordCommandsProps {
+    containerProps: ThemeProviderProps;
+    commandBarProps: ICommandBarProps;
+}
+
 export interface IGridCellRendererComponentProps {
     onGetOptionSetProps: (props: IOptionSetProps) => IOptionSetProps,
     onGetLinkProps: (props: ILinkProps) => ILinkProps;
+    onGetRecordCommandsProps: (props: IRecordCommandsProps) => IRecordCommandsProps;
     onRenderContent: (defaultRenderer: () => JSX.Element) => JSX.Element, 
     rootContainerProps: ThemeProviderProps;
     contentWrapperProps: React.HTMLAttributes<HTMLDivElement>;
