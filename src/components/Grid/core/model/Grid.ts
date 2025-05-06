@@ -1,4 +1,4 @@
-import { Attribute, Client, Constants, DataType, DataTypes, IColumn, ICustomColumnControl, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { Attribute, Client, Constants, DataType, DataTypes, IColumn, ICommand, ICustomColumnControl, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { Filtering } from "../../filtering/model/Filtering";
 import { IGrid } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
@@ -321,7 +321,7 @@ export class Grid {
         return defaultControl;
     }
 
-    public getParameters(record: IRecord, column: IGridColumn, editing: boolean, recordCommands?: any[]) {
+    public getParameters(record: IRecord, column: IGridColumn, editing: boolean, recordCommands?: ICommand[]) {
         const parameters: any = {
             Dataset: {
                 raw: this.dataset,

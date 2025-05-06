@@ -8,13 +8,13 @@ import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles, me
 import { useRerender } from '@talxis/react-components';
 import { getJustifyContent } from '../styles';
 import { useDebouncedCallback } from 'use-debounce';
-import { Client } from '@talxis/client-libraries';
+import { Client, ICommand } from '@talxis/client-libraries';
 import { AgGridContext } from '../../AgGrid/context';
 
 const client = new Client();
 
 interface ICellContentProps extends ICellProps {
-    recordCommands?: any[];
+    recordCommands?: ICommand[];
 }
 
 

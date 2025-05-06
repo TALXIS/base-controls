@@ -1,25 +1,8 @@
-import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
+import { IColumn, ICommand, IDataset, IRecord } from "@talxis/client-libraries";
 import { IControl, IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
 import { IIconProps, IImageProps, ILinkProps, ISpinnerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 import { ICommandBarProps } from "@talxis/react-components";
-
-export interface ICommand {
-    canExecute: boolean;
-
-    /**
-     * Seems to be always empty - buttons present in Flyout and SplitButton are put on first level (the array of buttons is flattened).
-     */
-    children: any[];
-    commandId: string;
-    commandButtonId: string;
-    controlType: any;
-    icon: string;
-    label: string;
-    shouldBeVisible: boolean;
-    tooltip: string;
-    execute: () => Promise<void>;
-}
 
 export interface IGridCellRenderer extends IControl<IGridCellRendererParameters, {}, ReturnType<typeof getDefaultGridRendererTranslations>, IGridCellRendererComponentProps> {
 }

@@ -1,11 +1,11 @@
 import { CommandBar, ICommandBarItemProps, ITheme, useRerender, useResizeObserver, useThemeGenerator, withButtonLoading } from "@talxis/react-components";
 import { useComponentProps } from "../useComponentProps";
-import { ICommand, IRecordCommandsProps } from "../interfaces";
+import { IRecordCommandsProps } from "../interfaces";
 import { Icon } from "./Icon";
 import { ICommandBar, PartialTheme, ThemeProvider } from "@fluentui/react";
 import { useEffect, useMemo, useRef } from "react";
 import { getRecordCommandsStyles } from "./styles";
-import { IColumn } from "@talxis/client-libraries";
+import { IColumn, ICommand } from "@talxis/client-libraries";
 
 interface IRecordCommands {
     commands: ICommand[];
