@@ -261,8 +261,11 @@ export class NestedControl {
                         childeventlisteners: [{
                             eventname: "onInit",
                             eventhandler: (control: ComponentFramework.StandardControl<any, any>) => {
+                                LOADED_CONTROLS.add(this._lastRenderedControlName);
                                 this._customControlInstance = control;
                                 this._patchUpdateView(this._customControlInstance!, this._manifest!);
+                                this._loading = false;
+                                this.getOptions().callbacks?.onControlStateChanged?.();
                             }
                         }]
                     };
@@ -305,9 +308,6 @@ export class NestedControl {
                         throw new NestedControlError({
                             message: `Custom control ${this._lastRenderedControlName} does not expose it's instance through fireEvent. Please add fireEvent to init() to avoid unintentional behavior.`
                         }, this)
-                    }
-                    else {
-                        this.getOptions().callbacks?.onControlStateChanged?.();
                     }
                 }
             });

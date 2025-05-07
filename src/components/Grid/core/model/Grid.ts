@@ -425,7 +425,12 @@ export class Grid {
         //if any nested PCF has been loaded and we are in Power Apps, do a page refresh to prevent memory leaks
         //this should be moved to dataset control
         if (this._usesNestedPcfs && !this._client.isTalxisPortal()) {
-            location.reload();
+            //leaving this uncommented causes memory leak
+            //the reload is bad UX when view switcher is active since every view switch destroys the control in Power Apps
+            //we cannot gradually unmount nested PCF due to performance (all nested PCF get renderer => lag, blinking)
+            //Power Apps tries to clear the child elements, but the array containing all elements does not get cleared
+            //the method for it won't trigger since it's part of a setState that does not finish when we navigate away
+            //location.reload();
         }
     }
 

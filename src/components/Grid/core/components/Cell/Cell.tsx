@@ -19,7 +19,6 @@ export interface ICellProps extends ICellRendererParams {
     value: ICellValues;
 }
 export const Cell = (props: ICellProps) => {
-    const record = props.data;
     const styles = useMemo(() => getCellStyles(), [])
     const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);

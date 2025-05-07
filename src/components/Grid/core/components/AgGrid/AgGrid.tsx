@@ -91,11 +91,11 @@ export const AgGrid = (props: IGrid) => {
         }
         grid.dataset.setSelectedRecordIds(e.api.getSelectedNodes().map(node => node.data!.getRecordId()));
     }, 0);
-    
+
     useEffect(() => {
         agGrid.toggleOverlay();
         //scroll to top when data is loaded
-        if(!grid.loading && grid.dataset.sortedRecordIds.length > 0) {
+        if (!grid.loading && grid.dataset.sortedRecordIds.length > 0) {
             gridApiRef.current?.ensureIndexVisible(0);
         }
     }, [grid.loading]);
@@ -116,7 +116,7 @@ export const AgGrid = (props: IGrid) => {
 
     useEffect(() => {
         const columns = agGrid.getColumns();
-        if(columns.length === 0) {
+        if (columns.length === 0) {
             return;
         }
         setAgColumns(columns)
@@ -127,8 +127,10 @@ export const AgGrid = (props: IGrid) => {
     }, [agColumns]);
 
     useEffect(() => {
-        //we need to set the height of the grid after everything else is rendered to avoid the redraw rows error
-        setGridHeight(grid.getHeightSettings().height);
+        setTimeout(() => {
+            //we need to set the height of the grid after everything else is rendered to avoid the redraw rows error
+            setGridHeight(grid.getHeightSettings().height);
+        }, 0);
     }, [records, agColumns])
 
     innerRerenderRef.current = false;
@@ -201,10 +203,10 @@ export const AgGrid = (props: IGrid) => {
     });
 
     useMemo(() => {
-        if(componentProps.registerRowGroupingModule) {
+        if (componentProps.registerRowGroupingModule) {
             ModuleRegistry.register(RowGroupingModule);
         }
-        if(componentProps.licenseKey) {
+        if (componentProps.licenseKey) {
             LicenseManager.setLicenseKey(componentProps.licenseKey);
         }
     }, []);
