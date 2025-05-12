@@ -40,7 +40,7 @@ export const Paging = () => {
                             {
                                 key: 'header',
                                 itemType: ContextualMenuItemType.Header,
-                                text: 'Počet záznamů na stránce',
+                                text: labels['page-record-count'](),
                             },
                             {
                                 key: 'divider',

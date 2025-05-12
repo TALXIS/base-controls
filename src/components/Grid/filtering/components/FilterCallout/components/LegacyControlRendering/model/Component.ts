@@ -57,6 +57,9 @@ export class Component extends GridDependency {
                     },
                     ShowErrorMessage: {
                         raw: true
+                    },
+                    EnableTypeSuffix: {
+                        raw: false
                     }
                 }
             }

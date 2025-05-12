@@ -1,4 +1,4 @@
-import { Attribute, Client, Constants, DataType, DataTypes, IColumn, ICustomColumnControl, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { Attribute, Client, Constants, DataType, DataTypes, IColumn, ICommand, ICustomColumnControl, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { Filtering } from "../../filtering/model/Filtering";
 import { IGrid } from "../../interfaces";
 import { Paging } from "../../paging/model/Paging";
@@ -202,6 +202,7 @@ export class Grid {
                 isFilterable: this._isColumnFilterable(column),
                 disableSorting: !this._isColumnSortable(column),
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
+                type: this._getColumnType(column),
                 isResizable: true,
                 isSorted: sorted ? true : false,
                 isFiltered: false,
@@ -320,7 +321,7 @@ export class Grid {
         return defaultControl;
     }
 
-    public getParameters(record: IRecord, column: IGridColumn, editing: boolean) {
+    public getParameters(record: IRecord, column: IGridColumn, editing: boolean, recordCommands?: ICommand[]) {
         const parameters: any = {
             Dataset: {
                 raw: this.dataset,
@@ -359,6 +360,12 @@ export class Grid {
             parameters.AutoFocus = {
                 raw: true,
                 type: DataTypes.TwoOptions
+            }
+        }
+        if(recordCommands) {
+            parameters.RecordCommands = {
+                raw: recordCommands,
+                type: DataTypes.Object
             }
         }
         switch (column.dataType) {
@@ -404,7 +411,7 @@ export class Grid {
                 return 'right';
             }
         }
-        if (column.type === 'action') {
+        if (column.type === 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             return 'right';
         }
         return 'left';
@@ -418,7 +425,12 @@ export class Grid {
         //if any nested PCF has been loaded and we are in Power Apps, do a page refresh to prevent memory leaks
         //this should be moved to dataset control
         if (this._usesNestedPcfs && !this._client.isTalxisPortal()) {
-            location.reload();
+            //leaving this uncommented causes memory leak
+            //the reload is bad UX when view switcher is active since every view switch destroys the control in Power Apps
+            //we cannot gradually unmount nested PCF due to performance (all nested PCF get renderer => lag, blinking)
+            //Power Apps tries to clear the child elements, but the array containing all elements does not get cleared
+            //the method for it won't trigger since it's part of a setState that does not finish when we navigate away
+            //location.reload();
         }
     }
 
@@ -524,5 +536,15 @@ export class Grid {
             return this.dataset.getTargetEntityType();
         }
         return this.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
+    }
+
+    private _getColumnType(column: IColumn) {
+        if(column.type) {
+            return column.type;
+        }
+        if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+            return 'action';
+        }
+        return undefined;
     }
 }
