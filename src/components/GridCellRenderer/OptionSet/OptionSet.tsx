@@ -87,7 +87,7 @@ const ColorfulOption = (props: {
         },
         option: option,
         textProps: {
-            children: option.Label
+            children: option.Label,
         }
     })
 
