@@ -5,6 +5,7 @@ import { ColorfulOption, ComboBox } from "@talxis/react-components";
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { getComboBoxStyles } from './styles';
+import { getIsColorFeatureEnabled, onRenderColorfulOption } from '../OptionSet/shared';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const { sizing, onNotifyOutputChanged, theme } = useControl('MultiSelectOptionSet', props);
@@ -14,14 +15,9 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const { Options } = parameters.value.attributes;
     const context = props.context;
     const applicationTheme = props.context.fluentDesignLanguage?.applicationTheme;
+    const isColorFeatureEnabled = useMemo(() => getIsColorFeatureEnabled(props.parameters.EnableOptionSetColors?.raw, Options), [props.parameters.EnableOptionSetColors?.raw, Options]);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    const getIsColorFeatureEnabled = () => {
-        if (props.parameters.EnableMultiSelectOptionSetColors?.raw && Options.find(x => x.Color)) {
-            return true;
-        }
-        return false;
-    }
-    const styles = useMemo(() => getComboBoxStyles(getIsColorFeatureEnabled(), sizing.width, sizing.height), [getIsColorFeatureEnabled(), sizing.width, sizing.height]);
+    const styles = useMemo(() => getComboBoxStyles(isColorFeatureEnabled, sizing.width, sizing.height), [isColorFeatureEnabled, sizing.width, sizing.height]);
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
@@ -49,14 +45,6 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         });
     };
 
-    const onRenderColorfulOption = (option: IComboBoxOption | undefined) => {
-        if (!option) {
-            return null;
-        }
-        const color = Options.find(item => item.Value.toString() === option.key)?.Color ?? theme.palette.neutralLight
-        return <ColorfulOption label={option.text} color={color} />
-    };
-
     useEffect(() => {
         if (parameters.AutoFocus?.raw) {
             componentRef.current?.focus(true);
@@ -73,7 +61,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
             autoFocus: true
         } : undefined,
         onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
-        onRenderOption: getIsColorFeatureEnabled() ? onRenderColorfulOption : undefined,
+        onRenderOption: isColorFeatureEnabled ? (option) => onRenderColorfulOption(Options, option, theme) : undefined,
         calloutProps: applicationTheme ? {
             theme: applicationTheme
         } : undefined,
