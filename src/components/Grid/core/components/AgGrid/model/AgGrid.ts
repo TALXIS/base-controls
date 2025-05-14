@@ -229,8 +229,7 @@ export class AgGrid extends GridDependency {
     public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
         //get the latest reference - ag grid might still be referencing the old one and give us wrong index
         const record = this._grid.dataset.records[params.data!.getRecordId()];
-        //@ts-ignore
-        const isEven = record.getIndex() % 2 === 0;
+        const isEven = record?.getIndex() % 2 === 0;
         const defaultTheme = this.getDefaultCellTheme(isEven);
         const defaultBackgroundColor = defaultTheme.semanticColors.bodyBackground;
         const colId = params.colDef.colId!;
