@@ -16,7 +16,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const applicationTheme = props.context.fluentDesignLanguage?.applicationTheme;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const getIsColorFeatureEnabled = () => {
-        if (props.parameters.EnableOptionSetColors?.raw && Options.find(x => x.Color)) {
+        if (props.parameters.EnableMultiSelectOptionSetColors?.raw && Options.find(x => x.Color)) {
             return true;
         }
         return false;

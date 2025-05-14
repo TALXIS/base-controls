@@ -8,7 +8,7 @@ export interface IMultiSelectOptionSet extends IControl<IMultiSelectOptionSetPar
 
 export interface IMultiSelectOptionSetParameters extends IInputParameters {
     value: IMultiSelectOptionSetProperty;
-    EnableOptionSetColors?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableMultiSelectOptionSetColors?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface IMultiSelectOptionSetOutputs extends IOutputs {
