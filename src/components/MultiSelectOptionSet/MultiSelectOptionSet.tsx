@@ -15,7 +15,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const { Options } = parameters.value.attributes;
     const context = props.context;
     const applicationTheme = props.context.fluentDesignLanguage?.applicationTheme;
-    const isColorFeatureEnabled = useMemo(() => getIsColorFeatureEnabled(props.parameters.EnableOptionSetColors?.raw, Options), [props.parameters.EnableOptionSetColors?.raw, Options]);
+    const isColorFeatureEnabled = useMemo(() => getIsColorFeatureEnabled(props.parameters.EnableMultiSelectOptionSetColors?.raw, Options), [props.parameters.EnableMultiSelectOptionSetColors?.raw, Options]);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const styles = useMemo(() => getComboBoxStyles(isColorFeatureEnabled, sizing.width, sizing.height), [isColorFeatureEnabled, sizing.width, sizing.height]);
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
