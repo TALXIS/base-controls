@@ -2,13 +2,14 @@ import { Icon, IIconProps, ILinkProps, Image, Link, SpinnerSize, ThemeProvider }
 import { useControl } from "../../hooks";
 import { useMemo, useState } from "react";
 import { getDefaultContentRendererStyles, getGridCellLabelStyles } from "./styles";
-import { Attribute, Client, DataType, DataTypes, FetchXmlDataProvider, FileAttribute, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { Attribute, Client, Constants, DataType, DataTypes, FetchXmlDataProvider, FileAttribute, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { OptionSet } from './OptionSet';
 import { IGridCellRenderer } from "./interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
 import { ComponentPropsContext } from "./useComponentProps";
 import { DefaultContentRenderer } from "./DefaultContentRenderer";
 import { getClassNames, Spinner } from "@talxis/react-components";
+import { RecordCommands } from "./RecordCommands/RecordCommands";
 
 const client = new Client();
 
@@ -229,6 +230,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const componentProps = onOverrideComponentProps({
         onGetLinkProps: (props) => props,
         onGetOptionSetProps: (props) => props,
+        onGetRecordCommandsProps: (props) => props,
         onRenderContent: (defaultRenderer) => defaultRenderer(),
         rootContainerProps: {
             theme: theme,
@@ -277,15 +279,22 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const prefixIconProps = getIconProps(prefixIcon);
     const suffixIconProps = getIconProps(suffixIcon)
 
-    return <ThemeProvider {...componentProps.rootContainerProps}>
-        <ComponentPropsContext.Provider value={componentPropsProviderValue}>
+    return <ComponentPropsContext.Provider value={componentPropsProviderValue}>
+        {column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME ? 
+        <RecordCommands
+            applicationTheme={context.fluentDesignLanguage?.applicationTheme ?? theme}
+            theme={theme}
+            themeOverride={context.fluentDesignLanguage?.v8FluentOverrides}
+            commands={props.parameters.RecordCommands?.raw ?? []}
+            alignment={columnAlignment} /> : 
+        <ThemeProvider {...componentProps.rootContainerProps}>
             {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
             <div {...componentProps.contentWrapperProps}>
-                {componentProps.onRenderContent(() => renderContent())}
+                {componentProps.contentWrapperProps.children ?? renderContent()}
             </div>
             {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
-        </ComponentPropsContext.Provider>
-    </ThemeProvider>
+        </ThemeProvider>}
+    </ComponentPropsContext.Provider>
 }
 
 

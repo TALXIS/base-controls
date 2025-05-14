@@ -86,6 +86,7 @@ export const gridTranslations = {
     "download": { 1029: 'Stáhnout', 1033: 'Download' },
     "value-not-editable": { 1029: 'Tuto hodnotu nelze upravit.', 1033: 'This value cannot be edited.' },
     "original-value": { 1029: 'Původní hodnota', 1033: 'Previous value' },
-    "new-value": { 1029: 'Nová hodnota', 1033: 'New value' }
+    "new-value": { 1029: 'Nová hodnota', 1033: 'New value' },
+    "page-record-count": {1029: 'Počet záznamů na stránce', 1033: 'Records per page'}
 };
 
