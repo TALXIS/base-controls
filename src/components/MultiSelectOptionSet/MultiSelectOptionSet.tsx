@@ -1,9 +1,10 @@
 
 import { IMultiSelectOptionSet } from './interfaces';
 import { useControl } from '../../hooks';
-import { ComboBox } from "@talxis/react-components";
+import { ColorfulOption, ComboBox } from "@talxis/react-components";
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { getComboBoxStyles } from './styles';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const { sizing, onNotifyOutputChanged, theme } = useControl('MultiSelectOptionSet', props);
@@ -14,11 +15,18 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const context = props.context;
     const applicationTheme = props.context.fluentDesignLanguage?.applicationTheme;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-
+    const getIsColorFeatureEnabled = () => {
+        if (props.parameters.EnableOptionSetColors?.raw && Options.find(x => x.Color)) {
+            return true;
+        }
+        return false;
+    }
+    const styles = useMemo(() => getComboBoxStyles(getIsColorFeatureEnabled(), sizing.width, sizing.height), [getIsColorFeatureEnabled(), sizing.width, sizing.height]);
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
     }));
+
 
     const handleChange = (option?: IComboBoxOption | null): void => {
         if (!option) {
@@ -41,6 +49,14 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         });
     };
 
+    const onRenderColorfulOption = (option: IComboBoxOption | undefined) => {
+        if (!option) {
+            return null;
+        }
+        const color = Options.find(item => item.Value.toString() === option.key)?.Color ?? theme.palette.neutralLight
+        return <ColorfulOption label={option.text} color={color} />
+    };
+
     useEffect(() => {
         if (parameters.AutoFocus?.raw) {
             componentRef.current?.focus(true);
@@ -57,6 +73,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
             autoFocus: true
         } : undefined,
         onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
+        onRenderOption: getIsColorFeatureEnabled() ? onRenderColorfulOption : undefined,
         calloutProps: applicationTheme ? {
             theme: applicationTheme
         } : undefined,
@@ -65,17 +82,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         selectedKey: boundValue.raw ? boundValue.raw.map(key => key.toString()) : null,
         useComboBoxAsMenuWidth: true,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
-        styles: {
-            root: {
-                height: sizing.height,
-                width: sizing.width,
-                display: 'flex',
-                alignItems: 'center',
-            },
-            callout: {
-                maxHeight: '300px !important'
-            }
-        },
+        styles: { root: styles.root, callout: styles.callout },
         clickToCopyProps: parameters.EnableCopyButton?.raw === true ? {
             key: 'copy',
             showOnlyOnHover: true,
@@ -98,7 +105,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
 
     return (
         <ThemeProvider theme={theme} applyTo="none">
-            <ComboBox {...componentProps}/>
+            <ComboBox {...componentProps} />
         </ThemeProvider>
     );
 };
