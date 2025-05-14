@@ -9,9 +9,10 @@ interface IColorfulOptionsProps {
 export const ColorfulOptions = (props: IColorfulOptionsProps) => {
     const styles = useMemo(() => getColorfulOptionsStyles(), []);
     const { value } = props;
-    return <>
+    const options = value.attributes.Options;
+    return <div>
         {value.raw?.map((value, index) => (
-            <span >{value} </span>
+            <span>{options.find(option => option.Value == value)?.Label} </span>
         ))}
-    </>
+    </div>
 }
