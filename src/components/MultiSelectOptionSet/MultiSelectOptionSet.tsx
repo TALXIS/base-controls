@@ -1,14 +1,14 @@
 
 import { IMultiSelectOptionSet } from './interfaces';
 import { useControl } from '../../hooks';
-import { ColorfulOption, ComboBox, TextField } from "@talxis/react-components";
+import { ComboBox } from "@talxis/react-components";
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { getComboBoxStyles } from './styles';
 import ReactDOM from 'react-dom';
 import React from 'react';
 import { ColorfulOptions } from './ColorfulOptions/ColorfulOptions';
-import { getIsColorFeatureEnabled, onRenderColorfulOption } from '../OptionSet/shared';
+import { onRenderColorfulOption, getIsColorFeatureEnabled } from '../OptionSet/shared';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const { sizing, onNotifyOutputChanged, theme } = useControl('MultiSelectOptionSet', props);
@@ -20,13 +20,11 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const context = props.context;
     const applicationTheme = props.context.fluentDesignLanguage?.applicationTheme;
     const isColorFeatureEnabled = useMemo(() => getIsColorFeatureEnabled(props.parameters.EnableMultiSelectOptionSetColors?.raw, Options), [props.parameters.EnableMultiSelectOptionSetColors?.raw, Options]);
-    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    const styles = useMemo(() => getComboBoxStyles(isColorFeatureEnabled, sizing.width, sizing.height), [isColorFeatureEnabled, sizing.width, sizing.height]);
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
         key: option.Value.toString(),
         text: option.Label,
     }));
-
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const handleChange = (option?: IComboBoxOption | null): void => {
         if (!option) {
@@ -54,13 +52,6 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
             return true;
         }
         if (boundValue.raw.length === 0) {
-            return true;
-        }
-        return false;
-    }
-
-    const getIsColorFeatureEnabled = () => {
-        if (props.parameters.EnableMultiSelectOptionSetColors?.raw && Options.find(x => x.Color)) {
             return true;
         }
         return false;
@@ -98,12 +89,12 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     }, []);
 
     useEffect(() => {
-        if (getIsColorFeatureEnabled()) {
+        if (isColorFeatureEnabled) {
             renderColorfulOptions();
         }
     }, [boundValue.raw]);
 
-    const styles = getComboBoxStyles(getIsColorFeatureEnabled(), isEmptyValue(), sizing.width, sizing.height)
+    const styles = getComboBoxStyles(isColorFeatureEnabled, isEmptyValue(), sizing.width, sizing.height)
 
     const componentProps = onOverrideComponentProps({
         componentRef: componentRef,
