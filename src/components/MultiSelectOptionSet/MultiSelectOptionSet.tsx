@@ -65,7 +65,8 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
         container.onclick = () => componentRef.current?.focus(true);
 
         ReactDOM.render(React.createElement(ColorfulOptions, {
-            value: boundValue
+            value: boundValue,
+            context: props.context
         }), container);
 
         const existingContainer = parent.querySelector(`:scope>.${className}`);

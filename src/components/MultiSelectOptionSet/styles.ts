@@ -28,6 +28,9 @@ export const getComboBoxStyles = (isColorFeatureEnabled: boolean, isEmptyValue: 
             display: 'flex',
             alignItems: 'center',
             height: '100%',
+            textAlign: 'left',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
         },
     })
 }
