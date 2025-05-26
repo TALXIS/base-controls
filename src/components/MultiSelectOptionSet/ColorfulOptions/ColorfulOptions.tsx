@@ -13,7 +13,7 @@ interface IColorfulOptionsProps {
 export const ColorfulOptions = (props: IColorfulOptionsProps) => {
     const styles = useMemo(() => getColorfulOptionsStyles(), []);
     const { value } = props;
-    const theme = useControlTheme();
+    const theme = useControlTheme(props.context.fluentDesignLanguage);
     const options = value.attributes.Options;
 
     const getOptionProperties = (option: ComponentFramework.PropertyHelper.OptionMetadata | undefined): { containerProps: { className: string; theme: PartialTheme }; option: ComponentFramework.PropertyHelper.OptionMetadata | undefined; textProps: { children: string | undefined }; } => {
@@ -46,7 +46,7 @@ export const ColorfulOptions = (props: IColorfulOptionsProps) => {
                 const optionProps = getOptionProperties(option);
                 return (
                     <ThemeProvider key={index} {...optionProps.containerProps}>
-                        <Text {...optionProps.textProps}>{optionProps.textProps.children}</Text>
+                        <Text {...optionProps.textProps} title={optionProps.textProps.children}>{optionProps.textProps.children}</Text>
                     </ThemeProvider>
                 );
             })}
