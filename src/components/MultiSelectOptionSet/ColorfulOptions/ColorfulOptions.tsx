@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { getColorfulOptionsStyles } from "./styles";
 import { IContext, IMultiSelectOptionSetProperty } from "../../../interfaces";
-import { ThemeProvider, Text, useTheme, merge, PartialTheme } from "@fluentui/react";
+import { ThemeProvider, Text, merge, PartialTheme } from "@fluentui/react";
 import { Theming, useThemeGenerator } from "@talxis/react-components";
+import { useControlTheme } from "../../../utils";
 
 interface IColorfulOptionsProps {
     value: IMultiSelectOptionSetProperty;
@@ -12,14 +13,12 @@ interface IColorfulOptionsProps {
 export const ColorfulOptions = (props: IColorfulOptionsProps) => {
     const styles = useMemo(() => getColorfulOptionsStyles(), []);
     const { value } = props;
-    const theme = useTheme();
+    const theme = useControlTheme();
     const options = value.attributes.Options;
 
     const getOptionProperties = (option: ComponentFramework.PropertyHelper.OptionMetadata | undefined): { containerProps: { className: string; theme: PartialTheme }; option: ComponentFramework.PropertyHelper.OptionMetadata | undefined; textProps: { children: string | undefined }; } => {
         const backgroundColor = (option && option.Color) ?? theme.palette.neutralLight;
-        console.log('becc ', backgroundColor);
         const textColor = Theming.GetTextColorForBackground(backgroundColor);
-        console.log('textt ', textColor);
         const optionTheme = useThemeGenerator(textColor, backgroundColor, textColor, merge({}, {
             fonts: {
                 medium: {
