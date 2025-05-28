@@ -7,7 +7,7 @@ export const getComboBoxStyles = (isColorFeatureEnabled: boolean, isEmptyValue: 
             width: width,
             display: 'flex',
             alignItems: 'center',
-            ...(!isEmptyValue && {
+            ...(!isEmptyValue && isColorFeatureEnabled && {
                 paddingLeft: '4px !important',
             }),
             '.ms-ComboBox-Input': {
