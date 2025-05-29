@@ -10,6 +10,8 @@ export enum DatasetConditionOperator {
     NotLike = 7,
     In = 8,
     NotIn = 9,
+    Between = 10,
+    NotBetween = 11,
     Null = 12,
     NotNull = 13,
     Yesterday = 14,

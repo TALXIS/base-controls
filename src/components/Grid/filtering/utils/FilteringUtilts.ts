@@ -51,6 +51,8 @@ export class FilteringUtils {
                                 case DatasetConditionOperator.On:
                                 case DatasetConditionOperator.OnOrAfter:
                                 case DatasetConditionOperator.OnOrBefore:
+                                case DatasetConditionOperator.Between:
+                                case DatasetConditionOperator.NotBetween:
                                 case DatasetConditionOperator.Today:
                                 case DatasetConditionOperator.Yesterday:
                                 case DatasetConditionOperator.Tomorrow:
