@@ -19,6 +19,8 @@ export interface IColumnFilterConditionController {
     remove: () => void;
     save: () => Promise<boolean>;
     clear: () => void;
+    setShouldShowError: (shouldShowError: boolean) => void;
+    shouldShowError: () => boolean;
 }
 
 export const useColumnFilterConditionController = (column: IGridColumn): IColumnFilterConditionController | null => {
@@ -43,7 +45,9 @@ export const useColumnFilterConditionController = (column: IGridColumn): IColumn
             },
             remove: () => condition?.remove(),
             save: () => condition?.save(),
-            clear: () => condition?.clear()
+            clear: () => condition?.clear(),
+            setShouldShowError: (shouldShowError: boolean) => condition?.setShouldShowError(shouldShowError),
+            shouldShowError: () => condition?.shouldShowError()
         }))
     }
     useRefreshCallback(conditionPromise, refresh);

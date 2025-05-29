@@ -5,6 +5,7 @@ import { IGridColumn } from "../../core/interfaces/IGridColumn";
 import { Grid } from "../../core/model/Grid";
 import { GridDependency } from "../../core/model/GridDependency";
 import { FilteringUtils } from "../utils/FilteringUtilts";
+import dayjs from "dayjs";
 
 export class Condition extends GridDependency {
     private _column: IGridColumn;
@@ -14,6 +15,7 @@ export class Condition extends GridDependency {
     private _isValid: boolean = true;
     private _inicializationPromise: Promise<boolean> | undefined;
     private _initialized: boolean = false;
+    private _shouldShowError: boolean = false;
 
     constructor(grid: Grid, column: IGridColumn) {
         super(grid);
@@ -86,6 +88,14 @@ export class Condition extends GridDependency {
         return this._isValid;
     }
 
+    public setShouldShowError(value: boolean) {
+        this._shouldShowError = value;
+    }
+
+    public shouldShowError() {
+        return this._shouldShowError;
+    }
+
     public async getExpression() {
         const result = { ...this._conditionExpression };
         result.conditionOperator = this._operatorDecorator(this._conditionExpression.conditionOperator, this._conditionExpression.value) as any;
@@ -95,6 +105,7 @@ export class Condition extends GridDependency {
 
     }
     public async save(): Promise<boolean> {
+        this._shouldShowError = true;
         if (!await this.value.isValid()) {
             this._isValid = false;
             this._triggerRefreshCallbacks();
@@ -145,6 +156,14 @@ export class Condition extends GridDependency {
                         }
                     }
                 }
+                //@ts-ignore - going from between/not between to other operators
+                if((previousOperator === Data || previousOperator === 11) && (conditionOperator !== 10 && conditionOperator !== 11)) {
+                    this._conditionExpression.value = "";
+                }
+                //@ts-ignore - going from other operators to between/not between
+                if((conditionOperator === 10 || conditionOperator === 11) && (previousOperator !== 10 && previousOperator !== 11)) {
+                    this._conditionExpression.value = []
+                }
             },
         }
     }
@@ -156,6 +175,16 @@ export class Condition extends GridDependency {
             isValid: async () => {
                 if(this._conditionUtils.operator(this.operator.get()).doesNotAllowValue) {
                     return true;
+                }
+                const operator = this.operator.get();
+                if(operator === DatasetConditionOperator.Between || operator === DatasetConditionOperator.NotBetween) {
+                    // undefined causes dayjs to use today
+                    const date1 = dayjs(this.value.get()?.[0] ?? '---');
+                    const date2 = dayjs(this.value.get()?.[1] ?? '---');
+                    if(date1.isValid() && date2.isValid()) {
+                        return true;
+                    }
+                    return false;
                 }
                 const memoryProvider = new MemoryDataProvider([{
                     id: 'id',

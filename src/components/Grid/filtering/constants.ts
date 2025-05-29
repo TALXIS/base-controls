@@ -12,6 +12,8 @@ export const OPERATORS = [
     { type: DatasetConditionOperator.NotLike, key: 'condition-notlike' },
     { type: DatasetConditionOperator.In, key: 'condition-in' },
     { type: DatasetConditionOperator.NotIn, key: 'condition-notin' },
+    { type: DatasetConditionOperator.Between, key: 'condition-between' },
+    { type: DatasetConditionOperator.NotBetween, key: 'condition-notbetween' },
     { type: DatasetConditionOperator.Null, key: 'condition-null' },
     { type: DatasetConditionOperator.NotNull, key: 'condition-notnull' },
     { type: DatasetConditionOperator.Yesterday, key: 'condition-yesterday' },

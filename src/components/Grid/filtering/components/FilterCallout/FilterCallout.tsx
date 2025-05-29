@@ -8,6 +8,7 @@ import { FilteringUtils } from '../../utils/FilteringUtilts';
 import { ConditionOperator } from './components/ConditionOperator/ConditionOperator';
 import { ConditionValue } from './components/ConditionValue/ConditionValue';
 import { useGridInstance } from '../../../core/hooks/useGridInstance';
+import { ConditionValueBetween } from './components/ConditionValue/ConditionValueBetween';
 
 export interface IFilterCallout extends ICalloutProps {
     column: IGridColumn;
@@ -15,7 +16,7 @@ export interface IFilterCallout extends ICalloutProps {
 }
 
 export const FilterCallout = (props: IFilterCallout) => {
-    const {column, onDismiss} = {...props};
+    const { column, onDismiss } = { ...props };
     const condition = useColumnFilterConditionController(column);
     const grid = useGridInstance();
     const conditionRef = React.useRef<IColumnFilterConditionController | null>();
@@ -25,7 +26,7 @@ export const FilterCallout = (props: IFilterCallout) => {
     const conditionUtils = FilteringUtils.condition();
 
     const isDeleteButtonDisabled = () => {
-        switch(conditionValue) {
+        switch (conditionValue) {
             case null:
             case undefined:
             case "": {
@@ -35,11 +36,19 @@ export const FilterCallout = (props: IFilterCallout) => {
         return false;
     }
 
+    const isBetweenCondition = () => {
+        if (conditionOperator === 10 || conditionOperator === 11) {
+            return true;
+        }
+        return false;
+    }
+
     React.useEffect(() => {
         return () => {
             conditionRef.current?.clear();
         }
     }, []);
+
 
     return (
         <Callout
@@ -56,15 +65,19 @@ export const FilterCallout = (props: IFilterCallout) => {
                 <>
                     <div className={filterCalloutStyles.controls}>
                         <ConditionOperator column={column} />
-                        {conditionUtils.value(conditionOperator!).isEditable &&
-                        <ConditionValue
-                            column={column} />
+                        {conditionUtils.value(conditionOperator!).isEditable && !isBetweenCondition() &&
+                            <ConditionValue
+                                column={column} />
+                        }
+                        {isBetweenCondition() &&
+                            <ConditionValueBetween
+                                column={column} />
                         }
                     </div>
                     <div className={filterCalloutStyles.footer}>
                         <PrimaryButton text={grid.labels['filtermenu-applybutton']()}
                             onClick={async () => {
-                                if(await condition.save()) {
+                                if (await condition.save()) {
                                     props.onDismiss();
                                 }
                             }} />
@@ -72,6 +85,7 @@ export const FilterCallout = (props: IFilterCallout) => {
                             <Button text={grid.labels['filtermenu-clearbutton']()}
                                 disabled={isDeleteButtonDisabled()}
                                 onClick={() => {
+                                    condition.setShouldShowError(false);
                                     condition.value.set(null);
                                 }} />
                         }
