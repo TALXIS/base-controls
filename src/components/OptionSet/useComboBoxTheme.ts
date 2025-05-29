@@ -2,7 +2,6 @@ import { IOptionSet } from "./interfaces";
 import { ITheme } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
 import { Theming, useThemeGenerator } from "@talxis/react-components";
-import { getIsColorFeatureEnabled } from "./shared";
 
 export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, ITheme] => {
     const boundValue = props.parameters.value;
@@ -26,6 +25,12 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
         colors.textColor = Theming.GetTextColorForBackground(selectedOptionColor);
         return colors;
     }
+    const getIsColorFeatureEnabled = () => {
+        if (props.parameters.EnableOptionSetColors?.raw && Options.find(x => x.Color)) {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Since we are creating new theme for combobox, we need to add the overrides in cases where there is no color feature enabled or no color is selected.
@@ -34,17 +39,17 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
         const override: DeepPartial<ITheme> = {
             ...props.context.fluentDesignLanguage?.v8FluentOverrides
         }
-        if (!colorFeatureEnabled) {
+        if(!colorFeatureEnabled) {
             return override;
         }
-        if (!selectedOptionColor) {
+        if(!selectedOptionColor) {
             return override;
         }
         delete override.semanticColors?.inputBackground;
         return override;
     }
 
-    const isColorFeatureEnabled = getIsColorFeatureEnabled(props.parameters.EnableOptionSetColors?.raw, Options);
+    const isColorFeatureEnabled = getIsColorFeatureEnabled();
     const colors = getColors(isColorFeatureEnabled);
     const override = getThemeOverride(isColorFeatureEnabled);
 
