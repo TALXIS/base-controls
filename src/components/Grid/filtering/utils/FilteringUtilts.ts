@@ -46,35 +46,34 @@ export class FilteringUtils {
                         });
                     })(),
                     dateOperators: (() => {
-                        return OPERATORS.filter(operator => {
-                            switch (operator.type) {
-                                case DatasetConditionOperator.On:
-                                case DatasetConditionOperator.OnOrAfter:
-                                case DatasetConditionOperator.OnOrBefore:
-                                case DatasetConditionOperator.Between:
-                                case DatasetConditionOperator.NotBetween:
-                                case DatasetConditionOperator.Today:
-                                case DatasetConditionOperator.Yesterday:
-                                case DatasetConditionOperator.Tomorrow:
-                                case DatasetConditionOperator.ThisWeek:
-                                case DatasetConditionOperator.ThisMonth:
-                                case DatasetConditionOperator.ThisYear:
-                                case DatasetConditionOperator.Next7Days:
-                                case DatasetConditionOperator.NextXDays:
-                                case DatasetConditionOperator.NextXMonths:
-                                case DatasetConditionOperator.LastWeek:
-                                case DatasetConditionOperator.Last7Days:
-                                case DatasetConditionOperator.LastMonth:
-                                case DatasetConditionOperator.LastYear:
-                                case DatasetConditionOperator.LastXDays:
-                                case DatasetConditionOperator.LastXMonths:
-                                case DatasetConditionOperator.NotNull:
-                                case DatasetConditionOperator.Null:
-                                    return true;
-                                default:
-                                    return false;
-                            }
-                        });
+                        const operatorOrder = [
+                            DatasetConditionOperator.On,
+                            DatasetConditionOperator.OnOrAfter,
+                            DatasetConditionOperator.OnOrBefore,
+                            DatasetConditionOperator.Between,
+                            DatasetConditionOperator.NotBetween,
+                            DatasetConditionOperator.Today,
+                            DatasetConditionOperator.Yesterday,
+                            DatasetConditionOperator.Tomorrow,
+                            DatasetConditionOperator.ThisWeek,
+                            DatasetConditionOperator.ThisMonth,
+                            DatasetConditionOperator.ThisYear,
+                            DatasetConditionOperator.Next7Days,
+                            DatasetConditionOperator.NextXDays,
+                            DatasetConditionOperator.NextXMonths,
+                            DatasetConditionOperator.LastWeek,
+                            DatasetConditionOperator.Last7Days,
+                            DatasetConditionOperator.LastMonth,
+                            DatasetConditionOperator.LastYear,
+                            DatasetConditionOperator.LastXDays,
+                            DatasetConditionOperator.LastXMonths,
+                            DatasetConditionOperator.NotNull,
+                            DatasetConditionOperator.Null
+                        ];
+
+                        return OPERATORS
+                            .filter(operator => operatorOrder.includes(operator.type))
+                            .sort((a, b) => operatorOrder.indexOf(a.type) - operatorOrder.indexOf(b.type));
                     })(),
                     multipleOptionSetOperators: (() => {
                         return OPERATORS.filter(operator => {

@@ -41,6 +41,8 @@ export const gridTranslations = {
     "condition-underorequal": { 1029: "Je pod nebo se rovná", 1033: "Under or equal" },
     "condition-containvalues": { 1029: "Obsahuje hodnoty", 1033: "Contain values" },
     "condition-doesnotcontainvalues": { 1029: "Neobsahuje hodnoty", 1033: "Does not contain values" },
+    "condition-between": { 1029: "Mezi", 1033: "Between" },
+    "condition-notbetween": { 1029: "Není mezi", 1033: "Not between" },
     "filtermenu-filterby": { 1029: "Filtrovat podle", 1033: "Filter By" },
     "filtermenu-applybutton": { 1029: "Použít", 1033: "Apply" },
     "filtermenu-clearbutton": { 1029: "Vymazat", 1033: "Clear" },

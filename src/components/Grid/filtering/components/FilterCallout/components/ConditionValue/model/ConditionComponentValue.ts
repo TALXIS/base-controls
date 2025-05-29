@@ -83,8 +83,19 @@ export class ConditionComponentValue {
         switch (this.column.dataType) {
             case DataType.DATE_AND_TIME_DATE_AND_TIME:
             case DataType.DATE_AND_TIME_DATE_ONLY: {
+                if(Array.isArray(value)) {
+                    value = value.map((x: Date) => {
+                        if(x) {
+                            const date = dayjs(x);
+                            if(date.isValid()) {
+                                return date.format('YYYY-MM-DD');
+                            }
+                            return x;
+                        }
+                        return null;
+                    })
+                }
                 if(value instanceof Date) {
-
                      //the column of date time is always converted to Date column in Power Apps
                      value = dayjs(value).format('YYYY-MM-DD');
                 }
