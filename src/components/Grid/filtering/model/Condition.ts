@@ -157,11 +157,11 @@ export class Condition extends GridDependency {
                     }
                 }
                 //@ts-ignore - going from between/not between to other operators
-                if((previousOperator === 10 || previousOperator === 11) && (conditionOperator !== 10 && conditionOperator !== 11)) {
+                if((previousOperator === DatasetConditionOperator.Between || previousOperator === DatasetConditionOperator.NotBetween) && (conditionOperator !== DatasetConditionOperator.Between && conditionOperator !== DatasetConditionOperator.NotBetween)) {
                     this._conditionExpression.value = "";
                 }
                 //@ts-ignore - going from other operators to between/not between
-                if((conditionOperator === 10 || conditionOperator === 11) && (previousOperator !== 10 && previousOperator !== 11)) {
+                if((conditionOperator === DatasetConditionOperator.Between || conditionOperator === DatasetConditionOperator.NotBetween) && (previousOperator !== DatasetConditionOperator.Between && previousOperator !== DatasetConditionOperator.NotBetween)) {
                     this._conditionExpression.value = []
                 }
             },
