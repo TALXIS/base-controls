@@ -1,5 +1,5 @@
 import { IComboBoxProps } from "@talxis/react-components";
-import { IMultiSelectOptionSetProperty } from "../../interfaces";
+import { IMultiSelectOptionSetProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
 import { IInputParameters } from "../../interfaces/parameters";
 
@@ -8,6 +8,7 @@ export interface IMultiSelectOptionSet extends IControl<IMultiSelectOptionSetPar
 
 export interface IMultiSelectOptionSetParameters extends IInputParameters {
     value: IMultiSelectOptionSetProperty;
+    EnableOptionSetColors?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface IMultiSelectOptionSetOutputs extends IOutputs {
