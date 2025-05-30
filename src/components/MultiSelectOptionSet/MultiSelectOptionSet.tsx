@@ -4,11 +4,11 @@ import { useControl } from '../../hooks';
 import { ComboBox } from "@talxis/react-components";
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';
-import { getComboBoxStyles } from './styles';
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { ColorfulOptions } from './ColorfulOptions/ColorfulOptions';
-import { onRenderColorfulOption, getIsColorFeatureEnabled } from '../OptionSet/shared';
+import { ColorfulOptions } from './ColofulOptions/ColorfulOptions';
+import { getIsColorFeatureEnabled, onRenderColorfulOption } from '../OptionSet/shared';
+import { getComboBoxStyles } from './styles';
 
 export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     const { sizing, onNotifyOutputChanged, theme } = useControl('MultiSelectOptionSet', props);

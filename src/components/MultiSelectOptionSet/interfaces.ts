@@ -1,5 +1,5 @@
 import { IComboBoxProps } from "@talxis/react-components";
-import { IMultiSelectOptionSetProperty } from "../../interfaces";
+import { IMultiSelectOptionSetProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
 import { IInputParameters } from "../../interfaces/parameters";
 
