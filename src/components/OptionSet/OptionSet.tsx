@@ -6,6 +6,7 @@ import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useComboBoxTheme } from './useComboBoxTheme';
 import { getComboBoxStyles } from './styles';
+import { onRenderColorfulOption } from './shared';
 
 
 export const OptionSet = (props: IOptionSet) => {
@@ -39,14 +40,6 @@ export const OptionSet = (props: IOptionSet) => {
         onNotifyOutputChanged({
             value: value
         });
-    };
-
-    const onRenderColorfulOption = (option: IComboBoxOption | undefined) => {
-        if (!option) {
-            return null;
-        }
-        const color = Options.find(item => item.Value.toString() === option.key)?.Color ?? theme.palette.neutralLight
-        return <ColorfulOption label={option.text} color={color} />
     };
 
     const componentProps = onOverrideComponentProps({
@@ -84,7 +77,7 @@ export const OptionSet = (props: IOptionSet) => {
             },
         }),
         onChange: (e, option) => handleChange(option),
-        onRenderOption: colorFeatureEnabled ? onRenderColorfulOption : undefined,
+        onRenderOption: colorFeatureEnabled ? (option) => onRenderColorfulOption(Options, option, theme) : undefined,
     });
 
     return (
