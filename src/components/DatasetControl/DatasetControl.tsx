@@ -8,6 +8,9 @@ import { IDatasetControl } from "./interfaces";
 import { QuickFind } from "./QuickFind/QuickFind";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { useRerender } from "@talxis/react-components";
+import { Client } from "@talxis/client-libraries";
+
+const client = new Client();
 
 export const DatasetControl = (props: IDatasetControl) => {
   const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
@@ -16,17 +19,17 @@ export const DatasetControl = (props: IDatasetControl) => {
   const injectedContextRef = useRef(props.context);
   const styles = useMemo(() => getDatasetControlStyles(theme, props.parameters.Height?.raw), []);
   const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-  //@ts-ignore - private property
-  dataset._setRenderer(() => rerender());
+  useMemo(() => {
+    if (dataset.isVirtual() || !client.isTalxisPortal()) {
+      dataset.setInterceptor('__onRequestRender', () => rerender());
+    }
+  }, []);
 
   //we need to have a way to customize the init behavior from above
   const componentProps = onOverrideComponentProps({
     onDatasetInit: () => {
-      if (dataset.paging.pageNumber > 1) {
-        dataset.paging.loadExactPage(dataset.paging.pageNumber)
-      }
-      else {
-        dataset.refresh();
+      if (dataset.isVirtual()) {
+        dataset.paging.loadExactPage(dataset.paging.pageNumber);
       }
     },
     containerProps: {

@@ -85,10 +85,10 @@
     "validator": "^13.11.9"
   },
   "peerDependencies": {
-    "react": "^16.8.6 || ^17.0.2",
-    "react-dom": "^16.8.6 || ^17.0.2",
-    "@talxis/react-components": "^1.2503.4",
+    "@fluentui/react": "<=8.121.5",
     "@talxis/client-libraries": "^1.2505.3",
-    "@fluentui/react": "<=8.121.5"
+    "@talxis/react-components": "^1.2503.4",
+    "react": "^16.8.6 || ^17.0.2",
+    "react-dom": "^16.8.6 || ^17.0.2"
   }
 }
