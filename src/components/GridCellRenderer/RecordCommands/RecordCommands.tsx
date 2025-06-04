@@ -81,7 +81,7 @@ export const RecordCommands = (props: IRecordCommands) => {
                         }
                     })();
                 },
-                onRenderIcon: iconName.includes('svg') ? () => <Icon name={iconName} /> : undefined,
+                onRenderIcon: iconName?.includes('svg') ? () => <Icon name={iconName} /> : undefined,
             })
         })
         return result;
