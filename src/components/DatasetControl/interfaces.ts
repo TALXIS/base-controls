@@ -24,13 +24,12 @@ export interface IDatasetControlComponentProps {
         onRender: (renderQuickFind: () => React.ReactElement) => React.ReactElement;
         onGetQuickFindProps: (props: IQuickFindProps) => IQuickFindProps;
     };
-    /**
-     * Can be used to override the default control renderer (Grid).
-     */
-    onControlRender: (props: IControl<IGridParameters, any, any, any>, defaultRenderer: (props: IControl<IGridParameters, any, any, IGridComponentProps>) => React.ReactElement) => React.ReactElement;
 }
 
 
 export interface IDatasetControl extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps> {
-    EnableQuickFind?: Omit<ITwoOptionsProperty, 'attributes'>
+    /**
+     * Tells the Dataset control which UI component should be used for the dataset.
+     */
+    onGetControlComponent: (props: IControl<IGridParameters, any, any, any>) => React.ReactElement<IControl<any, any, any, any>>
 }
