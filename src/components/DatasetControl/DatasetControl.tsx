@@ -8,6 +8,9 @@ import { IDatasetControl } from "./interfaces";
 import { QuickFind } from "./QuickFind/QuickFind";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { useRerender } from "@talxis/react-components";
+import { Client } from "@talxis/client-libraries";
+
+const client = new Client();
 
 export const DatasetControl = (props: IDatasetControl) => {
   const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
@@ -16,23 +19,24 @@ export const DatasetControl = (props: IDatasetControl) => {
   const injectedContextRef = useRef(props.context);
   const styles = useMemo(() => getDatasetControlStyles(theme, props.parameters.Height?.raw), []);
   const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-  //@ts-ignore - private property
-  dataset._setRenderer(() => rerender());
+  useMemo(() => {
+    if (dataset.isVirtual() || !client.isTalxisPortal()) {
+      dataset.setInterceptor('__onRequestRender', () => rerender());
+    }
+  }, []);
 
   //we need to have a way to customize the init behavior from above
   const componentProps = onOverrideComponentProps({
     onDatasetInit: () => {
-      if (dataset.paging.pageNumber > 1) {
-        dataset.paging.loadExactPage(dataset.paging.pageNumber)
-      }
-      else {
-        dataset.refresh();
+      if (dataset.isVirtual()) {
+        dataset.paging.loadExactPage(dataset.paging.pageNumber);
       }
     },
     containerProps: {
       theme: theme,
       className: styles.datasetControlRoot,
     },
+
     headerProps: {
       headerContainerProps: {
         className: styles.headerRoot
@@ -40,7 +44,7 @@ export const DatasetControl = (props: IDatasetControl) => {
       onRender: (renderQuickFind) => renderQuickFind(),
       onGetQuickFindProps: (props) => props
     },
-    onOverrideControlProps: (props) => props
+    onControlRender: (props, defaultRenderer) => defaultRenderer(props),
   });
 
   const renderErrorMessageBar = (onReset?: () => void) => {
@@ -64,14 +68,21 @@ export const DatasetControl = (props: IDatasetControl) => {
     componentProps.onDatasetInit();
   }, []);
 
+  const isQuickFindEnabled = () => {
+    if (dataset.isVirtual() && props.parameters.EnableQuickFind?.raw) {
+      return true;
+    }
+    return false;
+  }
+
 
   return (
     <ThemeProvider {...componentProps.containerProps}>
-      {props.parameters.EnableQuickFind?.raw &&
+      {isQuickFindEnabled() &&
         <div {...componentProps.headerProps.headerContainerProps}>
           {componentProps.headerProps.onRender(() => {
             return <>
-              {props.parameters.EnableQuickFind?.raw &&
+              {isQuickFindEnabled() &&
                 <QuickFind
                   dataset={dataset}
                   labels={labels}
@@ -82,10 +93,9 @@ export const DatasetControl = (props: IDatasetControl) => {
           })}
         </div>
       }
-      <Grid
-        {...props}
-        onOverrideComponentProps={(props) => componentProps.onOverrideControlProps(props)}
-        context={injectedContextRef.current} />
+      {componentProps.onControlRender({ ...props, context: injectedContextRef.current }, (props) => {
+        return <Grid {...props} />
+      })}
     </ThemeProvider>
   )
 }

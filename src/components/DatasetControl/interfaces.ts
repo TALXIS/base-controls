@@ -5,7 +5,7 @@ import { IGridComponentProps, IGridOutputs, IGridParameters } from "../Grid";
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
 import { ITextFieldProps } from "@talxis/react-components";
-import { AgGridReactProps } from "@ag-grid-community/react";
+import React from "react";
 
 export interface IQuickFindProps {
     textFieldProps: ITextFieldProps;
@@ -18,11 +18,16 @@ export interface IDatasetControlComponentProps {
     containerProps: ThemeProviderProps;
     headerProps: {
         headerContainerProps: React.HTMLAttributes<HTMLDivElement>
+        /**
+         * Can be used to override the default header renderer (includes QuickFind).
+         */
         onRender: (renderQuickFind: () => React.ReactElement) => React.ReactElement;
         onGetQuickFindProps: (props: IQuickFindProps) => IQuickFindProps;
     };
-    //TODO: make dynamic, we might render a different control within DatasetControl in the future
-    onOverrideControlProps: (props: IGridComponentProps) => IGridComponentProps;
+    /**
+     * Can be used to override the default control renderer (Grid).
+     */
+    onControlRender: (props: IControl<IGridParameters, any, any, any>, defaultRenderer: (props: IControl<IGridParameters, any, any, IGridComponentProps>) => React.ReactElement) => React.ReactElement;
 }
 
 
