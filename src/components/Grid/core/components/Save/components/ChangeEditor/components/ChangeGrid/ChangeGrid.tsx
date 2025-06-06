@@ -209,7 +209,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
                         headerProps: {
                             ...props.headerProps,
                             headerContainerProps: {
-                                ...props.headerProps.headerContainerProps,
+                                ...props.headerProps?.headerContainerProps,
                                 style: {
                                     display: 'none'
                                 }

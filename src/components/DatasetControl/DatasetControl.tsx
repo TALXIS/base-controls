@@ -36,6 +36,7 @@ export const DatasetControl = (props: IDatasetControl) => {
       theme: theme,
       className: styles.datasetControlRoot,
     },
+
     headerProps: {
       headerContainerProps: {
         className: styles.headerRoot
@@ -43,7 +44,7 @@ export const DatasetControl = (props: IDatasetControl) => {
       onRender: (renderQuickFind) => renderQuickFind(),
       onGetQuickFindProps: (props) => props
     },
-    onOverrideControlProps: (props) => props
+    onControlRender: (props, defaultRenderer) => defaultRenderer(props),
   });
 
   const renderErrorMessageBar = (onReset?: () => void) => {
@@ -67,14 +68,21 @@ export const DatasetControl = (props: IDatasetControl) => {
     componentProps.onDatasetInit();
   }, []);
 
+  const isQuickFindEnabled = () => {
+    if (dataset.isVirtual() && props.parameters.EnableQuickFind?.raw) {
+      return true;
+    }
+    return false;
+  }
+
 
   return (
     <ThemeProvider {...componentProps.containerProps}>
-      {props.parameters.EnableQuickFind?.raw &&
+      {isQuickFindEnabled() &&
         <div {...componentProps.headerProps.headerContainerProps}>
           {componentProps.headerProps.onRender(() => {
             return <>
-              {props.parameters.EnableQuickFind?.raw &&
+              {isQuickFindEnabled() &&
                 <QuickFind
                   dataset={dataset}
                   labels={labels}
@@ -85,10 +93,9 @@ export const DatasetControl = (props: IDatasetControl) => {
           })}
         </div>
       }
-      <Grid
-        {...props}
-        onOverrideComponentProps={(props) => componentProps.onOverrideControlProps(props)}
-        context={injectedContextRef.current} />
+      {componentProps.onControlRender({ ...props, context: injectedContextRef.current }, (props) => {
+        return <Grid {...props} />
+      })}
     </ThemeProvider>
   )
 }
