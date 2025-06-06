@@ -1,5 +1,4 @@
 import { useMemo, useRef } from "react";
-import { Grid } from "../Grid";
 import { useControl } from "../../hooks";
 import { MessageBar, MessageBarButton, MessageBarType, ThemeProvider } from "@fluentui/react";
 import { datasetControlTranslations } from "./translations";
@@ -44,7 +43,6 @@ export const DatasetControl = (props: IDatasetControl) => {
       onRender: (renderQuickFind) => renderQuickFind(),
       onGetQuickFindProps: (props) => props
     },
-    onControlRender: (props, defaultRenderer) => defaultRenderer(props),
   });
 
   const renderErrorMessageBar = (onReset?: () => void) => {
@@ -93,9 +91,7 @@ export const DatasetControl = (props: IDatasetControl) => {
           })}
         </div>
       }
-      {componentProps.onControlRender({ ...props, context: injectedContextRef.current }, (props) => {
-        return <Grid {...props} />
-      })}
+      {props.onGetControlComponent({ ...props, context: injectedContextRef.current })}
     </ThemeProvider>
   )
 }

@@ -13,6 +13,7 @@ import { useTheme } from "@fluentui/react";
 import { getChangeGridStyles } from "./styles";
 import React from "react";
 import { AgGridContext } from "../../../../../AgGrid/context";
+import { Grid } from "../../../../../../../Grid";
 
 interface IChangeGrid {
     recordChange: IRecordChange;
@@ -196,6 +197,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
     return (
         <div className={styles.root}>
             <DatasetControl
+                onGetControlComponent={(props) => <Grid {...props} />}
                 context={{
                     ...grid.pcfContext,
                     parameters: {
