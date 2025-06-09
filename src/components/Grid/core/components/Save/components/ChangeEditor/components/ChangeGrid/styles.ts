@@ -29,9 +29,6 @@ export const getChangeGridStyles = (theme: ITheme, recordName: string) => {
                         display: 'block'
                     }
                 }
-            },
-            '.talxis__gridControl [class^="pageSizeBtnWrapper"]': {
-                display: 'none'
             }
         },
         recordName: {

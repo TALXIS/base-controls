@@ -58,14 +58,6 @@ export const gridTranslations = {
     "filtersortmenu-filterby": { 1029: "Filtrovat podle", 1033: "Filter by" },
     "filtersortmenu-clearfilter": { 1029: "Vymazat filtr", 1033: "Clear filter" },
     "filtersortmenu-clearsorting": { 1029: "Vymazat řazení", 1033: "Clear sorting" },
-    "paging-of": { 1029: "z", 1033: "of" },
-    "paging-firstpage": { 1029: "První strana", 1033: "First page" },
-    "paging-previouspage": { 1029: "Předchozí", 1033: "Previous" },
-    "paging-page": { 1029: "Strana", 1033: "Page" },
-    "paging-nextpage": { 1029: "Další", 1033: "Next" },
-    "paging-lastpage": { 1029: "Poslední strana", 1033: "Last page" },
-    "paging-pages": { 1029: "{{start}} - {{end}}", 1033: "{{start}} - {{end}}" },
-    "paging-pages-totalcount": { 1029: "z {{recordcount}}", 1033: "of {{recordcount}}" },
     "norecordsfound": { 1029: 'Nenašli jsme nic, co by se zde dalo zobrazit.', 1033: 'No records found.' },
     "saving-changenotification": { 1029: "Počet upravených záznamů: <b>{{numOfChanges}}</b>.", 1033: "Number of updated records: <b>{{numOfChanges}}</b>." },
     "saving-clickreview": {1029: "Klikněte <u>zde</u> pro jejich zobrazení.", 1033: "Click <u>here</u> to review"},
@@ -88,7 +80,6 @@ export const gridTranslations = {
     "download": { 1029: 'Stáhnout', 1033: 'Download' },
     "value-not-editable": { 1029: 'Tuto hodnotu nelze upravit.', 1033: 'This value cannot be edited.' },
     "original-value": { 1029: 'Původní hodnota', 1033: 'Previous value' },
-    "new-value": { 1029: 'Nová hodnota', 1033: 'New value' },
-    "page-record-count": {1029: 'Počet záznamů na stránce', 1033: 'Records per page'}
+    "new-value": { 1029: 'Nová hodnota', 1033: 'New value' }
 };
 

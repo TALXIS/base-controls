@@ -6,7 +6,6 @@ export const getDatasetControlStyles = (theme: ITheme, height?: string | null) =
         datasetControlRoot: {
             display: 'flex',
             flexDirection: 'column',
-            gap: 15,
             ...(height === '100%' ? getFullHeightStyles(theme) : {})
 
         },
@@ -15,6 +14,7 @@ export const getDatasetControlStyles = (theme: ITheme, height?: string | null) =
             paddingLeft: 15,
             paddingTop: 15,
             paddingRight: 15,
+            marginBottom: 15
         },
         messageBarBtn: {
             minHeight: 'inherit'

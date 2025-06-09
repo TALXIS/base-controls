@@ -1,11 +1,13 @@
 import { ThemeProviderProps } from "@fluentui/react";
 import { ITranslation } from "../../hooks";
-import { IControl, ITwoOptionsProperty } from "../../interfaces";
+import { IControl, ITranslations, ITwoOptionsProperty } from "../../interfaces";
 import { IGridComponentProps, IGridOutputs, IGridParameters } from "../Grid";
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
 import { ITextFieldProps } from "@talxis/react-components";
 import React from "react";
+import { IDatasetPaging, IDatasetPagingParameters } from "./Paging";
+
 
 export interface IQuickFindProps {
     textFieldProps: ITextFieldProps;
@@ -24,6 +26,8 @@ export interface IDatasetControlComponentProps {
         onRender: (renderQuickFind: () => React.ReactElement) => React.ReactElement;
         onGetQuickFindProps: (props: IQuickFindProps) => IQuickFindProps;
     };
+    onRenderPagination: (props: IDatasetPaging, renderPagination: (props: IDatasetPaging) => React.ReactElement<IDatasetPaging>) => React.ReactElement;
+
 }
 
 

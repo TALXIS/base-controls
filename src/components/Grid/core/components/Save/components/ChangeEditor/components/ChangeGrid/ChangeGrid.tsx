@@ -216,7 +216,8 @@ export const ChangeGrid = (props: IChangeGrid) => {
                                     display: 'none'
                                 }
                             }
-                        }
+                        },
+                        onRenderPagination: (props, renderPagination) => React.createElement(React.Fragment)
                     }
                 }}
                 parameters={{

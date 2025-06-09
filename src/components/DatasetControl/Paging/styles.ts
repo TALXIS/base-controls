@@ -2,7 +2,7 @@ import { mergeStyleSets, ITheme } from "@fluentui/react";
 
 export const getPagingStyles = (theme: ITheme) => {
     return mergeStyleSets({
-        root: {
+        datasetPagingRoot: {
             display: 'flex',
             flexWrap: 'wrap',
             justifyContent: 'center'

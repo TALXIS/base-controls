@@ -1,13 +1,13 @@
 import { useMemo, useRef } from "react";
 import { useControl } from "../../hooks";
-import { MessageBar, MessageBarButton, MessageBarType, ThemeProvider } from "@fluentui/react";
+import { ThemeProvider } from "@fluentui/react";
 import { datasetControlTranslations } from "./translations";
 import { getDatasetControlStyles } from "./styles";
 import { IDatasetControl } from "./interfaces";
 import { QuickFind } from "./QuickFind/QuickFind";
-import { ErrorBoundary } from "./ErrorBoundary";
 import { useRerender } from "@talxis/react-components";
 import { Client } from "@talxis/client-libraries";
+import { DatasetPaging } from "./Paging";
 
 const client = new Client();
 
@@ -43,19 +43,8 @@ export const DatasetControl = (props: IDatasetControl) => {
       onRender: (renderQuickFind) => renderQuickFind(),
       onGetQuickFindProps: (props) => props
     },
+    onRenderPagination: (props, renderPagination) => renderPagination(props)
   });
-
-  const renderErrorMessageBar = (onReset?: () => void) => {
-    <MessageBar
-      isMultiline={false}
-      actions={<MessageBarButton className={styles.messageBarBtn} text={labels.reload()} onClick={() => {
-        onReset?.();
-        dataset.refresh();
-      }} />}
-      messageBarType={MessageBarType.error}>
-      {dataset.errorMessage || labels.generalError()}
-    </MessageBar>
-  }
 
   useMemo(() => {
     //@ts-ignore - private property
@@ -92,6 +81,13 @@ export const DatasetControl = (props: IDatasetControl) => {
         </div>
       }
       {props.onGetControlComponent({ ...props, context: injectedContextRef.current })}
+      {componentProps.onRenderPagination({
+        context: injectedContextRef.current, parameters: {
+          Dataset: dataset,
+          EnablePagination: props.parameters.EnablePagination,
+          EnablePageSizeSwitcher: props.parameters.EnablePageSizeSwitcher
+        }
+      }, (paginationProps) => <DatasetPaging {...paginationProps} />)}
     </ThemeProvider>
   )
 }
