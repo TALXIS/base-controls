@@ -157,7 +157,7 @@ export class Condition extends GridDependency {
                     }
                 }
                 //@ts-ignore - going from between/not between to other operators
-                if((previousOperator === Data || previousOperator === 11) && (conditionOperator !== 10 && conditionOperator !== 11)) {
+                if((previousOperator === 10 || previousOperator === 11) && (conditionOperator !== 10 && conditionOperator !== 11)) {
                     this._conditionExpression.value = "";
                 }
                 //@ts-ignore - going from other operators to between/not between
