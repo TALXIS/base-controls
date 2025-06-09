@@ -1,19 +1,23 @@
-import { ComboBox, CommandBarButton, ContextualMenuItemType, IComboBoxOption, IContextualMenuItem, useTheme } from '@fluentui/react';
-import { CommandBar } from '@fluentui/react';
-import React from 'react';
-import { useGridInstance } from '../../../core/hooks/useGridInstance';
-import { usePagingController } from '../../controllers/usePagingController';
-import { getPagingStyles } from './styles';
+import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem, ThemeProvider } from "@fluentui/react";
+import { useControl } from "../../../hooks";
+import { IDatasetPaging } from "./interfaces";
+import { getPagingStyles } from "./styles";
+import { useMemo } from "react";
+import { Paging } from "./Paging";
+import { CommandBar } from "@talxis/react-components";
+import { datasetPagingTranslations } from "./translations";
 
-export const Paging = () => {
-    const grid = useGridInstance();
-    const labels = grid.labels;
-    const paging = usePagingController();
-    const styles = getPagingStyles(useTheme());
+const PAGE_SIZE_OPTIONS = ['25', '50', '75', '100', '250'];
+
+export const DatasetPaging = (props: IDatasetPaging) => {
+    const { labels, theme } = useControl('DatasetPaging', props, datasetPagingTranslations);
+    const styles = useMemo(() => getPagingStyles(theme), [theme]);
+    const paging = useMemo(() => new Paging(() => props.parameters, () => labels), []);
+    const parameters = props.parameters;
+    const dataset = parameters.Dataset;
 
     const getPageSizeOptions = (): IContextualMenuItem[] => {
-        const sizes = ['25', '50', '75', '100', '250'];
-        return sizes.map(size => {
+        return PAGE_SIZE_OPTIONS.map(size => {
             return {
                 key: size,
                 text: size,
@@ -23,19 +27,13 @@ export const Paging = () => {
             }
         })
     }
-    const getPagingLabel = () => {
-        if (paging.totalResultCount === undefined) {
-            return labels['paging-pages']({ start: paging.pageFirstRecordOrder, end: paging.pageLastRecordOrder })
-        }
-        return `${labels['paging-pages']({ start: paging.pageFirstRecordOrder, end: paging.pageLastRecordOrder })} ${labels['paging-pages-totalcount']({ recordcount: paging.formattedTotalResultCount })}`
-    }
     return (
-        <div className={styles.root}>
+        <ThemeProvider theme={theme} className={styles.datasetPagingRoot}>
             <div className={styles.pageSizeBtnWrapper}>
                 <CommandBarButton
-                    disabled={grid.dataset.loading || !grid.paging.isEnabled}
-                    text={getPagingLabel()}
-                    menuProps={grid.parameters.EnablePageSizeSwitcher?.raw !== false ? {
+                    disabled={dataset.loading || !paging.isEnabled}
+                    text={paging.toString()}
+                    menuProps={parameters.EnablePageSizeSwitcher?.raw !== false ? {
                         items: [
                             {
                                 key: 'header',
@@ -51,7 +49,7 @@ export const Paging = () => {
                     } : undefined}
                 />
             </div>
-            {grid.paging.isEnabled &&
+            {paging.isEnabled &&
                 <CommandBar
                     className={styles.pagination}
                     items={[]}
@@ -59,13 +57,13 @@ export const Paging = () => {
                         key: 'FirstPage',
                         iconOnly: true,
                         iconProps: { iconName: 'DoubleChevronLeft' },
-                        disabled: !paging.hasPreviousPage || grid.dataset.loading,
+                        disabled: !paging.hasPreviousPage || dataset.loading,
                         onClick: () => paging.reset()
                     }, {
                         key: 'PreviousPage',
                         iconOnly: true,
                         iconProps: { iconName: 'Back' },
-                        disabled: !paging.hasPreviousPage || grid.dataset.loading,
+                        disabled: !paging.hasPreviousPage || dataset.loading,
                         onClick: () => paging.loadPreviousPage()
                     }, {
                         key: 'CurrentPage',
@@ -76,11 +74,14 @@ export const Paging = () => {
                         key: 'NextPage',
                         iconOnly: true,
                         iconProps: { iconName: 'Forward' },
-                        disabled: !paging.hasNextPage || grid.dataset.loading,
+                        disabled: !paging.hasNextPage || dataset.loading,
                         onClick: () => paging.loadNextPage()
                     }]}
                 />
             }
-        </div>
+        </ThemeProvider>
     )
+
+
+
 }

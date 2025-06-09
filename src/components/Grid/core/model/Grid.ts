@@ -1,7 +1,6 @@
 import { Attribute, Client, Constants, DataType, DataTypes, IColumn, ICommand, ICustomColumnControl, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { Filtering } from "../../filtering/model/Filtering";
 import { IGrid } from "../../interfaces";
-import { Paging } from "../../paging/model/Paging";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
 import { KeyHoldListener } from "../services/KeyListener";
@@ -37,9 +36,7 @@ export class Grid {
         filtering: Filtering,
         sorting: Sorting,
         selection: Selection,
-        paging: Paging,
     };
-    private _initialPageSize: number;
     private _usesNestedPcfs: boolean = false;
     private _client = new Client();
     private _isUpdateScheduled: boolean = false;
@@ -57,9 +54,7 @@ export class Grid {
             filtering: new Filtering(this),
             selection: new Selection(this),
             sorting: new Sorting(this),
-            paging: new Paging(this),
         }
-        this._initialPageSize = this.paging.pageSize;
 
     };
     public get isNavigationEnabled() {
@@ -106,7 +101,7 @@ export class Grid {
         return this._dependencies.selection;
     }
     public get paging() {
-        return this._dependencies.paging;
+        return this._dataset.paging
     }
     public get shouldRerender() {
         return this._shouldRerender;
@@ -145,13 +140,13 @@ export class Grid {
     }
 
     public getHeightSettings(): IGridHeightSettings {
-        if(this.parameters.Height?.raw) {
+        if (this.parameters.Height?.raw) {
             return {
                 isAutoHeightEnabled: false,
                 height: this.parameters.Height?.raw
             }
         }
-        if(this._records.length <= 15) {
+        if (this._records.length <= 15) {
             return {
                 isAutoHeightEnabled: true
             }
@@ -362,7 +357,7 @@ export class Grid {
                 type: DataTypes.TwoOptions
             }
         }
-        if(recordCommands) {
+        if (recordCommands) {
             parameters.RecordCommands = {
                 raw: recordCommands,
                 type: DataTypes.Object
@@ -525,7 +520,7 @@ export class Grid {
             return false;
         }
         //by default, do not make virtual columns filterable unless explicitly set
-        if(column.name.endsWith('__virtual')) {
+        if (column.name.endsWith('__virtual')) {
             return column.metadata?.isFilterable ?? false;
         }
         return column.metadata?.isFilterable ?? true;
@@ -539,10 +534,10 @@ export class Grid {
     }
 
     private _getColumnType(column: IColumn) {
-        if(column.type) {
+        if (column.type) {
             return column.type;
         }
-        if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             return 'action';
         }
         return undefined;

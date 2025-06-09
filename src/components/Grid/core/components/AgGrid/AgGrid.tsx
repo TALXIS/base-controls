@@ -4,12 +4,11 @@ import { ColDef, ColumnResizedEvent, DomLayoutType, GridApi, GridState, ModuleRe
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
-import { Paging } from "../../../paging/components/Paging/Paging";
 import { EmptyRecords } from "./components/EmptyRecordsOverlay/EmptyRecords";
 import { Save } from "../Save/Save";
 import { LoadingOverlay } from "./components/LoadingOverlay/LoadingOverlay";
 import { IRecord } from '@talxis/client-libraries';
-import { useDebounce, useDebouncedCallback } from 'use-debounce';
+import { useDebouncedCallback } from 'use-debounce';
 import { useGridController } from '../../controllers/useGridController';
 import { useRerender, useStateValues } from '@talxis/react-components';
 import { AgGrid as AgGridModel } from './model/AgGrid';
@@ -226,7 +225,6 @@ export const AgGrid = (props: IGrid) => {
                 }
                 <AgGridReact {...componentProps.agGrid}>
                 </AgGridReact>
-                <Paging />
             </div>
         </AgGridContext.Provider>
     );
