@@ -2,10 +2,6 @@ import { Client, Dataset, FetchXmlBuilder, IColumn, IDataProvider, IDataset, Pow
 import { mergeStyles } from "@fluentui/react";
 
 interface IInputs {
-    Columns: ComponentFramework.PropertyTypes.StringProperty;
-    HomePageGridClientApiRibbonButtonId: ComponentFramework.PropertyTypes.StringProperty;
-    InlineRibbonButtonIds: ComponentFramework.PropertyTypes.StringProperty;
-    Height: ComponentFramework.PropertyTypes.StringProperty;
     [key: string]: any
 }
 
