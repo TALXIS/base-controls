@@ -303,6 +303,9 @@ export class AgGrid extends GridDependency {
         if (column.name === CHECKBOX_COLUMN_KEY) {
             return false;
         }
+        if(params?.data?.getDataProvider().isAggregationFooterProvider()) {
+            return false;
+        }
         const columnInfo = params.data?.getColumnInfo(column.name);
         if (!this._grid.parameters.EnableEditing?.raw || columnInfo?.ui.isLoading() === true) {
             return false;

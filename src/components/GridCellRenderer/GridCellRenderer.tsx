@@ -1,8 +1,8 @@
-import { Icon, IIconProps, ILinkProps, Image, Link, SpinnerSize, ThemeProvider } from "@fluentui/react";
+import { Icon, IIconProps, ILinkProps, Image, Label, Link, SpinnerSize, ThemeProvider } from "@fluentui/react";
 import { useControl } from "../../hooks";
 import { useMemo, useState } from "react";
 import { getDefaultContentRendererStyles, getGridCellLabelStyles } from "./styles";
-import { Attribute, Client, Constants, DataType, DataTypes, FetchXmlDataProvider, FileAttribute, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { AggregationFunction, Attribute, Client, Constants, DataType, DataTypes, FetchXmlDataProvider, FileAttribute, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { OptionSet } from './OptionSet';
 import { IGridCellRenderer } from "./interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
@@ -10,6 +10,7 @@ import { ComponentPropsContext } from "./useComponentProps";
 import { DefaultContentRenderer } from "./DefaultContentRenderer";
 import { getClassNames, Spinner } from "@talxis/react-components";
 import { RecordCommands } from "./RecordCommands/RecordCommands";
+import { Text } from '@fluentui/react'
 
 const client = new Client();
 
@@ -20,7 +21,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const column = props.parameters.Column.raw;
     const columnAlignment = props.parameters.ColumnAlignment.raw;
     const dataType: DataType = props.parameters.value.type as DataType;
-    const { theme, sizing } = useControl('GridCellLabel', props, getDefaultGridRendererTranslations());
+    const { theme, sizing, labels } = useControl('GridCellLabel', props, getDefaultGridRendererTranslations());
     const styles = useMemo(() => getGridCellLabelStyles(columnAlignment ?? 'left', dataType, sizing.height!, theme), [columnAlignment, dataType, sizing.height, theme]);
     const defaultContentRendererStyles = useMemo(() => getDefaultContentRendererStyles(theme, dataType, sizing.height!), [theme, dataType, sizing.height]);
     const value = props.parameters.value.raw;
@@ -28,6 +29,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const isNavigationEnabled = props.parameters.EnableNavigation.raw;
     const prefixIcon = props.parameters.PrefixIcon?.raw
     const suffixIcon = props.parameters.SuffixIcon?.raw;
+    const aggregationFunction = props.parameters.AggregationFunction.raw;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const [downloadInProgress, setIsDownloadInProgress] = useState(false);
 
@@ -139,7 +141,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             case DataTypes.LookupOwner:
             case DataTypes.LookupSimple:
             case DataTypes.LookupRegarding: {
-                if(isNavigationEnabled) {
+                if (isNavigationEnabled) {
                     const linkProps = componentProps.onGetLinkProps(getLinkProps());
                     return <Link {...linkProps}>{linkProps.children}</Link>
                 }
@@ -161,7 +163,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const shouldUsePortalDownload = () => {
         const isFetchXmlDataProvider = dataset.getDataProvider() instanceof FetchXmlDataProvider;
         //only use portal download if within portal, uses fetch xml provider and is not virtual column
-        if(client.isTalxisPortal() && isFetchXmlDataProvider && !column.name.endsWith('__virtual')) {
+        if (client.isTalxisPortal() && isFetchXmlDataProvider && !column.name.endsWith('__virtual')) {
             return true;
         }
         return false;
@@ -177,7 +179,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
                     }
                     {isImage &&
                         <Image {...componentProps.fileProps.imageProps} src={getThumbnailUrl()} />
-                     }
+                    }
                 </>
             }
             {downloadInProgress &&
@@ -227,11 +229,29 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
         setIsDownloadInProgress(false);
     }
 
+    const getAggregationLabel = (aggregationFunction: AggregationFunction) => {
+        switch (aggregationFunction) {
+            case 'avg': {
+                return labels.avg();
+            }
+            case 'max': {
+                return labels.max();
+            }
+            case 'min': {
+                return labels.min();
+            }
+            case 'sum': {
+                return labels.sum();
+            }
+        }
+    }
+
     const componentProps = onOverrideComponentProps({
         onGetLinkProps: (props) => props,
         onGetOptionSetProps: (props) => props,
         onGetRecordCommandsProps: (props) => props,
         onRenderContent: (defaultRenderer) => defaultRenderer(),
+        onRenderAggregationLabel: (props, defaultRenderer) => defaultRenderer(props),
         rootContainerProps: {
             theme: theme,
             className: styles.root
@@ -239,10 +259,21 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
         contentWrapperProps: {
             className: styles.contentWrapper,
         },
+        prefixSuffixWrapperProps: {
+            className: styles.prefixSuffixContentWrapper
+        },
         textProps: {
             className: getClassNames([defaultContentRendererStyles.content, !formattedValue ? defaultContentRendererStyles.placeholder : undefined]),
             title: formattedValue,
-            children: column.type === 'action' ? '' : (formattedValue || '---')
+            children: (() => {
+                if(column.type === 'action') {
+                    return '';
+                }
+                if(record.getDataProvider().isAggregationFooterProvider() && !formattedValue) {
+                    return '';
+                }
+                return formattedValue || '---';
+            })()
         },
         fileProps: {
             containerProps: {
@@ -280,20 +311,29 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const suffixIconProps = getIconProps(suffixIcon)
 
     return <ComponentPropsContext.Provider value={componentPropsProviderValue}>
-        {column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME ? 
-        <RecordCommands
-            applicationTheme={context.fluentDesignLanguage?.applicationTheme ?? theme}
-            theme={theme}
-            themeOverride={context.fluentDesignLanguage?.v8FluentOverrides}
-            commands={props.parameters.RecordCommands?.raw ?? []}
-            alignment={columnAlignment} /> : 
-        <ThemeProvider {...componentProps.rootContainerProps}>
-            {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
-            <div {...componentProps.contentWrapperProps}>
-                {componentProps.contentWrapperProps.children ?? renderContent()}
-            </div>
-            {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
-        </ThemeProvider>}
+        {column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME ?
+            <RecordCommands
+                applicationTheme={context.fluentDesignLanguage?.applicationTheme ?? theme}
+                theme={theme}
+                themeOverride={context.fluentDesignLanguage?.v8FluentOverrides}
+                commands={props.parameters.RecordCommands?.raw ?? []}
+                alignment={columnAlignment} /> :
+            <ThemeProvider {...componentProps.rootContainerProps}>
+                {aggregationFunction &&
+                    componentProps.onRenderAggregationLabel({
+                        className: styles.aggregationLabel
+                    }, (props) => {
+                        return <Label {...props}>{getAggregationLabel(aggregationFunction)}</Label>
+                    })
+                }
+                <div {...componentProps.prefixSuffixWrapperProps}>
+                    {prefixIconProps && <Icon {...prefixIconProps} className={getClassNames([prefixIconProps.className, styles.icon])} />}
+                    <div {...componentProps.contentWrapperProps}>
+                        {componentProps.contentWrapperProps.children ?? renderContent()}
+                    </div>
+                    {suffixIconProps && <Icon {...suffixIconProps} className={getClassNames([suffixIconProps.className, styles.icon])} />}
+                </div>
+            </ThemeProvider>}
     </ComponentPropsContext.Provider>
 }
 

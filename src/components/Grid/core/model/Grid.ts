@@ -9,6 +9,7 @@ import { IGridColumn } from "../interfaces/IGridColumn";
 import { BaseControls } from "../../../../utils";
 import { IBinding } from "../../../NestedControlRenderer/interfaces";
 import { merge } from "merge-anything";
+import { Aggregation } from "../../aggregation/Aggregation";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
@@ -36,6 +37,7 @@ export class Grid {
         filtering: Filtering,
         sorting: Sorting,
         selection: Selection,
+        aggregation: Aggregation
     };
     private _usesNestedPcfs: boolean = false;
     private _client = new Client();
@@ -54,6 +56,7 @@ export class Grid {
             filtering: new Filtering(this),
             selection: new Selection(this),
             sorting: new Sorting(this),
+            aggregation: new Aggregation(this)
         }
 
     };
@@ -96,6 +99,9 @@ export class Grid {
     }
     public get filtering() {
         return this._dependencies.filtering;
+    }
+    public get aggregation() {
+        return this._dependencies.aggregation;
     }
     public get selection() {
         return this._dependencies.selection;
@@ -317,6 +323,7 @@ export class Grid {
     }
 
     public getParameters(record: IRecord, column: IGridColumn, editing: boolean, recordCommands?: ICommand[]) {
+        const aggregation = this.aggregation.getAggregationForColumn(column.name);
         const parameters: any = {
             Dataset: {
                 raw: this.dataset,
@@ -351,17 +358,17 @@ export class Grid {
             raw: editing ? 'editor' : 'renderer',
             type: DataTypes.SingleLineText
         }
-        if (editing) {
-            parameters.AutoFocus = {
-                raw: true,
-                type: DataTypes.TwoOptions
-            }
+        parameters.AutoFocus = {
+            raw: editing,
+            type: DataTypes.TwoOptions
         }
-        if (recordCommands) {
-            parameters.RecordCommands = {
-                raw: recordCommands,
-                type: DataTypes.Object
-            }
+        parameters.AggregationFunction = {
+            raw: record.getDataProvider().isAggregationFooterProvider() ? aggregation?.aggregationFunction ?? null : null,
+            type: DataTypes.SingleLineText
+        }
+        parameters.RecordCommands = {
+            raw: recordCommands ?? [],
+            type: DataTypes.Object
         }
         switch (column.dataType) {
             case 'Lookup.Customer':

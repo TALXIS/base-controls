@@ -23,8 +23,20 @@ export const Cell = (props: ICellProps) => {
     const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
     const grid = useGridInstance();
+    const record = props.data;
+    const column = props.baseColumn;
+
+    const shouldRenderEmptyCell = () => {
+        if (record.getDataProvider().isAggregationFooterProvider() && column.name === CHECKBOX_COLUMN_KEY) {
+            return true;
+        }
+        return false;
+    }
 
     const renderContent = () => {
+        if (shouldRenderEmptyCell()) {
+            return <></>
+        }
         switch (props.baseColumn.name) {
             case CHECKBOX_COLUMN_KEY: {
                 return (
@@ -159,10 +171,10 @@ export const InternalCell = (props: ICellProps) => {
     }
 
     const isLoading = () => {
-        if(props.value.loading) {
+        if (props.value.loading) {
             return true;
         }
-        if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME && !recordCommands) {
+        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME && !recordCommands) {
             return true;
 
         }
@@ -173,7 +185,7 @@ export const InternalCell = (props: ICellProps) => {
     const styles = useMemo(() => getInnerCellStyles(props.isCellEditor, theme, props.value.columnAlignment), [props.isCellEditor, theme, props.value.columnAlignment]);
 
     useEffect(() => {
-        if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
             (async () => {
                 //@ts-ignore - typings
                 setRecordCommands(await grid.dataset.retrieveRecordCommand([record.getRecordId()], grid.inlineRibbonButtonIds));

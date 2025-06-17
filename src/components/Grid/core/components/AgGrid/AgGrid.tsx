@@ -197,7 +197,8 @@ export const AgGrid = (props: IGrid) => {
             },
             columnDefs: agColumns as any,
             rowData: records,
-            getRowHeight: (params) => agGrid.getRowHeight(params.data!)
+            getRowHeight: (params) => agGrid.getRowHeight(params.data!),
+            pinnedBottomRowData: grid.aggregation.getAggregationRecord()
         }
     });
 

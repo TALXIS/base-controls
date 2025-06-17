@@ -1,7 +1,7 @@
-import { IColumn, ICommand, IDataset, IRecord } from "@talxis/client-libraries";
+import { AggregationFunction, IColumn, ICommand, IDataset, IRecord } from "@talxis/client-libraries";
 import { IControl, IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { getDefaultGridRendererTranslations } from "./translations";
-import { IIconProps, IImageProps, ILinkProps, ISpinnerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
+import { IIconProps, IImageProps, ILabelProps, ILinkProps, ISpinnerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 import { ICommandBarProps } from "@talxis/react-components";
 
 export interface IGridCellRenderer extends IControl<IGridCellRendererParameters, {}, ReturnType<typeof getDefaultGridRendererTranslations>, IGridCellRendererComponentProps> {
@@ -13,7 +13,8 @@ export interface IGridCellRendererParameters extends IParameters {
     CellType: Omit<ComponentFramework.PropertyTypes.EnumProperty<"renderer" | "editor">, 'type'>;
     EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
     PrefixIcon?: IStringProperty;
-    SuffixIcon?: IStringProperty
+    SuffixIcon?: IStringProperty;
+    AggregationFunction: Omit<ComponentFramework.PropertyTypes.EnumProperty<AggregationFunction | null>, 'type'>;
     Column: {
         raw: IColumn;
     }
@@ -49,7 +50,9 @@ export interface IGridCellRendererComponentProps {
     onGetLinkProps: (props: ILinkProps) => ILinkProps;
     onGetRecordCommandsProps: (props: IRecordCommandsProps) => IRecordCommandsProps;
     onRenderContent: (defaultRenderer: () => JSX.Element) => JSX.Element, 
+    onRenderAggregationLabel: (props: ILabelProps, defaultRenderer: (props: ILabelProps) => React.ReactElement) => React.ReactElement;
     rootContainerProps: ThemeProviderProps;
+    prefixSuffixWrapperProps: React.HTMLAttributes<HTMLDivElement>;
     contentWrapperProps: React.HTMLAttributes<HTMLDivElement>;
     textProps: ITextProps;
     fileProps: {
