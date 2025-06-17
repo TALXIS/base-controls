@@ -156,12 +156,12 @@ export class AgGrid extends GridDependency {
     }
 
     public toggleOverlay() {
-        if(this._grid.loading) {
+        if (this._grid.loading) {
             this._gridApi?.showLoadingOverlay();
         }
         else {
             setTimeout(() => {
-                if(this._grid.dataset.sortedRecordIds.length === 0) {
+                if (this._grid.dataset.sortedRecordIds.length === 0) {
                     this._gridApi?.showNoRowsOverlay();
                 }
             }, 0);
@@ -174,13 +174,18 @@ export class AgGrid extends GridDependency {
             if (!cell) {
                 return;
             }
-            const row = this._gridApi?.getDisplayedRowAtIndex(cell.rowIndex);
-            const formattedValue = this._gridApi?.getCellValue({
-                rowNode: row!,
-                colKey: cell.column.getColId(),
-                useFormatter: true
-            })
-            navigator.clipboard.writeText(formattedValue ?? "");
+            let record: IRecord | undefined;
+            //aggregated record
+            if(cell.rowPinned) {
+                record = this._gridApi?.getPinnedBottomRow(cell.rowIndex)?.data;
+            }
+            else {
+                record = this._gridApi?.getDisplayedRowAtIndex(cell.rowIndex)?.data as IRecord;
+            }
+            if (record) {
+                //@ts-ignore - a
+                navigator.clipboard.writeText(record.getFormattedValue(cell.column.getColId()));
+            }
         }
     }
 
@@ -212,7 +217,7 @@ export class AgGrid extends GridDependency {
         }
         const selectedIdsSet = new Set(this._grid.dataset.getSelectedRecordIds().map(id => id));
         this._gridApi.forEachNode(node => {
-            if(selectedIdsSet.has(node.id!)) {
+            if (selectedIdsSet.has(node.id!)) {
                 node.setSelected(true);
             }
             else {
@@ -233,7 +238,7 @@ export class AgGrid extends GridDependency {
         const defaultTheme = this.getDefaultCellTheme(isEven);
         const defaultBackgroundColor = defaultTheme.semanticColors.bodyBackground;
         const colId = params.colDef.colId!;
-    
+
         // Handle checkbox column specifically
         if (colId === CHECKBOX_COLUMN_KEY || !params.data) {
             return {
@@ -244,9 +249,9 @@ export class AgGrid extends GridDependency {
                 themeOverride: {}
             };
         }
-    
+
         const customFormatting = params.data!.getColumnInfo(colId).ui.getCustomFormatting(defaultTheme) ?? {};
-        
+
         // Prepare the result with defaults
         const result: Required<ICustomColumnFormatting> = {
             backgroundColor: customFormatting.backgroundColor ?? defaultBackgroundColor,
@@ -255,7 +260,7 @@ export class AgGrid extends GridDependency {
             className: customFormatting.className ?? '',
             themeOverride: customFormatting.themeOverride ?? {}
         };
-    
+
         // Apply background-specific adjustments
         if (result.backgroundColor !== defaultBackgroundColor) {
             result.themeOverride = merge({}, {
@@ -265,22 +270,22 @@ export class AgGrid extends GridDependency {
                     }
                 }
             }, result.themeOverride);
-    
+
             if (!customFormatting.primaryColor) {
                 result.primaryColor = Theming.GetTextColorForBackground(result.backgroundColor);
             }
         }
-    
+
         // Ensure text color is set
         if (!result.textColor) {
             result.textColor = Theming.GetTextColorForBackground(result.backgroundColor);
         }
-    
+
         return result;
     }
 
     public getDefaultCellTheme(isEven: boolean): ITheme {
-        if(isEven || !this._grid.isZebraEnabled) {
+        if (isEven || !this._grid.isZebraEnabled) {
             return this.evenRowCellTheme;
         }
         return this.oddRowCellTheme;
@@ -303,7 +308,7 @@ export class AgGrid extends GridDependency {
         if (column.name === CHECKBOX_COLUMN_KEY) {
             return false;
         }
-        if(params?.data?.getDataProvider().isAggregationFooterProvider()) {
+        if (params?.data?.getDataProvider().isAggregationFooterProvider()) {
             return false;
         }
         const columnInfo = params.data?.getColumnInfo(column.name);

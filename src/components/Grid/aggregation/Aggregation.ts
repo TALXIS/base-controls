@@ -1,14 +1,20 @@
-import { AggregationFunction, Dataset, IAggregationMetadata, IDataProvider, IDataset, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { AggregationFunction, IAggregationMetadata, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { GridDependency } from "../core/model/GridDependency";
 import { Grid } from "../core/model/Grid";
 
 export class Aggregation extends GridDependency {
     private _hasUserChangedAggregations: boolean = false;
-    private _eventsRegistered: boolean = false;
 
     constructor(grid: Grid) {
         super(grid);
-        this._dataset.addEventListener('onNewDataLoaded', () => this._updateAggregations())
+        this._dataset.addEventListener('onNewDataLoaded', () => this._updateAggregations());
+        this._getAggregationDataProvider().addEventListener('onError', (errorMessage, details) => this._onError(errorMessage, details));
+        this._getAggregationDataProvider().addEventListener('onNewDataLoaded', () => {
+            this._dataset.getDataProvider().setError(false)
+        })
+        this._getAggregationDataProvider().addEventListener('onLoading', () => {
+            this._pcfContext.factory.requestRender();
+        })
     }
     public getAggregationRecord(): IRecord[] {
         if (this._getAggregationDataProvider().aggregation.getAggregations().length === 0) {
@@ -28,7 +34,6 @@ export class Aggregation extends GridDependency {
         })
         this._hasUserChangedAggregations = true;
         this._getAggregationDataProvider().refresh();
-        this._pcfContext.factory.requestRender();
     }
 
     public removeAggregation(columnName: string) {
@@ -38,7 +43,6 @@ export class Aggregation extends GridDependency {
         }
         this._hasUserChangedAggregations = true;
         this._getAggregationDataProvider().refresh();
-        this._pcfContext.factory.requestRender();
     }
 
     public isAggregationAppliedToColumn(columnName: string, aggregationFunction?: string): boolean {
@@ -84,14 +88,7 @@ export class Aggregation extends GridDependency {
     }
 
     private _getAggregationDataProvider() {
-        const dataset = this._dataset.getDataProvider().getFooterAggregationDataProvider();
-        if (!this._eventsRegistered) {
-            dataset.addEventListener('onNewDataLoaded', () => {
-                this._pcfContext.factory.requestRender();
-            });
-            this._eventsRegistered = true;
-        }
-        return dataset;
+        return this._dataset.getDataProvider().getFooterAggregationDataProvider();
     }
 
     private _getDummyLoadingRecord(): IRecord {
@@ -108,5 +105,15 @@ export class Aggregation extends GridDependency {
             dummyRecord.expressions.ui.setLoadingExpression(col.name, () => true);
         });
         return dummyRecord;
+    }
+
+    private _onError(errorMessage: string, details?: any) {
+        let errorText = errorMessage;
+        const errorCode = details?.errorCode;
+        if (errorCode === 2147750198) {
+            errorText = this._grid.labels['error-2147750198']();
+        }
+        this._dataset.getDataProvider().setError(true, errorText);
+        this._pcfContext.factory.requestRender();
     }
 }

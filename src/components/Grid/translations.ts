@@ -86,6 +86,10 @@ export const gridTranslations = {
     "download": { 1029: 'Stáhnout', 1033: 'Download' },
     "value-not-editable": { 1029: 'Tuto hodnotu nelze upravit.', 1033: 'This value cannot be edited.' },
     "original-value": { 1029: 'Původní hodnota', 1033: 'Previous value' },
-    "new-value": { 1029: 'Nová hodnota', 1033: 'New value' }
+    "new-value": { 1029: 'Nová hodnota', 1033: 'New value' },
+    "error-2147750198": {
+        1029: 'Výpočet překročil maximální limit kvůli velkému počtu řádků. Zmenšete rozsah dat nebo kontaktujte podporu.',
+        1033: 'The calculation exceeded the maximum limit due to a large number of rows. Please reduce the data range or contact support for assistance.'
+    }
 };
 

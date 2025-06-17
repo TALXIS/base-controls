@@ -441,7 +441,9 @@ export class Grid {
         switch (column.dataType) {
             //getValue always returns string for TwoOptions
             case 'TwoOptions': {
-                value = value == '1' ? true : false
+                if (typeof value === 'string') {
+                    value = value == '1' ? true : false
+                }
                 break;
             }
             //getValue always returns string for OptionSet

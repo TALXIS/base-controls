@@ -10,7 +10,6 @@ import { ComponentPropsContext } from "./useComponentProps";
 import { DefaultContentRenderer } from "./DefaultContentRenderer";
 import { getClassNames, Spinner } from "@talxis/react-components";
 import { RecordCommands } from "./RecordCommands/RecordCommands";
-import { Text } from '@fluentui/react'
 
 const client = new Client();
 
