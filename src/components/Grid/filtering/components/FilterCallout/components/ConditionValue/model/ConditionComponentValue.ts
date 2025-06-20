@@ -52,7 +52,7 @@ export class ConditionComponentValue {
     }
     public get() {
         let value = this._value.get();
-        if (!value) {
+        if (value == null) {
             return null;
         }
         switch (this.column.dataType) {
