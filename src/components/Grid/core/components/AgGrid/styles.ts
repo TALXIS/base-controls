@@ -1,5 +1,4 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { IGridHeightSettings } from "../../model/Grid";
 
 export const getGridStyles = (theme: ITheme) => {
     return mergeStyleSets({

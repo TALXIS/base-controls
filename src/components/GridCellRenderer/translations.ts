@@ -20,5 +20,13 @@ export const getDefaultGridRendererTranslations = () => {
             1029: 'Součet',
             1033: 'Sum'
         },
+        count: {
+            1029: 'Počet (včetně prázdných hodnot)',
+            1033: 'Count (including empty values)'
+        },
+        countcolumn: {
+            1029: 'Počet',
+            1033: 'Count'
+        }
     }
 };

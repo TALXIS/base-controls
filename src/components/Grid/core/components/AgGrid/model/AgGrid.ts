@@ -308,7 +308,8 @@ export class AgGrid extends GridDependency {
         if (column.name === CHECKBOX_COLUMN_KEY) {
             return false;
         }
-        if (params?.data?.getDataProvider().isAggregationFooterProvider()) {
+        //we cannot edit aggregated or grouped columns
+        if (params?.data?.getDataProvider().getSummarizationType() !== 'none') {
             return false;
         }
         const columnInfo = params.data?.getColumnInfo(column.name);
@@ -368,13 +369,15 @@ export class AgGrid extends GridDependency {
         if (column.oneClickEdit) {
             editing = true;
         }
+        const isAggregatedRecord = record.getDataProvider().getSummarizationType() === 'aggregation';
         const values = {
             notifications: columnInfo.ui.getNotifications(),
             value: p.data!.getValue(column.name),
             customFormatting: this.getCellFormatting(p),
             customControl: customControl,
             height: p.node.rowHeight,
-            error: columnInfo.error,
+            //validations need to be disabled for aggregated records
+            error: isAggregatedRecord ? false : columnInfo.error,
             loading: columnInfo.ui.isLoading(),
             errorMessage: columnInfo.errorMessage,
             editable: columnInfo.security.editable,

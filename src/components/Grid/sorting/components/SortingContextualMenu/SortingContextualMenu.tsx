@@ -6,8 +6,7 @@ import { getColumnHeaderContextualMenuStyles } from './styles';
 import { useGridInstance } from '../../../core/hooks/useGridInstance';
 import { useColumnSortingController } from '../../controllers/useColumnSortingController';
 import { useColumnFilterConditionController } from '../../../filtering/controller/useColumnFilterConditionController';
-import { AggregationFunction } from '@talxis/client-libraries';
-import { TableBottomRow24Filled, Filter24Regular, ArrowSortUp24Regular, ArrowSortDown24Regular, FilterDismiss24Regular, Dismiss24Filled } from '@fluentui/react-icons';
+import { Filter24Regular, ArrowSortUp24Regular, ArrowSortDown24Regular, FilterDismiss24Regular, Dismiss24Regular, Autosum24Regular } from '@fluentui/react-icons';
 
 export interface ISortingContextualMenu extends Omit<IContextualMenuProps, 'items'> {
     column: IGridColumn;
@@ -36,13 +35,6 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
             return `${options[0].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[1].Label}`
         }
         return `${options[1].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[0].Label}`
-    }
-
-    const onSetAggregation = (aggregationFunction: AggregationFunction) => {
-        aggregation.addAggregation(column.name, aggregationFunction);
-    }
-    const onRemoveAggregation = () => {
-        aggregation.removeAggregation(column.name);
     }
 
     const getLabel = async (isDesc?: boolean) => {
@@ -120,43 +112,26 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 {
                     key: 'total',
                     text: labels['filtersortmenu-total'](),
-                    onRenderIcon: () => <TableBottomRow24Filled />,
+                    onRenderIcon: () => <Autosum24Regular />,
                     subMenuProps: {
                         items: [
                             {
                                 key: 'none',
                                 className: styles.item,
-                                //@ts-ignore
                                 checked: aggregation.isAggregationAppliedToColumn(column.name, 'none'),
                                 text: labels['filtersortmenu-total-none'](),
-                                onClick: () => onRemoveAggregation()
+                                onClick: () => aggregation.removeAggregation(column.name)
+
                             },
-                            {
-                                key: 'avg',
-                                checked: aggregation.isAggregationAppliedToColumn(column.name, 'avg'),
-                                className: styles.item,
-                                text: labels['filtersortmenu-total-avg'](),
-                                onClick: () => onSetAggregation('avg')
-                            }, {
-                                key: 'max',
-                                checked: aggregation.isAggregationAppliedToColumn(column.name, 'max'),
-                                className: styles.item,
-                                text: labels['filtersortmenu-total-max'](),
-                                onClick: () => onSetAggregation('max')
-                            }, {
-                                key: 'min',
-                                checked: aggregation.isAggregationAppliedToColumn(column.name, 'min'),
-                                className: styles.item,
-                                text: labels['filtersortmenu-total-min'](),
-                                onClick: () => onSetAggregation('min')
-                            }, {
-                                key: 'sum',
-                                checked: aggregation.isAggregationAppliedToColumn(column.name, 'sum'),
-                                className: styles.item,
-                                text: labels['filtersortmenu-total-sum'](),
-                                onClick: () => onSetAggregation('sum')
-                            }
-                        ]
+                            ...column.metadata!.SupportedAggregations!.map(aggregationFunction => {
+                                return {
+                                    key: aggregationFunction,
+                                    className: styles.item,
+                                    checked: aggregation.isAggregationAppliedToColumn(column.name, aggregationFunction),
+                                    text: labels[`filtersortmenu-total-${aggregationFunction}`](),
+                                    onClick: () => aggregation.addAggregation(column.name, aggregationFunction)
+                                }
+                            })]
                     }
                 }
             ] : []),
@@ -167,7 +142,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
             ...(grid.dataset.sorting.find(x => x.name === column.name) ? [{
                 key: 'clear',
                 text: labels['filtersortmenu-clearsorting'](),
-                onRenderIcon: () => <Dismiss24Filled />,
+                onRenderIcon: () => <Dismiss24Regular />,
                 onClick: () => {
                     sorting.clear();
                 }

@@ -1,6 +1,6 @@
 import { AgGridReact } from '@ag-grid-community/react';
 import { mergeStyles, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
-import { ColDef, ColumnResizedEvent, DomLayoutType, GridApi, GridState, ModuleRegistry, SelectionChangedEvent } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, ColDef, ColumnResizedEvent, DomLayoutType, GridApi, GridState, ModuleRegistry, SelectionChangedEvent } from "@ag-grid-community/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
@@ -38,6 +38,7 @@ export const AgGrid = (props: IGrid) => {
     const records = grid.records;
     const [gridHeight, setGridHeight] = useState<string | undefined>(grid.getHeightSettings().height);
     const userChangedColumnSizeRef = useRef(false);
+    const [shouldUsePinnedBottomRowData, setShouldUsePinnedBottomRowData] = useState<boolean>(false);
     const rerender = useRerender();
     const innerRerenderRef = useRef(true);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
@@ -122,13 +123,14 @@ export const AgGrid = (props: IGrid) => {
     }, [columns]);
 
     useEffect(() => {
-        sizeColumnsIfSpaceAvailable()
+        sizeColumnsIfSpaceAvailable();
     }, [agColumns]);
 
     useEffect(() => {
         setTimeout(() => {
-            //we need to set the height of the grid after everything else is rendered to avoid the redraw rows error
+            //we need to set the height of the grid and pinned rows after everything else is rendered to avoid the redraw rows error
             setGridHeight(grid.getHeightSettings().height);
+            setShouldUsePinnedBottomRowData(true);
         }, 0);
     }, [records, agColumns])
 
@@ -163,8 +165,8 @@ export const AgGrid = (props: IGrid) => {
                     }
                 },
             },
-            onCellDoubleClicked: (e) => {
-                if (grid.isNavigationEnabled && !grid.isEditable) {
+            onCellDoubleClicked: (e: CellDoubleClickedEvent<IRecord>) => {
+                if (grid.isNavigationEnabled && !grid.isEditable && e.data?.getDataProvider().getSummarizationType() === 'none') {
                     grid.dataset.openDatasetItem(e.data!.getNamedReference())
                 }
             },
@@ -198,7 +200,7 @@ export const AgGrid = (props: IGrid) => {
             columnDefs: agColumns as any,
             rowData: records,
             getRowHeight: (params) => agGrid.getRowHeight(params.data!),
-            pinnedBottomRowData: grid.aggregation.getAggregationRecord()
+            pinnedBottomRowData: shouldUsePinnedBottomRowData ? grid.aggregation.getAggregationRecord() : undefined,
         }
     });
 

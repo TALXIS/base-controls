@@ -6,6 +6,7 @@ export interface IGridColumn extends IColumn {
     isFilterable: boolean;
     isSorted: boolean;
     isFiltered: boolean;
+    canBeAggregated: boolean;
     isSortedDescending: boolean;
     isResizable: boolean;
     alignment: IColumn['alignment'],

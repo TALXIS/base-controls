@@ -15,7 +15,9 @@ export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment'], da
             lineHeight: 6,
             textAlign: columnAlignment,
             color: theme.semanticColors.infoIcon,
-            fontSize: 12
+            fontSize: 12,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
         },
         prefixSuffixContentWrapper: {
             display: 'flex',

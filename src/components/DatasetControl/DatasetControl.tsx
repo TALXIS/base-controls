@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useControl } from "../../hooks";
 import { ThemeProvider } from "@fluentui/react";
 import { datasetControlTranslations } from "./translations";

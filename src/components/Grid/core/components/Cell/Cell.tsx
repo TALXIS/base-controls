@@ -25,10 +25,12 @@ export const Cell = (props: ICellProps) => {
     const grid = useGridInstance();
     const record = props.data;
     const column = props.baseColumn;
-
+    
     const shouldRenderEmptyCell = () => {
-        if (record.getDataProvider().isAggregationFooterProvider() && column.name === CHECKBOX_COLUMN_KEY) {
-            return true;
+        if(record.getDataProvider().getSummarizationType() === 'aggregation') {
+            if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME || column.name === CHECKBOX_COLUMN_KEY) {
+                return true;
+            }
         }
         return false;
     }

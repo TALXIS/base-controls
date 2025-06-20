@@ -98,7 +98,12 @@ export const ChangeGrid = (props: IChangeGrid) => {
                 PrimaryIdAttribute: "id__virtual"
             }
         );
-        memoryProvider.setColumns(getColumns());
+        memoryProvider.setColumns(getColumns().map(col => {
+            return {
+                ...col,
+                aggregationFunction: undefined
+            }
+        }));
         const dataset = new Dataset(memoryProvider);
         dataset.isValid = () => {
             return baseRecord.isValid()

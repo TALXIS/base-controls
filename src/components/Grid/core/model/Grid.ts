@@ -202,6 +202,7 @@ export class Grid {
                 isRequired: this._isColumnRequired(column),
                 isFilterable: this._isColumnFilterable(column),
                 disableSorting: !this._isColumnSortable(column),
+                canBeAggregated: this._canColumnBeAggregated(column),
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
                 type: this._getColumnType(column),
                 isResizable: true,
@@ -225,6 +226,7 @@ export class Grid {
                 isFiltered: false,
                 isRequired: false,
                 isResizable: false,
+                canBeAggregated: false,
                 disableSorting: true,
                 isSorted: false,
                 isSortedDescending: false,
@@ -363,7 +365,7 @@ export class Grid {
             type: DataTypes.TwoOptions
         }
         parameters.AggregationFunction = {
-            raw: record.getDataProvider().isAggregationFooterProvider() ? aggregation?.aggregationFunction ?? null : null,
+            raw: record.getDataProvider().getSummarizationType() !== 'none' ? aggregation?.aggregationFunction ?? null : null,
             type: DataTypes.SingleLineText
         }
         parameters.RecordCommands = {
@@ -540,6 +542,21 @@ export class Grid {
             return this.dataset.getTargetEntityType();
         }
         return this.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
+    }
+
+    private _canColumnBeAggregated(column: IColumn): boolean {
+        //aggregations disabled by default
+        if (this.parameters.EnableAggregation?.raw !== true) {
+            return false;
+        }
+        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+            return false;
+        }
+        if(!column.metadata?.SupportedAggregations || column.metadata.SupportedAggregations.length === 0) {
+            return false;
+
+        }
+        return true;
     }
 
     private _getColumnType(column: IColumn) {

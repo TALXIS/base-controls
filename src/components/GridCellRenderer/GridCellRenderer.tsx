@@ -125,7 +125,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     }
 
     const renderContent = () => {
-        if (!formattedValue) {
+        if (!formattedValue || aggregationFunction) {
             return <DefaultContentRenderer />
         }
         if (column.isPrimary && isNavigationEnabled) {
@@ -242,6 +242,12 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             case 'sum': {
                 return labels.sum();
             }
+            case 'count': {
+                return labels.count()
+            }
+            case 'countcolumn': {
+                return labels.countcolumn()
+            }
         }
     }
 
@@ -264,15 +270,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
         textProps: {
             className: getClassNames([defaultContentRendererStyles.content, !formattedValue ? defaultContentRendererStyles.placeholder : undefined]),
             title: formattedValue,
-            children: (() => {
-                if(column.type === 'action') {
-                    return '';
-                }
-                if(record.getDataProvider().isAggregationFooterProvider() && !formattedValue) {
-                    return '';
-                }
-                return formattedValue || '---';
-            })()
+            children: formattedValue ?? '---'
         },
         fileProps: {
             containerProps: {
