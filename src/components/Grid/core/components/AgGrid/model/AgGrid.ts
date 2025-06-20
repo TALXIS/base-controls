@@ -183,8 +183,7 @@ export class AgGrid extends GridDependency {
                 record = this._gridApi?.getDisplayedRowAtIndex(cell.rowIndex)?.data as IRecord;
             }
             if (record) {
-                //@ts-ignore - a
-                navigator.clipboard.writeText(record.getFormattedValue(cell.column.getColId()));
+                navigator.clipboard.writeText(record.getFormattedValue(cell.column.getColId()) ?? '');
             }
         }
     }
