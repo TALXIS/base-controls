@@ -57,6 +57,9 @@ export class ConditionComponentValue {
         }
         switch (this.column.dataType) {
             case DataType.MULTI_SELECT_OPTIONSET: {
+                if(!value) {
+                    return [];
+                }
                 if (typeof value === 'string') {
                     value = [value];
                 }
@@ -65,6 +68,9 @@ export class ConditionComponentValue {
             case DataType.LOOKUP_OWNER:
             case DataType.LOOKUP_SIMPLE:
             case DataType.LOOKUP_CUSTOMER: {
+                if(!value) {
+                    return [];
+                }
                 if (typeof value === 'string') {
                     value = [value];
                 }
