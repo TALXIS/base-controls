@@ -1,5 +1,4 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { IGridHeightSettings } from "../../model/Grid";
 
 export const getGridStyles = (theme: ITheme) => {
     return mergeStyleSets({
@@ -67,6 +66,10 @@ export const getGridStyles = (theme: ITheme) => {
                     borderColor: `${theme.semanticColors.errorIcon} !important`
                 }
             },
+            '.ag-floating-bottom .ag-row-pinned': {
+                borderTop: `1px solid ${theme.semanticColors.menuDivider}`,
+                borderBottom: 'none',
+            }
         }
     })
 };

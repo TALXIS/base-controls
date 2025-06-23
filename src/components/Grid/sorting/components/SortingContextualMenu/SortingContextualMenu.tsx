@@ -6,6 +6,7 @@ import { getColumnHeaderContextualMenuStyles } from './styles';
 import { useGridInstance } from '../../../core/hooks/useGridInstance';
 import { useColumnSortingController } from '../../controllers/useColumnSortingController';
 import { useColumnFilterConditionController } from '../../../filtering/controller/useColumnFilterConditionController';
+import { Filter24Regular, ArrowSortUp24Regular, ArrowSortDown24Regular, FilterDismiss24Regular, Dismiss24Regular, Autosum24Regular } from '@fluentui/react-icons';
 
 export interface ISortingContextualMenu extends Omit<IContextualMenuProps, 'items'> {
     column: IGridColumn;
@@ -14,26 +15,28 @@ export interface ISortingContextualMenu extends Omit<IContextualMenuProps, 'item
 
 export const SortingContextualMenu = (props: ISortingContextualMenu) => {
     const grid = useGridInstance();
+    const aggregation = grid.aggregation;
     const labels = grid.labels;
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
-    const {column, onDismiss} = {...props};
+    const { column, onDismiss } = { ...props };
     const sorting = useColumnSortingController(column);
     const condition = useColumnFilterConditionController(column);
     const [items, setItems] = useState<IContextualMenuItem[]>([]);
 
     useEffect(() => {
-        (async() => {
+        (async () => {
             setItems(await getItems())
         })();
     }, [condition]);
 
     const getTwoOptionsSortLabel = async (isDesc?: boolean) => {
         const options = column.metadata?.OptionSet ?? [];
-        if(!isDesc) {
+        if (!isDesc) {
             return `${options[0].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[1].Label}`
         }
         return `${options[1].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[0].Label}`
     }
+
     const getLabel = async (isDesc?: boolean) => {
         switch (column.dataType) {
             case DataType.WHOLE_NONE:
@@ -54,7 +57,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 return labels['filtersortmenu-sortdate-z-a']()
             }
             case DataType.TWO_OPTIONS: {
-               return getTwoOptionsSortLabel(isDesc);
+                return getTwoOptionsSortLabel(isDesc);
             }
             default: {
                 if (!isDesc) {
@@ -66,7 +69,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
     }
 
     const getItems = async (): Promise<IContextualMenuItem[]> => {
-        if(!condition) {
+        if (!condition) {
             return []
         }
         const items: IContextualMenuItem[] = [
@@ -76,9 +79,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 disabled: column.disableSorting || column.dataType === DataType.MULTI_SELECT_OPTIONSET,
                 text: await getLabel(),
                 className: styles.item,
-                iconProps: {
-                    iconName: 'SortUp'
-                },
+                onRenderIcon: () => <ArrowSortUp24Regular />,
                 onClick: () => sorting.sort(0)
             },
             {
@@ -87,9 +88,8 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 disabled: column.disableSorting || column.dataType === DataType.MULTI_SELECT_OPTIONSET,
                 text: await getLabel(true),
                 className: styles.item,
-                iconProps: {
-                    iconName: 'SortDown'
-                },
+                onRenderIcon: () => <ArrowSortDown24Regular />,
+                iconProps: {},
                 onClick: () => sorting.sort(1)
             },
             {
@@ -101,38 +101,63 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 className: styles.item,
                 disabled: !column.isFilterable,
                 text: labels['filtermenu-filterby'](),
-                iconProps: {
-                    iconName: 'Filter'
-                },
+                onRenderIcon: () => <Filter24Regular />,
                 onClick: (e) => onDismiss(e, false, true)
-            }
-        ];
-        if (condition.isAppliedToDataset) {
-            items.push({
+            },
+            ...(column.canBeAggregated ? [
+                {
+                    key: 'divider-aggregation',
+                    itemType: ContextualMenuItemType.Divider
+                },
+                {
+                    key: 'total',
+                    text: labels['filtersortmenu-total'](),
+                    onRenderIcon: () => <Autosum24Regular />,
+                    subMenuProps: {
+                        items: [
+                            {
+                                key: 'none',
+                                className: styles.item,
+                                checked: aggregation.isAggregationAppliedToColumn(column.name, 'none'),
+                                text: labels['filtersortmenu-total-none'](),
+                                onClick: () => aggregation.removeAggregation(column.name)
+
+                            },
+                            ...column.metadata!.SupportedAggregations!.map(aggregationFunction => {
+                                return {
+                                    key: aggregationFunction,
+                                    className: styles.item,
+                                    checked: aggregation.isAggregationAppliedToColumn(column.name, aggregationFunction),
+                                    text: labels[`filtersortmenu-total-${aggregationFunction}`](),
+                                    onClick: () => aggregation.addAggregation(column.name, aggregationFunction)
+                                }
+                            })]
+                    }
+                }
+            ] : []),
+            {
+                key: 'divider-footer',
+                itemType: ContextualMenuItemType.Divider
+            },
+            ...(grid.dataset.sorting.find(x => x.name === column.name) ? [{
+                key: 'clear',
+                text: labels['filtersortmenu-clearsorting'](),
+                onRenderIcon: () => <Dismiss24Regular />,
+                onClick: () => {
+                    sorting.clear();
+                }
+            }] : []),
+            ...(condition.isAppliedToDataset ? [{
                 key: 'clearFilter',
                 text: labels['filtersortmenu-clearfilter'](),
-                iconProps: {
-                    iconName: 'ClearFilter'
-                },
+                onRenderIcon: () => <FilterDismiss24Regular />,
                 onClick: () => {
                     condition.remove();
                     condition.save();
                 }
-            });
-        }
-        if(grid.dataset.sorting.find(x => x.name === column.name)) {
-            items.push({
-                key: 'clear',
-                text: labels['filtersortmenu-clearsorting'](),
-                iconProps: {
-                    iconName: 'Cancel'
-                },
-                onClick: () => {
-                    sorting.clear();
-                }
+            }] : []),
 
-            })
-        }
+        ];
         return items
     }
     return <ContextualMenu {...props} items={items} />;

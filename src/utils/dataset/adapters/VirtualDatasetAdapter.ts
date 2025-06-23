@@ -15,7 +15,7 @@ interface IParameterGetters {
     /**
      * Callback that gets triggered and awaited before the dataset is initialized. Useful for setting initialization code that needs to run before the dataset is ready.
      */
-    onInitialize?: () => void | Promise<void>
+    onInitialize?: () => void | Promise<void>;
 }
 
 /**

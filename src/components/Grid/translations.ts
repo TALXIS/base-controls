@@ -58,9 +58,17 @@ export const gridTranslations = {
     "filtersortmenu-filterby": { 1029: "Filtrovat podle", 1033: "Filter by" },
     "filtersortmenu-clearfilter": { 1029: "Vymazat filtr", 1033: "Clear filter" },
     "filtersortmenu-clearsorting": { 1029: "Vymazat řazení", 1033: "Clear sorting" },
+    "filtersortmenu-total-none": { 1029: 'Žádný', 1033: 'None' },
+    "filtersortmenu-total-avg": { 1029: 'Průměr', 1033: 'Average' },
+    "filtersortmenu-total-max": { 1029: 'Maximum', 1033: 'Maximum' },
+    "filtersortmenu-total-min": { 1029: 'Minimum', 1033: 'Minimum' },
+    "filtersortmenu-total-sum": { 1029: 'Součet', 1033: 'Sum' },
+    "filtersortmenu-total-count": { 1029: 'Počet (včetně prázdných hodnot)', 1033: 'Count (including empty values)' },
+    "filtersortmenu-total-countcolumn": { 1029: 'Počet', 1033: 'Count' },
+    "filtersortmenu-total": { 1029: 'Součty', 1033: 'Totals' },
     "norecordsfound": { 1029: 'Nenašli jsme nic, co by se zde dalo zobrazit.', 1033: 'No records found.' },
     "saving-changenotification": { 1029: "Počet upravených záznamů: <b>{{numOfChanges}}</b>.", 1033: "Number of updated records: <b>{{numOfChanges}}</b>." },
-    "saving-clickreview": {1029: "Klikněte <u>zde</u> pro jejich zobrazení.", 1033: "Click <u>here</u> to review"},
+    "saving-clickreview": { 1029: "Klikněte <u>zde</u> pro jejich zobrazení.", 1033: "Click <u>here</u> to review" },
     "saving-save": { 1029: "Uložit", 1033: "Save" },
     "saving-saving": { 1029: "Ukládání...", 1033: "Saving..." },
     "saving-changepreview-title": { 1033: 'Number of updated rows: {{numOfChanges}}', 1029: 'Počet upravených záznamů: {{numOfChanges}}' },
@@ -80,6 +88,10 @@ export const gridTranslations = {
     "download": { 1029: 'Stáhnout', 1033: 'Download' },
     "value-not-editable": { 1029: 'Tuto hodnotu nelze upravit.', 1033: 'This value cannot be edited.' },
     "original-value": { 1029: 'Původní hodnota', 1033: 'Previous value' },
-    "new-value": { 1029: 'Nová hodnota', 1033: 'New value' }
+    "new-value": { 1029: 'Nová hodnota', 1033: 'New value' },
+    "error-2147750198": {
+        1029: 'Kalkulace překročila maximální limit kvůli velkému počtu řádků. Zmenšete prosím rozsah dat nebo kontaktujte podporu.',
+        1033: 'The calculation exceeded the maximum limit due to a large number of rows. Please reduce the data range or contact support for assistance.'
+    }
 };
 

@@ -57,10 +57,14 @@ export const CellContent = (props: ICellContentProps) => {
                         errorText: 'transparent'
 
                     },
+                    fonts: record.getDataProvider().getSummarizationType() === 'aggregation' ? {
+                        medium: {
+                            fontWeight: 600 as any
+                        }
+                    }: {},
                     effects: {
                         underlined: false
                     },
-
                     components: {
                         'TextField': {
                             styles: {

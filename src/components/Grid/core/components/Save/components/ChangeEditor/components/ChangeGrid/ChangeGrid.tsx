@@ -95,10 +95,15 @@ export const ChangeGrid = (props: IChangeGrid) => {
                     'valueDesc__virtual': grid.labels["new-value"](),
                 },
             ], {
-                PrimaryIdAttribute: "id__virtual"
-            }
+            PrimaryIdAttribute: "id__virtual"
+        }
         );
-        memoryProvider.setColumns(getColumns());
+        memoryProvider.setColumns(getColumns().map(col => {
+            return {
+                ...col,
+                aggregationFunction: undefined
+            }
+        }));
         const dataset = new Dataset(memoryProvider);
         dataset.isValid = () => {
             return baseRecord.isValid()
@@ -134,7 +139,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
                         }
                         return change.originalValue;
                     })
-                    if(!change) {
+                    if (!change) {
                         record.setValue(col.name, record.getValue(col.name))
                     }
                     else {
@@ -177,8 +182,8 @@ export const ChangeGrid = (props: IChangeGrid) => {
         })
 
         dataset.addEventListener('onRecordColumnValueChanged', (record, columnName) => {
-            baseRecord.setValue(columnName, record.getValue(columnName)); 
-            props.onRequestRender(); 
+            baseRecord.setValue(columnName, record.getValue(columnName));
+            props.onRequestRender();
         })
         dataset.addEventListener('onChangesCleared', () => {
             baseRecord.clearChanges?.();
@@ -234,6 +239,9 @@ export const ChangeGrid = (props: IChangeGrid) => {
                     EnableNavigation: {
                         raw: false,
                     },
+                    EnableAggregation: {
+                        raw: false
+                    },
                     EnableOptionSetColors: grid.parameters.EnableOptionSetColors,
                     EnableSorting: {
                         raw: false,
@@ -246,7 +254,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
                     },
                     Height: {
                         raw: '160px'
-                    }
+                    },
                 }}
             />
         </div>

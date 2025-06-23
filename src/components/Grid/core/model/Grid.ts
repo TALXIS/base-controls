@@ -9,6 +9,7 @@ import { IGridColumn } from "../interfaces/IGridColumn";
 import { BaseControls } from "../../../../utils";
 import { IBinding } from "../../../NestedControlRenderer/interfaces";
 import { merge } from "merge-anything";
+import { Aggregation } from "../../aggregation/Aggregation";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
@@ -36,6 +37,7 @@ export class Grid {
         filtering: Filtering,
         sorting: Sorting,
         selection: Selection,
+        aggregation: Aggregation
     };
     private _usesNestedPcfs: boolean = false;
     private _client = new Client();
@@ -54,6 +56,7 @@ export class Grid {
             filtering: new Filtering(this),
             selection: new Selection(this),
             sorting: new Sorting(this),
+            aggregation: new Aggregation(this)
         }
 
     };
@@ -96,6 +99,9 @@ export class Grid {
     }
     public get filtering() {
         return this._dependencies.filtering;
+    }
+    public get aggregation() {
+        return this._dependencies.aggregation;
     }
     public get selection() {
         return this._dependencies.selection;
@@ -196,6 +202,7 @@ export class Grid {
                 isRequired: this._isColumnRequired(column),
                 isFilterable: this._isColumnFilterable(column),
                 disableSorting: !this._isColumnSortable(column),
+                canBeAggregated: this._canColumnBeAggregated(column),
                 isSortedDescending: sorted?.sortDirection === 1 ? true : false,
                 type: this._getColumnType(column),
                 isResizable: true,
@@ -219,6 +226,7 @@ export class Grid {
                 isFiltered: false,
                 isRequired: false,
                 isResizable: false,
+                canBeAggregated: false,
                 disableSorting: true,
                 isSorted: false,
                 isSortedDescending: false,
@@ -317,6 +325,7 @@ export class Grid {
     }
 
     public getParameters(record: IRecord, column: IGridColumn, editing: boolean, recordCommands?: ICommand[]) {
+        const aggregation = this.aggregation.getAggregationForColumn(column.name);
         const parameters: any = {
             Dataset: {
                 raw: this.dataset,
@@ -351,17 +360,17 @@ export class Grid {
             raw: editing ? 'editor' : 'renderer',
             type: DataTypes.SingleLineText
         }
-        if (editing) {
-            parameters.AutoFocus = {
-                raw: true,
-                type: DataTypes.TwoOptions
-            }
+        parameters.AutoFocus = {
+            raw: editing,
+            type: DataTypes.TwoOptions
         }
-        if (recordCommands) {
-            parameters.RecordCommands = {
-                raw: recordCommands,
-                type: DataTypes.Object
-            }
+        parameters.AggregationFunction = {
+            raw: record.getDataProvider().getSummarizationType() !== 'none' ? aggregation?.aggregationFunction ?? null : null,
+            type: DataTypes.SingleLineText
+        }
+        parameters.RecordCommands = {
+            raw: recordCommands ?? [],
+            type: DataTypes.Object
         }
         switch (column.dataType) {
             case 'Lookup.Customer':
@@ -434,7 +443,9 @@ export class Grid {
         switch (column.dataType) {
             //getValue always returns string for TwoOptions
             case 'TwoOptions': {
-                value = value == '1' ? true : false
+                if (typeof value === 'string') {
+                    value = value == '1' ? true : false
+                }
                 break;
             }
             //getValue always returns string for OptionSet
@@ -531,6 +542,21 @@ export class Grid {
             return this.dataset.getTargetEntityType();
         }
         return this.dataset.linking.getLinkedEntities().find(x => x.alias === entityAliasName)!.name;
+    }
+
+    private _canColumnBeAggregated(column: IColumn): boolean {
+        //aggregations disabled by default
+        if (this.parameters.EnableAggregation?.raw !== true) {
+            return false;
+        }
+        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+            return false;
+        }
+        if(!column.metadata?.SupportedAggregations || column.metadata.SupportedAggregations.length === 0) {
+            return false;
+
+        }
+        return true;
     }
 
     private _getColumnType(column: IColumn) {

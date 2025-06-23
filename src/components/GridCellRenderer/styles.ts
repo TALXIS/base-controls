@@ -5,13 +5,27 @@ import { ITheme } from "@talxis/react-components";
 export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment'], dataType: DataType, rowHeight: number, theme: ITheme) => {
     return mergeStyleSets({
         root: {
-            display: 'flex',
-            alignItems: 'center',
             height: rowHeight,
             paddingLeft: 8,
             paddingRight: 8,
+            display: 'flex',
+            flexDirection: 'column'
+        },
+        aggregationLabel: {
+            lineHeight: 6,
+            textAlign: columnAlignment,
+            color: theme.semanticColors.infoIcon,
+            fontSize: 12,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+        },
+        prefixSuffixContentWrapper: {
+            display: 'flex',
+            flexGrow: 1,
+            alignItems: 'center',
             justifyContent: getJustifyContent(columnAlignment),
             gap: 10,
+
         },
         fileWrapper: {
             display: 'flex',
@@ -86,10 +100,10 @@ const getMultilineStyles = (rowHeight: number, theme: ITheme) => {
     let fontSize = 20;
     const themeFontSize = theme.fonts.medium.fontSize;
     theme.fonts.medium.lineHeight
-    if(typeof themeFontSize === 'number') {
+    if (typeof themeFontSize === 'number') {
         fontSize = themeFontSize;
     }
-    else if(typeof themeFontSize === 'string' && themeFontSize.endsWith('px')) {
+    else if (typeof themeFontSize === 'string' && themeFontSize.endsWith('px')) {
         fontSize = parseInt(themeFontSize.replace('px', ''));
     }
     const clamp = Math.floor(rowHeight / fontSize) - 1;
