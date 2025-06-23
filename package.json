@@ -83,7 +83,7 @@
     "numeral": "^2.0.6",
     "use-debounce": "^10.0.1",
     "validator": "^13.11.9",
-    "@talxis/client-libraries": "^1.2506.3"
+    "@talxis/client-libraries": "^1.2506.4"
   },
   "peerDependencies": {
     "@fluentui/react": "<=8.121.5",
