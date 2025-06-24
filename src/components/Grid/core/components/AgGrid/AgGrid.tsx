@@ -12,17 +12,28 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useGridController } from '../../controllers/useGridController';
 import { useRerender, useStateValues } from '@talxis/react-components';
 import { AgGrid as AgGridModel } from './model/AgGrid';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { AgGridContext } from './context';
 import { IGrid } from '../../../interfaces';
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 import { LicenseManager } from '@ag-grid-enterprise/core';
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
+import { Datasource } from './model/Datasource';
+import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
+ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule]);
+
+alert('hello');
 
 
 export const AgGrid = (props: IGrid) => {
+    const datasource = useMemo(() => new Datasource(() => props.parameters.Grid), []);
+    return <AgGridReact
+        datasource={datasource} 
+        rowModelType='serverSide' />
+}
+
+
+export const AgGrid2 = (props: IGrid) => {
     const grid = useGridInstance();
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     const containerWidthRef = useRef(0);
