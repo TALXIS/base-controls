@@ -5,7 +5,6 @@ export interface IGridColumn extends IColumn {
     isEditable: boolean;
     isFilterable: boolean;
     isSorted: boolean;
-    isFiltered: boolean;
     canBeAggregated: boolean;
     isSortedDescending: boolean;
     isResizable: boolean;

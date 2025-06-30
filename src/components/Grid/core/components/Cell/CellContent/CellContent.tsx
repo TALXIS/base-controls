@@ -9,7 +9,7 @@ import { useRerender } from '@talxis/react-components';
 import { getJustifyContent } from '../styles';
 import { useDebouncedCallback } from 'use-debounce';
 import { Client, ICommand } from '@talxis/client-libraries';
-import { AgGridContext } from '../../AgGrid/context';
+import { Grid2 } from '../../../model/Grid';
 
 const client = new Client();
 
@@ -26,8 +26,7 @@ export const CellContent = (props: ICellContentProps) => {
     columnRef.current = props.baseColumn;
     valueRef.current = props.value;
     const rerender = useRerender();
-    const grid = useGridInstance();
-    const agGrid = React.useContext(AgGridContext);
+    const grid: Grid2 = useGridInstance() as any;
     const record = props.data;
     const node = props.node;
     const themeRef = React.useRef(useTheme());
@@ -40,8 +39,7 @@ export const CellContent = (props: ICellContentProps) => {
     }
 
     const getFluentDesignLanguage = (fluentDesignLanguage?: IFluentDesignState) => {
-        //@ts-ignore
-        const formatting = agGrid.getCellFormatting(props);
+        const formatting = grid.getFieldFormatting(record, columnRef.current.name);
         const mergedOverrides: any = merge({}, fluentDesignLanguage?.v8FluentOverrides ?? {}, formatting.themeOverride);
         const columnAlignment = valueRef.current.columnAlignment;
         const result = ControlTheme.GenerateFluentDesignLanguage(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, {
@@ -115,7 +113,7 @@ export const CellContent = (props: ICellContentProps) => {
         if (!mountedRef.current) {
             isEditing = false;
         }
-        grid.onNotifyOutputChanged(record, columnRef.current, isEditing, outputs.value, () => rerender())
+        //grid.onNotifyOutputChanged(record, columnRef.current, isEditing, outputs.value, () => rerender())
     }
     const debouncedNotifyOutputChanged = useDebouncedCallback((outputs) => onNotifyOutputChanged(outputs), 100);
 
@@ -132,7 +130,7 @@ export const CellContent = (props: ICellContentProps) => {
     }
 
     return <NestedControlRenderer
-        context={grid.pcfContext}
+        context={grid.getPcfContext()}
         parameters={{
             ControlName: valueRef.current.customControl.name,
             LoadingType: 'shimmer',
@@ -187,7 +185,7 @@ export const CellContent = (props: ICellContentProps) => {
                 },
                 onOverrideRender: (control, isCustomPcfComponent, defaultRender) => {
                     if (isCustomPcfComponent) {
-                        grid.setUsesNestedPcfs();
+                        //grid.setUsesNestedPcfs();
                     }
                     if (valueRef.current.customComponent) {
                         const result = valueRef.current.customComponent.onRender(control.getProps(), themeRef.current, control.getContainer())
@@ -225,7 +223,7 @@ export const CellContent = (props: ICellContentProps) => {
                     const columnInfo = record.getColumnInfo(getColumn().name);
                     const parameters = columnInfo.ui.getControlParameters({
                         ...controlProps.parameters,
-                        ...grid.getParameters(record, getColumn(), props.isCellEditor, recordCommands)
+                        ...grid.getFieldBindingParameters(record, getColumn(), props.isCellEditor, recordCommands)
                     })
                     return {
                         ...controlProps,

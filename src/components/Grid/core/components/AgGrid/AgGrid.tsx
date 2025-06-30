@@ -1,6 +1,6 @@
 import { AgGridReact } from '@ag-grid-community/react';
 import { mergeStyles, MessageBar, MessageBarType, useTheme } from "@fluentui/react";
-import { CellDoubleClickedEvent, ColDef, ColumnResizedEvent, DomLayoutType, GridApi, GridState, ModuleRegistry, SelectionChangedEvent } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, ColDef, ColumnResizedEvent, DomLayoutType, GetRowIdParams, GridApi, GridReadyEvent, GridState, ModuleRegistry, SelectionChangedEvent } from "@ag-grid-community/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGridInstance } from "../../hooks/useGridInstance";
 import { getGridStyles } from "./styles";
@@ -18,22 +18,54 @@ import { AgGridContext } from './context';
 import { IGrid } from '../../../interfaces';
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 import { LicenseManager } from '@ag-grid-enterprise/core';
-import { Datasource } from './model/Datasource';
 import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
-ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule]);
-
-alert('hello');
-
+import { MenuModule } from '@ag-grid-enterprise/menu'
+import { ClipboardModule } from '@ag-grid-enterprise/clipboard';
+import { Grid2 } from '../../model/Grid';
+ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule, MenuModule]);
 
 export const AgGrid = (props: IGrid) => {
-    const datasource = useMemo(() => new Datasource(() => props.parameters.Grid), []);
-    return <AgGridReact
-        datasource={datasource} 
-        rowModelType='serverSide' />
+    const theme = useTheme();
+    const styles = useMemo(() => getGridStyles(theme), [theme]);
+    const grid: Grid2 = useGridInstance() as any;
+    const agGrid = useMemo(() => new AgGridModel({
+        grid: grid
+    }), []);
+
+
+    const onGridReady = (event: GridReadyEvent<IRecord, any>) => {
+        agGrid.init(event.api);
+    }
+
+    return <div className={`ag-theme-balham ${styles.agGridRoot}`} style={{ height: 600 }}><AgGridReact
+        columnDefs={agGrid.getColumns()}
+        animateRows={false}
+        getRowId={(params: GetRowIdParams<IRecord>) => params.data.getRecordId()}
+        rowModelType='serverSide'
+        suppressCopyRowsToClipboard
+        rowSelection={agGrid.getSelectionType()}
+        loadingOverlayComponent={LoadingOverlay}
+        noRowsOverlayComponent={EmptyRecords}
+        getRowHeight={() => 40}
+        reactiveCustomComponents
+        gridOptions={{
+            getRowStyle: (params) => {
+                const record = params.data;
+                if(!record) {
+                    return undefined
+                }
+                return {
+                    backgroundColor: grid.getDefaultCellTheme(record.getIndex() % 2 === 0).semanticColors.bodyBackground
+                }
+            },
+        }}
+        onGridReady={onGridReady}
+         />
+    </div>
 }
 
 
-export const AgGrid2 = (props: IGrid) => {
+/* export const AgGrid2 = (props: IGrid) => {
     const grid = useGridInstance();
     const gridApiRef = useRef<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord>>();
     const containerWidthRef = useRef(0);
@@ -243,3 +275,4 @@ export const AgGrid2 = (props: IGrid) => {
         </AgGridContext.Provider>
     );
 }
+ */

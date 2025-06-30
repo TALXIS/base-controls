@@ -1,13 +1,12 @@
-import { Attribute, MemoryDataProvider } from "@talxis/client-libraries";
+import { Attribute, IDataset, MemoryDataProvider } from "@talxis/client-libraries";
 import { DatasetConditionOperator } from "../../core/enums/ConditionOperator";
 import { DataType } from "../../core/enums/DataType";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
-import { Grid } from "../../core/model/Grid";
-import { GridDependency } from "../../core/model/GridDependency";
 import { FilteringUtils } from "../utils/FilteringUtilts";
 import dayjs from "dayjs";
+import { DatasetExtension } from "../../core/model/DatasetExtension";
 
-export class Condition extends GridDependency {
+export class Condition extends DatasetExtension {
     private _column: IGridColumn;
     private _conditionExpression: ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression = {} as any;
     private _isRemoved?: boolean;
@@ -17,8 +16,8 @@ export class Condition extends GridDependency {
     private _initialized: boolean = false;
     private _shouldShowError: boolean = false;
 
-    constructor(grid: Grid, column: IGridColumn) {
-        super(grid);
+    constructor(onGetDataset: () => IDataset, column: IGridColumn) {
+        super(onGetDataset);
         this._column = {...column};
         switch(this._column.dataType) {
             //this will skip regex validation since it is not desirable during filtering (we have contains and stuff)
@@ -108,7 +107,7 @@ export class Condition extends GridDependency {
         this._shouldShowError = true;
         if (!await this.value.isValid()) {
             this._isValid = false;
-            this._triggerRefreshCallbacks();
+            //this._triggerRefreshCallbacks();
             return false;
         }
         const filterExpression = this._filterExpression;
@@ -218,7 +217,7 @@ export class Condition extends GridDependency {
         else {
             this._conditionExpression.value = value;
         }
-        this._triggerRefreshCallbacks();
+        //this._triggerRefreshCallbacks();
     }
 
     private async _attributeNameDecorator(conditionOperator: DatasetConditionOperator, attributeName: string, undecorate?: boolean) {

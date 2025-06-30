@@ -1,18 +1,29 @@
 import { AggregationFunction, IAggregationMetadata, IDataset, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { GridDependency } from "../core/model/GridDependency";
-import { Grid } from "../core/model/Grid";
+import { DatasetExtension } from "../core/model/DatasetExtension";
 
-export class Aggregation extends GridDependency {
+interface ITranslations {
+    calculationLimitExceededError: string;
+}
+
+interface IDependencies {
+    onGetDataset: () => IDataset;
+    translations: ITranslations;
+}
+
+export class Aggregation extends DatasetExtension {
     private _hasUserChangedAggregations: boolean = false;
     private _aggregationDataset: IDataset;
+    private _translations: ITranslations;
+    private _onRequestRenderHandler: () => void = () => {};
 
-    constructor(grid: Grid) {
-        super(grid);
+    constructor({ onGetDataset, translations}: IDependencies) {
+        super(onGetDataset);
+        this._translations = translations;
         this._aggregationDataset = this._dataset.getChildDataset();
         this._aggregationDataset.addEventListener('onBeforeNewDataLoaded', () => this._syncAggregationDataProvider());
         this._aggregationDataset.addEventListener('onError', (errorMessage, details) => this._onError(errorMessage, details));
         this._aggregationDataset.addEventListener('onNewDataLoaded', () => this._dataset.getDataProvider().setError(false));
-        this._aggregationDataset.addEventListener('onLoading', () => this._pcfContext.factory.requestRender());
+        this._aggregationDataset.addEventListener('onLoading', () => this._onRequestRenderHandler());
         this._dataset.addEventListener('onNewDataLoaded', () => this._updateAggregations());
     }
     public getAggregationRecord(): IRecord[] {
@@ -22,6 +33,7 @@ export class Aggregation extends GridDependency {
         if (this._aggregationDataset.loading) {
             return [this._getDummyLoadingRecord()];
         }
+        console.log(this._aggregationDataset.getDataProvider().getRecords());
         return this._aggregationDataset.getDataProvider().getRecords();
     }
 
@@ -59,6 +71,10 @@ export class Aggregation extends GridDependency {
         return this._aggregationDataset.aggregation.getAggregations().find(agg => {
             return agg.columnName === columnName;
         });
+    }
+
+    public setOnRequestRenderHandler(handler: () => void) {
+        this._onRequestRenderHandler = handler;
     }
 
     private _updateAggregations() {
@@ -114,10 +130,10 @@ export class Aggregation extends GridDependency {
         let errorText = errorMessage;
         const errorCode = details?.errorCode;
         if (errorCode === 2147750198 || errorCode === -2147164125) {
-            errorText = this._grid.labels['error-2147750198']();
+            errorText = this._translations.calculationLimitExceededError;
         }
         this._dataset.getDataProvider().setError(true, errorText);
-        this._pcfContext.factory.requestRender();
+        this._onRequestRenderHandler();
     }
 
     private _syncAggregationDataProvider() {

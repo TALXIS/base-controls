@@ -56,7 +56,7 @@ export const ChangeGrid = (props: IChangeGrid) => {
         props.onDatasetReady(dataset);
         return () => {
             props.onDatasetDestroyed(dataset);
-            agGridContext.rerender();
+            //agGridContext.rerender();
         }
     }, []);
 

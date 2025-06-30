@@ -2,19 +2,20 @@ import { useMemo, useRef, useState } from 'react';
 import { CommandBarButton, Icon, Label, useTheme } from '@fluentui/react';
 import { FilterCallout, IFilterCallout } from '../../../filtering/components/FilterCallout/FilterCallout';
 import { IGridColumn } from '../../interfaces/IGridColumn';
-import { ISortingContextualMenu, SortingContextualMenu } from '../../../sorting/components/SortingContextualMenu/SortingContextualMenu';
 import { getColumnHeaderStyles } from './styles';
 import { useGridInstance } from '../../hooks/useGridInstance';
 import React from 'react';
+import { ColumnHeaderContextualMenu, IColumnHeaderContextualMenuProps } from './ContextualMenu/ColumnHeaderContextualMenu';
+import { Grid2 } from '../../model/Grid';
 
 export interface IColumnHeader {
     baseColumn: IGridColumn;
 }
 
 export const ColumnHeader = (props: IColumnHeader) => {
-    const grid = useGridInstance();
+    const grid: Grid2 = useGridInstance() as any;
     const column = props.baseColumn;
-    const [columnHeaderContextualMenuProps, setColumnHeaderContextualMenuProps] = useState<ISortingContextualMenu | null>(null);
+    const [columnHeaderContextualMenuProps, setColumnHeaderContextualMenuProps] = useState<IColumnHeaderContextualMenuProps | null>(null);
     const [filterCalloutProps, setFilterCalloutProps] = useState<IFilterCallout | null>(null);
     const theme = useTheme();
     const columnHeaderStyles = useMemo(() => getColumnHeaderStyles(theme, column.alignment), [theme, column.alignment])
@@ -55,6 +56,9 @@ export const ColumnHeader = (props: IColumnHeader) => {
         }
         return false;
     }
+    const isColumnFiltered = () => {
+        return grid.getFiltering().getColumnFilter(column.name).isAppliedToDataset()
+    }
     return (
         <>
             <CommandBarButton
@@ -63,7 +67,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
                 className={columnHeaderStyles.root}
                 onClick={onClick}
             >
-                {grid.isEditable && !column.isEditable && column.type !== 'action' && <Icon className={columnHeaderStyles.editIcon} iconName='Uneditable' />}
+                {false && !column.isEditable && column.type !== 'action' && <Icon className={columnHeaderStyles.editIcon} iconName='Uneditable' />}
                 <div className={columnHeaderStyles.labelWrapper}>
                     <Label className={columnHeaderStyles.label}>{column.displayName}</Label>
                     {column.isRequired &&
@@ -72,11 +76,11 @@ export const ColumnHeader = (props: IColumnHeader) => {
                 </div>
                 <div className={columnHeaderStyles.filterSortIcons}>
                     {column.isSorted && <Icon iconName={column.isSortedDescending ? 'SortDown' : 'SortUp'} />}
-                    {column.isFiltered && <Icon iconName='Filter' />}
+                    {isColumnFiltered() && <Icon iconName='Filter' />}
                 </div>
             </CommandBarButton>
             {columnHeaderContextualMenuProps &&
-                <SortingContextualMenu 
+                <ColumnHeaderContextualMenu
                     target={buttonRef}
                     calloutProps={{
                         preventDismissOnEvent: preventDismissOnEvent

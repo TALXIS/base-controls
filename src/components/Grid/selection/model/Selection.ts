@@ -1,52 +1,64 @@
-import { GridDependency } from "../../core/model/GridDependency";
+import { IDataset } from "@talxis/client-libraries";
+import { DatasetExtension } from "../../core/model/DatasetExtension";
 
-export class Selection extends GridDependency {
+
+interface IDependencies {
+    onGetDataset: () => IDataset;
+    onGetSelectionType: () => 'single' | 'multiple' | 'none';
+}
+
+export class Selection extends DatasetExtension {
+    private _getSelectionType: () => 'single' | 'multiple' | 'none';
     private _selectedRecordIdsSet: Set<string> = new Set<string>();
 
-    public toggle(recordId: string, clearExistingSelection?: boolean) {
-        this._selectedRecordIdsSet = new Set(this.selectedRecordIds);
-        if(clearExistingSelection || this.type === 'single') {
-            this._selectedRecordIdsSet.clear()
-        }
-        if(this._selectedRecordIdsSet.has(recordId)) {
-            this._selectedRecordIdsSet.delete(recordId);
-        }
-        else {
-            this._selectedRecordIdsSet.add(recordId);
-        }
-        this._setSelectedRecords();
+    constructor({ onGetDataset, onGetSelectionType }: IDependencies) {
+        super(onGetDataset);
+        this._getSelectionType = onGetSelectionType;
+
+        this._dataset.addEventListener('onRecordsSelected', (ids) => {
+            this._selectedRecordIdsSet = new Set(ids);
+        });
+
+    }
+    public areAllRecordsSelected(): boolean {
+        const selectedRecordIds = this._dataset.getSelectedRecordIds();
+        const sortedRecordIds = this._dataset.sortedRecordIds;
+        return selectedRecordIds.length === sortedRecordIds.length;
+    }
+    public getSelectedRecordIdsSet(): Set<string> {
+        return this._selectedRecordIdsSet;
     }
 
-    public setSelectedRecordIds(ids: string[]) {
-        this._dataset.setSelectedRecordIds(ids);
-    }
-
-    public get selectedRecordIds() {
-        return this._dataset.getSelectedRecordIds();
-    }
-    public get allRecordsSelected() {
-        return this.selectedRecordIds.length === this._dataset.sortedRecordIds.length;
-    }
-    public get type() {
-        switch(this._grid.props.parameters.SelectableRows?.raw) {
-            case undefined:
-            case null: {
-                return 'multiple'
-            }
+    public toggle(recordId: string) {
+        switch (this._selectionType) {
             case 'none': {
-                return undefined;
+                return;
             }
-            default: return this._grid.props.parameters.SelectableRows?.raw;
+            case 'single': {
+                if (this._selectedRecordIdsSet.has(recordId)) {
+                    this._selectedRecordIdsSet.clear();
+                }
+                else {
+                    this._selectedRecordIdsSet.clear();
+                    this._selectedRecordIdsSet.add(recordId);
+                }
+                break;
+            }
+            case 'multiple': {
+                if (this._selectedRecordIdsSet.has(recordId)) {
+                    this._selectedRecordIdsSet.delete(recordId);
+                }
+                else {
+                    this._selectedRecordIdsSet.add(recordId);
+                }
+                break;
+            }
         }
+        this._dataset.setSelectedRecordIds([...this._selectedRecordIdsSet.values()]);
     }
 
-    public clear() {
-        this._grid.dataset.setSelectedRecordIds([]);
+    private get _selectionType() {
+        return this._getSelectionType();
     }
-    public selectAll() {
-        this._grid.dataset.setSelectedRecordIds(this._dataset.sortedRecordIds)
-    }
-    private _setSelectedRecords() {
-        this._grid.dataset.setSelectedRecordIds([...this._selectedRecordIdsSet.values()]);
-    }
+
 }

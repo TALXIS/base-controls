@@ -3,6 +3,7 @@ import { DatasetConditionOperator } from "../../core/enums/ConditionOperator";
 import { useGridInstance } from "../../core/hooks/useGridInstance"
 import { useRefreshCallback } from "../../core/hooks/useRefreshCallback";
 import { IGridColumn } from "../../core/interfaces/IGridColumn";
+import { Grid2 } from "../../core/model/Grid";
 
 export interface IColumnFilterConditionController {
     isAppliedToDataset: boolean,
@@ -24,7 +25,8 @@ export interface IColumnFilterConditionController {
 }
 
 export const useColumnFilterConditionController = (column: IGridColumn): IColumnFilterConditionController | null => {
-    const filtering = useGridInstance().filtering;
+    const grid: Grid2 = useGridInstance() as any;
+    const filtering = grid.getFiltering();
     const conditionPromise = useMemo(() => filtering.condition(column), []);
     const [controller, setController] = useState<IColumnFilterConditionController>();
     
@@ -50,7 +52,7 @@ export const useColumnFilterConditionController = (column: IGridColumn): IColumn
             shouldShowError: () => condition?.shouldShowError()
         }))
     }
-    useRefreshCallback(conditionPromise, refresh);
+    //useRefreshCallback(conditionPromise, refresh);
     useEffect(() => {
         (async () => {
             refresh();

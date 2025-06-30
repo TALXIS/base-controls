@@ -1,57 +1,59 @@
 import { Checkbox, ThemeProvider, useTheme } from "@fluentui/react";
-import { useContext, useEffect } from "react";
 import { useGridInstance } from "../../../../hooks/useGridInstance";
 import { getGlobalCheckboxStyles } from "./styles";
-import { AgGridContext } from "../../../AgGrid/context";
 import { Theming, useRerender, useThemeGenerator } from "@talxis/react-components";
+import { Grid2 } from "../../../../model/Grid";
+import { IHeaderParams } from "@ag-grid-community/core";
+import { useMemo } from "react";
 
 
-export const GlobalCheckBox = () => {
-    const grid = useGridInstance();
+export const GlobalCheckBox = (props: IHeaderParams) => {
+    const grid: Grid2 = useGridInstance() as any;
+    const api = props.api;
+    const dataset = grid.getDataset();
+    const context = grid.getPcfContext();
     const baseTheme = useTheme();
-    const theme = useThemeGenerator(
-        baseTheme.palette.themePrimary,
-        baseTheme.semanticColors.bodyBackground,
-        Theming.GetTextColorForBackground(baseTheme.semanticColors.bodyBackground),
-        //@ts-ignore - typings
-        grid.pcfContext.fluentDesignLanguage?.v8FluentOverrides
-    )
+    const primaryColor = baseTheme.palette.themePrimary;
+    const backgroundColor = baseTheme.semanticColors.bodyBackground;
+    const textColor = Theming.GetTextColorForBackground(backgroundColor);
+    const v8FluentOverrides = context.fluentDesignLanguage?.v8FluentOverrides;
+    const theme = useThemeGenerator(primaryColor, backgroundColor, textColor, v8FluentOverrides);
     const styles = getGlobalCheckboxStyles(theme);
-    const selection = grid.selection;
-    const agGrid = useContext(AgGridContext);
+    const selection = grid.getSelection();
     const rerender = useRerender();
 
+    useMemo(() => {
+        dataset.addEventListener('onRecordsSelected', () => {
+            rerender();
+        })
+    }, []);
+
     const getCheckBoxState = () => {
-        if (grid.selection.allRecordsSelected) {
+        if (selection.areAllRecordsSelected()) {
             return 'checked';
         }
-        if (grid.dataset.getSelectedRecordIds().length > 0) {
+        if (dataset.getSelectedRecordIds().length > 0) {
             return 'intermediate';
         }
         return 'unchecked';
     }
 
     const onChange = (checked?: boolean) => {
-        if (checked) {
-            selection.selectAll();
+        if(checked) {
+            dataset.setSelectedRecordIds(dataset.sortedRecordIds);
         }
         else {
-            selection.clear();
+            dataset.clearSelectedRecordIds();
         }
     }
-
     const checkboxState = getCheckBoxState();
 
-    useEffect(() => {
-        agGrid.setGlobalCheckBoxRenderer(() => rerender())
-    }, []);
-
-    if (grid.dataset.sortedRecordIds.length === 0) {
+    if (dataset.sortedRecordIds.length === 0) {
         return <></>
     }
     return (
         <ThemeProvider theme={theme} className={styles.root}>
-            {selection.type === 'multiple' &&
+            {grid.getSelectionType() === 'multiple' &&
                 <Checkbox
                     checked={checkboxState === 'checked'}
                     styles={{

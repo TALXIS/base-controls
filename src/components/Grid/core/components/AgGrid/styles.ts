@@ -1,8 +1,26 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { ITheme, keyframes, mergeStyleSets } from "@fluentui/react";
+
+const fadeIn = keyframes({
+  from: {
+    opacity: 0,
+  },
+  to: {
+    opacity: 1,
+  },
+});
+
+const fadeOut = keyframes({
+  from: {
+    opacity: 1,
+  },
+  to: {
+    opacity: 0,
+  },
+});
 
 export const getGridStyles = (theme: ITheme) => {
     return mergeStyleSets({
-        root: {
+        agGridRoot: {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
@@ -50,6 +68,16 @@ export const getGridStyles = (theme: ITheme) => {
                 border: 'none !important',
                 borderRadius: 0
             },
+            '.ag-cell-highlight': {
+                '::after': {
+                    content: "''",
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 70%)`,
+                    'view-transition-name': 'cell-highlight',
+                }
+            },
             '.ag-cell-focus': {
                 zIndex: 2,
                 '::after': {
@@ -69,6 +97,12 @@ export const getGridStyles = (theme: ITheme) => {
             '.ag-floating-bottom .ag-row-pinned': {
                 borderTop: `1px solid ${theme.semanticColors.menuDivider}`,
                 borderBottom: 'none',
+            },
+            '::view-transition-old(cell-highlight)': {
+                animation: `${fadeOut} 0.3s ease-out forwards`
+            },
+            '::view-transition-new(cell-highlight)': {
+                animation: `${fadeIn} 0.3s ease-in forwards`
             }
         }
     })

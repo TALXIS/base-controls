@@ -1,35 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ContextualMenu, ContextualMenuItemType, IContextualMenuItem, IContextualMenuProps, useTheme } from '@fluentui/react';
-import { IGridColumn } from '../../../core/interfaces/IGridColumn';
-import { DataType } from '../../../core/enums/DataType';
-import { getColumnHeaderContextualMenuStyles } from './styles';
-import { useGridInstance } from '../../../core/hooks/useGridInstance';
-import { useColumnSortingController } from '../../controllers/useColumnSortingController';
-import { useColumnFilterConditionController } from '../../../filtering/controller/useColumnFilterConditionController';
+import { IGridColumn } from '../../../interfaces/IGridColumn';
+import { DataType } from '../../../enums/DataType';
+import { useGridInstance } from '../../../hooks/useGridInstance';
+import { useColumnFilterConditionController } from '../../../../filtering/controller/useColumnFilterConditionController';
 import { Filter24Regular, ArrowSortUp24Regular, ArrowSortDown24Regular, FilterDismiss24Regular, Dismiss24Regular, Autosum24Regular } from '@fluentui/react-icons';
+import { Grid2 } from '../../../model/Grid';
+import { getColumnHeaderContextualMenuStyles } from './styles';
 
-export interface ISortingContextualMenu extends Omit<IContextualMenuProps, 'items'> {
+export interface IColumnHeaderContextualMenuProps extends Omit<IContextualMenuProps, 'items'> {
     column: IGridColumn;
     onDismiss: (e?: Event | React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>, dismissAll?: boolean, showFilterCallout?: boolean) => void;
 }
 
-export const SortingContextualMenu = (props: ISortingContextualMenu) => {
-    const grid = useGridInstance();
-    const aggregation = grid.aggregation;
-    const labels = grid.labels;
+export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuProps) => {
+    const grid: Grid2 = useGridInstance() as any;
+    const dataset = grid.getDataset();
+    const aggregation = grid.getAggregation();
+    const labels = grid.getLabels();
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
     const { column, onDismiss } = { ...props };
-    const sorting = useColumnSortingController(column);
-    const condition = useColumnFilterConditionController(column);
-    const [items, setItems] = useState<IContextualMenuItem[]>([]);
+    const columnSorting = grid.getSorting().getColumnSorting(column.name);
+    const columnFilter = grid.getFiltering().getColumnFilter(column.name);
+    //const condition = useColumnFilterConditionController(column);
 
-    useEffect(() => {
-        (async () => {
-            setItems(await getItems())
-        })();
-    }, [condition]);
 
-    const getTwoOptionsSortLabel = async (isDesc?: boolean) => {
+    const getTwoOptionsSortLabel = (isDesc?: boolean) => {
         const options = column.metadata?.OptionSet ?? [];
         if (!isDesc) {
             return `${options[0].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[1].Label}`
@@ -37,7 +33,7 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
         return `${options[1].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[0].Label}`
     }
 
-    const getLabel = async (isDesc?: boolean) => {
+    const getLabel = (isDesc?: boolean): string => {
         switch (column.dataType) {
             case DataType.WHOLE_NONE:
             case DataType.DECIMAL:
@@ -68,29 +64,32 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
         }
     }
 
-    const getItems = async (): Promise<IContextualMenuItem[]> => {
-        if (!condition) {
-            return []
-        }
+    const getItems = (): IContextualMenuItem[] => {
         const items: IContextualMenuItem[] = [
             {
                 key: 'sort_asc',
                 checked: column.isSorted && !column.isSortedDescending,
                 disabled: column.disableSorting || column.dataType === DataType.MULTI_SELECT_OPTIONSET,
-                text: await getLabel(),
+                text: getLabel(),
                 className: styles.item,
                 onRenderIcon: () => <ArrowSortUp24Regular />,
-                onClick: () => sorting.sort(0)
+                onClick: () => {
+                    columnSorting.setSortValue(0)
+                    dataset.refresh()
+                }
             },
             {
                 key: 'sort_desc',
                 checked: column.isSorted && column.isSortedDescending,
                 disabled: column.disableSorting || column.dataType === DataType.MULTI_SELECT_OPTIONSET,
-                text: await getLabel(true),
+                text: getLabel(true),
                 className: styles.item,
                 onRenderIcon: () => <ArrowSortDown24Regular />,
                 iconProps: {},
-                onClick: () => sorting.sort(1)
+                onClick: () => {
+                    columnSorting.setSortValue(1)
+                    dataset.refresh()
+                }
             },
             {
                 key: 'divider',
@@ -139,26 +138,27 @@ export const SortingContextualMenu = (props: ISortingContextualMenu) => {
                 key: 'divider-footer',
                 itemType: ContextualMenuItemType.Divider
             },
-            ...(grid.dataset.sorting.find(x => x.name === column.name) ? [{
+            ...(dataset.sorting.find(x => x.name === column.name) ? [{
                 key: 'clear',
                 text: labels['filtersortmenu-clearsorting'](),
                 onRenderIcon: () => <Dismiss24Regular />,
                 onClick: () => {
-                    sorting.clear();
+                    columnSorting.clear();
+                    dataset.refresh()
                 }
             }] : []),
-            ...(condition.isAppliedToDataset ? [{
+             ...(columnFilter.isAppliedToDataset() ? [{
                 key: 'clearFilter',
                 text: labels['filtersortmenu-clearfilter'](),
                 onRenderIcon: () => <FilterDismiss24Regular />,
                 onClick: () => {
-                    condition.remove();
-                    condition.save();
+                    //condition.remove();
+                    //condition.save();
                 }
             }] : []),
 
         ];
         return items
     }
-    return <ContextualMenu {...props} items={items} />;
+    return <ContextualMenu {...props} items={getItems()} />;
 };

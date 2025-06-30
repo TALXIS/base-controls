@@ -11,6 +11,7 @@ import { CellContent } from "./CellContent/CellContent";
 import { ICellValues } from "../AgGrid/model/AgGrid";
 import { getClassNames, ICommandBarItemProps, useThemeGenerator } from "@talxis/react-components";
 import { useControlTheme } from "../../../../../utils";
+import { Grid2 } from "../../model/Grid";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
@@ -22,9 +23,11 @@ export const Cell = (props: ICellProps) => {
     const styles = useMemo(() => getCellStyles(), [])
     const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
-    const grid = useGridInstance();
+    const grid: Grid2 = useGridInstance() as any;
+    const selection = grid.getSelection();
     const record = props.data;
     const column = props.baseColumn;
+    const node = props.node;
     
     const shouldRenderEmptyCell = () => {
         if(record.getDataProvider().getSummarizationType() === 'aggregation') {
@@ -43,9 +46,9 @@ export const Cell = (props: ICellProps) => {
             case CHECKBOX_COLUMN_KEY: {
                 return (
                     <Checkbox
-                        checked={props.node.isSelected()}
+                        checked={node.isSelected()}
                         onChange={(e, checked) => {
-                            grid.selection.toggle(props.node.id!);
+                            selection.toggle(record.getRecordId())
                         }}
                         styles={{
                             checkbox: styles.checkbox
@@ -68,12 +71,12 @@ export const InternalCell = (props: ICellProps) => {
     const column = props.baseColumn;
     const record = props.data;
     const formatting = props.value.customFormatting;
-    const grid = useGridInstance();
+    const grid: Grid2 = useGridInstance() as any;
     const error = props.value.error;
     const notifications = props.value.notifications;
     const errorMessage = props.value.errorMessage;
     const theme = useTheme();
-    const applicationTheme = useControlTheme(grid.pcfContext.fluentDesignLanguage);
+    const applicationTheme = useControlTheme(grid.getPcfContext().fluentDesignLanguage);
     const [recordCommands, setRecordCommands] = useState(undefined);
 
     const shouldShowNotEditableNotification = () => {
@@ -133,7 +136,7 @@ export const InternalCell = (props: ICellProps) => {
         if (shouldShowNotEditableNotification()) {
             result.push({
                 key: 'noteditable',
-                text: grid.labels['value-not-editable'](),
+                text: grid.getLabels()['value-not-editable'](),
                 iconOnly: true,
                 disabled: true,
                 tooltipHostProps: tooltipProps,

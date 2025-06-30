@@ -9,6 +9,7 @@ import { ConditionOperator } from './components/ConditionOperator/ConditionOpera
 import { ConditionValue } from './components/ConditionValue/ConditionValue';
 import { useGridInstance } from '../../../core/hooks/useGridInstance';
 import { ConditionValueBetween } from './components/ConditionValue/ConditionValueBetween';
+import { Grid2 } from '../../../core/model/Grid';
 
 export interface IFilterCallout extends ICalloutProps {
     column: IGridColumn;
@@ -18,7 +19,8 @@ export interface IFilterCallout extends ICalloutProps {
 export const FilterCallout = (props: IFilterCallout) => {
     const { column, onDismiss } = { ...props };
     const condition = useColumnFilterConditionController(column);
-    const grid = useGridInstance();
+    const grid: Grid2 = useGridInstance() as any;
+    const labels = grid.getLabels();
     const conditionRef = React.useRef<IColumnFilterConditionController | null>();
     conditionRef.current = condition;
     const conditionOperator = condition?.operator.get();
@@ -56,7 +58,7 @@ export const FilterCallout = (props: IFilterCallout) => {
             calloutWidth={230}
             className={filterCalloutStyles.root}>
             <div className={filterCalloutStyles.header}>
-                <Text className={filterCalloutStyles.title} variant="mediumPlus">{grid.labels['filtermenu-filterby']()}</Text>
+                <Text className={filterCalloutStyles.title} variant="mediumPlus">{labels['filtermenu-filterby']()}</Text>
                 <IconButton onClick={() => onDismiss()} iconProps={{
                     iconName: 'ChromeClose',
                 }} />
@@ -75,14 +77,14 @@ export const FilterCallout = (props: IFilterCallout) => {
                         }
                     </div>
                     <div className={filterCalloutStyles.footer}>
-                        <PrimaryButton text={grid.labels['filtermenu-applybutton']()}
+                        <PrimaryButton text={labels['filtermenu-applybutton']()}
                             onClick={async () => {
                                 if (await condition.save()) {
                                     props.onDismiss();
                                 }
                             }} />
                         {conditionUtils.value(conditionOperator!).isEditable &&
-                            <Button text={grid.labels['filtermenu-clearbutton']()}
+                            <Button text={labels['filtermenu-clearbutton']()}
                                 disabled={isDeleteButtonDisabled()}
                                 onClick={() => {
                                     condition.setShouldShowError(false);
