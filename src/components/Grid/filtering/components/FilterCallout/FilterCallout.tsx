@@ -1,15 +1,12 @@
-import * as React from 'react';
-import { Callout, IconButton, PrimaryButton, Button, ICalloutProps } from '@fluentui/react';
+import { Callout, IconButton, ICalloutProps } from '@fluentui/react';
 import { Text } from '@fluentui/react';
 import { filterCalloutStyles } from './styles';
-import { IColumnFilterConditionController, useColumnFilterConditionController } from '../../controller/useColumnFilterConditionController';
 import { IGridColumn } from '../../../core/interfaces/IGridColumn';
-import { FilteringUtils } from '../../utils/FilteringUtilts';
-import { ConditionOperator } from './components/ConditionOperator/ConditionOperator';
-import { ConditionValue } from './components/ConditionValue/ConditionValue';
-import { useGridInstance } from '../../../core/hooks/useGridInstance';
-import { ConditionValueBetween } from './components/ConditionValue/ConditionValueBetween';
 import { Grid2 } from '../../../core/model/Grid';
+import { useGridInstance } from '../../../core/hooks/useGridInstance';
+import { useEffect } from 'react';
+import { DatasetColumnFiltering } from '../../../../DatasetControl/Filtering/DatasetColumnFiltering';
+import { getClassNames } from '@talxis/react-components';
 
 export interface IFilterCallout extends ICalloutProps {
     column: IGridColumn;
@@ -18,39 +15,24 @@ export interface IFilterCallout extends ICalloutProps {
 
 export const FilterCallout = (props: IFilterCallout) => {
     const { column, onDismiss } = { ...props };
-    const condition = useColumnFilterConditionController(column);
     const grid: Grid2 = useGridInstance() as any;
+    const dataset = grid.getDataset();
+    const context = grid.getPcfContext();
     const labels = grid.getLabels();
-    const conditionRef = React.useRef<IColumnFilterConditionController | null>();
-    conditionRef.current = condition;
-    const conditionOperator = condition?.operator.get();
-    const conditionValue = condition?.value.get();
-    const conditionUtils = FilteringUtils.condition();
+    const filtering = grid.getFiltering();
+    const columnFilter = grid.getFiltering().getColumnFilter(column.name);
 
-    const isDeleteButtonDisabled = () => {
-        switch (conditionValue) {
-            case null:
-            case undefined:
-            case "": {
-                return true;
-            }
-        }
-        return false;
+    const onColumnFilterSaved = (filter: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => {
+        dataset.filtering.setFilter(filter);
+        onDismiss();
+        dataset.refresh();
     }
 
-    const isBetweenCondition = () => {
-        if (conditionOperator === 10 || conditionOperator === 11) {
-            return true;
-        }
-        return false;
-    }
-
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
-            conditionRef.current?.clear();
+            filtering.removeColumnFilter(column.name);
         }
     }, []);
-
 
     return (
         <Callout
@@ -63,37 +45,41 @@ export const FilterCallout = (props: IFilterCallout) => {
                     iconName: 'ChromeClose',
                 }} />
             </div>
-            {condition &&
-                <>
-                    <div className={filterCalloutStyles.controls}>
-                        <ConditionOperator column={column} />
-                        {conditionUtils.value(conditionOperator!).isEditable && !isBetweenCondition() &&
-                            <ConditionValue
-                                column={column} />
-                        }
-                        {isBetweenCondition() &&
-                            <ConditionValueBetween
-                                column={column} />
-                        }
-                    </div>
-                    <div className={filterCalloutStyles.footer}>
-                        <PrimaryButton text={labels['filtermenu-applybutton']()}
-                            onClick={async () => {
-                                if (await condition.save()) {
-                                    props.onDismiss();
+            <DatasetColumnFiltering
+                parameters={{
+                    ColumnName: {
+                        raw: column.name,
+                    },
+                    Filtering: grid.getFiltering()
+                }}
+                onNotifyOutputChanged={(outputs) => onColumnFilterSaved(outputs)}
+                onOverrideComponentProps={(props) => {
+                    return {
+                        ...props,
+                        onRender: (props, defaultRender) => {
+                            return defaultRender({
+                                ...props,
+                                container: {
+                                    ...props.container,
+                                    className: getClassNames([props.container.className, filterCalloutStyles.datasetColumnFilteringRoot]),
+                                },
+                                valueControlsContainer: {
+                                    ...props.valueControlsContainer,
+                                    className: getClassNames([props.valueControlsContainer.className, filterCalloutStyles.valueControlsContainer]),
+                                },
+                                onRenderButtons: (props, defaultRender) => {
+                                    return defaultRender({
+                                        ...props,
+                                        container: {
+                                            className: getClassNames([props.container.className, filterCalloutStyles.datasetColumnFilteringButtons])
+                                        }
+                                    })
                                 }
-                            }} />
-                        {conditionUtils.value(conditionOperator!).isEditable &&
-                            <Button text={labels['filtermenu-clearbutton']()}
-                                disabled={isDeleteButtonDisabled()}
-                                onClick={() => {
-                                    condition.setShouldShowError(false);
-                                    condition.value.set(null);
-                                }} />
+                            })
                         }
-                    </div>
-                </>
-            }
+                    }
+                }}
+                context={context} />
         </Callout>
     );
 };

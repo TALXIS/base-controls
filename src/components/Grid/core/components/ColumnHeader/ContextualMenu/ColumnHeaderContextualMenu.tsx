@@ -3,10 +3,10 @@ import { ContextualMenu, ContextualMenuItemType, IContextualMenuItem, IContextua
 import { IGridColumn } from '../../../interfaces/IGridColumn';
 import { DataType } from '../../../enums/DataType';
 import { useGridInstance } from '../../../hooks/useGridInstance';
-import { useColumnFilterConditionController } from '../../../../filtering/controller/useColumnFilterConditionController';
 import { Filter24Regular, ArrowSortUp24Regular, ArrowSortDown24Regular, FilterDismiss24Regular, Dismiss24Regular, Autosum24Regular } from '@fluentui/react-icons';
 import { Grid2 } from '../../../model/Grid';
 import { getColumnHeaderContextualMenuStyles } from './styles';
+import { Type as FilterType } from '@talxis/client-libraries';
 
 export interface IColumnHeaderContextualMenuProps extends Omit<IContextualMenuProps, 'items'> {
     column: IGridColumn;
@@ -20,9 +20,9 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
     const labels = grid.getLabels();
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
     const { column, onDismiss } = { ...props };
+    const filtering = grid.getFiltering();
     const columnSorting = grid.getSorting().getColumnSorting(column.name);
-    const columnFilter = grid.getFiltering().getColumnFilter(column.name);
-    //const condition = useColumnFilterConditionController(column);
+    const columnFilter = filtering.getColumnFilter(column.name);
 
 
     const getTwoOptionsSortLabel = (isDesc?: boolean) => {
@@ -38,7 +38,6 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
             case DataType.WHOLE_NONE:
             case DataType.DECIMAL:
             case DataType.WHOLE_DURATION:
-            case DataType.FP:
             case DataType.CURRENCY: {
                 if (!isDesc) {
                     return labels['filtersortmenu-sortnumber-a-z']()
@@ -62,6 +61,16 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                 return labels['filtersortmenu-sorttext-z-a']()
             }
         }
+    }
+
+    const onClearFilter = () => {
+        columnFilter.clear();
+        const filterExpression = filtering.getFilterExpression(FilterType.And.Value);
+        if(!filterExpression) {
+            throw new Error('Filter expression is invalid');
+        }
+        dataset.filtering.setFilter(filterExpression);
+        dataset.refresh();
     }
 
     const getItems = (): IContextualMenuItem[] => {
@@ -151,10 +160,7 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                 key: 'clearFilter',
                 text: labels['filtersortmenu-clearfilter'](),
                 onRenderIcon: () => <FilterDismiss24Regular />,
-                onClick: () => {
-                    //condition.remove();
-                    //condition.save();
-                }
+                onClick: () => onClearFilter()
             }] : []),
 
         ];

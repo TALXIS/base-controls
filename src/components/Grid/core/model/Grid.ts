@@ -1,5 +1,4 @@
 import { Attribute, Client, Constants, DataType, DataTypes, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
-import { Filtering, Filtering2 } from "../../filtering/model/Filtering";
 import { IGrid, IGridParameters } from "../../interfaces";
 import { Selection } from "../../selection/model/Selection";
 import { Sorting } from "../../sorting/Sorting";
@@ -14,6 +13,7 @@ import { ITranslation } from "../../../../hooks/useControlLabels";
 import { gridTranslations } from "../../translations";
 import { ITheme, Theming } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
+import { Filtering } from "../../../../utils/dataset/extensions";
 
 interface IGridDependencies {
     labels: Required<ITranslation<typeof gridTranslations>>;
@@ -30,7 +30,7 @@ export class Grid2 {
     private _sorting: Sorting;
     private _selection: Selection;
     private _aggregation: Aggregation;
-    private _filtering: Filtering2;
+    private _filtering: Filtering;
     private _labels: Required<ITranslation<typeof gridTranslations>>;
     private _theme: ITheme;
     public readonly oddRowCellTheme: ITheme;
@@ -55,13 +55,12 @@ export class Grid2 {
             onGetDataset: () => this.getDataset(),
             onGetSelectionType: () => this.getSelectionType()
         })
-        this._filtering = new Filtering2(() => this.getDataset())
+        this._filtering = new Filtering(() => this.getDataset())
     }
 
     public getGridColumns(): IGridColumn[] {
         const gridColumns: IGridColumn[] = this.getDataset().columns.map(column => {
             const sorted = this.getDataset().sorting?.find(sort => sort.name === column.name);
-            console.log(this._filtering.getColumnFilter('optionset').getConditions()[0].getUndecoratedValue());
             return {
                 ...column,
                 alignment: this.getColumnAlignment(column),
@@ -78,7 +77,6 @@ export class Grid2 {
             }
         })
         this._injectCheckboxColumn(gridColumns);
-        console.log(gridColumns);
         return gridColumns;
     }
 
@@ -114,7 +112,7 @@ export class Grid2 {
     public getSorting(): Sorting {
         return this._sorting;
     }
-    public getFiltering(): Filtering2 {
+    public getFiltering(): Filtering {
         return this._filtering;
     }
     public getSelection(): Selection {
@@ -705,7 +703,7 @@ export class Grid {
                 isFiltered: false,
                 getEntityName: () => this._getColumnEntityName(column.name)
             }
-            const condition = await this.filtering.condition(gridColumn);
+            //const condition = await this.filtering.condition(gridColumn);
             //@ts-ignore
             gridColumn.isFiltered = condition.isAppliedToDataset;
             gridColumns.push(gridColumn);

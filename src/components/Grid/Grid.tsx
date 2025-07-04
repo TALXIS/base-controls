@@ -6,8 +6,9 @@ import { IGrid } from "./interfaces";
 import { AgGrid } from './core/components/AgGrid/AgGrid';
 import { gridTranslations } from './translations';
 import { GridContext } from "./GridContext";
-import { mergeStyleSets, ThemeProvider } from "@fluentui/react";
+import { DirectionalHint, mergeStyleSets, ThemeProvider } from "@fluentui/react";
 import { KeyHoldListener } from "./core/services/KeyListener";
+import { ComboBox } from "@talxis/react-components";
 
 const styles = mergeStyleSets({
     root: {

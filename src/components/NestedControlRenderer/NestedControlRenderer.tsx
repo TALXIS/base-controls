@@ -154,7 +154,8 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 },
                 onUnmount: (control, defaultUnmount) => {
                     getRef().componentProps.onOverrideUnmount(control, () => onUmount(control, defaultUnmount))
-                }
+                },
+                onIsLoading: () => getRef().componentProps.onOverrideIsLoading?.()
             },
         })
 
@@ -235,7 +236,7 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
 
     return (
         <div {...componentProps.rootContainerProps}>
-            {(!control || control.isLoading()) && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>
+            {(!control || control.isLoading() || props.componentProps.onOverrideIsLoading?.()) && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>
             }
             {errorMessage &&
                 <MessageBar messageBarType={MessageBarType.error} isMultiline={false} actions={<div>

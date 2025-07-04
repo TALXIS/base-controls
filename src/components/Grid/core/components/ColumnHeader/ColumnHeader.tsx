@@ -1,12 +1,12 @@
 import { useMemo, useRef, useState } from 'react';
 import { CommandBarButton, Icon, Label, useTheme } from '@fluentui/react';
-import { FilterCallout, IFilterCallout } from '../../../filtering/components/FilterCallout/FilterCallout';
 import { IGridColumn } from '../../interfaces/IGridColumn';
 import { getColumnHeaderStyles } from './styles';
 import { useGridInstance } from '../../hooks/useGridInstance';
 import React from 'react';
 import { ColumnHeaderContextualMenu, IColumnHeaderContextualMenuProps } from './ContextualMenu/ColumnHeaderContextualMenu';
 import { Grid2 } from '../../model/Grid';
+import { FilterCallout } from '../../../filtering/components/FilterCallout/FilterCallout';
 
 export interface IColumnHeader {
     baseColumn: IGridColumn;
@@ -16,7 +16,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
     const grid: Grid2 = useGridInstance() as any;
     const column = props.baseColumn;
     const [columnHeaderContextualMenuProps, setColumnHeaderContextualMenuProps] = useState<IColumnHeaderContextualMenuProps | null>(null);
-    const [filterCalloutProps, setFilterCalloutProps] = useState<IFilterCallout | null>(null);
+    const [filterCalloutProps, setFilterCalloutProps] = useState<any | null>(null);
     const theme = useTheme();
     const columnHeaderStyles = useMemo(() => getColumnHeaderStyles(theme, column.alignment), [theme, column.alignment])
     const buttonRef = useRef<HTMLElement>(null);

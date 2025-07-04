@@ -76,6 +76,11 @@ export interface INestedControlRendererComponentProps {
      * Callback function that allows you to override the default control unmount behavior.
      */
     onOverrideUnmount: (control: NestedControl, defaultUnmount: () => void) => void;
+
+    /**
+     * Can be used to override the loading state of the control.
+     */
+    onOverrideIsLoading: () => boolean;
 }
 
 export interface IBinding {

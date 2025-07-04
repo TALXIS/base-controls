@@ -1,18 +1,13 @@
 import { mergeStyleSets } from "@fluentui/react";
 
 export const filterCalloutStyles = mergeStyleSets({
-    controls: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-        flexGrow: 1
-    },
     root: {
         minHeight: 200,
         padding: 16,
         '.ms-Callout-main': {
             display: 'flex',
             flexDirection: 'column',
+            minHeight: 180,
             gap: 10
         },
         '.TALXIS__combobox__root, [class*="TALXIS__textfield__root"], [class*="TALXIS__tag-picker__root"]': {
@@ -29,9 +24,13 @@ export const filterCalloutStyles = mergeStyleSets({
             fontSize: 12
         }
     },
-    footer: {
-        display: 'flex',
-        gap: 10,
-        justifyContent: 'flex-end'
+    valueControlsContainer: {
+        flexGrow: 1
+    },
+    datasetColumnFilteringRoot: {
+        flexGrow: 1
+    },
+    datasetColumnFilteringButtons: {
+        justifyContent: 'flex-end',
     }
 });
