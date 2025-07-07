@@ -4,7 +4,6 @@ import { filterCalloutStyles } from './styles';
 import { IGridColumn } from '../../../core/interfaces/IGridColumn';
 import { Grid2 } from '../../../core/model/Grid';
 import { useGridInstance } from '../../../core/hooks/useGridInstance';
-import { useEffect } from 'react';
 import { DatasetColumnFiltering } from '../../../../DatasetControl/Filtering/DatasetColumnFiltering';
 import { getClassNames } from '@talxis/react-components';
 
@@ -19,20 +18,12 @@ export const FilterCallout = (props: IFilterCallout) => {
     const dataset = grid.getDataset();
     const context = grid.getPcfContext();
     const labels = grid.getLabels();
-    const filtering = grid.getFiltering();
-    const columnFilter = grid.getFiltering().getColumnFilter(column.name);
 
     const onColumnFilterSaved = (filter: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => {
-        dataset.filtering.setFilter(filter);
         onDismiss();
+        dataset.filtering.setFilter(filter);
         dataset.refresh();
     }
-
-    useEffect(() => {
-        return () => {
-            filtering.removeColumnFilter(column.name);
-        }
-    }, []);
 
     return (
         <Callout

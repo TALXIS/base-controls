@@ -42,7 +42,8 @@ const externalDeps = [
     '@ag-grid-community/core',
     '@ag-grid-community/styles',
     '@ag-grid-community/styles/ag-grid.css',
-    '@ag-grid-community/styles/ag-theme-balham.css'
+    '@ag-grid-community/styles/ag-theme-balham.css',
+    '@solid-primitives/keyboard'
 ]
 
 export default [

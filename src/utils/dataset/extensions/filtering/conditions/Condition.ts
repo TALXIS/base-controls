@@ -68,11 +68,12 @@ export abstract class Condition extends EventEmitter<IEvents> {
 
     public setOperator(operator: IOperator['Value']): void {
         this._operator = operator;
+        this.setValue(this.getControlValue());
         this.dispatchEvent("onOperatorChanged", operator);
     }
 
     public getOperator(decorate?: boolean): IOperator['Value'] {
-        if(decorate) {
+        if (decorate) {
             return this._getDecoratedOperator(this._operator, this._filterValue);
         }
         return this._operator;
@@ -82,19 +83,20 @@ export abstract class Condition extends EventEmitter<IEvents> {
     }
 
     public getValue(decorate?: boolean) {
-        if(decorate) {
+        if (decorate) {
             return this._getDecoratedValue(this._filterValue);
         }
         return this._filterValue;
     }
 
-    public getControlValue(): any {
-        return this._getControlValue(this._filterValue);
-    }
-
-    public setControlValue(value: any): void {
+    //accepts value in PCF control format
+    public setValue(value: any): void {
         this._filterValue = this._getFilterValue(value);
         this.dispatchEvent("onValueChanged", this._filterValue);
+    }
+
+    public getControlValue(): any {
+        return this._getControlValue(this._filterValue);
     }
 
     public getMetadata() {
@@ -105,7 +107,7 @@ export abstract class Condition extends EventEmitter<IEvents> {
         return false;
     }
 
-    public getBindings(): {[key: string]: IBinding} {
+    public getBindings(): { [key: string]: IBinding } {
         return {};
     }
 

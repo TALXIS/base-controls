@@ -64,9 +64,9 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
     }
 
     const onClearFilter = () => {
-        columnFilter.clear();
+        filtering.removeColumnFilter(column.name);
         const filterExpression = filtering.getFilterExpression(FilterType.And.Value);
-        if(!filterExpression) {
+        if (!filterExpression) {
             throw new Error('Filter expression is invalid');
         }
         dataset.filtering.setFilter(filterExpression);
@@ -156,7 +156,7 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                     dataset.refresh()
                 }
             }] : []),
-             ...(columnFilter.isAppliedToDataset() ? [{
+            ...(columnFilter.isAppliedToDataset() ? [{
                 key: 'clearFilter',
                 text: labels['filtersortmenu-clearfilter'](),
                 onRenderIcon: () => <FilterDismiss24Regular />,

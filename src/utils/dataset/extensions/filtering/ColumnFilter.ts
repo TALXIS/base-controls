@@ -22,6 +22,7 @@ export class ColumnFilter {
         this._getDataset = onGetDataset;
         this._column = this._dataset.getDataProvider().getColumnsMap().get(columnName)!;
         this._createConditionsFromFilterExpression();
+        this._dataset.addEventListener('onBeforeNewDataLoaded', () => this._createConditionsFromFilterExpression())
     }
 
     public isAppliedToDataset(): boolean {
@@ -40,10 +41,6 @@ export class ColumnFilter {
         this._conditions.set(id, condition);
     }
 
-    public clear() {
-        this._conditions.clear();
-    }
-
     public getExpressionConditions(): ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression[] {
         const attributeName = Attribute.GetNameFromAlias(this._column.name);
         const entityAlias = Attribute.GetLinkedEntityAlias(this._column.name) ?? '';
@@ -58,6 +55,7 @@ export class ColumnFilter {
     }
 
     private _createConditionsFromFilterExpression() {
+        this._conditions.clear();
         const conditions = this._dataset.filtering.getFilter()?.conditions ?? [];
         conditions.map(cond => {
             const attributeName = this._undecorateAttributeName(cond.attributeName, cond.conditionOperator);

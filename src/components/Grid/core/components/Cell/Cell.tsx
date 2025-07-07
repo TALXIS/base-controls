@@ -20,6 +20,7 @@ export interface ICellProps extends ICellRendererParams {
     value: ICellValues;
 }
 export const Cell = (props: ICellProps) => {
+    console.log(props.valueFormatted, props.isCellEditor);
     const styles = useMemo(() => getCellStyles(), [])
     const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);

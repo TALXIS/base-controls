@@ -191,7 +191,7 @@ export class LookupCondition extends Condition {
         }
         this._isValueLoading = false;
         this._lastSelectedLookupValue = lookupValues;
-        this.setControlValue(lookupValues);
+        this.setValue(lookupValues);
     }
 
 }

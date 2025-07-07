@@ -72,6 +72,7 @@ export class AgGrid {
                     baseColumn: column,
                     isCellEditor: true
                 },
+                editable: (p) => this._isColumnEditable(column, p),
                 headerComponent: ColumnHeader,
                 cellRenderer: Cell,
                 cellEditor: Cell,
@@ -243,6 +244,26 @@ export class AgGrid {
                 this.getGridApi().showNoRowsOverlay();
             }
         }, 0);
+    }
+
+    private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
+        if (column.name === CHECKBOX_COLUMN_KEY) {
+            return false;
+        }
+        //we cannot edit aggregated or grouped columns
+        if (params?.data?.getDataProvider().getSummarizationType() !== 'none') {
+            return false;
+        }
+        const columnInfo = params.data?.getColumnInfo(column.name);
+        if (!this._grid.isEditingEnabled() || columnInfo?.ui.isLoading() === true) {
+            return false;
+        }
+        //disable ag grid cell editor if oneClickEdit is enabled
+        //editor control will be used in cell renderer
+        if (column.oneClickEdit) {
+            return false;
+        }
+        return columnInfo?.security.editable ?? true;
     }
 
     private get _dataset() {

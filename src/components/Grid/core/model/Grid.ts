@@ -1,7 +1,6 @@
 import { Attribute, Client, Constants, DataType, DataTypes, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { IGrid, IGridParameters } from "../../interfaces";
 import { Selection } from "../../selection/model/Selection";
-import { Sorting } from "../../sorting/Sorting";
 import { KeyHoldListener } from "../services/KeyListener";
 import { CHECKBOX_COLUMN_KEY } from "../../constants";
 import { IGridColumn } from "../interfaces/IGridColumn";
@@ -13,7 +12,7 @@ import { ITranslation } from "../../../../hooks/useControlLabels";
 import { gridTranslations } from "../../translations";
 import { ITheme, Theming } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
-import { Filtering } from "../../../../utils/dataset/extensions";
+import { Filtering, Sorting } from "../../../../utils/dataset/extensions";
 
 interface IGridDependencies {
     labels: Required<ITranslation<typeof gridTranslations>>;
@@ -42,9 +41,7 @@ export class Grid2 {
         this._theme = theme ?? getTheme();
         this.oddRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.neutralLighterAlt, this._theme.semanticColors.bodyText);
         this.evenRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.white, this._theme.semanticColors.bodyText);
-        this._sorting = new Sorting({
-            onGetDataset: () => this.getDataset()
-        })
+        this._sorting = new Sorting(() => this.getDataset());
         this._aggregation = new Aggregation({
             onGetDataset: () => this.getDataset(),
             translations: {
@@ -129,6 +126,10 @@ export class Grid2 {
     }
     public isNavigationEnabled(): boolean {
         return this.getParameters().EnableNavigation?.raw !== false;
+    }
+
+    public isEditingEnabled(): boolean {
+        return this.getParameters().EnableEditing?.raw === true;
     }
     public optionSetColorsEnabled(): boolean {
         return this.getParameters().EnableOptionSetColors?.raw === true;

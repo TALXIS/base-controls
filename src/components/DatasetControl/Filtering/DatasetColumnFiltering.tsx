@@ -50,7 +50,7 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
     }
 
     const onClear = () => {
-        condition.setControlValue(null);
+        condition.setValue(null);
         setShouldRemountValueControl(true);
     }
 

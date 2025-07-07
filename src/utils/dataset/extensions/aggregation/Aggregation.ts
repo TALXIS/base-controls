@@ -1,5 +1,5 @@
 import { AggregationFunction, IAggregationMetadata, IDataset, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { DatasetExtension } from "../core/model/DatasetExtension";
+import { DatasetExtension } from "../DatasetExtension";
 
 interface ITranslations {
     calculationLimitExceededError: string;

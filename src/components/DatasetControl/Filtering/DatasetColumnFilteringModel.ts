@@ -30,7 +30,7 @@ export class DatasetColumnFilteringModel {
     public setConditionValue(value: any, index: number) {
         const operator = this._condition.getOperator();
         if (operator !== Operators.Between.Value && operator !== Operators.NotBetween.Value) {
-            this._condition.setControlValue(value);
+            this._condition.setValue(value);
         }
         else {
             const values = [this._condition.getControlValue()?.[0] ?? null, this._condition.getControlValue()?.[1] ?? null];
@@ -40,7 +40,7 @@ export class DatasetColumnFilteringModel {
             else {
                 values[1] = value;
             }
-            this._condition.setControlValue(values);
+            this._condition.setValue(values);
         }
     }
 
@@ -57,41 +57,6 @@ export class DatasetColumnFilteringModel {
     }
     
     public getControlName() {
-        switch (this._condition.getDataType()) {
-            case 'Currency':
-            case 'Decimal':
-            case 'Whole.None':
-            case 'Whole.Language':
-            case 'Whole.TimeZone': {
-                return BaseControls.Decimal;
-            }
-            case 'DateAndTime.DateAndTime':
-            case 'DateAndTime.DateOnly': {
-                return BaseControls.DateTime;
-            }
-            case 'Lookup.Customer':
-            case 'Lookup.Owner':
-            case 'Lookup.Regarding':
-            case 'Lookup.Simple': {
-                return BaseControls.Lookup;
-            }
-            case 'SingleLine.Email':
-            case 'SingleLine.Phone':
-            case 'SingleLine.Text':
-            case 'SingleLine.TextArea':
-            case 'Multiple':
-            case 'SingleLine.URL': {
-                return BaseControls.TextField;
-            }
-            case 'TwoOptions':
-            case 'OptionSet':
-            case 'MultiSelectPicklist': {
-                return BaseControls.MultiSelectOptionSet;
-            }
-            case 'Whole.Duration': {
-                return BaseControls.Duration;
-            }
-        }
-        return null;
+        return BaseControls.GetControlNameForDataType(this._condition.getColumn().dataType);
     }
 }
