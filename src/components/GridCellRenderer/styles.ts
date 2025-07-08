@@ -5,7 +5,7 @@ import { ITheme } from "@talxis/react-components";
 export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment'], dataType: DataType, rowHeight: number, theme: ITheme) => {
     return mergeStyleSets({
         root: {
-            height: rowHeight,
+            height: '100%',
             paddingLeft: 8,
             paddingRight: 8,
             display: 'flex',
@@ -73,6 +73,7 @@ export const getDefaultContentRendererStyles = (theme: ITheme, dataType: DataTyp
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             flexGrow: 1,
+            resize: isMultiple(dataType) ? 'vertical' : 'none',
             ...(isMultiple(dataType) ? getMultilineStyles(rowHeight, theme) : {})
         },
         placeholder: {
@@ -96,25 +97,14 @@ const getJustifyContent = (columnAlignment: IColumn['alignment']) => {
 }
 
 const getMultilineStyles = (rowHeight: number, theme: ITheme) => {
-    rowHeight = rowHeight + 1;
-    let fontSize = 20;
-    const themeFontSize = theme.fonts.medium.fontSize;
-    theme.fonts.medium.lineHeight
-    if (typeof themeFontSize === 'number') {
-        fontSize = themeFontSize;
-    }
-    else if (typeof themeFontSize === 'string' && themeFontSize.endsWith('px')) {
-        fontSize = parseInt(themeFontSize.replace('px', ''));
-    }
-    const clamp = Math.floor(rowHeight / fontSize) - 1;
     return {
         lineHeight: '1.2',
         display: '-webkit-box',
         whiteSpace: 'normal',
         '-webkit-box-orient': 'vertical',
         wordBreak: 'break-all',
-        '-webkit-line-clamp': clamp.toString(),
-    };
+        '-webkit-line-clamp': '6',
+    }
 }
 
 const isMultiple = (dataType: DataType) => {

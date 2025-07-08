@@ -55,8 +55,14 @@ export class DatasetColumnFilteringModel {
         }
         return [null, null];
     }
-    
+
     public getControlName() {
-        return BaseControls.GetControlNameForDataType(this._condition.getColumn().dataType);
+        const dataType = this._condition.getDataType();
+        if (!dataType) {
+            return null;
+        }
+        else {
+            return BaseControls.GetControlNameForDataType(dataType);
+        }
     }
 }

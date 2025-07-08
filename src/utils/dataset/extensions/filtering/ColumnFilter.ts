@@ -41,6 +41,10 @@ export class ColumnFilter {
         this._conditions.set(id, condition);
     }
 
+    public clear() {
+        this._conditions.clear();
+    }
+
     public getExpressionConditions(): ComponentFramework.PropertyHelper.DataSetApi.ConditionExpression[] {
         const attributeName = Attribute.GetNameFromAlias(this._column.name);
         const entityAlias = Attribute.GetLinkedEntityAlias(this._column.name) ?? '';

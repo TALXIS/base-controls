@@ -13,6 +13,7 @@ export interface IControlController<TTranslations, TOutputs> {
         width?: number,
         height?: number
     },
+    className: string;
     theme: ITheme;
     onNotifyOutputChanged: (outputs: TOutputs) => void,
 }
@@ -70,6 +71,7 @@ export const useControl = <TParameters extends IParameters, TOutputs extends IOu
     };
     
     return {
+        className: `talxis__baseControl__${name}`,
         labels,
         sizing,
         theme: useControlTheme(context.fluentDesignLanguage),

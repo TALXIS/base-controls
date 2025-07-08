@@ -26,6 +26,7 @@ const externalDeps = [
     'react',
     'react-dom',
     'react/jsx-runtime',
+    'debounce',
     'use-debounce',
     'validator',
     'validator/es/lib/isURL',
