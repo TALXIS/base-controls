@@ -34,8 +34,30 @@ export const CellContent = (props: ICellContentProps) => {
     const styles = React.useMemo(() => getCellContentStyles(valueRef.current.columnAlignment), [valueRef.current.columnAlignment]);
     //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
+
     const getColumn = () => {
         return columnRef.current;
+    }
+
+    const getThemeId = () => {
+        if(valueRef.current.aggregatedValue != null) {
+            return `${valueRef.current.aggregatedValue}`
+        }
+        return null;
+    }
+
+    const getFonts = () => {
+        if(valueRef.current.aggregatedValue != null && valueRef.current.value == null) {
+            return {
+                medium: {
+                    fontSize: 15,
+                    fontWeight: 600
+                }
+            }
+        }
+        else {
+            return {};
+        }
     }
 
     const getFluentDesignLanguage = (fluentDesignLanguage?: IFluentDesignState) => {
@@ -46,6 +68,7 @@ export const CellContent = (props: ICellContentProps) => {
         const result = ControlTheme.GenerateFluentDesignLanguage(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, {
             v8FluentOverrides: merge({},
                 {
+                    id: getThemeId(),
                     semanticColors: {
                         inputBorder: 'transparent',
                         inputBorderHovered: 'transparent',
@@ -56,11 +79,7 @@ export const CellContent = (props: ICellContentProps) => {
                         errorText: 'transparent'
 
                     },
-                    fonts: record.getDataProvider().getSummarizationType() === 'aggregation' ? {
-                        medium: {
-                            fontWeight: 600 as any
-                        }
-                    }: {},
+                    fonts: getFonts(),
                     effects: {
                         underlined: false
                     },
@@ -232,7 +251,8 @@ export const CellContent = (props: ICellContentProps) => {
                             ...controlProps.context,
                             mode: Object.create(controlProps.context.mode, {
                                 allocatedHeight: {
-                                    value: node.rowHeight! - 1
+                                    //-4 is needed to offset the auto size behavior
+                                    value: node.rowHeight! - 4
                                 },
 
                             }),

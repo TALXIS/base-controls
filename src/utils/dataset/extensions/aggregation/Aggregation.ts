@@ -1,5 +1,4 @@
-import { AggregationFunction, IAggregationMetadata, IDataset, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { DatasetExtension } from "../DatasetExtension";
+import { AggregationFunction, EventEmitter, IAggregationMetadata, IDataset, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 
 interface ITranslations {
     calculationLimitExceededError: string;
@@ -10,21 +9,27 @@ interface IDependencies {
     translations: ITranslations;
 }
 
-export class Aggregation extends DatasetExtension {
+interface IEvents {
+    onRequestRender: () => void;
+    onRequestMainDatasetRefresh: () => void;
+}
+
+export class Aggregation extends EventEmitter<IEvents> {
     private _hasUserChangedAggregations: boolean = false;
     private _aggregationDataset: IDataset;
     private _translations: ITranslations;
-    private _onRequestRenderHandler: () => void = () => {};
+    private _onGetDataset: () => IDataset;
 
-    constructor({ onGetDataset, translations}: IDependencies) {
-        super(onGetDataset);
+    constructor({ onGetDataset, translations }: IDependencies) {
+        super();
+        this._onGetDataset = onGetDataset;
         this._translations = translations;
-        this._aggregationDataset = this._dataset.getChildDataset();
-        this._aggregationDataset.addEventListener('onBeforeNewDataLoaded', () => this._syncAggregationDataProvider());
-        this._aggregationDataset.addEventListener('onError', (errorMessage, details) => this._onError(errorMessage, details));
-        this._aggregationDataset.addEventListener('onNewDataLoaded', () => this._dataset.getDataProvider().setError(false));
-        this._aggregationDataset.addEventListener('onLoading', () => this._onRequestRenderHandler());
-        this._dataset.addEventListener('onNewDataLoaded', () => this._updateAggregations());
+        //this._aggregationDataset = this._dataset.getChildDataset();
+        //this._aggregationDataset.addEventListener('onBeforeNewDataLoaded', () => this._syncAggregationDataProvider());
+        //this._aggregationDataset.addEventListener('onError', (errorMessage, details) => this._onError(errorMessage, details));
+        //this._aggregationDataset.addEventListener('onNewDataLoaded', () => this._dataset.getDataProvider().setError(false));
+        //this._aggregationDataset.addEventListener('onLoading', () => this.dispatchEvent('onRequestRender'));
+        //this._dataset.addEventListener('onNewDataLoaded', () => this._updateAggregations());
     }
     public getAggregationRecord(): IRecord[] {
         if (this._aggregationDataset.aggregation.getAggregations().length === 0 || this._dataset.sortedRecordIds.length === 0) {
@@ -37,6 +42,14 @@ export class Aggregation extends DatasetExtension {
     }
 
     public addAggregation(columnName: string, aggregationFunction: AggregationFunction) {
+        if (this._dataset.grouping.getGroupBys().length > 0) {
+            this._dataset.aggregation.addAggregation({
+                columnName: columnName,
+                alias: `${columnName}_${aggregationFunction}`,
+                aggregationFunction: aggregationFunction,
+            })
+            this.dispatchEvent('onRequestMainDatasetRefresh');
+        }
         this._aggregationDataset.aggregation.addAggregation({
             columnName: columnName,
             alias: `${columnName}_${aggregationFunction}`,
@@ -47,15 +60,22 @@ export class Aggregation extends DatasetExtension {
     }
 
     public removeAggregation(columnName: string) {
+        if (this._dataset.aggregation.getAggregations().length > 0) {
+            this._dataset.aggregation.removeAggregation(columnName);
+            this.dispatchEvent('onRequestMainDatasetRefresh');
+        }
         const aggregation = this.getAggregationForColumn(columnName);
         if (aggregation) {
-            this._aggregationDataset.aggregation.removeAggregation(aggregation);
+            this._aggregationDataset.aggregation.removeAggregation(columnName);
         }
         this._hasUserChangedAggregations = true;
         this._aggregationDataset.refresh();
     }
 
     public isAggregationAppliedToColumn(columnName: string, aggregationFunction?: string): boolean {
+        if (this._dataset.aggregation.getAggregation(columnName)?.aggregationFunction === aggregationFunction) {
+            return true;
+        }
         return !!this._aggregationDataset.aggregation.getAggregations().find(agg => {
             if (agg.columnName === columnName) {
                 if (aggregationFunction) {
@@ -72,10 +92,6 @@ export class Aggregation extends DatasetExtension {
         });
     }
 
-    public setOnRequestRenderHandler(handler: () => void) {
-        this._onRequestRenderHandler = handler;
-    }
-
     private _updateAggregations() {
         this._syncAggregationDataProvider();
         if (!this._hasUserChangedAggregations) {
@@ -87,7 +103,7 @@ export class Aggregation extends DatasetExtension {
         const columnNames = this._dataset.getDataProvider().getColumns().map(col => col.name);
         aggregations.map(agg => {
             if (!columnNames.includes(agg.columnName)) {
-                this._aggregationDataset.aggregation.removeAggregation(agg);
+                this._aggregationDataset.aggregation.removeAggregation(agg.columnName);
             }
         })
         if (this._aggregationDataset.aggregation.getAggregations().length > 0) {
@@ -132,10 +148,11 @@ export class Aggregation extends DatasetExtension {
             errorText = this._translations.calculationLimitExceededError;
         }
         this._dataset.getDataProvider().setError(true, errorText);
-        this._onRequestRenderHandler();
+        this.dispatchEvent('onRequestRender')
     }
 
     private _syncAggregationDataProvider() {
+        this._aggregationDataset.grouping.clear();
         this._aggregationDataset.getDataProvider().setLinking(this._dataset.getDataProvider().getLinking());
         this._aggregationDataset.getDataProvider().setFiltering(this._dataset.getDataProvider().getFiltering());
         this._aggregationDataset.getDataProvider().setSearchQuery(this._dataset.getDataProvider().getSearchQuery());
@@ -143,12 +160,15 @@ export class Aggregation extends DatasetExtension {
         this._aggregationDataset.getDataProvider().setColumns(this._dataset.getDataProvider().getColumns().map(col => {
             return {
                 ...col,
+                isGrouped: false,
                 metadata: {
                     ...col.metadata,
                     RequiredLevel: 0
                 }
             }
         }))
-
+    }
+    private get _dataset() {
+        return this._onGetDataset();
     }
 }

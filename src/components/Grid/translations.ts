@@ -22,6 +22,8 @@ export const gridTranslations = {
     "filtersortmenu-total-count": { 1029: 'Počet (včetně prázdných hodnot)', 1033: 'Count (including empty values)' },
     "filtersortmenu-total-countcolumn": { 1029: 'Počet', 1033: 'Count' },
     "filtersortmenu-total": { 1029: 'Součty', 1033: 'Totals' },
+    "filtersortmenu-group": { 1029: 'Seskupit', 1033: 'Group' },
+    "filtersortmenu-ungroup": { 1029: 'Zrušit seskupení', 1033: 'Ungroup' },
     "norecordsfound": { 1029: 'Nenašli jsme nic, co by se zde dalo zobrazit.', 1033: 'No records found.' },
     "saving-changenotification": { 1029: "Počet upravených záznamů: <b>{{numOfChanges}}</b>.", 1033: "Number of updated records: <b>{{numOfChanges}}</b>." },
     "saving-clickreview": { 1029: "Klikněte <u>zde</u> pro jejich zobrazení.", 1033: "Click <u>here</u> to review" },

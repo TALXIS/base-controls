@@ -64,6 +64,7 @@ export const Grid = (props: IGrid) => {
                 getRowId={(params: GetRowIdParams<IRecord>) => `${params.data.getRecordId()}_${params.data.getIndex()}`}
                 rowModelType='serverSide'
                 suppressCopyRowsToClipboard
+                groupDisplayType="custom"
                 rowSelection={agGrid.getSelectionType()}
                 loadingOverlayComponent={LoadingOverlay}
                 noRowsOverlayComponent={EmptyRecords}

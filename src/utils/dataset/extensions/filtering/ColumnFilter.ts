@@ -34,11 +34,12 @@ export class ColumnFilter {
     public getConditions(): Condition[] {
         return [...this._conditions.values()];
     }
-    public addCondition() {
+    public addCondition(): Condition {
         const id = crypto.randomUUID();
         const ConditionClass = this._getConditionClass();
         const condition = new ConditionClass({ id, column: this._column });
         this._conditions.set(id, condition);
+        return this._conditions.get(id)!;
     }
 
     public clear() {

@@ -2,7 +2,7 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps } from "@fluentui/react";
 import { IRecord, Constants } from "@talxis/client-libraries";
 import { useThemeGenerator, getClassNames } from "@talxis/react-components";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
 import { CHECKBOX_COLUMN_KEY } from "../../constants";
 import { ICellValues } from "../../grid/ag-grid/AgGridModel";
@@ -15,10 +15,19 @@ import { getCellStyles, getInnerCellStyles } from "./styles";
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     isCellEditor: boolean;
+    isFirstGroupedColumn?: boolean;
     data: IRecord;
     value: ICellValues;
 }
+
 export const Cell = (props: ICellProps) => {
+    if(!props.value) {
+        return <></>
+    }
+    return <CellWrapper {...props} />
+}
+
+const CellWrapper = (props: ICellProps) => {
     const styles = useMemo(() => getCellStyles(), [])
     const cellFormatting = props.value.customFormatting;
     const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
@@ -27,10 +36,11 @@ export const Cell = (props: ICellProps) => {
     const record = props.data;
     const column = props.baseColumn;
     const node = props.node;
-    
+    const checkBoxRef = useRef<HTMLDivElement>(null);
+
     const shouldRenderEmptyCell = () => {
-        if(record.getDataProvider().getSummarizationType() === 'aggregation') {
-            if(column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME || column.name === CHECKBOX_COLUMN_KEY) {
+        if (record.getDataProvider().getSummarizationType() === 'aggregation') {
+            if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME || column.name === CHECKBOX_COLUMN_KEY) {
                 return true;
             }
         }
@@ -44,14 +54,13 @@ export const Cell = (props: ICellProps) => {
         switch (props.baseColumn.name) {
             case CHECKBOX_COLUMN_KEY: {
                 return (
-                    <Checkbox
-                        checked={node.isSelected()}
-                        onChange={(e, checked) => {
-                            selection.toggle(record.getRecordId())
-                        }}
-                        styles={{
-                            checkbox: styles.checkbox
-                        }} />
+                    <div ref={checkBoxRef} className={styles.checkBoxContainer}>
+                        <Checkbox
+                            checked={node.isSelected()}
+                            styles={{
+                                checkbox: styles.checkbox
+                            }} />
+                    </div>
                 );
             }
             default: {
@@ -59,6 +68,21 @@ export const Cell = (props: ICellProps) => {
             }
         }
     }
+
+    const onCheckBoxClick = useCallback(e => {
+        e.stopPropagation();
+        e.preventDefault();
+        selection.toggle(record.getRecordId());
+    }, []);
+
+    useEffect(() => {
+        //this needs to be done like this because stopPropagation in React onClick
+        //does not stop the event from propagating to the grid (cause by synthentic events)
+        //https://stackoverflow.com/questions/24415631/reactjs-syntheticevent-stoppropagation-only-works-with-react-events
+        if (checkBoxRef.current) {
+            checkBoxRef.current.addEventListener('click', onCheckBoxClick)
+        }
+    }, []);
 
     return <ThemeProvider theme={cellTheme} className={getClassNames([styles.cellRoot, cellFormatting.className])}>
         {renderContent()}
@@ -69,6 +93,7 @@ export const Cell = (props: ICellProps) => {
 export const InternalCell = (props: ICellProps) => {
     const column = props.baseColumn;
     const record = props.data;
+    const node = props.node;
     const formatting = props.value.customFormatting;
     const grid = useGridInstance();
     const error = props.value.error;
@@ -112,6 +137,7 @@ export const InternalCell = (props: ICellProps) => {
         }
         return (
             <>
+                {grid.isColumnExpandable(record, column) && <button onClick={() => node.setExpanded(!node.expanded)}>toggle</button>}
                 {(column.type !== 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) &&
                     <CellContent {...props} recordCommands={recordCommands} />
                 }
@@ -195,7 +221,7 @@ export const InternalCell = (props: ICellProps) => {
                 setRecordCommands(await grid.dataset.retrieveRecordCommand([record.getRecordId()], grid.inlineRibbonButtonIds));
             })();
         }
-    }, [record.getValue(column.name)]);
+    }, [grid.getRecordValue(record, column)]);
 
     return <div className={styles.innerCellRoot} data-is-valid={!error}>
         {renderContent()}

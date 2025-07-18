@@ -8,7 +8,7 @@ import { ITranslation } from "../../../hooks";
 import { IBinding } from "../../NestedControlRenderer/interfaces";
 import { BaseControls, IFluentDesignState } from "../../../utils";
 import { IGrid, IGridParameters } from "../interfaces";
-import { Aggregation, Filtering, Sorting, Selection } from "../../../utils/dataset/extensions";
+import { Aggregation, Filtering, Sorting, Selection, Grouping } from "../../../utils/dataset/extensions";
 import { CHECKBOX_COLUMN_KEY } from "../constants";
 
 const DEFAULT_ROW_HEIGHT = 42;
@@ -23,12 +23,19 @@ interface IPCFContext extends Omit<ComponentFramework.Context<any, any>, 'fluent
     fluentDesignLanguage?: IFluentDesignState
 }
 
+interface IAggregationInfo {
+    value: number | null;
+    formattedValue: string | null;
+    aggregatedColumn: IColumn | null;
+}
+
 export interface IGridColumn extends IColumn {
     isRequired: boolean;
     isEditable: boolean;
     isFilterable: boolean;
     isSorted: boolean;
     canBeAggregated: boolean;
+    canBeGrouped: boolean;
     isSortedDescending: boolean;
     isResizable: boolean;
     alignment: IColumn['alignment'],
@@ -40,10 +47,11 @@ export class GridModel {
     private _sorting: Sorting;
     private _selection: Selection;
     private _aggregation: Aggregation;
+    private _grouping: Grouping;
     private _filtering: Filtering;
     private _labels: Required<ITranslation<typeof gridTranslations>>;
     private _theme: ITheme;
-    private _currentColumns: IGridColumn[] = [];
+    private _cachedColumns: IGridColumn[] = [];
     public readonly oddRowCellTheme: ITheme;
     public readonly evenRowCellTheme: ITheme;
 
@@ -60,11 +68,13 @@ export class GridModel {
                 calculationLimitExceededError: this._labels["error-2147750198"]()
             }
         })
+        this._aggregation.addEventListener('onRequestMainDatasetRefresh', () => this._dataset.refresh())
         this._selection = new Selection({
             onGetDataset: () => this.getDataset(),
             onGetSelectionType: () => this.getSelectionType()
         })
         this._filtering = new Filtering(() => this.getDataset());
+        this._grouping = new Grouping(() => this.getDataset());
     }
 
     public getDataset(): IDataset {
@@ -107,6 +117,9 @@ export class GridModel {
     }
     public getAggregation(): Aggregation {
         return this._aggregation
+    }
+    public getGrouping(): Grouping {
+        return this._grouping;
     }
     public getLabels(): Required<ITranslation<typeof gridTranslations>> {
         return this._labels;
@@ -205,7 +218,7 @@ export class GridModel {
     }
 
     public getFieldBindingParameters(record: IRecord, column: IGridColumn, editing: boolean, recordCommands?: ICommand[]) {
-        const aggregation = this.getAggregation().getAggregationForColumn(column.name);
+        const aggregationInfo = this.getAggregationInfo(record, column);
         const parameters: any = {
             Dataset: {
                 raw: this.getDataset(),
@@ -219,6 +232,11 @@ export class GridModel {
                 raw: column,
                 type: DataTypes.Object
             }
+        }
+        parameters.AggregatedValue = {
+            raw: aggregationInfo.value,
+            formatted: aggregationInfo.formattedValue,
+            type: aggregationInfo.aggregatedColumn?.dataType ?? DataTypes.Decimal
         }
         parameters.EnableNavigation = {
             raw: this.isNavigationEnabled(),
@@ -245,44 +263,45 @@ export class GridModel {
             type: DataTypes.TwoOptions
         }
         parameters.AggregationFunction = {
-            raw: record.getDataProvider().getSummarizationType() !== 'none' ? aggregation?.aggregationFunction ?? null : null,
+            raw: aggregationInfo.aggregatedColumn?.aggregationFunction ?? null,
+            type: DataTypes.SingleLineText
+        }
+        parameters.PrefixIcon = {
+            raw: null,
+            type: DataTypes.SingleLineText
+        }
+        parameters.SuffixIcon = {
+            raw: null,
             type: DataTypes.SingleLineText
         }
         parameters.RecordCommands = {
             raw: recordCommands ?? [],
             type: DataTypes.Object
         }
-        switch (column.dataType) {
-            case 'Lookup.Customer':
-            case 'Lookup.Owner':
-            case 'Lookup.Regarding':
-            case 'Lookup.Simple': {
-                parameters.IsInlineNewEnabled = {
-                    raw: false,
-                    type: DataTypes.TwoOptions
-                }
-                break;
-            }
-            case 'SingleLine.Email':
-            case 'SingleLine.Phone':
-            case 'SingleLine.URL': {
-                parameters.EnableTypeSuffix = {
-                    raw: false,
-                    type: DataTypes.TwoOptions
-                }
-                break;
-            }
-            case 'OptionSet':
-            case 'TwoOptions':
-            case 'MultiSelectPicklist': {
-                parameters.EnableOptionSetColors = {
-                    raw: this.optionSetColorsEnabled(),
-                    type: DataTypes.TwoOptions
-                }
-                break;
-            }
+        parameters.IsInlineNewEnabled = {
+            raw: false,
+            type: DataTypes.TwoOptions
+        }
+        parameters.EnableTypeSuffix = {
+            raw: false,
+            type: DataTypes.TwoOptions
+        }
+        parameters.EnableOptionSetColors = {
+            raw: this.optionSetColorsEnabled(),
+            type: DataTypes.TwoOptions
         }
         return parameters;
+    }
+
+    public isColumnExpandable(record: IRecord, column: IColumn): boolean {
+        const grouping = record.getDataProvider().grouping.getGroupBy(column.name);
+        if (grouping) {
+            const aggregatedValue = this.getRecordValue(record, column);
+            return aggregatedValue != null;
+        }
+        else {
+            return false;
+        }
     }
 
     public getFieldFormatting(record: IRecord, columnName: string): Required<ICustomColumnFormatting> {
@@ -355,12 +374,13 @@ export class GridModel {
     }
 
     public getCachedGridColumns(): IGridColumn[] {
-        return this._currentColumns;
+        return this._cachedColumns;
     }
 
-    public getGridColumns(): {haveColumnsBeenUpdated: boolean, columns: IGridColumn[]} {
+    public getGridColumns(): { haveColumnsBeenUpdated: boolean, columns: IGridColumn[] } {
         const gridColumns = this._getGridColumnsFromDataset();
-        if (!deepEqual(gridColumns, this._currentColumns)) {
+        if (!deepEqual(gridColumns, this._cachedColumns)) {
+            this._cachedColumns = gridColumns;
             return {
                 haveColumnsBeenUpdated: true,
                 columns: gridColumns
@@ -369,8 +389,48 @@ export class GridModel {
         else {
             return {
                 haveColumnsBeenUpdated: false,
-                columns: this._currentColumns
+                columns: this._cachedColumns
             }
+        }
+    }
+
+    public getAggregationInfo(record: IRecord, column: IGridColumn): IAggregationInfo {
+        const aggregation = record.getDataProvider().aggregation.getAggregation(column.name);
+        const aggrColumn = record.getDataProvider().getColumnsMap().get(aggregation?.alias ?? '') ?? null;
+        if (aggregation) {
+            return {
+                value: this.getRecordValue(record, column),
+                formattedValue: record.getFormattedValue(aggregation.alias),
+                aggregatedColumn: aggrColumn ?? null
+            }
+        }
+        else {
+            return {
+                value: null,
+                formattedValue: null,
+                aggregatedColumn: null
+            }
+        }
+    }
+
+    public getRecordValue(record: IRecord, column: IColumn | string): any {
+        return this._getRecordValue(record, column, false);
+    }
+    public getRecordFormattedValue(record: IRecord, column: IColumn | string): string | null {
+        return this._getRecordValue(record, column, true);
+    }
+    private _getRecordValue(record: IRecord, column: IColumn | string, formatted: boolean): any {
+        column = typeof column === 'string' ? record.getDataProvider().getColumnsMap().get(column)! : column;
+        const method = formatted ? 'getFormattedValue' : 'getValue';
+        const groupBy = record.getDataProvider().grouping.getGroupBy(column.name);
+        const aggregation = record.getDataProvider().aggregation.getAggregation(column.name);
+        //case for total row - aggregation is considered value
+        if (!groupBy && aggregation) {
+            return record[method](aggregation.alias);
+        }
+        else {
+            //when should aggregation count as record value?
+            return record[method](groupBy?.alias ?? column.name);
         }
     }
 
@@ -382,6 +442,7 @@ export class GridModel {
                 alignment: this.getColumnAlignment(column),
                 isEditable: this._isColumnEditable(column),
                 isRequired: this._isColumnRequired(column),
+                canBeGrouped: true,
                 isFilterable: this._isColumnFilterable(column),
                 disableSorting: !this._isColumnSortable(column),
                 canBeAggregated: this._canColumnBeAggregated(column),
@@ -428,7 +489,7 @@ export class GridModel {
         return false;
     }
     private _isColumnSortable(column: IColumn): boolean {
-        if (column.name.endsWith('__virtual')) {
+        if (column.isVirtual) {
             return false;
         }
         if (this.getParameters().EnableSorting?.raw === false) {
@@ -455,7 +516,7 @@ export class GridModel {
             return false;
         }
         //by default, do not make virtual columns filterable unless explicitly set
-        if (column.name.endsWith('__virtual')) {
+        if (column.isVirtual) {
             return column.metadata?.isFilterable ?? false;
         }
         return column.metadata?.isFilterable ?? true;
@@ -495,7 +556,12 @@ export class GridModel {
 
 
     private _getBindingValue(record: IRecord, column: IColumn) {
-        let value = record.getValue(column.name);
+        let value = this.getRecordValue(record, column);
+        const summarizationType = this.getDataset().getDataProvider().getSummarizationType();
+        //case for total row - only aggregated value parameter should be shown
+        if (summarizationType === 'aggregation') {
+            value = null;
+        }
         switch (column.dataType) {
             //getValue always returns string for TwoOptions
             case 'TwoOptions': {
@@ -529,7 +595,7 @@ export class GridModel {
     }
 
     private _injectCheckboxColumn(gridColumns: IGridColumn[]) {
-        if (this.getSelectionType() !== 'none') {
+        if (this.getSelectionType() !== 'none' && !gridColumns.find(x => x.name === CHECKBOX_COLUMN_KEY)) {
             gridColumns.unshift({
                 name: CHECKBOX_COLUMN_KEY,
                 alias: CHECKBOX_COLUMN_KEY,
@@ -544,6 +610,7 @@ export class GridModel {
                 disableSorting: true,
                 isSorted: false,
                 isSortedDescending: false,
+                canBeGrouped: false,
                 order: 0,
                 visualSizeFactor: 45,
                 getEntityName: () => this._getColumnEntityName(CHECKBOX_COLUMN_KEY)

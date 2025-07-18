@@ -1,6 +1,6 @@
 import React from 'react';
 import { ContextualMenu, ContextualMenuItemType, IContextualMenuItem, IContextualMenuProps, useTheme } from '@fluentui/react';
-import { Filter24Regular, ArrowSortUp24Regular, ArrowSortDown24Regular, FilterDismiss24Regular, Dismiss24Regular, Autosum24Regular } from '@fluentui/react-icons';
+import { Filter24Regular, ArrowSortUp24Regular, ArrowSortDown24Regular, FilterDismiss24Regular, Dismiss24Regular, Autosum24Regular, GroupList24Regular, AppsList24Regular } from '@fluentui/react-icons';
 import { getColumnHeaderContextualMenuStyles } from './styles';
 import { DataTypes, Type as FilterType } from '@talxis/client-libraries';
 import { useGridInstance } from '../../grid/useGridInstance';
@@ -15,12 +15,14 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
     const grid = useGridInstance();
     const dataset = grid.getDataset();
     const aggregation = grid.getAggregation();
+    const grouping = grid.getGrouping();
     const labels = grid.getLabels();
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
     const { column, onDismiss } = { ...props };
     const filtering = grid.getFiltering();
     const columnSorting = grid.getSorting().getColumnSorting(column.name);
     const columnFilter = filtering.getColumnFilter(column.name);
+    const isGroupingAppliedToColumn = grouping.isGroupingAppliedToColumn(column.name);
 
 
     const getTwoOptionsSortLabel = (isDesc?: boolean) => {
@@ -71,6 +73,16 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
         dataset.refresh();
     }
 
+    const onGroup = () => {
+        if(isGroupingAppliedToColumn) {
+            grouping.ungroupColumn(column.name);
+        }
+        else {
+            grouping.groupColumn(column.name);
+        }
+        dataset.refresh();
+    }
+
     const getItems = (): IContextualMenuItem[] => {
         const items: IContextualMenuItem[] = [
             {
@@ -110,6 +122,17 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                 onRenderIcon: () => <Filter24Regular />,
                 onClick: (e) => onDismiss(e, false, true)
             },
+            ...(column.canBeGrouped ? [
+                {
+                    key: 'divider-grouping',
+                    itemType: ContextualMenuItemType.Divider
+                },{
+                    key: 'group',
+                    text: isGroupingAppliedToColumn ? labels['filtersortmenu-ungroup']() : labels['filtersortmenu-group'](),
+                    onRenderIcon: () => isGroupingAppliedToColumn ? <AppsList24Regular /> : <GroupList24Regular />,
+                    onClick: () => onGroup()
+                }
+            ] : []),
             ...(column.canBeAggregated ? [
                 {
                     key: 'divider-aggregation',
@@ -124,18 +147,27 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                             {
                                 key: 'none',
                                 className: styles.item,
-                                checked: aggregation.isAggregationAppliedToColumn(column.name, 'none'),
+                                //checked: aggregation.isAggregationAppliedToColumn(column.name, 'none'),
                                 text: labels['filtersortmenu-total-none'](),
-                                onClick: () => aggregation.removeAggregation(column.name)
+                                onClick: () => {
+                                    dataset.aggregation.removeAggregation(column.name)
+                                }
 
                             },
                             ...column.metadata!.SupportedAggregations!.map(aggregationFunction => {
                                 return {
                                     key: aggregationFunction,
                                     className: styles.item,
-                                    checked: aggregation.isAggregationAppliedToColumn(column.name, aggregationFunction),
+                                    //checked: aggregation.isAggregationAppliedToColumn(column.name, aggregationFunction),
                                     text: labels[`filtersortmenu-total-${aggregationFunction}`](),
-                                    onClick: () => aggregation.addAggregation(column.name, aggregationFunction)
+                                    onClick: () => {
+                                        dataset.aggregation.addAggregation({
+                                            columnName: column.name,
+                                            alias: `${column.name}_${aggregationFunction}`,
+                                            aggregationFunction: aggregationFunction
+                                        })
+                                        dataset.refresh();
+                                    }
                                 }
                             })]
                     }

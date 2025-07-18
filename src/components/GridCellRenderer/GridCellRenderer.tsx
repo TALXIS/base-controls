@@ -162,7 +162,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const shouldUsePortalDownload = () => {
         const isFetchXmlDataProvider = dataset.getDataProvider() instanceof FetchXmlDataProvider;
         //only use portal download if within portal, uses fetch xml provider and is not virtual column
-        if (client.isTalxisPortal() && isFetchXmlDataProvider && !column.name.endsWith('__virtual')) {
+        if (client.isTalxisPortal() && isFetchXmlDataProvider && !column.isVirtual) {
             return true;
         }
         return false;

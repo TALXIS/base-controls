@@ -12,6 +12,14 @@ export const getCellStyles = () => {
         },
         checkbox: {
             marginRight: 0.5
+        },
+        checkBoxContainer: {
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer'
         }
     })
 }

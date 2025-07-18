@@ -8,6 +8,9 @@ export class Comparator {
         if (!this._isEqual(oldValues?.value, newValues?.value)) {
             return false;
         }
+        if(!this._isEqual(oldValues?.aggregatedValue, newValues?.aggregatedValue)) {
+            return false;
+        }
         if (!this._isEqual(oldValues?.height, newValues?.height)) {
             return false;
         }

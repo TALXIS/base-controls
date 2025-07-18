@@ -1,4 +1,4 @@
-import { ColDef, ColumnResizedEvent, EditableCallbackParams, GridApi, IRowNode, ModuleRegistry, RowHeightParams, RowNode, SelectionChangedEvent, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams, ValueParserParams } from "@ag-grid-community/core";
+import { ColDef, ColumnResizedEvent, EditableCallbackParams, GridApi, IRowNode, KeyCreatorParams, ModuleRegistry, RowHeightParams, RowNode, SelectionChangedEvent, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams, ValueParserParams } from "@ag-grid-community/core";
 import debounce from 'debounce';
 import { GridModel, IGridColumn } from "../GridModel";
 import { DataTypes, IAddControlNotificationOptions, IColumn, IColumnInfo, IControlParameters, ICustomColumnComponent, ICustomColumnControl, ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
@@ -28,6 +28,7 @@ export interface ICellValues {
     customComponent: ICustomColumnComponent;
     loading: boolean;
     value: any;
+    aggregatedValue: any;
     error: boolean;
     height: number;
     errorMessage: string;
@@ -40,13 +41,12 @@ export interface ICellValues {
 
 export class AgGridModel {
     private _grid: GridModel;
-    private _pendingSelectionChange: boolean = false;
-    private _hasCheckboxBeenClicked: boolean = false;
     private _dataSource: ServerSideDatasource;
     private _gridApi: GridApi | undefined;
     private _comparator: Comparator;
     private _hasUserResizedColumns: boolean = false;
     private _getContainer: () => HTMLDivElement;
+    private _rowGroupingSet: Set<string> = new Set<string>();
     private _debouncedColumnResized: debounce.DebouncedFunction<(e: ColumnResizedEvent<IRecord>) => void>;
 
     constructor({ grid, getContainer }: IAgGridTestDependencies) {
@@ -54,12 +54,12 @@ export class AgGridModel {
         this._getContainer = getContainer;
         this._dataSource = new ServerSideDatasource(this);
         this._comparator = new Comparator();
-        this._grid.getAggregation().setOnRequestRenderHandler(() => this._setPinnedRowData());
+        //this._grid.getAggregation().addEventListener('onRequestRender', () => this._setPinnedRowData());
         this._debouncedColumnResized = debounce((e: ColumnResizedEvent<IRecord>) => this._onColumnResized(e));
     }
 
     public getColumns(gridColumns: IGridColumn[]): ColDef[] {
-        return gridColumns.map(column => {
+        const agColumns = gridColumns.map(column => {
             const isCheckboxColumn = column.name === CHECKBOX_COLUMN_KEY;
             const agColumn: ColDef = {
                 colId: column.name,
@@ -72,10 +72,11 @@ export class AgGridModel {
                 autoHeaderHeight: true,
                 suppressMovable: column.isDraggable === false ? true : false,
                 suppressSizeToFit: isCheckboxColumn,
-                lockPosition: isCheckboxColumn ? 'left' : undefined,
+                lockPosition: this._getLockPosition(column),
                 headerComponentParams: {
                     baseColumn: column
                 },
+                rowGroup: column.isGrouped,
                 cellRendererParams: {
                     baseColumn: column,
                     isCellEditor: false
@@ -89,23 +90,27 @@ export class AgGridModel {
                 cellRenderer: Cell,
                 cellEditor: Cell,
                 valueGetter: (p: ValueGetterParams<IRecord>) => this._valueGetter(p, column),
-                valueFormatter: (p: ValueFormatterParams<IRecord>) => this._valueFormatter(p, column),
+                valueFormatter: (p: ValueFormatterParams<IRecord>) => this._valueFormatter(p),
+                keyCreator: (p) => this._getGroupKey(p, column),
                 equals: (valueA, valueB) => {
                     return this._comparator.isEqual(valueA, valueB);
                 },
                 suppressKeyboardEvent: (p) => this._suppressKeyboardEvent(p, column)
-                //suppressKeyboardEvent: (params) => this._grid._suppressKeyboardEvent(params, column),
             }
             if (column.dataType === DataTypes.Multiple) {
-                //agColumn.autoHeight = true;
+                agColumn.autoHeight = true;
+            }
+            if (agColumn.rowGroup) {
+                this._rowGroupingSet.add(agColumn.colId!);
             }
             if (agColumn.field === CHECKBOX_COLUMN_KEY) {
                 agColumn.lockPosition = 'left';
                 agColumn.headerComponent = RecordSelectionCheckBox;
             }
-            console.log(agColumn);
             return agColumn;
         })
+        this._sortColumns(agColumns);
+        return agColumns;
     }
 
     public getGridApi() {
@@ -143,6 +148,9 @@ export class AgGridModel {
     }
 
     public refresh() {
+        if (this._grid.getDataset().loading) {
+            return;
+        }
         const { haveColumnsBeenUpdated, columns } = this._grid.getGridColumns();
         if (haveColumnsBeenUpdated) {
             this.getGridApi().setGridOption('columnDefs', this.getColumns(columns))
@@ -150,10 +158,59 @@ export class AgGridModel {
         else {
             this.getGridApi().refreshCells();
         }
-        //can cause refresh cells to trigger, should not call it again if that happens
-        //this._grid.refreshColumns();
-        //this.getGridApi().refreshServerSide();
-        //this.getGridApi().refreshCells();
+        this._autoSizeColumns();
+    }
+
+    private _scrollToTop() {
+        this.getGridApi().ensureIndexVisible(0, 'top');
+    }
+
+    private _getGroupKey(params: KeyCreatorParams<IRecord>, column: IGridColumn): string {
+        const record = params.data!;
+        const grouping = record.getDataProvider().grouping.getGroupBy(column.name);
+        return record.getFormattedValue(grouping!.alias) ?? '';
+    }
+
+    private _getLockPosition(column: IGridColumn) {
+        if (column.name === CHECKBOX_COLUMN_KEY) {
+            return 'left';
+        }
+        if (column.isGrouped) {
+            return 'left';
+        }
+        return undefined;
+    }
+
+    private _sortColumns(columns: ColDef[]) {
+        if (this._rowGroupingSet.size > 0) {
+            const rowGroupOrder = Array.from(this._rowGroupingSet);
+            const rowGroupIndexMap = new Map<string, number>();
+            rowGroupOrder.forEach((colId, index) => {
+                rowGroupIndexMap.set(colId, index);
+            });
+            columns.sort((a, b) => {
+                if (a.field === CHECKBOX_COLUMN_KEY) {
+                    return -1;
+                }
+                if (b.field === CHECKBOX_COLUMN_KEY) {
+                    return 1;
+                }
+
+                const aIsRowGroup = a.rowGroup && rowGroupIndexMap.has(a.colId!);
+                const bIsRowGroup = b.rowGroup && rowGroupIndexMap.has(b.colId!);
+
+                if (aIsRowGroup && bIsRowGroup) {
+                    return rowGroupIndexMap.get(a.colId!)! - rowGroupIndexMap.get(b.colId!)!;
+                }
+                if (aIsRowGroup) {
+                    return -1;
+                }
+                if (bIsRowGroup) {
+                    return 1;
+                }
+                return 0;
+            });
+        }
     }
 
     private _suppressKeyboardEvent(params: SuppressKeyboardEventParams<IRecord, any>, column: IGridColumn): boolean {
@@ -166,16 +223,19 @@ export class AgGridModel {
     private _registerEventListeners() {
         this._dataset.addEventListener('onLoading', (isLoading: boolean) => this._setLoadingOverlay(isLoading));
         this._dataset.addEventListener('onRecordsSelected', () => this._setSelectedNodes())
-        this._dataset.addEventListener('onNewDataLoaded', () => {
-            this.getGridApi().refreshServerSide();
-            this._setNoRowsOverlay();
-        })
+        this._dataset.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded())
         this.getGridApi().addEventListener('gridSizeChanged', () => this._autoSizeColumns());
         this.getGridApi().addEventListener('firstDataRendered', () => this._autoSizeColumns());
         this.getGridApi().addEventListener('selectionChanged', (e: SelectionChangedEvent) => this._onSelectionChanged(e));
         this.getGridApi().addEventListener('columnResized', (e: any) => this._debouncedColumnResized(e));
-        this.getGridApi().setGridOption('getRowHeight', (params) => this._getRowHeight(params));
+        this.getGridApi().setGridOption('getRowHeight', (params) => this._grid.getDefaultRowHeight());
         this.getGridApi().addEventListener('modelUpdated', () => this._setGridHeight())
+    }
+
+    private _onNewDataLoaded() {
+        this.getGridApi().refreshServerSide();
+        this._setNoRowsOverlay();
+        this._scrollToTop();
     }
 
     private _calculateGridHeight(): string {
@@ -203,23 +263,7 @@ export class AgGridModel {
         }, 100);
     }
 
-    private _getRowHeight(params: RowHeightParams<IRecord>) {
-        return 42;
-        const columnWidths: { [name: string]: number } = {};
-        const defaultRowHeight = this._grid.getDefaultRowHeight();
-        const record = params.data as IRecord | undefined;
-        this.getGridApi().getAllGridColumns().map(col => {
-            columnWidths[col.getColId()] = col.getActualWidth()
-        })
-        if (Object.keys(columnWidths).length === 0) {
-            return this._grid.getDefaultRowHeight();
-        }
-        //not defined for grouping
-        return record?.getHeight(columnWidths, defaultRowHeight) ?? defaultRowHeight;
-    }
-
     private _onColumnResized(e: ColumnResizedEvent<IRecord>) {
-        console.log(e)
         if (e.source === 'uiColumnResized') {
             this._hasUserResizedColumns = true;
             this._updateColumnVisualSizeFactor(e);
@@ -228,17 +272,17 @@ export class AgGridModel {
     }
 
     private _autoSizeColumns() {
-        return;
-        if (!this._hasUserResizedColumns) {
-            this.getGridApi().sizeColumnsToFit({
-                columnLimits: this._grid.getCachedGridColumns().map(col => {
-                    return {
-                        key: col.name,
-                        minWidth: col.visualSizeFactor
-                    }
-                })
-            });
+        if (this._hasUserResizedColumns) {
+            return;
         }
+        this.getGridApi().sizeColumnsToFit({
+            columnLimits: this._grid.getCachedGridColumns().map(col => {
+                return {
+                    key: col.name,
+                    minWidth: col.visualSizeFactor
+                }
+            })
+        });
     }
 
     private _updateColumnVisualSizeFactor(e: ColumnResizedEvent<IRecord>) {
@@ -262,56 +306,57 @@ export class AgGridModel {
     }
 
     private _onSelectionChanged(e: SelectionChangedEvent) {
-        switch (e.source) {
-            case 'api':
-            case 'apiSelectAll': {
+        switch (true) {
+            case e.source === 'api':
+            case e.source === 'apiSelectAll': {
                 return;
             }
-            //@ts-ignore - typings
-            case '__CHECKBOX': {
-                this._hasCheckboxBeenClicked = true;
-            }
         }
-        if (this._pendingSelectionChange) {
-            return;
-        }
-        this._pendingSelectionChange = true;
-
-        queueMicrotask(() => {
-            this._pendingSelectionChange = false;
-            const selectedNodes = this.getGridApi().getSelectedNodes();
-            if (this._hasCheckboxBeenClicked) {
-                this._hasCheckboxBeenClicked = false;
-                return;
-            }
-            this._dataset.setSelectedRecordIds(selectedNodes.map(node => node.id!));
-        })
+        const selectedNodes = this.getGridApi().getSelectedNodes();
+        this._dataset.setSelectedRecordIds(selectedNodes.map(node => node.data.getRecordId()));
     }
 
     private _setSelectedNodes() {
         this.getGridApi().deselectAll();
         this.getGridApi().forEachNode(node => {
-            if (this._grid.getSelection().getSelectedRecordIdsSet().has(node.id!)) {
+            if (this._grid.getSelection().getSelectedRecordIdsSet().has(node.data.getRecordId())) {
                 node.setSelected(true);
             }
         })
         this.getGridApi().refreshCells({
-            columns: [CHECKBOX_COLUMN_KEY]
+            columns: [CHECKBOX_COLUMN_KEY],
+            force: true
         })
     }
 
-    private _valueFormatter(p: ValueFormatterParams<IRecord>, column: IGridColumn): string {
-        if (column.name === CHECKBOX_COLUMN_KEY) {
-            return ''
+    private _valueFormatter(p: ValueFormatterParams<IRecord>): string {
+        const record: IRecord = p.data!;
+        const column = record.getDataProvider().getColumnsMap().get(p.colDef.colId!);
+        if (!column) {
+            return '';
         }
-        return p.data?.getFormattedValue(column.name) ?? '';
+        else if (column.isGrouped) {
+            const grouping = record.getDataProvider().grouping.getGroupBy(column.name);
+            if (!grouping) {
+                return '';
+            }
+            return record.getFormattedValue(grouping.alias) ?? '';
+        }
+        else if (column.aggregationFunction) {
+            const aggregation = record.getDataProvider().aggregation.getAggregation(column.name);
+            return record.getFormattedValue(aggregation!.alias) ?? '';
+        }
+        else {
+            return record.getFormattedValue(column.name) ?? '';
+        }
     }
 
     private _valueGetter(p: ValueGetterParams<IRecord>, column: IGridColumn) {
         if (column.name === CHECKBOX_COLUMN_KEY || !p.data) {
-            return {
-                customFormatting: this._grid.getFieldFormatting(p.data!, column.name)
-            }
+            return null;
+        }
+        if (!p.data.getDataProvider().getColumnsMap().get(column.name)) {
+            return null;
         }
         let editing: boolean = false;
         const record = p.data;
@@ -333,15 +378,15 @@ export class AgGridModel {
         if (column.oneClickEdit) {
             editing = true;
         }
-        const isAggregatedRecord = record.getDataProvider().getSummarizationType() === 'aggregation';
+        const aggregationInfo = this._grid.getAggregationInfo(record, column);
         const values = {
             notifications: columnInfo.ui.getNotifications(),
-            value: p.data!.getValue(column.name),
-            customFormatting: this._grid.getFieldFormatting(p.data!, column.name),
+            value: this._grid.getRecordValue(record, column),
+            customFormatting: this._grid.getFieldFormatting(record, column.name),
             customControl: customControl,
             height: p.node!.rowHeight,
-            //validations need to be disabled for aggregated records
-            error: isAggregatedRecord ? false : columnInfo.error,
+            error: columnInfo.error,
+            aggregatedValue: aggregationInfo.value,
             loading: columnInfo.ui.isLoading(),
             errorMessage: columnInfo.errorMessage,
             editable: columnInfo.security.editable,
@@ -350,7 +395,6 @@ export class AgGridModel {
             columnAlignment: column.alignment,
             customComponent: columnInfo.ui.getCustomControlComponent()
         } as ICellValues;
-        console.log(values.height);
         return values;
     }
 
@@ -401,363 +445,3 @@ export class AgGridModel {
         return this._grid.getDataset();
     }
 }
-
-/* export class AgGrid extends GridDependency {
-    private _gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>;
-    private _theme: ITheme;
-    private _rerenderCallback: () => void = () => { };
-    private _rerenderGlobalCheckBox: () => void = () => { };
-    private _comparator: Comparator = new Comparator();
-    public readonly oddRowCellTheme: ITheme;
-    public readonly evenRowCellTheme: ITheme;
-
-    constructor(grid: Grid, gridApiRef: React.MutableRefObject<GridApi<ComponentFramework.PropertyHelper.DataSetApi.EntityRecord> | undefined>, theme: ITheme) {
-        super(grid);
-        this._gridApiRef = gridApiRef;
-        this._theme = theme;
-        this._grid.dataset.addEventListener('onRecordsSelected', (ids) => {
-            this.refreshRowSelection();
-        })
-        this.oddRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.neutralLighterAlt, this._theme.semanticColors.bodyText);
-        this.evenRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.white, this._theme.semanticColors.bodyText);
-    }
-    public getColumns() {
-        const agColumns: ColDef[] = [];
-        for (const column of this._grid.columns) {
-            const agColumn: ColDef = {
-                colId: column.name,
-                field: column.name,
-                headerName: column.displayName,
-                hide: column.isHidden,
-                width: column.visualSizeFactor,
-                sortable: !column.disableSorting,
-                resizable: column.isResizable,
-                autoHeaderHeight: true,
-                suppressMovable: column.isDraggable === false ? true : false,
-                suppressSizeToFit: column.name === CHECKBOX_COLUMN_KEY,
-                suppressKeyboardEvent: (params) => this._suppressKeyboardEvent(params, column),
-                cellRenderer: Cell,
-                cellEditor: Cell,
-                editable: (p) => this._isColumnEditable(column, p),
-                headerComponent: ColumnHeader,
-                onCellClicked: (event) => {
-                    this._grid.dataset.fireEventListeners?.('onRecordColumnClick', event.data, column.name);
-                },
-                valueFormatter: (p) => {
-                    if (column.name === CHECKBOX_COLUMN_KEY) {
-                        return null;
-                    }
-                    return p.data?.getFormattedValue(column.name)
-                },
-                valueGetter: (p: any) => this._getValue(p, column),
-                equals: (valueA, valueB) => {
-                    return this._comparator.isEqual(valueA, valueB);
-                },
-                cellRendererParams: {
-                    baseColumn: column,
-                    isCellEditor: false
-                },
-                cellEditorParams: {
-                    baseColumn: column,
-                    isCellEditor: true
-                },
-                headerComponentParams: {
-                    baseColumn: column
-                },
-            }
-            if (agColumn.field === CHECKBOX_COLUMN_KEY) {
-                agColumn.lockPosition = 'left';
-                agColumn.headerComponent = GlobalCheckBox;
-            }
-            agColumns.push(agColumn)
-        }
-        return agColumns;
-    }
-
-    public refresh() {
-        if (this._grid.loading) {
-            return;
-        }
-        this._gridApi?.resetRowHeights();
-        this._gridApi?.refreshCells({
-            rowNodes: this._gridApi.getRenderedNodes()
-        });
-    }
-
-    public setGlobalCheckBoxRenderer(renderer: () => void) {
-        this._rerenderGlobalCheckBox = renderer;
-    }
-
-    public rerenderGlobalCheckBox() {
-        this._rerenderGlobalCheckBox();
-    }
-
-    public updateColumnOrder(e: ColumnMovedEvent<IRecord, any>) {
-        if (e.type === 'gridOptionsChanged' || !e.finished) {
-            return;
-        }
-        const sortedIds = e.api.getState().columnOrder?.orderedColIds;
-        if (!sortedIds) {
-            return;
-        }
-        const idIndexMap = new Map<string, number>();
-        sortedIds.forEach((id, index) => {
-            idIndexMap.set(id, index);
-        });
-
-        const orderedColumns = [...this._grid.dataset.columns].sort((a, b) => {
-            const aIndex = idIndexMap.has(a.name) ? idIndexMap.get(a.name)! : sortedIds.length;
-            const bIndex = idIndexMap.has(b.name) ? idIndexMap.get(b.name)! : sortedIds.length;
-            return aIndex - bIndex;
-        });
-        this._grid.dataset.setColumns?.(orderedColumns);
-    }
-
-    public updateColumnVisualSizeFactor(e: ColumnResizedEvent<IRecord, any>) {
-        const resizedColumnKey = this._grid.dataset.columns.find(x => x.name === e.column?.getId())?.name;
-        if (!resizedColumnKey) {
-            return;
-        }
-        const columns = this._grid.dataset.columns;
-        for (let i = 0; i < columns.length; i++) {
-            if (columns[i].name === resizedColumnKey) {
-                columns[i].visualSizeFactor = e.column?.getActualWidth()!
-            }
-        }
-        this._grid.dataset.setColumns?.(columns);
-        this.refresh();
-    }
-
-    public toggleOverlay() {
-        if (this._grid.loading) {
-            this._gridApi?.showLoadingOverlay();
-        }
-        else {
-            setTimeout(() => {
-                if (this._grid.dataset.sortedRecordIds.length === 0) {
-                    this._gridApi?.showNoRowsOverlay();
-                }
-            }, 0);
-        }
-    }
-
-    public copyCellValue(event: KeyboardEvent) {
-        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
-            const cell = this._gridApi?.getFocusedCell();
-            if (!cell) {
-                return;
-            }
-            let record: IRecord | undefined;
-            //aggregated record
-            if (cell.rowPinned) {
-                record = this._gridApi?.getPinnedBottomRow(cell.rowIndex)?.data;
-            }
-            else {
-                record = this._gridApi?.getDisplayedRowAtIndex(cell.rowIndex)?.data as IRecord;
-            }
-            if (record) {
-                navigator.clipboard.writeText(record.getFormattedValue(cell.column.getColId()) ?? '');
-            }
-        }
-    }
-
-    public getRowHeight(record?: IRecord) {
-        const columnWidths: { [name: string]: number } = {};
-        this._gridApi?.getAllGridColumns().map(col => {
-            columnWidths[col.getColId()] = col.getActualWidth()
-        })
-        if (Object.keys(columnWidths).length === 0) {
-            return this._grid.rowHeight;
-        }
-        //not defined for grouping
-        return record?.getHeight(columnWidths, this._grid.rowHeight) ?? this._grid.rowHeight;
-    }
-
-    public getTotalColumnsWidth() {
-        if (!this._gridApi) {
-            return 0;
-        }
-        let width = 0;
-        for (const column of this._gridApi.getAllDisplayedColumns()) {
-            width = width + column.getActualWidth();
-        }
-        return width;
-    }
-    public refreshRowSelection() {
-        if (!this._gridApi) {
-            return;
-        }
-        const selectedIdsSet = new Set(this._grid.dataset.getSelectedRecordIds().map(id => id));
-        this._gridApi.forEachNode(node => {
-            if (selectedIdsSet.has(node.id!)) {
-                node.setSelected(true);
-            }
-            else {
-                node.setSelected(false);
-            }
-        })
-        this._gridApi.refreshCells({
-            columns: [CHECKBOX_COLUMN_KEY],
-            force: true,
-        })
-        this._rerenderGlobalCheckBox();
-    }
-
-    public getCellFormatting(params: CellClassParams<IRecord, any>): Required<ICustomColumnFormatting> {
-        //get the latest reference - ag grid might still be referencing the old one and give us wrong index
-        const record = this._grid.dataset.records[params.data!.getRecordId()];
-        const isEven = record?.getIndex() % 2 === 0;
-        const defaultTheme = this.getDefaultCellTheme(isEven);
-        const defaultBackgroundColor = defaultTheme.semanticColors.bodyBackground;
-        const colId = params.colDef.colId!;
-
-        // Handle checkbox column specifically
-        if (colId === CHECKBOX_COLUMN_KEY || !params.data) {
-            return {
-                primaryColor: this._theme.palette.themePrimary,
-                backgroundColor: defaultBackgroundColor,
-                textColor: Theming.GetTextColorForBackground(defaultBackgroundColor),
-                className: '',
-                themeOverride: {}
-            };
-        }
-
-        const customFormatting = params.data!.getColumnInfo(colId).ui.getCustomFormatting(defaultTheme) ?? {};
-
-        // Prepare the result with defaults
-        const result: Required<ICustomColumnFormatting> = {
-            backgroundColor: customFormatting.backgroundColor ?? defaultBackgroundColor,
-            primaryColor: customFormatting.primaryColor ?? this._theme.palette.themePrimary,
-            textColor: customFormatting.textColor ?? '',
-            className: customFormatting.className ?? '',
-            themeOverride: customFormatting.themeOverride ?? {}
-        };
-
-        // Apply background-specific adjustments
-        if (result.backgroundColor !== defaultBackgroundColor) {
-            result.themeOverride = merge({}, {
-                fonts: {
-                    medium: {
-                        fontWeight: 600
-                    }
-                }
-            }, result.themeOverride);
-
-            if (!customFormatting.primaryColor) {
-                result.primaryColor = Theming.GetTextColorForBackground(result.backgroundColor);
-            }
-        }
-
-        // Ensure text color is set
-        if (!result.textColor) {
-            result.textColor = Theming.GetTextColorForBackground(result.backgroundColor);
-        }
-
-        return result;
-    }
-
-    public getDefaultCellTheme(isEven: boolean): ITheme {
-        if (isEven || !this._grid.isZebraEnabled) {
-            return this.evenRowCellTheme;
-        }
-        return this.oddRowCellTheme;
-    }
-
-
-    public setRerenderCallback(callback: () => void) {
-        this._rerenderCallback = callback;
-    }
-
-    public rerender() {
-        this._rerenderCallback();
-    }
-
-    private get _gridApi() {
-        return this._gridApiRef.current;
-    }
-
-    private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
-        if (column.name === CHECKBOX_COLUMN_KEY) {
-            return false;
-        }
-        //we cannot edit aggregated or grouped columns
-        if (params?.data?.getDataProvider().getSummarizationType() !== 'none') {
-            return false;
-        }
-        const columnInfo = params.data?.getColumnInfo(column.name);
-        if (!this._grid.parameters.EnableEditing?.raw || columnInfo?.ui.isLoading() === true) {
-            return false;
-        }
-        //disable ag grid cell editor if oneClickEdit is enabled
-        //editor control will be used in cell renderer
-        if (column.oneClickEdit) {
-            return false;
-        }
-        return columnInfo?.security.editable ?? true;
-    }
-    private _suppressKeyboardEvent(params: SuppressKeyboardEventParams<IRecord, any>, column: IGridColumn) {
-        if (params.event.key !== 'Enter' || params.api.getEditingCells().length === 0) {
-            return false;
-        }
-        switch (column.dataType) {
-            case DataTypes.DateAndTimeDateAndTime:
-            case DataTypes.DateAndTimeDateOnly:
-            case DataTypes.LookupOwner:
-            case DataTypes.LookupCustomer:
-            case DataTypes.LookupRegarding:
-            case DataTypes.LookupSimple:
-            case DataTypes.MultiSelectOptionSet:
-            case DataTypes.OptionSet:
-            case DataTypes.TwoOptions:
-            case DataTypes.WholeDuration: {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private _getValue(p: any, column: IGridColumn) {
-        if (column.name === CHECKBOX_COLUMN_KEY || !p.data) {
-            return {
-                customFormatting: this.getCellFormatting(p)
-            }
-        }
-        let editing: boolean = false;
-        const record = p.data as IRecord;
-        const columnInfo = p.data!.getColumnInfo(column.name) as IColumnInfo;
-        //i hate this, there is no other way to get the information if we are in edit mode or not
-        if (p.api.getEditingCells() > 0 || Error().stack!.includes('startEditing')) {
-            editing = true;
-        }
-        const customControl = this._grid.getControl(column, record, editing || !!column.oneClickEdit);
-        const control = new NestedControl({
-            onGetBindings: () => this._grid.getBindings(record, column, customControl),
-            parentPcfContext: this._grid.pcfContext,
-        });
-        const parameters = columnInfo.ui.getControlParameters({
-            ...control.getParameters(),
-            ...this._grid.getParameters(record, column, editing),
-        })
-        if (column.oneClickEdit) {
-            editing = true;
-        }
-        const isAggregatedRecord = record.getDataProvider().getSummarizationType() === 'aggregation';
-        const values = {
-            notifications: columnInfo.ui.getNotifications(),
-            value: p.data!.getValue(column.name),
-            customFormatting: this.getCellFormatting(p),
-            customControl: customControl,
-            height: p.node.rowHeight,
-            //validations need to be disabled for aggregated records
-            error: isAggregatedRecord ? false : columnInfo.error,
-            loading: columnInfo.ui.isLoading(),
-            errorMessage: columnInfo.errorMessage,
-            editable: columnInfo.security.editable,
-            editing: editing,
-            parameters: parameters,
-            columnAlignment: column.alignment,
-            customComponent: columnInfo.ui.getCustomControlComponent()
-        } as ICellValues;
-        return values;
-    }
-} */

@@ -9,7 +9,6 @@ import { DateTime } from '../DateTime';
 import { MultiSelectOptionSet } from '../MultiSelectOptionSet';
 import { Lookup } from '../Lookup';
 import { OptionSet } from '../OptionSet';
-import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
 import { BaseControls } from '../../utils';
 import { getNestedControlStyles } from './styles';
 import { Spinner, useRerender } from '@talxis/react-components';
@@ -17,6 +16,7 @@ import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } fr
 import ReactDOM from 'react-dom';
 import { useControlLabels } from '../../hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
+import { GridCellRenderer } from '../GridGroupCellRenderer/GridGroupCellRenderer';
 
 interface IRef {
     control: NestedControl | null;

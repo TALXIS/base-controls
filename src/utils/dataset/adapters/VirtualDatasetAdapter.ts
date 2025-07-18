@@ -1,5 +1,5 @@
 import { mergeStyles } from "@fluentui/react";
-import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
+import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, IGroupByMetadata, MemoryDataProvider } from "@talxis/client-libraries";
 
 interface IOutputs {
     DatasetControl?: any;
@@ -46,7 +46,7 @@ export class VirtualDatasetAdapter {
         this._notifyOutputChanged = notifyOutputChanged;
         this._container = container;
         let dataProvider: any = null;
-        if(parameters.dataProviderType !== 'Custom') {
+        if (parameters.dataProviderType !== 'Custom') {
             //@ts-ignore - typings
             this._dataProviderClass = this._providerClasses[this._parameters.dataProviderType];
             dataProvider = new this._dataProviderClass(this._getData(), this._getEntityMetadata());
@@ -113,6 +113,36 @@ export class VirtualDatasetAdapter {
     }
 
     private _onDatasetInit() {
+        let originalGrouping: IGroupByMetadata[] = [];
+        let originalAggregation: IGroupByMetadata[] = [];
+        this._dataset.addEventListener('onBeforeNewDataProcessed', () => {
+            this._dataset.grouping.clear();
+            this._dataset.aggregation.clear();
+            originalGrouping.map((group: any) => {
+                this._dataset.grouping.addGroupBy(group);
+            })
+            originalAggregation.map((aggr: any) => {
+                this._dataset.aggregation.addAggregation(aggr);
+            })
+        })
+        this._dataset.addEventListener('onBeforeNewDataLoaded', () => {
+            originalGrouping = this._dataset.grouping.getGroupBys();
+            originalAggregation = this._dataset.aggregation.getAggregations();
+            if (originalGrouping.length > 1) {
+                this._dataset.grouping.clear();
+                this._dataset.grouping.addGroupBy(originalGrouping[0]);
+                if(this._dataset.aggregation.getAggregation(originalGrouping[0].columnName)) {
+                    this._dataset.aggregation.getAggregations().map(aggr => {
+                        if(originalGrouping[0].columnName === aggr.columnName) {
+                            return;
+                        }
+                        else if (originalGrouping.find(x => x.columnName === aggr.columnName)) {
+                            this._dataset.aggregation.removeAggregation(aggr.columnName);
+                        }
+                    })
+                }
+            }
+        })
         this.getDataset().setInterceptor('onInitialize', async () => {
             await this._getOutputsPromise;
             await this._parameters.onInitialize?.();
