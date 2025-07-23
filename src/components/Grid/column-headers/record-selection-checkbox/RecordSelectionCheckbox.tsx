@@ -16,7 +16,6 @@ export const RecordSelectionCheckBox = () => {
     const v8FluentOverrides = context.fluentDesignLanguage?.v8FluentOverrides;
     const theme = useThemeGenerator(primaryColor, backgroundColor, textColor, v8FluentOverrides);
     const styles = getGlobalCheckboxStyles(theme);
-    const selection = grid.getSelection();
     const rerender = useRerender();
 
     useMemo(() => {
@@ -26,17 +25,19 @@ export const RecordSelectionCheckBox = () => {
     }, []);
 
     const getCheckBoxState = () => {
-        if (selection.areAllRecordsSelected()) {
+        const selectedRecordIds = dataset.getDataProvider().getSelectedRecordIds();
+        const selectedRecordIdsWithChildren = dataset.getDataProvider().getSelectedRecordIdsWithChildren();
+        if (selectedRecordIdsWithChildren.length === 0) {
+            return 'unchecked';
+        }
+        if(selectedRecordIds.length === dataset.sortedRecordIds.length) {
             return 'checked';
         }
-        if (dataset.getSelectedRecordIds().length > 0) {
-            return 'intermediate';
-        }
-        return 'unchecked';
+        return 'intermediate'; //indeterminate state, when some records are selected but not all
     }
 
     const onChange = (checked?: boolean) => {
-        if(checked) {
+        if (checked) {
             dataset.setSelectedRecordIds(dataset.sortedRecordIds);
         }
         else {

@@ -30,6 +30,7 @@ export interface IGridParameters extends IParameters {
     EnableAggregation?: Omit<ITwoOptionsProperty, 'attributes'>;
     RowHeight?: Omit<IWholeNumberProperty, 'attributes'>;
     EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
+    DefaultExpandedGroupLevel?: Omit<IWholeNumberProperty, 'attributes'>;
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;

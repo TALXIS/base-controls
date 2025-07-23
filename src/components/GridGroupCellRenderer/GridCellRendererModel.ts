@@ -128,11 +128,12 @@ export class GridCellRendererModel {
         if(!aggregatedFormattedValue) {
             return null;
         }
-        else if(this.getValue() != null) {
-            return `(${aggregatedFormattedValue})`
+        //value is equal to aggregated value, so we don't show it
+        else if(this.getFormattedValue() === aggregatedFormattedValue) {
+            return null;
         }
         else {
-            return aggregatedFormattedValue;
+            return `(${aggregatedFormattedValue})`;
         }
     }
 

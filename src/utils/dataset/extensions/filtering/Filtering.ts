@@ -1,14 +1,22 @@
-import { DatasetExtension } from "../DatasetExtension";
+import { IDataProvider } from "@talxis/client-libraries";
 import { ColumnFilter } from "./ColumnFilter";
+import { DataProviderExtension } from "../DataProviderExtension";
 
-export class Filtering extends DatasetExtension {
+export class Filtering extends DataProviderExtension {
     private _columnFilters: Map<string, ColumnFilter> = new Map();
+
+    constructor(getDataProvider: () => IDataProvider) {
+        super(getDataProvider);
+        this._dataProvider.getColumns().map(col => {
+            this.getColumnFilter(col.name);
+        })
+    }
 
     public getColumnFilter(columnName: string) {
         if (!this._columnFilters.get(columnName)) {
             this._columnFilters.set(columnName, new ColumnFilter({
                 columnName: columnName,
-                onGetDataset: () => this._dataset
+                onGetDataProvider: () => this._dataProvider
             }));
         }
         return this._columnFilters.get(columnName)!;

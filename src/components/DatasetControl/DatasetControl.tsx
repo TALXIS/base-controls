@@ -20,7 +20,7 @@ export const DatasetControl = (props: IDatasetControl) => {
   const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
   useMemo(() => {
     if (dataset.isVirtual() || !client.isTalxisPortal()) {
-      dataset.setInterceptor('__onRequestRender', () => rerender());
+      dataset.addEventListener('onRenderRequested', () => rerender())
     }
   }, []);
 

@@ -1,5 +1,4 @@
 import { DataType, DataTypes, EventEmitter, FieldValue, IColumn, IFieldValidationResult, IOperator, Operators } from "@talxis/client-libraries";
-import { IBinding } from "../../../../../components/NestedControlRenderer/interfaces";
 
 interface IConditionDependencies {
     id: string;
@@ -107,7 +106,7 @@ export abstract class Condition extends EventEmitter<IEvents> {
         return false;
     }
 
-    public getBindings(): { [key: string]: IBinding } {
+    public getBindings(): { [key: string]: any } {
         return {};
     }
 

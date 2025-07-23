@@ -1,4 +1,4 @@
-import { DataType, DataTypes, FieldValue, IFieldValidationResult, Operators } from "@talxis/client-libraries";
+import { DataType, Operators, IFieldValidationResult, FieldValue, DataTypes } from "@talxis/client-libraries";
 import { Condition } from "./Condition";
 
 export class NumberCondition extends Condition {
@@ -11,7 +11,7 @@ export class NumberCondition extends Condition {
         //this prefills the lastSelected option
         this._getFilterValue(this._getControlValue(this.getValue()));
     }
-    
+
     public getDataType(): DataType | null {
         switch (this.getOperator()) {
             case Operators.ContainsData.Value:

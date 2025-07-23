@@ -1,4 +1,3 @@
-import { Attribute, DataTypes, IColumn, IDataset, IOperator, Operators } from "@talxis/client-libraries";
 import { DateCondition } from "./conditions/DateCondition";
 import { FileCondition } from "./conditions/FileCondition";
 import { LookupCondition } from "./conditions/LookupCondition";
@@ -7,22 +6,23 @@ import { NumberCondition } from "./conditions/NumberCondition";
 import { OptionSetCondition } from "./conditions/OptionSetCondition";
 import { TextCondition } from "./conditions/TextCondition";
 import { Condition } from "./conditions";
+import { IDataProvider, Attribute, DataTypes, IOperator, Operators, IColumn } from "@talxis/client-libraries";
+import { DataProviderExtension } from "../DataProviderExtension";
 
 interface IDependencies {
     columnName: string;
-    onGetDataset: () => IDataset;
+    onGetDataProvider: () => IDataProvider;
 }
 
-export class ColumnFilter {
+export class ColumnFilter extends DataProviderExtension {
     private _conditions: Map<string, Condition> = new Map();
     private _column: IColumn;
-    private _getDataset: () => IDataset;
 
-    constructor({ columnName, onGetDataset }: IDependencies) {
-        this._getDataset = onGetDataset;
-        this._column = this._dataset.getDataProvider().getColumnsMap().get(columnName)!;
+    constructor({ columnName, onGetDataProvider }: IDependencies) {
+        super(onGetDataProvider);
+        this._column = this._dataProvider.getColumnsMap().get(columnName)!;
         this._createConditionsFromFilterExpression();
-        this._dataset.addEventListener('onBeforeNewDataLoaded', () => this._createConditionsFromFilterExpression())
+        this._dataProvider.addEventListener('onBeforeNewDataLoaded', () => this._createConditionsFromFilterExpression())
     }
 
     public isAppliedToDataset(): boolean {
@@ -61,7 +61,7 @@ export class ColumnFilter {
 
     private _createConditionsFromFilterExpression() {
         this._conditions.clear();
-        const conditions = this._dataset.filtering.getFilter()?.conditions ?? [];
+        const conditions = this._dataProvider.getFiltering()?.conditions ?? [];
         conditions.map(cond => {
             const attributeName = this._undecorateAttributeName(cond.attributeName, cond.conditionOperator);
             const alias = cond.entityAliasName ? `${cond.entityAliasName}.${attributeName}` : attributeName;
@@ -158,9 +158,4 @@ export class ColumnFilter {
         ];
         return decoratableOperators.includes(operator);
     }
-
-    private get _dataset() {
-        return this._getDataset();
-    }
-
 }

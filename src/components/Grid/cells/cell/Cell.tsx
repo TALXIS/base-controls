@@ -11,52 +11,35 @@ import { useGridInstance } from "../../grid/useGridInstance";
 import { CellContent } from "./content/CellContent";
 import { Notifications } from "./notifications/Notifications";
 import { getCellStyles, getInnerCellStyles } from "./styles";
+import { useAgGridInstance } from "../../grid/ag-grid/useAgGridInstance";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     isCellEditor: boolean;
-    isFirstGroupedColumn?: boolean;
-    data: IRecord;
-    value: ICellValues;
+    record: IRecord;
+    cellData: ICellValues
 }
 
 export const Cell = (props: ICellProps) => {
-    if(!props.value) {
-        return <></>
-    }
-    return <CellWrapper {...props} />
-}
-
-const CellWrapper = (props: ICellProps) => {
     const styles = useMemo(() => getCellStyles(), [])
-    const cellFormatting = props.value.customFormatting;
-    const cellTheme = useThemeGenerator(cellFormatting.primaryColor, cellFormatting.backgroundColor, cellFormatting.textColor, cellFormatting.themeOverride);
+    const { cellData, record, baseColumn, node } = props;
+    const { customFormatting } = cellData;
+    const cellTheme = useThemeGenerator(customFormatting.primaryColor, customFormatting.backgroundColor, customFormatting.textColor, customFormatting.themeOverride);
+    const agGrid = useAgGridInstance();
     const grid = useGridInstance();
-    const selection = grid.getSelection();
-    const record = props.data;
-    const column = props.baseColumn;
-    const node = props.node;
     const checkBoxRef = useRef<HTMLDivElement>(null);
-
-    const shouldRenderEmptyCell = () => {
-        if (record.getDataProvider().getSummarizationType() === 'aggregation') {
-            if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME || column.name === CHECKBOX_COLUMN_KEY) {
-                return true;
-            }
-        }
-        return false;
-    }
+    const recordSelectionState = agGrid.getRecordSelectionState(node);
+    const isRecordSelectionDisabled = grid.isRecordSelectionDisabled(record);
 
     const renderContent = () => {
-        if (shouldRenderEmptyCell()) {
-            return <></>
-        }
         switch (props.baseColumn.name) {
             case CHECKBOX_COLUMN_KEY: {
                 return (
                     <div ref={checkBoxRef} className={styles.checkBoxContainer}>
                         <Checkbox
-                            checked={node.isSelected()}
+                            checked={recordSelectionState === 'checked'}
+                            disabled={isRecordSelectionDisabled}
+                            indeterminate={recordSelectionState === 'indeterminate'}
                             styles={{
                                 checkbox: styles.checkbox
                             }} />
@@ -70,10 +53,13 @@ const CellWrapper = (props: ICellProps) => {
     }
 
     const onCheckBoxClick = useCallback(e => {
-        e.stopPropagation();
-        e.preventDefault();
-        selection.toggle(record.getRecordId());
+        if (!isRecordSelectionDisabled) {
+            e.stopPropagation();
+            e.preventDefault();
+            record.getDataProvider().toggleSelectedRecordId(record.getRecordId(), { clearExisting: agGrid.getGrid().getSelectionType() === 'single' });
+        }
     }, []);
+
 
     useEffect(() => {
         //this needs to be done like this because stopPropagation in React onClick
@@ -84,7 +70,9 @@ const CellWrapper = (props: ICellProps) => {
         }
     }, []);
 
-    return <ThemeProvider theme={cellTheme} className={getClassNames([styles.cellRoot, cellFormatting.className])}>
+    return <ThemeProvider
+        theme={cellTheme}
+        className={getClassNames([styles.cellRoot, customFormatting.className])}>
         {renderContent()}
     </ThemeProvider>
 }
@@ -92,16 +80,18 @@ const CellWrapper = (props: ICellProps) => {
 
 export const InternalCell = (props: ICellProps) => {
     const column = props.baseColumn;
-    const record = props.data;
+    const record = props.record;
     const node = props.node;
-    const formatting = props.value.customFormatting;
+    const formatting = props.cellData.customFormatting;
     const grid = useGridInstance();
-    const error = props.value.error;
-    const notifications = props.value.notifications;
-    const errorMessage = props.value.errorMessage;
+    const agGrid = useAgGridInstance();
+    const error = props.cellData.error;
+    const notifications = props.cellData.notifications;
+    const errorMessage = props.cellData.errorMessage;
     const theme = useTheme();
     const applicationTheme = useControlTheme(grid.getPcfContext().fluentDesignLanguage);
     const [recordCommands, setRecordCommands] = useState(undefined);
+    const expandButtonRef = useRef<HTMLButtonElement>(null);
 
     const shouldShowNotEditableNotification = () => {
         if (column.isEditable && !record.getColumnInfo(column.name).security.editable) {
@@ -137,7 +127,7 @@ export const InternalCell = (props: ICellProps) => {
         }
         return (
             <>
-                {grid.isColumnExpandable(record, column) && <button onClick={() => node.setExpanded(!node.expanded)}>toggle</button>}
+                {grid.isColumnExpandable(record, column) && <button ref={expandButtonRef} onClick={() => agGrid.toggleGroup(node)}>toggle</button>}
                 {(column.type !== 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) &&
                     <CellContent {...props} recordCommands={recordCommands} />
                 }
@@ -195,13 +185,13 @@ export const InternalCell = (props: ICellProps) => {
         return <Notifications
             formatting={formatting}
             isActionColumn={column.type === 'action'}
-            columnAlignment={props.value.columnAlignment}
+            columnAlignment={props.cellData.columnAlignment}
             notifications={notifications}
             farItems={getFarNotifications()} />
     }
 
     const isLoading = () => {
-        if (props.value.loading) {
+        if (props.cellData.loading) {
             return true;
         }
         if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME && !recordCommands) {
@@ -211,8 +201,13 @@ export const InternalCell = (props: ICellProps) => {
         return false;
     }
 
+    const toggleExpand = useCallback((e: MouseEvent) => {
+        e.stopPropagation();
+        agGrid.toggleGroup(node)
+    }, []);
+
     const shouldRenderNotifications = getShouldRenderNotifications();
-    const styles = useMemo(() => getInnerCellStyles(props.isCellEditor, theme, props.value.columnAlignment), [props.isCellEditor, theme, props.value.columnAlignment]);
+    const styles = useMemo(() => getInnerCellStyles(props.isCellEditor, theme, props.cellData.columnAlignment), [props.isCellEditor, theme, props.cellData.columnAlignment]);
 
     useEffect(() => {
         if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
@@ -222,6 +217,12 @@ export const InternalCell = (props: ICellProps) => {
             })();
         }
     }, [grid.getRecordValue(record, column)]);
+
+    useEffect(() => {
+        if (expandButtonRef.current) {
+            expandButtonRef.current.addEventListener('click', toggleExpand);
+        }
+    }, []);
 
     return <div className={styles.innerCellRoot} data-is-valid={!error}>
         {renderContent()}

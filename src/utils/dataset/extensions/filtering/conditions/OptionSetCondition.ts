@@ -1,11 +1,11 @@
-import { DataTypes, IOperator, Operators } from "@talxis/client-libraries";
+import { Operators, DataTypes, IOperator } from "@talxis/client-libraries";
 import { Condition } from "./Condition";
 
 export class OptionSetCondition extends Condition {
     private _lastSelectedOptionSetValue: number[] | null = null;
     private _lastSelectedStringValue: string | null = null;
 
-    constructor(...args: any){
+    constructor(...args: any) {
         ///@ts-ignore
         super(...args)
         //this prefills the lastSelected option
@@ -49,7 +49,7 @@ export class OptionSetCondition extends Condition {
             case Operators.DoesNotEqual.Value:
             case Operators.ContainValues.Value:
             case Operators.DoesNotContainValues.Value:
-                if(this._lastSelectedOptionSetValue) {
+                if (this._lastSelectedOptionSetValue) {
                     return this._lastSelectedOptionSetValue;
                 }
                 if (isString) {
@@ -67,7 +67,7 @@ export class OptionSetCondition extends Condition {
             case Operators.DoesNotEndWith.Value:
             case Operators.Like.Value:
             case Operators.NotLike.Value:
-                if(this._lastSelectedStringValue) {
+                if (this._lastSelectedStringValue) {
                     return this._lastSelectedStringValue;
                 }
                 if (isString) {
@@ -116,8 +116,8 @@ export class OptionSetCondition extends Condition {
     }
 
     protected _getUndecoratedOperator(operator: IOperator["Value"], value: any): IOperator["Value"] {
-        if(Array.isArray(value)) {
-            switch(operator) {
+        if (Array.isArray(value)) {
+            switch (operator) {
                 case Operators.In.Value: {
                     return Operators.Equal.Value;
                 }
@@ -129,8 +129,8 @@ export class OptionSetCondition extends Condition {
         return operator;
     }
     protected _getDecoratedOperator(operator: IOperator["Value"], value: any): IOperator["Value"] {
-        if(Array.isArray(value)) {
-            switch(operator) {
+        if (Array.isArray(value)) {
+            switch (operator) {
                 case Operators.Equal.Value: {
                     return Operators.In.Value;
                 }

@@ -1,28 +1,28 @@
-import { IDataset } from "@talxis/client-libraries";
-import { DatasetExtension } from "../DatasetExtension";
+import { IDataProvider, IDataset } from "@talxis/client-libraries";
 
 
 interface IDependencies {
-    onGetDataset: () => IDataset;
+    onGetDataProvider: () => IDataProvider;
     onGetSelectionType: () => 'single' | 'multiple' | 'none';
 }
 
-export class Selection extends DatasetExtension {
+export class Selection {
     private _getSelectionType: () => 'single' | 'multiple' | 'none';
+    private _getDataProvider: () => IDataProvider;
     private _selectedRecordIdsSet: Set<string> = new Set<string>();
 
-    constructor({ onGetDataset, onGetSelectionType }: IDependencies) {
-        super(onGetDataset);
+    constructor({ onGetDataProvider, onGetSelectionType }: IDependencies) {
         this._getSelectionType = onGetSelectionType;
-
-        this._dataset.addEventListener('onRecordsSelected', (ids) => {
+        this._getDataProvider = onGetDataProvider;
+        this._selectedRecordIdsSet = new Set(this._dataProvider.getSelectedRecordIds());
+        this._dataProvider.addEventListener('onRecordsSelected', (ids) => {
             this._selectedRecordIdsSet = new Set(ids);
         });
 
     }
     public areAllRecordsSelected(): boolean {
-        const selectedRecordIds = this._dataset.getSelectedRecordIds();
-        const sortedRecordIds = this._dataset.sortedRecordIds;
+        const selectedRecordIds = this._dataProvider.getSelectedRecordIds();
+        const sortedRecordIds = this._dataProvider.getSortedRecordIds();
         return selectedRecordIds.length === sortedRecordIds.length;
     }
     public getSelectedRecordIdsSet(): Set<string> {
@@ -54,11 +54,15 @@ export class Selection extends DatasetExtension {
                 break;
             }
         }
-        this._dataset.setSelectedRecordIds([...this._selectedRecordIdsSet.values()]);
+        this._dataProvider.setSelectedRecordIds([...this._selectedRecordIdsSet.values()]);
     }
 
     private get _selectionType() {
         return this._getSelectionType();
+    }
+
+    private get _dataProvider() {
+        return this._getDataProvider();
     }
 
 }

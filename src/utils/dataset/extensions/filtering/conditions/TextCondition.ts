@@ -1,4 +1,4 @@
-import { DataTypes, Operators } from "@talxis/client-libraries";
+import { Operators, DataTypes } from "@talxis/client-libraries";
 import { Condition } from "./Condition";
 
 export class TextCondition extends Condition {
@@ -35,7 +35,7 @@ export class TextCondition extends Condition {
         if (this._isEmptyValue(value)) {
             return null;
         }
-        if(typeof value === 'number') {
+        if (typeof value === 'number') {
             return value.toString();
         }
 

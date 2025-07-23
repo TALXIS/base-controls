@@ -24,7 +24,7 @@ export const CellContent = (props: ICellContentProps) => {
     const valueRef = React.useRef(props.value);
     const recordCommands = props.recordCommands;
     columnRef.current = props.baseColumn;
-    valueRef.current = props.value;
+    valueRef.current = props.cellData;
     const rerender = useRerender();
     const grid = useGridInstance();
     const record = props.data;
@@ -47,7 +47,7 @@ export const CellContent = (props: ICellContentProps) => {
     }
 
     const getFonts = () => {
-        if(valueRef.current.aggregatedValue != null && valueRef.current.value == null) {
+        if(valueRef.current.aggregatedValue != null) {
             return {
                 medium: {
                     fontSize: 15,

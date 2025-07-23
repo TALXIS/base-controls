@@ -1,4 +1,4 @@
-import { DataTypes, IOperator, Operators } from "@talxis/client-libraries";
+import { Operators, DataTypes, IOperator } from "@talxis/client-libraries";
 import { Condition } from "./Condition";
 
 export class MultiSelectOptionSetCondition extends Condition {

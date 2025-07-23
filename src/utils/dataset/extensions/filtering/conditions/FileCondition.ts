@@ -11,7 +11,6 @@ export class FileCondition extends Condition {
     protected _getControlValue(): null {
         return null;
     }
-
     protected _getFilterValue(value: any): string | string[] | null {
         return null;
     }

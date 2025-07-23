@@ -1,6 +1,5 @@
 import { DataTypes, IOperator, Operators, Sanitizer } from "@talxis/client-libraries";
 import { Condition } from "./Condition";
-import { IBinding } from "../../../../../components/NestedControlRenderer/interfaces";
 
 export class LookupCondition extends Condition {
     private _lastSelectedLookupValue: ComponentFramework.LookupValue[] | null = null;
@@ -33,7 +32,7 @@ export class LookupCondition extends Condition {
         return this._isValueLoading;
     }
 
-    public getBindings(): { [key: string]: IBinding } {
+    public getBindings(): { [key: string]: any } {
         return {
             'MultipleEnabled': {
                 isStatic: true,
@@ -158,11 +157,12 @@ export class LookupCondition extends Condition {
     }
 
     private _getGuid(value: any): string | null {
-        const guidRegex = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{32})$/i;
-        if (guidRegex.test(value)) {
+        if (Sanitizer.Guid.isGuid(value)) {
             return Sanitizer.Guid.removeGuidBrackets(value);
         }
-        return null;
+        else {
+            return null;
+        }
     }
 
     private async _getLookupValue(guids: string[]): Promise<void> {

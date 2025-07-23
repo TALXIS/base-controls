@@ -1,4 +1,4 @@
-import { Attribute, Constants, DataType, DataTypes, EventEmitter, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataset, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { Attribute, Constants, DataType, DataTypes, EventEmitter, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IRecord, Operators, Sanitizer } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import { ITheme, Theming } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
@@ -8,8 +8,10 @@ import { ITranslation } from "../../../hooks";
 import { IBinding } from "../../NestedControlRenderer/interfaces";
 import { BaseControls, IFluentDesignState } from "../../../utils";
 import { IGrid, IGridParameters } from "../interfaces";
-import { Aggregation, Filtering, Sorting, Selection, Grouping } from "../../../utils/dataset/extensions";
+import { Aggregation, Sorting, Selection, Grouping } from "../../../utils/dataset/extensions";
 import { CHECKBOX_COLUMN_KEY } from "../constants";
+import { Filtering } from "../../../utils/dataset/extensions/filtering";
+import { Type as FilterType } from "@talxis/client-libraries";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
@@ -45,7 +47,6 @@ export interface IGridColumn extends IColumn {
 export class GridModel {
     private _getProps: () => IGrid;
     private _sorting: Sorting;
-    private _selection: Selection;
     private _aggregation: Aggregation;
     private _grouping: Grouping;
     private _filtering: Filtering;
@@ -69,11 +70,7 @@ export class GridModel {
             }
         })
         this._aggregation.addEventListener('onRequestMainDatasetRefresh', () => this._dataset.refresh())
-        this._selection = new Selection({
-            onGetDataset: () => this.getDataset(),
-            onGetSelectionType: () => this.getSelectionType()
-        })
-        this._filtering = new Filtering(() => this.getDataset());
+        this._filtering = new Filtering(() => this.getDataset().getDataProvider());
         this._grouping = new Grouping(() => this.getDataset());
     }
 
@@ -112,9 +109,6 @@ export class GridModel {
     public getFiltering(): Filtering {
         return this._filtering;
     }
-    public getSelection(): Selection {
-        return this._selection;
-    }
     public getAggregation(): Aggregation {
         return this._aggregation
     }
@@ -135,6 +129,10 @@ export class GridModel {
     }
     public optionSetColorsEnabled(): boolean {
         return this.getParameters().EnableOptionSetColors?.raw === true;
+    }
+
+    public getDefaultExpandedGroupLevel(): number {
+        return this.getParameters().DefaultExpandedGroupLevel?.raw ?? -1;
     }
 
     public getDefaultRowHeight(): number {
@@ -190,8 +188,8 @@ export class GridModel {
             'value': {
                 isStatic: false,
                 type: column.dataType as any,
-                value: this._getBindingValue(record, column),
-                formattedValue: record.getFormattedValue(column.name),
+                value: this.getControlValue(record, column),
+                formattedValue: this.getRecordFormattedValue(record, column),
                 error: columnInfo.error,
                 errorMessage: columnInfo.errorMessage,
                 onNotifyOutputChanged: () => { },
@@ -295,9 +293,9 @@ export class GridModel {
 
     public isColumnExpandable(record: IRecord, column: IColumn): boolean {
         const grouping = record.getDataProvider().grouping.getGroupBy(column.name);
-        if (grouping) {
-            const aggregatedValue = this.getRecordValue(record, column);
-            return aggregatedValue != null;
+        const aggregation = record.getDataProvider().aggregation.getAggregation(column.name);
+        if (grouping && aggregation) {
+            return this.getRecordValue(record, aggregation.alias) != null;
         }
         else {
             return false;
@@ -305,7 +303,6 @@ export class GridModel {
     }
 
     public getFieldFormatting(record: IRecord, columnName: string): Required<ICustomColumnFormatting> {
-        //get the latest reference - ag grid might still be referencing the old one and give us wrong index
         const isEven = record.getIndex() % 2 === 0;
         const defaultTheme = this.getDefaultCellTheme(isEven);
         const defaultBackgroundColor = defaultTheme.semanticColors.bodyBackground;;
@@ -399,8 +396,8 @@ export class GridModel {
         const aggrColumn = record.getDataProvider().getColumnsMap().get(aggregation?.alias ?? '') ?? null;
         if (aggregation) {
             return {
-                value: this.getRecordValue(record, column),
-                formattedValue: record.getFormattedValue(aggregation.alias),
+                value: this.getRecordValue(record, aggregation.alias),
+                formattedValue: this.getRecordFormattedValue(record, aggregation.alias),
                 aggregatedColumn: aggrColumn ?? null
             }
         }
@@ -419,17 +416,153 @@ export class GridModel {
     public getRecordFormattedValue(record: IRecord, column: IColumn | string): string | null {
         return this._getRecordValue(record, column, true);
     }
-    private _getRecordValue(record: IRecord, column: IColumn | string, formatted: boolean): any {
+    //returns record value in a form that is compatible with PCF typings
+    public getControlValue(record: IRecord, column: IColumn | string): any {
         column = typeof column === 'string' ? record.getDataProvider().getColumnsMap().get(column)! : column;
+        let value = this.getRecordValue(record, column);
+        switch (column.dataType) {
+            //getValue always returns string for TwoOptions
+            case 'TwoOptions': {
+                if (typeof value === 'string') {
+                    value = value == '1' ? true : false
+                }
+                break;
+            }
+            //getValue always returns string for OptionSet
+            case 'OptionSet': {
+                value = value ? parseInt(value) : null;
+                break;
+            }
+            case 'MultiSelectPicklist': {
+                value = value ? value.split(',').map((x: string) => parseInt(x)) : null;
+                break;
+            }
+            case 'Lookup.Simple':
+            case 'Lookup.Customer':
+            case 'Lookup.Owner':
+            case 'Lookup.Regarding': {
+                //our implementation returns array, Power Apps returns object
+                if (value && !Array.isArray(value)) {
+                    value = [value];
+                }
+                value = value?.map((x: ComponentFramework.EntityReference) => Sanitizer.Lookup.getLookupValue(x))
+                break;
+            }
+        }
+        return value;
+    }
+
+    public getGroupChildrenDataProvider(groupRecord: IRecord): IDataProvider {
+        const groupBys = this._dataset.grouping.getGroupBys();
+        const parentRecord = groupRecord;
+        const level = groupRecord.getDataProvider().getNestingLevel();
+        const parentDataProvider = parentRecord.getDataProvider();
+        const groupDataProvider = parentDataProvider.getChildDataProvider(parentRecord.getRecordId());
+        //this makes sure client API can register events in the child dataset
+        const groupDataset = this._dataset.getChildDataset(groupDataProvider);
+        const groupedColumnName = groupBys[level].columnName;
+        const nextGroupedColumnName = groupBys[level + 1]?.columnName;
+        const groupedColumn = this._dataset.getDataProvider().getColumnsMap().get(groupedColumnName)!;
+        groupDataProvider.setViewId('');
+        groupDataProvider.getColumnsMap().clear();
+        //make the grouped column virtual column does not appear in the grid
+        groupDataProvider.setColumns(parentDataProvider.getColumns().map(col => {
+            if (col.name === groupedColumn.name) {
+                return {
+                    ...col,
+                    isVirtual: true
+                }
+            }
+            else {
+                return col;
+            }
+        }));
+        groupDataProvider.getPaging().setPageSize(25);
+        groupDataProvider.grouping.clear();
+        groupDataProvider.aggregation.clear();
+
+        if (nextGroupedColumnName) {
+            const groupBy = this._dataset.grouping.getGroupBy(nextGroupedColumnName)!;
+            groupDataProvider.grouping.addGroupBy(groupBy);
+            const aggr = this._dataset.aggregation.getAggregation(groupBy.columnName)!;
+            groupDataProvider.aggregation.addAggregation(aggr);
+        }
+        this._dataset.aggregation.getAggregations().map(aggr => {
+            //adds aggregations that are not grouped
+            if (groupDataProvider.grouping.getGroupBys().length > 0 && !this._dataset.grouping.getGroupBy(aggr.columnName)) {
+                groupDataProvider.aggregation.addAggregation(aggr);
+            }
+        })
+        const filterDataProvider = groupDataProvider.getChildDataProvider();
+        filterDataProvider.setColumns(this._dataset.columns);
+        const filtering = new Filtering(() => filterDataProvider);
+        const columnFilter = filtering.getColumnFilter(groupedColumn.name);
+        const condition = columnFilter.addCondition();
+        const value = this._getFilterValueFromRecordValue(parentRecord, groupedColumn.dataType, groupedColumn.name);
+
+        if (value == null) {
+            condition.setOperator(Operators.DoesNotContainData.Value)
+        }
+        else {
+            condition.setOperator(Operators.Equal.Value);
+            condition.setValue(value);
+        }
+        const filterExpression = filtering.getFilterExpression(FilterType.And.Value);
+        if (!filterExpression) {
+            throw new Error('Unexpected error when filtering group dataset');
+        }
+        groupDataProvider.setFiltering(filterExpression);
+        return groupDataProvider;
+    }
+
+    public isRecordSelectionDisabled(record: IRecord): boolean {
+        const dataProvider = record.getDataProvider();
+        if (dataProvider.getSummarizationType() === 'grouping') {
+            if (this.getSelectionType() === 'single') {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+
+    private _getFilterValueFromRecordValue(record: IRecord, dataType: DataType, columnName: string) {
+        const value = this.getControlValue(record, columnName);
+        if (value == null || (Array.isArray(value) && value.length === 0)) {
+            return null;
+        }
+        switch (dataType) {
+            case 'OptionSet': {
+                return [value];
+            }
+            case 'TwoOptions': {
+                return [value ? 1 : 0];
+            }
+        }
+        return value;
+    }
+
+    private _getRecordValue(record: IRecord, column: IColumn | string, formatted: boolean): any {
+        if (!record) {
+            return null;
+        }
+        column = typeof column === 'string' ? record.getDataProvider().getColumnsMap().get(column)! : column;
+        if (!column) {
+            return null;
+        }
         const method = formatted ? 'getFormattedValue' : 'getValue';
         const groupBy = record.getDataProvider().grouping.getGroupBy(column.name);
         const aggregation = record.getDataProvider().aggregation.getAggregation(column.name);
-        //case for total row - aggregation is considered value
+        //aggregation is considered as value when it's set but no grouping is applied to the column
         if (!groupBy && aggregation) {
             return record[method](aggregation.alias);
         }
         else {
-            //when should aggregation count as record value?
             return record[method](groupBy?.alias ?? column.name);
         }
     }
@@ -453,7 +586,6 @@ export class GridModel {
                 getEntityName: () => this._getColumnEntityName(column.name)
             }
         })
-        this._injectCheckboxColumn(gridColumns);
         return gridColumns;
     }
 
@@ -552,70 +684,6 @@ export class GridModel {
             return 'action';
         }
         return undefined;
-    }
-
-
-    private _getBindingValue(record: IRecord, column: IColumn) {
-        let value = this.getRecordValue(record, column);
-        const summarizationType = this.getDataset().getDataProvider().getSummarizationType();
-        //case for total row - only aggregated value parameter should be shown
-        if (summarizationType === 'aggregation') {
-            value = null;
-        }
-        switch (column.dataType) {
-            //getValue always returns string for TwoOptions
-            case 'TwoOptions': {
-                if (typeof value === 'string') {
-                    value = value == '1' ? true : false
-                }
-                break;
-            }
-            //getValue always returns string for OptionSet
-            case 'OptionSet': {
-                value = value ? parseInt(value) : null;
-                break;
-            }
-            case 'MultiSelectPicklist': {
-                value = value ? value.split(',').map((x: string) => parseInt(x)) : null;
-                break;
-            }
-            case 'Lookup.Simple':
-            case 'Lookup.Customer':
-            case 'Lookup.Owner':
-            case 'Lookup.Regarding': {
-                //our implementation returns array, Power Apps returns object
-                if (value && !Array.isArray(value)) {
-                    value = [value];
-                }
-                value = value?.map((x: ComponentFramework.EntityReference) => Sanitizer.Lookup.getLookupValue(x))
-                break;
-            }
-        }
-        return value;
-    }
-
-    private _injectCheckboxColumn(gridColumns: IGridColumn[]) {
-        if (this.getSelectionType() !== 'none' && !gridColumns.find(x => x.name === CHECKBOX_COLUMN_KEY)) {
-            gridColumns.unshift({
-                name: CHECKBOX_COLUMN_KEY,
-                alias: CHECKBOX_COLUMN_KEY,
-                dataType: DataTypes.SingleLineText,
-                alignment: 'center',
-                displayName: '',
-                isEditable: false,
-                isFilterable: false,
-                isRequired: false,
-                isResizable: false,
-                canBeAggregated: false,
-                disableSorting: true,
-                isSorted: false,
-                isSortedDescending: false,
-                canBeGrouped: false,
-                order: 0,
-                visualSizeFactor: 45,
-                getEntityName: () => this._getColumnEntityName(CHECKBOX_COLUMN_KEY)
-            });
-        }
     }
 
     private get _dataset() {

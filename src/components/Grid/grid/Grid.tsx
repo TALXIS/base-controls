@@ -16,6 +16,7 @@ import { getGridStyles } from "./styles";
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 import { useDebouncedCallback } from "use-debounce";
+import { AgGridContext } from "./ag-grid/AgGridContext";
 
 const getGridInstance = (onGetProps: () => IGrid, labels: any, theme: ITheme): GridModel => {
     return new GridModel({
@@ -43,7 +44,7 @@ export const Grid = (props: IGrid) => {
 
     const debouncedRefresh = useDebouncedCallback(() => agGrid.refresh(), 0);
 
-    if(gridReadyRef.current) {
+    if (gridReadyRef.current) {
         debouncedRefresh();
     }
 
@@ -55,33 +56,35 @@ export const Grid = (props: IGrid) => {
 
 
     return <GridContext.Provider value={grid}>
-        <ThemeProvider
-            className={getClassNames([className, styles.gridRoot, 'ag-theme-balham'])}
-            ref={containerRef}
-        >
-            <AgGridReact
-                animateRows={false}
-                getRowId={(params: GetRowIdParams<IRecord>) => `${params.data.getRecordId()}_${params.data.getIndex()}`}
-                rowModelType='serverSide'
-                suppressCopyRowsToClipboard
-                groupDisplayType="custom"
-                rowSelection={agGrid.getSelectionType()}
-                loadingOverlayComponent={LoadingOverlay}
-                noRowsOverlayComponent={EmptyRecords}
-                reactiveCustomComponents
-                gridOptions={{
-                    getRowStyle: (params) => {
-                        const record = params.data;
-                        if (!record) {
-                            return undefined
-                        }
-                        return {
-                            backgroundColor: grid.getDefaultCellTheme(record.getIndex() % 2 === 0).semanticColors.bodyBackground
-                        }
-                    },
-                }}
-                onGridReady={onGridReady}
-            />
-        </ThemeProvider>
+        <AgGridContext.Provider value={agGrid}>
+            <ThemeProvider
+                className={getClassNames([className, styles.gridRoot, 'ag-theme-balham'])}
+                ref={containerRef}
+            >
+                <AgGridReact
+                    animateRows={false}
+                    getRowId={(params: GetRowIdParams<IRecord>) => `${params.data.getRecordId()}`}
+                    rowModelType='serverSide'
+                    suppressCopyRowsToClipboard
+                    groupDisplayType="custom"
+                    rowSelection={agGrid.getSelectionType()}
+                    loadingOverlayComponent={LoadingOverlay}
+                    noRowsOverlayComponent={EmptyRecords}
+                    reactiveCustomComponents
+                    gridOptions={{
+                        getRowStyle: (params) => {
+                            const record = params.data;
+                            if (!record) {
+                                return undefined
+                            }
+                            return {
+                                backgroundColor: grid.getDefaultCellTheme(record.getIndex() % 2 === 0).semanticColors.bodyBackground
+                            }
+                        },
+                    }}
+                    onGridReady={onGridReady}
+                />
+            </ThemeProvider>
+        </AgGridContext.Provider>
     </GridContext.Provider>
 }
