@@ -64,7 +64,7 @@ export const TwoOptions = (props: ITwoOptions) => {
                         }
                     }}
                     theme={theme}
-                    checked={boundValue.raw}
+                    checked={!!boundValue.raw}
                     componentRef={componentRef}
                     disabled={context.mode.isControlDisabled}
                     inlineLabel
