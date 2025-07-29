@@ -120,6 +120,7 @@ export const Lookup = (props: ILookup) => {
             //TODO: use metadata to know if the attribute is a lookup and datetime
             //metadata are laaded prior to the search result, so we don't know what attribute to ask for when fetching metadata
             if(!text){
+                //if the attribute is not found, try to get the formatted value of lookup
                 text = result.entityData["_"+result.layout?.Rows?.[0]?.Cells?.[1]?.Name+"_value@OData.Community.Display.V1.FormattedValue"]
             }
             const dateRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/;
