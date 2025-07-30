@@ -150,7 +150,7 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                                 //checked: aggregation.isAggregationAppliedToColumn(column.name, 'none'),
                                 text: labels['filtersortmenu-total-none'](),
                                 onClick: () => {
-                                    dataset.aggregation.removeAggregation(column.name)
+                                    dataset.aggregation.removeAggregation(column.aggregation?.alias!)
                                 }
 
                             },

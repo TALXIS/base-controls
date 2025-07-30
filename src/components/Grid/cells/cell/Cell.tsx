@@ -28,6 +28,7 @@ export const Cell = (props: ICellProps) => {
     const agGrid = useAgGridInstance();
     const grid = useGridInstance();
     const checkBoxRef = useRef<HTMLDivElement>(null);
+    const cellRef = useRef<HTMLDivElement>(null);
     const recordSelectionState = agGrid.getRecordSelectionState(node);
     const isRecordSelectionDisabled = grid.isRecordSelectionDisabled(record);
 
@@ -60,6 +61,13 @@ export const Cell = (props: ICellProps) => {
         }
     }, []);
 
+    const onCellClick = useCallback((e: MouseEvent) => {
+        const key = grid.getCurrentlyHeldKey();
+        if(record.getDataProvider().getSummarizationType() === 'grouping' && key !== 'SHIFT' && key !== 'CONTROL' && key !== 'META') {
+            e.stopPropagation();
+        }
+    }, []);
+
 
     useEffect(() => {
         //this needs to be done like this because stopPropagation in React onClick
@@ -68,9 +76,11 @@ export const Cell = (props: ICellProps) => {
         if (checkBoxRef.current) {
             checkBoxRef.current.addEventListener('click', onCheckBoxClick)
         }
+        cellRef.current?.addEventListener('click', onCellClick);
     }, []);
 
     return <ThemeProvider
+        ref={cellRef}
         theme={cellTheme}
         className={getClassNames([styles.cellRoot, customFormatting.className])}>
         {renderContent()}

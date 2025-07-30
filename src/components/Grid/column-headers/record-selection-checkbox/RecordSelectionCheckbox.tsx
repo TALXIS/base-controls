@@ -26,7 +26,7 @@ export const RecordSelectionCheckBox = () => {
 
     const getCheckBoxState = () => {
         const selectedRecordIds = dataset.getDataProvider().getSelectedRecordIds();
-        const selectedRecordIdsWithChildren = dataset.getDataProvider().getSelectedRecordIdsWithChildren();
+        const selectedRecordIdsWithChildren = dataset.getDataProvider().getSelectedRecordIds(true);
         if (selectedRecordIdsWithChildren.length === 0) {
             return 'unchecked';
         }

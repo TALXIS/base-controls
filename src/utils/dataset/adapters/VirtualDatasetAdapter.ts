@@ -128,18 +128,14 @@ export class VirtualDatasetAdapter {
         this._dataset.addEventListener('onBeforeNewDataLoaded', () => {
             originalGrouping = this._dataset.grouping.getGroupBys();
             originalAggregation = this._dataset.aggregation.getAggregations();
+            //remove all grouping and aggregations and only keep the 
             if (originalGrouping.length > 1) {
                 this._dataset.grouping.clear();
                 this._dataset.grouping.addGroupBy(originalGrouping[0]);
-                if(this._dataset.aggregation.getAggregation(originalGrouping[0].columnName)) {
-                    this._dataset.aggregation.getAggregations().map(aggr => {
-                        if(originalGrouping[0].columnName === aggr.columnName) {
-                            return;
-                        }
-                        else if (originalGrouping.find(x => x.columnName === aggr.columnName)) {
-                            this._dataset.aggregation.removeAggregation(aggr.columnName);
-                        }
-                    })
+                //clear all grouping aggregations except the first one
+                for(let i = 1; i < originalGrouping.length; i++) {
+                    const column = this._dataset.getDataProvider().getColumnsMap().get(originalGrouping[i].columnName);
+                    this._dataset.aggregation.removeAggregation(column?.aggregation?.alias!);
                 }
             }
         })

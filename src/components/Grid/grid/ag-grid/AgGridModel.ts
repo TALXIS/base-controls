@@ -82,19 +82,16 @@ export class AgGridModel {
                 },
                 rowGroup: column.grouping?.isGrouped,
                 cellRendererParams: (p: any) => {
-                    const record = p.data;
-                    const recordId = record.getRecordId();
                     return {
-                        baseColumn: column,
-                        isCellEditor: false,
-                        deferRender: true,
-                        cellData: this._cellDataMap.get(`${recordId}_${column.name}`),
-                        record: record
+                        ...this._getCellParameters(p.data, column),
+                        isCellEditor: false
                     }
                 },
-                cellEditorParams: {
-                    baseColumn: column,
-                    isCellEditor: true
+                cellEditorParams: (p: any) => {
+                    return {
+                        ...this._getCellParameters(p.data, column),
+                        isCellEditor: true
+                    }
                 },
                 editable: (p) => this._isColumnEditable(column, p),
                 headerComponent: ColumnHeader,
@@ -184,16 +181,25 @@ export class AgGridModel {
             }
             else {
                 const childDataProvider = dataProvider.getChildDataProvider(record.getRecordId());
-                if (childDataProvider.getSelectedRecordIdsWithChildren().length === 0) {
+                if (childDataProvider.getSelectedRecordIds(true).length === 0) {
                     return 'unchecked';
                 }
                 else {
-                    return 'indeterminate'
+                    return 'indeterminate';
                 }
             }
         }
         else {
             return node.isSelected() ? 'checked' : 'unchecked';
+        }
+    }
+
+    private _getCellParameters(record: IRecord, column: IGridColumn) {
+        const recordId = record.getRecordId();
+        return {
+            baseColumn: column,
+            cellData: this._cellDataMap.get(`${recordId}_${column.name}`),
+            record: record
         }
     }
 
@@ -309,6 +315,10 @@ export class AgGridModel {
         })
     }
 
+    private _toggleSuppressRowClickSelection() {
+        this.getGridApi().setGridOption('suppressRowClickSelection', this._dataset.grouping.getGroupBys().length > 0);
+    }
+
     private _calculateGridHeight(): string {
         const defaultRowHeight = this._grid.getDefaultRowHeight();
         const offset = 20;
@@ -382,9 +392,8 @@ export class AgGridModel {
                 return;
             }
         }
-        //@ts-ignore
-        this._dataset.clearSelectedRecordIds();
         const selectedNodes: IRowNode<IRecord>[] = this.getGridApi().getSelectedNodes();
+        this._dataset.clearSelectedRecordIds();
         const providerSelectedRecordIdsMap = new Map<IDataProvider, string[]>();
         selectedNodes.map(node => {
             const record = node.data!;
@@ -400,9 +409,9 @@ export class AgGridModel {
     }
 
     private async _setSelectedNodes() {
-        let ids = this._dataset.getDataProvider().getSelectedRecordIdsWithChildren();
+        let ids = this._dataset.getDataProvider().getSelectedRecordIds(true);
         let isLoading = false;
-        await this._loadGroups(ids, () => {
+        await this._grid.loadGroups(ids, () => {
             if (!isLoading) {
                 this._dataset.getDataProvider().setLoading(true);
                 isLoading = true;
@@ -411,7 +420,7 @@ export class AgGridModel {
         if (isLoading) {
             this._dataset.getDataProvider().setLoading(false);
         }
-        ids = this._dataset.getDataProvider().getSelectedRecordIdsWithChildren();
+        ids = this._dataset.getDataProvider().getSelectedRecordIds(true);
         this.getGridApi().setServerSideSelectionState({
             selectAll: false,
             toggledNodes: ids
@@ -420,42 +429,6 @@ export class AgGridModel {
             columns: [CHECKBOX_COLUMN_KEY],
             force: true
         })
-    }
-
-    private async _loadGroups(ids: string[], onRequestLoad: () => void) {
-        let pendingPromises: Promise<any>[] = [];
-        const groupIds = this._getGroupRecordIds(ids);
-        const providersToRefresh: Promise<IDataProvider>[] = [];
-        for (const groupId of groupIds) {
-            const record = this._dataset.getDataProvider().getRecordsMap(true)[groupId];
-            const groupDataProvider = this._grid.getGroupChildrenDataProvider(record);
-            if (groupDataProvider.getRecords().length === 0) {
-                onRequestLoad();
-                providersToRefresh.push(new Promise(async (resolve) => {
-                    await groupDataProvider.refresh();
-                    resolve(groupDataProvider);
-                }))
-            }
-            else {
-                groupDataProvider.setSelectedRecordIds(groupDataProvider.getSortedRecordIds(), { propagateToChildren: false, disableEvent: true });
-            }
-        }
-        if (providersToRefresh.length > 0) {
-            const providers = await Promise.all(providersToRefresh);
-            for (const provider of providers) {
-                provider.setSelectedRecordIds(provider.getSortedRecordIds(), { propagateToChildren: false });
-                for (const record of provider.getRecords()) {
-                    if (record.getRecordId().startsWith('group')) {
-                        pendingPromises.push(this._loadGroups(provider.getSelectedRecordIds(), onRequestLoad))
-                    }
-                }
-            }
-        }
-        return Promise.all(pendingPromises);
-    }
-
-    private _getGroupRecordIds(ids: string[]): string[] {
-        return ids.filter(id => id.startsWith('group_'));
     }
 
     private _valueFormatter(p: ValueFormatterParams<IRecord>): string {
