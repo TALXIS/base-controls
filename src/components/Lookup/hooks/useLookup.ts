@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ITranslation, useControl } from "../../../hooks";
-import { IEntity, ILayout, ILookup } from "../interfaces";
+import { IEntity, ILayout, ILookup, IMetadata } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
 import { ITheme } from "@talxis/react-components";
@@ -93,7 +93,7 @@ export const useLookup = (props: ILookup): [
                 result.push({
                     entityType: entityName,
                     id: entity[entityMetadata.PrimaryIdAttribute],
-                    name: entity[layout.Rows?.[0]?.Cells?.[0]?.Name] ?? entity[entityMetadata.PrimaryNameAttribute] ?? labels.noName(),
+                    name: getPrimaryName(entity, entityMetadata, layout.Rows?.[0]?.Cells?.[0]?.Name),
                     entityData: entity,
                     layout: layout
                 });
@@ -101,6 +101,23 @@ export const useLookup = (props: ILookup): [
         }
         return result;
     }
+
+
+    const getPrimaryName = (
+        entity: ComponentFramework.WebApi.Entity,
+        entityMetadata: IMetadata,
+        attribute: string
+    ): string => {
+        //TODO: use metadata to know if the attribute is a lookup and datetime
+        //metadata are laaded prior to the search result, so we don't know what attribute to ask for when fetching metadata
+        return (
+            entity[attribute] ??
+            entity[`_${attribute}_value@OData.Community.Display.V1.FormattedValue`] ??
+            entity[entityMetadata.PrimaryNameAttribute] ??
+            labels.noName()
+        );
+    };
+
 
     const createRecord = async (entityName: string) => {
         const formParameters = props.onGetOnCreateFormParameters?.(entityName)
