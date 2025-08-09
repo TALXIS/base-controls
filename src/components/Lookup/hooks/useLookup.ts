@@ -102,7 +102,6 @@ export const useLookup = (props: ILookup): [
         return result;
     }
 
-
     const getPrimaryName = (
         entity: ComponentFramework.WebApi.Entity,
         entityMetadata: IMetadata,
@@ -117,7 +116,6 @@ export const useLookup = (props: ILookup): [
             labels.noName()
         );
     };
-
 
     const createRecord = async (entityName: string) => {
         const formParameters = props.onGetOnCreateFormParameters?.(entityName)
