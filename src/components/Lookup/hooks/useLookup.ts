@@ -4,6 +4,7 @@ import { IEntity, ILayout, ILookup, IMetadata } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
 import { ITheme } from "@talxis/react-components";
+import dayjs from "dayjs";
 
 export const useLookup = (props: ILookup): [
     ComponentFramework.LookupValue[],
@@ -81,19 +82,45 @@ export const useLookup = (props: ILookup): [
         }
         await Promise.all(fetchXmlMap.values());
         const responsePromiseMap = new Map<string, Promise<ComponentFramework.WebApi.RetrieveMultipleResponse>>()
+        const aliasEntityMap: { aliasAttribute: string, entityAttribute: string }[] = [];
+        const domParser = new DOMParser();
         for (const [entityName, fetchXml] of fetchXmlMap) {
-            responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?$top=25&fetchXml=${encodeURIComponent((await fetchXml))}`))
+            const fetchXMLresult = await fetchXml;
+            responsePromiseMap.set(entityName, context.webAPI.retrieveMultipleRecords(entityName, `?$top=25&fetchXml=${encodeURIComponent((fetchXMLresult))}`))
+            //parsing of link entities from fetchXML
+            const xml = domParser.parseFromString(fetchXMLresult, "application/xml");
+            const linkEntities = xml.querySelectorAll(`link-entity`);
+            for (const linkEntity of linkEntities) {
+                const aliasAttribute = linkEntity.getAttribute('alias');
+                const entityAttribute = linkEntity.getAttribute('name');
+                if (entityAttribute) {
+                    aliasEntityMap.push({ aliasAttribute: aliasAttribute ?? entityAttribute, entityAttribute: entityAttribute })
+                }
+                else {
+                    throw Error("Link-entity without name property is not supported. Offedning query: " + fetchXMLresult);
+                }
+            }
         }
         await Promise.all(responsePromiseMap.values());
         const result: (ComponentFramework.LookupValue & { entityData: { [key: string]: any }, layout: ILayout })[] = [];
         for (const [entityName, response] of responsePromiseMap) {
             const layout: ILayout = JSON.parse((await getFetchXml(entityViewIdMap.get(entityName)!)).layoutjson ?? "{}");
+            //Mapping link-entities' logical names to layout's Cell 
+            if (layout.Rows.some(x => x.Cells.some(x => x.Name.includes(".")))) {
+                const cellsToModify = layout.Rows.flatMap(row => row.Cells)
+                    .filter(cell => cell.Name.includes("."));
+
+                cellsToModify.forEach(cell => {
+                    const alias = cell.Name.split(".")[0]
+                    cell.RelatedEntityName = aliasEntityMap.find(x => x.aliasAttribute === alias)?.entityAttribute ?? "";
+                });
+            }
             for (const entity of (await response).entities) {
                 const entityMetadata = await entities.find(x => x.entityName === entityName)!.metadata;
                 result.push({
                     entityType: entityName,
                     id: entity[entityMetadata.PrimaryIdAttribute],
-                    name: getPrimaryName(entity, entityMetadata, layout.Rows?.[0]?.Cells?.[0]?.Name),
+                    name: await getPrimaryName(entity, entityName, layout.Rows?.[0]?.Cells?.[0]?.Name, layout),
                     entityData: entity,
                     layout: layout
                 });
@@ -102,16 +129,49 @@ export const useLookup = (props: ILookup): [
         return result;
     }
 
-    const getPrimaryName = (
+    const getPrimaryName = async (
         entity: ComponentFramework.WebApi.Entity,
-        entityMetadata: IMetadata,
-        attribute: string
-    ): string => {
-        //TODO: use metadata to know if the attribute is a lookup and datetime
-        //metadata are laaded prior to the search result, so we don't know what attribute to ask for when fetching metadata
+        entityName: string,
+        attribute: string,
+        layout: ILayout
+    ): Promise<string> => {
+        let targetEntityName = entityName;
+        let targetAttribute = attribute;
+        //checking for attributes pointing to related entity attribute, given by convention of using dot as separator
+        if (attribute.includes(".")) {
+            targetEntityName = layout.Rows.find(x => x.Cells)?.Cells?.find(y => y.Name === attribute)?.RelatedEntityName || entityName;
+            targetAttribute = attribute.split(".")[1]
+        }
+        const entityMetadata: ComponentFramework.PropertyHelper.EntityMetadata = await props.context.utils.getEntityMetadata(targetEntityName, [targetAttribute]);
+        const attributetype: string = entityMetadata.Attributes.get(targetAttribute).AttributeTypeName;
+        let primaryName: string;
+        switch (attributetype.toLowerCase()) {
+            case "lookup":
+            case "partylist":
+            case "owner":
+            case "customer":
+                primaryName = entity[`_${targetAttribute}_value@OData.Community.Display.V1.FormattedValue`];
+                break;
+            case "optionset":
+            case "picklist":
+            case "state":
+            case "status":
+            case "boolean":
+            case "integer":
+            case "bigint":
+            case "decimal":
+            case "money":
+                //TODO: Introduce user formatting, this approach takes format from application user setting
+                primaryName = entity[`${targetAttribute}@OData.Community.Display.V1.FormattedValue`];
+                break;
+            case "datetime":
+                primaryName = props.context.formatting.formatTime(dayjs(entity[targetAttribute]).toDate(), 1);
+                break
+            default:
+                primaryName = entity[targetAttribute];
+        };
         return (
-            entity[attribute] ??
-            entity[`_${attribute}_value@OData.Community.Display.V1.FormattedValue`] ??
+            primaryName ??
             entity[entityMetadata.PrimaryNameAttribute] ??
             labels.noName()
         );
