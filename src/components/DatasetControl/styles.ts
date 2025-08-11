@@ -1,28 +1,23 @@
 import { mergeStyleSets } from "@fluentui/react"
-import { ITheme } from "@talxis/react-components";
 
-export const getDatasetControlStyles = (theme: ITheme, height?: string | null) => {
+export const getDatasetControlStyles = (height?: string | null) => {
     return mergeStyleSets({
         datasetControlRoot: {
             display: 'flex',
             flexDirection: 'column',
-            ...(height === '100%' ? getFullHeightStyles(theme) : {})
+            ...(height === '100%' ? getFullHeightStyles() : {})
 
         },
-        headerRoot: {
-            display: 'flex',
-            paddingLeft: 15,
-            paddingTop: 15,
-            paddingRight: 15,
-            marginBottom: 15
+        controlContainer: {
+            ...(height === '100%' ? getFullHeightStyles() : {})
         },
-        messageBarBtn: {
-            minHeight: 'inherit'
-        }
+        footer: {
+
+        },
     });
 }
 
-const getFullHeightStyles = (theme: ITheme) => {
+const getFullHeightStyles = () => {
     return {
         flexGrow: 1
     }

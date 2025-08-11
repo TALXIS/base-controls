@@ -2,7 +2,7 @@ import React from 'react';
 import { ContextualMenu, ContextualMenuItemType, IContextualMenuItem, IContextualMenuProps, useTheme } from '@fluentui/react';
 import { Filter24Regular, ArrowSortUp24Regular, ArrowSortDown24Regular, FilterDismiss24Regular, Dismiss24Regular, Autosum24Regular, GroupList24Regular, AppsList24Regular } from '@fluentui/react-icons';
 import { getColumnHeaderContextualMenuStyles } from './styles';
-import { DataTypes, Type as FilterType } from '@talxis/client-libraries';
+import { DataTypes } from '@talxis/client-libraries';
 import { useGridInstance } from '../../grid/useGridInstance';
 import { IGridColumn } from '../../grid/GridModel';
 
@@ -14,74 +14,9 @@ export interface IColumnHeaderContextualMenuProps extends Omit<IContextualMenuPr
 export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuProps) => {
     const grid = useGridInstance();
     const dataset = grid.getDataset();
-    const aggregation = grid.getAggregation();
-    const grouping = grid.getGrouping();
     const labels = grid.getLabels();
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
     const { column, onDismiss } = { ...props };
-    const filtering = grid.getFiltering();
-    const columnSorting = grid.getSorting().getColumnSorting(column.name);
-    const columnFilter = filtering.getColumnFilter(column.name);
-    const isGroupingAppliedToColumn = grouping.isGroupingAppliedToColumn(column.name);
-
-
-    const getTwoOptionsSortLabel = (isDesc?: boolean) => {
-        const options = column.metadata?.OptionSet ?? [];
-        if (!isDesc) {
-            return `${options[0].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[1].Label}`
-        }
-        return `${options[1].Label} ${labels['filtersortmenu-sorttwooption-joint']()} ${options[0].Label}`
-    }
-
-    const getLabel = (isDesc?: boolean): string => {
-        switch (column.dataType) {
-            case DataTypes.WholeNone:
-            case DataTypes.Decimal:
-            case DataTypes.WholeDuration:
-            case DataTypes.Currency: {
-                if (!isDesc) {
-                    return labels['filtersortmenu-sortnumber-a-z']()
-                }
-                return labels['filtersortmenu-sortnumber-z-a']()
-            }
-            case DataTypes.DateAndTimeDateAndTime:
-            case DataTypes.DateAndTimeDateOnly: {
-                if (!isDesc) {
-                    return labels['filtersortmenu-sortdate-a-z']()
-                }
-                return labels['filtersortmenu-sortdate-z-a']()
-            }
-            case DataTypes.TwoOptions: {
-                return getTwoOptionsSortLabel(isDesc);
-            }
-            default: {
-                if (!isDesc) {
-                    return labels['filtersortmenu-sorttext-a-z']()
-                }
-                return labels['filtersortmenu-sorttext-z-a']()
-            }
-        }
-    }
-
-    const onClearFilter = () => {
-        filtering.removeColumnFilter(column.name);
-        const filterExpression = filtering.getFilterExpression(FilterType.And.Value);
-        if (!filterExpression) {
-            throw new Error('Filter expression is invalid');
-        }
-        dataset.filtering.setFilter(filterExpression);
-        dataset.refresh();
-    }
-
-    const onGroup = () => {
-        if(isGroupingAppliedToColumn) {
-            grouping.ungroupColumn(column.name);
-        }
-        else {
-            grouping.groupColumn(column.name);
-        }
-        dataset.refresh();
-    }
 
     const getItems = (): IContextualMenuItem[] => {
         const items: IContextualMenuItem[] = [
@@ -89,26 +24,20 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                 key: 'sort_asc',
                 checked: column.isSorted && !column.isSortedDescending,
                 disabled: column.disableSorting || column.dataType === DataTypes.MultiSelectOptionSet,
-                text: getLabel(),
+                text: grid.getColumnSortingLabel(column.name, false),
                 className: styles.item,
                 onRenderIcon: () => <ArrowSortUp24Regular />,
-                onClick: () => {
-                    columnSorting.setSortValue(0)
-                    dataset.refresh()
-                }
+                onClick: () => grid.sortColumn(column.name, false)
             },
             {
                 key: 'sort_desc',
                 checked: column.isSorted && column.isSortedDescending,
                 disabled: column.disableSorting || column.dataType === DataTypes.MultiSelectOptionSet,
-                text: getLabel(true),
+                text:  grid.getColumnSortingLabel(column.name, true),
                 className: styles.item,
                 onRenderIcon: () => <ArrowSortDown24Regular />,
                 iconProps: {},
-                onClick: () => {
-                    columnSorting.setSortValue(1)
-                    dataset.refresh()
-                }
+                onClick: () => grid.sortColumn(column.name, true)
             },
             {
                 key: 'divider',
@@ -126,11 +55,11 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                 {
                     key: 'divider-grouping',
                     itemType: ContextualMenuItemType.Divider
-                },{
+                }, {
                     key: 'group',
-                    text: isGroupingAppliedToColumn ? labels['filtersortmenu-ungroup']() : labels['filtersortmenu-group'](),
-                    onRenderIcon: () => isGroupingAppliedToColumn ? <AppsList24Regular /> : <GroupList24Regular />,
-                    onClick: () => onGroup()
+                    text: column.grouping?.isGrouped ? labels['filtersortmenu-ungroup']() : labels['filtersortmenu-group'](),
+                    onRenderIcon: () => column.grouping?.isGrouped ? <AppsList24Regular /> : <GroupList24Regular />,
+                    onClick: () => grid.toggleColumnGroup(column.name)
                 }
             ] : []),
             ...(column.canBeAggregated ? [
@@ -144,30 +73,31 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                     onRenderIcon: () => <Autosum24Regular />,
                     subMenuProps: {
                         items: [
-                            {
-                                key: 'none',
-                                className: styles.item,
-                                //checked: aggregation.isAggregationAppliedToColumn(column.name, 'none'),
-                                text: labels['filtersortmenu-total-none'](),
-                                onClick: () => {
-                                    dataset.aggregation.removeAggregation(column.aggregation?.alias!)
-                                }
+                            ...!column.grouping?.isGrouped ? [
+                                {
+                                    key: 'none',
+                                    className: styles.item,
+                                    checked: !column.aggregation,
+                                    text: labels['filtersortmenu-total-none'](),
+                                    onClick: () => grid.removeAggregation(column.aggregation?.alias!)
 
-                            },
-                            ...column.metadata!.SupportedAggregations!.map(aggregationFunction => {
+                                }
+                            ] : [],
+                            ...column.metadata!.SupportedAggregations!.filter(supportedAggr => {
+                                //these aggregations do not make sense during grouping for non-grouped columns
+                                if (dataset.grouping.getGroupBys().length > 0 && !column.grouping?.isGrouped) {
+                                    return supportedAggr !== 'count' && supportedAggr !== 'countcolumn';
+                                }
+                                else {
+                                    return true;
+                                }
+                            }).map(aggregationFunction => {
                                 return {
                                     key: aggregationFunction,
                                     className: styles.item,
-                                    //checked: aggregation.isAggregationAppliedToColumn(column.name, aggregationFunction),
+                                    checked: column.aggregation?.aggregationFunction === aggregationFunction,
                                     text: labels[`filtersortmenu-total-${aggregationFunction}`](),
-                                    onClick: () => {
-                                        dataset.aggregation.addAggregation({
-                                            columnName: column.name,
-                                            alias: `${column.name}_${aggregationFunction}`,
-                                            aggregationFunction: aggregationFunction
-                                        })
-                                        dataset.refresh();
-                                    }
+                                    onClick: () => grid.addAggregation(column.name, aggregationFunction)
                                 }
                             })]
                     }
@@ -181,16 +111,13 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                 key: 'clear',
                 text: labels['filtersortmenu-clearsorting'](),
                 onRenderIcon: () => <Dismiss24Regular />,
-                onClick: () => {
-                    columnSorting.clear();
-                    dataset.refresh()
-                }
+                onClick: () => grid.clearColumnSorting(column.name)
             }] : []),
-            ...(columnFilter.isAppliedToDataset() ? [{
+            ...(column.isFiltered ? [{
                 key: 'clearFilter',
                 text: labels['filtersortmenu-clearfilter'](),
                 onRenderIcon: () => <FilterDismiss24Regular />,
-                onClick: () => onClearFilter()
+                onClick: () => grid.removeColumnFilter(column.name, true)
             }] : []),
 
         ];

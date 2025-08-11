@@ -1,7 +1,7 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps } from "@fluentui/react";
+import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyles, Icon, SpinnerSize, CommandBarButton } from "@fluentui/react";
 import { IRecord, Constants } from "@talxis/client-libraries";
-import { useThemeGenerator, getClassNames } from "@talxis/react-components";
+import { useThemeGenerator, getClassNames, useRerender, Spinner } from "@talxis/react-components";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
 import { CHECKBOX_COLUMN_KEY } from "../../constants";
@@ -12,17 +12,90 @@ import { CellContent } from "./content/CellContent";
 import { Notifications } from "./notifications/Notifications";
 import { getCellStyles, getInnerCellStyles } from "./styles";
 import { useAgGridInstance } from "../../grid/ag-grid/useAgGridInstance";
+import ReactDOM from "react-dom";
+import { GridContext } from "../../grid/GridContext";
+import { AgGridContext } from "../../grid/ag-grid/AgGridContext";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
     isCellEditor: boolean;
     record: IRecord;
-    cellData: ICellValues
+    value: ICellValues;
 }
 
+const SELECTION_MODIFIER_KEYS = ['SHIFT', 'CONTROL', 'META'];
+
 export const Cell = (props: ICellProps) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const memoizedContainerRef = useRef<HTMLDivElement | null>();
+    const { record, node, baseColumn } = props;
+    const column = baseColumn;
+    const grid = useGridInstance();
+    const agGrid = useAgGridInstance();
+    const rerender = useRerender();
+
+    const onCellClick = useCallback((e: MouseEvent) => {
+        const key = grid.getCurrentlyHeldKey();
+        if (record.getDataProvider().getSummarizationType() === 'grouping' && !SELECTION_MODIFIER_KEYS.includes(key!)) {
+            e.stopPropagation();
+        }
+        else if (node.isSelected()) {
+            e.stopPropagation();
+        }
+    }, []);
+
+    const shouldAutoSaveRecord = () => {
+        return grid.isAutoSaveEnabled() && record.isDirty() && record.isValid();
+    }
+
+    const onFieldValueChanged = useCallback((columnName: string) => {
+        if (columnName !== column.name) {
+            return;
+        }
+        if (shouldAutoSaveRecord()) {
+            record.save();
+        }
+        props.api.refreshCells({
+            rowNodes: [node]
+        })
+        if (props.isCellEditor) {
+            rerender();
+        }
+    }, []);
+
+    useEffect(() => {
+        memoizedContainerRef.current = containerRef.current;
+        containerRef.current?.addEventListener('click', onCellClick);
+        record.addEventListener('onFieldValueChanged', onFieldValueChanged)
+        return () => {
+            containerRef.current?.removeEventListener('click', onCellClick);
+            record.removeEventListener('onFieldValueChanged', onFieldValueChanged);
+            ReactDOM.unmountComponentAtNode(memoizedContainerRef.current!);
+        }
+    }, []);
+
+
+    useEffect(() => {
+        //we need to render a new React tree so we can stop selection propagation to ag grid when clicking on grouped rows
+        //while allowing the child onClick events to propagate
+        //if we do not do this, the child onClick events are not called since the click cannot propagate
+        //to the element react uses to register click events
+        ReactDOM.render(
+            <GridContext.Provider value={grid}>
+                <AgGridContext.Provider value={agGrid}>
+                    <CellContentWrapper {...props} />
+                </AgGridContext.Provider>
+            </GridContext.Provider>,
+            containerRef.current
+        );
+    });
+
+    return <div className={mergeStyles({ width: '100%', height: '100% !important' })} ref={containerRef} />
+}
+
+const CellContentWrapper = (props: ICellProps) => {
     const styles = useMemo(() => getCellStyles(), [])
-    const { cellData, record, baseColumn, node } = props;
+    const { value: cellData, record, baseColumn, node } = props;
     const { customFormatting } = cellData;
     const cellTheme = useThemeGenerator(customFormatting.primaryColor, customFormatting.backgroundColor, customFormatting.textColor, customFormatting.themeOverride);
     const agGrid = useAgGridInstance();
@@ -31,27 +104,7 @@ export const Cell = (props: ICellProps) => {
     const cellRef = useRef<HTMLDivElement>(null);
     const recordSelectionState = agGrid.getRecordSelectionState(node);
     const isRecordSelectionDisabled = grid.isRecordSelectionDisabled(record);
-
-    const renderContent = () => {
-        switch (props.baseColumn.name) {
-            case CHECKBOX_COLUMN_KEY: {
-                return (
-                    <div ref={checkBoxRef} className={styles.checkBoxContainer}>
-                        <Checkbox
-                            checked={recordSelectionState === 'checked'}
-                            disabled={isRecordSelectionDisabled}
-                            indeterminate={recordSelectionState === 'indeterminate'}
-                            styles={{
-                                checkbox: styles.checkbox
-                            }} />
-                    </div>
-                );
-            }
-            default: {
-                return <InternalCell {...props} />
-            }
-        }
-    }
+    const [savingResult, setSavingResult] = useState<'success' | 'error' | null>(null);
 
     const onCheckBoxClick = useCallback(e => {
         if (!isRecordSelectionDisabled) {
@@ -61,22 +114,60 @@ export const Cell = (props: ICellProps) => {
         }
     }, []);
 
-    const onCellClick = useCallback((e: MouseEvent) => {
-        const key = grid.getCurrentlyHeldKey();
-        if(record.getDataProvider().getSummarizationType() === 'grouping' && key !== 'SHIFT' && key !== 'CONTROL' && key !== 'META') {
-            e.stopPropagation();
+    const renderContent = () => {
+        if (baseColumn.name === CHECKBOX_COLUMN_KEY && record.getDataProvider().getSummarizationType() !== 'aggregation') {
+            if(record.isSaving()) {
+                return <Spinner size={SpinnerSize.xSmall} />
+            }
+            if (savingResult) {
+                return <IconButton
+                    iconProps={{
+                        iconName: savingResult === 'success' ? 'Accept' : 'Error'
+                    }} />
+            }
+            return (
+                <div
+                    ref={checkBoxRef}
+                    className={styles.checkBoxContainer}>
+                    <Checkbox
+                        checked={recordSelectionState === 'checked'}
+                        disabled={isRecordSelectionDisabled}
+                        indeterminate={recordSelectionState === 'indeterminate'}
+                        styles={{
+                            checkbox: styles.checkbox
+                        }} />
+                </div>
+            );
         }
+        else {
+            return <InternalCell {...props} />
+        }
+    }
+
+    const onSaved = useCallback((result) => {
+        if (result) {
+            setSavingResult('success');
+        }
+        else {
+            setSavingResult('error');
+        }
+        setTimeout(() => {
+            setSavingResult(null);
+        }, 5000);
     }, []);
 
 
     useEffect(() => {
+        record.addEventListener('onSaved', onSaved)
         //this needs to be done like this because stopPropagation in React onClick
         //does not stop the event from propagating to the grid (cause by synthentic events)
         //https://stackoverflow.com/questions/24415631/reactjs-syntheticevent-stoppropagation-only-works-with-react-events
         if (checkBoxRef.current) {
             checkBoxRef.current.addEventListener('click', onCheckBoxClick)
         }
-        cellRef.current?.addEventListener('click', onCellClick);
+        return () => {
+            record.removeEventListener('onSaved', onSaved);
+        }
     }, []);
 
     return <ThemeProvider
@@ -92,19 +183,25 @@ export const InternalCell = (props: ICellProps) => {
     const column = props.baseColumn;
     const record = props.record;
     const node = props.node;
-    const formatting = props.cellData.customFormatting;
+    const formatting = props.value.customFormatting;
     const grid = useGridInstance();
     const agGrid = useAgGridInstance();
-    const error = props.cellData.error;
-    const notifications = props.cellData.notifications;
-    const errorMessage = props.cellData.errorMessage;
+    const error = props.value.error;
+    const notifications = props.value.notifications;
+    const errorMessage = props.value.errorMessage;
     const theme = useTheme();
     const applicationTheme = useControlTheme(grid.getPcfContext().fluentDesignLanguage);
     const [recordCommands, setRecordCommands] = useState(undefined);
-    const expandButtonRef = useRef<HTMLButtonElement>(null);
+    const rerender = useRerender();
+    const styles = useMemo(() => getInnerCellStyles(
+        props.isCellEditor,
+        theme,
+        props.value.columnAlignment,
+        node.expanded
+    ), [props.isCellEditor, theme, props.value.columnAlignment, node.expanded]);
 
     const shouldShowNotEditableNotification = () => {
-        if (column.isEditable && !record.getColumnInfo(column.name).security.editable) {
+        if (column.isEditable && !record.getColumnInfo(column.name).security.editable && record.getSummarizationType() === 'none') {
             return true;
         }
         return false;
@@ -137,7 +234,18 @@ export const InternalCell = (props: ICellProps) => {
         }
         return (
             <>
-                {grid.isColumnExpandable(record, column) && <button ref={expandButtonRef} onClick={() => agGrid.toggleGroup(node)}>toggle</button>}
+                {grid.isColumnExpandable(record, column) &&
+                    <IconButton
+                        iconProps={{ iconName: 'ChevronRight' }}
+                        styles={{
+                            root: styles.groupToggleButtonRoot,
+                            icon: styles.groupToggleButtonIcon
+                        }}
+                        onClick={() => {
+                            agGrid.toggleGroup(node);
+                            rerender();
+                        }} />
+                }
                 {(column.type !== 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) &&
                     <CellContent {...props} recordCommands={recordCommands} />
                 }
@@ -195,29 +303,22 @@ export const InternalCell = (props: ICellProps) => {
         return <Notifications
             formatting={formatting}
             isActionColumn={column.type === 'action'}
-            columnAlignment={props.cellData.columnAlignment}
+            columnAlignment={props.value.columnAlignment}
             notifications={notifications}
             farItems={getFarNotifications()} />
     }
 
     const isLoading = () => {
-        if (props.cellData.loading) {
+        if (props.value.loading) {
             return true;
         }
         if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME && !recordCommands) {
             return true;
-
         }
         return false;
     }
 
-    const toggleExpand = useCallback((e: MouseEvent) => {
-        e.stopPropagation();
-        agGrid.toggleGroup(node)
-    }, []);
-
     const shouldRenderNotifications = getShouldRenderNotifications();
-    const styles = useMemo(() => getInnerCellStyles(props.isCellEditor, theme, props.cellData.columnAlignment), [props.isCellEditor, theme, props.cellData.columnAlignment]);
 
     useEffect(() => {
         if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
@@ -228,13 +329,10 @@ export const InternalCell = (props: ICellProps) => {
         }
     }, [grid.getRecordValue(record, column)]);
 
-    useEffect(() => {
-        if (expandButtonRef.current) {
-            expandButtonRef.current.addEventListener('click', toggleExpand);
-        }
-    }, []);
-
-    return <div className={styles.innerCellRoot} data-is-valid={!error}>
+    return <div
+        className={styles.innerCellRoot}
+        data-is-loading={isLoading()}
+        data-is-valid={!error}>
         {renderContent()}
     </div>
 }

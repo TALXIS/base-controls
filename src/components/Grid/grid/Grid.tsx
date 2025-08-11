@@ -43,7 +43,6 @@ export const Grid = (props: IGrid) => {
     }), []);
 
     const debouncedRefresh = useDebouncedCallback(() => agGrid.refresh(), 0);
-
     if (gridReadyRef.current) {
         debouncedRefresh();
     }
@@ -67,20 +66,27 @@ export const Grid = (props: IGrid) => {
                     rowModelType='serverSide'
                     suppressCopyRowsToClipboard
                     groupDisplayType="custom"
+                    //needs to be set here, crashes if set via API
+                    rowHeight={grid.getDefaultRowHeight()}
                     rowSelection={agGrid.getSelectionType()}
                     loadingOverlayComponent={LoadingOverlay}
                     noRowsOverlayComponent={EmptyRecords}
                     reactiveCustomComponents
                     gridOptions={{
-                        getRowStyle: (params) => {
+                         getRowStyle: (params) => {
                             const record = params.data;
                             if (!record) {
                                 return undefined
                             }
                             return {
-                                backgroundColor: grid.getDefaultCellTheme(record.getIndex() % 2 === 0).semanticColors.bodyBackground
+                                backgroundColor: grid.getDefaultCellTheme(record).semanticColors.bodyBackground,
                             }
                         },
+                        rowClassRules: {
+                            'my-custom-selected': (params) => {
+                                return !!params.node.isSelected();
+                            }
+                        }
                     }}
                     onGridReady={onGridReady}
                 />

@@ -16,11 +16,11 @@ interface IDependencies {
 
 export class ColumnFilter extends DataProviderExtension {
     private _conditions: Map<string, Condition> = new Map();
-    private _column: IColumn;
+    private _columnName: string;
 
     constructor({ columnName, onGetDataProvider }: IDependencies) {
         super(onGetDataProvider);
-        this._column = this._dataProvider.getColumnsMap().get(columnName)!;
+        this._columnName = columnName;
         this._createConditionsFromFilterExpression();
         this._dataProvider.addEventListener('onBeforeNewDataLoaded', () => this._createConditionsFromFilterExpression())
     }
@@ -157,5 +157,9 @@ export class ColumnFilter extends DataProviderExtension {
             Operators.DoesNotEndWith.Value
         ];
         return decoratableOperators.includes(operator);
+    }
+
+    private get _column(): IColumn {
+        return this._dataProvider.getColumnsMap().get(this._columnName)!;
     }
 }

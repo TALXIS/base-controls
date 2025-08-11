@@ -1,26 +1,16 @@
-import { DatasetExtension } from "../DatasetExtension";
+import { DataProviderExtension } from "../DataProviderExtension";
 
-export class Grouping extends DatasetExtension {
-    public isGroupingAppliedToColumn(columnName: string): boolean {
-        return !!this._dataset.grouping.getGroupBy(columnName);
-    }
+export class Grouping extends DataProviderExtension {
 
     public groupColumn(columnName: string): void {
-        this._dataset.grouping.addGroupBy({
+        this._dataProvider.grouping.addGroupBy({
             columnName: columnName,
             alias: `${columnName}_group`,
         })
-        if (!this._dataset.aggregation.getAggregation(columnName)) {
-            this._dataset.aggregation.addAggregation({
-                columnName: columnName,
-                alias: `${columnName}_countcolumn`,
-                aggregationFunction: 'countcolumn'
-            })
-        }
     }
-
-    public ungroupColumn(columnName: string): void {
-        this._dataset.grouping.removeGroupBy(columnName);
-        this._dataset.aggregation.removeAggregation(columnName);
+    public ungroupColumn(alias: string): void {
+        const column = this._dataProvider.getColumns().find(col => col.grouping?.alias === alias);
+        this._dataProvider.grouping.removeGroupBy(alias);
+        this._dataProvider.aggregation.removeAggregation(column?.aggregation?.alias!);
     }
 }

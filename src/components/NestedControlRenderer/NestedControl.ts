@@ -95,7 +95,7 @@ export class NestedControl {
                 }),
                 factory: {
                     ...this.getOptions().parentPcfContext.factory,
-                    requestRender: () => this.render()
+                    requestRender: () => this.render(),
                 },
                 fluentDesignLanguage: this._getFluentDesignLanguage(this.getOptions().parentPcfContext.fluentDesignLanguage)
             },

@@ -8,17 +8,17 @@ interface IDeps {
 }
 
 export const getValueRendererStyles = (deps: IDeps) => {
-    const { theme, isMultiline, makeBold } = deps;
+    const { isMultiline, theme } = deps;
     return mergeStyleSets({
         text: {
             fontSize: 'inherit',
             ...isMultiline ? getMultilineStyles() : {},
-            ...makeBold ? {
-                //fontWeight: 600
-            } : {}
         },
         link: {
              ...isMultiline ? getMultilineStyles() : {},
+        },
+        placeholder: {
+            color: theme.semanticColors.disabledText
         }
     })
 }

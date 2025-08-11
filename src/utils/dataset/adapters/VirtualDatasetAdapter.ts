@@ -28,10 +28,6 @@ export class VirtualDatasetAdapter {
         'Memory': MemoryDataProvider
     };
     private _dataset!: Dataset<IDataProvider>;
-    private _parsedData: any = null;
-    private _lastUsedColumns: string | null = null;
-    private _lastUsedData: string | null = null;
-    private _lastUsedMetadata: string | null = null;
     private _dataProviderClass!: (typeof this._providerClasses[keyof typeof this._providerClasses]);
     private _container!: HTMLDivElement;
     private _notifyOutputChanged!: () => void;
@@ -57,44 +53,18 @@ export class VirtualDatasetAdapter {
         //@ts-ignore - typings
         this._dataset = new Dataset(dataProvider);
         this._dataset.setColumns(this._getColumns());
+        this._dataset.setDataSource(this._getData());
         this._dataset.setMetadata(this._getEntityMetadata());
-
         if (this._parameters.onGetHeight?.() === '100%') {
             this._container.classList.add(this._getFullTabStyles());
         }
-        this._lastUsedColumns = this._parameters.onGetColumns();
-        this._lastUsedData = this._parameters.onGetData();
-        this._lastUsedMetadata = this._parameters.onGetEntityMetadata();
         this._notifyOutputChanged();
         this._onDatasetInit();
         return this;
     }
 
     public updateView(): void {
-        this._parsedData = null;
-        this._refreshOnChange([
-            {
-                previousValue: this._lastUsedColumns,
-                currentValue: this._parameters.onGetColumns(),
-                beforeRefreshCallback: () => this._dataset.setColumns(this._getColumns())
-            },
-            {
-                previousValue: this._lastUsedData,
-                currentValue: this._parameters.onGetData(),
-                beforeRefreshCallback: () => {
-                    this._dataset.setDataSource(this._getData());
-                    this._dataset.setColumns(this._getColumns());
-                }
-            },
-            {
-                previousValue: this._lastUsedMetadata,
-                currentValue: this._parameters.onGetEntityMetadata(),
-                beforeRefreshCallback: () => this._dataset.setMetadata(this._getEntityMetadata())
-            }
-        ]);
-        this._lastUsedColumns = this._parameters.onGetColumns();
-        this._lastUsedData = this._parameters.onGetData();
-        this._lastUsedMetadata = this._parameters.onGetEntityMetadata();
+        
     }
 
     public getDataset(): Dataset<IDataProvider> {
@@ -113,32 +83,6 @@ export class VirtualDatasetAdapter {
     }
 
     private _onDatasetInit() {
-        let originalGrouping: IGroupByMetadata[] = [];
-        let originalAggregation: IGroupByMetadata[] = [];
-        this._dataset.addEventListener('onBeforeNewDataProcessed', () => {
-            this._dataset.grouping.clear();
-            this._dataset.aggregation.clear();
-            originalGrouping.map((group: any) => {
-                this._dataset.grouping.addGroupBy(group);
-            })
-            originalAggregation.map((aggr: any) => {
-                this._dataset.aggregation.addAggregation(aggr);
-            })
-        })
-        this._dataset.addEventListener('onBeforeNewDataLoaded', () => {
-            originalGrouping = this._dataset.grouping.getGroupBys();
-            originalAggregation = this._dataset.aggregation.getAggregations();
-            //remove all grouping and aggregations and only keep the 
-            if (originalGrouping.length > 1) {
-                this._dataset.grouping.clear();
-                this._dataset.grouping.addGroupBy(originalGrouping[0]);
-                //clear all grouping aggregations except the first one
-                for(let i = 1; i < originalGrouping.length; i++) {
-                    const column = this._dataset.getDataProvider().getColumnsMap().get(originalGrouping[i].columnName);
-                    this._dataset.aggregation.removeAggregation(column?.aggregation?.alias!);
-                }
-            }
-        })
         this.getDataset().setInterceptor('onInitialize', async () => {
             await this._getOutputsPromise;
             await this._parameters.onInitialize?.();
@@ -146,11 +90,7 @@ export class VirtualDatasetAdapter {
     }
 
     private _getData() {
-        if (this._parsedData) {
-            return this._parsedData;
-        }
-        this._parsedData = this._dataProviderClass.GetParsedData(this._parameters.onGetData());
-        return this._parsedData;
+        return this._dataProviderClass.GetParsedData(this._parameters.onGetData()) as any;
     }
 
     private _getColumns() {
@@ -200,19 +140,6 @@ export class VirtualDatasetAdapter {
         catch (err) {
             console.error(err);
             return this._dataset.getMetadata();
-        }
-    }
-
-    private _refreshOnChange(objectsToCompare: { currentValue: string | null, previousValue: string | null, beforeRefreshCallback?: () => void }[]) {
-        let shouldRefresh = false;
-        objectsToCompare.forEach(obj => {
-            if (obj.currentValue !== obj.previousValue) {
-                shouldRefresh = true;
-                obj.beforeRefreshCallback?.();
-            }
-        });
-        if (shouldRefresh) {
-            this._dataset.paging.loadExactPage(this._dataset.paging.pageNumber);
         }
     }
 

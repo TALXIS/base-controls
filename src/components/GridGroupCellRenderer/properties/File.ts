@@ -78,7 +78,7 @@ export class File extends Property {
     public async downloadPortalFile() {
         const record = this.getModel().getRecord();
         const column = this.getModel().getColumn();
-        SinglePromiseExecutor.execute(`downloadPortalFile_${record.getRecordId()}_${column.name}`, async () => {
+        return SinglePromiseExecutor.execute(`downloadPortalFile_${record.getRecordId()}_${column.name}`, async () => {
             const context = this.getModel().getContext();
             const storage = new FileAttribute(context.webAPI);
             const dataset = this.getModel().getDataset();

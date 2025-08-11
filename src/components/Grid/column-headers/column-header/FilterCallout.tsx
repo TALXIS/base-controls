@@ -27,9 +27,8 @@ export const FilterCallout = (props: IFilterCallout) => {
 
     useEffect(() => {
         return () => {
-            const columnFilter = grid.getFiltering().getColumnFilter(column.name);
-            if(!columnFilter.isAppliedToDataset()) {
-                columnFilter.clear();
+            if (!column.isFiltered) {
+                grid.removeColumnFilter(column.name)
             }
         }
     }, []);

@@ -1,141 +1,120 @@
-import { AggregationFunction, EventEmitter, IAggregationMetadata, IDataset, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { AggregationFunction, EventEmitter, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 
 interface ITranslations {
     calculationLimitExceededError: string;
 }
 
 interface IDependencies {
-    onGetDataset: () => IDataset;
+    onGetDataProvider: () => IDataProvider;
     translations: ITranslations;
 }
 
 interface IEvents {
-    onRequestRender: () => void;
-    onRequestMainDatasetRefresh: () => void;
+    onStateUpdated: () => void;
 }
 
 export class Aggregation extends EventEmitter<IEvents> {
-    private _hasUserChangedAggregations: boolean = false;
-    private _aggregationDataset: IDataset;
+    private _aggregationDataProvider: IDataProvider;
     private _translations: ITranslations;
-    private _onGetDataset: () => IDataset;
+    private _onGetDataProvider: () => IDataProvider;
 
-    constructor({ onGetDataset, translations }: IDependencies) {
+    constructor({ onGetDataProvider, translations }: IDependencies) {
         super();
-        this._onGetDataset = onGetDataset;
+        this._onGetDataProvider = onGetDataProvider;
         this._translations = translations;
-        //this._aggregationDataset = this._dataset.getChildDataset();
-        //this._aggregationDataset.addEventListener('onBeforeNewDataLoaded', () => this._syncAggregationDataProvider());
-        //this._aggregationDataset.addEventListener('onError', (errorMessage, details) => this._onError(errorMessage, details));
-        //this._aggregationDataset.addEventListener('onNewDataLoaded', () => this._dataset.getDataProvider().setError(false));
-        //this._aggregationDataset.addEventListener('onLoading', () => this.dispatchEvent('onRequestRender'));
-        //this._dataset.addEventListener('onNewDataLoaded', () => this._updateAggregations());
+        this._aggregationDataProvider = this._dataProvider.getChildDataProvider();
+        this._aggregationDataProvider.enableAggregationWithoutGrouping(true);
+        this._dataProvider.addEventListener('onNewDataLoaded', () => this.refresh());
+        this._aggregationDataProvider.addEventListener('onLoading', () => this.dispatchEvent('onStateUpdated'));
+        //run on init since the first onNewDataLoaded event will not be triggered
+        //because initialization of the class happens after the first data is loaded
+        this.refresh();
     }
     public getAggregationRecord(): IRecord[] {
-        if (this._aggregationDataset.aggregation.getAggregations().length === 0 || this._dataset.sortedRecordIds.length === 0) {
+        if (this._aggregationDataProvider.aggregation.getAggregations().length === 0 || this._dataProvider.getSortedRecordIds().length === 0) {
             return [];
         }
-        if (this._aggregationDataset.loading) {
+        if (this._aggregationDataProvider.isLoading()) {
             return [this._getDummyLoadingRecord()];
         }
-        return this._aggregationDataset.getDataProvider().getRecords();
+        return this._aggregationDataProvider.getRecords();
     }
 
     public addAggregation(columnName: string, aggregationFunction: AggregationFunction) {
-        if (this._dataset.grouping.getGroupBys().length > 0) {
-            this._dataset.aggregation.addAggregation({
-                columnName: columnName,
-                alias: `${columnName}_${aggregationFunction}`,
-                aggregationFunction: aggregationFunction,
-            })
-            this.dispatchEvent('onRequestMainDatasetRefresh');
-        }
-        this._aggregationDataset.aggregation.addAggregation({
+        this._dataProvider.aggregation.addAggregation({
             columnName: columnName,
             alias: `${columnName}_${aggregationFunction}`,
             aggregationFunction: aggregationFunction,
         })
-        this._hasUserChangedAggregations = true;
-        this._aggregationDataset.refresh();
     }
 
-    public removeAggregation(columnName: string) {
-        if (this._dataset.aggregation.getAggregations().length > 0) {
-            this._dataset.aggregation.removeAggregation(columnName);
-            this.dispatchEvent('onRequestMainDatasetRefresh');
-        }
-        const aggregation = this.getAggregationForColumn(columnName);
-        if (aggregation) {
-            this._aggregationDataset.aggregation.removeAggregation(columnName);
-        }
-        this._hasUserChangedAggregations = true;
-        this._aggregationDataset.refresh();
+    public removeAggregation(alias: string) {
+        this._dataProvider.aggregation.removeAggregation(alias);
     }
 
-    public isAggregationAppliedToColumn(columnName: string, aggregationFunction?: string): boolean {
-        if (this._dataset.aggregation.getAggregation(columnName)?.aggregationFunction === aggregationFunction) {
-            return true;
+    public refresh() {
+        if (!this._isMainProviderAggregated()) {
+            this._aggregationDataProvider.aggregation.clear();
+            this.dispatchEvent('onStateUpdated');
+            return;
         }
-        return !!this._aggregationDataset.aggregation.getAggregations().find(agg => {
-            if (agg.columnName === columnName) {
-                if (aggregationFunction) {
-                    return agg.aggregationFunction === aggregationFunction;
-                }
-                return true;
+        let hasCountAggrBeenApplied = false;
+        this._aggregationDataProvider.setLinking(this._dataProvider.getLinking());
+        this._aggregationDataProvider.setFiltering(this._dataProvider.getFiltering());
+        this._aggregationDataProvider.setSearchQuery(this._dataProvider.getSearchQuery());
+        this._aggregationDataProvider.setDataSource(this._dataProvider.getDataSource());
+        this._aggregationDataProvider.setColumns(this._dataProvider.getColumns().map(col => {
+            return {
+                ...col,
+                grouping: undefined,
+                //only keep one aggregation of count or countcolumn for grouping
+                aggregation: (() => {
+                    if (this._dataProvider.grouping.getGroupBys().length > 0 && (col.aggregation?.aggregationFunction === 'count' || col.aggregation?.aggregationFunction === 'countcolumn')) {
+                        if (!hasCountAggrBeenApplied) {
+                            hasCountAggrBeenApplied = true;
+                            return col.aggregation;
+                        }
+                        else {
+                            return undefined;
+                        }
+                    }
+                    else {
+                        return col.aggregation;
+                    }
+                })()
             }
-        })
+        }));
+        this._aggregationDataProvider.refresh();
     }
 
-    public getAggregationForColumn(columnName: string) {
-        return this._aggregationDataset.aggregation.getAggregations().find(agg => {
-            return agg.columnName === columnName;
-        });
-    }
-
-    private _updateAggregations() {
-        this._syncAggregationDataProvider();
-        if (!this._hasUserChangedAggregations) {
-            this._getAggregationsFromColumns().map(aggregation => {
-                this._aggregationDataset.aggregation.addAggregation(aggregation);
-            })
-        }
-        const aggregations = this._aggregationDataset.aggregation.getAggregations();
-        const columnNames = this._dataset.getDataProvider().getColumns().map(col => col.name);
-        aggregations.map(agg => {
-            if (!columnNames.includes(agg.columnName)) {
-                this._aggregationDataset.aggregation.removeAggregation(agg.columnName);
-            }
-        })
-        if (this._aggregationDataset.aggregation.getAggregations().length > 0) {
-            this._aggregationDataset.refresh();
-        }
-    }
-
-    private _getAggregationsFromColumns(): IAggregationMetadata[] {
-        const aggregations: IAggregationMetadata[] = [];
-        this._dataset.columns.map(col => {
-            if (col.aggregationFunction) {
-                aggregations.push({
-                    columnName: col.name,
-                    alias: `${col.name}_${col.aggregationFunction}`,
-                    aggregationFunction: col.aggregationFunction,
-                })
-            }
-        })
-        return aggregations;
+    private _isMainProviderAggregated(): boolean {
+        //we need to look at columns since agggregation object can be empty if case of aggregation without grouping
+        return this._dataProvider.getColumns().some(col => col.aggregation?.aggregationFunction);
     }
 
     private _getDummyLoadingRecord(): IRecord {
         const data: { [key: string]: any } = {};
         data.id = 'loading';
-        this._dataset.columns.map(col => {
+        this._dataProvider.getColumns().map(col => {
             data[col.name] = null;
         })
         const provider = new MemoryDataProvider([data], { PrimaryIdAttribute: "id" });
-        provider.setColumns(this._dataset.columns);
+        //@ts-ignore
+        provider.enableAggregationWithoutGrouping(true);
+        provider.setColumns([...this._dataProvider.getColumns(), {
+            name: 'id',
+            dataType: 'SingleLine.Text',
+        }]);
+        provider.grouping.clear();
+        provider.aggregation.clear();
+        provider.aggregation.addAggregation({
+            columnName: 'id',
+            alias: 'id_count',
+            aggregationFunction: 'count'
+        })
         provider.refreshSync();
         const dummyRecord = provider.getRecords()[0];
-        this._dataset.columns.map(col => {
+        this._dataProvider.getColumns().map(col => {
             dummyRecord.expressions.ui.setLoadingExpression(col.name, () => true);
         });
         return dummyRecord;
@@ -147,28 +126,10 @@ export class Aggregation extends EventEmitter<IEvents> {
         if (errorCode === 2147750198 || errorCode === -2147164125) {
             errorText = this._translations.calculationLimitExceededError;
         }
-        this._dataset.getDataProvider().setError(true, errorText);
-        this.dispatchEvent('onRequestRender')
+        this._dataProvider.setError(true, errorText);
+        this.dispatchEvent('onStateUpdated')
     }
-
-    private _syncAggregationDataProvider() {
-        this._aggregationDataset.grouping.clear();
-        this._aggregationDataset.getDataProvider().setLinking(this._dataset.getDataProvider().getLinking());
-        this._aggregationDataset.getDataProvider().setFiltering(this._dataset.getDataProvider().getFiltering());
-        this._aggregationDataset.getDataProvider().setSearchQuery(this._dataset.getDataProvider().getSearchQuery());
-        this._aggregationDataset.getDataProvider().setDataSource(this._dataset.getDataProvider().getDataSource())
-        this._aggregationDataset.getDataProvider().setColumns(this._dataset.getDataProvider().getColumns().map(col => {
-            return {
-                ...col,
-                isGrouped: false,
-                metadata: {
-                    ...col.metadata,
-                    RequiredLevel: 0
-                }
-            }
-        }))
-    }
-    private get _dataset() {
-        return this._onGetDataset();
+    private get _dataProvider(): IDataProvider {
+        return this._onGetDataProvider();
     }
 }

@@ -24,7 +24,7 @@ export const getCellStyles = () => {
     })
 }
 
-export const getInnerCellStyles = (isEditing: boolean, theme: ITheme, columnAlignment: IColumn['alignment']) => {
+export const getInnerCellStyles = (isEditing: boolean, theme: ITheme, columnAlignment: IColumn['alignment'], isExpanded: boolean) => {
     return mergeStyleSets({
         innerCellRoot: {
             flex: 1,
@@ -35,7 +35,16 @@ export const getInnerCellStyles = (isEditing: boolean, theme: ITheme, columnAlig
             marginLeft: isEditing ? - 1 : undefined,
             marginRight: isEditing ? - 1 : undefined,
         },
-
+        groupToggleButtonRoot: {
+            height: '100%'
+        },
+        groupToggleButtonIcon: {
+            transition: 'transform 0.1s linear',
+            fontSize: 12,
+            color: theme.semanticColors.infoIcon,
+            fontWeight: 600,
+            transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+        },
         shimmerWrapper: {
             height: 10
         },

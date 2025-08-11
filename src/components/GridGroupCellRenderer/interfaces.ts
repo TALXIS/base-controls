@@ -11,16 +11,20 @@ export interface IGridCellRendererParameters extends IParameters {
     ColumnAlignment: Omit<ComponentFramework.PropertyTypes.EnumProperty<"left" | "center" | "right">, 'type'>;
     CellType: Omit<ComponentFramework.PropertyTypes.EnumProperty<"renderer" | "editor">, 'type'>;
     EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
-    AggregateFunction: Omit<ComponentFramework.PropertyTypes.EnumProperty<AggregationFunction | null>, 'type'>;
+    AggregationFunction: Omit<ComponentFramework.PropertyTypes.EnumProperty<AggregationFunction | null>, 'type'>;
     AggregatedValue: IDecimalNumberProperty | IWholeNumberProperty;
     Column: {
         raw: IColumn;
     }
+    /**
+     * This dataset instance is always the main dataset, even if the current cell is being rendered via a child data provider.
+     * You can access the child DataProvider via the `getDataProvider()` method on the record instance.
+     */
     Dataset: {
-        raw: IDataset
+        raw: IDataset;
     }
     Record: {
-        raw: IRecord
+        raw: IRecord;
     }
     PrefixIcon: IStringProperty;
     SuffixIcon: IStringProperty;

@@ -16,15 +16,10 @@ export const FileRenderer = (props: IFileRendererProps) => {
     const [thumbnailFailedToLoad, setThumbnailFailedToLoad] = React.useState(false);
 
     const onLinkClick = async (e: React.MouseEvent<HTMLElement | HTMLAnchorElement | HTMLButtonElement, MouseEvent>) => {
-        if (true) {
+        if (model.shouldUsePortalDownload()) {
             e.preventDefault();
             setIsFileDownloading(true);
-            await new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve(true);
-                }, 5000);
-            })
-            //await model.downloadPortalFile();
+            await model.downloadPortalFile();
             setIsFileDownloading(false);
         }
     }

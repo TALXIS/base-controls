@@ -190,8 +190,10 @@ export class LookupCondition extends Condition {
             }
         }
         this._isValueLoading = false;
-        this._lastSelectedLookupValue = lookupValues;
-        this.setValue(lookupValues);
+        if (lookupValues.length > 0) {
+            this._lastSelectedLookupValue = lookupValues;
+            this.setValue(lookupValues);
+        }
     }
 
 }

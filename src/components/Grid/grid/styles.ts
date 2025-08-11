@@ -50,8 +50,11 @@ export const getGridStyles = (theme: ITheme) => {
                 borderRadius: 0,
                 overflow: 'hidden'
             },
-            '.ag-cell-wrapper': {
-                //height: '100%'
+            '.ag-cell-wrapper:has([data-is-loading="true"])': {
+                height: '100%'
+            },
+            '.ag-pinned-left-cols-container .ag-cell-last-left-pinned:not([col-id="__checkbox__virtual"])': {
+                borderRight: `1px solid ${theme.semanticColors.menuDivider} !important`
             },
             '.ag-cell-highlight': {
                 '::after': {
@@ -88,7 +91,7 @@ export const getGridStyles = (theme: ITheme) => {
 };
 
 export const getJustifyContent = (columnAlignment: Required<IColumn['alignment']>) => {
-    switch(columnAlignment) {
+    switch (columnAlignment) {
         case 'left': {
             return 'flex-start'
         }

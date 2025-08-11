@@ -5,6 +5,7 @@ import { getValueRendererStyles } from "./styles";
 import { ColorfulOptionSetValueRenderer } from "./ColorfulOptionSetValueRenderer/ColorfulOptionSetValueRenderer";
 import { useModel } from "../useModel";
 import { FileRenderer } from "./FileRenderer/FileRenderer";
+import { getClassNames } from "@talxis/react-components";
 
 export const ValueRenderer = (props: IValueRendererProps) => {
     const model = useModel();
@@ -23,15 +24,7 @@ export const ValueRenderer = (props: IValueRendererProps) => {
         !!model.getAggregationLabel() || !!model.getFormattedAggregatedValue()
     ]);
 
-    if (!formattedValue || formattedValue === '---') {
-        return props.onRenderText({
-            className: styles.text
-        }, (props) => {
-            return <Text {...props}>{formattedValue}</Text>;
-        })
-    }
-
-    else if (isFile) {
+    if (isFile) {
         return <FileRenderer onRenderFile={props.onRenderFile} />
     }
 
@@ -53,9 +46,10 @@ export const ValueRenderer = (props: IValueRendererProps) => {
     }
     else {
         return props.onRenderText({
-            className: styles.text
+            className: getClassNames([styles.text, !formattedValue.value ? styles.placeholder : undefined]),
+            children: formattedValue.placeholder
         }, (props) => {
-            return <Text {...props}>{formattedValue}</Text>;
+            return <Text {...props}>{formattedValue.placeholder}</Text>;
         })
     }
 }

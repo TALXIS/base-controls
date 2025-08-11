@@ -12,7 +12,7 @@ export class Property {
             return {
                 target: "_blank",
                 rel: "noopener noreferrer",
-                children: this._model.getFormattedValue(),
+                children: this.getFormattedValue(),
                 onClick: () => this._onClick()
             }
         }
@@ -47,8 +47,8 @@ export class Property {
     public getValue(): any {
         return this._model.getValue();
     }
-    public getFormattedValue(): any {
-        return this._model.getFormattedValue();
+    public getFormattedValue(): string | null {
+        return this._model.getFormattedValue().value;
     }
     private _onClick() {
         this._model.getDataset()?.openDatasetItem(this._model.getRecord().getNamedReference())

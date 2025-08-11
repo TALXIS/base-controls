@@ -40,6 +40,7 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
         });
     }
     const onSave = () => {
+        condition.setIsValueRequired(true);
         const result = filtering.getFilterExpression(FilterType.And.Value);
         if (!result) {
             rerender();

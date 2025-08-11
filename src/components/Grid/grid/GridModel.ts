@@ -1,4 +1,4 @@
-import { Attribute, Constants, DataType, DataTypes, EventEmitter, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IRecord, Operators, Sanitizer } from "@talxis/client-libraries";
+import { AggregationFunction, Attribute, Constants, DataProvider, DataType, DataTypes, EventEmitter, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IRecord, Operators, Sanitizer } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import { ITheme, Theming } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
@@ -37,6 +37,7 @@ export interface IGridColumn extends IColumn {
     isEditable: boolean;
     isFilterable: boolean;
     isSorted: boolean;
+    isFiltered: boolean;
     canBeAggregated: boolean;
     canBeGrouped: boolean;
     isSortedDescending: boolean;
@@ -46,17 +47,18 @@ export interface IGridColumn extends IColumn {
 }
 
 export class GridModel {
+    public readonly oddRowCellTheme: ITheme;
+    public readonly evenRowCellTheme: ITheme;
     private _getProps: () => IGrid;
-    private _sorting: Sorting;
-    private _aggregation: Aggregation;
-    private _grouping: Grouping;
-    private _filtering: Filtering;
     private _labels: Required<ITranslation<typeof gridTranslations>>;
     private _theme: ITheme;
     private _cachedColumns: IGridColumn[] = [];
+    private _hasFirstDataBeenLoaded = false;
     private _getCurrentlyHeldKey = useCurrentlyHeldKey();
-    public readonly oddRowCellTheme: ITheme;
-    public readonly evenRowCellTheme: ITheme;
+    private __sorting?: Sorting;
+    private __aggregation?: Aggregation;
+    private __grouping?: Grouping;
+    private __filtering?: Filtering;
 
     constructor({ onGetProps, labels, theme }: IGridDependencies) {
         this._getProps = onGetProps;
@@ -64,16 +66,22 @@ export class GridModel {
         this._theme = theme ?? getTheme();
         this.oddRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.neutralLighterAlt, this._theme.semanticColors.bodyText);
         this.evenRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.white, this._theme.semanticColors.bodyText);
-        this._sorting = new Sorting(() => this.getDataset());
-        this._aggregation = new Aggregation({
-            onGetDataset: () => this.getDataset(),
+        this._registerEventListeners();
+    }
+    public init() {
+        if (this._hasFirstDataBeenLoaded) {
+            return;
+        }
+        this._hasFirstDataBeenLoaded = true;
+        this.__sorting = new Sorting(() => this.getDataset());
+        this.__aggregation = new Aggregation({
+            onGetDataProvider: () => this.getDataset().getDataProvider(),
             translations: {
                 calculationLimitExceededError: this._labels["error-2147750198"]()
             }
         })
-        this._aggregation.addEventListener('onRequestMainDatasetRefresh', () => this._dataset.refresh())
-        this._filtering = new Filtering(() => this.getDataset().getDataProvider());
-        this._grouping = new Grouping(() => this.getDataset());
+        this.__filtering = new Filtering(() => this.getDataset().getDataProvider());
+        this.__grouping = new Grouping(() => this.getDataset().getDataProvider());
     }
 
     public getDataset(): IDataset {
@@ -87,36 +95,6 @@ export class GridModel {
     public getParameters(): IGridParameters {
         return this._getProps().parameters;
     }
-
-    public getColumnAlignment(column: IColumn) {
-        if (column.alignment) {
-            return column.alignment;
-        }
-        switch (column.dataType) {
-            case DataTypes.WholeNone:
-            case DataTypes.Decimal:
-            case DataTypes.Currency: {
-                return 'right';
-            }
-        }
-        if (column.type === 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
-            return 'right';
-        }
-        return 'left';
-    }
-
-    public getSorting(): Sorting {
-        return this._sorting;
-    }
-    public getFiltering(): Filtering {
-        return this._filtering;
-    }
-    public getAggregation(): Aggregation {
-        return this._aggregation
-    }
-    public getGrouping(): Grouping {
-        return this._grouping;
-    }
     public getLabels(): Required<ITranslation<typeof gridTranslations>> {
         return this._labels;
     }
@@ -125,6 +103,9 @@ export class GridModel {
     }
     public isNavigationEnabled(): boolean {
         return this.getParameters().EnableNavigation?.raw !== false;
+    }
+    public isAutoSaveEnabled(): boolean {
+        return false;
     }
     public isEditingEnabled(): boolean {
         return this.getParameters().EnableEditing?.raw === true;
@@ -136,7 +117,6 @@ export class GridModel {
     public getDefaultExpandedGroupLevel(): number {
         return this.getParameters().DefaultExpandedGroupLevel?.raw ?? -1;
     }
-
     public getDefaultRowHeight(): number {
         const height = this.getParameters().RowHeight?.raw;
         if (height) {
@@ -144,7 +124,6 @@ export class GridModel {
         }
         return DEFAULT_ROW_HEIGHT;
     }
-
     public getSelectionType(): 'none' | 'single' | 'multiple' {
         switch (this.getParameters().SelectableRows?.raw) {
             case undefined:
@@ -154,7 +133,6 @@ export class GridModel {
         }
         return this.getParameters().SelectableRows!.raw;
     }
-
     public getControl(column: IColumn, record: IRecord, editing: boolean): Required<ICustomColumnControl> {
         //file and image currently do not support editor, always force cell renderers
         switch (column.dataType) {
@@ -217,8 +195,12 @@ export class GridModel {
         return bindings;
     }
 
-    public getFieldBindingParameters(record: IRecord, column: IGridColumn, editing: boolean, recordCommands?: ICommand[]) {
+    public getFieldBindingParameters(record: IRecord, column: IColumn, editing: boolean, recordCommands?: ICommand[]) {
+        //make sure we have IColumn, not IGridColumn
+        column = record.getDataProvider().getColumnsMap().get(column.name)!;
         const aggregationInfo = this.getAggregationInfo(record, column);
+        const summarizationType = record.getDataProvider().getSummarizationType();
+        const aggregationFunction = aggregationInfo.aggregatedColumn?.aggregation?.aggregationFunction ?? null;
         const parameters: any = {
             Dataset: {
                 raw: this.getDataset(),
@@ -239,7 +221,36 @@ export class GridModel {
             type: aggregationInfo.aggregatedColumn?.dataType ?? DataTypes.Decimal
         }
         parameters.EnableNavigation = {
-            raw: this.isNavigationEnabled(),
+            //TODO: enable navigation for grouped lookups
+            raw: (() => {
+                if (!this.isNavigationEnabled()) {
+                    return false;
+                }
+                if (summarizationType === 'aggregation') {
+                    return false;
+                }
+                else if (summarizationType === 'grouping') {
+                    switch (column.dataType) {
+                        case DataTypes.LookupCustomer:
+                        case DataTypes.LookupRegarding:
+                        case DataTypes.LookupOwner:
+                        case DataTypes.LookupSimple:
+                        case DataTypes.File:
+                        case DataTypes.Image:
+                        case DataTypes.SingleLineEmail:
+                        case DataTypes.SingleLineUrl:
+                        case DataTypes.SingleLinePhone: {
+                            return true;
+                        }
+                        default: {
+                            return false;
+                        }
+                    }
+                }
+                else {
+                    return true;
+                }
+            })(),
             type: DataTypes.TwoOptions
         }
         parameters.ColumnAlignment = {
@@ -263,7 +274,7 @@ export class GridModel {
             type: DataTypes.TwoOptions
         }
         parameters.AggregationFunction = {
-            raw: aggregationInfo.aggregatedColumn?.aggregationFunction ?? null,
+            raw: summarizationType === 'aggregation' ? aggregationFunction : null,
             type: DataTypes.SingleLineText
         }
         parameters.PrefixIcon = {
@@ -305,8 +316,7 @@ export class GridModel {
     }
 
     public getFieldFormatting(record: IRecord, columnName: string): Required<ICustomColumnFormatting> {
-        const isEven = record.getIndex() % 2 === 0;
-        const defaultTheme = this.getDefaultCellTheme(isEven);
+        const defaultTheme = this.getDefaultCellTheme(record, columnName);
         const defaultBackgroundColor = defaultTheme.semanticColors.bodyBackground;;
 
         // Handle checkbox column specifically
@@ -354,22 +364,22 @@ export class GridModel {
         return result;
     }
 
-    public getDefaultCellTheme(isEven: boolean): ITheme {
-        if (isEven || !this.isZebraEnabled()) {
+    public getDefaultCellTheme(record: IRecord, columnName?: string): ITheme {
+        const isEven = record.getIndex() % 2 === 0;
+        const summarizationType = record.getDataProvider().getSummarizationType();
+        if (summarizationType !== 'none') {
+            return this.oddRowCellTheme;
+        }
+        //child of a group record
+        else if (record.getDataProvider().getParentDataProvider()) {
             return this.evenRowCellTheme;
         }
-        return this.oddRowCellTheme;
-    }
-
-    public onNotifyOutputChanged(record: IRecord, column: IColumn, editing: boolean, newValue: any, rerenderCell: () => void) {
-        record.setValue(column.name, newValue);
-        if (!editing) {
-            this.getPcfContext().factory.requestRender();
-            return;
+        else if (isEven || !this.isZebraEnabled()) {
+            return this.evenRowCellTheme;
         }
-        setTimeout(() => {
-            rerenderCell();
-        }, 0);
+        else {
+            return this.oddRowCellTheme;
+        }
     }
 
     public getCachedGridColumns(): IGridColumn[] {
@@ -377,6 +387,12 @@ export class GridModel {
     }
 
     public getGridColumns(): { haveColumnsBeenUpdated: boolean, columns: IGridColumn[] } {
+        if (!this._hasFirstDataBeenLoaded) {
+            return {
+                haveColumnsBeenUpdated: false,
+                columns: []
+            }
+        }
         const gridColumns = this._getGridColumnsFromDataset();
         if (!deepEqual(gridColumns, this._cachedColumns)) {
             this._cachedColumns = gridColumns;
@@ -393,7 +409,7 @@ export class GridModel {
         }
     }
 
-    public getAggregationInfo(record: IRecord, column: IGridColumn): IAggregationInfo {
+    public getAggregationInfo(record: IRecord, column: IColumn): IAggregationInfo {
         const aggregation = record.getDataProvider().aggregation.getAggregation(column.aggregation?.alias!);
         const aggrColumn = record.getDataProvider().getColumnsMap().get(aggregation?.alias ?? '') ?? null;
         if (aggregation) {
@@ -422,6 +438,10 @@ export class GridModel {
     public getControlValue(record: IRecord, column: IColumn | string): any {
         column = typeof column === 'string' ? record.getDataProvider().getColumnsMap().get(column)! : column;
         let value = this.getRecordValue(record, column);
+        if (record.getDataProvider().getSummarizationType() === 'aggregation') {
+            //total row control value is always null (the control displays just the aggregated value)
+            return null;
+        }
         switch (column.dataType) {
             //getValue always returns string for TwoOptions
             case 'TwoOptions': {
@@ -456,51 +476,62 @@ export class GridModel {
 
     public getGroupChildrenDataProvider(groupRecord: IRecord): IDataProvider {
         const groupBys = this._dataset.grouping.getGroupBys();
+        const aggregations = this._dataset.aggregation.getAggregations();
         const parentRecord = groupRecord;
         const level = groupRecord.getDataProvider().getNestingLevel();
         const parentDataProvider = parentRecord.getDataProvider();
-        const groupDataProvider = parentDataProvider.getChildDataProvider(parentRecord.getRecordId());
+        const groupDataProvider = parentDataProvider.getChildDataProvider({ parentRecordId: parentRecord.getRecordId() });
         //this makes sure client API can register events in the child dataset
-        const groupDataset = this._dataset.getChildDataset(groupDataProvider);
+        this._dataset.getChildDataset(groupDataProvider);
+        //grid supports nested grouping, if this is defined, the next level will be grouped by this column
         const nextGroupedColumn = this._dataset.getDataProvider().getColumnsMap().get(groupBys[level + 1]?.columnName);
-        const groupedColumn = this._dataset.getDataProvider().getColumnsMap().get(groupBys[level].columnName)!;
+        //the column that is the current data provider grouped on
+        const currentGroupedColumn = this._dataset.getDataProvider().getColumnsMap().get(groupBys[level].columnName)!;
         groupDataProvider.setViewId('');
         groupDataProvider.getColumnsMap().clear();
-        //make the grouped column virtual column does not appear in the grid
+        //make the current grouped column virtual column does not appear in the grid
         groupDataProvider.setColumns(parentDataProvider.getColumns().map(col => {
-            if (col.name === groupedColumn.name) {
+            if (col.name === currentGroupedColumn.name) {
                 return {
                     ...col,
-                    isVirtual: true
+                    isVirtual: true,
+                    //this is so the cell renderer will not try to render empty value
+                    type: 'action'
                 }
             }
             else {
                 return col;
             }
         }));
-        groupDataProvider.getPaging().setPageSize(25);
+        groupDataProvider.getPaging().setPageSize(50);
         groupDataProvider.grouping.clear();
         groupDataProvider.aggregation.clear();
+        //ignore the sorting on grouped columns if we are going to fetch the last level - it causes data to be fetched
+        if (!nextGroupedColumn) {
+            groupDataProvider.setSorting(parentDataProvider.getSorting().filter(sort => !groupBys.find(groupBy => sort.name === groupBy.columnName)));
+        }
 
+        //set the aggregations and grouping for child dataset if it has grouped column on the next level
         if (nextGroupedColumn) {
             const groupBy = this._dataset.grouping.getGroupBy(nextGroupedColumn.grouping?.alias!)!;
             const aggregation = this._dataset.aggregation.getAggregation(nextGroupedColumn.aggregation?.alias!)!;
             groupDataProvider.grouping.addGroupBy(groupBy);
             groupDataProvider.aggregation.addAggregation(aggregation);
         }
-        this._dataset.aggregation.getAggregations().map(aggr => {
+        //add aggregations that are not applied to grouped columns
+        aggregations.map(aggr => {
             const isGrouped = groupBys.find(x => x.columnName === aggr.columnName);
-            //adds aggregations that are not grouped
             if (groupDataProvider.grouping.getGroupBys().length > 0 && !isGrouped) {
                 groupDataProvider.aggregation.addAggregation(aggr);
             }
         })
+        //apply filtering to the group dataset
         const filterDataProvider = groupDataProvider.getChildDataProvider();
         filterDataProvider.setColumns(this._dataset.columns);
         const filtering = new Filtering(() => filterDataProvider);
-        const columnFilter = filtering.getColumnFilter(groupedColumn.name);
+        const columnFilter = filtering.getColumnFilter(currentGroupedColumn.name);
         const condition = columnFilter.addCondition();
-        const value = this._getFilterValueFromRecordValue(parentRecord, groupedColumn.dataType, groupedColumn.name);
+        const value = this._getFilterValueFromRecordValue(parentRecord, currentGroupedColumn.dataType, currentGroupedColumn.name);
 
         if (value == null) {
             condition.setOperator(Operators.DoesNotContainData.Value)
@@ -568,10 +599,156 @@ export class GridModel {
         return this._getCurrentlyHeldKey();
     }
 
-    private _getGroupRecordIds(ids: string[]): string[] {
-        return ids.filter(id => id.startsWith('group_'));
+    public isColumnEditable(columnName: string, record?: IRecord): boolean {
+        let isEditable = true;
+        const mainDatasetColumn = this.getDataset().getDataProvider().getColumnsMap().get(columnName)!;
+        let column = mainDatasetColumn;
+        if (record) {
+            column = record.getDataProvider().getColumnsMap().get(columnName)!;
+        }
+        switch (true) {
+            case !this.isEditingEnabled():
+            case record?.isSaving():
+            case column.oneClickEdit: {
+                isEditable = false;
+                break;
+            }
+        }
+        switch (column.name) {
+            case DataProvider.CONST.CHECKBOX_COLUMN_KEY:
+            case DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME: {
+                isEditable = false;
+                break;
+            }
+        }
+        //these field types do not support editing
+        switch (column.dataType) {
+            case DataTypes.File:
+            case DataTypes.Image: {
+                isEditable = false;
+                break;
+            }
+        }
+        //if the column is not editable, return false
+        if (!isEditable) {
+            return false
+        }
+        else {
+            //columns is editable and we are not asking for record
+            if (!record) {
+                return true;
+            }
+            //column is editable, but we need to check if the record is editable
+            else return this._isRecordFieldEditable(record, column);
+        }
     }
 
+    public addAggregation(columnName: string, aggregationFunction: AggregationFunction) {
+        this._setAggregationDecorator(() => {
+            this._aggregation.addAggregation(columnName, aggregationFunction)
+        })
+    }
+    public removeAggregation(alias: string) {
+        this._setAggregationDecorator(() => {
+            this._aggregation.removeAggregation(alias);
+        })
+    }
+    public toggleColumnGroup(columnName: string) {
+        const column = this.getDataset().getDataProvider().getColumnsMap().get(columnName)!;
+        if (column.grouping?.isGrouped) {
+            this._grouping.ungroupColumn(column.grouping.alias!);
+        }
+        else {
+            this._grouping.groupColumn(column.name);
+        }
+        this._dataset.refresh();
+    }
+
+    public getColumnFilter(columnName: string) {
+        return this._filtering.getColumnFilter(columnName)
+    }
+
+    public removeColumnFilter(columnName: string, saveToDataset?: boolean) {
+        this._filtering.removeColumnFilter(columnName);
+        if (!saveToDataset) {
+            return;
+        }
+        const filterExpression = this._filtering.getFilterExpression(FilterType.And.Value);
+        if (!filterExpression) {
+            throw new Error('Unexpected error when clearing column filter.');
+        }
+        this._dataset.filtering.setFilter(filterExpression);
+        this._dataset.refresh();
+    }
+
+    public sortColumn(columnName: string, descending?: boolean) {
+        this._sorting.getColumnSorting(columnName).setSortValue(descending ? 1 : 0);
+        this._dataset.refresh();
+    }
+
+    public clearColumnSorting(columnName: string) {
+        this._sorting.getColumnSorting(columnName).clear();
+        this._dataset.refresh();
+    }
+
+    public getAggregation() {
+        return this._aggregation;
+    }
+
+    public getFiltering() {
+        return this._filtering;
+    }
+
+    public getColumnSortingLabel(columnName: string, descending?: boolean): string {
+        const column = this.getDataset().getDataProvider().getColumnsMap().get(columnName)!;
+        switch (column.dataType) {
+            case DataTypes.WholeNone:
+            case DataTypes.Decimal:
+            case DataTypes.WholeDuration:
+            case DataTypes.Currency: {
+                if (!descending) {
+                    return this._labels['filtersortmenu-sortnumber-a-z']()
+                }
+                return this._labels['filtersortmenu-sortnumber-z-a']()
+            }
+            case DataTypes.DateAndTimeDateAndTime:
+            case DataTypes.DateAndTimeDateOnly: {
+                if (!descending) {
+                    return this._labels['filtersortmenu-sortdate-a-z']()
+                }
+                return this._labels['filtersortmenu-sortdate-z-a']()
+            }
+            case DataTypes.TwoOptions: {
+                const options = column.metadata?.OptionSet ?? [];
+                if (!descending) {
+                    return `${options[0].Label} ${this._labels['filtersortmenu-sorttwooption-joint']()} ${options[1].Label}`
+                }
+                return `${options[1].Label} ${this._labels['filtersortmenu-sorttwooption-joint']()} ${options[0].Label}`
+            }
+            default: {
+                if (!descending) {
+                    return this._labels['filtersortmenu-sorttext-a-z']()
+                }
+                return this._labels['filtersortmenu-sorttext-z-a']()
+            }
+        }
+
+    }
+
+    private _setAggregationDecorator(fn: () => void) {
+        fn();
+        if (this._dataset.grouping.getGroupBys().length > 0) {
+            this._dataset.refresh();
+        }
+        else {
+            this._aggregation?.refresh();
+            this._dataset.render();
+        }
+    }
+
+    private _getGroupRecordIds(ids: string[]): string[] {
+        return ids.filter(id => id.startsWith(DataProvider.CONST.GROUP_PREFIX));
+    }
 
     private _getFilterValueFromRecordValue(record: IRecord, dataType: DataType, columnAlias: string) {
         const value = this.getControlValue(record, columnAlias);
@@ -614,8 +791,9 @@ export class GridModel {
             const sorted = this.getDataset().sorting?.find(sort => sort.name === column.name);
             return {
                 ...column,
-                alignment: this.getColumnAlignment(column),
-                isEditable: this._isColumnEditable(column),
+                alignment: column.alignment!,
+                isFiltered: this._filtering.getColumnFilter(column.name).isAppliedToDataset(),
+                isEditable: this.isColumnEditable(column.name),
                 isRequired: this._isColumnRequired(column),
                 canBeGrouped: true,
                 isFilterable: this._isColumnFilterable(column),
@@ -631,22 +809,17 @@ export class GridModel {
         return gridColumns;
     }
 
-    private _isColumnEditable(column: IColumn): boolean {
-        //only allow editing if specifically allowed
-        if (!this.getParameters().EnableEditing?.raw) {
+    private _isRecordFieldEditable(record: IRecord, column: IColumn): boolean {
+        // summarized records are not editable
+        if (record.getDataProvider().getSummarizationType() !== 'none') {
             return false;
         }
-        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
+        const columnInfo = record.getColumnInfo(column.name);
+        if (columnInfo.ui.isLoading()) {
             return false;
         }
-        //these field types do not support editing
-        switch (column.dataType) {
-            case DataTypes.File:
-            case DataTypes.Image: {
-                return false;
-            }
-        }
-        return column.metadata?.IsValidForUpdate ?? false;
+        //if editable not defined, return true since column is editable in this case
+        return columnInfo?.security.editable ?? true;
     }
 
     private _isColumnRequired(column: IColumn): boolean {
@@ -713,7 +886,18 @@ export class GridModel {
         }
         if (!column.metadata?.SupportedAggregations || column.metadata.SupportedAggregations.length === 0) {
             return false;
-
+        }
+        //do not allow aggregations if grouping is present and only 
+        if (this._dataset.grouping.getGroupBys().length > 0) {
+            const aggregations = [...column.metadata.SupportedAggregations];
+            for (const aggregation of [...aggregations]) {
+                if (aggregation === 'count' || aggregation === 'countcolumn') {
+                    aggregations.pop();
+                }
+            }
+            if (aggregations.length === 0) {
+                return false;
+            }
         }
         return true;
     }
@@ -728,7 +912,72 @@ export class GridModel {
         return undefined;
     }
 
+    private _registerEventListeners() {
+        this._dataset.addEventListener('onInitialDataLoaded', () => this.init());
+        this._setGroupingInterceptor();
+    }
+
+    //this method makes sure that the grouping is only applied to the first grouping column
+    //this allows for nested grouping to work correctly
+    private _setGroupingInterceptor() {
+        let originalGrouping: IGroupByMetadata[] = [];
+        let originalAggregation: IGroupByMetadata[] = [];
+        this._dataset.addEventListener('onBeforeNewDataLoaded', () => {
+            originalGrouping = this._dataset.grouping.getGroupBys();
+            originalAggregation = this._dataset.aggregation.getAggregations();
+
+            if (originalGrouping.length > 1) {
+                this._dataset.grouping.clear();
+                const groupBy = originalGrouping[0];
+                const column = this._dataset.getDataProvider().getColumnsMap().get(groupBy.columnName)!;
+                this._dataset.grouping.addGroupBy(originalGrouping[0], column.order);
+                //clear all grouping aggregations except the first one
+                for (let i = 1; i < originalGrouping.length; i++) {
+                    const column = this._dataset.getDataProvider().getColumnsMap().get(originalGrouping[i].columnName);
+                    this._dataset.aggregation.removeAggregation(column?.aggregation?.alias!);
+                }
+            }
+        })
+        this._dataset.addEventListener('onNewDataLoaded', () => {
+            originalGrouping.map((group) => {
+                const column = this._dataset.getDataProvider().getColumnsMap().get(group.columnName)!;
+                this._dataset.grouping.addGroupBy(group, column.order);
+            })
+            originalAggregation.map((aggr: any) => {
+                this._dataset.aggregation.addAggregation(aggr);
+            })
+        })
+    }
+
     private get _dataset() {
         return this.getDataset();
+    }
+
+    private get _sorting(): Sorting {
+        if (!this.__sorting) {
+            throw new Error('Sorting is not initialized. Call init() method first.');
+        }
+        return this.__sorting;
+    }
+
+    private get _filtering(): Filtering {
+        if (!this.__filtering) {
+            throw new Error('Filtering is not initialized. Call init() method first.');
+        }
+        return this.__filtering;
+    }
+
+    private get _aggregation(): Aggregation {
+        if (!this.__aggregation) {
+            throw new Error('Aggregation is not initialized. Call init() method first.');
+        }
+        return this.__aggregation;
+    }
+
+    private get _grouping(): Grouping {
+        if (!this.__grouping) {
+            throw new Error('Grouping is not initialized. Call init() method first.');
+        }
+        return this.__grouping;
     }
 }

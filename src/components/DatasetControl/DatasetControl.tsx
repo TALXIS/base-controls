@@ -1,93 +1,91 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useControl } from "../../hooks";
 import { ThemeProvider } from "@fluentui/react";
 import { datasetControlTranslations } from "./translations";
-import { getDatasetControlStyles } from "./styles";
 import { IDatasetControl } from "./interfaces";
-import { QuickFind } from "./QuickFind/QuickFind";
 import { useRerender } from "@talxis/react-components";
-import { Client } from "@talxis/client-libraries";
-import { DatasetPaging } from "./Paging";
-
-const client = new Client();
+import { DatasetControlModel } from "./DatasetControlModel";
+import { ModelContext } from "./useModel";
+import { Pagination } from "./Pagination/Pagination";
+import { getDatasetControlStyles } from "./styles";
+import { Header } from "./Header/Header";
 
 export const DatasetControl = (props: IDatasetControl) => {
   const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
-  const rerender = useRerender();
-  const dataset = props.parameters.Grid;
-  const injectedContextRef = useRef(props.context);
-  const styles = useMemo(() => getDatasetControlStyles(theme, props.parameters.Height?.raw), []);
+  const propsRef = useRef<IDatasetControl>(props);
+  propsRef.current = props;
+  const model = useMemo(() => new DatasetControlModel({
+    getProps: () => propsRef.current,
+    getLabels: () => labels,
+  }), []);
   const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-  useMemo(() => {
-    if (dataset.isVirtual() || !client.isTalxisPortal()) {
-      dataset.addEventListener('onRenderRequested', () => rerender())
-    }
-  }, []);
+  const rerender = useRerender();
+  const styles = useMemo(() => getDatasetControlStyles(props.parameters.Height?.raw), [props.parameters.Height?.raw]);
+  const dataset = model.getDataset();
 
-  //we need to have a way to customize the init behavior from above
   const componentProps = onOverrideComponentProps({
-    onDatasetInit: () => {
-      if (dataset.isVirtual()) {
-        dataset.paging.loadExactPage(dataset.paging.pageNumber);
-      }
-    },
-    containerProps: {
-      theme: theme,
-      className: styles.datasetControlRoot,
-    },
+    onRender: (props, defaultRender) => defaultRender(props),
+  })
 
-    headerProps: {
-      headerContainerProps: {
-        className: styles.headerRoot
-      },
-      onRender: (renderQuickFind) => renderQuickFind(),
-      onGetQuickFindProps: (props) => props
-    },
-    onRenderPagination: (props, renderPagination) => renderPagination(props)
-  });
-
-  useMemo(() => {
-    //@ts-ignore - private property
-    injectedContextRef.current = dataset._patchContext(props.context);
-  }, [props.context]);
-
-  useMemo(() => {
-    componentProps.onDatasetInit();
-  }, []);
-
-  const isQuickFindEnabled = () => {
-    if (dataset.isVirtual() && props.parameters.EnableQuickFind?.raw) {
-      return true;
+  const isFooterVisible = () => {
+    switch (true) {
+      case model.isPaginationVisible():
+      case model.isRecordCountVisible():
+      case model.isPageSizeSwitcherVisible():
+        return true;
+      default:
+        return false;
     }
-    return false;
   }
 
+  const isPaginationVisible = () => {
+    return isFooterVisible();
+  }
 
-  return (
-    <ThemeProvider {...componentProps.containerProps}>
-      {isQuickFindEnabled() &&
-        <div {...componentProps.headerProps.headerContainerProps}>
-          {componentProps.headerProps.onRender(() => {
-            return <>
-              {isQuickFindEnabled() &&
-                <QuickFind
-                  dataset={dataset}
-                  labels={labels}
-                  theme={theme}
-                  onGetQuickFindComponentProps={(props) => componentProps.headerProps.onGetQuickFindProps(props)} />
-              }
-            </>
-          })}
-        </div>
-      }
-      {props.onGetControlComponent({ ...props, context: injectedContextRef.current })}
-      {componentProps.onRenderPagination({
-        context: injectedContextRef.current, parameters: {
-          Dataset: dataset,
-          EnablePagination: props.parameters.EnablePagination,
-          EnablePageSizeSwitcher: props.parameters.EnablePageSizeSwitcher
-        }
-      }, (paginationProps) => <DatasetPaging {...paginationProps} />)}
-    </ThemeProvider>
-  )
+  useEffect(() => {
+    dataset.addEventListener('onNewDataLoaded', () => rerender());
+    dataset.addEventListener('onRenderRequested', () => rerender());
+    dataset.addEventListener('onLoading', () => rerender());
+  }, []);
+
+  return <ModelContext.Provider value={model}>
+    {componentProps.onRender({
+      container: {
+        theme: theme,
+        className: styles.datasetControlRoot
+      },
+      onRenderHeader: (props, defaultRender) => defaultRender(props),
+      onRenderFooter: (props, defaultRender) => defaultRender(props),
+      onRenderControlContainer: (props, defaultRender) => defaultRender(props)
+    }, (props) => {
+      return <ThemeProvider {...props.container}>
+        <Header onRenderHeader={props.onRenderHeader} />
+        {props.onRenderControlContainer({
+          controlContainerProps: {
+            className: styles.controlContainer
+          },
+
+        }, (props) => {
+          return <div {...props.controlContainerProps}>
+            {propsRef.current.onGetControlComponent(propsRef.current)}
+          </div>
+        })}
+        {props.onRenderFooter({
+          footerContainerProps: {
+            className: styles.footer
+          },
+          onRenderPagination: (props, defaultRender) => defaultRender(props)
+        }, (props) => {
+          if (!isFooterVisible()) {
+            return <></>
+          }
+          return <div {...props.footerContainerProps}>
+            {isPaginationVisible() &&
+              <Pagination onRenderPagination={props.onRenderPagination} />
+            }
+          </div>
+        })}
+      </ThemeProvider>
+    })}
+  </ModelContext.Provider>
 }

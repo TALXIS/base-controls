@@ -55,9 +55,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
         }
         return false;
     }
-    const isColumnFiltered = () => {
-        return grid.getFiltering().getColumnFilter(column.name).isAppliedToDataset()
-    }
+
     return (
         <>
             <CommandBarButton
@@ -75,7 +73,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
                 </div>
                 <div className={columnHeaderStyles.filterSortIcons}>
                     {column.isSorted && <Icon iconName={column.isSortedDescending ? 'SortDown' : 'SortUp'} />}
-                    {isColumnFiltered() && <Icon iconName='Filter' />}
+                    {column.isFiltered && <Icon iconName='Filter' />}
                 </div>
             </CommandBarButton>
             {columnHeaderContextualMenuProps &&

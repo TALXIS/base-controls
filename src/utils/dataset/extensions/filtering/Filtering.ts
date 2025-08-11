@@ -40,7 +40,6 @@ export class Filtering extends DataProviderExtension {
         for (const colFilter of [...this._columnFilters.values()]) {
             const conditions = colFilter.getConditions();
             for (const condition of conditions) {
-                condition.setIsValueRequired(true);
                 const validationResult = condition.getValidationResult();
                 if (validationResult.some(result => result.error)) {
                     return false;

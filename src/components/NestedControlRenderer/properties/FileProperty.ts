@@ -1,4 +1,3 @@
-import { FieldValue } from "@talxis/client-libraries";
 import { Property } from "./Property";
 import { IFileProperty } from "../../../interfaces";
 
@@ -7,7 +6,7 @@ export class FileProperty extends Property {
         const value = this.getValue();
         return {
             raw: value,
-            formatted: this.getFormattedValue() ?? ''
+            formatted: this.getFormattedValue()
         }
     }
 }

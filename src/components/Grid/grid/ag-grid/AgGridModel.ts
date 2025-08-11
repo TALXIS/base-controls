@@ -1,18 +1,19 @@
-import { ColDef, ColumnResizedEvent, EditableCallbackParams, GridApi, IRowNode, IsServerSideGroupOpenByDefaultParams, ModuleRegistry, SelectionChangedEvent, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellClickedEvent, CellDoubleClickedEvent, ColDef, ColumnMovedEvent, ColumnResizedEvent, GridApi, IRowNode, IsServerSideGroupOpenByDefaultParams, ModuleRegistry, SelectionChangedEvent, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import debounce from 'debounce';
 import { GridModel, IGridColumn } from "../GridModel";
-import { DataTypes, IAddControlNotificationOptions, IColumn, IColumnInfo, IControlParameters, ICustomColumnComponent, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IRecord, Operators } from "@talxis/client-libraries";
+import { DataProvider, DataTypes, IAddControlNotificationOptions, IColumn, IColumnInfo, IControlParameters, ICustomColumnComponent, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IRecord, Operators } from "@talxis/client-libraries";
 import { NestedControl } from "../../../NestedControlRenderer/NestedControl";
 import { Cell } from "../../cells/cell/Cell";
 import { ColumnHeader } from "../../column-headers/column-header/ColumnHeader";
 import { CHECKBOX_COLUMN_KEY } from "../../constants";
-import { Comparator } from "../ValueComparator";
+import { Comparator, KeyCreator } from "../ValueComparator";
 import { ServerSideDatasource } from "./ServerSideDatasource";
 import { RecordSelectionCheckBox } from "../../column-headers/record-selection-checkbox/RecordSelectionCheckbox";
 import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
 import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
 import { MenuModule } from "@ag-grid-enterprise/menu";
+import { FullRowLoading } from "../../loading/full-row/FullRowLoading";
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule, MenuModule]);
 
 interface IAgGridTestDependencies {
@@ -37,16 +38,15 @@ export interface ICellValues {
     editing: boolean;
     editable: boolean;
     disabled: boolean;
+    saving: boolean;
 }
 
 export class AgGridModel {
     private _grid: GridModel;
     private _dataSource: ServerSideDatasource;
     private _gridApi: GridApi | undefined;
-    private _comparator: Comparator;
     private _hasUserResizedColumns: boolean = false;
     private _getContainer: () => HTMLDivElement;
-    private _cellDataMap: Map<string, ICellValues> = new Map<string, ICellValues>();
     private _debouncedColumnResized: debounce.DebouncedFunction<(e: ColumnResizedEvent<IRecord>) => void>;
     private _debouncedSetSelectedNodes: debounce.DebouncedFunction<() => void>;
     private _expandedRowGroupIds: string[] = [];
@@ -56,10 +56,11 @@ export class AgGridModel {
         this._grid = grid;
         this._getContainer = getContainer;
         this._dataSource = new ServerSideDatasource(this);
-        this._comparator = new Comparator();
-        //this._grid.getAggregation().addEventListener('onRequestRender', () => this._setPinnedRowData());
         this._debouncedColumnResized = debounce((e: ColumnResizedEvent<IRecord>) => this._onColumnResized(e));
         this._debouncedSetSelectedNodes = debounce(() => this._setSelectedNodes(), 0);
+        this._dataset.addEventListener('onInitialDataLoaded', () => {
+            this._grid.getAggregation().addEventListener('onStateUpdated', () => this._setPinnedRowData());
+        })
     }
 
     public getColumns(gridColumns: IGridColumn[]): ColDef[] {
@@ -72,11 +73,14 @@ export class AgGridModel {
                 hide: this._isColumnHidden(column),
                 width: this._getColumnWidth(column),
                 sortable: !column.disableSorting,
+                lockPinned: true,
                 resizable: column.isResizable,
                 autoHeaderHeight: true,
+                autoHeight: this._isColumnAutoHeightEnabled(column),
                 suppressMovable: column.isDraggable === false ? true : false,
                 suppressSizeToFit: isCheckboxColumn,
                 lockPosition: this._getLockPosition(column),
+                pinned: this._isColumnPinned(column),
                 headerComponentParams: {
                     baseColumn: column
                 },
@@ -93,27 +97,22 @@ export class AgGridModel {
                         isCellEditor: true
                     }
                 },
-                editable: (p) => this._isColumnEditable(column, p),
+                editable: (p) => this._grid.isColumnEditable(column.name, p.data),
+                equals: (valueA: ICellValues, valueB: ICellValues) => new Comparator().isEqual(valueA, valueB),
                 headerComponent: ColumnHeader,
                 cellRenderer: Cell,
                 cellEditor: Cell,
                 valueGetter: (p: ValueGetterParams<IRecord>) => this._valueGetter(p, column),
                 valueFormatter: (p: ValueFormatterParams<IRecord>) => this._valueFormatter(p),
-                equals: (valueA, valueB) => {
-                    return this._comparator.isEqual(this._cellDataMap.get(valueA), this._cellDataMap.get(valueB));
-                },
-                suppressKeyboardEvent: (p) => this._suppressKeyboardEvent(p, column)
-            }
-            if (column.dataType === DataTypes.Multiple) {
-                agColumn.autoHeight = true;
+                suppressKeyboardEvent: (p) => this._suppressKeyboardEvent(p, column),
+                onCellDoubleClicked: (e: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(e),
+                onCellClicked: (e: CellClickedEvent<IRecord>) => this._onCellClick(e),
             }
             if (agColumn.field === CHECKBOX_COLUMN_KEY) {
-                agColumn.lockPosition = 'left';
                 agColumn.headerComponent = RecordSelectionCheckBox;
             }
             return agColumn;
         })
-        this._sortColumns(agColumns);
         return agColumns;
     }
 
@@ -130,7 +129,7 @@ export class AgGridModel {
             this._setLoadingOverlay(true);
         }
         this._registerEventListeners();
-        this.getGridApi().setGridOption('serverSideDatasource', this._dataSource);
+        this._setGridOptions();
     }
 
     public getGrid(): GridModel {
@@ -180,7 +179,7 @@ export class AgGridModel {
                 return 'checked';
             }
             else {
-                const childDataProvider = dataProvider.getChildDataProvider(record.getRecordId());
+                const childDataProvider = dataProvider.getChildDataProvider({ parentRecordId: record.getRecordId() });
                 if (childDataProvider.getSelectedRecordIds(true).length === 0) {
                     return 'unchecked';
                 }
@@ -194,11 +193,54 @@ export class AgGridModel {
         }
     }
 
+    private _isColumnAutoHeightEnabled(column: IGridColumn): boolean {
+        switch (column.dataType) {
+            case DataTypes.Multiple:
+            case DataTypes.SingleLineTextArea: {
+                return true;
+            }
+            default: {
+                return false;
+            }
+        }
+    }
+
+    private _onCellClick (e: CellClickedEvent<IRecord>) {
+        //@ts-ignore
+        e.data?.dispatchEvent('onFieldClicked', e.colDef.colId!);
+    }
+
+    private _onCellDoubleClick(e: CellDoubleClickedEvent<IRecord>) {
+        const column = this._dataset.getDataProvider().getColumnsMap().get(e.colDef.colId!)!
+        switch (true) {
+            //do not navigate if the column is not editable or if the grid is not in navigation mode
+            case !this._grid.isNavigationEnabled():
+            case this._grid.isColumnEditable(column.name, e.data):
+            case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY: {
+                return;
+            }
+            default: {
+                const record = e.data!;
+                record.getDataProvider().openDatasetItem(record.getNamedReference());
+            }
+        }
+    }
+
+    private _isColumnPinned(column: IGridColumn): boolean {
+        switch(true) {
+            case column.name === CHECKBOX_COLUMN_KEY:
+            case column.grouping?.isGrouped: {
+                return true;
+            }
+            default: {
+                return false;
+            }
+        }
+    }
+
     private _getCellParameters(record: IRecord, column: IGridColumn) {
-        const recordId = record.getRecordId();
         return {
             baseColumn: column,
-            cellData: this._cellDataMap.get(`${recordId}_${column.name}`),
             record: record
         }
     }
@@ -221,11 +263,14 @@ export class AgGridModel {
         this.getGridApi().ensureIndexVisible(0, 'top');
     }
 
+    private _scrollToLeft() {
+        if (this._dataset.grouping.getGroupBys().length > 0) {
+            this.getGridApi().ensureColumnVisible(CHECKBOX_COLUMN_KEY);
+        }
+    }
+
     private _getLockPosition(column: IGridColumn) {
         if (column.name === CHECKBOX_COLUMN_KEY) {
-            return 'left';
-        }
-        if (column.grouping?.isGrouped) {
             return 'left';
         }
         return undefined;
@@ -251,12 +296,13 @@ export class AgGridModel {
             const isAGrouped = a.rowGroup;
             const isBGrouped = b.rowGroup;
 
-            // If both are grouped, sort by grouping order
+            // If both are grouped, sort by order of items in groupBys
             if (isAGrouped && isBGrouped) {
+                const groupBys = this._grid.getDataset().grouping.getGroupBys();
                 const colA = columnsMap.get(a.field!)!;
                 const colB = columnsMap.get(b.field!)!;
-                const orderA = colA.grouping?.order ?? Number.MAX_SAFE_INTEGER;
-                const orderB = colB.grouping?.order ?? Number.MAX_SAFE_INTEGER;
+                const orderA = groupBys.map(group => group.alias).indexOf(colA.grouping?.alias!)
+                const orderB = groupBys.map(group => group.alias).indexOf(colB.grouping?.alias!)
                 return orderA - orderB;
             }
             // Maintain original order for non-grouped columns
@@ -280,9 +326,14 @@ export class AgGridModel {
         this.getGridApi().addEventListener('selectionChanged', (e: SelectionChangedEvent) => this._onSelectionChanged(e));
         this.getGridApi().addEventListener('columnResized', (e: any) => this._debouncedColumnResized(e));
         this.getGridApi().addEventListener('modelUpdated', () => this._setGridHeight());
-        //this.getGridApi().addEventListener('modelUpdated', (params: any) => this._syncExpandedRowGroups());
-        this.getGridApi().setGridOption('getRowHeight', (params) => this._grid.getDefaultRowHeight());
-        this.getGridApi().setGridOption('isServerSideGroupOpenByDefault', (params) => this._syncExpandedRowGroups(params))
+        this.getGridApi().addEventListener('columnMoved', (e: ColumnMovedEvent<IRecord>) => this._onColumnMoved(e));
+    }
+
+    private _setGridOptions() {
+        this.getGridApi().setGridOption('serverSideDatasource', this._dataSource);
+        this.getGridApi().setGridOption('isServerSideGroupOpenByDefault', (params) => this._syncExpandedRowGroups(params));
+        this.getGridApi().setGridOption('loadingCellRenderer', FullRowLoading)
+        this.getGridApi().setGridOption('suppressDragLeaveHidesColumns', true);
     }
 
     private _syncExpandedRowGroups(params: IsServerSideGroupOpenByDefaultParams): boolean {
@@ -302,6 +353,24 @@ export class AgGridModel {
         }
     }
 
+    private _onColumnMoved(e: ColumnMovedEvent<IRecord>) {
+        const movedColumn = this._grid.getDataset().getDataProvider().getColumnsMap().get(e.column?.getColId()!);
+        if(!e.finished || e.source !== 'uiColumnMoved') {
+            return;
+        }
+        let order = 0;
+        this._dataset.setColumns(e.api.getState().columnOrder?.orderedColIds!.map(col => {
+            const column = this._grid.getDataset().getDataProvider().getColumnsMap().get(col)!;
+            return {
+                ...column,
+                order: order++
+            }
+        }))
+        if(movedColumn?.grouping?.isGrouped) {
+            this._dataset.refresh();
+        }
+    }
+
     private _onNewDataLoaded() {
         this._refreshServerSideModel();
         this._setNoRowsOverlay();
@@ -315,13 +384,12 @@ export class AgGridModel {
         })
     }
 
-    private _toggleSuppressRowClickSelection() {
-        this.getGridApi().setGridOption('suppressRowClickSelection', this._dataset.grouping.getGroupBys().length > 0);
-    }
-
     private _calculateGridHeight(): string {
         const defaultRowHeight = this._grid.getDefaultRowHeight();
-        const offset = 20;
+        let offset = 20;
+        if(this._dataset.grouping.getGroupBys().length > 0) {
+            offset += 30;
+        }
         if (this._grid.getParameters().Height?.raw) {
             return this._grid.getParameters().Height!.raw!;
         }
@@ -381,8 +449,6 @@ export class AgGridModel {
             return col;
         })
         this._grid.getDataset().setColumns(newColumns);
-        //this.refresh();
-        //this._grid.getPcfContext().factory.requestRender();
     }
 
     private _onSelectionChanged(e: SelectionChangedEvent<IRecord>) {
@@ -392,8 +458,9 @@ export class AgGridModel {
                 return;
             }
         }
-        const selectedNodes: IRowNode<IRecord>[] = this.getGridApi().getSelectedNodes();
         this._dataset.clearSelectedRecordIds();
+        const selectedNodes: IRowNode<IRecord>[] = this.getGridApi().getSelectedNodes();
+        //if we click a grouped record, do not propagate the selection to children
         const providerSelectedRecordIdsMap = new Map<IDataProvider, string[]>();
         selectedNodes.map(node => {
             const record = node.data!;
@@ -453,11 +520,11 @@ export class AgGridModel {
             ...control.getParameters(),
             ...this._grid.getFieldBindingParameters(record, column, editing),
         })
-        if (column.oneClickEdit) {
+        if (column.oneClickEdit && record.getSummarizationType() === 'none') {
             editing = true;
         }
         const aggregationInfo = this._grid.getAggregationInfo(record, column);
-        const values = {
+        return {
             notifications: columnInfo.ui.getNotifications(),
             value: this._grid.getRecordValue(record, column),
             customFormatting: this._grid.getFieldFormatting(record, column.name),
@@ -469,12 +536,10 @@ export class AgGridModel {
             editable: columnInfo.security.editable,
             editing: editing,
             parameters: parameters,
+            saving: record.isSaving(),
             columnAlignment: column.alignment,
             customComponent: columnInfo.ui.getCustomControlComponent()
         } as ICellValues;
-        const valueKey = `${record.getRecordId()}_${column.name}`;
-        this._cellDataMap.set(valueKey, values);
-        return valueKey;
     }
 
     private _setPinnedRowData() {
@@ -498,26 +563,6 @@ export class AgGridModel {
                 this.getGridApi().showNoRowsOverlay();
             }
         }, 0);
-    }
-
-    private _isColumnEditable(column: IGridColumn, params: EditableCallbackParams<IRecord, any>): boolean {
-        if (column.name === CHECKBOX_COLUMN_KEY) {
-            return false;
-        }
-        //we cannot edit aggregated or grouped columns
-        if (params?.data?.getDataProvider().getSummarizationType() !== 'none') {
-            return false;
-        }
-        const columnInfo = params.data?.getColumnInfo(column.name);
-        if (!this._grid.isEditingEnabled() || columnInfo?.ui.isLoading() === true) {
-            return false;
-        }
-        //disable ag grid cell editor if oneClickEdit is enabled
-        //editor control will be used in cell renderer
-        if (column.oneClickEdit) {
-            return false;
-        }
-        return columnInfo?.security.editable ?? true;
     }
 
     private get _dataset() {

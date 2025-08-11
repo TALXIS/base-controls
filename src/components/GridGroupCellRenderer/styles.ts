@@ -34,7 +34,8 @@ export const getGridCellRendererStyles = (model: GridCellRendererModel, height?:
             gap: 5,
             flexGrow: 1,
             width: '100%',
-            alignItems: isMultiline ? 'flex-start' : 'flex-end'
+            alignItems: 'center'
+            //alignItems: isMultiline ? 'flex-start' : 'flex-end'
         },
         innerContentContainer: {
             display: 'flex',
@@ -49,6 +50,8 @@ export const getGridCellRendererStyles = (model: GridCellRendererModel, height?:
             width: '100%',
             textAlign: columnAlignment,
             color: theme.semanticColors.infoIcon,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
         },
         aggregatedValue: {
             ...formattedAggregatedValue != null && value == null ? {
@@ -62,6 +65,11 @@ export const getGridCellRendererStyles = (model: GridCellRendererModel, height?:
             textOverflow: 'ellipsis',
             flexGrow: 1,
             textAlign: columnAlignment,
+        },
+        affixIconRoot: {
+            'img': {
+                width: 18
+            }
         }
     })
 }

@@ -7,9 +7,10 @@ import { getClassNames } from "@talxis/react-components";
 import { getGridCellRendererStyles } from "./styles";
 import { ValueRenderer } from "./ValueRenderer/ValueRenderer";
 import { ModelContext } from "./useModel";
+import { gridGroupCellRendererTranslations } from "./translations";
 
 export const GridCellRenderer = (props: IGridCellRenderer) => {
-    const { theme, labels, className, sizing } = useControl('GridCellRenderer', props);
+    const { theme, labels, className, sizing } = useControl('GridCellRenderer', props, gridGroupCellRendererTranslations);
     const propsRef = useRef<IGridCellRenderer>(props);
     propsRef.current = props;
     const model = useMemo(() => {
@@ -21,7 +22,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     }, []);
     const styles = getGridCellRendererStyles(model, sizing.height);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    
+
     const componentProps = onOverrideComponentProps({
         onRender: (props, defaultRender) => defaultRender(props)
     })
@@ -31,7 +32,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             {componentProps.onRender({
                 container: {
                     className: getClassNames([className, styles.gridCellRendererRoot]),
-                    title: model.getFormattedValue(),
+                    title: model.getFormattedValue().value!,
                     theme: theme
                 },
                 onRenderContentContainer: (props, defaultRender) => defaultRender(props),
@@ -60,6 +61,9 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
                                 <div {...props.container}>
                                     {props.onRenderPrefixIcon({
                                         ...model.getPrefixIconProps(),
+                                         styles: {
+                                            root: styles.affixIconRoot
+                                        }
                                     }, (props) => {
                                         if (model.getPrefixIconProps()) {
                                             return <Icon {...props} />;
@@ -78,7 +82,6 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
                                                 {props.onRenderValueContainer({
                                                     container: {
                                                         className: styles.valueContainer,
-                                                        children: model.getFormattedValue()
                                                     },
                                                     onRenderValue: (props, defaultRender) => defaultRender(props)
                                                 }, (props) => {
@@ -112,7 +115,10 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
                                         );
                                     })}
                                     {props.onRenderSuffixIcon({
-                                        ...model.getSuffixIconProps()
+                                        ...model.getSuffixIconProps(),
+                                        styles: {
+                                            root: styles.affixIconRoot
+                                        }
                                     }, (props) => {
                                         if (model.getSuffixIconProps()) {
                                             return <Icon {...props} />

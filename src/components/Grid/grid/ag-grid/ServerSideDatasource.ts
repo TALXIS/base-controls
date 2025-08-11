@@ -1,5 +1,6 @@
 import { IServerSideDatasource, IServerSideGetRowsParams } from "@ag-grid-community/core";
 import { AgGridModel } from "./AgGridModel";
+import { IDataProvider, IRecord } from "@talxis/client-libraries";
 
 export class ServerSideDatasource implements IServerSideDatasource {
     private _agGrid: AgGridModel
@@ -12,14 +13,22 @@ export class ServerSideDatasource implements IServerSideDatasource {
         const records = this._agGrid.getGrid().getDataset().getDataProvider().getRecords();
         if (params.request.groupKeys.length > 0) {
             const groupDataProvider = this._agGrid.getGrid().getGroupChildrenDataProvider(params.parentNode.data);
-            let records = groupDataProvider.getRecords();
-            if(records.length === 0) {
+            const selectedRecordIds = groupDataProvider.getSelectedRecordIds();
+            let records: IRecord[] = [];
+            try {
                 records = await groupDataProvider.refresh();
             }
-            params.success({
-                rowData: records,
-                rowCount: records.length
-            })
+            catch (err) { }
+            groupDataProvider.setSelectedRecordIds(selectedRecordIds);
+            if (groupDataProvider.isError()) {
+                params.fail();
+            }
+            else {
+                params.success({
+                    rowData: records,
+                    rowCount: records.length
+                })
+            }
         }
         else {
             params.success({
@@ -28,5 +37,4 @@ export class ServerSideDatasource implements IServerSideDatasource {
             })
         }
     }
-
 }

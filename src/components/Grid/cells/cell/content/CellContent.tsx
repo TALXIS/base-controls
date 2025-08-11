@@ -24,8 +24,7 @@ export const CellContent = (props: ICellContentProps) => {
     const valueRef = React.useRef(props.value);
     const recordCommands = props.recordCommands;
     columnRef.current = props.baseColumn;
-    valueRef.current = props.cellData;
-    const rerender = useRerender();
+    valueRef.current = props.value
     const grid = useGridInstance();
     const record = props.data;
     const node = props.node;
@@ -40,14 +39,14 @@ export const CellContent = (props: ICellContentProps) => {
     }
 
     const getThemeId = () => {
-        if(valueRef.current.aggregatedValue != null) {
+        if (valueRef.current.aggregatedValue != null) {
             return `${valueRef.current.aggregatedValue}`
         }
         return null;
     }
 
     const getFonts = () => {
-        if(valueRef.current.aggregatedValue != null) {
+        if (valueRef.current.aggregatedValue != null) {
             return {
                 medium: {
                     fontSize: 15,
@@ -127,13 +126,7 @@ export const CellContent = (props: ICellContentProps) => {
     }
 
     const onNotifyOutputChanged = (outputs: any) => {
-        let isEditing = props.isCellEditor;
-        //if we are not mounted, set editing to true so requestRender gets run
-        //if this is not present, a PCF editor might trigger this too late and we would not see the current value in renderer until next
-        if (!mountedRef.current) {
-            isEditing = false;
-        }
-        grid.onNotifyOutputChanged(record, columnRef.current, isEditing, outputs.value, () => rerender())
+        record.setValue(columnRef.current.name, outputs.value);
     }
     const debouncedNotifyOutputChanged = useDebouncedCallback((outputs) => onNotifyOutputChanged(outputs), 100);
 
@@ -161,7 +154,6 @@ export const CellContent = (props: ICellContentProps) => {
         onNotifyOutputChanged={(outputs) => {
             //talxis portal does not have debounce for notifyoutput
             //Power Apps does a debounce of 100ms
-            //TODO: make part of nested control renderer
             if (getColumn().oneClickEdit && client.isTalxisPortal()) {
                 debouncedNotifyOutputChanged(outputs);
             }
@@ -252,7 +244,7 @@ export const CellContent = (props: ICellContentProps) => {
                             mode: Object.create(controlProps.context.mode, {
                                 allocatedHeight: {
                                     //-4 is needed to offset the auto size behavior
-                                    value: node.rowHeight! - 4
+                                    value: node.rowHeight! - 1
                                 },
 
                             }),

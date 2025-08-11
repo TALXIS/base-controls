@@ -49,7 +49,7 @@ export class GridCellRendererModel {
     private _property: Property;
     private _labels: Labels;
     private _tickMemoizer: TickMemoizer<MemoizedFunction> = new TickMemoizer();
-    
+
     constructor(deps: IDeps) {
         this._getProps = deps.getProps;
         this._labels = deps.labels;
@@ -60,11 +60,41 @@ export class GridCellRendererModel {
     public getValue() {
         return this._getProps().parameters.value.raw;
     }
-
-    public getFormattedValue() {
-        return this._getProps().parameters.value.formatted ?? null;
+    /**
+     * Returns an object so we can use both --- and null as valid null values.
+     */
+    public getFormattedValue(): { value: string | null, placeholder: string | null } {
+        const summarizationType = this.getRecord().getDataProvider().getSummarizationType();
+        const formattedValue = this._getProps().parameters.value.formatted ?? null;
+        const mainDatasetColumn = this._getProps().parameters.Dataset.raw.getDataProvider().getColumnsMap().get(this.getColumn().name)!;
+        //action columns should always return empty string;
+        if (this.getColumn().type === 'action') {
+            return {
+                value: null,
+                placeholder: null
+            }
+        }
+        else if(summarizationType !== 'none') {
+            const aggregatedFormattedValue = this._getProps().parameters.AggregatedValue?.formatted ?? null;
+            return {
+                value: formattedValue,
+                //show placeholder only if aggregated value is not null and formatted value is null
+                placeholder: aggregatedFormattedValue != null && formattedValue == null ? '---' : formattedValue
+            }
+        }
+        else if( summarizationType === 'none' && mainDatasetColumn.isVirtual && mainDatasetColumn.aggregation?.aggregationFunction) {
+            return {
+                value: null,
+                placeholder: null
+            }
+        }
+        else {
+            return {
+                value: formattedValue,
+                placeholder: formattedValue ?? '---'
+            }
+        }
     }
-
     public isTotalRow() {
         return this.getRecord().getDataProvider().getSummarizationType() === 'aggregation';
     }
@@ -106,10 +136,15 @@ export class GridCellRendererModel {
     }
 
     public getLinkProps() {
-        if (this.getValue() == null || this._getProps().parameters.EnableNavigation?.raw === false) {
-            return null;
+        switch (true) {
+            case this.getFormattedValue().value == null:
+            case this._getProps().parameters.EnableNavigation?.raw === false: {
+                return null;
+            }
+            default: {
+                return this._property.getLinkProps();
+            }
         }
-        return this._property.getLinkProps();
     }
 
     public async downloadPortalFile() {
@@ -117,19 +152,25 @@ export class GridCellRendererModel {
     }
 
     public getColorfulOptionSet() {
-        if (this.getValue() == null || this._getProps().parameters.EnableOptionSetColors?.raw !== true) {
-            return null;
+        switch (true) {
+            case this.getFormattedValue().value == null:
+            case this._getProps().parameters.EnableOptionSetColors?.raw !== true:
+            case this._getProps().parameters.AggregationFunction?.raw != null: {
+                return null;
+            }
+            default: {
+                return this._property.getColorfulOptionSet();
+            }
         }
-        return this._property.getColorfulOptionSet();
     }
 
     public getFormattedAggregatedValue(): string | null {
         const aggregatedFormattedValue = this._getProps().parameters.AggregatedValue?.formatted ?? null;
-        if(!aggregatedFormattedValue) {
+        if (!aggregatedFormattedValue) {
             return null;
         }
         //value is equal to aggregated value, so we don't show it
-        else if(this.getFormattedValue() === aggregatedFormattedValue) {
+        else if (this.getFormattedValue().value === aggregatedFormattedValue) {
             return null;
         }
         else {
@@ -138,7 +179,7 @@ export class GridCellRendererModel {
     }
 
     public getAggregationLabel() {
-        const aggregationFunction = this._getProps().parameters.AggregateFunction?.raw;
+        const aggregationFunction = this._getProps().parameters.AggregationFunction?.raw
         switch (aggregationFunction) {
             case 'avg': {
                 return this._labels.avg();
@@ -174,14 +215,22 @@ export class GridCellRendererModel {
     }
 
     public isMultiline() {
-        if(this.isTotalRow()) {
+        if (this.isTotalRow()) {
+            return false;
+        }
+        if(this.getRecord().getSummarizationType() === 'grouping' && !this.getValue()) {
             return false;
         }
         return this._property.isMultiline();
     }
 
     public isFile() {
-        return this._property.isFile();
+        if (!this.getFormattedValue().value) {
+            return false;
+        }
+        else {
+            return this._property.isFile();
+        }
     }
 
     private _getPropertyInstance(): Property {
