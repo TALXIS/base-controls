@@ -105,29 +105,55 @@ export const Lookup = (props: ILookup) => {
         return mouseOver || isFocused;
     }
 
-    const getSecondaryName = (result: ComponentFramework.LookupValue & {
+    const getSecondaryName = async (result: ComponentFramework.LookupValue & {
         entityData: {
             [key: string]: any;
         };
         layout: ILayout;
-    }, metadata?: IMetadata) => {
+    }): Promise<string | undefined> => {
+        const metadata = await entities.find(x => x.entityName === result.entityType)?.metadata;
+        const attribute: string | undefined = result.layout?.Rows?.[0]?.Cells?.[1]?.Name;
         //polymorphic, selected all
         if (!entities.find(x => x.selected)) {
             return metadata?.DisplayName;
         }
-        else {
-            let text: string | undefined = result.entityData[result.layout?.Rows?.[0]?.Cells?.[1]?.Name];
-            //TODO: use metadata to know if the attribute is a lookup and datetime
-            //metadata are laaded prior to the search result, so we don't know what attribute to ask for when fetching metadata
-            if(!text){
-                //if the attribute is not found, try to get the formatted value of lookup
-                text = result.entityData["_"+result.layout?.Rows?.[0]?.Cells?.[1]?.Name+"_value@OData.Community.Display.V1.FormattedValue"]
+        else if (metadata?.LogicalName && attribute) {
+            let targetEntityName = metadata.LogicalName;
+            let targetAttribute = attribute;
+            //checking for attributes pointing to related entity attribute, given by convention of using dot as separator
+            if (attribute.includes(".")) {
+                targetEntityName = result.layout.Rows.find(x => x.Cells.find(y => y.Name === attribute))?.Cells?.find(y => y.Name === attribute)?.RelatedEntityName || metadata.LogicalName;
+                targetAttribute = attribute.split(".")[1]
             }
-            const dateRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/;
-            if (typeof text === 'string' && text.match(dateRegex)) {
-                text = props.context.formatting.formatTime(dayjs(text).toDate(), 1);
-            }
-            return text;
+            const entityMetadata: ComponentFramework.PropertyHelper.EntityMetadata = await props.context.utils.getEntityMetadata(targetEntityName, [targetAttribute]);
+            const attributetype: string = entityMetadata.Attributes.get(targetAttribute).AttributeTypeName;
+            let primaryName: string;
+            switch (attributetype) {
+                case "lookup":
+                case "partylist":
+                case "owner":
+                case "customer":
+                    primaryName = result.entityData[`_${targetAttribute}_value@OData.Community.Display.V1.FormattedValue`];
+                    break;
+                case "optionset":
+                case "picklist":
+                case "state":
+                case "status":
+                case "boolean":
+                case "integer":
+                case "bigint":
+                case "decimal":
+                case "money":
+                    //TODO: Introduce user formatting, this approach takes format from application user setting
+                    primaryName = result.entityData[`${targetAttribute}@OData.Community.Display.V1.FormattedValue`];
+                    break;
+                case "datetime":
+                    primaryName = props.context.formatting.formatTime(dayjs(result.entityData[attribute]).toDate(), 1);
+                    break;
+                default:
+                    primaryName = result.entityData[attribute];
+            };
+            return primaryName;
         }
     }
 
@@ -139,11 +165,10 @@ export const Lookup = (props: ILookup) => {
             if (selectedItems?.find(x => x.key === result.id)) {
                 continue;
             }
-            const metadata = await entities.find(x => x.entityName === result.entityType)?.metadata;
             suggestions.push({
                 key: result.id,
                 text: result.name,
-                secondaryText: getSecondaryName(result, metadata),
+                secondaryText: await getSecondaryName(result),
                 'data-entity': result.entityType
             })
         }
