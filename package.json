@@ -92,7 +92,7 @@
   },
   "peerDependencies": {
     "@fluentui/react": "<=8.121.5",
-    "@talxis/react-components": "/Users/dominikbrych/Desktop/NETWORG/INT0015-SharedComponents",
+    "@talxis/react-components": "^1.2505.2",
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2"
   }

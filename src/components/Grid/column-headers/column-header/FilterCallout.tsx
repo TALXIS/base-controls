@@ -20,9 +20,11 @@ export const FilterCallout = (props: IFilterCallout) => {
     const labels = grid.getLabels();
 
     const onColumnFilterSaved = (filter: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => {
-        onDismiss();
-        dataset.filtering.setFilter(filter);
-        dataset.refresh();
+        dataset.executeWithUnsavedChangesBlocker(() => {
+            onDismiss();
+            dataset.filtering.setFilter(filter);
+            dataset.refresh();
+        })
     }
 
     useEffect(() => {

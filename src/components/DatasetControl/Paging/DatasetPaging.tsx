@@ -23,7 +23,7 @@ export const DatasetPaging = (props: IDatasetPaging) => {
                 text: size,
                 checked: parseInt(size) === paging.pageSize,
                 className: styles.pageSizeOption,
-                onClick: () => paging.setPageSize(parseInt(size))
+                onClick: () => dataset.executeWithUnsavedChangesBlocker(() => paging.setPageSize(parseInt(size)))
             }
         })
     }
@@ -58,13 +58,13 @@ export const DatasetPaging = (props: IDatasetPaging) => {
                         iconOnly: true,
                         iconProps: { iconName: 'DoubleChevronLeft' },
                         disabled: !paging.hasPreviousPage || dataset.loading,
-                        onClick: () => paging.reset()
+                        onClick: () => dataset.executeWithUnsavedChangesBlocker(() => paging.reset())
                     }, {
                         key: 'PreviousPage',
                         iconOnly: true,
                         iconProps: { iconName: 'Back' },
                         disabled: !paging.hasPreviousPage || dataset.loading,
-                        onClick: () => paging.loadPreviousPage()
+                        onClick: () => dataset.executeWithUnsavedChangesBlocker(() => paging.loadPreviousPage())
                     }, {
                         key: 'CurrentPage',
                         text: `${labels['paging-page']()} ${paging.pageNumber.toString()}`,
@@ -75,7 +75,7 @@ export const DatasetPaging = (props: IDatasetPaging) => {
                         iconOnly: true,
                         iconProps: { iconName: 'Forward' },
                         disabled: !paging.hasNextPage || dataset.loading,
-                        onClick: () => paging.loadNextPage()
+                        onClick: () => dataset.executeWithUnsavedChangesBlocker(() => paging.loadNextPage())
                     }]}
                 />
             }

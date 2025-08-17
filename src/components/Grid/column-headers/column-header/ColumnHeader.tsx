@@ -1,11 +1,13 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CommandBarButton, Icon, Label, useTheme } from '@fluentui/react';
 import React from 'react';
 import { useGridInstance } from '../../grid/useGridInstance';
 import { IGridColumn } from '../../grid/GridModel';
-import { getColumnHeaderStyles } from './styles';
 import { ColumnHeaderContextualMenu, IColumnHeaderContextualMenuProps } from './ColumnHeaderContextualMenu';
 import { FilterCallout } from './FilterCallout';
+import { NestedControlRenderer } from '../../../NestedControlRenderer';
+import { useRerender } from '@talxis/react-components';
+import { useAgGridInstance } from '../../grid/ag-grid/useAgGridInstance';
 
 export interface IColumnHeader {
     baseColumn: IGridColumn;
@@ -13,15 +15,23 @@ export interface IColumnHeader {
 
 export const ColumnHeader = (props: IColumnHeader) => {
     const grid = useGridInstance();
-    const column = props.baseColumn;
+    const agGrid = useAgGridInstance();
+    const column = grid.getGridColumnByName(props.baseColumn.name);
     const [columnHeaderContextualMenuProps, setColumnHeaderContextualMenuProps] = useState<IColumnHeaderContextualMenuProps | null>(null);
     const [filterCalloutProps, setFilterCalloutProps] = useState<any | null>(null);
-    const theme = useTheme();
-    const columnHeaderStyles = useMemo(() => getColumnHeaderStyles(theme, column.alignment), [theme, column.alignment])
-    const buttonRef = useRef<HTMLElement>(null);
+    const buttonRef = useRef<HTMLDivElement>(null);
+    const aggregation = grid.getAggregation();
+    const rerender = useRerender();
+
+    useEffect(() => {
+        agGrid.addEventListener('onRefresh', rerender)
+        return () => {
+            agGrid.removeEventListener('onRefresh', rerender);
+        }
+    })
 
     const onClick = () => {
-        if ((column.isFilterable === false && column.disableSorting && !column.canBeAggregated)) {
+        if ((!column.isFilterable && column.disableSorting && !column.canBeAggregated)) {
             return;
         }
         setColumnHeaderContextualMenuProps({
@@ -41,10 +51,10 @@ export const ColumnHeader = (props: IColumnHeader) => {
         });
     }
     const preventDismissOnEvent = (e: Event | React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element> | React.FocusEvent<Element, Element>) => {
-        if(e.type !== 'scroll') {
+        if (e.type !== 'scroll') {
             return false;
         }
-        const target = e.target  as HTMLElement;
+        const target = e.target as HTMLElement;
         //check for vertical scroll
         if (target?.classList?.contains('ag-body-viewport') || target?.classList?.contains('ag-body-vertical-scroll-viewport')) {
             return true;
@@ -55,33 +65,39 @@ export const ColumnHeader = (props: IColumnHeader) => {
         }
         return false;
     }
-
     return (
         <>
-            <CommandBarButton
-                elementRef={buttonRef}
-                title={column.displayName}
-                className={columnHeaderStyles.root}
-                onClick={onClick}
-            >
-                {false && !column.isEditable && column.type !== 'action' && <Icon className={columnHeaderStyles.editIcon} iconName='Uneditable' />}
-                <div className={columnHeaderStyles.labelWrapper}>
-                    <Label className={columnHeaderStyles.label}>{column.displayName}</Label>
-                    {column.isRequired &&
-                        <span className={columnHeaderStyles.requiredSymbol}>*</span>
+            <div ref={buttonRef} onClick={onClick}>
+            <NestedControlRenderer
+                context={grid.getPcfContext()}
+                parameters={{
+                    ControlName: 'GridColumnHeader',
+                    Bindings: {
+                        Column: {
+                            isStatic: true,
+                            value: column,
+                            type: 'Object',
+                        },
+                        Dataset: {
+                            value: grid.getDataset(),
+                            isStatic: true,
+                            type: 'Object',
+                        },
+                        EnableEditing: {
+                            isStatic: true,
+                            value: grid.isEditingEnabled(),
+                            type: 'TwoOptions'
+                        }
                     }
-                </div>
-                <div className={columnHeaderStyles.filterSortIcons}>
-                    {column.isSorted && <Icon iconName={column.isSortedDescending ? 'SortDown' : 'SortUp'} />}
-                    {column.isFiltered && <Icon iconName='Filter' />}
-                </div>
-            </CommandBarButton>
+                }}
+            />
+            </div>
             {columnHeaderContextualMenuProps &&
                 <ColumnHeaderContextualMenu
                     target={buttonRef}
                     calloutProps={{
                         preventDismissOnEvent: preventDismissOnEvent
-                    }} 
+                    }}
                     {...columnHeaderContextualMenuProps} />
             }
             {filterCalloutProps &&

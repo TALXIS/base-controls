@@ -6,7 +6,6 @@ interface ITranslations {
 
 interface IDependencies {
     onGetDataProvider: () => IDataProvider;
-    translations: ITranslations;
 }
 
 interface IEvents {
@@ -15,22 +14,24 @@ interface IEvents {
 
 export class Aggregation extends EventEmitter<IEvents> {
     private _aggregationDataProvider: IDataProvider;
-    private _translations: ITranslations;
     private _onGetDataProvider: () => IDataProvider;
 
-    constructor({ onGetDataProvider, translations }: IDependencies) {
+    constructor({ onGetDataProvider }: IDependencies) {
         super();
         this._onGetDataProvider = onGetDataProvider;
-        this._translations = translations;
         this._aggregationDataProvider = this._dataProvider.getChildDataProvider();
         this._aggregationDataProvider.enableAggregationWithoutGrouping(true);
         this._dataProvider.addEventListener('onNewDataLoaded', () => this.refresh());
         this._aggregationDataProvider.addEventListener('onLoading', () => this.dispatchEvent('onStateUpdated'));
+        this._aggregationDataProvider.addEventListener('onError', () => this.dispatchEvent('onStateUpdated'));
         //run on init since the first onNewDataLoaded event will not be triggered
         //because initialization of the class happens after the first data is loaded
         this.refresh();
     }
     public getAggregationRecord(): IRecord[] {
+        if(this._aggregationDataProvider.isError()) {
+            return [this._getDummyErrorRecord()];
+        }
         if (this._aggregationDataProvider.aggregation.getAggregations().length === 0 || this._dataProvider.getSortedRecordIds().length === 0) {
             return [];
         }
@@ -52,7 +53,7 @@ export class Aggregation extends EventEmitter<IEvents> {
         this._dataProvider.aggregation.removeAggregation(alias);
     }
 
-    public refresh() {
+    public async refresh() {
         if (!this._isMainProviderAggregated()) {
             this._aggregationDataProvider.aggregation.clear();
             this.dispatchEvent('onStateUpdated');
@@ -84,7 +85,7 @@ export class Aggregation extends EventEmitter<IEvents> {
                 })()
             }
         }));
-        this._aggregationDataProvider.refresh();
+        await this._aggregationDataProvider.refresh();
     }
 
     private _isMainProviderAggregated(): boolean {
@@ -92,14 +93,13 @@ export class Aggregation extends EventEmitter<IEvents> {
         return this._dataProvider.getColumns().some(col => col.aggregation?.aggregationFunction);
     }
 
-    private _getDummyLoadingRecord(): IRecord {
+    private _getDummyRecord(): IRecord {
         const data: { [key: string]: any } = {};
-        data.id = 'loading';
+        data.id = 'dummy-id';
         this._dataProvider.getColumns().map(col => {
             data[col.name] = null;
         })
-        const provider = new MemoryDataProvider([data], { PrimaryIdAttribute: "id" });
-        //@ts-ignore
+        const provider = new MemoryDataProvider([data], { PrimaryIdAttribute: "dummy-id" });
         provider.enableAggregationWithoutGrouping(true);
         provider.setColumns([...this._dataProvider.getColumns(), {
             name: 'id',
@@ -114,21 +114,22 @@ export class Aggregation extends EventEmitter<IEvents> {
         })
         provider.refreshSync();
         const dummyRecord = provider.getRecords()[0];
-        this._dataProvider.getColumns().map(col => {
-            dummyRecord.expressions.ui.setLoadingExpression(col.name, () => true);
-        });
         return dummyRecord;
     }
 
-    private _onError(errorMessage: string, details?: any) {
-        let errorText = errorMessage;
-        const errorCode = details?.errorCode;
-        if (errorCode === 2147750198 || errorCode === -2147164125) {
-            errorText = this._translations.calculationLimitExceededError;
-        }
-        this._dataProvider.setError(true, errorText);
-        this.dispatchEvent('onStateUpdated')
+    private _getDummyLoadingRecord(): IRecord {
+        const record = this._getDummyRecord();
+        record.getDataProvider().getColumns().map(col => {
+            record.expressions.ui.setLoadingExpression(col.name, () => true);
+        })
+        return record;
     }
+    private _getDummyErrorRecord(): IRecord {
+        const record = this._getDummyRecord();
+        record.getDataProvider().setError(true, this._aggregationDataProvider.getErrorMessage());
+        return record;
+    }
+
     private get _dataProvider(): IDataProvider {
         return this._onGetDataProvider();
     }

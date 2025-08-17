@@ -17,6 +17,7 @@ import ReactDOM from 'react-dom';
 import { useControlLabels } from '../../hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
 import { GridCellRenderer } from '../GridGroupCellRenderer/GridGroupCellRenderer';
+import { GridColumnHeader } from '../GridColumnHeader/GridColumnHeader';
 
 interface IRef {
     control: NestedControl | null;
@@ -104,6 +105,9 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 return Duration;
             case 'GridCellRenderer':
                 return GridCellRenderer;
+            case 'GridColumnHeader': {
+                return GridColumnHeader;
+            }
             default:
                 return GridCellRenderer;
         }

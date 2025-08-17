@@ -1,13 +1,15 @@
 import { mergeStyleSets } from "@fluentui/react"
 
-export const getFullRowLoadingStyles = () => {
+export const getRibbonStyles = () => {
     return mergeStyleSets({
-        fullRowLoadingRoot: {
+        ribbonRoot: {
+            flex: 1
+        },
+        shimmerRoot: {
             width: '100%',
-            height: '100%'
         },
         shimmerWrapper: {
-            height: '100%'
+            height: 44
         }
-    });
+    })
 }

@@ -1,4 +1,4 @@
-import { IButtonProps, IMessageBarProps, ThemeProviderProps } from "@fluentui/react";
+import { IButtonProps, IMessageBarProps, IShimmerProps, ThemeProviderProps } from "@fluentui/react";
 import { ITranslation } from "../../hooks";
 import { IControl } from "../../interfaces";
 import { IGridOutputs, IGridParameters } from "../Grid";
@@ -6,7 +6,6 @@ import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
 import { ICommandBarProps, ITextFieldProps } from "@talxis/react-components";
 import React from "react";
-import { ICommand } from "@talxis/client-libraries";
 
 
 export interface IDatasetControl extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps> {
@@ -56,7 +55,12 @@ export interface IHeaderProps {
 export interface IRibbonQuickFindWrapperProps {
     ribbonQuickFindContainerProps: React.HTMLAttributes<HTMLDivElement>;
     onRenderQuickFind: (props: IQuickFindProps, defaultRender: (props: IQuickFindProps) => React.ReactElement) => React.ReactElement;
-    onRenderRibbon: (props: ICommandBarProps, defaultRender: (props: ICommandBarProps) => React.ReactElement) => React.ReactElement;
+    onRenderRibbon: (props: IRibbonProps, defaultRender: (props: IRibbonProps) => React.ReactElement) => React.ReactElement;
+}
+
+interface IRibbonProps {
+    onRenderCommandBar: (props: ICommandBarProps, defaultRender: (props: ICommandBarProps) => React.ReactElement) => React.ReactElement;
+    onRenderLoading: (props: IShimmerProps, defaultRender: (props: IShimmerProps) => React.ReactElement) => React.ReactElement;
 }
 
 interface IErrorMessageBarProps {

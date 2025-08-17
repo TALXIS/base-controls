@@ -1,8 +1,22 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
 
-export const getCellStyles = () => {
+export const getCellStyles = (theme: ITheme) => {
     return mergeStyleSets({
+        autoSaveBtnRoot: {
+            width: '100%',
+            height: '100%',
+        },
+        autoSaveBtnSuccess: {
+            color: theme.semanticColors.successIcon,
+        },
+        autoSafeBtnError: {
+            color: theme.semanticColors.errorIcon,
+        },
+        autoSafeBtnTooltipRoot: {
+            width: '100%',
+            height: '100%'
+        },
         cellRoot: {
             height: '100% !important',
             width: '100%',

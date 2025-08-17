@@ -2,44 +2,6 @@ import { IAddControlNotificationOptions, ICustomColumnComponent, ICustomColumnFo
 import deepEqual from 'fast-deep-equal/es6';
 import { ICellValues } from "./ag-grid/AgGridModel";
 
-export class KeyCreator {
-    public createKey(values: ICellValues): string {
-        const keyParts: (string | boolean)[] = [];
-        keyParts.push(values.value);
-        keyParts.push(values.aggregatedValue);
-        keyParts.push(values.columnAlignment ?? '');
-        keyParts.push(values.saving);
-        keyParts.push(values.error);
-        keyParts.push(values.errorMessage);
-        keyParts.push(values.editable);
-        keyParts.push(values.loading);
-        keyParts.push(values.disabled);
-        keyParts.push(JSON.stringify(this._getParameters(values.parameters)));
-        keyParts.push(JSON.stringify(values.customFormatting));
-        keyParts.push(values.notifications.map(notification => notification.uniqueId).join('_'));
-        keyParts.push(JSON.stringify(values.customComponent));
-        return keyParts.join('_');
-
-    }
-
-    private _getParameters(params: any) {
-        if (!params) return {};
-        const { Dataset, Record, Column, ...filteredParams } = params;
-        let paramsToCompare: any = {};
-        Object.entries(filteredParams).map(([key, parameter]: any) => {
-            paramsToCompare[key] = { ...parameter };
-            delete paramsToCompare[key].attributes;
-            Object.entries(paramsToCompare[key]).map(([attributePropKey, value]) => {
-                if (typeof value === 'function') {
-                    delete paramsToCompare[key][attributePropKey];
-                }
-            })
-
-        })
-        return paramsToCompare;
-    }
-}
-
 export class Comparator {
 
     public isEqual(oldValues?: ICellValues, newValues?: ICellValues) {

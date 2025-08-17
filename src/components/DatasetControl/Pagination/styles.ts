@@ -1,12 +1,17 @@
-import { mergeStyleSets } from "@fluentui/react"
+import { ITheme, mergeStyleSets } from "@fluentui/react"
 
-export const getPaginationStyles = () => {
+export const getPaginationStyles = (theme: ITheme) => {
     return mergeStyleSets({
         paginationRoot: {
             display: 'flex'
         },
         commandBarRoot: {
             flexGrow: 1
-        }
+        },
+        currentPageBtn: {
+            '.ms-Button-label': {
+                color: theme.semanticColors.bodyText
+            }
+        },
     })
 }

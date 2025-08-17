@@ -19,9 +19,8 @@ export const RecordSelectionCheckBox = () => {
     const rerender = useRerender();
 
     useMemo(() => {
-        dataset.addEventListener('onRecordsSelected', () => {
-            rerender();
-        })
+        dataset.addEventListener('onRecordsSelected', () => rerender());
+        dataset.addEventListener('onNewDataLoaded', () => rerender());
     }, []);
 
     const getCheckBoxState = () => {

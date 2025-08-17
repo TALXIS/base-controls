@@ -10,6 +10,7 @@ import { getJustifyContent } from "../../../grid/styles";
 import { useGridInstance } from "../../../grid/useGridInstance";
 import { ICellProps } from "../Cell";
 import { getCellContentStyles } from "./styles";
+import { useAgGridInstance } from "../../../grid/ag-grid/useAgGridInstance";
 
 const client = new Client();
 
@@ -26,6 +27,7 @@ export const CellContent = (props: ICellContentProps) => {
     columnRef.current = props.baseColumn;
     valueRef.current = props.value
     const grid = useGridInstance();
+    const agGrid = useAgGridInstance();
     const record = props.data;
     const node = props.node;
     const themeRef = React.useRef(useTheme());
@@ -126,7 +128,7 @@ export const CellContent = (props: ICellContentProps) => {
     }
 
     const onNotifyOutputChanged = (outputs: any) => {
-        record.setValue(columnRef.current.name, outputs.value);
+        agGrid.onNotifyOutputChanged(record, columnRef.current.name, outputs.value, valueRef.current.parameters)
     }
     const debouncedNotifyOutputChanged = useDebouncedCallback((outputs) => onNotifyOutputChanged(outputs), 100);
 

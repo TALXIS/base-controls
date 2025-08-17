@@ -1,5 +1,5 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyles, Icon, SpinnerSize, CommandBarButton } from "@fluentui/react";
+import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyles, Icon, SpinnerSize, CommandBarButton, TooltipHost, MessageBar, MessageBarType } from "@fluentui/react";
 import { IRecord, Constants } from "@talxis/client-libraries";
 import { useThemeGenerator, getClassNames, useRerender, Spinner } from "@talxis/react-components";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -15,6 +15,7 @@ import { useAgGridInstance } from "../../grid/ag-grid/useAgGridInstance";
 import ReactDOM from "react-dom";
 import { GridContext } from "../../grid/GridContext";
 import { AgGridContext } from "../../grid/ag-grid/AgGridContext";
+import { CheckmarkCircle24Filled, ErrorCircle24Filled } from '@fluentui/react-icons';
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
@@ -44,23 +45,16 @@ export const Cell = (props: ICellProps) => {
         }
     }, []);
 
-    const shouldAutoSaveRecord = () => {
-        return grid.isAutoSaveEnabled() && record.isDirty() && record.isValid();
-    }
-
-    const onFieldValueChanged = useCallback((columnName: string) => {
+    const onFieldValueChanged = useCallback(async (columnName: string) => {
         if (columnName !== column.name) {
             return;
-        }
-        if (shouldAutoSaveRecord()) {
-            record.save();
         }
         props.api.refreshCells({
             rowNodes: [node]
         })
-        if (props.isCellEditor) {
+        setTimeout(() => {
             rerender();
-        }
+        }, 0);
     }, []);
 
     useEffect(() => {
@@ -94,10 +88,10 @@ export const Cell = (props: ICellProps) => {
 }
 
 const CellContentWrapper = (props: ICellProps) => {
-    const styles = useMemo(() => getCellStyles(), [])
     const { value: cellData, record, baseColumn, node } = props;
     const { customFormatting } = cellData;
     const cellTheme = useThemeGenerator(customFormatting.primaryColor, customFormatting.backgroundColor, customFormatting.textColor, customFormatting.themeOverride);
+    const styles = useMemo(() => getCellStyles(cellTheme), [cellTheme])
     const agGrid = useAgGridInstance();
     const grid = useGridInstance();
     const checkBoxRef = useRef<HTMLDivElement>(null);
@@ -105,6 +99,7 @@ const CellContentWrapper = (props: ICellProps) => {
     const recordSelectionState = agGrid.getRecordSelectionState(node);
     const isRecordSelectionDisabled = grid.isRecordSelectionDisabled(record);
     const [savingResult, setSavingResult] = useState<'success' | 'error' | null>(null);
+    const rerender = useRerender();
 
     const onCheckBoxClick = useCallback(e => {
         if (!isRecordSelectionDisabled) {
@@ -114,16 +109,29 @@ const CellContentWrapper = (props: ICellProps) => {
         }
     }, []);
 
+
     const renderContent = () => {
         if (baseColumn.name === CHECKBOX_COLUMN_KEY && record.getDataProvider().getSummarizationType() !== 'aggregation') {
-            if(record.isSaving()) {
+            if (record.isSaving()) {
                 return <Spinner size={SpinnerSize.xSmall} />
             }
             if (savingResult) {
-                return <IconButton
-                    iconProps={{
-                        iconName: savingResult === 'success' ? 'Accept' : 'Error'
-                    }} />
+                return (
+                    <IconButton
+                        styles={{
+                            root: styles.autoSaveBtnRoot,
+                        }}
+                        title={savingResult === 'success' ? grid.getLabels()['saving-autosave-success']() : grid.getLabels()['saving-autosave-error']()}
+                        onRenderIcon={() => {
+                            if (savingResult === 'success') {
+                                return <CheckmarkCircle24Filled className={styles.autoSaveBtnSuccess} />
+                            }
+                            else {
+                                return <ErrorCircle24Filled className={styles.autoSafeBtnError} />
+                            }
+                        }}
+                    />
+                )
             }
             return (
                 <div
@@ -144,21 +152,22 @@ const CellContentWrapper = (props: ICellProps) => {
         }
     }
 
-    const onSaved = useCallback((result) => {
+    const onAfterSaved = useCallback((result) => {
         if (result) {
             setSavingResult('success');
+            setTimeout(() => {
+                setSavingResult(null);
+            }, 5000);
         }
         else {
             setSavingResult('error');
         }
-        setTimeout(() => {
-            setSavingResult(null);
-        }, 5000);
     }, []);
 
 
     useEffect(() => {
-        record.addEventListener('onSaved', onSaved)
+        record.addEventListener('onAfterSaved', onAfterSaved);
+        record.addEventListener('onBeforeSaved', rerender)
         //this needs to be done like this because stopPropagation in React onClick
         //does not stop the event from propagating to the grid (cause by synthentic events)
         //https://stackoverflow.com/questions/24415631/reactjs-syntheticevent-stoppropagation-only-works-with-react-events
@@ -166,7 +175,8 @@ const CellContentWrapper = (props: ICellProps) => {
             checkBoxRef.current.addEventListener('click', onCheckBoxClick)
         }
         return () => {
-            record.removeEventListener('onSaved', onSaved);
+            record.removeEventListener('onAfterSaved', onAfterSaved);
+            record.removeEventListener('onBeforeSaved', rerender);
         }
     }, []);
 

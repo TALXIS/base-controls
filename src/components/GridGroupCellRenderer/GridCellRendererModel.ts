@@ -170,7 +170,7 @@ export class GridCellRendererModel {
             return null;
         }
         //value is equal to aggregated value, so we don't show it
-        else if (this.getFormattedValue().value === aggregatedFormattedValue) {
+        else if(this.getValue() === this._getProps().parameters.AggregatedValue?.raw) {
             return null;
         }
         else {

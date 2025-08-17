@@ -45,7 +45,7 @@ export const DatasetControl = (props: IDatasetControl) => {
   useEffect(() => {
     dataset.addEventListener('onNewDataLoaded', () => rerender());
     dataset.addEventListener('onRenderRequested', () => rerender());
-    dataset.addEventListener('onLoading', () => rerender());
+    dataset.addEventListener('onBeforeNewDataLoaded', () => rerender());
   }, []);
 
   return <ModelContext.Provider value={model}>

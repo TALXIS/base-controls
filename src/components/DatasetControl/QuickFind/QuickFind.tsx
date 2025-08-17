@@ -12,9 +12,11 @@ export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperPro
   const styles = useMemo(() => getQuickFindStyles(), []);
 
   const onSearch = (query?: string) => {
-    setQuery(query ?? '');
-    dataset.setSearchQuery?.(query ?? '');
-    dataset.refresh();
+    dataset.executeWithUnsavedChangesBlocker(() => {
+      setQuery(query ?? '');
+      dataset.setSearchQuery?.(query ?? '');
+      dataset.refresh();
+    })
   }
 
   const onKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -36,6 +38,7 @@ export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperPro
         root: styles.textFieldRoot,
         fieldGroup: styles.fieldGroup
       },
+      disabled: dataset.loading,
       onChange: (e, newValue) => setQuery(newValue ?? ''),
       onKeyUp: onKeyUp,
       ...(query ? {

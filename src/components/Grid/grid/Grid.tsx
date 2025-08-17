@@ -42,11 +42,6 @@ export const Grid = (props: IGrid) => {
         getContainer: () => containerRef.current!
     }), []);
 
-    const debouncedRefresh = useDebouncedCallback(() => agGrid.refresh(), 0);
-    if (gridReadyRef.current) {
-        debouncedRefresh();
-    }
-
 
     const onGridReady = (event: GridReadyEvent<IRecord, any>) => {
         agGrid.init(event.api);

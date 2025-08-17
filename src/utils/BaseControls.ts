@@ -14,6 +14,7 @@ export type BaseControl =
     | 'Grid'
     | 'DatasetControl'
     | 'NestedControl'
+    | 'GridColumnHeader'
 
 export class BaseControls {
     public static get TextField(): 'TextField' {
@@ -50,6 +51,9 @@ export class BaseControls {
     
     public static get TwoOptions(): 'TwoOptions' {
         return 'TwoOptions';
+    }
+    public static get GridColumnHeader(): 'GridColumnHeader' {
+        return 'GridColumnHeader';
     }
 
     public static GetControlNameForDataType(dataType: DataType) {
@@ -96,7 +100,8 @@ export class BaseControls {
             BaseControls.TwoOptions,
             BaseControls.Duration,
             BaseControls.TextField,
-            BaseControls.GridCellRenderer
+            BaseControls.GridCellRenderer,
+            BaseControls.GridColumnHeader,
         ]
     }
     public static IsBaseControl(name: string) {

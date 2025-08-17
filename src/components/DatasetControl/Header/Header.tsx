@@ -3,13 +3,13 @@ import { IComponentProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { useEffect, useMemo } from "react";
 import { getHeaderStyles } from "./styles";
-import { CommandBar, useRerender } from "@talxis/react-components";
+import { useRerender } from "@talxis/react-components";
 import { QuickFind } from "../QuickFind/QuickFind";
+import { Ribbon } from "../../Ribbon/Ribbon";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
     const model = useModel();
     const dataset = model.getDataset();
-    const labels = model.getLabels();
     const rerender = useRerender();
 
     const styles = useMemo(() => getHeaderStyles(), []);
@@ -23,22 +23,19 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
         switch (true) {
             case model.isQuickFindVisible():
             case dataset.error:
+            case model.isRibbonVisible():
             case dataset.isDirty(): {
                 return true;
             }
             default: {
-               return false;
+                return false;
             }
         }
     }
 
-    const saveChanges = async () => {
-        await dataset.save();
-        dataset.refresh();
-    }
-
     useEffect(() => {
-        dataset.addEventListener('onRecordColumnValueChanged', () => rerender());
+        model.addEventListener('onRecordCommandsLoaded', () => rerender());
+        dataset.addEventListener('onLoading', () => rerender());
     }, []);
 
     return props.onRenderHeader({
@@ -63,10 +60,33 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                 return <div {...props.ribbonQuickFindContainerProps}>
                     {model.isRibbonVisible() &&
                         props.onRenderRibbon({
-                            className: styles.ribbon,
-                            items: []
+                            onRenderCommandBar: (props, defaultRender) => defaultRender(props),
+                            onRenderLoading: (props, defaultRender) => defaultRender(props),
                         }, (props) => {
-                            return <CommandBar {...props} />
+                            return <Ribbon
+                                context={{
+                                    ...model.getPcfContext(),
+                                    mode: {
+                                        ...model.getPcfContext().mode,
+                                        isControlDisabled: dataset.loading
+                                    }
+                                }}
+                                parameters={{
+                                    Commands: {
+                                        raw: model.retrieveRecordCommands(),
+                                    },
+                                    Loading: {
+                                        raw: !model.areCommandsLoaded()
+                                    }
+                                }}
+                                onOverrideComponentProps={(ribbonProps) => {
+                                    return {
+                                        ...ribbonProps,
+                                        onRenderLoading: (shimmerProps, defaultRender) => props.onRenderLoading(shimmerProps, (props) => defaultRender(props)),
+                                        onRenderCommandBar: (commandBarProps, defaultRender) => props.onRenderCommandBar(commandBarProps, (props) => defaultRender(props)),
+                                    }
+                                }}
+                            />
                         })
                     }
                     {model.isQuickFindVisible() &&
@@ -88,7 +108,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                     </MessageBar>
                 })
             }
-            {model.isUnsavedChangesMessageBarVisible() &&
+            {/* {model.isUnsavedChangesMessageBarVisible() &&
                 props.onRenderUnsavedChangesMessageBar({
                     messageBarProps: {
                         messageBarType: dataset.isValid() ? MessageBarType.info : MessageBarType.error,
@@ -134,7 +154,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                         }} />
                     </MessageBar>
                 })
-            }
+            } */}
         </div>
     })
 }

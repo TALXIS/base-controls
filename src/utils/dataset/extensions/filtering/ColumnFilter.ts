@@ -66,7 +66,7 @@ export class ColumnFilter extends DataProviderExtension {
             const attributeName = this._undecorateAttributeName(cond.attributeName, cond.conditionOperator);
             const alias = cond.entityAliasName ? `${cond.entityAliasName}.${attributeName}` : attributeName;
             const ConditionClass = this._getConditionClass();
-            const id = crypto.randomUUID();
+            const id = `${alias}_${cond.conditionOperator}_${Array.isArray(cond.value) ? cond.value.join('_') : cond.value}`;
             if (alias === this._column.name) {
                 const condition = new ConditionClass({ id, column: this._column, condition: cond });
                 this._conditions.set(id, condition);

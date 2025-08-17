@@ -17,6 +17,17 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
     const labels = grid.getLabels();
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
     const { column, onDismiss } = { ...props };
+    const aggregationFunctionList = (() => {
+        return column.metadata!.SupportedAggregations!.filter(supportedAggr => {
+            //these aggregations do not make sense during grouping for non-grouped columns
+            if (dataset.grouping.getGroupBys().length > 0 && !column.grouping?.isGrouped) {
+                return supportedAggr !== 'count' && supportedAggr !== 'countcolumn';
+            }
+            else {
+                return true;
+            }
+        })
+    })();
 
     const getItems = (): IContextualMenuItem[] => {
         const items: IContextualMenuItem[] = [
@@ -33,7 +44,7 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                 key: 'sort_desc',
                 checked: column.isSorted && column.isSortedDescending,
                 disabled: column.disableSorting || column.dataType === DataTypes.MultiSelectOptionSet,
-                text:  grid.getColumnSortingLabel(column.name, true),
+                text: grid.getColumnSortingLabel(column.name, true),
                 className: styles.item,
                 onRenderIcon: () => <ArrowSortDown24Regular />,
                 iconProps: {},
@@ -62,7 +73,7 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
                     onClick: () => grid.toggleColumnGroup(column.name)
                 }
             ] : []),
-            ...(column.canBeAggregated ? [
+            ...(column.canBeAggregated && aggregationFunctionList.length > 0 ? [
                 {
                     key: 'divider-aggregation',
                     itemType: ContextualMenuItemType.Divider
@@ -83,15 +94,7 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
 
                                 }
                             ] : [],
-                            ...column.metadata!.SupportedAggregations!.filter(supportedAggr => {
-                                //these aggregations do not make sense during grouping for non-grouped columns
-                                if (dataset.grouping.getGroupBys().length > 0 && !column.grouping?.isGrouped) {
-                                    return supportedAggr !== 'count' && supportedAggr !== 'countcolumn';
-                                }
-                                else {
-                                    return true;
-                                }
-                            }).map(aggregationFunction => {
+                            ...aggregationFunctionList.map(aggregationFunction => {
                                 return {
                                     key: aggregationFunction,
                                     className: styles.item,

@@ -4,6 +4,7 @@ import { getFullRowLoadingStyles } from "./styles"
 import { ILoadingCellRendererParams } from "@ag-grid-community/core"
 import { useGridInstance } from "../../grid/useGridInstance"
 import { IRecord } from "@talxis/client-libraries"
+import { FullWidthCellRendererError } from "../../errors/FullWidthCellRendererError/FullWidthCellRendererError"
 
 export const FullRowLoading = (props: ILoadingCellRendererParams) => {
     const styles = useMemo(() => getFullRowLoadingStyles(), []);
@@ -28,12 +29,7 @@ export const FullRowLoading = (props: ILoadingCellRendererParams) => {
         }} />
     }
     else {
-        return <MessageBar
-            styles={{
-                root: styles.errorRoot,
-            }}
-            messageBarType={MessageBarType.error}>
-            {getDataProvider().getErrorMessage()}
-        </MessageBar>
+        return <FullWidthCellRendererError 
+            errorMessage={getDataProvider().getErrorMessage()} />
     }
 }

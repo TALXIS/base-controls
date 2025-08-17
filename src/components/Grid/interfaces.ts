@@ -29,10 +29,11 @@ export interface IGridParameters extends IParameters {
     EnableChangeEditor?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableMultiEdit?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableZebra?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableGrouping?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableAggregation?: Omit<ITwoOptionsProperty, 'attributes'>;
     RowHeight?: Omit<IWholeNumberProperty, 'attributes'>;
     EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
-    AutoSave?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableAutoSave?: Omit<ITwoOptionsProperty, 'attributes'>;
     DefaultExpandedGroupLevel?: Omit<IWholeNumberProperty, 'attributes'>;
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
