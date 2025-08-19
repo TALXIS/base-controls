@@ -54,7 +54,7 @@ export class DatasetControlModel extends EventEmitter<IEvents> {
         return this._getParameters().EnableQuickFind?.raw ?? false;
     }
     public isAutoSaveEnabled(): boolean {
-        return this._getParameters().AutoSave?.raw === true;
+        return this._getParameters().EnableAutoSave?.raw === true;
     }
     public isRibbonVisible(): boolean {
         return true;

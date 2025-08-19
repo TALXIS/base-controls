@@ -56,6 +56,7 @@ export const RecordSelectionCheckBox = () => {
                     styles={{
                         checkbox: styles.checkbox
                     }}
+                    disabled={dataset.grouping.getGroupBys().length > 0}
                     indeterminate={checkboxState === 'intermediate'}
                     onChange={(e, checked) => onChange(checked)} />
             }

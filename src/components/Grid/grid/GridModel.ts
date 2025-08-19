@@ -131,6 +131,7 @@ export class GridModel {
         return this.getParameters().SelectableRows!.raw;
     }
     public getControl(column: IColumn, record: IRecord, editing: boolean): Required<ICustomColumnControl> {
+        editing = record.getSummarizationType() === 'aggregation' ? false : editing;
         //file and image currently do not support editor, always force cell renderers
         switch (column.dataType) {
             case 'File':
@@ -218,13 +219,15 @@ export class GridModel {
             type: aggregationInfo.aggregatedColumn?.dataType ?? DataTypes.Decimal
         }
         parameters.EnableNavigation = {
-            //TODO: enable navigation for grouped lookups
             raw: (() => {
                 if (!this.isNavigationEnabled()) {
                     return false;
                 }
                 if (summarizationType === 'aggregation') {
                     return false;
+                }
+                if (column.isPrimary) {
+                    return true;
                 }
                 else if (summarizationType === 'grouping') {
                     switch (column.dataType) {
@@ -318,14 +321,7 @@ export class GridModel {
     }
 
     public isColumnExpandable(record: IRecord, column: IColumn): boolean {
-        const grouping = record.getDataProvider().grouping.getGroupBy(column.grouping?.alias!);
-        const aggregation = record.getDataProvider().aggregation.getAggregation(column.aggregation?.alias!);
-        if (grouping && aggregation) {
-            return this.getRecordValue(record, aggregation.alias) != null;
-        }
-        else {
-            return false;
-        }
+        return !!record.getDataProvider().grouping.getGroupBy(column.grouping?.alias!);
     }
 
     public getFieldFormatting(record: IRecord, columnName: string): Required<ICustomColumnFormatting> {
@@ -421,6 +417,7 @@ export class GridModel {
             }
         }
         else {
+            this._cachedColumns = gridColumns;
             return {
                 haveColumnsOrderBeenUpdated: false,
                 columns: this._cachedColumns
@@ -460,8 +457,16 @@ export class GridModel {
     }
     //returns record value in a form that is compatible with PCF typings
     public getControlValue(record: IRecord, column: IColumn | string): any {
-        column = typeof column === 'string' ? record.getDataProvider().getColumnsMap().get(column)! : column;
+        const columnName = typeof column === 'string' ? column : column.name;
+        column = record.getDataProvider().getColumnsMap().get(columnName)!;
+        //can be the aggregated value
         let value = this.getRecordValue(record, column);
+        const aggregationColumn = record.getDataProvider().getColumnsMap().get(column.aggregation?.alias!);
+        const groupByColumn = record.getDataProvider().grouping.getGroupBy(column.grouping?.alias!);
+        // case for total row => the control should work with AggregatedValue parameter 
+        if (aggregationColumn && !groupByColumn) {
+            value = null;
+        }
         switch (column.dataType) {
             //getValue always returns string for TwoOptions
             case 'TwoOptions': {
@@ -512,9 +517,7 @@ export class GridModel {
             if (col.name === currentGroupedColumn.name) {
                 return {
                     ...col,
-                    isVirtual: true,
-                    //this is so the cell renderer will not try to render empty value
-                    type: 'action'
+                    isVirtual: true
                 }
             }
             else {
@@ -568,68 +571,54 @@ export class GridModel {
 
     public isRecordSelectionDisabled(record: IRecord): boolean {
         const dataProvider = record.getDataProvider();
-        if (dataProvider.getSummarizationType() === 'grouping') {
-            if (this.getSelectionType() === 'single') {
-                return true;
-            }
-            else {
-                return false;
-            }
+        const level = dataProvider.getNestingLevel();
+        const groupBys = this.getDataset().grouping.getGroupBys();
+        if (level < groupBys.length - 1) {
+            return true;
         }
-        else {
-            return false;
+        if (dataProvider.getSummarizationType() === 'grouping' && this.getSelectionType() === 'single') {
+            return true;
         }
+        return false;
     }
 
 
 
-    public async loadGroups(ids: string[], disableLoadingTrigger?: boolean) {
+    public async loadGroups(ids: string[], onRequestLoading: () => void) {
+        let pendingPromises: Promise<any>[] = [];
         const groupIds = this._getGroupRecordIds(ids);
-        const providersToRefresh: IDataProvider[] = [];
-
-        const getProvidersToRefresh = async () => {
-            const promises: Promise<void>[] = [];
-            for (const groupId of groupIds) {
-                promises.push(new Promise((resolve) => {
-                    setTimeout(() => {
-                        const record = this._dataset.getDataProvider().getRecordsMap(true)[groupId];
-                        const groupDataProvider = this.getGroupChildrenDataProvider(record);
-                        if (groupDataProvider.getRecords().length === 0) {
-                            if (promises.length === 1 && !disableLoadingTrigger) {
-                                this._dataset.getDataProvider().setLoading(true);
-                            }
-                            providersToRefresh.push(groupDataProvider);
-                        } else {
-                            groupDataProvider.setSelectedRecordIds(groupDataProvider.getSortedRecordIds(), { propagateToChildren: false, disableEvent: true });
-                        }
-                        resolve();
-                    }, 0);
+        const providersToRefresh: Promise<IDataProvider>[] = [];
+        for (const groupId of groupIds) {
+            const record = this._dataset.getDataProvider().getRecordsMap(true)[groupId];
+            const groupDataProvider = this.getGroupChildrenDataProvider(record);
+            if (groupDataProvider.getRecords().length === 0) {
+                onRequestLoading();
+                providersToRefresh.push(new Promise(async (resolve) => {
+                    await groupDataProvider.refresh();
+                    resolve(groupDataProvider);
                 }))
             }
-            return Promise.all(promises);
+            else {
+                groupDataProvider.setSelectedRecordIds(groupDataProvider.getSortedRecordIds(), { propagateToChildren: false, disableEvent: true });
+            }
         }
-        await getProvidersToRefresh();
-        const chunkSize = 100;
-        for (let i = 0; i < providersToRefresh.length; i += chunkSize) {
-            const chunk = providersToRefresh.slice(i, i + chunkSize);
-            const providers = await Promise.all(chunk.map(provider => {
-                return new Promise<IDataProvider>(async (resolve) => {
-                    await provider.refresh();
-                    resolve(provider);
-                })
-            }));
+        if (providersToRefresh.length > 0) {
+            const providers = await Promise.all(providersToRefresh);
             for (const provider of providers) {
                 provider.setSelectedRecordIds(provider.getSortedRecordIds(), { propagateToChildren: false });
-                for (const record of provider.getRecords()) {
-                    if (record.getRecordId().startsWith('group')) {
-                        await this.loadGroups(provider.getSelectedRecordIds(), true);
+                if (provider.getRecords().length > 25 && provider.grouping.getGroupBys().length > 0) {
+
+                }
+                else {
+                    for (const record of provider.getRecords()) {
+                        if (record.getRecordId().startsWith('group')) {
+                            pendingPromises.push(this.loadGroups(provider.getSelectedRecordIds(), onRequestLoading))
+                        }
                     }
                 }
             }
         }
-        if (!disableLoadingTrigger && providersToRefresh.length > 0) {
-            this._dataset.getDataProvider().setLoading(false);
-        }
+        return Promise.all(pendingPromises);
     }
 
     public getCurrentlyHeldKey(): string | null {
@@ -827,9 +816,13 @@ export class GridModel {
         return value;
     }
 
-    private _getRecordValue(record: IRecord, column: IColumn | string, formatted: boolean): any {
+    private _getRecordValue(record: IRecord, column: IColumn | string, formatted: boolean): {value: any; groupedValue: any; aggregatedValue: any} {
         if (!record) {
-            return null;
+            return {
+                value: null,
+                groupedValue: null,
+                aggregatedValue: null
+            }
         }
         const columnName = typeof column === 'string' ? column : column.name;
         column = record.getDataProvider().getColumnsMap().get(columnName)!;
@@ -872,14 +865,7 @@ export class GridModel {
     }
 
     private _isRecordFieldEditable(record: IRecord, column: IColumn): boolean {
-        // summarized records are not editable
-        if (record.getDataProvider().getSummarizationType() !== 'none') {
-            return false;
-        }
         const columnInfo = record.getColumnInfo(column.name);
-        if (columnInfo.ui.isLoading()) {
-            return false;
-        }
         //if editable not defined, return true since column is editable in this case
         return columnInfo?.security.editable ?? true;
     }

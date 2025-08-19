@@ -17,17 +17,7 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
     const labels = grid.getLabels();
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
     const { column, onDismiss } = { ...props };
-    const aggregationFunctionList = (() => {
-        return column.metadata!.SupportedAggregations!.filter(supportedAggr => {
-            //these aggregations do not make sense during grouping for non-grouped columns
-            if (dataset.grouping.getGroupBys().length > 0 && !column.grouping?.isGrouped) {
-                return supportedAggr !== 'count' && supportedAggr !== 'countcolumn';
-            }
-            else {
-                return true;
-            }
-        })
-    })();
+    const aggregationFunctionList = column.metadata!.SupportedAggregations!
 
     const getItems = (): IContextualMenuItem[] => {
         const items: IContextualMenuItem[] = [

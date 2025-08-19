@@ -20,7 +20,6 @@ export const ColumnHeader = (props: IColumnHeader) => {
     const [columnHeaderContextualMenuProps, setColumnHeaderContextualMenuProps] = useState<IColumnHeaderContextualMenuProps | null>(null);
     const [filterCalloutProps, setFilterCalloutProps] = useState<any | null>(null);
     const buttonRef = useRef<HTMLDivElement>(null);
-    const aggregation = grid.getAggregation();
     const rerender = useRerender();
 
     useEffect(() => {

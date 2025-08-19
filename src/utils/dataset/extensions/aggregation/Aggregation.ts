@@ -68,21 +68,7 @@ export class Aggregation extends EventEmitter<IEvents> {
             return {
                 ...col,
                 grouping: undefined,
-                //only keep one aggregation of count or countcolumn for grouping
-                aggregation: (() => {
-                    if (this._dataProvider.grouping.getGroupBys().length > 0 && (col.aggregation?.aggregationFunction === 'count' || col.aggregation?.aggregationFunction === 'countcolumn')) {
-                        if (!hasCountAggrBeenApplied) {
-                            hasCountAggrBeenApplied = true;
-                            return col.aggregation;
-                        }
-                        else {
-                            return undefined;
-                        }
-                    }
-                    else {
-                        return col.aggregation;
-                    }
-                })()
+                aggregation: col.aggregation
             }
         }));
         await this._aggregationDataProvider.refresh();

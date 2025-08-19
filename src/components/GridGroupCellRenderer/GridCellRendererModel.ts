@@ -136,8 +136,11 @@ export class GridCellRendererModel {
     }
 
     public getLinkProps() {
+        const value = this.getValue();
+        const formattedValue = this.getFormattedValue().value;
         switch (true) {
-            case this.getFormattedValue().value == null:
+            case formattedValue == null:
+            //navigation enabled by default
             case this._getProps().parameters.EnableNavigation?.raw === false: {
                 return null;
             }
@@ -171,6 +174,9 @@ export class GridCellRendererModel {
         }
         //value is equal to aggregated value, so we don't show it
         else if(this.getValue() === this._getProps().parameters.AggregatedValue?.raw) {
+            return null;
+        }
+        else if(this.getFormattedValue().value === aggregatedFormattedValue) {
             return null;
         }
         else {
@@ -222,6 +228,13 @@ export class GridCellRendererModel {
             return false;
         }
         return this._property.isMultiline();
+    }
+
+    public isAutoHeightEnabled() {
+        if(this.isTotalRow()) {
+            return false;
+        }
+        return !!this.getColumn().autoHeight;
     }
 
     public isFile() {

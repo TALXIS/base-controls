@@ -1,3 +1,4 @@
+import { Attribute } from "@talxis/client-libraries";
 import { ITranslation } from "../../hooks";
 import { IGridColumnHeader } from "./interfaces";
 import { gridColumnHeaderTranslations } from "./translations";
@@ -38,9 +39,8 @@ export class GridColumnHeaderModel {
         return !this.getColumn().metadata?.IsValidForUpdate
     }
     public isFiltered() {
-        //will this work for linked entities?
         const filtering = this.getDataset().filtering.getFilter();
-        return filtering?.conditions.some(condition => condition.attributeName === this.getColumn().name);
+        return filtering?.conditions.some(condition => condition.attributeName === Attribute.GetNameFromAlias(this.getColumn().name));
     }
     public isRequired() {
         if(!this._getProps().parameters.EnableEditing?.raw) {
@@ -82,7 +82,10 @@ export class GridColumnHeaderModel {
         }
     }
     public isAggregated() {
-        return !!this.getColumn().aggregation?.aggregationFunction
+        if (this.getColumn().grouping?.isGrouped) {
+            return false;
+        }
+        return !!this.getColumn().aggregation?.aggregationFunction;
     }
     public getDataset() {
         return this._getProps().parameters.Dataset.raw;

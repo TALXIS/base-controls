@@ -53,6 +53,9 @@ export const getGridStyles = (theme: ITheme) => {
             '.ag-cell-wrapper:has([data-is-loading="true"])': {
                 height: '100%'
             },
+            '.ms-Checkbox.is-disabled .ms-Checkbox-checkbox': {
+                borderColor: `${theme.semanticColors.disabledBorder} !important`
+            },
             '.ag-pinned-left-cols-container .ag-cell-last-left-pinned:not([col-id="__checkbox__virtual"])': {
                 borderRight: `1px solid ${theme.semanticColors.menuDivider} !important`
             },

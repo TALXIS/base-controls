@@ -52,7 +52,6 @@ export class VirtualDatasetAdapter {
         }
         //@ts-ignore - typings
         this._dataset = new Dataset(dataProvider);
-        this._dataset.setColumns(this._getColumns());
         this._dataset.setDataSource(this._getData());
         this._dataset.setMetadata(this._getEntityMetadata());
         if (this._parameters.onGetHeight?.() === '100%') {
@@ -64,7 +63,7 @@ export class VirtualDatasetAdapter {
     }
 
     public updateView(): void {
-        
+
     }
 
     public getDataset(): Dataset<IDataProvider> {
@@ -85,6 +84,7 @@ export class VirtualDatasetAdapter {
     private _onDatasetInit() {
         this.getDataset().setInterceptor('onInitialize', async () => {
             await this._getOutputsPromise;
+            this._dataset.setColumns(this._getColumns());
             await this._parameters.onInitialize?.();
         })
     }

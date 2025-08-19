@@ -6,6 +6,8 @@ import { useEffect } from 'react';
 import { IGridColumn } from '../../grid/GridModel';
 import { useGridInstance } from '../../grid/useGridInstance';
 import { filterCalloutStyles } from './styles';
+import { ILookup } from '../../../Lookup';
+import { INestedControlRenderer } from '../../../NestedControlRenderer/interfaces';
 
 export interface IFilterCallout extends ICalloutProps {
     column: IGridColumn;
@@ -25,6 +27,44 @@ export const FilterCallout = (props: IFilterCallout) => {
             dataset.filtering.setFilter(filter);
             dataset.refresh();
         })
+    }
+
+    const onRenderConditionValueControl = (props: INestedControlRenderer, defaultRender: (props: INestedControlRenderer) => React.ReactElement) => {
+        switch (column.dataType) {
+            case 'Lookup.Customer':
+            case 'Lookup.Owner':
+            case 'Lookup.Regarding':
+            case 'Lookup.Simple': {
+                return defaultRender({
+                    ...props,
+                    onOverrideComponentProps: (props) => {
+                        return {
+                            ...props,
+                            onOverrideControlProps: (props: ILookup): ILookup => {
+                                return {
+                                    ...props,
+                                    parameters: {
+                                        ...props.parameters,
+                                        value: {
+                                            ...props.parameters.value,
+                                            //@ts-ignore
+                                            getAllViews: (() => {
+                                                const originalGetAllViews = props.parameters.value.getAllViews;
+                                                //@ts-ignore
+                                                return (...args) => originalGetAllViews(...args, 1);
+                                            })()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+            default: {
+                return defaultRender(props);
+            }
+        }
     }
 
     useEffect(() => {
@@ -68,6 +108,7 @@ export const FilterCallout = (props: IFilterCallout) => {
                                     ...props.valueControlsContainer,
                                     className: getClassNames([props.valueControlsContainer.className, filterCalloutStyles.valueControlsContainer]),
                                 },
+                                onRenderConditionValueControl: onRenderConditionValueControl,
                                 onRenderButtons: (props, defaultRender) => {
                                     return defaultRender({
                                         ...props,

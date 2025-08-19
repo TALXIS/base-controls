@@ -105,7 +105,7 @@ export class AgGridModel extends EventEmitter<IEvents> {
                         isCellEditor: true
                     }
                 },
-                editable: (p) => this._grid.isColumnEditable(column.name, p.data),
+                editable: (p) => this._isCellEditorEnabled(column.name, p.data),
                 equals: (valueA: ICellValues, valueB: ICellValues) => new Comparator().isEqual(valueA, valueB),
                 headerComponent: ColumnHeader,
                 cellRenderer: Cell,
@@ -214,15 +214,7 @@ export class AgGridModel extends EventEmitter<IEvents> {
     }
 
     private _isColumnAutoHeightEnabled(column: IGridColumn): boolean {
-        switch (column.dataType) {
-            case DataTypes.Multiple:
-            case DataTypes.SingleLineTextArea: {
-                return true;
-            }
-            default: {
-                return false;
-            }
-        }
+        return !!column.autoHeight
     }
 
     private _onCellClick(e: CellClickedEvent<IRecord>) {
@@ -266,8 +258,18 @@ export class AgGridModel extends EventEmitter<IEvents> {
     }
 
     private _isColumnHidden(column: IGridColumn): boolean {
-        if (column.name === CHECKBOX_COLUMN_KEY && this._grid.getSelectionType() !== 'none') {
-            return false;
+        if(column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY) {
+            switch(true) {
+                case this._grid.getSelectionType() !== 'none': {
+                    return false;
+                }
+                case this._grid.isAutoSaveEnabled(): {
+                    return false;
+                }
+                default: {
+                    return true;
+                }
+            }
         }
         return !!column.isHidden;
     }
@@ -490,7 +492,16 @@ export class AgGridModel extends EventEmitter<IEvents> {
 
     private async _setSelectedNodes() {
         let ids = this._dataset.getDataProvider().getSelectedRecordIds(true);
-        await this._grid.loadGroups(ids);
+        let isLoading = false;
+        await this._grid.loadGroups(ids, () => {
+            if (!isLoading) {
+                this._dataset.getDataProvider().setLoading(true);
+                isLoading = true;
+            }
+        });
+        if (isLoading) {
+            this._dataset.getDataProvider().setLoading(false);
+        }
         ids = this._dataset.getDataProvider().getSelectedRecordIds(true);
         this.getGridApi().setServerSideSelectionState({
             selectAll: false,
@@ -567,6 +578,20 @@ export class AgGridModel extends EventEmitter<IEvents> {
                 this.getGridApi().showNoRowsOverlay();
             }
         }, 0);
+    }
+
+    private _isCellEditorEnabled(columnName: string, record: IRecord): boolean {
+        const column = this._grid.getGridColumnByName(columnName);
+        // check column eligibility for cell editor
+        switch (true) {
+            //never allow cell editor for oneClickEdit - everything is handled by cell renderer in this case
+            case column.oneClickEdit:
+            //never allow cell editor for non-editable columns
+            case !column.isEditable: {
+                return false;
+            }
+        }
+        return record.getColumnInfo(column.name).security.editable;
     }
 
     private get _dataset() {

@@ -8,6 +8,7 @@ export const getGridCellRendererStyles = (model: GridCellRendererModel, height?:
     const columnAlignment = model.getColumnAlignment();
     const theme = model.getControlTheme();
     const isMultiline = model.isMultiline();
+    const autoHeightEnabled = model.isAutoHeightEnabled()
     const hasAggregationLabel = !!model.getAggregationLabel();
     const formattedAggregatedValue = model.getFormattedAggregatedValue();
     const value = model.getValue();
@@ -18,7 +19,7 @@ export const getGridCellRendererStyles = (model: GridCellRendererModel, height?:
     return mergeStyleSets({
         gridCellRendererRoot: {
             height: '100%',
-            minHeight: isMultiline ? minHeight : undefined,
+            minHeight: autoHeightEnabled ? minHeight : undefined,
             paddingLeft: 8,
             paddingRight: 8,
             display: 'flex',
@@ -26,7 +27,7 @@ export const getGridCellRendererStyles = (model: GridCellRendererModel, height?:
             justifyContent: hasAggregationLabel ? 'flex-end' : getJustifyContent(columnAlignment),
             flexDirection: hasAggregationLabel ? 'column' : 'row',
             overflow: 'hidden',
-            resize: isMultiline ? 'vertical' : undefined
+            resize: autoHeightEnabled ? 'vertical' : undefined
         },
         contentContainer: {
             display: 'flex',

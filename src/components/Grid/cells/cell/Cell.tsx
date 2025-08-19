@@ -1,6 +1,6 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyles, Icon, SpinnerSize, CommandBarButton, TooltipHost, MessageBar, MessageBarType } from "@fluentui/react";
-import { IRecord, Constants } from "@talxis/client-libraries";
+import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyles, Icon, SpinnerSize, CommandBarButton, TooltipHost, MessageBar, MessageBarType, mergeStyleSets } from "@fluentui/react";
+import { IRecord, Constants, DataProvider } from "@talxis/client-libraries";
 import { useThemeGenerator, getClassNames, useRerender, Spinner } from "@talxis/react-components";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
@@ -35,6 +35,35 @@ export const Cell = (props: ICellProps) => {
     const agGrid = useAgGridInstance();
     const rerender = useRerender();
 
+    const skipCellRendering = (() => {
+        const dataProvider = record.getDataProvider();
+        const summarizationType = dataProvider.getSummarizationType();
+        switch (true) {
+            case column.type === 'action': {
+                return false;
+            }
+            case props.value.loading: {
+                return false;
+            }
+            case summarizationType === 'grouping': {
+                const _column = dataProvider.getColumnsMap().get(column.name)!;
+                if (_column.aggregation?.aggregationFunction && !_column.grouping?.isGrouped) {
+                    return false;
+                }
+                return dataProvider.grouping.getGroupBys()[0].columnName !== column.name
+            }
+            case summarizationType === 'aggregation': {
+                return !dataProvider.getColumnsMap().get(column.name)?.aggregation?.aggregationFunction;
+            }
+            case summarizationType === 'none': {
+                return !!column.grouping?.isGrouped
+            }
+            default: {
+                return false;
+            }
+        }
+    })();
+
     const onCellClick = useCallback((e: MouseEvent) => {
         const key = grid.getCurrentlyHeldKey();
         if (record.getDataProvider().getSummarizationType() === 'grouping' && !SELECTION_MODIFIER_KEYS.includes(key!)) {
@@ -57,6 +86,21 @@ export const Cell = (props: ICellProps) => {
         }, 0);
     }, []);
 
+
+    const getTopLevelCellWrapperStyles = () => {
+        return mergeStyleSets({
+            cellRoot: {
+                width: '100%',
+                height: (() => {
+                    if (skipCellRendering && column.autoHeight) {
+                        return `${grid.getDefaultRowHeight()}px !important`;
+                    }
+                    return '100% !important';
+                })()
+            }
+        })
+    }
+
     useEffect(() => {
         memoizedContainerRef.current = containerRef.current;
         containerRef.current?.addEventListener('click', onCellClick);
@@ -70,10 +114,9 @@ export const Cell = (props: ICellProps) => {
 
 
     useEffect(() => {
-        //we need to render a new React tree so we can stop selection propagation to ag grid when clicking on grouped rows
-        //while allowing the child onClick events to propagate
-        //if we do not do this, the child onClick events are not called since the click cannot propagate
-        //to the element react uses to register click events
+        if (skipCellRendering) {
+            return;
+        }
         ReactDOM.render(
             <GridContext.Provider value={grid}>
                 <AgGridContext.Provider value={agGrid}>
@@ -83,8 +126,7 @@ export const Cell = (props: ICellProps) => {
             containerRef.current
         );
     });
-
-    return <div className={mergeStyles({ width: '100%', height: '100% !important' })} ref={containerRef} />
+    return <div className={getTopLevelCellWrapperStyles().cellRoot} ref={containerRef} />
 }
 
 const CellContentWrapper = (props: ICellProps) => {
@@ -133,19 +175,21 @@ const CellContentWrapper = (props: ICellProps) => {
                     />
                 )
             }
-            return (
-                <div
-                    ref={checkBoxRef}
-                    className={styles.checkBoxContainer}>
-                    <Checkbox
-                        checked={recordSelectionState === 'checked'}
-                        disabled={isRecordSelectionDisabled}
-                        indeterminate={recordSelectionState === 'indeterminate'}
-                        styles={{
-                            checkbox: styles.checkbox
-                        }} />
-                </div>
-            );
+            if (grid.getSelectionType() !== 'none') {
+                return (
+                    <div
+                        ref={checkBoxRef}
+                        className={styles.checkBoxContainer}>
+                        <Checkbox
+                            checked={recordSelectionState === 'checked'}
+                            disabled={isRecordSelectionDisabled}
+                            indeterminate={recordSelectionState === 'indeterminate'}
+                            styles={{
+                                checkbox: styles.checkbox
+                            }} />
+                    </div>
+                );
+            }
         }
         else {
             return <InternalCell {...props} />
