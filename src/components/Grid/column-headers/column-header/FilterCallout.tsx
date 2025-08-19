@@ -22,7 +22,7 @@ export const FilterCallout = (props: IFilterCallout) => {
     const labels = grid.getLabels();
 
     const onColumnFilterSaved = (filter: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => {
-        dataset.executeWithUnsavedChangesBlocker(() => {
+        dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
             onDismiss();
             dataset.filtering.setFilter(filter);
             dataset.refresh();

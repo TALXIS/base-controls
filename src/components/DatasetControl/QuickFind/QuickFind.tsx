@@ -12,7 +12,7 @@ export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperPro
   const styles = useMemo(() => getQuickFindStyles(), []);
 
   const onSearch = (query?: string) => {
-    dataset.executeWithUnsavedChangesBlocker(() => {
+    dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
       setQuery(query ?? '');
       dataset.setSearchQuery?.(query ?? '');
       dataset.refresh();

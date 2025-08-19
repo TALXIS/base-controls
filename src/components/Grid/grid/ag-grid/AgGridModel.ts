@@ -223,7 +223,7 @@ export class AgGridModel extends EventEmitter<IEvents> {
     }
 
     private _onCellDoubleClick(e: CellDoubleClickedEvent<IRecord>) {
-        const column = this._dataset.getDataProvider().getColumnsMap().get(e.colDef.colId!)!
+        const column = this._dataset.getDataProvider().getColumnsMap()[e.colDef.colId!]!
         switch (true) {
             //do not navigate if the column is not editable or if the grid is not in navigation mode
             case !this._grid.isNavigationEnabled():
@@ -369,13 +369,13 @@ export class AgGridModel extends EventEmitter<IEvents> {
     }
 
     private _onColumnMoved(e: ColumnMovedEvent<IRecord>) {
-        const movedColumn = this._grid.getDataset().getDataProvider().getColumnsMap().get(e.column?.getColId()!);
+        const movedColumn = this._grid.getDataset().getDataProvider().getColumnsMap()[e.column?.getColId()!];
         if (!e.finished || e.source !== 'uiColumnMoved') {
             return;
         }
         let order = 0;
         this._dataset.setColumns(e.api.getState().columnOrder?.orderedColIds!.map(col => {
-            const column = this._grid.getDataset().getDataProvider().getColumnsMap().get(col)!;
+            const column = this._grid.getDataset().getDataProvider().getColumnsMap()[col]!;
             return {
                 ...column,
                 order: order++
@@ -491,18 +491,9 @@ export class AgGridModel extends EventEmitter<IEvents> {
     }
 
     private async _setSelectedNodes() {
-        let ids = this._dataset.getDataProvider().getSelectedRecordIds(true);
-        let isLoading = false;
-        await this._grid.loadGroups(ids, () => {
-            if (!isLoading) {
-                this._dataset.getDataProvider().setLoading(true);
-                isLoading = true;
-            }
-        });
-        if (isLoading) {
-            this._dataset.getDataProvider().setLoading(false);
-        }
-        ids = this._dataset.getDataProvider().getSelectedRecordIds(true);
+        await this._grid.loadGroups(this._dataset.getDataProvider().getSelectedRecordIds(true));
+        const ids = this._dataset.getDataProvider().getSelectedRecordIds(true);
+        
         this.getGridApi().setServerSideSelectionState({
             selectAll: false,
             toggledNodes: ids
@@ -514,7 +505,8 @@ export class AgGridModel extends EventEmitter<IEvents> {
     }
 
     private _valueFormatter(p: ValueFormatterParams<IRecord>): string {
-        return this._grid.getRecordFormattedValue(p.data!, p.colDef.colId!) ?? '';
+        const formattedValue = this._grid.getRecordFormattedValue(p.data!, p.colDef.colId!);
+        return formattedValue.value ?? formattedValue.aggregatedValue;
     }
 
     private _valueGetter(p: ValueGetterParams<IRecord>, column: IGridColumn) {
@@ -538,14 +530,14 @@ export class AgGridModel extends EventEmitter<IEvents> {
         if (column.oneClickEdit && record.getSummarizationType() === 'none') {
             editing = true;
         }
-        const aggregationInfo = this._grid.getAggregationInfo(record, column.name);
+        const value = this._grid.getRecordValue(record, column);
         return {
             notifications: columnInfo.ui.getNotifications(),
-            value: this._grid.getRecordValue(record, column),
+            value: value.value,
             customFormatting: this._grid.getFieldFormatting(record, column.name),
             customControl: customControl,
             error: columnInfo.error,
-            aggregatedValue: aggregationInfo.value,
+            aggregatedValue: value.aggregatedValue,
             loading: columnInfo.ui.isLoading(),
             errorMessage: columnInfo.errorMessage,
             editable: columnInfo.security.editable,

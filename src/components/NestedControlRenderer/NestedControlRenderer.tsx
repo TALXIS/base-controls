@@ -16,7 +16,7 @@ import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } fr
 import ReactDOM from 'react-dom';
 import { useControlLabels } from '../../hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
-import { GridCellRenderer } from '../GridGroupCellRenderer/GridGroupCellRenderer';
+import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
 import { GridColumnHeader } from '../GridColumnHeader/GridColumnHeader';
 
 interface IRef {

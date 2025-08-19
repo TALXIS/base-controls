@@ -167,7 +167,7 @@ export class GridModel {
                 isStatic: false,
                 type: column.dataType as any,
                 value: this.getControlValue(record, column),
-                formattedValue: this.getRecordFormattedValue(record, column),
+                formattedValue: this.getRecordFormattedValue(record, column).value,
                 error: columnInfo.error,
                 errorMessage: columnInfo.errorMessage,
                 onNotifyOutputChanged: () => { },
@@ -195,10 +195,11 @@ export class GridModel {
 
     public getFieldBindingParameters(record: IRecord, column: IColumn, editing: boolean, recordCommands?: ICommand[]) {
         //make sure we have IColumn, not IGridColumn
-        column = record.getDataProvider().getColumnsMap().get(column.name)!;
-        const aggregationInfo = this.getAggregationInfo(record, column.name);
+        column = record.getDataProvider().getColumnsMap()[column.name]!;
         const summarizationType = record.getDataProvider().getSummarizationType();
-        const aggregationFunction = aggregationInfo.aggregatedColumn?.aggregation?.aggregationFunction ?? null;
+        const value = this.getRecordValue(record, column);
+        const formattedValue = this.getRecordFormattedValue(record, column);
+        const aggregationColumn = record.getDataProvider().getColumnsMap()[column.aggregation?.alias!];
         const parameters: any = {
             Dataset: {
                 raw: this.getDataset(),
@@ -214,9 +215,9 @@ export class GridModel {
             }
         }
         parameters.AggregatedValue = {
-            raw: aggregationInfo.value,
-            formatted: aggregationInfo.formattedValue,
-            type: aggregationInfo.aggregatedColumn?.dataType ?? DataTypes.Decimal
+            raw: value.aggregatedValue,
+            formatted: formattedValue.aggregatedValue,
+            type: aggregationColumn?.dataType ?? DataTypes.Decimal
         }
         parameters.EnableNavigation = {
             raw: (() => {
@@ -225,9 +226,6 @@ export class GridModel {
                 }
                 if (summarizationType === 'aggregation') {
                     return false;
-                }
-                if (column.isPrimary) {
-                    return true;
                 }
                 else if (summarizationType === 'grouping') {
                     switch (column.dataType) {
@@ -274,7 +272,7 @@ export class GridModel {
             type: DataTypes.TwoOptions
         }
         parameters.AggregationFunction = {
-            raw: summarizationType === 'aggregation' ? aggregationFunction : null,
+            raw: summarizationType === 'aggregation' ? aggregationColumn?.aggregation?.aggregationFunction : null,
             type: DataTypes.SingleLineText
         }
         parameters.PrefixIcon = {
@@ -426,47 +424,21 @@ export class GridModel {
     }
 
     public getColumnByName(columnName: string): IColumn {
-        return this.getDataset().getDataProvider().getColumnsMap().get(columnName)!;
+        return this.getDataset().getDataProvider().getColumnsMap()[columnName]!;
     }
 
-    public getAggregationInfo(record: IRecord, columnName: string): IAggregationInfo {
-        const column = record.getDataProvider().getColumnsMap().get(columnName)!;
-        const aggregation = record.getDataProvider().aggregation.getAggregation(column.aggregation?.alias!);
-        const aggrColumn = record.getDataProvider().getColumnsMap().get(aggregation?.alias ?? '') ?? null;
-        if (aggregation) {
-            return {
-                value: this.getRecordValue(record, aggregation.alias),
-                formattedValue: this.getRecordFormattedValue(record, aggregation.alias),
-                aggregatedColumn: aggrColumn ?? null
-            }
-        }
-        else {
-            return {
-                value: null,
-                formattedValue: null,
-                aggregatedColumn: null
-            }
-        }
-    }
-
-    public getRecordValue(record: IRecord, column: IColumn | string): any {
+    public getRecordValue(record: IRecord, column: IColumn | string) {
         return this._getRecordValue(record, column, false);
     }
-    public getRecordFormattedValue(record: IRecord, column: IColumn | string): string | null {
+    public getRecordFormattedValue(record: IRecord, column: IColumn | string) {
         return this._getRecordValue(record, column, true);
     }
     //returns record value in a form that is compatible with PCF typings
     public getControlValue(record: IRecord, column: IColumn | string): any {
         const columnName = typeof column === 'string' ? column : column.name;
-        column = record.getDataProvider().getColumnsMap().get(columnName)!;
+        column = record.getDataProvider().getColumnsMap()[columnName]!;
         //can be the aggregated value
-        let value = this.getRecordValue(record, column);
-        const aggregationColumn = record.getDataProvider().getColumnsMap().get(column.aggregation?.alias!);
-        const groupByColumn = record.getDataProvider().grouping.getGroupBy(column.grouping?.alias!);
-        // case for total row => the control should work with AggregatedValue parameter 
-        if (aggregationColumn && !groupByColumn) {
-            value = null;
-        }
+        let value = this.getRecordValue(record, column).value;
         switch (column.dataType) {
             //getValue always returns string for TwoOptions
             case 'TwoOptions': {
@@ -507,11 +479,11 @@ export class GridModel {
         const parentDataProvider = parentRecord.getDataProvider();
         const groupDataProvider = parentDataProvider.getChildDataProvider({ parentRecordId: parentRecord.getRecordId() });
         //grid supports nested grouping, if this is defined, the next level will be grouped by this column
-        const nextGroupedColumn = this._dataset.getDataProvider().getColumnsMap().get(groupBys[level + 1]?.columnName);
+        const nextGroupedColumn = this._dataset.getDataProvider().getColumnsMap()[groupBys[level + 1]?.columnName];
         //the column that is the current data provider grouped on
-        const currentGroupedColumn = this._dataset.getDataProvider().getColumnsMap().get(groupBys[level].columnName)!;
+        const currentGroupedColumn = this._dataset.getDataProvider().getColumnsMap()[groupBys[level].columnName];
         groupDataProvider.setViewId('');
-        groupDataProvider.getColumnsMap().clear();
+        //groupDataProvider.getColumnsMap() = {};
         //make the current grouped column virtual column does not appear in the grid
         groupDataProvider.setColumns(parentDataProvider.getColumns().map(col => {
             if (col.name === currentGroupedColumn.name) {
@@ -584,41 +556,35 @@ export class GridModel {
 
 
 
-    public async loadGroups(ids: string[], onRequestLoading: () => void) {
-        let pendingPromises: Promise<any>[] = [];
+    public async loadGroups(ids: string[]) {
         const groupIds = this._getGroupRecordIds(ids);
-        const providersToRefresh: Promise<IDataProvider>[] = [];
+        const providers: Promise<IDataProvider>[] = [];
+        let loadingTriggered = false;
+
         for (const groupId of groupIds) {
-            const record = this._dataset.getDataProvider().getRecordsMap(true)[groupId];
+            const record = this._dataset.getDataProvider().getRecordsMap()[groupId];
             const groupDataProvider = this.getGroupChildrenDataProvider(record);
+            //refresh provider if it has no records
             if (groupDataProvider.getRecords().length === 0) {
-                onRequestLoading();
-                providersToRefresh.push(new Promise(async (resolve) => {
+                if(!loadingTriggered) {
+                    this._dataset.getDataProvider().setLoading(true);
+                    loadingTriggered = true;
+                }
+                providers.push(new Promise(async (resolve) => {
                     await groupDataProvider.refresh();
                     resolve(groupDataProvider);
                 }))
             }
             else {
-                groupDataProvider.setSelectedRecordIds(groupDataProvider.getSortedRecordIds(), { propagateToChildren: false, disableEvent: true });
+                providers.push(Promise.resolve(groupDataProvider));
             }
         }
-        if (providersToRefresh.length > 0) {
-            const providers = await Promise.all(providersToRefresh);
-            for (const provider of providers) {
-                provider.setSelectedRecordIds(provider.getSortedRecordIds(), { propagateToChildren: false });
-                if (provider.getRecords().length > 25 && provider.grouping.getGroupBys().length > 0) {
-
-                }
-                else {
-                    for (const record of provider.getRecords()) {
-                        if (record.getRecordId().startsWith('group')) {
-                            pendingPromises.push(this.loadGroups(provider.getSelectedRecordIds(), onRequestLoading))
-                        }
-                    }
-                }
-            }
+        for (const provider of await Promise.all(providers)) {
+            provider.setSelectedRecordIds(provider.getSortedRecordIds(), { propagateToChildren: false });
         }
-        return Promise.all(pendingPromises);
+        if(loadingTriggered) {
+            this._dataset.getDataProvider().setLoading(false);
+        }
     }
 
     public getCurrentlyHeldKey(): string | null {
@@ -627,10 +593,10 @@ export class GridModel {
 
     public isColumnEditable(columnName: string, record?: IRecord): boolean {
         let isEditable = true;
-        const mainDatasetColumn = this.getDataset().getDataProvider().getColumnsMap().get(columnName)!;
+        const mainDatasetColumn = this.getDataset().getDataProvider().getColumnsMap()[columnName]!;
         let column = mainDatasetColumn;
         if (record) {
-            column = record.getDataProvider().getColumnsMap().get(columnName)!;
+            column = record.getDataProvider().getColumnsMap()[columnName]!;
         }
         switch (true) {
             case !this.isEditingEnabled():
@@ -670,22 +636,22 @@ export class GridModel {
     }
 
     public addAggregation(columnName: string, aggregationFunction: AggregationFunction) {
-        this._dataset.executeWithUnsavedChangesBlocker(() => {
+        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._setAggregationDecorator(() => {
                 this._aggregation.addAggregation(columnName, aggregationFunction)
             })
         })
     }
     public removeAggregation(alias: string) {
-        this._dataset.executeWithUnsavedChangesBlocker(() => {
+        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._setAggregationDecorator(() => {
                 this._aggregation.removeAggregation(alias);
             })
         })
     }
     public toggleColumnGroup(columnName: string) {
-        this._dataset.executeWithUnsavedChangesBlocker(() => {
-            const column = this.getDataset().getDataProvider().getColumnsMap().get(columnName)!;
+        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
+            const column = this.getDataset().getDataProvider().getColumnsMap()[columnName]!;
             if (column.grouping?.isGrouped) {
                 this._grouping.ungroupColumn(column.grouping.alias!);
             }
@@ -705,7 +671,7 @@ export class GridModel {
         if (!saveToDataset) {
             return;
         }
-        this._dataset.executeWithUnsavedChangesBlocker(() => {
+        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
             const filterExpression = this._filtering.getFilterExpression(FilterType.And.Value);
             if (!filterExpression) {
                 throw new Error('Unexpected error when clearing column filter.');
@@ -716,14 +682,14 @@ export class GridModel {
     }
 
     public sortColumn(columnName: string, descending?: boolean) {
-        this._dataset.executeWithUnsavedChangesBlocker(() => {
+        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._sorting.getColumnSorting(columnName).setSortValue(descending ? 1 : 0);
             this._dataset.refresh();
         })
     }
 
     public clearColumnSorting(columnName: string) {
-        this._dataset.executeWithUnsavedChangesBlocker(() => {
+        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._sorting.getColumnSorting(columnName).clear();
             this._dataset.refresh();
         })
@@ -738,7 +704,7 @@ export class GridModel {
     }
 
     public getColumnSortingLabel(columnName: string, descending?: boolean): string {
-        const column = this.getDataset().getDataProvider().getColumnsMap().get(columnName)!;
+        const column = this.getDataset().getDataProvider().getColumnsMap()[columnName]!;
         switch (column.dataType) {
             case DataTypes.WholeNone:
             case DataTypes.Decimal:
@@ -816,28 +782,37 @@ export class GridModel {
         return value;
     }
 
-    private _getRecordValue(record: IRecord, column: IColumn | string, formatted: boolean): {value: any; groupedValue: any; aggregatedValue: any} {
+    private _getRecordValue(record: IRecord, column: IColumn | string, formatted: boolean): { value: any; aggregatedValue: any } {
         if (!record) {
             return {
                 value: null,
-                groupedValue: null,
                 aggregatedValue: null
             }
         }
         const columnName = typeof column === 'string' ? column : column.name;
-        column = record.getDataProvider().getColumnsMap().get(columnName)!;
+        column = record.getDataProvider().getColumnsMap()[columnName]!;
         if (!column) {
-            return null;
+            return {
+                value: null,
+                aggregatedValue: null
+            }
         }
         const method = formatted ? 'getFormattedValue' : 'getValue';
         const groupBy = record.getDataProvider().grouping.getGroupBy(column.grouping?.alias!);
         const aggregation = record.getDataProvider().aggregation.getAggregation(column.aggregation?.alias!);
-        //aggregation is considered as value when it's set but no grouping is applied to the column
-        if (!groupBy && aggregation) {
-            return record[method](aggregation.alias);
+
+        let value = record[method](columnName);
+        let aggregatedValue = null;
+
+        if (groupBy) {
+            value = record[method](groupBy.alias);
         }
-        else {
-            return record[method](groupBy?.alias ?? column.name);
+        if (aggregation) {
+            aggregatedValue = record[method](aggregation.alias);
+        }
+        return {
+            value: value,
+            aggregatedValue: aggregatedValue
         }
     }
 
@@ -952,18 +927,18 @@ export class GridModel {
             if (originalGrouping.length > 1) {
                 this._dataset.grouping.clear();
                 const groupBy = originalGrouping[0];
-                const column = this._dataset.getDataProvider().getColumnsMap().get(groupBy.columnName)!;
+                const column = this._dataset.getDataProvider().getColumnsMap()[groupBy.columnName]!;
                 this._dataset.grouping.addGroupBy(originalGrouping[0], column.order);
                 //clear all grouping aggregations except the first one
                 for (let i = 1; i < originalGrouping.length; i++) {
-                    const column = this._dataset.getDataProvider().getColumnsMap().get(originalGrouping[i].columnName);
+                    const column = this._dataset.getDataProvider().getColumnsMap()[originalGrouping[i].columnName];
                     this._dataset.aggregation.removeAggregation(column?.aggregation?.alias!);
                 }
             }
         })
         this._dataset.addEventListener('onNewDataLoaded', () => {
             originalGrouping.map((group) => {
-                const column = this._dataset.getDataProvider().getColumnsMap().get(group.columnName)!;
+                const column = this._dataset.getDataProvider().getColumnsMap()[group.columnName]!;
                 this._dataset.grouping.addGroupBy(group, column.order);
             })
             originalAggregation.map((aggr: any) => {

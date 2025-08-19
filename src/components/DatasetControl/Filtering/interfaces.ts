@@ -1,11 +1,11 @@
 import { ThemeProviderProps } from "@fluentui/react";
 import { IControl, IParameters, IStringProperty, ITranslations } from "../../../interfaces";
-import { Filtering } from "../../../utils/dataset/extensions";
 import { IOptionSet } from "../../OptionSet";
 import { datasetColumnFilteringTranslations } from "./translations";
 import { INestedControlRenderer } from "../../NestedControlRenderer/interfaces";
 import { IButtonProps as IFluentButtonProps } from "@fluentui/react";
 import React from "react";
+import { Filtering } from "../../../utils/dataset/extensions/filtering";
 
 
 export interface IDatasetColumnFiltering extends IControl<IDatasetColumnFilteringParameters, ComponentFramework.PropertyHelper.DataSetApi.FilterExpression, Partial<ITranslations<typeof datasetColumnFilteringTranslations>>, IDatasetColumnFilteringComponentProps> {

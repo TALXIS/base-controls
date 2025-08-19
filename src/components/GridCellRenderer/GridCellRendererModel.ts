@@ -64,9 +64,7 @@ export class GridCellRendererModel {
      * Returns an object so we can use both --- and null as valid null values.
      */
     public getFormattedValue(): { value: string | null, placeholder: string | null } {
-        const summarizationType = this.getRecord().getDataProvider().getSummarizationType();
         const formattedValue = this._getProps().parameters.value.formatted ?? null;
-        const mainDatasetColumn = this._getProps().parameters.Dataset.raw.getDataProvider().getColumnsMap().get(this.getColumn().name)!;
         //action columns should always return empty string;
         if (this.getColumn().type === 'action') {
             return {
@@ -74,18 +72,17 @@ export class GridCellRendererModel {
                 placeholder: null
             }
         }
-        else if(summarizationType !== 'none') {
-            const aggregatedFormattedValue = this._getProps().parameters.AggregatedValue?.formatted ?? null;
+        else if(this.getColumn().grouping?.isGrouped) {
+            //if the column is grouped, we should aways have --- as placeholder
             return {
                 value: formattedValue,
-                //show placeholder only if aggregated value is not null and formatted value is null
-                placeholder: aggregatedFormattedValue != null && formattedValue == null ? '---' : formattedValue
+                placeholder: formattedValue ?? '---'
             }
         }
-        else if( summarizationType === 'none' && mainDatasetColumn.isVirtual && mainDatasetColumn.aggregation?.aggregationFunction) {
+        else if(this.getColumn().aggregation?.aggregationFunction) {
             return {
-                value: null,
-                placeholder: null
+                value: formattedValue,
+                placeholder: formattedValue
             }
         }
         else {
@@ -136,7 +133,6 @@ export class GridCellRendererModel {
     }
 
     public getLinkProps() {
-        const value = this.getValue();
         const formattedValue = this.getFormattedValue().value;
         switch (true) {
             case formattedValue == null:
@@ -172,16 +168,10 @@ export class GridCellRendererModel {
         if (!aggregatedFormattedValue) {
             return null;
         }
-        //value is equal to aggregated value, so we don't show it
-        else if(this.getValue() === this._getProps().parameters.AggregatedValue?.raw) {
-            return null;
-        }
-        else if(this.getFormattedValue().value === aggregatedFormattedValue) {
-            return null;
-        }
-        else {
+        if(this.getColumn().grouping?.isGrouped) {
             return `(${aggregatedFormattedValue})`;
         }
+        return aggregatedFormattedValue;
     }
 
     public getAggregationLabel() {

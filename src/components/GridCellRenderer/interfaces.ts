@@ -1,10 +1,9 @@
-import { AggregationFunction, IColumn, ICommand, IDataset, IRecord } from "@talxis/client-libraries";
-import { IControl, IParameters, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
-import { getDefaultGridRendererTranslations } from "./translations";
+import { AggregationFunction, IColumn, IDataset, IRecord } from "@talxis/client-libraries";
+import { IControl, IDecimalNumberProperty, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "../../interfaces";
 import { IIconProps, IImageProps, ILabelProps, ILinkProps, ISpinnerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
-import { ICommandBarProps } from "@talxis/react-components";
+import { gridGroupCellRendererTranslations } from "./translations";
 
-export interface IGridCellRenderer extends IControl<IGridCellRendererParameters, {}, ReturnType<typeof getDefaultGridRendererTranslations>, IGridCellRendererComponentProps> {
+export interface IGridCellRenderer extends IControl<IGridCellRendererParameters, {}, typeof gridGroupCellRendererTranslations, IGridCellRendererComponentProps> {
 }
 
 export interface IGridCellRendererParameters extends IParameters {
@@ -12,59 +11,77 @@ export interface IGridCellRendererParameters extends IParameters {
     ColumnAlignment: Omit<ComponentFramework.PropertyTypes.EnumProperty<"left" | "center" | "right">, 'type'>;
     CellType: Omit<ComponentFramework.PropertyTypes.EnumProperty<"renderer" | "editor">, 'type'>;
     EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
-    PrefixIcon?: IStringProperty;
-    SuffixIcon?: IStringProperty;
     AggregationFunction: Omit<ComponentFramework.PropertyTypes.EnumProperty<AggregationFunction | null>, 'type'>;
+    AggregatedValue: IDecimalNumberProperty | IWholeNumberProperty;
     Column: {
         raw: IColumn;
     }
+    /**
+     * This dataset instance is always the main dataset, even if the current cell is being rendered via a child data provider.
+     * You can access the child DataProvider via the `getDataProvider()` method on the record instance.
+     */
     Dataset: {
-        raw: IDataset
+        raw: IDataset;
     }
-    Record:  {
-        raw: IRecord
+    Record: {
+        raw: IRecord;
     }
-    RecordCommands?: {
-        raw: ICommand[];
-    }
-}
-
-export interface IOptionSetProps {
-    containerProps: React.HTMLAttributes<HTMLDivElement>;
-    onGetOptionProps: (props: IOptionProps) => IOptionProps
-}
-
-export interface IOptionProps {
-    containerProps: ThemeProviderProps;
-    option: ComponentFramework.PropertyHelper.OptionMetadata;
-    textProps: ITextProps;
-}
-
-export interface IRecordCommandsProps {
-    containerProps: ThemeProviderProps;
-    commandBarProps: ICommandBarProps;
+    PrefixIcon: IStringProperty;
+    SuffixIcon: IStringProperty;
 }
 
 export interface IGridCellRendererComponentProps {
-    onGetOptionSetProps: (props: IOptionSetProps) => IOptionSetProps,
-    onGetLinkProps: (props: ILinkProps) => ILinkProps;
-    onGetRecordCommandsProps: (props: IRecordCommandsProps) => IRecordCommandsProps;
-    onRenderContent: (defaultRenderer: () => JSX.Element) => JSX.Element, 
-    onRenderAggregationLabel: (props: ILabelProps, defaultRenderer: (props: ILabelProps) => React.ReactElement) => React.ReactElement;
-    rootContainerProps: ThemeProviderProps;
-    prefixSuffixWrapperProps: React.HTMLAttributes<HTMLDivElement>;
-    contentWrapperProps: React.HTMLAttributes<HTMLDivElement>;
-    textProps: ITextProps;
-    fileProps: {
-        containerProps: React.HTMLAttributes<HTMLDivElement>;
-        iconProps: Omit<IIconProps, 'iconName'> & {
-            onGetIconName: (iconName: string) => string
-        };
-        imageProps: Omit<IImageProps, 'src'> & {
-            onGetSrc: (src: string) => string
-        },
-        loadingProps: {
-            spinnerProps: ISpinnerProps;
-        }
-    }
+    onRender: (props: IComponentProps, defaultRender: (props: IComponentProps) => React.ReactElement) => React.ReactElement;
 }
+
+interface IComponentProps {
+    container: ThemeProviderProps;
+    onRenderContentContainer: (props: IContentContainerProps, defaultRender: (props: IContentContainerProps) => React.ReactElement) => React.ReactElement;
+    onRenderAggregationLabel: (props: ILabelProps, defaultRender: (props: ILabelProps) => React.ReactElement) => React.ReactElement;
+}
+
+interface IContentContainerProps {
+    container: React.HTMLAttributes<HTMLDivElement>;
+    onRenderPrefixIcon: (props: IIconProps, defaultRender: (props: IIconProps) => React.ReactElement) => React.ReactElement;
+    onRenderSuffixIcon: (props: IIconProps, defaultRender: (props: IIconProps) => React.ReactElement) => React.ReactElement;
+    onRenderInnerContainer: (props: IInnerContentContainerProps, defaultRender: (props: IInnerContentContainerProps) => React.ReactElement) => React.ReactElement;
+}
+
+interface IInnerContentContainerProps {
+    container: React.HTMLAttributes<HTMLDivElement>;
+    onRenderAggregatedValue: (props: ITextProps, defaultRender: (props: ITextProps) => React.ReactElement) => React.ReactElement;
+    onRenderValueContainer: (props: IValueContainerProps, defaultRender: (props: IValueContainerProps) => React.ReactElement) => React.ReactElement;
+}
+
+interface IValueContainerProps {
+    container: React.HTMLAttributes<HTMLDivElement>;
+    onRenderValue: (props: IValueRendererProps, defaultRender: (props: IValueRendererProps) => React.ReactElement) => React.ReactElement;
+}
+
+export interface IValueRendererProps {
+    onRenderPlaceholder: (props: ITextProps, defaultRender: (props: ITextProps) => React.ReactElement) => React.ReactElement;
+    onRenderText: (props: ITextProps, defaultRender: (props: ITextProps) => React.ReactElement) => React.ReactElement;
+    onRenderLink: (props: ILinkProps, defaultRender: (props: ILinkProps) => React.ReactElement) => React.ReactElement;
+    onRenderFile: (props: IFileRendererProps, defaultRender: (props: IFileRendererProps) => React.ReactElement) => React.ReactElement;
+    onRenderColorfulOptionSet: (props: IColorfulOptionSetValueRendererProps, defaultRender: (props: IColorfulOptionSetValueRendererProps) => React.ReactElement) => React.ReactElement;
+
+}
+
+export interface IColorfulOptionSetValueRendererProps {
+    container: React.HTMLAttributes<HTMLDivElement>;
+    onRenderOption: (props: IColorfulOptionValueRendererProps, defaultRender: (props: IColorfulOptionValueRendererProps) => React.ReactElement) => React.ReactElement;
+}
+
+export interface IColorfulOptionValueRendererProps {
+    container: ThemeProviderProps;
+    onRenderText: (props: ITextProps, defaultRender: (props: ITextProps) => React.ReactElement) => React.ReactElement;
+}
+
+export interface IFileRendererProps {
+    container: React.HTMLAttributes<HTMLDivElement>;
+    onRenderFileAttachmentIcon: (props: IIconProps, defaultRender: (props: IIconProps) => React.ReactElement) => React.ReactElement;
+    onRenderImageThumbnail: (props: IImageProps, defaultRender: (props: IImageProps) => React.ReactElement) => React.ReactElement;
+    onRenderLoading: (props: ISpinnerProps, defaultRender: (props: ISpinnerProps) => React.ReactElement) => React.ReactElement;
+    onRenderLink: (props: ILinkProps, defaultRender: (props: ILinkProps) => React.ReactElement) => React.ReactElement;
+}
+

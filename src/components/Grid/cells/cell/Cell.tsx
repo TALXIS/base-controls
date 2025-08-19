@@ -46,14 +46,14 @@ export const Cell = (props: ICellProps) => {
                 return false;
             }
             case summarizationType === 'grouping': {
-                const _column = dataProvider.getColumnsMap().get(column.name)!;
+                const _column = dataProvider.getColumnsMap()[column.name]!;
                 if (_column.aggregation?.aggregationFunction && !_column.grouping?.isGrouped) {
                     return false;
                 }
                 return dataProvider.grouping.getGroupBys()[0].columnName !== column.name
             }
             case summarizationType === 'aggregation': {
-                return !dataProvider.getColumnsMap().get(column.name)?.aggregation?.aggregationFunction;
+                return !dataProvider.getColumnsMap()[column.name]?.aggregation?.aggregationFunction;
             }
             case summarizationType === 'none': {
                 return !!column.grouping?.isGrouped
@@ -381,7 +381,7 @@ export const InternalCell = (props: ICellProps) => {
                 setRecordCommands(await grid.dataset.retrieveRecordCommand([record.getRecordId()], grid.inlineRibbonButtonIds));
             })();
         }
-    }, [grid.getRecordValue(record, column)]);
+    }, [grid.getRecordValue(record, column).value]);
 
     return <div
         className={styles.innerCellRoot}

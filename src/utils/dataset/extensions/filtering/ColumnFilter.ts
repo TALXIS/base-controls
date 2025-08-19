@@ -160,6 +160,6 @@ export class ColumnFilter extends DataProviderExtension {
     }
 
     private get _column(): IColumn {
-        return this._dataProvider.getColumnsMap().get(this._columnName)!;
+        return this._dataProvider.getColumnsMap()[this._columnName]!;
     }
 }

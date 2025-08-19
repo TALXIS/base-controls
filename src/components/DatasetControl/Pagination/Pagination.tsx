@@ -43,7 +43,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
             text: size,
             checked: parseInt(size) === paging.pageSize,
             className: 'pageSizeOption',
-            onClick: () => dataset.executeWithUnsavedChangesBlocker(() => onSetPageSize(parseInt(size)))
+            onClick: () => dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => onSetPageSize(parseInt(size)))
           }))
 
         ]
@@ -60,13 +60,13 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
         iconOnly: true,
         iconProps: { iconName: 'DoubleChevronLeft' },
         disabled: !paging.hasPreviousPage || dataset.loading,
-        onClick: () => dataset.executeWithUnsavedChangesBlocker(() => paging.reset())
+        onClick: () => dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => paging.reset())
       }, {
         key: 'PreviousPage',
         iconOnly: true,
         iconProps: { iconName: 'Back' },
         disabled: !paging.hasPreviousPage || dataset.loading,
-        onClick: () => dataset.executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber - 1))
+        onClick: () => dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber - 1))
       }, {
         key: 'CurrentPage',
         text: `${labels['paging-page']()} ${paging.pageNumber.toString()}`,
@@ -77,7 +77,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
         iconOnly: true,
         iconProps: { iconName: 'Forward' },
         disabled: !paging.hasNextPage || dataset.loading,
-        onClick: () => dataset.executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber + 1))
+        onClick: () => dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber + 1))
       }]
     },
     onRenderCommandBar: (props, defaultRender) => defaultRender(props),
