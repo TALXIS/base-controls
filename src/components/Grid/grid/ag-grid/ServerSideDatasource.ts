@@ -10,16 +10,18 @@ export class ServerSideDatasource implements IServerSideDatasource {
 
     }
     public async getRows(params: IServerSideGetRowsParams): Promise<void> {
-        const records = this._agGrid.getGrid().getDataset().getDataProvider().getRecords();
+        const dataset = this._agGrid.getGrid().getDataset();
+        const records = dataset.getRecords();
         if (params.request.groupKeys.length > 0) {
-            const groupDataProvider = this._agGrid.getGrid().getGroupChildrenDataProvider(params.parentNode.data);
-            const enableRecordSelectionClearing = this._preventRecordSelectionClearing(groupDataProvider);
-            let records: IRecord[] = [];
+            const groupDataProvider = dataset.getDataProvider().getGroupChildrenDataProvider(params.parentNode.data);
+            let records: IRecord[] = groupDataProvider.getRecords();
             try {
-                records = await groupDataProvider.refresh();
+                //clear selected records means the main dataset has been refreshed
+                if (records.length === 0 || dataset.getSelectedRecordIds().length === 0) {
+                    records = await groupDataProvider.refresh();
+                }
             }
             catch (err) { }
-            enableRecordSelectionClearing();
             if (groupDataProvider.isError()) {
                 params.fail();
             }
@@ -35,16 +37,6 @@ export class ServerSideDatasource implements IServerSideDatasource {
                 rowData: records,
                 rowCount: records.length
             })
-        }
-    }
-
-    private _preventRecordSelectionClearing(dataProvider: IDataProvider) {
-        const originalClearSelectedRecords = dataProvider.clearSelectedRecordIds;
-        dataProvider.clearSelectedRecordIds = () => {
-            // Do nothing to prevent clearing selected records
-        }
-        return () => {
-            dataProvider.clearSelectedRecordIds = originalClearSelectedRecords;
         }
     }
 }

@@ -22,7 +22,7 @@ interface IAgGridTestDependencies {
     getContainer: () => HTMLDivElement;
 }
 
-interface IEvents {
+export interface IAgGridModelEvents {
     onRefresh: () => void;
 }
 
@@ -46,7 +46,7 @@ export interface ICellValues {
     saving: boolean;
 }
 
-export class AgGridModel extends EventEmitter<IEvents> {
+export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _grid: GridModel;
     private _dataSource: ServerSideDatasource;
     private _gridApi: GridApi | undefined;
@@ -57,6 +57,7 @@ export class AgGridModel extends EventEmitter<IEvents> {
     private _debouncedSetSelectedNodes: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _expandedRowGroupIds: string[] = [];
     private _hasUserExpandedRowGroups: boolean = false;
+    private _isLoadingNestedProviders: boolean = false;
 
     constructor({ grid, getContainer }: IAgGridTestDependencies) {
         super();
@@ -171,13 +172,13 @@ export class AgGridModel extends EventEmitter<IEvents> {
     public getRecordSelectionState(node: IRowNode<IRecord>): 'checked' | 'unchecked' | 'indeterminate' {
         const record = node.data!;
         const dataProvider = record.getDataProvider();
-        if (dataProvider.getSummarizationType() === 'grouping') {
+        const childDataProvider = dataProvider.getChildDataProvider(record.getRecordId());
+        if (childDataProvider) {
             if (node.isSelected()) {
                 return 'checked';
             }
             else {
-                const childDataProvider = dataProvider.getChildDataProvider({ parentRecordId: record.getRecordId() });
-                if (childDataProvider.getSelectedRecordIds(true).length === 0) {
+                if (childDataProvider.getSelectedRecordIds().length === 0) {
                     return 'unchecked';
                 }
                 else {
@@ -258,8 +259,8 @@ export class AgGridModel extends EventEmitter<IEvents> {
     }
 
     private _isColumnHidden(column: IGridColumn): boolean {
-        if(column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY) {
-            switch(true) {
+        if (column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY) {
+            switch (true) {
                 case this._grid.getSelectionType() !== 'none': {
                     return false;
                 }
@@ -491,10 +492,17 @@ export class AgGridModel extends EventEmitter<IEvents> {
     }
 
     private async _setSelectedNodes(ids: string[]) {
-        await this._grid.loadGroups(ids);
+        const childProviders = this._dataset.getDataProvider().getChildDataProviders(true).filter(x => x.getParentRecordId());
+        if (!this._isLoadingNestedProviders && childProviders.some(provider => provider.isLoading())) {
+            this._isLoadingNestedProviders = true;
+            this._dataset.getDataProvider().setLoading(true);
+        }
+        else if (this._isLoadingNestedProviders && childProviders.every(provider => !provider.isLoading())) {
+            this._dataset.getDataProvider().setLoading(false);
+        }
         this.getGridApi().setServerSideSelectionState({
             selectAll: false,
-            toggledNodes: this._grid.getDataset().getDataProvider().getSelectedRecordIds(true)
+            toggledNodes: this._grid.getDataset().getDataProvider().getSelectedRecordIds({includeGroupRecordIds: true})
         })
         this.getGridApi().refreshCells({
             columns: [CHECKBOX_COLUMN_KEY],

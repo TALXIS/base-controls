@@ -14,9 +14,7 @@ export const FullRowLoading = (props: ILoadingCellRendererParams) => {
     const getDataProvider = () => {
         const parentRecord: IRecord | undefined = node.parent?.data;
         if(parentRecord) {
-            return parentRecord.getDataProvider().getChildDataProvider({
-                parentRecordId: parentRecord.getRecordId()
-            })
+            return parentRecord.getDataProvider().getChildDataProvider(parentRecord.getRecordId())!
         }
         else {
             return grid.getDataset().getDataProvider();

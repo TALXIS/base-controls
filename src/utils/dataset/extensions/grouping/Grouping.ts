@@ -1,4 +1,4 @@
-import { DataProviderExtension } from "../DataProviderExtension";
+import { DataProviderExtension } from "@talxis/client-libraries";
 
 export class Grouping extends DataProviderExtension {
 

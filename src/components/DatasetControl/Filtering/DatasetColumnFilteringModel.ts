@@ -1,8 +1,8 @@
 import { Operators } from "@talxis/client-libraries";
 import { ITranslation } from "../../../hooks";
-import { Condition } from "../../../utils/dataset/extensions/filtering/conditions";
 import { datasetColumnFilteringTranslations } from "./translations";
 import { BaseControls } from "../../../utils";
+import { Condition } from '@talxis/client-libraries';
 
 type Labels = Required<ITranslation<typeof datasetColumnFilteringTranslations>>;
 

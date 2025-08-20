@@ -1,4 +1,4 @@
-import { AggregationFunction, Attribute, Constants, DataProvider, DataType, DataTypes, EventEmitter, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IRecord, Operators, Sanitizer } from "@talxis/client-libraries";
+import { AggregationFunction, DataProvider, DataType, DataTypes, FieldValue, Filtering, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import { ITheme, Theming } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
@@ -8,9 +8,8 @@ import { ITranslation } from "../../../hooks";
 import { IBinding } from "../../NestedControlRenderer/interfaces";
 import { BaseControls, IFluentDesignState } from "../../../utils";
 import { IGrid, IGridParameters } from "../interfaces";
-import { Aggregation, Sorting, Selection, Grouping } from "../../../utils/dataset/extensions";
+import { Aggregation, Sorting, Grouping } from "../../../utils/dataset/extensions";
 import { CHECKBOX_COLUMN_KEY } from "../constants";
-import { Filtering } from "../../../utils/dataset/extensions/filtering";
 import { Type as FilterType } from "@talxis/client-libraries";
 import { useCurrentlyHeldKey } from "@solid-primitives/keyboard";
 
@@ -77,7 +76,7 @@ export class GridModel {
         this.__aggregation = new Aggregation({
             onGetDataProvider: () => this.getDataset().getDataProvider(),
         })
-        this.__filtering = new Filtering(() => this.getDataset().getDataProvider());
+        this.__filtering = new Filtering(() => this.getDataset().getDataProvider() , FieldValue);
         this.__grouping = new Grouping(() => this.getDataset().getDataProvider());
     }
 
@@ -471,76 +470,6 @@ export class GridModel {
         return value;
     }
 
-    public getGroupChildrenDataProvider(groupRecord: IRecord): IDataProvider {
-        const groupBys = this._dataset.grouping.getGroupBys();
-        const aggregations = this._dataset.aggregation.getAggregations();
-        const parentRecord = groupRecord;
-        const level = groupRecord.getDataProvider().getNestingLevel();
-        const parentDataProvider = parentRecord.getDataProvider();
-        const groupDataProvider = parentDataProvider.getChildDataProvider({ parentRecordId: parentRecord.getRecordId() });
-        //grid supports nested grouping, if this is defined, the next level will be grouped by this column
-        const nextGroupedColumn = this._dataset.getDataProvider().getColumnsMap()[groupBys[level + 1]?.columnName];
-        //the column that is the current data provider grouped on
-        const currentGroupedColumn = this._dataset.getDataProvider().getColumnsMap()[groupBys[level].columnName];
-        groupDataProvider.setViewId('');
-        //groupDataProvider.getColumnsMap() = {};
-        //make the current grouped column virtual column does not appear in the grid
-        groupDataProvider.setColumns(parentDataProvider.getColumns().map(col => {
-            if (col.name === currentGroupedColumn.name) {
-                return {
-                    ...col,
-                    isVirtual: true
-                }
-            }
-            else {
-                return col;
-            }
-        }));
-        groupDataProvider.getPaging().setPageSize(5000);
-        groupDataProvider.grouping.clear();
-        groupDataProvider.aggregation.clear();
-        //ignore the sorting on grouped columns if we are going to fetch the last level - it causes data to be fetched
-        if (!nextGroupedColumn) {
-            groupDataProvider.setSorting(parentDataProvider.getSorting().filter(sort => !groupBys.find(groupBy => sort.name === groupBy.columnName)));
-        }
-
-        //set the aggregations and grouping for child dataset if it has grouped column on the next level
-        if (nextGroupedColumn) {
-            const groupBy = this._dataset.grouping.getGroupBy(nextGroupedColumn.grouping?.alias!)!;
-            const aggregation = this._dataset.aggregation.getAggregation(nextGroupedColumn.aggregation?.alias!)!;
-            groupDataProvider.grouping.addGroupBy(groupBy);
-            groupDataProvider.aggregation.addAggregation(aggregation);
-        }
-        //add aggregations that are not applied to grouped columns
-        aggregations.map(aggr => {
-            const isGrouped = groupBys.find(x => x.columnName === aggr.columnName);
-            if (groupDataProvider.grouping.getGroupBys().length > 0 && !isGrouped) {
-                groupDataProvider.aggregation.addAggregation(aggr);
-            }
-        })
-        //apply filtering to the group dataset
-        const filterDataProvider = groupDataProvider.getChildDataProvider();
-        filterDataProvider.setColumns(this._dataset.columns);
-        const filtering = new Filtering(() => filterDataProvider);
-        const columnFilter = filtering.getColumnFilter(currentGroupedColumn.name);
-        const condition = columnFilter.addCondition();
-        const value = this._getFilterValueFromRecordValue(parentRecord, currentGroupedColumn.dataType, currentGroupedColumn.name);
-
-        if (value == null) {
-            condition.setOperator(Operators.DoesNotContainData.Value)
-        }
-        else {
-            condition.setOperator(Operators.Equal.Value);
-            condition.setValue(value);
-        }
-        const filterExpression = filtering.getFilterExpression(FilterType.And.Value);
-        if (!filterExpression) {
-            throw new Error('Unexpected error when filtering group dataset');
-        }
-        groupDataProvider.setFiltering(filterExpression);
-        return groupDataProvider;
-    }
-
     public isRecordSelectionDisabled(record: IRecord): boolean {
         const dataProvider = record.getDataProvider();
         const level = dataProvider.getNestingLevel();
@@ -552,36 +481,6 @@ export class GridModel {
             return true;
         }
         return false;
-    }
-
-
-
-    public async loadGroups(ids: string[]) {
-        const groupIds = this._getGroupRecordIds(ids);
-        const providersToRefresh: Promise<IDataProvider>[] = [];
-        let loadingTriggered = false;
-
-        for (const groupId of groupIds) {
-            const record = this._dataset.getDataProvider().getRecordsMap()[groupId];
-            const groupDataProvider = this.getGroupChildrenDataProvider(record);
-            if (groupDataProvider.getRecords().length > 0) {
-                return;
-            }
-            if (!loadingTriggered) {
-                this._dataset.getDataProvider().setLoading(true);
-                loadingTriggered = true;
-            }
-            providersToRefresh.push(new Promise(async (resolve) => {
-                await groupDataProvider.refresh();
-                resolve(groupDataProvider);
-            }))
-        }
-        for (const provider of await Promise.all(providersToRefresh)) {
-            provider.setSelectedRecordIds(provider.getSortedRecordIds());
-        }
-        if (loadingTriggered) {
-            this._dataset.getDataProvider().setLoading(false);
-        }
     }
 
     public getCurrentlyHeldKey(): string | null {
@@ -660,7 +559,7 @@ export class GridModel {
     }
 
     public getColumnFilter(columnName: string) {
-        return this._filtering.getColumnFilter(columnName)
+        return this._filtering.getColumnFilter(columnName);
     }
 
     public removeColumnFilter(columnName: string, saveToDataset?: boolean) {

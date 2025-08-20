@@ -40,8 +40,8 @@ class ColumnSorting extends DatasetExtension {
     }
 }
 
-export class Sorting extends DatasetExtension {
 
+export class Sorting extends DatasetExtension {
     public getColumnSorting(columnName: string) {
         return new ColumnSorting({
             columnName,

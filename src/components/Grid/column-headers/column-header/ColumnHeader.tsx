@@ -8,6 +8,8 @@ import { FilterCallout } from './FilterCallout';
 import { NestedControlRenderer } from '../../../NestedControlRenderer';
 import { useRerender } from '@talxis/react-components';
 import { useAgGridInstance } from '../../grid/ag-grid/useAgGridInstance';
+import { useEventEmitter } from '../../../../hooks/useEventEmitter';
+import { IAgGridModelEvents } from '../../grid/ag-grid/AgGridModel';
 
 export interface IColumnHeader {
     baseColumn: IGridColumn;
@@ -21,13 +23,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
     const [filterCalloutProps, setFilterCalloutProps] = useState<any | null>(null);
     const buttonRef = useRef<HTMLDivElement>(null);
     const rerender = useRerender();
-
-    useEffect(() => {
-        agGrid.addEventListener('onRefresh', rerender)
-        return () => {
-            agGrid.removeEventListener('onRefresh', rerender);
-        }
-    })
+    useEventEmitter<IAgGridModelEvents>(agGrid, 'onRefresh', rerender);
 
     const onClick = () => {
         if ((!column.isFilterable && column.disableSorting && !column.canBeAggregated)) {

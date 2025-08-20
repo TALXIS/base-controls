@@ -1,9 +1,4 @@
 import { AggregationFunction, EventEmitter, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
-
-interface ITranslations {
-    calculationLimitExceededError: string;
-}
-
 interface IDependencies {
     onGetDataProvider: () => IDataProvider;
 }
@@ -19,7 +14,7 @@ export class Aggregation extends EventEmitter<IEvents> {
     constructor({ onGetDataProvider }: IDependencies) {
         super();
         this._onGetDataProvider = onGetDataProvider;
-        this._aggregationDataProvider = this._dataProvider.getChildDataProvider();
+        this._aggregationDataProvider = this._dataProvider.createChildDataProvider();
         this._aggregationDataProvider.enableAggregationWithoutGrouping(true);
         this._dataProvider.addEventListener('onNewDataLoaded', () => this.refresh());
         this._aggregationDataProvider.addEventListener('onLoading', () => this.dispatchEvent('onStateUpdated'));
@@ -29,11 +24,11 @@ export class Aggregation extends EventEmitter<IEvents> {
         this.refresh();
     }
     public getAggregationRecord(): IRecord[] {
-        if(this._aggregationDataProvider.isError()) {
-            return [this._getDummyErrorRecord()];
-        }
         if (this._aggregationDataProvider.aggregation.getAggregations().length === 0 || this._dataProvider.getSortedRecordIds().length === 0) {
             return [];
+        }
+        if (this._aggregationDataProvider.isError()) {
+            return [this._getDummyErrorRecord()];
         }
         if (this._aggregationDataProvider.isLoading()) {
             return [this._getDummyLoadingRecord()];
@@ -59,7 +54,6 @@ export class Aggregation extends EventEmitter<IEvents> {
             this.dispatchEvent('onStateUpdated');
             return;
         }
-        let hasCountAggrBeenApplied = false;
         this._aggregationDataProvider.setLinking(this._dataProvider.getLinking());
         this._aggregationDataProvider.setFiltering(this._dataProvider.getFiltering());
         this._aggregationDataProvider.setSearchQuery(this._dataProvider.getSearchQuery());

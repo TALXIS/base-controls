@@ -11,11 +11,11 @@ interface IDatasetControlModelDeps {
     getLabels: () => Labels;
 }
 
-interface IEvents {
+export interface IDatasetControlModelEvents {
     onRecordCommandsLoaded: () => void;
 }
 
-export class DatasetControlModel extends EventEmitter<IEvents> {
+export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents> {
     private _getProps: () => IDatasetControl;
     private _getLabels: () => Labels;
     private _commands: ICommand[] = [];

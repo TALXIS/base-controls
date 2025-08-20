@@ -9,6 +9,8 @@ import { ModelContext } from "./useModel";
 import { Pagination } from "./Pagination/Pagination";
 import { getDatasetControlStyles } from "./styles";
 import { Header } from "./Header/Header";
+import { useEventEmitter } from "../../hooks/useEventEmitter";
+import { IDataProviderEventListeners } from "@talxis/client-libraries";
 
 export const DatasetControl = (props: IDatasetControl) => {
   const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
@@ -22,6 +24,11 @@ export const DatasetControl = (props: IDatasetControl) => {
   const rerender = useRerender();
   const styles = useMemo(() => getDatasetControlStyles(props.parameters.Height?.raw), [props.parameters.Height?.raw]);
   const dataset = model.getDataset();
+  
+  useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', rerender);
+  useEventEmitter<IDataProviderEventListeners>(dataset, 'onRenderRequested', rerender);
+  useEventEmitter<IDataProviderEventListeners>(dataset, 'onBeforeNewDataLoaded', rerender);
+
 
   const componentProps = onOverrideComponentProps({
     onRender: (props, defaultRender) => defaultRender(props),
@@ -41,12 +48,6 @@ export const DatasetControl = (props: IDatasetControl) => {
   const isPaginationVisible = () => {
     return isFooterVisible();
   }
-
-  useEffect(() => {
-    dataset.addEventListener('onNewDataLoaded', () => rerender());
-    dataset.addEventListener('onRenderRequested', () => rerender());
-    dataset.addEventListener('onBeforeNewDataLoaded', () => rerender());
-  }, []);
 
   return <ModelContext.Provider value={model}>
     {componentProps.onRender({

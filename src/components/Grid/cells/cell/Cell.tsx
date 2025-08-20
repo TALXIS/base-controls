@@ -1,6 +1,6 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyles, Icon, SpinnerSize, CommandBarButton, TooltipHost, MessageBar, MessageBarType, mergeStyleSets } from "@fluentui/react";
-import { IRecord, Constants, DataProvider } from "@talxis/client-libraries";
+import { IRecord, Constants, DataProvider, IRecordEvents } from "@talxis/client-libraries";
 import { useThemeGenerator, getClassNames, useRerender, Spinner } from "@talxis/react-components";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
@@ -16,6 +16,7 @@ import ReactDOM from "react-dom";
 import { GridContext } from "../../grid/GridContext";
 import { AgGridContext } from "../../grid/ag-grid/AgGridContext";
 import { CheckmarkCircle24Filled, ErrorCircle24Filled } from '@fluentui/react-icons';
+import { useEventEmitter } from "../../../../hooks/useEventEmitter";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
@@ -100,11 +101,11 @@ export const Cell = (props: ICellProps) => {
             }
         })
     }
+    useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', onFieldValueChanged);
 
     useEffect(() => {
         memoizedContainerRef.current = containerRef.current;
         containerRef.current?.addEventListener('click', onCellClick);
-        record.addEventListener('onFieldValueChanged', onFieldValueChanged)
         return () => {
             containerRef.current?.removeEventListener('click', onCellClick);
             record.removeEventListener('onFieldValueChanged', onFieldValueChanged);
@@ -142,6 +143,7 @@ const CellContentWrapper = (props: ICellProps) => {
     const isRecordSelectionDisabled = grid.isRecordSelectionDisabled(record);
     const [savingResult, setSavingResult] = useState<'success' | 'error' | null>(null);
     const rerender = useRerender();
+    useEventEmitter<IRecordEvents>(record, 'onBeforeSaved', rerender);
 
     const onCheckBoxClick = useCallback(e => {
         if (!isRecordSelectionDisabled) {
@@ -208,10 +210,10 @@ const CellContentWrapper = (props: ICellProps) => {
         }
     }, []);
 
+    useEventEmitter<IRecordEvents>(record, 'onAfterSaved', onAfterSaved);
+
 
     useEffect(() => {
-        record.addEventListener('onAfterSaved', onAfterSaved);
-        record.addEventListener('onBeforeSaved', rerender)
         //this needs to be done like this because stopPropagation in React onClick
         //does not stop the event from propagating to the grid (cause by synthentic events)
         //https://stackoverflow.com/questions/24415631/reactjs-syntheticevent-stoppropagation-only-works-with-react-events
@@ -219,8 +221,7 @@ const CellContentWrapper = (props: ICellProps) => {
             checkBoxRef.current.addEventListener('click', onCheckBoxClick)
         }
         return () => {
-            record.removeEventListener('onAfterSaved', onAfterSaved);
-            record.removeEventListener('onBeforeSaved', rerender);
+            checkBoxRef.current?.removeEventListener('click', onCheckBoxClick);
         }
     }, []);
 

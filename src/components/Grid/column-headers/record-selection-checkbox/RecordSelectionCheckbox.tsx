@@ -3,6 +3,8 @@ import { getGlobalCheckboxStyles } from "./styles";
 import { Theming, useRerender, useThemeGenerator } from "@talxis/react-components";
 import { useMemo } from "react";
 import { useGridInstance } from "../../grid/useGridInstance";
+import { useEventEmitter } from "../../../../hooks/useEventEmitter";
+import { IDataProviderEventListeners } from "@talxis/client-libraries";
 
 
 export const RecordSelectionCheckBox = () => {
@@ -17,16 +19,13 @@ export const RecordSelectionCheckBox = () => {
     const theme = useThemeGenerator(primaryColor, backgroundColor, textColor, v8FluentOverrides);
     const styles = getGlobalCheckboxStyles(theme);
     const rerender = useRerender();
+    //useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', rerender);
+    useEventEmitter<IDataProviderEventListeners>(dataset, 'onRecordsSelected', rerender);
 
-    useMemo(() => {
-        dataset.addEventListener('onRecordsSelected', () => rerender());
-        dataset.addEventListener('onNewDataLoaded', () => rerender());
-    }, []);
 
     const getCheckBoxState = () => {
         const selectedRecordIds = dataset.getDataProvider().getSelectedRecordIds();
-        const selectedRecordIdsWithChildren = dataset.getDataProvider().getSelectedRecordIds(true);
-        if (selectedRecordIdsWithChildren.length === 0) {
+        if (selectedRecordIds.length === 0) {
             return 'unchecked';
         }
         if(selectedRecordIds.length === dataset.sortedRecordIds.length) {

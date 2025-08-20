@@ -6,13 +6,17 @@ import { getHeaderStyles } from "./styles";
 import { useRerender } from "@talxis/react-components";
 import { QuickFind } from "../QuickFind/QuickFind";
 import { Ribbon } from "../../Ribbon/Ribbon";
+import { useEventEmitter } from "../../../hooks/useEventEmitter";
+import { IDataProviderEventListeners } from "@talxis/client-libraries";
+import { IDatasetControlModelEvents } from "../DatasetControlModel";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
     const model = useModel();
     const dataset = model.getDataset();
     const rerender = useRerender();
-
     const styles = useMemo(() => getHeaderStyles(), []);
+    useEventEmitter<IDataProviderEventListeners>(dataset, 'onLoading', rerender);
+    useEventEmitter<IDatasetControlModelEvents>(model, 'onRecordCommandsLoaded', rerender);
 
     const isHeaderVisible = () => {
         //render header only in these cases
@@ -32,11 +36,6 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
             }
         }
     }
-
-    useEffect(() => {
-        model.addEventListener('onRecordCommandsLoaded', () => rerender());
-        dataset.addEventListener('onLoading', () => rerender());
-    }, []);
 
     return props.onRenderHeader({
         headerContainerProps: {
