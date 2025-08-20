@@ -54,7 +54,7 @@ export class AgGridModel extends EventEmitter<IEvents> {
     private _getContainer: () => HTMLDivElement;
     private _debouncedColumnResized: debounce.DebouncedFunction<(e: ColumnResizedEvent<IRecord>) => void>;
     private _debouncedRefresh: debounce.DebouncedFunction<() => void>;
-    private _debouncedSetSelectedNodes: debounce.DebouncedFunction<() => void>;
+    private _debouncedSetSelectedNodes: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _expandedRowGroupIds: string[] = [];
     private _hasUserExpandedRowGroups: boolean = false;
 
@@ -64,7 +64,7 @@ export class AgGridModel extends EventEmitter<IEvents> {
         this._getContainer = getContainer;
         this._dataSource = new ServerSideDatasource(this);
         this._debouncedColumnResized = debounce((e: ColumnResizedEvent<IRecord>) => this._onColumnResized(e));
-        this._debouncedSetSelectedNodes = debounce(() => this._setSelectedNodes(), 0);
+        this._debouncedSetSelectedNodes = debounce((ids) => this._setSelectedNodes(ids), 0);
         this._debouncedRefresh = debounce(() => this._refresh(), 0);
         this._dataset.addEventListener('onInitialDataLoaded', () => {
             this._grid.getAggregation().addEventListener('onStateUpdated', () => this._setPinnedRowData());
@@ -310,7 +310,7 @@ export class AgGridModel extends EventEmitter<IEvents> {
 
     private _registerEventListeners() {
         this._dataset.addEventListener('onLoading', (isLoading: boolean) => this._setLoadingOverlay(isLoading));
-        this._dataset.addEventListener('onRecordsSelected', () => this._debouncedSetSelectedNodes());
+        this._dataset.addEventListener('onRecordsSelected', (ids: string[]) => this._debouncedSetSelectedNodes(ids));
         this._dataset.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded());
         this._dataset.addEventListener('onRenderRequested', () => this.refresh());
         this.getGridApi().addEventListener('gridSizeChanged', () => this._autoSizeColumns());
@@ -490,13 +490,11 @@ export class AgGridModel extends EventEmitter<IEvents> {
         });
     }
 
-    private async _setSelectedNodes() {
-        await this._grid.loadGroups(this._dataset.getDataProvider().getSelectedRecordIds(true));
-        const ids = this._dataset.getDataProvider().getSelectedRecordIds(true);
-        
+    private async _setSelectedNodes(ids: string[]) {
+        await this._grid.loadGroups(ids);
         this.getGridApi().setServerSideSelectionState({
             selectAll: false,
-            toggledNodes: ids
+            toggledNodes: this._grid.getDataset().getDataProvider().getSelectedRecordIds(true)
         })
         this.getGridApi().refreshCells({
             columns: [CHECKBOX_COLUMN_KEY],

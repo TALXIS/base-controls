@@ -13,13 +13,13 @@ export class ServerSideDatasource implements IServerSideDatasource {
         const records = this._agGrid.getGrid().getDataset().getDataProvider().getRecords();
         if (params.request.groupKeys.length > 0) {
             const groupDataProvider = this._agGrid.getGrid().getGroupChildrenDataProvider(params.parentNode.data);
-            const selectedRecordIds = groupDataProvider.getSelectedRecordIds();
+            const enableRecordSelectionClearing = this._preventRecordSelectionClearing(groupDataProvider);
             let records: IRecord[] = [];
             try {
                 records = await groupDataProvider.refresh();
             }
             catch (err) { }
-            groupDataProvider.setSelectedRecordIds(selectedRecordIds);
+            enableRecordSelectionClearing();
             if (groupDataProvider.isError()) {
                 params.fail();
             }
@@ -35,6 +35,16 @@ export class ServerSideDatasource implements IServerSideDatasource {
                 rowData: records,
                 rowCount: records.length
             })
+        }
+    }
+
+    private _preventRecordSelectionClearing(dataProvider: IDataProvider) {
+        const originalClearSelectedRecords = dataProvider.clearSelectedRecordIds;
+        dataProvider.clearSelectedRecordIds = () => {
+            // Do nothing to prevent clearing selected records
+        }
+        return () => {
+            dataProvider.clearSelectedRecordIds = originalClearSelectedRecords;
         }
     }
 }

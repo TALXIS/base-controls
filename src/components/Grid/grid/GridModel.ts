@@ -558,31 +558,28 @@ export class GridModel {
 
     public async loadGroups(ids: string[]) {
         const groupIds = this._getGroupRecordIds(ids);
-        const providers: Promise<IDataProvider>[] = [];
+        const providersToRefresh: Promise<IDataProvider>[] = [];
         let loadingTriggered = false;
 
         for (const groupId of groupIds) {
             const record = this._dataset.getDataProvider().getRecordsMap()[groupId];
             const groupDataProvider = this.getGroupChildrenDataProvider(record);
-            //refresh provider if it has no records
-            if (groupDataProvider.getRecords().length === 0) {
-                if(!loadingTriggered) {
-                    this._dataset.getDataProvider().setLoading(true);
-                    loadingTriggered = true;
-                }
-                providers.push(new Promise(async (resolve) => {
-                    await groupDataProvider.refresh();
-                    resolve(groupDataProvider);
-                }))
+            if (groupDataProvider.getRecords().length > 0) {
+                return;
             }
-            else {
-                providers.push(Promise.resolve(groupDataProvider));
+            if (!loadingTriggered) {
+                this._dataset.getDataProvider().setLoading(true);
+                loadingTriggered = true;
             }
+            providersToRefresh.push(new Promise(async (resolve) => {
+                await groupDataProvider.refresh();
+                resolve(groupDataProvider);
+            }))
         }
-        for (const provider of await Promise.all(providers)) {
-            provider.setSelectedRecordIds(provider.getSortedRecordIds(), { propagateToChildren: false });
+        for (const provider of await Promise.all(providersToRefresh)) {
+            provider.setSelectedRecordIds(provider.getSortedRecordIds());
         }
-        if(loadingTriggered) {
+        if (loadingTriggered) {
             this._dataset.getDataProvider().setLoading(false);
         }
     }
