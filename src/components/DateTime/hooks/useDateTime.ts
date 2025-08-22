@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 import { useInputBasedControl } from "../../../hooks/useInputBasedControl";
-import { IDateTime, IDateTimeOutputs, IDateTimeParameters } from "../interfaces";
+import { IDateTime, IDateTimeOutputs, IDateTimeParameters} from "../interfaces";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "../translations";
-import { ITranslation } from "../../../hooks";
+import {ITranslation } from "../../../hooks";
 import { ITheme } from "@talxis/react-components";
 
 dayjs.extend(customParseFormat);
@@ -36,7 +36,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const format = boundValue.attributes.Format ?? boundValue.type;
     const dateFormattingInfo = context.userSettings.dateFormattingInfo;
     const lastValidDateRef = useRef<Date | undefined>(undefined);
-
+    
     const isDateTime = (() => {
         switch (format) {
             case 'DateAndTime':
@@ -88,7 +88,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             }
             return boundValue.raw;
         }
-        if (boundValue.error) {
+        if(boundValue.error) {
             return lastValidDateRef.current;
         }
         return undefined;
@@ -96,28 +96,19 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
 
     const dateExtractor = (value: string | Date): Date | string => {
         if (value instanceof Date) {
-            let dayjsDate = dayjs(value);
-            if (!isDateTime) {
-                dayjsDate = dayjsDate.startOf('day');
-            }
-            return dayjsDate.toDate();
+            return value;
         }
         const dayjsDate = dayjs(value, formatting, true);
         if (!dayjsDate.isValid()) {
             const dayJsDateNoWhiteSpace = dayjs(value?.replaceAll(' ', ''), formatting.replaceAll(' ', ''));
-            if (!dayJsDateNoWhiteSpace.isValid()) {
+            if(!dayJsDateNoWhiteSpace.isValid()) {
                 return value;
             }
             else {
                 return dayJsDateNoWhiteSpace.toDate();
             }
         }
-        if (!isDateTime) {
-            return dayjsDate.startOf('day').toDate();
-        }
-        else {
-            return dayjsDate.toDate();
-        }
+        return dayjsDate.toDate();
     };
 
     const clearDate = () => {
@@ -129,7 +120,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const selectDate = (date?: Date, time?: string) => {
         //onSelectDate can trigger on initial click with empty date, do not continue in this case
         //for clearing dates, date.clear should be used
-        if (!date && !time) {
+        if(!date && !time) {
             return;
         }
         let dayjsDate = dayjs(date ?? getDate());
@@ -139,7 +130,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         }
         const dayjsTime = dayjs(time, shortTimePattern, true);
         let invalidDateString;
-        if (!dayjsTime.isValid()) {
+        if(!dayjsTime.isValid()) {
             invalidDateString = `${dayjsDate.format(shortDatePattern)} ${time}`
         }
         dayjsDate = dayjsDate.hour(dayjsTime.hour());
@@ -148,7 +139,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             value: dateExtractor(invalidDateString ?? dayjsDate.toDate()) as any
         });
     };
-    const { value, labels, theme, setValue, onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
+    const {value, labels, theme, setValue, onNotifyOutputChanged} = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
         formatter: formatDate,
         valueExtractor: dateExtractor,
         defaultTranslations: getDefaultDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
