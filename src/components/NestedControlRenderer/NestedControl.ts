@@ -48,6 +48,7 @@ export interface IOptions {
         onGetProps?: (props: IControl<any, any, any, any>) => IControl<any, any, any, any>;
         onRender?: (control: NestedControl, defaultRender: () => Promise<void>) => void;
         onUnmount?: (control: NestedControl, defaultUnmount: () => void) => void;
+        onIsLoading?: () => boolean;
     }
 }
 
@@ -71,7 +72,7 @@ export class NestedControl {
 
     constructor(options: IOptions) {
         this._options = options;
-        this._getPropertiesFromBindings()
+        this._getPropertiesFromBindings();
     }
 
     public getProps(): IControl<IParameters, any, any, any> {
@@ -94,7 +95,7 @@ export class NestedControl {
                 }),
                 factory: {
                     ...this.getOptions().parentPcfContext.factory,
-                    requestRender: () => this.render()
+                    requestRender: () => this.render(),
                 },
                 fluentDesignLanguage: this._getFluentDesignLanguage(this.getOptions().parentPcfContext.fluentDesignLanguage)
             },
@@ -141,7 +142,7 @@ export class NestedControl {
     }
 
     public async render() {
-        if (this._pendingInitialRender || this._destroyed) {
+        if (this._pendingInitialRender || this._destroyed || this._options.overrides?.onIsLoading?.()) {
             return;
         }
         await this._getPropertiesFromBindings();

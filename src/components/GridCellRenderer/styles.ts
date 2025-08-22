@@ -1,87 +1,103 @@
 import { mergeStyleSets } from "@fluentui/react"
-import { DataType, IColumn } from "@talxis/client-libraries";
-import { ITheme } from "@talxis/react-components";
+import { IColumn } from "@talxis/client-libraries";
+import { GridCellRendererModel } from "./GridCellRendererModel";
 
-export const getGridCellLabelStyles = (columnAlignment: IColumn['alignment'], dataType: DataType, rowHeight: number, theme: ITheme) => {
+let minHeight: number | undefined = undefined;
+
+export const getGridCellRendererStyles = (model: GridCellRendererModel, height?: number) => {
+    const columnAlignment = model.getColumnAlignment();
+    const theme = model.getControlTheme();
+    const isMultiline = model.isMultiline();
+    const autoHeightEnabled = model.isAutoHeightEnabled()
+    const hasAggregationLabel = !!model.getAggregationLabel();
+    const formattedAggregatedValue = model.getFormattedAggregatedValue();
+    const value = model.getValue();
+
+    if(minHeight === undefined) {
+        minHeight = height;
+    }
     return mergeStyleSets({
-        root: {
-            height: rowHeight,
+        gridCellRendererRoot: {
+            height: '100%',
+            minHeight: autoHeightEnabled ? minHeight : undefined,
             paddingLeft: 8,
             paddingRight: 8,
             display: 'flex',
-            flexDirection: 'column'
+            alignItems: getAlignItems(columnAlignment, hasAggregationLabel, isMultiline),
+            justifyContent: hasAggregationLabel ? 'flex-end' : getJustifyContent(columnAlignment),
+            flexDirection: hasAggregationLabel ? 'column' : 'row',
+            overflow: 'hidden',
+            resize: autoHeightEnabled ? 'vertical' : undefined
+        },
+        contentContainer: {
+            display: 'flex',
+            minWidth: 0,
+            gap: 5,
+            flexGrow: 1,
+            width: '100%',
+            alignItems: 'center'
+            //alignItems: isMultiline ? 'flex-start' : 'flex-end'
+        },
+        innerContentContainer: {
+            display: 'flex',
+            overflow: 'hidden',
+            justifyContent: getJustifyContent(columnAlignment),
+            flexGrow: 1,
+            gap: 3
         },
         aggregationLabel: {
-            lineHeight: 6,
-            textAlign: columnAlignment,
+            lineHeight: '1',
+            fontSize: theme.fonts.small.fontSize,
+            width: '100%',
+            textAlign: 'right',
             color: theme.semanticColors.infoIcon,
-            fontSize: 12,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
         },
-        prefixSuffixContentWrapper: {
-            display: 'flex',
-            flexGrow: 1,
-            alignItems: 'center',
-            justifyContent: getJustifyContent(columnAlignment),
-            gap: 10,
-
+        aggregatedValue: {
+            ...formattedAggregatedValue != null && value == null ? {
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+            } : {}
         },
-        fileWrapper: {
-            display: 'flex',
-            gap: 5,
+        valueContainer: {
+            minWidth: 0,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            alignItems: 'center'
-        },
-        contentWrapper: {
             flexGrow: 1,
             textAlign: columnAlignment,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
         },
-        fileImage: {
-            marginRight: 5,
-            flexShrink: 0,
+        affixIconRoot: {
             'img': {
-                width: 32
+                width: 18
             }
-        },
-        link: {
-            maxWidth: '100%',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            ...(isMultiple(dataType) ? getMultilineStyles(rowHeight, theme) : {})
-        },
-        icon: {
-            'img': {
-                width: 20
-            }
-        },
-        fileIcon: {
-            fontSize: 18
-        },
-        loadingSpinnerCircle: {
-            width: 20,
-            height: 20
         }
     })
 }
-export const getDefaultContentRendererStyles = (theme: ITheme, dataType: DataType, rowHeight: number) => {
-    return mergeStyleSets({
-        content: {
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            flexGrow: 1,
-            ...(isMultiple(dataType) ? getMultilineStyles(rowHeight, theme) : {})
-        },
-        placeholder: {
-            color: theme.semanticColors.inputPlaceholderText
+
+const getAlignItems = (columnAlignment: IColumn['alignment'], hasAggregationLabel: boolean, isMultiline: boolean) => {
+    if (hasAggregationLabel) {
+        switch (columnAlignment) {
+            case 'left': {
+                return 'flex-start';
+            }
+            case 'center': {
+                return 'center';
+            }
+            case 'right': {
+                return 'flex-end';
+            }
         }
-    });
+    }
+    if(isMultiline) {
+        return 'flex-start'
+    }
+    else {
+        return 'center';
+    }
 }
 
-const getJustifyContent = (columnAlignment: IColumn['alignment']) => {
+export const getJustifyContent = (columnAlignment: IColumn['alignment']) => {
     switch (columnAlignment) {
         case 'left': {
             return 'flex-start';
@@ -93,30 +109,4 @@ const getJustifyContent = (columnAlignment: IColumn['alignment']) => {
             return 'flex-end';
         }
     }
-}
-
-const getMultilineStyles = (rowHeight: number, theme: ITheme) => {
-    rowHeight = rowHeight + 1;
-    let fontSize = 20;
-    const themeFontSize = theme.fonts.medium.fontSize;
-    theme.fonts.medium.lineHeight
-    if (typeof themeFontSize === 'number') {
-        fontSize = themeFontSize;
-    }
-    else if (typeof themeFontSize === 'string' && themeFontSize.endsWith('px')) {
-        fontSize = parseInt(themeFontSize.replace('px', ''));
-    }
-    const clamp = Math.floor(rowHeight / fontSize) - 1;
-    return {
-        lineHeight: '1.2',
-        display: '-webkit-box',
-        whiteSpace: 'normal',
-        '-webkit-box-orient': 'vertical',
-        wordBreak: 'break-all',
-        '-webkit-line-clamp': clamp.toString(),
-    };
-}
-
-const isMultiple = (dataType: DataType) => {
-    return dataType === 'Multiple' || dataType === 'SingleLine.TextArea';
 }

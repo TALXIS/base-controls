@@ -9,7 +9,6 @@ import { DateTime } from '../DateTime';
 import { MultiSelectOptionSet } from '../MultiSelectOptionSet';
 import { Lookup } from '../Lookup';
 import { OptionSet } from '../OptionSet';
-import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
 import { BaseControls } from '../../utils';
 import { getNestedControlStyles } from './styles';
 import { Spinner, useRerender } from '@talxis/react-components';
@@ -17,6 +16,8 @@ import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } fr
 import ReactDOM from 'react-dom';
 import { useControlLabels } from '../../hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
+import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
+import { GridColumnHeader } from '../GridColumnHeader/GridColumnHeader';
 
 interface IRef {
     control: NestedControl | null;
@@ -104,6 +105,9 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 return Duration;
             case 'GridCellRenderer':
                 return GridCellRenderer;
+            case 'GridColumnHeader': {
+                return GridColumnHeader;
+            }
             default:
                 return GridCellRenderer;
         }
@@ -154,7 +158,8 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 },
                 onUnmount: (control, defaultUnmount) => {
                     getRef().componentProps.onOverrideUnmount(control, () => onUmount(control, defaultUnmount))
-                }
+                },
+                onIsLoading: () => getRef().componentProps.onOverrideIsLoading?.()
             },
         })
 
@@ -235,7 +240,7 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
 
     return (
         <div {...componentProps.rootContainerProps}>
-            {(!control || control.isLoading()) && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>
+            {(!control || control.isLoading() || props.componentProps.onOverrideIsLoading?.()) && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>
             }
             {errorMessage &&
                 <MessageBar messageBarType={MessageBarType.error} isMultiline={false} actions={<div>

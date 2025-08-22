@@ -1,5 +1,5 @@
 import { mergeStyles } from "@fluentui/react";
-import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
+import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, IGroupByMetadata, MemoryDataProvider } from "@talxis/client-libraries";
 
 interface IOutputs {
     DatasetControl?: any;
@@ -12,6 +12,7 @@ interface IParameterGetters {
     onGetEntityMetadata: () => string | null;
     customDataProvider?: IDataProvider;
     onGetHeight?: () => string | null;
+    onGetGroupingType?: () => 'nested' | 'flat';
     /**
      * Callback that gets triggered and awaited before the dataset is initialized. Useful for setting initialization code that needs to run before the dataset is ready.
      */
@@ -28,10 +29,6 @@ export class VirtualDatasetAdapter {
         'Memory': MemoryDataProvider
     };
     private _dataset!: Dataset<IDataProvider>;
-    private _parsedData: any = null;
-    private _lastUsedColumns: string | null = null;
-    private _lastUsedData: string | null = null;
-    private _lastUsedMetadata: string | null = null;
     private _dataProviderClass!: (typeof this._providerClasses[keyof typeof this._providerClasses]);
     private _container!: HTMLDivElement;
     private _notifyOutputChanged!: () => void;
@@ -46,7 +43,7 @@ export class VirtualDatasetAdapter {
         this._notifyOutputChanged = notifyOutputChanged;
         this._container = container;
         let dataProvider: any = null;
-        if(parameters.dataProviderType !== 'Custom') {
+        if (parameters.dataProviderType !== 'Custom') {
             //@ts-ignore - typings
             this._dataProviderClass = this._providerClasses[this._parameters.dataProviderType];
             dataProvider = new this._dataProviderClass(this._getData(), this._getEntityMetadata());
@@ -54,47 +51,21 @@ export class VirtualDatasetAdapter {
         else {
             dataProvider = this._parameters.customDataProvider;
         }
+        (<IDataProvider>dataProvider).grouping.setGroupingType(parameters.onGetGroupingType?.() ?? 'nested');
         //@ts-ignore - typings
         this._dataset = new Dataset(dataProvider);
-        this._dataset.setColumns(this._getColumns());
+        this._dataset.setDataSource(this._getData());
         this._dataset.setMetadata(this._getEntityMetadata());
-
         if (this._parameters.onGetHeight?.() === '100%') {
             this._container.classList.add(this._getFullTabStyles());
         }
-        this._lastUsedColumns = this._parameters.onGetColumns();
-        this._lastUsedData = this._parameters.onGetData();
-        this._lastUsedMetadata = this._parameters.onGetEntityMetadata();
         this._notifyOutputChanged();
         this._onDatasetInit();
         return this;
     }
 
     public updateView(): void {
-        this._parsedData = null;
-        this._refreshOnChange([
-            {
-                previousValue: this._lastUsedColumns,
-                currentValue: this._parameters.onGetColumns(),
-                beforeRefreshCallback: () => this._dataset.setColumns(this._getColumns())
-            },
-            {
-                previousValue: this._lastUsedData,
-                currentValue: this._parameters.onGetData(),
-                beforeRefreshCallback: () => {
-                    this._dataset.setDataSource(this._getData());
-                    this._dataset.setColumns(this._getColumns());
-                }
-            },
-            {
-                previousValue: this._lastUsedMetadata,
-                currentValue: this._parameters.onGetEntityMetadata(),
-                beforeRefreshCallback: () => this._dataset.setMetadata(this._getEntityMetadata())
-            }
-        ]);
-        this._lastUsedColumns = this._parameters.onGetColumns();
-        this._lastUsedData = this._parameters.onGetData();
-        this._lastUsedMetadata = this._parameters.onGetEntityMetadata();
+
     }
 
     public getDataset(): Dataset<IDataProvider> {
@@ -115,16 +86,13 @@ export class VirtualDatasetAdapter {
     private _onDatasetInit() {
         this.getDataset().setInterceptor('onInitialize', async () => {
             await this._getOutputsPromise;
+            this._dataset.setColumns(this._getColumns());
             await this._parameters.onInitialize?.();
         })
     }
 
     private _getData() {
-        if (this._parsedData) {
-            return this._parsedData;
-        }
-        this._parsedData = this._dataProviderClass.GetParsedData(this._parameters.onGetData());
-        return this._parsedData;
+        return this._dataProviderClass.GetParsedData(this._parameters.onGetData()) as any;
     }
 
     private _getColumns() {
@@ -174,19 +142,6 @@ export class VirtualDatasetAdapter {
         catch (err) {
             console.error(err);
             return this._dataset.getMetadata();
-        }
-    }
-
-    private _refreshOnChange(objectsToCompare: { currentValue: string | null, previousValue: string | null, beforeRefreshCallback?: () => void }[]) {
-        let shouldRefresh = false;
-        objectsToCompare.forEach(obj => {
-            if (obj.currentValue !== obj.previousValue) {
-                shouldRefresh = true;
-                obj.beforeRefreshCallback?.();
-            }
-        });
-        if (shouldRefresh) {
-            this._dataset.paging.loadExactPage(this._dataset.paging.pageNumber);
         }
     }
 

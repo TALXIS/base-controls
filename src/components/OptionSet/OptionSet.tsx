@@ -18,6 +18,7 @@ export const OptionSet = (props: IOptionSet) => {
     const boundValue = parameters.value;
     const { Options } = parameters.value.attributes;
     const context = props.context;
+    const applicationTheme = props.context.fluentDesignLanguage?.applicationTheme;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const comboBoxOptions: IComboBoxOption[] = Options.map(option => ({
@@ -51,10 +52,10 @@ export const OptionSet = (props: IOptionSet) => {
         useComboBoxAsMenuWidth: true,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
         styles: { root: styles.root, callout: styles.callout },
-        onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={props.context.fluentDesignLanguage?.applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
-        calloutProps: {
-            theme: props.context.fluentDesignLanguage?.applicationTheme
-        },
+        onRenderContainer: (containerProps, defaultRender) => <ThemeProvider theme={applicationTheme}>{defaultRender?.(containerProps)}</ThemeProvider>,
+        calloutProps: applicationTheme ? {
+            theme: applicationTheme
+        } : undefined,
         ...(parameters.EnableCopyButton?.raw === true && {
             clickToCopyProps: {
                 key: 'copy',

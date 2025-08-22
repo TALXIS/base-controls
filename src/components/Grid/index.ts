@@ -1,2 +1,2 @@
-export * from './Grid';
+export * from './grid/Grid';
 export * from './interfaces';
