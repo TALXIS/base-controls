@@ -12,6 +12,7 @@ interface IParameterGetters {
     onGetEntityMetadata: () => string | null;
     customDataProvider?: IDataProvider;
     onGetHeight?: () => string | null;
+    onGetGroupingType?: () => 'nested' | 'flat';
     /**
      * Callback that gets triggered and awaited before the dataset is initialized. Useful for setting initialization code that needs to run before the dataset is ready.
      */
@@ -50,6 +51,7 @@ export class VirtualDatasetAdapter {
         else {
             dataProvider = this._parameters.customDataProvider;
         }
+        (<IDataProvider>dataProvider).grouping.setGroupingType(parameters.onGetGroupingType?.() ?? 'nested');
         //@ts-ignore - typings
         this._dataset = new Dataset(dataProvider);
         this._dataset.setDataSource(this._getData());

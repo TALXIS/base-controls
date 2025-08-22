@@ -33,43 +33,22 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
     }
 
     public isPaginationVisible(): boolean {
-        if (this._getParameters().EnablePagination?.raw !== false) {
-            return true;
-        }
-        return false;
+        return this._getParameters().EnablePagination?.raw ?? true;
     }
     public isRecordCountVisible(): boolean {
-        if (this._getParameters().ShowRecordCount?.raw !== false) {
-            return true;
-        }
-        return false;
+        return this._getParameters().ShowRecordCount?.raw ?? true;
     }
     public isPageSizeSwitcherVisible(): boolean {
-        if (this._getParameters().EnablePageSizeSwitcher?.raw !== false) {
-            return true;
-        }
-        return false;
+        return this._getParameters().EnablePageSizeSwitcher?.raw ?? true;
     }
     public isQuickFindVisible(): boolean {
-        return this._getParameters().EnableQuickFind?.raw ?? false;
+        return this._getParameters().EnableQuickFind?.raw ?? true;
     }
     public isAutoSaveEnabled(): boolean {
-        return this._getParameters().EnableAutoSave?.raw === true;
+        return this._getParameters().EnableAutoSave?.raw ?? false;
     }
     public isRibbonVisible(): boolean {
-        return true;
-    }
-    public isUnsavedChangesMessageBarVisible(): boolean {
-        switch (true) {
-            case !this.getDataset().isDirty():
-            case this.getDataset().error:
-            case this.isAutoSaveEnabled(): {
-                return false;
-            }
-            default: {
-                return true;
-            }
-        }
+        return this._getParameters().EnableCommandBar?.raw ?? true;
     }
     public getDataset() {
         return this._getParameters().Grid;

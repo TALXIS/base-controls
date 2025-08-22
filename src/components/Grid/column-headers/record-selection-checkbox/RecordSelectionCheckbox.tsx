@@ -19,12 +19,11 @@ export const RecordSelectionCheckBox = () => {
     const theme = useThemeGenerator(primaryColor, backgroundColor, textColor, v8FluentOverrides);
     const styles = getGlobalCheckboxStyles(theme);
     const rerender = useRerender();
-    //useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', rerender);
     useEventEmitter<IDataProviderEventListeners>(dataset, 'onRecordsSelected', rerender);
 
 
     const getCheckBoxState = () => {
-        const selectedRecordIds = dataset.getDataProvider().getSelectedRecordIds();
+        const selectedRecordIds = dataset.getDataProvider().getSelectedRecordIds({includeGroupRecordIds: true, includeChildrenRecordIds: false});
         if (selectedRecordIds.length === 0) {
             return 'unchecked';
         }

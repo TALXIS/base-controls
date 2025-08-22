@@ -31,12 +31,14 @@ export interface IGridParameters extends IParameters {
     EnableZebra?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableGrouping?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableAggregation?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableCommandBar?: Omit<ITwoOptionsProperty, 'attributes'>;
     RowHeight?: Omit<IWholeNumberProperty, 'attributes'>;
     EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableAutoSave?: Omit<ITwoOptionsProperty, 'attributes'>;
     DefaultExpandedGroupLevel?: Omit<IWholeNumberProperty, 'attributes'>;
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
+    GroupType?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">, 'type'>;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;
     Grid: IDataset
 }

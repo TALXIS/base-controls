@@ -106,6 +106,10 @@ export class GridModel {
     public isEditingEnabled(): boolean {
         return this.getParameters().EnableEditing?.raw === true;
     }
+    public getGroupType(): 'nested' | 'flat' {
+        return this.getParameters().GroupType?.raw ?? 'nested';
+    }
+
     public optionSetColorsEnabled(): boolean {
         return this.getParameters().EnableOptionSetColors?.raw === true;
     }
@@ -318,7 +322,8 @@ export class GridModel {
     }
 
     public isColumnExpandable(record: IRecord, column: IColumn): boolean {
-        return !!record.getDataProvider().grouping.getGroupBy(column.grouping?.alias!);
+        const groupBy = record.getDataProvider().grouping.getGroupBys()[0];
+        return groupBy?.columnName === column.name
     }
 
     public getFieldFormatting(record: IRecord, columnName: string): Required<ICustomColumnFormatting> {
@@ -474,7 +479,7 @@ export class GridModel {
         const dataProvider = record.getDataProvider();
         const level = dataProvider.getNestingLevel();
         const groupBys = this.getDataset().grouping.getGroupBys();
-        if (level < groupBys.length - 1) {
+        if (this.getGroupType() === 'nested' && level < groupBys.length - 1) {
             return true;
         }
         if (dataProvider.getSummarizationType() === 'grouping' && this.getSelectionType() === 'single') {
@@ -814,6 +819,9 @@ export class GridModel {
     //this method makes sure that the grouping is only applied to the first grouping column
     //this allows for nested grouping to work correctly
     private _setGroupingInterceptor() {
+        if(this.getGroupType() === 'flat') {
+            return;
+        }
         let originalGrouping: IGroupByMetadata[] = [];
         let originalAggregation: IGroupByMetadata[] = [];
         this._dataset.addEventListener('onBeforeNewDataLoaded', () => {

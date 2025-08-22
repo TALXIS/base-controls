@@ -15,7 +15,6 @@ import { ThemeProvider } from "@fluentui/react";
 import { getGridStyles } from "./styles";
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
-import { useDebouncedCallback } from "use-debounce";
 import { AgGridContext } from "./ag-grid/AgGridContext";
 
 const getGridInstance = (onGetProps: () => IGrid, labels: any, theme: ITheme): GridModel => {
@@ -56,11 +55,8 @@ export const Grid = (props: IGrid) => {
                 ref={containerRef}
             >
                 <AgGridReact
-                    animateRows={false}
                     getRowId={(params: GetRowIdParams<IRecord>) => `${params.data.getRecordId()}`}
                     rowModelType='serverSide'
-                    suppressCopyRowsToClipboard
-                    groupDisplayType="custom"
                     //needs to be set here, crashes if set via API
                     rowHeight={grid.getDefaultRowHeight()}
                     rowSelection={agGrid.getSelectionType()}
@@ -77,11 +73,6 @@ export const Grid = (props: IGrid) => {
                                 backgroundColor: grid.getDefaultCellTheme(record).semanticColors.bodyBackground,
                             }
                         },
-                        rowClassRules: {
-                            'my-custom-selected': (params) => {
-                                return !!params.node.isSelected();
-                            }
-                        }
                     }}
                     onGridReady={onGridReady}
                 />

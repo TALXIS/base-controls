@@ -1,7 +1,7 @@
-import { ActionButton, MessageBar, MessageBarType } from "@fluentui/react";
+import { MessageBar, MessageBarType } from "@fluentui/react";
 import { IComponentProps } from "../interfaces";
 import { useModel } from "../useModel";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { getHeaderStyles } from "./styles";
 import { useRerender } from "@talxis/react-components";
 import { QuickFind } from "../QuickFind/QuickFind";
@@ -19,16 +19,11 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
     useEventEmitter<IDatasetControlModelEvents>(model, 'onRecordCommandsLoaded', rerender);
 
     const isHeaderVisible = () => {
-        //render header only in these cases
-        //rest of the cases (ribbon, quick find) are handled by the platform for native grids
-        if (!dataset.isVirtual()) {
-            return dataset.isDirty() || dataset.error;
-        }
         switch (true) {
             case model.isQuickFindVisible():
             case dataset.error:
             case model.isRibbonVisible():
-            case dataset.isDirty(): {
+            {
                 return true;
             }
             default: {

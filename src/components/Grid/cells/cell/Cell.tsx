@@ -51,7 +51,10 @@ export const Cell = (props: ICellProps) => {
                 if (_column.aggregation?.aggregationFunction && !_column.grouping?.isGrouped) {
                     return false;
                 }
-                return dataProvider.grouping.getGroupBys()[0].columnName !== column.name
+                if (grid.getGroupType() === 'nested') {
+                    return dataProvider.grouping.getGroupBys()[0].columnName !== column.name
+                }
+                return !column.grouping?.isGrouped;
             }
             case summarizationType === 'aggregation': {
                 return !dataProvider.getColumnsMap()[column.name]?.aggregation?.aggregationFunction;

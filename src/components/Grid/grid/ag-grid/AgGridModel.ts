@@ -240,7 +240,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     private _isColumnPinned(column: IGridColumn): boolean {
         switch (true) {
-            case column.name === CHECKBOX_COLUMN_KEY:
+            case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY:
             case column.grouping?.isGrouped: {
                 return true;
             }
@@ -329,6 +329,9 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this.getGridApi().setGridOption('isFullWidthRow', (params) => this._isFullWidthRow(params));
         this.getGridApi().setGridOption('fullWidthCellRenderer', FullWidthCellRendererError);
         this.getGridApi().setGridOption('fullWidthCellRendererParams', (params: IsFullWidthRowParams<IRecord>) => this._getFullWidthCellRendererParams(params))
+        this.getGridApi().setGridOption('suppressCopyRowsToClipboard', true);
+        this.getGridApi().setGridOption('animateRows', false);
+        this.getGridApi().setGridOption('groupDisplayType', 'custom');
     }
 
     private _isFullWidthRow(params: IsFullWidthRowParams<IRecord>): boolean {
@@ -493,15 +496,17 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private async _setSelectedNodes(ids: string[]) {
         const childProviders = this._dataset.getDataProvider().getChildDataProviders(true).filter(x => x.getParentRecordId());
         if (!this._isLoadingNestedProviders && childProviders.some(provider => provider.isLoading())) {
-            this._isLoadingNestedProviders = true;
             this._dataset.getDataProvider().setLoading(true);
         }
         else if (this._isLoadingNestedProviders && childProviders.every(provider => !provider.isLoading())) {
-            this._dataset.getDataProvider().setLoading(false);
+            this._isLoadingNestedProviders = false;
+            if (ids.length !== 0) {
+                this._dataset.getDataProvider().setLoading(false);
+            }
         }
         this.getGridApi().setServerSideSelectionState({
             selectAll: false,
-            toggledNodes: this._grid.getDataset().getDataProvider().getSelectedRecordIds({includeGroupRecordIds: true})
+            toggledNodes: this._grid.getDataset().getDataProvider().getSelectedRecordIds({ includeGroupRecordIds: true })
         })
         this.getGridApi().refreshCells({
             columns: [CHECKBOX_COLUMN_KEY],

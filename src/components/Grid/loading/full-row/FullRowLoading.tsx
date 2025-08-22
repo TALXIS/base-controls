@@ -1,4 +1,4 @@
-import { MessageBar, MessageBarType, Shimmer } from "@fluentui/react"
+import { Shimmer } from "@fluentui/react"
 import { useMemo } from "react"
 import { getFullRowLoadingStyles } from "./styles"
 import { ILoadingCellRendererParams } from "@ag-grid-community/core"
