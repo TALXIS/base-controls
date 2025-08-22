@@ -1,4 +1,4 @@
-import { AggregationFunction, DataProvider, DataType, DataTypes, FieldValue, Filtering, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { AggregationFunction, DataProvider, DataType, DataTypes, FieldValue, Filtering, Grouping, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IRecord, Sanitizer, Sorting, TotalRow } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import { ITheme, Theming } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
@@ -8,10 +8,10 @@ import { ITranslation } from "../../../hooks";
 import { IBinding } from "../../NestedControlRenderer/interfaces";
 import { BaseControls, IFluentDesignState } from "../../../utils";
 import { IGrid, IGridParameters } from "../interfaces";
-import { Aggregation, Sorting, Grouping } from "../../../utils/dataset/extensions";
 import { CHECKBOX_COLUMN_KEY } from "../constants";
 import { Type as FilterType } from "@talxis/client-libraries";
-import { useCurrentlyHeldKey } from "@solid-primitives/keyboard";
+import hotkeys from 'hotkeys-js';
+import { includes } from "lodash";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
@@ -23,12 +23,6 @@ interface IGridDependencies {
 
 interface IPCFContext extends Omit<ComponentFramework.Context<any, any>, 'fluentDesignLanguage'> {
     fluentDesignLanguage?: IFluentDesignState
-}
-
-interface IAggregationInfo {
-    value: number | null;
-    formattedValue: string | null;
-    aggregatedColumn: IColumn | null;
 }
 
 export interface IGridColumn extends IColumn {
@@ -53,9 +47,8 @@ export class GridModel {
     private _cachedColumns: IGridColumn[] = [];
     private _cachedColumnsMap: Map<string, IGridColumn> = new Map();
     private _hasFirstDataBeenLoaded = false;
-    private _getCurrentlyHeldKey = useCurrentlyHeldKey();
     private __sorting?: Sorting;
-    private __aggregation?: Aggregation;
+    private __totalRow?: TotalRow
     private __grouping?: Grouping;
     private __filtering?: Filtering;
 
@@ -66,17 +59,19 @@ export class GridModel {
         this.oddRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.neutralLighterAlt, this._theme.semanticColors.bodyText);
         this.evenRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.white, this._theme.semanticColors.bodyText);
         this._registerEventListeners();
+        hotkeys('*', (event, handler) => {
+        })
     }
     public init() {
         if (this._hasFirstDataBeenLoaded) {
             return;
         }
         this._hasFirstDataBeenLoaded = true;
-        this.__sorting = new Sorting(() => this.getDataset());
-        this.__aggregation = new Aggregation({
+        this.__sorting = new Sorting(() => this.getDataset().getDataProvider());
+        this.__totalRow = new TotalRow({
             onGetDataProvider: () => this.getDataset().getDataProvider(),
         })
-        this.__filtering = new Filtering(() => this.getDataset().getDataProvider() , FieldValue);
+        this.__filtering = new Filtering(() => this.getDataset().getDataProvider(), FieldValue);
         this.__grouping = new Grouping(() => this.getDataset().getDataProvider());
     }
 
@@ -102,6 +97,9 @@ export class GridModel {
     }
     public isAutoSaveEnabled(): boolean {
         return this.getParameters().EnableAutoSave?.raw === true;
+    }
+    public isGroupedColumnsPinnedEnabled(): boolean {
+        return this.getParameters().EnableGroupedColumnsPinning?.raw !== false;
     }
     public isEditingEnabled(): boolean {
         return this.getParameters().EnableEditing?.raw === true;
@@ -488,10 +486,6 @@ export class GridModel {
         return false;
     }
 
-    public getCurrentlyHeldKey(): string | null {
-        return this._getCurrentlyHeldKey();
-    }
-
     public isColumnEditable(columnName: string, record?: IRecord): boolean {
         let isEditable = true;
         const mainDatasetColumn = this.getDataset().getDataProvider().getColumnsMap()[columnName]!;
@@ -539,14 +533,14 @@ export class GridModel {
     public addAggregation(columnName: string, aggregationFunction: AggregationFunction) {
         this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._setAggregationDecorator(() => {
-                this._aggregation.addAggregation(columnName, aggregationFunction)
+                this._totalRow.addAggregation(columnName, aggregationFunction)
             })
         })
     }
     public removeAggregation(alias: string) {
         this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._setAggregationDecorator(() => {
-                this._aggregation.removeAggregation(alias);
+                this._totalRow.removeAggregation(alias);
             })
         })
     }
@@ -584,7 +578,7 @@ export class GridModel {
 
     public sortColumn(columnName: string, descending?: boolean) {
         this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
-            this._sorting.getColumnSorting(columnName).setSortValue(descending ? 1 : 0);
+            this._sorting.getColumnSorting(columnName).setSortValue(descending ? 1 : 0, hotkeys.getPressedKeyString().includes('⇧'));
             this._dataset.refresh();
         })
     }
@@ -596,12 +590,26 @@ export class GridModel {
         })
     }
 
-    public getAggregation() {
-        return this._aggregation;
+    public getTotalRow() {
+        return this._totalRow;
     }
 
     public getFiltering() {
         return this._filtering;
+    }
+
+    public isSelectionModifierKeyPressed(): boolean {
+        const pressedKeys = hotkeys.getPressedKeyString().join(',');
+        switch (true) {
+            case pressedKeys.includes('⇧'):
+            case pressedKeys.includes('ctrl'):
+            case pressedKeys.includes('⌘'): {
+                return true;
+            }
+            default: {
+                return false;
+            }
+        }
     }
 
     public getColumnSortingLabel(columnName: string, descending?: boolean): string {
@@ -640,6 +648,10 @@ export class GridModel {
 
     }
 
+    public destroy() {
+        hotkeys.unbind();
+    }
+
     private _getVisibleColumnNames(columns: IGridColumn[]): string[] {
         const names: string[] = [];
         for (const column of columns) {
@@ -658,29 +670,9 @@ export class GridModel {
             this._dataset.refresh();
         }
         else {
-            this._aggregation?.refresh();
+            this._totalRow?.refresh();
             this._dataset.render();
         }
-    }
-
-    private _getGroupRecordIds(ids: string[]): string[] {
-        return ids.filter(id => id.startsWith(DataProvider.CONST.GROUP_PREFIX));
-    }
-
-    private _getFilterValueFromRecordValue(record: IRecord, dataType: DataType, columnAlias: string) {
-        const value = this.getControlValue(record, columnAlias);
-        if (value == null || (Array.isArray(value) && value.length === 0)) {
-            return null;
-        }
-        switch (dataType) {
-            case 'OptionSet': {
-                return [value];
-            }
-            case 'TwoOptions': {
-                return [value ? 1 : 0];
-            }
-        }
-        return value;
     }
 
     private _getRecordValue(record: IRecord, column: IColumn | string, formatted: boolean): { value: any; aggregatedValue: any } {
@@ -819,7 +811,7 @@ export class GridModel {
     //this method makes sure that the grouping is only applied to the first grouping column
     //this allows for nested grouping to work correctly
     private _setGroupingInterceptor() {
-        if(this.getGroupType() === 'flat') {
+        if (this.getGroupType() === 'flat') {
             return;
         }
         let originalGrouping: IGroupByMetadata[] = [];
@@ -869,11 +861,11 @@ export class GridModel {
         return this.__filtering;
     }
 
-    private get _aggregation(): Aggregation {
-        if (!this.__aggregation) {
+    private get _totalRow(): TotalRow {
+        if (!this.__totalRow) {
             throw new Error('Aggregation is not initialized. Call init() method first.');
         }
-        return this.__aggregation;
+        return this.__totalRow;
     }
 
     private get _grouping(): Grouping {

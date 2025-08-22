@@ -67,11 +67,16 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._debouncedSetSelectedNodes = debounce((ids) => this._setSelectedNodes(ids), 0);
         this._debouncedRefresh = debounce(() => this._refresh(), 0);
         this._dataset.addEventListener('onInitialDataLoaded', () => {
-            this._grid.getAggregation().addEventListener('onStateUpdated', () => this._setPinnedRowData());
+            const totalRowDataProvider = this._grid.getTotalRow().getDataProvider();
+            totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
+            totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
         })
     }
 
     public getColumns(gridColumns: IGridColumn[]): ColDef[] {
+        if (this._grid.getDataset().grouping.getGroupBys().length > 0 && !this._grid.isGroupedColumnsPinnedEnabled()) {
+            this._sortColumns(gridColumns);
+        }
         const agColumns = gridColumns.map(column => {
             const isCheckboxColumn = column.name === CHECKBOX_COLUMN_KEY;
             const agColumn: ColDef = {
@@ -198,6 +203,25 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         }
     }
 
+    private _sortColumns(columns: IGridColumn[]): IGridColumn[] {
+        return columns.sort((a, b) => {
+            // If both columns have the same grouping status, maintain original order (return 0)
+            if ((a.grouping?.isGrouped || false) === (b.grouping?.isGrouped || false)) {
+                return 0;
+            }
+            // If a is grouped, it should come first
+            if (a.grouping?.isGrouped) {
+                return -1;
+            }
+            // If b is grouped, it should come first
+            if (b.grouping?.isGrouped) {
+                return 1;
+            }
+            // Default case, should never reach here given the first condition
+            return 0;
+        });
+    }
+
     private _refresh() {
         if (this._grid.getDataset().loading) {
             return;
@@ -241,7 +265,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _isColumnPinned(column: IGridColumn): boolean {
         switch (true) {
             case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY:
-            case column.grouping?.isGrouped: {
+            case column.grouping?.isGrouped && this._grid.isGroupedColumnsPinnedEnabled(): {
                 return true;
             }
             default: {
@@ -327,8 +351,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this.getGridApi().setGridOption('loadingCellRenderer', FullRowLoading)
         this.getGridApi().setGridOption('suppressDragLeaveHidesColumns', true);
         this.getGridApi().setGridOption('isFullWidthRow', (params) => this._isFullWidthRow(params));
-        this.getGridApi().setGridOption('fullWidthCellRenderer', FullWidthCellRendererError);
-        this.getGridApi().setGridOption('fullWidthCellRendererParams', (params: IsFullWidthRowParams<IRecord>) => this._getFullWidthCellRendererParams(params))
+        //this.getGridApi().setGridOption('fullWidthCellRenderer', FullWidthCellRendererError);
+        //this.getGridApi().setGridOption('fullWidthCellRendererParams', (params: IsFullWidthRowParams<IRecord>) => this._getFullWidthCellRendererParams(params))
         this.getGridApi().setGridOption('suppressCopyRowsToClipboard', true);
         this.getGridApi().setGridOption('animateRows', false);
         this.getGridApi().setGridOption('groupDisplayType', 'custom');
@@ -394,6 +418,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this.refresh();
         this._setNoRowsOverlay();
         this._scrollToTop();
+        this.getGridApi().ensureColumnVisible(this._grid.getGridColumns().filter(x => !x.isHidden)[0]?.name ?? '');
     }
 
     private _refreshServerSideModel() {
@@ -560,7 +585,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private _setPinnedRowData() {
-        this.getGridApi().setGridOption('pinnedBottomRowData', this._grid.getAggregation().getAggregationRecord())
+        const totalRecord = this._grid.getTotalRow().getTotalRowRecord();
+        this.getGridApi().setGridOption('pinnedBottomRowData', totalRecord ? [totalRecord] : []);
     }
 
     private _setLoadingOverlay(isLoading: boolean) {

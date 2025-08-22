@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { GetRowIdParams, GridReadyEvent } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { AgGridModel } from "./ag-grid/AgGridModel";
@@ -47,6 +47,12 @@ export const Grid = (props: IGrid) => {
         gridReadyRef.current = true;
     }
 
+    useEffect(() => {
+        return () => {
+            grid.destroy();
+        }
+    }, []);
+
 
     return <GridContext.Provider value={grid}>
         <AgGridContext.Provider value={agGrid}>
@@ -62,9 +68,10 @@ export const Grid = (props: IGrid) => {
                     rowSelection={agGrid.getSelectionType()}
                     loadingOverlayComponent={LoadingOverlay}
                     noRowsOverlayComponent={EmptyRecords}
+                    enableGroupEdit
                     reactiveCustomComponents
                     gridOptions={{
-                         getRowStyle: (params) => {
+                        getRowStyle: (params) => {
                             const record = params.data;
                             if (!record) {
                                 return undefined

@@ -13,5 +13,8 @@ export const getPaginationStyles = (theme: ITheme) => {
                 color: theme.semanticColors.bodyText
             }
         },
+        pageSizeSwitcherRoot: {
+            height: 44
+        }
     })
 }

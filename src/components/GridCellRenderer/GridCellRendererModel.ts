@@ -135,9 +135,9 @@ export class GridCellRendererModel {
     public getLinkProps() {
         const formattedValue = this.getFormattedValue().value;
         switch (true) {
-            case formattedValue == null:
+            case formattedValue == null: 
             //navigation enabled by default
-            case this._getProps().parameters.EnableNavigation?.raw === false: {
+            case this._getProps().parameters.EnableNavigation?.raw === false && !this.isFile(): {
                 return null;
             }
             default: {

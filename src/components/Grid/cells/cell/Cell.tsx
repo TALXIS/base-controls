@@ -25,8 +25,6 @@ export interface ICellProps extends ICellRendererParams {
     value: ICellValues;
 }
 
-const SELECTION_MODIFIER_KEYS = ['SHIFT', 'CONTROL', 'META'];
-
 export const Cell = (props: ICellProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const memoizedContainerRef = useRef<HTMLDivElement | null>();
@@ -69,8 +67,7 @@ export const Cell = (props: ICellProps) => {
     })();
 
     const onCellClick = useCallback((e: MouseEvent) => {
-        const key = grid.getCurrentlyHeldKey();
-        if (record.getDataProvider().getSummarizationType() === 'grouping' && !SELECTION_MODIFIER_KEYS.includes(key!)) {
+        if (record.getDataProvider().getSummarizationType() === 'grouping' && !grid.isSelectionModifierKeyPressed()) {
             e.stopPropagation();
         }
         else if (node.isSelected()) {

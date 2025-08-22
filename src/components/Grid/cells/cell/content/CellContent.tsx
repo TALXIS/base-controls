@@ -226,7 +226,9 @@ export const CellContent = (props: ICellContentProps) => {
                     //skip the unmounting for custom PCF's in Power Apps
                     // PCF unmount in Power Apps causes other nested PCF's to reinitialize which causes flickering
                     //umounting of nested PCF's happens on grid destroy to prevent memory leaks (currently done by refreshing the page as no better method was found)
-                    if (control.isMountedPcfComponent() && !grid.getClient().isTalxisPortal()) {
+                    if (control.isMountedPcfComponent() && !client.isTalxisPortal()) {
+                        //we can atleast destroy the react component
+                        control.getControlInstance()?.destroy();
                         return;
                     }
                     return defaultUnmount();
