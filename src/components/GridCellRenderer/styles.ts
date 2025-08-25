@@ -53,6 +53,8 @@ export const getGridCellRendererStyles = (model: GridCellRendererModel, height?:
             color: theme.semanticColors.infoIcon,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
+            padding: 'initial',
+            paddingTop: 3
         },
         aggregatedValue: {
             ...formattedAggregatedValue != null && value == null ? {
