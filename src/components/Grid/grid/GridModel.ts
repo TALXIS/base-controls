@@ -107,13 +107,14 @@ export class GridModel {
     public getGroupType(): 'nested' | 'flat' {
         return this.getParameters().GroupType?.raw ?? 'nested';
     }
-
     public optionSetColorsEnabled(): boolean {
         return this.getParameters().EnableOptionSetColors?.raw === true;
     }
-
     public getDefaultExpandedGroupLevel(): number {
         return this.getParameters().DefaultExpandedGroupLevel?.raw ?? -1;
+    }
+    public getLicenseKey(): string | null{
+        return this.getParameters().LicenseKey?.raw ?? null;
     }
     public getDefaultRowHeight(): number {
         const height = this.getParameters().RowHeight?.raw;
@@ -122,6 +123,7 @@ export class GridModel {
         }
         return DEFAULT_ROW_HEIGHT;
     }
+
     public getSelectionType(): 'none' | 'single' | 'multiple' {
         switch (this.getParameters().SelectableRows?.raw) {
             case undefined:

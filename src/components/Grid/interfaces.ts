@@ -41,6 +41,7 @@ export interface IGridParameters extends IParameters {
     InlineRibbonButtonIds?: IStringProperty;
     GroupType?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">, 'type'>;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;
+    LicenseKey?: IStringProperty;
     Grid: IDataset
 }
 

@@ -14,6 +14,7 @@ import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-mo
 import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
 import { FullRowLoading } from "../../loading/full-row/FullRowLoading";
 import { FullWidthCellRendererError } from "../../errors/FullWidthCellRendererError/FullWidthCellRendererError";
+import { LicenseManager } from "@ag-grid-enterprise/core";
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule,]);
 
 interface IAgGridTestDependencies {
@@ -71,6 +72,10 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
             totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
         })
+        const licenseKey = this._grid.getLicenseKey();
+        if(licenseKey) {
+            LicenseManager.setLicenseKey(licenseKey);
+        }
     }
 
     public getColumns(gridColumns: IGridColumn[]): ColDef[] {
@@ -351,8 +356,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this.getGridApi().setGridOption('loadingCellRenderer', FullRowLoading)
         this.getGridApi().setGridOption('suppressDragLeaveHidesColumns', true);
         this.getGridApi().setGridOption('isFullWidthRow', (params) => this._isFullWidthRow(params));
-        //this.getGridApi().setGridOption('fullWidthCellRenderer', FullWidthCellRendererError);
-        //this.getGridApi().setGridOption('fullWidthCellRendererParams', (params: IsFullWidthRowParams<IRecord>) => this._getFullWidthCellRendererParams(params))
+        this.getGridApi().setGridOption('fullWidthCellRenderer', FullWidthCellRendererError);
+        this.getGridApi().setGridOption('fullWidthCellRendererParams', (params: IsFullWidthRowParams<IRecord>) => this._getFullWidthCellRendererParams(params))
         this.getGridApi().setGridOption('suppressCopyRowsToClipboard', true);
         this.getGridApi().setGridOption('animateRows', false);
         this.getGridApi().setGridOption('groupDisplayType', 'custom');
