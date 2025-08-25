@@ -521,13 +521,12 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private async _setSelectedNodes(ids: string[]) {
         const childProviders = this._dataset.getDataProvider().getChildDataProviders(true).filter(x => x.getParentRecordId());
         if (!this._isLoadingNestedProviders && childProviders.some(provider => provider.isLoading())) {
+            this._isLoadingNestedProviders = true;
             this._dataset.getDataProvider().setLoading(true);
         }
         else if (this._isLoadingNestedProviders && childProviders.every(provider => !provider.isLoading())) {
             this._isLoadingNestedProviders = false;
-            if (ids.length !== 0) {
                 this._dataset.getDataProvider().setLoading(false);
-            }
         }
         this.getGridApi().setServerSideSelectionState({
             selectAll: false,
