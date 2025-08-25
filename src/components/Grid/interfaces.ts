@@ -31,6 +31,7 @@ export interface IGridParameters extends IParameters {
     EnableZebra?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableGrouping?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableAggregation?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableGroupedColumnsPinning?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableCommandBar?: Omit<ITwoOptionsProperty, 'attributes'>;
     RowHeight?: Omit<IWholeNumberProperty, 'attributes'>;
     EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
@@ -40,6 +41,7 @@ export interface IGridParameters extends IParameters {
     InlineRibbonButtonIds?: IStringProperty;
     GroupType?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">, 'type'>;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;
+    LicenseKey?: IStringProperty;
     Grid: IDataset
 }
 

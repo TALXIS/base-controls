@@ -14,6 +14,7 @@ import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-mo
 import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
 import { FullRowLoading } from "../../loading/full-row/FullRowLoading";
 import { FullWidthCellRendererError } from "../../errors/FullWidthCellRendererError/FullWidthCellRendererError";
+import { LicenseManager } from "@ag-grid-enterprise/core";
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule,]);
 
 interface IAgGridTestDependencies {
@@ -67,11 +68,20 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._debouncedSetSelectedNodes = debounce((ids) => this._setSelectedNodes(ids), 0);
         this._debouncedRefresh = debounce(() => this._refresh(), 0);
         this._dataset.addEventListener('onInitialDataLoaded', () => {
-            this._grid.getAggregation().addEventListener('onStateUpdated', () => this._setPinnedRowData());
+            const totalRowDataProvider = this._grid.getTotalRow().getDataProvider();
+            totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
+            totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
         })
+        const licenseKey = this._grid.getLicenseKey();
+        if(licenseKey) {
+            LicenseManager.setLicenseKey(licenseKey);
+        }
     }
 
     public getColumns(gridColumns: IGridColumn[]): ColDef[] {
+        if (this._grid.getDataset().grouping.getGroupBys().length > 0 && !this._grid.isGroupedColumnsPinnedEnabled()) {
+            this._sortColumns(gridColumns);
+        }
         const agColumns = gridColumns.map(column => {
             const isCheckboxColumn = column.name === CHECKBOX_COLUMN_KEY;
             const agColumn: ColDef = {
@@ -198,6 +208,25 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         }
     }
 
+    private _sortColumns(columns: IGridColumn[]): IGridColumn[] {
+        return columns.sort((a, b) => {
+            // If both columns have the same grouping status, maintain original order (return 0)
+            if ((a.grouping?.isGrouped || false) === (b.grouping?.isGrouped || false)) {
+                return 0;
+            }
+            // If a is grouped, it should come first
+            if (a.grouping?.isGrouped) {
+                return -1;
+            }
+            // If b is grouped, it should come first
+            if (b.grouping?.isGrouped) {
+                return 1;
+            }
+            // Default case, should never reach here given the first condition
+            return 0;
+        });
+    }
+
     private _refresh() {
         if (this._grid.getDataset().loading) {
             return;
@@ -241,7 +270,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _isColumnPinned(column: IGridColumn): boolean {
         switch (true) {
             case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY:
-            case column.grouping?.isGrouped: {
+            case column.grouping?.isGrouped && this._grid.isGroupedColumnsPinnedEnabled(): {
                 return true;
             }
             default: {
@@ -394,6 +423,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this.refresh();
         this._setNoRowsOverlay();
         this._scrollToTop();
+        this.getGridApi().ensureColumnVisible(this._grid.getGridColumns().filter(x => !x.isHidden)[0]?.name ?? '');
     }
 
     private _refreshServerSideModel() {
@@ -496,13 +526,12 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private async _setSelectedNodes(ids: string[]) {
         const childProviders = this._dataset.getDataProvider().getChildDataProviders(true).filter(x => x.getParentRecordId());
         if (!this._isLoadingNestedProviders && childProviders.some(provider => provider.isLoading())) {
+            this._isLoadingNestedProviders = true;
             this._dataset.getDataProvider().setLoading(true);
         }
         else if (this._isLoadingNestedProviders && childProviders.every(provider => !provider.isLoading())) {
             this._isLoadingNestedProviders = false;
-            if (ids.length !== 0) {
                 this._dataset.getDataProvider().setLoading(false);
-            }
         }
         this.getGridApi().setServerSideSelectionState({
             selectAll: false,
@@ -560,7 +589,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private _setPinnedRowData() {
-        this.getGridApi().setGridOption('pinnedBottomRowData', this._grid.getAggregation().getAggregationRecord())
+        const totalRecord = this._grid.getTotalRow().getTotalRowRecord();
+        this.getGridApi().setGridOption('pinnedBottomRowData', totalRecord ? [totalRecord] : []);
     }
 
     private _setLoadingOverlay(isLoading: boolean) {

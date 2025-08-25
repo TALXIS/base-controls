@@ -44,7 +44,7 @@ const externalDeps = [
     '@ag-grid-community/styles',
     '@ag-grid-community/styles/ag-grid.css',
     '@ag-grid-community/styles/ag-theme-balham.css',
-    '@solid-primitives/keyboard'
+    'hotkeys-js',
 ]
 
 export default [

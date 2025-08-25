@@ -33,8 +33,11 @@ export class GridColumnHeaderModel {
         return this._getSorting()?.sortDirection === 1;
     }
     public isUneditableIconVisible() {
-        if(!this._getProps().parameters.EnableEditing?.raw) {
-            return false;
+        switch (true) {
+            case !this._getProps().parameters.EnableEditing?.raw:
+            case this.getColumn().type === 'action': {
+                return false;
+            }
         }
         return !this.getColumn().metadata?.IsValidForUpdate
     }
@@ -43,10 +46,10 @@ export class GridColumnHeaderModel {
         return filtering?.conditions.some(condition => condition.attributeName === Attribute.GetNameFromAlias(this.getColumn().name));
     }
     public isRequired() {
-        if(!this._getProps().parameters.EnableEditing?.raw) {
+        if (!this._getProps().parameters.EnableEditing?.raw) {
             return false;
         }
-        switch(this.getColumn().metadata?.RequiredLevel) {
+        switch (this.getColumn().metadata?.RequiredLevel) {
             case 1:
             case 2: {
                 return true;

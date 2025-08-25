@@ -82,6 +82,10 @@ export class NestedControl {
         return this._props;
     }
 
+    public getControlInstance() {
+        return this._customControlInstance;
+    }
+
     public refreshProps() {
         const parameters: { [name: string]: IProperty } = this.getParameters();
         const props: IControl<any, any, any, any> = {

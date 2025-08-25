@@ -27,6 +27,9 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
     pageSizeSwitcherProps: {
       disabled: !model.isPageSizeSwitcherVisible() || dataset.loading,
       text: paginationModel.toString(),
+      styles: {
+        root: styles.pageSizeSwitcherRoot,
+      },
       menuProps: {
         items: [
           {
