@@ -73,7 +73,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
         })
         const licenseKey = this._grid.getLicenseKey();
-        if(licenseKey) {
+        if (licenseKey) {
             LicenseManager.setLicenseKey(licenseKey);
         }
     }
@@ -423,7 +423,6 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this.refresh();
         this._setNoRowsOverlay();
         this._scrollToTop();
-        this.getGridApi().ensureColumnVisible(this._grid.getGridColumns().filter(x => !x.isHidden)[0]?.name ?? '');
     }
 
     private _refreshServerSideModel() {
@@ -524,14 +523,22 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private async _setSelectedNodes(ids: string[]) {
-        const childProviders = this._dataset.getDataProvider().getChildDataProviders(true).filter(x => x.getParentRecordId());
-        if (!this._isLoadingNestedProviders && childProviders.some(provider => provider.isLoading())) {
+        //interval to prevent infinite loading
+        const checkLoadingNestedProviders = setInterval(() => {
+            if(this._isLoadingNestedProviders && !this._areChildProvidersLoading()) {
+                this._isLoadingNestedProviders = false;
+                this._dataset.getDataProvider().setLoading(false);
+                clearInterval(checkLoadingNestedProviders);
+            }
+        }, 500);
+        if (!this._isLoadingNestedProviders && this._areChildProvidersLoading()) {
             this._isLoadingNestedProviders = true;
             this._dataset.getDataProvider().setLoading(true);
         }
-        else if (this._isLoadingNestedProviders && childProviders.every(provider => !provider.isLoading())) {
+        else if (this._isLoadingNestedProviders && !this._areChildProvidersLoading()) {
             this._isLoadingNestedProviders = false;
-                this._dataset.getDataProvider().setLoading(false);
+            this._dataset.getDataProvider().setLoading(false);
+            clearInterval(checkLoadingNestedProviders);
         }
         this.getGridApi().setServerSideSelectionState({
             selectAll: false,
@@ -541,6 +548,11 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             columns: [CHECKBOX_COLUMN_KEY],
             force: true
         })
+    }
+
+    private _areChildProvidersLoading(): boolean {
+        const childProviders = this._dataset.getDataProvider().getChildDataProviders(true).filter(x => x.getParentRecordId());
+        return childProviders.some(provider => provider.isLoading());
     }
 
     private _valueFormatter(p: ValueFormatterParams<IRecord>): string {

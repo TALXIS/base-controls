@@ -14,7 +14,10 @@ export class PaginationModel {
     }
 
     private _getPageFirstRecordOrder() {
-        return (this._paging.pageNumber - 1) * this._paging.pageSize + (this._paging.totalResultCount === 0 ? 0 : 1);
+        if(this._model.getDataset().sortedRecordIds.length === 0) {
+            return 0;
+        }
+        return (this._paging.pageNumber - 1) * this._paging.pageSize + 1;
     }
 
     private _getFormattedTotalResultCount(): string {

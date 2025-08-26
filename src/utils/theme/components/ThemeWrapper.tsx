@@ -7,7 +7,7 @@ interface IThemeWrapper extends ThemeProviderProps {
     children?: React.ReactNode;
 }
 
-export const ThemeWrapper: React.FC<IThemeWrapper> = (props: IThemeWrapper) => {
+export const ThemeWrapper = (props: IThemeWrapper) => {
     const theme = useControlTheme(props.fluentDesignLanguage);
     return (
         <ThemeProvider theme={theme} {...props}>

@@ -1,4 +1,4 @@
-import { CommandBarButton, ContextualMenuItemType, useTheme } from "@fluentui/react";
+import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
 import { IFooterProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { getPaginationStyles } from "./styles";
@@ -44,10 +44,10 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
           ...PAGE_SIZE_OPTIONS.map((size) => ({
             key: size,
             text: size,
+            className: styles.selectedPageSizeButton,
             checked: parseInt(size) === paging.pageSize,
-            className: 'pageSizeOption',
             onClick: () => dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => onSetPageSize(parseInt(size)))
-          }))
+          } as IContextualMenuItem))
 
         ]
       }

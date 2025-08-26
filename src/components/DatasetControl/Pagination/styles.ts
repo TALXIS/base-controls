@@ -15,6 +15,12 @@ export const getPaginationStyles = (theme: ITheme) => {
         },
         pageSizeSwitcherRoot: {
             height: 44
+        },
+        selectedPageSizeButton: {
+            '.is-checked': {
+                backgroundColor: theme.semanticColors.buttonBackgroundHovered,
+                fontWeight: 600
+            }
         }
     })
 }

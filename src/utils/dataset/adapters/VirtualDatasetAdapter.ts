@@ -1,16 +1,15 @@
 import { mergeStyles } from "@fluentui/react";
-import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, IGroupByMetadata, MemoryDataProvider } from "@talxis/client-libraries";
+import { Dataset, FetchXmlDataProvider, IAttributeMetadata, IColumn, IDataProvider, IRawRecord } from "@talxis/client-libraries";
 
 interface IOutputs {
     DatasetControl?: any;
 }
 
 interface IParameterGetters {
-    dataProviderType: "Memory" | "FetchXml" | 'Custom';
-    onGetData: () => string | null;
-    onGetColumns: () => string | null;
-    onGetEntityMetadata: () => string | null;
-    customDataProvider?: IDataProvider;
+    DataProviderClass: { new(...args: any[]): IDataProvider }
+    onGetDataSource: () => string | IRawRecord[];
+    onGetColumns?: () => string | IColumn[];
+    onGetEntityMetadata?: () => string | IAttributeMetadata;
     onGetHeight?: () => string | null;
     onGetGroupingType?: () => 'nested' | 'flat';
     /**
@@ -24,12 +23,7 @@ interface IParameterGetters {
  *
  */
 export class VirtualDatasetAdapter {
-    private _providerClasses = {
-        'FetchXml': FetchXmlDataProvider,
-        'Memory': MemoryDataProvider
-    };
     private _dataset!: Dataset<IDataProvider>;
-    private _dataProviderClass!: (typeof this._providerClasses[keyof typeof this._providerClasses]);
     private _container!: HTMLDivElement;
     private _notifyOutputChanged!: () => void;
     private _resolveGetOutputs!: (value: boolean | PromiseLike<boolean>) => void;
@@ -37,35 +31,39 @@ export class VirtualDatasetAdapter {
         this._resolveGetOutputs = resolve;
     });
     private _parameters!: IParameterGetters;
+    private _initialized: boolean = false;
 
-    public init(notifyOutputChanged: () => void, container: HTMLDivElement, parameters: IParameterGetters) {
+    public init(notifyOutputChanged: () => void, container: HTMLDivElement, parameters: IParameterGetters): VirtualDatasetAdapter {
         this._parameters = parameters;
-        this._notifyOutputChanged = notifyOutputChanged;
         this._container = container;
-        let dataProvider: any = null;
-        if (parameters.dataProviderType !== 'Custom') {
-            //@ts-ignore - typings
-            this._dataProviderClass = this._providerClasses[this._parameters.dataProviderType];
-            dataProvider = new this._dataProviderClass(this._getData(), this._getEntityMetadata());
+        this._notifyOutputChanged = notifyOutputChanged;
+        const dataSource = parameters.onGetDataSource();
+        if (!dataSource) {
+            return this;
         }
-        else {
-            dataProvider = this._parameters.customDataProvider;
-        }
+        const dataProvider = new parameters.DataProviderClass(dataSource, this._getEntityMetadata());
         (<IDataProvider>dataProvider).grouping.setGroupingType(parameters.onGetGroupingType?.() ?? 'nested');
-        //@ts-ignore - typings
         this._dataset = new Dataset(dataProvider);
-        this._dataset.setDataSource(this._getData());
+        this._dataset.setDataSource(dataSource);
         this._dataset.setMetadata(this._getEntityMetadata());
         if (this._parameters.onGetHeight?.() === '100%') {
             this._container.classList.add(this._getFullTabStyles());
         }
         this._notifyOutputChanged();
         this._onDatasetInit();
+        this._initialized = true;
         return this;
     }
 
-    public updateView(): void {
-
+    public updateView(context: ComponentFramework.Context<any, IOutputs>, renderComponent: () => void): void {
+        if (!this._parameters.onGetDataSource()) {
+            return;
+        }
+        //if not yet initialized, initialize, can happen if we start without data
+        if (!this._initialized) {
+            this.init(this._notifyOutputChanged, this._container, this._parameters);
+        }
+        return renderComponent();
     }
 
     public getDataset(): Dataset<IDataProvider> {
@@ -91,17 +89,14 @@ export class VirtualDatasetAdapter {
         })
     }
 
-    private _getData() {
-        return this._dataProviderClass.GetParsedData(this._parameters.onGetData()) as any;
-    }
-
     private _getColumns() {
         try {
-            const parameterColumns: IColumn[] = JSON.parse(this._parameters.onGetColumns() ?? "[]");
+            const parameterColumns = this._parameters.onGetColumns?.();
+            const columns: IColumn[] = Array.isArray(parameterColumns) ? parameterColumns : JSON.parse(parameterColumns ?? "[]");
             if (this._shouldMergeColumns()) {
-                return this._getMergedColumns(parameterColumns);
+                return this._getMergedColumns(columns);
             }
-            return parameterColumns;
+            return columns;
         }
         catch (err) {
             console.error(err);
@@ -111,7 +106,7 @@ export class VirtualDatasetAdapter {
 
     private _shouldMergeColumns(): boolean {
         if (this._dataset.getDataProvider() instanceof FetchXmlDataProvider) {
-            const fetchXml = this._parameters.onGetData();
+            const fetchXml = this._parameters.onGetDataSource() as string;
             if (fetchXml?.includes('savedqueryid') || fetchXml?.includes('userqueryid')) {
                 return true;
             }
@@ -137,7 +132,8 @@ export class VirtualDatasetAdapter {
 
     private _getEntityMetadata() {
         try {
-            return JSON.parse(this._parameters.onGetEntityMetadata() ?? "{}");
+            const parameterMetadata = this._parameters.onGetEntityMetadata?.();
+            return typeof parameterMetadata === 'object' ? parameterMetadata : JSON.parse(parameterMetadata ?? "{}");
         }
         catch (err) {
             console.error(err);
