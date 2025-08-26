@@ -10,6 +10,9 @@ export const getGridColumnHeaderStyles = (theme: ITheme, alignment: Required<ICo
             paddingRight: 10,
             overflow: 'hidden'
         },
+        commandBarButtonFlexContainer: {
+            gap: 5
+        },
         columnDisplayNameText: {
             fontWeight: 600,
             textOverflow: 'ellipsis',

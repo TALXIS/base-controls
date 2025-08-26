@@ -54,6 +54,7 @@ export const GridColumnHeader = (props: IGridColumnHeader) => {
                 buttonProps: {
                     styles: {
                         root: styles.commandBarButtonRoot,
+                        flexContainer: styles.commandBarButtonFlexContainer
                     },
                     title: getTitle()
                 },
@@ -63,7 +64,7 @@ export const GridColumnHeader = (props: IGridColumnHeader) => {
                 return <CommandBarButton {...props.buttonProps}>
                     {props.onRenderColumnDisplayNameContainer({
                         container: {
-                            className: styles.columnDisplayNameContainer
+                            className: styles.columnDisplayNameContainer,
                         },
                         onRenderColumnDisplayName: (props, defaultRender) => defaultRender(props),
                         onRenderRequiredSymbol: (props, defaultRender) => defaultRender(props),
