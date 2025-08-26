@@ -1,6 +1,6 @@
 {
   "name": "@talxis/base-controls",
-  "version": "1.2509.1-alpha.1",
+  "version": "1.2509.1-alpha.2",
   "description": "Set of React components that natively work with Power Apps Component Framework API's",
   "main": "dist/index.js",
   "module": "dist/index.js",
