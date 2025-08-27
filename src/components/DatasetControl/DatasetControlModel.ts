@@ -28,7 +28,10 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         this._getLabels = deps.getLabels;
         this._registerInterceptors();
         this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands())
-        this.getDataset().paging.loadExactPage(this.getDataset().paging.pageNumber);
+        //triggering data load is done by platform in non-virtual datasets
+        if (this.getDataset().isVirtual()) {
+            this.getDataset().paging.loadExactPage(this.getDataset().paging.pageNumber);
+        }
         this._addEventListeners();
     }
 
