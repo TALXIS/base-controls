@@ -102,53 +102,6 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                     </MessageBar>
                 })
             }
-            {/* {model.isUnsavedChangesMessageBarVisible() &&
-                props.onRenderUnsavedChangesMessageBar({
-                    messageBarProps: {
-                        messageBarType: dataset.isValid() ? MessageBarType.info : MessageBarType.error,
-                        isMultiline: false
-                    },
-                    onRenderSaveBtn: (props, defaultRender) => defaultRender(props),
-                    onRenderDiscardBtn: (props, defaultRender) => defaultRender(props)
-                }, (props) => {
-                    return <MessageBar actions={
-                        <>
-                            {props.onRenderDiscardBtn({
-                                text: 'Discard changes',
-                                iconProps: {
-                                    iconName: 'Cancel'
-                                },
-                                disabled: dataset.loading,
-                                styles: {
-                                    root: styles.unsavedChangesMessageBarBtn
-                                },
-                                onClick: () => dataset.refresh(),
-                            }, (props) => {
-                                return <ActionButton {...props} />
-                            })}
-                            {props.onRenderSaveBtn({
-                                text: 'Save',
-                                disabled: dataset.loading || !dataset.isValid(),
-                                iconProps: {
-                                    iconName: 'Save'
-                                },
-                                styles: {
-                                    root: styles.unsavedChangesMessageBarBtn
-                                },
-                                onClick: saveChanges,
-                            }, (props) => {
-                                return <ActionButton {...props} />
-                            })}
-                        </>
-                    } {...props.messageBarProps}>
-                        <div dangerouslySetInnerHTML={{
-                            __html: labels["unsaved-changes"]({
-                                numOfChanges: dataset.getDataProvider().getDirtyRecordIds().length
-                            })
-                        }} />
-                    </MessageBar>
-                })
-            } */}
         </div>
     })
 }

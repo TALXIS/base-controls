@@ -30,6 +30,7 @@ export const Ribbon = (props: IRibbon) => {
     const pendingActionsSet = useMemo(() => new Set<string>(), []);
     const rerender = useRerender();
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+    
     const componentProps = onOverrideComponentProps({
         onRenderCommandBar: (props, defaultRender) => defaultRender(props),
         onRenderLoading: (props, defaultRender) => defaultRender(props)
