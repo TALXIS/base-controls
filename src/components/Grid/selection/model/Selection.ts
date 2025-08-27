@@ -5,10 +5,11 @@ export class Selection extends GridDependency {
 
     public toggle(recordId: string, clearExistingSelection?: boolean) {
         this._selectedRecordIdsSet = new Set(this.selectedRecordIds);
-        if(clearExistingSelection || this.type === 'single') {
-            this._selectedRecordIdsSet.clear()
+        const shouldSelect = !this._selectedRecordIdsSet.has(recordId);
+        if (clearExistingSelection) {
+            this._selectedRecordIdsSet.clear();
         }
-        if(this._selectedRecordIdsSet.has(recordId)) {
+        if (!shouldSelect) {
             this._selectedRecordIdsSet.delete(recordId);
         }
         else {
@@ -28,7 +29,7 @@ export class Selection extends GridDependency {
         return this.selectedRecordIds.length === this._dataset.sortedRecordIds.length;
     }
     public get type() {
-        switch(this._grid.props.parameters.SelectableRows?.raw) {
+        switch (this._grid.props.parameters.SelectableRows?.raw) {
             case undefined:
             case null: {
                 return 'multiple'
