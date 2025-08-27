@@ -45,7 +45,7 @@ export const Cell = (props: ICellProps) => {
                     <Checkbox
                         checked={props.node.isSelected()}
                         onChange={(e, checked) => {
-                            grid.selection.toggle(props.node.id!);
+                            grid.selection.toggle(props.node.id!, grid.selection.type === 'single');
                         }}
                         styles={{
                             checkbox: styles.checkbox

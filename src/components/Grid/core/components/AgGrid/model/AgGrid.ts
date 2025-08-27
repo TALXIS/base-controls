@@ -379,7 +379,7 @@ export class AgGrid extends GridDependency {
             error: isAggregatedRecord ? false : columnInfo.error,
             loading: columnInfo.ui.isLoading(),
             errorMessage: columnInfo.errorMessage,
-            editable: columnInfo.security.editable,
+            editable: this._grid.isEditable && columnInfo.security.editable,
             editing: editing,
             parameters: parameters,
             columnAlignment: column.alignment,

@@ -138,7 +138,7 @@ export const CellContent = (props: ICellContentProps) => {
             LoadingType: 'shimmer',
             Bindings: grid.getBindings(record, getColumn(), valueRef.current.customControl),
             ControlStates: {
-                isControlDisabled: !valueRef.current.editing
+                isControlDisabled: !valueRef.current.editable
             },
         }}
         onNotifyOutputChanged={(outputs) => {
