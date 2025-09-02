@@ -1,6 +1,5 @@
 import { useTheme, ITextFieldStyles, IComboBoxStyles, IDatePickerStyles, IToggleStyles } from "@fluentui/react";
-import { Client, ICommand } from "@talxis/client-libraries";
-import { useRerender } from "@talxis/react-components";
+import { Client, DataProvider, ICommand, IRecord } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import React from "react";
 import { useDebouncedCallback } from "use-debounce";
@@ -14,16 +13,11 @@ import { useAgGridInstance } from "../../../grid/ag-grid/useAgGridInstance";
 
 const client = new Client();
 
-interface ICellContentProps extends ICellProps {
-    recordCommands?: ICommand[];
-}
 
-
-export const CellContent = (props: ICellContentProps) => {
+export const CellContent = (props: ICellProps) => {
     const columnRef = React.useRef(props.baseColumn);
     const mountedRef = React.useRef(false);
     const valueRef = React.useRef(props.value);
-    const recordCommands = props.recordCommands;
     columnRef.current = props.baseColumn;
     valueRef.current = props.value
     const grid = useGridInstance();
@@ -127,6 +121,10 @@ export const CellContent = (props: ICellContentProps) => {
         return result;
     }
 
+    const isControlDisabled = () => {
+        return !valueRef.current.editable;
+    }
+
     const onNotifyOutputChanged = (outputs: any) => {
         agGrid.onNotifyOutputChanged(record, columnRef.current.name, outputs.value, valueRef.current.parameters)
     }
@@ -150,7 +148,7 @@ export const CellContent = (props: ICellContentProps) => {
             LoadingType: 'shimmer',
             Bindings: grid.getBindings(record, getColumn(), valueRef.current.customControl),
             ControlStates: {
-                isControlDisabled: !valueRef.current.editable
+                isControlDisabled: isControlDisabled()
             },
         }}
         onNotifyOutputChanged={(outputs) => {
@@ -239,7 +237,7 @@ export const CellContent = (props: ICellContentProps) => {
                     const columnInfo = record.getColumnInfo(getColumn().name);
                     const parameters = columnInfo.ui.getControlParameters({
                         ...controlProps.parameters,
-                        ...grid.getFieldBindingParameters(record, getColumn(), props.isCellEditor, recordCommands)
+                        ...grid.getFieldBindingParameters(record, getColumn(), props.isCellEditor)
                     })
                     return {
                         ...controlProps,

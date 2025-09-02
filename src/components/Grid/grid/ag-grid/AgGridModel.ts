@@ -267,11 +267,14 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         }
     }
 
-    private _isColumnPinned(column: IGridColumn): boolean {
+    private _isColumnPinned(column: IGridColumn) {
         switch (true) {
             case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY:
             case column.grouping?.isGrouped && this._grid.isGroupedColumnsPinnedEnabled(): {
                 return true;
+            }
+            case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME: {
+                return 'right'
             }
             default: {
                 return false;
@@ -287,20 +290,17 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private _isColumnHidden(column: IGridColumn): boolean {
-        if (column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY) {
-            switch (true) {
-                case this._grid.getSelectionType() !== 'none': {
-                    return false;
-                }
-                case this._grid.isAutoSaveEnabled(): {
-                    return false;
-                }
-                default: {
-                    return true;
-                }
-            }
+        if (column.name !== DataProvider.CONST.CHECKBOX_COLUMN_KEY) {
+            return !!column.isHidden;
         }
-        return !!column.isHidden;
+        //we need the checkbox column space for the loading spinner for saving
+        if(this._grid.isEditingEnabled()) {
+            return false;
+        }
+        if(this._grid.getSelectionType() === 'none') {
+            return true;
+        }
+        return false;
     }
 
     private _getColumnWidth(column: IGridColumn): number | undefined {
@@ -525,7 +525,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private async _setSelectedNodes(ids: string[]) {
         //interval to prevent infinite loading
         const checkLoadingNestedProviders = setInterval(() => {
-            if(this._isLoadingNestedProviders && !this._areChildProvidersLoading()) {
+            if (this._isLoadingNestedProviders && !this._areChildProvidersLoading()) {
                 this._isLoadingNestedProviders = false;
                 this._dataset.getDataProvider().setLoading(false);
                 clearInterval(checkLoadingNestedProviders);

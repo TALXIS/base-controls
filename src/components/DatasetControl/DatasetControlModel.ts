@@ -63,7 +63,7 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         return this._getProps().context;
     }
     public async loadCommands() {
-        this._commands = await this.getDataset().getCommands();
+        this._commands = await this.getDataset().getDataProvider().retrieveRecordCommand();
         this._commands = this._getFilteredCommands(this._commands);
         this._commandsLoaded = true;
         this.dispatchEvent('onRecordCommandsLoaded');

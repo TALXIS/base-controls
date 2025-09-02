@@ -1,6 +1,6 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyles, Icon, SpinnerSize, CommandBarButton, TooltipHost, MessageBar, MessageBarType, mergeStyleSets } from "@fluentui/react";
-import { IRecord, Constants, DataProvider, IRecordEvents } from "@talxis/client-libraries";
+import { IRecord, Constants, DataProvider, IRecordEvents, ICommand } from "@talxis/client-libraries";
 import { useThemeGenerator, getClassNames, useRerender, Spinner } from "@talxis/react-components";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
@@ -108,7 +108,6 @@ export const Cell = (props: ICellProps) => {
         containerRef.current?.addEventListener('click', onCellClick);
         return () => {
             containerRef.current?.removeEventListener('click', onCellClick);
-            record.removeEventListener('onFieldValueChanged', onFieldValueChanged);
             ReactDOM.unmountComponentAtNode(memoizedContainerRef.current!);
         }
     }, []);
@@ -246,7 +245,6 @@ export const InternalCell = (props: ICellProps) => {
     const errorMessage = props.value.errorMessage;
     const theme = useTheme();
     const applicationTheme = useControlTheme(grid.getPcfContext().fluentDesignLanguage);
-    const [recordCommands, setRecordCommands] = useState(undefined);
     const rerender = useRerender();
     const styles = useMemo(() => getInnerCellStyles(
         props.isCellEditor,
@@ -302,7 +300,7 @@ export const InternalCell = (props: ICellProps) => {
                         }} />
                 }
                 {(column.type !== 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) &&
-                    <CellContent {...props} recordCommands={recordCommands} />
+                    <CellContent {...props} />
                 }
                 {shouldRenderNotifications &&
                     renderNotifications()
@@ -367,22 +365,9 @@ export const InternalCell = (props: ICellProps) => {
         if (props.value.loading) {
             return true;
         }
-        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME && !recordCommands) {
-            return true;
-        }
         return false;
     }
-
     const shouldRenderNotifications = getShouldRenderNotifications();
-
-    useEffect(() => {
-        if (column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) {
-            (async () => {
-                //@ts-ignore - typings
-                setRecordCommands(await grid.dataset.retrieveRecordCommand([record.getRecordId()], grid.inlineRibbonButtonIds));
-            })();
-        }
-    }, [grid.getRecordValue(record, column).value]);
 
     return <div
         className={styles.innerCellRoot}

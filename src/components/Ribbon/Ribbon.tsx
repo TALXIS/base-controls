@@ -1,10 +1,11 @@
-import { CommandBar, ICommandBarItemProps, useRerender } from "@talxis/react-components";
+import { CommandBar, getClassNames, ICommandBarItemProps, useRerender } from "@talxis/react-components";
 import { useControl } from "../../hooks"
 import { IRibbon } from "./interfaces"
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { getRibbonStyles } from "./styles";
-import { ICommand } from "@talxis/client-libraries";
-import { Shimmer } from "@fluentui/react";
+import { Shimmer, ThemeProvider } from "@fluentui/react";
+import { IRibbonModelEvents, RibbonModel } from "./RibbonModel";
+import { useEventEmitter } from "../../hooks/useEventEmitter";
 
 const fluentIconMap: { [key: string]: string } = {
     'Activate': 'ActivateOrders',
@@ -22,34 +23,18 @@ const fluentIconMap: { [key: string]: string } = {
 }
 
 export const Ribbon = (props: IRibbon) => {
-    const { className } = useControl('Ribbon', props, {});
-    const isDisabled = props.context.mode.isControlDisabled;
+    const { theme, className } = useControl('Ribbon', props, {});
+    const propsRef = useRef<IRibbon>(props);
+    propsRef.current = props;
+    const model = useMemo(() => new RibbonModel(() => propsRef.current), [])
     const commands = props.parameters.Commands?.raw ?? [];
-    const isLoading = props.parameters.Loading?.raw ?? false;
     const styles = useMemo(() => getRibbonStyles(), []);
-    const pendingActionsSet = useMemo(() => new Set<string>(), []);
     const rerender = useRerender();
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
-    
+    useEventEmitter<IRibbonModelEvents>(model, ['onBeforeCommandExecuted', 'onCommandExecutionFinished'], () => rerender())
     const componentProps = onOverrideComponentProps({
-        onRenderCommandBar: (props, defaultRender) => defaultRender(props),
-        onRenderLoading: (props, defaultRender) => defaultRender(props)
+        onRender: (props, defaultRender) => defaultRender(props),
     })
-
-    const onCommandClick = async (command: ICommand) => {
-        pendingActionsSet.add(command.commandId);
-        rerender();
-        try {
-            await command.execute();
-        }
-        catch (err) {
-            console.error(err);
-        }
-        finally {
-            pendingActionsSet.delete(command.commandId);
-            rerender();
-        }
-    }
 
     const getCommandBarItems = (): ICommandBarItemProps[] => {
         const result: ICommandBarItemProps[] = [];
@@ -64,14 +49,14 @@ export const Ribbon = (props: IRibbon) => {
             result.push({
                 key: command.commandId,
                 text: command.label,
-                disabled: !command.canExecute || pendingActionsSet.has(command.commandId) || isDisabled,
+                disabled: model.isCommandDisabled(command),
                 ["data-id"]: command?.commandButtonId,
                 ["data-command"]: command?.commandId,
                 title: command?.tooltip,
                 iconProps: {
                     iconName: iconName
                 },
-                onClick: () => { onCommandClick(command) },
+                onClick: () => { model.executeCommand(command) },
                 //TODO: svg support
                 //onRenderIcon: iconName?.includes('svg') ? () => <Icon name={iconName} /> : undefined,
             })
@@ -79,23 +64,36 @@ export const Ribbon = (props: IRibbon) => {
         return result;
     }
 
-    if (isLoading) {
-        return componentProps.onRenderLoading({
-            styles: {
-                root: styles.shimmerRoot,
-                shimmerWrapper: styles.shimmerWrapper
-            }
-        }, (props) => {
-            return <Shimmer {...props} />
-        })
-    }
-    else {
-        return componentProps.onRenderCommandBar({
-            className: styles.ribbonRoot,
-            items: getCommandBarItems(),
-        }, (props) => {
-            return <CommandBar {...props} />
-        })
-    }
+    return componentProps.onRender({
+        container: {
+            theme: theme,
+            className: getClassNames([className, styles.container])
+        },
+        onRenderCommandBar: (props, defaultRender) => defaultRender(props),
+        onRenderLoading: (props, defaultRender) => defaultRender(props)
+    }, (props) => {
+        return <ThemeProvider {...props.container}>
+            {(() => {
+                if (model.isLoading()) {
+                    return props.onRenderLoading({
+                        styles: {
+                            root: styles.shimmerRoot,
+                            shimmerWrapper: styles.shimmerWrapper
+                        }
+                    }, (props) => {
+                        return <Shimmer {...props} />
+                    })
+                }
+                else {
+                    return props.onRenderCommandBar({
+                        theme: theme,
+                        items: getCommandBarItems(),
+                    }, (props) => {
+                        return <CommandBar {...props} />
+                    })
+                }
+            })()}
+        </ThemeProvider>
+    })
 
 }

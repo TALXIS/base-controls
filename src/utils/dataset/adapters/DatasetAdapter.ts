@@ -149,7 +149,7 @@ export class DatasetAdapter {
         }
         else {
             await initializationCallback();
-            this._powerAppsDatasetProvider?.setPendingChangeFromOutside();
+            //this._powerAppsDatasetProvider?.setPendingChangeFromOutside();
             this._dataset.paging.loadExactPage(this._dataset.paging.pageNumber);
         }
     }
@@ -203,7 +203,7 @@ export class DatasetAdapter {
         return this._context.utils._customControlProperties.contextString === 'grid';
     }
     private _refreshOnChange(objectsToCompare: { currentValue: any, previousValue: any, beforeRefreshCallback?: () => void }[]) {
-        let shouldRefresh = false;
+        /* let shouldRefresh = false;
         objectsToCompare.map(obj => {
             if (obj.currentValue != obj.previousValue) {
                 shouldRefresh = true;
@@ -216,7 +216,7 @@ export class DatasetAdapter {
         }
         queueMicrotask(() => {
             this._powerAppsDatasetProvider?.resolveDataRefresh();
-        })
+        }) */
     }
 
     private _getGlobalDatasetInstanceName() {
@@ -258,9 +258,12 @@ export class DatasetAdapter {
         if (this._client.isTalxisPortal()) {
             return undefined;
         }
-        return new PowerAppsDatasetProvider(this._getCurrentFetchXml(), () => <any>this._parameters.onGetDataset(), {
-            onColumnsChanged: (ids) => this._setViewColumns(ids)
-        });
+        return new PowerAppsDatasetProvider(this._getCurrentFetchXml(), {
+            onGetPowerAppsDataset: () => <any>this._parameters.onGetDataset(),
+            events: {
+                onColumnsChanged: (ids) => this._setViewColumns(ids),
+            }
+        })
     }
 
     private _getDatasetPropertyName(): string {

@@ -23,9 +23,9 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
             case model.isQuickFindVisible():
             case dataset.error:
             case model.isRibbonVisible():
-            {
-                return true;
-            }
+                {
+                    return true;
+                }
             default: {
                 return false;
             }
@@ -53,35 +53,23 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
             }, (props) => {
                 return <div {...props.ribbonQuickFindContainerProps}>
                     {model.isRibbonVisible() &&
-                        props.onRenderRibbon({
-                            onRenderCommandBar: (props, defaultRender) => defaultRender(props),
-                            onRenderLoading: (props, defaultRender) => defaultRender(props),
-                        }, (props) => {
-                            return <Ribbon
-                                context={{
-                                    ...model.getPcfContext(),
-                                    mode: {
-                                        ...model.getPcfContext().mode,
-                                        isControlDisabled: dataset.loading
-                                    }
-                                }}
-                                parameters={{
-                                    Commands: {
-                                        raw: model.retrieveRecordCommands(),
-                                    },
-                                    Loading: {
-                                        raw: !model.areCommandsLoaded()
-                                    }
-                                }}
-                                onOverrideComponentProps={(ribbonProps) => {
-                                    return {
-                                        ...ribbonProps,
-                                        onRenderLoading: (shimmerProps, defaultRender) => props.onRenderLoading(shimmerProps, (props) => defaultRender(props)),
-                                        onRenderCommandBar: (commandBarProps, defaultRender) => props.onRenderCommandBar(commandBarProps, (props) => defaultRender(props)),
-                                    }
-                                }}
-                            />
-                        })
+                        <Ribbon
+                            context={{
+                                ...model.getPcfContext(),
+                                mode: {
+                                    ...model.getPcfContext().mode,
+                                    isControlDisabled: dataset.loading
+                                }
+                            }}
+                            parameters={{
+                                Commands: {
+                                    raw: model.retrieveRecordCommands(),
+                                },
+                                Loading: {
+                                    raw: !model.areCommandsLoaded()
+                                }
+                            }}
+                        />
                     }
                     {model.isQuickFindVisible() &&
                         <QuickFind

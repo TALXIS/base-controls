@@ -15,6 +15,8 @@ export type BaseControl =
     | 'DatasetControl'
     | 'NestedControl'
     | 'GridColumnHeader'
+    | 'Ribbon'
+    | 'GridInlineRibbon';
 
 export class BaseControls {
     public static get TextField(): 'TextField' {
@@ -54,6 +56,12 @@ export class BaseControls {
     }
     public static get GridColumnHeader(): 'GridColumnHeader' {
         return 'GridColumnHeader';
+    }
+    public static get Ribbon(): 'Ribbon' {
+        return 'Ribbon';
+    }
+    public static get GridInlineRibbon(): 'GridInlineRibbon' {
+        return 'GridInlineRibbon';
     }
 
     public static GetControlNameForDataType(dataType: DataType) {
@@ -102,6 +110,8 @@ export class BaseControls {
             BaseControls.TextField,
             BaseControls.GridCellRenderer,
             BaseControls.GridColumnHeader,
+            BaseControls.Ribbon,
+            BaseControls.GridInlineRibbon
         ]
     }
     public static IsBaseControl(name: string) {

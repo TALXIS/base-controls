@@ -7,9 +7,6 @@ export const getHeaderStyles = () => {
             alignItems: 'center',
             gap: 8
         },
-        ribbon: {
-            flex: 1
-        },
         header: {
             paddingLeft: 15,
             paddingTop: 15,

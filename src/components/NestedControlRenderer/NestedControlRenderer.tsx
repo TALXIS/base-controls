@@ -18,6 +18,8 @@ import { useControlLabels } from '../../hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
 import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
 import { GridColumnHeader } from '../GridColumnHeader/GridColumnHeader';
+import { Ribbon } from '../Ribbon/Ribbon';
+import { GridInlineRibbon } from '../GridInlineRibbon/GridInlineRibbon';
 
 interface IRef {
     control: NestedControl | null;
@@ -107,6 +109,12 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 return GridCellRenderer;
             case 'GridColumnHeader': {
                 return GridColumnHeader;
+            }
+            case 'GridInlineRibbon': {
+                return GridInlineRibbon;
+            }
+            case 'Ribbon': {
+                return Ribbon;
             }
             default:
                 return GridCellRenderer;

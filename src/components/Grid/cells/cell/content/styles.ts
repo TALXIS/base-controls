@@ -9,7 +9,7 @@ export const getCellContentStyles = (columnAlignment: IColumn['alignment']) => {
             minWidth: 0,
             overflow: 'hidden',
             flexGrow: 1,
-            border: '2px solid transparent',
+            border: '2px solid transparent'
         },
         controlContainer: {
             height: '100%'

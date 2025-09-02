@@ -147,7 +147,18 @@ export class GridModel {
             }
         }
         const defaultControl: Required<ICustomColumnControl> = {
-            name: editing ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : 'GridCellRenderer',
+            name: (() => {
+                if(record.getSummarizationType() === 'aggregation') {
+                    return 'GridCellRenderer';
+                }
+                if(column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME) {
+                    return BaseControls.GridInlineRibbon;
+                }
+                if(editing) {
+                    return BaseControls.GetControlNameForDataType(column.dataType as DataType)
+                }
+                return 'GridCellRenderer';
+            })(),
             appliesTo: 'both',
             bindings: {}
         };
@@ -196,7 +207,7 @@ export class GridModel {
         return bindings;
     }
 
-    public getFieldBindingParameters(record: IRecord, column: IColumn, editing: boolean, recordCommands?: ICommand[]) {
+    public getFieldBindingParameters(record: IRecord, column: IColumn, editing: boolean) {
         //make sure we have IColumn, not IGridColumn
         column = record.getDataProvider().getColumnsMap()[column.name]!;
         const summarizationType = record.getDataProvider().getSummarizationType();
@@ -285,10 +296,6 @@ export class GridModel {
         parameters.SuffixIcon = {
             raw: null,
             type: DataTypes.SingleLineText
-        }
-        parameters.RecordCommands = {
-            raw: recordCommands ?? [],
-            type: DataTypes.Object
         }
         parameters.IsInlineNewEnabled = {
             raw: false,

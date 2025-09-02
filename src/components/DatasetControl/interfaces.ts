@@ -6,6 +6,7 @@ import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
 import { ICommandBarProps, ITextFieldProps } from "@talxis/react-components";
 import React from "react";
+import { IRibbonComponentProps } from "../Ribbon/interfaces";
 
 
 export interface IDatasetControl extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps> {
@@ -55,12 +56,7 @@ export interface IHeaderProps {
 export interface IRibbonQuickFindWrapperProps {
     ribbonQuickFindContainerProps: React.HTMLAttributes<HTMLDivElement>;
     onRenderQuickFind: (props: IQuickFindProps, defaultRender: (props: IQuickFindProps) => React.ReactElement) => React.ReactElement;
-    onRenderRibbon: (props: IRibbonProps, defaultRender: (props: IRibbonProps) => React.ReactElement) => React.ReactElement;
-}
-
-interface IRibbonProps {
-    onRenderCommandBar: (props: ICommandBarProps, defaultRender: (props: ICommandBarProps) => React.ReactElement) => React.ReactElement;
-    onRenderLoading: (props: IShimmerProps, defaultRender: (props: IShimmerProps) => React.ReactElement) => React.ReactElement;
+    onRenderRibbon: IRibbonComponentProps['onRender']
 }
 
 interface IErrorMessageBarProps {
