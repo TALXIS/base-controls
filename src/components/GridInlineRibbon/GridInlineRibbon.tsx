@@ -21,12 +21,11 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const rerender = useRerender();
     const styles = useMemo(() => getGridInlineRibbonStyles(props.parameters.Record.raw.getDataProvider().getColumnsMap()[DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME].alignment), []);
-    useEventEmitter<IGridInlineRibbonModelEvents>(model, 'onLoading', () => rerender());
+    useEventEmitter<IGridInlineRibbonModelEvents>(model, ['onBeforeCommandsRefresh', 'onAfterCommandsRefresh'], () => rerender());
 
     const observe = useResizeObserver(() => {
         commandBarRef.current?.remeasure();
     })
-
     useEffect(() => {
         model.refreshCommands();
         if (containerRef.current) {

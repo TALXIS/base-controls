@@ -3,7 +3,7 @@ import { useControl } from "../../hooks"
 import { IRibbon } from "./interfaces"
 import { useMemo, useRef } from "react";
 import { getRibbonStyles } from "./styles";
-import { Shimmer, ThemeProvider } from "@fluentui/react";
+import { getIcon, Shimmer, ThemeProvider } from "@fluentui/react";
 import { IRibbonModelEvents, RibbonModel } from "./RibbonModel";
 import { useEventEmitter } from "../../hooks/useEventEmitter";
 
@@ -36,29 +36,50 @@ export const Ribbon = (props: IRibbon) => {
         onRender: (props, defaultRender) => defaultRender(props),
     })
 
+    const getIconName = (iconName?: string): string | undefined => {
+        const iconType = model.getIconType(iconName);
+        switch (iconType) {
+            case 'none': {
+                return undefined;
+            }
+            case 'url': {
+                return iconName;
+            }
+            case 'fluent': {
+                if (fluentIconMap[iconName!]) {
+                    return fluentIconMap[iconName!];
+                }
+                if (getIcon(iconName)) {
+                    return iconName!;
+                }
+                return 'Puzzle';
+            }
+        }
+    }
+
     const getCommandBarItems = (): ICommandBarItemProps[] => {
         const result: ICommandBarItemProps[] = [];
         commands.map(command => {
             if (!command.shouldBeVisible) {
                 return;
             }
-            let iconName = command.icon;
-            if (fluentIconMap[iconName]) {
-                iconName = fluentIconMap[iconName];
-            }
+            const iconName = getIconName(command.icon);
+            const iconUrl = model.getIconUrl(iconName);
             result.push({
                 key: command.commandId,
                 text: command.label,
                 disabled: model.isCommandDisabled(command),
+                className: styles.commandBtnRoot,
                 ["data-id"]: command?.commandButtonId,
                 ["data-command"]: command?.commandId,
                 title: command?.tooltip,
-                iconProps: {
-                    iconName: iconName
-                },
-                onClick: () => { model.executeCommand(command) },
-                //TODO: svg support
-                //onRenderIcon: iconName?.includes('svg') ? () => <Icon name={iconName} /> : undefined,
+                iconProps: iconName !== null ? {
+                    iconName: !iconUrl ? iconName : undefined,
+                    imageProps: iconUrl ? {
+                        src: iconUrl
+                    } : undefined
+                } : undefined,
+                onClick: () => { model.executeCommand(command) }
             })
         })
         return result;
@@ -88,6 +109,7 @@ export const Ribbon = (props: IRibbon) => {
                     return props.onRenderCommandBar({
                         theme: theme,
                         items: getCommandBarItems(),
+                        contextualMenuTheme: propsRef.current.context.fluentDesignLanguage?.applicationTheme ?? theme
                     }, (props) => {
                         return <CommandBar {...props} />
                     })

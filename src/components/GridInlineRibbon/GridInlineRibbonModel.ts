@@ -2,7 +2,8 @@ import { EventEmitter, ICommand } from "@talxis/client-libraries";
 import { IGridInlineRibbon } from "./interfaces";
 
 export interface IGridInlineRibbonModelEvents {
-    onLoading: (isLoading: boolean) => void;
+    onBeforeCommandsRefresh: () => void;
+    onAfterCommandsRefresh: () => void;
 }
 
 export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEvents> {
@@ -24,23 +25,29 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
     public isLoading(): boolean {
         return this._loading;
     }
-    public refreshCommands = async () => {
-        this.dispatchEvent('onLoading', true);
+    public refreshCommands = async (refreshAllRules?: boolean) => {
         this._loading = true;
+        this.dispatchEvent('onBeforeCommandsRefresh');
         this._commands = await this._getDataProvider().retrieveRecordCommand({
-            recordIds: [this._getRecord().getRecordId()]
+            recordIds: [this._getRecord().getRecordId()],
+            specificCommands: this._getProps().parameters.CommandButtonIds?.raw?.split(',').map(id => id.trim()) ?? [],
+            refreshAllRules: refreshAllRules ?? false
         })
+        console.log(this._commands);
         this._loading = false;
-        this.dispatchEvent('onLoading', false);
+        this.dispatchEvent('onAfterCommandsRefresh');
+    }
+    private _refreshCommandsWithRules = () => {
+        this.refreshCommands(true);
     }
 
     private _registerEventListeners() {
-        this._getDataProvider().addEventListener('onRecordColumnValueChanged', this.refreshCommands);
-        this._getDataProvider().addEventListener('onAfterRecordSaved', this.refreshCommands);
+        this._getRecord().addEventListener('onFieldValueChanged', this._refreshCommandsWithRules);
+        this._getRecord().addEventListener('onAfterSaved', this._refreshCommandsWithRules);
     }
     private _unregisterEventListeners() {
-        this._getDataProvider().removeEventListener('onRecordColumnValueChanged', this.refreshCommands);
-        this._getDataProvider().removeEventListener('onAfterRecordSaved', this.refreshCommands);
+        this._getRecord().removeEventListener('onFieldValueChanged',this._refreshCommandsWithRules);
+        this._getRecord().removeEventListener('onAfterSaved', this._refreshCommandsWithRules);
     }
     private _getRecord() {
         return this._getProps().parameters.Record.raw;

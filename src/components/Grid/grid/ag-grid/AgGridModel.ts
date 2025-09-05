@@ -273,9 +273,6 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             case column.grouping?.isGrouped && this._grid.isGroupedColumnsPinnedEnabled(): {
                 return true;
             }
-            case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME: {
-                return 'right'
-            }
             default: {
                 return false;
             }
@@ -505,7 +502,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                 return;
             }
         }
-        this._dataset.clearSelectedRecordIds();
+        //this._dataset.clearSelectedRecordIds();
         const selectedNodes: IRowNode<IRecord>[] = this.getGridApi().getSelectedNodes();
         //if we click a grouped record, do not propagate the selection to children
         const providerSelectedRecordIdsMap = new Map<IDataProvider, string[]>();

@@ -19,7 +19,6 @@ export class RibbonModel extends EventEmitter<IRibbonModelEvents> {
 
     public async executeCommand(command: ICommand) {
         this._pendingActionsSet.add(command.commandId);
-        console.log('executeCommand', command);
         this.dispatchEvent('onBeforeCommandExecuted');
         try {
             await command.execute();
@@ -50,18 +49,24 @@ export class RibbonModel extends EventEmitter<IRibbonModelEvents> {
         return false;
     }
 
-    public getIconUrl(iconName: string) {
-        if (client.isTalxisPortal()) {
-            return iconName;
+    public getIconUrl(iconName?: string): string | null {
+        if(!iconName) {
+            return null;
         }
-        const array = iconName.split('$webresource:');
-        return `https://${window.location.host}${window.Xrm.Utility.getGlobalContext().getWebResourceUrl(array[1] ?? iconName)}`
+        const webResourceName = iconName.split('$webresource:')[1];
+        if(!webResourceName) {
+            return null;
+        }
+        return `https://${window.location.host}${window.Xrm.Utility.getGlobalContext().getWebResourceUrl(webResourceName)}`
     }
 
-    public getIconType(iconName: string): 'url' | 'fluent' {
-        if (iconName.includes('.')) {
+    public getIconType(iconName?: string): 'url' | 'fluent' | 'none' {
+        if(!iconName) {
+            return 'none'
+        }
+        if(iconName.startsWith('$')) {
             return 'url';
         }
-        return 'fluent'
+        return 'fluent';
     }
 }

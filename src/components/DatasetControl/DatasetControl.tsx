@@ -68,7 +68,7 @@ export const DatasetControl = (props: IDatasetControl) => {
 
         }, (props) => {
           return <div {...props.controlContainerProps}>
-            {propsRef.current.onGetControlComponent(propsRef.current)}
+            {propsRef.current.onGetControlComponent()}
           </div>
         })}
         {props.onRenderFooter({

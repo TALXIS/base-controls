@@ -10,6 +10,11 @@ export const getRibbonStyles = () => {
         },
         shimmerWrapper: {
             height: 44
+        },
+        commandBtnRoot: {
+            'img': {
+                width: 18
+            }
         }
     })
 }

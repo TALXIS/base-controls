@@ -1,4 +1,4 @@
-import { AggregationFunction, DataProvider, DataType, DataTypes, FieldValue, Filtering, Grouping, IColumn, ICommand, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IRecord, Sanitizer, Sorting, TotalRow } from "@talxis/client-libraries";
+import { AggregationFunction, DataProvider, DataType, DataTypes, FieldValue, Filtering, Grouping, IColumn, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IRecord, Sanitizer, Sorting, TotalRow } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import { ITheme, Theming } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
@@ -100,6 +100,9 @@ export class GridModel {
     }
     public isGroupedColumnsPinnedEnabled(): boolean {
         return this.getParameters().EnableGroupedColumnsPinning?.raw !== false;
+    }
+    public getInlineRibbonButtonIds(): string | null {
+        return this.getParameters().InlineRibbonButtonIds?.raw ?? null;
     }
     public isEditingEnabled(): boolean {
         return this.getParameters().EnableEditing?.raw === true;
@@ -308,6 +311,10 @@ export class GridModel {
         parameters.EnableOptionSetColors = {
             raw: this.optionSetColorsEnabled(),
             type: DataTypes.TwoOptions
+        }
+        parameters.CommandButtonIds = {
+            raw: this.getInlineRibbonButtonIds(),
+            type: DataTypes.SingleLineText
         }
         parameters.ShouldStopEditWhenOutputChanges = {
             raw: (() => {
