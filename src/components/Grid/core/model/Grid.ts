@@ -269,7 +269,7 @@ export class Grid {
                 isStatic: false,
                 type: column.dataType as any,
                 value: this._getBindingValue(record, column),
-                formattedValue: record.getFormattedValue(column.name),
+                formattedValue: this._getFormattedValue(record, column),
                 error: columnInfo.error,
                 errorMessage: columnInfo.errorMessage,
                 onNotifyOutputChanged: () => { },
@@ -567,5 +567,20 @@ export class Grid {
             return 'action';
         }
         return undefined;
+    }
+
+    private _getFormattedValue(record: IRecord, column: IColumn) {
+        if (this._isColumnLookup(column)) {
+            if (record.getFormattedValue(column.name)?.length) {
+                return record.getFormattedValue(column.name);
+            } else if (this._getBindingValue(record, column)?.length) {
+                return this.labels['no-name']();
+            } 
+        } 
+        return record.getFormattedValue(column.name);
+    }
+
+    private _isColumnLookup(column: IColumn): boolean {
+        return column.dataType === 'Lookup.Simple' || column.dataType === 'Lookup.Customer' || column.dataType === 'Lookup.Owner' || column.dataType === 'Lookup.Regarding';
     }
 }
