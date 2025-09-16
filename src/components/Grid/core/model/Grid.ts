@@ -570,14 +570,15 @@ export class Grid {
     }
 
     private _getFormattedValue(record: IRecord, column: IColumn) {
+        const value: string | null = record.getFormattedValue(column.name);
         if (this._isColumnLookup(column)) {
-            if (record.getFormattedValue(column.name)?.length) {
-                return record.getFormattedValue(column.name);
+            if (value?.length) {
+                return value;
             } else if (this._getBindingValue(record, column)?.length) {
                 return this.labels['no-name']();
-            } 
-        } 
-        return record.getFormattedValue(column.name);
+            }
+        }
+        return value;
     }
 
     private _isColumnLookup(column: IColumn): boolean {
