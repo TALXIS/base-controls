@@ -1,7 +1,11 @@
 {
   "name": "@talxis/base-controls",
   "version": "0.0.1",
-  "description": "Set of React components that natively work with Power Apps Component Framework API's",
+  "description": "Set of React components that natively work with Power Apps Component Framework APIs.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TALXIS/base-controls.git"
+  },
   "main": "dist/index.js",
   "module": "dist/index.js",
   "license": "MIT",

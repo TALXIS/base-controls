@@ -1,0 +1,3 @@
+# Releasing
+
+To create a new release (and publish it to NPM), [create a new release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release). The version number will be inferred from the release. You should name the release like `v1.YYMM.X`, where `YY` is year, eg. `25`, `MM` is month, eg. `09` and `X` is incremented number from `0` for the current minor release (eg. `YYMM`).
