@@ -1,0 +1,27 @@
+name: Build and Publish to NPM
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+      - name: Set package.json version from release tag
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}
+          npm version --no-git-tag-version "$VERSION"
+        env:
+          GITHUB_REF: ${{ github.ref }}
+      - run: npm install
+      - run: npm run build
+      - run: npm publish --access-public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
