@@ -340,6 +340,10 @@ export class Condition extends GridDependency {
                 cond.conditionOperator = DatasetConditionOperator.NotNull as any;
                 break;
             }
+            case DataType.SINGLE_LINE_TEXT: {
+                cond.conditionOperator = DatasetConditionOperator.Like as any;
+                break;
+            }
         }
         return cond;
     }
