@@ -23,11 +23,11 @@ export const RecordSelectionCheckBox = () => {
 
 
     const getCheckBoxState = () => {
-        const selectedRecordIds = dataset.getDataProvider().getSelectedRecordIds({includeGroupRecordIds: true, includeChildrenRecordIds: false});
+        const selectedRecordIds = dataset.getDataProvider().getSelectedRecordIds({ includeGroupRecordIds: true, includeChildrenRecordIds: false });
         if (selectedRecordIds.length === 0) {
             return 'unchecked';
         }
-        if(selectedRecordIds.length === dataset.sortedRecordIds.length) {
+        if (selectedRecordIds.length === dataset.sortedRecordIds.length) {
             return 'checked';
         }
         return 'intermediate'; //indeterminate state, when some records are selected but not all
@@ -43,21 +43,23 @@ export const RecordSelectionCheckBox = () => {
     }
     const checkboxState = getCheckBoxState();
 
-    if (dataset.sortedRecordIds.length === 0) {
+    if (dataset.sortedRecordIds.length === 0 && !dataset.loading) {
         return <></>
     }
-    return (
-        <ThemeProvider theme={theme} className={styles.root}>
-            {grid.getSelectionType() === 'multiple' &&
-                <Checkbox
-                    checked={checkboxState === 'checked'}
-                    styles={{
-                        checkbox: styles.checkbox
-                    }}
-                    disabled={dataset.grouping.getGroupBys().length > 0}
-                    indeterminate={checkboxState === 'intermediate'}
-                    onChange={(e, checked) => onChange(checked)} />
-            }
-        </ThemeProvider>
-    )
+    else {
+        return (
+            <ThemeProvider theme={theme} className={styles.root}>
+                {grid.getSelectionType() === 'multiple' &&
+                    <Checkbox
+                        checked={checkboxState === 'checked'}
+                        styles={{
+                            checkbox: styles.checkbox
+                        }}
+                        disabled={dataset.grouping.getGroupBys().length > 0}
+                        indeterminate={checkboxState === 'intermediate'}
+                        onChange={(e, checked) => onChange(checked)} />
+                }
+            </ThemeProvider>
+        )
+    }
 };

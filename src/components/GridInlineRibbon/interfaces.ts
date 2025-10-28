@@ -2,6 +2,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { IControl } from "../../interfaces/context";
 import { IRibbonComponentProps } from "../Ribbon/interfaces";
 import { IStringProperty } from "../../interfaces";
+import { ICommandBarItemProps } from "@fluentui/react";
 
 export interface IGridInlineRibbon extends IControl<IRibbonParameters, any, any, IGridInlineRibbonComponentProps> {
 }

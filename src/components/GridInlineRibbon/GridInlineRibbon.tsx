@@ -26,12 +26,21 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const observe = useResizeObserver(() => {
         commandBarRef.current?.remeasure();
     })
+
+    const getRibbonColumn = () => {
+        return props.parameters.Record.raw.getField(DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME);
+    }
+
     useEffect(() => {
+        getRibbonColumn().setCustomProperty('isRibbonUiMounted', true);
         model.refreshCommands();
         if (containerRef.current) {
             observe(containerRef.current);
         }
-        return () => model.destroy();
+        return () => {
+            getRibbonColumn().setCustomProperty('isRibbonUiMounted', false);
+            model.destroy();
+        }
     }, []);
 
     return componentProps.onRender({
@@ -39,7 +48,8 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
             className: styles.gridInlineRibbonRoot,
             ref: containerRef
         },
-        onRenderRibbon: (props, defaultRender) => defaultRender(props)
+        onRenderRibbon: (props, defaultRender) => defaultRender(props),
+
     }, (props) => {
         return <div {...props.container}>
             <Ribbon
