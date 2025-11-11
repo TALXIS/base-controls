@@ -206,11 +206,13 @@ const CellContentWrapper = (props: ICellProps) => {
         }
         else {
             setSavingResult('error');
+            setTimeout(() => {
+                setSavingResult(null);
+            }, 10000);
         }
     }, []);
 
     useEventEmitter<IRecordEvents>(record, 'onAfterSaved', onAfterSaved);
-
 
     useEffect(() => {
         //this needs to be done like this because stopPropagation in React onClick

@@ -1,0 +1,140 @@
+<fetch version="1.0" mapping="logical" savedqueryid="4d3c72e3-742c-406b-92ce-59b32afeb7c6"
+    returntotalrecordcount="true" page="1" count="5000" no-lock="false">
+    <entity name="talxis_field">
+        <attribute name="statecode" />
+        <attribute name="talxis_fieldid" />
+        <attribute name="talxis_name" />
+        <attribute name="talxis_singlelinetext" />
+        <attribute name="talxis_singlelineurl" />
+        <attribute name="talxis_singlelinephone" />
+        <attribute name="talxis_singlelineemail" />
+        <attribute name="talxis_multiple" />
+        <attribute name="talxis_wholenone" />
+        <attribute name="talxis_wholeduration" />
+        <attribute name="talxis_decimal" />
+        <attribute name="talxis_dateonly" />
+        <attribute name="talxis_dateandtime" />
+        <attribute name="talxis_dateandtimetzi" />
+        <attribute name="talxis_optionset" />
+        <attribute name="talxis_optionsetcolorful" />
+        <attribute name="talxis_multiselectoptionset" />
+        <attribute name="talxis_multiselectoptionsetcolorful" />
+        <attribute name="talxis_twooptions" />
+        <attribute name="talxis_twooptionscolorful" />
+        <attribute name="talxis_file" />
+        <attribute name="talxis_image" />
+        <attribute name="talxis_parentfield" />
+        <attribute name="talxis_currency" />
+        <filter type="or">
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1004dsdsasa" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1005" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1005" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1007" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1008" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1009" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 100dsadas" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 101" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 101" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1010" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1011" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1012" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1014" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1013" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1026" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1027" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1028" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_name" operator="eq" value="Batch 1029" />
+            </filter>
+            <filter type="and">
+                <condition attribute="talxis_singlelinephone" operator="null" />
+            </filter>
+        </filter>
+        <order attribute="talxis_name" descending="false" />
+    </entity>
+</fetch>

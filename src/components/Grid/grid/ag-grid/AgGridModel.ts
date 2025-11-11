@@ -335,7 +335,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private _registerEventListeners() {
-        this._dataset.addEventListener('onLoading', (isLoading: boolean) => this._setLoadingOverlay(isLoading));
+        this._dataset.addEventListener('onLoading', (isLoading: boolean) => this._setLoadingOverlay(this._dataset.loading));
         this._dataset.addEventListener('onRecordsSelected', (ids: string[]) => this._debouncedSetSelectedNodes(ids));
         this._dataset.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded());
         this._dataset.addEventListener('onRenderRequested', () => this.refresh());

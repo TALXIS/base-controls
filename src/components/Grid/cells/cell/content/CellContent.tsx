@@ -1,6 +1,5 @@
-import { useTheme, ITextFieldStyles, IComboBoxStyles, IDatePickerStyles, IToggleStyles } from "@fluentui/react";
+import { useTheme, ITextFieldStyles, IComboBoxStyles, IDatePickerStyles, IToggleStyles, mergeThemes, merge } from "@fluentui/react";
 import { Client, DataProvider, ICommand, IRecord } from "@talxis/client-libraries";
-import { merge } from "merge-anything";
 import React from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { IFluentDesignState, ControlTheme } from "../../../../../utils";
@@ -56,7 +55,6 @@ export const CellContent = (props: ICellProps) => {
     }
 
     const getFluentDesignLanguage = (fluentDesignLanguage?: IFluentDesignState) => {
-        //@ts-ignore
         const formatting = grid.getFieldFormatting(record, getColumn().name);
         const mergedOverrides: any = merge({}, fluentDesignLanguage?.v8FluentOverrides ?? {}, formatting.themeOverride);
         const columnAlignment = valueRef.current.columnAlignment;
@@ -115,7 +113,7 @@ export const CellContent = (props: ICellProps) => {
                     }
                 },
                 mergedOverrides
-            ),
+            ) as any,
             applicationTheme: fluentDesignLanguage?.applicationTheme
         })
         return result;

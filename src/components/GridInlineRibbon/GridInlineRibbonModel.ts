@@ -1,18 +1,22 @@
-import { DataProvider, EventEmitter, ICommand } from "@talxis/client-libraries";
-import { IGridInlineRibbon } from "./interfaces";
+import { EventEmitter, ICommand, IRecord } from "@talxis/client-libraries";
 
 export interface IGridInlineRibbonModelEvents {
     onBeforeCommandsRefresh: () => void;
     onAfterCommandsRefresh: () => void;
 }
 
+interface IDeps {
+    onGetRecord: () => IRecord;
+    onGetCommandButtonIds: () => string[];
+}
+
 export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEvents> {
-    private _getProps: () => IGridInlineRibbon;
+    private _deps: IDeps;
     private _commands: ICommand[] = [];
     private _loading: boolean = true;
-    constructor(getProps: () => IGridInlineRibbon) {
+    constructor(deps: IDeps) {
         super();
-        this._getProps = getProps;
+        this._deps = deps;
         this._registerEventListeners();
     }
 
@@ -30,7 +34,7 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
         this.dispatchEvent('onBeforeCommandsRefresh');
         this._commands = await this._getDataProvider().retrieveRecordCommand({
             recordIds: [this._getRecord().getRecordId()],
-            specificCommands: this._getProps().parameters.CommandButtonIds?.raw?.split(',').map(id => id.trim()) ?? [],
+            specificCommands: this._deps.onGetCommandButtonIds(),
             refreshAllRules: true
         })
         this._loading = false;
@@ -46,7 +50,7 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
         this._getRecord().removeEventListener('onAfterSaved', this.refreshCommands);
     }
     private _getRecord() {
-        return this._getProps().parameters.Record.raw;
+        return this._deps.onGetRecord();
     }
     private _getDataProvider() {
         return this._getRecord().getDataProvider();

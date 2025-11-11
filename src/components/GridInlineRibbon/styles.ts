@@ -2,12 +2,12 @@ import { mergeStyleSets } from "@fluentui/react"
 import { IColumn } from "@talxis/client-libraries"
 import { getJustifyContent } from "../GridCellRenderer/styles"
 
-export const getGridInlineRibbonStyles = (columnAlignment: Required<IColumn['alignment']>) => {
+export const getGridInlineRibbonStyles = (columnAlignment: Required<IColumn['alignment']>, height: number) => {
     return mergeStyleSets({
         gridInlineRibbonRoot: {
             display: 'flex',
             alignItems: 'center',
-            height: '100%'
+            height: height
         },
         primarySet: {
             justifyContent: getJustifyContent(columnAlignment)

@@ -1,4 +1,4 @@
-import { Client, Dataset, FetchXmlBuilder, IColumn, IDataset, Interceptors, PowerAppsDatasetProvider } from "@talxis/client-libraries";
+import { Client, Dataset, IColumn, IDataset, Interceptors, PowerAppsDatasetProvider } from "@talxis/client-libraries";
 import { mergeStyles } from "@fluentui/react";
 import { IGridParameters } from "../../../components";
 
@@ -48,11 +48,11 @@ const RIBBON_GROUPING_DATASET_NAME_DEFAULT = 'RibbonGroupingDataset';
 
 export class DatasetAdapter {
     private _container!: HTMLDivElement;
-    private _firstDataLoaded: boolean = false;
     private _dataset!: IDataset;
     private _context!: ComponentFramework.Context<IInputs, IOutputs>;
     private _client = new Client();
     private _options?: IDatasetAdapterOptions;
+    private _scheduleForRefresh: boolean = false;
     private _notifyOutputChanged!: () => void;
     private _resolveGetOutputs!: (value: boolean | PromiseLike<boolean>) => void;
     private _interceptors: Interceptors<IDatasetAdapterInterceptors> = new Interceptors(this._getDefaultInterceptors());
@@ -68,10 +68,7 @@ export class DatasetAdapter {
         this._container = container;
         this._context = context;
         this._notifyOutputChanged = notifyOutputChanged;
-        this._dataset = this.getDataset()
-        if (!this._client.isTalxisPortal()) {
-            this._dataset.addEventListener('onInitialDataLoaded', () => this._firstDataLoaded = true)
-        }
+        this._dataset = this.getDataset();
         this._dataset.setColumns(this._getColumns());
         if (this._getHeight() === '100%') {
             this._container.classList.add(this._getFullHeightStyles())
@@ -82,15 +79,18 @@ export class DatasetAdapter {
 
     public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (parameters: IGridParameters) => void) {
         this._context = context;
-        this._syncPowerAppsDatasetSetup();
-        this._syncPowerAppsDatasetOnNativeRefresh();
+        if (!this._client.isTalxisPortal()) {
+            this._syncPowerAppsDatasetSetup();
+            this._syncPowerAppsDatasetOnNativeRefresh();
+        }
         return onRenderComponent({
             Grid: this.getDataset(),
             EnableEditing: {
                 raw: this._isEditingEnabled()
             },
             EnableCommandBar: {
-                raw: this._isCommandBarEnabled()
+                //always handled by host platform
+                raw: false
             },
             EnableAutoSave: {
                 raw: this._isAutoSaveEnabled()
@@ -121,18 +121,16 @@ export class DatasetAdapter {
                 raw: false
             },
             EnableAggregation: {
-                //raw: context.parameters.EnableAggregation?.raw === 'true',
-                raw: true
+                raw: context.parameters.EnableAggregation?.raw === 'true',
             },
             EnableGrouping: {
-                //raw: context.parameters.EnableFiltering?.raw === 'true'
-                raw: true
+                raw: context.parameters.EnableFiltering?.raw === 'true'
             },
             Height: {
                 raw: this._getHeight()
             },
             InlineRibbonButtonIds: {
-                raw: 'Mscrm.HomepageGrid.talxis_field.Deactivate'
+                raw: context.parameters.InlineRibbonButtonIds?.raw ?? null
             },
         })
     }
@@ -168,6 +166,7 @@ export class DatasetAdapter {
         }
     }
 
+
     private _getDatasetParameterName(): string {
         return this._options?.datasetParameterName ?? DATASET_NAME_DEFAULT;
     }
@@ -175,8 +174,8 @@ export class DatasetAdapter {
         return this._options?.ribbonGroupingDatasetName ?? RIBBON_GROUPING_DATASET_NAME_DEFAULT;
     }
 
-    private _getDatasetByName(name: string, throwErrorOnNotFound: true): ComponentFramework.PropertyTypes.DataSet | IDataset;
-    private _getDatasetByName(name: string, throwErrorOnNotFound?: boolean): ComponentFramework.PropertyTypes.DataSet | IDataset | null  {
+    private _getDatasetByName(name: string, throwErrorOnNotFound?: true): ComponentFramework.PropertyTypes.DataSet | IDataset;
+    private _getDatasetByName(name: string, throwErrorOnNotFound?: boolean): ComponentFramework.PropertyTypes.DataSet | IDataset | null {
         const dataset = this._context.parameters[name] ?? null;
         if (!dataset && throwErrorOnNotFound) {
             throw new Error(`Could not find the dataset parameter "${name}". Make sure the dataset is bound in the manifest.`);
@@ -205,23 +204,8 @@ export class DatasetAdapter {
     }
 
     private _isAutoSaveEnabled(): boolean {
-        return false;
         return this._context.parameters.EnableAutoSave?.raw === 'true';
     }
-
-    private _isCommandBarEnabled(): boolean {
-        return true;
-        switch (true) {
-            //only case where we need to show command bar is in Power Apps when editing is enabled and auto save is disabled
-            case this._isEditingEnabled() && !this._client.isTalxisPortal() && !this._isAutoSaveEnabled(): {
-                return true;
-            }
-            default: {
-                return false;
-            }
-        }
-    }
-
     private _isEditingEnabled(): boolean {
         return this._context.parameters.EnableEditing?.raw === 'true';
     }
@@ -235,31 +219,21 @@ export class DatasetAdapter {
 
     //toggle refresh on our grid when native dataset is refreshed
     private _syncPowerAppsDatasetOnNativeRefresh() {
-        return;
-        switch (true) {
-            case this._client.isTalxisPortal():
-            case !this._firstDataLoaded:
-            case this._context.updatedProperties.join() === 'SelectedItems':
-            case this._getRefreshingStatus() !== 0:
-            case (<PowerAppsDatasetProvider>this.getDataset().getDataProvider()).isRefreshDisabled(): {
-                return;
-            }
-            default: {
-                this.getDataset().refresh();
-            }
+        const powerAppsDataset = this._getDatasetByName(this._getDatasetParameterName(), true) as ComponentFramework.PropertyTypes.DataSet;
+        const provider = this.getDataset().getDataProvider() as PowerAppsDatasetProvider;
+        //this makes sure that internally triggered refresh does not cause infinite loop
+        if (powerAppsDataset.loading && !provider.isMainDatasetSyncInProgress()) {
+            this._scheduleForRefresh = true;
+            return;
+        }
+        if (this._scheduleForRefresh) {
+            this._scheduleForRefresh = false;
+            provider.refreshFromOutside();
         }
     }
 
     private _syncPowerAppsDatasetSetup() {
-        if (this._client.isTalxisPortal()) {
-            return;
-        }
         this._dataset.setSearchQuery(this._getCurrentSearchQuery());
-    }
-
-    private _getRefreshingStatus() {
-        //@ts-ignore - typings
-        return this._context.factory._customControlProperties.dynamicData.parameters.Grid.refreshingStatus
     }
 
     private async _onDatasetInit() {
@@ -274,13 +248,14 @@ export class DatasetAdapter {
                     recordIds: [],
                     specificCommands: [homePageGridClientApiRibbonButtonId]
                 });
-                if (commands.length === 0) {
+                const command = commands.find(x => x.commandButtonId === homePageGridClientApiRibbonButtonId);
+                if (!command) {
                     this._context.navigation.openErrorDialog({
                         message: `Could not find ribbon button ${homePageGridClientApiRibbonButtonId}. Client API will not be enabled.`
                     })
                 }
                 else {
-                    await commands[0].execute();
+                    await command.execute();
                 }
             }
         }
@@ -329,13 +304,6 @@ export class DatasetAdapter {
         })
     }
 
-    private _getCurrentFetchXml(): string {
-        if (this._client.isTalxisPortal()) {
-            return this._dataset.getDataSource();
-        }
-        return this._getNormalizedFetchXml(this._getDatasetDynamicData().cachedQueryState.fetchXml)
-    }
-
     private _getCurrentSearchQuery(): string {
         if (this._client.isTalxisPortal()) {
             return this._dataset.getSearchQuery();
@@ -352,26 +320,12 @@ export class DatasetAdapter {
         //@ts-ignore
         return `talxis_grid_${this._context.utils._customControlProperties.id}`;
     }
-
-    private _getNormalizedFetchXml(fetchXmlString: string): string {
-        const fetchXml = FetchXmlBuilder.fetch.fromXml(fetchXmlString)
-        fetchXml.savedqueryid = "";
-        fetchXml.userqueryid = "";
-        return fetchXml.toXml();
-    }
-
-    private _setViewColumns(ids: string[]) {
-        //@ts-ignore - typings
-        this._context.factory.fireEvent('setViewColumns', ids);
-    }
     private _getPowerAppsDatasetProvider() {
         return new PowerAppsDatasetProvider({
             datasetParameterName: this._getDatasetParameterName(),
             onGetContext: () => this._context,
             onGetPowerAppsDataset: () => <ComponentFramework.PropertyTypes.DataSet>this._getDatasetByName(this._getDatasetParameterName(), true),
-            events: {
-                onColumnsChanged: (ids) => this._setViewColumns(ids)
-            }
+            onGetRibbonGroupingPowerAppsDataset: () => <ComponentFramework.PropertyTypes.DataSet>this._getDatasetByName(this._getRibbonGroupingDatasetParameterName(), true)
         })
     }
 

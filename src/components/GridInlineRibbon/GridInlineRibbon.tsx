@@ -12,7 +12,10 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const propsRef = useRef(props);
     propsRef.current = props;
     const context = props.context;
-    const model = useMemo(() => new GridInlineRibbonModel(() => propsRef.current), []);
+    const model = useMemo(() => new GridInlineRibbonModel({
+        onGetRecord: () => propsRef.current.parameters.Record.raw,
+        onGetCommandButtonIds: () => propsRef.current.parameters.CommandButtonIds?.raw?.split(',').map(id => id.trim()) ?? []
+    }), []);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const componentProps = onOverrideComponentProps({
         onRender: (props, defaultRender) => defaultRender(props)
@@ -20,7 +23,7 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     const commandBarRef = useRef<ICommandBar>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const rerender = useRerender();
-    const styles = useMemo(() => getGridInlineRibbonStyles(props.parameters.Record.raw.getDataProvider().getColumnsMap()[DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME].alignment), []);
+    const styles = useMemo(() => getGridInlineRibbonStyles(props.parameters.Record.raw.getDataProvider().getColumnsMap()[DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME].alignment, context.mode.allocatedHeight), [context.mode.allocatedHeight]);
     useEventEmitter<IGridInlineRibbonModelEvents>(model, ['onBeforeCommandsRefresh', 'onAfterCommandsRefresh'], () => rerender());
 
     const observe = useResizeObserver(() => {
@@ -71,33 +74,43 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
                 onOverrideComponentProps={() => {
                     return {
                         onRender: (ribbonProps, defaultRender) => {
-                            return props.onRenderRibbon({
-                                ...ribbonProps,
-                                container: {
-                                    ...ribbonProps.container,
-                                    className: getClassNames([ribbonProps.container.className, styles.ribbonContainer])
-                                },
-                                onRenderLoading: (props, defaultRender) => defaultRender({
+                            return props.onRenderRibbon(ribbonProps, (props) => {
+                                return defaultRender({
                                     ...props,
-                                    styles: {
-                                        ...props.styles,
-                                        //@ts-ignore - typings
-                                        root: getClassNames([(props.styles?.root), styles.shimmerRoot]),
-                                        //@ts-ignore - typings
-                                        shimmerWrapper: getClassNames([props.styles?.shimmerWrapper, styles.shimmerWrapper])
-                                    }
-                                }),
-                                onRenderCommandBar: (props, defaultRender) => defaultRender({
-                                    ...props,
-                                    componentRef: commandBarRef,
-                                    styles: {
-                                        ...props.styles,
-                                        //@ts-ignore - typings
-                                        primarySet: getClassNames([props.styles?.primarySet, styles.primarySet])
+                                    container: {
+                                        ...props.container,
+                                        className: getClassNames([props.container.className, styles.ribbonContainer])
                                     },
+                                    onRenderLoading: (loadingProps, defaultRender) => {
+                                        return props.onRenderLoading(loadingProps, (props) => {
+                                            return defaultRender({
+                                                ...props,
+                                                styles: {
+                                                    ...props.styles,
+                                                    //@ts-ignore - typings
+                                                    root: getClassNames([(props.styles?.root), styles.shimmerRoot]),
+                                                    //@ts-ignore - typings
+                                                    shimmerWrapper: getClassNames([props.styles?.shimmerWrapper, styles.shimmerWrapper])
+                                                }
+                                            })
+                                        })
+                                    },
+                                    onRenderCommandBar: (commandBarProps, defaultRender) => {
+                                        return props.onRenderCommandBar(commandBarProps, (props) => {
+                                            return defaultRender({
+                                                ...props,
+                                                componentRef: commandBarRef,
+                                                styles: {
+                                                    ...props.styles,
+                                                    //@ts-ignore - typings
+                                                    primarySet: getClassNames([props.styles?.primarySet, styles.primarySet])
+                                                },
+                                            })
+                                        })
+                                    }
                                 })
-                            }, defaultRender);
-                        },
+                            })
+                        }
                     }
                 }}
             />

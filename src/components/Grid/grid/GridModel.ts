@@ -108,7 +108,7 @@ export class GridModel {
         return this.getParameters().EnableEditing?.raw === true;
     }
     public getGroupType(): 'nested' | 'flat' {
-        return this.getParameters().GroupType?.raw ?? 'nested';
+        return this.getDataset().grouping.getGroupingType();
     }
     public optionSetColorsEnabled(): boolean {
         return this.getParameters().EnableOptionSetColors?.raw === true;

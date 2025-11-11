@@ -27,7 +27,8 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         this._getProps = deps.getProps;
         this._getLabels = deps.getLabels;
         this._registerInterceptors();
-        this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands())
+        this._setDatasetProperties();
+        this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids))
         //triggering data load is done by platform in non-virtual datasets
         if (this.getDataset().isVirtual()) {
             this.getDataset().paging.loadExactPage(this.getDataset().paging.pageNumber);
@@ -62,8 +63,12 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
     public getPcfContext() {
         return this._getProps().context;
     }
-    public async loadCommands() {
-        this._commands = await this.getDataset().getDataProvider().retrieveRecordCommand();
+    public async loadCommands(ids: string[]) {
+        this._commands = await this.getDataset().getDataProvider().retrieveRecordCommand({
+            recordIds: ids,
+            refreshAllRules: true,
+            isMainRibbon: true
+        });
         this._commands = this._getFilteredCommands(this._commands);
         this._commandsLoaded = true;
         this.dispatchEvent('onRecordCommandsLoaded');
@@ -77,18 +82,23 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
     private _getParameters() {
         return this._getProps().parameters;
     }
+
+    private _setDatasetProperties() {
+        const provider = this.getDataset().getDataProvider();
+        provider.setProperty('autoSave', this.isAutoSaveEnabled());
+        provider.setProperty('groupingType', this._getParameters().GroupType?.raw ?? 'flat');
+    }
+
     private _addEventListeners() {
-        if (this.isRibbonVisible()) {
-            this.getDataset().addEventListener('onRecordsSelected', () => {
-                this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
-            })
-            this.getDataset().addEventListener('onRecordColumnValueChanged', () => {
-                this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
-            })
-            this.getDataset().addEventListener('onAfterRecordSaved', () => {
-                this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
-            })
-        }
+        this.getDataset().addEventListener('onRecordsSelected', () => {
+            this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
+        })
+        this.getDataset().addEventListener('onRecordColumnValueChanged', () => {
+            this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
+        })
+        this.getDataset().addEventListener('onAfterRecordSaved', () => {
+            this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
+        })
     }
     private _registerInterceptors() {
         this.getDataset().setInterceptor('__unsavedChangesBlocker', (defaultAction: any) => {

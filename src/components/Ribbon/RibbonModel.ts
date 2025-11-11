@@ -1,8 +1,6 @@
 import { Client, EventEmitter, ICommand } from "@talxis/client-libraries";
 import { IRibbon } from "./interfaces";
 
-const client = new Client();
-
 
 export interface IRibbonModelEvents {
     onBeforeCommandExecuted: () => void;
