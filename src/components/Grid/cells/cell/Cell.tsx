@@ -224,7 +224,7 @@ const CellContentWrapper = (props: ICellProps) => {
         return () => {
             checkBoxRef.current?.removeEventListener('click', onCheckBoxClick);
         }
-    }, []);
+    }, [savingResult]);
 
     return <ThemeProvider
         ref={cellRef}

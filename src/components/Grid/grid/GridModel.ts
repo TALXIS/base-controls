@@ -116,7 +116,7 @@ export class GridModel {
     public getDefaultExpandedGroupLevel(): number {
         return this.getParameters().DefaultExpandedGroupLevel?.raw ?? -1;
     }
-    public getLicenseKey(): string | null{
+    public getLicenseKey(): string | null {
         return this.getParameters().LicenseKey?.raw ?? null;
     }
     public getDefaultRowHeight(): number {
@@ -151,13 +151,13 @@ export class GridModel {
         }
         const defaultControl: Required<ICustomColumnControl> = {
             name: (() => {
-                if(record.getSummarizationType() === 'aggregation') {
+                if (record.getSummarizationType() === 'aggregation') {
                     return 'GridCellRenderer';
                 }
-                if(column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME) {
+                if (column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME) {
                     return BaseControls.GridInlineRibbon;
                 }
-                if(editing) {
+                if (editing) {
                     return BaseControls.GetControlNameForDataType(column.dataType as DataType)
                 }
                 return 'GridCellRenderer';
@@ -815,12 +815,20 @@ export class GridModel {
 
     private _registerEventListeners() {
         this._dataset.addEventListener('onInitialDataLoaded', () => this.init());
-        this._dataset.addEventListener('onRecordColumnValueChanged', (record) => this._autoSaveRecord(record))
+        this._dataset.addEventListener('onRecordColumnValueChanged', (record) => this._autoSaveRecord(record));
+        this._dataset.addEventListener('onAfterRecordSaved', () => this._refreshTotalRowOnAutoSave());
+        this._dataset.addEventListener('onAfterSaved', () => this._totalRow.refresh())
         this._setGroupingInterceptor();
     }
     private _autoSaveRecord(record: IRecord) {
         if (this.isAutoSaveEnabled() && record.isDirty()) {
             record.save();
+        }
+    }
+
+    private _refreshTotalRowOnAutoSave() {
+        if (this.isAutoSaveEnabled()) {
+            this._totalRow.refresh()
         }
     }
 

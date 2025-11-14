@@ -30,7 +30,7 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         this._setDatasetProperties();
         this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids))
         //triggering data load is done by platform in non-virtual datasets
-        if (this.getDataset().isVirtual()) {
+        if (this.getDataset().getDataProvider().getProperty('isStandalone')) {
             this.getDataset().paging.loadExactPage(this.getDataset().paging.pageNumber);
         }
         this._addEventListeners();
@@ -86,7 +86,7 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
     private _setDatasetProperties() {
         const provider = this.getDataset().getDataProvider();
         provider.setProperty('autoSave', this.isAutoSaveEnabled());
-        provider.setProperty('groupingType', this._getParameters().GroupType?.raw ?? 'flat');
+        provider.setProperty('groupingType', this._getParameters().GroupType?.raw ?? 'nested');
     }
 
     private _addEventListeners() {
@@ -101,16 +101,16 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         })
     }
     private _registerInterceptors() {
-        this.getDataset().setInterceptor('__unsavedChangesBlocker', (defaultAction: any) => {
+        this.getDataset().setInterceptor('__unsavedChangesBlocker', (parameters, defaultAction) => {
             if (!this.getDataset().isDirty()) {
-                return defaultAction();
+                return defaultAction(parameters);
             }
             else if (window.confirm(this.getLabels()['saving-discard-all-confirmation']())) {
                 //@ts-ignore
                 this.getDataset().getDataProvider()['_dirtyRecordIdsSet'].clear();
                 //@ts-ignore
                 this.getDataset().getDataProvider()['_invalidRecordFieldIdsSet'].clear();
-                return defaultAction();
+                return defaultAction(parameters);
             }
         })
     }
@@ -118,20 +118,9 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
     private _getFilteredCommands(commands: ICommand[]): ICommand[] {
         return commands.filter(command => {
             switch (true) {
-                //these handles are handled by the platform in non-virtual datasets
-                case !this.getDataset().isVirtual() && DataProvider.CONST.NATIVE_COMMAND_IDS.includes(command.commandButtonId): {
+                //these handles are handled by the platform in non-standalone mode
+                case !this.getDataset().getDataProvider().getProperty('isStandalone') && DataProvider.CONST.NATIVE_COMMAND_IDS.includes(command.commandButtonId): {
                     return false;
-                }
-                //no need to display these button when auto save is active
-                case this.isAutoSaveEnabled(): {
-                    switch (command.commandButtonId) {
-                        case DataProvider.CONST.SAVE_COMMAND_ID:
-                        case DataProvider.CONST.CLEAR_CHANGES_COMMAND_ID: {
-                            return false;
-                        }
-                    }
-                    if (command.commandButtonId === DataProvider.CONST.SAVE_COMMAND_ID)
-                        return false;
                 }
             }
             return true;
