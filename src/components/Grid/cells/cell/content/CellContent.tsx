@@ -25,7 +25,7 @@ export const CellContent = (props: ICellProps) => {
     const node = props.node;
     const themeRef = React.useRef(useTheme());
     themeRef.current = useTheme();
-    const styles = React.useMemo(() => getCellContentStyles(valueRef.current.columnAlignment), [valueRef.current.columnAlignment]);
+    const styles = React.useMemo(() => getCellContentStyles(valueRef.current.columnAlignment, node.rowHeight!), [valueRef.current.columnAlignment, node.rowHeight]);
     //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);
 

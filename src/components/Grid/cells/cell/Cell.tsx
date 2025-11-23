@@ -1,6 +1,6 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyles, Icon, SpinnerSize, CommandBarButton, TooltipHost, MessageBar, MessageBarType, mergeStyleSets } from "@fluentui/react";
-import { IRecord, Constants, DataProvider, IRecordEvents, ICommand } from "@talxis/client-libraries";
+import { IRecord, Constants, DataProvider, IRecordEvents, ICommand, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useThemeGenerator, getClassNames, useRerender, Spinner } from "@talxis/react-components";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
@@ -140,7 +140,7 @@ const CellContentWrapper = (props: ICellProps) => {
     const cellRef = useRef<HTMLDivElement>(null);
     const recordSelectionState = agGrid.getRecordSelectionState(node);
     const isRecordSelectionDisabled = grid.isRecordSelectionDisabled(record);
-    const [savingResult, setSavingResult] = useState<'success' | 'error' | null>(null);
+    const [savingResult, setSavingResult] = useState<IRecordSaveOperationResult | null>(null);
     const rerender = useRerender();
     useEventEmitter<IRecordEvents>(record, 'onBeforeSaved', rerender);
 
@@ -164,9 +164,9 @@ const CellContentWrapper = (props: ICellProps) => {
                         styles={{
                             root: styles.autoSaveBtnRoot,
                         }}
-                        title={savingResult === 'success' ? grid.getLabels()['saving-autosave-success']() : grid.getLabels()['saving-autosave-error']()}
+                        title={savingResult.success ? grid.getLabels()['saving-autosave-success']() : savingResult.errorMessages?.join(';')}
                         onRenderIcon={() => {
-                            if (savingResult === 'success') {
+                            if (savingResult.success) {
                                 return <CheckmarkCircle24Filled className={styles.autoSaveBtnSuccess} />
                             }
                             else {
@@ -197,15 +197,14 @@ const CellContentWrapper = (props: ICellProps) => {
         }
     }
 
-    const onAfterSaved = useCallback((result) => {
-        if (result) {
-            setSavingResult('success');
+    const onAfterSaved = useCallback((result: IRecordSaveOperationResult) => {
+        setSavingResult(result);
+        if (result.success) {
             setTimeout(() => {
                 setSavingResult(null);
             }, 5000);
         }
         else {
-            setSavingResult('error');
             setTimeout(() => {
                 setSavingResult(null);
             }, 10000);

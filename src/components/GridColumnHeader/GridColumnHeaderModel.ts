@@ -42,8 +42,8 @@ export class GridColumnHeaderModel {
         return !this.getColumn().metadata?.IsValidForUpdate
     }
     public isFiltered() {
-        const filtering = this.getDataset().filtering.getFilter();
-        return filtering?.conditions.some(condition => condition.attributeName === Attribute.GetNameFromAlias(this.getColumn().name));
+        const filtering = this._getProps().parameters.Filtering.raw;
+        return filtering.getColumnFilter(this.getColumn().name).isAppliedToDataset()
     }
     public isRequired() {
         if (!this._getProps().parameters.EnableEditing?.raw) {

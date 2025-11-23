@@ -1,7 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react"
 import { IColumn } from "@talxis/client-libraries"
 
-export const getCellContentStyles = (columnAlignment: IColumn['alignment']) => {
+export const getCellContentStyles = (columnAlignment: IColumn['alignment'], height: number) => {
     return mergeStyleSets({
         controlRoot: {
             height: '100%',
@@ -12,7 +12,12 @@ export const getCellContentStyles = (columnAlignment: IColumn['alignment']) => {
             border: '2px solid transparent'
         },
         controlContainer: {
-            height: '100%'
+            height: '100%',
+            //TODO: this should be fixed in the control itself
+            '.ms-TextField--multiline .ms-TextField-fieldGroup': {
+                height: `${height}px !important`
+            }
+            //TODO: remove this, this should be fixed in the multiline textfield itself
         },
         loadingWrapper: {
             height: '100%',

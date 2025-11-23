@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef } from "react";
-import { GetRowIdParams, GridReadyEvent } from "@ag-grid-community/core";
+import { GetRowIdParams, GridReadyEvent, GridState } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { AgGridModel } from "./ag-grid/AgGridModel";
 import { AgGridReact } from "@ag-grid-community/react";
 import { LoadingOverlay } from "../overlays/loading/LoadingOverlay";
 import { EmptyRecords } from "../overlays/empty-records/EmptyRecordsOverlay";
-import { getClassNames, ITheme } from "@talxis/react-components";
+import { getClassNames, ITheme, useStateValues } from "@talxis/react-components";
 import { IGrid } from "../interfaces";
 import { GridModel } from "./GridModel";
 import { useControl } from "../../../hooks";
@@ -70,6 +70,7 @@ export const Grid = (props: IGrid) => {
                     noRowsOverlayComponent={EmptyRecords}
                     enableGroupEdit
                     reactiveCustomComponents
+                    initialState={props.state?.AgGridState}
                     gridOptions={{
                         getRowStyle: (params) => {
                             const record = params.data;

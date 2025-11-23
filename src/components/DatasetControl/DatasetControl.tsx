@@ -24,7 +24,7 @@ export const DatasetControl = (props: IDatasetControl) => {
   const rerender = useRerender();
   const styles = useMemo(() => getDatasetControlStyles(props.parameters.Height?.raw), [props.parameters.Height?.raw]);
   const dataset = model.getDataset();
-  
+
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', rerender);
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onRenderRequested', rerender);
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onBeforeNewDataLoaded', rerender);
@@ -49,6 +49,12 @@ export const DatasetControl = (props: IDatasetControl) => {
     return isFooterVisible();
   }
 
+  useEffect(() => {
+    return () => {
+      model.destroy();
+    }
+  }, []);
+
   return <ModelContext.Provider value={model}>
     {componentProps.onRender({
       container: {
@@ -67,8 +73,9 @@ export const DatasetControl = (props: IDatasetControl) => {
           },
 
         }, (props) => {
+          const { onOverrideComponentProps, ...filteredProps } = propsRef.current;
           return <div {...props.controlContainerProps}>
-            {propsRef.current.onGetControlComponent()}
+            {propsRef.current.onGetControlComponent(filteredProps)}
           </div>
         })}
         {props.onRenderFooter({

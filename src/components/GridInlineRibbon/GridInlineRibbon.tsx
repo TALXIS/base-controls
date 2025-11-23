@@ -41,7 +41,9 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
             observe(containerRef.current);
         }
         return () => {
-            getRibbonColumn().setCustomProperty('isRibbonUiMounted', false);
+            if (!props.parameters.Record.raw.getDataProvider().isDestroyed()) {
+                getRibbonColumn().setCustomProperty('isRibbonUiMounted', false);
+            }
             model.destroy();
         }
     }, []);

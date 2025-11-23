@@ -82,6 +82,11 @@ export const ColumnHeader = (props: IColumnHeader) => {
                             isStatic: true,
                             value: grid.isEditingEnabled(),
                             type: 'TwoOptions'
+                        },
+                        Filtering: {
+                            isStatic: true,
+                            value: grid.getFiltering(),
+                            type: 'Object'
                         }
                     }
                 }}

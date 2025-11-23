@@ -10,6 +10,7 @@ export interface IRibbonModelEvents {
 export class RibbonModel extends EventEmitter<IRibbonModelEvents> {
     private _getProps: () => IRibbon;
     private _pendingActionsSet: Set<string> = new Set<string>();
+    private _client: Client = new Client();
     constructor(getProps: () => IRibbon) {
         super();
         this._getProps = getProps;
@@ -35,34 +36,47 @@ export class RibbonModel extends EventEmitter<IRibbonModelEvents> {
     }
 
     public isCommandDisabled(command: ICommand): boolean {
-        if(this._getProps().context.mode.isControlDisabled) {
+        if (this._getProps().context.mode.isControlDisabled) {
             return true;
         }
-        if(!command.canExecute) {
+        if (!command.canExecute) {
             return true;
         }
-        if(this._pendingActionsSet.has(command.commandId)) {
+        if (this._pendingActionsSet.has(command.commandId)) {
             return true;
         }
         return false;
     }
 
     public getIconUrl(iconName?: string): string | null {
-        if(!iconName) {
+        if (!iconName) {
             return null;
         }
-        const webResourceName = iconName.split('$webresource:')[1];
-        if(!webResourceName) {
-            return null;
+        if (this._client.isTalxisPortal()) {
+            if(iconName.startsWith('https://')) {
+                return iconName;
+            }
+            else {
+                return null;
+            }
         }
-        return `https://${window.location.host}${window.Xrm.Utility.getGlobalContext().getWebResourceUrl(webResourceName)}`
+        else {
+            const webResourceName = iconName.split('$webresource:')[1];
+            if (!webResourceName) {
+                return null;
+            }
+            return `https://${window.location.host}${window.Xrm.Utility.getGlobalContext().getWebResourceUrl(webResourceName)}`
+        }
     }
 
     public getIconType(iconName?: string): 'url' | 'fluent' | 'none' {
-        if(!iconName) {
+        if (!iconName) {
             return 'none'
         }
-        if(iconName.startsWith('$')) {
+        if (!this._client.isTalxisPortal() && iconName.startsWith('$')) {
+            return 'url';
+        }
+        if (this._client.isTalxisPortal() && iconName.startsWith('https://')) {
             return 'url';
         }
         return 'fluent';

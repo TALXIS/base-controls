@@ -13,7 +13,7 @@ export class Property {
                 target: "_blank",
                 rel: "noopener noreferrer",
                 children: this.getFormattedValue(),
-                onClick: () => this._onClick()
+                onClick: () => this._openRecord()
             }
         }
         else {
@@ -50,7 +50,7 @@ export class Property {
     public getFormattedValue(): string | null {
         return this._model.getFormattedValue().value;
     }
-    private _onClick() {
+    private _openRecord() {
         this._model.getDataset()?.openDatasetItem(this._model.getRecord().getNamedReference())
     }
 }

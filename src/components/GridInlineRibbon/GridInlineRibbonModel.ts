@@ -34,8 +34,8 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
         this.dispatchEvent('onBeforeCommandsRefresh');
         this._commands = await this._getDataProvider().retrieveRecordCommand({
             recordIds: [this._getRecord().getRecordId()],
-            specificCommands: this._deps.onGetCommandButtonIds(),
-            refreshAllRules: true
+            refreshAllRules: true,
+            isInline: true
         })
         this._loading = false;
         this.dispatchEvent('onAfterCommandsRefresh');

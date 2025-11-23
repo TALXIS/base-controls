@@ -1,4 +1,4 @@
-import { DataProvider, EventEmitter, ICommand } from "@talxis/client-libraries";
+import { Client, DataProvider, EventEmitter, ICommand } from "@talxis/client-libraries";
 import { ITranslation } from "../../hooks";
 import { IDatasetControl } from "./interfaces";
 import { datasetControlTranslations } from "./translations";
@@ -18,8 +18,10 @@ export interface IDatasetControlModelEvents {
 export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents> {
     private _getProps: () => IDatasetControl;
     private _getLabels: () => Labels;
+    private _hasInitialDataLoaded: boolean = false;
     private _commands: ICommand[] = [];
     private _commandsLoaded: boolean = false;
+    private _client: Client = new Client();
     private _debouncedLoadRecordCommands: debounce.DebouncedFunction<(ids: string[]) => void>;
 
     constructor(deps: IDatasetControlModelDeps) {
@@ -28,11 +30,8 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         this._getLabels = deps.getLabels;
         this._registerInterceptors();
         this._setDatasetProperties();
+        this._setState();
         this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids))
-        //triggering data load is done by platform in non-virtual datasets
-        if (this.getDataset().getDataProvider().getProperty('isStandalone')) {
-            this.getDataset().paging.loadExactPage(this.getDataset().paging.pageNumber);
-        }
         this._addEventListeners();
     }
 
@@ -64,12 +63,14 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         return this._getProps().context;
     }
     public async loadCommands(ids: string[]) {
+        //we need to to have our ribbon shadow call the retrieveRecordCommand method in Power Apps in order to inject it into Power Apps ribbon.
+        if (!this.isRibbonVisible() && this._client.isTalxisPortal()) {
+            return;
+        }
         this._commands = await this.getDataset().getDataProvider().retrieveRecordCommand({
             recordIds: ids,
-            refreshAllRules: true,
-            isMainRibbon: true
+            refreshAllRules: true
         });
-        this._commands = this._getFilteredCommands(this._commands);
         this._commandsLoaded = true;
         this.dispatchEvent('onRecordCommandsLoaded');
     }
@@ -79,6 +80,10 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
     public areCommandsLoaded(): boolean {
         return this._commandsLoaded;
     }
+    public destroy() {
+        this._saveState();
+        this.getDataset().destroy();
+    }
     private _getParameters() {
         return this._getProps().parameters;
     }
@@ -87,6 +92,12 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         const provider = this.getDataset().getDataProvider();
         provider.setProperty('autoSave', this.isAutoSaveEnabled());
         provider.setProperty('groupingType', this._getParameters().GroupType?.raw ?? 'nested');
+        const inlineRibbonButtonsIds = [
+            ...(this._getParameters().InlineRibbonButtonIds?.raw?.split(',') ?? []),
+            DataProvider.CONST.SAVE_COMMAND_ID,
+            DataProvider.CONST.CLEAR_CHANGES_COMMAND_ID
+        ];
+        provider.setProperty('inlineRibbonButtonsIds', new Set(inlineRibbonButtonsIds));
     }
 
     private _addEventListeners() {
@@ -98,6 +109,9 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         })
         this.getDataset().addEventListener('onAfterRecordSaved', () => {
             this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
+        })
+        this.getDataset().addEventListener('onInitialDataLoaded', () => {
+            this._hasInitialDataLoaded = true;
         })
     }
     private _registerInterceptors() {
@@ -115,16 +129,46 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         })
     }
 
-    private _getFilteredCommands(commands: ICommand[]): ICommand[] {
-        return commands.filter(command => {
-            switch (true) {
-                //these handles are handled by the platform in non-standalone mode
-                case !this.getDataset().getDataProvider().getProperty('isStandalone') && DataProvider.CONST.NATIVE_COMMAND_IDS.includes(command.commandButtonId): {
-                    return false;
-                }
+    private _saveState() {
+        if(!this._hasInitialDataLoaded) {
+            return;
+        }
+        const provider = this.getDataset().getDataProvider();
+        const state = this._getProps().state || {};
+        const DatasetControlState = state.DatasetControlState || {};
+        DatasetControlState.columns = provider.getColumns().map(col => {
+            return {
+                ...col,
+                //do not store metadata in state
+                metadata: undefined
             }
-            return true;
-        })
+        });
+        DatasetControlState.linking = provider.getLinking();
+        DatasetControlState.sorting = provider.getSorting();
+        DatasetControlState.filtering = provider.getFiltering();
+        DatasetControlState.pageSize = provider.getPaging().pageSize;
+        DatasetControlState.pageNumber = provider.getPaging().pageNumber;
+        DatasetControlState.searchQuery = provider.getSearchQuery();
+        DatasetControlState.selectedRecordIds = provider.getSelectedRecordIds();
+        state.DatasetControlState = DatasetControlState;
+        this._getProps().context.mode.setControlState(state);
+    }
+
+    private _setState() {
+        const state = this._getProps().state?.DatasetControlState;
+        if (!state) {
+            return;
+        }
+
+        const provider = this.getDataset().getDataProvider();
+        provider.setProperty('hasPreviousState', true);
+        provider.setLinking(state.linking);
+        provider.setSorting(state.sorting);
+        provider.setFiltering(state.filtering);
+        provider.getPaging().setPageSize(state.pageSize);
+        provider.getPaging().setPageNumber(state.pageNumber);
+        provider.setSearchQuery(state.searchQuery);
+        provider.setSelectedRecordIds(state.selectedRecordIds);
     }
 
 }

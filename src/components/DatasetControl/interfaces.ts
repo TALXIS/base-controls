@@ -13,7 +13,7 @@ export interface IDatasetControl extends IControl<IGridParameters, IGridOutputs,
     /**
      * Tells the Dataset control which UI component should be used for the dataset.
      */
-    onGetControlComponent: () => React.ReactElement<IControl<any, any, any, any>>
+    onGetControlComponent: (props: Omit<IDatasetControl, 'onOverrideComponentProps'>) => React.ReactElement<IControl<any, any, any, any>>
 }
 
 export interface IDatasetControlComponentProps {

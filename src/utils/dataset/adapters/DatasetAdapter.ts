@@ -1,6 +1,6 @@
-import { Client, Dataset, IColumn, IDataset, IInterceptor, Interceptors, PowerAppsDatasetProvider } from "@talxis/client-libraries";
+import { Client, Dataset, FetchXmlBuilder, IColumn, IDataset, IInterceptor, Interceptors, PowerAppsDatasetProvider } from "@talxis/client-libraries";
 import { mergeStyles } from "@fluentui/react";
-import { IGridParameters } from "../../../components";
+import { IDatasetControl, IGridParameters } from "../../../components";
 
 interface IInputs {
     Grid: ComponentFramework.PropertyTypes.DataSet;
@@ -22,13 +22,13 @@ interface IInputs {
     InlineRibbonButtonIds?: ComponentFramework.PropertyTypes.StringProperty;
 }
 
+interface IDatasetAdapterOptions {
+    onInitialize?: () => Promise<void>;
+}
+
 
 interface IOutputs {
     DatasetControl?: any;
-}
-
-interface IDatasetAdapterInterceptors {
-    onBeforeInitialized: (dataset: IDataset) => void | Promise<void>;
 }
 
 export class DatasetAdapter {
@@ -37,16 +37,23 @@ export class DatasetAdapter {
     private _context!: ComponentFramework.Context<IInputs, IOutputs>;
     private _client = new Client();
     private _scheduleForRefresh: boolean = false;
+    private _options?: IDatasetAdapterOptions;
     private _notifyOutputChanged!: () => void;
+    private _state: ComponentFramework.Dictionary = {};
     private _resolveGetOutputs!: (value: boolean | PromiseLike<boolean>) => void;
-    private _interceptors: Interceptors<IDatasetAdapterInterceptors> = new Interceptors();
     private _getOutputsPromise: Promise<boolean> = new Promise(resolve => {
         this._resolveGetOutputs = resolve;
     });
 
-    public init(context: ComponentFramework.Context<IInputs, IOutputs>, notifyOutputChanged: () => void, container: HTMLDivElement) {
+    constructor(options?: IDatasetAdapterOptions) {
+        this._options = options;
+    }
+
+    public init(context: ComponentFramework.Context<IInputs, IOutputs>, notifyOutputChanged: () => void, container: HTMLDivElement, state: ComponentFramework.Dictionary) {
         this._container = container;
         this._context = context;
+        this._state = state ?? {};
+        this._flushInvalidState();
         this._notifyOutputChanged = notifyOutputChanged;
         this._dataset = this.getDataset();
         this._dataset.setColumns(this._getColumns());
@@ -57,62 +64,66 @@ export class DatasetAdapter {
         this._onDatasetInit();
     }
 
-    public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (parameters: IGridParameters) => void) {
+    public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (datasetControlProps: Omit<IDatasetControl, 'onGetControlComponent'>) => void) {
         this._context = context;
         if (!this._client.isTalxisPortal()) {
             this._syncPowerAppsDatasetSetup();
             this._syncPowerAppsDatasetOnNativeRefresh();
         }
         return onRenderComponent({
-            Grid: this.getDataset(),
-            EnableEditing: {
-                raw: this._isEditingEnabled()
-            },
-            EnableCommandBar: {
-                //always handled by host platform
-                raw: false
-            },
-            EnableAutoSave: {
-                raw: this._isAutoSaveEnabled()
-            },
-            EnablePagination: {
-                raw: context.parameters.EnablePagination?.raw !== 'false'
-            },
-            EnableFiltering: {
-                raw: context.parameters.EnableFiltering?.raw !== 'false'
-            },
-            EnableSorting: {
-                raw: context.parameters.EnableSorting?.raw !== 'false'
-            },
-            EnableNavigation: {
-                raw: context.parameters.EnableNavigation?.raw !== 'false'
-            },
-            EnableOptionSetColors: {
-                raw: context.parameters.EnableOptionSetColors?.raw === 'true'
-            },
-            SelectableRows: {
-                raw: context.parameters.SelectableRows?.raw ?? 'single'
-            },
-            RowHeight: {
-                raw: context.parameters.RowHeight?.raw ?? 42
-            },
-            //quick find is always handled by platform
-            EnableQuickFind: {
-                raw: false
-            },
-            EnableAggregation: {
-                //raw: context.parameters.EnableAggregation?.raw === 'true',
-                raw: true
-            },
-            EnableGrouping: {
-                raw: context.parameters.EnableFiltering?.raw === 'true'
-            },
-            Height: {
-                raw: this._getHeight()
-            },
-            InlineRibbonButtonIds: {
-                raw: context.parameters.InlineRibbonButtonIds?.raw ?? null
-            },
+            context: context as any,
+            state: this._state,
+            parameters: {
+                Grid: this.getDataset(),
+                EnableEditing: {
+                    raw: this._isEditingEnabled()
+                },
+                EnableCommandBar: {
+                    //always handled by host platform
+                    raw: false
+                },
+                EnableAutoSave: {
+                    raw: this._isAutoSaveEnabled()
+                },
+                EnablePagination: {
+                    raw: context.parameters.EnablePagination?.raw !== 'false'
+                },
+                EnableFiltering: {
+                    raw: context.parameters.EnableFiltering?.raw !== 'false'
+                },
+                EnableSorting: {
+                    raw: context.parameters.EnableSorting?.raw !== 'false'
+                },
+                EnableNavigation: {
+                    raw: context.parameters.EnableNavigation?.raw !== 'false'
+                },
+                EnableOptionSetColors: {
+                    raw: context.parameters.EnableOptionSetColors?.raw === 'true'
+                },
+                SelectableRows: {
+                    raw: context.parameters.SelectableRows?.raw ?? 'single'
+                },
+                RowHeight: {
+                    raw: context.parameters.RowHeight?.raw ?? 42
+                },
+                //quick find is always handled by platform
+                EnableQuickFind: {
+                    raw: false
+                },
+                EnableAggregation: {
+                    //raw: context.parameters.EnableAggregation?.raw === 'true',
+                    raw: true
+                },
+                EnableGrouping: {
+                    raw: context.parameters.EnableFiltering?.raw === 'true'
+                },
+                Height: {
+                    raw: this._getHeight()
+                },
+                InlineRibbonButtonIds: {
+                    raw: context.parameters.InlineRibbonButtonIds?.raw ?? null
+                },
+            }
         })
     }
 
@@ -131,10 +142,6 @@ export class DatasetAdapter {
         return dataset;
     }
 
-    public setInterceptor<K extends keyof IDatasetAdapterInterceptors>(name: K, interceptor: IInterceptor<IDatasetAdapterInterceptors, K>) {
-        this._interceptors.setInterceptor(name, interceptor);
-    }
-
     public getOutputs(): IOutputs {
         this._resolveGetOutputs(true);
         return {
@@ -147,7 +154,11 @@ export class DatasetAdapter {
         //@ts-ignore - typings
         delete window.Xrm[this._getGlobalDatasetInstanceName()];
         if (!this._client.isTalxisPortal()) {
-            this._dataset.destroy();
+            const state = this._state ?? {};
+            const DatasetControlState = state.DatasetControlState ?? {};
+            DatasetControlState.fetchXml = this._getDatasetDynamicData().cachedQueryState.fetchXml;
+            state.DatasetControlState = DatasetControlState;
+            this._context.mode.setControlState(state);
         }
     }
 
@@ -195,7 +206,7 @@ export class DatasetAdapter {
     private async _onDatasetInit() {
         const initializationCallback = async () => {
             await this._getOutputsPromise;
-            await this._interceptors.execute('onBeforeInitialized', this.getDataset(), () => {});
+            await this._options?.onInitialize?.();
             const homePageGridClientApiRibbonButtonId = this._context.parameters.HomePageGridClientApiRibbonButtonId?.raw;
             if (this._isHomePageGrid() && homePageGridClientApiRibbonButtonId) {
                 //@ts-ignore - typings
@@ -224,6 +235,41 @@ export class DatasetAdapter {
         }
     }
 
+    private _flushInvalidState() {
+        if (!this._client.isTalxisPortal()) {
+            this._parseQueryKey(this._getDatasetDynamicData()._getQueryKey());
+            const currentFetchXml = this._harmonizeFetchXml(this._getDatasetDynamicData().cachedQueryState.fetchXml);
+            const stateFetchXml = this._harmonizeFetchXml(this._state?.DatasetControlState?.fetchXml);
+            if (currentFetchXml !== stateFetchXml) {
+                Object.keys(this._state).map(key => delete this._state[key]);
+            }
+        }
+    }
+
+    //Power Apps does not persist state of these properties => do not consider them for state comparison
+    private _harmonizeFetchXml(fetchXml?: string) {
+        if (!fetchXml) {
+            return null;
+        }
+        const fetch = FetchXmlBuilder.fetch.fromXml(fetchXml);
+        fetch.page = 1;
+        fetch.count = 50;
+        fetch.pagingCookie = "";
+        //why does this get randomly added?
+        fetch.entity.attributes = fetch.entity.attributes.filter(attr => attr.name !== 'statecode');
+        return fetch.toXml();
+
+    }
+
+    private _parseQueryKey(queryKey?: string) {
+        if (!queryKey) {
+            return null;
+        }
+        const parts = queryKey.split(':');
+        parts.pop();
+        return parts.join(':');
+    }
+
     private _getColumns() {
         try {
             const parameterColumns: IColumn[] = JSON.parse(this._context.parameters.Columns?.raw ?? '[]');
@@ -234,21 +280,39 @@ export class DatasetAdapter {
             return this._dataset.columns;
         }
     }
-
     private _getMergedColumns(parameterColumns: IColumn[]): IColumn[] {
-        const columnsMap = new Map(this._dataset.getDataProvider().getColumns().map(col => [col.name, col]));
-        parameterColumns.map(parameterCol => {
-            const col = columnsMap.get(parameterCol.name);
-            if (col) {
-                columnsMap.set(col.name, {
-                    ...col,
-                    ...parameterCol
-                })
+        const columnsMap = new Map<string, IColumn>(this._dataset.columns.map((col: IColumn) => [col.name, col]));
+        const stateColumnsMap = new Map<string, IColumn>(this._state?.DatasetControlState?.columns?.map((col: IColumn) => [col.name, col]) ?? []);
+        //load from state
+        if (stateColumnsMap.size > 0) {
+            //save to return state in porta;
+            if (this._client.isTalxisPortal()) {
+                return [...stateColumnsMap.values()];
             }
             else {
-                columnsMap.set(parameterCol.name, parameterCol);
+                this._dataset.columns.map(col => {
+                    stateColumnsMap.set(col.name, {
+                        ...stateColumnsMap.get(col.name),
+                        isHidden: col.isHidden
+                    } as IColumn)
+                });
+                return [...stateColumnsMap.values()];
             }
-        })
+        }
+        else {
+            parameterColumns.map(parameterCol => {
+                const col = columnsMap.get(parameterCol.name);
+                if (col) {
+                    columnsMap.set(col.name, {
+                        ...col,
+                        ...parameterCol
+                    })
+                }
+                else {
+                    columnsMap.set(parameterCol.name, parameterCol);
+                }
+            })
+        }
         return [...columnsMap.values()]
     }
 
@@ -281,5 +345,4 @@ export class DatasetAdapter {
             onGetContext: () => this._context
         })
     }
-
 }

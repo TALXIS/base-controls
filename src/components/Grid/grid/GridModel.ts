@@ -11,7 +11,6 @@ import { IGrid, IGridParameters } from "../interfaces";
 import { CHECKBOX_COLUMN_KEY } from "../constants";
 import { Type as FilterType } from "@talxis/client-libraries";
 import hotkeys from 'hotkeys-js';
-import { includes } from "lodash";
 
 const DEFAULT_ROW_HEIGHT = 42;
 
@@ -81,6 +80,10 @@ export class GridModel {
 
     public getPcfContext(): IPCFContext {
         return this._getProps().context;
+    }
+
+    public getState() {
+        return this._getProps().state;
     }
 
     public getParameters(): IGridParameters {
@@ -838,28 +841,30 @@ export class GridModel {
         if (this.getGroupType() === 'flat') {
             return;
         }
-        let originalGrouping: IGroupByMetadata[] = [];
+        let originalSortedGrouping: IGroupByMetadata[] = [];
         let originalAggregation: IGroupByMetadata[] = [];
         this._dataset.addEventListener('onBeforeNewDataLoaded', () => {
-            originalGrouping = this._dataset.grouping.getGroupBys();
+            originalSortedGrouping = this._dataset.grouping.getGroupBys().sort((a, b) => {
+                const colA = this._dataset.getDataProvider().getColumnsMap()[a.columnName]!;
+                const colB = this._dataset.getDataProvider().getColumnsMap()[b.columnName]!;
+                return colA.order! - colB.order!;
+            });
             originalAggregation = this._dataset.aggregation.getAggregations();
-
-            if (originalGrouping.length > 1) {
+            if (originalSortedGrouping.length > 1) {
                 this._dataset.grouping.clear();
-                const groupBy = originalGrouping[0];
-                const column = this._dataset.getDataProvider().getColumnsMap()[groupBy.columnName]!;
-                this._dataset.grouping.addGroupBy(originalGrouping[0], column.order);
+                const groupBy = originalSortedGrouping[0];
+                this._dataset.grouping.addGroupBy(groupBy);
                 //clear all grouping aggregations except the first one
-                for (let i = 1; i < originalGrouping.length; i++) {
-                    const column = this._dataset.getDataProvider().getColumnsMap()[originalGrouping[i].columnName];
+                for (let i = 1; i < originalSortedGrouping.length; i++) {
+                    const column = this._dataset.getDataProvider().getColumnsMap()[originalSortedGrouping[i].columnName];
                     this._dataset.aggregation.removeAggregation(column?.aggregation?.alias!);
                 }
             }
         })
         this._dataset.addEventListener('onNewDataLoaded', () => {
-            originalGrouping.map((group) => {
+            originalSortedGrouping.map((group) => {
                 const column = this._dataset.getDataProvider().getColumnsMap()[group.columnName]!;
-                this._dataset.grouping.addGroupBy(group, column.order);
+                this._dataset.grouping.addGroupBy(group);
             })
             originalAggregation.map((aggr: any) => {
                 this._dataset.aggregation.addAggregation(aggr);

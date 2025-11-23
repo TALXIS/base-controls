@@ -1,4 +1,4 @@
-import { IColumn, IDataset } from "@talxis/client-libraries";
+import { Filtering, IColumn, IDataset } from "@talxis/client-libraries";
 import { IControl, IParameters, ITwoOptionsProperty } from "../../interfaces";
 import { IButtonProps, IIconProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 import { gridColumnHeaderTranslations } from "./translations";
@@ -43,6 +43,9 @@ export interface IGridColumnHeaderParameters extends IParameters {
     }
     Column: {
         raw: IColumn;
+    }
+    Filtering: {
+        raw: Filtering;
     }
     /**
      * Should correspond to the `EnableEditing` property in the Grid control.
