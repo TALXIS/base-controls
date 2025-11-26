@@ -8,6 +8,7 @@ import { useGridInstance } from '../../grid/useGridInstance';
 import { filterCalloutStyles } from './styles';
 import { ILookup } from '../../../Lookup';
 import { INestedControlRenderer } from '../../../NestedControlRenderer/interfaces';
+import { IInternalDataProvider } from '@talxis/client-libraries';
 
 export interface IFilterCallout extends ICalloutProps {
     column: IGridColumn;
@@ -18,11 +19,12 @@ export const FilterCallout = (props: IFilterCallout) => {
     const { column, onDismiss } = { ...props };
     const grid = useGridInstance();
     const dataset = grid.getDataset();
+    const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
     const context = grid.getPcfContext();
     const labels = grid.getLabels();
 
     const onColumnFilterSaved = (filter: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => {
-        dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
+        dataProvider.executeWithUnsavedChangesBlocker(() => {
             onDismiss();
             dataset.filtering.setFilter(filter);
             dataset.refresh();

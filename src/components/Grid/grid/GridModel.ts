@@ -1,4 +1,4 @@
-import { AggregationFunction, DataProvider, DataType, DataTypes, FieldValue, Filtering, Grouping, IColumn, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IRecord, Sanitizer, Sorting, TotalRow } from "@talxis/client-libraries";
+import { AggregationFunction, DataProvider, DataType, DataTypes, FieldValue, Filtering, Grouping, IColumn, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IInternalDataProvider, IRecord, Sanitizer, Sorting, TotalRow } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import { ITheme, Theming } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
@@ -45,7 +45,7 @@ export class GridModel {
     private _theme: ITheme;
     private _cachedColumns: IGridColumn[] = [];
     private _cachedColumnsMap: Map<string, IGridColumn> = new Map();
-    private _hasFirstDataBeenLoaded = false;
+    private _hasFirstDataBeenLoaded: boolean;
     private __sorting?: Sorting;
     private __totalRow?: TotalRow
     private __grouping?: Grouping;
@@ -54,24 +54,19 @@ export class GridModel {
     constructor({ onGetProps, labels, theme }: IGridDependencies) {
         this._getProps = onGetProps;
         this._labels = labels;
+        this._hasFirstDataBeenLoaded = !this.getDataset().loading;
         this._theme = theme ?? getTheme();
         this.oddRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.neutralLighterAlt, this._theme.semanticColors.bodyText);
         this.evenRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.white, this._theme.semanticColors.bodyText);
-        this._registerEventListeners();
-        hotkeys('*', (event, handler) => {
-        })
-    }
-    public init() {
-        if (this._hasFirstDataBeenLoaded) {
-            return;
-        }
-        this._hasFirstDataBeenLoaded = true;
         this.__sorting = new Sorting(() => this.getDataset().getDataProvider());
         this.__totalRow = new TotalRow({
             onGetDataProvider: () => this.getDataset().getDataProvider(),
         })
         this.__filtering = new Filtering(() => this.getDataset().getDataProvider(), FieldValue);
         this.__grouping = new Grouping(() => this.getDataset().getDataProvider());
+        this._registerEventListeners();
+        hotkeys('*', (event, handler) => {
+        })
     }
 
     public getDataset(): IDataset {
@@ -111,7 +106,7 @@ export class GridModel {
         return this.getParameters().EnableEditing?.raw === true;
     }
     public getGroupType(): 'nested' | 'flat' {
-        return this.getDataset().grouping.getGroupingType();
+        return this.getDataset().getDataProvider().getProperty('groupingType');
     }
     public optionSetColorsEnabled(): boolean {
         return this.getParameters().EnableOptionSetColors?.raw === true;
@@ -550,21 +545,21 @@ export class GridModel {
     }
 
     public addAggregation(columnName: string, aggregationFunction: AggregationFunction) {
-        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
+        this._getInternalDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._setAggregationDecorator(() => {
                 this._totalRow.addAggregation(columnName, aggregationFunction)
             })
         })
     }
     public removeAggregation(alias: string) {
-        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
+        this._getInternalDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._setAggregationDecorator(() => {
                 this._totalRow.removeAggregation(alias);
             })
         })
     }
     public toggleColumnGroup(columnName: string) {
-        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
+        this._getInternalDataProvider().executeWithUnsavedChangesBlocker(() => {
             const column = this.getDataset().getDataProvider().getColumnsMap()[columnName]!;
             if (column.grouping?.isGrouped) {
                 this._grouping.ungroupColumn(column.grouping.alias!);
@@ -585,7 +580,7 @@ export class GridModel {
         if (!saveToDataset) {
             return;
         }
-        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
+        this._getInternalDataProvider().executeWithUnsavedChangesBlocker(() => {
             const filterExpression = this._filtering.getFilterExpression(FilterType.And.Value);
             if (!filterExpression) {
                 throw new Error('Unexpected error when clearing column filter.');
@@ -596,27 +591,24 @@ export class GridModel {
     }
 
     public sortColumn(columnName: string, descending?: boolean) {
-        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
+        this._getInternalDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._sorting.getColumnSorting(columnName).setSortValue(descending ? 1 : 0, hotkeys.getPressedKeyString().includes('⇧'));
             this._dataset.refresh();
         })
     }
 
     public clearColumnSorting(columnName: string) {
-        this._dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
+        this._getInternalDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._sorting.getColumnSorting(columnName).clear();
             this._dataset.refresh();
         })
     }
-
     public getTotalRow() {
         return this._totalRow;
     }
-
     public getFiltering() {
         return this._filtering;
     }
-
     public isSelectionModifierKeyPressed(): boolean {
         const pressedKeys = hotkeys.getPressedKeyString().join(',');
         switch (true) {
@@ -681,6 +673,10 @@ export class GridModel {
             }
         }
         return names;
+    }
+
+    private _getInternalDataProvider(): IInternalDataProvider {
+        return this.getDataset().getDataProvider() as IInternalDataProvider;
     }
 
     private _setAggregationDecorator(fn: () => void) {
@@ -817,7 +813,7 @@ export class GridModel {
     }
 
     private _registerEventListeners() {
-        this._dataset.addEventListener('onInitialDataLoaded', () => this.init());
+        this._dataset.addEventListener('onInitialDataLoaded', () => this._hasFirstDataBeenLoaded = true);
         this._dataset.addEventListener('onRecordColumnValueChanged', (record) => this._autoSaveRecord(record));
         this._dataset.addEventListener('onAfterRecordSaved', () => this._refreshTotalRowOnAutoSave());
         this._dataset.addEventListener('onAfterSaved', () => this._totalRow.refresh())

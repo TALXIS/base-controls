@@ -3,16 +3,18 @@ import { IRibbonQuickFindWrapperProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { TextField } from "@talxis/react-components";
 import { getQuickFindStyles } from "./styles";
+import { IInternalDataProvider } from "@talxis/client-libraries";
 
 export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperProps['onRenderQuickFind'] }) => {
   const [query, setQuery] = useState<string>('');
   const model = useModel();
   const dataset = model.getDataset();
+  const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
   const labels = model.getLabels();
   const styles = useMemo(() => getQuickFindStyles(), []);
 
   const onSearch = (query?: string) => {
-    dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => {
+    dataProvider.executeWithUnsavedChangesBlocker(() => {
       setQuery(query ?? '');
       dataset.setSearchQuery?.(query ?? '');
       dataset.refresh();

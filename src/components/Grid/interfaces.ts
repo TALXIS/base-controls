@@ -18,14 +18,15 @@ export interface IGrid extends IControl<IGridParameters, IGridOutputs, Partial<I
 }
 
 export interface IGridParameters extends IParameters {
+    Grid: IDataset;
     EnableEditing?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnablePagination?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableFiltering?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableSorting?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableQuickFind?: Omit<ITwoOptionsProperty, 'attributes'>;
-    EnableOptionSetColors?:  Omit<ITwoOptionsProperty, 'attributes'>;
-    ShowRecordCount?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableOptionSetColors?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableRecordCount?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableChangeEditor?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableMultiEdit?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableZebra?: Omit<ITwoOptionsProperty, 'attributes'>;
@@ -39,10 +40,9 @@ export interface IGridParameters extends IParameters {
     DefaultExpandedGroupLevel?: Omit<IWholeNumberProperty, 'attributes'>;
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
-    GroupType?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">, 'type'>;
+    GroupingType?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">, 'type'>;
     SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;
     LicenseKey?: IStringProperty;
-    Grid: IDataset
 }
 
 export interface IGridOutputs extends IOutputs {

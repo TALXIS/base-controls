@@ -1,4 +1,4 @@
-import { Client, DataProvider, EventEmitter, ICommand } from "@talxis/client-libraries";
+import { Client, DataProvider, EventEmitter, ICommand, IInternalDataProvider } from "@talxis/client-libraries";
 import { ITranslation } from "../../hooks";
 import { IDatasetControl } from "./interfaces";
 import { datasetControlTranslations } from "./translations";
@@ -33,13 +33,14 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         this._setState();
         this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids))
         this._addEventListeners();
+        this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
     }
 
     public isPaginationVisible(): boolean {
         return this._getParameters().EnablePagination?.raw ?? true;
     }
     public isRecordCountVisible(): boolean {
-        return this._getParameters().ShowRecordCount?.raw ?? true;
+        return this._getParameters().EnableRecordCount?.raw ?? true;
     }
     public isPageSizeSwitcherVisible(): boolean {
         return this._getParameters().EnablePageSizeSwitcher?.raw ?? true;
@@ -91,7 +92,7 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
     private _setDatasetProperties() {
         const provider = this.getDataset().getDataProvider();
         provider.setProperty('autoSave', this.isAutoSaveEnabled());
-        provider.setProperty('groupingType', this._getParameters().GroupType?.raw ?? 'nested');
+        provider.setProperty('groupingType', this._getParameters().GroupingType?.raw ?? 'nested');
         const inlineRibbonButtonsIds = [
             ...(this._getParameters().InlineRibbonButtonIds?.raw?.split(',') ?? []),
             DataProvider.CONST.SAVE_COMMAND_ID,
@@ -115,7 +116,7 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         })
     }
     private _registerInterceptors() {
-        this.getDataset().setInterceptor('__unsavedChangesBlocker', (parameters, defaultAction) => {
+        this._getInternalDataProvider().setInterceptor('__unsavedChangesBlocker', (parameters, defaultAction) => {
             if (!this.getDataset().isDirty()) {
                 return defaultAction(parameters);
             }
@@ -169,6 +170,10 @@ export class DatasetControlModel extends EventEmitter<IDatasetControlModelEvents
         provider.getPaging().setPageNumber(state.pageNumber);
         provider.setSearchQuery(state.searchQuery);
         provider.setSelectedRecordIds(state.selectedRecordIds);
+    }
+    
+    private _getInternalDataProvider(): IInternalDataProvider {
+        return this.getDataset().getDataProvider() as IInternalDataProvider;
     }
 
 }

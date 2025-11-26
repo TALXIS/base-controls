@@ -5,6 +5,7 @@ import { getPaginationStyles } from "./styles";
 import { useMemo } from "react";
 import { CommandBar } from "@talxis/react-components";
 import { PaginationModel } from "./PaginationModel";
+import { IInternalDataProvider } from "@talxis/client-libraries";
 
 const PAGE_SIZE_OPTIONS = ['25', '50', '75', '100', '250'];
 
@@ -12,6 +13,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
   const model = useModel();
   const paginationModel = useMemo(() => new PaginationModel(model), []);
   const dataset = model.getDataset();
+  const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
   const labels = model.getLabels();
   const paging = dataset.paging;
   const theme = useTheme();
@@ -46,7 +48,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
             text: size,
             className: styles.selectedPageSizeButton,
             checked: parseInt(size) === paging.pageSize,
-            onClick: () => dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => onSetPageSize(parseInt(size)))
+            onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => onSetPageSize(parseInt(size)))
           } as IContextualMenuItem))
 
         ]
@@ -63,13 +65,13 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
         iconOnly: true,
         iconProps: { iconName: 'DoubleChevronLeft' },
         disabled: !paging.hasPreviousPage || dataset.loading,
-        onClick: () => dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => paging.reset())
+        onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => paging.reset())
       }, {
         key: 'PreviousPage',
         iconOnly: true,
         iconProps: { iconName: 'Back' },
         disabled: !paging.hasPreviousPage || dataset.loading,
-        onClick: () => dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber - 1))
+        onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber - 1))
       }, {
         key: 'CurrentPage',
         text: `${labels['paging-page']()} ${paging.pageNumber.toString()}`,
@@ -80,7 +82,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
         iconOnly: true,
         iconProps: { iconName: 'Forward' },
         disabled: !paging.hasNextPage || dataset.loading,
-        onClick: () => dataset.getDataProvider().executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber + 1))
+        onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber + 1))
       }]
     },
     onRenderCommandBar: (props, defaultRender) => defaultRender(props),

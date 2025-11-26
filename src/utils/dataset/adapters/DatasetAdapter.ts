@@ -1,10 +1,11 @@
-import { Client, Dataset, FetchXmlBuilder, IColumn, IDataset, IInterceptor, Interceptors, PowerAppsDatasetProvider } from "@talxis/client-libraries";
+import { Client, Dataset, FetchXmlBuilder, IColumn, IDataset, PowerAppsDatasetProvider } from "@talxis/client-libraries";
 import { mergeStyles } from "@fluentui/react";
-import { IDatasetControl, IGridParameters } from "../../../components";
+import { IDatasetControl } from "../../../components";
 
 interface IInputs {
     Grid: ComponentFramework.PropertyTypes.DataSet;
     RibbonGroupingDataset?: ComponentFramework.PropertyTypes.DataSet;
+    EnableQuickFind?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     Columns?: ComponentFramework.PropertyTypes.StringProperty;
     Height?: ComponentFramework.PropertyTypes.StringProperty;
     RowHeight?: ComponentFramework.PropertyTypes.WholeNumberProperty;
@@ -16,10 +17,17 @@ interface IInputs {
     EnableOptionSetColors?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableAggregation?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableGrouping?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
-    SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
     EnableAutoSave?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableCommandBar?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableZebra?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableGroupedColumnsPinning?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnablePageSizeSwitcher?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableRecordCount?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     HomePageGridClientApiRibbonButtonId?: ComponentFramework.PropertyTypes.StringProperty;
     InlineRibbonButtonIds?: ComponentFramework.PropertyTypes.StringProperty;
+    DefaultExpandedGroupLevel?: ComponentFramework.PropertyTypes.WholeNumberProperty;
+    SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
+    GroupingType?: ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">;
 }
 
 interface IDatasetAdapterOptions {
@@ -111,8 +119,7 @@ export class DatasetAdapter {
                     raw: false
                 },
                 EnableAggregation: {
-                    //raw: context.parameters.EnableAggregation?.raw === 'true',
-                    raw: true
+                    raw: context.parameters.EnableAggregation?.raw === 'true',
                 },
                 EnableGrouping: {
                     raw: context.parameters.EnableFiltering?.raw === 'true'
@@ -123,6 +130,24 @@ export class DatasetAdapter {
                 InlineRibbonButtonIds: {
                     raw: context.parameters.InlineRibbonButtonIds?.raw ?? null
                 },
+                EnableZebra: {
+                    raw: context.parameters.EnableZebra?.raw !== 'false'
+                },
+                DefaultExpandedGroupLevel: {
+                    raw: context.parameters.DefaultExpandedGroupLevel?.raw ?? null
+                },
+                EnableRecordCount: {
+                    raw: context.parameters.EnableRecordCount?.raw !== 'false'
+                },
+                EnableGroupedColumnsPinning: {
+                    raw: context.parameters.EnableGroupedColumnsPinning?.raw !== 'false'
+                },
+                EnablePageSizeSwitcher: {
+                    raw: context.parameters.EnablePageSizeSwitcher?.raw !== 'false'
+                },
+                GroupingType: {
+                    raw: context.parameters.GroupingType?.raw ?? 'nested'
+                }
             }
         })
     }

@@ -1,6 +1,6 @@
 import { mergeStyles } from "@fluentui/react";
 import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { IDatasetControl, IGridParameters } from "../../../components";
+import { IDatasetControl} from "../../../components";
 
 interface IOutputs {
     DatasetControl?: any;
@@ -24,11 +24,17 @@ interface IInputs {
     EnableOptionSetColors?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableAggregation?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableGrouping?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
-    SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
     EnableAutoSave?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableCommandBar?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableZebra?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableGroupedColumnsPinning?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnablePageSizeSwitcher?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableRecordCount?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     HomePageGridClientApiRibbonButtonId?: ComponentFramework.PropertyTypes.StringProperty;
     InlineRibbonButtonIds?: ComponentFramework.PropertyTypes.StringProperty;
+    DefaultExpandedGroupLevel?: ComponentFramework.PropertyTypes.WholeNumberProperty;
+    SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
+    GroupingType?: ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">;
 }
 
 interface IVirtualDatasetAdapterOptions {
@@ -143,6 +149,25 @@ export class VirtualDatasetAdapter {
                 InlineRibbonButtonIds: {
                     raw: context.parameters.InlineRibbonButtonIds?.raw ?? null
                 },
+                EnableZebra: {
+                    raw: context.parameters.EnableZebra?.raw !== 'false'
+                },
+                DefaultExpandedGroupLevel: {
+                    raw: context.parameters.DefaultExpandedGroupLevel?.raw ?? null
+                },
+                EnableRecordCount: {
+                    raw: context.parameters.EnableRecordCount?.raw !== 'false'
+                },
+                EnableGroupedColumnsPinning: {
+                    raw: context.parameters.EnableGroupedColumnsPinning?.raw !== 'false'
+                },
+                EnablePageSizeSwitcher: {
+                    raw: context.parameters.EnablePageSizeSwitcher?.raw !== 'false'
+                },
+                GroupingType: {
+                    raw: context.parameters.GroupingType?.raw ?? 'nested'
+                }
+
             }
         })
     }
