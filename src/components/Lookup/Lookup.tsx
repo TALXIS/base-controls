@@ -125,7 +125,7 @@ export const Lookup = (props: ILookup) => {
                 targetEntityName = result.layout.Rows.find(x => x.Cells.find(y => y.Name === attribute))?.Cells?.find(y => y.Name === attribute)?.RelatedEntityName || metadata.LogicalName;
                 targetAttribute = attribute.split(".")[1]
             }
-            const entityMetadata: ComponentFramework.PropertyHelper.EntityMetadata = await props.context.utils.getEntityMetadata(targetEntityName, [targetAttribute]);
+            const entityMetadata: ComponentFramework.PropertyHelper.EntityMetadata = await window.Xrm.Utility.getEntityMetadata(targetEntityName, [targetAttribute]);
             const attributetype: string = entityMetadata.Attributes.get(targetAttribute).AttributeTypeName;
             let primaryName: string;
             switch (attributetype) {

@@ -31,7 +31,7 @@ export const useLookup = (props: ILookup): [
             return {
                 entityName: target,
                 selected: targets.length === 1 ? true : false,
-                metadata: props.context.utils.getEntityMetadata(target, []) as any,
+                metadata: window.Xrm.Utility.getEntityMetadata(target, []) as any,
             }
         })
     });
@@ -142,7 +142,7 @@ export const useLookup = (props: ILookup): [
             targetEntityName = layout.Rows.find(x => x.Cells)?.Cells?.find(y => y.Name === attribute)?.RelatedEntityName || entityName;
             targetAttribute = attribute.split(".")[1]
         }
-        const entityMetadata: ComponentFramework.PropertyHelper.EntityMetadata = await props.context.utils.getEntityMetadata(targetEntityName, [targetAttribute]);
+        const entityMetadata: ComponentFramework.PropertyHelper.EntityMetadata = await window.Xrm.Utility.getEntityMetadata(targetEntityName, [targetAttribute]);
         const attributetype: string = entityMetadata.Attributes.get(targetAttribute).AttributeTypeName;
         let primaryName: string;
         switch (attributetype.toLowerCase()) {
