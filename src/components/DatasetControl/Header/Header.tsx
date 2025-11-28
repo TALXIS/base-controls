@@ -8,21 +8,22 @@ import { QuickFind } from "../QuickFind/QuickFind";
 import { Ribbon } from "../../Ribbon/Ribbon";
 import { useEventEmitter } from "../../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
-import { IDatasetControlModelEvents } from "../DatasetControlModel";
+import { IDatasetControlEvents } from "../../../utils/dataset-control";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
     const model = useModel();
-    const dataset = model.getDataset();
+    const datasetControl = model.getDatasetControl();
+    const dataset = datasetControl.getDataset();
     const rerender = useRerender();
     const styles = useMemo(() => getHeaderStyles(), []);
     useEventEmitter<IDataProviderEventListeners>(dataset, 'onLoading', rerender);
-    useEventEmitter<IDatasetControlModelEvents>(model, 'onRecordCommandsLoaded', rerender);
+    useEventEmitter<IDatasetControlEvents>(datasetControl, 'onRecordCommandsLoaded', rerender);
 
     const isHeaderVisible = () => {
         switch (true) {
-            case model.isQuickFindVisible():
+            case datasetControl.isQuickFindVisible():
             case dataset.error:
-            case model.isRibbonVisible():
+            case datasetControl.isRibbonVisible():
                 {
                     return true;
                 }
@@ -52,26 +53,26 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                 onRenderRibbon: (props, defaultRender) => defaultRender(props)
             }, (props) => {
                 return <div {...props.ribbonQuickFindContainerProps}>
-                    {model.isRibbonVisible() &&
+                    {datasetControl.isRibbonVisible() &&
                         <Ribbon
                             context={{
-                                ...model.getPcfContext(),
+                                ...datasetControl.getPcfContext(),
                                 mode: {
-                                    ...model.getPcfContext().mode,
+                                    ...datasetControl.getPcfContext().mode,
                                     isControlDisabled: dataset.loading
                                 }
                             }}
                             parameters={{
                                 Commands: {
-                                    raw: model.retrieveRecordCommands(),
+                                    raw: datasetControl.retrieveRecordCommands(),
                                 },
                                 Loading: {
-                                    raw: !model.areCommandsLoaded()
+                                    raw: !datasetControl.areCommandsLoaded()
                                 }
                             }}
                         />
                     }
-                    {model.isQuickFindVisible() &&
+                    {datasetControl.isQuickFindVisible() &&
                         <QuickFind
                             onRenderQuickFind={props.onRenderQuickFind} />
                     }

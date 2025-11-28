@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from "react";
 import { useControl } from "../../hooks";
 import { ThemeProvider } from "@fluentui/react";
 import { datasetControlTranslations } from "./translations";
-import { IDatasetControl } from "./interfaces";
 import { useRerender } from "@talxis/react-components";
 import { DatasetControlModel } from "./DatasetControlModel";
 import { ModelContext } from "./useModel";
@@ -11,19 +10,27 @@ import { getDatasetControlStyles } from "./styles";
 import { Header } from "./Header/Header";
 import { useEventEmitter } from "../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
+import { IDatasetControlProps } from "./interfaces";
 
-export const DatasetControl = (props: IDatasetControl) => {
-  const { labels, theme } = useControl('DatasetControl', props, datasetControlTranslations);
-  const propsRef = useRef<IDatasetControl>(props);
+export const DatasetControl = (props: IDatasetControlProps) => {
+  const { labels, theme } = useControl('DatasetControl', {
+    ...props,
+    context: props.onGetDatasetControlInstance().getPcfContext(),
+    parameters: props.onGetDatasetControlInstance().getParameters(),
+  }, datasetControlTranslations);
+  
+  const propsRef = useRef<IDatasetControlProps>(props);
   propsRef.current = props;
+  const datasetControl = propsRef.current.onGetDatasetControlInstance();
   const model = useMemo(() => new DatasetControlModel({
-    getProps: () => propsRef.current,
+    datasetControl: datasetControl,
     getLabels: () => labels,
   }), []);
+  useMemo(() => props.onGetDatasetControlInstance().init(), []);
   const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
   const rerender = useRerender();
-  const styles = useMemo(() => getDatasetControlStyles(props.parameters.Height?.raw), [props.parameters.Height?.raw]);
-  const dataset = model.getDataset();
+  const styles = useMemo(() => getDatasetControlStyles(datasetControl.getHeight()), [datasetControl.getHeight()]);
+  const dataset = datasetControl.getDataset();
 
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', rerender);
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onRenderRequested', rerender);
@@ -36,9 +43,9 @@ export const DatasetControl = (props: IDatasetControl) => {
 
   const isFooterVisible = () => {
     switch (true) {
-      case model.isPaginationVisible():
-      case model.isRecordCountVisible():
-      case model.isPageSizeSwitcherVisible():
+      case datasetControl.isPaginationVisible():
+      case datasetControl.isRecordCountVisible():
+      case datasetControl.isPageSizeSwitcherVisible():
         return true;
       default:
         return false;
@@ -51,7 +58,7 @@ export const DatasetControl = (props: IDatasetControl) => {
 
   useEffect(() => {
     return () => {
-      model.destroy();
+      datasetControl.destroy();
     }
   }, []);
 
@@ -75,7 +82,12 @@ export const DatasetControl = (props: IDatasetControl) => {
         }, (props) => {
           const { onOverrideComponentProps, ...filteredProps } = propsRef.current;
           return <div {...props.controlContainerProps}>
-            {propsRef.current.onGetControlComponent(filteredProps)}
+            {propsRef.current.onGetControlComponent({
+              ...filteredProps,
+              parameters: datasetControl.getParameters(),
+              context: datasetControl.getPcfContext(),
+              state: datasetControl.getState()
+            })}
           </div>
         })}
         {props.onRenderFooter({

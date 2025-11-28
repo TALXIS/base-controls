@@ -1,6 +1,7 @@
 import { mergeStyles } from "@fluentui/react";
-import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { IDatasetControl} from "../../../components";
+import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, Interceptors, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { IDatasetControlParameters, IDatasetControlProps } from "../../../components";
+import { DatasetControl, IDatasetControl } from "../../dataset-control";
 
 interface IOutputs {
     DatasetControl?: any;
@@ -39,11 +40,15 @@ interface IInputs {
 
 interface IVirtualDatasetAdapterOptions {
     /**
-     * If provided, this function is called when the dataset is initialized and awaited before loading first data.
+     * Runs a promise that is awaited when the dataset control is initialized, before loading the first data.
      */
     onInitialize?: () => Promise<void>;
+    /**
+     * If provided, this function is called when the dataset is initialized and awaited before loading first data.
+     */
     CustomDataProviderClass?: new (...args: any) => IDataProvider;
 }
+
 
 /**
  * Helper class that holds boilerplate code for handling a virtual dataset in PCF, like syncing data, columns, and metadata from parameters.
@@ -53,137 +58,66 @@ export class VirtualDatasetAdapter {
     private _context!: ComponentFramework.Context<IInputs, IOutputs>;
     private _dataset!: Dataset<IDataProvider>;
     private _container!: HTMLDivElement;
-    private _notifyOutputChanged!: () => void;
-    private _resolveGetOutputs!: (value: boolean | PromiseLike<boolean>) => void;
-    private _getOutputsPromise: Promise<boolean> = new Promise(resolve => {
-        this._resolveGetOutputs = resolve;
-    });
     private _options?: IVirtualDatasetAdapterOptions
     private _initialized: boolean = false;
     private _state: ComponentFramework.Dictionary = {};
+    private _datasetControl!: IDatasetControl;
 
     constructor(options?: IVirtualDatasetAdapterOptions) {
         this._options = options;
     }
 
-    public init(context: ComponentFramework.Context<IInputs, IOutputs>, notifyOutputChanged: () => void, container: HTMLDivElement, state: ComponentFramework.Dictionary) {
+    public init(context: ComponentFramework.Context<IInputs, IOutputs>, container: HTMLDivElement, state: ComponentFramework.Dictionary) {
         this._container = container;
         this._context = context;
         this._state = state ?? {};
-        this._notifyOutputChanged = notifyOutputChanged;
         if (!context.parameters.Data.raw) {
             return this;
         }
         const dataProvider = this._getDataProviderInstance();
         this._dataset = new Dataset(dataProvider);
-        this._dataset.setDataSource(context.parameters.Data.raw);
         this._dataset.setMetadata(this._getEntityMetadata());
+        this._dataset.setDataSource(context.parameters.Data.raw);
+        this._datasetControl = new DatasetControl({
+            state: this._state,
+            //@ts-ignore - typings
+            controlId: this._context.utils._customControlProperties?.controlId,
+            onGetPcfContext: () => this._context,
+            onGetParameters: () => this._getDatasetControlParameters()
+        });
+        this._datasetControl.setInterceptor('onInitialize', async (props, defaultAction) => {
+            await this._options?.onInitialize?.();
+            this._dataset.setColumns(this._getColumns());
+            //client API initialization and preload
+            await defaultAction(props);
+            //make sure that columns always go through interceptor
+            this._dataset.setColumns(this._dataset.columns);
+        });
         if (this._context.parameters.Height?.raw === '100%') {
             this._container.classList.add(this._getFullTabStyles());
         }
-        this._notifyOutputChanged();
-        this._onDatasetInit();
         this._initialized = true;
     }
 
     /**
      * @param {?() => void} [onRenderEmptyData] - Only called when the data parameter is set to `null`. This should usually not happen since it's a required parameter, but Power Apps can pass null in certain scenarios (for example on a form with new record).
      */
-    public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (datasetControlProps: Omit<IDatasetControl, 'onGetControlComponent'>) => void, onRenderEmptyData?: () => void) {
+    public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (datasetControlProps: Omit<IDatasetControlProps, 'onGetControlComponent'>) => void, onRenderEmptyData?: () => void) {
         this._context = context;
         if (!context.parameters.Data.raw) {
             return onRenderEmptyData?.()
         }
         //if not yet initialized, initialize, can happen if we start without data
         if (!this._initialized) {
-            this.init(context, this._notifyOutputChanged, this._container, this._state);
+            this.init(context, this._container, this._state);
         }
         return onRenderComponent({
-            context: this._context as any,
-            state: this._state,
-            parameters: {
-                Grid: this.getDataset(),
-                EnableEditing: {
-                    raw: this._isEditingEnabled()
-                },
-                EnableCommandBar: {
-                    raw: this._isCommandBarEnabled()
-                },
-                EnableAutoSave: {
-                    raw: this._isAutoSaveEnabled()
-                },
-                EnablePagination: {
-                    raw: context.parameters.EnablePagination?.raw !== 'false'
-                },
-                EnableFiltering: {
-                    raw: context.parameters.EnableFiltering?.raw !== 'false'
-                },
-                EnableSorting: {
-                    raw: context.parameters.EnableSorting?.raw !== 'false'
-                },
-                EnableNavigation: {
-                    raw: context.parameters.EnableNavigation?.raw !== 'false'
-                },
-                EnableOptionSetColors: {
-                    raw: context.parameters.EnableOptionSetColors?.raw === 'true'
-                },
-                SelectableRows: {
-                    raw: context.parameters.SelectableRows?.raw ?? 'single'
-                },
-                RowHeight: {
-                    raw: context.parameters.RowHeight?.raw ?? 42
-                },
-                //quick find is always handled by platform
-                EnableQuickFind: {
-                    raw: context.parameters.EnableQuickFind?.raw === 'true'
-                },
-                EnableAggregation: {
-                    raw: context.parameters.EnableAggregation?.raw === 'true',
-                },
-                EnableGrouping: {
-                    raw: context.parameters.EnableGrouping?.raw === 'true'
-                },
-                Height: {
-                    raw: this._context.parameters.Height?.raw ?? null
-                },
-                InlineRibbonButtonIds: {
-                    raw: context.parameters.InlineRibbonButtonIds?.raw ?? null
-                },
-                EnableZebra: {
-                    raw: context.parameters.EnableZebra?.raw !== 'false'
-                },
-                DefaultExpandedGroupLevel: {
-                    raw: context.parameters.DefaultExpandedGroupLevel?.raw ?? null
-                },
-                EnableRecordCount: {
-                    raw: context.parameters.EnableRecordCount?.raw !== 'false'
-                },
-                EnableGroupedColumnsPinning: {
-                    raw: context.parameters.EnableGroupedColumnsPinning?.raw !== 'false'
-                },
-                EnablePageSizeSwitcher: {
-                    raw: context.parameters.EnablePageSizeSwitcher?.raw !== 'false'
-                },
-                GroupingType: {
-                    raw: context.parameters.GroupingType?.raw ?? 'nested'
-                }
-
-            }
-        })
+            onGetDatasetControlInstance: () => this._datasetControl
+        });
     }
 
     public getDataset(): Dataset<IDataProvider> {
         return this._dataset;
-    }
-
-    public destroy(): void {
-    }
-
-    public getOutputs(): IOutputs {
-        this._resolveGetOutputs(true);
-        return {
-            DatasetControl: this.getDataset()
-        };
     }
 
     private _isEditingEnabled(): boolean {
@@ -198,11 +132,80 @@ export class VirtualDatasetAdapter {
         return this._context.parameters.EnableCommandBar?.raw !== 'false'
     }
 
-    private async _onDatasetInit() {
-        await this._getOutputsPromise;
-        await this._options?.onInitialize?.();
-        this._dataset.setColumns(this._getColumns());
-        this._dataset.paging.loadExactPage(this._dataset.paging.pageNumber);
+    private _getDatasetControlParameters(): IDatasetControlParameters {
+        return {
+            Grid: this.getDataset(),
+            EnableEditing: {
+                raw: this._isEditingEnabled()
+            },
+            EnableCommandBar: {
+                raw: this._isCommandBarEnabled()
+            },
+            EnableAutoSave: {
+                raw: this._isAutoSaveEnabled()
+            },
+            EnablePagination: {
+                raw: this._context.parameters.EnablePagination?.raw !== 'false'
+            },
+            EnableFiltering: {
+                raw: this._context.parameters.EnableFiltering?.raw !== 'false'
+            },
+            EnableSorting: {
+                raw: this._context.parameters.EnableSorting?.raw !== 'false'
+            },
+            EnableNavigation: {
+                raw: this._context.parameters.EnableNavigation?.raw !== 'false'
+            },
+            EnableOptionSetColors: {
+                raw: this._context.parameters.EnableOptionSetColors?.raw === 'true'
+            },
+            SelectableRows: {
+                raw: this._context.parameters.SelectableRows?.raw ?? 'single'
+            },
+            RowHeight: {
+                raw: this._context.parameters.RowHeight?.raw ?? 42
+            },
+            //quick find is always handled by platform
+            EnableQuickFind: {
+                raw: this._context.parameters.EnableQuickFind?.raw === 'true'
+            },
+            EnableAggregation: {
+                raw: this._context.parameters.EnableAggregation?.raw === 'true',
+            },
+            EnableGrouping: {
+                raw: this._context.parameters.EnableGrouping?.raw === 'true'
+            },
+            Height: {
+                raw: this._context.parameters.Height?.raw ?? null
+            },
+            InlineRibbonButtonIds: {
+                raw: this._context.parameters.InlineRibbonButtonIds?.raw ?? null
+            },
+            EnableZebra: {
+                raw: this._context.parameters.EnableZebra?.raw !== 'false'
+            },
+            DefaultExpandedGroupLevel: {
+                raw: this._context.parameters.DefaultExpandedGroupLevel?.raw ?? null
+            },
+            EnableRecordCount: {
+                raw: this._context.parameters.EnableRecordCount?.raw !== 'false'
+            },
+            EnableGroupedColumnsPinning: {
+                raw: this._context.parameters.EnableGroupedColumnsPinning?.raw !== 'false'
+            },
+            EnablePageSizeSwitcher: {
+                raw: this._context.parameters.EnablePageSizeSwitcher?.raw !== 'false'
+            },
+            GroupingType: {
+                raw: this._context.parameters.GroupingType?.raw ?? 'nested'
+            },
+            ClientApiWebresourceName: {
+                raw: 'talxis_gridclientapidemo'
+            },
+            ClientApiFunctionName: {
+                raw: 'onDatasetControlInitialized'
+            }
+        }
     }
 
     private _getDataProviderInstance(): IDataProvider {

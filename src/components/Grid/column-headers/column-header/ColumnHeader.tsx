@@ -25,8 +25,9 @@ export const ColumnHeader = (props: IColumnHeader) => {
     const rerender = useRerender();
     useEventEmitter<IAgGridModelEvents>(agGrid, 'onRefresh', rerender);
 
+    //needs to be called with onTouchEnd as well since ag grid cancels the click event on them
     const onClick = () => {
-        if ((!column.isFilterable && column.disableSorting && !column.canBeAggregated)) {
+        if ((!column.isFilterable && column.disableSorting && !column.canBeAggregated && !column?.metadata?.CanBeGrouped)) {
             return;
         }
         setColumnHeaderContextualMenuProps({
@@ -62,35 +63,35 @@ export const ColumnHeader = (props: IColumnHeader) => {
     }
     return (
         <>
-            <div ref={buttonRef} onClick={onClick}>
-            <NestedControlRenderer
-                context={grid.getPcfContext()}
-                parameters={{
-                    ControlName: 'GridColumnHeader',
-                    Bindings: {
-                        Column: {
-                            isStatic: true,
-                            value: column,
-                            type: 'Object',
-                        },
-                        Dataset: {
-                            value: grid.getDataset(),
-                            isStatic: true,
-                            type: 'Object',
-                        },
-                        EnableEditing: {
-                            isStatic: true,
-                            value: grid.isEditingEnabled(),
-                            type: 'TwoOptions'
-                        },
-                        Filtering: {
-                            isStatic: true,
-                            value: grid.getFiltering(),
-                            type: 'Object'
+            <div ref={buttonRef} onClick={onClick} onTouchEnd={onClick}>
+                <NestedControlRenderer
+                    context={grid.getPcfContext()}
+                    parameters={{
+                        ControlName: 'GridColumnHeader',
+                        Bindings: {
+                            Column: {
+                                isStatic: true,
+                                value: column,
+                                type: 'Object',
+                            },
+                            Dataset: {
+                                value: grid.getDataset(),
+                                isStatic: true,
+                                type: 'Object',
+                            },
+                            EnableEditing: {
+                                isStatic: true,
+                                value: grid.isEditingEnabled(),
+                                type: 'TwoOptions'
+                            },
+                            Filtering: {
+                                isStatic: true,
+                                value: grid.getFiltering(),
+                                type: 'Object'
+                            }
                         }
-                    }
-                }}
-            />
+                    }}
+                />
             </div>
             {columnHeaderContextualMenuProps &&
                 <ColumnHeaderContextualMenu

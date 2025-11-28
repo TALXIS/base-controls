@@ -1,13 +1,15 @@
-import { IRecord } from "@talxis/client-libraries";
+import { IDataset, IRecord } from "@talxis/client-libraries";
 import { IControl } from "../../interfaces/context";
 import { IRibbonComponentProps } from "../Ribbon/interfaces";
 import { IStringProperty } from "../../interfaces";
-import { ICommandBarItemProps } from "@fluentui/react";
 
 export interface IGridInlineRibbon extends IControl<IRibbonParameters, any, any, IGridInlineRibbonComponentProps> {
 }
 
 export interface IRibbonParameters {
+    Dataset: {
+        raw: IDataset;
+    }
     Record: {
         raw: IRecord;
     },

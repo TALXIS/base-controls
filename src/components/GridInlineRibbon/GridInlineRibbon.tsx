@@ -13,6 +13,7 @@ export const GridInlineRibbon = (props: IGridInlineRibbon) => {
     propsRef.current = props;
     const context = props.context;
     const model = useMemo(() => new GridInlineRibbonModel({
+        onGetDataset: () => propsRef.current.parameters.Dataset.raw,
         onGetRecord: () => propsRef.current.parameters.Record.raw,
         onGetCommandButtonIds: () => propsRef.current.parameters.CommandButtonIds?.raw?.split(',').map(id => id.trim()) ?? []
     }), []);

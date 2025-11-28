@@ -38,6 +38,7 @@ export interface IGridParameters extends IParameters {
     EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableAutoSave?: Omit<ITwoOptionsProperty, 'attributes'>;
     DefaultExpandedGroupLevel?: Omit<IWholeNumberProperty, 'attributes'>;
+    
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
     GroupingType?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">, 'type'>;

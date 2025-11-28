@@ -1,4 +1,4 @@
-import { EventEmitter, ICommand, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, ICommand, IDataset, IRecord } from "@talxis/client-libraries";
 
 export interface IGridInlineRibbonModelEvents {
     onBeforeCommandsRefresh: () => void;
@@ -8,6 +8,7 @@ export interface IGridInlineRibbonModelEvents {
 interface IDeps {
     onGetRecord: () => IRecord;
     onGetCommandButtonIds: () => string[];
+    onGetDataset: () => IDataset;
 }
 
 export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEvents> {
@@ -32,10 +33,11 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
     public refreshCommands = async () => {
         this._loading = true;
         this.dispatchEvent('onBeforeCommandsRefresh');
-        this._commands = await this._getDataProvider().retrieveRecordCommand({
+        this._commands = await this._getDataset().getDataProvider().retrieveRecordCommand({
             recordIds: [this._getRecord().getRecordId()],
             refreshAllRules: true,
-            isInline: true
+            isInline: true,
+            isGrouped: this._getRecord().getSummarizationType() === 'grouping'
         })
         this._loading = false;
         this.dispatchEvent('onAfterCommandsRefresh');
@@ -52,7 +54,7 @@ export class GridInlineRibbonModel extends EventEmitter<IGridInlineRibbonModelEv
     private _getRecord() {
         return this._deps.onGetRecord();
     }
-    private _getDataProvider() {
-        return this._getRecord().getDataProvider();
+    private _getDataset() {
+        return this._deps.onGetDataset();
     }
 }

@@ -1,19 +1,29 @@
 import { IButtonProps, IMessageBarProps, IShimmerProps, ThemeProviderProps } from "@fluentui/react";
 import { ITranslation } from "../../hooks";
-import { IControl } from "../../interfaces";
+import { IControl, IStringProperty } from "../../interfaces";
 import { IGridOutputs, IGridParameters } from "../Grid";
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
 import { ICommandBarProps, ITextFieldProps } from "@talxis/react-components";
 import React from "react";
 import { IRibbonComponentProps } from "../Ribbon/interfaces";
+import { IDatasetControl } from "../../utils/dataset-control";
 
 
-export interface IDatasetControl extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps> {
+export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {
+    /**
+     * Gets the instance of the Dataset control model.
+     */
+    onGetDatasetControlInstance: () => IDatasetControl;
     /**
      * Tells the Dataset control which UI component should be used for the dataset.
      */
-    onGetControlComponent: (props: Omit<IDatasetControl, 'onOverrideComponentProps'>) => React.ReactElement<IControl<any, any, any, any>>
+    onGetControlComponent: (props: Omit<IDatasetControlProps, 'onOverrideComponentProps'> & {parameters: IDatasetControlParameters; context: ComponentFramework.Context<any, any>, state: ComponentFramework.Dictionary}) => React.ReactElement<IControl<any, any, any, any>>
+}
+
+export interface IDatasetControlParameters extends IGridParameters {
+    ClientApiWebresourceName?: IStringProperty;
+    ClientApiFunctionName?: IStringProperty;
 }
 
 export interface IDatasetControlComponentProps {

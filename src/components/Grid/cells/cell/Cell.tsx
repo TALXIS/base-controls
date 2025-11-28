@@ -32,6 +32,7 @@ export const Cell = (props: ICellProps) => {
     const column = baseColumn;
     const grid = useGridInstance();
     const agGrid = useAgGridInstance();
+    const lastLoadingRefValue = useRef<boolean>(props.value.loading);
     const rerender = useRerender();
 
     const skipCellRendering = (() => {
@@ -45,6 +46,9 @@ export const Cell = (props: ICellProps) => {
                 return false;
             }
             case summarizationType === 'grouping': {
+                if (lastLoadingRefValue.current && !props.value.loading) {
+                    return false;
+                }
                 const _column = dataProvider.getColumnsMap()[column.name]!;
                 if (_column.aggregation?.aggregationFunction && !_column.grouping?.isGrouped) {
                     return false;
@@ -65,6 +69,7 @@ export const Cell = (props: ICellProps) => {
             }
         }
     })();
+    lastLoadingRefValue.current = props.value.loading;
 
     const onCellClick = useCallback((e: MouseEvent) => {
         if (record.getDataProvider().getSummarizationType() === 'grouping' && !grid.isSelectionModifierKeyPressed()) {
@@ -115,16 +120,18 @@ export const Cell = (props: ICellProps) => {
 
     useEffect(() => {
         if (skipCellRendering) {
-            return;
+            ReactDOM.render(<></>, containerRef.current)
         }
-        ReactDOM.render(
-            <GridContext.Provider value={grid}>
-                <AgGridContext.Provider value={agGrid}>
-                    <CellContentWrapper {...props} />
-                </AgGridContext.Provider>
-            </GridContext.Provider>,
-            containerRef.current
-        );
+        else {
+            ReactDOM.render(
+                <GridContext.Provider value={grid}>
+                    <AgGridContext.Provider value={agGrid}>
+                        <CellContentWrapper {...props} />
+                    </AgGridContext.Provider>
+                </GridContext.Provider>,
+                containerRef.current
+            );
+        }
     });
     return <div className={getTopLevelCellWrapperStyles().cellRoot} ref={containerRef} />
 }

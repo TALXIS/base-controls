@@ -17,14 +17,14 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
     const labels = grid.getLabels();
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
     const { column, onDismiss } = { ...props };
-    const aggregationFunctionList = column.metadata!.SupportedAggregations!
+    const aggregationFunctionList = column.metadata?.SupportedAggregations ?? [];
 
     const getItems = (): IContextualMenuItem[] => {
         const items: IContextualMenuItem[] = [
             {
                 key: 'sort_asc',
                 checked: column.isSorted && !column.isSortedDescending,
-                disabled: column.disableSorting || column.dataType === DataTypes.MultiSelectOptionSet,
+                disabled: column.disableSorting,
                 text: grid.getColumnSortingLabel(column.name, false),
                 className: styles.item,
                 onRenderIcon: () => <ArrowSortUp24Regular />,
@@ -33,7 +33,7 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
             {
                 key: 'sort_desc',
                 checked: column.isSorted && column.isSortedDescending,
-                disabled: column.disableSorting || column.dataType === DataTypes.MultiSelectOptionSet,
+                disabled: column.disableSorting,
                 text: grid.getColumnSortingLabel(column.name, true),
                 className: styles.item,
                 onRenderIcon: () => <ArrowSortDown24Regular />,

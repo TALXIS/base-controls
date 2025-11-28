@@ -90,12 +90,13 @@ export const Ribbon = (props: IRibbon) => {
             theme: theme,
             className: getClassNames([className, styles.container])
         },
+        isLoading: model.isLoading(),
         onRenderCommandBar: (props, defaultRender) => defaultRender(props),
         onRenderLoading: (props, defaultRender) => defaultRender(props)
     }, (props) => {
         return <ThemeProvider {...props.container}>
             {(() => {
-                if (model.isLoading()) {
+                if (props.isLoading) {
                     return props.onRenderLoading({
                         styles: {
                             root: styles.shimmerRoot,

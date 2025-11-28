@@ -19,7 +19,8 @@ export interface IRibbonComponentProps {
 }
 
 interface IComponentProps {
-    container: ThemeProviderProps; 
+    container: ThemeProviderProps;
+    isLoading: boolean; 
     onRenderLoading: (props: IShimmerProps, defaultRender: (props: IShimmerProps) => React.ReactElement) => React.ReactElement;
     onRenderCommandBar: (props: ICommandBarProps, defaultRender: (props: ICommandBarProps) => React.ReactElement) => React.ReactElement;
 }

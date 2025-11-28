@@ -8,7 +8,7 @@ import { IInternalDataProvider } from "@talxis/client-libraries";
 export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperProps['onRenderQuickFind'] }) => {
   const [query, setQuery] = useState<string>('');
   const model = useModel();
-  const dataset = model.getDataset();
+  const dataset = model.getDatasetControl().getDataset();
   const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
   const labels = model.getLabels();
   const styles = useMemo(() => getQuickFindStyles(), []);

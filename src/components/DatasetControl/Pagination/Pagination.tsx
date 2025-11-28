@@ -11,8 +11,9 @@ const PAGE_SIZE_OPTIONS = ['25', '50', '75', '100', '250'];
 
 export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPagination'] }) => {
   const model = useModel();
+  const datasetControl = model.getDatasetControl();
   const paginationModel = useMemo(() => new PaginationModel(model), []);
-  const dataset = model.getDataset();
+  const dataset = model.getDatasetControl().getDataset();
   const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
   const labels = model.getLabels();
   const paging = dataset.paging;
@@ -27,7 +28,7 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
 
   return props.onRenderPagination({
     pageSizeSwitcherProps: {
-      disabled: !model.isPageSizeSwitcherVisible() || dataset.loading,
+      disabled: !datasetControl.isPageSizeSwitcherVisible() || dataset.loading,
       text: paginationModel.toString(),
       styles: {
         root: styles.pageSizeSwitcherRoot,
@@ -89,10 +90,10 @@ export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPa
     onRenderPageSizeSwitcher: (props, defaultRender) => defaultRender(props),
   }, (props) => {
     return <div {...props.paginationContainerProps}>
-      {(model.isPageSizeSwitcherVisible() || model.isRecordCountVisible()) &&
+      {(datasetControl.isPageSizeSwitcherVisible() || datasetControl.isRecordCountVisible()) &&
         <CommandBarButton {...props.pageSizeSwitcherProps} />
       }
-      {model.isPaginationVisible() &&
+      {datasetControl.isPaginationVisible() &&
         <CommandBar {...props.commandBarProps} />
       }
     </div>

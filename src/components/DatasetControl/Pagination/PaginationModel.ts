@@ -1,3 +1,4 @@
+import { IDataset } from "@talxis/client-libraries";
 import { DatasetControlModel } from "../DatasetControlModel";
 
 export class PaginationModel {
@@ -14,7 +15,7 @@ export class PaginationModel {
     }
 
     private _getPageFirstRecordOrder() {
-        if(this._model.getDataset().sortedRecordIds.length === 0) {
+        if(this._model.getDatasetControl().getDataset().sortedRecordIds.length === 0) {
             return 0;
         }
         return (this._paging.pageNumber - 1) * this._paging.pageSize + 1;
@@ -35,7 +36,7 @@ export class PaginationModel {
             if (this._paging.hasNextPage) {
                 return `${count}+`;
             }
-            return `${count - this._paging.pageSize + this._model.getDataset().sortedRecordIds.length}`
+            return `${count - this._paging.pageSize + this._model.getDatasetControl().getDataset().sortedRecordIds.length}`
 
         }
         if (count > this._paging.totalResultCount && this._paging.totalResultCount !== -1) {
@@ -45,7 +46,7 @@ export class PaginationModel {
     }
 
     private get _paging() {
-        return this._model.getDataset().paging;
+        return this._model.getDatasetControl().getDataset().paging;
     }
 
 }

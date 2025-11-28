@@ -744,7 +744,32 @@ export class GridModel {
             this._cachedColumnsMap.set(column.name, gridColumn);
             return gridColumn;
         })
+
+        if (this.isEditingEnabled() || this.getSelectionType() !== 'none') {
+            //gridColumns.unshift(this._createCheckboxColumn());
+        }
         return gridColumns;
+    }
+
+    private _createCheckboxColumn(): IGridColumn {
+        return {
+            name: DataProvider.CONST.CHECKBOX_COLUMN_KEY,
+            dataType: DataTypes.TwoOptions,
+            order: Number.MIN_SAFE_INTEGER,
+            type: 'action',
+            alignment: 'center',
+            isVirtual: true,
+            isHidden: true,
+            isFiltered: false,
+            isEditable: false,
+            isFilterable: false,
+            isRequired: false,
+            canBeGrouped: false,
+            canBeAggregated: false,
+            isResizable: false,
+            isSorted: false,
+            isSortedDescending: false,
+        }
     }
 
     private _isRecordFieldEditable(record: IRecord, column: IColumn): boolean {

@@ -93,6 +93,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                 hide: this._isColumnHidden(column),
                 width: this._getColumnWidth(column),
                 sortable: !column.disableSorting,
+                checkboxSelection: column.order === 0,
+                headerCheckboxSelection: column.order === 0,
                 lockPinned: true,
                 resizable: column.isResizable,
                 autoHeaderHeight: true,
@@ -507,7 +509,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _setGridHeight() {
         setTimeout(() => {
             const container = this._getContainer();
-            if(container) {
+            if (container) {
                 container.style.height = this._calculateGridHeight();
             }
         }, 100);
@@ -629,8 +631,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             parentPcfContext: this._grid.getPcfContext(),
         });
         const parameters = columnInfo.ui.getControlParameters({
-            ...control.getParameters(),
             ...this._grid.getFieldBindingParameters(record, column, editing),
+            ...control.getParameters(),
         })
         if (column.oneClickEdit && record.getSummarizationType() === 'none') {
             editing = true;

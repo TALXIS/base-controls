@@ -1,6 +1,7 @@
 import { Client, Dataset, FetchXmlBuilder, IColumn, IDataset, PowerAppsDatasetProvider } from "@talxis/client-libraries";
 import { mergeStyles } from "@fluentui/react";
-import { IDatasetControl } from "../../../components";
+import { IDatasetControlParameters, IDatasetControlProps } from "../../../components";
+import { DatasetControl, IDatasetControl } from "../../dataset-control";
 
 interface IInputs {
     Grid: ComponentFramework.PropertyTypes.DataSet;
@@ -46,110 +47,49 @@ export class DatasetAdapter {
     private _client = new Client();
     private _scheduleForRefresh: boolean = false;
     private _options?: IDatasetAdapterOptions;
-    private _notifyOutputChanged!: () => void;
     private _state: ComponentFramework.Dictionary = {};
-    private _resolveGetOutputs!: (value: boolean | PromiseLike<boolean>) => void;
-    private _getOutputsPromise: Promise<boolean> = new Promise(resolve => {
-        this._resolveGetOutputs = resolve;
-    });
+    private _datasetControl!: IDatasetControl;
 
     constructor(options?: IDatasetAdapterOptions) {
         this._options = options;
     }
 
-    public init(context: ComponentFramework.Context<IInputs, IOutputs>, notifyOutputChanged: () => void, container: HTMLDivElement, state: ComponentFramework.Dictionary) {
+    public init(context: ComponentFramework.Context<IInputs, IOutputs>, container: HTMLDivElement, state: ComponentFramework.Dictionary) {
         this._container = container;
         this._context = context;
         this._state = state ?? {};
         this._flushInvalidState();
-        this._notifyOutputChanged = notifyOutputChanged;
         this._dataset = this.getDataset();
-        this._dataset.setColumns(this._getColumns());
+        this._datasetControl = new DatasetControl({
+            state: this._state,
+            controlId: this._dataset.getViewId(),
+            onGetPcfContext: () => this._context,
+            onGetParameters: () => this._getDatasetControlParameters()
+        });
+        //@ts-ignore - typings
+        this._context.factory.fireEvent('onDatasetControlInstanceReady', this._datasetControl);
+        this._datasetControl.setInterceptor('onInitialize', async (props, defaultAction) => {
+            await this._options?.onInitialize?.();
+            this._dataset.setColumns(this._getColumns());
+            //client API initialization nad preload
+            await defaultAction(props);
+            //make sure columns are in sync after client API potentially modified them
+            this._dataset.setColumns(this._dataset.columns);
+        });
         if (this._getHeight() === '100%') {
             this._container.classList.add(this._getFullHeightStyles())
         }
-        this._notifyOutputChanged();
-        this._onDatasetInit();
     }
 
-    public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (datasetControlProps: Omit<IDatasetControl, 'onGetControlComponent'>) => void) {
+    public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (datasetControlProps: Omit<IDatasetControlProps, 'onGetControlComponent'>) => void) {
         this._context = context;
         if (!this._client.isTalxisPortal()) {
             this._syncPowerAppsDatasetSetup();
             this._syncPowerAppsDatasetOnNativeRefresh();
         }
         return onRenderComponent({
-            context: context as any,
-            state: this._state,
-            parameters: {
-                Grid: this.getDataset(),
-                EnableEditing: {
-                    raw: this._isEditingEnabled()
-                },
-                EnableCommandBar: {
-                    //always handled by host platform
-                    raw: false
-                },
-                EnableAutoSave: {
-                    raw: this._isAutoSaveEnabled()
-                },
-                EnablePagination: {
-                    raw: context.parameters.EnablePagination?.raw !== 'false'
-                },
-                EnableFiltering: {
-                    raw: context.parameters.EnableFiltering?.raw !== 'false'
-                },
-                EnableSorting: {
-                    raw: context.parameters.EnableSorting?.raw !== 'false'
-                },
-                EnableNavigation: {
-                    raw: context.parameters.EnableNavigation?.raw !== 'false'
-                },
-                EnableOptionSetColors: {
-                    raw: context.parameters.EnableOptionSetColors?.raw === 'true'
-                },
-                SelectableRows: {
-                    raw: context.parameters.SelectableRows?.raw ?? 'single'
-                },
-                RowHeight: {
-                    raw: context.parameters.RowHeight?.raw ?? 42
-                },
-                //quick find is always handled by platform
-                EnableQuickFind: {
-                    raw: false
-                },
-                EnableAggregation: {
-                    raw: context.parameters.EnableAggregation?.raw === 'true',
-                },
-                EnableGrouping: {
-                    raw: context.parameters.EnableFiltering?.raw === 'true'
-                },
-                Height: {
-                    raw: this._getHeight()
-                },
-                InlineRibbonButtonIds: {
-                    raw: context.parameters.InlineRibbonButtonIds?.raw ?? null
-                },
-                EnableZebra: {
-                    raw: context.parameters.EnableZebra?.raw !== 'false'
-                },
-                DefaultExpandedGroupLevel: {
-                    raw: context.parameters.DefaultExpandedGroupLevel?.raw ?? null
-                },
-                EnableRecordCount: {
-                    raw: context.parameters.EnableRecordCount?.raw !== 'false'
-                },
-                EnableGroupedColumnsPinning: {
-                    raw: context.parameters.EnableGroupedColumnsPinning?.raw !== 'false'
-                },
-                EnablePageSizeSwitcher: {
-                    raw: context.parameters.EnablePageSizeSwitcher?.raw !== 'false'
-                },
-                GroupingType: {
-                    raw: context.parameters.GroupingType?.raw ?? 'nested'
-                }
-            }
-        })
+            onGetDatasetControlInstance: () => this._datasetControl,
+        });
     }
 
     public getDataset(): IDataset {
@@ -167,17 +107,7 @@ export class DatasetAdapter {
         return dataset;
     }
 
-    public getOutputs(): IOutputs {
-        this._resolveGetOutputs(true);
-        return {
-            DatasetControl: this._dataset,
-
-        }
-    }
-
     public destroy(): void {
-        //@ts-ignore - typings
-        delete window.Xrm[this._getGlobalDatasetInstanceName()];
         if (!this._client.isTalxisPortal()) {
             const state = this._state ?? {};
             const DatasetControlState = state.DatasetControlState ?? {};
@@ -186,6 +116,84 @@ export class DatasetAdapter {
             this._context.mode.setControlState(state);
         }
     }
+
+    private _getDatasetControlParameters(): IDatasetControlParameters {
+        return {
+            Grid: this.getDataset(),
+            EnableEditing: {
+                raw: this._isEditingEnabled()
+            },
+            EnableCommandBar: {
+                //always handled by host platform
+                raw: false
+            },
+            EnableAutoSave: {
+                raw: this._isAutoSaveEnabled()
+            },
+            EnablePagination: {
+                raw: this._context.parameters.EnablePagination?.raw !== 'false'
+            },
+            EnableFiltering: {
+                raw: this._context.parameters.EnableFiltering?.raw !== 'false'
+            },
+            EnableSorting: {
+                raw: this._context.parameters.EnableSorting?.raw !== 'false'
+            },
+            EnableNavigation: {
+                raw: this._context.parameters.EnableNavigation?.raw !== 'false'
+            },
+            EnableOptionSetColors: {
+                raw: this._context.parameters.EnableOptionSetColors?.raw === 'true'
+            },
+            SelectableRows: {
+                raw: this._context.parameters.SelectableRows?.raw ?? 'single'
+            },
+            RowHeight: {
+                raw: this._context.parameters.RowHeight?.raw ?? 42
+            },
+            //quick find is always handled by platform
+            EnableQuickFind: {
+                raw: false
+            },
+            EnableAggregation: {
+                raw: this._context.parameters.EnableAggregation?.raw === 'true',
+            },
+            EnableGrouping: {
+                raw: this._context.parameters.EnableFiltering?.raw === 'true'
+            },
+            Height: {
+                raw: this._getHeight()
+            },
+            InlineRibbonButtonIds: {
+                raw: this._context.parameters.InlineRibbonButtonIds?.raw ?? null
+            },
+            EnableZebra: {
+                raw: this._context.parameters.EnableZebra?.raw !== 'false'
+            },
+            DefaultExpandedGroupLevel: {
+                raw: this._context.parameters.DefaultExpandedGroupLevel?.raw ?? null
+            },
+            EnableRecordCount: {
+                raw: this._context.parameters.EnableRecordCount?.raw !== 'false'
+            },
+            EnableGroupedColumnsPinning: {
+                raw: this._context.parameters.EnableGroupedColumnsPinning?.raw !== 'false'
+            },
+            EnablePageSizeSwitcher: {
+                raw: this._context.parameters.EnablePageSizeSwitcher?.raw !== 'false'
+            },
+            GroupingType: {
+                raw: this._context.parameters.GroupingType?.raw ?? 'nested'
+            },
+            ClientApiWebresourceName: {
+                raw: 'talxis_gridclientapidemo'
+            },
+            ClientApiFunctionName: {
+                raw: 'onDatasetControlInitialized'
+            }
+        }
+    }
+
 
     private _getDatasetDynamicData() {
         //@ts-ignore - typings
@@ -202,7 +210,6 @@ export class DatasetAdapter {
     private _isEditingEnabled(): boolean {
         return this._context.parameters.EnableEditing?.raw === 'true';
     }
-
     private _getHeight(): string | null {
         if (this._isHomePageGrid()) {
             return '100%';
@@ -226,38 +233,6 @@ export class DatasetAdapter {
 
     private _syncPowerAppsDatasetSetup() {
         this._dataset.setSearchQuery(this._getCurrentSearchQuery());
-    }
-
-    private async _onDatasetInit() {
-        const initializationCallback = async () => {
-            await this._getOutputsPromise;
-            await this._options?.onInitialize?.();
-            const homePageGridClientApiRibbonButtonId = this._context.parameters.HomePageGridClientApiRibbonButtonId?.raw;
-            if (this._isHomePageGrid() && homePageGridClientApiRibbonButtonId) {
-                //@ts-ignore - typings
-                window.Xrm[this._getGlobalDatasetInstanceName()] = this._dataset;
-                const commands = await this.getDataset().getDataProvider().retrieveRecordCommand({
-                    recordIds: [],
-                    specificCommands: [homePageGridClientApiRibbonButtonId]
-                });
-                const command = commands.find(x => x.commandButtonId === homePageGridClientApiRibbonButtonId);
-                if (!command) {
-                    this._context.navigation.openErrorDialog({
-                        message: `Could not find ribbon button ${homePageGridClientApiRibbonButtonId}. Client API will not be enabled.`
-                    })
-                }
-                else {
-                    await command.execute();
-                }
-            }
-        }
-        if (this._client.isTalxisPortal()) {
-            this._dataset.setInterceptor('onInitialize', () => initializationCallback());
-        }
-        else {
-            await initializationCallback();
-            this._dataset.paging.loadExactPage(this._dataset.paging.pageNumber);
-        }
     }
 
     private _flushInvalidState() {
