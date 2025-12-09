@@ -2,7 +2,7 @@ import { TextField as TextFieldBase } from "@talxis/react-components";
 import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
 import { ICommandBarItemProps, ThemeProvider } from '@fluentui/react';
-import { DataTypes } from "@talxis/client-libraries";
+import { DataTypes } from "@talxis/client-libraries";m "../NestedControlRenderer/NestedControlRenderer";
 
 export const TextField = (props: ITextField) => {
     const context = props.context;
@@ -117,7 +117,7 @@ export const TextField = (props: ITextField) => {
         }
     })
     return (
-        <ThemeProvider applyTo="none" theme={theme}>
+        <ThemeProvider style={isTextArea ? { height: '100%' } : undefined} applyTo="none" theme={theme}>
             <TextFieldBase {...componentProps} />
         </ThemeProvider>
     );
