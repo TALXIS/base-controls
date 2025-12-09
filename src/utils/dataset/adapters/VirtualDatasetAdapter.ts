@@ -1,139 +1,254 @@
 import { mergeStyles } from "@fluentui/react";
-import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
+import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, Interceptors, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { IDatasetControlParameters, IDatasetControlProps } from "../../../components";
+import { DatasetControl, IDatasetControl } from "../../dataset-control";
 
 interface IOutputs {
     DatasetControl?: any;
 }
 
-interface IParameterGetters {
-    dataProviderType: "Memory" | "FetchXml" | 'Custom';
-    onGetData: () => string | null;
-    onGetColumns: () => string | null;
-    onGetEntityMetadata: () => string | null;
-    customDataProvider?: IDataProvider;
-    onGetHeight?: () => string | null;
-    /**
-     * Callback that gets triggered and awaited before the dataset is initialized. Useful for setting initialization code that needs to run before the dataset is ready.
-     */
-    onInitialize?: () => void | Promise<void>;
+interface IInputs {
+    Data: ComponentFramework.PropertyTypes.StringProperty | {
+        raw: IRawRecord[]
+    }
+    EntityMetadata: ComponentFramework.PropertyTypes.StringProperty;
+    DataProvider: ComponentFramework.PropertyTypes.EnumProperty<"Memory" | "FetchXml">;
+    EnableQuickFind?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    Columns?: ComponentFramework.PropertyTypes.StringProperty;
+    Height?: ComponentFramework.PropertyTypes.StringProperty;
+    RowHeight?: ComponentFramework.PropertyTypes.WholeNumberProperty;
+    EnableEditing?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnablePagination?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableFiltering?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableSorting?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableNavigation?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableOptionSetColors?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableAggregation?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableGrouping?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableAutoSave?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableCommandBar?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableZebra?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableGroupedColumnsPinning?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnablePageSizeSwitcher?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableRecordCount?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    HomePageGridClientApiRibbonButtonId?: ComponentFramework.PropertyTypes.StringProperty;
+    InlineRibbonButtonIds?: ComponentFramework.PropertyTypes.StringProperty;
+    DefaultExpandedGroupLevel?: ComponentFramework.PropertyTypes.WholeNumberProperty;
+    SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
+    GroupingType?: ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">;
+    IsLocalHarnessDebugMode?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
 }
+
+interface IVirtualDatasetAdapterOptions {
+    /**
+     * Runs a promise that is awaited when the dataset control is initialized, before loading the first data.
+     */
+    onInitialize?: () => Promise<void>;
+    /**
+     * If provided, this function is called when the dataset is initialized and awaited before loading first data.
+     */
+    CustomDataProviderClass?: new (...args: any) => IDataProvider;
+}
+
 
 /**
  * Helper class that holds boilerplate code for handling a virtual dataset in PCF, like syncing data, columns, and metadata from parameters.
  *
  */
 export class VirtualDatasetAdapter {
-    private _providerClasses = {
-        'FetchXml': FetchXmlDataProvider,
-        'Memory': MemoryDataProvider
-    };
+    private _context!: ComponentFramework.Context<IInputs, IOutputs>;
     private _dataset!: Dataset<IDataProvider>;
-    private _parsedData: any = null;
-    private _lastUsedColumns: string | null = null;
-    private _lastUsedData: string | null = null;
-    private _lastUsedMetadata: string | null = null;
-    private _dataProviderClass!: (typeof this._providerClasses[keyof typeof this._providerClasses]);
     private _container!: HTMLDivElement;
-    private _notifyOutputChanged!: () => void;
-    private _resolveGetOutputs!: (value: boolean | PromiseLike<boolean>) => void;
-    private _getOutputsPromise: Promise<boolean> = new Promise(resolve => {
-        this._resolveGetOutputs = resolve;
-    });
-    private _parameters!: IParameterGetters;
+    private _options?: IVirtualDatasetAdapterOptions
+    private _initialized: boolean = false;
+    private _state: ComponentFramework.Dictionary = {};
+    private _datasetControl!: IDatasetControl;
 
-    public init(notifyOutputChanged: () => void, container: HTMLDivElement, parameters: IParameterGetters) {
-        this._parameters = parameters;
-        this._notifyOutputChanged = notifyOutputChanged;
-        this._container = container;
-        let dataProvider: any = null;
-        if(parameters.dataProviderType !== 'Custom') {
-            //@ts-ignore - typings
-            this._dataProviderClass = this._providerClasses[this._parameters.dataProviderType];
-            dataProvider = new this._dataProviderClass(this._getData(), this._getEntityMetadata());
-        }
-        else {
-            dataProvider = this._parameters.customDataProvider;
-        }
-        //@ts-ignore - typings
-        this._dataset = new Dataset(dataProvider);
-        this._dataset.setColumns(this._getColumns());
-        this._dataset.setMetadata(this._getEntityMetadata());
-
-        if (this._parameters.onGetHeight?.() === '100%') {
-            this._container.classList.add(this._getFullTabStyles());
-        }
-        this._lastUsedColumns = this._parameters.onGetColumns();
-        this._lastUsedData = this._parameters.onGetData();
-        this._lastUsedMetadata = this._parameters.onGetEntityMetadata();
-        this._notifyOutputChanged();
-        this._onDatasetInit();
-        return this;
+    constructor(options?: IVirtualDatasetAdapterOptions) {
+        this._options = options;
     }
 
-    public updateView(): void {
-        this._parsedData = null;
-        this._refreshOnChange([
-            {
-                previousValue: this._lastUsedColumns,
-                currentValue: this._parameters.onGetColumns(),
-                beforeRefreshCallback: () => this._dataset.setColumns(this._getColumns())
-            },
-            {
-                previousValue: this._lastUsedData,
-                currentValue: this._parameters.onGetData(),
-                beforeRefreshCallback: () => {
-                    this._dataset.setDataSource(this._getData());
-                    this._dataset.setColumns(this._getColumns());
-                }
-            },
-            {
-                previousValue: this._lastUsedMetadata,
-                currentValue: this._parameters.onGetEntityMetadata(),
-                beforeRefreshCallback: () => this._dataset.setMetadata(this._getEntityMetadata())
-            }
-        ]);
-        this._lastUsedColumns = this._parameters.onGetColumns();
-        this._lastUsedData = this._parameters.onGetData();
-        this._lastUsedMetadata = this._parameters.onGetEntityMetadata();
+    public init(context: ComponentFramework.Context<IInputs, IOutputs>, container: HTMLDivElement, state: ComponentFramework.Dictionary) {
+        this._container = container;
+        this._context = context;
+        this._state = state ?? {};
+        if (!context.parameters.Data.raw) {
+            this._createDummyDatasetControl();
+            return this;
+        }
+        const dataProvider = this._getDataProviderInstance();
+        this._dataset = new Dataset(dataProvider);
+        //loads parameter columns
+        this._dataset.setMetadata(this._getEntityMetadata());
+        this._dataset.setDataSource(context.parameters.Data.raw);
+        this._datasetControl = new DatasetControl({
+            state: this._state,
+            //@ts-ignore - typings
+            controlId: this._context.utils._customControlProperties?.controlId,
+            onGetPcfContext: () => this._context,
+            onGetParameters: () => this._getDatasetControlParameters()
+        });
+        this._datasetControl.setInterceptor('onInitialize', async (parameters, defaultAction) => {
+            //preloads dataset
+            await defaultAction(parameters);
+            //sets columns after preload
+            this._dataset.setColumns(this._getColumns());
+            await this._options?.onInitialize?.();
+        });
+        if (this._context.parameters.Height?.raw === '100%') {
+            this._container.classList.add(this._getFullTabStyles());
+        }
+        this._initialized = true;
+    }
+
+    /**
+     * @param {?() => void} [onRenderEmptyData] - Only called when the data parameter is set to `null`. This should usually not happen since it's a required parameter, but Power Apps can pass null in certain scenarios (for example on a form with new record).
+     */
+    public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (datasetControlProps: Omit<IDatasetControlProps, 'onGetControlComponent'>) => void, onRenderEmptyData?: () => void) {
+        this._context = context;
+        if (!context.parameters.Data.raw) {
+            return onRenderEmptyData?.()
+        }
+        //if not yet initialized, initialize, can happen if we start without data
+        if (!this._initialized) {
+            this.init(context, this._container, this._state);
+        }
+        return onRenderComponent({
+            onGetDatasetControlInstance: () => this._datasetControl
+        });
     }
 
     public getDataset(): Dataset<IDataProvider> {
         return this._dataset;
     }
 
-    public destroy(): void {
-        this._dataset.destroy();
+    public getDatasetControl(): IDatasetControl {
+        return this._datasetControl;
     }
 
-    public getOutputs(): IOutputs {
-        this._resolveGetOutputs(true);
+    private _isEditingEnabled(): boolean {
+        return this._context.parameters.EnableEditing?.raw === 'true';
+    }
+
+    private _isAutoSaveEnabled(): boolean {
+        return this._context.parameters.EnableAutoSave?.raw === 'true';
+    }
+
+    private _isCommandBarEnabled(): boolean {
+        return this._context.parameters.EnableCommandBar?.raw !== 'false'
+    }
+
+    private _createDummyDatasetControl() {
+        this._datasetControl = new DatasetControl({
+            state: this._state,
+            //@ts-ignore - typings
+            controlId: this._context.utils._customControlProperties?.controlId,
+            onGetPcfContext: () => this._context,
+            onGetParameters: () => {
+                return {
+                    ...this._getDatasetControlParameters(),
+                    Grid: new Dataset(new MemoryDataProvider([], { PrimaryIdAttribute: 'id' }))
+                }
+            }
+        });
+    }
+
+    private _getDatasetControlParameters(): IDatasetControlParameters {
         return {
-            DatasetControl: this.getDataset()
-        };
-    }
-
-    private _onDatasetInit() {
-        this.getDataset().setInterceptor('onInitialize', async () => {
-            await this._getOutputsPromise;
-            await this._parameters.onInitialize?.();
-        })
-    }
-
-    private _getData() {
-        if (this._parsedData) {
-            return this._parsedData;
+            Grid: this.getDataset(),
+            EnableEditing: {
+                raw: this._isEditingEnabled()
+            },
+            EnableCommandBar: {
+                raw: this._isCommandBarEnabled()
+            },
+            EnableAutoSave: {
+                raw: this._isAutoSaveEnabled()
+            },
+            EnablePagination: {
+                raw: this._context.parameters.EnablePagination?.raw !== 'false'
+            },
+            EnableFiltering: {
+                raw: this._context.parameters.EnableFiltering?.raw !== 'false'
+            },
+            EnableSorting: {
+                raw: this._context.parameters.EnableSorting?.raw !== 'false'
+            },
+            EnableNavigation: {
+                raw: this._context.parameters.EnableNavigation?.raw !== 'false'
+            },
+            EnableOptionSetColors: {
+                raw: this._context.parameters.EnableOptionSetColors?.raw === 'true'
+            },
+            SelectableRows: {
+                raw: this._context.parameters.SelectableRows?.raw ?? 'single'
+            },
+            RowHeight: {
+                raw: this._context.parameters.RowHeight?.raw ?? 42
+            },
+            //quick find is always handled by platform
+            EnableQuickFind: {
+                raw: this._context.parameters.EnableQuickFind?.raw === 'true'
+            },
+            EnableAggregation: {
+                raw: this._context.parameters.EnableAggregation?.raw === 'true',
+            },
+            EnableGrouping: {
+                raw: this._context.parameters.EnableGrouping?.raw === 'true'
+            },
+            Height: {
+                raw: this._context.parameters.Height?.raw ?? null
+            },
+            InlineRibbonButtonIds: {
+                raw: this._context.parameters.InlineRibbonButtonIds?.raw ?? null
+            },
+            EnableZebra: {
+                raw: this._context.parameters.EnableZebra?.raw !== 'false'
+            },
+            DefaultExpandedGroupLevel: {
+                raw: this._context.parameters.DefaultExpandedGroupLevel?.raw ?? null
+            },
+            EnableRecordCount: {
+                raw: this._context.parameters.EnableRecordCount?.raw !== 'false'
+            },
+            EnableGroupedColumnsPinning: {
+                raw: this._context.parameters.EnableGroupedColumnsPinning?.raw !== 'false'
+            },
+            EnablePageSizeSwitcher: {
+                raw: this._context.parameters.EnablePageSizeSwitcher?.raw !== 'false'
+            },
+            GroupingType: {
+                raw: this._context.parameters.GroupingType?.raw ?? 'nested'
+            },
+            IsLocalHarnessDebugMode: this._context.parameters.IsLocalHarnessDebugMode,
+            ClientApiWebresourceName: {
+                raw: 'talxis_gridclientapidemo'
+            },
+            ClientApiFunctionName: {
+                raw: 'onDatasetControlInitialized'
+            }
         }
-        this._parsedData = this._dataProviderClass.GetParsedData(this._parameters.onGetData());
-        return this._parsedData;
+    }
+
+    private _getDataProviderInstance(): IDataProvider {
+        if (this._options?.CustomDataProviderClass) {
+            return new this._options.CustomDataProviderClass(this._context.parameters.Data.raw);
+        }
+        switch (this._context.parameters.DataProvider.raw) {
+            case "FetchXml": {
+                return new FetchXmlDataProvider(this._context.parameters.Data.raw as string)
+            }
+            case 'Memory': {
+                return new MemoryDataProvider(this._context.parameters.Data.raw!, this._getEntityMetadata())
+            }
+        }
     }
 
     private _getColumns() {
         try {
-            const parameterColumns: IColumn[] = JSON.parse(this._parameters.onGetColumns() ?? "[]");
-            if (this._shouldMergeColumns()) {
-                return this._getMergedColumns(parameterColumns);
-            }
-            return parameterColumns;
+            const parameterColumns = this._context.parameters.Columns?.raw;
+            const columns: IColumn[] = Array.isArray(parameterColumns) ? parameterColumns : JSON.parse(parameterColumns ?? "[]");
+            return this._getMergedColumns(columns);
         }
         catch (err) {
             console.error(err);
@@ -141,53 +256,36 @@ export class VirtualDatasetAdapter {
         }
     }
 
-    private _shouldMergeColumns(): boolean {
-        if (this._dataset.getDataProvider() instanceof FetchXmlDataProvider) {
-            const fetchXml = this._parameters.onGetData();
-            if (fetchXml?.includes('savedqueryid') || fetchXml?.includes('userqueryid')) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private _getMergedColumns(parameterColumns: IColumn[]): IColumn[] {
-        const columnsMap = new Map(this._dataset.columns.map(col => [col.name, col]));
-        parameterColumns.forEach(parameterCol => {
-            const col = columnsMap.get(parameterCol.name);
-            if (col) {
-                columnsMap.set(col.name, {
-                    ...col,
-                    ...parameterCol
-                });
-            } else {
-                columnsMap.set(parameterCol.name, parameterCol);
-            }
-        });
+        const columnsMap = new Map<string, IColumn>(this._dataset.columns.map((col: IColumn) => [col.name, col]));
+        const stateColumnsMap = new Map<string, IColumn>(this._state?.DatasetControlState?.columns?.map((col: IColumn) => [col.name, col]) ?? []);
+        //if we have state, return it
+        if (stateColumnsMap.size > 0) {
+            return [...stateColumnsMap.values()];
+        }
+        //no state, save to load from parameters
+        else {
+            parameterColumns.forEach(parameterCol => {
+                const col = columnsMap.get(parameterCol.name);
+                if (col) {
+                    columnsMap.set(col.name, {
+                        ...col,
+                        ...parameterCol
+                    });
+                } else {
+                    columnsMap.set(parameterCol.name, parameterCol);
+                }
+            });
+        }
         return [...columnsMap.values()];
     }
 
     private _getEntityMetadata() {
-        try {
-            return JSON.parse(this._parameters.onGetEntityMetadata() ?? "{}");
+        const parameterMetadata = this._context.parameters.EntityMetadata.raw;
+        if (parameterMetadata) {
+            return JSON.parse(parameterMetadata);
         }
-        catch (err) {
-            console.error(err);
-            return this._dataset.getMetadata();
-        }
-    }
-
-    private _refreshOnChange(objectsToCompare: { currentValue: string | null, previousValue: string | null, beforeRefreshCallback?: () => void }[]) {
-        let shouldRefresh = false;
-        objectsToCompare.forEach(obj => {
-            if (obj.currentValue !== obj.previousValue) {
-                shouldRefresh = true;
-                obj.beforeRefreshCallback?.();
-            }
-        });
-        if (shouldRefresh) {
-            this._dataset.paging.loadExactPage(this._dataset.paging.pageNumber);
-        }
+        return {};
     }
 
     private _getFullTabStyles() {

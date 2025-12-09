@@ -43,7 +43,7 @@ export const useInputBasedControl = <TValue, TParameters extends IInputParameter
     const rawValue = props.parameters.value.raw;
     const [value, setValue] = useState<TValue>(formatter?.(rawValue) ?? rawValue);
     const valueRef = useRef<TValue>(rawValue);
-    const { labels, sizing, theme, onNotifyOutputChanged } = useControl(name, props, options?.defaultTranslations);
+    const { labels, sizing, theme, className, onNotifyOutputChanged } = useControl(name, props, options?.defaultTranslations);
 
     useEffect(() => {
         const formattedValue = formatter?.(rawValue);
@@ -63,6 +63,7 @@ export const useInputBasedControl = <TValue, TParameters extends IInputParameter
         };
     }, []);
     return {
+        className: className,
         value,
         labels,
         sizing,

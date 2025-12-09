@@ -1,39 +1,86 @@
-import { ThemeProviderProps } from "@fluentui/react";
+import { IButtonProps, IMessageBarProps, IShimmerProps, ThemeProviderProps } from "@fluentui/react";
 import { ITranslation } from "../../hooks";
-import { IControl, ITranslations, ITwoOptionsProperty } from "../../interfaces";
-import { IGridComponentProps, IGridOutputs, IGridParameters } from "../Grid";
+import { IControl, IStringProperty } from "../../interfaces";
+import { IGridOutputs, IGridParameters } from "../Grid";
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
-import { ITextFieldProps } from "@talxis/react-components";
+import { ICommandBarProps, ITextFieldProps } from "@talxis/react-components";
 import React from "react";
-import { IDatasetPaging, IDatasetPagingParameters } from "./Paging";
+import { IRibbonComponentProps } from "../Ribbon/interfaces";
+import { IDatasetControl } from "../../utils/dataset-control";
 
 
-export interface IQuickFindProps {
-    textFieldProps: ITextFieldProps;
-    container: ThemeProviderProps;
-}
-
-
-export interface IDatasetControlComponentProps {
-    onDatasetInit: () => void,
-    containerProps: ThemeProviderProps;
-    headerProps: {
-        headerContainerProps: React.HTMLAttributes<HTMLDivElement>
-        /**
-         * Can be used to override the default header renderer (includes QuickFind).
-         */
-        onRender: (renderQuickFind: () => React.ReactElement) => React.ReactElement;
-        onGetQuickFindProps: (props: IQuickFindProps) => IQuickFindProps;
-    };
-    onRenderPagination: (props: IDatasetPaging, renderPagination: (props: IDatasetPaging) => React.ReactElement<IDatasetPaging>) => React.ReactElement;
-
-}
-
-
-export interface IDatasetControl extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps> {
+export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {
+    /**
+     * Gets the instance of the Dataset control model.
+     */
+    onGetDatasetControlInstance: () => IDatasetControl;
     /**
      * Tells the Dataset control which UI component should be used for the dataset.
      */
-    onGetControlComponent: (props: IControl<IGridParameters, any, any, any>) => React.ReactElement<IControl<any, any, any, any>>
+    onGetControlComponent: (props: Omit<IDatasetControlProps, 'onOverrideComponentProps'> & {parameters: IDatasetControlParameters; context: ComponentFramework.Context<any, any>, state: ComponentFramework.Dictionary}) => React.ReactElement<IControl<any, any, any, any>>
+}
+
+export interface IDatasetControlParameters extends IGridParameters {
+    ClientApiWebresourceName?: IStringProperty;
+    ClientApiFunctionName?: IStringProperty;
+}
+
+export interface IDatasetControlComponentProps {
+    onRender: (props: IComponentProps, defaultRender: (props: IComponentProps) => React.ReactElement) => React.ReactElement;
+}
+
+export interface IComponentProps {
+    container: ThemeProviderProps;
+    onRenderControlContainer: (props: IControlContainerProps, defaultRender: (props: IControlContainerProps) => React.ReactElement) => React.ReactElement;
+    onRenderHeader: (props: IHeaderProps, defaultRender: (props: IHeaderProps) => React.ReactElement) => React.ReactElement;
+    onRenderFooter: (props: IFooterProps, defaultRender: (props: IFooterProps) => React.ReactElement) => React.ReactElement;
+
+}
+
+interface IControlContainerProps {
+    controlContainerProps: React.HTMLAttributes<HTMLDivElement>;
+}
+
+export interface IFooterProps {
+   footerContainerProps: React.HTMLAttributes<HTMLDivElement>;
+   onRenderPagination: (props: IPaginationProps, defaultRender: (props: IPaginationProps) => React.ReactElement) => React.ReactElement;
+}
+
+export interface IPaginationProps {
+    paginationContainerProps: React.HTMLAttributes<HTMLDivElement>;
+    commandBarProps: ICommandBarProps;
+    pageSizeSwitcherProps: IButtonProps;
+    onRenderCommandBar: (props: ICommandBarProps, defaultRender: (props: ICommandBarProps) => React.ReactElement) => React.ReactElement;
+    onRenderPageSizeSwitcher: (props: IButtonProps, defaultRender: (props: IButtonProps) => React.ReactElement) => React.ReactElement;
+
+}
+
+export interface IHeaderProps {
+    headerContainerProps: React.HTMLAttributes<HTMLDivElement>;
+    onRenderRibbonQuickFindWrapper: (props: IRibbonQuickFindWrapperProps, defaultRender: (props: IRibbonQuickFindWrapperProps) => React.ReactElement) => React.ReactElement;
+    onRenderErrorMessageBar: (props: IErrorMessageBarProps, defaultRender: (props: IErrorMessageBarProps) => React.ReactElement) => React.ReactElement;
+    onRenderUnsavedChangesMessageBar: (props: IUnsavedChangesMesssageBarProps, defaultRender: (props: IUnsavedChangesMesssageBarProps) => React.ReactElement) => React.ReactElement;
+}
+
+export interface IRibbonQuickFindWrapperProps {
+    ribbonQuickFindContainerProps: React.HTMLAttributes<HTMLDivElement>;
+    onRenderQuickFind: (props: IQuickFindProps, defaultRender: (props: IQuickFindProps) => React.ReactElement) => React.ReactElement;
+    onRenderRibbon: IRibbonComponentProps['onRender']
+}
+
+interface IErrorMessageBarProps {
+    messageBarProps: IMessageBarProps;
+    onRenderMessageBar: (props: IMessageBarProps, defaultRender: (props: IMessageBarProps) => React.ReactElement) => React.ReactElement;
+}
+
+interface IUnsavedChangesMesssageBarProps {
+    messageBarProps: IMessageBarProps;
+    onRenderSaveBtn: (props: IButtonProps, defaultRender: (props: IButtonProps) => React.ReactElement) => React.ReactElement;
+    onRenderDiscardBtn: (props: IButtonProps, defaultRender: (props: IButtonProps) => React.ReactElement) => React.ReactElement;
+}
+
+export interface IQuickFindProps {
+    textFieldProps: ITextFieldProps;
+    onRenderTextField: (props: ITextFieldProps, defaultRender: (props: ITextFieldProps) => React.ReactElement) => React.ReactElement;
 }

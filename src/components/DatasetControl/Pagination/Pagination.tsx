@@ -1,0 +1,101 @@
+import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
+import { IFooterProps } from "../interfaces";
+import { useModel } from "../useModel";
+import { getPaginationStyles } from "./styles";
+import { useMemo } from "react";
+import { CommandBar } from "@talxis/react-components";
+import { PaginationModel } from "./PaginationModel";
+import { IInternalDataProvider } from "@talxis/client-libraries";
+
+const PAGE_SIZE_OPTIONS = ['25', '50', '75', '100', '250'];
+
+export const Pagination = (props: { onRenderPagination: IFooterProps['onRenderPagination'] }) => {
+  const model = useModel();
+  const datasetControl = model.getDatasetControl();
+  const paginationModel = useMemo(() => new PaginationModel(model), []);
+  const dataset = model.getDatasetControl().getDataset();
+  const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
+  const labels = model.getLabels();
+  const paging = dataset.paging;
+  const theme = useTheme();
+  const styles = useMemo(() => getPaginationStyles(theme), [theme]);
+
+  const onSetPageSize = (pageSize: number) => {
+    paging.setPageSize(pageSize);
+    dataset.refresh();
+  }
+
+
+  return props.onRenderPagination({
+    pageSizeSwitcherProps: {
+      disabled: !datasetControl.isPageSizeSwitcherVisible() || dataset.loading,
+      text: paginationModel.toString(),
+      styles: {
+        root: styles.pageSizeSwitcherRoot,
+      },
+      menuProps: {
+        items: [
+          {
+            key: 'header',
+            itemType: ContextualMenuItemType.Header,
+            text: labels['page-record-count'](),
+          },
+          {
+            key: 'divider',
+            itemType: ContextualMenuItemType.Divider,
+          },
+          ...PAGE_SIZE_OPTIONS.map((size) => ({
+            key: size,
+            text: size,
+            className: styles.selectedPageSizeButton,
+            checked: parseInt(size) === paging.pageSize,
+            onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => onSetPageSize(parseInt(size)))
+          } as IContextualMenuItem))
+
+        ]
+      }
+    },
+    paginationContainerProps: {
+      className: styles.paginationRoot
+    },
+    commandBarProps: {
+      className: styles.commandBarRoot,
+      items: [],
+      farItems: [{
+        key: 'FirstPage',
+        iconOnly: true,
+        iconProps: { iconName: 'DoubleChevronLeft' },
+        disabled: !paging.hasPreviousPage || dataset.loading,
+        onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => paging.reset())
+      }, {
+        key: 'PreviousPage',
+        iconOnly: true,
+        iconProps: { iconName: 'Back' },
+        disabled: !paging.hasPreviousPage || dataset.loading,
+        onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber - 1))
+      }, {
+        key: 'CurrentPage',
+        text: `${labels['paging-page']()} ${paging.pageNumber.toString()}`,
+        className: styles.currentPageBtn,
+        disabled: true,
+      }, {
+        key: 'NextPage',
+        iconOnly: true,
+        iconProps: { iconName: 'Forward' },
+        disabled: !paging.hasNextPage || dataset.loading,
+        onClick: () => dataProvider.executeWithUnsavedChangesBlocker(() => paging.loadExactPage(paging.pageNumber + 1))
+      }]
+    },
+    onRenderCommandBar: (props, defaultRender) => defaultRender(props),
+    onRenderPageSizeSwitcher: (props, defaultRender) => defaultRender(props),
+  }, (props) => {
+    return <div {...props.paginationContainerProps}>
+      {(datasetControl.isPageSizeSwitcherVisible() || datasetControl.isRecordCountVisible()) &&
+        <CommandBarButton {...props.pageSizeSwitcherProps} />
+      }
+      {datasetControl.isPaginationVisible() &&
+        <CommandBar {...props.commandBarProps} />
+      }
+    </div>
+  })
+}

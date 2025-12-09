@@ -26,6 +26,7 @@ const externalDeps = [
     'react',
     'react-dom',
     'react/jsx-runtime',
+    'debounce',
     'use-debounce',
     'validator',
     'validator/es/lib/isURL',
@@ -35,11 +36,15 @@ const externalDeps = [
     '@ag-grid-community/client-side-row-model',
     "@ag-grid-enterprise/core",
     "@ag-grid-enterprise/row-grouping",
+    "@ag-grid-enterprise/server-side-row-model",
+    "@ag-grid-enterprise/menu",
+    "@ag-grid-enterprise/clipboard",
     '@ag-grid-community/react',
     '@ag-grid-community/core',
     '@ag-grid-community/styles',
     '@ag-grid-community/styles/ag-grid.css',
-    '@ag-grid-community/styles/ag-theme-balham.css'
+    '@ag-grid-community/styles/ag-theme-balham.css',
+    'hotkeys-js',
 ]
 
 export default [

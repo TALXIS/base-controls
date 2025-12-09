@@ -2,11 +2,11 @@ import { mergeStyleSets } from "@fluentui/react"
 
 export const getQuickFindStyles = () => {
     return mergeStyleSets({
-        quickFindRoot: {
+        textFieldRoot: {
             marginLeft: 'auto'
         },
         fieldGroup: {
-            width: 230
+            width: 230,
         }
     })
 }

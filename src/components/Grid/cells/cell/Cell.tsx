@@ -1,0 +1,297 @@
+import { ICellRendererParams } from "@ag-grid-community/core";
+import { ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyleSets } from "@fluentui/react";
+import { IRecord, Constants, DataProvider, IRecordEvents } from "@talxis/client-libraries";
+import { useThemeGenerator, getClassNames, useRerender } from "@talxis/react-components";
+import { useMemo, useEffect, useRef, useCallback } from "react";
+import { useControlTheme } from "../../../../utils";
+import { ICellValues } from "../../grid/ag-grid/AgGridModel";
+import { IGridColumn } from "../../grid/GridModel";
+import { useGridInstance } from "../../grid/useGridInstance";
+import { CellContent } from "./content/CellContent";
+import { Notifications } from "./notifications/Notifications";
+import { getCellStyles, getInnerCellStyles } from "./styles";
+import { useAgGridInstance } from "../../grid/ag-grid/useAgGridInstance";
+import ReactDOM from "react-dom";
+import { GridContext } from "../../grid/GridContext";
+import { AgGridContext } from "../../grid/ag-grid/AgGridContext";
+import { useEventEmitter } from "../../../../hooks/useEventEmitter";
+
+export interface ICellProps extends ICellRendererParams {
+    baseColumn: IGridColumn;
+    isCellEditor: boolean;
+    record: IRecord;
+    value: ICellValues;
+}
+
+export const Cell = (props: ICellProps) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const memoizedContainerRef = useRef<HTMLDivElement | null>();
+    const { record, node, baseColumn } = props;
+    const column = baseColumn;
+    const grid = useGridInstance();
+    const agGrid = useAgGridInstance();
+    const lastLoadingRefValue = useRef<boolean>(props.value.loading);
+    const rerender = useRerender();
+
+    const skipCellRendering = (() => {
+        const dataProvider = record.getDataProvider();
+        const summarizationType = dataProvider.getSummarizationType();
+        switch (true) {
+            case column.type === 'action': {
+                return false;
+            }
+            case props.value.loading: {
+                return false;
+            }
+            case summarizationType === 'grouping': {
+                if (lastLoadingRefValue.current && !props.value.loading) {
+                    return false;
+                }
+                const _column = dataProvider.getColumnsMap()[column.name]!;
+                if (_column.aggregation?.aggregationFunction && !_column.grouping?.isGrouped) {
+                    return false;
+                }
+                if (grid.getGroupType() === 'nested') {
+                    return dataProvider.grouping.getGroupBys()[0].columnName !== column.name
+                }
+                return !column.grouping?.isGrouped;
+            }
+            case summarizationType === 'aggregation': {
+                return !dataProvider.getColumnsMap()[column.name]?.aggregation?.aggregationFunction;
+            }
+            case summarizationType === 'none': {
+                return !!column.grouping?.isGrouped
+            }
+            default: {
+                return false;
+            }
+        }
+    })();
+    lastLoadingRefValue.current = props.value.loading;
+
+    const onCellClick = useCallback((e: MouseEvent) => {
+        if (record.getDataProvider().getSummarizationType() === 'grouping' && !grid.isSelectionModifierKeyPressed()) {
+            e.stopPropagation();
+        }
+        else if (node.isSelected()) {
+            e.stopPropagation();
+        }
+    }, []);
+
+    const onFieldValueChanged = useCallback(async (columnName: string) => {
+        if (columnName !== column.name) {
+            return;
+        }
+        props.api.refreshCells({
+            rowNodes: [node]
+        })
+        setTimeout(() => {
+            rerender();
+        }, 0);
+    }, []);
+
+
+    const getTopLevelCellWrapperStyles = () => {
+        return mergeStyleSets({
+            cellRoot: {
+                width: '100%',
+                height: (() => {
+                    if (skipCellRendering && column.autoHeight) {
+                        return `${grid.getDefaultRowHeight()}px !important`;
+                    }
+                    return '100% !important';
+                })()
+            }
+        })
+    }
+    useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', onFieldValueChanged);
+
+    useEffect(() => {
+        memoizedContainerRef.current = containerRef.current;
+        containerRef.current?.addEventListener('click', onCellClick);
+        return () => {
+            containerRef.current?.removeEventListener('click', onCellClick);
+            ReactDOM.unmountComponentAtNode(memoizedContainerRef.current!);
+        }
+    }, []);
+
+
+    useEffect(() => {
+        if (skipCellRendering) {
+            ReactDOM.render(<></>, containerRef.current)
+        }
+        else {
+            ReactDOM.render(
+                <GridContext.Provider value={grid}>
+                    <AgGridContext.Provider value={agGrid}>
+                        <CellContentWrapper {...props} />
+                    </AgGridContext.Provider>
+                </GridContext.Provider>,
+                containerRef.current
+            );
+        }
+    });
+    return <div className={getTopLevelCellWrapperStyles().cellRoot} ref={containerRef} />
+}
+
+const CellContentWrapper = (props: ICellProps) => {
+    const { value: cellData, record } = props;
+    const { customFormatting } = cellData;
+    const cellTheme = useThemeGenerator(customFormatting.primaryColor, customFormatting.backgroundColor, customFormatting.textColor, customFormatting.themeOverride);
+    const styles = useMemo(() => getCellStyles(cellTheme), [cellTheme])
+    const cellRef = useRef<HTMLDivElement>(null);
+    const rerender = useRerender();
+    useEventEmitter<IRecordEvents>(record, 'onBeforeSaved', rerender);
+
+    return <ThemeProvider
+        ref={cellRef}
+        theme={cellTheme}
+        className={getClassNames([styles.cellRoot, customFormatting.className])}>
+        <InternalCell {...props} />
+    </ThemeProvider>
+}
+
+
+export const InternalCell = (props: ICellProps) => {
+    const column = props.baseColumn;
+    const record = props.record;
+    const node = props.node;
+    const formatting = props.value.customFormatting;
+    const grid = useGridInstance();
+    const agGrid = useAgGridInstance();
+    const error = props.value.error;
+    const notifications = props.value.notifications;
+    const errorMessage = props.value.errorMessage;
+    const theme = useTheme();
+    const applicationTheme = useControlTheme(grid.getPcfContext().fluentDesignLanguage);
+    const rerender = useRerender();
+    const styles = useMemo(() => getInnerCellStyles(
+        props.isCellEditor,
+        theme,
+        props.value.columnAlignment,
+        node.expanded
+    ), [props.isCellEditor, theme, props.value.columnAlignment, node.expanded]);
+
+    const shouldShowNotEditableNotification = () => {
+        if (column.isEditable && !record.getColumnInfo(column.name).security.editable && record.getSummarizationType() === 'none') {
+            return true;
+        }
+        return false;
+    }
+
+    const getShouldRenderNotifications = (): boolean => {
+        if (props.isCellEditor) {
+            return false;
+        }
+        if (error === true) {
+            return true;
+        }
+        if (shouldShowNotEditableNotification()) {
+            return true;
+        }
+        if (notifications && notifications.length > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    const renderContent = (): JSX.Element => {
+        if (isLoading()) {
+            return (
+                <Shimmer styles={{
+                    shimmerWrapper: styles.shimmerWrapper,
+                    root: styles.shimmerRoot
+                }} />
+            );
+        }
+        return (
+            <>
+                {grid.isColumnExpandable(record, column) &&
+                    <IconButton
+                        iconProps={{ iconName: 'ChevronRight' }}
+                        styles={{
+                            root: styles.groupToggleButtonRoot,
+                            icon: styles.groupToggleButtonIcon
+                        }}
+                        onClick={() => {
+                            agGrid.toggleGroup(node);
+                            rerender();
+                        }} />
+                }
+                {(column.type !== 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) &&
+                    <CellContent {...props} />
+                }
+                {shouldRenderNotifications &&
+                    renderNotifications()
+                }
+            </>
+        )
+    }
+
+    const getFarNotifications = (): ICommandBarItemProps[] => {
+        const result: ICommandBarItemProps[] = [];
+        const tooltipProps: ITooltipHostProps = {
+            tooltipProps: {
+                theme: applicationTheme
+            },
+            calloutProps: {
+                theme: applicationTheme,
+            }
+        }
+        if (shouldShowNotEditableNotification()) {
+            result.push({
+                key: 'noteditable',
+                text: grid.getLabels()['value-not-editable'](),
+                iconOnly: true,
+                disabled: true,
+                tooltipHostProps: tooltipProps,
+                iconProps: {
+                    iconName: 'Uneditable',
+                    styles: {
+                        root: styles.uneditableIconRoot
+                    }
+                }
+            })
+        }
+        if (error) {
+            result.push({
+                key: 'error',
+                iconOnly: true,
+                disabled: true,
+                text: errorMessage,
+                tooltipHostProps: tooltipProps,
+                iconProps: {
+                    iconName: 'Error',
+                    styles: {
+                        root: styles.errorIconRoot
+                    }
+                }
+            })
+        }
+        return result;
+    }
+
+    const renderNotifications = (): JSX.Element => {
+        return <Notifications
+            formatting={formatting}
+            isActionColumn={column.type === 'action'}
+            columnAlignment={props.value.columnAlignment}
+            notifications={notifications}
+            farItems={getFarNotifications()} />
+    }
+
+    const isLoading = () => {
+        if (props.value.loading) {
+            return true;
+        }
+        return false;
+    }
+    const shouldRenderNotifications = getShouldRenderNotifications();
+
+    return <div
+        className={styles.innerCellRoot}
+        data-is-loading={isLoading()}
+        data-is-valid={!error}>
+        {renderContent()}
+    </div>
+}

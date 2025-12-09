@@ -1,68 +1,68 @@
-import { IDataset } from "@talxis/client-libraries";
-import { ITextFieldProps, ITheme, TextField } from "@talxis/react-components";
-import { datasetControlTranslations } from "../translations";
-import { ITranslation } from "../../../hooks";
 import { useEffect, useMemo, useState } from "react";
-import { ThemeProvider } from "@fluentui/react";
-import { IQuickFindProps } from "../interfaces";
+import { IRibbonQuickFindWrapperProps } from "../interfaces";
+import { useModel } from "../useModel";
+import { TextField } from "@talxis/react-components";
 import { getQuickFindStyles } from "./styles";
+import { IInternalDataProvider } from "@talxis/client-libraries";
 
-export interface IQuickFindComponentProps {
-    labels: ITranslation<typeof datasetControlTranslations>
-    dataset: IDataset;
-    theme: ITheme;
-    onGetQuickFindComponentProps: (props: IQuickFindProps) => IQuickFindProps;
-}
+export const QuickFind = (props: { onRenderQuickFind: IRibbonQuickFindWrapperProps['onRenderQuickFind'] }) => {
+  const [query, setQuery] = useState<string>('');
+  const model = useModel();
+  const dataset = model.getDatasetControl().getDataset();
+  const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
+  const labels = model.getLabels();
+  const styles = useMemo(() => getQuickFindStyles(), []);
 
-export const QuickFind = (props: IQuickFindComponentProps) => {
-    const { dataset, labels, theme } = { ...props };
-    const [query, setQuery] = useState<string>('');
-    const styles = useMemo(() => getQuickFindStyles(), [])
-
-    const quickFindProps = props.onGetQuickFindComponentProps({
-        container: {
-            theme: theme,
-            className: styles.quickFindRoot
-        },
-        textFieldProps: {
-            value: query,
-            styles: {
-                fieldGroup: styles.fieldGroup
-            },
-            placeholder: `${labels.search()} ${dataset.getMetadata()?.DisplayCollectionName ?? labels.records()}...`,
-            onChange: (e, newValue) => setQuery(newValue ?? ''),
-            onKeyUp: (e) => {
-                if (e.key === 'Enter') {
-                    onSearch(query);
-                }
-            },
-            deleteButtonProps: query ? {
-                key: 'delete',
-                iconProps: {
-                    iconName: 'Cancel'
-                },
-                onClick: () => {
-                    setQuery("");
-                    onSearch(undefined);
-                }
-            } : undefined,
-            suffixItems: [{
-                key: 'search',
-                iconProps: {
-                    iconName: 'Search'
-                },
-                onClick: () => onSearch(query)
-            }]
-        }
+  const onSearch = (query?: string) => {
+    dataProvider.executeWithUnsavedChangesBlocker(() => {
+      setQuery(query ?? '');
+      dataset.setSearchQuery?.(query ?? '');
+      dataset.refresh();
     })
-    const onSearch = (query?: string) => {
-        dataset.setSearchQuery?.(query ?? "");
-        dataset.refresh();
-    }
+  }
 
-    useEffect(() => {
-        setQuery(dataset.getSearchQuery?.() ?? '');
-    }, [dataset.getSearchQuery?.()])
-    //needs to be wrapped within ThemeProvider because the theme context can be lost if we are overriding the header render
-    return <ThemeProvider {...quickFindProps.container}><TextField {...quickFindProps.textFieldProps} /></ThemeProvider>
+  const onKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onSearch(query);
+    }
+  }
+
+  useEffect(() => {
+    setQuery(dataset.getSearchQuery?.() ?? '');
+  }, [dataset.getSearchQuery?.()])
+
+  return props.onRenderQuickFind({
+    onRenderTextField: (props, defaultRender) => defaultRender(props),
+    textFieldProps: {
+      value: query,
+      placeholder: `${labels.search()} ${dataset.getMetadata()?.DisplayCollectionName ?? labels.records()}...`,
+      styles: {
+        root: styles.textFieldRoot,
+        fieldGroup: styles.fieldGroup
+      },
+      disabled: dataset.loading,
+      onChange: (e, newValue) => setQuery(newValue ?? ''),
+      onKeyUp: onKeyUp,
+      ...(query ? {
+        deleteButtonProps: {
+          key: 'delete',
+          iconProps: {
+            iconName: 'Cancel'
+          },
+          onClick: () => onSearch(undefined)
+        }
+      } : {}),
+      suffixItems: [{
+        key: 'search',
+        iconProps: {
+          iconName: 'Search'
+        },
+        onClick: () => onSearch(query)
+      }]
+
+
+    }
+  }, (props) => {
+    return <TextField {...props.textFieldProps} />
+  })
 }

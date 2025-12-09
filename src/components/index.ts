@@ -11,3 +11,4 @@ export * from './OptionSet';
 export * from './TextField';
 export * from './TwoOptions';
 export * from './Duration';
+export * from './GridInlineRibbon';
