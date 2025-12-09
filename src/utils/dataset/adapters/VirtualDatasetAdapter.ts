@@ -36,6 +36,7 @@ interface IInputs {
     DefaultExpandedGroupLevel?: ComponentFramework.PropertyTypes.WholeNumberProperty;
     SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
     GroupingType?: ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">;
+    IsLocalHarnessDebugMode?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
 }
 
 interface IVirtualDatasetAdapterOptions {
@@ -72,10 +73,12 @@ export class VirtualDatasetAdapter {
         this._context = context;
         this._state = state ?? {};
         if (!context.parameters.Data.raw) {
+            this._createDummyDatasetControl();
             return this;
         }
         const dataProvider = this._getDataProviderInstance();
         this._dataset = new Dataset(dataProvider);
+        //loads parameter columns
         this._dataset.setMetadata(this._getEntityMetadata());
         this._dataset.setDataSource(context.parameters.Data.raw);
         this._datasetControl = new DatasetControl({
@@ -85,13 +88,12 @@ export class VirtualDatasetAdapter {
             onGetPcfContext: () => this._context,
             onGetParameters: () => this._getDatasetControlParameters()
         });
-        this._datasetControl.setInterceptor('onInitialize', async (props, defaultAction) => {
-            await this._options?.onInitialize?.();
+        this._datasetControl.setInterceptor('onInitialize', async (parameters, defaultAction) => {
+            //preloads dataset
+            await defaultAction(parameters);
+            //sets columns after preload
             this._dataset.setColumns(this._getColumns());
-            //client API initialization and preload
-            await defaultAction(props);
-            //make sure that columns always go through interceptor
-            this._dataset.setColumns(this._dataset.columns);
+            await this._options?.onInitialize?.();
         });
         if (this._context.parameters.Height?.raw === '100%') {
             this._container.classList.add(this._getFullTabStyles());
@@ -120,6 +122,10 @@ export class VirtualDatasetAdapter {
         return this._dataset;
     }
 
+    public getDatasetControl(): IDatasetControl {
+        return this._datasetControl;
+    }
+
     private _isEditingEnabled(): boolean {
         return this._context.parameters.EnableEditing?.raw === 'true';
     }
@@ -130,6 +136,21 @@ export class VirtualDatasetAdapter {
 
     private _isCommandBarEnabled(): boolean {
         return this._context.parameters.EnableCommandBar?.raw !== 'false'
+    }
+
+    private _createDummyDatasetControl() {
+        this._datasetControl = new DatasetControl({
+            state: this._state,
+            //@ts-ignore - typings
+            controlId: this._context.utils._customControlProperties?.controlId,
+            onGetPcfContext: () => this._context,
+            onGetParameters: () => {
+                return {
+                    ...this._getDatasetControlParameters(),
+                    Grid: new Dataset(new MemoryDataProvider([], { PrimaryIdAttribute: 'id' }))
+                }
+            }
+        });
     }
 
     private _getDatasetControlParameters(): IDatasetControlParameters {
@@ -199,6 +220,7 @@ export class VirtualDatasetAdapter {
             GroupingType: {
                 raw: this._context.parameters.GroupingType?.raw ?? 'nested'
             },
+            IsLocalHarnessDebugMode: this._context.parameters.IsLocalHarnessDebugMode,
             ClientApiWebresourceName: {
                 raw: 'talxis_gridclientapidemo'
             },

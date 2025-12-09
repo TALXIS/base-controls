@@ -13,7 +13,7 @@ export class Property {
                 target: "_blank",
                 rel: "noopener noreferrer",
                 children: this.getFormattedValue(),
-                onClick: () => this._openRecord()
+                onClick: () => this.openRecord(this._model.getRecord().getNamedReference()),
             }
         }
         else {
@@ -50,7 +50,12 @@ export class Property {
     public getFormattedValue(): string | null {
         return this._model.getFormattedValue().value;
     }
-    private _openRecord() {
-        this._model.getDataset()?.openDatasetItem(this._model.getRecord().getNamedReference())
+    public openRecord(entityReference: ComponentFramework.EntityReference) {
+        const dataset = this._model.getDataset();
+        const record = this._model.getRecord();
+        if(dataset.getSelectedRecordIds().length <= 1) {
+            dataset.setSelectedRecordIds([record.getRecordId()]);
+        }
+        dataset.openDatasetItem(entityReference)
     }
 }

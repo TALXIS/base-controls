@@ -29,6 +29,9 @@ interface IInputs {
     DefaultExpandedGroupLevel?: ComponentFramework.PropertyTypes.WholeNumberProperty;
     SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
     GroupingType?: ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">;
+    ClientApiWebresourceName?: ComponentFramework.PropertyTypes.StringProperty;
+    ClientApiFunctionName?: ComponentFramework.PropertyTypes.StringProperty;
+
 }
 
 interface IDatasetAdapterOptions {
@@ -66,19 +69,20 @@ export class DatasetAdapter {
             onGetPcfContext: () => this._context,
             onGetParameters: () => this._getDatasetControlParameters()
         });
+        //loads parameter columns
         //@ts-ignore - typings
-        this._context.factory.fireEvent('onDatasetControlInstanceReady', this._datasetControl);
-        this._datasetControl.setInterceptor('onInitialize', async (props, defaultAction) => {
-            await this._options?.onInitialize?.();
+        this._datasetControl.setInterceptor('onInitialize', async (parameters, defaultAction) => {
+            //preloads dataset
+            await defaultAction(parameters);
+            //sets columns after preload
             this._dataset.setColumns(this._getColumns());
-            //client API initialization nad preload
-            await defaultAction(props);
-            //make sure columns are in sync after client API potentially modified them
-            this._dataset.setColumns(this._dataset.columns);
+            await this._options?.onInitialize?.();
         });
         if (this._getHeight() === '100%') {
             this._container.classList.add(this._getFullHeightStyles())
         }
+        //@ts-ignore - typings
+        this._context.factory.fireEvent('onDatasetControlInstanceReady', this._datasetControl);
     }
 
     public updateView(context: ComponentFramework.Context<IInputs, IOutputs>, onRenderComponent: (datasetControlProps: Omit<IDatasetControlProps, 'onGetControlComponent'>) => void) {
@@ -121,6 +125,7 @@ export class DatasetAdapter {
         return {
             Grid: this.getDataset(),
             EnableEditing: {
+                //raw: true
                 raw: this._isEditingEnabled()
             },
             EnableCommandBar: {
@@ -129,6 +134,7 @@ export class DatasetAdapter {
             },
             EnableAutoSave: {
                 raw: this._isAutoSaveEnabled()
+                //raw: true
             },
             EnablePagination: {
                 raw: this._context.parameters.EnablePagination?.raw !== 'false'
@@ -156,10 +162,12 @@ export class DatasetAdapter {
                 raw: false
             },
             EnableAggregation: {
+                //raw: true
                 raw: this._context.parameters.EnableAggregation?.raw === 'true',
             },
             EnableGrouping: {
-                raw: this._context.parameters.EnableFiltering?.raw === 'true'
+                //raw: true
+                raw: this._context.parameters.EnableGrouping?.raw === 'true'
             },
             Height: {
                 raw: this._getHeight()
@@ -177,6 +185,7 @@ export class DatasetAdapter {
                 raw: this._context.parameters.EnableRecordCount?.raw !== 'false'
             },
             EnableGroupedColumnsPinning: {
+                //raw: false
                 raw: this._context.parameters.EnableGroupedColumnsPinning?.raw !== 'false'
             },
             EnablePageSizeSwitcher: {
@@ -186,10 +195,10 @@ export class DatasetAdapter {
                 raw: this._context.parameters.GroupingType?.raw ?? 'nested'
             },
             ClientApiWebresourceName: {
-                raw: 'talxis_gridclientapidemo'
+                raw: this._context.parameters.ClientApiWebresourceName?.raw ?? null
             },
             ClientApiFunctionName: {
-                raw: 'onDatasetControlInitialized'
+                raw: this._context.parameters.ClientApiFunctionName?.raw ?? null
             }
         }
     }
@@ -285,7 +294,7 @@ export class DatasetAdapter {
         const stateColumnsMap = new Map<string, IColumn>(this._state?.DatasetControlState?.columns?.map((col: IColumn) => [col.name, col]) ?? []);
         //load from state
         if (stateColumnsMap.size > 0) {
-            //save to return state in porta;
+            //save to return state in portal;
             if (this._client.isTalxisPortal()) {
                 return [...stateColumnsMap.values()];
             }
@@ -336,10 +345,6 @@ export class DatasetAdapter {
         return this._context.utils._customControlProperties.contextString === 'grid';
     }
 
-    private _getGlobalDatasetInstanceName() {
-        //@ts-ignore
-        return `talxis_grid_${this._context.utils._customControlProperties.id}`;
-    }
     private _getPowerAppsDatasetProvider() {
         return new PowerAppsDatasetProvider({
             onGetContext: () => this._context

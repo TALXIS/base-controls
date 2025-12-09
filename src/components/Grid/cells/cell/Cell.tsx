@@ -1,10 +1,9 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { Checkbox, ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyles, Icon, SpinnerSize, CommandBarButton, TooltipHost, MessageBar, MessageBarType, mergeStyleSets } from "@fluentui/react";
-import { IRecord, Constants, DataProvider, IRecordEvents, ICommand, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { useThemeGenerator, getClassNames, useRerender, Spinner } from "@talxis/react-components";
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyleSets } from "@fluentui/react";
+import { IRecord, Constants, DataProvider, IRecordEvents } from "@talxis/client-libraries";
+import { useThemeGenerator, getClassNames, useRerender } from "@talxis/react-components";
+import { useMemo, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
-import { CHECKBOX_COLUMN_KEY } from "../../constants";
 import { ICellValues } from "../../grid/ag-grid/AgGridModel";
 import { IGridColumn } from "../../grid/GridModel";
 import { useGridInstance } from "../../grid/useGridInstance";
@@ -15,7 +14,6 @@ import { useAgGridInstance } from "../../grid/ag-grid/useAgGridInstance";
 import ReactDOM from "react-dom";
 import { GridContext } from "../../grid/GridContext";
 import { AgGridContext } from "../../grid/ag-grid/AgGridContext";
-import { CheckmarkCircle24Filled, ErrorCircle24Filled } from '@fluentui/react-icons';
 import { useEventEmitter } from "../../../../hooks/useEventEmitter";
 
 export interface ICellProps extends ICellRendererParams {
@@ -137,106 +135,19 @@ export const Cell = (props: ICellProps) => {
 }
 
 const CellContentWrapper = (props: ICellProps) => {
-    const { value: cellData, record, baseColumn, node } = props;
+    const { value: cellData, record } = props;
     const { customFormatting } = cellData;
     const cellTheme = useThemeGenerator(customFormatting.primaryColor, customFormatting.backgroundColor, customFormatting.textColor, customFormatting.themeOverride);
     const styles = useMemo(() => getCellStyles(cellTheme), [cellTheme])
-    const agGrid = useAgGridInstance();
-    const grid = useGridInstance();
-    const checkBoxRef = useRef<HTMLDivElement>(null);
     const cellRef = useRef<HTMLDivElement>(null);
-    const recordSelectionState = agGrid.getRecordSelectionState(node);
-    const isRecordSelectionDisabled = grid.isRecordSelectionDisabled(record);
-    const [savingResult, setSavingResult] = useState<IRecordSaveOperationResult | null>(null);
     const rerender = useRerender();
     useEventEmitter<IRecordEvents>(record, 'onBeforeSaved', rerender);
-
-    const onCheckBoxClick = useCallback(e => {
-        if (!isRecordSelectionDisabled) {
-            e.stopPropagation();
-            e.preventDefault();
-            record.getDataProvider().toggleSelectedRecordId(record.getRecordId(), { clearExisting: agGrid.getGrid().getSelectionType() === 'single' });
-        }
-    }, []);
-
-
-    const renderContent = () => {
-        if (baseColumn.name === CHECKBOX_COLUMN_KEY && record.getDataProvider().getSummarizationType() !== 'aggregation') {
-            if (record.isSaving()) {
-                return <Spinner size={SpinnerSize.xSmall} />
-            }
-            if (savingResult) {
-                return (
-                    <IconButton
-                        styles={{
-                            root: styles.autoSaveBtnRoot,
-                        }}
-                        title={savingResult.success ? grid.getLabels()['saving-autosave-success']() : savingResult.errorMessages?.join(';')}
-                        onRenderIcon={() => {
-                            if (savingResult.success) {
-                                return <CheckmarkCircle24Filled className={styles.autoSaveBtnSuccess} />
-                            }
-                            else {
-                                return <ErrorCircle24Filled className={styles.autoSafeBtnError} />
-                            }
-                        }}
-                    />
-                )
-            }
-            if (grid.getSelectionType() !== 'none') {
-                return (
-                    <div
-                        ref={checkBoxRef}
-                        className={styles.checkBoxContainer}>
-                        <Checkbox
-                            checked={recordSelectionState === 'checked'}
-                            disabled={isRecordSelectionDisabled}
-                            indeterminate={recordSelectionState === 'indeterminate'}
-                            styles={{
-                                checkbox: styles.checkbox
-                            }} />
-                    </div>
-                );
-            }
-        }
-        else {
-            return <InternalCell {...props} />
-        }
-    }
-
-    const onAfterSaved = useCallback((result: IRecordSaveOperationResult) => {
-        setSavingResult(result);
-        if (result.success) {
-            setTimeout(() => {
-                setSavingResult(null);
-            }, 5000);
-        }
-        else {
-            setTimeout(() => {
-                setSavingResult(null);
-            }, 10000);
-        }
-    }, []);
-
-    useEventEmitter<IRecordEvents>(record, 'onAfterSaved', onAfterSaved);
-
-    useEffect(() => {
-        //this needs to be done like this because stopPropagation in React onClick
-        //does not stop the event from propagating to the grid (cause by synthentic events)
-        //https://stackoverflow.com/questions/24415631/reactjs-syntheticevent-stoppropagation-only-works-with-react-events
-        if (checkBoxRef.current) {
-            checkBoxRef.current.addEventListener('click', onCheckBoxClick)
-        }
-        return () => {
-            checkBoxRef.current?.removeEventListener('click', onCheckBoxClick);
-        }
-    }, [savingResult]);
 
     return <ThemeProvider
         ref={cellRef}
         theme={cellTheme}
         className={getClassNames([styles.cellRoot, customFormatting.className])}>
-        {renderContent()}
+        <InternalCell {...props} />
     </ThemeProvider>
 }
 

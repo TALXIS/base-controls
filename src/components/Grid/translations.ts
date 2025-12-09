@@ -50,5 +50,6 @@ export const gridTranslations = {
     "value-not-editable": { 1029: 'Tuto hodnotu nelze upravit.', 1033: 'This value cannot be edited.' },
     "original-value": { 1029: 'Původní hodnota', 1033: 'Previous value' },
     "new-value": { 1029: 'Nová hodnota', 1033: 'New value' },
+    "maximumGroupChildrenLimitReached": { 1029: "Bylo dosaženo maximálního limitu {{maxGroupChildren}} podřízených záznamů. Záznamy nad tento limit nebudou načteny.", 1033: "The maximum limit of {{maxGroupChildren}} child records has been reached. Records above this limit will not be loaded." },
 };
 

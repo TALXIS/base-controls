@@ -1,7 +1,6 @@
 import { Checkbox, ThemeProvider, useTheme } from "@fluentui/react";
 import { getGlobalCheckboxStyles } from "./styles";
 import { Theming, useRerender, useThemeGenerator } from "@talxis/react-components";
-import { useMemo } from "react";
 import { useGridInstance } from "../../grid/useGridInstance";
 import { useEventEmitter } from "../../../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
@@ -10,14 +9,7 @@ import { IDataProviderEventListeners } from "@talxis/client-libraries";
 export const RecordSelectionCheckBox = () => {
     const grid = useGridInstance();
     const dataset = grid.getDataset();
-    const context = grid.getPcfContext();
-    const baseTheme = useTheme();
-    const primaryColor = baseTheme.palette.themePrimary;
-    const backgroundColor = baseTheme.semanticColors.bodyBackground;
-    const textColor = Theming.GetTextColorForBackground(backgroundColor);
-    const v8FluentOverrides = context.fluentDesignLanguage?.v8FluentOverrides;
-    const theme = useThemeGenerator(primaryColor, backgroundColor, textColor, v8FluentOverrides);
-    const styles = getGlobalCheckboxStyles(theme);
+    const styles = getGlobalCheckboxStyles();
     const rerender = useRerender();
     useEventEmitter<IDataProviderEventListeners>(dataset, 'onRecordsSelected', rerender);
 
@@ -48,7 +40,7 @@ export const RecordSelectionCheckBox = () => {
     }
     else {
         return (
-            <ThemeProvider theme={theme} className={styles.root}>
+            <div className={styles.root}>
                 {grid.getSelectionType() === 'multiple' &&
                     <Checkbox
                         checked={checkboxState === 'checked'}
@@ -59,7 +51,7 @@ export const RecordSelectionCheckBox = () => {
                         indeterminate={checkboxState === 'intermediate'}
                         onChange={(e, checked) => onChange(checked)} />
                 }
-            </ThemeProvider>
+            </div>
         )
     }
 };

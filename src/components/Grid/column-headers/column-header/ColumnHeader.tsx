@@ -18,7 +18,7 @@ export interface IColumnHeader {
 export const ColumnHeader = (props: IColumnHeader) => {
     const grid = useGridInstance();
     const agGrid = useAgGridInstance();
-    const column = grid.getGridColumnByName(props.baseColumn.name);
+    const column = grid.getGridColumnByName(props.baseColumn.name, true);
     const [columnHeaderContextualMenuProps, setColumnHeaderContextualMenuProps] = useState<IColumnHeaderContextualMenuProps | null>(null);
     const [filterCalloutProps, setFilterCalloutProps] = useState<any | null>(null);
     const buttonRef = useRef<HTMLDivElement>(null);

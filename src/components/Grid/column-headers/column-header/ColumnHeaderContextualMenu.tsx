@@ -16,7 +16,9 @@ export const ColumnHeaderContextualMenu = (props: IColumnHeaderContextualMenuPro
     const dataset = grid.getDataset();
     const labels = grid.getLabels();
     const styles = getColumnHeaderContextualMenuStyles(useTheme());
-    const { column, onDismiss } = { ...props };
+    const { onDismiss } = { ...props };
+    const column = grid.getGridColumnByName(props.column.name, true);
+
     const aggregationFunctionList = column.metadata?.SupportedAggregations ?? [];
 
     const getItems = (): IContextualMenuItem[] => {

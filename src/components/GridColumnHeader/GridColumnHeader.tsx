@@ -4,7 +4,7 @@ import { IGridColumnHeader } from "./interfaces";
 import { useMemo, useRef } from "react";
 import { GridColumnHeaderModel } from "./GridColumnHeaderModel";
 import { getGridColumnHeaderStyles } from "./styles";
-import { Autosum20Regular, GroupList20Regular, GroupList24Regular, GroupListRegular } from "@fluentui/react-icons";
+import { Autosum20Regular, GroupList20Regular } from "@fluentui/react-icons";
 import { gridColumnHeaderTranslations } from "./translations";
 
 export const GridColumnHeader = (props: IGridColumnHeader) => {

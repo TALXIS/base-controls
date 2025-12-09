@@ -234,8 +234,8 @@ export const CellContent = (props: ICellProps) => {
                     //we still might have old one's cached in valueRef
                     const columnInfo = record.getColumnInfo(getColumn().name);
                     const parameters = columnInfo.ui.getControlParameters({
-                        ...controlProps.parameters,
-                        ...grid.getFieldBindingParameters(record, getColumn(), props.isCellEditor)
+                        ...grid.getFieldBindingParameters(record, getColumn(), props.isCellEditor),
+                        ...controlProps.parameters
                     })
                     return {
                         ...controlProps,

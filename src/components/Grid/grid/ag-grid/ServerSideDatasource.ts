@@ -13,7 +13,7 @@ export class ServerSideDatasource implements IServerSideDatasource {
         const dataset = this._agGrid.getGrid().getDataset();
         const records = dataset.getRecords();
         if (params.request.groupKeys.length > 0) {
-            const groupDataProvider = dataset.getDataProvider().getGroupChildrenDataProvider(params.parentNode.data);
+            const groupDataProvider = dataset.getDataProvider().createGroupedRecordDataProvider(params.parentNode.data);
             let records: IRecord[] = groupDataProvider.getRecords();
             try {
                 //clear selected records means the main dataset has been refreshed

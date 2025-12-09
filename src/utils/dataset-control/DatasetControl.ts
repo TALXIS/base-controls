@@ -1,4 +1,4 @@
-import { Client, DataProvider, EventEmitter, ICommand, IInterceptor, IInternalDataProvider, Interceptors } from "@talxis/client-libraries";
+import { Client, DataProvider, EventEmitter, ICommand, IDataset, IInterceptor, IInternalDataProvider, Interceptors } from "@talxis/client-libraries";
 import debounce from "debounce";
 import { IDatasetControlParameters } from "../../components/DatasetControl/interfaces";
 
@@ -16,11 +16,11 @@ export interface IDatasetControlEvents {
 }
 
 interface IDatasetControlInterceptors {
-    onInitialize: () => void;
+    onInitialize: () => Promise<void>;
 }
 
 export interface IDatasetControl extends EventEmitter<IDatasetControlEvents> {
-    setInterceptor<K extends "onInitialize">(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void;
+    setInterceptor<K extends keyof IDatasetControlInterceptors>(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void;
     isPaginationVisible(): boolean;
     isRecordCountVisible(): boolean;
     isPageSizeSwitcherVisible(): boolean;
@@ -28,7 +28,7 @@ export interface IDatasetControl extends EventEmitter<IDatasetControlEvents> {
     isAutoSaveEnabled(): boolean;
     isRibbonVisible(): boolean;
     getHeight(): string | null;
-    getDataset(): any;
+    getDataset(): IDataset;
     getPcfContext(): ComponentFramework.Context<any>;
     getParameters(): IDatasetControlParameters;
     loadCommands(ids: string[]): Promise<void>;
@@ -37,10 +37,11 @@ export interface IDatasetControl extends EventEmitter<IDatasetControlEvents> {
     destroy(): void;
     init(): Promise<void>;
     getState(): ComponentFramework.Dictionary;
+    saveState(): void;
 }
 
 export class DatasetControl extends EventEmitter<IDatasetControlEvents> implements IDatasetControl {
-    private _hasInitialDataLoaded: boolean = false;
+    private _hasFirstDataLoaded: boolean = false;
     private _commands: ICommand[] = [];
     private _commandsLoaded: boolean = false;
     private _client: Client = new Client();
@@ -51,7 +52,6 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     constructor(options: IDatasetControlOptions) {
         super();
         this._options = options
-        this._registerInterceptors();
         this._setDatasetProperties();
         this._setState();
         this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids))
@@ -59,7 +59,7 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
     }
 
-    public setInterceptor<K extends "onInitialize">(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void {
+    public setInterceptor<K extends keyof IDatasetControlInterceptors>(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void {
         this._interceptors.setInterceptor(event, interceptor);
     }
     public isPaginationVisible(): boolean {
@@ -108,22 +108,21 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         return this._commandsLoaded;
     }
     public destroy() {
-        this._saveState();
+        this.saveState();
         this.getDataset().destroy();
+        this.clearEventListeners();
         this._interceptors.clearInterceptors();
     }
     public async init() {
         await this._interceptors.execute('onInitialize', undefined, async () => {
-            //Portal DatasetControl preloads itself, so only preload for standalone or non-portal
             if (this.getDataset().getDataProvider().getProperty('isStandalone') || !this._client.isTalxisPortal()) {
                 await (<IInternalDataProvider>this.getDataset().getDataProvider()).preload();
             }
-            await this._executeClientApiScript();
         });
-        //Portal DatasetControl calls loadExactPage itself, so only load for standalone or non-portal
-        if (this.getDataset().getDataProvider().getProperty('isStandalone') || !this._client.isTalxisPortal()) {
-            this.getDataset().paging.loadExactPage(this.getDataset().paging.pageNumber);
-        }
+        await this._executeClientApiScript();
+        //this makes sure the current columns go through any dataset interceptors
+        this.getDataset().setColumns(this.getDataset().columns);
+        this.getDataset().paging.loadExactPage(this.getDataset().paging.pageNumber);
         this.dispatchEvent('onInitialized');
     }
     public getParameters() {
@@ -131,6 +130,24 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     }
     public getState() {
         return this._options.state;
+    }
+    public saveState() {
+        if (!this._hasFirstDataLoaded) {
+            return;
+        }
+        const provider = this.getDataset().getDataProvider();
+        const state = this._options.state;
+        const DatasetControlState = state.DatasetControlState || {};
+        DatasetControlState.columns = provider.getColumns();
+        DatasetControlState.linking = provider.getLinking();
+        DatasetControlState.sorting = provider.getSorting();
+        DatasetControlState.filtering = provider.getFiltering();
+        DatasetControlState.pageSize = provider.getPaging().pageSize;
+        DatasetControlState.pageNumber = provider.getPaging().pageNumber;
+        DatasetControlState.searchQuery = provider.getSearchQuery();
+        DatasetControlState.selectedRecordIds = provider.getSelectedRecordIds();
+        state.DatasetControlState = DatasetControlState;
+        this.getPcfContext().mode.setControlState(state);
     }
     private async _executeClientApiScript(): Promise<void> {
         const clientApiWebresourceName = this.getParameters().ClientApiWebresourceName?.raw;
@@ -174,48 +191,9 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         this.getDataset().addEventListener('onAfterRecordSaved', () => {
             this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
         })
-        this.getDataset().addEventListener('onInitialDataLoaded', () => {
-            this._hasInitialDataLoaded = true;
+        this.getDataset().addEventListener('onFirstDataLoaded', () => {
+            this._hasFirstDataLoaded = true;
         })
-    }
-    private _registerInterceptors() {
-        this._getInternalDataProvider().setInterceptor('__unsavedChangesBlocker', (parameters, defaultAction) => {
-            if (!this.getDataset().isDirty()) {
-                return defaultAction(parameters);
-            }
-            else if (window.confirm('fix me')) {
-                //@ts-ignore
-                this.getDataset().getDataProvider()['_dirtyRecordIdsSet'].clear();
-                //@ts-ignore
-                this.getDataset().getDataProvider()['_invalidRecordFieldIdsSet'].clear();
-                return defaultAction(parameters);
-            }
-        })
-    }
-
-    private _saveState() {
-        if (!this._hasInitialDataLoaded) {
-            return;
-        }
-        const provider = this.getDataset().getDataProvider();
-        const state = this._options.state;
-        const DatasetControlState = state.DatasetControlState || {};
-        DatasetControlState.columns = provider.getColumns().map(col => {
-            return {
-                ...col,
-                //do not store metadata in state
-                metadata: undefined
-            }
-        });
-        DatasetControlState.linking = provider.getLinking();
-        DatasetControlState.sorting = provider.getSorting();
-        DatasetControlState.filtering = provider.getFiltering();
-        DatasetControlState.pageSize = provider.getPaging().pageSize;
-        DatasetControlState.pageNumber = provider.getPaging().pageNumber;
-        DatasetControlState.searchQuery = provider.getSearchQuery();
-        DatasetControlState.selectedRecordIds = provider.getSelectedRecordIds();
-        state.DatasetControlState = DatasetControlState;
-        this.getPcfContext().mode.setControlState(state);
     }
 
     private _setState() {
@@ -233,10 +211,6 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         provider.getPaging().setPageNumber(state.pageNumber);
         provider.setSearchQuery(state.searchQuery);
         provider.setSelectedRecordIds(state.selectedRecordIds);
-    }
-
-    private _getInternalDataProvider(): IInternalDataProvider {
-        return this.getDataset().getDataProvider() as IInternalDataProvider;
     }
 
 }

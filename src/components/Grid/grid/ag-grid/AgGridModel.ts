@@ -15,6 +15,7 @@ import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
 import { FullRowLoading } from "../../loading/full-row/FullRowLoading";
 import { FullWidthCellRendererError } from "../../errors/FullWidthCellRendererError/FullWidthCellRendererError";
 import { LicenseManager } from "@ag-grid-enterprise/core";
+import { SelectionCell } from "../../cells/selection-cell/SelectionCell";
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule,]);
 
 interface IAgGridTestDependencies {
@@ -53,13 +54,13 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _hasUserResizedColumns: boolean = false;
     private _getContainer: () => HTMLDivElement;
     private _debouncedColumnResized: debounce.DebouncedFunction<(e: ColumnResizedEvent<IRecord>) => void>;
-    private _debouncedRefresh: debounce.DebouncedFunction<() => void>;
     private _debouncedSetSelectedNodes: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _expandedRowGroupIds: string[] = [];
     private _hasUserExpandedRowGroups: boolean = false;
     private _isLoadingNestedProviders: boolean = false;
     private _idsToAddToExpandGroupState = new Set<string>();
     private _intervals: NodeJS.Timeout[] = [];
+
 
     constructor({ grid, getContainer }: IAgGridTestDependencies) {
         super();
@@ -68,12 +69,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._dataSource = new ServerSideDatasource(this);
         this._debouncedColumnResized = debounce((e: ColumnResizedEvent<IRecord>) => this._onColumnResized(e));
         this._debouncedSetSelectedNodes = debounce((ids) => this._setSelectedNodes(ids), 0);
-        this._debouncedRefresh = debounce(() => this._refresh(), 0);
-        this._dataset.addEventListener('onInitialDataLoaded', () => {
-            const totalRowDataProvider = this._grid.getTotalRow().getDataProvider();
-            totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
-            totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
-        })
+        this._localHarnessDebugSetup();
         const licenseKey = this._grid.getLicenseKey();
         if (licenseKey) {
             LicenseManager.setLicenseKey(licenseKey);
@@ -84,24 +80,22 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         if (this._grid.getDataset().grouping.getGroupBys().length > 0 && !this._grid.isGroupedColumnsPinnedEnabled()) {
             this._sortColumns(gridColumns);
         }
-        const agColumns = gridColumns.map(column => {
-            const isCheckboxColumn = column.name === CHECKBOX_COLUMN_KEY;
+        const agColumns: ColDef[] = [];
+        for (const column of gridColumns) {
+            if (column.isHidden) {
+                continue;
+            }
             const agColumn: ColDef = {
                 colId: column.name,
                 field: column.name,
                 headerName: column.displayName,
-                hide: this._isColumnHidden(column),
-                width: this._getColumnWidth(column),
+                width: column.visualSizeFactor,
                 sortable: !column.disableSorting,
-                checkboxSelection: column.order === 0,
-                headerCheckboxSelection: column.order === 0,
                 lockPinned: true,
                 resizable: column.isResizable,
                 autoHeaderHeight: true,
                 autoHeight: this._isColumnAutoHeightEnabled(column),
                 suppressMovable: column.isDraggable === false ? true : false,
-                suppressSizeToFit: isCheckboxColumn,
-                lockPosition: this._getLockPosition(column),
                 pinned: this._isColumnPinned(column),
                 headerComponentParams: {
                     baseColumn: column
@@ -129,28 +123,31 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                 suppressKeyboardEvent: (p) => this._suppressKeyboardEvent(p, column),
                 onCellDoubleClicked: (e: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(e),
             }
-            if (agColumn.field === CHECKBOX_COLUMN_KEY) {
-                agColumn.headerComponent = RecordSelectionCheckBox;
-            }
-            return agColumn;
-        })
+            agColumns.push(agColumn);
+        }
+        if (this._grid.getSelectionType() !== 'none' || this._grid.isEditingEnabled()) {
+            agColumns.unshift(this._createCheckBoxColumn())
+        }
         return agColumns;
     }
 
-    public getGridApi() {
-        if (!this._gridApi) {
-            throw new Error("Grid API is not available");
+    public executeWithGridApi(callback: (gridApi: GridApi) => void) {
+        if (!this._gridApi || this._gridApi.isDestroyed()) {
+            return;
         }
-        return this._gridApi;
+        return callback(this._gridApi);
     }
 
     public init(gridApi: GridApi) {
         this._gridApi = gridApi;
-        if (this._grid.getDataset().loading) {
-            this._setLoadingOverlay(true);
-        }
         this._registerEventListeners();
         this._setGridOptions();
+        this._setCurrentColumns();
+        if (!this._grid.getDataset().loading) {
+            //we need to call this here since the events already fired before the grid api was ready
+            this._onNewDataLoaded();
+            this._setTotalRow();
+        }
     }
 
     public getGrid(): GridModel {
@@ -170,9 +167,6 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             }
         }
     }
-    public refresh() {
-        this._debouncedRefresh();
-    }
 
     public toggleGroup(node: IRowNode<IRecord>) {
         node.setExpanded(!node.expanded);
@@ -184,7 +178,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     public getRecordSelectionState(node: IRowNode<IRecord>): 'checked' | 'unchecked' | 'indeterminate' {
         const record = node.data!;
         const dataProvider = record.getDataProvider();
-        const childDataProvider = dataProvider.getChildDataProvider(record.getRecordId());
+        const childDataProvider = dataProvider.getGroupedRecordDataProvider(record.getRecordId());
         let result: 'checked' | 'unchecked' | 'indeterminate';
         if (childDataProvider) {
             if (node.isSelected()) {
@@ -215,9 +209,40 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     public onNotifyOutputChanged(record: IRecord, columnName: string, value: any, parameters: any) {
         record.setValue(columnName, value);
-        const { ShouldStopEditWhenOutputChanges } = parameters;
-        if (ShouldStopEditWhenOutputChanges?.raw) {
-            this.getGridApi().stopEditing();
+        const { ShouldUnmountWhenOutputChanges } = parameters;
+        if (ShouldUnmountWhenOutputChanges?.raw) {
+            this.executeWithGridApi(gridApi => gridApi.stopEditing());
+        }
+    }
+
+    private _localHarnessDebugSetup() {
+        if (this._grid.getParameters().IsLocalHarnessDebugMode?.raw === 'true') {
+            window.addEventListener('visibilitychange', () => {
+                this._saveState();
+            })
+        }
+    }
+
+    private _createCheckBoxColumn(): ColDef {
+        return {
+            colId: DataProvider.CONST.CHECKBOX_COLUMN_KEY,
+            field: DataProvider.CONST.CHECKBOX_COLUMN_KEY,
+            headerName: '',
+            width: 40,
+            lockPinned: true,
+            resizable: false,
+            pinned: 'left',
+            headerComponent: RecordSelectionCheckBox,
+            cellRenderer: SelectionCell,
+            suppressSizeToFit: true,
+            suppressMovable: true,
+            valueGetter: () => null,
+            valueFormatter: () => '',
+            cellRendererParams: (p: any) => {
+                return {
+                    record: p.data
+                }
+            }
         }
     }
 
@@ -245,19 +270,10 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._saveState();
     }
 
-    private _refresh() {
-        if (this._grid.getDataset().loading) {
-            return;
-        }
-        const { haveColumnsOrderBeenUpdated, columns } = this._grid.refreshGridColumns();
-        if (haveColumnsOrderBeenUpdated) {
-            this.getGridApi().setGridOption('columnDefs', this.getColumns(columns));
-            this._autoSizeColumns();
-        }
-        else {
-            this.getGridApi().refreshCells();
-        }
-        this.dispatchEvent('onRefresh');
+    private _setCurrentColumns() {
+        const gridColumns = this._grid.getGridColumns();
+        this.executeWithGridApi(gridApi => gridApi.setGridOption('columnDefs', this.getColumns(gridColumns)));
+        this._autoSizeColumns();
     }
 
     private _isColumnAutoHeightEnabled(column: IGridColumn): boolean {
@@ -267,12 +283,14 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _onCellDoubleClick(e: CellDoubleClickedEvent<IRecord>) {
         const column = this._dataset.getDataProvider().getColumnsMap()[e.colDef.colId!]!
         switch (true) {
-            //do not navigate if the column is not editable or if the grid is not in navigation mode
             case !this._grid.isNavigationEnabled():
+            //do not navigate on editable columns
             case this._grid.isColumnEditable(column.name, e.data):
+            //do not navigate on aggregated/grouped rows
             case e.data?.getSummarizationType() !== 'none':
+            //do not navigate on checkbox column
             case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY: {
-                return;
+                break;
             }
             default: {
                 const record = e.data!;
@@ -282,22 +300,23 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private _saveState() {
-        const { rowSelection, columnOrder, ...gridState } = this.getGridApi().getState();
-        const selectedGroupIds = this._grid.getDataset().getSelectedRecordIds({ includeGroupRecordIds: true }).filter(id => id.startsWith(DataProvider.CONST.GROUP_PREFIX));
-        const expandedRowGroupIds = new Set<string>([...selectedGroupIds, ...this._idsToAddToExpandGroupState.values()]);
-        if (expandedRowGroupIds.size > 0) {
-            gridState.rowGroupExpansion = {
-                expandedRowGroupIds: [...expandedRowGroupIds.values()]
+        this.executeWithGridApi(gridApi => {
+            const { rowSelection, columnOrder, ...gridState } = gridApi.getState();
+            const selectedGroupIds = this._grid.getDataset().getSelectedRecordIds({ includeGroupRecordIds: true }).filter(id => id.startsWith(DataProvider.CONST.GROUP_PREFIX));
+            const expandedRowGroupIds = new Set<string>([...selectedGroupIds, ...this._idsToAddToExpandGroupState.values()]);
+            if (expandedRowGroupIds.size > 0) {
+                gridState.rowGroupExpansion = {
+                    expandedRowGroupIds: [...expandedRowGroupIds.values()]
+                }
             }
-        }
-        const state = this.getGrid().getState() || {};
-        state.AgGridState = gridState;
-        this.getGrid().getPcfContext().mode.setControlState(state);
+            const state = this.getGrid().getState() || {};
+            state.AgGridState = gridState;
+            this.getGrid().getPcfContext().mode.setControlState(state);
+        });
     }
 
     private _isColumnPinned(column: IGridColumn) {
         switch (true) {
-            case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY:
             case column.grouping?.isGrouped && this._grid.isGroupedColumnsPinnedEnabled(): {
                 return true;
             }
@@ -314,36 +333,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         }
     }
 
-    private _isColumnHidden(column: IGridColumn): boolean {
-        if (column.name !== DataProvider.CONST.CHECKBOX_COLUMN_KEY) {
-            return !!column.isHidden;
-        }
-        //we need the checkbox column space for the loading spinner for saving
-        if (this._grid.isEditingEnabled()) {
-            return false;
-        }
-        if (this._grid.getSelectionType() === 'none') {
-            return true;
-        }
-        return false;
-    }
-
-    private _getColumnWidth(column: IGridColumn): number | undefined {
-        if (column.name === CHECKBOX_COLUMN_KEY) {
-            return 45; // Default width for checkbox column
-        }
-        return column.visualSizeFactor;
-    }
-
     private _scrollToTop() {
-        this.getGridApi().ensureIndexVisible(0, 'top');
-    }
-
-    private _getLockPosition(column: IGridColumn) {
-        if (column.name === CHECKBOX_COLUMN_KEY) {
-            return 'left';
-        }
-        return undefined;
+        this.executeWithGridApi(gridApi => gridApi.ensureIndexVisible(0, 'top'));
     }
 
     private _canExpandRowGroupsByDefault(): boolean {
@@ -366,28 +357,45 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._dataset.addEventListener('onLoading', (isLoading: boolean) => this._setLoadingOverlay(this._dataset.loading));
         this._dataset.addEventListener('onRecordsSelected', (ids: string[]) => this._debouncedSetSelectedNodes(ids));
         this._dataset.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded());
-        this._dataset.addEventListener('onRenderRequested', () => this.refresh());
-        this.getGridApi().addEventListener('gridSizeChanged', () => this._autoSizeColumns());
-        this.getGridApi().addEventListener('firstDataRendered', () => this._autoSizeColumns());
-        this.getGridApi().addEventListener('selectionChanged', (e: SelectionChangedEvent) => this._onSelectionChanged(e));
-        this.getGridApi().addEventListener('columnResized', (e: any) => this._debouncedColumnResized(e));
-        this.getGridApi().addEventListener('modelUpdated', () => this._setGridHeight());
-        this.getGridApi().addEventListener('columnMoved', (e: ColumnMovedEvent<IRecord>) => this._onColumnMoved(e));
-        this.getGridApi().addEventListener('firstDataRendered', () => this._handleSelectionFromState());
-        this.getGridApi().addEventListener('gridPreDestroyed', () => this._onDestroyed());
+        this._dataset.addEventListener('onRenderRequested', () => this.executeWithGridApi(gridApi => gridApi.refreshCells()));
+        this._dataset.addEventListener('onFirstDataLoaded', () => this._setTotalRow());
+        this.executeWithGridApi(gridApi => {
+            gridApi.addEventListener('gridSizeChanged', () => this._autoSizeColumns());
+            gridApi.addEventListener('firstDataRendered', () => this._autoSizeColumns());
+            gridApi.addEventListener('selectionChanged', (e: SelectionChangedEvent) => this._onSelectionChanged(e));
+            gridApi.addEventListener('columnResized', (e: any) => this._debouncedColumnResized(e));
+            gridApi.addEventListener('modelUpdated', () => {
+                if (this._grid.getDataset().loading) {
+                    this._setLoadingOverlay(true);
+                }
+                this._setGridHeight();
+            });
+            gridApi.addEventListener('columnMoved', (e: ColumnMovedEvent<IRecord>) => this._onColumnMoved(e));
+            gridApi.addEventListener('firstDataRendered', () => this._handleSelectionFromState());
+            gridApi.addEventListener('gridPreDestroyed', () => this._onDestroyed());
+        });
+    }
+
+    private _setTotalRow() {
+        const totalRowDataProvider = this._grid.getTotalRow().getDataProvider();
+        totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
+        totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
+        this._setPinnedRowData();
     }
 
     private _setGridOptions() {
-        this.getGridApi().setGridOption('serverSideDatasource', this._dataSource);
-        this.getGridApi().setGridOption('isServerSideGroupOpenByDefault', (params) => this._syncExpandedRowGroups(params));
-        this.getGridApi().setGridOption('loadingCellRenderer', FullRowLoading)
-        this.getGridApi().setGridOption('suppressDragLeaveHidesColumns', true);
-        this.getGridApi().setGridOption('isFullWidthRow', (params) => this._isFullWidthRow(params));
-        this.getGridApi().setGridOption('fullWidthCellRenderer', FullWidthCellRendererError);
-        this.getGridApi().setGridOption('fullWidthCellRendererParams', (params: IsFullWidthRowParams<IRecord>) => this._getFullWidthCellRendererParams(params))
-        this.getGridApi().setGridOption('suppressCopyRowsToClipboard', true);
-        this.getGridApi().setGridOption('animateRows', false);
-        this.getGridApi().setGridOption('groupDisplayType', 'custom');
+        this.executeWithGridApi(gridApi => {
+            gridApi.setGridOption('serverSideDatasource', this._dataSource);
+            gridApi.setGridOption('isServerSideGroupOpenByDefault', (params) => this._syncExpandedRowGroups(params));
+            gridApi.setGridOption('loadingCellRenderer', FullRowLoading)
+            gridApi.setGridOption('suppressDragLeaveHidesColumns', true);
+            gridApi.setGridOption('isFullWidthRow', (params) => this._isFullWidthRow(params));
+            gridApi.setGridOption('fullWidthCellRenderer', FullWidthCellRendererError);
+            gridApi.setGridOption('fullWidthCellRendererParams', (params: IsFullWidthRowParams<IRecord>) => this._getFullWidthCellRendererParams(params))
+            gridApi.setGridOption('suppressCopyRowsToClipboard', true);
+            gridApi.setGridOption('animateRows', false);
+            gridApi.setGridOption('groupDisplayType', 'custom');
+        });
     }
 
     private _isFullWidthRow(params: IsFullWidthRowParams<IRecord>): boolean {
@@ -408,24 +416,39 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         const selectedRecordIds = this._grid.getDataset().getSelectedRecordIds();
         this._grid.getDataset().clearSelectedRecordIds();
         let isScrolledToMiddle = false;
+        const localIntervals: NodeJS.Timeout[] = [];
+        const resolvedProviderSet = new Set<IDataProvider>();
         for (const id of selectedRecordIds) {
             const interval = setInterval(() => {
                 const record = this._grid.getDataset().getDataProvider().getRecordsMap()[id];
                 if (record) {
                     clearInterval(interval);
-                    record.getDataProvider().setSelectedRecordIds([...record.getDataProvider().getSelectedRecordIds(), id]);
+                    const provider = record.getDataProvider();
+                    if (!resolvedProviderSet.has(provider)) {
+                        const recordIdsToSelect = selectedRecordIds.filter(id => provider.getRecordsMap()[id])
+                        provider.setSelectedRecordIds(recordIdsToSelect);
+                        resolvedProviderSet.add(provider);
+                    }
                     if (!isScrolledToMiddle) {
                         const middleSelectedRecordId = selectedRecordIds[Math.floor(selectedRecordIds.length / 2)]
-                        const node = this.getGridApi().getRowNode(middleSelectedRecordId);
-                        if (node) {
-                            isScrolledToMiddle = true;
-                            this.getGridApi().ensureNodeVisible(node!, 'middle');
-                        }
+                        this.executeWithGridApi(gridApi => {
+                            const node = gridApi.getRowNode(middleSelectedRecordId);
+                            if (node) {
+                                isScrolledToMiddle = true;
+                                gridApi.ensureNodeVisible(node!, 'middle');
+                            }
+                        });
                     }
                 }
-            }, 0);
+            }, 100);
+            localIntervals.push(interval);
             this._intervals.push(interval);
         }
+        //abandon the selection after 5 seconds
+        //this could be done better by detecting if we are done loading all providers
+        setTimeout(() => {
+            localIntervals.forEach(interval => clearInterval(interval));
+        }, 5000);
     }
 
     private _getFullWidthCellRendererParams(params: IsFullWidthRowParams<IRecord>) {
@@ -459,13 +482,13 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             return;
         }
         let order = 0;
-        this._dataset.setColumns(e.api.getState().columnOrder?.orderedColIds!.map(col => {
-            const column = this._grid.getDataset().getDataProvider().getColumnsMap()[col]!;
-            return {
-                ...column,
-                order: order++
+        const newColumnsMap = new Map<string, IColumn>(this._grid.getDataset().columns.map(col => [col.name, col]));
+        for (const colId of e.api.getState().columnOrder?.orderedColIds!) {
+            if (newColumnsMap.has(colId)) {
+                newColumnsMap.set(colId, { ...newColumnsMap.get(colId)!, order: order++ });
             }
-        }))
+        }
+        this._dataset.setColumns([...newColumnsMap.values()]);
         if (movedColumn?.grouping?.isGrouped) {
             this._dataset.refresh();
         }
@@ -473,16 +496,18 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     private _onNewDataLoaded() {
         this._refreshServerSideModel();
-        this.refresh();
+        this._setCurrentColumns();
         this._setNoRowsOverlay();
         this._scrollToTop();
     }
 
     private _refreshServerSideModel() {
-        this._expandedRowGroupIds = this.getGridApi().getState().rowGroupExpansion?.expandedRowGroupIds ?? [];
-        this.getGridApi().refreshServerSide({
-            purge: true
-        })
+        this.executeWithGridApi(gridApi => {
+            this._expandedRowGroupIds = gridApi.getState()?.rowGroupExpansion?.expandedRowGroupIds ?? [];
+            gridApi.refreshServerSide({
+                purge: true
+            })
+        });
     }
 
     private _calculateGridHeight(): string {
@@ -495,8 +520,13 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             return this._grid.getParameters().Height!.raw!;
         }
         else {
-            const totalRowHeight = this.getGridApi().getRenderedNodes().reduce((acc, node) => acc + (node.rowHeight ?? defaultRowHeight), 0);
-            const numberOfRecords = this.getGridApi().getRenderedNodes().length;
+            let totalRowHeight = 0;
+            let numberOfRecords = 0;
+            this.executeWithGridApi(gridApi => {
+                const renderedNodes = gridApi.getRenderedNodes();
+                totalRowHeight = renderedNodes.reduce((acc, node) => acc + (node.rowHeight ?? defaultRowHeight), 0);
+                numberOfRecords = renderedNodes.length;
+            });
             if (numberOfRecords <= 15) {
                 const headerHeight = this._getContainer().querySelector('.ag-header-row')?.clientHeight ?? 0;
                 return `${totalRowHeight + headerHeight + offset}px`;
@@ -526,13 +556,15 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         if (this._hasUserResizedColumns) {
             return;
         }
-        this.getGridApi().sizeColumnsToFit({
-            columnLimits: this._grid.getGridColumns().map(col => {
-                return {
-                    key: col.name,
-                    minWidth: col.visualSizeFactor
-                }
-            })
+        this.executeWithGridApi(gridApi => {
+            gridApi.sizeColumnsToFit({
+                columnLimits: this._grid.getDataset().columns.map(col => {
+                    return {
+                        key: col.name,
+                        minWidth: col.visualSizeFactor
+                    }
+                })
+            });
         });
     }
 
@@ -541,8 +573,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         if (!resizedColumnKey) {
             return;
         }
-        const columns = this._grid.getGridColumns();
-        const newColumns = columns.map(col => {
+        const columns = this._grid.getDataset().columns; const newColumns = columns.map(col => {
             if (col.name === resizedColumnKey) {
                 return {
                     ...col,
@@ -561,7 +592,10 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                 return;
             }
         }
-        const selectedNodes: IRowNode<IRecord>[] = this.getGridApi().getSelectedNodes();
+        let selectedNodes: IRowNode<IRecord>[] = [];
+        this.executeWithGridApi(gridApi => {
+            selectedNodes = gridApi.getSelectedNodes();
+        });
         //if we click a grouped record, do not propagate the selection to children
         const providerSelectedRecordIdsMap = new Map<IDataProvider, string[]>();
         selectedNodes.map(node => {
@@ -596,18 +630,20 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             this._dataset.getDataProvider().setLoading(false);
             clearInterval(checkLoadingNestedProviders);
         }
-        this.getGridApi().setServerSideSelectionState({
-            selectAll: false,
-            toggledNodes: this._grid.getDataset().getDataProvider().getSelectedRecordIds({ includeGroupRecordIds: true })
-        })
-        this.getGridApi().refreshCells({
-            columns: [CHECKBOX_COLUMN_KEY],
-            force: true
-        })
+        this.executeWithGridApi(gridApi => {
+            gridApi.setServerSideSelectionState({
+                selectAll: false,
+                toggledNodes: this._grid.getDataset().getDataProvider().getSelectedRecordIds({ includeGroupRecordIds: true })
+            })
+            gridApi.refreshCells({
+                columns: [CHECKBOX_COLUMN_KEY],
+                force: true
+            })
+        });
     }
 
     private _areChildProvidersLoading(): boolean {
-        const childProviders = this._dataset.getDataProvider().getChildDataProviders(true).filter(x => x.getParentRecordId());
+        const childProviders = this._dataset.getDataProvider().getGroupedRecordDataProviders(true).filter(x => x.getParentRecordId());
         return childProviders.some(provider => provider.isLoading());
     }
 
@@ -658,14 +694,14 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     private _setPinnedRowData() {
         const totalRecord = this._grid.getTotalRow().getTotalRowRecord();
-        this.getGridApi().setGridOption('pinnedBottomRowData', totalRecord ? [totalRecord] : []);
+        this.executeWithGridApi(gridApi => gridApi.setGridOption('pinnedBottomRowData', totalRecord ? [totalRecord] : []));
     }
 
     private _setLoadingOverlay(isLoading: boolean) {
         if (!isLoading) {
-            return this.getGridApi().hideOverlay();
+            return this.executeWithGridApi(gridApi => gridApi.hideOverlay());
         }
-        this.getGridApi().showLoadingOverlay();
+        this.executeWithGridApi(gridApi => gridApi.showLoadingOverlay());
     }
 
     private _setNoRowsOverlay() {
@@ -673,16 +709,18 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             if (this._grid.getDataset().loading) {
                 return;
             }
-            this.getGridApi().hideOverlay();
-            if (this._grid.getDataset().getDataProvider().getRecords().length === 0) {
-                this.getGridApi().showNoRowsOverlay();
-            }
+            this.executeWithGridApi(gridApi => {
+                gridApi.hideOverlay();
+                if (this._grid.getDataset().getDataProvider().getRecords().length === 0) {
+                    gridApi.showNoRowsOverlay();
+                }
+            });
         }, 0);
     }
 
     private _isCellEditorEnabled(columnName: string, record: IRecord): boolean {
-        const column = this._grid.getGridColumnByName(columnName);
-        // check column eligibility for cell editor
+
+        const column = this._grid.getGridColumnByName(columnName);        // check column eligibility for cell editor
         switch (true) {
             //never allow cell editor for oneClickEdit - everything is handled by cell renderer in this case
             case column.oneClickEdit:

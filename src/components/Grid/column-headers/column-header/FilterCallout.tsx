@@ -47,6 +47,9 @@ export const FilterCallout = (props: IFilterCallout) => {
                                     ...props,
                                     parameters: {
                                         ...props.parameters,
+                                        IsInlineNewEnabled: {
+                                            raw: false
+                                        },
                                         value: {
                                             ...props.parameters.value,
                                             //@ts-ignore

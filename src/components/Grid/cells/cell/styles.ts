@@ -3,37 +3,12 @@ import { IColumn } from "@talxis/client-libraries";
 
 export const getCellStyles = (theme: ITheme) => {
     return mergeStyleSets({
-        autoSaveBtnRoot: {
-            width: '100%',
-            height: '100%',
-        },
-        autoSaveBtnSuccess: {
-            color: theme.semanticColors.successIcon,
-        },
-        autoSafeBtnError: {
-            color: theme.semanticColors.errorIcon,
-        },
-        autoSafeBtnTooltipRoot: {
-            width: '100%',
-            height: '100%'
-        },
         cellRoot: {
             height: '100% !important',
             width: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
-        },
-        checkbox: {
-            marginRight: 0.5
-        },
-        checkBoxContainer: {
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer'
         }
     })
 }

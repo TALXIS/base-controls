@@ -8,10 +8,7 @@ export class Lookup extends Property {
             target: "_blank",
             rel: "noopener noreferrer",
             children: this.getFormattedValue(),
-            onClick: () => this._onLookupClick(),
+            onClick: () => this.openRecord(Sanitizer.Lookup.getEntityReference(this.getValue()[0]))
         };
-    }
-    private _onLookupClick() {
-        this.getModel().getDataset()?.openDatasetItem(Sanitizer.Lookup.getEntityReference(this.getValue()[0]))
     }
 }

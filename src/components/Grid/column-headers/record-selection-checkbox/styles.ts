@@ -1,9 +1,8 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react"
+import { mergeStyleSets } from "@fluentui/react"
 
-export const getGlobalCheckboxStyles = (theme: ITheme) => {
+export const getGlobalCheckboxStyles = () => {
     return mergeStyleSets({
         root: {
-            backgroundColor: theme.semanticColors.bodyBackground,
             flexGrow: 1,
             display: 'flex',
             justifyContent: 'center',
