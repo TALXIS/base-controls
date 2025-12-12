@@ -37,6 +37,8 @@ interface IInputs {
     SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
     GroupingType?: ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">;
     IsLocalHarnessDebugMode?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    ClientApiWebresourceName?: ComponentFramework.PropertyTypes.StringProperty;
+    ClientApiFunctionName?: ComponentFramework.PropertyTypes.StringProperty;
 }
 
 interface IVirtualDatasetAdapterOptions {
@@ -222,10 +224,10 @@ export class VirtualDatasetAdapter {
             },
             IsLocalHarnessDebugMode: this._context.parameters.IsLocalHarnessDebugMode,
             ClientApiWebresourceName: {
-                raw: 'talxis_gridclientapidemo'
+                raw: this._context.parameters.ClientApiWebresourceName?.raw ?? null
             },
             ClientApiFunctionName: {
-                raw: 'onDatasetControlInitialized'
+                raw: this._context.parameters.ClientApiFunctionName?.raw ?? null
             }
         }
     }
