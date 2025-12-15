@@ -1,5 +1,5 @@
 import { mergeStyles } from "@fluentui/react";
-import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, Interceptors, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { Dataset, FetchXmlDataProvider, IColumn, IDataProvider, IDataset, Interceptors, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { IDatasetControlParameters, IDatasetControlProps } from "../../../components";
 import { DatasetControl, IDatasetControl } from "../../dataset-control";
 
@@ -45,7 +45,7 @@ interface IVirtualDatasetAdapterOptions {
     /**
      * Runs a promise that is awaited when the dataset control is initialized, before loading the first data.
      */
-    onInitialize?: () => Promise<void>;
+    onInitialize?: (dataset: IDataset) => Promise<void>;
     /**
      * If provided, this function is called when the dataset is initialized and awaited before loading first data.
      */
@@ -95,7 +95,7 @@ export class VirtualDatasetAdapter {
             await defaultAction(parameters);
             //sets columns after preload
             this._dataset.setColumns(this._getColumns());
-            await this._options?.onInitialize?.();
+            await this._options?.onInitialize?.(this._dataset);
         });
         if (this._context.parameters.Height?.raw === '100%') {
             this._container.classList.add(this._getFullTabStyles());
