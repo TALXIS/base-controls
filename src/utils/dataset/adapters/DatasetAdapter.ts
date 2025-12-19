@@ -35,7 +35,7 @@ interface IInputs {
 }
 
 interface IDatasetAdapterOptions {
-    onInitialize?: () => Promise<void>;
+    onInitialize?: (dataset: IDataset) => Promise<void>;
 }
 
 
@@ -76,7 +76,7 @@ export class DatasetAdapter {
             await defaultAction(parameters);
             //sets columns after preload
             this._dataset.setColumns(this._getColumns());
-            await this._options?.onInitialize?.();
+            await this._options?.onInitialize?.(this.getDataset());
         });
         if (this._getHeight() === '100%') {
             this._container.classList.add(this._getFullHeightStyles())
