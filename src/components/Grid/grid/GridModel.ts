@@ -90,7 +90,7 @@ export class GridModel {
         return this.getParameters().EnableNavigation?.raw !== false;
     }
     public isAutoSaveEnabled(): boolean {
-        return this.getParameters().EnableAutoSave?.raw === true;
+        return this._dataset.getDataProvider().getProperty('autoSave') === true
     }
     public isGroupedColumnsPinnedEnabled(): boolean {
         return this.getParameters().EnableGroupedColumnsPinning?.raw !== false;
@@ -780,7 +780,6 @@ export class GridModel {
     }
 
     private _registerEventListeners() {
-        this._dataset.addEventListener('onRecordColumnValueChanged', (record) => this._autoSaveRecord(record));
         this._dataset.addEventListener('onAfterRecordSaved', () => this._refreshTotalRowOnAutoSave());
         this._dataset.addEventListener('onAfterSaved', () => this._totalRow.refresh());
         this._dataset.addEventListener('onNestedProviderPagingLimitReached', () => this._showNestedProviderPagingLimitNotification());
@@ -797,12 +796,6 @@ export class GridModel {
             });
         }
     }
-    private _autoSaveRecord(record: IRecord) {
-        if (this.isAutoSaveEnabled() && record.isDirty()) {
-            record.save();
-        }
-    }
-
     private _refreshTotalRowOnAutoSave() {
         if (this.isAutoSaveEnabled()) {
             this._totalRow.refresh()
