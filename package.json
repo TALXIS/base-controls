@@ -90,12 +90,12 @@
     "merge-anything": "^5.1.7",
     "numeral": "^2.0.6",
     "use-debounce": "^10.0.1",
-    "validator": "^13.11.9"
+    "validator": "^13.11.9",
+    "@talxis/client-libraries": "/Users/dominikbrych/Desktop/NETWORG/INT0014/src/SDK/ClientLibraries"
   },
   "peerDependencies": {
     "@fluentui/react": "<=8.121.5",
     "@talxis/react-components": "1.2505.2",
-    "@talxis/client-libraries": "/Users/dominikbrych/Desktop/NETWORG/INT0014/src/SDK/ClientLibraries",
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2"
   }

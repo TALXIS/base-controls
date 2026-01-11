@@ -1,6 +1,6 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyleSets } from "@fluentui/react";
-import { IRecord, Constants, DataProvider, IRecordEvents } from "@talxis/client-libraries";
+import { IRecord, Constants, DataProvider, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useThemeGenerator, getClassNames, useRerender } from "@talxis/react-components";
 import { useMemo, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
@@ -159,9 +159,9 @@ export const InternalCell = (props: ICellProps) => {
     const formatting = props.value.customFormatting;
     const grid = useGridInstance();
     const agGrid = useAgGridInstance();
-    const error = props.value.error;
+    const errorRef = useRef<boolean>(props.value.error);
     const notifications = props.value.notifications;
-    const errorMessage = props.value.errorMessage;
+    const errorMessageRef = useRef<string | undefined>(props.value.errorMessage);
     const theme = useTheme();
     const applicationTheme = useControlTheme(grid.getPcfContext().fluentDesignLanguage);
     const rerender = useRerender();
@@ -171,6 +171,18 @@ export const InternalCell = (props: ICellProps) => {
         props.value.columnAlignment,
         node.expanded
     ), [props.isCellEditor, theme, props.value.columnAlignment, node.expanded]);
+
+    useEventEmitter<IRecordEvents>(record, 'onAfterSaved', (result: IRecordSaveOperationResult) => {
+        if(!result.success) {
+            const errors = result.errors ?? [];
+            const fieldError = errors.find(error => error.fieldName === column.name);
+            if(fieldError) {
+                errorRef.current = true;
+                errorMessageRef.current = fieldError.message;
+                rerender();
+            }
+        }
+    });
 
     const shouldShowNotEditableNotification = () => {
         if (column.isEditable && !record.getColumnInfo(column.name).security.editable && record.getSummarizationType() === 'none') {
@@ -183,7 +195,7 @@ export const InternalCell = (props: ICellProps) => {
         if (props.isCellEditor) {
             return false;
         }
-        if (error === true) {
+        if (errorRef.current === true) {
             return true;
         }
         if (shouldShowNotEditableNotification()) {
@@ -253,12 +265,12 @@ export const InternalCell = (props: ICellProps) => {
                 }
             })
         }
-        if (error) {
+        if (errorRef.current) {
             result.push({
                 key: 'error',
                 iconOnly: true,
                 disabled: true,
-                text: errorMessage,
+                text: errorMessageRef.current,
                 tooltipHostProps: tooltipProps,
                 iconProps: {
                     iconName: 'Error',
@@ -291,7 +303,7 @@ export const InternalCell = (props: ICellProps) => {
     return <div
         className={styles.innerCellRoot}
         data-is-loading={isLoading()}
-        data-is-valid={!error}>
+        data-is-valid={!errorRef.current}>
         {renderContent()}
     </div>
 }

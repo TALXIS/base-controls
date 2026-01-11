@@ -12,7 +12,7 @@ import { IDatasetControl } from "../../utils/dataset-control";
 
 export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {
     /**
-     * Gets the instance of the Dataset control model.
+     * Used to provide the Dataset control instance.
      */
     onGetDatasetControlInstance: () => IDatasetControl;
     /**
@@ -65,6 +65,8 @@ export interface IHeaderProps {
 
 export interface IRibbonQuickFindWrapperProps {
     ribbonQuickFindContainerProps: React.HTMLAttributes<HTMLDivElement>;
+    isRibbonVisible: boolean;
+    isQuickFindVisible: boolean;
     onRenderQuickFind: (props: IQuickFindProps, defaultRender: (props: IQuickFindProps) => React.ReactElement) => React.ReactElement;
     onRenderRibbon: IRibbonComponentProps['onRender']
 }
