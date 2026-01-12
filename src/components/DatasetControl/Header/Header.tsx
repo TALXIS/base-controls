@@ -49,17 +49,25 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                 ribbonQuickFindContainerProps: {
                     className: styles.ribbonQuickFindContainer
                 },
+                isRibbonVisible: datasetControl.isRibbonVisible(),
+                isQuickFindVisible: datasetControl.isQuickFindVisible(),
                 onRenderQuickFind: (props, defaultRender) => defaultRender(props),
                 onRenderRibbon: (props, defaultRender) => defaultRender(props)
             }, (props) => {
                 return <div {...props.ribbonQuickFindContainerProps}>
-                    {datasetControl.isRibbonVisible() &&
+                    {props.isRibbonVisible &&
                         <Ribbon
                             context={{
                                 ...datasetControl.getPcfContext(),
                                 mode: {
                                     ...datasetControl.getPcfContext().mode,
                                     isControlDisabled: dataset.loading
+                                }
+                            }}
+                            onOverrideComponentProps={(ribbonProps) => {
+                                return {
+                                    ...ribbonProps,
+                                    onRender: props.onRenderRibbon
                                 }
                             }}
                             parameters={{
@@ -72,7 +80,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                             }}
                         />
                     }
-                    {datasetControl.isQuickFindVisible() &&
+                    {props.isQuickFindVisible &&
                         <QuickFind
                             onRenderQuickFind={props.onRenderQuickFind} />
                     }

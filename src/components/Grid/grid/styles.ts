@@ -69,6 +69,9 @@ export const getGridStyles = (theme: ITheme) => {
                     'view-transition-name': 'cell-highlight',
                 }
             },
+            '.ag-overlay-loading-wrapper': {
+                backdropFilter: 'blur(1px)'
+            },
             '.ag-cell-focus': {
                 zIndex: 2,
                 '::after': {

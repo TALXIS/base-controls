@@ -1,16 +1,16 @@
 import { DefaultButton, DirectionalHint, PrimaryButton, ThemeProvider } from "@fluentui/react";
-import { useControl } from "../../../hooks"
+import { useControl, useEventEmitter } from "../../../hooks"
 import { OptionSet } from "../../OptionSet";
 import { IDatasetColumnFiltering } from "./interfaces";
 import { datasetColumnFilteringTranslations } from "./translations";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { DatasetColumnFilteringModel } from "./DatasetColumnFilteringModel";
+import { DatasetColumnFilteringModel, IDatasetColumnFilteringModelEvents } from "./DatasetColumnFilteringModel";
 import { useRerender } from "@talxis/react-components";
 import { NestedControlRenderer } from "../../NestedControlRenderer";
 import React from "react";
 import { getDatasetColumnFilteringStyles } from "./styles";
 import { useDebouncedCallback } from "use-debounce";
-import { Type as FilterType } from "@talxis/client-libraries";
+import { IConditionEvents } from "@talxis/client-libraries";
 
 export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
@@ -26,6 +26,16 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
     const condition = columnFilter.getConditions()[0];
     const rerender = useRerender();
     const [shouldRemountValueControl, setShouldRemountValueControl] = useState(false);
+    const model = useMemo(() => {
+        return new DatasetColumnFilteringModel({
+            condition: condition,
+            labels: labels,
+            filtering: filtering
+        })
+    }, []);
+    useEventEmitter<IDatasetColumnFilteringModelEvents>(model, 'onSave', (result) => onSave(result));
+    useEventEmitter<IDatasetColumnFilteringModelEvents>(model, 'onConditionValueChanged', rerender);
+    useEventEmitter<IConditionEvents>(condition, 'onOperatorChanged', () => onOperatorChanged());
 
     const onOperatorChanged = useCallback(() => {
         setShouldRemountValueControl(true);
@@ -39,9 +49,7 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
             return value == null;
         });
     }
-    const onSave = () => {
-        condition.setIsValueRequired(true);
-        const result = filtering.getFilterExpression(FilterType.And.Value);
+    const onSave = (result: false | ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => {
         if (!result) {
             rerender();
         }
@@ -57,13 +65,7 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
 
     const debouncedSetConditionControlValue = useDebouncedCallback((value, index) => {
         model.setConditionValue(value, index);
-    })
-
-    const model = useMemo(() => {
-        condition.addEventListener('onOperatorChanged', onOperatorChanged);
-        condition.addEventListener('onValueChanged', rerender);
-        return new DatasetColumnFilteringModel(condition, labels)
-    }, []);
+    });
 
     const conditionValue = model.getConditionValue();
     const validationResult = condition.getValidationResult();
@@ -176,7 +178,7 @@ export const DatasetColumnFiltering = (props: IDatasetColumnFiltering) => {
                     {props.onRenderApplyButton({
                         text: 'Apply',
                         disabled: condition.isValueLoading(),
-                        onClick: onSave,
+                        onClick: () => model.save(),
                     }, (props) => <PrimaryButton {...props} />)}
                     {props.onRenderClearButton({
                         text: 'Clear',

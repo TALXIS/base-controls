@@ -41,6 +41,8 @@ export const Grid = (props: IGrid) => {
         getContainer: () => containerRef.current!
     }), []);
 
+    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+
 
     const onGridReady = (event: GridReadyEvent<IRecord, any>) => {
         agGrid.init(event.api);
@@ -53,6 +55,30 @@ export const Grid = (props: IGrid) => {
         }
     }, []);
 
+    const componentProps = onOverrideComponentProps({
+        getRowId: (params: GetRowIdParams<IRecord>) => `${params.data.getRecordId()}`,
+        rowModelType: 'serverSide' as const,
+        //needs to be set here, crashes if set via API
+        rowHeight: grid.getDefaultRowHeight(),
+        rowSelection: agGrid.getSelectionType(),
+        loadingOverlayComponent: LoadingOverlay,
+        noRowsOverlayComponent: EmptyRecords,
+        enableGroupEdit: true,
+        reactiveCustomComponents: true,
+        initialState: props.state?.AgGridState,
+        gridOptions: {
+            getRowStyle: (params) => {
+                const record = params.data;
+                if (!record) {
+                    return undefined
+                }
+                return {
+                    backgroundColor: grid.getDefaultCellTheme(record).semanticColors.bodyBackground,
+                }
+            },
+        },
+        onGridReady: onGridReady,
+    })
 
     return <GridContext.Provider value={grid}>
         <AgGridContext.Provider value={agGrid}>
@@ -61,28 +87,7 @@ export const Grid = (props: IGrid) => {
                 ref={containerRef}
             >
                 <AgGridReact
-                    getRowId={(params: GetRowIdParams<IRecord>) => `${params.data.getRecordId()}`}
-                    rowModelType='serverSide'
-                    //needs to be set here, crashes if set via API
-                    rowHeight={grid.getDefaultRowHeight()}
-                    rowSelection={agGrid.getSelectionType()}
-                    loadingOverlayComponent={LoadingOverlay}
-                    noRowsOverlayComponent={EmptyRecords}
-                    enableGroupEdit
-                    reactiveCustomComponents
-                    initialState={props.state?.AgGridState}
-                    gridOptions={{
-                        getRowStyle: (params) => {
-                            const record = params.data;
-                            if (!record) {
-                                return undefined
-                            }
-                            return {
-                                backgroundColor: grid.getDefaultCellTheme(record).semanticColors.bodyBackground,
-                            }
-                        },
-                    }}
-                    onGridReady={onGridReady}
+                    {...componentProps}
                 />
             </ThemeProvider>
         </AgGridContext.Provider>

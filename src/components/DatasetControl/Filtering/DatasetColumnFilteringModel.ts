@@ -1,4 +1,4 @@
-import { Operators } from "@talxis/client-libraries";
+import { EventEmitter, Filtering, Operators, Type } from "@talxis/client-libraries";
 import { ITranslation } from "../../../hooks";
 import { datasetColumnFilteringTranslations } from "./translations";
 import { BaseControls } from "../../../utils";
@@ -6,13 +6,27 @@ import { Condition } from '@talxis/client-libraries';
 
 type Labels = Required<ITranslation<typeof datasetColumnFilteringTranslations>>;
 
-export class DatasetColumnFilteringModel {
+export interface IDatasetColumnFilteringModelEvents {
+    onSave: (result: false | ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => void;
+    onConditionValueChanged: () => void;
+}
+
+interface IDatasetColumnFilteringModelOptions {
+    condition: Condition;
+    labels: Labels;
+    filtering: Filtering;
+}
+
+export class DatasetColumnFilteringModel extends EventEmitter<IDatasetColumnFilteringModelEvents> {
     private _condition: Condition;
     private _labels: Labels;
+    private _filtering: Filtering;
 
-    constructor(condition: Condition, labels: Labels) {
-        this._condition = condition;
-        this._labels = labels;
+    constructor(options: IDatasetColumnFilteringModelOptions) {
+        super();
+        this._condition = options.condition;
+        this._labels = options.labels;
+        this._filtering = options.filtering;
     }
 
     public getOperatorOptionSet(): ComponentFramework.PropertyHelper.OptionMetadata[] {
@@ -42,14 +56,25 @@ export class DatasetColumnFilteringModel {
             }
             this._condition.setValue(values);
         }
+        this.dispatchEvent('onConditionValueChanged');
     }
 
     public getConditionValue(): any[] {
         const operator = this._condition.getOperator();
-        if (operator !== Operators.Between.Value && operator !== Operators.NotBetween.Value) {
-            return [this._condition.getControlValue()];
+        let value = this._condition.getControlValue();
+        switch (operator) {
+            case Operators.Like.Value:
+            case Operators.NotLike.Value: {
+                if(typeof value === 'string' && value.startsWith('*')) {
+                    value = value.substring(1);
+                    this._condition.setValue(value);
+                }
+                break;
+            }
         }
-        const value = this._condition.getControlValue();
+        if (operator !== Operators.Between.Value && operator !== Operators.NotBetween.Value) {
+            return [value];
+        }
         if (Array.isArray(value)) {
             return value;
         }
@@ -64,5 +89,26 @@ export class DatasetColumnFilteringModel {
         else {
             return BaseControls.GetControlNameForDataType(dataType);
         }
+    }
+    public save() {
+        const operator = this._condition.getOperator();
+        switch (operator) {
+            case Operators.Like.Value:
+            case Operators.NotLike.Value: {
+                this._condition.setValue(`*${this._condition.getControlValue() ?? ''}`);
+                break;
+            }
+        }
+        this._condition.setIsValueRequired(true);
+        const result = this._filtering.getFilterExpression(Type.And.Value);
+        if (!result) {
+            switch (operator) {
+                case Operators.Like.Value:
+                case Operators.NotLike.Value: {
+                    this._condition.setValue(this._condition.getControlValue()?.substring(1))
+                }
+            }
+        }
+        this.dispatchEvent('onSave', result);
     }
 }
