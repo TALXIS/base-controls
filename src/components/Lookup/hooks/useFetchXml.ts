@@ -24,7 +24,9 @@ export const useFetchXml = (context: ComponentFramework.Context<any>): [
         const placeholderConditions: Element[] = [];
         for (const cond of conditions) {
             if (cond.getAttribute('value') === "{0}") {
-                cond.setAttribute('value', query);
+                if(query) {
+                    cond.setAttribute('value', `%${query}%`);
+                }
                 placeholderConditions.push(cond);
             }
         }
