@@ -150,7 +150,7 @@ export const useLookup = (props: ILookup): [
             case "partylist":
             case "owner":
             case "customer":
-                primaryName = entity[`_${targetAttribute}_value@OData.Community.Display.V1.FormattedValue`];
+                primaryName = entity[`_${attribute}_value@OData.Community.Display.V1.FormattedValue`];
                 break;
             case "optionset":
             case "picklist":
@@ -162,13 +162,13 @@ export const useLookup = (props: ILookup): [
             case "decimal":
             case "money":
                 //TODO: Introduce user formatting, this approach takes format from application user setting
-                primaryName = entity[`${targetAttribute}@OData.Community.Display.V1.FormattedValue`];
+                primaryName = entity[`${attribute}@OData.Community.Display.V1.FormattedValue`];
                 break;
             case "datetime":
-                primaryName = props.context.formatting.formatTime(dayjs(entity[targetAttribute]).toDate(), 1);
+                primaryName = props.context.formatting.formatTime(dayjs(entity[attribute]).toDate(), 1);
                 break
             default:
-                primaryName = entity[targetAttribute];
+                primaryName = entity[attribute];
         };
         return (
             primaryName ??
