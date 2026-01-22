@@ -1,13 +1,14 @@
-import { IButtonProps, IMessageBarProps, IShimmerProps, ThemeProviderProps } from "@fluentui/react";
+import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 import { ITranslation } from "../../hooks";
 import { IControl, IStringProperty } from "../../interfaces";
 import { IGridOutputs, IGridParameters } from "../Grid";
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
-import { ICommandBarProps, ITextFieldProps } from "@talxis/react-components";
+import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "@talxis/react-components";
 import React from "react";
 import { IRibbonComponentProps } from "../Ribbon/interfaces";
 import { IDatasetControl } from "../../utils/dataset-control";
+import { IColumn } from "@talxis/client-libraries";
 
 
 export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {
@@ -18,7 +19,7 @@ export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParam
     /**
      * Tells the Dataset control which UI component should be used for the dataset.
      */
-    onGetControlComponent: (props: Omit<IDatasetControlProps, 'onOverrideComponentProps'> & {parameters: IDatasetControlParameters; context: ComponentFramework.Context<any, any>, state: ComponentFramework.Dictionary}) => React.ReactElement<IControl<any, any, any, any>>
+    onGetControlComponent: (props: Omit<IDatasetControlProps, 'onOverrideComponentProps'> & { parameters: IDatasetControlParameters; context: ComponentFramework.Context<any, any>, state: ComponentFramework.Dictionary }) => React.ReactElement<IControl<any, any, any, any>>
 }
 
 export interface IDatasetControlParameters extends IGridParameters {
@@ -43,8 +44,8 @@ interface IControlContainerProps {
 }
 
 export interface IFooterProps {
-   footerContainerProps: React.HTMLAttributes<HTMLDivElement>;
-   onRenderPagination: (props: IPaginationProps, defaultRender: (props: IPaginationProps) => React.ReactElement) => React.ReactElement;
+    footerContainerProps: React.HTMLAttributes<HTMLDivElement>;
+    onRenderPagination: (props: IPaginationProps, defaultRender: (props: IPaginationProps) => React.ReactElement) => React.ReactElement;
 }
 
 export interface IPaginationProps {
@@ -82,7 +83,27 @@ interface IUnsavedChangesMesssageBarProps {
     onRenderDiscardBtn: (props: IButtonProps, defaultRender: (props: IButtonProps) => React.ReactElement) => React.ReactElement;
 }
 
+interface IColumnList extends React.HTMLAttributes<HTMLDivElement> {
+    columns: IColumn[];
+    onRenderColumnLabel: (props: ITextProps & { key: string }, defaultRender: (props: ITextProps) => React.ReactElement) => React.ReactElement;
+}
+
+interface ICalloutProps extends ICalloutPropsBase {
+    isVisible: boolean;
+    isLikeQuery: boolean;
+    onRenderLikeOperatorWarning: (props: ITextProps, defaultRender: (props: ITextProps) => React.ReactElement) => React.ReactElement;
+    onRenderBegingsWithFilterInfo: (props: ITextProps, defaultRender: (props: ITextProps) => React.ReactElement) => React.ReactElement;
+    onRenderColumnsList: (props: IColumnList, defaultRender: (props: IColumnList) => React.ReactElement) => React.ReactElement;
+
+}
+
+interface ICalloutContainer extends React.HTMLAttributes<HTMLDivElement> {
+    isVisible: boolean;
+    onRenderCallout: (props: ICalloutProps, defaultRender: (props: ICalloutProps) => React.ReactElement) => React.ReactElement;
+}
+
 export interface IQuickFindProps {
-    textFieldProps: ITextFieldProps;
+    containerProps: React.HTMLAttributes<HTMLDivElement>;
     onRenderTextField: (props: ITextFieldProps, defaultRender: (props: ITextFieldProps) => React.ReactElement) => React.ReactElement;
+    onRenderCalloutContainer: (props: ICalloutContainer, defaultRender: (props: ICalloutContainer) => React.ReactElement) => React.ReactElement;
 }

@@ -16,6 +16,10 @@ export const datasetControlTranslations = {
     "paging-lastpage": { 1029: "Poslední strana", 1033: "Last page" },
     "paging-pages": { 1029: "{{start}} - {{end}}", 1033: "{{start}} - {{end}}" },
     "paging-pages-totalcount": { 1029: "z {{recordcount}}", 1033: "of {{recordcount}}" },
-    "page-record-count": { 1029: 'Počet záznamů na stránce', 1033: 'Records per page' }
+    "page-record-count": { 1029: 'Počet záznamů na stránce', 1033: 'Records per page' },
+    "quickfind-like-warning": { 1029: "Pokud chcete výsledky získat rychleji, nezačínejte hvězdičkou (*)", 1033: "For faster results, don't start with an asterisk (*)"},
+    "quickfind-search-use-filter": { 1029: "Použít filtr", 1033: "Apply" },
+    "quickfind-search-starts-with": { 1029: "začíná na", 1033: "begins with" },
+    "quickfind-search-on-these-columns": { 1029: "na tyto sloupce:", 1033: "filter on these columns:" }
 };
 
