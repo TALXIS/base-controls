@@ -34,6 +34,9 @@ export interface IDatasetControl extends EventEmitter<IDatasetControlEvents> {
     loadCommands(ids: string[]): Promise<void>;
     retrieveRecordCommands(): ICommand[];
     areCommandsLoaded(): boolean;
+    isEditColumnsVisible(): boolean;
+    isViewSwitcherVisible(): boolean;
+    isEditFiltersVisible(): boolean;
     destroy(): void;
     init(): Promise<void>;
     getState(): ComponentFramework.Dictionary;
@@ -79,6 +82,15 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     }
     public isRibbonVisible(): boolean {
         return this.getParameters().EnableCommandBar?.raw ?? true;
+    }
+    public isViewSwitcherVisible(): boolean {
+        return false;
+    }
+    public isEditColumnsVisible(): boolean {
+        return true;
+    }
+    public isEditFiltersVisible(): boolean {
+        return true;
     }
     public getHeight() {
         return this.getParameters().Height?.raw ?? null;

@@ -68,6 +68,10 @@ export interface IRibbonQuickFindWrapperProps {
     ribbonQuickFindContainerProps: React.HTMLAttributes<HTMLDivElement>;
     isRibbonVisible: boolean;
     isQuickFindVisible: boolean;
+    isViewSwitcherVisible: boolean;
+    isEditColumnsVisible: boolean;
+    isEditFiltersVisible: boolean;
+    shouldMergeRightSideCommandsWithRibbon: boolean;
     onRenderQuickFind: (props: IQuickFindProps, defaultRender: (props: IQuickFindProps) => React.ReactElement) => React.ReactElement;
     onRenderRibbon: IRibbonComponentProps['onRender']
 }

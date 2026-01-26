@@ -1,14 +1,15 @@
-import { MessageBar, MessageBarType } from "@fluentui/react";
+import { CommandBar, CommandBarButton, MessageBar, MessageBarType } from "@fluentui/react";
 import { IComponentProps } from "../interfaces";
 import { useModel } from "../useModel";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getHeaderStyles } from "./styles";
-import { useRerender } from "@talxis/react-components";
+import { ICommandBarItemProps, useRerender } from "@talxis/react-components";
 import { QuickFind } from "../QuickFind/QuickFind";
 import { Ribbon } from "../../Ribbon/Ribbon";
 import { useEventEmitter } from "../../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlEvents } from "../../../utils/dataset-control";
+import { EditColumns } from "../EditColumns/EditColumns";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
     const model = useModel();
@@ -16,6 +17,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
     const dataset = datasetControl.getDataset();
     const rerender = useRerender();
     const styles = useMemo(() => getHeaderStyles(), []);
+    const [isEditColumnsPanelVisible, setIsEditColumnsPanelVisible] = useState<boolean>(false);
     useEventEmitter<IDataProviderEventListeners>(dataset, 'onLoading', rerender);
     useEventEmitter<IDatasetControlEvents>(datasetControl, 'onRecordCommandsLoaded', rerender);
 
@@ -31,6 +33,25 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                 return false;
             }
         }
+    }
+
+    const getRightSideCommands = (): ICommandBarItemProps[] => {
+        return [
+            ...(datasetControl.isEditColumnsVisible() ? [{
+                key: 'column',
+                text: 'Edit Columns',
+                iconProps: { iconName: 'ColumnOptions' },
+                onClick: () => setIsEditColumnsPanelVisible(true)
+            }] : []),
+            ...(datasetControl.isEditFiltersVisible() ? [{
+                key: 'filter',
+                text: 'Edit Filters',
+                iconProps: { iconName: 'Filter' }
+            }] : [])];
+    }
+
+    const shouldMergeRightSideCommandsWithRibbon = () => {
+        return datasetControl.isViewSwitcherVisible() && (datasetControl.isEditColumnsVisible() || datasetControl.isEditFiltersVisible());
     }
 
     return props.onRenderHeader({
@@ -51,10 +72,17 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                 },
                 isRibbonVisible: datasetControl.isRibbonVisible(),
                 isQuickFindVisible: datasetControl.isQuickFindVisible(),
+                isEditColumnsVisible: datasetControl.isEditColumnsVisible(),
+                isViewSwitcherVisible: datasetControl.isViewSwitcherVisible(),
+                isEditFiltersVisible: datasetControl.isEditFiltersVisible(),
+                shouldMergeRightSideCommandsWithRibbon: shouldMergeRightSideCommandsWithRibbon(),
                 onRenderQuickFind: (props, defaultRender) => defaultRender(props),
                 onRenderRibbon: (props, defaultRender) => defaultRender(props)
             }, (props) => {
                 return <div {...props.ribbonQuickFindContainerProps}>
+                    {props.isViewSwitcherVisible &&
+                        <CommandBarButton text="Current View" />
+                    }
                     {props.isRibbonVisible &&
                         <Ribbon
                             context={{
@@ -67,7 +95,22 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                             onOverrideComponentProps={(ribbonProps) => {
                                 return {
                                     ...ribbonProps,
-                                    onRender: props.onRenderRibbon
+                                    onRender: (ribbonProps, defaultRender) => props.onRenderRibbon({
+                                        ...ribbonProps,
+                                        onRenderCommandBar: (commandBarProps, defaultRender) => {
+                                            return defaultRender({
+                                                ...commandBarProps,
+                                                styles: {
+                                                    ...commandBarProps.styles,
+                                                    primarySet: {
+                                                        justifyContent: props.isViewSwitcherVisible ? 'flex-end' : 'flex-start'
+                                                    }
+                                                },
+                                                items: [...commandBarProps.items, ...(props.isViewSwitcherVisible ? getRightSideCommands() : [])],
+                                                farItems: !props.isViewSwitcherVisible ? getRightSideCommands() : []
+                                            })
+                                        }
+                                    }, defaultRender)
                                 }
                             }}
                             parameters={{
@@ -98,6 +141,12 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                         {dataset.errorMessage}
                     </MessageBar>
                 })
+            }
+            {isEditColumnsPanelVisible &&
+                <div style={{position: 'absolute'}}>
+                    <EditColumns
+                        onDismiss={() => setIsEditColumnsPanelVisible(false)} />
+                </div>
             }
         </div>
     })

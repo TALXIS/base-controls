@@ -4,6 +4,7 @@ export const getRibbonStyles = () => {
     return mergeStyleSets({
         container: {
             flex: 1,
+            minWidth: 0,
         },
         shimmerRoot: {
             width: '100%',
