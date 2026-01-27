@@ -38,7 +38,17 @@ export const getEditColumnsStyles = (theme: ITheme) => {
         },
         header: {
             borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
-            paddingBottom: 15
+            paddingBottom: 15,
+            paddingTop: 15
+        },
+        selectors: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12
+        },
+        selector: {
+            marginLeft: 15,
+            marginRight: 15
         }
     });
 }

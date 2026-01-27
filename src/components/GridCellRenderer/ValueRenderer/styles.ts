@@ -15,7 +15,7 @@ export const getValueRendererStyles = (deps: IDeps) => {
             ...isMultiline ? getMultilineStyles() : {},
         },
         link: {
-             ...isMultiline ? getMultilineStyles() : {},
+            ...isMultiline ? getMultilineStyles() : {},
         },
         placeholder: {
             color: theme.semanticColors.disabledText
@@ -27,6 +27,7 @@ const getMultilineStyles = (): CSSProperties => {
     return {
         whiteSpace: 'normal',
         display: '-webkit-box',
+        //@ts-ignore
         '-webkit-box-orient': 'vertical',
         //@ts-ignore
         wordBreak: 'auto-phrase',

@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SelectionCellModel } from "./SelectionCellModel";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { Spinner, useRerender } from "@talxis/react-components";
-import { Callout, Checkbox, IconButton, Link, SpinnerSize, Text, ThemeProvider, useTheme } from "@fluentui/react";
+import { Checkbox, IconButton, SpinnerSize, ThemeProvider } from "@fluentui/react";
 import { useEventEmitter } from "../../../../hooks";
 import { CheckmarkCircle24Filled, ErrorCircle24Filled } from "@fluentui/react-icons";
 import { getSelectionCellStyles } from "./styles";

@@ -1,10 +1,9 @@
-import { IColumn } from "@talxis/client-libraries";
 import { EditColumnsModel } from "../EditColumnsModel";
-import AsyncSelect, { AsyncProps } from 'react-select/async';
-import { GroupBase } from 'react-select';
-import { MultiValueContainer } from "react-select/dist/declarations/src/components/MultiValue";
+import React, { useMemo } from "react";
+import { components } from "react-select";
+import { getColumnSelectorStyles } from "./styles";
 import { useModel } from "../../useModel";
-import React from "react";
+import { Selector } from "../Selector/Selector";
 
 interface IColumnSelectorProps {
     editColumnsModel: EditColumnsModel;
@@ -12,29 +11,22 @@ interface IColumnSelectorProps {
 
 export const ColumnSelector = (props: IColumnSelectorProps) => {
     const { editColumnsModel } = props;
-    const selectProps: AsyncProps<IColumn, false, GroupBase<IColumn>> = {
-        getOptionValue: (column: any) => column.name,
-        getOptionLabel: (column: any) => column.displayName,
-        isClearable: false,
-        loadOptions: (inputValue: string) => editColumnsModel.getAvailableColumns(inputValue),
-        defaultOptions: true,
-        value: editColumnsModel.getColumns(),
-        isMulti: true,
-        onChange: (columns: IColumn[]) => editColumnsModel.addColumn(columns[columns.length - 1]),
-        components: {
-            MultiValueContainer: (props: any) => <React.Fragment />
-        },
-        styles: {
-            control: (base: any) => {
-                return {
-                    ...base,
-                    marginLeft: 15,
-                    marginRight: 15,
-                }
-            },
-        },
+    const styles = useMemo(() => getColumnSelectorStyles(), []);
+    const model = useModel();
+    const labels = model.getLabels();
 
-    } as AsyncProps<IColumn, false, GroupBase<IColumn>>;
-
-    return <AsyncSelect {...selectProps} />
+    return <Selector<true> onOverrideComponentProps={(props) => {
+        return {
+            ...props,
+            isMulti: true,
+            className: styles.root,
+            value: editColumnsModel.getColumns(),
+            loadOptions: (inputValue: string) => editColumnsModel.getAvailableColumns(inputValue),
+            onChange: (columns) => editColumnsModel.addColumn(columns[columns.length - 1]),
+            components: {
+                MultiValueContainer: (props) => <React.Fragment />,
+                Input: (props) => <components.Input {...props} placeholder={`${labels["add-column"]()}...`} />
+            }
+        }
+    }} />
 }

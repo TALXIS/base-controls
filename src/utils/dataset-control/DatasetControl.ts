@@ -12,6 +12,7 @@ interface IDatasetControlOptions {
 
 export interface IDatasetControlEvents {
     onRecordCommandsLoaded: () => void;
+    onRemountRequested: () => void;
     onInitialized: () => void;
 }
 
@@ -38,6 +39,7 @@ export interface IDatasetControl extends EventEmitter<IDatasetControlEvents> {
     isViewSwitcherVisible(): boolean;
     isEditFiltersVisible(): boolean;
     destroy(): void;
+    requestRemount(): void;
     init(): Promise<void>;
     getState(): ComponentFramework.Dictionary;
     saveState(): void;
@@ -124,6 +126,9 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         this.getDataset().destroy();
         this.clearEventListeners();
         this._interceptors.clearInterceptors();
+    }
+    public requestRemount(): void {
+        this.dispatchEvent('onRemountRequested');
     }
     public async init() {
         await this._interceptors.execute('onInitialize', undefined, async () => {

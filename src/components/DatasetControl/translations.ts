@@ -1,6 +1,8 @@
 export const datasetControlTranslations = {
     "search": { 1029: "Vyhledat", 1033: "Search" },
     "records": { 1029: "záznamy", 1033: "records" },
+    "column-source": { 1029: "Zdroj sloupců", 1033: "Column source" },
+    "add-column": { 1029: "Přidat sloupec", 1033: "Add column" },
     "generalError": { 1029: "Během načítání ovládacího prvku došlo k nečekané chybě", 1033: "An unexpected error occurred while loading the control." },
     "reload": { 1029: "Obnovit", 1033: "Reload" },
     "unsaved-changes": { 1029: "Počet upravených záznamů: <b>{{numOfChanges}}</b>.", 1033: "Number of updated records: <b>{{numOfChanges}}</b>." },
