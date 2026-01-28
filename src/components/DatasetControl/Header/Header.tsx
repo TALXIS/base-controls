@@ -1,4 +1,4 @@
-import { CommandBar, CommandBarButton, MessageBar, MessageBarType } from "@fluentui/react";
+import { CommandBarButton, MessageBar, MessageBarType } from "@fluentui/react";
 import { IComponentProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { useMemo, useState } from "react";
@@ -13,6 +13,7 @@ import { EditColumns } from "../EditColumns/EditColumns";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
     const model = useModel();
+    const labels = model.getLabels();
     const datasetControl = model.getDatasetControl();
     const dataset = datasetControl.getDataset();
     const rerender = useRerender();
@@ -20,6 +21,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
     const [isEditColumnsPanelVisible, setIsEditColumnsPanelVisible] = useState<boolean>(false);
     useEventEmitter<IDataProviderEventListeners>(dataset, 'onLoading', rerender);
     useEventEmitter<IDatasetControlEvents>(datasetControl, 'onRecordCommandsLoaded', rerender);
+    useEventEmitter<IDatasetControlEvents>(datasetControl, 'onEditColumnsRequested', () => setIsEditColumnsPanelVisible(true));
 
     const isHeaderVisible = () => {
         switch (true) {
@@ -35,23 +37,20 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
         }
     }
 
-    const getRightSideCommands = (): ICommandBarItemProps[] => {
+    //will not be needed once we have a custom edit columns button in the ribbon
+    const getRightSideCommands = (isEditColumnsVisible: boolean, isEditFiltersVisible: boolean): ICommandBarItemProps[] => {
         return [
-            ...(datasetControl.isEditColumnsVisible() ? [{
+            ...(isEditColumnsVisible ? [{
                 key: 'column',
-                text: 'Edit Columns',
+                text: labels['edit-columns'](),
                 iconProps: { iconName: 'ColumnOptions' },
                 onClick: () => setIsEditColumnsPanelVisible(true)
             }] : []),
-            ...(datasetControl.isEditFiltersVisible() ? [{
+            ...(isEditFiltersVisible ? [{
                 key: 'filter',
-                text: 'Edit Filters',
+                text: labels['edit-filters'](),
                 iconProps: { iconName: 'Filter' }
             }] : [])];
-    }
-
-    const shouldMergeRightSideCommandsWithRibbon = () => {
-        return datasetControl.isViewSwitcherVisible() && (datasetControl.isEditColumnsVisible() || datasetControl.isEditFiltersVisible());
     }
 
     return props.onRenderHeader({
@@ -62,92 +61,92 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
         onRenderRibbonQuickFindWrapper: (props, defaultRender) => defaultRender(props),
         onRenderUnsavedChangesMessageBar: (props, defaultRender) => defaultRender(props)
     }, (props) => {
-        if (!isHeaderVisible()) {
-            return <></>
-        }
-        return <div {...props.headerContainerProps}>
-            {props.onRenderRibbonQuickFindWrapper({
-                ribbonQuickFindContainerProps: {
-                    className: styles.ribbonQuickFindContainer
-                },
-                isRibbonVisible: datasetControl.isRibbonVisible(),
-                isQuickFindVisible: datasetControl.isQuickFindVisible(),
-                isEditColumnsVisible: datasetControl.isEditColumnsVisible(),
-                isViewSwitcherVisible: datasetControl.isViewSwitcherVisible(),
-                isEditFiltersVisible: datasetControl.isEditFiltersVisible(),
-                shouldMergeRightSideCommandsWithRibbon: shouldMergeRightSideCommandsWithRibbon(),
-                onRenderQuickFind: (props, defaultRender) => defaultRender(props),
-                onRenderRibbon: (props, defaultRender) => defaultRender(props)
-            }, (props) => {
-                return <div {...props.ribbonQuickFindContainerProps}>
-                    {props.isViewSwitcherVisible &&
-                        <CommandBarButton text="Current View" />
-                    }
-                    {props.isRibbonVisible &&
-                        <Ribbon
-                            context={{
-                                ...datasetControl.getPcfContext(),
-                                mode: {
-                                    ...datasetControl.getPcfContext().mode,
-                                    isControlDisabled: dataset.loading
-                                }
-                            }}
-                            onOverrideComponentProps={(ribbonProps) => {
-                                return {
-                                    ...ribbonProps,
-                                    onRender: (ribbonProps, defaultRender) => props.onRenderRibbon({
-                                        ...ribbonProps,
-                                        onRenderCommandBar: (commandBarProps, defaultRender) => {
-                                            return defaultRender({
-                                                ...commandBarProps,
-                                                styles: {
-                                                    ...commandBarProps.styles,
-                                                    primarySet: {
-                                                        justifyContent: props.isViewSwitcherVisible ? 'flex-end' : 'flex-start'
-                                                    }
-                                                },
-                                                items: [...commandBarProps.items, ...(props.isViewSwitcherVisible ? getRightSideCommands() : [])],
-                                                farItems: !props.isViewSwitcherVisible ? getRightSideCommands() : []
-                                            })
+        return <>
+            {isHeaderVisible() &&
+                <div {...props.headerContainerProps}>
+                    {props.onRenderRibbonQuickFindWrapper({
+                        ribbonQuickFindContainerProps: {
+                            className: styles.ribbonQuickFindContainer
+                        },
+                        isRibbonVisible: datasetControl.isRibbonVisible(),
+                        isQuickFindVisible: datasetControl.isQuickFindVisible(),
+                        isEditColumnsVisible: datasetControl.isEditColumnsVisible(),
+                        isViewSwitcherVisible: datasetControl.isViewSwitcherVisible(),
+                        isEditFiltersVisible: datasetControl.isEditFiltersVisible(),
+                        onRenderQuickFind: (props, defaultRender) => defaultRender(props),
+                        onRenderRibbon: (props, defaultRender) => defaultRender(props)
+                    }, (props) => {
+                        return <div {...props.ribbonQuickFindContainerProps}>
+                            {props.isViewSwitcherVisible &&
+                                <CommandBarButton text="Current View" />
+                            }
+                            {props.isRibbonVisible &&
+                                <Ribbon
+                                    context={{
+                                        ...datasetControl.getPcfContext(),
+                                        mode: {
+                                            ...datasetControl.getPcfContext().mode,
+                                            isControlDisabled: dataset.loading
                                         }
-                                    }, defaultRender)
-                                }
-                            }}
-                            parameters={{
-                                Commands: {
-                                    raw: datasetControl.retrieveRecordCommands(),
-                                },
-                                Loading: {
-                                    raw: !datasetControl.areCommandsLoaded()
-                                }
-                            }}
-                        />
-                    }
-                    {props.isQuickFindVisible &&
-                        <QuickFind
-                            onRenderQuickFind={props.onRenderQuickFind} />
+                                    }}
+                                    onOverrideComponentProps={(ribbonProps) => {
+                                        return {
+                                            ...ribbonProps,
+                                            onRender: (ribbonProps, defaultRender) => props.onRenderRibbon({
+                                                ...ribbonProps,
+                                                onRenderCommandBar: (commandBarProps, defaultRender) => {
+                                                    return defaultRender({
+                                                        ...commandBarProps,
+                                                        styles: {
+                                                            ...commandBarProps.styles,
+                                                            primarySet: {
+                                                                justifyContent: props.isViewSwitcherVisible ? 'flex-end' : 'flex-start'
+                                                            }
+                                                        },
+                                                        items: [...commandBarProps.items, ...(props.isViewSwitcherVisible ? getRightSideCommands(props.isEditColumnsVisible, props.isEditFiltersVisible) : [])],
+                                                        farItems: !props.isViewSwitcherVisible ? getRightSideCommands(props.isEditColumnsVisible, props.isEditFiltersVisible) : []
+                                                    })
+                                                }
+                                            }, defaultRender)
+                                        }
+                                    }}
+                                    parameters={{
+                                        Commands: {
+                                            raw: datasetControl.retrieveRecordCommands(),
+                                        },
+                                        Loading: {
+                                            raw: !datasetControl.areCommandsLoaded()
+                                        }
+                                    }}
+                                />
+                            }
+                            {props.isQuickFindVisible &&
+                                <QuickFind
+                                    onRenderQuickFind={props.onRenderQuickFind} />
+                            }
+                        </div>
+                    })}
+                    {dataset.error &&
+                        props.onRenderErrorMessageBar({
+                            messageBarProps: {
+                                messageBarType: MessageBarType.error
+                            },
+                            onRenderMessageBar: (props, defaultRender) => defaultRender(props)
+
+                        }, (props) => {
+                            return <MessageBar {...props.messageBarProps}>
+                                {dataset.errorMessage}
+                            </MessageBar>
+                        })
                     }
                 </div>
-            })}
-            {dataset.error &&
-                props.onRenderErrorMessageBar({
-                    messageBarProps: {
-                        messageBarType: MessageBarType.error
-                    },
-                    onRenderMessageBar: (props, defaultRender) => defaultRender(props)
-
-                }, (props) => {
-                    return <MessageBar {...props.messageBarProps}>
-                        {dataset.errorMessage}
-                    </MessageBar>
-                })
             }
             {isEditColumnsPanelVisible &&
-                <div style={{position: 'absolute'}}>
+                <div style={{ position: 'absolute' }}>
                     <EditColumns
                         onDismiss={() => setIsEditColumnsPanelVisible(false)} />
                 </div>
             }
-        </div>
+        </>
     })
 }

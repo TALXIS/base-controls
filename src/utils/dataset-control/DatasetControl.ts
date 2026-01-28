@@ -1,6 +1,7 @@
-import { Client, DataProvider, EventEmitter, ICommand, IDataset, IInterceptor, IInternalDataProvider, Interceptors } from "@talxis/client-libraries";
+import { Client, DataProvider, EventEmitter, ICommand, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors } from "@talxis/client-libraries";
 import debounce from "debounce";
 import { IDatasetControlParameters } from "../../components/DatasetControl/interfaces";
+import { EditColumns, IEditColumns } from "./EditColumns";
 
 
 interface IDatasetControlOptions {
@@ -13,6 +14,7 @@ interface IDatasetControlOptions {
 export interface IDatasetControlEvents {
     onRecordCommandsLoaded: () => void;
     onRemountRequested: () => void;
+    onEditColumnsRequested: () => void;
     onInitialized: () => void;
 }
 
@@ -20,7 +22,8 @@ interface IDatasetControlInterceptors {
     onInitialize: () => Promise<void>;
 }
 
-export interface IDatasetControl extends EventEmitter<IDatasetControlEvents> {
+export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
+    editColumns: IEditColumns;
     setInterceptor<K extends keyof IDatasetControlInterceptors>(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void;
     isPaginationVisible(): boolean;
     isRecordCountVisible(): boolean;
@@ -38,6 +41,8 @@ export interface IDatasetControl extends EventEmitter<IDatasetControlEvents> {
     isEditColumnsVisible(): boolean;
     isViewSwitcherVisible(): boolean;
     isEditFiltersVisible(): boolean;
+    //this should be removed once we have a custom edit columns button in the ribbon
+    requestEditColumns(): void;
     destroy(): void;
     requestRemount(): void;
     init(): Promise<void>;
@@ -56,12 +61,16 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
 
     constructor(options: IDatasetControlOptions) {
         super();
-        this._options = options
+        this._options = options;
         this._setDatasetProperties();
         this._setState();
         this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids))
         this._addEventListeners();
         this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
+    }
+
+    public get editColumns(): IEditColumns {
+        return new EditColumns({ datasetControl: this });
     }
 
     public setInterceptor<K extends keyof IDatasetControlInterceptors>(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void {
@@ -85,14 +94,18 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     public isRibbonVisible(): boolean {
         return this.getParameters().EnableCommandBar?.raw ?? true;
     }
+    public requestEditColumns(): void {
+        this.dispatchEvent('onEditColumnsRequested');
+    }
     public isViewSwitcherVisible(): boolean {
         return false;
     }
     public isEditColumnsVisible(): boolean {
         return true;
+        return this.getParameters().EnableEditColumns?.raw ?? false;
     }
     public isEditFiltersVisible(): boolean {
-        return true;
+        return false;
     }
     public getHeight() {
         return this.getParameters().Height?.raw ?? null;

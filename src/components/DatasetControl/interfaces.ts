@@ -1,6 +1,6 @@
 import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 import { ITranslation } from "../../hooks";
-import { IControl, IStringProperty } from "../../interfaces";
+import { IControl, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IGridOutputs, IGridParameters } from "../Grid";
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
@@ -23,6 +23,7 @@ export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParam
 }
 
 export interface IDatasetControlParameters extends IGridParameters {
+    EnableEditColumns?: Omit<ITwoOptionsProperty, 'attributes'>;
     ClientApiWebresourceName?: IStringProperty;
     ClientApiFunctionName?: IStringProperty;
 }
@@ -71,7 +72,6 @@ export interface IRibbonQuickFindWrapperProps {
     isViewSwitcherVisible: boolean;
     isEditColumnsVisible: boolean;
     isEditFiltersVisible: boolean;
-    shouldMergeRightSideCommandsWithRibbon: boolean;
     onRenderQuickFind: (props: IQuickFindProps, defaultRender: (props: IQuickFindProps) => React.ReactElement) => React.ReactElement;
     onRenderRibbon: IRibbonComponentProps['onRender']
 }

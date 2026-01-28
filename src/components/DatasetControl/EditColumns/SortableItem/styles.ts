@@ -22,6 +22,7 @@ export const getSortableItemStyles = (theme: ITheme) => {
                 minWidth: 0,
                 whiteSpace: 'nowrap',
                 textOverflow: 'ellipsis',
+                userSelect: 'none'
             },
         },
     })

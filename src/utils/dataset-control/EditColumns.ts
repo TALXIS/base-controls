@@ -1,7 +1,7 @@
+import { Attribute, DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
+import { IDatasetControl } from "./DatasetControl";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Attribute, DataTypes, EventEmitter, IColumn, IDataProvider } from "@talxis/client-libraries";
-import { IDatasetControl } from "../../../utils/dataset-control";
 
 export interface IEditColumnsEvents {
     onColumnAdded: (column: IColumn) => void;
@@ -9,12 +9,23 @@ export interface IEditColumnsEvents {
     onRelatedEntityColumnChanged: (relatedEntityColumn: IColumn | null) => void;
 }
 
-interface IEditColumnsModelOptions {
+interface IEditColumnsOptions {
     datasetControl: IDatasetControl;
 }
 
+export interface IEditColumns extends IEventEmitter<IEditColumnsEvents> {
+    save(): Promise<void>;
+    getColumns(): (IColumn & { id: string })[];
+    deleteColumn(name: string): void;
+    addColumn(column: IColumn): void;
+    getAvailableColumns(query?: string): Promise<IColumn[]>;
+    getAvailableRelatedColumns(query?: string): Promise<IColumn[]>;
+    selectRelatedEntityColumn(column: IColumn): void;
+    onColumnMoved(e: DragEndEvent): void;
+    getMainEntityColumn(): IColumn;
+}
 
-export class EditColumnsModel extends EventEmitter<IEditColumnsEvents> {
+export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEditColumns {
     private _datasetControl: IDatasetControl;
     private _provider: IDataProvider;
     private _currentColumns: (IColumn & { id: string })[] = [];
@@ -22,7 +33,7 @@ export class EditColumnsModel extends EventEmitter<IEditColumnsEvents> {
     private _foreignKeyMap: Map<string, string> = new Map();
     public static readonly MAIN_ENTITY_COLUMN_NAME = '__main_entity__';
 
-    constructor(options: IEditColumnsModelOptions) {
+    constructor(options: IEditColumnsOptions) {
         super();
         this._datasetControl = options.datasetControl;
         this._provider = options.datasetControl.getDataset().getDataProvider();
@@ -70,9 +81,13 @@ export class EditColumnsModel extends EventEmitter<IEditColumnsEvents> {
             .filter(col => !query || col.displayName?.toLowerCase().includes(query.toLowerCase()));
     }
 
-    public async getAvailableRelatedColumns(query?: string): Promise<IColumn[]> {
+    public async getAvailableRelatedColumns(query?: string): Promise<(IColumn & {entityDisplayName: string})[]> {
         const availableColumns = await this.getAvailableColumns(query);
         const result = availableColumns.filter(col => {
+            const targets = col.metadata?.Targets ?? [];
+            if(targets.length !== 1) {
+                return false;
+            }
             switch (col.dataType) {
                 case 'Lookup.Customer':
                 case 'Lookup.Owner':
@@ -86,11 +101,19 @@ export class EditColumnsModel extends EventEmitter<IEditColumnsEvents> {
             }
         });
         result.push(this.getMainEntityColumn());
-        return result.sort((a, b) => a.displayName!.localeCompare(b.displayName!));
+        const test = await Promise.all(result.map(async col => {
+            const entityName = col.metadata?.Targets?.[0]!;
+            const entityMetadata = await window.Xrm.Utility.getEntityMetadata(entityName);
+            return {
+                ...col,
+                entityDisplayName: entityMetadata.DisplayName as any
+            }
+        }));
+        return test.sort((a, b) => a.displayName!.localeCompare(b.displayName!));
     }
 
     public selectRelatedEntityColumn(column: IColumn) {
-        if(column.name === EditColumnsModel.MAIN_ENTITY_COLUMN_NAME) {
+        if (column.name === EditColumns.MAIN_ENTITY_COLUMN_NAME) {
             this._relatedEntityColumn = null;
         }
         else {
@@ -111,9 +134,12 @@ export class EditColumnsModel extends EventEmitter<IEditColumnsEvents> {
 
     public getMainEntityColumn(): IColumn {
         return {
-            name: EditColumnsModel.MAIN_ENTITY_COLUMN_NAME,
-            displayName: this._provider.getMetadata().DisplayName ?? 'Data Source',
-            dataType: DataTypes.SingleLineText,
+            name: EditColumns.MAIN_ENTITY_COLUMN_NAME,
+            displayName: this._provider.getMetadata().DisplayName,
+            dataType: DataTypes.LookupSimple,
+            metadata: {
+                Targets: [this._provider.getEntityName()]
+            }
         }
     }
 
