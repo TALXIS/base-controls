@@ -83,7 +83,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
-    "@talxis/client-libraries": "/Users/dominikbrych/Desktop/NETWORG/INT0014/src/SDK/ClientLibraries",
+    "@talxis/client-libraries": "1.2601.5",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
     "debounce": "^2.2.0",
