@@ -44,7 +44,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
     }
 
     useEffect(() => {
-        if(openMenuOnMount) {
+        if (openMenuOnMount) {
             ref.current?.focus();
             ref.current?.openMenu('first');
         }
@@ -63,13 +63,15 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             isMulti: true,
             inputValue: inputValue,
             className: styles.root,
+            backspaceRemovesValue: false,
             value: editColumnsModel.getColumns(),
             closeMenuOnSelect: false,
             hideSelectedOptions: true,
             defaultOptions: defaultOptions,
             placeholder: `${labels["add-column"]()}...`,
-            onInputChange: onInputChange,
             controlShouldRenderValue: false,
+            onInputChange: onInputChange,
+            onKeyDown: (ev) => ev.key === 'Enter' && ref.current?.openMenu('first'),
             loadOptions: (inputValue: string) => editColumnsModel.getAvailableColumns(inputValue),
             onChange: (columns) => onChange(columns as IColumn[]),
         }

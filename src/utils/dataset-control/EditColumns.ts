@@ -72,21 +72,33 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
     public async getAvailableColumns(query?: string): Promise<IColumn[]> {
         const entityName = this._relatedEntityColumn?.metadata?.Targets?.[0] ?? this._provider.getEntityName();
         const availableColumns = await this._provider.getAvailableColumns({ entityName: entityName });
-        return availableColumns
-            .filter(col => !query || col.displayName?.toLowerCase().includes(query.toLowerCase()));
+        if (!query) return availableColumns;
+
+        const normalizedQuery = this._normalizeText(query).toLowerCase();
+        return availableColumns.filter(col =>
+            this._normalizeText(col.displayName || '').toLowerCase().includes(normalizedQuery)
+        );
     }
+
 
     public async getAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]> {
         const relatedColumns = await this._provider.getAvailableRelatedColumns();
         const allColumns = [...relatedColumns, this.getMainEntityColumn()];
 
+        if (!query) {
+            return allColumns.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
+        }
+
+        const normalizedQuery = this._normalizeText(query).toLowerCase();
         return allColumns
-            .filter(col => !query || col.displayName?.toLowerCase().includes(query.toLowerCase()))
+            .filter(col => {
+                return this._normalizeText(col.displayName || '').toLowerCase().includes(normalizedQuery);
+            })
             .sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
     }
 
     public selectRelatedEntityColumn(column: IAvailableRelatedColumn) {
-        this._relatedEntityColumn = column.name === this._provider.getMetadata().PrimaryIdAttribute ? null : {...column};
+        this._relatedEntityColumn = column.name === this._provider.getMetadata().PrimaryIdAttribute ? null : { ...column };
         this.dispatchEvent('onRelatedEntityColumnChanged', this._relatedEntityColumn);
     }
 
@@ -94,11 +106,11 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
         if (draggedColumnId !== targetColumnId) {
             const oldIndex = this._currentColumns.findIndex(col => col.id === draggedColumnId);
             const newIndex = this._currentColumns.findIndex(col => col.id === targetColumnId);
-        
+
             const newColumns = [...this._currentColumns];
             const [movedItem] = newColumns.splice(oldIndex, 1);
             newColumns.splice(newIndex, 0, movedItem);
-            
+
             this._currentColumns = newColumns;
             this.dispatchEvent('onColumnsChanged', this._currentColumns);
         }
@@ -116,6 +128,10 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
                 Targets: [this._provider.getEntityName()]
             }
         }
+    }
+
+    private _normalizeText(text: string): string {
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
     private _generateLinkedEntityExpression(relatedColumn: IAvailableRelatedColumn): ILinkEntityExposedExpression {

@@ -1,6 +1,6 @@
 import { DefaultButton, Label, Panel, PanelType, PrimaryButton, useTheme } from "@fluentui/react";
 import { useModel } from "../useModel";
-import { useMemo, useRef, useState } from "react";
+import { Key, useMemo, useRef, useState } from "react";
 import { getEditColumnsStyles } from "./styles";
 import { DndContext, PointerSensor, useSensor } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
@@ -19,7 +19,6 @@ interface IEditColumnsProps {
 }
 
 export const EditColumns = (props: IEditColumnsProps) => {
-    const { onDismiss } = props;
     const model = useModel();
     const datasetControl = model.getDatasetControl();
     const dataset = datasetControl.getDataset();
@@ -50,6 +49,10 @@ export const EditColumns = (props: IEditColumnsProps) => {
         return title;
     }
 
+    const onDismiss = (ev?: React.SyntheticEvent<HTMLElement, Event> | KeyboardEvent | undefined) => {
+        return (ev as KeyboardEvent)?.key === 'Escape' ? ev?.preventDefault() : props.onDismiss();
+    };
+
     return <EditColumnsContext.Provider value={editColumnsModel}>
         <Panel
             headerText={getTitle()}
@@ -67,13 +70,13 @@ export const EditColumns = (props: IEditColumnsProps) => {
                     <PrimaryButton
                         onClick={() => {
                             editColumnsModel.save();
-                            onDismiss();
+                            props.onDismiss();
                         }}
                         text={labels['save']()}
                     />
                     <DefaultButton
                         text={labels['cancel']()}
-                        onClick={onDismiss}
+                        onClick={props.onDismiss}
                     />
                 </div>
             }}
