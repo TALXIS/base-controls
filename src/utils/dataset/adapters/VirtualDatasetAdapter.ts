@@ -25,6 +25,7 @@ interface IInputs {
     EnableOptionSetColors?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableAggregation?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableGrouping?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableEditColumns?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableAutoSave?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableCommandBar?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableZebra?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
@@ -191,6 +192,9 @@ export class VirtualDatasetAdapter {
             //quick find is always handled by platform
             EnableQuickFind: {
                 raw: this._context.parameters.EnableQuickFind?.raw === 'true'
+            },
+            EnableEditColumns: {
+                raw: this._context.parameters.EnableEditColumns?.raw === 'true'
             },
             EnableAggregation: {
                 raw: this._context.parameters.EnableAggregation?.raw === 'true',
