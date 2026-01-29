@@ -3,6 +3,7 @@ export const datasetControlTranslations = {
     "records": { 1029: "záznamy", 1033: "records" },
     'no-name': { 1029: "(Bez názvu)", 1033: "(No name)" },
     "column-source": { 1029: "Zdroj sloupců", 1033: "Column source" },
+    "no-result-found": { 1029: "Nebyly nalezeny žádné výsledky.", 1033: "No results found." },
     "add-column": { 1029: "Přidat sloupec", 1033: "Add column" },
     "cancel": { 1029: "Zrušit", 1033: "Cancel" },
     'edit-columns': { 1029: "Upravit sloupce", 1033: "Edit columns" },

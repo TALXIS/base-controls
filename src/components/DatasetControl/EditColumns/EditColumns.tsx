@@ -1,6 +1,6 @@
 import { DefaultButton, Label, Panel, PanelType, PrimaryButton, useTheme } from "@fluentui/react";
 import { useModel } from "../useModel";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { getEditColumnsStyles } from "./styles";
 import { DndContext, PointerSensor, useSensor } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
@@ -32,9 +32,13 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const sensor = useSensor(PointerSensor);
     const scrollableContainerRef = useRef<HTMLDivElement>(null);
     const [shouldRemountColumnSelector, remountColumnSelector] = useShouldRemount();
+    const [openColumnSelectorOnMount, setOpenColumnSelectorOnMount] = useState(false);
     const rerender = useRerender();
     useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onColumnsChanged', rerender);
-    useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onRelatedEntityColumnChanged', remountColumnSelector);
+    useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onRelatedEntityColumnChanged', () => {
+        remountColumnSelector();
+        setOpenColumnSelectorOnMount(true);
+    });
     useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onColumnAdded', () => scrollableContainerRef.current?.scrollTo({ top: 0 }));
 
     const getTitle = () => {
@@ -82,7 +86,8 @@ export const EditColumns = (props: IEditColumnsProps) => {
                     </div>
                     {!shouldRemountColumnSelector &&
                         <div className={styles.selector}>
-                            <ColumnSelector />
+                            <ColumnSelector 
+                                openMenuOnMount={openColumnSelectorOnMount} />
                         </div>
                     }
                 </div>
@@ -90,7 +95,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
             <div ref={scrollableContainerRef} className={styles.scrollableContainer}>
                 <DndContext
                     sensors={[sensor]}
-                    onDragEnd={(e) => editColumnsModel.onColumnMoved(e)}
+                    onDragEnd={(e) => editColumnsModel.onColumnMoved(e.active.id.toString(), e.over?.id.toString() ?? '')}
                     modifiers={[restrictToVerticalAxis]}
                 >
                     <SortableContext

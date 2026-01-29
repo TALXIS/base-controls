@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { components, InputActionMeta } from "react-select";
+import { InputActionMeta } from "react-select";
 import { getColumnSelectorStyles } from "./styles";
 import { useModel } from "../../useModel";
 import { Selector } from "../Selector/Selector";
@@ -7,14 +7,20 @@ import { useEditColumns } from "../useEditColumns";
 import { SelectInstance } from 'react-select';
 import { IColumn } from "@talxis/client-libraries";
 
+interface IColumnSelectorProps {
+    openMenuOnMount?: boolean;
+}
 
-export const ColumnSelector = () => {
+
+export const ColumnSelector = (props: IColumnSelectorProps) => {
+    const { openMenuOnMount } = props;
     const editColumnsModel = useEditColumns();
     const styles = useMemo(() => getColumnSelectorStyles(), []);
     const model = useModel();
     const labels = model.getLabels();
     const ref = React.useRef<SelectInstance>(null);
     const [defaultOptions, setDefaultOptions] = React.useState<IColumn[]>([]);
+    const [inputValue, setInputValue] = React.useState<string>('');
 
     const onChange = (columns: IColumn[]) => {
         editColumnsModel.addColumn(columns[columns.length - 1]);
@@ -25,15 +31,23 @@ export const ColumnSelector = () => {
     }
 
     const onInputChange = (value: string, actionMeta: InputActionMeta) => {
-        if(actionMeta.action === 'set-value') {
-            return actionMeta.prevInputValue;
+        switch (actionMeta.action) {
+            case 'menu-close':
+            case 'input-blur':
+            case 'set-value': {
+                value = actionMeta.prevInputValue;
+                break;
+            }
         }
-        else {
-            return value;
-        }
+        setInputValue(value);
+        return value;
     }
 
     useEffect(() => {
+        if(openMenuOnMount) {
+            ref.current?.focus();
+            ref.current?.openMenu('first');
+        }
         (async () => {
             const options = await editColumnsModel.getAvailableColumns();
             //forces refresh of defaultOptions
@@ -47,18 +61,17 @@ export const ColumnSelector = () => {
             ...props,
             ref: ref,
             isMulti: true,
+            inputValue: inputValue,
             className: styles.root,
             value: editColumnsModel.getColumns(),
             closeMenuOnSelect: false,
-            onInputChange: onInputChange,
+            hideSelectedOptions: true,
             defaultOptions: defaultOptions,
+            placeholder: `${labels["add-column"]()}...`,
+            onInputChange: onInputChange,
+            controlShouldRenderValue: false,
             loadOptions: (inputValue: string) => editColumnsModel.getAvailableColumns(inputValue),
             onChange: (columns) => onChange(columns as IColumn[]),
-            components: {
-                ...props.components,
-                MultiValueContainer: (props) => <React.Fragment />,
-                Input: (props) => <components.Input {...props} placeholder={`${labels["add-column"]()}...`} />
-            }
         }
     }} />
 }

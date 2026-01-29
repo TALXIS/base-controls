@@ -1,7 +1,5 @@
-import { Attribute, DataTypes, EventEmitter, IColumn, IDataProvider, IEventEmitter } from "@talxis/client-libraries";
+import { Attribute, DataTypes, EventEmitter, IAvailableRelatedColumn, IColumn, IDataProvider, IEventEmitter, ILinkEntityExposedExpression } from "@talxis/client-libraries";
 import { IDatasetControl } from "./DatasetControl";
-import { DragEndEvent } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
 
 export interface IEditColumnsEvents {
     onColumnAdded: (column: IColumn) => void;
@@ -14,42 +12,35 @@ interface IEditColumnsOptions {
 }
 
 export interface IEditColumns extends IEventEmitter<IEditColumnsEvents> {
-    save(): Promise<void>;
+    save(): void;
     getColumns(): (IColumn & { id: string })[];
     deleteColumn(name: string): void;
     addColumn(column: IColumn): void;
     getAvailableColumns(query?: string): Promise<IColumn[]>;
-    getAvailableRelatedColumns(query?: string): Promise<IColumn[]>;
-    selectRelatedEntityColumn(column: IColumn): void;
-    onColumnMoved(e: DragEndEvent): void;
-    getMainEntityColumn(): IColumn;
+    getAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]>;
+    selectRelatedEntityColumn(column: IAvailableRelatedColumn): void;
+    onColumnMoved(draggedColumnId: string, targetColumnId: string): void;
+    getMainEntityColumn(): IAvailableRelatedColumn;
 }
 
 export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEditColumns {
     private _datasetControl: IDatasetControl;
     private _provider: IDataProvider;
     private _currentColumns: (IColumn & { id: string })[] = [];
-    private _relatedEntityColumn: IColumn | null = null;
-    private _foreignKeyMap: Map<string, string> = new Map();
-    public static readonly MAIN_ENTITY_COLUMN_NAME = '__main_entity__';
+    private _relatedEntityColumn: IAvailableRelatedColumn | null = null;
+    private _foreignKeyEntityLinkMap: Map<string, ILinkEntityExposedExpression> = new Map();
 
     constructor(options: IEditColumnsOptions) {
         super();
         this._datasetControl = options.datasetControl;
         this._provider = options.datasetControl.getDataset().getDataProvider();
         this._currentColumns = this._provider.getColumns().map(col => ({ ...col, id: col.name }));
+        this._foreignKeyEntityLinkMap = new Map(this._provider.getLinking().map(l => [l.to, l]));
     }
 
-    public async save() {
-        await this._setLinking();
-        const newColumns: IColumn[] = this._currentColumns.map((col, i) => {
-            const { id, ...newCol } = {
-                ...col,
-                order: i
-            }
-            return newCol;
-        })
-        this._provider.setColumns(newColumns);
+    public save() {
+        this._setColumns();
+        this._setLinking();
         this._provider.clearSelectedRecordIds();
         this._datasetControl.requestRemount();
     }
@@ -60,14 +51,18 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
 
     public deleteColumn(name: string) {
         this._currentColumns = this._currentColumns.filter(col => col.name !== name);
+        this._cleanupUnusedLinkedEntityExpression();
         this.dispatchEvent('onColumnsChanged', this._currentColumns);
     }
 
     public addColumn(column: IColumn) {
         if (this._relatedEntityColumn) {
-            column.name = `${this._generateLinkedEntityAlias(column)}.${column.name}`;
-            column.displayName = `${this._relatedEntityColumn.displayName} (${column.displayName})`;
-            this._foreignKeyMap.set(column.name, this._relatedEntityColumn.name);
+            const linking = this._generateLinkedEntityExpression(this._relatedEntityColumn);
+            column = {
+                ...column,
+                name: `${linking.alias}.${column.name}`,
+                displayName: `${column.displayName} (${this._relatedEntityColumn.displayName})`
+            }
         }
         this._currentColumns.unshift({ ...column, id: column.name });
         this.dispatchEvent('onColumnAdded', column);
@@ -81,61 +76,41 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
             .filter(col => !query || col.displayName?.toLowerCase().includes(query.toLowerCase()));
     }
 
-    public async getAvailableRelatedColumns(query?: string): Promise<(IColumn & {entityDisplayName: string})[]> {
-        const availableColumns = await this.getAvailableColumns(query);
-        const result = availableColumns.filter(col => {
-            const targets = col.metadata?.Targets ?? [];
-            if(targets.length !== 1) {
-                return false;
-            }
-            switch (col.dataType) {
-                case 'Lookup.Customer':
-                case 'Lookup.Owner':
-                case 'Lookup.Regarding':
-                case 'Lookup.Simple': {
-                    return true;
-                }
-                default: {
-                    return false;
-                }
-            }
-        });
-        result.push(this.getMainEntityColumn());
-        const test = await Promise.all(result.map(async col => {
-            const entityName = col.metadata?.Targets?.[0]!;
-            const entityMetadata = await window.Xrm.Utility.getEntityMetadata(entityName);
-            return {
-                ...col,
-                entityDisplayName: entityMetadata.DisplayName as any
-            }
-        }));
-        return test.sort((a, b) => a.displayName!.localeCompare(b.displayName!));
+    public async getAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]> {
+        const relatedColumns = await this._provider.getAvailableRelatedColumns();
+        const allColumns = [...relatedColumns, this.getMainEntityColumn()];
+
+        return allColumns
+            .filter(col => !query || col.displayName?.toLowerCase().includes(query.toLowerCase()))
+            .sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
     }
 
-    public selectRelatedEntityColumn(column: IColumn) {
-        if (column.name === EditColumns.MAIN_ENTITY_COLUMN_NAME) {
-            this._relatedEntityColumn = null;
-        }
-        else {
-            this._relatedEntityColumn = column;
-        }
-        this.dispatchEvent('onRelatedEntityColumnChanged', column);
+    public selectRelatedEntityColumn(column: IAvailableRelatedColumn) {
+        this._relatedEntityColumn = column.name === this._provider.getMetadata().PrimaryIdAttribute ? null : {...column};
+        this.dispatchEvent('onRelatedEntityColumnChanged', this._relatedEntityColumn);
     }
 
-    public onColumnMoved(e: DragEndEvent) {
-        const { active, over } = e;
-        if (active.id !== over?.id) {
-            const oldIndex = this._currentColumns.findIndex(col => col.id === active.id);
-            const newIndex = this._currentColumns.findIndex(col => col.id === over?.id);
-            this._currentColumns = arrayMove(this._currentColumns, oldIndex, newIndex);
+    public onColumnMoved(draggedColumnId: string, targetColumnId: string) {
+        if (draggedColumnId !== targetColumnId) {
+            const oldIndex = this._currentColumns.findIndex(col => col.id === draggedColumnId);
+            const newIndex = this._currentColumns.findIndex(col => col.id === targetColumnId);
+        
+            const newColumns = [...this._currentColumns];
+            const [movedItem] = newColumns.splice(oldIndex, 1);
+            newColumns.splice(newIndex, 0, movedItem);
+            
+            this._currentColumns = newColumns;
             this.dispatchEvent('onColumnsChanged', this._currentColumns);
         }
     }
 
-    public getMainEntityColumn(): IColumn {
+    public getMainEntityColumn(): IAvailableRelatedColumn {
         return {
-            name: EditColumns.MAIN_ENTITY_COLUMN_NAME,
+            name: this._provider.getMetadata().PrimaryIdAttribute,
             displayName: this._provider.getMetadata().DisplayName,
+            relatedEntityName: this._provider.getEntityName(),
+            relatedEntityDisplayName: '',
+            relatedEntityPrimaryIdAttribute: this._provider.getMetadata().PrimaryIdAttribute,
             dataType: DataTypes.LookupSimple,
             metadata: {
                 Targets: [this._provider.getEntityName()]
@@ -143,68 +118,52 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
         }
     }
 
-    private _generateLinkedEntityAlias(column: IColumn): string {
-        const linkedEntities = this._provider.getLinking();
-        const entityName = column.metadata?.EntityLogicalName!;
+    private _generateLinkedEntityExpression(relatedColumn: IAvailableRelatedColumn): ILinkEntityExposedExpression {
+        // Return existing alias if already mapped
+        const existingLinkedEntity = this._foreignKeyEntityLinkMap.get(relatedColumn.name);
+        if (existingLinkedEntity) {
+            return existingLinkedEntity;
+        }
+        const existingAliases = new Set([...this._foreignKeyEntityLinkMap.values()].map(link => link.alias));
+        const entityName = relatedColumn.relatedEntityName;
         let alias = entityName;
-        let index = 0;
-        while (linkedEntities.find(le => le.alias === alias)) {
+        let index = 1;
+
+        while (existingAliases.has(alias)) {
             alias = `${entityName}_${index++}`;
         }
-        return alias;
+        const linking: ILinkEntityExposedExpression = {
+            alias: alias,
+            name: entityName,
+            from: relatedColumn.relatedEntityPrimaryIdAttribute,
+            to: relatedColumn.name,
+            linkType: 'outer'
+        }
+        this._foreignKeyEntityLinkMap.set(relatedColumn.name, linking);
+        return linking;
     }
 
-    private async _setLinking() {
-        const linking = this._provider.getLinking();
-        const newLinks = await Promise.all(this._getLinkedEntityColumns().map(async column => {
-            const linkedEntityAlias = Attribute.GetLinkedEntityAlias(column.name)!;
-            const existingLink = linking.find(l => l.alias === linkedEntityAlias);
-            const entityName = column.metadata?.EntityLogicalName!;
-            const parentLinkedEntityAlias = existingLink?.parentLinkedEntityAlias ?? undefined;
-            const linkType = existingLink?.linkType ?? 'outer';
-            //primary key from linked entity
-            const from = existingLink?.from ?? (await window.Xrm.Utility.getEntityMetadata(entityName)).PrimaryIdAttribute;
-            //foreign key from main entity
-            const to = existingLink?.to ?? this._foreignKeyMap.get(column.name)!;
-            return {
-                alias: linkedEntityAlias,
-                parentLinkedEntityAlias: parentLinkedEntityAlias,
-                name: entityName,
-                linkType: linkType,
-                from: from,
-                to: to
-            }
-        }));
-        this._provider.setLinking(newLinks);
-    }
-
-    private _getLinkedEntityColumns(): IColumn[] {
-        return this._currentColumns.filter(col => {
-            switch (true) {
-                case this._isFileColumn(col):
-                case !Attribute.GetLinkedEntityAlias(col.name): {
-                    return false;
-                }
-                default: {
-                    return true;
-                }
-            }
-        })
-    }
-
-    private _isFileColumn(column: IColumn): boolean {
-        switch (true) {
-            case column.name.endsWith('.mimetype'):
-            case column.name.endsWith('.filesizeinbytes'):
-            case column.name.endsWith('.filename'):
-            case column.name.endsWith('.imageurl'):
-            case column.name.endsWith('.fullimageurl'):
-            case column.name.endsWith('.filesizebytes'): {
-                return true;
-            }
-            default: {
-                return false;
-            }
+    private _cleanupUnusedLinkedEntityExpression() {
+        const currentColumnsLinks = new Set<string>(this._currentColumns.map(col => Attribute.GetLinkedEntityAlias(col.name) ?? ''));
+        const linkToRemove = [...this._foreignKeyEntityLinkMap.entries()].find(([key, link]) => {
+            return !currentColumnsLinks.has(link.alias);
+        });
+        if (linkToRemove) {
+            this._foreignKeyEntityLinkMap.delete(linkToRemove[0]);
         }
     }
+
+    private _setLinking() {
+        this._provider.setLinking([...this._foreignKeyEntityLinkMap.values()]);
+    }
+    private _setColumns() {
+        this._provider.setColumns(this._currentColumns.map((col, i) => {
+            const { id, ...newCol } = {
+                ...col,
+                order: i
+            }
+            return newCol;
+        }));
+    }
+
 }

@@ -34,7 +34,8 @@ export const getEditColumnsStyles = (theme: ITheme) => {
             paddingRight: 15,
             paddingTop: 12,
             paddingBottom: 12,
-            flex: 1
+            flex: 1,
+            scrollbarWidth: 'thin',
         },
         header: {
             borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
