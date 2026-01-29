@@ -101,7 +101,6 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         return false;
     }
     public isEditColumnsVisible(): boolean {
-        return true;
         return this.getParameters().EnableEditColumns?.raw ?? false;
     }
     public isEditFiltersVisible(): boolean {
