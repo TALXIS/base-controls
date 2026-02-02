@@ -32,7 +32,7 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
 
     const componentProps = onOverrideComponentProps({
         id: id,
-        getOptionValue: (column: any) => Attribute.GetNameFromAlias(column.name),
+        getOptionValue: (column: any) => column.name,
         getOptionLabel: (column: any) => column.displayName ?? labels['no-name'](),
         noOptionsMessage: () => labels['no-result-found'](),
         maxMenuHeight: 600,

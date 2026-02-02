@@ -35,7 +35,7 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
         this._datasetControl = options.datasetControl;
         this._provider = options.datasetControl.getDataset().getDataProvider();
         this._currentColumns = this._provider.getColumns().map(col => ({ ...col, id: col.name }));
-        this._foreignKeyEntityLinkMap = new Map(this._provider.getLinking().map(l => [l.to, l]));
+        this._foreignKeyEntityLinkMap = new Map(this._provider.getLinking().map(l => [`${l.from}_${l.to}`, l]));
     }
 
     public save() {
@@ -136,7 +136,7 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
 
     private _generateLinkedEntityExpression(relatedColumn: IAvailableRelatedColumn): ILinkEntityExposedExpression {
         // Return existing alias if already mapped
-        const existingLinkedEntity = this._foreignKeyEntityLinkMap.get(relatedColumn.name);
+        const existingLinkedEntity = this._foreignKeyEntityLinkMap.get(`${relatedColumn.relatedEntityPrimaryIdAttribute}_${relatedColumn.name}`);
         if (existingLinkedEntity) {
             return existingLinkedEntity;
         }
@@ -155,7 +155,7 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
             to: relatedColumn.name,
             linkType: 'outer'
         }
-        this._foreignKeyEntityLinkMap.set(relatedColumn.name, linking);
+        this._foreignKeyEntityLinkMap.set(`${relatedColumn.relatedEntityPrimaryIdAttribute}_${relatedColumn.name}`, linking);
         return linking;
     }
 
