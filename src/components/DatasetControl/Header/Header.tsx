@@ -10,6 +10,7 @@ import { useEventEmitter } from "../../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlEvents } from "../../../utils/dataset-control";
 import { EditColumns } from "../EditColumns/EditColumns";
+import { ViewSwitcher } from "../ViewSwitcher/ViewSwitcher";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
     const model = useModel();
@@ -71,14 +72,14 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                         isRibbonVisible: datasetControl.isRibbonVisible(),
                         isQuickFindVisible: datasetControl.isQuickFindVisible(),
                         isEditColumnsVisible: datasetControl.isEditColumnsVisible(),
-                        isViewSwitcherVisible: datasetControl.isViewSwitcherVisible(),
+                        isViewSwitcherVisible: true,
                         isEditFiltersVisible: datasetControl.isEditFiltersVisible(),
                         onRenderQuickFind: (props, defaultRender) => defaultRender(props),
                         onRenderRibbon: (props, defaultRender) => defaultRender(props)
                     }, (props) => {
                         return <div {...props.ribbonQuickFindContainerProps}>
                             {props.isViewSwitcherVisible &&
-                                <CommandBarButton text="Current View" />
+                                <ViewSwitcher />
                             }
                             {props.isRibbonVisible &&
                                 <Ribbon
