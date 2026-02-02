@@ -73,6 +73,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
                             props.onDismiss();
                         }}
                         text={labels['save']()}
+                        disabled={columns.filter(col => !col.isHidden).length === 0}
                     />
                     <DefaultButton
                         text={labels['cancel']()}

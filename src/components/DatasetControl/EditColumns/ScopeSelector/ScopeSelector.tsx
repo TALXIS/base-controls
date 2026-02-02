@@ -28,6 +28,7 @@ export const ScopeSelector = () => {
             isMulti: false,
             isDisabled: isDisabled,
             defaultValue: editColumnsModel.getMainEntityColumn(),
+            getOptionValue: (column) => `${column.relatedEntityPrimaryIdAttribute}_${column.name}`,
             getOptionLabel: (column) => getOptionLabel(column),
             loadOptions: (inputValue: string) => editColumnsModel.getAvailableRelatedColumns(inputValue),
             onChange: (column) => editColumnsModel.selectRelatedEntityColumn(column!),
