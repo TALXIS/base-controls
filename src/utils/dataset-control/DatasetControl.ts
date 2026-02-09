@@ -1,7 +1,8 @@
-import { Client, DataProvider, EventEmitter, ICommand, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors } from "@talxis/client-libraries";
+import { Client, DataProvider, EventEmitter, ICommand, IDataProvider, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors, ISavedQuery } from "@talxis/client-libraries";
 import debounce from "debounce";
 import { IDatasetControlParameters } from "../../components/DatasetControl/interfaces";
 import { EditColumns, IEditColumns } from "./EditColumns";
+import { IViewSwitcher, ViewSwitcher } from "./ViewSwitcher";
 
 
 interface IDatasetControlOptions {
@@ -15,15 +16,17 @@ export interface IDatasetControlEvents {
     onRecordCommandsLoaded: () => void;
     onRemountRequested: () => void;
     onEditColumnsRequested: () => void;
-    onInitialized: () => void;
 }
 
 interface IDatasetControlInterceptors {
-    onInitialize: () => Promise<void>;
 }
+
+type IRemountRequestContext = | { reason: 'saved-query-changed'; data: { oldQueryId: string, newQueryId: string } }
+// Add more reasons here with specific data types as needed
 
 export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
     editColumns: IEditColumns;
+    viewSwitcher: IViewSwitcher;
     setInterceptor<K extends keyof IDatasetControlInterceptors>(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void;
     isPaginationVisible(): boolean;
     isRecordCountVisible(): boolean;
@@ -44,35 +47,42 @@ export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
     //this should be removed once we have a custom edit columns button in the ribbon
     requestEditColumns(): void;
     destroy(): void;
-    requestRemount(): void;
+    requestRemount(context?: IRemountRequestContext): void;
     init(): Promise<void>;
     getState(): ComponentFramework.Dictionary;
     saveState(): void;
 }
 
 export class DatasetControl extends EventEmitter<IDatasetControlEvents> implements IDatasetControl {
-    private _hasFirstDataLoaded: boolean = false;
     private _commands: ICommand[] = [];
     private _commandsLoaded: boolean = false;
     private _client: Client = new Client();
     private _options: IDatasetControlOptions;
     private _debouncedLoadRecordCommands: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _interceptors = new Interceptors<IDatasetControlInterceptors>();
+    private _remountRequestContext: IRemountRequestContext | null = null;
+    private _isUsingLegacyColumnsBinding: boolean = false;
+    private _viewSwitcher: ViewSwitcher;
 
     constructor(options: IDatasetControlOptions) {
         super();
         this._options = options;
         this._setDatasetProperties();
-        this._setState();
+        this._loadState();
         this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids))
         this._addEventListeners();
         this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
+        this._isUsingLegacyColumnsBinding = !!this.getPcfContext().parameters['Columns']?.raw;
+        this._viewSwitcher = new ViewSwitcher(this);
+        this._showLegacyColumnsWarning();
     }
 
     public get editColumns(): IEditColumns {
         return new EditColumns({ datasetControl: this });
     }
-
+    public get viewSwitcher(): IViewSwitcher {
+        return this._viewSwitcher;
+    }
     public setInterceptor<K extends keyof IDatasetControlInterceptors>(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void {
         this._interceptors.setInterceptor(event, interceptor);
     }
@@ -98,7 +108,7 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         this.dispatchEvent('onEditColumnsRequested');
     }
     public isViewSwitcherVisible(): boolean {
-        return false;
+        return !!this.getParameters().EnableViewSwitcher?.raw && !this._isUsingLegacyColumnsBinding;
     }
     public isEditColumnsVisible(): boolean {
         return this.getParameters().EnableEditColumns?.raw ?? false;
@@ -139,20 +149,16 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         this.clearEventListeners();
         this._interceptors.clearInterceptors();
     }
-    public requestRemount(): void {
+    public requestRemount(context?: IRemountRequestContext): void {
+        this._remountRequestContext = context ?? null;
         this.dispatchEvent('onRemountRequested');
     }
     public async init() {
-        await this._interceptors.execute('onInitialize', undefined, async () => {
-            if (this.getDataset().getDataProvider().getProperty('isStandalone') || !this._client.isTalxisPortal()) {
-                await (<IInternalDataProvider>this.getDataset().getDataProvider()).preload();
-            }
-        });
         await this._executeClientApiScript();
-        //this makes sure the current columns go through any dataset interceptors
-        this.getDataset().setColumns(this.getDataset().columns);
+        if (this.getDataset().getDataProvider().getProperty('isStandalone') || !this._client.isTalxisPortal()) {
+            await (<IInternalDataProvider>this.getDataset().getDataProvider()).preload();
+        }
         this.getDataset().paging.loadExactPage(this.getDataset().paging.pageNumber);
-        this.dispatchEvent('onInitialized');
     }
     public getParameters() {
         return this._options.onGetParameters();
@@ -161,22 +167,28 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         return this._options.state;
     }
     public saveState() {
-        if (!this._hasFirstDataLoaded) {
-            return;
-        }
         const provider = this.getDataset().getDataProvider();
         const state = this._options.state;
+        const currentViewId = provider.getViewId();
         const DatasetControlState = state.DatasetControlState || {};
-        DatasetControlState.columns = provider.getColumns();
-        DatasetControlState.linking = provider.getLinking();
-        DatasetControlState.sorting = provider.getSorting();
-        DatasetControlState.filtering = provider.getFiltering();
-        DatasetControlState.pageSize = provider.getPaging().pageSize;
-        DatasetControlState.pageNumber = provider.getPaging().pageNumber;
-        DatasetControlState.searchQuery = provider.getSearchQuery();
-        DatasetControlState.selectedRecordIds = provider.getSelectedRecordIds();
+        DatasetControlState.viewId = this._remountRequestContext?.data?.newQueryId ?? currentViewId;
+        DatasetControlState.SavedQueries = provider.getSavedQueries().map(query => query.id === currentViewId ? this._enrichQueryWithCurrentState(query, provider) : query);
         state.DatasetControlState = DatasetControlState;
         this.getPcfContext().mode.setControlState(state);
+    }
+
+    private _enrichQueryWithCurrentState(query: ISavedQuery, provider: IDataProvider) {
+        return {
+            ...query,
+            columns: provider.getColumns(),
+            sorting: provider.getSorting(),
+            linking: provider.getLinking(),
+            selectedRecordIds: provider.getSelectedRecordIds(),
+            pageNumber: provider.getPaging().pageNumber,
+            pageSize: provider.getPaging().pageSize,
+            userFilter: provider.getFiltering(),
+            searchQuery: provider.getSearchQuery()
+        };
     }
     private async _executeClientApiScript(): Promise<void> {
         const clientApiWebresourceName = this.getParameters().ClientApiWebresourceName?.raw;
@@ -219,27 +231,27 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         })
         this.getDataset().addEventListener('onAfterRecordSaved', () => {
             this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
-        })
-        this.getDataset().addEventListener('onFirstDataLoaded', () => {
-            this._hasFirstDataLoaded = true;
-        })
+        });
     }
 
-    private _setState() {
+    private _loadState() {
         const state = this._options.state?.DatasetControlState;
         if (!state) {
             return;
         }
-
         const provider = this.getDataset().getDataProvider();
+        provider.setMetadata({
+            ...provider.getMetadata(),
+            SavedQueries: state.SavedQueries
+        });
+        provider.setViewId(state.viewId);
         provider.setProperty('hasPreviousState', true);
-        provider.setLinking(state.linking);
-        provider.setSorting(state.sorting);
-        provider.setFiltering(state.filtering);
-        provider.getPaging().setPageSize(state.pageSize);
-        provider.getPaging().setPageNumber(state.pageNumber);
-        provider.setSearchQuery(state.searchQuery);
-        provider.setSelectedRecordIds(state.selectedRecordIds);
+    }
+
+    private _showLegacyColumnsWarning() {
+        if (this._isUsingLegacyColumnsBinding && this._options.onGetParameters().EnableViewSwitcher?.raw) {
+            console.warn('View Switcher requires columns to be set via Entity Metadata. It will not be visible when using legacy Columns binding.');
+        }
     }
 
 }

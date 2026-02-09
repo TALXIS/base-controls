@@ -72,7 +72,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                         isRibbonVisible: datasetControl.isRibbonVisible(),
                         isQuickFindVisible: datasetControl.isQuickFindVisible(),
                         isEditColumnsVisible: datasetControl.isEditColumnsVisible(),
-                        isViewSwitcherVisible: true,
+                        isViewSwitcherVisible: datasetControl.isViewSwitcherVisible(),
                         isEditFiltersVisible: datasetControl.isEditFiltersVisible(),
                         onRenderQuickFind: (props, defaultRender) => defaultRender(props),
                         onRenderRibbon: (props, defaultRender) => defaultRender(props)

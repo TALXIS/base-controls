@@ -65,7 +65,7 @@ export const Grid = (props: IGrid) => {
         noRowsOverlayComponent: EmptyRecords,
         enableGroupEdit: true,
         reactiveCustomComponents: true,
-        initialState: props.state?.AgGridState,
+        initialState: props.state?.[`${props.state?.DatasetControlState?.viewId}_agGridState`],
         gridOptions: {
             getRowStyle: (params) => {
                 const record = params.data;

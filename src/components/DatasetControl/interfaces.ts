@@ -24,6 +24,7 @@ export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParam
 
 export interface IDatasetControlParameters extends IGridParameters {
     EnableEditColumns?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableViewSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
     ClientApiWebresourceName?: IStringProperty;
     ClientApiFunctionName?: IStringProperty;
 }

@@ -6,6 +6,9 @@ export const getViewSwitcherStyles = (theme: ITheme) => {
         commandBarButtonLabel: {
             fontWeight: 600
         },
+        commandBarButtonRoot: {
+            height: 32
+        },
         selectedViewItem: {
             backgroundColor: theme.semanticColors.buttonBackgroundPressed,
             '.ms-ContextualMenu-itemText': {

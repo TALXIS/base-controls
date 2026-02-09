@@ -26,6 +26,7 @@ interface IInputs {
     EnableAggregation?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableGrouping?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableEditColumns?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
+    EnableViewSwitcher?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableAutoSave?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableCommandBar?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     EnableZebra?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
@@ -46,7 +47,7 @@ interface IVirtualDatasetAdapterOptions {
     /**
      * Runs a promise that is awaited when the dataset control is initialized, before loading the first data.
      */
-    onInitialize?: (dataset: IDataset) => Promise<void>;
+    onDatasetControlCreated?: (datasetControl: IDatasetControl) => Promise<void>;
     /**
      * If provided, this function is called when the dataset is initialized and awaited before loading first data.
      */
@@ -81,23 +82,16 @@ export class VirtualDatasetAdapter {
         }
         const dataProvider = this._getDataProviderInstance();
         this._dataset = new Dataset(dataProvider);
-        //loads parameter columns
         this._dataset.setMetadata(this._getEntityMetadata());
         this._dataset.setDataSource(context.parameters.Data.raw);
+        this._dataset.setColumns(this._getColumns());
         this._datasetControl = new DatasetControl({
             state: this._state,
-            //@ts-ignore - typings
-            controlId: this._context.utils._customControlProperties?.controlId,
+            controlId: (this._context.utils as any)._customControlProperties?.controlId,
             onGetPcfContext: () => this._context,
             onGetParameters: () => this._getDatasetControlParameters()
         });
-        this._datasetControl.setInterceptor('onInitialize', async (parameters, defaultAction) => {
-            //preloads dataset
-            await defaultAction(parameters);
-            //sets columns after preload
-            this._dataset.setColumns(this._getColumns());
-            await this._options?.onInitialize?.(this.getDataset());
-        });
+        this._options?.onDatasetControlCreated?.(this._datasetControl);
         if (this._context.parameters.Height?.raw === '100%') {
             this._container.classList.add(this._getFullTabStyles());
         }
@@ -121,10 +115,6 @@ export class VirtualDatasetAdapter {
         });
     }
 
-    public getDataset(): Dataset<IDataProvider> {
-        return this._dataset;
-    }
-
     public getDatasetControl(): IDatasetControl {
         return this._datasetControl;
     }
@@ -144,8 +134,7 @@ export class VirtualDatasetAdapter {
     private _createDummyDatasetControl() {
         this._datasetControl = new DatasetControl({
             state: this._state,
-            //@ts-ignore - typings
-            controlId: this._context.utils._customControlProperties?.controlId,
+            controlId: (this._context.utils as any)._customControlProperties?.controlId,
             onGetPcfContext: () => this._context,
             onGetParameters: () => {
                 return {
@@ -158,7 +147,7 @@ export class VirtualDatasetAdapter {
 
     private _getDatasetControlParameters(): IDatasetControlParameters {
         return {
-            Grid: this.getDataset(),
+            Grid: this._dataset,
             EnableEditing: {
                 raw: this._isEditingEnabled()
             },
@@ -179,6 +168,9 @@ export class VirtualDatasetAdapter {
             },
             EnableNavigation: {
                 raw: this._context.parameters.EnableNavigation?.raw !== 'false'
+            },
+            EnableViewSwitcher: {
+                raw: this._context.parameters.EnableViewSwitcher?.raw === 'true'
             },
             EnableOptionSetColors: {
                 raw: this._context.parameters.EnableOptionSetColors?.raw === 'true'
@@ -250,6 +242,7 @@ export class VirtualDatasetAdapter {
         }
     }
 
+    //deprecated - all columns should now be loaded from provided saved queries
     private _getColumns() {
         try {
             const parameterColumns = this._context.parameters.Columns?.raw;

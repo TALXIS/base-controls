@@ -1,17 +1,22 @@
-import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react";
+import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem, Shimmer, ShimmerElementType, ShimmerLine, Spinner, useTheme } from "@fluentui/react";
 import { useModel } from "../useModel";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getViewSwitcherStyles } from "./styles";
-import { ViewSwitcherModel } from "./ViewSwitcherModel";
+import { useEventEmitter } from "../../../hooks";
+import { IDatasetControlEvents } from "../../../utils/dataset-control";
+import { IDataProviderEventListeners, ISavedQuery } from "@talxis/client-libraries";
 
 export const ViewSwitcher = () => {
     const model = useModel();
+    const datasetControl = model.getDatasetControl();
     const labels = model.getLabels();
     const theme = useTheme();
     const styles = useMemo(() => getViewSwitcherStyles(theme), [theme]);
-    const viewSwitcher = useMemo(() => new ViewSwitcherModel(model.getDatasetControl()), []);
+    const viewSwitcher = datasetControl.viewSwitcher;
+    const [loading, setLoading] = useState(true);
+    useEventEmitter<IDataProviderEventListeners>(datasetControl.getDataset(), 'onPreloadFinished', () => setLoading(false));
 
-    const getViewSwitcherItems = (): IContextualMenuItem[] => {
+    const getViewSwitcherItems = (currentSavedQuery: ISavedQuery): IContextualMenuItem[] => {
         return [
             ...viewSwitcher.getUserQueries().length > 0 ? [{
                 key: 'userViewHeader',
@@ -25,7 +30,7 @@ export const ViewSwitcher = () => {
                 return {
                     key: view.id,
                     text: view.displayName,
-                    className: viewSwitcher.getCurrentSavedQuery().id === view.id ? styles.selectedViewItem : undefined,
+                    className: currentSavedQuery.id === view.id ? styles.selectedViewItem : undefined,
 
                 } as IContextualMenuItem
             }),
@@ -41,22 +46,31 @@ export const ViewSwitcher = () => {
                 return {
                     key: view.id,
                     text: view.displayName,
-                    className: viewSwitcher.getCurrentSavedQuery().id === view.id ? styles.selectedViewItem : undefined,
+                    className: currentSavedQuery.id === view.id ? styles.selectedViewItem : undefined,
+                    onClick: () => viewSwitcher.setCurrentSavedQuery(view.id)
 
                 } as IContextualMenuItem
             })
         ]
     }
-
-    return <CommandBarButton
-        text={viewSwitcher.getCurrentSavedQuery().displayName}
-        menuProps={{
-            items: getViewSwitcherItems()
-        }}
-        styles={{
-            label: styles.commandBarButtonLabel,
-            menuIcon: styles.menuIcon,
-            menuIconExpanded: styles.menuIconExpanded
-        }}
-    />
+    if (loading) {
+        return <Shimmer shimmerElements={[
+            {type: ShimmerElementType.line, width: 200, height: 10}
+        ]} />
+    }
+    else {
+        const currentSavedQuery = viewSwitcher.getCurrentSavedQuery();
+        return <CommandBarButton
+            text={currentSavedQuery.displayName}
+            menuProps={{
+                items: getViewSwitcherItems(currentSavedQuery)
+            }}
+            styles={{
+                root: styles.commandBarButtonRoot,
+                label: styles.commandBarButtonLabel,
+                menuIcon: styles.menuIcon,
+                menuIconExpanded: styles.menuIconExpanded
+            }}
+        />
+    }
 }

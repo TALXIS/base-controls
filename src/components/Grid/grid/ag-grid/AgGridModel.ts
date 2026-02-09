@@ -310,7 +310,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                 }
             }
             const state = this.getGrid().getState() || {};
-            state.AgGridState = gridState;
+            state[`${this.getGrid().getDataset().getViewId()}_agGridState`] = gridState;
             this.getGrid().getPcfContext().mode.setControlState(state);
         });
     }
