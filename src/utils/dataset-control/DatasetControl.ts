@@ -34,6 +34,7 @@ export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
     isQuickFindVisible(): boolean;
     isAutoSaveEnabled(): boolean;
     isRibbonVisible(): boolean;
+    getUserQueryScopeId(): string | null;
     getHeight(): string | null;
     getDataset(): IDataset;
     getPcfContext(): ComponentFramework.Context<any>;
@@ -108,7 +109,8 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         this.dispatchEvent('onEditColumnsRequested');
     }
     public isViewSwitcherVisible(): boolean {
-        return !!this.getParameters().EnableViewSwitcher?.raw && !this._isUsingLegacyColumnsBinding;
+        return true;
+        //return !!this.getParameters().EnableViewSwitcher?.raw && !this._isUsingLegacyColumnsBinding;
     }
     public isEditColumnsVisible(): boolean {
         return this.getParameters().EnableEditColumns?.raw ?? false;
@@ -118,6 +120,10 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     }
     public getHeight() {
         return this.getParameters().Height?.raw ?? null;
+    }
+    //TODO: if not defined, use record id of form record if available
+    public getUserQueryScopeId(): string | null {
+        return 'user_query_scope';
     }
     public getDataset() {
         return this.getParameters().Grid;
@@ -214,6 +220,9 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         const provider = this.getDataset().getDataProvider();
         provider.setProperty('autoSave', this.isAutoSaveEnabled());
         provider.setProperty('groupingType', this.getParameters().GroupingType?.raw ?? 'nested');
+        provider.setProperty('isViewSwitcherEnabled', this.isViewSwitcherVisible());
+        provider.setProperty('areUserQueriesEnabled', true);
+
         const inlineRibbonButtonsIds = [
             ...(this.getParameters().InlineRibbonButtonIds?.raw?.split(',') ?? []),
             DataProvider.CONST.SAVE_COMMAND_ID,
