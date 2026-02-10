@@ -174,7 +174,7 @@ onOverrideComponentProps={(props) => {
 
 In case of Decimal, the component used is our [`TextField`](https://talxis.github.io/docs-int0015-sharedcomponents/) from Shared Components, so the props parameter corresponds to the `ITextFieldProps` object. If you are using this method, you always need to return your overriden props by **spreading the original props object**! If you are overriding a method, you should call the original method as well:
 
-###Overriding context methods
+### Overriding context methods
 
 It is possible to override the behavior of context methods to achieve additional features. For example, let's say that we would like the control to append the string 'Beers' after every number. We can achieve that by overriding the `formatDecimal` method like this:
 
