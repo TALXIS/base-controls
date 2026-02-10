@@ -1,3 +1,5 @@
+# Usage
+
 Rendering a Base Control in your PCF is as simple as using any other component. After you install the [@talxis/base-controls](https://www.npmjs.com/package/@talxis/base-controls?activeTab=versions) package, you can import a Base Control and use it as standard React component:
 
 <details>
@@ -25,7 +27,7 @@ return <Decimal
 This piece of code will render a Decimal component showcasing the number you have inputted. Notice that you always need to pass it a PCF `context` and a parameters object with binding parameter. 
 
 
-![image.png](/.attachments/image-a4b04e82-7b61-4c4f-a745-0b098312ba8e.png)
+![Decimal component rendering 3,000.00](./.attachments/image-a4b04e82-7b61-4c4f-a745-0b098312ba8e.png)
 
 ## So? What's the big deal, can't I just use a classic TextField?
 
@@ -51,7 +53,7 @@ Power of Base Controls relies in their full implementation of various repeating 
 ```
 </details>
 
-![image.png](/.attachments/image-c07ab171-5802-4689-b22a-aea7bdda6320.png)
+![Decimal component with precision 1](./.attachments/image-c07ab171-5802-4689-b22a-aea7bdda6320.png)
 
 This might not seem like much, but let's think about it. Why was the precision set to `2` in the first place? Well it was se to that because if no precision is provided, a User Settings precision is used. How does it know which characters to use as number and decimal separator? Again, it comes from User Settings. 
 
@@ -141,7 +143,7 @@ return <Decimal
 ```
 </details>
 
-![image.png](/.attachments/image-75b5ec0a-61f6-41e1-a82b-831c66d64daf.png)
+![Decimal component with error message](./.attachments/image-75b5ec0a-61f6-41e1-a82b-831c66d64daf.png)
 ## Extensibility
 
 ### Translations
@@ -172,7 +174,7 @@ onOverrideComponentProps={(props) => {
 
 In case of Decimal, the component used is our [`TextField`](https://talxis.github.io/docs-int0015-sharedcomponents/) from Shared Components, so the props parameter corresponds to the `ITextFieldProps` object. If you are using this method, you always need to return your overriden props by **spreading the original props object**! If you are overriding a method, you should call the original method as well:
 
-###Overriding context methods
+### Overriding context methods
 
 It is possible to override the behavior of context methods to achieve additional features. For example, let's say that we would like the control to append the string 'Beers' after every number. We can achieve that by overriding the `formatDecimal` method like this:
 
@@ -195,7 +197,7 @@ context={{
 <br />
 
 Example above replaces the `formatDecimal` method with it's own that simple calls the original method and always appends the word 'Beers' on the end giving us the following result:
-![image.png](/.attachments/image-cdbd9f4a-4828-4fae-812d-2edaa4202e90.png)
+![Decimal component displaying Beers](./.attachments/image-cdbd9f4a-4828-4fae-812d-2edaa4202e90.png)
 
 You can see that we are never assigning anything to the original context method, we are simply spreading it and overriding things in the new object. You **should never** assign anything to PCF context and nothing like `context.whateverProp = newProp` should be part of a PR. If so, you will be punished.
 
@@ -250,12 +252,12 @@ Let's take what we now know and make a bit more advanced example. Let's stay we 
 
 To explain the above code example: We have switched the Base Control to `Whole.None`, because Beer is usually counted by whole pieces. Because of that, we had the override the `formatInteger` method instead of the `formatDecimal` method. After that, we have overriden the component props by adding a custom button with action and setting the component `readOnly`. Notice how we are still using the original `suffixItems` from props. If we wouldn't do that, the control would lost all of its native buttons, including the spin button. Last, we have enabled the spin button using the `EnableSpinButton` parameter. 
 
-![basecontrol_example.gif](/.attachments/basecontrol_example-ce9577b5-ac1e-4a94-8784-a0443330a5b6.gif)
+![Beer Spinner with spin button](./.attachments/basecontrol_example-ce9577b5-ac1e-4a94-8784-a0443330a5b6.gif)
 
 Because we are using a Base Control, we can also turn on other common features if needed through parameters. For example, a copy button:
 
-![basecontrol_example.gif](/.attachments/basecontrol_example-5665f232-4afe-42f4-8724-f68eca8e10d0.gif)
+![Beer Spinner with copy button](./.attachments/basecontrol_example-5665f232-4afe-42f4-8724-f68eca8e10d0.gif)
 
 ## Source code is your friend
 
-We have provided typings and description for every Base Control to help you understand what you need to do to make them work and do what you want. If you are lost or something weird is happening, look into their [source code](https://dev.azure.com/thenetworg/INT0015/_git/INT0015-BaseControls) to see what might be wrong. Base Controls are relatively new addition, so some bugs/weird behavior is to be expected. If any of these occur, please react out to @<Dominik Brych> and we will sort it out.
+We have provided typings and description for every Base Control to help you understand what you need to do to make them work and do what you want. If you are lost or something weird is happening, look into their [source code](https://github.com/TALXIS/base-controls) to see what might be wrong. Base Controls are relatively new addition, so some bugs/weird behavior is to be expected. If any of these occur, please reach out to @<Dominik Brych> and we will sort it out.
