@@ -27,7 +27,7 @@ return <Decimal
 This piece of code will render a Decimal component showcasing the number you have inputted. Notice that you always need to pass it a PCF `context` and a parameters object with binding parameter. 
 
 
-<!-- TODO: add screenshot of Decimal component rendering "3,000.00" with default precision -->
+![Decimal component rendering 3,000.00](./.attachments/image-a4b04e82-7b61-4c4f-a745-0b098312ba8e.png)
 
 ## So? What's the big deal, can't I just use a classic TextField?
 
@@ -53,7 +53,7 @@ Power of Base Controls relies in their full implementation of various repeating 
 ```
 </details>
 
-<!-- TODO: add screenshot of Decimal component displaying "3,000.0" with precision set to 1 -->
+![Decimal component with precision 1](./.attachments/image-c07ab171-5802-4689-b22a-aea7bdda6320.png)
 
 This might not seem like much, but let's think about it. Why was the precision set to `2` in the first place? Well it was se to that because if no precision is provided, a User Settings precision is used. How does it know which characters to use as number and decimal separator? Again, it comes from User Settings. 
 
@@ -143,7 +143,7 @@ return <Decimal
 ```
 </details>
 
-<!-- TODO: add screenshot of Decimal component with red error outline and error message text -->
+![Decimal component with error message](./.attachments/image-75b5ec0a-61f6-41e1-a82b-831c66d64daf.png)
 ## Extensibility
 
 ### Translations
@@ -197,7 +197,7 @@ context={{
 <br />
 
 Example above replaces the `formatDecimal` method with it's own that simple calls the original method and always appends the word 'Beers' on the end giving us the following result:
-<!-- TODO: add screenshot of Decimal component displaying "3,000.00 Beers" -->
+![Decimal component displaying Beers](./.attachments/image-cdbd9f4a-4828-4fae-812d-2edaa4202e90.png)
 
 You can see that we are never assigning anything to the original context method, we are simply spreading it and overriding things in the new object. You **should never** assign anything to PCF context and nothing like `context.whateverProp = newProp` should be part of a PR. If so, you will be punished.
 
@@ -252,11 +252,11 @@ Let's take what we now know and make a bit more advanced example. Let's stay we 
 
 To explain the above code example: We have switched the Base Control to `Whole.None`, because Beer is usually counted by whole pieces. Because of that, we had the override the `formatInteger` method instead of the `formatDecimal` method. After that, we have overriden the component props by adding a custom button with action and setting the component `readOnly`. Notice how we are still using the original `suffixItems` from props. If we wouldn't do that, the control would lost all of its native buttons, including the spin button. Last, we have enabled the spin button using the `EnableSpinButton` parameter. 
 
-<!-- TODO: add animated GIF of Beer Spinner with spin button and beer icon action -->
+![Beer Spinner with spin button](./.attachments/basecontrol_example-ce9577b5-ac1e-4a94-8784-a0443330a5b6.gif)
 
 Because we are using a Base Control, we can also turn on other common features if needed through parameters. For example, a copy button:
 
-<!-- TODO: add animated GIF of Beer Spinner with copy button enabled -->
+![Beer Spinner with copy button](./.attachments/basecontrol_example-5665f232-4afe-42f4-8724-f68eca8e10d0.gif)
 
 ## Source code is your friend
 
