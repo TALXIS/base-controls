@@ -10,9 +10,6 @@ export const getViewManagerDialogStyles = () => {
                     flexGrow: 1
                 }
             }
-        },
-        datasetControlRoot: {
-            width: 600
         }
     })
 }

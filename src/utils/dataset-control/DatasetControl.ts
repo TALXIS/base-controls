@@ -10,6 +10,7 @@ interface IDatasetControlOptions {
     controlId: string;
     onGetPcfContext: () => ComponentFramework.Context<any, any>;
     onGetParameters: () => IDatasetControlParameters;
+    onSaveState?: (state: ComponentFramework.Dictionary) => void;
 }
 
 export interface IDatasetControlEvents {
@@ -21,7 +22,7 @@ export interface IDatasetControlEvents {
 interface IDatasetControlInterceptors {
 }
 
-type IRemountRequestContext = | { reason: 'saved-query-changed'; data: { oldQueryId: string, newQueryId: string } }
+type IRemountRequestContext = | { reason: 'saved-query-changed'; data: { oldQueryId: string, newQueryId: string } } | { reason: 'flush-state' }
 // Add more reasons here with specific data types as needed
 
 export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
@@ -29,6 +30,7 @@ export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
     viewSwitcher: IViewSwitcher;
     setInterceptor<K extends keyof IDatasetControlInterceptors>(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void;
     isPaginationVisible(): boolean;
+    getControlId(): string;
     isRecordCountVisible(): boolean;
     isPageSizeSwitcherVisible(): boolean;
     isQuickFindVisible(): boolean;
@@ -69,7 +71,7 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         super();
         this._options = options;
         this._setDatasetProperties();
-        this._loadState();
+        this._loadState(this._options.controlId, this._options.state);
         this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids))
         this._addEventListeners();
         this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
@@ -172,15 +174,28 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     public getState() {
         return this._options.state;
     }
+    public getControlId() {
+        return this._options.controlId;
+    }
     public saveState() {
-        const provider = this.getDataset().getDataProvider();
         const state = this._options.state;
-        const currentViewId = provider.getViewId();
-        const DatasetControlState = state.DatasetControlState || {};
-        DatasetControlState.viewId = this._remountRequestContext?.data?.newQueryId ?? currentViewId;
-        DatasetControlState.SavedQueries = provider.getSavedQueries().map(query => query.id === currentViewId ? this._enrichQueryWithCurrentState(query, provider) : query);
-        state.DatasetControlState = DatasetControlState;
-        this.getPcfContext().mode.setControlState(state);
+        const controlState = state[this._options.controlId];
+        switch (this._remountRequestContext?.reason) {
+            case 'flush-state': {
+                state[this._options.controlId] = {};
+                break;
+            }
+            default: {
+                const provider = this.getDataset().getDataProvider();
+                const currentViewId = provider.getViewId();
+                const DatasetControlState = controlState.DatasetControlState || {};
+                DatasetControlState.viewId = this._remountRequestContext?.data?.newQueryId ?? currentViewId;
+                DatasetControlState.SavedQueries = provider.getSavedQueries().map(query => query.id === currentViewId ? this._enrichQueryWithCurrentState(query, provider) : query);
+                controlState.DatasetControlState = DatasetControlState;
+                state[this._options.controlId] = controlState;
+            }
+        }
+        this._options.onSaveState?.(state);
     }
 
     private _enrichQueryWithCurrentState(query: ISavedQuery, provider: IDataProvider) {
@@ -243,18 +258,20 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         });
     }
 
-    private _loadState() {
-        const state = this._options.state?.DatasetControlState;
-        if (!state) {
-            return;
+    private _loadState(controlId: string, state: ComponentFramework.Dictionary) {
+        if (state[controlId]?.DatasetControlState) {
+            const DatasetControlState = state[controlId].DatasetControlState;
+            const provider = this.getDataset().getDataProvider();
+            provider.setMetadata({
+                ...provider.getMetadata(),
+                SavedQueries: DatasetControlState.SavedQueries
+            });
+            provider.setViewId(DatasetControlState.viewId);
+            provider.setProperty('hasPreviousState', true);
         }
-        const provider = this.getDataset().getDataProvider();
-        provider.setMetadata({
-            ...provider.getMetadata(),
-            SavedQueries: state.SavedQueries
-        });
-        provider.setViewId(state.viewId);
-        provider.setProperty('hasPreviousState', true);
+        else if(!state[controlId]) {
+            state[controlId] = {};
+        }
     }
 
     private _showLegacyColumnsWarning() {

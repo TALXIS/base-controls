@@ -5,6 +5,8 @@ export const datasetControlTranslations = {
     'save-new-view': { 1029: "Uložit jako nové zobrazení", 1033: "Save as new view" },
     'save-existing-view': { 1029: "Uložit změny do aktuálního zobrazení", 1033: "Save changes to current view" },
     'manage-views': { 1029: "Spravovat má zobrazení", 1033: "Manage my views" },
+    'name': { 1029: "Název", 1033: "Name" },
+    'description': { 1029: "Popis", 1033: "Description" },
     "column-source": { 1029: "Zdroj sloupců", 1033: "Column source" },
     "no-result-found": { 1029: "Nebyly nalezeny žádné výsledky.", 1033: "No results found." },
     "add-column": { 1029: "Přidat sloupec", 1033: "Add column" },

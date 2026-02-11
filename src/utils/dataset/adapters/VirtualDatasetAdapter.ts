@@ -89,7 +89,8 @@ export class VirtualDatasetAdapter {
             state: this._state,
             controlId: (this._context.utils as any)._customControlProperties?.controlId,
             onGetPcfContext: () => this._context,
-            onGetParameters: () => this._getDatasetControlParameters()
+            onGetParameters: () => this._getDatasetControlParameters(),
+            onSaveState: (state) => this._context.mode.setControlState(state)
         });
         this._options?.onDatasetControlCreated?.(this._datasetControl);
         if (this._context.parameters.Height?.raw === '100%') {

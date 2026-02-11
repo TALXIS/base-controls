@@ -1,6 +1,6 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyleSets } from "@fluentui/react";
-import { IRecord, Constants, DataProvider, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { DataProvider, IRecord, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useThemeGenerator, getClassNames, useRerender } from "@talxis/react-components";
 import { useMemo, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
@@ -230,7 +230,7 @@ export const InternalCell = (props: ICellProps) => {
                             rerender();
                         }} />
                 }
-                {(column.type !== 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) &&
+                {(column.type !== 'action' || column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME) &&
                     <CellContent {...props} />
                 }
                 {shouldRenderNotifications &&

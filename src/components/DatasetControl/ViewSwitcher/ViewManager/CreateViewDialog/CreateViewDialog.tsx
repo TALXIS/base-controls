@@ -1,8 +1,9 @@
 import { Dialog, DialogFooter, MessageBar, MessageBarType, PrimaryButton } from "@fluentui/react";
 import { useModel } from "../../../useModel";
 import { TextField, withButtonLoading } from "@talxis/react-components";
-import React from "react";
+import React, { useMemo } from "react";
 import { useIsLoading } from "../../../../../hooks";
+import { getCreateViewDialogStyles } from "./styles";
 
 const SaveButton = withButtonLoading(PrimaryButton);
 
@@ -11,13 +12,13 @@ interface ICreateViewDialogProps {
 }
 
 export const CreateViewDialog = (props: ICreateViewDialogProps) => {
-    const { onDismiss } = props;
     const model = useModel();
     const labels = model.getLabels();
     const viewSwitcher = model.getDatasetControl().viewSwitcher;
     const [name, setName] = React.useState('');
     const [description, setDescription] = React.useState('');
     const [errorMessage, setErrorMessage] = React.useState<string>();
+    const styles = useMemo(() => getCreateViewDialogStyles(), []);
 
     const [isLoading, saveNewView] = useIsLoading(async () => {
         const result = await viewSwitcher.saveNewUserQuery({ name, description });
@@ -25,6 +26,12 @@ export const CreateViewDialog = (props: ICreateViewDialogProps) => {
             setErrorMessage(result.errors?.map(e => e.message).join(', ') ?? 'Unknown error');
         }
     });
+
+    const onDismiss = () => {
+        if (!isLoading) {
+            props.onDismiss();
+        }
+    }
 
     return <Dialog
         hidden={false}
@@ -36,22 +43,32 @@ export const CreateViewDialog = (props: ICreateViewDialogProps) => {
             isBlocking: true
         }}
     >
-        {errorMessage && <MessageBar messageBarType={MessageBarType.error}>
-            {errorMessage}
-        </MessageBar>}
-        <div>
+        <div className={styles.contentWrapper}>
+            {errorMessage && <MessageBar
+                isMultiline={false}
+                truncated
+                messageBarType={MessageBarType.error}>
+                {errorMessage}
+            </MessageBar>}
             <TextField
                 value={name}
-                onChange={(e, newValue) => setName(newValue || '')} />
+                label={labels['name']()}
+                disabled={isLoading}
+                required
+                onChange={(e, newValue) => setName(newValue ?? '')} />
             <TextField
                 value={description}
-                onChange={(e, newValue) => setDescription(newValue || '')} />
+                label={labels['description']()}
+                disabled={isLoading}
+                multiline
+                onChange={(e, newValue) => setDescription(newValue ?? '')} />
         </div>
         <DialogFooter>
             <SaveButton
                 text={labels['save']()}
                 isLoading={isLoading}
                 onClick={saveNewView}
+                disabled={!name.trim()}
             />
         </DialogFooter>
 

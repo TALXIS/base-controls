@@ -8,7 +8,7 @@ export const useIsLoading = <T>(fn: () => Promise<T>): [boolean, () => Promise<T
     const execute = async () => {
         setIsLoading(true);
         try {
-            return fn();
+            return await fn();
         } 
         finally {
             if (isMounted()) {

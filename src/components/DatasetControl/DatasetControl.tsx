@@ -86,7 +86,7 @@ export const DatasetControl = (props: IDatasetControlProps) => {
               ...filteredProps,
               parameters: datasetControl.getParameters(),
               context: datasetControl.getPcfContext(),
-              state: datasetControl.getState()
+              state: datasetControl.getState()[datasetControl.getControlId()]
             })}
           </div>
         })}
