@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useControl } from "../../hooks";
 import { ThemeProvider } from "@fluentui/react";
 import { datasetControlTranslations } from "./translations";
@@ -11,6 +11,8 @@ import { Header } from "./Header/Header";
 import { useEventEmitter } from "../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlProps } from "./interfaces";
+import { on } from "events";
+import { ControlComponentLoading } from "./ControlComponentLoading/ControlComponentLoading";
 
 export const DatasetControl = (props: IDatasetControlProps) => {
   const { labels, theme } = useControl('DatasetControl', {
@@ -18,7 +20,7 @@ export const DatasetControl = (props: IDatasetControlProps) => {
     context: props.onGetDatasetControlInstance().getPcfContext(),
     parameters: props.onGetDatasetControlInstance().getParameters(),
   }, datasetControlTranslations);
-  
+
   const propsRef = useRef<IDatasetControlProps>(props);
   propsRef.current = props;
   const datasetControl = propsRef.current.onGetDatasetControlInstance();
@@ -31,10 +33,20 @@ export const DatasetControl = (props: IDatasetControlProps) => {
   const rerender = useRerender();
   const styles = useMemo(() => getDatasetControlStyles(datasetControl.getHeight()), [datasetControl.getHeight()]);
   const dataset = datasetControl.getDataset();
+  const [shouldLoadControlComponent, setShouldLoadControlComponent] = useState(!dataset.loading);
 
-  useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', rerender);
+  useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', (options: any) => onNewDataLoaded(options));
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onRenderRequested', rerender);
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onBeforeNewDataLoaded', rerender);
+
+  const onNewDataLoaded = (options: {isFirstLoad: boolean}) => {
+    if (options.isFirstLoad) {
+      setShouldLoadControlComponent(true);
+    }
+    else {
+      rerender();
+    }
+  }
 
 
   const componentProps = onOverrideComponentProps({
@@ -76,18 +88,20 @@ export const DatasetControl = (props: IDatasetControlProps) => {
         <Header onRenderHeader={props.onRenderHeader} />
         {props.onRenderControlContainer({
           controlContainerProps: {
-            className: styles.controlContainer
+            className: styles.controlContainer,
           },
-
+          shouldLoadControlComponent: shouldLoadControlComponent,
+          onRenderLoading: () => <ControlComponentLoading />
         }, (props) => {
           const { onOverrideComponentProps, ...filteredProps } = propsRef.current;
           return <div {...props.controlContainerProps}>
-            {propsRef.current.onGetControlComponent({
+            {props.shouldLoadControlComponent && propsRef.current.onGetControlComponent({
               ...filteredProps,
               parameters: datasetControl.getParameters(),
               context: datasetControl.getPcfContext(),
               state: datasetControl.getState()[datasetControl.getControlId()]
             })}
+            {!props.shouldLoadControlComponent && props.onRenderLoading()}
           </div>
         })}
         {props.onRenderFooter({

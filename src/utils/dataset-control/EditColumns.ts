@@ -176,7 +176,7 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
         this._provider.setColumns(this._currentColumns.map((col, i) => {
             const { id, ...newCol } = {
                 ...col,
-                order: i
+                order: i,
             }
             return newCol;
         }));

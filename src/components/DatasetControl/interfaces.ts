@@ -27,6 +27,7 @@ export interface IDatasetControlParameters extends IGridParameters {
     EnableViewSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
     ClientApiWebresourceName?: IStringProperty;
     ClientApiFunctionName?: IStringProperty;
+    UserQueryScope?: IStringProperty;
 }
 
 export interface IDatasetControlComponentProps {
@@ -43,6 +44,8 @@ export interface IComponentProps {
 
 interface IControlContainerProps {
     controlContainerProps: React.HTMLAttributes<HTMLDivElement>;
+    shouldLoadControlComponent: boolean;
+    onRenderLoading: () => React.ReactElement;
 }
 
 export interface IFooterProps {

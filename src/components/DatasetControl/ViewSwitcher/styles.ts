@@ -24,6 +24,14 @@ export const getViewSwitcherStyles = (theme: ITheme) => {
         menuCallout: {
             width: 250,
         },
+        viewItem: {
+            '[class^="defaultViewLabel"]': {
+                order: 2
+            }
+        },
+        defaultViewLabel: {
+            color: theme.semanticColors.disabledText
+        },
         menuSectionContent: {
             maxHeight: 200,
             overflow: 'auto',

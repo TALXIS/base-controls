@@ -38,6 +38,7 @@ interface IInputs {
     DefaultExpandedGroupLevel?: ComponentFramework.PropertyTypes.WholeNumberProperty;
     SelectableRows?: ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">;
     GroupingType?: ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">;
+    UserQueryScope?: ComponentFramework.PropertyTypes.StringProperty;
     IsLocalHarnessDebugMode?: ComponentFramework.PropertyTypes.EnumProperty<"true" | "false">;
     ClientApiWebresourceName?: ComponentFramework.PropertyTypes.StringProperty;
     ClientApiFunctionName?: ComponentFramework.PropertyTypes.StringProperty;
@@ -140,7 +141,10 @@ export class VirtualDatasetAdapter {
             onGetParameters: () => {
                 return {
                     ...this._getDatasetControlParameters(),
-                    Grid: new Dataset(new MemoryDataProvider([], { PrimaryIdAttribute: 'id' }))
+                    Grid: new Dataset(new MemoryDataProvider({
+                        dataSource: [],
+                        metadata: {PrimaryIdAttribute: 'id'}
+                    }))
                 }
             }
         });
@@ -225,6 +229,9 @@ export class VirtualDatasetAdapter {
             },
             ClientApiFunctionName: {
                 raw: this._context.parameters.ClientApiFunctionName?.raw ?? null
+            },
+            UserQueryScope: {
+                raw: this._getUserQueryScope()
             }
         }
     }
@@ -235,10 +242,15 @@ export class VirtualDatasetAdapter {
         }
         switch (this._context.parameters.DataProvider.raw) {
             case "FetchXml": {
-                return new FetchXmlDataProvider(this._context.parameters.Data.raw as string)
+                return new FetchXmlDataProvider({
+                    dataSource: this._context.parameters.Data.raw as string,
+                })
             }
             case 'Memory': {
-                return new MemoryDataProvider(this._context.parameters.Data.raw!, this._getEntityMetadata())
+                return new MemoryDataProvider({
+                    dataSource: this._context.parameters.Data.raw!,
+                    metadata: this._getEntityMetadata()
+                })
             }
         }
     }
@@ -294,5 +306,16 @@ export class VirtualDatasetAdapter {
             flexDirection: 'column',
             flexGrow: 1
         });
+    }
+
+    private _getUserQueryScope() {
+        if(this._context.parameters.UserQueryScope?.raw) {
+            return this._context.parameters.UserQueryScope.raw;
+        }
+        else {
+            //@ts-ignore - this is just for testing, scope should be passed via binding
+            return this._context.page?.entityId ?? null;
+        }
+        
     }
 }

@@ -41,9 +41,9 @@ export const Panel = (props: IPanelProps) => {
     }
 
     return <BasePanel
+        isOpen
         styles={{
             footer: styles.panelFooter,
-            commands: styles.panelCommands,
             scrollableContent: styles.panelScrollableContent,
             content: styles.panelContent,
             ...props.styles

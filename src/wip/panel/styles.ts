@@ -9,8 +9,6 @@ export const getPanelStyles = (theme: ITheme) => {
             display: 'flex',
             gap: 10
         },
-        panelCommands: {
-        },
         panelScrollableContent: {
             overflowX: 'hidden',
             display: 'flex',
@@ -21,15 +19,6 @@ export const getPanelStyles = (theme: ITheme) => {
              flexDirection: 'column',
              minHeight: 0,
              padding: 0
-        },
-        scrollableContainer: {
-            overflow: 'auto',
-            paddingLeft: 15,
-            paddingRight: 15,
-            paddingTop: 12,
-            paddingBottom: 12,
-            flex: 1,
-            scrollbarWidth: 'thin',
         },
         header: {
             borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,

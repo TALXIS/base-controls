@@ -1,4 +1,4 @@
-import { CommandBarButton, Icon, IContextualMenuItem, Shimmer, ShimmerElementType, useTheme } from "@fluentui/react";
+import { CommandBarButton, ContextualMenuItem, Icon, IContextualMenuItem, Shimmer, ShimmerElementType, useTheme } from "@fluentui/react";
 import { useModel } from "../useModel";
 import { useMemo, useState } from "react";
 import { getViewSwitcherStyles } from "./styles";
@@ -28,12 +28,16 @@ export const ViewSwitcher = () => {
 
     const getQueryContextuaMenuItem = (view: ISavedQuery, currentSavedQuery: ISavedQuery): IContextualMenuItem => {
         const isSelected = currentSavedQuery.id === view.id;
+        const classNames = getClassNames([styles.viewItem, isSelected ? styles.selectedViewItem : undefined]);
         return {
             key: view.id,
             id: `${QUERY_ID_PREFIX}_${view.id}`,
             text: view.displayName,
-            className: isSelected ? styles.selectedViewItem : undefined,
-            ['data-selected']: isSelected,
+            hasIcons: view.isDefault,
+            title: view.displayName,
+            iconProps: view.isDefault ? { iconName: 'CheckMark' } : undefined,
+            className: classNames,
+            ['data-is-default']: view.isDefault,
             ['data-group-key']: view.isUserQuery ? USER_VIEW_GROUP_KEY : SYSTEM_VIEW_GROUP_KEY,
             onClick: () => viewSwitcher.setCurrentSavedQuery(view.id)
         }
@@ -52,7 +56,11 @@ export const ViewSwitcher = () => {
                     iconProps: {
                         iconName: 'Save'
                     },
-                }] : [{
+                    //TODO: handle errors
+                    onClick: () => viewSwitcher.updateCurrentUserQuery()
+                    
+                }] : []),
+                {
                     key: 'saveNewView',
                     ['data-group-key']: ACTION_GROUP_KEY,
                     text: labels['save-new-view'](),
@@ -61,7 +69,7 @@ export const ViewSwitcher = () => {
                         iconName: 'SaveAs'
                     },
                     onClick: () => setCreateViewDialogOpen(true)
-                }]),
+                },
                 {
                     key: 'manageViews',
                     ['data-group-key']: ACTION_GROUP_KEY,
@@ -85,7 +93,12 @@ export const ViewSwitcher = () => {
                 {label && <Text className={styles.menuSectionHeaderLabel}>{label}</Text>}
             </div>
             <div className={styles.menuSectionContent}>
-                {items.map(item => itemRenderer?.(item))}
+                {items.map(item => itemRenderer?.({
+                    ...item,
+                    onRenderIcon: item['data-is-default'] ? () => {
+                        return <Text className={styles.defaultViewLabel}>{labels['default']()}</Text>
+                    } : undefined
+                }))}
             </div>
         </>
     }

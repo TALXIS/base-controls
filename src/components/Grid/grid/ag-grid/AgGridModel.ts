@@ -145,8 +145,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._setCurrentColumns();
         if (!this._grid.getDataset().loading) {
             //we need to call this here since the events already fired before the grid api was ready
-            this._onNewDataLoaded();
-            this._setTotalRow();
+            this._onNewDataLoaded({isFirstLoad: true});
         }
     }
 
@@ -355,9 +354,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _registerEventListeners() {
         this._dataset.addEventListener('onLoading', (isLoading: boolean) => this._setLoadingOverlay(this._dataset.loading));
         this._dataset.addEventListener('onRecordsSelected', (ids: string[]) => this._debouncedSetSelectedNodes(ids));
-        this._dataset.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded());
+        this._dataset.addEventListener('onNewDataLoaded', (params) => this._onNewDataLoaded(params));
         this._dataset.addEventListener('onRenderRequested', () => this.executeWithGridApi(gridApi => gridApi.refreshCells()));
-        this._dataset.addEventListener('onFirstDataLoaded', () => this._setTotalRow());
         this.executeWithGridApi(gridApi => {
             gridApi.addEventListener('gridSizeChanged', () => this._autoSizeColumns());
             gridApi.addEventListener('firstDataRendered', () => this._autoSizeColumns());
@@ -493,7 +491,10 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         }
     }
 
-    private _onNewDataLoaded() {
+    private _onNewDataLoaded(params: {isFirstLoad: boolean}) {
+        if(params.isFirstLoad) {
+            this._setTotalRow();
+        }
         this._refreshServerSideModel();
         this._setCurrentColumns();
         this._setNoRowsOverlay();

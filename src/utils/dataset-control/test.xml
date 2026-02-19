@@ -1,0 +1,57 @@
+<fetch version="1.0" mapping="logical" count="50" page="1">
+    <entity name="talxis_field">
+        <attribute name="statecode" />
+        <attribute name="ownerid" />
+        <attribute name="modifiedon" />
+        <attribute name="exchangerate" />
+        <attribute name="createdon" />
+        <attribute name="talxis_name" />
+        <attribute name="talxis_singlelinetext" />
+        <attribute name="talxis_singlelineurl" />
+        <attribute name="talxis_singlelinephone" />
+        <attribute name="talxis_singlelineemail" />
+        <attribute name="talxis_multiple" />
+        <attribute name="talxis_wholenone" />
+        <attribute name="talxis_wholeduration" />
+        <attribute name="talxis_decimal" />
+        <attribute name="talxis_dateonly" />
+        <attribute name="talxis_dateandtime" />
+        <attribute name="talxis_dateandtimetzi" />
+        <attribute name="talxis_optionset" />
+        <attribute name="talxis_optionsetcolorful" />
+        <attribute name="talxis_multiselectoptionset" />
+        <attribute name="talxis_multiselectoptionsetcolorful" />
+        <attribute name="talxis_twooptions" />
+        <attribute name="talxis_twooptionscolorful" />
+        <attribute name="talxis_file" />
+        <attribute name="talxis_image" />
+        <attribute name="talxis_parentfield" />
+        <attribute name="talxis_currency" />
+        <attribute name="talxis_fieldid" />
+        <order attribute="talxis_name" />
+        <link-entity alias="talxis_file" from="fileattachmentid" link-type="outer"
+            name="fileattachment" to="talxis_file">
+            <attribute name="mimetype" />
+            <attribute name="filesizeinbytes" />
+            <attribute name="filename" />
+        </link-entity>
+        <link-entity alias="talxis_imageid_imagedescriptor" from="imagedescriptorid"
+            link-type="outer" name="imagedescriptor" to="talxis_imageid">
+            <attribute name="mimetype" />
+            <attribute name="filesizebytes" />
+            <attribute name="filename" />
+            <attribute name="imageurl" />
+            <attribute name="fullimageurl" />
+        </link-entity>
+        <link-entity alias="systemuser" from="systemuserid" link-type="outer" name="systemuser"
+            to="modifiedby">
+            <attribute name="applicationid" />
+        </link-entity>
+        <filter type="and">
+            <condition attribute="talxis_name" operator="ends-with" value="%1" />
+            <filter type="or">
+                <condition attribute="talxis_singlelineurl" operator="like" value="%batch2%" />
+            </filter>
+        </filter>
+    </entity>
+</fetch>

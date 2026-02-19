@@ -25,16 +25,6 @@ export const ViewManagerPanel = (props: IViewManagerPanelProps) => {
         isOpen>
         <DatasetControlRenderer
             onGetDatasetControlInstance={() => viewManager.getDatasetControl()}
-            onOverrideComponentProps={(props) => {
-                return {
-                    ...props,
-                    onRender: (props, defaultRender) => {
-                        return defaultRender({
-                            ...props
-                        })
-                    }
-                }
-            }}
             onGetControlComponent={(props) => <Grid {...props} />}
         />
     </Panel>

@@ -22,7 +22,7 @@ export interface IDatasetControlEvents {
 interface IDatasetControlInterceptors {
 }
 
-type IRemountRequestContext = | { reason: 'saved-query-changed'; data: { oldQueryId: string, newQueryId: string } } | { reason: 'flush-state' }
+type IRemountRequestContext = | { reason: 'saved-query-changed'; data: { newQueryId: string } } | { reason: 'flush-state' } | { reason: 'saved-query-added'; data: { newQueryId: string } }
 // Add more reasons here with specific data types as needed
 
 export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
@@ -36,7 +36,7 @@ export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
     isQuickFindVisible(): boolean;
     isAutoSaveEnabled(): boolean;
     isRibbonVisible(): boolean;
-    getUserQueryScopeId(): string | null;
+    getUserQueryScope(): string | null;
     getHeight(): string | null;
     getDataset(): IDataset;
     getPcfContext(): ComponentFramework.Context<any>;
@@ -123,9 +123,8 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     public getHeight() {
         return this.getParameters().Height?.raw ?? null;
     }
-    //TODO: if not defined, use record id of form record if available
-    public getUserQueryScopeId(): string | null {
-        return 'user_query_scope';
+    public getUserQueryScope(): string | null {
+        return this.getParameters().UserQueryScope?.raw ?? null;
     }
     public getDataset() {
         return this.getParameters().Grid;
@@ -163,9 +162,6 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     }
     public async init() {
         await this._executeClientApiScript();
-        if (this.getDataset().getDataProvider().getProperty('isStandalone') || !this._client.isTalxisPortal()) {
-            await (<IInternalDataProvider>this.getDataset().getDataProvider()).preload();
-        }
         this.getDataset().paging.loadExactPage(this.getDataset().paging.pageNumber);
     }
     public getParameters() {
@@ -178,36 +174,42 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         return this._options.controlId;
     }
     public saveState() {
+        const provider = this.getDataset().getDataProvider();
+        const currentViewId = provider.getViewId();
         const state = this._options.state;
         const controlState = state[this._options.controlId];
+        const DatasetControlState = controlState.DatasetControlState || {};
+        controlState.DatasetControlState = DatasetControlState;
+        state[this._options.controlId] = controlState;
+
+        DatasetControlState.viewId = currentViewId;
+        DatasetControlState.SavedQueries = provider.getSavedQueries().map(query => query.id === currentViewId ? this._enrichQueryWithCurrentState(query, provider) : query);
+
         switch (this._remountRequestContext?.reason) {
             case 'flush-state': {
                 state[this._options.controlId] = {};
                 break;
             }
-            default: {
-                const provider = this.getDataset().getDataProvider();
-                const currentViewId = provider.getViewId();
-                const DatasetControlState = controlState.DatasetControlState || {};
-                DatasetControlState.viewId = this._remountRequestContext?.data?.newQueryId ?? currentViewId;
-                DatasetControlState.SavedQueries = provider.getSavedQueries().map(query => query.id === currentViewId ? this._enrichQueryWithCurrentState(query, provider) : query);
-                controlState.DatasetControlState = DatasetControlState;
-                state[this._options.controlId] = controlState;
+            case 'saved-query-changed':
+            case 'saved-query-added': {
+                DatasetControlState.viewId = this._remountRequestContext.data.newQueryId;
+                if (this._remountRequestContext.reason === 'saved-query-added') {
+                    DatasetControlState.SavedQueries = DatasetControlState.SavedQueries.filter((query: ISavedQuery) => query.id !== DataProvider.CONST.DEFAULT_VIEW_ID);
+                }
+                break;
             }
         }
         this._options.onSaveState?.(state);
     }
 
-    private _enrichQueryWithCurrentState(query: ISavedQuery, provider: IDataProvider) {
+    private _enrichQueryWithCurrentState(query: ISavedQuery, provider: IDataProvider): ISavedQuery {
         return {
             ...query,
             columns: provider.getColumns(),
-            sorting: provider.getSorting(),
-            linking: provider.getLinking(),
+            fetchXml: provider.getFetchXml(),
             selectedRecordIds: provider.getSelectedRecordIds(),
             pageNumber: provider.getPaging().pageNumber,
-            pageSize: provider.getPaging().pageSize,
-            userFilter: provider.getFiltering(),
+            userFilter: provider.getFiltering() ?? undefined,
             searchQuery: provider.getSearchQuery()
         };
     }
@@ -235,8 +237,9 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         const provider = this.getDataset().getDataProvider();
         provider.setProperty('autoSave', this.isAutoSaveEnabled());
         provider.setProperty('groupingType', this.getParameters().GroupingType?.raw ?? 'nested');
-        provider.setProperty('isViewSwitcherEnabled', this.isViewSwitcherVisible());
-        provider.setProperty('areUserQueriesEnabled', true);
+        provider.setProperty('fetchSavedQueries', this.isViewSwitcherVisible());
+        provider.setProperty('fetchUserQueries', true);
+        provider.setProperty('userQueryScopeId', this.getUserQueryScope() ?? undefined);
 
         const inlineRibbonButtonsIds = [
             ...(this.getParameters().InlineRibbonButtonIds?.raw?.split(',') ?? []),
@@ -269,7 +272,7 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
             provider.setViewId(DatasetControlState.viewId);
             provider.setProperty('hasPreviousState', true);
         }
-        else if(!state[controlId]) {
+        else if (!state[controlId]) {
             state[controlId] = {};
         }
     }

@@ -2,6 +2,7 @@ export const datasetControlTranslations = {
     "search": { 1029: "Vyhledat", 1033: "Search" },
     "records": { 1029: "záznamy", 1033: "records" },
     'no-name': { 1029: "(Bez názvu)", 1033: "(No name)" },
+    'default': { 1029: "Výchozí", 1033: "Default" },
     'save-new-view': { 1029: "Uložit jako nové zobrazení", 1033: "Save as new view" },
     'save-existing-view': { 1029: "Uložit změny do aktuálního zobrazení", 1033: "Save changes to current view" },
     'manage-views': { 1029: "Spravovat má zobrazení", 1033: "Manage my views" },

@@ -1,4 +1,4 @@
-import { DefaultButton, Label, Panel, PanelType, PrimaryButton, useTheme } from "@fluentui/react";
+import { DefaultButton, Label, PanelType, PrimaryButton, useTheme } from "@fluentui/react";
 import { useModel } from "../useModel";
 import { Key, useMemo, useRef, useState } from "react";
 import { getEditColumnsStyles } from "./styles";
@@ -13,6 +13,7 @@ import { useShouldRemount } from "../../../hooks/useShouldRemount";
 import { ScopeSelector } from "./ScopeSelector/ScopeSelector";
 import { IEditColumnsEvents } from "../../../utils/dataset-control/EditColumns";
 import { EditColumnsContext } from "./useEditColumns";
+import { Panel } from "../../../wip/panel/Panel";
 
 interface IEditColumnsProps {
     onDismiss: () => void;
@@ -56,29 +57,12 @@ export const EditColumns = (props: IEditColumnsProps) => {
     return <EditColumnsContext.Provider value={editColumnsModel}>
         <Panel
             headerText={getTitle()}
-            isOpen={true}
             onDismiss={onDismiss}
-            styles={{
-                footer: styles.panelFooter,
-                commands: styles.panelCommands,
-                scrollableContent: styles.panelScrollableContent,
-                content: styles.panelContent
-            }}
-            isFooterAtBottom
-            onRenderFooterContent={() => {
-                return <div className={styles.panelFooterButtons}>
-                    <PrimaryButton
-                        onClick={() => {
-                            editColumnsModel.save();
-                            props.onDismiss();
-                        }}
-                        text={labels['save']()}
-                    />
-                    <DefaultButton
-                        text={labels['cancel']()}
-                        onClick={props.onDismiss}
-                    />
-                </div>
+            saveButtonText={labels['save']()}
+            cancelButtonText={labels['cancel']()}
+            onSave={() => {
+                editColumnsModel.save();
+                props.onDismiss();
             }}
         >
             <div className={styles.header}>
@@ -89,7 +73,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
                     </div>
                     {!shouldRemountColumnSelector &&
                         <div className={styles.selector}>
-                            <ColumnSelector 
+                            <ColumnSelector
                                 openMenuOnMount={openColumnSelectorOnMount} />
                         </div>
                     }

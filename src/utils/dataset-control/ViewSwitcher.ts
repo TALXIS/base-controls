@@ -4,11 +4,12 @@ import { IDatasetControl } from "./DatasetControl";
 export interface IViewSwitcher {
     getSystemQueries(): ISavedQuery[];
     getUserQueries(): ISavedQuery[];
-    getUserQueriesProvider(): IFetchXmlDataProvider;
+    createUserQueriesDataProvider(): IFetchXmlDataProvider;
     areUserQueriesEnabled(): boolean;
     setCurrentSavedQuery(queryId: string): void;
     getCurrentSavedQuery(): ISavedQuery;
     saveNewUserQuery(data: { name: string; description: string }): Promise<IRecordSaveOperationResult>;
+    updateCurrentUserQuery(): Promise<IRecordSaveOperationResult>;
 }
 
 export class ViewSwitcher implements IViewSwitcher {
@@ -30,11 +31,9 @@ export class ViewSwitcher implements IViewSwitcher {
         return !!this._provider.getUserQueriesFetchXml();
     }
     public setCurrentSavedQuery(queryId: string) {
-        const oldQueryId = this._provider.getViewId();
         this._datasetControl.requestRemount({
             reason: 'saved-query-changed',
             data: {
-                oldQueryId: oldQueryId,
                 newQueryId: queryId
             }
         });
@@ -46,8 +45,10 @@ export class ViewSwitcher implements IViewSwitcher {
         }
         return query;
     }
-    public getUserQueriesProvider(): IFetchXmlDataProvider {
-        return new FetchXmlDataProvider(this._provider.getUserQueriesFetchXml()!)
+    public createUserQueriesDataProvider(): IFetchXmlDataProvider {
+        return new FetchXmlDataProvider({
+            dataSource: this._provider.getUserQueriesFetchXml()!
+        })
     }
     public async saveNewUserQuery(data: { name: string; description?: string }): Promise<IRecordSaveOperationResult> {
         const { name, description } = data;
@@ -56,9 +57,17 @@ export class ViewSwitcher implements IViewSwitcher {
                 'talxis_name': name,
                 'talxis_description': description ?? null,
                 'talxis_returnedtypecode': this._provider.getEntityName(),
-                'talxis_layoutjson': JSON.stringify(this._getLayout())
+                'talxis_layoutjson': JSON.stringify(this._provider.getColumns().map(column => this._getColumnWithStrippedMetadata(column))),
+                'talxis_recordid': this._datasetControl.getUserQueryScope(),
+                'talxis_isdefault': this.getUserQueries().length === 0,
+                'talxis_fetchxml': this._provider.getFetchXml()
             });
-            this.setCurrentSavedQuery(response.id);
+            this._datasetControl.requestRemount({
+                reason: 'saved-query-added',
+                data: {
+                    newQueryId: response.id
+                }
+            })
             return {
                 success: true,
                 recordId: response.id,
@@ -77,12 +86,33 @@ export class ViewSwitcher implements IViewSwitcher {
         }
     }
 
-    private _getLayout() {
-        const layout = {
-            dataSource: this._provider.getDataSourceForUserQuery(),
-            columns: this._provider.getColumns().map(column => this._getColumnWithStrippedMetadata(column))
+    public async updateCurrentUserQuery(): Promise<IRecordSaveOperationResult> {
+        const currentQuery = this.getCurrentSavedQuery();
+        this._provider.setLoading(true);
+        try {
+            await window.Xrm.WebApi.updateRecord(DataProvider.CONST.USER_QUERY_TABLE_NAME, currentQuery.id, {
+                'talxis_layoutjson': JSON.stringify(this._provider.getColumns().map(column => this._getColumnWithStrippedMetadata(column))),
+                'talxis_fetchxml': this._provider.getFetchXml()
+            });
+            return {
+                success: true,
+                recordId: currentQuery.id,
+                fields: ['talxis_layoutjson']
+            }
         }
-        return layout;
+        catch(error) {
+            return {
+                success: false,
+                recordId: currentQuery.id,
+                fields: ['talxis_layoutjson'],
+                errors: [{
+                    message: (error as any).message
+                }]
+            }
+        }
+        finally {
+            this._provider.setLoading(false);
+        }
     }
 
     private _getColumnWithStrippedMetadata(column: IColumn): IColumn {

@@ -1,0 +1,31 @@
+<fetch count="50">
+    <entity name="_default_entity">
+        <attribute name="text" />
+        <attribute name="multilinetext" />
+        <attribute name="mail" />
+        <attribute name="phone" />
+        <attribute name="url" />
+        <attribute name="lookup" />
+        <attribute name="twooptions" />
+        <attribute name="twooptionscolorful" />
+        <attribute name="optionset" />
+        <attribute name="optionsetcolorful" />
+        <attribute name="multiselectoptionset" />
+        <attribute name="multiselectoptionsetcolorful" />
+        <attribute name="number" />
+        <attribute name="decimal" />
+        <attribute name="currency" />
+        <attribute name="dateonly" />
+        <attribute name="datetime" />
+        <attribute name="duration" />
+        <attribute name="file" />
+        <attribute name="image" />
+        <filter type="and">
+            <condition attribute="twooptionscolorful" operator="eq" value="0" />
+            <condition attribute="optionsetcolorful" operator="eq" value="2" />
+        </filter>
+        <filter type="and">
+            <condition attribute="text" operator="like" value="%n%" />
+        </filter>
+    </entity>
+</fetch>
