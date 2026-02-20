@@ -5,6 +5,7 @@ export * from './DateTime';
 export * from './Grid';
 export * from './GridCellRenderer';
 export * from './Lookup';
+export * from './MapPicker';
 export * from './MultiSelectOptionSet';
 export * from './NestedControlRenderer';
 export * from './OptionSet';
