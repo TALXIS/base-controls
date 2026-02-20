@@ -35,6 +35,7 @@
     "@types/react-dom": "^17.0.21",
     "@types/validator": "^13.11.9",
     "@types/xrm": "^9.0.81",
+    "@vis.gl/react-google-maps": "^1.7.1",
     "babel-loader": "^8.2.3",
     "esbuild": "^0.13.9",
     "glob": "^11.0.0",
