@@ -1,6 +1,6 @@
-import { DefaultButton, Label, Panel, PanelType, PrimaryButton, useTheme } from "@fluentui/react";
+import { DefaultButton, Label, Panel, PrimaryButton, useTheme } from "@fluentui/react";
 import { useModel } from "../useModel";
-import { Key, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { getEditColumnsStyles } from "./styles";
 import { DndContext, PointerSensor, useSensor } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
@@ -13,10 +13,14 @@ import { useShouldRemount } from "../../../hooks/useShouldRemount";
 import { ScopeSelector } from "./ScopeSelector/ScopeSelector";
 import { IEditColumnsEvents } from "../../../utils/dataset-control/EditColumns";
 import { EditColumnsContext } from "./useEditColumns";
+import { IComponents } from "./components";
+import { components as defaultComponents } from "./components";
 
 interface IEditColumnsProps {
     onDismiss: () => void;
+    components?: Partial<IComponents>;
 }
+
 
 export const EditColumns = (props: IEditColumnsProps) => {
     const model = useModel();
@@ -32,6 +36,10 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const scrollableContainerRef = useRef<HTMLDivElement>(null);
     const [shouldRemountColumnSelector, remountColumnSelector] = useShouldRemount();
     const [openColumnSelectorOnMount, setOpenColumnSelectorOnMount] = useState(false);
+    const components = {
+        ...defaultComponents,
+        ...props.components
+    }
     const rerender = useRerender();
     useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onColumnsChanged', rerender);
     useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onRelatedEntityColumnChanged', () => {
@@ -53,7 +61,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
         return (ev as KeyboardEvent)?.key === 'Escape' ? ev?.preventDefault() : props.onDismiss();
     };
 
-    return <EditColumnsContext.Provider value={editColumnsModel}>
+    return <EditColumnsContext.Provider value={{model: editColumnsModel, components}}>
         <Panel
             headerText={getTitle()}
             isOpen={true}
@@ -83,6 +91,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
             }}
         >
             <div className={styles.header}>
+                <components.CommandBar items={[]}/>
                 <div className={styles.selectors}>
                     <div className={styles.selector}>
                         <Label>{labels["column-source"]()}</Label>

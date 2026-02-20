@@ -9,7 +9,7 @@ import { useEditColumns } from "../useEditColumns";
 
 export const SortableItem = (props: { column: IColumn }) => {
     const { column} = props;
-    const editColumnsModel = useEditColumns();
+    const editColumnsModel = useEditColumns().model;
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: column.name });
     const theme = useTheme();
     const styles = useMemo(() => getSortableItemStyles(theme), []);

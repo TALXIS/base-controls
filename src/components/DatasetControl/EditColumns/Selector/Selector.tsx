@@ -1,16 +1,19 @@
-import { Attribute, IColumn } from "@talxis/client-libraries";
-import { GroupBase, MenuProps } from 'react-select';
-import { Callout, DirectionalHint, TooltipHost, useTheme } from "@fluentui/react";
+import { IColumn } from "@talxis/client-libraries";
+import { GroupBase } from 'react-select';
+import { Callout, DirectionalHint, IconButton, TooltipHost, useTheme, Text } from "@fluentui/react";
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
 import { useModel } from "../../useModel";
 import { components } from 'react-select';
 import { useMemo } from "react";
 import React from "react";
+import { getSelectorStyles } from "./styles";
+import { useEditColumns } from "../useEditColumns";
 
 type ReactSelectProps<IsMulti extends boolean = false, TColumn extends IColumn = IColumn> = AsyncProps<TColumn, IsMulti, GroupBase<TColumn>>;
 
 interface ISelectorProps<IsMulti extends boolean = false, TColumn extends IColumn = IColumn> {
+    context: 'scopeSelector' | 'columnSelector';
     onOverrideComponentProps?: (props: ReactSelectProps<IsMulti, TColumn>) => ReactSelectProps<IsMulti, TColumn>
 }
 
@@ -19,6 +22,9 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((p) => p);
     const labels = useModel().getLabels();
     const id = useMemo(() => `selector-${window.crypto.randomUUID()}`, []);
+    const styles = useMemo(() => getSelectorStyles(), []);
+    const { components: editColumnsComponents } = useEditColumns();
+    const { context } = props;
 
     const MemoizedMenu = useMemo(() =>
         React.memo((props: any) => (
@@ -28,7 +34,8 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
                 <components.Menu {...props} />
             </Callout>
         )),
-        [id]);
+        [id]
+    );
 
     const componentProps = onOverrideComponentProps({
         id: id,
@@ -50,6 +57,12 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
                 return {
                     width: 300
                 }
+            },
+            menuList: (base) => {
+                return {
+                    ...base,
+                    scrollbarWidth: 'thin'
+                }
             }
         },
         theme: (base: any) => {
@@ -69,12 +82,16 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
                 <TooltipHost
                     content={props.data.name}
                 >
-                    <div style={{ padding: '8px 12px' }}>
-                        {props.children}
+                    <div className={styles.optionContainer}>
+                        <Text className={styles.optionText}>{props.children}</Text>
+                        {editColumnsComponents.OptionSuffix && 
+                            <editColumnsComponents.OptionSuffix context={context} />
+                        }
                     </div>
                 </TooltipHost>
             </components.Option>,
             Menu: MemoizedMenu
+
         }
     })
 
