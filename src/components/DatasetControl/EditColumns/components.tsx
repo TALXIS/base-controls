@@ -1,8 +1,10 @@
 import { ICommandBarProps } from "@talxis/react-components";
 import { CommandBar } from "./CommandBar/CommandBar";
+import { IColumn } from "@talxis/client-libraries";
 
 interface ISuffixProps {
     context: 'scopeSelector' | 'columnSelector';
+    column: IColumn;
 }
 
 export interface IComponents {

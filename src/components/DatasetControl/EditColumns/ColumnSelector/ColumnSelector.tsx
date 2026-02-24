@@ -64,7 +64,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             inputValue: inputValue,
             className: styles.root,
             backspaceRemovesValue: false,
-            value: editColumnsModel.getColumns(),
+            value: editColumnsModel.getColumns().filter(col => !col.isHidden),
             closeMenuOnSelect: false,
             hideSelectedOptions: true,
             defaultOptions: defaultOptions,

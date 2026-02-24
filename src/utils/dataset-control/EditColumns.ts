@@ -19,7 +19,7 @@ export interface IEditColumns extends IEventEmitter<IEditColumnsEvents> {
     getAvailableColumns(query?: string): Promise<IColumn[]>;
     getAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]>;
     selectRelatedEntityColumn(column: IAvailableRelatedColumn): void;
-    onColumnMoved(draggedColumnId: string, targetColumnId: string): void;
+    moveColumn(draggedColumnId: string, targetColumnId: string): void;
     getMainEntityColumn(): IAvailableRelatedColumn;
 }
 
@@ -64,6 +64,7 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
                 displayName: `${column.displayName} (${this._relatedEntityColumn.displayName})`
             }
         }
+        this._currentColumns = this._currentColumns.filter(col => col.name !== column.name);
         this._currentColumns.unshift({ ...column, id: column.name });
         this.dispatchEvent('onColumnAdded', column);
         this.dispatchEvent('onColumnsChanged', this._currentColumns);
@@ -102,7 +103,7 @@ export class EditColumns extends EventEmitter<IEditColumnsEvents> implements IEd
         this.dispatchEvent('onRelatedEntityColumnChanged', this._relatedEntityColumn);
     }
 
-    public onColumnMoved(draggedColumnId: string, targetColumnId: string) {
+    public moveColumn(draggedColumnId: string, targetColumnId: string) {
         if (draggedColumnId !== targetColumnId) {
             const oldIndex = this._currentColumns.findIndex(col => col.id === draggedColumnId);
             const newIndex = this._currentColumns.findIndex(col => col.id === targetColumnId);

@@ -85,7 +85,9 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
                     <div className={styles.optionContainer}>
                         <Text className={styles.optionText}>{props.children}</Text>
                         {editColumnsComponents.OptionSuffix && 
-                            <editColumnsComponents.OptionSuffix context={context} />
+                            <editColumnsComponents.OptionSuffix
+                                column={props.data}
+                                context={context} />
                         }
                     </div>
                 </TooltipHost>

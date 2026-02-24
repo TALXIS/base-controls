@@ -50,6 +50,12 @@ export const getEditColumnsStyles = (theme: ITheme) => {
         selector: {
             marginLeft: 15,
             marginRight: 15
+        },
+        loadingOverlay: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1
         }
     });
 }

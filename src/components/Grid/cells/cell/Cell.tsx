@@ -173,14 +173,21 @@ export const InternalCell = (props: ICellProps) => {
     ), [props.isCellEditor, theme, props.value.columnAlignment, node.expanded]);
 
     useEventEmitter<IRecordEvents>(record, 'onAfterSaved', (result: IRecordSaveOperationResult) => {
-        if(!result.success) {
+        if (!result.success) {
             const errors = result.errors ?? [];
             const fieldError = errors.find(error => error.fieldName === column.name);
-            if(fieldError) {
+            if (fieldError) {
                 errorRef.current = true;
                 errorMessageRef.current = fieldError.message;
                 rerender();
             }
+        }
+    });
+
+    useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', (fieldName: string) => {
+        if (fieldName === column.name) {
+            errorRef.current = record.getField(fieldName).isValid().error;
+            rerender();
         }
     });
 
