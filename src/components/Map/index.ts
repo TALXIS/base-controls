@@ -1,3 +1,3 @@
 export * from './interfaces';
-export * from './components/MapPicker';
+export * from './components/Map';
 export * from './providers';

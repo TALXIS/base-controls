@@ -1,11 +1,11 @@
-import { IMapPicker } from "../interfaces";
+import { IMap } from "../interfaces";
 import { useCallback, useEffect, useState } from "react";
 import { IMapLocation } from "../providers";
 import { useEventEmitter } from "../../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
-import './MapPicker.css';
+import './Map.css';
 
-export const MapPicker = (props: IMapPicker) => {
+export const Map = (props: IMap) => {
     const { Dataset: dataset, PinMetadata: pinMetadata, MapProvider } = props.parameters;
     const [locations, setLocations] = useState<IMapLocation[]>([]);
 
