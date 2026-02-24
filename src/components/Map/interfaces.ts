@@ -5,23 +5,23 @@ import { IDataset } from "@talxis/client-libraries";
 import { IMapProvider } from "./providers";
 
 
-export interface IMapPicker extends IControl<IMapPickerParameters, IMapPickerOutputs, Partial<ITranslations<typeof mapTranslations>>, any> {
+export interface IMap extends IControl<IMapParameters, IMapOutputs, Partial<ITranslations<typeof mapTranslations>>, any> {
     
 }
 
-interface IMapPickerEntityProps {
+interface IMapEntityProps {
     LatitudeAttributeName: string;
     LongitudeAttributeName: string;
 
     RouteAttributeName?: string;
 }
 
-export interface IMapPickerParameters extends IParameters {
+export interface IMapParameters extends IParameters {
     Dataset: IDataset;
-    PinMetadata?: IMapPickerEntityProps;
+    PinMetadata?: IMapEntityProps;
     MapProvider: IMapProvider;
 }
 
-export interface IMapPickerOutputs extends IOutputs {
+export interface IMapOutputs extends IOutputs {
 
 }
