@@ -14,7 +14,7 @@ interface IColumnSelectorProps {
 
 export const ColumnSelector = (props: IColumnSelectorProps) => {
     const { openMenuOnMount } = props;
-    const editColumnsModel = useEditColumns();
+    const editColumnsModel = useEditColumns().model;
     const styles = useMemo(() => getColumnSelectorStyles(), []);
     const model = useModel();
     const labels = model.getLabels();
@@ -56,7 +56,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
     }, []);
 
 
-    return <Selector<true> onOverrideComponentProps={(props) => {
+    return <Selector<true> context="columnSelector" onOverrideComponentProps={(props) => {
         return {
             ...props,
             ref: ref,
@@ -64,7 +64,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             inputValue: inputValue,
             className: styles.root,
             backspaceRemovesValue: false,
-            value: editColumnsModel.getColumns(),
+            value: editColumnsModel.getColumns().filter(col => !col.isHidden),
             closeMenuOnSelect: false,
             hideSelectedOptions: true,
             defaultOptions: defaultOptions,

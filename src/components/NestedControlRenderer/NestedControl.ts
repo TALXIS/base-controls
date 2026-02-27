@@ -1,4 +1,4 @@
-import { DataType, DataTypes, PromiseCache } from "@talxis/client-libraries";
+import { DataType, DataTypes, Formatting, PromiseCache } from "@talxis/client-libraries";
 import { Property } from "./properties/Property";
 import { TextProperty } from "./properties/TextProperty";
 import { OptionSetProperty } from "./properties/OptionSetProperty";
@@ -101,6 +101,7 @@ export class NestedControl {
                     ...this.getOptions().parentPcfContext.factory,
                     requestRender: () => this.render(),
                 },
+                formatting: Formatting.Get(),
                 fluentDesignLanguage: this._getFluentDesignLanguage(this.getOptions().parentPcfContext.fluentDesignLanguage)
             },
             parameters: parameters,
