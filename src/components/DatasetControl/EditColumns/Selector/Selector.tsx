@@ -1,6 +1,6 @@
-import { IColumn } from "@talxis/client-libraries";
+import { DatasetConstants, IColumn } from "@talxis/client-libraries";
 import { GroupBase } from 'react-select';
-import { Callout, DirectionalHint, IconButton, TooltipHost, useTheme, Text } from "@fluentui/react";
+import { Callout, DirectionalHint, TooltipHost, useTheme, Text } from "@fluentui/react";
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
 import { useModel } from "../../useModel";
@@ -36,6 +36,10 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
         )),
         [id]
     );
+
+    const getTooltipContent = (columnName: string): string => {
+        return columnName.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX) ? 'user_column' : columnName;
+    }
 
     const componentProps = onOverrideComponentProps({
         id: id,
@@ -80,15 +84,11 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
         components: {
             Option: (props) => <components.Option {...props}>
                 <TooltipHost
-                    content={props.data.name}
+                    content={getTooltipContent(props.data.name)}
                 >
                     <div className={styles.optionContainer}>
-                        <Text className={styles.optionText}>{props.children}</Text>
-                        {editColumnsComponents.OptionSuffix && 
-                            <editColumnsComponents.OptionSuffix
-                                column={props.data}
-                                context={context} />
-                        }
+                        <editColumnsComponents.OptionText {...props as any} />
+                        <editColumnsComponents.OptionCommandBar items={[]} context={context} column={props.data} />
                     </div>
                 </TooltipHost>
             </components.Option>,

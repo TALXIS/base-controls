@@ -15,6 +15,7 @@ import { IEditColumns, IEditColumnsEvents } from "../../../utils/dataset-control
 import { EditColumnsContext } from "./useEditColumns";
 import { IComponents } from "./components";
 import { components as defaultComponents } from "./components";
+import { IColumn } from "@talxis/client-libraries";
 
 export interface IEditColumnsRef {
     remountColumnSelector: () => void;
@@ -23,11 +24,12 @@ export interface IEditColumnsRef {
 
 export interface IEditColumnsProps {
     onDismiss: () => void;
-    onGetRef?: (ref: IEditColumnsRef) => void;
     isLoading?: boolean;
     showScopeSelector?: boolean;
     components?: Partial<IComponents>;
     panelProps?: IPanelProps;
+    onGetRef?: (ref: IEditColumnsRef) => void;
+    onFilterVisibleColumns?: (columns: IColumn[]) => IColumn[];
 }
 
 
@@ -40,17 +42,14 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const labels = model.getLabels();
     const styles = useMemo(() => getEditColumnsStyles(theme), []);
     const editColumnsModel = useMemo(() => datasetControl.editColumns, []);
-    const columns = editColumnsModel.getColumns();
+    const columns = props.onFilterVisibleColumns?.(editColumnsModel.getColumns()) ?? editColumnsModel.getColumns();
     const sensor = useSensor(PointerSensor);
     const scrollableContainerRef = useRef<HTMLDivElement>(null);
     const { isLoading, showScopeSelector = true } = props;
     const [shouldRemountColumnSelector, remountColumnSelector] = useShouldRemount();
     const [openColumnSelectorOnMount, setOpenColumnSelectorOnMount] = useState(false);
-
-    const components = {
-        ...defaultComponents,
-        ...props.components
-    }
+    //TODO: unify via hook?
+    const components = { ...defaultComponents, ...props.components };
     const rerender = useRerender();
 
     useEventEmitter<IEditColumnsEvents>(editColumnsModel, 'onColumnsChanged', rerender);
@@ -122,12 +121,10 @@ export const EditColumns = (props: IEditColumnsProps) => {
                             <ScopeSelector />
                         </div>
                     )}
-                    {!shouldRemountColumnSelector &&
-                        <div className={styles.selector}>
-                            <ColumnSelector
-                                openMenuOnMount={openColumnSelectorOnMount} />
-                        </div>
-                    }
+                    <div style={{height: 38}} className={styles.selector}>
+                        {!shouldRemountColumnSelector && <ColumnSelector
+                            openMenuOnMount={openColumnSelectorOnMount} />}
+                    </div>
                 </div>
             </div>
             <div ref={scrollableContainerRef} className={styles.scrollableContainer}>
