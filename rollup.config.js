@@ -51,6 +51,7 @@ const externalDeps = [
     'react-select',
     'react-select/async',
     'hotkeys-js',
+    '@vis.gl/react-google-maps',
 ]
 
 export default [
