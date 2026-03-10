@@ -92,6 +92,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
             isFooterAtBottom
             onRenderFooterContent={() => {
                 return <div className={styles.panelFooterButtons}>
+                    
                     <PrimaryButton
                         onClick={() => {
                             editColumnsModel.save();

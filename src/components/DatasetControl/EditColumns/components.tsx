@@ -24,8 +24,8 @@ export interface IComponents {
 }
 
 export const components: IComponents = {
-    CommandBar: (props: ICommandBarProps) => <CommandBar {...props} />,
-    OptionText: (props: React.PropsWithChildren<OptionProps<IColumn, boolean, GroupBase<IColumn>>>) => <OptionText {...props} />,
-    SortableItemCommandBar: (props: ISortableItemCommandBarProps) => <SortableItemCommandBar {...props} />,
-    OptionCommandBar: (props: IOptionCommandBarProps) => <OptionCommandBar {...props} /> 
+    CommandBar: CommandBar,
+    OptionText: OptionText,
+    SortableItemCommandBar: SortableItemCommandBar,
+    OptionCommandBar: OptionCommandBar
 }
