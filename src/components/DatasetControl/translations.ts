@@ -13,6 +13,7 @@ export const datasetControlTranslations = {
     "add-column": { 1029: "Přidat sloupec", 1033: "Add column" },
     'system-views': { 1029: "Systémové zobrazení", 1033: "System views" },
     'user-views': { 1029: "Moje zobrazení", 1033: "My views" },
+    "custom-column": { 1029: "Uživatelský sloupec", 1033: "User column" },
     "cancel": { 1029: "Zrušit", 1033: "Cancel" },
     'edit-columns': { 1029: "Upravit sloupce", 1033: "Edit columns" },
     'edit-filters': { 1029: "Upravit filtry", 1033: "Edit filters" },

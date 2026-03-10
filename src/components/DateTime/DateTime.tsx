@@ -7,6 +7,7 @@ import { Calendar, IInternalCalendarProps } from "./components/Calendar";
 import { DatePicker } from "@talxis/react-components";
 import { useControlSizing } from "../../hooks/useControlSizing";
 import dayjs from "dayjs";
+import { useDebouncedCallback } from "use-debounce";
 
 export const DateTime = (componentProps: IDateTime) => {
     const ref = useRef<HTMLDivElement>(null);
@@ -26,23 +27,27 @@ export const DateTime = (componentProps: IDateTime) => {
     }, []);
 
     const getRestrictedDates = (): Date[] | undefined => {
-        if(!parameters.RestrictedDates?.raw) {
+        if (!parameters.RestrictedDates?.raw) {
             return undefined;
         }
         return JSON.parse(parameters.RestrictedDates?.raw).map((x: string) => new Date(x))
     }
-    
+
     const onOverrideDayCellProps = (element: HTMLElement, date: Date, classNames: IProcessedStyleSet<ICalendarDayGridStyles>) => {
-        if(!element || !parameters.RestrictedDaysOfWeek?.raw) {
+        if (!element || !parameters.RestrictedDaysOfWeek?.raw) {
             return;
         }
         const weekDaysToExclude: number[] = JSON.parse(parameters.RestrictedDaysOfWeek.raw);
-        if(weekDaysToExclude.includes(date.getDay())) {
+        if (weekDaysToExclude.includes(date.getDay())) {
             element.setAttribute('data-is-focusable', 'false');
             element.classList?.add(classNames.dayOutsideBounds!);
             (element.children[0] as HTMLButtonElement).disabled = true;
         }
     }
+
+    const onSelectDate = useDebouncedCallback((value: Date | null | undefined) => {
+        date.set(value!);
+    }, 0);
 
     const datePickerProps = onOverrideComponentProps({
         className: styles.datePicker,
@@ -51,7 +56,7 @@ export const DateTime = (componentProps: IDateTime) => {
         keepCalendarOpenAfterDaySelect: isDateTime,
         readOnly: context.mode.isControlDisabled,
         //@ts-ignore - this is a hack to close the calendar when dates get selected on date only fields
-        onSelectDate: isDateTime ? undefined : (newDate) => date.set(newDate!),
+        onSelectDate: isDateTime ? undefined : onSelectDate,
         //disable so the user cannot input restricted Dates
         allowTextInput: !parameters.RestrictedDates?.raw && !parameters.RestrictedDaysOfWeek?.raw,
         // Lowest date supported by CDS: https://learn.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/dn996866(v=crm.8)?redirectedfrom=MSDN
@@ -118,7 +123,7 @@ export const DateTime = (componentProps: IDateTime) => {
                 },
                 theme: componentProps.context.fluentDesignLanguage?.applicationTheme ?? theme
             };
-            if(isDateTime) {
+            if (isDateTime) {
                 calendarProps.onSelectDate = (newDate) => date.set(newDate)
             }
             return <Calendar {...calendarProps} />
@@ -127,7 +132,7 @@ export const DateTime = (componentProps: IDateTime) => {
         textField: {
             value: date.getFormatted() ?? "",
             onChange: (e, value) => {
-                if(isDateTime) {
+                if (isDateTime) {
                     const datePart = dayjs(value, patterns.shortDatePattern).format(patterns.shortDatePattern);
                     const time = value?.split(datePart).pop()?.substring(1);
                     lastInputedTimeString.current = time;

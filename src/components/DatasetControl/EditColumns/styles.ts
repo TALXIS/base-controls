@@ -20,7 +20,10 @@ export const getEditColumnsStyles = (theme: ITheme) => {
         header: {
             borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
             paddingBottom: 15,
-            paddingTop: 15
+            paddingTop: 15,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12
         },
         selectors: {
             display: 'flex',
@@ -30,6 +33,12 @@ export const getEditColumnsStyles = (theme: ITheme) => {
         selector: {
             marginLeft: 15,
             marginRight: 15
+        },
+        loadingOverlay: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1
         }
     });
 }

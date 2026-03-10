@@ -5,7 +5,7 @@ import { useModel } from "../../useModel";
 import { Selector } from "../Selector/Selector";
 import { useEditColumns } from "../useEditColumns";
 import { SelectInstance } from 'react-select';
-import { IColumn } from "@talxis/client-libraries";
+import { Attribute, IColumn } from "@talxis/client-libraries";
 
 interface IColumnSelectorProps {
     openMenuOnMount?: boolean;
@@ -14,7 +14,7 @@ interface IColumnSelectorProps {
 
 export const ColumnSelector = (props: IColumnSelectorProps) => {
     const { openMenuOnMount } = props;
-    const editColumnsModel = useEditColumns();
+    const editColumnsModel = useEditColumns().model;
     const styles = useMemo(() => getColumnSelectorStyles(), []);
     const model = useModel();
     const labels = model.getLabels();
@@ -56,7 +56,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
     }, []);
 
 
-    return <Selector<true> onOverrideComponentProps={(props) => {
+    return <Selector<true> context="columnSelector" onOverrideComponentProps={(props) => {
         return {
             ...props,
             ref: ref,
@@ -64,13 +64,14 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             inputValue: inputValue,
             className: styles.root,
             backspaceRemovesValue: false,
-            value: editColumnsModel.getColumns(),
+            value: editColumnsModel.getColumns().filter(col => !col.isHidden),
             closeMenuOnSelect: false,
             hideSelectedOptions: true,
             defaultOptions: defaultOptions,
             placeholder: `${labels["add-column"]()}...`,
             controlShouldRenderValue: false,
             onInputChange: onInputChange,
+            getOptionValue: (column) => Attribute.GetNameFromAlias(column.name),
             onKeyDown: (ev) => ev.key === 'Enter' && ref.current?.openMenu('first'),
             loadOptions: (inputValue: string) => editColumnsModel.getAvailableColumns(inputValue),
             onChange: (columns) => onChange(columns as IColumn[]),

@@ -6,7 +6,7 @@ import { useModel } from "../../useModel";
 
 
 export const ScopeSelector = () => {
-    const editColumnsModel = useEditColumns();
+    const editColumnsModel = useEditColumns().model;
     const [isDisabled, setIsDisabled] = useState(true);
     const labels = useModel().getLabels();
 
@@ -22,12 +22,13 @@ export const ScopeSelector = () => {
         })();
     }, []);
 
-    return <Selector<false, IAvailableRelatedColumn> onOverrideComponentProps={(props) => {
+    return <Selector<false, IAvailableRelatedColumn> context="scopeSelector" onOverrideComponentProps={(props) => {
         return {
             ...props,
             isMulti: false,
             isDisabled: isDisabled,
             defaultValue: editColumnsModel.getMainEntityColumn(),
+            getOptionValue: (column) => `${column.relatedEntityPrimaryIdAttribute}_${column.name}`,
             getOptionLabel: (column) => getOptionLabel(column),
             loadOptions: (inputValue: string) => editColumnsModel.getAvailableRelatedColumns(inputValue),
             onChange: (column) => editColumnsModel.selectRelatedEntityColumn(column!),

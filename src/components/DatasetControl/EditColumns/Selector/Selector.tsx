@@ -1,16 +1,19 @@
-import { Attribute, IColumn } from "@talxis/client-libraries";
-import { GroupBase, MenuProps } from 'react-select';
-import { Callout, DirectionalHint, TooltipHost, useTheme } from "@fluentui/react";
+import { DatasetConstants, IColumn } from "@talxis/client-libraries";
+import { GroupBase } from 'react-select';
+import { Callout, DirectionalHint, TooltipHost, useTheme, Text } from "@fluentui/react";
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
 import { useModel } from "../../useModel";
 import { components } from 'react-select';
 import { useMemo } from "react";
 import React from "react";
+import { getSelectorStyles } from "./styles";
+import { useEditColumns } from "../useEditColumns";
 
 type ReactSelectProps<IsMulti extends boolean = false, TColumn extends IColumn = IColumn> = AsyncProps<TColumn, IsMulti, GroupBase<TColumn>>;
 
 interface ISelectorProps<IsMulti extends boolean = false, TColumn extends IColumn = IColumn> {
+    context: 'scopeSelector' | 'columnSelector';
     onOverrideComponentProps?: (props: ReactSelectProps<IsMulti, TColumn>) => ReactSelectProps<IsMulti, TColumn>
 }
 
@@ -19,6 +22,9 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((p) => p);
     const labels = useModel().getLabels();
     const id = useMemo(() => `selector-${window.crypto.randomUUID()}`, []);
+    const styles = useMemo(() => getSelectorStyles(), []);
+    const { components: editColumnsComponents } = useEditColumns();
+    const { context } = props;
 
     const MemoizedMenu = useMemo(() =>
         React.memo((props: any) => (
@@ -28,12 +34,17 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
                 <components.Menu {...props} />
             </Callout>
         )),
-        [id]);
+        [id]
+    );
+
+    const getTooltipContent = (columnName: string): string => {
+        return columnName.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX) ? 'user_column' : columnName;
+    }
 
     const componentProps = onOverrideComponentProps({
         id: id,
-        getOptionValue: (column: any) => Attribute.GetNameFromAlias(column.name),
-        getOptionLabel: (column: any) => column.displayName ?? labels['no-name'](),
+        getOptionValue: (column) => column.name,
+        getOptionLabel: (column) => column.displayName ?? labels['no-name'](),
         noOptionsMessage: () => labels['no-result-found'](),
         maxMenuHeight: 600,
         isClearable: false,
@@ -49,6 +60,12 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
             menu: () => {
                 return {
                     width: 300
+                }
+            },
+            menuList: (base) => {
+                return {
+                    ...base,
+                    scrollbarWidth: 'thin'
                 }
             }
         },
@@ -67,14 +84,16 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
         components: {
             Option: (props) => <components.Option {...props}>
                 <TooltipHost
-                    content={props.data.name}
+                    content={getTooltipContent(props.data.name)}
                 >
-                    <div style={{ padding: '8px 12px' }}>
-                        {props.children}
+                    <div className={styles.optionContainer}>
+                        <editColumnsComponents.OptionText {...props as any} />
+                        <editColumnsComponents.OptionCommandBar items={[]} context={context} column={props.data} />
                     </div>
                 </TooltipHost>
             </components.Option>,
             Menu: MemoizedMenu
+
         }
     })
 
