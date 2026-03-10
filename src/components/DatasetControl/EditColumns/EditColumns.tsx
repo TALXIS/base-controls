@@ -48,7 +48,6 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const { isLoading, showScopeSelector = true } = props;
     const [shouldRemountColumnSelector, remountColumnSelector] = useShouldRemount();
     const [openColumnSelectorOnMount, setOpenColumnSelectorOnMount] = useState(false);
-    //TODO: unify via hook?
     const components = { ...defaultComponents, ...props.components };
     const rerender = useRerender();
 
