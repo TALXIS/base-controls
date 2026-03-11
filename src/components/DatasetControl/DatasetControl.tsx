@@ -11,7 +11,6 @@ import { Header } from "./Header/Header";
 import { useEventEmitter } from "../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlProps } from "./interfaces";
-import { on } from "events";
 import { ControlComponentLoading } from "./ControlComponentLoading/ControlComponentLoading";
 
 export const DatasetControl = (props: IDatasetControlProps) => {

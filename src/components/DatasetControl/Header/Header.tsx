@@ -143,10 +143,8 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                 </div>
             }
             {isEditColumnsPanelVisible &&
-                <div style={{ position: 'absolute' }}>
-                    <EditColumns
-                        onDismiss={() => setIsEditColumnsPanelVisible(false)} />
-                </div>
+                <EditColumns
+                    onDismiss={() => setIsEditColumnsPanelVisible(false)} />
             }
         </>
     })

@@ -77,15 +77,14 @@ export class VirtualDatasetAdapter {
         this._container = container;
         this._context = context;
         this._state = state ?? {};
+
         if (!context.parameters.Data.raw) {
             this._createDummyDatasetControl();
             return this;
         }
         const dataProvider = this._getDataProviderInstance();
         this._dataset = new Dataset(dataProvider);
-        this._dataset.setMetadata(this._getEntityMetadata());
-        this._dataset.setDataSource(context.parameters.Data.raw);
-        this._dataset.setColumns(this._getColumns());
+
         this._datasetControl = new DatasetControl({
             state: this._state,
             controlId: (this._context.utils as any)._customControlProperties?.controlId,
@@ -93,7 +92,9 @@ export class VirtualDatasetAdapter {
             onGetParameters: () => this._getDatasetControlParameters(),
             onSaveState: (state) => this._context.mode.setControlState(state)
         });
+
         this._options?.onDatasetControlCreated?.(this._datasetControl);
+        
         if (this._context.parameters.Height?.raw === '100%') {
             this._container.classList.add(this._getFullTabStyles());
         }
@@ -232,7 +233,8 @@ export class VirtualDatasetAdapter {
             },
             UserQueryScope: {
                 raw: this._getUserQueryScope()
-            }
+            },
+            EntityMetadata: this._getEntityMetadata()
         }
     }
 
@@ -253,43 +255,6 @@ export class VirtualDatasetAdapter {
                 })
             }
         }
-    }
-
-    //deprecated - all columns should now be loaded from provided saved queries
-    private _getColumns() {
-        try {
-            const parameterColumns = this._context.parameters.Columns?.raw;
-            const columns: IColumn[] = Array.isArray(parameterColumns) ? parameterColumns : JSON.parse(parameterColumns ?? "[]");
-            return this._getMergedColumns(columns);
-        }
-        catch (err) {
-            console.error(err);
-            return this._dataset.columns;
-        }
-    }
-
-    private _getMergedColumns(parameterColumns: IColumn[]): IColumn[] {
-        const columnsMap = new Map<string, IColumn>(this._dataset.columns.map((col: IColumn) => [col.name, col]));
-        const stateColumnsMap = new Map<string, IColumn>(this._state?.DatasetControlState?.columns?.map((col: IColumn) => [col.name, col]) ?? []);
-        //if we have state, return it
-        if (stateColumnsMap.size > 0) {
-            return [...stateColumnsMap.values()];
-        }
-        //no state, save to load from parameters
-        else {
-            parameterColumns.forEach(parameterCol => {
-                const col = columnsMap.get(parameterCol.name);
-                if (col) {
-                    columnsMap.set(col.name, {
-                        ...col,
-                        ...parameterCol
-                    });
-                } else {
-                    columnsMap.set(parameterCol.name, parameterCol);
-                }
-            });
-        }
-        return [...columnsMap.values()];
     }
 
     private _getEntityMetadata() {

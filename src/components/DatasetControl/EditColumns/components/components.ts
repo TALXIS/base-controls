@@ -3,7 +3,7 @@ import { CommandBar } from "./CommandBar/CommandBar";
 import { IColumn } from "@talxis/client-libraries";
 import { GroupBase, OptionProps } from "react-select";
 import { OptionText } from "./OptionText/OptionText";
-import { SortableItemCommandBar } from "./SortableItem/SortableItemCommandBar/SortableItemCommandBar";
+import { SortableItemCommandBar } from "./SortableItemCommandBar/SortableItemCommandBar";
 import { OptionCommandBar } from "./OptionCommandBar/OptionCommandBar";
 
 export interface IOptionCommandBarProps extends ICommandBarProps {

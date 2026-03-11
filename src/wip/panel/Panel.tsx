@@ -1,45 +1,28 @@
-import { IPanelProps as IPanelPropsBase, Panel as BasePanel, PrimaryButton, DefaultButton, useTheme, IButtonProps } from "@fluentui/react";
+import { IPanelProps as IPanelPropsBase, Panel as BasePanel, PrimaryButton, DefaultButton, useTheme, IButtonProps, Overlay } from "@fluentui/react";
 import { useMemo } from "react";
 import { getPanelStyles } from "./styles";
+import { Spinner } from "@talxis/react-components";
+import { IPanelComponents } from "./components/components";
+import { components as defaultComponents } from "./components/components";
 
-interface IPanelProps extends IPanelPropsBase {
+export interface IPanelProps extends IPanelPropsBase {
     saveButtonText?: string;
     cancelButtonText?: string;
-    onDismiss?: () => void;
+    isLoading?: boolean;
+    components?: Partial<IPanelComponents>;
     onSave?: () => void;
-    components?: {
-        FooterContent?: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-        SaveButton?: (props: IButtonProps) => JSX.Element;
-        DismissButton?: (props: IButtonProps) => JSX.Element;
-    }
 }
 
-export const PanelFooterContent = (props: React.HTMLAttributes<HTMLDivElement>) => {
-    return <div {...props}>
-        {props.children}
-    </div>
-}
-
-export const SaveButton = (props: IButtonProps) => {
-    return <PrimaryButton {...props} />
-}
-
-export const DismissButton = (props: IButtonProps) => {
-    return <DefaultButton {...props} />
-}
 
 export const Panel = (props: IPanelProps) => {
-    const { saveButtonText, cancelButtonText, onDismiss, onSave } = props;
+    const { saveButtonText, cancelButtonText, onDismiss, onSave, isLoading } = props;
     const theme = useTheme();
     const styles = useMemo(() => getPanelStyles(theme), []);
 
     const components = {
-        FooterContent: PanelFooterContent,
-        SaveButton: SaveButton,
-        DismissButton: DismissButton,
+        ...defaultComponents,
         ...props.components
     }
-
     return <BasePanel
         isOpen
         styles={{
@@ -53,10 +36,10 @@ export const Panel = (props: IPanelProps) => {
                 <components.FooterContent className={styles.panelFooterButtons}>
                     <components.SaveButton
                         onClick={onSave}
-                        text={saveButtonText ?? 'Save'} 
+                        text={saveButtonText ?? 'Save'}
                     />
-                    <components.DismissButton 
-                        onClick={onDismiss}
+                    <components.DismissButton
+                        onClick={() => onDismiss?.()}
                         text={cancelButtonText ?? 'Cancel'}
                     />
                 </components.FooterContent>
@@ -65,6 +48,12 @@ export const Panel = (props: IPanelProps) => {
         isFooterAtBottom
         {...props}
     >
-        {props.children}
+        <components.Header />
+        <components.ScrollableContainer>
+            {isLoading && <Overlay className={styles.loadingOverlay}>
+                <Spinner />
+            </Overlay>}
+            {props.children}
+        </components.ScrollableContainer>
     </BasePanel>
 }

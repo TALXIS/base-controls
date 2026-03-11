@@ -64,20 +64,20 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     private _debouncedLoadRecordCommands: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _interceptors = new Interceptors<IDatasetControlInterceptors>();
     private _remountRequestContext: IRemountRequestContext | null = null;
-    private _isUsingLegacyColumnsBinding: boolean = false;
     private _viewSwitcher: ViewSwitcher;
 
     constructor(options: IDatasetControlOptions) {
         super();
         this._options = options;
+        this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids));
+        this._viewSwitcher = new ViewSwitcher(this);
+
+        this._setEntityMetadata();
+        this._setColumnsFromLegacyParameter();
         this._setDatasetProperties();
         this._loadState(this._options.controlId, this._options.state);
-        this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids))
         this._addEventListeners();
         this._debouncedLoadRecordCommands(this.getDataset().getSelectedRecordIds());
-        this._isUsingLegacyColumnsBinding = !!this.getPcfContext().parameters['Columns']?.raw;
-        this._viewSwitcher = new ViewSwitcher(this);
-        this._showLegacyColumnsWarning();
     }
 
     public get editColumns(): IEditColumns {
@@ -277,9 +277,18 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         }
     }
 
-    private _showLegacyColumnsWarning() {
-        if (this._isUsingLegacyColumnsBinding && this._options.onGetParameters().EnableViewSwitcher?.raw) {
-            console.warn('View Switcher requires columns to be set via Entity Metadata. It will not be visible when using legacy Columns binding.');
+    private _setEntityMetadata() {
+        const entityMetadata = this.getParameters().EntityMetadata;
+        if(entityMetadata) {
+            this.getDataset().getDataProvider().setMetadata(entityMetadata);
+        }
+    }
+    
+    private _setColumnsFromLegacyParameter() {
+        const columnsParameter = this.getPcfContext().parameters.Columns?.raw;
+        if (columnsParameter) {
+            console.warn('Setting columns via `Columns` parameter is deprecated. Please set columns using SavedQueries in Entity Metadata instead.');
+            this.getDataset().getDataProvider().setColumns(JSON.parse(columnsParameter));
         }
     }
 

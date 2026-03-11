@@ -8,7 +8,7 @@ import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps }
 import React from "react";
 import { IRibbonComponentProps } from "../Ribbon/interfaces";
 import { IDatasetControl } from "../../utils/dataset-control";
-import { IColumn } from "@talxis/client-libraries";
+import { IColumn, IEntityMetadata } from "@talxis/client-libraries";
 
 
 export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {
@@ -28,6 +28,7 @@ export interface IDatasetControlParameters extends IGridParameters {
     ClientApiWebresourceName?: IStringProperty;
     ClientApiFunctionName?: IStringProperty;
     UserQueryScope?: IStringProperty;
+    EntityMetadata?: IEntityMetadata;
 }
 
 export interface IDatasetControlComponentProps {

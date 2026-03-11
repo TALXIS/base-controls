@@ -15,15 +15,21 @@ export const getPanelStyles = (theme: ITheme) => {
             flexDirection: 'column',
         },
         panelContent: {
-             display: 'flex',
-             flexDirection: 'column',
-             minHeight: 0,
-             padding: 0
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            padding: 0
         },
         header: {
             borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
             paddingBottom: 15,
             paddingTop: 15
         },
+        loadingOverlay: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1
+        }
     })
 }

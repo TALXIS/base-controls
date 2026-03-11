@@ -4,7 +4,8 @@ export const getOptionTextStyles = () => {
     return mergeStyleSets({
         optionText: {
             flexGrow: 1,
-            gap: 10
+            gap: 10,
+            backgroundColor: 'transparent !important'
         }
     })
 }

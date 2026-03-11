@@ -1,4 +1,3 @@
-import { FieldValue } from "@talxis/client-libraries";
 import { IWholeNumberProperty } from "../../../interfaces";
 import { Property } from "./Property";
 
