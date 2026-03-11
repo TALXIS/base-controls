@@ -1,20 +1,19 @@
 import { useMemo, useState } from "react"
-import { getHeaderStyles } from "./styles";
 import { Label, useTheme } from "@fluentui/react";
-import { ScopeSelector } from "../ScopeSelector/ScopeSelector";
-import { useModel } from "../../useModel";
-import { ColumnSelector } from "../ColumnSelector/ColumnSelector";
+import { ScopeSelector } from "../scope-selector/ScopeSelector";
+import { ColumnSelector } from "../column-selector/ColumnSelector";
 import { useEditColumns } from "../useEditColumns";
-import { useShouldRemount } from "../../../../hooks/useShouldRemount";
-import { useEventEmitter } from "../../../../hooks";
-import { IEditColumnsEvents } from "../../../../utils/dataset-control/EditColumns";
 import { useRerender } from "@talxis/react-components";
+import { getHeaderStyles } from "./styles";
+import { useShouldRemount } from "../../../hooks/useShouldRemount";
+import { IEditColumnsEvents } from "../../../utils/edit-columns";
+import { useEventEmitter } from "../../../hooks";
 
 
 export const Header = () => {
     const theme = useTheme();
     const styles = useMemo(() => getHeaderStyles(theme), []);
-    const labels = useModel().getLabels();
+    const labels = useEditColumns().functions.getLabels();
     const [shouldRemountColumnSelector, remountColumnSelector] = useShouldRemount();
     const [openColumnSelectorOnMount, setOpenColumnSelectorOnMount] = useState(false);
     const {model, components, showScopeSelector} = useEditColumns();
@@ -31,7 +30,7 @@ export const Header = () => {
         <div className={styles.selectors}>
             {showScopeSelector && (
                 <div>
-                    <Label>{labels["column-source"]()}</Label>
+                    <Label>{labels["column-source"]}</Label>
                     <ScopeSelector />
                 </div>
             )}

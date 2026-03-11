@@ -1,4 +1,4 @@
-import { CommandBarButton, MessageBar, MessageBarType } from "@fluentui/react";
+import { MessageBar, MessageBarType } from "@fluentui/react";
 import { IComponentProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { useMemo, useState } from "react";
@@ -9,8 +9,9 @@ import { Ribbon } from "../../Ribbon/Ribbon";
 import { useEventEmitter } from "../../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlEvents } from "../../../utils/dataset-control";
-import { EditColumns } from "../EditColumns/EditColumns";
 import { ViewSwitcher } from "../ViewSwitcher/ViewSwitcher";
+import { EditColumns } from "./EditColumns/EditColumns";
+
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
     const model = useModel();
@@ -20,6 +21,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
     const rerender = useRerender();
     const styles = useMemo(() => getHeaderStyles(), []);
     const [isEditColumnsPanelVisible, setIsEditColumnsPanelVisible] = useState<boolean>(false);
+
     useEventEmitter<IDataProviderEventListeners>(dataset, 'onLoading', rerender);
     useEventEmitter<IDatasetControlEvents>(datasetControl, 'onRecordCommandsLoaded', rerender);
     useEventEmitter<IDatasetControlEvents>(datasetControl, 'onEditColumnsRequested', () => setIsEditColumnsPanelVisible(true));
@@ -143,7 +145,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                 </div>
             }
             {isEditColumnsPanelVisible &&
-                <EditColumns
+                <EditColumns 
                     onDismiss={() => setIsEditColumnsPanelVisible(false)} />
             }
         </>

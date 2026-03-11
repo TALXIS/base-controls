@@ -3,12 +3,11 @@ import { GroupBase } from 'react-select';
 import { Callout, DirectionalHint, TooltipHost, useTheme, Text } from "@fluentui/react";
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
-import { useModel } from "../../useModel";
 import { components } from 'react-select';
 import { useMemo } from "react";
 import React from "react";
-import { getSelectorStyles } from "./styles";
 import { useEditColumns } from "../useEditColumns";
+import { getSelectorStyles } from "./styles";
 
 type ReactSelectProps<IsMulti extends boolean = false, TColumn extends IColumn = IColumn> = AsyncProps<TColumn, IsMulti, GroupBase<TColumn>>;
 
@@ -20,7 +19,8 @@ interface ISelectorProps<IsMulti extends boolean = false, TColumn extends IColum
 export const Selector = <IsMulti extends boolean = false, TColumn extends IColumn = IColumn>(props: ISelectorProps<IsMulti, TColumn>) => {
     const theme = useTheme();
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((p) => p);
-    const labels = useModel().getLabels();
+    const {functions} = useEditColumns();
+    const labels = functions.getLabels();
     const id = useMemo(() => `selector-${window.crypto.randomUUID()}`, []);
     const styles = useMemo(() => getSelectorStyles(), []);
     const { components: editColumnsComponents } = useEditColumns();
@@ -44,8 +44,8 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
     const componentProps = onOverrideComponentProps({
         id: id,
         getOptionValue: (column) => column.name,
-        getOptionLabel: (column) => column.displayName ?? labels['no-name'](),
-        noOptionsMessage: () => labels['no-result-found'](),
+        getOptionLabel: (column) => column.displayName ?? labels["no-name"],
+        noOptionsMessage: () => labels["no-results"],
         maxMenuHeight: 600,
         isClearable: false,
         defaultOptions: true,

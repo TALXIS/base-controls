@@ -1,14 +1,14 @@
 import React from "react";
 import { useContext } from "react"
-import { IEditColumns } from "../../../utils/dataset-control/EditColumns";
 import { IComponents } from "./components/components";
-import { IColumn } from "@talxis/client-libraries";
+import { IFunctions } from "./functions";
+import { IEditColumns } from "../../utils/edit-columns";
 
 export const EditColumnsContext = React.createContext<{
-    model: IEditColumns;
     components: IComponents;
+    functions: IFunctions;
+    model: IEditColumns;
     showScopeSelector: boolean;
-    visibleColumns: IColumn[];
     
 }>(null as any);
 

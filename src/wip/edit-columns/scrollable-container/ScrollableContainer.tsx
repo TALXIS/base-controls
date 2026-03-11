@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useEditColumns } from "../useEditColumns";
-import { IEditColumnsEvents } from "../../../../utils/dataset-control/EditColumns";
-import { useEventEmitter } from "../../../../hooks";
-import { ScrollableContainer as ScrollableContainerBase } from "../../../../wip/panel/components/ScrollableContainer/ScrollableContainer";
+import { IEditColumnsEvents } from "../../../utils/edit-columns";
+import { useEventEmitter } from "../../../hooks";
+import { ScrollableContainer as ScrollableContainerBase } from "../../panel/components/ScrollableContainer/ScrollableContainer";
 
 export const ScrollableContainer = (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>) => {
     const { model } = useEditColumns();

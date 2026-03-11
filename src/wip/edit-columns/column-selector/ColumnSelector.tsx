@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { InputActionMeta } from "react-select";
 import { getColumnSelectorStyles } from "./styles";
-import { useModel } from "../../useModel";
-import { Selector } from "../Selector/Selector";
+import { Selector } from "../selector/Selector";
 import { useEditColumns } from "../useEditColumns";
 import { SelectInstance } from 'react-select';
 import { Attribute, IColumn } from "@talxis/client-libraries";
@@ -14,16 +13,15 @@ interface IColumnSelectorProps {
 
 export const ColumnSelector = (props: IColumnSelectorProps) => {
     const { openMenuOnMount } = props;
-    const editColumnsModel = useEditColumns().model;
+    const {model, functions} = useEditColumns();
     const styles = useMemo(() => getColumnSelectorStyles(), []);
-    const model = useModel();
-    const labels = model.getLabels();
+    const labels = functions.getLabels();
     const ref = React.useRef<SelectInstance>(null);
     const [defaultOptions, setDefaultOptions] = React.useState<IColumn[]>([]);
     const [inputValue, setInputValue] = React.useState<string>('');
 
     const onChange = (columns: IColumn[]) => {
-        editColumnsModel.addColumn(columns[columns.length - 1]);
+        model.addColumn(columns[columns.length - 1]);
         setDefaultOptions([...defaultOptions]);
         setTimeout(() => {
             ref.current?.focusInput();
@@ -49,7 +47,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             ref.current?.openMenu('first');
         }
         (async () => {
-            const options = await editColumnsModel.getAvailableColumns();
+            const options = await model.getAvailableColumns();
             //forces refresh of defaultOptions
             setDefaultOptions(options);
         })();
@@ -64,16 +62,16 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             inputValue: inputValue,
             className: styles.root,
             backspaceRemovesValue: false,
-            value: editColumnsModel.getColumns().filter(col => !col.isHidden),
+            value: model.getColumns().filter(col => !col.isHidden),
             closeMenuOnSelect: false,
             hideSelectedOptions: true,
             defaultOptions: defaultOptions,
-            placeholder: `${labels["add-column"]()}...`,
+            placeholder: `${labels['add-column']}...`,
             controlShouldRenderValue: false,
             onInputChange: onInputChange,
             getOptionValue: (column) => Attribute.GetNameFromAlias(column.name),
             onKeyDown: (ev) => ev.key === 'Enter' && ref.current?.openMenu('first'),
-            loadOptions: (inputValue: string) => editColumnsModel.getAvailableColumns(inputValue),
+            loadOptions: (inputValue: string) => model.getAvailableColumns(inputValue),
             onChange: (columns) => onChange(columns as IColumn[]),
         }
     }} />

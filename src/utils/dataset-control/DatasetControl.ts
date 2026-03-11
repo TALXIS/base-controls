@@ -1,8 +1,9 @@
 import { Client, DataProvider, EventEmitter, ICommand, IDataProvider, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors, ISavedQuery } from "@talxis/client-libraries";
 import debounce from "debounce";
 import { IDatasetControlParameters } from "../../components/DatasetControl/interfaces";
-import { EditColumns, IEditColumns } from "./EditColumns";
 import { IViewSwitcher, ViewSwitcher } from "./ViewSwitcher";
+import { DatasetControlEditColumns } from "./edit-columns/DatasetControlEditColumns";
+import { IEditColumns } from "../edit-columns";
 
 
 interface IDatasetControlOptions {
@@ -81,7 +82,7 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     }
 
     public get editColumns(): IEditColumns {
-        return new EditColumns({ datasetControl: this });
+        return new DatasetControlEditColumns({ datasetControl: this });
     }
     public get viewSwitcher(): IViewSwitcher {
         return this._viewSwitcher;

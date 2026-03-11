@@ -4,18 +4,17 @@ import { IColumn } from "@talxis/client-libraries";
 import { getSortableItemStyles } from "./styles";
 import { useMemo } from "react";
 import { useTheme, Text, ThemeProvider } from "@fluentui/react";
-import { useModel } from "../../useModel";
 import { useEditColumns } from "../useEditColumns";
 import { useThemeGenerator } from "@talxis/react-components";
 
 export const SortableItem = (props: { column: IColumn }) => {
     const { column } = props;
-    const { model, components } = useEditColumns()
+    const { components, functions, model } = useEditColumns();
+    const labels = functions.getLabels();
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: column.name });
     const theme = useTheme();
     const styles = useMemo(() => getSortableItemStyles(theme), []);
-    const labels = useModel().getLabels();
-    const displayName = column.displayName ?? labels['no-name']();
+    const displayName = column.displayName ?? labels['no-name'];
     const sortableItemTheme = useThemeGenerator(theme.palette.themePrimary, theme.semanticColors.buttonBackgroundPressed, theme.semanticColors.bodyText);
 
     const style = {

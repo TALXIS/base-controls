@@ -5,6 +5,7 @@ import { DatasetControl as DatasetControlRenderer } from "../../../DatasetContro
 import { Grid } from "../../../../Grid";
 import { ViewManager } from "../ViewManager";
 import { Panel } from "../../../../../wip/panel/Panel";
+import { getLabels } from "../../../../../wip/panel/functions/getLabels";
 
 interface IViewManagerPanelProps {
     onDismiss: (shouldRemount: boolean) => void;
@@ -18,11 +19,26 @@ export const ViewManagerPanel = (props: IViewManagerPanelProps) => {
     const viewManager = useMemo(() => new ViewManager(datasetControl), []);
 
     return <Panel
-        headerText={labels['manage-views']()}
-        type={PanelType.medium}
-        onDismiss={() => onDismiss(viewManager.haveChangesBeenMade())}
-        onRenderFooterContent={undefined}
-        isOpen>
+        functions={{
+            getLabels: () => {
+                const originalLabels = getLabels();
+                return {
+                    ...originalLabels,
+                    header: labels['manage-views']()
+                }
+            },
+            onDismiss: () => onDismiss(viewManager.haveChangesBeenMade()),
+        }}
+        components={{
+            FooterContent: () => <></>
+        }}
+        overrideComponentProps={(props) => {
+            return {
+                ...props,
+                type: PanelType.medium
+            }
+        }}
+    >
         <DatasetControlRenderer
             onGetDatasetControlInstance={() => viewManager.getDatasetControl()}
             onGetControlComponent={(props) => <Grid {...props} />}
