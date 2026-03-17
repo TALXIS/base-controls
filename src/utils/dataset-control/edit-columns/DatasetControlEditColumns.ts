@@ -21,7 +21,7 @@ export class DatasetControlEditColumns extends EditColumnsBase {
         this._foreignKeyEntityLinkMap = new Map(this._provider.getLinking().map(l => [`${l.from}_${l.to}`, l]));
     }
 
-    public getColumns(): IColumn[] {
+    public onGetColumns(): IColumn[] {
         return this._currentColumns.filter(col => !col.isHidden);
     }
 
@@ -63,7 +63,12 @@ export class DatasetControlEditColumns extends EditColumnsBase {
         }
     }
 
-    public async getAvailableColumns(query?: string): Promise<IColumn[]> {
+    public onSelectRelatedEntityColumn(column: IAvailableRelatedColumn | null) {
+        //@ts-ignore - typings
+        this._relatedEntityColumn = column?.name === this._provider.getMetadata().PrimaryIdAttribute ? null : { ...column };
+    }
+
+    public async onGetAvailableColumns(query?: string): Promise<IColumn[]> {
         const entityName = this._relatedEntityColumn?.metadata?.Targets?.[0] ?? this._provider.getEntityName();
         const availableColumns = await this._provider.getAvailableColumns({ entityName: entityName });
         if (!query) return availableColumns;
@@ -75,9 +80,9 @@ export class DatasetControlEditColumns extends EditColumnsBase {
     }
 
 
-    public async getAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]> {
+    public async onGetAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]> {
         const relatedColumns = await this._provider.getAvailableRelatedColumns();
-        const allColumns = [...relatedColumns, this.getMainEntityColumn()];
+        const allColumns = [...relatedColumns, this.onGetMainEntityColumn()];
 
         if (!query) {
             return allColumns.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
@@ -91,12 +96,7 @@ export class DatasetControlEditColumns extends EditColumnsBase {
             .sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
     }
 
-    public selectRelatedEntityColumn(column: IAvailableRelatedColumn) {
-        this._relatedEntityColumn = column.name === this._provider.getMetadata().PrimaryIdAttribute ? null : { ...column };
-        this.dispatchEvent('onRelatedEntityColumnChanged', this._relatedEntityColumn);
-    }
-
-    public getMainEntityColumn(): IAvailableRelatedColumn {
+    public onGetMainEntityColumn(): IAvailableRelatedColumn {
         return {
             name: this._provider.getMetadata().PrimaryIdAttribute,
             displayName: this._provider.getMetadata().DisplayName,

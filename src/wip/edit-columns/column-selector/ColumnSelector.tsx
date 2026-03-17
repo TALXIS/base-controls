@@ -47,7 +47,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             ref.current?.openMenu('first');
         }
         (async () => {
-            const options = await model.getAvailableColumns();
+            const options = await model.onGetAvailableColumns();
             //forces refresh of defaultOptions
             setDefaultOptions(options);
         })();
@@ -62,7 +62,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             inputValue: inputValue,
             className: styles.root,
             backspaceRemovesValue: false,
-            value: model.getColumns().filter(col => !col.isHidden),
+            value: model.onGetColumns().filter(col => !col.isHidden),
             closeMenuOnSelect: false,
             hideSelectedOptions: true,
             defaultOptions: defaultOptions,
@@ -71,7 +71,7 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             onInputChange: onInputChange,
             getOptionValue: (column) => Attribute.GetNameFromAlias(column.name),
             onKeyDown: (ev) => ev.key === 'Enter' && ref.current?.openMenu('first'),
-            loadOptions: (inputValue: string) => model.getAvailableColumns(inputValue),
+            loadOptions: (inputValue: string) => model.onGetAvailableColumns(inputValue),
             onChange: (columns) => onChange(columns as IColumn[]),
         }
     }} />

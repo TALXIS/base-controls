@@ -40,7 +40,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const functions = { ...defaultFunctions, ...props.functions };
     const labels = functions.getLabels();
 
-    const visibleColumns = model.getColumns().map(col => {
+    const visibleColumns = model.onGetColumns().map(col => {
         return {
             ...col,
             id: col.name

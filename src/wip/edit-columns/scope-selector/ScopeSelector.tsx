@@ -17,7 +17,7 @@ export const ScopeSelector = () => {
 
     useEffect(() => {
         (async () => {
-            const options = await model.getAvailableRelatedColumns();
+            const options = await model.onGetAvailableRelatedColumns();
             setIsDisabled(options.length === 1);
         })();
     }, []);
@@ -27,10 +27,10 @@ export const ScopeSelector = () => {
             ...props,
             isMulti: false,
             isDisabled: isDisabled,
-            defaultValue: model.getMainEntityColumn(),
+            defaultValue: model.onGetMainEntityColumn(),
             getOptionValue: (column) => `${column.relatedEntityPrimaryIdAttribute}_${column.name}`,
             getOptionLabel: (column) => getOptionLabel(column),
-            loadOptions: (inputValue: string) => model.getAvailableRelatedColumns(inputValue),
+            loadOptions: (inputValue: string) => model.onGetAvailableRelatedColumns(inputValue),
             onChange: (column) => model.selectRelatedEntityColumn(column!),
         }
     }} />
