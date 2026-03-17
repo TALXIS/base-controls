@@ -4,7 +4,7 @@ import { IComponents } from "./components/components";
 import { IFunctions } from "./functions";
 import { IEditColumns } from "../../utils/edit-columns";
 
-export const EditColumnsContext = React.createContext<{
+export const EditColumnsInternalContext = React.createContext<{
     components: IComponents;
     functions: IFunctions;
     model: IEditColumns;
@@ -13,5 +13,5 @@ export const EditColumnsContext = React.createContext<{
 }>(null as any);
 
 export const useEditColumns = () => {
-    return useContext(EditColumnsContext);
+    return useContext(EditColumnsInternalContext);
 }

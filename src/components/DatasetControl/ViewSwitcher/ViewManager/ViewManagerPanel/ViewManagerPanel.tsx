@@ -1,4 +1,4 @@
-import { PanelType } from "@fluentui/react"
+import { IPanelProps, PanelType } from "@fluentui/react"
 import { useMemo } from "react";
 import { useModel } from "../../../useModel";
 import { DatasetControl as DatasetControlRenderer } from "../../../DatasetControl";
@@ -6,18 +6,21 @@ import { Grid } from "../../../../Grid";
 import { ViewManager } from "../ViewManager";
 import { Panel } from "../../../../../wip/panel/Panel";
 import { getLabels } from "../../../../../wip/panel/functions/getLabels";
+import { components } from "../../../../../wip/panel/components/components";
 
 interface IViewManagerPanelProps {
     onDismiss: (shouldRemount: boolean) => void;
 }
 
+const CustomPanel = (props: IPanelProps) => {
+    return <components.Panel {...props} type={PanelType.medium} />
+}
 
 export const ViewManagerPanel = (props: IViewManagerPanelProps) => {
     const { onDismiss } = props;
     const labels = useModel().getLabels();
     const datasetControl = useModel().getDatasetControl();
     const viewManager = useMemo(() => new ViewManager(datasetControl), []);
-
     return <Panel
         functions={{
             getLabels: () => {
@@ -30,13 +33,8 @@ export const ViewManagerPanel = (props: IViewManagerPanelProps) => {
             onDismiss: () => onDismiss(viewManager.haveChangesBeenMade()),
         }}
         components={{
-            FooterContent: () => <></>
-        }}
-        overrideComponentProps={(props) => {
-            return {
-                ...props,
-                type: PanelType.medium
-            }
+            FooterContent: () => <></>,
+            Panel: CustomPanel
         }}
     >
         <DatasetControlRenderer

@@ -30,7 +30,7 @@ export class DatasetControlEditColumns extends EditColumnsBase {
         this._cleanupUnusedLinkedEntityExpression();
     }
 
-    public onSave() {
+    public onColumnsSave() {
         this._setColumns();
         this._setLinking();
         this._provider.clearSelectedRecordIds();

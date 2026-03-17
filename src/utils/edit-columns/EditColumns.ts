@@ -3,7 +3,7 @@ import { EventEmitter, IAvailableRelatedColumn, IColumn, IEventEmitter } from "@
 export interface IEditColumnsEvents {
     onColumnAdded: (column: IColumn) => void;
     onColumnsChanged: (newColumns: IColumn[]) => void;
-    onSaved: () => void;
+    onColumnsSaved: () => void;
     onRelatedEntityColumnChanged: (relatedEntityColumn: IAvailableRelatedColumn | null) => void;
 }
 
@@ -14,11 +14,10 @@ export interface IEditColumns extends IEventEmitter<IEditColumnsEvents> {
     addColumn(column: IColumn): void;
     selectRelatedEntityColumn(column: IAvailableRelatedColumn): void;
     moveColumn(draggedColumnId: string, targetColumnId: string): void;
-    onGetColumns(): IColumn[];
-    onGetAvailableColumns(query?: string): Promise<IColumn[]>;
-    onGetAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]>;
-    onSelectRelatedEntityColumn(column: IAvailableRelatedColumn): void;
-    onGetMainEntityColumn(): IAvailableRelatedColumn;
+    getMainEntityColumn(): IAvailableRelatedColumn;
+    getColumns(): IColumn[];
+    getAvailableColumns(query?: string): Promise<IColumn[]>;
+    getAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]>;
 }
 
 /**
@@ -30,7 +29,7 @@ export abstract class EditColumnsBase extends EventEmitter<IEditColumnsEvents> i
     public abstract onDeleteColumn(columnName: string): void;
     public abstract onMoveColumn(draggedColumnId: string, targetColumnId: string): void;
     public abstract onSelectRelatedEntityColumn(column: IAvailableRelatedColumn | null): void;
-    public abstract onSave(): void;
+    public abstract onColumnsSave(): void;
     public abstract onGetColumns(): IColumn[];
     public abstract onGetAvailableColumns(query?: string): Promise<IColumn[]>;
     public abstract onGetAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]>;
@@ -53,13 +52,28 @@ export abstract class EditColumnsBase extends EventEmitter<IEditColumnsEvents> i
     }
 
     public save(): void {
-        this.onSave();
-        this.dispatchEvent('onSaved');
+        this.onColumnsSave();
+        this.dispatchEvent('onColumnsSaved');
     }
 
     public selectRelatedEntityColumn(column: IAvailableRelatedColumn): void {
         this.onSelectRelatedEntityColumn(column);
         this.dispatchEvent('onRelatedEntityColumnChanged', column);
+    }
+
+    public getMainEntityColumn(): IAvailableRelatedColumn {
+        return this.onGetMainEntityColumn();
+    }
+    
+    public getAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]> {
+        return this.onGetAvailableRelatedColumns(query);
+    }
+
+    public getColumns(): IColumn[] {
+        return this.onGetColumns();
+    }
+    public getAvailableColumns(query?: string): Promise<IColumn[]> {
+        return this.onGetAvailableColumns(query);
     }
 }
 

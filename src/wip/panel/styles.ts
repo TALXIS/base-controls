@@ -24,12 +24,6 @@ export const getPanelStyles = (theme: ITheme) => {
             borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
             paddingBottom: 15,
             paddingTop: 15
-        },
-        loadingOverlay: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1
         }
     })
 }

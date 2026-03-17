@@ -1,63 +1,63 @@
-import { IPanelProps as IPanelPropsBase, Panel as BasePanel, useTheme, Overlay } from "@fluentui/react";
+import { useTheme } from "@fluentui/react";
 import { useMemo } from "react";
 import { getPanelStyles } from "./styles";
-import { Spinner } from "@talxis/react-components";
 import { IPanelComponents } from "./components/components";
 import { components as defaultComponents } from "./components/components";
 import { IPanelFunctions, functions as defaultFunctions } from "./functions/functions";
+import { PanelContext } from "./usePanel";
 
 export interface IPanelProps {
-    isLoading?: boolean;
     components?: Partial<IPanelComponents>;
     functions?: Partial<IPanelFunctions>;
     children?: React.ReactNode;
-    /**
-     * Can be used to override props that are passed to Fluent UI's Panel component. This is useful for cases where the consumer needs to set props that are not explicitly handled by this Panel component, such as `isBlocking`. The function receives the default props as an argument and should return the modified props.
-     */
-    overrideComponentProps?: (props: IPanelPropsBase) => IPanelPropsBase;
+}
+
+const LoadingOverlayProviderContainer = (props: React.HTMLAttributes<HTMLDivElement>) => {
+    return <div {...props} style={{position: 'unset'}} />
 }
 
 export const Panel = (props: IPanelProps) => {
-    const { isLoading } = props;
     const theme = useTheme();
     const styles = useMemo(() => getPanelStyles(theme), []);
     const components = { ...defaultComponents, ...props.components };
     const functions = { ...defaultFunctions, ...props.functions };
     const labels = functions.getLabels();
-    const getPanelProps = (props.overrideComponentProps ?? ((p: IPanelPropsBase) => p));
+    const { onDismiss, onSave } = functions;
 
-
-    return <BasePanel
-        {...getPanelProps({
-            isOpen: true,
-            headerText: labels.header,
-            styles: {
-                footer: styles.panelFooter,
-                scrollableContent: styles.panelScrollableContent,
-                content: styles.panelContent,
-            },
-            onRenderFooterContent: () => (
-                <components.FooterContent className={styles.panelFooterButtons}>
-                    <components.SaveButton
-                        onClick={functions.onSave}
-                        text={labels.save}
-                    />
-                    <components.DismissButton
-                        onClick={functions.onDismiss}
-                        text={labels.dismiss}
-                    />
-                </components.FooterContent>
-            ),
-            isFooterAtBottom: true,
-            onDismiss: functions.onDismiss
-        })}
-    >
-        <components.Header />
-        <components.ScrollableContainer>
-            {isLoading && <Overlay className={styles.loadingOverlay}>
-                <Spinner />
-            </Overlay>}
-            {props.children}
-        </components.ScrollableContainer>
-    </BasePanel>
+    return (
+        <PanelContext.Provider value={{ components: components }}>
+            <components.Panel
+                isOpen={true}
+                headerText={labels.header}
+                styles={{
+                    footer: styles.panelFooter,
+                    scrollableContent: styles.panelScrollableContent,
+                    content: styles.panelContent,
+                }}
+                onRenderFooterContent={() => (
+                    <components.FooterContent className={styles.panelFooterButtons}>
+                        <components.SaveButton
+                            onClick={onSave}
+                            text={labels.save}
+                        />
+                        <components.DismissButton
+                            onClick={onDismiss}
+                            text={labels.dismiss}
+                        />
+                    </components.FooterContent>
+                )}
+                isFooterAtBottom={true}
+                onDismiss={onDismiss}
+            >
+                <components.LoadingOverlayProvider components={{
+                    Container: LoadingOverlayProviderContainer
+                }}>
+                    <components.Header />
+                    <components.ScrollableContainer>
+                        {props.children}
+                    </components.ScrollableContainer>
+                </components.LoadingOverlayProvider>
+            </components.Panel>
+        </PanelContext.Provider>
+    );
 }

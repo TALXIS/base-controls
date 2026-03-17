@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 
 
 export const ScopeSelector = () => {
-    
     const {model, functions} = useEditColumns();
     const [isDisabled, setIsDisabled] = useState(true);
     const labels = functions.getLabels();
@@ -17,7 +16,7 @@ export const ScopeSelector = () => {
 
     useEffect(() => {
         (async () => {
-            const options = await model.onGetAvailableRelatedColumns();
+            const options = await model.getAvailableRelatedColumns();
             setIsDisabled(options.length === 1);
         })();
     }, []);
@@ -27,10 +26,10 @@ export const ScopeSelector = () => {
             ...props,
             isMulti: false,
             isDisabled: isDisabled,
-            defaultValue: model.onGetMainEntityColumn(),
+            defaultValue: model.getMainEntityColumn(),
             getOptionValue: (column) => `${column.relatedEntityPrimaryIdAttribute}_${column.name}`,
             getOptionLabel: (column) => getOptionLabel(column),
-            loadOptions: (inputValue: string) => model.onGetAvailableRelatedColumns(inputValue),
+            loadOptions: (inputValue: string) => model.getAvailableRelatedColumns(inputValue),
             onChange: (column) => model.selectRelatedEntityColumn(column!),
         }
     }} />

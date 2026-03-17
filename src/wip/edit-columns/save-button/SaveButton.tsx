@@ -4,5 +4,5 @@ import { useEditColumns } from "../useEditColumns";
 
 export const SaveButton = (props: IButtonProps) => {
     const { model } = useEditColumns();
-    return <components.SaveButton {...props} disabled={model.onGetColumns().length === 0} />
+    return <components.SaveButton {...props} disabled={model.getColumns().length === 0} />
 }
