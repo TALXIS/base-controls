@@ -1,39 +1,51 @@
-import { Overlay } from "@fluentui/react";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { getLoadingOverlayStyles } from "./styles";
-import { LoadingOverlayContext } from "./useLoadingOverlay";
 import React from "react";
 import { ILoadingOverlayProviderComponents, components as defaultComponents } from "./components";
+import { LoadingOverlayInternalContext } from "./context";
 
-interface ILoadingOptions {
-    isLoading: boolean;
+export interface ILoadingOptions {
+    isVisible: boolean;
     message?: string;
 }
 
 export interface ILoadingOverlayProviderProps {
+    options?: ILoadingOptions;
     children?: React.ReactNode;
     components?: Partial<ILoadingOverlayProviderComponents>;
 }
 
 export const LoadingOverlayProvider = (props: ILoadingOverlayProviderProps) => {
     const { children } = props;
+    const isControlled = useRef(!!props.options).current;
     const styles = useMemo(() => getLoadingOverlayStyles(), []);
-    const [options, setOptions] = React.useState<ILoadingOptions>({ isLoading: false });
-    const { isLoading, message } = options;
+    const [_loadingOptions, setOptions] = React.useState<ILoadingOptions>({ isVisible: false });
+    const loadingOptions = props.options ?? _loadingOptions;
+    const { isVisible, message } = loadingOptions;
     const components = { ...defaultComponents, ...props.components };
 
     const toggle = (options: ILoadingOptions) => {
-        setOptions(options);
+        if (isControlled) {
+            console.warn("LoadingOverlayProvider is in controlled mode since options prop is provided. Calls to toggle will not have any effect.")
+        }
+        else {
+            setOptions(options);
+        }
     }
 
-    return <LoadingOverlayContext.Provider value={{ toggle }}>
+    if (isControlled !== !!props.options) {
+        console.error("LoadingOverlayProvider: cannot switch between controlled and uncontrolled modes.");
+    }
+
+
+    return <LoadingOverlayInternalContext.Provider value={{ toggle, isVisible, message }}>
         <components.Container className={styles.loadingOverlayContainer}>
             {children}
-            {isLoading &&
-                <Overlay className={styles.loadingOverlay}>
+            {isVisible &&
+                <components.Overlay className={styles.loadingOverlay}>
                     <components.Spinner label={message} />
-                </Overlay>
+                </components.Overlay>
             }
         </components.Container>
-    </LoadingOverlayContext.Provider>
+    </LoadingOverlayInternalContext.Provider>
 }

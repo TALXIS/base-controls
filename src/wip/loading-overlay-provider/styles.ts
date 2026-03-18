@@ -7,11 +7,11 @@ export const getLoadingOverlayStyles = () => {
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1,
-            backdropFilter: 'blur(2px)'
+            backdropFilter: 'blur(2px)',
+            cursor: 'wait',
         },
         loadingOverlayContainer: {
-            position: 'relative',
-            //maxWidth: 'fit-content'
+            position: 'relative'
         }
     })
 }

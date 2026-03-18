@@ -79,7 +79,6 @@ export class DatasetControlEditColumns extends EditColumnsBase {
         );
     }
 
-
     public async onGetAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]> {
         const relatedColumns = await this._provider.getAvailableRelatedColumns();
         const allColumns = [...relatedColumns, this.onGetMainEntityColumn()];
