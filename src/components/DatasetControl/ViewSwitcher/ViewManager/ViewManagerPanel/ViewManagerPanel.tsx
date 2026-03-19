@@ -5,7 +5,6 @@ import { DatasetControl as DatasetControlRenderer } from "../../../DatasetContro
 import { Grid } from "../../../../Grid";
 import { ViewManager } from "../ViewManager";
 import { Panel } from "../../../../../wip/panel/Panel";
-import { getLabels } from "../../../../../wip/panel/functions/getLabels";
 import { components } from "../../../../../wip/panel/components/components";
 
 interface IViewManagerPanelProps {
@@ -18,20 +17,9 @@ const CustomPanel = (props: IPanelProps) => {
 
 export const ViewManagerPanel = (props: IViewManagerPanelProps) => {
     const { onDismiss } = props;
-    const labels = useModel().getLabels();
     const datasetControl = useModel().getDatasetControl();
     const viewManager = useMemo(() => new ViewManager(datasetControl), []);
     return <Panel
-        functions={{
-            getLabels: () => {
-                const originalLabels = getLabels();
-                return {
-                    ...originalLabels,
-                    header: labels['manage-views']()
-                }
-            },
-            onDismiss: () => onDismiss(viewManager.haveChangesBeenMade()),
-        }}
         components={{
             FooterContent: () => <></>,
             Panel: CustomPanel

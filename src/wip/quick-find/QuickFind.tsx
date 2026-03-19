@@ -1,26 +1,24 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import { useContext } from "../shared"
 import { QuickFindContext } from "./context";
 import { useEventEmitter } from "../../hooks";
 import { IQuickFindEvents } from "../../utils/quick-find/QuickFindBase";
-import { Text, FontIcon, DirectionalHint } from "@fluentui/react";
-import { IQuickFindFunctions } from "./functions";
-import { functions as defaultFunctions } from "./functions";
+import { Text, FontIcon } from "@fluentui/react";
 import { components as defaultComponents } from "./components";
 import { getQuickFindStyles } from "./styles";
 import { IQuickFindComponents } from "./components";
+import { IQuickFindLabels, QUICK_FIND_LABELS } from "./labels";
 
 interface IQuickFindProps {
-    functions?: Partial<IQuickFindFunctions>;
     components?: Partial<IQuickFindComponents>;
+    labels?: Partial<IQuickFindLabels>;
 }
 
 export const QuickFind = (props: IQuickFindProps) => {
     const styles = useMemo(() => getQuickFindStyles(), []);
     const context = useContext('QuickFind', QuickFindContext);
-    const functions = { ...defaultFunctions, ...props.functions };
     const components = { ...defaultComponents, ...props.components };
-    const labels = functions.getLabels();
+    const labels = { ...QUICK_FIND_LABELS, ...props.labels };
     const columnNames = context.getColumnNames();
     const [isCalloutVisible, setIsCalloutVisible] = React.useState(false);
     const [query, setQuery] = React.useState(context.getSearchQuery());

@@ -4,17 +4,18 @@ import { IColumn } from "@talxis/client-libraries";
 import { getSortableItemStyles } from "./styles";
 import { useMemo } from "react";
 import { useTheme, Text, ThemeProvider } from "@fluentui/react";
-import { useEditColumns } from "../useEditColumns";
 import { useThemeGenerator } from "@talxis/react-components";
+import { useEditColumns, useEditColumnsComponents, useEditColumnsLabels } from "../context";
 
 export const SortableItem = (props: { column: IColumn }) => {
     const { column } = props;
-    const { components, functions, model } = useEditColumns();
-    const labels = functions.getLabels();
+    const components = useEditColumnsComponents();
+    const labels = useEditColumnsLabels();
+    const model = useEditColumns();
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: column.name });
     const theme = useTheme();
     const styles = useMemo(() => getSortableItemStyles(theme), []);
-    const displayName = column.displayName ?? labels['no-name'];
+    const displayName = column.displayName ?? labels.noName;
     const sortableItemTheme = useThemeGenerator(theme.palette.themePrimary, theme.semanticColors.buttonBackgroundPressed, theme.semanticColors.bodyText);
 
     const style = {
@@ -25,7 +26,7 @@ export const SortableItem = (props: { column: IColumn }) => {
     return (
         <ThemeProvider theme={sortableItemTheme} className={styles.sortableItem} ref={setNodeRef} style={style} {...attributes} {...listeners}>
             <Text title={displayName}>{displayName}</Text>
-            <components.SortableItemCommandBar column={column} items={[]} farItems={[{
+            <components.SortableItemCommandBar items={[]} farItems={[{
                 key: 'delete',
                 iconProps: {
                     iconName: 'Cancel',

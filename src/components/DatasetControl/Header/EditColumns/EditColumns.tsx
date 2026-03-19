@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { EditColumns as EditColumnsComponent } from "../../../../wip/edit-columns/EditColumns";
 import { useModel } from "../../useModel";
-import { getLabels } from "../../../../wip/edit-columns/functions/getLabels";
 import { EditColumnsContext } from "../../../../wip/edit-columns/context";
 
 interface IEditColumnsProps {
@@ -25,20 +24,6 @@ export const EditColumns = (props: IEditColumnsProps) => {
         return title;
     }
     return <EditColumnsContext.Provider value={editColumnsModel}>
-        <EditColumnsComponent
-            functions={{
-                getLabels: () => {
-                    const originalLabels = getLabels();
-                    return {
-                        ...originalLabels,
-                        header: getEditColumnsPanelHeaderText(),
-                        "add-column": labels['add-column'](),
-                        "no-results": 'CUSTOM TEST',
-                        "column-source": labels["column-source"](),
-                        "no-name": labels["no-name"]()
-                    }
-                }
-            }}
-        />
+        <EditColumnsComponent />
     </EditColumnsContext.Provider>
 }

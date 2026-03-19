@@ -1,9 +1,8 @@
+import { IOverlayProviderComponents } from '../../overlay-provider/components';
 import { Overlay } from './overlay';
-export interface IDisabledOverlayProviderComponents {
-    Overlay: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-}
+import { components as overlayProviderComponents } from '../../overlay-provider/components';
 
-
-export const components: IDisabledOverlayProviderComponents = {
+export const components: IOverlayProviderComponents = {
+    ...overlayProviderComponents,
     Overlay: Overlay
 }

@@ -1,5 +1,5 @@
 import { DefaultButton, IButtonProps, IPanelProps, Panel as PanelBase, PrimaryButton } from "@fluentui/react";
-import { ScrollableContainer } from "./ScrollableContainer/ScrollableContainer";
+import { ScrollableContainer } from "./scrollable-container/ScrollableContainer";
 import { ILoadingOverlayProviderProps, LoadingOverlayProvider } from "../../loading-overlay-provider";
 
 export interface IPanelComponents {

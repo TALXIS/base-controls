@@ -3,32 +3,28 @@ import { useMemo } from "react";
 import { getPanelStyles } from "./styles";
 import { IPanelComponents } from "./components/components";
 import { components as defaultComponents } from "./components/components";
-import { IPanelFunctions, functions as defaultFunctions } from "./functions/functions";
-import { PanelContext } from "./usePanel";
+import { PanelComponentsContext } from "./context";
+import { LoadingOverlayProviderContainer } from "./components/loading-overlay-provider-container";
+import { LoadingOverlaySpinner } from "./components/loading-overlay-spinner/LoadingOverlaySpinner";
+import { IPanelLabels } from "./labels";
+import { PANEL_LABELS } from "./labels";
 
 export interface IPanelProps {
     components?: Partial<IPanelComponents>;
-    functions?: Partial<IPanelFunctions>;
     children?: React.ReactNode;
-}
-
-const LoadingOverlayProviderContainer = (props: React.HTMLAttributes<HTMLDivElement>) => {
-    return <div {...props} style={{position: 'unset'}} />
+    labels?: Partial<IPanelLabels>
 }
 
 export const Panel = (props: IPanelProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getPanelStyles(theme), []);
     const components = { ...defaultComponents, ...props.components };
-    const functions = { ...defaultFunctions, ...props.functions };
-    const labels = functions.getLabels();
-    const { onDismiss, onSave } = functions;
+    const labels = { ...PANEL_LABELS, ...props.labels };
 
     return (
-        <PanelContext.Provider value={{ components: components }}>
+        <PanelComponentsContext.Provider value={components}>
             <components.Panel
                 isOpen={true}
-                headerText={labels.header}
                 styles={{
                     footer: styles.panelFooter,
                     scrollableContent: styles.panelScrollableContent,
@@ -37,20 +33,18 @@ export const Panel = (props: IPanelProps) => {
                 onRenderFooterContent={() => (
                     <components.FooterContent className={styles.panelFooterButtons}>
                         <components.SaveButton
-                            onClick={onSave}
                             text={labels.save}
                         />
                         <components.DismissButton
-                            onClick={onDismiss}
                             text={labels.dismiss}
                         />
                     </components.FooterContent>
                 )}
                 isFooterAtBottom={true}
-                onDismiss={onDismiss}
             >
                 <components.LoadingOverlayProvider components={{
-                    Container: LoadingOverlayProviderContainer
+                    Container: LoadingOverlayProviderContainer,
+                    Spinner: LoadingOverlaySpinner
                 }}>
                     <components.Header />
                     <components.ScrollableContainer>
@@ -58,6 +52,6 @@ export const Panel = (props: IPanelProps) => {
                     </components.ScrollableContainer>
                 </components.LoadingOverlayProvider>
             </components.Panel>
-        </PanelContext.Provider>
+        </PanelComponentsContext.Provider>
     );
 }

@@ -1,76 +1,53 @@
-import { DatasetConstants, IColumn } from "@talxis/client-libraries";
-import { GroupBase } from 'react-select';
-import { Callout, DirectionalHint, TooltipHost, useTheme, Text } from "@fluentui/react";
-import AsyncSelect from 'react-select/async';
-import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
-import { components } from 'react-select';
-import { useMemo } from "react";
-import React from "react";
-import { useEditColumns } from "../useEditColumns";
-import { getSelectorStyles } from "./styles";
+import { IColumn } from "@talxis/client-libraries";
+import { useTheme } from "@fluentui/react";
+import { AsyncProps } from 'react-select/async';
+import React, { useCallback, useMemo } from "react";
+import { useEditColumnsLabels } from "../context";
+import { Option } from "./components/option";
+import { Menu } from "./components/menu";
 
-type ReactSelectProps<IsMulti extends boolean = false, TColumn extends IColumn = IColumn> = AsyncProps<TColumn, IsMulti, GroupBase<TColumn>>;
-
-interface ISelectorProps<IsMulti extends boolean = false, TColumn extends IColumn = IColumn> {
-    context: 'scopeSelector' | 'columnSelector';
-    onOverrideComponentProps?: (props: ReactSelectProps<IsMulti, TColumn>) => ReactSelectProps<IsMulti, TColumn>
+interface ISelectorProps {
+  components: {
+    Select: React.ComponentType<AsyncProps<any, any, any>>;
+  };
 }
 
-export const Selector = <IsMulti extends boolean = false, TColumn extends IColumn = IColumn>(props: ISelectorProps<IsMulti, TColumn>) => {
+
+export const Selector = (props: ISelectorProps) => {
     const theme = useTheme();
-    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((p) => p);
-    const {functions} = useEditColumns();
-    const labels = functions.getLabels();
+    const labels = useEditColumnsLabels();
     const id = useMemo(() => `selector-${window.crypto.randomUUID()}`, []);
-    const styles = useMemo(() => getSelectorStyles(), []);
-    const { components: editColumnsComponents } = useEditColumns();
-    const { context } = props;
+    
+    const Select = props.components?.Select;
 
-    const MemoizedMenu = useMemo(() =>
-        React.memo((props: any) => (
-            <Callout
-                directionalHint={DirectionalHint.leftTopEdge}
-                target={`#${id}`}>
-                <components.Menu {...props} />
-            </Callout>
-        )),
-        [id]
-    );
+    const MenuWithId = useCallback((props: any) => {
+        return <Menu {...props} selectorId={id}  />
+    }, [id]);
 
-    const getTooltipContent = (columnName: string): string => {
-        return columnName.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX) ? 'user_column' : columnName;
-    }
-
-    const componentProps = onOverrideComponentProps({
-        id: id,
-        getOptionValue: (column) => column.name,
-        getOptionLabel: (column) => column.displayName ?? labels["no-name"],
-        noOptionsMessage: () => labels["no-results"],
-        maxMenuHeight: 600,
-        isClearable: false,
-        defaultOptions: true,
-        styles: {
-            option: (base) => {
-                return {
+    return (
+        <Select
+            id={id}
+            getOptionValue={(column: IColumn) => column.name}
+            getOptionLabel={(column: IColumn) => column.displayName ?? labels.noName}
+            noOptionsMessage={() => labels.noResults}
+            maxMenuHeight={600}
+            isClearable={false}
+            defaultOptions={true}
+            styles={{
+                option: (base) => ({
                     ...base,
                     padding: 0,
                     cursor: 'pointer',
-                }
-            },
-            menu: () => {
-                return {
+                }),
+                menu: () => ({
                     width: 300
-                }
-            },
-            menuList: (base) => {
-                return {
+                }),
+                menuList: (base) => ({
                     ...base,
                     scrollbarWidth: 'thin'
-                }
-            }
-        },
-        theme: (base: any) => {
-            return {
+                })
+            }}
+            theme={(base: any) => ({
                 ...base,
                 colors: {
                     ...base.colors,
@@ -79,23 +56,11 @@ export const Selector = <IsMulti extends boolean = false, TColumn extends IColum
                     primary50: theme.palette.themeLight,
                     primary25: theme.palette.themeLighter,
                 }
-            }
-        },
-        components: {
-            Option: (props) => <components.Option {...props}>
-                <TooltipHost
-                    content={getTooltipContent(props.data.name)}
-                >
-                    <div className={styles.optionContainer}>
-                        <editColumnsComponents.OptionText {...props as any} />
-                        <editColumnsComponents.OptionCommandBar items={[]} context={context} column={props.data} />
-                    </div>
-                </TooltipHost>
-            </components.Option>,
-            Menu: MemoizedMenu
-
-        }
-    })
-
-    return <AsyncSelect {...componentProps} />
+            })}
+            components={{
+                Option: Option,
+                Menu: MenuWithId
+            }}
+        />
+    );
 }

@@ -1,13 +1,14 @@
 import React from "react";
+import { useOverlayProvider } from "../overlay-provider";
+import { ILoadingOverlayProviderComponents } from "./components";
 
-export interface ILoadingOverlayContext {
-    toggle: (options: {isVisible: boolean; message?: string}) => void;
-    isVisible: boolean;
-    message?: string;
+
+export const LoadingOverlayProviderComponentsContext = React.createContext<ILoadingOverlayProviderComponents>(null as any);
+
+export const useLoadingOverlayProviderComponents = () => {
+    return React.useContext(LoadingOverlayProviderComponentsContext);
 }
 
-export const LoadingOverlayInternalContext = React.createContext<ILoadingOverlayContext>(null as any);
-
-export const useLoadingOverlay = () => {
-    return React.useContext(LoadingOverlayInternalContext);
+export const useLoadingOverlayProvider = () => {
+    return useOverlayProvider();
 }

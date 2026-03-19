@@ -2,20 +2,20 @@ import React, { useEffect, useMemo } from "react";
 import { InputActionMeta } from "react-select";
 import { getColumnSelectorStyles } from "./styles";
 import { Selector } from "../selector/Selector";
-import { useEditColumns } from "../useEditColumns";
 import { SelectInstance } from 'react-select';
 import { Attribute, IColumn } from "@talxis/client-libraries";
+import { useEditColumns, useEditColumnsLabels } from "../context";
+import AsyncSelect from "react-select/async";
 
 interface IColumnSelectorProps {
     openMenuOnMount?: boolean;
 }
 
-
 export const ColumnSelector = (props: IColumnSelectorProps) => {
     const { openMenuOnMount } = props;
-    const {model, functions} = useEditColumns();
+    const model = useEditColumns();
+    const labels = useEditColumnsLabels();
     const styles = useMemo(() => getColumnSelectorStyles(), []);
-    const labels = functions.getLabels();
     const ref = React.useRef<SelectInstance>(null);
     const [defaultOptions, setDefaultOptions] = React.useState<IColumn[]>([]);
     const [inputValue, setInputValue] = React.useState<string>('');
@@ -52,27 +52,27 @@ export const ColumnSelector = (props: IColumnSelectorProps) => {
             setDefaultOptions(options);
         })();
     }, []);
+    
 
-
-    return <Selector<true> context="columnSelector" onOverrideComponentProps={(props) => {
-        return {
-            ...props,
-            ref: ref,
-            isMulti: true,
-            inputValue: inputValue,
-            className: styles.root,
-            backspaceRemovesValue: false,
-            value: model.getColumns().filter(col => !col.isHidden),
-            closeMenuOnSelect: false,
-            hideSelectedOptions: true,
-            defaultOptions: defaultOptions,
-            placeholder: `${labels['add-column']}...`,
-            controlShouldRenderValue: false,
-            onInputChange: onInputChange,
-            getOptionValue: (column) => Attribute.GetNameFromAlias(column.name),
-            onKeyDown: (ev) => ev.key === 'Enter' && ref.current?.openMenu('first'),
-            loadOptions: (inputValue: string) => model.getAvailableColumns(inputValue),
-            onChange: (columns) => onChange(columns as IColumn[]),
-        }
+    return <Selector components={{
+        Select: (props) => <AsyncSelect<IColumn, true, any>
+            {...props}
+            isMulti={true}
+            inputValue={inputValue}
+            className={styles.root}
+            backspaceRemovesValue={false}
+            value={model.getColumns().filter(col => !col.isHidden)}
+            closeMenuOnSelect={false}
+            hideSelectedOptions={true}
+            defaultOptions={defaultOptions}
+            placeholder={`${labels.addColumn}...`}
+            controlShouldRenderValue={false}
+            onInputChange={onInputChange}
+            getOptionValue={(column) => Attribute.GetNameFromAlias(column.name)}
+            onKeyDown={(ev) => ev.key === 'Enter' && ref.current?.openMenu('first')}
+            loadOptions={(inputValue: string) => model.getAvailableColumns(inputValue)} 
+            onChange={(columns) => onChange(columns as IColumn[])}
+        />
     }} />
+
 }
