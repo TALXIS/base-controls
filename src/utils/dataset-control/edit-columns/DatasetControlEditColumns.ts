@@ -10,12 +10,13 @@ export class DatasetControlEditColumns extends EditColumnsBase {
     private _datasetControl: IDatasetControl;
     private _provider: IDataProvider;
     private _currentColumns: IColumn[] = [];
-    private _relatedEntityColumn: IAvailableRelatedColumn | null = null;
+    private _scopeColumn: IAvailableRelatedColumn
     private _foreignKeyEntityLinkMap: Map<string, ILinkEntityExposedExpression> = new Map();
 
     constructor(options: IEditColumnsOptions) {
         super();
         this._datasetControl = options.datasetControl;
+        this._scopeColumn = this._getMainEntityColumn();
         this._provider = options.datasetControl.getDataset().getDataProvider();
         this._currentColumns = this._provider.getColumns().map(col => ({ ...col, id: col.name }));
         this._foreignKeyEntityLinkMap = new Map(this._provider.getLinking().map(l => [`${l.from}_${l.to}`, l]));
@@ -38,12 +39,12 @@ export class DatasetControlEditColumns extends EditColumnsBase {
     }
 
     public onAddColumn(column: IColumn): void {
-        if (this._relatedEntityColumn) {
-            const linking = this._generateLinkedEntityExpression(this._relatedEntityColumn);
+        if (this._scopeColumn.name !== this._getMainEntityColumn().name) {
+            const linking = this._generateLinkedEntityExpression(this._scopeColumn);
             column = {
                 ...column,
                 name: `${linking.alias}.${column.name}`,
-                displayName: `${column.displayName} (${this._relatedEntityColumn.displayName})`
+                displayName: `${column.displayName} (${this._scopeColumn.displayName})`
             }
         }
         this._currentColumns = this._currentColumns.filter(col => col.name !== column.name);
@@ -63,13 +64,12 @@ export class DatasetControlEditColumns extends EditColumnsBase {
         }
     }
 
-    public onSelectRelatedEntityColumn(column: IAvailableRelatedColumn | null) {
-        //@ts-ignore - typings
-        this._relatedEntityColumn = column?.name === this._provider.getMetadata().PrimaryIdAttribute ? null : { ...column };
+    public onSetScopeColumn(column: IAvailableRelatedColumn) {
+        this._scopeColumn = column;
     }
 
     public async onGetAvailableColumns(query?: string): Promise<IColumn[]> {
-        const entityName = this._relatedEntityColumn?.metadata?.Targets?.[0] ?? this._provider.getEntityName();
+        const entityName = this._scopeColumn.metadata?.Targets?.[0];
         const availableColumns = await this._provider.getAvailableColumns({ entityName: entityName });
         if (!query) return availableColumns;
 
@@ -79,9 +79,9 @@ export class DatasetControlEditColumns extends EditColumnsBase {
         );
     }
 
-    public async onGetAvailableRelatedColumns(query?: string): Promise<IAvailableRelatedColumn[]> {
+    public async onGetAvailableScopeColumns(query?: string): Promise<IAvailableRelatedColumn[]> {
         const relatedColumns = await this._provider.getAvailableRelatedColumns();
-        const allColumns = [...relatedColumns, this.onGetMainEntityColumn()];
+        const allColumns = [...relatedColumns, this._getMainEntityColumn()];
 
         if (!query) {
             return allColumns.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
@@ -95,7 +95,16 @@ export class DatasetControlEditColumns extends EditColumnsBase {
             .sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
     }
 
-    public onGetMainEntityColumn(): IAvailableRelatedColumn {
+    public onGetScopeColumn(): IAvailableRelatedColumn {
+        return this._scopeColumn;
+    }
+
+
+    private _normalizeText(text: string): string {
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    private _getMainEntityColumn(): IAvailableRelatedColumn {
         return {
             name: this._provider.getMetadata().PrimaryIdAttribute,
             displayName: this._provider.getMetadata().DisplayName,
@@ -107,10 +116,6 @@ export class DatasetControlEditColumns extends EditColumnsBase {
                 Targets: [this._provider.getEntityName()]
             }
         }
-    }
-
-    private _normalizeText(text: string): string {
-        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
     private _generateLinkedEntityExpression(relatedColumn: IAvailableRelatedColumn): ILinkEntityExposedExpression {

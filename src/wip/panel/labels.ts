@@ -1,9 +1,9 @@
 export interface IPanelLabels {
     dismiss: string;
-    save: string;
+    primaryButtonText: string;
 }
 
 export const PANEL_LABELS: IPanelLabels = {
     dismiss: "Dismiss",
-    save: "Save",
+    primaryButtonText: "OK",
 }

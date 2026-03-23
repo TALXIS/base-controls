@@ -8,7 +8,7 @@ export interface IViewSwitcher {
     areUserQueriesEnabled(): boolean;
     setCurrentSavedQuery(queryId: string): void;
     getCurrentSavedQuery(): ISavedQuery;
-    saveNewUserQuery(data: { name: string; description: string }): Promise<IRecordSaveOperationResult>;
+    saveNewUserQuery(data: { name: string; description: string }): Promise<void>;
     updateCurrentUserQuery(): Promise<IRecordSaveOperationResult>;
 }
 
@@ -50,40 +50,23 @@ export class ViewSwitcher implements IViewSwitcher {
             dataSource: this._provider.getUserQueriesFetchXml()!
         })
     }
-    public async saveNewUserQuery(data: { name: string; description?: string }): Promise<IRecordSaveOperationResult> {
+    public async saveNewUserQuery(data: { name: string; description?: string }) {
         const { name, description } = data;
-        try {
-            const response = await window.Xrm.WebApi.createRecord(DataProvider.CONST.USER_QUERY_TABLE_NAME, {
-                'talxis_name': name,
-                'talxis_description': description ?? null,
-                'talxis_returnedtypecode': this._provider.getEntityName(),
-                'talxis_layoutjson': JSON.stringify(this._provider.getColumns().map(column => this._getColumnWithStrippedMetadata(column))),
-                'talxis_recordid': this._datasetControl.getUserQueryScope(),
-                'talxis_isdefault': this.getUserQueries().length === 0,
-                'talxis_fetchxml': this._provider.getFetchXml()
-            });
-            this._datasetControl.requestRemount({
-                reason: 'saved-query-added',
-                data: {
-                    newQueryId: response.id
-                }
-            })
-            return {
-                success: true,
-                recordId: response.id,
-                fields: []
+        const response = await window.Xrm.WebApi.createRecord(DataProvider.CONST.USER_QUERY_TABLE_NAME, {
+            'talxis_name': name,
+            'talxis_description': description ?? null,
+            'talxis_returnedtypecode': this._provider.getEntityName(),
+            'talxis_layoutjson': JSON.stringify(this._provider.getColumns().map(column => this._getColumnWithStrippedMetadata(column))),
+            'talxis_recordid': this._datasetControl.getUserQueryScope(),
+            'talxis_isdefault': this.getUserQueries().length === 0,
+            'talxis_fetchxml': this._provider.getFetchXml()
+        });
+        this._datasetControl.requestRemount({
+            reason: 'saved-query-added',
+            data: {
+                newQueryId: response.id
             }
-        }
-        catch (error: any) {
-            return {
-                fields: [],
-                recordId: '',
-                success: false,
-                errors: [{
-                    message: error.message
-                }]
-            }
-        }
+        });
     }
 
     public async updateCurrentUserQuery(): Promise<IRecordSaveOperationResult> {
@@ -100,7 +83,7 @@ export class ViewSwitcher implements IViewSwitcher {
                 fields: ['talxis_layoutjson']
             }
         }
-        catch(error) {
+        catch (error) {
             return {
                 success: false,
                 recordId: currentQuery.id,

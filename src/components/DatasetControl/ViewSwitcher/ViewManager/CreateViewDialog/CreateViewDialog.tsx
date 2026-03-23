@@ -12,7 +12,7 @@ interface ICreateViewDialogProps {
 }
 
 export const CreateViewDialog = (props: ICreateViewDialogProps) => {
-    const model = useModel();
+    /* const model = useModel();
     const labels = model.getLabels();
     const viewSwitcher = model.getDatasetControl().viewSwitcher;
     const [name, setName] = React.useState('');
@@ -72,5 +72,5 @@ export const CreateViewDialog = (props: ICreateViewDialogProps) => {
             />
         </DialogFooter>
 
-    </Dialog>
+    </Dialog> */
 }

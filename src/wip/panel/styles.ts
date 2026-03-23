@@ -3,11 +3,8 @@ import { ITheme, mergeStyleSets } from "@fluentui/react"
 export const getPanelStyles = (theme: ITheme) => {
     return mergeStyleSets({
         panelFooter: {
-            borderTop: `1px solid ${theme.semanticColors.bodyDivider}`
-        },
-        panelFooterButtons: {
-            display: 'flex',
-            gap: 10
+            borderTop: `1px solid ${theme.semanticColors.bodyDivider}`,
+            zIndex: 1
         },
         panelScrollableContent: {
             overflowX: 'hidden',

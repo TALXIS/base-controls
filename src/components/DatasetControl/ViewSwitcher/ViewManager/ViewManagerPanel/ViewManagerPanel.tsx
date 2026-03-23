@@ -21,7 +21,7 @@ export const ViewManagerPanel = (props: IViewManagerPanelProps) => {
     const viewManager = useMemo(() => new ViewManager(datasetControl), []);
     return <Panel
         components={{
-            FooterContent: () => <></>,
+            Footer: () => <></>,
             Panel: CustomPanel
         }}
     >

@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react"
+import { Container } from "../../../scrollable-container/components"
 import { getScrollableContainerStyles } from "./styles";
 import { getClassNames } from "../../../../utils";
 
-export const ScrollableContainer = (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>) => {
+export const ScrollableContainer = (props: React.HTMLProps<HTMLDivElement>) => {
     const styles = useMemo(() => getScrollableContainerStyles(), []);
-    
-    return <div className={getClassNames([styles.scrollableContainer, props.className])} {...props} />
+
+    return <Container {...props} className={getClassNames([styles.scrollableContainer, props.className])} />
 }

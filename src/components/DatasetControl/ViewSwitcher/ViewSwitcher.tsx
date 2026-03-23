@@ -156,7 +156,7 @@ export const ViewSwitcher = () => {
                 }}
             />
             {viewManagerOpen && <ViewManagerPanel onDismiss={onViewManagerDismissed} />}
-            {createViewDialogOpen && <CreateViewDialog onDismiss={() => setCreateViewDialogOpen(false)} />}
+          {/*   {createViewDialogOpen && <CreateViewDialog onDismiss={() => setCreateViewDialogOpen(false)} />} */}
         </>
     }
 }

@@ -1,14 +1,14 @@
 import { useState } from "react"
 import { useIsMounted } from "./useIsMounted";
 
-export const useIsLoading = <TArgs extends unknown[], TResult>(fn: (...args: TArgs) => Promise<TResult>): [boolean, (...args: TArgs) => Promise<TResult>] => {
+export const useIsLoading = (): [boolean, (fn: () => Promise<any>) => Promise<any>] => {
     const [isLoading, setIsLoading] = useState(false);
     const isMounted = useIsMounted();
 
-    const execute = async (...args: TArgs) => {
+    const execute = async (fn: () => Promise<any>) => {
         setIsLoading(true);
         try {
-            return await fn(...args);
+            return await fn();
         }
         finally {
             if (isMounted()) {

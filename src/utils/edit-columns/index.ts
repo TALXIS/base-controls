@@ -1,1 +1,1 @@
-export * from './EditColumns';
+export * from './EditColumnsBase';

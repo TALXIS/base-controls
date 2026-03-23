@@ -1,28 +1,23 @@
 import { DefaultButton, IButtonProps, IPanelProps, Panel as PanelBase, PrimaryButton } from "@fluentui/react";
-import { ScrollableContainer } from "./scrollable-container/ScrollableContainer";
 import { ILoadingOverlayProviderProps, LoadingOverlayProvider } from "../../loading-overlay-provider";
+import { IScrollableContainerProps, ScrollableContainer } from "../../scrollable-container";
+import { Footer } from "./footer";
 
 export interface IPanelComponents {
     Panel: (props: IPanelProps) => JSX.Element;
-    FooterContent: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
-    SaveButton: (props: IButtonProps) => JSX.Element;
-    DismissButton: (props: IButtonProps) => JSX.Element;
-    ScrollableContainer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+    Footer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+    FooterPrimaryButton: (props: IButtonProps) => JSX.Element;
+    FooterDismissButton: (props: IButtonProps) => JSX.Element;
+    ScrollableContainer: (props: IScrollableContainerProps) => JSX.Element;
     Header: () => JSX.Element;
     LoadingOverlayProvider: (props: ILoadingOverlayProviderProps) => JSX.Element;
 }
 
-export const PanelFooterContent = (props: React.HTMLAttributes<HTMLDivElement>) => {
-    return <div {...props}>
-        {props.children}
-    </div>
-}
-
-export const SaveButton = (props: IButtonProps) => {
+export const FooterPrimaryButton = (props: IButtonProps) => {
     return <PrimaryButton {...props} />
 }
 
-export const DismissButton = (props: IButtonProps) => {
+export const FooterDismissButton = (props: IButtonProps) => {
     return <DefaultButton {...props} />
 }
 
@@ -35,9 +30,9 @@ export const Panel = (props: IPanelProps) => {
 }
 
 export const components: IPanelComponents = {
-    FooterContent: PanelFooterContent,
-    SaveButton: SaveButton,
-    DismissButton: DismissButton,
+    Footer: Footer,
+    FooterPrimaryButton: FooterPrimaryButton,
+    FooterDismissButton: FooterDismissButton,
     ScrollableContainer: ScrollableContainer,
     Header: Header,
     LoadingOverlayProvider: LoadingOverlayProvider,
