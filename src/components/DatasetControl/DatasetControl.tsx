@@ -13,7 +13,7 @@ import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlProps } from "./interfaces";
 import { ControlComponentLoading } from "./ControlComponentLoading/ControlComponentLoading";
 
-export const DatasetControl = (props: IDatasetControlProps) => {
+export const DatasetControl2 = (props: IDatasetControlProps) => {
   const { labels, theme } = useControl('DatasetControl', {
     ...props,
     context: props.onGetDatasetControlInstance().getPcfContext(),
@@ -32,7 +32,7 @@ export const DatasetControl = (props: IDatasetControlProps) => {
   const rerender = useRerender();
   const styles = useMemo(() => getDatasetControlStyles(datasetControl.getHeight()), [datasetControl.getHeight()]);
   const dataset = datasetControl.getDataset();
-  const [shouldLoadControlComponent, setShouldLoadControlComponent] = useState(!dataset.loading);
+  const [shouldLoadControlComponent, setShouldLoadControlComponent] = useState(true);
 
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onNewDataLoaded', (options: any) => onNewDataLoaded(options));
   useEventEmitter<IDataProviderEventListeners>(dataset, 'onRenderRequested', rerender);

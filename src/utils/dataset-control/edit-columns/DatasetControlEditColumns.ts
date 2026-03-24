@@ -16,8 +16,8 @@ export class DatasetControlEditColumns extends EditColumnsBase {
     constructor(options: IEditColumnsOptions) {
         super();
         this._datasetControl = options.datasetControl;
-        this._scopeColumn = this._getMainEntityColumn();
         this._provider = options.datasetControl.getDataset().getDataProvider();
+        this._scopeColumn = this._getMainEntityColumn();
         this._currentColumns = this._provider.getColumns().map(col => ({ ...col, id: col.name }));
         this._foreignKeyEntityLinkMap = new Map(this._provider.getLinking().map(l => [`${l.from}_${l.to}`, l]));
     }

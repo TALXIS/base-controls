@@ -8,6 +8,7 @@ import { IDialogLabels, DIALOG_LABELS } from "./labels";
 import { LoadingOverlayContainer } from "./components/loading-overlay-container";
 import { Spinner } from "./components/loading-overlay-spinner";
 import { ScrollableContainer } from "./components/scrollable-container";
+import { IOverlayProviderOptions } from "../overlay-provider";
 
 export interface IDialogProps {
     width?: string;
@@ -15,6 +16,7 @@ export interface IDialogProps {
     components?: Partial<IDialogComponents>;
     labels?: Partial<IDialogLabels>;
     children?: React.ReactNode;
+    loadingOptions?: IOverlayProviderOptions
     onPrimaryButtonClick?: () => void;
     onDismiss?: () => void;
 }
@@ -48,7 +50,7 @@ export const Dialog = (props: IDialogProps) => {
             <components.LoadingOverlayProvider components={{
                 Container: LoadingOverlayContainer,
                 Spinner: Spinner
-            }}>
+            }} options={props.loadingOptions}>
                 <components.ScrollableContainer components={{
                     Container: ScrollableContainer
                 }}>

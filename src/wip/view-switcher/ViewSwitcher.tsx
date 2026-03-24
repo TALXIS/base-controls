@@ -1,22 +1,24 @@
 import { useCallback, useMemo, useState } from "react";
 import { useViewSwitcher, ViewSwitcherLabelsContext } from "./context";
 import { getViewSwitcherStyles } from "./styles";
-import { CommandBarButton, IContextualMenuItem, IContextualMenuListProps, useTheme } from "@fluentui/react";
+import { IContextualMenuItem, IContextualMenuListProps, Shimmer, ShimmerElementType, useTheme } from "@fluentui/react";
 import { IViewSwitcherLabels } from "./labels";
 import { VIEW_SWITCHER_LABELS } from "./labels";
 import { MenuList } from "./components/menu-list";
-import { IRecordSaveOperationResult, ISavedQuery } from "@talxis/client-libraries";
+import { ISavedQuery } from "@talxis/client-libraries";
 import { getClassNames, useEventEmitter, useIsLoading } from "../..";
 import { IViewSwitcherEvents } from "../../utils/view-switcher";
 import { useRerender } from "@talxis/react-components";
 import { IViewSwitcherComponents } from "./components";
 import { components as defaultComponents } from "./components";
-import { CreateNewViewDialogContent} from "./components/create-new-view-dialog-content";
+import { CreateNewQueryDialog } from "./components/create-new-query-dialog/CreateNewQueryDialog";
+import { ViewManagerPanel } from "./components/view-manager-panel";
 
 const USER_VIEW_GROUP_KEY = 'userViews';
 const SYSTEM_VIEW_GROUP_KEY = 'systemViews';
 const ACTION_GROUP_KEY = 'actions';
 const QUERY_ID_PREFIX = 'viewSelector_query'
+
 
 export interface IViewSwitcherProps {
     enableUserQueries?: boolean;
@@ -24,7 +26,27 @@ export interface IViewSwitcherProps {
     components?: Partial<IViewSwitcherComponents>;
 }
 
+const LoadingShimmer = () => {
+    return <Shimmer shimmerElements={[
+        { type: ShimmerElementType.line, width: 200, height: 10 }
+    ]} />
+}
+
 export const ViewSwitcher = (props: IViewSwitcherProps) => {
+    const context = useViewSwitcher();
+    const components = { ...defaultComponents, ...props.components };
+
+    return <components.LoadingPlaceholder
+        loadingPromise={context.areQueriesLoaded()}
+        components={{
+            Spinner: LoadingShimmer
+        }}
+    >
+        <InternalViewSwitcher {...props} />
+    </components.LoadingPlaceholder>
+}
+
+const InternalViewSwitcher = (props: IViewSwitcherProps) => {
     const context = useViewSwitcher();
     const labels = { ...VIEW_SWITCHER_LABELS, ...props.labels };
     const components = { ...defaultComponents, ...props.components };
@@ -34,13 +56,16 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
     const styles = useMemo(() => getViewSwitcherStyles(theme), []);
     const [isLoading, executeWithLoading] = useIsLoading();
     const [createViewDialogOpen, setCreateViewDialogOpen] = useState(false);
+    const [viewManagerOpen, setViewManagerOpen] = useState(false);
     const rerender = useRerender();
 
     useEventEmitter<IViewSwitcherEvents>(context, 'onQueryChanged', rerender);
+    useEventEmitter<IViewSwitcherEvents>(context, 'onNewQueryCreated', (queryId: string) => onQueryCreated(queryId));
 
     const getQueryContextuaMenuItem = (view: ISavedQuery): IContextualMenuItem => {
         const isSelected = currentSavedQuery.id === view.id;
         const classNames = getClassNames([styles.viewItem, isSelected ? styles.selectedViewItem : undefined]);
+
         return {
             key: view.id,
             id: `${QUERY_ID_PREFIX}_${view.id}`,
@@ -92,7 +117,7 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
                     iconProps: {
                         iconName: 'Settings'
                     },
-                    //onClick: () => setViewManagerOpen(true)
+                    onClick: () => setViewManagerOpen(true)
                 }] : []),
 
         ]
@@ -103,6 +128,11 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
             const button = document.getElementById(`${QUERY_ID_PREFIX}_${viewId}`);
             button?.focus();
         }, 0);
+    }
+
+    const onQueryCreated = (queryId: string) => {
+        setCreateViewDialogOpen(false);
+        context.setCurrentSavedQuery(queryId);
     }
 
     const StableMenuList = useCallback((props?: IContextualMenuListProps) => {
@@ -132,17 +162,11 @@ export const ViewSwitcher = (props: IViewSwitcherProps) => {
                     onRenderMenuList: StableMenuList
                 }}
             />
-            {createViewDialogOpen && <components.CreateNewViewDialog
-                width="300px"
-                labels={{
-                    headerText: labels.saveNewView
-                }}
-                components={{
-
-                }}
-                onDismiss={() => setCreateViewDialogOpen(false)}>
-                <CreateNewViewDialogContent  />
-            </components.CreateNewViewDialog>
+            {createViewDialogOpen &&
+                <CreateNewQueryDialog onDismiss={() => setCreateViewDialogOpen(false)} />
+            }
+            {viewManagerOpen &&
+                <ViewManagerPanel onDismiss={() => setViewManagerOpen(false)} />
             }
         </>
     </ViewSwitcherLabelsContext.Provider>

@@ -9,7 +9,7 @@ export const getQuickFindStyles = () => {
             fontWeight: 600
         },
         quickFindContainer: {
-            
+            width: 230
         },
         calloutColumnsWrapper: {
             display: 'flex',

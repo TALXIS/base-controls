@@ -38,7 +38,7 @@ export const QuickFind = (props: IQuickFindProps) => {
             setIsCalloutVisible(false);
         }
     }
-
+    
     return (
         <div id={searchBoxId} className={styles.quickFindContainer}>
             <components.SearchBox
@@ -49,6 +49,7 @@ export const QuickFind = (props: IQuickFindProps) => {
                 onKeyUp={onKeyUp}
                 autoComplete="off"
                 placeholder={labels.placeholder}
+                disabled={columnNames.length === 0}
             />
             {isCalloutVisible && (columnNames.length > 0 || isLikeQuery) && (
                 <div style={{ position: 'absolute' }}>

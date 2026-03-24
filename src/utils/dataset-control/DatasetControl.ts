@@ -1,9 +1,76 @@
-import { Client, DataProvider, EventEmitter, ICommand, IDataProvider, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors, ISavedQuery } from "@talxis/client-libraries";
+import { Client, DataProvider, Dataset, EventEmitter, ICommand, IDataProvider, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors, ISavedQuery } from "@talxis/client-libraries";
 import debounce from "debounce";
 import { IDatasetControlParameters } from "../../components/DatasetControl/interfaces";
-import { IViewSwitcher, ViewSwitcher } from "./ViewSwitcher";
+import { DatasetControlViewSwitcher } from "./view-switcher/DatasetControlViewSwitcher";
 import { DatasetControlEditColumns } from "./edit-columns/DatasetControlEditColumns";
 import { IEditColumns } from "../edit-columns";
+import { IQuickFind } from "../quick-find";
+import { DatasetControlQuickFind } from "./quick-find/DatasetControlQuickFind";
+import { IViewSwitcher } from "../view-switcher/ViewSwitcherBase";
+
+export interface ISimpleDatasetControl extends EventEmitter<IDatasetControlEvents> {
+    editColumns: IEditColumns;
+    viewSwitcher: IViewSwitcher;
+    quickFind: IQuickFind;
+    getDataset: () => IDataset;
+    refresh: () => void;
+    requestRemount: () => void;
+    destroy: () => void;
+}
+
+export interface IDatasetControlFactory {
+    /**
+     * This method should return the class (not an instance) of the data provider that will be used by the dataset control. The dataset control will instantiate the provider by itself, passing the options returned from `getDataProviderOptions` to the provider's constructor.
+     */
+    getDataProviderClass: () => new (...args: any[]) => IDataProvider;
+    /**
+     * This object will be passed into the provider's constructor when instantiating the provider. It can be used to pass any additional configuration or dependencies that the provider might need.
+     */
+    getDataProviderOptions: () => {[key: string]: any};
+}
+
+
+export class SimpleDatasetControl extends EventEmitter<IDatasetControlEvents> implements ISimpleDatasetControl {
+    private _DataProviderClass: new (...args: any[]) => IDataProvider;
+    private _args: {[ key: string ]: any };
+    private _dataset!: IDataset;
+    private _provider!: IDataProvider;
+    private _viewSwitcher: IViewSwitcher;
+    private _quickFind: IQuickFind;
+
+    constructor(factory: IDatasetControlFactory) {
+        super();
+        this._DataProviderClass = factory.getDataProviderClass();
+        this._args = factory.getDataProviderOptions();
+        this._provider = new this._DataProviderClass(this._args);
+        this._dataset = new Dataset(this._provider);
+        this._viewSwitcher = new DatasetControlViewSwitcher(this as any);
+        this._quickFind = new DatasetControlQuickFind(this as any);
+    }
+
+    public get editColumns(): IEditColumns {
+        return new DatasetControlEditColumns({ datasetControl: this as any });
+    }
+    public get viewSwitcher(): IViewSwitcher {
+        return this._viewSwitcher;
+    }
+    public get quickFind(): IQuickFind {
+        return this._quickFind
+    }
+    public refresh(): void {
+        this._dataset.refresh();
+    }
+    public requestRemount(): void {
+        this.dispatchEvent('onRemountRequested');
+    }
+    public destroy(): void {
+        this._dataset.destroy();
+        this.clearEventListeners();
+    }
+    public getDataset() {
+        return this._dataset;
+    }
+}
 
 
 interface IDatasetControlOptions {
@@ -29,6 +96,7 @@ type IRemountRequestContext = | { reason: 'saved-query-changed'; data: { newQuer
 export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
     editColumns: IEditColumns;
     viewSwitcher: IViewSwitcher;
+    quickFind: IQuickFind;
     setInterceptor<K extends keyof IDatasetControlInterceptors>(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void;
     isPaginationVisible(): boolean;
     getControlId(): string;
@@ -40,6 +108,7 @@ export interface IDatasetControl extends IEventEmitter<IDatasetControlEvents> {
     getUserQueryScope(): string | null;
     getHeight(): string | null;
     getDataset(): IDataset;
+    refresh(): void;
     getPcfContext(): ComponentFramework.Context<any>;
     getParameters(): IDatasetControlParameters;
     loadCommands(ids: string[]): Promise<void>;
@@ -65,14 +134,15 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     private _debouncedLoadRecordCommands: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _interceptors = new Interceptors<IDatasetControlInterceptors>();
     private _remountRequestContext: IRemountRequestContext | null = null;
-    private _viewSwitcher: ViewSwitcher;
+    private _viewSwitcher: IViewSwitcher;
+    private _quickFind: IQuickFind;
 
     constructor(options: IDatasetControlOptions) {
         super();
         this._options = options;
         this._debouncedLoadRecordCommands = debounce((ids) => this.loadCommands(ids));
-        this._viewSwitcher = new ViewSwitcher(this);
-
+        this._viewSwitcher = new DatasetControlViewSwitcher(this)
+        this._quickFind = new DatasetControlQuickFind(this);
         this._setEntityMetadata();
         this._setColumnsFromLegacyParameter();
         this._setDatasetProperties();
@@ -87,6 +157,9 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     public get viewSwitcher(): IViewSwitcher {
         return this._viewSwitcher;
     }
+    public get quickFind(): IQuickFind {
+        return this._quickFind;
+    }
     public setInterceptor<K extends keyof IDatasetControlInterceptors>(event: K, interceptor: IInterceptor<IDatasetControlInterceptors, K>): void {
         this._interceptors.setInterceptor(event, interceptor);
     }
@@ -95,6 +168,10 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     }
     public isRecordCountVisible(): boolean {
         return this.getParameters().EnableRecordCount?.raw ?? true;
+    }
+    public async refresh(): Promise<void> {
+        //we can use this to check for pending changes before refreshing the dataset, but for now we'll just refresh directly
+        this.getDataset().refresh();
     }
     public isPageSizeSwitcherVisible(): boolean {
         return this.getParameters().EnablePageSizeSwitcher?.raw ?? true;
@@ -239,7 +316,7 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
         provider.setProperty('autoSave', this.isAutoSaveEnabled());
         provider.setProperty('groupingType', this.getParameters().GroupingType?.raw ?? 'nested');
         provider.setProperty('fetchSavedQueries', this.isViewSwitcherVisible());
-        provider.setProperty('fetchUserQueries', true);
+        provider.setProperty('fetchUserQueries', false);
         provider.setProperty('userQueryScopeId', this.getUserQueryScope() ?? undefined);
 
         const inlineRibbonButtonsIds = [

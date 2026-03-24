@@ -29,7 +29,7 @@ export const OverlayProvider = (props: IOverlayProviderProps) => {
     }
 
     return <OverlayProviderInternalContext.Provider value={{ toggle, isVisible, message }}>
-        <components.Container title={message} className={styles.overlayContainer}>
+        <components.Container title={isVisible ? message : undefined} className={styles.overlayContainer}>
             {children}
             {isVisible &&
                 <components.Overlay className={styles.overlay} />

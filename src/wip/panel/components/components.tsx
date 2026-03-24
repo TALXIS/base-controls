@@ -5,7 +5,7 @@ import { Footer } from "./footer";
 
 export interface IPanelComponents {
     Panel: (props: IPanelProps) => JSX.Element;
-    Footer: (props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element;
+    Footer: ((props: React.HTMLAttributes<HTMLDivElement>) => JSX.Element) | null;
     FooterPrimaryButton: (props: IButtonProps) => JSX.Element;
     FooterDismissButton: (props: IButtonProps) => JSX.Element;
     ScrollableContainer: (props: IScrollableContainerProps) => JSX.Element;

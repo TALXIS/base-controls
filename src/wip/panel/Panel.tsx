@@ -1,4 +1,4 @@
-import { useTheme } from "@fluentui/react";
+import { IOverlayProps, useTheme } from "@fluentui/react";
 import { useCallback, useMemo } from "react";
 import { getPanelStyles } from "./styles";
 import { IPanelComponents } from "./components/components";
@@ -9,11 +9,13 @@ import { LoadingOverlaySpinner } from "./components/loading-overlay-spinner/Load
 import { IPanelLabels } from "./labels";
 import { PANEL_LABELS } from "./labels";
 import { ScrollableContainer } from "./components/scrollable-container";
+import { IOverlayProviderOptions } from "../overlay-provider";
 
 export interface IPanelProps {
     components?: Partial<IPanelComponents>;
     children?: React.ReactNode;
     labels?: Partial<IPanelLabels>;
+    loadingOptions?: IOverlayProviderOptions;
     onDismiss?: () => void;
     onPrimaryButtonClick?: () => void;
 }
@@ -25,7 +27,7 @@ export const Panel = (props: IPanelProps) => {
     const labels = { ...PANEL_LABELS, ...props.labels };
 
     const StableFooter = useCallback(() => {
-        return <components.Footer />
+        return components.Footer ? <components.Footer /> : <></>;
     }, [])
 
     return (
@@ -41,13 +43,14 @@ export const Panel = (props: IPanelProps) => {
                             content: styles.panelContent,
                         }}
                         //hooks do not work if the component is passed directly
-                        onRenderFooterContent={StableFooter}
+                        //this is so we can get rid of footer if the footer is set to null via props
+                        onRenderFooterContent={props.components?.Footer !== null ? StableFooter : undefined}
                         isFooterAtBottom={true}
                     >
                         <components.LoadingOverlayProvider components={{
                             Container: LoadingOverlayProviderContainer,
                             Spinner: LoadingOverlaySpinner
-                        }}>
+                        }} options={props.loadingOptions}>
                             <components.Header />
                             <components.ScrollableContainer components={{
                                 Container: ScrollableContainer

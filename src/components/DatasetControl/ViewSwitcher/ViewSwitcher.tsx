@@ -47,7 +47,7 @@ export const ViewSwitcher = () => {
         return [
             ...viewSwitcher.getUserQueries().map(view => getQueryContextuaMenuItem(view, currentSavedQuery)),
             ...viewSwitcher.getSystemQueries().map(view => getQueryContextuaMenuItem(view, currentSavedQuery)),
-            ...(viewSwitcher.areUserQueriesEnabled() ? [
+            ...(true ? [
                 ...(currentSavedQuery.isUserQuery ? [{
                     key: 'saveExistingView',
                     ['data-group-key']: ACTION_GROUP_KEY,

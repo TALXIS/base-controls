@@ -24,6 +24,8 @@ export const EditColumns = (props: IEditColumnsProps) => {
         return title;
     }
     return <EditColumnsContext.Provider value={editColumnsModel}>
-        <EditColumnsComponent />
+        <EditColumnsComponent labels={{
+            header: getEditColumnsPanelHeaderText()
+        }} />
     </EditColumnsContext.Provider>
 }

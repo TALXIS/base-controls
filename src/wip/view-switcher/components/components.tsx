@@ -1,18 +1,26 @@
-import { CommandBarButton as CommandBarButtonBase } from "@fluentui/react";
+import { CommandBarButton as CommandBarButtonBase, IShimmerProps, Shimmer as ShimmerBase } from "@fluentui/react";
 import { IButttonWithLoadingProps, withButtonLoading } from "@talxis/react-components";
+import { IPanelProps, Panel } from "../../panel";
 import { Dialog, IDialogProps } from "../../dialog";
+import { ILoadingPlaceholderProps, LoadingPlaceholder } from "../../loading-placeholder";
 
 export interface IViewSwitcherComponents {
     CommandBarButton: (props: IButttonWithLoadingProps) => JSX.Element;
-    CreateNewViewDialog: (props: IDialogProps) => JSX.Element;
+    CreateNewQueryDialog: (props: IDialogProps) => JSX.Element;
+    ViewManagerPanel: (props: IPanelProps) => JSX.Element;
+    LoadingPlaceholder: (props: ILoadingPlaceholderProps) => JSX.Element;
+
 }
 
-export const CreateNewViewDialog = (props: IDialogProps) => {
-    return <Dialog {...props} />
+export const CommandBarButton = withButtonLoading(CommandBarButtonBase);
+
+export const Shimmer = (props: IShimmerProps) => {
+    return <ShimmerBase {...props} />
 }
 
-export const CommandBarButton = withButtonLoading(CommandBarButtonBase)
 export const components: IViewSwitcherComponents = {
     CommandBarButton,
-    CreateNewViewDialog: CreateNewViewDialog
+    CreateNewQueryDialog: Dialog,
+    ViewManagerPanel: Panel,
+    LoadingPlaceholder: LoadingPlaceholder
 }

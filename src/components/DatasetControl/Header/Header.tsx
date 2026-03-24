@@ -4,13 +4,13 @@ import { useModel } from "../useModel";
 import { useMemo, useState } from "react";
 import { getHeaderStyles } from "./styles";
 import { ICommandBarItemProps, useRerender } from "@talxis/react-components";
-import { QuickFind } from "../QuickFind/QuickFind";
 import { Ribbon } from "../../Ribbon/Ribbon";
 import { useEventEmitter } from "../../../hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlEvents } from "../../../utils/dataset-control";
-import { ViewSwitcher } from "../ViewSwitcher/ViewSwitcher";
 import { EditColumns } from "./EditColumns/EditColumns";
+import { QuickFind, QuickFindContext } from "../../../wip/quick-find";
+import { ViewSwitcher, ViewSwitcherContext } from "../../../wip/view-switcher";
 
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
@@ -80,8 +80,11 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                         onRenderRibbon: (props, defaultRender) => defaultRender(props)
                     }, (props) => {
                         return <div {...props.ribbonQuickFindContainerProps}>
+
                             {props.isViewSwitcherVisible &&
-                                <ViewSwitcher />
+                                <ViewSwitcherContext.Provider value={datasetControl.viewSwitcher}>
+                                    <ViewSwitcher />
+                                </ViewSwitcherContext.Provider>
                             }
                             {props.isRibbonVisible &&
                                 <Ribbon
@@ -124,8 +127,11 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                                 />
                             }
                             {props.isQuickFindVisible &&
-                                <QuickFind
-                                    onRenderQuickFind={props.onRenderQuickFind} />
+                                <QuickFindContext.Provider value={datasetControl.quickFind}>
+                                    <QuickFind labels={{
+                                        
+                                    }} />
+                                </QuickFindContext.Provider>
                             }
                         </div>
                     })}
@@ -145,7 +151,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
                 </div>
             }
             {isEditColumnsPanelVisible &&
-                <EditColumns 
+                <EditColumns
                     onDismiss={() => setIsEditColumnsPanelVisible(false)} />
             }
         </>
