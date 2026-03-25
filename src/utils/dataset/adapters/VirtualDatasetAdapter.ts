@@ -150,7 +150,10 @@ export class VirtualDatasetAdapter {
             onGetParameters: () => {
                 return {
                     ...this._getDatasetControlParameters(),
-                    Grid: new Dataset(new MemoryDataProvider([], { PrimaryIdAttribute: 'id' }))
+                    Grid: new Dataset(new MemoryDataProvider({
+                        dataSource: [],
+                        metadata: {PrimaryIdAttribute: 'id'}
+                    }))
                 }
             }
         });
@@ -242,10 +245,16 @@ export class VirtualDatasetAdapter {
         }
         switch (this._context.parameters.DataProvider.raw) {
             case "FetchXml": {
-                return new FetchXmlDataProvider(this._context.parameters.Data.raw as string)
+                return new FetchXmlDataProvider({
+                    fetchXml: this._context.parameters.Data.raw as string
+                })
             }
             case 'Memory': {
-                return new MemoryDataProvider(this._context.parameters.Data.raw!, this._getEntityMetadata())
+                return new MemoryDataProvider({
+                    dataSource: this._context.parameters.Data.raw!,
+                    metadata: this._getEntityMetadata()
+
+                });
             }
         }
     }
