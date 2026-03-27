@@ -209,6 +209,9 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     public onNotifyOutputChanged(record: IRecord, columnName: string, value: any, parameters: any) {
         record.setValue(columnName, value);
+        if(this.getGrid().isAutoSaveEnabled()) {
+            record.save();
+        }
         const { ShouldUnmountWhenOutputChanges } = parameters;
         if (ShouldUnmountWhenOutputChanges?.raw) {
             this.executeWithGridApi(gridApi => gridApi.stopEditing());
