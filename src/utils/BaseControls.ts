@@ -16,7 +16,8 @@ export type BaseControl =
     | 'NestedControl'
     | 'GridColumnHeader'
     | 'Ribbon'
-    | 'GridInlineRibbon';
+    | 'GridInlineRibbon'
+    | 'File';
 
 export class BaseControls {
     public static get TextField(): 'TextField' {
@@ -63,6 +64,9 @@ export class BaseControls {
     public static get GridInlineRibbon(): 'GridInlineRibbon' {
         return 'GridInlineRibbon';
     }
+    public static get File(): 'File' {
+        return 'File';
+    }
 
     public static GetControlNameForDataType(dataType: DataType) {
         switch(dataType) {
@@ -93,6 +97,9 @@ export class BaseControls {
             case 'Whole.Duration': {
                 return BaseControls.Duration;
             }
+            case 'File': {
+                return BaseControls.File;
+            }
             default: {
                 return BaseControls.TextField;
             }
@@ -111,7 +118,8 @@ export class BaseControls {
             BaseControls.GridCellRenderer,
             BaseControls.GridColumnHeader,
             BaseControls.Ribbon,
-            BaseControls.GridInlineRibbon
+            BaseControls.GridInlineRibbon,
+            BaseControls.File
         ]
     }
     public static IsBaseControl(name: string) {
