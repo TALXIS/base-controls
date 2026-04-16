@@ -22,6 +22,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
     useEventEmitter<IDataProviderEventListeners>(dataset, 'onLoading', rerender);
     useEventEmitter<IDatasetControlEvents>(datasetControl, 'onRecordCommandsLoaded', rerender);
     useEventEmitter<IDatasetControlEvents>(datasetControl, 'onEditColumnsRequested', () => setIsEditColumnsPanelVisible(true));
+    useEventEmitter<IDataProviderEventListeners>(dataset, 'onError', rerender);
 
     const isHeaderVisible = () => {
         switch (true) {

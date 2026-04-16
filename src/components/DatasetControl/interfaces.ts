@@ -26,6 +26,7 @@ export interface IDatasetControlParameters extends IGridParameters {
     EnableEditColumns?: Omit<ITwoOptionsProperty, 'attributes'>;
     ClientApiWebresourceName?: IStringProperty;
     ClientApiFunctionName?: IStringProperty;
+    DestroyDatasetOnUnmount?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface IDatasetControlComponentProps {

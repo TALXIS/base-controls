@@ -7,13 +7,14 @@ export class ErrorHelper {
         }
         catch (error) {
             try {
-                onError?.(error, ErrorHelper._getErrorMessage(error));
+                onError?.(error, ErrorHelper.getMessageFromError(error));
             } catch { }
             throw error;
         }
     }
+    
 
-    private static _getErrorMessage(error: any): string {
+    public static getMessageFromError(error: any): string {
         if (error instanceof Error && error.message) {
             return error.message;
         }

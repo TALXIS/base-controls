@@ -135,7 +135,10 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     }
     public destroy() {
         this.saveState();
-        this.getDataset().destroy();
+        //this might be needed when we share dataset between multiple dataset controls, we don't want one control to destroy the dataset when another control is still using it
+        if (this.getParameters().DestroyDatasetOnUnmount?.raw !== false) {
+            this.getDataset().destroy();
+        }
         this.clearEventListeners();
         this._interceptors.clearInterceptors();
     }

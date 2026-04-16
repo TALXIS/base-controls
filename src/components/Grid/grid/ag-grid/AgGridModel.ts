@@ -467,16 +467,9 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             return true
         }
         else if (this._canExpandRowGroupsByDefault()) {
-            if (params.rowNode.level <= this._grid.getDefaultExpandedGroupLevel()) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return params.rowNode.level <= this._grid.getDefaultExpandedGroupLevel();
         }
-        else {
-            return false;
-        }
+        else return false;
     }
 
     private _onColumnMoved(e: ColumnMovedEvent<IRecord>) {
