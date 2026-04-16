@@ -51,7 +51,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
                 const result = await customColumnsDataProvider.createColumn();
                 if (result.success) {
                     editColumnsRef.current?.remountColumnSelector();
-                    const column = customColumnsDataProvider.getColumns().find(col => col.name === result.columnName)!;
+                    const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === result.columnName)!
                     editColumnsRef.current?.editColumnsModel.addColumn(column);
                 }
             }
@@ -79,7 +79,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
                     operation: async () => {
                         const result = await customColumnsDataProvider.updateColumn(columnName);
                         if (result.success) {
-                            const column = customColumnsDataProvider.getColumns().find(col => col.name === columnName)!;
+                            const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === columnName)!;
                             //re-add the column to make sure the metadata are updated
                             editColumnsRef.current?.editColumnsModel.deleteColumn(columnName);
                             editColumnsRef.current?.editColumnsModel.addColumn(column);

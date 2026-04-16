@@ -12,7 +12,7 @@ export const OptionCommandBar = (props: IOptionCommandBarProps) => {
     const datasetControl = useDatasetControl();
     const columnsDataProvider = datasetControl.getCustomColumnsDataProvider();
     const styles = React.useMemo(() => getCustomColumnSuffixStyles(), []);
-    const isCustomColumn = React.useMemo(() => columnsDataProvider.getColumns().find(col => col.name === column.name), []);
+    const isCustomColumn = React.useMemo(() => columnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === column.name), []);
 
     const getCommandBarItems = (): ICommandBarItemProps[] => {
         switch (true) {

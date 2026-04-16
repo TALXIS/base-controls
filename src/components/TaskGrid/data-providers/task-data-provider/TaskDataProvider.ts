@@ -3,7 +3,7 @@ import { IRecordTree } from "./record-tree/RecordTree";
 import { IRecordsDeleteResult, ISourceDataProvider } from "../source-data-provider";
 import { ErrorHelper } from "../../../../utils/error-handling";
 import { ILocalizationService, ITaskGridLabels } from "../../labels";
-import { INativeColumns } from "../../TaskGridDatasetControl";
+import { INativeColumns } from "../../interfaces";
 import { DataBuilder } from "@talxis/client-libraries/dist/utils/dataset/data-providers/memory-provider/DataBuilder";
 
 export const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'path'];

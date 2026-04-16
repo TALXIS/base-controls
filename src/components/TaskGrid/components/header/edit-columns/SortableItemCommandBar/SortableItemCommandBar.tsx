@@ -10,7 +10,7 @@ export const SortableItemCommandBar = (props: ISortableItemCommandBarProps) => {
     const customColumnsDataProvider = datasetControl.getCustomColumnsDataProvider();
     const { column, ...rest } = props;
     const { onEditColumn } = useTaskGridEditColumns();
-    const isCustomColumn = React.useMemo(() => customColumnsDataProvider.getColumns().find(col => col.name === column.name), []);
+    const isCustomColumn = React.useMemo(() => customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === column.name), []);
 
     const farItems = [
         ...(isCustomColumn && customColumnsDataProvider.isEditEnabled() ? [{

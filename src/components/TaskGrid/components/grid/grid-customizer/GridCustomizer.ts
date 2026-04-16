@@ -7,7 +7,7 @@ import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-h
 import { AddTaskButton } from "../cell-renderers/add-task-button";
 import { ILocalizationService, ITaskGridLabels } from "../../../labels";
 import { PercentComplete } from "../cell-renderers/percent-complete";
-import { INativeColumns, ITaskGridDatasetControl } from "../../../TaskGridDatasetControl";
+import { INativeColumns, ITaskGridDatasetControl } from "../../../interfaces";
 
 export const ADD_TASK_COLUMN_NAME = 'addTask';
 

@@ -1,7 +1,6 @@
 import { useEventEmitter } from "../../hooks/useEventEmitter"
 import { IDatasetControlEvents } from "../../utils/dataset-control";
 import { useRef } from "react";
-import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./TaskGridDatasetControl";
 import * as React from "react";
 import { AgGridLicenseKeyContext, DatasetControlContext, LocalizationServiceContext, RootElementIdContext, TaskDataProviderContext, TaskGridComponentsContext, TaskGridDescriptorContext, usePcfContext } from "./context";
 import { DatasetControl as DatasetControlRenderer } from "../DatasetControl";
@@ -14,6 +13,7 @@ import { TASK_GRID_LABELS } from "./labels";
 import { ITaskGridState, TaskGridDatasetControlFactory } from "./TaskGridDatasetControlFactory";
 import { Header } from "./components/header/Header";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
+import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
 
 interface ITaskGridProps {
     taskGridDescriptor: ITaskGridDescriptor;

@@ -1,10 +1,11 @@
 import { Dataset } from "@talxis/client-libraries";
 import { ITaskDataProvider, TaskDataProvider } from "./data-providers/task-data-provider";
 import { ILocalizationService, ITaskGridLabels } from "./labels";
-import { ITaskGridDatasetControl, ITaskGridDescriptor, TaskGridDatasetControl } from "./TaskGridDatasetControl";
 import { ISavedQuery, ISavedQueryDataProvider, SavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
 import { RecordTree } from "./data-providers/task-data-provider/record-tree";
 import { CustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
+import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
+import { TaskGridDatasetControl } from "./TaskGridDatasetControl";
 
 export interface ITaskGridState {
     savedQuery?: Partial<ISavedQuery> & { id: string; linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[] };

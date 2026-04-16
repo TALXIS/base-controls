@@ -1,7 +1,7 @@
 import { EventEmitter, IColumn, IEventEmitter, IFetchXmlDataProviderColumn } from "@talxis/client-libraries";
 import { ITaskDataProvider } from "../task-data-provider";
 import { ICustomColumnsDataProvider } from "../custom-columns-data-provider/CustomColumnsDataProvider";
-import { INativeColumns } from "../../TaskGridDatasetControl";
+import { INativeColumns } from "../../interfaces";
 
 export type ICreateUserQueryResult = { success: true; queryId: string } | { success: false; errorMessage: string; };
 export type IUpdateUserQueryResult = { success: true; queryId: string } | { success: false; errorMessage: string; };

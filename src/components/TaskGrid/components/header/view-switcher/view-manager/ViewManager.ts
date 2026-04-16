@@ -1,6 +1,6 @@
 import { Dataset, ICommand, IDataProvider, IDataset, IRetrieveRecordCommandOptions } from "@talxis/client-libraries";
 import { DatasetControl, IDatasetControl } from "../../../../../../utils/dataset-control";
-import { ITaskGridDatasetControl } from "../../../../TaskGridDatasetControl";
+import { ITaskGridDatasetControl } from "../../../../interfaces";
 import { ILocalizationService, ITaskGridLabels } from "../../../../labels";
 import { IDeleteUserQueriesResult, ISavedQueryDataProvider } from "../../../../data-providers/saved-query-data-provider";
 
