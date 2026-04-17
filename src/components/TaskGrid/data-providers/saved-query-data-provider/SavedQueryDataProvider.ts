@@ -2,10 +2,8 @@ import { EventEmitter, IColumn, IEventEmitter, IFetchXmlDataProviderColumn } fro
 import { ITaskDataProvider } from "../task-data-provider";
 import { ICustomColumnsDataProvider } from "../custom-columns-data-provider/CustomColumnsDataProvider";
 import { INativeColumns } from "../../interfaces";
+import { ErrorHelper } from "../../../../utils";
 
-export type ICreateUserQueryResult = { success: true; queryId: string } | { success: false; errorMessage: string; };
-export type IUpdateUserQueryResult = { success: true; queryId: string } | { success: false; errorMessage: string; };
-export type IDeleteUserQueriesResult = { success: true; deletedQueryIds: string[] } | { success: false; errorMessage: string; failedQueryIds: string[] };
 
 export interface ICreateUserQueryParams {
     name: string;
@@ -20,12 +18,15 @@ export interface IUpdateUserQueryParams {
 
 export interface ISavedQueryDataProviderEvents {
     onBeforeUserQueriesDeleted: (queryIds: string[]) => void;
-    onAfterUserQueriesDeleted: (result: IDeleteUserQueriesResult) => void;
+    onAfterUserQueriesDeleted: (result: IDeletedUserQueriesResult) => void;
     onBeforeUserQueryUpdated: (queryId: string) => void;
-    onAfterUserQueryUpdated: (result: IUpdateUserQueryResult) => void;
+    onAfterUserQueryUpdated: (result: string | null) => void;
     onBeforeUserQueryCreated: (queryName: string) => void;
-    onAfterUserQueryCreated: (result: ICreateUserQueryResult) => void;
+    onAfterUserQueryCreated: (result: string | null) => void;
+    onError: (error: any, message: string) => void;
 }
+
+export type IDeletedUserQueriesResult = {success: true; deletedQueryIds: string[]} | {success: false; deletedQueryIds: string[]; errors: {queryId: string; error: any}[]};
 
 
 export interface ISavedQuery extends ISavedQueryMetadata {
@@ -47,9 +48,11 @@ const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'path', 'stateCode
 export interface ISavedQueryStrategy {
     onGetSystemQueries: () => Promise<ISavedQuery[]>;
     onGetUserQueries: () => Promise<ISavedQuery[]>;
-    onDeleteUserQueries: (queryIds: string[]) => Promise<IDeleteUserQueriesResult>;
-    onUpdateUserQuery: (currentQuery: ISavedQuery) => Promise<IUpdateUserQueryResult>;
-    onCreateUserQuery: (newQuery: { name: string; description?: string }, currentQuery: ISavedQuery) => Promise<ICreateUserQueryResult>;
+    onDeleteUserQueries: (queryIds: string[]) => Promise<IDeletedUserQueriesResult>;
+    /** @returns The updated query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    onUpdateUserQuery: (currentQuery: ISavedQuery) => Promise<string | null>;
+    /** @returns The created query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    onCreateUserQuery: (newQuery: { name: string; description?: string }, currentQuery: ISavedQuery) => Promise<string | null>;
     onEnableUserQueries?: () => boolean;
 }
 
@@ -59,10 +62,12 @@ export interface ISavedQueryDataProvider {
     getUserQueries: () => ISavedQuery[];
     getCurrentQuery: () => ISavedQuery;
     getSavedQuery(id: string): ISavedQuery;
-    createUserQuery: (params: ICreateUserQueryParams) => Promise<ICreateUserQueryResult>;
+    /** @returns The created query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    createUserQuery: (params: ICreateUserQueryParams) => Promise<string | null>;
     isUserQuery: (queryId: string) => boolean;
-    updateUserQuery: (provider: ITaskDataProvider) => Promise<IUpdateUserQueryResult>;
-    deleteUserQueries: (queryIds: string[]) => Promise<IDeleteUserQueriesResult>;
+    /** @returns The updated query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    updateUserQuery: (provider: ITaskDataProvider) => Promise<string | null>;
+    deleteUserQueries: (queryIds: string[]) => Promise<IDeletedUserQueriesResult>;
     refresh: () => Promise<void>;
     areUserQueriesEnabled: () => boolean;
     includeRequiredColumns: (columns: IColumn[]) => void;
@@ -126,36 +131,51 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         }
     }
 
-    public async updateUserQuery(provider: ITaskDataProvider): Promise<IUpdateUserQueryResult> {
+    public async updateUserQuery(provider: ITaskDataProvider): Promise<string | null> {
         this.queryEvents.dispatchEvent('onBeforeUserQueryUpdated', this.getCurrentQuery().id);
-        const result = await this._strategy.onUpdateUserQuery({
-            ...this.getCurrentQuery(),
-            ...this._getMetadataForSavedQuery(provider)
+        return ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                const result = await this._strategy.onUpdateUserQuery({
+                    ...this.getCurrentQuery(),
+                    ...this._getMetadataForSavedQuery(provider)
 
+                });
+                this.queryEvents.dispatchEvent('onAfterUserQueryUpdated', result);
+                return result;
+            },
+            onError: (error, message) => this.queryEvents.dispatchEvent('onError', error, message)
         })
-        this.queryEvents.dispatchEvent('onAfterUserQueryUpdated', result);
-        return result;
     }
 
-    public async createUserQuery(params: ICreateUserQueryParams): Promise<ICreateUserQueryResult> {
+    public async createUserQuery(params: ICreateUserQueryParams): Promise<string | null> {
         const { name, description, provider } = params;
         this.queryEvents.dispatchEvent('onBeforeUserQueryCreated', name);
-        const result = await this._strategy.onCreateUserQuery({
-            name: name,
-            description: description,
-        }, {
-            ...this.getCurrentQuery(),
-            ...this._getMetadataForSavedQuery(provider)
+        return ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                const result = await this._strategy.onCreateUserQuery({
+                    name: name,
+                    description: description,
+                }, {
+                    ...this.getCurrentQuery(),
+                    ...this._getMetadataForSavedQuery(provider)
+                })
+                this.queryEvents.dispatchEvent('onAfterUserQueryCreated', result);
+                return result;
+            },
+            onError: (error, message) => this.queryEvents.dispatchEvent('onError', error, message)
         })
-        this.queryEvents.dispatchEvent('onAfterUserQueryCreated', result);
-        return result;
     }
 
-    public async deleteUserQueries(queryIds: string[]): Promise<IDeleteUserQueriesResult> {
+    public async deleteUserQueries(queryIds: string[]): Promise<IDeletedUserQueriesResult> {
         this.queryEvents.dispatchEvent('onBeforeUserQueriesDeleted', queryIds);
-        const result = await this._strategy.onDeleteUserQueries(queryIds);
-        this.queryEvents.dispatchEvent('onAfterUserQueriesDeleted', result);
-        return result;
+        return ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                const result = await this._strategy.onDeleteUserQueries(queryIds);
+                this.queryEvents.dispatchEvent('onAfterUserQueriesDeleted', result);
+                return result;
+            },
+            onError: (error, message) => this.queryEvents.dispatchEvent('onError', error, message)
+        })
     }
 
     public async refresh() {

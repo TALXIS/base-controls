@@ -2,7 +2,8 @@ import { Dataset, ICommand, IDataProvider, IDataset, IRetrieveRecordCommandOptio
 import { DatasetControl, IDatasetControl } from "../../../../../../utils/dataset-control";
 import { ITaskGridDatasetControl } from "../../../../interfaces";
 import { ILocalizationService, ITaskGridLabels } from "../../../../labels";
-import { IDeleteUserQueriesResult, ISavedQueryDataProvider } from "../../../../data-providers/saved-query-data-provider";
+import { IDeletedUserQueriesResult, ISavedQueryDataProvider } from "../../../../data-providers/saved-query-data-provider";
+import { ErrorHelper } from "../../../../../../utils";
 
 export class ViewManager {
     private _taskGridDatasetControl: ITaskGridDatasetControl;
@@ -73,10 +74,7 @@ export class ViewManager {
                         text: this._localizationService.getLocalizedString('confirmDialog.deleteSelectedRows.text')
                     })
                     if (result.confirmed) {
-                        const result = await this._savedQueryDataProvider.deleteUserQueries(recordIds);
-                        if(result.success) {
-                            this._userQueryDataProvider.refresh();
-                        }
+                        this._savedQueryDataProvider.deleteUserQueries(recordIds);
                     }
                 }
             }
@@ -84,10 +82,18 @@ export class ViewManager {
         ] as ICommand[]
     }
 
-    private _onAfterUserQueriesDeleted(result: IDeleteUserQueriesResult) {
+    private _onAfterUserQueriesDeleted(result: IDeletedUserQueriesResult) {
         this._userQueryDataProvider.setLoading(false);
-        if(!result.success) {
-            this._userQueryDataProvider.setError(true, result.errorMessage);
+        if (!result.success) {
+            this._datasetControl.getPcfContext().navigation.openConfirmDialog({
+                subtitle: this._localizationService.getLocalizedString('deletingUserQueriesError'),
+                text: result.errors.map(e => {
+                    return `${this._userQueryDataProvider.getRecordsMap()[e.queryId].getNamedReference().name}: ${ErrorHelper.getMessageFromError(e.error)}`
+                }).join('\n'),
+            })
+        }
+        else {
+            this._userQueryDataProvider.refresh();
         }
     }
 

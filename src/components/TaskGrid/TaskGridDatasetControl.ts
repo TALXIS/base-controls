@@ -2,13 +2,14 @@ import { IDatasetControlParameters } from "../DatasetControl";
 import { IDatasetControlEvents } from "../../utils/dataset-control";
 import { EditColumns, IEditColumns } from "../../utils/dataset-control/EditColumns";
 import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering, IColumn } from "@talxis/client-libraries";
-import { ITaskDataProvider, REQUIRED_COLUMNS } from "./data-providers/task-data-provider";
+import { IDeleteTasksResult, ITaskDataProvider, REQUIRED_COLUMNS } from "./data-providers/task-data-provider";
 import { ILocalizationService, ITaskGridLabels } from "./labels";
-import { ICreateUserQueryResult, ISavedQueryDataProvider, IUpdateUserQueryResult } from "./data-providers/saved-query-data-provider";
+import { ISavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ICustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
 import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, IDatasetControlOptions } from "./interfaces";
+import { ErrorHelper } from "../..";
 
 export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> implements ITaskGridDatasetControl {
     private _dataset: IDataset;
@@ -74,7 +75,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public isHideInactiveTasksToggleVisible(): boolean {
         return this._gridParameters.enableHideInactiveTasksToggle ?? true;
     }
-    
+
     public isShowHierarchyToggleVisible(): boolean {
         return this._gridParameters.enableShowHierarchyToggle ?? true;
     }
@@ -102,7 +103,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         }
         return this._templateDataProvider;
     }
-    
+
 
     public createUserQueryDataProvider(): IDataProvider {
         return this._descriptor.onCreateUserQueryDataProvider();
@@ -174,7 +175,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return true;
     }
     public getHeight(): string | null {
-        return this._gridParameters.height  ?? null;
+        return this._gridParameters.height ?? null;
     }
     public getDataset(): IDataset {
         return this._dataset;
@@ -308,21 +309,51 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this.loadCommands(ids);
     }
 
-    private _onAfterUserQueryCreated(result: ICreateUserQueryResult) {
+    private _onAfterUserQueryCreated(result: string | null) {
         this._dataProvider.setLoading(false);
-        if (result.success) {
-            this.changeSavedQuery(result.queryId);
+        if (result) {
+            this.changeSavedQuery(result);
         }
     }
 
-    private _onAfterUserQueryUpdated(result: IUpdateUserQueryResult) {
-        this._dataProvider.setLoading(false);
+    private _registerEventListeners() {
+        this._dataProvider.taskEvents.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._customColumnsDataProvider?.events.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._savedQueryDataProvider.queryEvents.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._dataProvider.addEventListener('onRecordsSelected', (ids) => this._onSelectedRecordsChanged(ids));
+        this._dataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._dataProvider.setLoading(true));
+        this._dataProvider.taskEvents.addEventListener('onAfterTasksDeleted', (result) => this._onAfterTasksDeleted(result));
+        this._dataProvider.taskEvents.addEventListener('onBeforeTaskMoved', () => this._dataProvider.setLoading(true));
+        this._dataProvider.taskEvents.addEventListener('onBeforeTasksEdited', () => this._dataProvider.setLoading(true));
+        this._dataProvider.taskEvents.addEventListener('onAfterTasksEdited', () => this._dataProvider.setLoading(false));
+        this._dataProvider.taskEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
+        this._dataProvider.taskEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
+        this._dataProvider.taskEvents.addEventListener('onBeforeTasksCreated', () => this._dataProvider.setLoading(true));
+        this._dataProvider.taskEvents.addEventListener('onAfterTasksCreated', () => this._dataProvider.setLoading(false));
+        this._dataProvider.taskEvents.addEventListener('onAfterTaskMoved', () => this._dataProvider.setLoading(false));
+        this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
+        this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryUpdated', (result) => this._dataProvider.setLoading(false));
     }
 
-    private _registerEventListeners() {
-        this._dataProvider.addEventListener('onRecordsSelected', (ids) => this._onSelectedRecordsChanged(ids));
-        this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
-        this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryUpdated', (result) => this._onAfterUserQueryUpdated(result));
+    private _onError = (error: any, message: string) => {
+        this._dataProvider.setLoading(false);
+        this.getPcfContext().navigation.openErrorDialog({
+            message: message,
+            details: error
+        })
+    }
+
+    private _onAfterTasksDeleted = (result: IDeleteTasksResult | null) => {
+        this._dataProvider.setLoading(false);
+        if (!result) return;
+        if (!result.success) {
+            this.getPcfContext().navigation.openConfirmDialog({
+                subtitle: this._localizationService.getLocalizedString('deletingTasksError'),
+                text: result.errors.map(e => {
+                    return `${this._dataProvider.getRecordsMap()[e.id].getNamedReference().name}: ${ErrorHelper.getMessageFromError(e.error)}`
+                }).join('\n'),
+            })
+        }
     }
 
 }

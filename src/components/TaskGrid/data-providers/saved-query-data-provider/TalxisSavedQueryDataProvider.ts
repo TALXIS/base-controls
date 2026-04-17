@@ -1,5 +1,5 @@
 import { FetchXmlBuilder, FetchXmlDataProvider } from "@talxis/client-libraries";
-import { ICreateUserQueryResult, IDeleteUserQueriesResult, ISavedQuery, ISavedQueryStrategy, IUpdateUserQueryResult} from "./SavedQueryDataProvider";
+import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy } from "./SavedQueryDataProvider";
 import { ErrorHelper } from "../../../../utils/error-handling";
 
 const FETCH_XML = `
@@ -62,19 +62,29 @@ export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements IS
         return this._onGetSystemQueries();
     }
 
-    public async onDeleteUserQueries(queryIds: string[]): Promise<IDeleteUserQueriesResult> {
-        const result = await this.deleteRecords(queryIds);
-        if (!result.success) {
-            const failedIds = result.results.filter(r => !r.success).map(r => r.recordId);
-            throw new Error(`Failed to delete queries with ids ${failedIds.join(', ')}: ${ErrorHelper.getMessageFromError(result.results.map((r) => r.errorMessage).join('\n'))}`);
-        }
+    public async onDeleteUserQueries(queryIds: string[]): Promise<IDeletedUserQueriesResult> {
         return {
-            success: true,
-            deletedQueryIds: queryIds
+            success: false,
+            deletedQueryIds: [],
+            errors: queryIds.map(id => ({ queryId: id, error: new Error('Delete not implemented') }))
+        }
+        const result = await this.deleteRecords(queryIds);
+        if(result.success) {
+            return {
+                success: true,
+                deletedQueryIds: queryIds
+            }
+        }
+        else {
+            return {
+                success: false,
+                deletedQueryIds: result.results.filter(r => r.success).map(r => r.recordId),
+                errors: result.results.filter(r => !r.success).map(r => ({queryId: r.recordId, error: r.errorMessage}))
+            }
         }
     }
 
-    public async onUpdateUserQuery(currentQuery: ISavedQuery): Promise<IUpdateUserQueryResult> {
+    public async onUpdateUserQuery(currentQuery: ISavedQuery): Promise<string | null> {
         const record = this.getRecordsMap()[currentQuery.id];
         if (!record) {
             throw new Error(`Query record with id ${currentQuery.id} not found`);
@@ -85,13 +95,10 @@ export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements IS
         if (!result.success) {
             throw new Error(`Failed to update query with id ${currentQuery.id}: ${ErrorHelper.getMessageFromError(result.errors?.map((e: any) => e.message).join('\n'))}`);
         }
-        return {
-            success: true,
-            queryId: currentQuery.id
-        }
+        return currentQuery.id;
     }
 
-    public async onCreateUserQuery(newQuery: { name: string; description?: string; }, currentQuery: ISavedQuery): Promise<ICreateUserQueryResult> {
+    public async onCreateUserQuery(newQuery: { name: string; description?: string; }, currentQuery: ISavedQuery): Promise<string | null> {
         const userqueryid = `00001111${crypto.randomUUID().substring(8)}`;
         const { name, description } = newQuery;
         const { id, name: queryName, ...queryMetadata } = currentQuery;
@@ -106,9 +113,6 @@ export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements IS
         }
         const result = await window.Xrm.WebApi.createRecord('talxis_userquery', rawData);
 
-        return {
-            success: true,
-            queryId: result.id
-        }
+        return result.id;
     }
 }

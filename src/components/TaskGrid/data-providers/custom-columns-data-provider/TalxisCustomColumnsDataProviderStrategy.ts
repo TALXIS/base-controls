@@ -1,7 +1,7 @@
-import { Attribute, DatasetConstants, DataType, DataTypes, FieldValue, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
+import { Attribute, DatasetConstants, DataType, DataTypes, FieldValue, IColumn, IEventEmitter, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
 import { DynamicEntityDefinition } from "@talxis/client-metadata";
 import { Attribute as IAttribute } from '@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition';
-import { ICreateColumnResult, ICustomColumnsStrategy, IDeleteColumnResult } from "./CustomColumnsDataProvider";
+import { ICustomColumnsStrategy } from "./CustomColumnsDataProvider";
 
 export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
@@ -50,17 +50,14 @@ export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy
         })
     }
 
-    public async onDeleteColumn(columnName: string): Promise<IDeleteColumnResult> {
+    public async onDeleteColumn(columnName: string): Promise<string | null> {
         const id = columnName.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
         await window.Xrm.WebApi.deleteRecord(ATTRIBUTE_DEFINITION_ENTITY_NAME, id);
         await this.onRefresh();
-        return {
-            success: true,
-            columnName: columnName
-        }
+        return columnName
     }
 
-    public async onCreateColumn(): Promise<ICreateColumnResult> {
+    public async onCreateColumn(): Promise<string | null> {
         const { savedEntityReference } = await window.Xrm.Navigation.navigateTo({
             entityName: ATTRIBUTE_DEFINITION_ENTITY_NAME,
             pageType: 'entityrecord',
@@ -75,20 +72,12 @@ export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy
             const entityReference = savedEntityReference[0];
             const id = Sanitizer.Guid.removeGuidBrackets(entityReference.id);
             await this.onRefresh();
-            return {
-                success: true,
-                columnName: `${id}${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`
-            }
+            return `${id}${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`;
         }
-        else {
-            return {
-                success: false,
-                errorMessage: 'Column creation was cancelled'
-            }
-        }
+        else return null
     }
 
-    public async onUpdateColumn(columnName: string): Promise<IDeleteColumnResult> {
+    public async onUpdateColumn(columnName: string): Promise<string | null> {
         const attributeDefinitionId = columnName.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
         await window.Xrm.Navigation.navigateTo({
             entityName: ATTRIBUTE_DEFINITION_ENTITY_NAME,
@@ -98,10 +87,7 @@ export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy
             target: 2,
         });
         await this.onRefresh();
-        return {
-            success: true,
-            columnName: columnName
-        }
+        return columnName;
     }
 
     public async saveValueToCustomColumn(record: IRecord): Promise<IRecordSaveOperationResult> {

@@ -1,10 +1,9 @@
 import { EditColumns as EditColumnsBase, IEditColumnsRef } from '../../../../DatasetControl/EditColumns/EditColumns';
 import * as React from 'react';
 import { getEditColumnsStyles } from './styles';
-import { ErrorHelper } from '../../../../../utils/error-handling';
 import { useIsLoading } from '../../../../../hooks';
 import { TaskGridEditColumnsContext } from './useTaskGridEditColumns';
-import { useDatasetControl, useLocalizationService, usePcfContext, useRootElementId, useTaskDataProvider } from '../../../context';
+import { useDatasetControl, useLocalizationService, usePcfContext, useRootElementId } from '../../../context';
 import { OptionCommandBar } from './OptionCommandBar/OptionCommandBar';
 import { SortableItemCommandBar } from './SortableItemCommandBar/SortableItemCommandBar';
 import { CommandBar } from './CommandBar/CommandBar';
@@ -31,62 +30,45 @@ export const EditColumns = (props: IEditColumnsProps) => {
             text: localizationService.getLocalizedString('confirmColumnDelete'),
         })
         if (response.confirmed) {
-            return ErrorHelper.executeWithErrorHandling({
-                operation: async () => {
-                    const result = await customColumnsDataProvider.deleteColumn(columnName);
-                    if (result.success) {
-                        saveOnDismiss.current = true;
-                        editColumnsRef.current?.remountColumnSelector();
-                    }
-                },
-                onError: (error, message) => pcfContext.navigation.openErrorDialog({ message: message, details: error })
-            })
+            const result = await customColumnsDataProvider.deleteColumn(columnName);
+            if (result) {
+                saveOnDismiss.current = true;
+                editColumnsRef.current?.remountColumnSelector();
+            }
         }
     }
 
     const _onCreateColumn = async () => {
         editColumnsRef.current?.remountColumnSelector();
-        return ErrorHelper.executeWithErrorHandling({
-            operation: async () => {
-                const result = await customColumnsDataProvider.createColumn();
-                if (result.success) {
-                    editColumnsRef.current?.remountColumnSelector();
-                    const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === result.columnName)!
-                    editColumnsRef.current?.editColumnsModel.addColumn(column);
-                }
-            }
-        })
+        const result = await customColumnsDataProvider.createColumn();
+        if (result) {
+            editColumnsRef.current?.remountColumnSelector();
+            const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === result)!
+            editColumnsRef.current?.editColumnsModel.addColumn(column);
+        }
     }
 
     const _onEditColumn = async (columnName: string, requireRemount?: boolean) => {
         if (!requireRemount) {
             editColumnsRef.current?.remountColumnSelector();
-            return ErrorHelper.executeWithErrorHandling({
-                operation: async () => {
-                    const result = await customColumnsDataProvider.updateColumn(columnName);
-                    if (result.success) {
-                        editColumnsRef.current?.remountColumnSelector();
-                    }
-                }
-            });
+            const result = await customColumnsDataProvider.updateColumn(columnName);
+            if (result) {
+                editColumnsRef.current?.remountColumnSelector();
+            }
         }
         else {
             const response = await pcfContext.navigation.openConfirmDialog({
                 text: localizationService.getLocalizedString('confirmColumnEdit'),
             });
             if (response.confirmed) {
-                return ErrorHelper.executeWithErrorHandling({
-                    operation: async () => {
-                        const result = await customColumnsDataProvider.updateColumn(columnName);
-                        if (result.success) {
-                            const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === columnName)!;
-                            //re-add the column to make sure the metadata are updated
-                            editColumnsRef.current?.editColumnsModel.deleteColumn(columnName);
-                            editColumnsRef.current?.editColumnsModel.addColumn(column);
-                            editColumnsRef.current?.editColumnsModel.save();
-                        }
-                    }
-                });
+                const result = await customColumnsDataProvider.updateColumn(columnName);
+                if (result) {
+                    const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === columnName)!;
+                    //re-add the column to make sure the metadata are updated
+                    editColumnsRef.current?.editColumnsModel.deleteColumn(columnName);
+                    editColumnsRef.current?.editColumnsModel.addColumn(column);
+                    editColumnsRef.current?.editColumnsModel.save();
+                }
             }
         }
     }

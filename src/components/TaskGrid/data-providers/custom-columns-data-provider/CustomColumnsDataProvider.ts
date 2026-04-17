@@ -1,14 +1,15 @@
-import { DatasetConstants, IColumn } from "@talxis/client-libraries";
+import { DatasetConstants, IColumn, IEventEmitter, EventEmitter } from "@talxis/client-libraries";
+import { ErrorHelper } from "../../../../utils";
 
-export type ICreateColumnResult = { success: true; columnName: string } | { success: false; errorMessage: string };
-export type ISaveValueResult = { success: true; recordId: string } | { success: false; errorMessage: string };
-export type IDeleteColumnResult = { success: true; columnName: string } | { success: false; errorMessage: string };
-export type IUpdateColumnResult = { success: true; columnName: string } | { success: false; errorMessage: string };
 
 export interface ICustomColumnsDataProvider {
-    createColumn: () => Promise<ICreateColumnResult>;
-    deleteColumn: (columnName: string) => Promise<IDeleteColumnResult>;
-    updateColumn: (columnName: string) => Promise<IUpdateColumnResult>;
+    events: IEventEmitter<ICustomColumnsDataProviderEvents>;
+    /** @returns The created column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    createColumn: () => Promise<string | null>;
+    /** @returns The deleted column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    deleteColumn: (columnName: string) => Promise<string | null>;
+    /** @returns The updated column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    updateColumn: (columnName: string) => Promise<string | null>;
     refresh: () => Promise<IColumn[]>;
     getColumns: () => IColumn[];
     getStrategy<T extends ICustomColumnsStrategy>(): T;
@@ -19,31 +20,47 @@ export interface ICustomColumnsDataProvider {
 }
 
 export interface ICustomColumnsStrategy {
-    onCreateColumn: () => Promise<ICreateColumnResult>;
-    onDeleteColumn: (columnName: string) => Promise<IDeleteColumnResult>;
-    onUpdateColumn: (columnName: string) => Promise<IUpdateColumnResult>;
+    /** @returns The created column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    onCreateColumn: () => Promise<string | null>;
+    /** @returns The deleted column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    onDeleteColumn: (columnName: string) => Promise<string | null>;
+    /** @returns The updated column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    onUpdateColumn: (columnName: string) => Promise<string | null>;
     onRefresh: () => Promise<IColumn[]>;
     onGetColumns: () => IColumn[];
+}
 
+export interface ICustomColumnsDataProviderEvents {
+    onError: (error: any, message: string) => void;
 }
 
 export class CustomColumnsDataProvider implements ICustomColumnsDataProvider {
     private _strategy: ICustomColumnsStrategy;
+    public events: IEventEmitter<ICustomColumnsDataProviderEvents> = new EventEmitter();
 
     constructor(strategy: ICustomColumnsStrategy) {
         this._strategy = strategy;
     }
-    public async createColumn(): Promise<ICreateColumnResult> {
-        return await this._strategy.onCreateColumn();
-    }
     public getStrategy<T extends ICustomColumnsStrategy>(): T {
         return this._strategy as T;
     }
-    public async deleteColumn(columnName: string): Promise<IDeleteColumnResult> {
-        return await this._strategy.onDeleteColumn(columnName);
+    public async createColumn(): Promise<string | null> {
+        return ErrorHelper.executeWithErrorHandling({
+            operation: () => this._strategy.onCreateColumn(),
+            onError: (error, message) => this.events.dispatchEvent('onError', error, message)
+        })
     }
-    public async updateColumn(columnName: string): Promise<IUpdateColumnResult> {
-        return await this._strategy.onUpdateColumn(columnName);
+    public async deleteColumn(columnName: string): Promise<string | null> {
+        return ErrorHelper.executeWithErrorHandling({
+            operation: () => this._strategy.onDeleteColumn(columnName),
+            onError: (error, message) => this.events.dispatchEvent('onError', error, message)
+        })
+    }
+    public async updateColumn(columnName: string): Promise<string | null> {
+        return ErrorHelper.executeWithErrorHandling({
+            operation: () => this._strategy.onUpdateColumn(columnName),
+            onError: (error, message) => this.events.dispatchEvent('onError', error, message)
+        })
     }
     public getColumns(): IColumn[] {
         return this._strategy.onGetColumns();

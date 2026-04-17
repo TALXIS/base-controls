@@ -1,9 +1,21 @@
 import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, ICommand, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IEventEmitter, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, IRetrieveRecordCommandOptions, MemoryDataProvider, Operators, Type } from "@talxis/client-libraries";
 import { IRecordTree, RecordTree } from "./record-tree/RecordTree";
-import { IRecordsDeleteResult } from "../source-data-provider";
 import { ErrorHelper } from "../../../../utils/error-handling";
 import { ILocalizationService, ITaskGridLabels } from "../../labels";
 import { INativeColumns } from "../../interfaces";
+
+export interface IFailedRecord {
+    id: string;
+    error: any;
+}
+
+export type IDeleteTasksResult =
+    | { success: true; deletedTaskIds: string[] }
+    | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] };
+
+export type IEditTasksResult =
+    | { success: true; updatedRecords: IRawRecord[] }
+    | { success: false; updatedRecords: IRawRecord[]; errors: IFailedRecord[] };
 
 export const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'path'];
 
@@ -22,11 +34,24 @@ export interface ITaskDataProviderStrategy {
     onGetAvailableColumns: (options?: IAvailableColumnOptions) => Promise<IColumn[]>;
     onGetAvailableRelatedColumns: () => Promise<IAvailableRelatedColumn[]>;
     onGetQuickFindColumns: () => string[];
+    /** @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onCreateTask(parentTaskId?: string): Promise<IRawRecord | null>;
-    onDeleteTasks(taskIds: string[]): Promise<IRecordsDeleteResult>;
-    onCreateTemplateFromTask(taskId: string): Promise<IRawRecord>;
-    onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[]>;
-    onEditTasks(taskIds: string[]): Promise<IRawRecord[]>;
+    /**
+     * @returns Result indicating which tasks were deleted and which failed.
+     * `success: true` means all tasks were deleted. `success: false` means some or all failed.
+     * Throws on unexpected failure.
+     */
+    onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
+    /** @returns The created template raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    onCreateTemplateFromTask(taskId: string): Promise<IRawRecord | null>;
+    /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null>;
+    /**
+     * @returns Result indicating which tasks were updated and which failed, or `null` if the operation was cancelled by the user.
+     * `success: true` means all tasks were updated. `success: false` means some or all failed.
+     * Throws on unexpected failure.
+     */
+    onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
     onMoveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<void>;
     onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult>;
     onIsRecordActive(recordId: string): boolean;
@@ -39,16 +64,16 @@ export interface ITaskDataProviderStrategy {
 
 export interface ITaskDataProviderEventListener {
     onBeforeTemplateCreated: (taskId: string) => void;
-    onAfterTemplateCreated: (record: IRawRecord) => void;
+    onAfterTemplateCreated: (record: IRawRecord | null) => void;
     onBeforeTasksDeleted: (taskIds: string[]) => void;
-    onAfterTasksDeleted: (taskIds: string[]) => void;
+    onAfterTasksDeleted: (result: IDeleteTasksResult | null) => void;
     onBeforeTasksCreated: (parentId?: string) => void;
-    onAfterTasksCreated: (records: IRecord[], parentId?: string) => void;
+    onAfterTasksCreated: (records: IRawRecord[] | null, parentId?: string) => void;
     onBeforeTaskMoved: () => void;
     onAfterTaskMoved: (movingFromTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child') => void;
     onBeforeTasksEdited: (taskIds: string[]) => void;
     onTaskDataUpdated: (data: IRawRecord[]) => void;
-    onAfterTasksEdited: (taskIds: string[]) => void;
+    onAfterTasksEdited: (result: IEditTasksResult | null) => void;
     onRecordTreeUpdated: (updatedParentIds: (string | undefined)[]) => void;
     onError: (error: any, message: string) => void;
 }
@@ -61,12 +86,24 @@ export interface ITaskDataProvider extends IDataProvider {
     fetchRawRecords(ids: string[]): Promise<IRawRecord[]>;
     getRecordTree(): IRecordTree;
     updateTaskData(newData: IRawRecord[]): void;
-    editTasks(taskIds: string[]): Promise<void>;
-    bulkEditTasks(taskIds: string[]): Promise<void>;
-    createTask(parentTaskId?: string): Promise<void>;
-    deleteTasks(taskIds: string[]): Promise<void>;
-    createTemplateFromTask(taskId: string): Promise<void>;
-    createTasksFromTemplate(templateId: string, parentId?: string): Promise<void>;
+    /**
+     * @returns Result indicating which tasks were updated and which failed, or `null` if the operation was cancelled by the user.
+     * `success: true` means all tasks were updated. `success: false` means some or all failed — `updatedRecords` still contains the records that succeeded.
+     * Throws on unexpected failure.
+     */
+    editTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
+    /** @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    createTask(parentTaskId?: string): Promise<IRawRecord | null>;
+    /**
+     * @returns Result indicating which tasks were deleted and which failed.
+     * `success: true` means all tasks were deleted. `success: false` means some or all failed — `deletedTaskIds` still contains the ids that succeeded.
+     * Throws on unexpected failure before any deletes could be attempted.
+     */
+    deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
+    /** @returns The created template raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    createTemplateFromTask(taskId: string): Promise<IRawRecord | null>;
+    /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRawRecord[] | null>;
     isFlatListEnabled(): boolean;
     isTaskAddingEnabled(): boolean;
     isTaskEditingEnabled(): boolean;
@@ -197,34 +234,39 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         })
     }
 
-    public async createTask(parentId?: string) {
+    public async createTask(parentId?: string): Promise<IRawRecord | null> {
         this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentId);
-        await ErrorHelper.executeWithErrorHandling({
+        return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 const rawRecord = await this._strategy.onCreateTask(parentId);
-                this._createTasks(rawRecord ? [rawRecord] : [], parentId);
+                if (rawRecord) this._createTasks([rawRecord], parentId);
+                this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecord ? [rawRecord] : null, parentId);
+                return rawRecord;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         });
     }
 
-    public async createTasksFromTemplate(templateId: string, parentId?: string) {
+    public async createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRawRecord[] | null> {
         this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentId);
-        await ErrorHelper.executeWithErrorHandling({
+        return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 const rawRecords = await this._strategy.onCreateTasksFromTemplate(templateId, parentId);
-                this._createTasks(rawRecords, parentId);
+                if (rawRecords) this._createTasks(rawRecords, parentId);
+                this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecords, parentId);
+                return rawRecords;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })
     }
 
-    public async createTemplateFromTask(taskId: string) {
+    public async createTemplateFromTask(taskId: string): Promise<IRawRecord | null> {
         this.taskEvents.dispatchEvent('onBeforeTemplateCreated', taskId);
-        await ErrorHelper.executeWithErrorHandling({
+        return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 const rawRecord = await this._strategy.onCreateTemplateFromTask(taskId);
                 this.taskEvents.dispatchEvent('onAfterTemplateCreated', rawRecord);
+                return rawRecord;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         });
@@ -256,47 +298,33 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._taskTree.getSortedIds();
     }
 
-    public async deleteTasks(taskIds: string[]): Promise<void> {
+    public async deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
         this.taskEvents.dispatchEvent('onBeforeTasksDeleted', taskIds);
-        await ErrorHelper.executeWithErrorHandling({
+        return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 const result = await this._strategy.onDeleteTasks(taskIds);
-                const successfulDeletes = result.results.filter(r => r.success).map(r => r.recordId);
-                const failedDeletes = result.results.filter(r => !r.success);
-                await this.deleteRecords(successfulDeletes);
-                this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !successfulDeletes.includes(id)));
-                this._taskTree.build();
-                this.taskEvents.dispatchEvent('onRecordTreeUpdated', successfulDeletes);
-                this.taskEvents.dispatchEvent('onAfterTasksDeleted', successfulDeletes);
-                if (failedDeletes.length > 0) {
-                    const errorMessages: string[] = [];
-                    for (const notDeletedResult of failedDeletes) {
-                        const taskName = this.getRecordsMap()[notDeletedResult.recordId].getNamedReference().name;
-                        errorMessages.push(`${taskName}: ${notDeletedResult.errorMessage ?? ''}`);
-                    }
-                    throw new Error(errorMessages.join('\n'));
+                if (result !== null) {
+                    const deletedTaskIds = result.deletedTaskIds;
+                    await this.deleteRecords(deletedTaskIds);
+                    this.setSelectedRecordIds(this.getSelectedRecordIds().filter(id => !deletedTaskIds.includes(id)));
+                    this._taskTree.build();
+                    this.taskEvents.dispatchEvent('onRecordTreeUpdated', deletedTaskIds);
                 }
+                this.taskEvents.dispatchEvent('onAfterTasksDeleted', result);
+                return result;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })
     }
 
-    public async editTasks(taskIds: string[]) {
-        await ErrorHelper.executeWithErrorHandling({
+    public async editTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
+        return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 this.taskEvents.dispatchEvent('onBeforeTasksEdited', taskIds);
-                const rawRecords = await this._strategy.onEditTasks(taskIds);
-                this.updateTaskData(rawRecords);
-                this.taskEvents.dispatchEvent('onAfterTasksEdited', taskIds);
-            },
-            onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
-        })
-    }
-
-    public async bulkEditTasks(taskIds: string[]) {
-        await ErrorHelper.executeWithErrorHandling({
-            operation: async () => {
-
+                const result = await this._strategy.onEditTasks(taskIds);
+                if (result !== null) this.updateTaskData(result.updatedRecords);
+                this.taskEvents.dispatchEvent('onAfterTasksEdited', result);
+                return result;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })
@@ -421,6 +449,5 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             this._taskTree.build();
             this.taskEvents.dispatchEvent('onRecordTreeUpdated', [parentId]);
         }
-        this.taskEvents.dispatchEvent('onAfterTasksCreated', records, parentId);
     }
 }

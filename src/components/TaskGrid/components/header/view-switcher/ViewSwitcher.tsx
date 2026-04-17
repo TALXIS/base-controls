@@ -4,11 +4,11 @@ import { getViewSwitcherStyles } from "./styles";
 import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider } from "../../../context";
 import { CreateViewDialog } from "./create-view-dialog";
 import { ViewManagerDialog } from "./view-manager";
+import { useEventEmitter } from "../../../../../hooks";
 
 export const ViewSwitcher = () => {
     const localizationService = useLocalizationService();
     const datasetControl = useDatasetControl();
-    const context = usePcfContext();
     const savedQueryDataProvider = datasetControl.getSavedQueryDataProvider();
     const taskDataProvider = useTaskDataProvider();
     const systemQueries = savedQueryDataProvider.getSystemQueries();
@@ -18,6 +18,14 @@ export const ViewSwitcher = () => {
     const styles = React.useMemo(() => getViewSwitcherStyles(theme), []);
     const [showViewManagerDialog, setShowViewManagerDialog] = React.useState(false);
     const [showCreateViewDialog, setShowCreateViewDialog] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(false);
+    
+    useEventEmitter(savedQueryDataProvider.queryEvents, 'onBeforeUserQueryUpdated', () => {
+        setIsLoading(true);
+    });
+    useEventEmitter(savedQueryDataProvider.queryEvents, 'onAfterUserQueryUpdated', () => {
+        setIsLoading(false);
+    });
 
     const isQueryIdCurrent = (queryId: string): boolean => {
         return currentQuery.id === queryId;
@@ -63,10 +71,7 @@ export const ViewSwitcher = () => {
                     text: localizationService.getLocalizedString('saveExisting'),
                     iconProps: { iconName: 'Save' },
                     onClick: async () => {
-                        const result = await savedQueryDataProvider.updateUserQuery(taskDataProvider);
-                        if (!result.success) {
-                            context.navigation.openErrorDialog({ message: result.errorMessage });
-                        }
+                        savedQueryDataProvider.updateUserQuery(taskDataProvider);
                     }
                 }] : []),
                 {

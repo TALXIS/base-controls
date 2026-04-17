@@ -74,6 +74,7 @@ export interface ITaskGridLabels {
     deletingTasksError: string;
     noRecordsFound: string;
     unexpectedErrorOccurred: string;
+    deletingUserQueriesError: string;
 }
 
 export interface ILocalizationService<T> {
@@ -152,6 +153,7 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     updatingTasks: 'Updating task...',
     deletingTasks: 'Deleting task...',
     deletingTasksError: 'Some tasks could not be deleted due to following reasons:',
+    deletingUserQueriesError: 'Some views could not be deleted due to following reasons:',
     noRecordsFound: 'No records found.',
     unexpectedErrorOccurred: 'Unexpected error occurred.',
 }

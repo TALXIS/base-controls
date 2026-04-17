@@ -58,22 +58,8 @@ export class GridCustomizer implements IGridCustomizer {
             datasetControl: this._datasetControl
         });
         this._patchGridApi();
-
+        this._registerEventListeners();
         this._gridApi.setGridOption('rowClassRules', this._getRowClassRules());
-        this._taskDataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._taskDataProvider.setLoading(true));
-        this._taskDataProvider.taskEvents.addEventListener('onAfterTasksDeleted', () => this._taskDataProvider.setLoading(false));
-        this._taskDataProvider.taskEvents.addEventListener('onBeforeTaskMoved', () => this._taskDataProvider.setLoading(true));
-        this._taskDataProvider.taskEvents.addEventListener('onBeforeTasksEdited', () => this._taskDataProvider.setLoading(true));
-        this._taskDataProvider.taskEvents.addEventListener('onAfterTasksEdited', () => this._taskDataProvider.setLoading(false));
-        this._taskDataProvider.taskEvents.addEventListener('onAfterTaskMoved', (movingFromTaskId, movingToTaskId, position) => this._moveInto(movingFromTaskId, movingToTaskId, position));
-        this._taskDataProvider.taskEvents.addEventListener('onBeforeTasksCreated', (parentTaskId) => this._onBeforeTasksCreated(parentTaskId));
-        this._taskDataProvider.taskEvents.addEventListener('onBeforeTemplateCreated', () => this._taskDataProvider.setLoading(true));
-        this._taskDataProvider.taskEvents.addEventListener('onAfterTemplateCreated', () => this._taskDataProvider.setLoading(false));
-        this._taskDataProvider.taskEvents.addEventListener('onAfterTasksCreated', (records, parentId) => this._onAfterTasksCreated(records, parentId));
-        this._taskDataProvider.taskEvents.addEventListener('onError', (error, message) => this._onError(error, message));
-        this._taskDataProvider.taskEvents.addEventListener('onRecordTreeUpdated', (updatedParentIds) => this._onRecordTreeUpdated(updatedParentIds));
-        this._taskDataProvider.taskEvents.addEventListener('onTaskDataUpdated', (newData) => this._onAfterTaskDataUpdated(newData));
-        this._gridDragHandler.addEventListener('onGragEnd', (dragOperation) => this._onDragEnd(dragOperation));
         this._strategy?.onInitialize?.(this);
     }
 
@@ -351,7 +337,6 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
     private _moveInto(movingFromRecordId: string, movingToRecordId: string, position: 'child' | 'above' | 'below') {
-        this._taskDataProvider.setLoading(false);
         const draggedRecordNode = this._taskDataProvider.getRecordTree().getNode(movingFromRecordId);
         const draggedRecord = this._taskDataProvider.getRecordsMap()[movingFromRecordId];
         const draggedNode = this._gridApi.getRowNode(movingFromRecordId)!;
@@ -394,19 +379,16 @@ export class GridCustomizer implements IGridCustomizer {
         this._taskDataProvider.clearSelectedRecordIds();
     }
 
-    private _onBeforeTasksCreated = (parentId?: string) => {
-        this._taskDataProvider.setLoading(true);
-    }
 
-    private _onAfterTasksCreated = (records: IRecord[], parentId?: string) => {
-        this._taskDataProvider.setLoading(false);
-        if (records.length > 0 && parentId) {
+    private _onAfterTasksCreated = (records: IRawRecord[] | null, parentId?: string) => {
+        if (!records || records.length === 0) return;
+        if (parentId) {
             const parentNode = this._gridApi.getRowNode(parentId);
             if (parentNode && !parentNode.expanded) {
                 parentNode.setExpanded(true);
             }
         }
-        if (!parentId && records.length > 0) {
+        if (!parentId) {
             this._gridApi.ensureIndexVisible(0);
         }
     }
@@ -420,12 +402,11 @@ export class GridCustomizer implements IGridCustomizer {
         })
     }
 
-    private _onError = (error: any, message: string) => {
-        this._taskDataProvider.setLoading(false);
-        //we need to use openConfirmDialog because error message dialog does not work with new lines
-        this._pcfContext.navigation.openConfirmDialog({
-            title: this._localizationService.getLocalizedString('unexpectedErrorOccurred'),
-            text: message
-        })
+    private _registerEventListeners() {
+        this._taskDataProvider.taskEvents.addEventListener('onAfterTaskMoved', (movingFromTaskId, movingToTaskId, position) => this._moveInto(movingFromTaskId, movingToTaskId, position));
+        this._taskDataProvider.taskEvents.addEventListener('onAfterTasksCreated', (records, parentId) => this._onAfterTasksCreated(records, parentId));
+        this._taskDataProvider.taskEvents.addEventListener('onRecordTreeUpdated', (updatedParentIds) => this._onRecordTreeUpdated(updatedParentIds));
+        this._taskDataProvider.taskEvents.addEventListener('onTaskDataUpdated', (newData) => this._onAfterTaskDataUpdated(newData));
+        this._gridDragHandler.addEventListener('onGragEnd', (dragOperation) => this._onDragEnd(dragOperation));
     }
 }

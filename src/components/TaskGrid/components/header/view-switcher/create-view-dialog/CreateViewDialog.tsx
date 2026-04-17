@@ -3,6 +3,8 @@ import { TextField } from "../../../../../TextField";
 import * as React from "react";
 import { withButtonLoading } from '@talxis/react-components';
 import { useDatasetControl, useLocalizationService, usePcfContext } from "../../../../context";
+import { useEventEmitter } from "../../../../../../hooks";
+import { ISavedQueryDataProvider, ISavedQueryDataProviderEvents } from "../../../../data-providers";
 
 interface ICreateViewDialog {
     onDismiss: () => void;
@@ -21,17 +23,21 @@ export const CreateViewDialog = (props: ICreateViewDialog) => {
     const [isSaving, setIsSaving] = React.useState<boolean>(false);
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
-    const onSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    useEventEmitter<ISavedQueryDataProviderEvents>(savedQueryDataProvider.queryEvents, 'onBeforeUserQueryCreated', () => {
         setIsSaving(true);
-        const result = await savedQueryDataProvider.createUserQuery({
+        setErrorMessage(null);
+    })
+    useEventEmitter<ISavedQueryDataProviderEvents>(savedQueryDataProvider.queryEvents, 'onError', (error, errorMessage) => {
+        setIsSaving(false);
+        setErrorMessage(errorMessage ?? '');
+    });
+
+    const onSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        savedQueryDataProvider.createUserQuery({
             name: name,
             description: description,
             provider: datasetControl.getDataProvider()
         });
-        if (!result.success) {
-            setIsSaving(false);
-            setErrorMessage(result.errorMessage ?? '');
-        }
     }
 
     return <Dialog
