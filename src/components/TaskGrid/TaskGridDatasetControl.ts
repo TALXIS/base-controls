@@ -1,8 +1,8 @@
 import { IDatasetControlParameters } from "../DatasetControl";
 import { IDatasetControlEvents } from "../../utils/dataset-control";
 import { EditColumns, IEditColumns } from "../../utils/dataset-control/EditColumns";
-import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering } from "@talxis/client-libraries";
-import { ITaskDataProvider } from "./data-providers/task-data-provider";
+import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering, IColumn } from "@talxis/client-libraries";
+import { ITaskDataProvider, REQUIRED_COLUMNS } from "./data-providers/task-data-provider";
 import { ILocalizationService, ITaskGridLabels } from "./labels";
 import { ICreateUserQueryResult, ISavedQueryDataProvider, IUpdateUserQueryResult } from "./data-providers/saved-query-data-provider";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
@@ -122,7 +122,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._state.savedQuery.isFlatListEnabled = enabled;
         const pathColumn = this._dataProvider.getColumnsMap()[this.getNativeColumns().path];
         pathColumn.isHidden = !enabled;
-        pathColumn.order = 0;
+        pathColumn.order = -1;
+        //update the columns to trigger column sort
+        this._dataProvider.setColumns(this._dataProvider.getColumns());
         this._dataProvider.refresh();
     }
 
@@ -269,12 +271,16 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         if (state.savedQuery) {
             currentQuery = {
                 ...currentQuery,
-                ...state.savedQuery
+                ...state.savedQuery,
             }
         }
         else {
             state.savedQuery = currentQuery;
         }
+        //some required columns might have been discared by edit columns
+        this._savedQueryDataProvider.includeRequiredColumns(currentQuery.columns);
+        this._savedQueryDataProvider.harmonizeColumns(currentQuery.columns);
+        //at this point current query might be missing required properties
         let { filtering, sorting, columns, searchQuery, linking } = currentQuery;
         this._dataProvider.setColumns(columns);
 

@@ -65,6 +65,8 @@ export interface ISavedQueryDataProvider {
     deleteUserQueries: (queryIds: string[]) => Promise<IDeleteUserQueriesResult>;
     refresh: () => Promise<void>;
     areUserQueriesEnabled: () => boolean;
+    includeRequiredColumns: (columns: IColumn[]) => void;
+    harmonizeColumns: (columns: IColumn[]) => void;
 }
 
 interface IDeps {
@@ -171,8 +173,8 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             //makes sure custom columns from the current query are properly merged with the columns from the custom columns data provider strategy
             ...this._parseSavedQueryMetadata(this._currentQuery)
         }
-        this._includeRequiredColumns(this._currentQuery.columns);
-        this._harmonizeColumns(this._currentQuery.columns);
+        this.includeRequiredColumns(this._currentQuery.columns);
+        this.harmonizeColumns(this._currentQuery.columns);
     }
 
     private _getMetadataForSavedQuery(provider: ITaskDataProvider): ISavedQueryMetadata {
@@ -233,7 +235,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         };
     }
 
-    private _includeRequiredColumns(columns: IColumn[]) {
+    public includeRequiredColumns(columns: IColumn[]) {
         const allQueries = [...this.getSystemQueries(), ...this.getUserQueries()];
         const allQueryColumns = [...new Map(allQueries.flatMap(query => query.columns.map(col => [col.name, col]))).values()];
         for (const requiredColumnName of REQUIRED_COLUMNS) {
@@ -248,7 +250,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         }
     }
 
-    private _harmonizeColumns(columns: IColumn[]) {
+    public harmonizeColumns(columns: IColumn[]) {
         for (const column of columns) {
             switch (column.name) {
                 case this._nativeColumns.subject: {

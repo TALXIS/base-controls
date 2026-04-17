@@ -4,7 +4,6 @@ import { IGridCustomizerStrategy } from "./components/grid/grid-customizer";
 import { ICustomColumnsDataProvider, ICustomColumnsStrategy } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
 import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./data-providers/saved-query-data-provider";
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./data-providers/task-data-provider";
-import { IRecordTree } from "./data-providers/task-data-provider/record-tree";
 import { ILocalizationService, ITaskGridLabels } from "./labels";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 
@@ -39,15 +38,14 @@ export interface ITaskGridParameters {
     enableEditColumnsScopeSelector?: boolean;
 }
 
-export interface ISourceDataProviderParams {
-    taskTree: IRecordTree;
+export interface ITaskStrategyDeps {
     customColumnsDataProvider?: ICustomColumnsDataProvider;
 }
 
 export interface ITaskGridDescriptor {
     onGetNativeColumns: () => INativeColumns;
     onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
-    onCreateTaskStrategy: (deps: ISourceDataProviderParams) => ITaskDataProviderStrategy;
+    onCreateTaskStrategy: (deps: ITaskStrategyDeps) => ITaskDataProviderStrategy;
     onCreateUserQueryDataProvider: () => IDataProvider;
     onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy;
     onCreateTemplateDataProvider?: () => IDataProvider | undefined;

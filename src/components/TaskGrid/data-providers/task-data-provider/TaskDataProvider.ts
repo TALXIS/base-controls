@@ -1,15 +1,13 @@
 import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, ICommand, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IEventEmitter, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, IRetrieveRecordCommandOptions, MemoryDataProvider, Operators, Type } from "@talxis/client-libraries";
-import { IRecordTree } from "./record-tree/RecordTree";
-import { IRecordsDeleteResult, ISourceDataProvider } from "../source-data-provider";
+import { IRecordTree, RecordTree } from "./record-tree/RecordTree";
+import { IRecordsDeleteResult } from "../source-data-provider";
 import { ErrorHelper } from "../../../../utils/error-handling";
 import { ILocalizationService, ITaskGridLabels } from "../../labels";
 import { INativeColumns } from "../../interfaces";
-import { DataBuilder } from "@talxis/client-libraries/dist/utils/dataset/data-providers/memory-provider/DataBuilder";
 
 export const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'path'];
 
 export interface ITaskDataProviderOptions {
-    taskTree: IRecordTree;
     nativeColumns: INativeColumns;
     localizationService: ILocalizationService<ITaskGridLabels>;
     strategy: ITaskDataProviderStrategy;
@@ -92,7 +90,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             metadata: { PrimaryIdAttribute: 'id' }
         })
         this._nativeColumns = options.nativeColumns;
-        this._taskTree = options.taskTree;
+        this._taskTree = new RecordTree({
+            taskDataProvider: this
+        })
         this._localizationService = options.localizationService;
         this._strategy = options.strategy;
         this._onFlatListEnabled = options.onIsFlatListEnabled;
@@ -354,7 +354,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public createNewDataProvider(eventBubbleOptions?: IEventBubbleOptions): IDataProvider {
         return new TaskDataProvider({
             localizationService: this._localizationService,
-            taskTree: this._taskTree,
             nativeColumns: this._nativeColumns,
             strategy: this._strategy,
             onIsFlatListEnabled: () => this._onFlatListEnabled(),

@@ -1,6 +1,5 @@
-import { IMemoryProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { ITaskDataProvider } from "../TaskDataProvider";
-import { ISourceDataProvider } from "../../source-data-provider";
 import { patchDataBuilderPrepare } from "./patchDataBuilderPrepare";
 
 interface ITreeNode {
@@ -12,8 +11,8 @@ interface ITreeNode {
     parent?: IRecord;
 }
 
-interface IRecordTreeOptions {
-    onGetTaskDataProvider: () => ITaskDataProvider;
+interface IRecordTreeParams {
+    taskDataProvider: ITaskDataProvider;
 }
 
 export interface IRecordTree {
@@ -36,10 +35,10 @@ export class RecordTree implements IRecordTree {
     private _sortedRecordIds: string[] = [];
     private _records: IRecord[] = [];
     private _recordsMap: { [recordId: string]: IRecord } = {};
-    private _onGetTaskDataProvider: () => ITaskDataProvider;
+    private _taskDataProvider: ITaskDataProvider;
 
-    constructor(options: IRecordTreeOptions) {
-        this._onGetTaskDataProvider = options.onGetTaskDataProvider;
+    constructor(options: IRecordTreeParams) {
+        this._taskDataProvider = options.taskDataProvider;
     }
 
     public getNodeMap(): Map<string, ITreeNode> {
@@ -71,8 +70,8 @@ export class RecordTree implements IRecordTree {
     }
 
     public build(): Map<string, ITreeNode> {
-        this._records = this._getTaskDataProvider().getAllRecords();
-        this._recordsMap = this._getTaskDataProvider().getRecordsMap();
+        this._records = this._taskDataProvider.getAllRecords();
+        this._recordsMap = this._taskDataProvider.getRecordsMap();
         // Clear existing record tree map and flat sorted array
         this._nodeMap.clear();
         this._patchRecordPaths();
@@ -363,7 +362,7 @@ export class RecordTree implements IRecordTree {
     }
 
     private _getTaskDataProvider(): ITaskDataProvider {
-        const provider = this._onGetTaskDataProvider();
+        const provider = this._taskDataProvider;
         if (!provider) {
             throw new Error('TaskDataProvider dependency not provided!');
         }

@@ -2,7 +2,7 @@ import { useEventEmitter } from "../../hooks/useEventEmitter"
 import { IDatasetControlEvents } from "../../utils/dataset-control";
 import { useRef } from "react";
 import * as React from "react";
-import { AgGridLicenseKeyContext, DatasetControlContext, LocalizationServiceContext, RootElementIdContext, TaskDataProviderContext, TaskGridComponentsContext, TaskGridDescriptorContext, usePcfContext } from "./context";
+import { AgGridLicenseKeyContext, DatasetControlContext, LocalizationServiceContext, PcfContext, RootElementIdContext, TaskDataProviderContext, TaskGridComponentsContext, TaskGridDescriptorContext, usePcfContext } from "./context";
 import { DatasetControl as DatasetControlRenderer } from "../DatasetControl";
 import { useTheme } from "@fluentui/react";
 import { getDatasetControlStyles } from "./styles";
@@ -16,6 +16,8 @@ import { ITaskGridComponents, TaskGridComponents } from "./components/components
 import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
 
 interface ITaskGridProps {
+    //should be replaced by Context API in future
+    pcfContext: ComponentFramework.Context<any, any>;
     taskGridDescriptor: ITaskGridDescriptor;
     labels?: Partial<ITaskGridLabels>;
     components?: Partial<ITaskGridComponents>;
@@ -31,8 +33,8 @@ export const TaskGrid = (props: ITaskGridProps) => {
     const { taskGridDescriptor } = props;
     const stateRef = useRef<ITaskGridState>({});
     const components = { ...TaskGridComponents, ...props.components };
-    const pcfContextRef = useRef(usePcfContext());
-    pcfContextRef.current = usePcfContext();
+    const pcfContextRef = useRef(props.pcfContext);
+    pcfContextRef.current = props.pcfContext;
     const labelsRef = useRef<ITaskGridLabels>();
     labelsRef.current = { ...TASK_GRID_LABELS, ...props.labels };
     const localizationService = React.useMemo(() => new LocalizationService(() => labelsRef.current!), []);
@@ -64,18 +66,20 @@ export const TaskGrid = (props: ITaskGridProps) => {
     }
 
     return (
-        <LocalizationServiceContext.Provider value={localizationService}>
-            <AgGridLicenseKeyContext.Provider value={taskGridDescriptor.onGetAgGridLicenseKey?.() ?? null}>
-                <TaskGridComponentsContext.Provider value={components}>
-                    <InternalTaskGridDatasetControl
-                        key={instanceState.remountKey}
-                        {...props}
-                        datasetControl={instanceState.instance}
-                        onRemountRequested={createDatasetControlInstance}
-                    />
-                </TaskGridComponentsContext.Provider>
-            </AgGridLicenseKeyContext.Provider>
-        </LocalizationServiceContext.Provider>
+        <PcfContext.Provider value={pcfContextRef.current}>
+            <LocalizationServiceContext.Provider value={localizationService}>
+                <AgGridLicenseKeyContext.Provider value={taskGridDescriptor.onGetAgGridLicenseKey?.() ?? null}>
+                    <TaskGridComponentsContext.Provider value={components}>
+                        <InternalTaskGridDatasetControl
+                            key={instanceState.remountKey}
+                            {...props}
+                            datasetControl={instanceState.instance}
+                            onRemountRequested={createDatasetControlInstance}
+                        />
+                    </TaskGridComponentsContext.Provider>
+                </AgGridLicenseKeyContext.Provider>
+            </LocalizationServiceContext.Provider>
+        </PcfContext.Provider>
     );
 }
 const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {

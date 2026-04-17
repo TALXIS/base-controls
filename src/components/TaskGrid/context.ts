@@ -4,21 +4,44 @@ import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { ITaskGridLabels, LocalizationService } from "./labels";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
 
-export const PcfContext = React.createContext<ComponentFramework.Context<any>>(null as any);
-export const DatasetControlContext = React.createContext<ITaskGridDatasetControl>(null as any);
-export const TaskDataProviderContext = React.createContext<ITaskDataProvider>(null as any);
+export const PcfContext = React.createContext<ComponentFramework.Context<any> | null>(null);
+PcfContext.displayName = 'PcfContext';
+
+export const DatasetControlContext = React.createContext<ITaskGridDatasetControl | null>(null);
+DatasetControlContext.displayName = 'DatasetControl';
+
+export const TaskDataProviderContext = React.createContext<ITaskDataProvider | null>(null);
+TaskDataProviderContext.displayName = 'TaskDataProvider';
+
 export const TaskGridComponentsContext = React.createContext<ITaskGridComponents>(TaskGridComponents);
-export const TaskGridDescriptorContext = React.createContext<ITaskGridDescriptor>(null as any);
+TaskGridComponentsContext.displayName = 'TaskGridComponents';
+
+export const TaskGridDescriptorContext = React.createContext<ITaskGridDescriptor | null>(null);
+TaskGridDescriptorContext.displayName = 'TaskGridDescriptor';
+
 export const RootElementIdContext = React.createContext<string>('');
-export const LocalizationServiceContext = React.createContext<LocalizationService<ITaskGridLabels>>(null as any);
+RootElementIdContext.displayName = 'RootElementId';
+
+export const LocalizationServiceContext = React.createContext<LocalizationService<ITaskGridLabels> | null>(null);
+LocalizationServiceContext.displayName = 'LocalizationService';
+
 export const AgGridLicenseKeyContext = React.createContext<string | null>(null);
+AgGridLicenseKeyContext.displayName = 'AgGridLicenseKey';
+
+const useContextWithNullCheck = <T>(ctx: React.Context<T | null>): T => {
+    const value = React.useContext(ctx);
+    if (value == null) {
+        throw new Error(`Context "${ctx.displayName ?? 'unknown'}" is not provided.`);
+    }
+    return value;
+}
 
 export const useTaskGridDescriptor = () => {
-    return React.useContext(TaskGridDescriptorContext);
+    return useContextWithNullCheck(TaskGridDescriptorContext);
 }
 
 export const useLocalizationService = () => {
-    return React.useContext(LocalizationServiceContext);
+    return useContextWithNullCheck(LocalizationServiceContext);
 }
 
 export const useRootElementId = () => {
@@ -26,7 +49,7 @@ export const useRootElementId = () => {
 }
 
 export const useDatasetControl = () => {
-    return React.useContext(DatasetControlContext);
+    return useContextWithNullCheck(DatasetControlContext);
 }
 
 export const useTaskGridComponents = () => {
@@ -34,11 +57,11 @@ export const useTaskGridComponents = () => {
 }
 
 export const useTaskDataProvider = () => {
-    return React.useContext(TaskDataProviderContext);
+    return useContextWithNullCheck(TaskDataProviderContext);
 }
 
 export const usePcfContext = () => {
-    return React.useContext(PcfContext);
+    return useContextWithNullCheck(PcfContext);
 }
 
 export const useAgGridLicenseKey = () => {

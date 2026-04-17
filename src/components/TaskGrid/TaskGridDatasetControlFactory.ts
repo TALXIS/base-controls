@@ -23,9 +23,6 @@ export class TaskGridDatasetControlFactory {
     public static async createInstance(options: ITaskGridDatasetControlFactoryOptions): Promise<ITaskGridDatasetControl> {
         let taskDataProvider: ITaskDataProvider;
         await options.taskGridDescriptor.onLoadDependencies?.();
-        const taskTree = new RecordTree({
-            onGetTaskDataProvider: () => taskDataProvider,
-        });
 
         const customColumnsStrategy = options.taskGridDescriptor.onCreateCustomColumnsStrategy?.();
         let customColumnsDataProvider: CustomColumnsDataProvider | undefined;
@@ -43,14 +40,12 @@ export class TaskGridDatasetControlFactory {
         await savedQueryDataProvider.refresh();
 
         const taskStrategy = options.taskGridDescriptor.onCreateTaskStrategy({
-            taskTree: taskTree,
             customColumnsDataProvider: customColumnsDataProvider,
         })
 
         taskDataProvider = new TaskDataProvider({
             localizationService: options.localizationService,
             nativeColumns: options.taskGridDescriptor.onGetNativeColumns(),
-            taskTree: taskTree,
             strategy: taskStrategy,
             onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(options, savedQueryDataProvider)
         });
