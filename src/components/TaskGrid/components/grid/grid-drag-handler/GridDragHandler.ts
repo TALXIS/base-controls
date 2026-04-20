@@ -4,7 +4,7 @@ import { ITaskDataProvider } from "../../../data-providers/task-data-provider";
 import { ISourceDataProvider } from "../../../data-providers/source-data-provider";
 import { INativeColumns, ITaskGridDatasetControl } from "../../../interfaces";
 
-interface IGridDragHandlerOptions {
+interface IGridDragHandlerParameters {
     datasetControl: ITaskGridDatasetControl;
     gridApi: GridApi<IRecord>;
 }
@@ -16,7 +16,7 @@ export interface IDragOperation {
 }
 
 interface IGridDragHandlerEvents {
-    onGragEnd: (dragOperation: IDragOperation) => void;
+    onDragEnd: (dragOperation: IDragOperation) => void;
 }
 
 export class GridDragHandler extends EventEmitter<IGridDragHandlerEvents> {
@@ -26,12 +26,12 @@ export class GridDragHandler extends EventEmitter<IGridDragHandlerEvents> {
     private _nativeColumns: INativeColumns;
     private _datasetControl: ITaskGridDatasetControl;
     
-    constructor(options: IGridDragHandlerOptions) {
+    constructor(parameters: IGridDragHandlerParameters) {
         super();
-        this._gridApi = options.gridApi;
-        this._dataProvider = options.datasetControl.getDataProvider();
-        this._datasetControl = options.datasetControl;
-        this._nativeColumns = options.datasetControl.getNativeColumns();
+        this._gridApi = parameters.gridApi;
+        this._dataProvider = parameters.datasetControl.getDataProvider();
+        this._datasetControl = parameters.datasetControl;
+        this._nativeColumns = parameters.datasetControl.getNativeColumns();
         this._gridApi.setGridOption('rowDragEntireRow', true);
         this._gridApi.setGridOption('onRowDragMove', (e) => this._onRowDragMove(e));
         this._gridApi.setGridOption('onRowDragEnd', (e) => this._onRowDragEnd(e));
@@ -57,7 +57,7 @@ export class GridDragHandler extends EventEmitter<IGridDragHandlerEvents> {
     }
 
     private _onRowDragEnd(e: RowDragEvent<IRecord, any>) {
-        this.dispatchEvent('onGragEnd', this._dragOperation!);
+        this.dispatchEvent('onDragEnd', this._dragOperation!);
         this._dragOperation = null;
         this._refreshRowClasses(e.overNode);
     }

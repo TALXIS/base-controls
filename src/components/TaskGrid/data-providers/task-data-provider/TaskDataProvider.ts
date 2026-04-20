@@ -19,20 +19,27 @@ export type IEditTasksResult =
 
 export const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'path'];
 
-export interface ITaskDataProviderOptions {
+export interface ITaskDataProviderParameters {
     nativeColumns: INativeColumns;
     localizationService: ILocalizationService<ITaskGridLabels>;
     strategy: ITaskDataProviderStrategy;
     onIsFlatListEnabled: () => boolean;
 }
 
+/** Strategy interface that handles all data access and mutation operations for tasks. */
 export interface ITaskDataProviderStrategy {
-    //if empty => all records are fetch
+    /**
+     * Called once on first load. Must return the initial columns, raw task records, and provider metadata.
+     * An empty `ids` array instructs the strategy to fetch all records.
+     */
     onGetRawRecords: (ids: string[]) => Promise<IRawRecord[]>;
+    /** Called once on first load. Must return the initial columns, raw task records, and entity metadata. */
     onInitialize: (provider: ITaskDataProvider) => Promise<{ columns: IColumn[]; rawData: IRawRecord[]; metadata: any }>
-    //columns that can be used in the grid - both native and custom, if supported
+    /** Returns all columns available for display in the grid (both native and custom). */
     onGetAvailableColumns: (options?: IAvailableColumnOptions) => Promise<IColumn[]>;
+    /** Returns linked-entity columns that can be used for filtering and sorting. */
     onGetAvailableRelatedColumns: () => Promise<IAvailableRelatedColumn[]>;
+    /** Returns the attribute names that are searched when the user types in the quick-find input. */
     onGetQuickFindColumns: () => string[];
     /** @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onCreateTask(parentTaskId?: string): Promise<IRawRecord | null>;
@@ -52,13 +59,21 @@ export interface ITaskDataProviderStrategy {
      * Throws on unexpected failure.
      */
     onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
+    /** Moves a task to a new position relative to another task. Returns the updated raw records, or `null` on cancellation. */
     onMoveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null>;
+    /** Persists inline cell edits for the given record. */
     onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult>;
+    /** Returns whether the given task record is currently active (non-completed). */
     onIsRecordActive(recordId: string): boolean;
+    /** Opens the record detail view. Called when a user clicks a non-subject cell. */
     onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): void;
+    /** Return `false` to disable task creation (hide the *New* button). Defaults to `true`. */
     onIsTaskAddingEnabled?(): boolean;
+    /** Return `false` to disable inline cell editing. Defaults to `true`. */
     onIsTaskEditingEnabled?(): boolean;
+    /** Return `false` to disable task deletion (hide the *Delete* button). Defaults to `true`. */
     onIsTaskDeletingEnabled?(): boolean;
+    /** When provided, the task tree is scoped to the subtree of the returned task id. */
     onGetRootTaskId?: () => string | undefined
 }
 
@@ -78,13 +93,21 @@ export interface ITaskDataProviderEventListener {
     onError: (error: any, message: string) => void;
 }
 
+/** Extended data provider interface for task records. Adds task-specific operations on top of `IDataProvider`. */
 export interface ITaskDataProvider extends IDataProvider {
+    /** EventEmitter for task lifecycle events (create, delete, edit, move, template, error). */
     taskEvents: IEventEmitter<ITaskDataProviderEventListener>;
+    /** Returns the native column name mapping. */
     getNativeColumns(): INativeColumns;
+    /** Returns all records regardless of current tree filtering or paging. */
     getAllRecords(): IRecord[];
+    /** Returns the underlying strategy cast to the given type. */
     getStrategy<T extends ITaskDataProviderStrategy>(): T;
+    /** Fetches raw task records by id via the strategy. Pass an empty array to fetch all. */
     fetchRawRecords(ids: string[]): Promise<IRawRecord[]>;
+    /** Returns the current hierarchical record tree built from loaded task data. */
     getRecordTree(): IRecordTree;
+    /** Applies updated raw record data in-place and rebuilds the tree if hierarchy changed. */
     updateTaskData(newData: IRawRecord[]): void;
     /**
      * @returns Result indicating which tasks were updated and which failed, or `null` if the operation was cancelled by the user.
@@ -104,11 +127,17 @@ export interface ITaskDataProvider extends IDataProvider {
     createTemplateFromTask(taskId: string): Promise<IRawRecord | null>;
     /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRawRecord[] | null>;
+    /** Returns `true` when the grid is displaying a flat list instead of a tree hierarchy. */
     isFlatListEnabled(): boolean;
+    /** Returns `true` when task creation is allowed (from `ITaskDataProviderStrategy.onIsTaskAddingEnabled`). */
     isTaskAddingEnabled(): boolean;
+    /** Returns `true` when inline cell editing is allowed (from `ITaskDataProviderStrategy.onIsTaskEditingEnabled`). */
     isTaskEditingEnabled(): boolean;
+    /** Returns `true` when task deletion is allowed (from `ITaskDataProviderStrategy.onIsTaskDeletingEnabled`). */
     isTaskDeletingEnabled(): boolean;
+    /** Returns the root task id when the tree is scoped to a subtree, or `null` for a full tree. */
     getRootTaskId: () => string | null;
+    /** Moves a task to a position relative to another task. Returns the updated raw records, or `null` on cancellation. */
     moveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null>;
 }
 
@@ -121,18 +150,18 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _onFlatListEnabled: () => boolean;
     public readonly taskEvents: EventEmitter<ITaskDataProviderEventListener> = new EventEmitter<ITaskDataProviderEventListener>();
 
-    constructor(options: ITaskDataProviderOptions) {
+    constructor(parameters: ITaskDataProviderParameters) {
         super({
             dataSource: [],
             metadata: { PrimaryIdAttribute: 'id' }
         })
-        this._nativeColumns = options.nativeColumns;
+        this._nativeColumns = parameters.nativeColumns;
         this._taskTree = new RecordTree({
             taskDataProvider: this
         })
-        this._localizationService = options.localizationService;
-        this._strategy = options.strategy;
-        this._onFlatListEnabled = options.onIsFlatListEnabled;
+        this._localizationService = parameters.localizationService;
+        this._strategy = parameters.strategy;
+        this._onFlatListEnabled = parameters.onIsFlatListEnabled;
     }
 
     public getStrategy<T extends ITaskDataProviderStrategy>(): T {
@@ -392,7 +421,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             onIsFlatListEnabled: () => this._onFlatListEnabled(),
         });
     }
-
     public async refresh(): Promise<IRecord[]> {
         if (!this._hasDataBeenLoaded) {
             await this._loadDataFromStrategy();

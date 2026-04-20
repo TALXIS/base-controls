@@ -45,36 +45,53 @@ export interface ISavedQueryMetadata {
 
 const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'path', 'stateCode'];
 
+/** Strategy interface for loading and persisting system and user-defined saved views (queries). */
 export interface ISavedQueryStrategy {
+    /** Returns the built-in (non-deletable) views. At least one system query must be returned. */
     onGetSystemQueries: () => Promise<ISavedQuery[]>;
+    /** Returns views saved by the current user. */
     onGetUserQueries: () => Promise<ISavedQuery[]>;
+    /** Deletes the specified user views. Returns a per-query success/failure result. */
     onDeleteUserQueries: (queryIds: string[]) => Promise<IDeletedUserQueriesResult>;
     /** @returns The updated query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onUpdateUserQuery: (currentQuery: ISavedQuery) => Promise<string | null>;
     /** @returns The created query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onCreateUserQuery: (newQuery: { name: string; description?: string }, currentQuery: ISavedQuery) => Promise<string | null>;
+    /** Return `false` to completely disable personal views for this instance. Defaults to `true`. */
     onEnableUserQueries?: () => boolean;
 }
 
+/** Manages system and user-defined saved views and exposes view lifecycle operations. */
 export interface ISavedQueryDataProvider {
+    /** EventEmitter for saved-query lifecycle events (create, update, delete, errors). */
     queryEvents: IEventEmitter<ISavedQueryDataProviderEvents>;
+    /** Returns the full list of non-deletable system views. */
     getSystemQueries: () => ISavedQuery[];
+    /** Returns the full list of user-created views. */
     getUserQueries: () => ISavedQuery[];
+    /** Returns the currently active saved query. Throws if `refresh` has not been called yet. */
     getCurrentQuery: () => ISavedQuery;
+    /** Looks up a query by id across system and user queries. Throws if not found. */
     getSavedQuery(id: string): ISavedQuery;
     /** @returns The created query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     createUserQuery: (params: ICreateUserQueryParams) => Promise<string | null>;
+    /** Returns `true` when the given query id belongs to a user view (as opposed to a system view). */
     isUserQuery: (queryId: string) => boolean;
     /** @returns The updated query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     updateUserQuery: (provider: ITaskDataProvider) => Promise<string | null>;
+    /** Deletes the specified user views. Returns a per-query success/failure result. */
     deleteUserQueries: (queryIds: string[]) => Promise<IDeletedUserQueriesResult>;
+    /** Fetches system and user queries from the strategy and sets the initial active query. */
     refresh: () => Promise<void>;
+    /** Returns `true` when personal views are enabled (from `ISavedQueryStrategy.onEnableUserQueries`). */
     areUserQueriesEnabled: () => boolean;
+    /** Ensures all required native columns (subject, parentId, stackRank, path, stateCode) are present in the provided columns array. */
     includeRequiredColumns: (columns: IColumn[]) => void;
+    /** Enforces column constraints: subject is never hidden; path column is always read-only. */
     harmonizeColumns: (columns: IColumn[]) => void;
 }
 
-interface IDeps {
+interface ISavedQueryDataProviderParameters {
     nativeColumns: INativeColumns;
     customColumnsDataProvider?: ICustomColumnsDataProvider;
     preferredQuery?: Partial<ISavedQuery> & { id: string };
@@ -90,11 +107,11 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _preferredQuery?: Partial<ISavedQuery> & { id: string };
     public queryEvents = new EventEmitter<ISavedQueryDataProviderEvents>();
 
-    constructor(strategy: ISavedQueryStrategy, deps: IDeps) {
+    constructor(strategy: ISavedQueryStrategy, parameters: ISavedQueryDataProviderParameters) {
         this._strategy = strategy;
-        this._preferredQuery = deps.preferredQuery;
-        this._nativeColumns = deps.nativeColumns;
-        this._customColumnsDataProvider = deps.customColumnsDataProvider;
+        this._preferredQuery = parameters.preferredQuery;
+        this._nativeColumns = parameters.nativeColumns;
+        this._customColumnsDataProvider = parameters.customColumnsDataProvider;
     }
 
     public getSystemQueries(): ISavedQuery[] {

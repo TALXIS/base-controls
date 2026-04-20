@@ -29,7 +29,7 @@ const _getFetchXml = (recordId?: string, ownerId?: string) => {
     return fetch.toXml();
 }
 
-interface ITalxisSavedQueryParams {
+interface ITalxisSavedQueryStrategyParameters {
     onGetSystemQueries: () => Promise<ISavedQuery[]>;
     recordId?: string;
     ownerId?: string;
@@ -39,11 +39,11 @@ export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements IS
     private _recordId?: string;
     private _onGetSystemQueries: () => Promise<ISavedQuery[]>;
 
-    constructor(params: ITalxisSavedQueryParams) {
-        const fetchXml = _getFetchXml(params.recordId, params.ownerId);
+    constructor(parameters: ITalxisSavedQueryStrategyParameters) {
+        const fetchXml = _getFetchXml(parameters.recordId, parameters.ownerId);
         super({ fetchXml });
-        this._recordId = params.recordId;
-        this._onGetSystemQueries = params.onGetSystemQueries;
+        this._recordId = parameters.recordId;
+        this._onGetSystemQueries = parameters.onGetSystemQueries;
     }
 
     public async onGetUserQueries(): Promise<ISavedQuery[]> {

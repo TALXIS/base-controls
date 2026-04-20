@@ -8,7 +8,7 @@ import { ISavedQueryDataProvider } from "./data-providers/saved-query-data-provi
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ICustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
-import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, IDatasetControlOptions } from "./interfaces";
+import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
 import { ErrorHelper } from "../../utils/error-handling";
 
 export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> implements ITaskGridDatasetControl {
@@ -26,20 +26,20 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     private _getPcfContext: () => ComponentFramework.Context<any, any>;
     private _changeToQueryId!: string;
 
-    constructor(options: IDatasetControlOptions) {
+    constructor(parameters: ITaskGridDatasetControlParameters) {
         super();
-        this._dataset = options.dataset;
+        this._dataset = parameters.dataset;
         this._dataProvider = this._dataset.getDataProvider() as ITaskDataProvider;
-        this._descriptor = options.taskGridDescriptor;
+        this._descriptor = parameters.taskGridDescriptor;
         this._controlId = this._descriptor.onGetControlId?.() ?? `task-grid-dataset-control-${crypto.randomUUID()}`;
-        this._localizationService = options.localizationService;
-        this._savedQueryDataProvider = options.savedQueryDataProvider;
-        this._customColumnsDataProvider = options.customColumnsDataProvider;
-        this._templateDataProvider = options.templateDataProvider;
-        this._state = options.state;
+        this._localizationService = parameters.localizationService;
+        this._savedQueryDataProvider = parameters.savedQueryDataProvider;
+        this._customColumnsDataProvider = parameters.customColumnsDataProvider;
+        this._templateDataProvider = parameters.templateDataProvider;
+        this._state = parameters.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
-        this._getPcfContext = options.onGetPcfContext;
-        this._loadState(options.state);
+        this._getPcfContext = parameters.onGetPcfContext;
+        this._loadState(parameters.state);
         this.loadCommands([]);
         this._registerEventListeners();
     }

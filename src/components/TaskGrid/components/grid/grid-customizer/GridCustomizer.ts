@@ -12,23 +12,38 @@ import { INativeColumns, ITaskGridDatasetControl } from "../../../interfaces";
 export const ADD_TASK_COLUMN_NAME = 'addTask';
 
 
+/** Strategy interface for deep customization of the AG Grid instance inside TaskGrid. */
 export interface IGridCustomizerStrategy {
+    /** Called once after the grid is ready. Use to call `customizer.registerExpressionDecorator` or perform other one-time setup. */
     onInitialize: (customizer: IGridCustomizer) => void;
+    /** Receives the computed column definitions and may return a modified array. */
     onGetColumnDefinitions?: (columnDefs: ColDef<IRecord>[]) => ColDef<IRecord>[];
+    /** Receives the default row class rules map and may return an extended or overridden version. */
     onGetRowClassRules?: (rules: RowClassRules<IRecord>) => RowClassRules<IRecord>;
+    /** Return a custom cell renderer component for the given column definition, or `undefined` to use the default. */
     onGetCellRenderer?: (colDef: ColDef<IRecord>) => any;
+    /** Return a custom cell editor component for the given column definition, or `undefined` to use the default. */
     onGetCellEditor?: (colDef: ColDef<IRecord>) => any;
+    /** Receives the raw AG Grid `GridApi` instance, useful if the strategy needs to retain a reference. */
     onRetrieveGridApi?: (gridApi: GridApi<IRecord>) => void;
 }
 
+/** Provides access to the AG Grid instance and the TaskGrid control to code running inside `IGridCustomizerStrategy`. */
 export interface IGridCustomizer {
+    /** Returns the underlying AG Grid `GridApi`. */
     getGridApi(): GridApi<IRecord>;
+    /** Returns the `ITaskDataProvider` that backs the grid data layer. */
     getTaskDataProvider(): ITaskDataProvider;
+    /** Returns the `ITaskGridDatasetControl` runtime control interface. */
     getDatasetControl(): ITaskGridDatasetControl;
+    /**
+     * Registers a column-expression decorator only when the given column exists in the current columns map.
+     * Prevents errors when registering decorators for columns that may not be present in all views.
+     */
     registerExpressionDecorator(columnName: string, registrator: () => void): void;
 }
 
-export interface IGridCustomizerParams {
+export interface IGridCustomizerParameters {
     gridApi: GridApi<IRecord>;
     datasetControl: ITaskGridDatasetControl;
     strategy?: IGridCustomizerStrategy;
@@ -44,13 +59,13 @@ export class GridCustomizer implements IGridCustomizer {
     private _datasetControl: ITaskGridDatasetControl;
     private _strategy?: IGridCustomizerStrategy;
 
-    constructor(options: IGridCustomizerParams) {
-        this._datasetControl = options.datasetControl;
+    constructor(parameters: IGridCustomizerParameters) {
+        this._datasetControl = parameters.datasetControl;
         this._taskDataProvider = this._datasetControl.getDataProvider();
-        this._gridApi = options.gridApi;
+        this._gridApi = parameters.gridApi;
         this._localizationService = this._datasetControl.getLocalizationService();
         this._nativeColumns = this._datasetControl.getNativeColumns();
-        this._strategy = options.strategy;
+        this._strategy = parameters.strategy;
         this._pcfContext = this._datasetControl.getPcfContext();
 
         this._gridDragHandler = new GridDragHandler({
@@ -364,6 +379,6 @@ export class GridCustomizer implements IGridCustomizer {
         this._taskDataProvider.taskEvents.addEventListener('onAfterTasksCreated', (records, parentId) => this._onAfterTasksCreated(records, parentId));
         this._taskDataProvider.taskEvents.addEventListener('onRecordTreeUpdated', (updatedParentIds) => this._onRecordTreeUpdated(updatedParentIds));
         this._taskDataProvider.taskEvents.addEventListener('onTaskDataUpdated', (newData) => this._onAfterTaskDataUpdated(newData));
-        this._gridDragHandler.addEventListener('onGragEnd', (dragOperation) => this._onDragEnd(dragOperation));
+        this._gridDragHandler.addEventListener('onDragEnd', (dragOperation) => this._onDragEnd(dragOperation));
     }
 }

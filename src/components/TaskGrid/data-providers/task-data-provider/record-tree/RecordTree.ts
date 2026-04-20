@@ -11,7 +11,7 @@ interface ITreeNode {
     parent?: IRecord;
 }
 
-interface IRecordTreeParams {
+interface IRecordTreeParameters {
     taskDataProvider: ITaskDataProvider;
 }
 
@@ -37,8 +37,8 @@ export class RecordTree implements IRecordTree {
     private _recordsMap: { [recordId: string]: IRecord } = {};
     private _taskDataProvider: ITaskDataProvider;
 
-    constructor(options: IRecordTreeParams) {
-        this._taskDataProvider = options.taskDataProvider;
+    constructor(parameters: IRecordTreeParameters) {
+        this._taskDataProvider = parameters.taskDataProvider;
     }
 
     public getNodeMap(): Map<string, ITreeNode> {
@@ -189,7 +189,7 @@ export class RecordTree implements IRecordTree {
         }
 
         allRecordsWithMatching.sort(sortByIndex);
-
+        
         for (const record of records) {
             const recordId = record.getRecordId();
             const isTopLevel = !record.getValue(this._getNativeColumns().parentId);

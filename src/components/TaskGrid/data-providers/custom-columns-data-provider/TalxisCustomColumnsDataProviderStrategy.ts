@@ -7,7 +7,7 @@ export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 export const CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME = 'talxis_task_talxis_attributevalue_regardingobjectid';
 
-interface ITalxisCustomColumnsStrategyParams {
+interface ITalxisCustomColumnsStrategyParameters {
     //entity name to fetch attributes for
     entityName: string;
     //record id to fetch attributes for
@@ -25,9 +25,9 @@ export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy
     private _attributes: IAttribute[] = [];
     private _attributeIdsMap: Map<string, string> = new Map();
 
-    constructor(options: ITalxisCustomColumnsStrategyParams) {
-        this._entityName = options.entityName;
-        this._recordId = options.recordId;
+    constructor(parameters: ITalxisCustomColumnsStrategyParameters) {
+        this._entityName = parameters.entityName;
+        this._recordId = parameters.recordId;
     }
 
     public async onRefresh(): Promise<IColumn[]> {
@@ -217,7 +217,6 @@ export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy
             }
             case 'DateAndTime.DateAndTime':
             case 'DateAndTime.DateOnly': {
-                console.log(value);
                 return value;
             }
             default: {

@@ -2,23 +2,7 @@ import { DatasetConstants, IColumn, IEventEmitter, EventEmitter } from "@talxis/
 import { ErrorHelper } from "../../../../utils";
 
 
-export interface ICustomColumnsDataProvider {
-    events: IEventEmitter<ICustomColumnsDataProviderEvents>;
-    /** @returns The created column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    createColumn: () => Promise<string | null>;
-    /** @returns The deleted column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    deleteColumn: (columnName: string) => Promise<string | null>;
-    /** @returns The updated column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    updateColumn: (columnName: string) => Promise<string | null>;
-    refresh: () => Promise<IColumn[]>;
-    getColumns: () => IColumn[];
-    getStrategy<T extends ICustomColumnsStrategy>(): T;
-    isCreateEnabled: () => boolean;
-    isDeleteEnabled: () => boolean;
-    isEditEnabled: () => boolean;
-    isCustomColumn: (columnName: string) => boolean;
-}
-
+/** Strategy interface for managing user-defined (dynamic) column definitions. */
 export interface ICustomColumnsStrategy {
     /** @returns The created column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onCreateColumn: () => Promise<string | null>;
@@ -26,8 +10,36 @@ export interface ICustomColumnsStrategy {
     onDeleteColumn: (columnName: string) => Promise<string | null>;
     /** @returns The updated column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onUpdateColumn: (columnName: string) => Promise<string | null>;
+    /** Fetches/reloads all custom column definitions and returns the resolved `IColumn[]`. */
     onRefresh: () => Promise<IColumn[]>;
+    /** Returns the currently loaded custom columns synchronously without a network fetch. */
     onGetColumns: () => IColumn[];
+}
+
+/** Manages the lifecycle of dynamic (user-defined) columns and wraps the strategy with error handling. */
+export interface ICustomColumnsDataProvider {
+    /** EventEmitter for error events raised by column operations. */
+    events: IEventEmitter<ICustomColumnsDataProviderEvents>;
+    /** @returns The created column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    createColumn: () => Promise<string | null>;
+    /** @returns The deleted column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    deleteColumn: (columnName: string) => Promise<string | null>;
+    /** @returns The updated column name, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
+    updateColumn: (columnName: string) => Promise<string | null>;
+    /** Refreshes the list of custom columns from the underlying strategy. */
+    refresh: () => Promise<IColumn[]>;
+    /** Returns the currently cached list of custom columns. */
+    getColumns: () => IColumn[];
+    /** Returns the underlying strategy cast to the given type for strategy-specific operations. */
+    getStrategy<T extends ICustomColumnsStrategy>(): T;
+    /** Returns `true` when creating new columns is allowed. */
+    isCreateEnabled: () => boolean;
+    /** Returns `true` when deleting columns is allowed. */
+    isDeleteEnabled: () => boolean;
+    /** Returns `true` when editing columns is allowed. */
+    isEditEnabled: () => boolean;
+    /** Returns `true` when the given column name is a custom (dynamic) column. */
+    isCustomColumn: (columnName: string) => boolean;
 }
 
 export interface ICustomColumnsDataProviderEvents {
