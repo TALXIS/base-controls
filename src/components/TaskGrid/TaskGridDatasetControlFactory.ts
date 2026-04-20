@@ -37,9 +37,11 @@ export class TaskGridDatasetControlFactory {
             customColumnsDataProvider: customColumnsDataProvider,
             preferredQuery: options.state.savedQuery,
         })
+        const templateDataProvider = options.taskGridDescriptor.onCreateTemplateDataProvider?.();
         await savedQueryDataProvider.refresh();
 
         const taskStrategy = options.taskGridDescriptor.onCreateTaskStrategy({
+            templateDataProvider: templateDataProvider,
             customColumnsDataProvider: customColumnsDataProvider,
         })
 
@@ -56,6 +58,7 @@ export class TaskGridDatasetControlFactory {
             dataset,
             state: options.state,
             taskGridDescriptor: options.taskGridDescriptor,
+            templateDataProvider: templateDataProvider,
             localizationService: options.localizationService,
             savedQueryDataProvider: savedQueryDataProvider,
             customColumnsDataProvider: customColumnsDataProvider,

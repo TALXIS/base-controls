@@ -1,10 +1,13 @@
-import { CommandBarButton, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react"
+import { CommandBarButton as CommandBarButtonBase, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react"
 import * as React from "react"
 import { getViewSwitcherStyles } from "./styles";
 import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider } from "../../../context";
 import { CreateViewDialog } from "./create-view-dialog";
 import { ViewManagerDialog } from "./view-manager";
 import { useEventEmitter } from "../../../../../hooks";
+import { withButtonLoading } from "@talxis/react-components";
+
+const CommandBarButton = withButtonLoading(CommandBarButtonBase);
 
 export const ViewSwitcher = () => {
     const localizationService = useLocalizationService();
@@ -19,7 +22,7 @@ export const ViewSwitcher = () => {
     const [showViewManagerDialog, setShowViewManagerDialog] = React.useState(false);
     const [showCreateViewDialog, setShowCreateViewDialog] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
-    
+
     useEventEmitter(savedQueryDataProvider.queryEvents, 'onBeforeUserQueryUpdated', () => {
         setIsLoading(true);
     });
@@ -85,6 +88,7 @@ export const ViewSwitcher = () => {
     }
     return <>
         <CommandBarButton
+            isLoading={isLoading}
             disabled={taskDataProvider.isLoading()}
             styles={{
                 label: styles.commandBarButtonLabel,

@@ -7,6 +7,7 @@ import { useDatasetControl, useLocalizationService, usePcfContext, useRootElemen
 import { OptionCommandBar } from './OptionCommandBar/OptionCommandBar';
 import { SortableItemCommandBar } from './SortableItemCommandBar/SortableItemCommandBar';
 import { CommandBar } from './CommandBar/CommandBar';
+import { ICustomColumnsDataProvider } from '../../../data-providers';
 
 
 interface IEditColumnsProps {
@@ -17,20 +18,19 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const localizationService = useLocalizationService();
     const saveOnDismiss = React.useRef(false);
     const datasetControl = useDatasetControl();
-    const customColumnsDataProvider = datasetControl.getCustomColumnsDataProvider();
+    const customColumnsDataProvider: ICustomColumnsDataProvider | undefined = datasetControl.isCustomColumnsEnabled() ? datasetControl.getCustomColumnsDataProvider() : undefined;
     const editColumnsRef = React.useRef<IEditColumnsRef>();
     const pcfContext = usePcfContext();
     const rootElementId = useRootElementId();
     const styles = React.useMemo(() => getEditColumnsStyles(), []);
-
-
+    
     const _onDeleteColumn = async (columnName: string) => {
         editColumnsRef.current?.remountColumnSelector();
         const response = await pcfContext.navigation.openConfirmDialog({
             text: localizationService.getLocalizedString('confirmColumnDelete'),
         })
         if (response.confirmed) {
-            const result = await customColumnsDataProvider.deleteColumn(columnName);
+            const result = await customColumnsDataProvider?.deleteColumn(columnName);
             if (result) {
                 saveOnDismiss.current = true;
                 editColumnsRef.current?.remountColumnSelector();
@@ -40,10 +40,10 @@ export const EditColumns = (props: IEditColumnsProps) => {
 
     const _onCreateColumn = async () => {
         editColumnsRef.current?.remountColumnSelector();
-        const result = await customColumnsDataProvider.createColumn();
+        const result = await customColumnsDataProvider?.createColumn();
         if (result) {
             editColumnsRef.current?.remountColumnSelector();
-            const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === result)!
+            const column = customColumnsDataProvider?.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === result)!
             editColumnsRef.current?.editColumnsModel.addColumn(column);
         }
     }
@@ -51,7 +51,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const _onEditColumn = async (columnName: string, requireRemount?: boolean) => {
         if (!requireRemount) {
             editColumnsRef.current?.remountColumnSelector();
-            const result = await customColumnsDataProvider.updateColumn(columnName);
+            const result = await customColumnsDataProvider?.updateColumn(columnName);
             if (result) {
                 editColumnsRef.current?.remountColumnSelector();
             }
@@ -61,9 +61,9 @@ export const EditColumns = (props: IEditColumnsProps) => {
                 text: localizationService.getLocalizedString('confirmColumnEdit'),
             });
             if (response.confirmed) {
-                const result = await customColumnsDataProvider.updateColumn(columnName);
+                const result = await customColumnsDataProvider?.updateColumn(columnName);
                 if (result) {
-                    const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === columnName)!;
+                    const column = customColumnsDataProvider?.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === columnName)!;
                     //re-add the column to make sure the metadata are updated
                     editColumnsRef.current?.editColumnsModel.deleteColumn(columnName);
                     editColumnsRef.current?.editColumnsModel.addColumn(column);
@@ -106,11 +106,11 @@ export const EditColumns = (props: IEditColumnsProps) => {
                 }
             }}
             onGetRef={(ref) => editColumnsRef.current = ref}
-            components={{
+            components={datasetControl.isCustomColumnsEnabled() ? {
                 CommandBar: CommandBar as () => JSX.Element,
                 SortableItemCommandBar: SortableItemCommandBar,
                 OptionCommandBar: OptionCommandBar
-            }}
+            } : undefined}
             onDismiss={onDismiss} />
     </TaskGridEditColumnsContext.Provider>
 }

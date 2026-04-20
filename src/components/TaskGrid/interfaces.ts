@@ -13,6 +13,7 @@ export interface IDatasetControlOptions {
     savedQueryDataProvider: ISavedQueryDataProvider;
     taskGridDescriptor: ITaskGridDescriptor;
     localizationService: ILocalizationService<ITaskGridLabels>;
+    templateDataProvider?: IDataProvider;
     customColumnsDataProvider?: ICustomColumnsDataProvider;
     onGetPcfContext: () => ComponentFramework.Context<any>;
 }
@@ -40,6 +41,7 @@ export interface ITaskGridParameters {
 
 export interface ITaskStrategyDeps {
     customColumnsDataProvider?: ICustomColumnsDataProvider;
+    templateDataProvider?: IDataProvider;
 }
 
 export interface ITaskGridDescriptor {
@@ -47,9 +49,9 @@ export interface ITaskGridDescriptor {
     onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
     onCreateTaskStrategy: (deps: ITaskStrategyDeps) => ITaskDataProviderStrategy;
     onCreateUserQueryDataProvider: () => IDataProvider;
-    onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy;
+    onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy | undefined;
     onCreateTemplateDataProvider?: () => IDataProvider | undefined;
-    onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy;
+    onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
     onGetAgGridLicenseKey?: () => string;
     onGetControlId?: () => string;
     onLoadDependencies?: () => Promise<void>;
@@ -74,4 +76,5 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isHideInactiveTasksToggleVisible: () => boolean;
     isEditColumnsScopeSelectorEnabled: () => boolean;
     isTemplatingEnabled: () => boolean;
+    isCustomColumnsEnabled: () => boolean;
 }

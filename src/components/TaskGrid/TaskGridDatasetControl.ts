@@ -1,15 +1,15 @@
 import { IDatasetControlParameters } from "../DatasetControl";
 import { IDatasetControlEvents } from "../../utils/dataset-control";
 import { EditColumns, IEditColumns } from "../../utils/dataset-control/EditColumns";
-import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering, IColumn } from "@talxis/client-libraries";
-import { IDeleteTasksResult, ITaskDataProvider, REQUIRED_COLUMNS } from "./data-providers/task-data-provider";
+import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering } from "@talxis/client-libraries";
+import { IDeleteTasksResult, ITaskDataProvider } from "./data-providers/task-data-provider";
 import { ILocalizationService, ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ICustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
 import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, IDatasetControlOptions } from "./interfaces";
-import { ErrorHelper } from "../..";
+import { ErrorHelper } from "../../utils/error-handling";
 
 export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> implements ITaskGridDatasetControl {
     private _dataset: IDataset;
@@ -35,9 +35,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._localizationService = options.localizationService;
         this._savedQueryDataProvider = options.savedQueryDataProvider;
         this._customColumnsDataProvider = options.customColumnsDataProvider;
+        this._templateDataProvider = options.templateDataProvider;
         this._state = options.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
-        this._templateDataProvider = this._createTemplateDataProvider();
         this._getPcfContext = options.onGetPcfContext;
         this._loadState(options.state);
         this.loadCommands([]);
@@ -70,6 +70,10 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     public isTemplatingEnabled(): boolean {
         return !!this._templateDataProvider;
+    }
+
+    public isCustomColumnsEnabled(): boolean {
+        return !!this._customColumnsDataProvider;
     }
 
     public isHideInactiveTasksToggleVisible(): boolean {
@@ -111,7 +115,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     public getCustomColumnsDataProvider() {
         if (!this._customColumnsDataProvider) {
-            throw new Error('This TaskGridDatasetControl does not have a custom columns data provider');
+            throw new Error('This TaskGridDatasetControl does not have a custom columns data provider!');
         }
         return this._customColumnsDataProvider;
     }
@@ -296,12 +300,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         }
         if (searchQuery) {
             this._dataProvider.setSearchQuery(searchQuery);
-        }
-    }
-
-    private _createTemplateDataProvider() {
-        if (this._descriptor.onCreateTemplateDataProvider) {
-            return this._descriptor.onCreateTemplateDataProvider();
         }
     }
 

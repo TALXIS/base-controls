@@ -52,7 +52,7 @@ export interface ITaskDataProviderStrategy {
      * Throws on unexpected failure.
      */
     onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
-    onMoveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<void>;
+    onMoveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null>;
     onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult>;
     onIsRecordActive(recordId: string): boolean;
     onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): void;
@@ -109,7 +109,7 @@ export interface ITaskDataProvider extends IDataProvider {
     isTaskEditingEnabled(): boolean;
     isTaskDeletingEnabled(): boolean;
     getRootTaskId: () => string | null;
-    moveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<void>;
+    moveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null>;
 }
 
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
@@ -198,11 +198,15 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             }
             const record = this.getRecordsMap()[recordId];
             const originalParentId = record.getValue(this.getNativeColumns().parentId)?.[0]?.id?.guid;
+            const originalStackRank = record.getValue(this.getNativeColumns().stackRank);
             record.setRawData(updatedData);
             const newParentId = record.getValue(this.getNativeColumns().parentId)?.[0]?.id?.guid;
+            const newStackRank = record.getValue(this.getNativeColumns().stackRank);
             if (originalParentId !== newParentId) {
                 recordTreeChanged = true;
                 affectedParentIds.push(recordId, originalParentId, newParentId);
+            } else if (originalStackRank !== newStackRank) {
+                recordTreeChanged = true;
             }
         }
         if (recordTreeChanged) {
@@ -222,13 +226,14 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return provider;
     }
 
-    public async moveTask(movingFromTaskId: string, movingToTaskId: string, position: "above" | "below" | "child") {
+    public async moveTask(movingFromTaskId: string, movingToTaskId: string, position: "above" | "below" | "child"): Promise<IRawRecord[] | null> {
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 this.taskEvents.dispatchEvent('onBeforeTaskMoved');
-                await this._strategy.onMoveTask(movingFromTaskId, movingToTaskId, position);
-                this._taskTree.build();
+                const result = await this._strategy.onMoveTask(movingFromTaskId, movingToTaskId, position);
+                if (result !== null) this.updateTaskData(result);
                 this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position);
+                return result;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })
@@ -432,7 +437,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             const record = this.newRecord({
                 rawData: rawRecord,
                 recordId: rawRecord[this.getMetadata().PrimaryIdAttribute],
-                position: 'start'
+                position: 'start',
             },);
             const stackRankAttributeName = this.getNativeColumns().stackRank;
             if (record.getValue(stackRankAttributeName) == null) {
@@ -441,8 +446,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 const newRawData = record.toRawData()
                 record.setRawData(newRawData);
             }
-            //@ts-ignore - we need to set task data provider as record provider
-            record._dataProvider = this;
             records.push(record);
         }
         if (records.length > 0) {

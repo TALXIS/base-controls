@@ -246,52 +246,9 @@ export class GridCustomizer implements IGridCustomizer {
 
     private async _onDragEnd(dragOperation: IDragOperation) {
         if (this._isDragOperationAllowed(dragOperation)) {
-            const result = await this._pcfContext.navigation.openConfirmDialog({
-                title: this._localizationService.getLocalizedString('confirmation'),
-                text: this._getDragConfirmationMessage(dragOperation)
-            });
-            if (result.confirmed) {
-                const draggedRecord = dragOperation.draggedNode.data!;
-                const node = this._taskDataProvider.getRecordTree().getNode(draggedRecord.getRecordId());
-                //TODO: figure out where this info will be kept
-                const maxNumberOfChildren = 10;
-                if (node.allChildren.length > maxNumberOfChildren) {
-                    const result = await this._pcfContext.navigation.openConfirmDialog({
-                        title: this._localizationService.getLocalizedString('confirmation'),
-                        text: this._localizationService.getLocalizedString('reorderingTaskDialog.manyChildrenWarning', { numberOfRecords: (node.allChildren.length + 1).toString() })
-                    });
-                    if (result.confirmed) {
-                        this._moveTask(dragOperation);
-                    }
-                }
-                else {
-                    this._moveTask(dragOperation);
-                }
-            }
+            this._moveTask(dragOperation);
         }
     }
-
-    private _getDragConfirmationMessage(dragOperation: IDragOperation): string {
-        const { draggedNode, overNode } = dragOperation;
-        const movingToRecord = overNode.data!;
-        const movingRecord = draggedNode.data!;
-        let stringName: keyof ITaskGridLabels = 'reorderingTaskDialog.text.children';
-        switch (dragOperation.dragOverSection) {
-            case 'top': {
-                stringName = 'reorderingTaskDialog.text.above';
-                break;
-            }
-            case 'bottom': {
-                stringName = 'reorderingTaskDialog.text.below';
-                break;
-            }
-        }
-        return this._localizationService.getLocalizedString(stringName, {
-            baseRecord: movingRecord.getNamedReference().name,
-            overBaseRecord: movingToRecord.getNamedReference().name
-        });
-    }
-
 
     private _isDragOperationAllowed(dragOperation: IDragOperation): boolean {
         const { draggedNode, overNode } = dragOperation;

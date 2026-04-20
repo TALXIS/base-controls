@@ -63,11 +63,6 @@ export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements IS
     }
 
     public async onDeleteUserQueries(queryIds: string[]): Promise<IDeletedUserQueriesResult> {
-        return {
-            success: false,
-            deletedQueryIds: [],
-            errors: queryIds.map(id => ({ queryId: id, error: new Error('Delete not implemented') }))
-        }
         const result = await this.deleteRecords(queryIds);
         if(result.success) {
             return {
