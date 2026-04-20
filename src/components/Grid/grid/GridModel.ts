@@ -90,7 +90,7 @@ export class GridModel {
         return this.getParameters().EnableNavigation?.raw !== false;
     }
     public isAutoSaveEnabled(): boolean {
-        return this._dataset.getDataProvider().getProperty('autoSave') === true
+        return this.getParameters().EnableAutoSave?.raw === true;
     }
     public isGroupedColumnsPinnedEnabled(): boolean {
         return this.getParameters().EnableGroupedColumnsPinning?.raw !== false;

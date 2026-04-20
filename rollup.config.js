@@ -51,6 +51,7 @@ const externalDeps = [
     'react-select',
     'react-select/async',
     'hotkeys-js',
+    'react-window'
 ]
 
 export default [
