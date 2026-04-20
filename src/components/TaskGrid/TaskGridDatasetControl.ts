@@ -11,6 +11,8 @@ import { ICustomColumnsDataProvider } from "./data-providers/custom-columns-data
 import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
 import { ErrorHelper } from "../../utils/error-handling";
 
+const STATE_CODE_ACTIVE = 0;
+
 export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> implements ITaskGridDatasetControl {
     private _dataset: IDataset;
     private _descriptor: ITaskGridDescriptor;
@@ -141,7 +143,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         if (hide) {
             const condition = stateCodeFilter.addCondition();
             condition.setOperator(Operators.Equal.Value);
-            condition.setValue([0]);
+            condition.setValue([STATE_CODE_ACTIVE]);
         }
         const filterExpression = filtering.getFilterExpression(Type.And.Value);
         if (filterExpression) {
@@ -241,6 +243,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public destroy(): void {
         this.saveState();
         this._dataProvider.destroy();
+        this._savedQueryDataProvider.destroy();
+        this._customColumnsDataProvider?.destroy();
+        this._templateDataProvider?.destroy();
     }
     public requestRemount(): void {
         this.dispatchEvent('onRemountRequested');

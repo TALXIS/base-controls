@@ -89,6 +89,7 @@ export interface ISavedQueryDataProvider {
     includeRequiredColumns: (columns: IColumn[]) => void;
     /** Enforces column constraints: subject is never hidden; path column is always read-only. */
     harmonizeColumns: (columns: IColumn[]) => void;
+    destroy: () => void;
 }
 
 interface ISavedQueryDataProviderParameters {
@@ -124,7 +125,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
 
     public getCurrentQuery(): ISavedQuery {
         if (!this._currentQuery) {
-            throw new Error('Current query not set');
+            throw new Error('Current query is not set. Make sure to call refresh() and wait for it to complete before accessing the current query.');
         }
         return this._currentQuery;
     }
@@ -140,7 +141,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     public getSavedQuery(id: string): ISavedQuery {
         const query = [...this._systemQueries, ...this._userQueries].find(q => q.id === id);
         if (!query) {
-            throw new Error(`Query with id ${id} not found`);
+            throw new Error(`Query with id ${id} not found. Make sure to call refresh() and wait for it to complete before accessing the saved query.`);
         }
         return {
             ...query,
@@ -193,6 +194,10 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             },
             onError: (error, message) => this.queryEvents.dispatchEvent('onError', error, message)
         })
+    }
+
+    public async destroy() {
+        this.queryEvents.clearEventListeners();
     }
 
     public async refresh() {

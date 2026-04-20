@@ -17,7 +17,6 @@ export type IEditTasksResult =
     | { success: true; updatedRecords: IRawRecord[] }
     | { success: false; updatedRecords: IRawRecord[]; errors: IFailedRecord[] };
 
-export const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'path'];
 
 export interface ITaskDataProviderParameters {
     nativeColumns: INativeColumns;
@@ -376,6 +375,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             //@ts-ignore - typings
             this._sourceDataProvider.onOpenDatasetItem(entityReference);
         }
+    }
+
+    public async destroy(): Promise<void> {
+        super.destroy();
+        this.taskEvents.clearEventListeners();
     }
 
     public getQuickFindColumns(): IColumn[] {

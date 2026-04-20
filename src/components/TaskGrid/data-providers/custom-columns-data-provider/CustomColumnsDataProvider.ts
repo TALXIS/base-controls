@@ -40,6 +40,7 @@ export interface ICustomColumnsDataProvider {
     isEditEnabled: () => boolean;
     /** Returns `true` when the given column name is a custom (dynamic) column. */
     isCustomColumn: (columnName: string) => boolean;
+    destroy: () => void;
 }
 
 export interface ICustomColumnsDataProviderEvents {
@@ -73,6 +74,9 @@ export class CustomColumnsDataProvider implements ICustomColumnsDataProvider {
             operation: () => this._strategy.onUpdateColumn(columnName),
             onError: (error, message) => this.events.dispatchEvent('onError', error, message)
         })
+    }
+    public destroy(): void {
+        this.events.clearEventListeners();
     }
     public getColumns(): IColumn[] {
         return this._strategy.onGetColumns();
