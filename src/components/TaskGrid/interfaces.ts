@@ -52,6 +52,17 @@ export interface ITaskGridParameters {
     enableHideInactiveTasksToggle?: boolean;
     /** Show the personal/system scope selector inside the Edit Columns panel. Defaults to `true`. */
     enableEditColumnsScopeSelector?: boolean;
+    /** Enable user queries. Defaults to `true`. */
+    enableUserQueries?: boolean;
+    /** Show the query manager. Defaults to `true`. */
+    enableQueryManager?: boolean;
+    /** Show the "Save as new" button in the query manager. Defaults to `true`. */
+    enableSaveAsNewQuery?: boolean;
+    /** Show the "Save changes" button in the query manager. Defaults to `true`. */
+    enableSaveChangesToQuery?: boolean;
+    enableCustomColumnCreation?: boolean;
+    enableCustomColumnEditing?: boolean;
+    enableCustomColumnDeletion?: boolean;
 }
 
 /** Available data providers injected into `ITaskDataProviderStrategy` at construction time. */
@@ -138,4 +149,18 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isTemplatingEnabled: () => boolean;
     /** Returns `true` when a custom columns strategy was supplied through the descriptor. */
     isCustomColumnsEnabled: () => boolean;
+    /** Whether the view manager is enabled (from `ITaskGridParameters.enableQueryManager`). */
+    isViewManagerEnabled: () => boolean;
+    /** Whether the "Save as new" button is enabled (from `ITaskGridParameters.enableSaveAsNewQuery`). */
+    isSaveQueryAsNewEnabled: () => boolean;
+    /** Whether the "Save changes" button is enabled (from `ITaskGridParameters.enableSaveChangesToQuery`). */
+    isSaveQueryChangesEnabled: () => boolean;
+    /** Whether custom column creation is enabled (from `ITaskGridParameters.enableCustomColumnCreation`). */
+    isCustomColumnCreationEnabled: () => boolean;
+    /** Whether custom column editing is enabled (from `ITaskGridParameters.enableCustomColumnEditing`). */
+    isCustomColumnEditingEnabled: () => boolean;
+    /** Whether custom column deletion is enabled (from `ITaskGridParameters.enableCustomColumnDeletion`). */   
+    isCustomColumnDeletionEnabled: () => boolean;
+    /** Whether user queries are enabled (from `ITaskGridParameters.enableUserQueries`). */
+    isUserQueriesFeatureEnabled: () => boolean;
 }
