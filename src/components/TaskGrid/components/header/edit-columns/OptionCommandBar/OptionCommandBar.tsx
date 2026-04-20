@@ -22,7 +22,7 @@ export const OptionCommandBar = (props: IOptionCommandBarProps) => {
             }
         }
         return [
-            ...columnsDataProvider.isEditEnabled() ? [{
+            ...datasetControl.isCustomColumnEditingEnabled() ? [{
                 key: 'edit',
                 className: styles.button,
                 iconProps: { iconName: 'Edit' },
@@ -32,7 +32,7 @@ export const OptionCommandBar = (props: IOptionCommandBarProps) => {
                     queueMicrotask(() => onEditColumn(column.name));
                 }
             }] : [],
-            ...columnsDataProvider.isDeleteEnabled() ? [{
+            ...datasetControl.isCustomColumnDeletionEnabled() ? [{
                 key: 'delete',
                 className: styles.button,
                 iconProps: { iconName: 'Delete' },

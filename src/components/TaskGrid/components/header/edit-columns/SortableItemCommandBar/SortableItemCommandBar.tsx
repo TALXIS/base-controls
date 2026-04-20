@@ -13,7 +13,7 @@ export const SortableItemCommandBar = (props: ISortableItemCommandBarProps) => {
     const isCustomColumn = React.useMemo(() => customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === column.name), []);
 
     const farItems = [
-        ...(isCustomColumn && customColumnsDataProvider.isEditEnabled() ? [{
+        ...(isCustomColumn && datasetControl.isCustomColumnEditingEnabled() ? [{
             key: 'edit',
             onMouseUp: () => {
                 onEditColumn(column.name, true);

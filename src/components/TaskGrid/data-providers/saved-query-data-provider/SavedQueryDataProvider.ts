@@ -57,8 +57,6 @@ export interface ISavedQueryStrategy {
     onUpdateUserQuery: (currentQuery: ISavedQuery) => Promise<string | null>;
     /** @returns The created query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onCreateUserQuery: (newQuery: { name: string; description?: string }, currentQuery: ISavedQuery) => Promise<string | null>;
-    /** Return `false` to completely disable personal views for this instance. Defaults to `true`. */
-    onEnableUserQueries?: () => boolean;
 }
 
 /** Manages system and user-defined saved views and exposes view lifecycle operations. */
@@ -83,8 +81,6 @@ export interface ISavedQueryDataProvider {
     deleteUserQueries: (queryIds: string[]) => Promise<IDeletedUserQueriesResult>;
     /** Fetches system and user queries from the strategy and sets the initial active query. */
     refresh: () => Promise<void>;
-    /** Returns `true` when personal views are enabled (from `ISavedQueryStrategy.onEnableUserQueries`). */
-    areUserQueriesEnabled: () => boolean;
     /** Ensures all required native columns (subject, parentId, stackRank, path, stateCode) are present in the provided columns array. */
     includeRequiredColumns: (columns: IColumn[]) => void;
     /** Enforces column constraints: subject is never hidden; path column is always read-only. */
@@ -128,10 +124,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             throw new Error('Current query is not set. Make sure to call refresh() and wait for it to complete before accessing the current query.');
         }
         return this._currentQuery;
-    }
-
-    public areUserQueriesEnabled(): boolean {
-        return this._strategy.onEnableUserQueries?.() ?? true;
     }
 
     public isUserQuery(queryId: string): boolean {
