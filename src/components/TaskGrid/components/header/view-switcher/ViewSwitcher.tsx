@@ -35,7 +35,11 @@ export const ViewSwitcher = () => {
     }
 
     const getViewSwitcherItems = (): IContextualMenuItem[] => {
-        const userQueriesEnabled = savedQueryDataProvider.areUserQueriesEnabled();
+        const userQueriesEnabled = datasetControl.isUserQueriesFeatureEnabled();
+        const isViewManagerEnabled = datasetControl.isViewManagerEnabled();
+        const isSaveAsNewEnabled = datasetControl.isSaveQueryAsNewEnabled();
+        const isSaveEnabled = datasetControl.isSaveQueryChangesEnabled();
+
         const mapQuery = (query: { id: string; name: string }): IContextualMenuItem => ({
             key: query.id,
             text: query.name,
@@ -63,13 +67,14 @@ export const ViewSwitcher = () => {
                     key: 'viewsDivider',
                     itemType: ContextualMenuItemType.Divider
                 },
+                ...(isSaveAsNewEnabled ? [
                 {
                     key: 'saveNewView',
                     text: localizationService.getLocalizedString('saveAsNew'),
                     iconProps: { iconName: 'SaveAs' },
                     onClick: () => setShowCreateViewDialog(true)
-                },
-                ...(savedQueryDataProvider.isUserQuery(currentQuery.id) ? [{
+                }] : []),
+                ...(savedQueryDataProvider.isUserQuery(currentQuery.id) && isSaveEnabled ? [{
                     key: 'saveExistingView',
                     text: localizationService.getLocalizedString('saveExisting'),
                     iconProps: { iconName: 'Save' },
@@ -77,12 +82,14 @@ export const ViewSwitcher = () => {
                         savedQueryDataProvider.updateUserQuery(taskDataProvider);
                     }
                 }] : []),
+                ...(isViewManagerEnabled ? [
                 {
                     key: 'manageView',
                     text: localizationService.getLocalizedString('manageViews'),
                     iconProps: { iconName: 'Settings' },
                     onClick: () => setShowViewManagerDialog(true)
                 }
+            ] : [])
             ] : [])
         ];
     }

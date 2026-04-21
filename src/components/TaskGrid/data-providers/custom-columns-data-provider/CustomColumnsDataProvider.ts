@@ -32,12 +32,6 @@ export interface ICustomColumnsDataProvider {
     getColumns: () => IColumn[];
     /** Returns the underlying strategy cast to the given type for strategy-specific operations. */
     getStrategy<T extends ICustomColumnsStrategy>(): T;
-    /** Returns `true` when creating new columns is allowed. */
-    isCreateEnabled: () => boolean;
-    /** Returns `true` when deleting columns is allowed. */
-    isDeleteEnabled: () => boolean;
-    /** Returns `true` when editing columns is allowed. */
-    isEditEnabled: () => boolean;
     /** Returns `true` when the given column name is a custom (dynamic) column. */
     isCustomColumn: (columnName: string) => boolean;
     destroy: () => void;
@@ -83,15 +77,6 @@ export class CustomColumnsDataProvider implements ICustomColumnsDataProvider {
     }
     public async refresh(): Promise<IColumn[]> {
         return await this._strategy.onRefresh();
-    }
-    public isCreateEnabled(): boolean {
-        return true;
-    }
-    public isDeleteEnabled(): boolean {
-        return true;
-    }
-    public isEditEnabled(): boolean {
-        return true;
     }
     public isCustomColumn(columnName: string): boolean {
         return columnName.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX);

@@ -199,11 +199,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._strategy.onGetRawRecords(ids);
     }
 
-    public getAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
-        return this._strategy.onGetAvailableColumns(options);
+    public onGetAvailableColumns(): Promise<IColumn[]> {
+        return this._strategy.onGetAvailableColumns();
     }
 
-    public getAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
+    public onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
         return this._strategy.onGetAvailableRelatedColumns();
     }
 

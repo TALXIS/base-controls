@@ -82,6 +82,17 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._gridParameters.enableHideInactiveTasksToggle ?? true;
     }
 
+    public isCustomColumnCreationEnabled(): boolean {
+        return this._gridParameters.enableCustomColumnCreation ?? true;
+    }
+    
+    public isCustomColumnEditingEnabled(): boolean {
+        return this._gridParameters.enableCustomColumnEditing ?? true;
+    }
+    public isCustomColumnDeletionEnabled(): boolean {
+        return this._gridParameters.enableCustomColumnDeletion ?? true;
+    }
+
     public isShowHierarchyToggleVisible(): boolean {
         return this._gridParameters.enableShowHierarchyToggle ?? true;
     }
@@ -97,6 +108,22 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
                 return true;
             }
         }
+    }
+    
+    public isViewManagerEnabled(): boolean {
+        return this._gridParameters.enableQueryManager ?? true;
+    }
+
+    public isSaveQueryAsNewEnabled(): boolean {
+        return this._gridParameters.enableSaveAsNewQuery ?? true;
+    }
+
+    public isSaveQueryChangesEnabled(): boolean {
+        return this._gridParameters.enableSaveChangesToQuery ?? true;
+    }
+
+    public isUserQueriesFeatureEnabled(): boolean {
+        return this._gridParameters.enableUserQueries ?? true;
     }
 
     public getSavedQueryDataProvider() {
