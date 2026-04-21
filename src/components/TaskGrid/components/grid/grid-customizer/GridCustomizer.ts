@@ -1,4 +1,4 @@
-import { ColDef, GridApi, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules } from "@ag-grid-community/core";
+import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
 import { ITaskDataProvider } from "../../../data-providers/task-data-provider";
 import { DatasetConstants, IRawRecord, IRecord } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
@@ -11,27 +11,31 @@ import { INativeColumns, ITaskGridDatasetControl } from "../../../interfaces";
 
 export const ADD_TASK_COLUMN_NAME = 'addTask';
 
+export type ColDef = ColDefBase<IRecord>;
+export type GridApi = GridApiBase<IRecord>;
+export type RowClassRules = RowClassRulesBase<IRecord>;
+
 
 /** Strategy interface for deep customization of the AG Grid instance inside TaskGrid. */
 export interface IGridCustomizerStrategy {
     /** Called once after the grid is ready. Use to call `customizer.registerExpressionDecorator` or perform other one-time setup. */
     onInitialize: (customizer: IGridCustomizer) => void;
     /** Receives the computed column definitions and may return a modified array. */
-    onGetColumnDefinitions?: (columnDefs: ColDef<IRecord>[]) => ColDef<IRecord>[];
+    onGetColumnDefinitions?: (columnDefs: ColDef[]) => ColDef[];
     /** Receives the default row class rules map and may return an extended or overridden version. */
-    onGetRowClassRules?: (rules: RowClassRules<IRecord>) => RowClassRules<IRecord>;
+    onGetRowClassRules?: (rules: RowClassRules) => RowClassRules;
     /** Return a custom cell renderer component for the given column definition, or `undefined` to use the default. */
-    onGetCellRenderer?: (colDef: ColDef<IRecord>) => any;
+    onGetCellRenderer?: (colDef: ColDef) => any;
     /** Return a custom cell editor component for the given column definition, or `undefined` to use the default. */
-    onGetCellEditor?: (colDef: ColDef<IRecord>) => any;
+    onGetCellEditor?: (colDef: ColDef) => any;
     /** Receives the raw AG Grid `GridApi` instance, useful if the strategy needs to retain a reference. */
-    onRetrieveGridApi?: (gridApi: GridApi<IRecord>) => void;
+    onRetrieveGridApi?: (gridApi: GridApi) => void;
 }
 
 /** Provides access to the AG Grid instance and the TaskGrid control to code running inside `IGridCustomizerStrategy`. */
 export interface IGridCustomizer {
     /** Returns the underlying AG Grid `GridApi`. */
-    getGridApi(): GridApi<IRecord>;
+    getGridApi(): GridApi;
     /** Returns the `ITaskDataProvider` that backs the grid data layer. */
     getTaskDataProvider(): ITaskDataProvider;
     /** Returns the `ITaskGridDatasetControl` runtime control interface. */
@@ -44,14 +48,14 @@ export interface IGridCustomizer {
 }
 
 export interface IGridCustomizerParameters {
-    gridApi: GridApi<IRecord>;
+    gridApi: GridApi;
     datasetControl: ITaskGridDatasetControl;
     strategy?: IGridCustomizerStrategy;
 }
 
 export class GridCustomizer implements IGridCustomizer {
     private _taskDataProvider: ITaskDataProvider;
-    private _gridApi: GridApi<IRecord>;
+    private _gridApi: GridApi;
     private _gridDragHandler: GridDragHandler;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _nativeColumns: INativeColumns;
@@ -82,7 +86,7 @@ export class GridCustomizer implements IGridCustomizer {
         return this._datasetControl;
     }
 
-    public getGridApi(): GridApi<IRecord> {
+    public getGridApi(): GridApi {
         return this._gridApi;
     }
 
@@ -125,7 +129,7 @@ export class GridCustomizer implements IGridCustomizer {
         return !matchingRecords[params.data.getRecordId()];
     }
 
-    private _injectAddTaskColumn(columnDefs: ColDef<IRecord>[]) {
+    private _injectAddTaskColumn(columnDefs: ColDef[]) {
         if (!columnDefs.find(colDef => colDef.colId === ADD_TASK_COLUMN_NAME)) {
             columnDefs.push({
                 colId: ADD_TASK_COLUMN_NAME,
@@ -143,7 +147,7 @@ export class GridCustomizer implements IGridCustomizer {
         }
     }
 
-    private _getColumnDefinitions(columnDefs: ColDef<IRecord>[]) {
+    private _getColumnDefinitions(columnDefs: ColDef[]) {
         this._injectAddTaskColumn(columnDefs);
         for (const colDef of columnDefs) {
             colDef.onCellDoubleClicked = () => { }
@@ -175,15 +179,15 @@ export class GridCustomizer implements IGridCustomizer {
 
     }
 
-    private _getColumnPriority(col: ColDef<IRecord>): number {
+    private _getColumnPriority(col: ColDef): number {
         if (col.colId === DatasetConstants.CHECKBOX_COLUMN_KEY) return 0;
         if (col.colId === ADD_TASK_COLUMN_NAME) return 1;
         if (col.field === this._nativeColumns.subject) return 2;
         return 3;
     }
 
-    private _getRowClassRules(): RowClassRules<IRecord> {
-        const rules: RowClassRules<IRecord> = {
+    private _getRowClassRules(): RowClassRules {
+        const rules: RowClassRules = {
             'talxis_task-grid_row--drag-over-middle': (params) => {
                 return !!params.data?.isActive() && this._getNodeDragOverSection(params.node) === 'middle'
             },
