@@ -1,5 +1,7 @@
 # TaskGrid
 
+> **Note:** For a minimal PCF wrapper and integration example, see [demo PCF](https://github.com/brYch97/task-pcf).
+
 A hierarchical task management grid built on [AG Grid](https://www.ag-grid.com/). It renders tasks in a parent-child tree structure with support for drag-and-drop reordering, inline editing, saved views, custom columns, and template-based task creation.
 
 ---
