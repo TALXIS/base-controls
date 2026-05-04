@@ -253,7 +253,6 @@ export class VirtualDatasetAdapter {
                 return new MemoryDataProvider({
                     dataSource: this._context.parameters.Data.raw!,
                     metadata: this._getEntityMetadata()
-
                 });
             }
         }
