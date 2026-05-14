@@ -44,7 +44,8 @@ export const Header = (props: ITaskGridHeaderProps) => {
                 text: localizationService.getLocalizedString('new'),
                 disabled: isLoading,
                 iconProps: { iconName: 'Add' },
-                subMenuProps: {
+                onClick: (isTaskAddingEnabled && !isTemplatingEnabled) ? () => { provider.createTask(); } : undefined,
+                subMenuProps: (isTaskAddingEnabled && !isTemplatingEnabled) ? undefined : {
                     items: [
                         ...(isTaskAddingEnabled ? [{
                             key: 'addTopLevelTask',

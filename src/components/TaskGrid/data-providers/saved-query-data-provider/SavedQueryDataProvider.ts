@@ -41,6 +41,7 @@ export interface ISavedQueryMetadata {
     linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[];
     isFlatListEnabled?: boolean;
     searchQuery?: string | undefined;
+    quickFindColumns?: string[];
 }
 
 const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'path', 'stateCode'];

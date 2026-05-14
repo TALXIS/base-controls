@@ -372,7 +372,7 @@ export class GridCustomizer implements IGridCustomizer {
                 const primaryIdAttribute = this._taskDataProvider.getMetadata().PrimaryIdAttribute;
                 const recordId = records[0][primaryIdAttribute] as string;
                 this._startEditingCell(recordId, this._nativeColumns.subject);
-            }, 10);
+            }, 100);
         }
     }
 
@@ -381,7 +381,7 @@ export class GridCustomizer implements IGridCustomizer {
         if (node?.rowIndex != null) {
             this._gridApi.startEditingCell({
                 rowIndex: node.rowIndex,
-                colKey: columnKey
+                colKey: columnKey,
             });
         }
     }
