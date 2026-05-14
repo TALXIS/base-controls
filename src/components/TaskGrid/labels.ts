@@ -32,6 +32,7 @@ export interface ITaskGridLabels {
     templateCreatedSuccessfully: string;
     description: string;
     noTaskTemplates: string;
+    path: string;
     addChild: string;
     addCustomColumn: string;
     confirmColumnDelete: string;
@@ -80,6 +81,7 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     no: 'No',
     yes: 'Yes',
     ok: 'Ok',
+    path: 'Path',
     confirm: 'Confirm',
     confirmation: 'Confirmation',
     myViews: 'My views',

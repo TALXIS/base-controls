@@ -1,8 +1,9 @@
-import { EventEmitter, IColumn, IEventEmitter, IFetchXmlDataProviderColumn } from "@talxis/client-libraries";
+import { DataTypes, EventEmitter, IColumn, IEventEmitter, IFetchXmlDataProviderColumn } from "@talxis/client-libraries";
 import { ITaskDataProvider } from "../task-data-provider";
 import { ICustomColumnsDataProvider } from "../custom-columns-data-provider/CustomColumnsDataProvider";
 import { INativeColumns } from "../../interfaces";
-import { ErrorHelper } from "../../../../utils";
+import { ErrorHelper, ILocalizationService } from "../../../../utils";
+import { ITaskGridLabels } from "../../labels";
 
 
 export interface ICreateUserQueryParams {
@@ -26,7 +27,7 @@ export interface ISavedQueryDataProviderEvents {
     onError: (error: any, message: string) => void;
 }
 
-export type IDeletedUserQueriesResult = {success: true; deletedQueryIds: string[]} | {success: false; deletedQueryIds: string[]; errors: {queryId: string; error: any}[]};
+export type IDeletedUserQueriesResult = { success: true; deletedQueryIds: string[] } | { success: false; deletedQueryIds: string[]; errors: { queryId: string; error: any }[] };
 
 
 export interface ISavedQuery extends ISavedQueryMetadata {
@@ -44,7 +45,8 @@ export interface ISavedQueryMetadata {
     quickFindColumns?: string[];
 }
 
-const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'path', 'stateCode'];
+export const PATH_COLUMN_NAME = 'path__virtual';
+const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'stateCode'];
 
 /** Strategy interface for loading and persisting system and user-defined saved views (queries). */
 export interface ISavedQueryStrategy {
@@ -91,6 +93,7 @@ export interface ISavedQueryDataProvider {
 
 interface ISavedQueryDataProviderParameters {
     nativeColumns: INativeColumns;
+    localizationService: ILocalizationService<ITaskGridLabels>;
     customColumnsDataProvider?: ICustomColumnsDataProvider;
     preferredQuery?: Partial<ISavedQuery> & { id: string };
 }
@@ -102,6 +105,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _userQueries: ISavedQuery[] = [];
     private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _nativeColumns: INativeColumns;
+    private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _preferredQuery?: Partial<ISavedQuery> & { id: string };
     public queryEvents = new EventEmitter<ISavedQueryDataProviderEvents>();
 
@@ -110,6 +114,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         this._preferredQuery = parameters.preferredQuery;
         this._nativeColumns = parameters.nativeColumns;
         this._customColumnsDataProvider = parameters.customColumnsDataProvider;
+        this._localizationService = parameters.localizationService;
     }
 
     public getSystemQueries(): ISavedQuery[] {
@@ -212,6 +217,55 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         this.harmonizeColumns(this._currentQuery.columns);
     }
 
+    public includeRequiredColumns(columns: IColumn[]) {
+        const allQueries = [...this.getSystemQueries(), ...this.getUserQueries()];
+        const allQueryColumns = [...new Map(allQueries.flatMap(query => query.columns.map(col => [col.name, col]))).values()];
+        for (const requiredColumnName of REQUIRED_COLUMNS) {
+            const mappedRequiredColumnName = this._nativeColumns[requiredColumnName as keyof INativeColumns];
+            if (!columns.find(col => col.name === mappedRequiredColumnName)) {
+                const columnFromQueries = allQueryColumns.find(col => col.name === mappedRequiredColumnName);
+                if (!columnFromQueries) {
+                    throw new Error(`Required column ${mappedRequiredColumnName} is missing from both current query and all available queries`);
+                }
+                columns.push(columnFromQueries);
+            }
+        }
+        this._includePathColumn(columns);
+    }
+
+    public harmonizeColumns(columns: IColumn[]) {
+        for (const column of columns) {
+            switch (column.name) {
+                case this._nativeColumns.subject: {
+                    column.isHidden = false;
+                    break;
+                }
+                case this._nativeColumns.path: {
+                    column.metadata = {
+                        ...column.metadata,
+                        IsValidForUpdate: false
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+
+    //TODO: this will not work with user queries (localization)
+    private _includePathColumn(columns: IColumn[]) {
+        if (!columns.find(col => col.name === PATH_COLUMN_NAME)) {
+            columns.push({
+                name: PATH_COLUMN_NAME,
+                dataType: DataTypes.Multiple,
+                displayName: this._localizationService.getLocalizedString('path'),
+                isVirtual: true,
+                visualSizeFactor: 300,
+                isHidden: this._currentQuery?.isFlatListEnabled ? false : true
+            })
+        }
+    }
+
     private _getMetadataForSavedQuery(provider: ITaskDataProvider): ISavedQueryMetadata {
         return {
             sorting: provider.getSorting(),
@@ -249,6 +303,8 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             !!customColumnsMap.get(name);
     }
 
+
+    //TODO: localization for virtual columns
     private _parseSavedQueryMetadata(metadata: ISavedQueryMetadata): ISavedQueryMetadata {
         const parsed = metadata;
         if (!this._customColumnsDataProvider) {
@@ -269,38 +325,5 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
                 conditions: parsed.filtering.conditions.filter(condition => this._isCustomColumnResolvable(condition.attributeName, customColumnsMap))
             } : undefined
         };
-    }
-
-    public includeRequiredColumns(columns: IColumn[]) {
-        const allQueries = [...this.getSystemQueries(), ...this.getUserQueries()];
-        const allQueryColumns = [...new Map(allQueries.flatMap(query => query.columns.map(col => [col.name, col]))).values()];
-        for (const requiredColumnName of REQUIRED_COLUMNS) {
-            const mappedRequiredColumnName = this._nativeColumns[requiredColumnName as keyof INativeColumns];
-            if (!columns.find(col => col.name === mappedRequiredColumnName)) {
-                const columnFromQueries = allQueryColumns.find(col => col.name === mappedRequiredColumnName);
-                if (!columnFromQueries) {
-                    throw new Error(`Required column ${mappedRequiredColumnName} is missing from both current query and all available queries`);
-                }
-                columns.push(columnFromQueries);
-            }
-        }
-    }
-
-    public harmonizeColumns(columns: IColumn[]) {
-        for (const column of columns) {
-            switch (column.name) {
-                case this._nativeColumns.subject: {
-                    column.isHidden = false;
-                    break;
-                }
-                case this._nativeColumns.path: {
-                    column.metadata = {
-                        ...column.metadata,
-                        IsValidForUpdate: false
-                    }
-                    break;
-                }
-            }
-        }
     }
 }

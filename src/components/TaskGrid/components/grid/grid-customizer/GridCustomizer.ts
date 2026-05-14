@@ -131,7 +131,7 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
     private _injectAddTaskColumn(columnDefs: ColDef[]) {
-        if (!columnDefs.find(colDef => colDef.colId === ADD_TASK_COLUMN_NAME)) {
+        if (!this._taskDataProvider.isFlatListEnabled() &&!columnDefs.find(colDef => colDef.colId === ADD_TASK_COLUMN_NAME)) {
             columnDefs.push({
                 colId: ADD_TASK_COLUMN_NAME,
                 headerName: '',

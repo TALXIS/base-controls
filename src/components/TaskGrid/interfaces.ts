@@ -91,7 +91,7 @@ export interface ITaskStrategyDeps {
  */
 export interface ITaskGridDescriptor {
     /** Returns the mapping of logical column roles to physical schema attribute names. */
-    onGetNativeColumns: () => INativeColumns;
+    onGetNativeColumns: () => Omit<INativeColumns, 'path'>;
     /** Returns the strategy responsible for loading system/user views and persisting view changes. */
     onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
     /** Returns the strategy that handles all task CRUD, move, template and record-save operations. */

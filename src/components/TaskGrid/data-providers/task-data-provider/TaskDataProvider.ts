@@ -4,7 +4,7 @@ import { ErrorHelper } from "../../../../utils/error-handling";
 import { ILocalizationService } from "../../../../utils";
 import { ITaskGridLabels } from "../../labels";
 import { INativeColumns } from "../../interfaces";
-import { ISavedQueryDataProvider } from "../saved-query-data-provider";
+import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "../saved-query-data-provider";
 
 export interface IFailedRecord {
     id: string;
@@ -181,8 +181,24 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._strategy.onGetRawRecords(ids);
     }
 
-    public onGetAvailableColumns(): Promise<IColumn[]> {
-        return this._strategy.onGetAvailableColumns();
+    public async onGetAvailableColumns(options?: { entityName?: string }): Promise<IColumn[]> {
+        return this._getColumnsWithUnusedVirtualColumns(await this._strategy.onGetAvailableColumns(options));
+    }
+
+    private _getColumnsWithUnusedVirtualColumns(columns: IColumn[]): IColumn[] {
+        columns = [...columns];
+        const columnsMap = new Map(columns.map(col => [col.name, col]));
+        const virtualColumns = this._savedQueryDataProvider.getSystemQueries().flatMap(query => query.columns).filter(column => column.isVirtual);
+        for (const virtualColumn of virtualColumns) {
+            //path column is always part of available columns (hidden)
+            if (!columnsMap.has(virtualColumn.name) || virtualColumn.name === PATH_COLUMN_NAME) {
+                columns.push({
+                    ...virtualColumn,
+                    isHidden: false
+                });
+            }
+        }
+        return columns;
     }
 
     public onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
@@ -418,7 +434,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public dispatchEvent<K extends keyof IDataProviderEventListeners>(event: K, ...args: Parameters<IDataProviderEventListeners[K]>): boolean {
-        if(event === 'onNewDataLoaded') {
+        if (event === 'onNewDataLoaded') {
             this._taskTree.build();
         }
         return super.dispatchEvent(event, ...args);
@@ -435,7 +451,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private async _loadDataFromStrategy() {
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
+                const virtualColumns = structuredClone(this.getColumns().filter(col => col.isVirtual));
                 const { columns, rawData, metadata } = await this._strategy.onInitialize(this);
+                this._harmonizeVirtualColumns(virtualColumns, columns);
                 this.setDataSource(rawData);
                 this.setMetadata(metadata);
                 this.setColumns(columns);
@@ -444,6 +462,16 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })
+    }
+
+    //fetch xml provider will override virtual column metadata by
+    private _harmonizeVirtualColumns(virtualColumns: IColumn[], columns: IColumn[]) {
+        columns.map((col, i) => {
+            const virtualCol = virtualColumns.find(virtualCol => virtualCol.name === col.name);
+            if (virtualCol) {
+                columns[i] = virtualCol;
+            }
+        });
     }
 
     private _createTasks(rawRecords: IRawRecord[], parentId?: string) {

@@ -2,8 +2,7 @@ import { Dataset } from "@talxis/client-libraries";
 import { ITaskDataProvider, TaskDataProvider } from "./data-providers/task-data-provider";
 import { ILocalizationService } from "../../utils";
 import { ITaskGridLabels } from "./labels";
-import { ISavedQuery, ISavedQueryDataProvider, SavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
-import { RecordTree } from "./data-providers/task-data-provider/record-tree";
+import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
 import { CustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { TaskGridDatasetControl } from "./TaskGridDatasetControl";
@@ -34,7 +33,8 @@ export class TaskGridDatasetControlFactory {
 
         const savedQueryStrategy = parameters.taskGridDescriptor.onCreateSavedQueryStrategy();
         const savedQueryDataProvider = new SavedQueryDataProvider(savedQueryStrategy, {
-            nativeColumns: parameters.taskGridDescriptor.onGetNativeColumns(),
+            localizationService: parameters.localizationService,
+            nativeColumns: { ...parameters.taskGridDescriptor.onGetNativeColumns(), path: PATH_COLUMN_NAME },
             customColumnsDataProvider: customColumnsDataProvider,
             preferredQuery: parameters.state.savedQuery,
         })
@@ -48,7 +48,7 @@ export class TaskGridDatasetControlFactory {
 
         taskDataProvider = new TaskDataProvider({
             localizationService: parameters.localizationService,
-            nativeColumns: parameters.taskGridDescriptor.onGetNativeColumns(),
+            nativeColumns: { ...parameters.taskGridDescriptor.onGetNativeColumns(), path: PATH_COLUMN_NAME },
             strategy: taskStrategy,
             savedQueryDataProvider: savedQueryDataProvider,
             onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider)

@@ -5,7 +5,7 @@ import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering }
 import { IDeleteTasksResult, ITaskDataProvider } from "./data-providers/task-data-provider";
 import { ILocalizationService } from "../../utils";
 import { ITaskGridLabels } from "./labels";
-import { ISavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
+import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./data-providers/saved-query-data-provider";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ICustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
@@ -52,7 +52,10 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public getNativeColumns() {
-        return this._descriptor.onGetNativeColumns();
+        return {
+            ...this._descriptor.onGetNativeColumns(),
+            path: PATH_COLUMN_NAME
+        }
     }
 
     public getLocalizationService() {
