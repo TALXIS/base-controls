@@ -367,6 +367,17 @@ export class GridCustomizer implements IGridCustomizer {
         if (!parentId) {
             this._gridApi.ensureIndexVisible(0);
         }
+        if (this._datasetControl.isInlineCreateEnabled() && records.length === 1) {
+            const primaryIdAttribute = this._taskDataProvider.getMetadata().PrimaryIdAttribute;
+            const recordId = records[0][primaryIdAttribute] as string;
+            const node = this._gridApi.getRowNode(recordId);
+            if (node?.rowIndex != null) {
+                this._gridApi.startEditingCell({
+                    rowIndex: node.rowIndex,
+                    colKey: this._nativeColumns.subject
+                });
+            }
+        }
     }
 
     private _onAfterTaskDataUpdated = (newData: IRawRecord[]) => {

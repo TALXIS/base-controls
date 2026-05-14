@@ -63,6 +63,7 @@ export interface ITaskGridParameters {
     enableCustomColumnCreation?: boolean;
     enableCustomColumnEditing?: boolean;
     enableCustomColumnDeletion?: boolean;
+    enableInlineCreate?: boolean;
 }
 
 /** Available data providers injected into `ITaskDataProviderStrategy` at construction time. */
@@ -163,4 +164,5 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isCustomColumnDeletionEnabled: () => boolean;
     /** Whether user queries are enabled (from `ITaskGridParameters.enableUserQueries`). */
     isUserQueriesFeatureEnabled: () => boolean;
+    isInlineCreateEnabled: () => boolean;
 }

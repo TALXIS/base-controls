@@ -93,6 +93,10 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._gridParameters.enableCustomColumnDeletion ?? true;
     }
 
+    public isInlineCreateEnabled(): boolean {
+        return this._gridParameters.enableInlineCreate ?? true;
+    }
+
     public isShowHierarchyToggleVisible(): boolean {
         return this._gridParameters.enableShowHierarchyToggle ?? true;
     }
