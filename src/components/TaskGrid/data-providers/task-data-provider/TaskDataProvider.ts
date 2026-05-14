@@ -1,8 +1,10 @@
 import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, ICommand, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IEventEmitter, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, IRetrieveRecordCommandOptions, MemoryDataProvider, Operators, Type } from "@talxis/client-libraries";
 import { IRecordTree, RecordTree } from "./record-tree/RecordTree";
 import { ErrorHelper } from "../../../../utils/error-handling";
-import { ILocalizationService, ITaskGridLabels } from "../../labels";
+import { ILocalizationService } from "../../../../utils";
+import { ITaskGridLabels } from "../../labels";
 import { INativeColumns } from "../../interfaces";
+import { ISavedQueryDataProvider } from "../saved-query-data-provider";
 
 export interface IFailedRecord {
     id: string;
@@ -22,6 +24,7 @@ export interface ITaskDataProviderParameters {
     nativeColumns: INativeColumns;
     localizationService: ILocalizationService<ITaskGridLabels>;
     strategy: ITaskDataProviderStrategy;
+    savedQueryDataProvider: ISavedQueryDataProvider;
     onIsFlatListEnabled: () => boolean;
 }
 
@@ -66,12 +69,6 @@ export interface ITaskDataProviderStrategy {
     onIsRecordActive(recordId: string): boolean;
     /** Opens the record detail view. Called when a user clicks a non-subject cell. */
     onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): void;
-    /** Return `false` to disable task creation (hide the *New* button). Defaults to `true`. */
-    onIsTaskAddingEnabled?(): boolean;
-    /** Return `false` to disable inline cell editing. Defaults to `true`. */
-    onIsTaskEditingEnabled?(): boolean;
-    /** Return `false` to disable task deletion (hide the *Delete* button). Defaults to `true`. */
-    onIsTaskDeletingEnabled?(): boolean;
     /** When provided, the task tree is scoped to the subtree of the returned task id. */
     onGetRootTaskId?: () => string | undefined
 }
@@ -141,6 +138,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _hasDataBeenLoaded: boolean = false;
     private _taskTree: IRecordTree;
     private _strategy: ITaskDataProviderStrategy;
+    private _savedQueryDataProvider: ISavedQueryDataProvider;
     private _onFlatListEnabled: () => boolean;
     public readonly taskEvents: EventEmitter<ITaskDataProviderEventListener> = new EventEmitter<ITaskDataProviderEventListener>();
 
@@ -148,7 +146,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         super({
             dataSource: [],
             metadata: { PrimaryIdAttribute: 'id' }
-        })
+        });
+        this._savedQueryDataProvider = parameters.savedQueryDataProvider;
         this._nativeColumns = parameters.nativeColumns;
         this._taskTree = new RecordTree({
             taskDataProvider: this
@@ -164,18 +163,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public getRootTaskId(): string | null {
         return this._strategy.onGetRootTaskId?.() ?? null;
-    }
-
-    public isTaskAddingEnabled(): boolean {
-        return this._strategy.onIsTaskAddingEnabled?.() ?? true;
-    }
-
-    public isTaskEditingEnabled(): boolean {
-        return this._strategy.onIsTaskEditingEnabled?.() ?? true;
-    }
-
-    public isTaskDeletingEnabled(): boolean {
-        return this._strategy.onIsTaskDeletingEnabled?.() ?? true;
     }
 
     public getRecordTree(): IRecordTree {
@@ -378,9 +365,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public getQuickFindColumns(): IColumn[] {
-        return this._strategy.onGetQuickFindColumns().map(columnName => {
-            return this.getColumnsMap()[columnName];
-        }).filter(col => col) as IColumn[];
+        const quickFindColumnNames = this._savedQueryDataProvider.getCurrentQuery().quickFindColumns ?? [];
+        const existingQuickFindColumns = quickFindColumnNames.map(columnName => this.getColumnsMap()[columnName]).filter(col => col) as IColumn[];
+        return existingQuickFindColumns;
     }
 
     public createGroupedRecordDataProvider(group: IRecord): IDataProvider {
@@ -417,6 +404,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             localizationService: this._localizationService,
             nativeColumns: this._nativeColumns,
             strategy: this._strategy,
+            savedQueryDataProvider: this._savedQueryDataProvider,
             onIsFlatListEnabled: () => this._onFlatListEnabled(),
         });
     }

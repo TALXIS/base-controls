@@ -1,6 +1,7 @@
 import { Dataset } from "@talxis/client-libraries";
 import { ITaskDataProvider, TaskDataProvider } from "./data-providers/task-data-provider";
-import { ILocalizationService, ITaskGridLabels } from "./labels";
+import { ILocalizationService } from "../../utils";
+import { ITaskGridLabels } from "./labels";
 import { ISavedQuery, ISavedQueryDataProvider, SavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
 import { RecordTree } from "./data-providers/task-data-provider/record-tree";
 import { CustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
@@ -49,6 +50,7 @@ export class TaskGridDatasetControlFactory {
             localizationService: parameters.localizationService,
             nativeColumns: parameters.taskGridDescriptor.onGetNativeColumns(),
             strategy: taskStrategy,
+            savedQueryDataProvider: savedQueryDataProvider,
             onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider)
         });
 

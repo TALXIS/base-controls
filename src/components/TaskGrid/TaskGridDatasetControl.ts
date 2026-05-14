@@ -3,7 +3,8 @@ import { IDatasetControlEvents } from "../../utils/dataset-control";
 import { EditColumns, IEditColumns } from "../../utils/dataset-control/EditColumns";
 import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering } from "@talxis/client-libraries";
 import { IDeleteTasksResult, ITaskDataProvider } from "./data-providers/task-data-provider";
-import { ILocalizationService, ITaskGridLabels } from "./labels";
+import { ILocalizationService } from "../../utils";
+import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
@@ -228,9 +229,11 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._gridParameters.enableTaskEditing ?? true;
     }
     public isTaskCreatingEnabled(): boolean {
+        if(!this.isTaskEditingEnabled()) return false;
         return this._gridParameters.enableTaskCreation ?? true;
     }
     public isTaskDeletingEnabled(): boolean {
+        if(!this.isTaskEditingEnabled()) return false;
         return this._gridParameters.enableTaskDeletion ?? true;
     }
 

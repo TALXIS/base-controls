@@ -5,7 +5,8 @@ import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
 import { AddTaskButton } from "../cell-renderers/add-task-button";
-import { ILocalizationService, ITaskGridLabels } from "../../../labels";
+import { ILocalizationService } from "../../../../../utils";
+import { ITaskGridLabels } from "../../../labels";
 import { PercentComplete } from "../cell-renderers/percent-complete";
 import { INativeColumns, ITaskGridDatasetControl } from "../../../interfaces";
 
@@ -364,26 +365,13 @@ export class GridCustomizer implements IGridCustomizer {
                 parentNode.setExpanded(true);
             }
         }
-        if (!parentId) {
-            this._gridApi.ensureIndexVisible(0);
-        }
-        if (this._datasetControl.isInlineCreateEnabled() && records.length === 1) {
-            setTimeout(() => {
-                const primaryIdAttribute = this._taskDataProvider.getMetadata().PrimaryIdAttribute;
-                const recordId = records[0][primaryIdAttribute] as string;
-                this._startEditingCell(recordId, this._nativeColumns.subject);
-            }, 100);
-        }
-    }
-
-    private _startEditingCell(recordId: string, columnKey: string) {
-        const node = this._gridApi.getRowNode(recordId);
-        if (node?.rowIndex != null) {
-            this._gridApi.startEditingCell({
-                rowIndex: node.rowIndex,
-                colKey: columnKey,
-            });
-        }
+        setTimeout(() => {
+            const primaryIdAttribute = this._taskDataProvider.getMetadata().PrimaryIdAttribute;
+            const recordId = records[0][primaryIdAttribute] as string;
+            const node = this._gridApi.getRowNode(recordId);
+            this._gridApi.setFocusedCell(node!.rowIndex!, this._nativeColumns.subject);
+            this._gridApi.ensureNodeVisible(node!);
+        }, 100);
     }
 
     private _onAfterTaskDataUpdated = (newData: IRawRecord[]) => {

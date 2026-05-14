@@ -1,5 +1,3 @@
-import { Liquid } from "liquidjs";
-
 export interface ITaskGridLabels {
     name: string;
     no: string;
@@ -77,10 +75,6 @@ export interface ITaskGridLabels {
     deletingUserQueriesError: string;
 }
 
-export interface ILocalizationService<T> {
-    getLocalizedString: (key: keyof T, variables?: {[key: string]: string}) => string;
-}
-
 export const TASK_GRID_LABELS: ITaskGridLabels = {
     name: 'Name',
     no: 'No',
@@ -156,22 +150,4 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     deletingUserQueriesError: 'Some views could not be deleted due to following reasons:',
     noRecordsFound: 'No records found.',
     unexpectedErrorOccurred: 'Unexpected error occurred.',
-}
-
-export class LocalizationService<T extends { [K in keyof T]: string }> implements ILocalizationService<T> {
-    private _getLabels: () => T;
-    private _liquidEngine: Liquid;
-
-    constructor(getLabels: () => T) {
-        this._getLabels = getLabels;
-        this._liquidEngine = new Liquid();
-    }
-
-    public getLocalizedString(key: keyof T, variables?: {[key: string]: string}): string {
-        const labels = this._getLabels();
-        if(variables) {
-            return this._liquidEngine.parseAndRenderSync(labels[key] as unknown as string, variables);
-        }
-        return labels[key];
-    }
 }

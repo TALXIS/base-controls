@@ -8,12 +8,13 @@ import { useTheme } from "@fluentui/react";
 import { getDatasetControlStyles } from "./styles";
 import { Grid } from "./components/grid";
 import { ITaskDataProvider } from "./data-providers/task-data-provider";
-import { ITaskGridLabels, LocalizationService } from "./labels";
+import { ITaskGridLabels } from "./labels";
 import { TASK_GRID_LABELS } from "./labels";
 import { ITaskGridState, TaskGridDatasetControlFactory } from "./TaskGridDatasetControlFactory";
 import { Header } from "./components/header/Header";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
 import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
+import { LocalizationService } from "../../utils";
 
 interface ITaskGridProps {
     //should be replaced by Context API in future
@@ -35,9 +36,7 @@ export const TaskGrid = (props: ITaskGridProps) => {
     const components = { ...TaskGridComponents, ...props.components };
     const pcfContextRef = useRef(props.pcfContext);
     pcfContextRef.current = props.pcfContext;
-    const labelsRef = useRef<ITaskGridLabels>();
-    labelsRef.current = { ...TASK_GRID_LABELS, ...props.labels };
-    const localizationService = React.useMemo(() => new LocalizationService(() => labelsRef.current!), []);
+    const localizationService = React.useMemo(() => new LocalizationService({ ...TASK_GRID_LABELS, ...props.labels }), []);
 
     const [instanceState, setInstanceState] = React.useState<{
         instance: ITaskGridDatasetControl;

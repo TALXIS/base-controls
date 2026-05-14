@@ -219,6 +219,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             linking: provider.getLinking(),
             searchQuery: provider.getSearchQuery(),
             isFlatListEnabled: provider.isFlatListEnabled(),
+            quickFindColumns: provider.getQuickFindColumns().map(col => col.name),
             columns: [
                 ...provider.getColumns().map((col: any) => {
                     const newCol = {
