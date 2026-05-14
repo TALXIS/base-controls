@@ -368,15 +368,21 @@ export class GridCustomizer implements IGridCustomizer {
             this._gridApi.ensureIndexVisible(0);
         }
         if (this._datasetControl.isInlineCreateEnabled() && records.length === 1) {
-            const primaryIdAttribute = this._taskDataProvider.getMetadata().PrimaryIdAttribute;
-            const recordId = records[0][primaryIdAttribute] as string;
-            const node = this._gridApi.getRowNode(recordId);
-            if (node?.rowIndex != null) {
-                this._gridApi.startEditingCell({
-                    rowIndex: node.rowIndex,
-                    colKey: this._nativeColumns.subject
-                });
-            }
+            setTimeout(() => {
+                const primaryIdAttribute = this._taskDataProvider.getMetadata().PrimaryIdAttribute;
+                const recordId = records[0][primaryIdAttribute] as string;
+                this._startEditingCell(recordId, this._nativeColumns.subject);
+            }, 10);
+        }
+    }
+
+    private _startEditingCell(recordId: string, columnKey: string) {
+        const node = this._gridApi.getRowNode(recordId);
+        if (node?.rowIndex != null) {
+            this._gridApi.startEditingCell({
+                rowIndex: node.rowIndex,
+                colKey: columnKey
+            });
         }
     }
 
