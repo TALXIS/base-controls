@@ -94,7 +94,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public isInlineCreateEnabled(): boolean {
-        return this._gridParameters.enableInlineCreate ?? true;
+        return this._gridParameters.enableInlineCreation ?? true;
     }
 
     public isShowHierarchyToggleVisible(): boolean {
@@ -123,7 +123,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public isSaveQueryChangesEnabled(): boolean {
-        return this._gridParameters.enableSaveChangesToQuery ?? true;
+        return this._gridParameters.enableSaveQueryChanges ?? true;
     }
 
     public isUserQueriesFeatureEnabled(): boolean {
@@ -223,11 +223,22 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public getPcfContext(): ComponentFramework.Context<any> {
         return this._getPcfContext();
     }
+
+    public isTaskEditingEnabled(): boolean {
+        return this._gridParameters.enableTaskEditing ?? true;
+    }
+    public isTaskCreatingEnabled(): boolean {
+        return this._gridParameters.enableTaskCreation ?? true;
+    }
+    public isTaskDeletingEnabled(): boolean {
+        return this._gridParameters.enableTaskDeletion ?? true;
+    }
+
     public getParameters(): IDatasetControlParameters {
         return {
             Grid: this.getDataset(),
             EnableEditing: {
-                raw: this._dataProvider.isTaskEditingEnabled()
+                raw: this.isTaskEditingEnabled()
             },
             EnableAutoSave: {
                 raw: true

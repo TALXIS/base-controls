@@ -129,11 +129,6 @@ export interface ITaskDataProvider extends IDataProvider {
     /** Returns `true` when the grid is displaying a flat list instead of a tree hierarchy. */
     isFlatListEnabled(): boolean;
     /** Returns `true` when task creation is allowed (from `ITaskDataProviderStrategy.onIsTaskAddingEnabled`). */
-    isTaskAddingEnabled(): boolean;
-    /** Returns `true` when inline cell editing is allowed (from `ITaskDataProviderStrategy.onIsTaskEditingEnabled`). */
-    isTaskEditingEnabled(): boolean;
-    /** Returns `true` when task deletion is allowed (from `ITaskDataProviderStrategy.onIsTaskDeletingEnabled`). */
-    isTaskDeletingEnabled(): boolean;
     /** Returns the root task id when the tree is scoped to a subtree, or `null` for a full tree. */
     getRootTaskId: () => string | null;
     /** Moves a task to a position relative to another task. Returns the updated raw records, or `null` on cancellation. */

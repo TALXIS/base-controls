@@ -42,6 +42,12 @@ export interface ITaskGridParameters {
     enableRowDragging?: boolean;
     /** Show the *Edit Columns* button in the ribbon. Defaults to `true`. */
     enableEditColumns?: boolean;
+    /** Enable editing of tasks directly in the grid. Defaults to `true`. */
+    enableTaskEditing?: boolean;
+    /** Enable creation of new tasks. Defaults to `true`. */
+    enableTaskCreation?: boolean;
+    /** Enable deletion of tasks. Defaults to `true`. */
+    enableTaskDeletion?: boolean;
     /** Show the search / quick-find input. Defaults to `true`. */
     enableQuickFind?: boolean;
     /** Show the view-switcher dropdown. Defaults to `true`. */
@@ -59,11 +65,15 @@ export interface ITaskGridParameters {
     /** Show the "Save as new" button in the query manager. Defaults to `true`. */
     enableSaveAsNewQuery?: boolean;
     /** Show the "Save changes" button in the query manager. Defaults to `true`. */
-    enableSaveChangesToQuery?: boolean;
+    enableSaveQueryChanges?: boolean;
+    /** Enable creation of custom columns. Defaults to `true`. */
     enableCustomColumnCreation?: boolean;
+    /** Enable editing of custom columns. Defaults to `true`. */
     enableCustomColumnEditing?: boolean;
+    /** Enable deletion of custom columns. Defaults to `true`. */
     enableCustomColumnDeletion?: boolean;
-    enableInlineCreate?: boolean;
+    /** Enable inline creation of tasks. Defaults to `true`. */
+    enableInlineCreation?: boolean;
 }
 
 /** Available data providers injected into `ITaskDataProviderStrategy` at construction time. */
@@ -148,13 +158,19 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isEditColumnsScopeSelectorEnabled: () => boolean;
     /** Returns `true` when a template data provider was supplied through the descriptor. */
     isTemplatingEnabled: () => boolean;
+    /** Returns `true` when inline creation of tasks is enabled. */
+    isTaskCreatingEnabled: () => boolean;
+    /** Returns `true` when inline editing of tasks is enabled. */
+    isTaskEditingEnabled: () => boolean;
+    /** Returns `true` when task deletion is enabled. */
+    isTaskDeletingEnabled: () => boolean;
     /** Returns `true` when a custom columns strategy was supplied through the descriptor. */
     isCustomColumnsEnabled: () => boolean;
     /** Whether the view manager is enabled (from `ITaskGridParameters.enableQueryManager`). */
     isViewManagerEnabled: () => boolean;
     /** Whether the "Save as new" button is enabled (from `ITaskGridParameters.enableSaveAsNewQuery`). */
     isSaveQueryAsNewEnabled: () => boolean;
-    /** Whether the "Save changes" button is enabled (from `ITaskGridParameters.enableSaveChangesToQuery`). */
+    /** Whether the "Save changes" button is enabled (from `ITaskGridParameters.enableSaveQueryChanges`). */
     isSaveQueryChangesEnabled: () => boolean;
     /** Whether custom column creation is enabled (from `ITaskGridParameters.enableCustomColumnCreation`). */
     isCustomColumnCreationEnabled: () => boolean;

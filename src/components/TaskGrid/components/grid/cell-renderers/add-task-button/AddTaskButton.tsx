@@ -13,7 +13,7 @@ export const AddTaskButton = (props: ICellProps) => {
     const datasetControl = useDatasetControl();
     const localizationService = useLocalizationService();
     const [isButtonMounted, setIsButtonMounted] = React.useState(true);
-    const isTaskAddingEnabled = taskDataProvider.isTaskAddingEnabled();
+    const isTaskAddingEnabled = datasetControl.isTaskCreatingEnabled();
     const isTemplatingEnabled = datasetControl.isTemplatingEnabled();
 
     const addTaskFromTemplate = async (templateId: string) => {

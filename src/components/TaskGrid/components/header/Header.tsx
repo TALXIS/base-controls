@@ -30,9 +30,9 @@ export const Header = (props: ITaskGridHeaderProps) => {
     const getCommandBarItems = (items: ICommandBarItemProps[]): ICommandBarItemProps[] => {
         const isTemplatingEnabled = datasetControl.isTemplatingEnabled();
         const isEditColumnsEnabled = datasetControl.getParameters().EnableEditColumns?.raw;
-        const isTaskAddingEnabled = provider.isTaskAddingEnabled();
-        const isTaskEditingEnabled = provider.isTaskEditingEnabled();
-        const isTaskDeletingEnabled = provider.isTaskDeletingEnabled();
+        const isTaskAddingEnabled = datasetControl.isTaskCreatingEnabled();
+        const isTaskEditingEnabled = datasetControl.isTaskEditingEnabled();
+        const isTaskDeletingEnabled = datasetControl.isTaskDeletingEnabled();
         const isShowHierarchyToggleVisible = datasetControl.isShowHierarchyToggleVisible();
         const isHideInactiveTasksToggleVisible = datasetControl.isHideInactiveTasksToggleVisible();
         const selectedIds = provider.getSelectedRecordIds();
