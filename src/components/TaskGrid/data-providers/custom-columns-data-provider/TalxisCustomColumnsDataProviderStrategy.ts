@@ -8,9 +8,9 @@ export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 export const CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME = 'talxis_task_talxis_attributevalue_regardingobjectid';
 
 interface ITalxisCustomColumnsStrategyParameters {
-    //entity name to fetch attributes for
+    //entity name to fetch custom columns for
     entityName: string;
-    //record id to fetch attributes for
+    //record id to fetch custom columns for
     recordId?: string;
 }
 
@@ -34,6 +34,15 @@ export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy
         const entityDefinition = await DynamicEntityDefinition.fetchForRecord(this._entityName, this._recordId);
         this._attributes = entityDefinition.Attributes;
         return this.onGetColumns();
+    }
+
+    //get all attribute values based given the 
+    public async onGetRawRecords(): Promise<IRawRecord[]> {
+        return [];
+    }
+
+    public async onGetRawRecord(recordId: string): Promise<IRawRecord> {
+        throw new Error('Method not implemented.');
     }
 
     public onGetColumns(): IColumn[] {

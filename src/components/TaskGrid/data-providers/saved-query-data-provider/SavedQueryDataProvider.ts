@@ -106,6 +106,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _nativeColumns: INativeColumns;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
+    private _systemQueriesColumnsMap: Map<string, IColumn> = new Map();
     private _preferredQuery?: Partial<ISavedQuery> & { id: string };
     public queryEvents = new EventEmitter<ISavedQueryDataProviderEvents>();
 
@@ -203,18 +204,20 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         const userQueries = await this._strategy.onGetUserQueries();
         const allQueries = [...systemQueries, ...userQueries];
         this._systemQueries = systemQueries;
+        const systemQueriesColumns = this._includePathColumn(systemQueries.flatMap(query => query.columns));
+        this._systemQueriesColumnsMap = new Map(systemQueriesColumns.map(col => [col.name, col]));
         this._userQueries = userQueries;
         if (this._systemQueries.length === 0) {
             throw new Error('At least one system query is required');
         }
         this._currentQuery = allQueries.find(q => q.id === this._preferredQuery?.id) ?? userQueries[0] ?? systemQueries[0];
+        this.includeRequiredColumns(this._currentQuery.columns);
+        this.harmonizeColumns(this._currentQuery.columns);
         this._currentQuery = {
             ...this._currentQuery,
             //makes sure custom columns from the current query are properly merged with the columns from the custom columns data provider strategy
             ...this._parseSavedQueryMetadata(this._currentQuery)
         }
-        this.includeRequiredColumns(this._currentQuery.columns);
-        this.harmonizeColumns(this._currentQuery.columns);
     }
 
     public includeRequiredColumns(columns: IColumn[]) {
@@ -251,8 +254,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         }
     }
 
-
-    //TODO: this will not work with user queries (localization)
     private _includePathColumn(columns: IColumn[]) {
         if (!columns.find(col => col.name === PATH_COLUMN_NAME)) {
             columns.push({
@@ -264,6 +265,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
                 isHidden: this._currentQuery?.isFlatListEnabled ? false : true
             })
         }
+        return columns;
     }
 
     private _getMetadataForSavedQuery(provider: ITaskDataProvider): ISavedQueryMetadata {
@@ -304,18 +306,29 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     }
 
 
-    //TODO: localization for virtual columns
     private _parseSavedQueryMetadata(metadata: ISavedQueryMetadata): ISavedQueryMetadata {
         const parsed = metadata;
+
+        // Enrich partial column definitions with full definitions from system queries
+        let columns = parsed.columns.map(col => {
+            const systemCol = this._systemQueriesColumnsMap.get(col.name);
+            if(!systemCol && col.isVirtual) {
+                throw new Error(`Virtual column ${col.name} is missing from system queries. Make sure all virtual columns are included in the system queries returned by the strategy's onGetSystemQueries method.`);
+            }
+            return systemCol ? { ...systemCol, ...col, metadata: { ...systemCol.metadata, ...col.metadata } } : col;
+        });
+
         if (!this._customColumnsDataProvider) {
-            return parsed;
+            return { ...parsed, columns };
         }
+
         const customColumnsMap = new Map(this._customColumnsDataProvider.getColumns().map(col => [col.name, col]));
-        let columns = parsed.columns.filter(col => this._isCustomColumnResolvable(col.name, customColumnsMap));
+        columns = columns.filter(col => this._isCustomColumnResolvable(col.name, customColumnsMap));
         columns = columns.map(col => {
             const customCol = customColumnsMap.get(col.name);
             return customCol ? { ...customCol, ...col, metadata: { ...customCol.metadata, ...col.metadata } } : col;
-        })
+        });
+
         return {
             ...parsed,
             sorting: parsed.sorting?.filter(sort => this._isCustomColumnResolvable(sort.name, customColumnsMap)),

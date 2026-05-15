@@ -190,8 +190,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         const columnsMap = new Map(columns.map(col => [col.name, col]));
         const virtualColumns = this._savedQueryDataProvider.getSystemQueries().flatMap(query => query.columns).filter(column => column.isVirtual);
         for (const virtualColumn of virtualColumns) {
-            //path column is always part of available columns (hidden)
-            if (!columnsMap.has(virtualColumn.name) || virtualColumn.name === PATH_COLUMN_NAME) {
+            if (!columnsMap.has(virtualColumn.name)) {
                 columns.push({
                     ...virtualColumn,
                     isHidden: false
@@ -303,12 +302,12 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         });
     }
 
-    public openDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): void {
+    public onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): void {
         if (!context || context?.columnName === this.getNativeColumns().subject) {
             this.editTasks([entityReference.id.guid]);
         }
         else {
-            this._strategy.onOpenDatasetItem(entityReference);
+            this._strategy.onOpenDatasetItem(entityReference, context);
         }
     }
 
@@ -363,16 +362,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public isRecordActive(recordId: string): boolean {
         return this._strategy.onIsRecordActive(recordId);
-    }
-
-    public onOpenDatasetItem(entityReference: ComponentFramework.EntityReference): void {
-        if (entityReference.etn === this.getEntityName()) {
-            this.editTasks([entityReference.id.guid]);
-        }
-        else {
-            //@ts-ignore - typings
-            this._sourceDataProvider.onOpenDatasetItem(entityReference);
-        }
     }
 
     public async destroy(): Promise<void> {
@@ -464,7 +453,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         })
     }
 
-    //fetch xml provider will override virtual column metadata by
+    //fetch xml provider will override virtual column metadata by default
     private _harmonizeVirtualColumns(virtualColumns: IColumn[], columns: IColumn[]) {
         columns.map((col, i) => {
             const virtualCol = virtualColumns.find(virtualCol => virtualCol.name === col.name);
