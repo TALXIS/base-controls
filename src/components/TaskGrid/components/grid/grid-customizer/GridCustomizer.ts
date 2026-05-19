@@ -153,6 +153,7 @@ export class GridCustomizer implements IGridCustomizer {
         for (const colDef of columnDefs) {
             colDef.onCellDoubleClicked = () => { }
             const columnName = colDef.colId as string;
+            const column = this._taskDataProvider.getColumnsMap()[columnName];
             switch (columnName) {
                 case this._nativeColumns.subject: {
                     colDef.cellRenderer = GroupCell;
@@ -165,7 +166,7 @@ export class GridCustomizer implements IGridCustomizer {
                 }
                 case this._nativeColumns.percentComplete: {
                     colDef.cellRenderer = PercentComplete;
-                    break
+                    break;
                 }
             }
         }

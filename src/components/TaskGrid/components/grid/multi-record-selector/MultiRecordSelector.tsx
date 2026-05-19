@@ -4,12 +4,17 @@ import { SelectInstance } from 'react-select';
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
 import { useLocalizationService } from '../../../context';
+import { MultiValueContainer } from './components/multi-value-container/MultiValueContainer';
+import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
+import { MultiValueLabel } from './components/multi-value-label/MultiValueLabel';
+import { getMultiRecordSelectorStyles } from './styles';
 
 interface IMultiRecordSelectorProps {
     onSelectionChange: (selectedRecords: ComponentFramework.EntityReference[]) => void;
     dataProvider: IDataProvider;
     container: HTMLElement;
     selectedRecords?: ComponentFramework.EntityReference[];
+    onNavigate?: (record: ComponentFramework.EntityReference) => void;
     onGetRef?: (ref: IMultRecordSelectorRef) => void;
     onMenuToggle?: (isOpen: boolean) => void;
     onOverrideComponentProps?: (props: AsyncProps<ComponentFramework.EntityReference, boolean, any>) => AsyncProps<ComponentFramework.EntityReference, boolean, any>;
@@ -24,6 +29,9 @@ export const MultiRecordSelector = (props: IMultiRecordSelectorProps) => {
     const localizationService = useLocalizationService();
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((p) => p);
     const ref = React.useRef<SelectInstance>(null);
+    const [renderKey, setRenderKey] = React.useState(0);
+    const isFirstRenderRef = React.useRef(true);
+    const [defaultOptions, setDefaultOptions] = React.useState<boolean>(false);
 
     const onLoadOptions = async (inputValue: string): Promise<ComponentFramework.EntityReference[]> => {
         dataProvider.setSearchQuery(inputValue);
@@ -54,6 +62,10 @@ export const MultiRecordSelector = (props: IMultiRecordSelectorProps) => {
     const onMenuOpen = (isOpen: boolean) => {
         props.onMenuToggle?.(isOpen);
         const controlElement = ref.current?.controlRef;
+        if(isOpen && !defaultOptions) {
+            setDefaultOptions(true);
+            setRenderKey(prev => prev + 1);
+        }
         if (isOpen && controlElement) {
             setTimeout(() => {
                 controlElement.scrollTop = controlElement.scrollHeight;
@@ -68,6 +80,14 @@ export const MultiRecordSelector = (props: IMultiRecordSelectorProps) => {
         }
     }, []);
 
+    React.useEffect(() => {
+        if (!isFirstRenderRef.current) {
+            ref.current?.openMenu('first');
+        }
+        isFirstRenderRef.current = false;
+    }, [renderKey]);
+
+
     props.onGetRef?.({ openMenu });
     const componentProps = onOverrideComponentProps({
         isMulti: true,
@@ -81,6 +101,7 @@ export const MultiRecordSelector = (props: IMultiRecordSelectorProps) => {
         menuPlacement: 'auto',
         isClearable: false,
         menuShouldScrollIntoView: false,
+        defaultOptions: defaultOptions,
         noOptionsMessage: () => localizationService.getLocalizedString('noRecordsFound'),
         loadingMessage: () => localizationService.getLocalizedString('loading'),
         getOptionValue: (record) => record.id.guid,
@@ -89,24 +110,19 @@ export const MultiRecordSelector = (props: IMultiRecordSelectorProps) => {
         onMenuOpen: () => onMenuOpen(true),
         onBlur: () => onMenuOpen(false),
         loadOptions: onLoadOptions,
-        styles: {
-            control: (base) => {
-                return {
-                    ...base,
-                    maxHeight: 200,
-                    overflow: 'auto',
-                    border: 'none',
-                    background: 'none',
-                    boxShadow: 'none',
-                }
-            },
-        },
+        onNavigate: props.onNavigate,
+        styles: getMultiRecordSelectorStyles(),
         components: {
             IndicatorSeparator: () => <></>,
             DropdownIndicator: () => <></>,
             LoadingIndicator: () => <></>,
+            MultiValueContainer: MultiValueContainer,
+            MultiValueRemove: MultiValueRemove,
+            MultiValueLabel: MultiValueLabel,
+            //Option: Option,
         },
     })
-
-    return <AsyncSelect {...componentProps} />
+    return <React.Fragment key={renderKey}>
+        <AsyncSelect {...componentProps} key={renderKey} />
+    </React.Fragment>
 }
