@@ -6,11 +6,14 @@ export const getMultiValueLabelStyles = () => {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            fontWeight: 600
+            fontWeight: 600,
+            display: 'block',
         },
         link: {
             fontWeight: 600,
             pointerEvents: 'all',
+            overflow: 'hidden',
+            display: 'block',
         }
     });
 };

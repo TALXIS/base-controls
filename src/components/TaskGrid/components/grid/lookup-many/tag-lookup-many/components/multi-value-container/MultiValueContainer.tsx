@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { ThemeProvider, useTheme } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
 import { Theming, useThemeGenerator } from '@talxis/react-components';
