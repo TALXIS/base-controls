@@ -36,7 +36,10 @@ export const LookupMany = (props: ILookupManyProps) => {
         return records.map(record => {
             return {
                 ...record.getNamedReference(),
-                rawData: record.getRawData()
+                rawData: {
+                    ...record.getRawData(),
+                    imageurl: 'https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-react-assets/persona-male.png'
+                }
             }
         })
     }
