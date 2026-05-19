@@ -1,17 +1,17 @@
 import { ILookupManyProps, LookupMany } from "../LookupMany";
 import { DEFAULT_TAG_LOOKUP_MANY_COMPONENTS } from "./components";
-import { TagLookupManyPropsContext } from "./context";
+import { ColorfulLookupManyPropsContext } from "./context";
 
-export interface ITagLookupManyProps extends ILookupManyProps {
+export interface IColorfulLookupManyProps extends ILookupManyProps {
     colorPropertyName?: string;
 }
 
-export const TagLookupMany = (props: ITagLookupManyProps) => {
+export const ColorfulLookupMany = (props: IColorfulLookupManyProps) => {
     const components = { ...DEFAULT_TAG_LOOKUP_MANY_COMPONENTS, ...props.components };
-    return <TagLookupManyPropsContext.Provider value={props}>
+    return <ColorfulLookupManyPropsContext.Provider value={props}>
         <LookupMany
             {...props}
             components={components}
         />
-    </TagLookupManyPropsContext.Provider>
+    </ColorfulLookupManyPropsContext.Provider>
 }
