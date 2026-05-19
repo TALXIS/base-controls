@@ -19,10 +19,6 @@ export interface ILookupManyProps {
     onRecordOpen?: (record: ComponentFramework.EntityReference) => void;
 }
 
-export interface ILookupManyRef {
-    openMenu: () => void;
-}
-
 export const LookupMany = (props: ILookupManyProps) => {
     const { dataProvider, selectedRecords = [], container, isDisabled = false, onRecordSelect, onRecordOpen } = props;
     const components = { ...DEFAULT_COMPONENTS, ...props.components };
@@ -32,6 +28,7 @@ export const LookupMany = (props: ILookupManyProps) => {
     const isFirstRenderRef = React.useRef(true);
     const [defaultOptions, setDefaultOptions] = React.useState<boolean>(false);
     const MultiValueLabel = React.useRef(components.onRenderMultiValueLabel);
+    const Option = React.useRef(components.onRenderOption);
 
     const onLoadOptions = async (inputValue: string): Promise<ComponentFramework.EntityReference[]> => {
         dataProvider.setSearchQuery(inputValue);
@@ -73,9 +70,9 @@ export const LookupMany = (props: ILookupManyProps) => {
     }
 
     React.useEffect(() => {
-        container.addEventListener('dblclick', openMenu);
+        //container.addEventListener('dblclick', openMenu);
         return () => {
-            container.removeEventListener('dblclick', openMenu);
+            //container.removeEventListener('dblclick', openMenu);
         }
     }, []);
 
@@ -93,7 +90,8 @@ export const LookupMany = (props: ILookupManyProps) => {
                 ref: ref,
                 isMulti: true,
                 menuPortalTarget: document.body,
-                openMenuOnClick: false,
+                closeMenuOnSelect: false,
+                //openMenuOnClick: false,
                 isDisabled: isDisabled,
                 placeholder: '',
                 value: selectedRecords,
@@ -108,7 +106,8 @@ export const LookupMany = (props: ILookupManyProps) => {
                     LoadingIndicator: () => <></>,
                     MultiValueContainer: MultiValueContainer,
                     MultiValueRemove: MultiValueRemove,
-                    MultiValueLabel: MultiValueLabel.current
+                    MultiValueLabel: MultiValueLabel.current,
+                    Option: Option.current
                 },
                 onKeyDown: onKeyDown,
                 noOptionsMessage: () => localizationService.getLocalizedString('noRecordsFound'),
