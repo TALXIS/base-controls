@@ -2,7 +2,6 @@ import { IDataProvider } from '@talxis/client-libraries';
 import * as React from 'react';
 import { SelectInstance } from 'react-select';
 import { useLocalizationService } from '../../../context';
-import { MultiValueContainer } from './components/multi-value-container/MultiValueContainer';
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
 import { getLookupManyStyles } from './styles';
 import { DEFAULT_COMPONENTS, ILookupManyComponents } from './components';
@@ -10,7 +9,6 @@ import { LookupManyPropsContext } from './context';
 
 export interface ILookupManyProps {
     dataProvider: IDataProvider;
-    container: HTMLElement;
     selectedRecordHeight?: number;
     isDisabled?: boolean;
     selectedRecords?: ComponentFramework.EntityReference[];
@@ -20,13 +18,14 @@ export interface ILookupManyProps {
 }
 
 export const LookupMany = (props: ILookupManyProps) => {
-    const { dataProvider, selectedRecords = [], container, isDisabled = false, onRecordSelect, onRecordOpen } = props;
+    const { dataProvider, selectedRecords = [], isDisabled = false, onRecordSelect, onRecordOpen } = props;
     const components = { ...DEFAULT_COMPONENTS, ...props.components };
     const localizationService = useLocalizationService();
     const ref = React.useRef<SelectInstance>(null);
     const [renderKey, setRenderKey] = React.useState(0);
     const isFirstRenderRef = React.useRef(true);
     const [defaultOptions, setDefaultOptions] = React.useState<boolean>(false);
+    const MultiValueContainerComponent = React.useRef(components.onRenderMultiValueContainer);
     const MultiValueLabel = React.useRef(components.onRenderMultiValueLabel);
     const Option = React.useRef(components.onRenderOption);
 
@@ -73,13 +72,6 @@ export const LookupMany = (props: ILookupManyProps) => {
     }
 
     React.useEffect(() => {
-        //container.addEventListener('dblclick', openMenu);
-        return () => {
-            //container.removeEventListener('dblclick', openMenu);
-        }
-    }, []);
-
-    React.useEffect(() => {
         if (!isFirstRenderRef.current) {
             ref.current?.openMenu('first');
         }
@@ -107,7 +99,7 @@ export const LookupMany = (props: ILookupManyProps) => {
                     IndicatorSeparator: () => <></>,
                     DropdownIndicator: () => <></>,
                     LoadingIndicator: () => <></>,
-                    MultiValueContainer: MultiValueContainer,
+                    MultiValueContainer: MultiValueContainerComponent.current,
                     MultiValueRemove: MultiValueRemove,
                     MultiValueLabel: MultiValueLabel.current,
                     Option: Option.current
