@@ -6,10 +6,12 @@ import { MultiValueContainer } from './components/multi-value-container/MultiVal
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
 import { getLookupManyStyles } from './styles';
 import { DEFAULT_COMPONENTS, ILookupManyComponents } from './components';
+import { LookupManyPropsContext } from './context';
 
 export interface ILookupManyProps {
     dataProvider: IDataProvider;
     container: HTMLElement;
+    selectedRecordHeight?: number;
     isDisabled?: boolean;
     selectedRecords?: ComponentFramework.EntityReference[];
     components?: Partial<ILookupManyComponents>;
@@ -84,41 +86,41 @@ export const LookupMany = (props: ILookupManyProps) => {
         isFirstRenderRef.current = false;
     }, [renderKey]);
 
-
-
-    return <React.Fragment key={renderKey}>
-        {components.onRenderSelect({
-            //@ts-ignore
-            ref: ref,
-            isMulti: true,
-            menuPortalTarget: document.body,
-            openMenuOnClick: false,
-            isDisabled: isDisabled,
-            placeholder: '',
-            value: selectedRecords,
-            menuPlacement: 'auto',
-            isClearable: false,
-            menuShouldScrollIntoView: false,
-            defaultOptions: defaultOptions,
-            styles: getLookupManyStyles(),
-            components: {
-                IndicatorSeparator: () => <></>,
-                DropdownIndicator: () => <></>,
-                LoadingIndicator: () => <></>,
-                MultiValueContainer: MultiValueContainer,
-                MultiValueRemove: MultiValueRemove,
-                MultiValueLabel: MultiValueLabel.current
-            },
-            onKeyDown: onKeyDown,
-            noOptionsMessage: () => localizationService.getLocalizedString('noRecordsFound'),
-            loadingMessage: () => localizationService.getLocalizedString('loading'),
-            getOptionValue: (record) => record.id.guid,
-            getOptionLabel: (record) => record.name,
-            onChange: (selectedRecords) => onRecordSelect(selectedRecords as ComponentFramework.EntityReference[]),
-            onMenuOpen: () => onMenuOpen(true),
-            onBlur: () => onMenuOpen(false),
-            loadOptions: onLoadOptions,
-            onNavigate: onRecordOpen
-        })}
-    </React.Fragment>
+    return <LookupManyPropsContext.Provider value={props}>
+        <React.Fragment key={renderKey}>
+            {components.onRenderSelect({
+                //@ts-ignore
+                ref: ref,
+                isMulti: true,
+                menuPortalTarget: document.body,
+                openMenuOnClick: false,
+                isDisabled: isDisabled,
+                placeholder: '',
+                value: selectedRecords,
+                menuPlacement: 'auto',
+                isClearable: false,
+                menuShouldScrollIntoView: false,
+                defaultOptions: defaultOptions,
+                styles: getLookupManyStyles(),
+                components: {
+                    IndicatorSeparator: () => <></>,
+                    DropdownIndicator: () => <></>,
+                    LoadingIndicator: () => <></>,
+                    MultiValueContainer: MultiValueContainer,
+                    MultiValueRemove: MultiValueRemove,
+                    MultiValueLabel: MultiValueLabel.current
+                },
+                onKeyDown: onKeyDown,
+                noOptionsMessage: () => localizationService.getLocalizedString('noRecordsFound'),
+                loadingMessage: () => localizationService.getLocalizedString('loading'),
+                getOptionValue: (record) => record.id.guid,
+                getOptionLabel: (record) => record.name,
+                onChange: (selectedRecords) => onRecordSelect(selectedRecords as ComponentFramework.EntityReference[]),
+                onMenuOpen: () => onMenuOpen(true),
+                onBlur: () => onMenuOpen(false),
+                loadOptions: onLoadOptions,
+                onNavigate: onRecordOpen
+            })}
+        </React.Fragment>
+    </LookupManyPropsContext.Provider>
 }

@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from '@fluentui/react';
 
-export const getMultiValueContainerStyles = (theme: ITheme, isDisabled?: boolean) => {
+export const getMultiValueContainerStyles = (theme: ITheme, isDisabled?: boolean, height?: number) => {
     return mergeStyleSets({
         root: {
             display: 'inline-flex',
@@ -15,7 +15,7 @@ export const getMultiValueContainerStyles = (theme: ITheme, isDisabled?: boolean
             color: theme.palette.neutralPrimary,
             maxWidth: 200,
             overflow: 'hidden',
-            height: 20
+            height: height ?? 20
         },
     });
 };

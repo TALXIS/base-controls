@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from '@fluentui/react';
 
-export const getMultiValueRemoveStyles = (theme: ITheme) => {
+export const getMultiValueRemoveStyles = (theme: ITheme, height?: number) => {
     return mergeStyleSets({
         root: {
             display: 'inline-flex',
@@ -11,7 +11,7 @@ export const getMultiValueRemoveStyles = (theme: ITheme) => {
             cursor: 'pointer',
             borderRadius: 2,
             color: theme.palette.neutralSecondary,
-            height: 20,
+            height: height ?? 20,
             width: 20,
             ':hover': {
                 color: theme.palette.neutralPrimary,
