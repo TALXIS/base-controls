@@ -1,20 +1,19 @@
 import * as React from 'react';
-import { Link, Persona, PersonaSize, TooltipHost } from '@fluentui/react';
+import { Persona, PersonaSize, TooltipHost } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
 import { getMultiValueLabelStyles } from './styles';
 import { usePeopleLookupManyProps } from '../../context';
+import { MultiValueLabel as MultiValueLabelBase } from '../../../components/multi-value-label';
 
-export const MultiValueLabel = ({ data, selectProps }: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
+export const MultiValueLabel = (props: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
     const styles = React.useMemo(() => getMultiValueLabelStyles(), []);
     const {imageUrlPropertyName = 'imageurl'} = usePeopleLookupManyProps();
-    const { onNavigate } = selectProps as any;
-    const imageUrl = (data as any).rawData?.[imageUrlPropertyName] ?? undefined;
-
+    const imageUrl = (props.data as any).rawData?.[imageUrlPropertyName] ?? undefined;
 
     const persona = (
-        <TooltipHost content={data.name}>
+        <TooltipHost content={props.data.name}>
             <Persona
-                text={data.name}
+                text={props.data.name}
                 size={PersonaSize.size24}
                 imageUrl={imageUrl}
                 hidePersonaDetails
@@ -23,18 +22,7 @@ export const MultiValueLabel = ({ data, selectProps }: MultiValueGenericProps<Co
         </TooltipHost>
     );
 
-    if (onNavigate) {
-        return (
-            <Link
-                onClick={(e) => {
-                    e.preventDefault();
-                    onNavigate(data);
-                }}
-            >
-                {persona}
-            </Link>
-        );
-    }
-
-    return <>{persona}</>;
+    return <MultiValueLabelBase {...props}>
+        {persona}
+    </MultiValueLabelBase>
 };
