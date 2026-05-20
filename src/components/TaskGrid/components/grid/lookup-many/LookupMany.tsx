@@ -6,6 +6,7 @@ import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemo
 import { getLookupManyStyles } from './styles';
 import { DEFAULT_COMPONENTS, ILookupManyComponents } from './components';
 import { LookupManyPropsContext } from './context';
+import { Callout } from '@fluentui/react';
 
 export interface ILookupManyProps {
     dataProvider: IDataProvider;
@@ -23,7 +24,6 @@ export const LookupMany = (props: ILookupManyProps) => {
     const localizationService = useLocalizationService();
     const ref = React.useRef<SelectInstance>(null);
     const [renderKey, setRenderKey] = React.useState(0);
-    const isFirstRenderRef = React.useRef(true);
     const [defaultOptions, setDefaultOptions] = React.useState<boolean>(false);
     const MultiValueContainerComponent = React.useRef(components.onRenderMultiValueContainer);
     const MultiValueLabel = React.useRef(components.onRenderMultiValueLabel);
@@ -61,27 +61,19 @@ export const LookupMany = (props: ILookupManyProps) => {
         }
     }
 
-    React.useEffect(() => {
-        if (!isFirstRenderRef.current) {
-            ref.current?.openMenu('first');
-        }
-        isFirstRenderRef.current = false;
-    }, [renderKey]);
-
     return <LookupManyPropsContext.Provider value={props}>
         <React.Fragment key={renderKey}>
             {components.onRenderSelect({
                 //@ts-ignore
                 ref: ref,
                 isMulti: true,
-                menuPortalTarget: document.body,
-                closeMenuOnSelect: false,
                 isDisabled: isDisabled,
-                placeholder: '',
+                menuPortalTarget: document.body,
                 value: selectedRecords,
                 menuPlacement: 'auto',
                 isClearable: false,
                 menuShouldScrollIntoView: false,
+                closeMenuOnSelect: false,
                 defaultOptions: defaultOptions,
                 styles: getLookupManyStyles(),
                 components: {
@@ -91,7 +83,7 @@ export const LookupMany = (props: ILookupManyProps) => {
                     MultiValueContainer: MultiValueContainerComponent.current,
                     MultiValueRemove: MultiValueRemove,
                     MultiValueLabel: MultiValueLabel.current,
-                    Option: Option.current
+                    Option: Option.current,
                 },
                 onKeyDown: onKeyDown,
                 noOptionsMessage: () => localizationService.getLocalizedString('noRecordsFound'),
