@@ -25,12 +25,6 @@ export interface IGridCustomizerStrategy {
     onGetColumnDefinitions?: (columnDefs: ColDef[]) => ColDef[];
     /** Receives the default row class rules map and may return an extended or overridden version. */
     onGetRowClassRules?: (rules: RowClassRules) => RowClassRules;
-    /** Return a custom cell renderer component for the given column definition, or `undefined` to use the default. */
-    onGetCellRenderer?: (colDef: ColDef) => any;
-    /** Return a custom cell editor component for the given column definition, or `undefined` to use the default. */
-    onGetCellEditor?: (colDef: ColDef) => any;
-    /** Receives the raw AG Grid `GridApi` instance, useful if the strategy needs to retain a reference. */
-    onRetrieveGridApi?: (gridApi: GridApi) => void;
 }
 
 /** Provides access to the AG Grid instance and the TaskGrid control to code running inside `IGridCustomizerStrategy`. */
@@ -131,7 +125,7 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
     private _injectAddTaskColumn(columnDefs: ColDef[]) {
-        if (!this._taskDataProvider.isFlatListEnabled() &&!columnDefs.find(colDef => colDef.colId === ADD_TASK_COLUMN_NAME)) {
+        if (!this._taskDataProvider.isFlatListEnabled() && !columnDefs.find(colDef => colDef.colId === ADD_TASK_COLUMN_NAME)) {
             columnDefs.push({
                 colId: ADD_TASK_COLUMN_NAME,
                 headerName: '',
@@ -173,10 +167,6 @@ export class GridCustomizer implements IGridCustomizer {
 
         columnDefs.sort((a, b) => this._getColumnPriority(a) - this._getColumnPriority(b));
         columnDefs = this._strategy?.onGetColumnDefinitions?.(columnDefs) ?? columnDefs;
-        for (const colDef of columnDefs) {
-            colDef.cellRenderer = this._strategy?.onGetCellRenderer?.(colDef) ?? colDef.cellRenderer;
-            colDef.cellEditor = this._strategy?.onGetCellEditor?.(colDef) ?? colDef.cellEditor;
-        }
         return columnDefs;
 
     }
@@ -370,10 +360,21 @@ export class GridCustomizer implements IGridCustomizer {
             const primaryIdAttribute = this._taskDataProvider.getMetadata().PrimaryIdAttribute;
             const recordId = records[0][primaryIdAttribute] as string;
             const node = this._gridApi.getRowNode(recordId);
-            this._gridApi.setFocusedCell(node!.rowIndex!, this._nativeColumns.subject);
-            this._gridApi.ensureNodeVisible(node!);
+            if (!node) return;
+            if (records.length === 1 && this._datasetControl.isInlineCreateEnabled()) {
+                const rowIndex = node.rowIndex!;
+                this._gridApi.startEditingCell({
+                    rowIndex: rowIndex,
+                    colKey: this._nativeColumns.subject
+                });
+            }
+            else {
+                this._gridApi.setFocusedCell(node!.rowIndex!, this._nativeColumns.subject);
+                this._gridApi.ensureNodeVisible(node!);
+            }
         }, 100);
     }
+
 
     private _onAfterTaskDataUpdated = (newData: IRawRecord[]) => {
         const recordIdsSet = new Set(newData.map(item => item[this._taskDataProvider.getMetadata().PrimaryIdAttribute]));

@@ -7,6 +7,11 @@ import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many
 import { Liquid } from "liquidjs";
 
 
+interface IFormParameters {
+    pageInput: Xrm.Navigation.PageInputEntityRecord;
+    navigationOptions: Xrm.Navigation.NavigationOptions;
+}
+
 export interface IDataProviderStrategyParams {
     fetchXml: string;
     isInlineCreateEnabled?: boolean;
@@ -16,6 +21,9 @@ export interface IDataProviderStrategyParams {
     bulkEditFormId?: string;
     projectReference?: ComponentFramework.EntityReference;
     rootTaskId?: string;
+    formStrategy?: {
+        onGetFormParameters?: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
+    }
 }
 
 interface ILookupManyColumn extends IColumn {
@@ -49,6 +57,8 @@ export class DataProviderStrategy implements IDataProviderStrategy {
     private _isEditingEnabled: boolean;
     private _lookupManyColumns: ILookupManyColumn[] = [];
     private _lookupManyHandlers: { [colName: string]: LookupManyHandler } = {};
+    private _getFormParameters: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
+
 
     constructor(params: IDataProviderStrategyParams) {
         this._fetchXml = params.fetchXml;
@@ -58,6 +68,7 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         this._bulkEditFormId = params.bulkEditFormId;
         this._isInlineCreateEnabled = params.isInlineCreateEnabled ?? true;
         this._isEditingEnabled = params.isEditingEnabled ?? true;
+        this._getFormParameters = params.formStrategy?.onGetFormParameters ?? ((operation, defaultParameters) => defaultParameters);
     }
 
     public async onGetRawRecords(ids: string[], select?: string): Promise<IRawRecord[]> {
@@ -245,8 +256,11 @@ export class DataProviderStrategy implements IDataProviderStrategy {
             return rawRecord;
         }
 
-        //this should be the same no matter the override
-        const navigateToResult = await Xrm.Navigation.navigateTo(pageInput, this._getFormNavigationOptions());
+        const { pageInput: resolvedPageInput, navigationOptions: resolvedNavigationOptions } = this._getFormParameters('create', {
+            pageInput,
+            navigationOptions: this._getFormNavigationOptions()
+        });
+        const navigateToResult = await Xrm.Navigation.navigateTo(resolvedPageInput, resolvedNavigationOptions);
         if (navigateToResult.savedEntityReference) {
             const entityReference = Sanitizer.Lookup.getEntityReference(navigateToResult.savedEntityReference[0]);
             await window.Xrm.WebApi.updateRecord(this._entityName, entityReference.id.guid, payload);
@@ -352,11 +366,15 @@ export class DataProviderStrategy implements IDataProviderStrategy {
     }
 
     public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
-        await window.Xrm.Navigation.navigateTo({
-            pageType: 'entityrecord',
-            entityName: entityReference.etn!,
-            entityId: entityReference.id.guid,
-        }, this._getFormNavigationOptions());
+        const { pageInput, navigationOptions } = this._getFormParameters('open', {
+            pageInput: {
+                pageType: 'entityrecord',
+                entityName: entityReference.etn!,
+                entityId: entityReference.id.guid,
+            },
+            navigationOptions: this._getFormNavigationOptions()
+        });
+        await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
     }
     public onGetRootTaskId?(): string | undefined {
         return this._rootTaskId;
@@ -391,32 +409,40 @@ export class DataProviderStrategy implements IDataProviderStrategy {
     }
 
     private async _editSingleTask(recordId: string): Promise<IRawRecord | null> {
-        let pageInput: Xrm.Navigation.PageInputEntityRecord = {
-            pageType: 'entityrecord',
-            entityName: this._entityName,
-            entityId: recordId,
-            formId: this._editFormId,
-            data: {
-                isEditingEnabled: this._isEditingEnabled
-            }
+        const { pageInput, navigationOptions } = this._getFormParameters('edit', {
+            pageInput: {
+                pageType: 'entityrecord',
+                entityName: this._entityName,
+                entityId: recordId,
+                formId: this._editFormId,
+                data: {
+                    isEditingEnabled: this._isEditingEnabled
+                }
+            },
+            navigationOptions: this._getFormNavigationOptions()
+        })
 
-        };
-        await window.Xrm.Navigation.navigateTo(pageInput, this._getFormNavigationOptions());
+        await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
         const result = await this.onGetRawRecords([recordId]);
         return result[0];
     }
 
     private async _editMultipleTasks(recordIds: string[]): Promise<IEditTasksResult | null> {
-        await window.Xrm.Navigation.navigateTo({
+        const { pageInput, navigationOptions} = this._getFormParameters('bulkEdit', {
             //@ts-ignore - not documented, passing of record id array is possible in Power Apps - https://butenko.pro/2021/10/14/howto-open-bulk-editing-of-records-using-xrm-navigation-navigateto/
-            pageType: 'bulkedit',
-            entityName: this._entityName,
-            entityIds: recordIds,
-            formId: this._bulkEditFormId
-        }, {
-            target: 2,
-            position: 2,
+            pageInput: {
+                //@ts-ignore - typings
+                pageType: 'bulkedit',
+                entityName: this._entityName,
+                entityIds: recordIds,
+                formId: this._bulkEditFormId
+            },
+            navigationOptions: {
+                target: 2,
+                position: 2,
+            }
         });
+        await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
         const rawRecords = await this.onGetRawRecords(recordIds);
         return {
             success: true,
