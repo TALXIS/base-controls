@@ -105,7 +105,7 @@ export interface ITaskGridDescriptor {
     /** (Optional) Returns a strategy for deep customization of AG Grid column definitions, renderers, editors, and row class rules. */
     onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
     /** (Optional) Returns the AG Grid Enterprise license key. */
-    onGetAgGridLicenseKey?: () => string;
+    onGetAgGridLicenseKey?: () => string | undefined;
     /** (Optional) Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
     onGetControlId?: () => string;
     /** (Optional) Async hook called before any data provider is created. Use for lazy loading or authentication. */
