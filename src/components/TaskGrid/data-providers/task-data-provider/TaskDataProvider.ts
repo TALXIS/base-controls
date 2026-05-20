@@ -31,8 +31,7 @@ export interface ITaskDataProviderParameters {
 /** Strategy interface that handles all data access and mutation operations for tasks. */
 export interface ITaskDataProviderStrategy {
     /**
-     * Called once on first load. Must return the initial columns, raw task records, and provider metadata.
-     * An empty `ids` array instructs the strategy to fetch all records.
+     * Called when the provider needs to retrieve latest data for specific tasks to synchronize the grid with the server.
      */
     onGetRawRecords: (ids: string[]) => Promise<IRawRecord[]>;
     /** Called once on first load. Must return the initial columns, raw task records, and entity metadata. */
@@ -68,7 +67,7 @@ export interface ITaskDataProviderStrategy {
     /** Returns whether the given task record is currently active (non-completed). */
     onIsRecordActive(recordId: string): boolean;
     /** Opens the record detail view. Called when a user clicks a non-subject cell. */
-    onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): void;
+    onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void>;
     /** When provided, the task tree is scoped to the subtree of the returned task id. */
     onGetRootTaskId?: () => string | undefined
 }
@@ -86,6 +85,8 @@ export interface ITaskDataProviderEventListener {
     onTaskDataUpdated: (data: IRawRecord[]) => void;
     onAfterTasksEdited: (result: IEditTasksResult | null) => void;
     onRecordTreeUpdated: (updatedParentIds: (string | undefined)[]) => void;
+    onBeforeDatasetItemOpened: (entityReference: ComponentFramework.EntityReference) => void;
+    onAfterDatasetItemOpened: (entityReference: ComponentFramework.EntityReference) => void;
     onError: (error: any, message: string) => void;
 }
 
@@ -302,12 +303,23 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         });
     }
 
-    public onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): void {
-        if (!context || context?.columnName === this.getNativeColumns().subject) {
+    public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
+        //!context => double click on row, open edit form
+        //context.columnName === subject => click on subject cell, open edit form
+        const shouldInvokeEdit = !context || context?.columnName === this.getNativeColumns().subject;
+        if(shouldInvokeEdit) {
             this.editTasks([entityReference.id.guid]);
         }
+        //lookup opening
         else {
-            this._strategy.onOpenDatasetItem(entityReference, context);
+            this.taskEvents.dispatchEvent('onBeforeDatasetItemOpened', entityReference);
+            ErrorHelper.executeWithErrorHandling({
+                operation: async () => {
+                    await this._strategy.onOpenDatasetItem(entityReference, context);
+                    this.taskEvents.dispatchEvent('onAfterDatasetItemOpened', entityReference);
+                },
+                onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
+            })
         }
     }
 

@@ -4,6 +4,7 @@ import { IRecordTree } from "../../data-providers/task-data-provider/record-tree
 import { INativeColumns } from "../../interfaces";
 import { LexoRank } from "../LexoRank";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
+import { Liquid } from "liquidjs";
 
 
 export interface IDataProviderStrategyParams {
@@ -13,7 +14,7 @@ export interface IDataProviderStrategyParams {
     editFormId?: string;
     createFormId?: string;
     bulkEditFormId?: string;
-    projectRecord?: IRecord;
+    projectReference?: ComponentFramework.EntityReference;
     rootTaskId?: string;
 }
 
@@ -26,14 +27,16 @@ export interface IDataverseEntityNativeColumns extends INativeColumns {
 }
 
 export interface IDataProviderStrategy extends ITaskDataProviderStrategy {
-    getProjectRecord(): IRecord | null;
+    getProjectReference(): ComponentFramework.EntityReference | null;
 }
+
+const LIQUID = new Liquid();
 
 export class DataProviderStrategy implements IDataProviderStrategy {
     private _fetchXml: string;
     private _entitySetName!: string;
     private _entityName!: string;
-    private _projectRecord?: IRecord;
+    private _projectReference?: ComponentFramework.EntityReference;
     private _projectMetadata?: Xrm.Metadata.EntityMetadata;
     private _rootTaskId?: string;
     private _taskTree!: IRecordTree;
@@ -49,7 +52,7 @@ export class DataProviderStrategy implements IDataProviderStrategy {
 
     constructor(params: IDataProviderStrategyParams) {
         this._fetchXml = params.fetchXml;
-        this._projectRecord = params.projectRecord;
+        this._projectReference = params.projectReference;
         this._editFormId = params.editFormId;
         this._createFormId = params.createFormId;
         this._bulkEditFormId = params.bulkEditFormId;
@@ -83,8 +86,8 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         return records;
     }
 
-    public getProjectRecord(): IRecord | null {
-        return this._projectRecord ?? null;
+    public getProjectReference(): ComponentFramework.EntityReference | null {
+        return this._projectReference ?? null;
     }
 
     private async _harmonizeLookupManyData(record: IRawRecord): Promise<IRawRecord> {
@@ -165,8 +168,8 @@ export class DataProviderStrategy implements IDataProviderStrategy {
             }
         });
 
-        if (this._projectRecord) {
-            this._projectMetadata = await window.Xrm.Utility.getEntityMetadata(this._projectRecord.getNamedReference().etn!);
+        if (this._projectReference) {
+            this._projectMetadata = await window.Xrm.Utility.getEntityMetadata(this._projectReference.etn!);
         }
 
         return {
@@ -190,20 +193,9 @@ export class DataProviderStrategy implements IDataProviderStrategy {
     }
 
     private _getFetchXml(): string {
-        if (!this._projectRecord) {
-            return this._fetchXml;
-        }
-        const nativeColumns: IDataverseEntityNativeColumns = this._provider.getNativeColumns();
-        const projectIdColumnName = nativeColumns.projectId;
-        if (!projectIdColumnName) {
-            throw new Error("ProjectId column is required to use project filter in DataverseEntityTaskStrategy");
-        }
-        //add project filter
-        const fetch = FetchXmlBuilder.fetch.fromXml(this._fetchXml);
-        fetch.entity.addFilter(new FetchXmlBuilder.filter('and', [
-            new FetchXmlBuilder.condition(projectIdColumnName, 'eq', [new FetchXmlBuilder.value(this._projectRecord.getRecordId())])
-        ]));
-        return fetch.toXml();
+        return LIQUID.parseAndRenderSync(this._fetchXml, {
+            projectId: this._projectReference?.id.guid,
+        })
     }
 
     public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
@@ -216,11 +208,6 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         return [];
     }
     public async onCreateTask(parentTaskId?: string): Promise<IRawRecord | null> {
-        let navigationOptions: Xrm.Navigation.NavigationOptions = {
-            target: 2,
-            width: { value: 80, unit: '%' },
-            position: 1,
-        };
         const data: { [key: string]: any } = {};
         let pageInput: Xrm.Navigation.PageInputEntityRecord = {
             pageType: 'entityrecord',
@@ -229,11 +216,11 @@ export class DataProviderStrategy implements IDataProviderStrategy {
             formId: this._createFormId
         };
         //prefill project
-        if (this._projectRecord) {
+        if (this._projectReference) {
             const projectIdColumnName = this._getNativeColumns().projectId;
-            data[`${projectIdColumnName}`] = this._projectRecord.getRecordId();
-            data[`${projectIdColumnName}name`] = this._projectRecord.getNamedReference().name;
-            data[`${projectIdColumnName}type`] = this._projectRecord.getNamedReference().etn;
+            data[`${projectIdColumnName}`] = this._projectReference.id.guid;
+            data[`${projectIdColumnName}name`] = this._projectReference.name;
+            data[`${projectIdColumnName}type`] = this._projectReference.etn;
         }
         //prefill parent task
         if (parentTaskId) {
@@ -246,8 +233,8 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         let payload: { [key: string]: any } = {};
         payload[`${this._getNativeColumns().stackRank}`] = await this._updateStackRank({ previousTaskId: undefined, nextTaskId: node.directChildren[0]?.getRecordId(), skipSave: true });
 
-        if (this._projectRecord) {
-            payload[`${await this._getNavigationalPropertyName(this._projectRecord.getNamedReference().etn!, this._getNativeColumns().projectId!)}@odata.bind`] = `/${this._projectMetadata?.EntitySetName}(${this._projectRecord.getRecordId()})`;
+        if (this._projectReference) {
+            payload[`${await this._getNavigationalPropertyName(this._projectReference.etn!, this._getNativeColumns().projectId!)}@odata.bind`] = `/${this._projectMetadata?.EntitySetName}(${this._projectReference.id.guid})`;
         }
         if (parentTaskId) {
             payload[`${await this._getNavigationalPropertyName(this._entityName, this._getNativeColumns().parentId)}@odata.bind`] = `/${this._entitySetName}(${parentTaskId})`;
@@ -259,7 +246,7 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         }
 
         //this should be the same no matter the override
-        const navigateToResult = await Xrm.Navigation.navigateTo(pageInput, navigationOptions);
+        const navigateToResult = await Xrm.Navigation.navigateTo(pageInput, this._getFormNavigationOptions());
         if (navigateToResult.savedEntityReference) {
             const entityReference = Sanitizer.Lookup.getEntityReference(navigateToResult.savedEntityReference[0]);
             await window.Xrm.WebApi.updateRecord(this._entityName, entityReference.id.guid, payload);
@@ -363,14 +350,13 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         const record = this._provider.getRecordsMap()[recordId];
         return record.getValue(this._provider.getNativeColumns().stateCode) == 0;
     }
-    
-    public onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): void {
-        if (entityReference.etn === this._entityName) {
-            this._editSingleTask(entityReference.id.guid);
-        }
-        else {
-            this._fetchXmlDataProvider.openDatasetItem(entityReference);
-        }
+
+    public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
+        await window.Xrm.Navigation.navigateTo({
+            pageType: 'entityrecord',
+            entityName: entityReference.etn!,
+            entityId: entityReference.id.guid,
+        }, this._getFormNavigationOptions());
     }
     public onGetRootTaskId?(): string | undefined {
         return this._rootTaskId;
@@ -388,6 +374,14 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         return relationship.ReferencingEntityNavigationPropertyName;
     }
 
+    private _getFormNavigationOptions(): Xrm.Navigation.NavigationOptions {
+        return {
+            target: 2,
+            width: { value: 80, unit: '%' },
+            position: 1,
+        };
+    }
+
     private _getLookupManyHandlerForColumn(colName: string): LookupManyHandler {
         const handler = this._lookupManyHandlers[colName];
         if (!handler) {
@@ -397,11 +391,6 @@ export class DataProviderStrategy implements IDataProviderStrategy {
     }
 
     private async _editSingleTask(recordId: string): Promise<IRawRecord | null> {
-        let navigationOptions: Xrm.Navigation.NavigationOptions = {
-            target: 2,
-            width: { value: 80, unit: '%' },
-            position: 1,
-        };
         let pageInput: Xrm.Navigation.PageInputEntityRecord = {
             pageType: 'entityrecord',
             entityName: this._entityName,
@@ -412,7 +401,7 @@ export class DataProviderStrategy implements IDataProviderStrategy {
             }
 
         };
-        await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
+        await window.Xrm.Navigation.navigateTo(pageInput, this._getFormNavigationOptions());
         const result = await this.onGetRawRecords([recordId]);
         return result[0];
     }

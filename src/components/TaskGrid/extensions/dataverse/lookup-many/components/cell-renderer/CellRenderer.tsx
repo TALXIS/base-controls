@@ -28,7 +28,7 @@ export const CellRenderer = (props: ICellRendererProps) => {
     const taskId = record.getRecordId();
     const provider = useTaskDataProvider();
     const strategy: IDataProviderStrategy = useTaskDataProvider().getStrategy();
-    const projectRecord = strategy.getProjectRecord();
+    const projectReference = strategy.getProjectReference();
     const fetchXml = customControl?.bindings?.FetchXml.value;
     
     if(!fetchXml) {
@@ -39,7 +39,7 @@ export const CellRenderer = (props: ICellRendererProps) => {
         fetchXml: fetchXml,
         variables: {
             taskId: taskId,
-            projectId: projectRecord?.getRecordId()
+            projectId: projectReference?.id.guid
         }
     }), []);
 
