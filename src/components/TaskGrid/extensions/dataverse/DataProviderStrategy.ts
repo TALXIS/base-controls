@@ -64,6 +64,7 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         this._fetchXml = params.fetchXml;
         this._projectReference = params.projectReference;
         this._editFormId = params.editFormId;
+        this._rootTaskId = params.rootTaskId;
         this._createFormId = params.createFormId;
         this._bulkEditFormId = params.bulkEditFormId;
         this._isInlineCreateEnabled = params.isInlineCreateEnabled ?? true;
@@ -153,8 +154,6 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         }));
         return batchedTasks.flat();
     }
-
-
 
     public async onInitialize(provider: ITaskDataProvider): Promise<{ columns: IColumn[]; rawData: IRawRecord[]; metadata: any; }> {
         this._provider = provider;

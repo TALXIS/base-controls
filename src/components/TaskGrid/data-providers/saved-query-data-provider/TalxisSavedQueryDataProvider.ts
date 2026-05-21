@@ -14,34 +14,46 @@ const FETCH_XML = `
 </fetch>
 `
 
-const _getFetchXml = (recordId?: string, ownerId?: string) => {
+const _getFetchXml = (entityName: string, recordId?: string, ownerId?: string) => {
     const fetch = FetchXmlBuilder.fetch.fromXml(FETCH_XML);
-    if (recordId || ownerId) {
-        const filter = new FetchXmlBuilder.filter("and")
-        if (recordId) {
-            filter.addCondition(new FetchXmlBuilder.condition("talxis_recordid", FetchXmlBuilder.Operator.Equal, [new FetchXmlBuilder.value(recordId)]))
-        }
-        if (ownerId) {
-            filter.addCondition(new FetchXmlBuilder.condition("ownerid", FetchXmlBuilder.Operator.Equal, [new FetchXmlBuilder.value(ownerId)]))
-        }
-        fetch.entity.addFilter(filter);
+    const filter = new FetchXmlBuilder.filter("and")
+    filter.addCondition(new FetchXmlBuilder.condition("talxis_returnedtypecode", FetchXmlBuilder.Operator.Equal, [new FetchXmlBuilder.value(entityName)]));
+    if (ownerId) {
+        filter.addCondition(new FetchXmlBuilder.condition("ownerid", FetchXmlBuilder.Operator.Equal, [new FetchXmlBuilder.value(ownerId)]))
     }
+    if (recordId) {
+        filter.addCondition(new FetchXmlBuilder.condition("talxis_recordid", FetchXmlBuilder.Operator.Equal, [new FetchXmlBuilder.value(recordId)]))
+    }
+    else {
+        filter.addCondition(new FetchXmlBuilder.condition("talxis_recordid", FetchXmlBuilder.Operator.Null));
+    }
+    fetch.entity.addFilter(filter);
     return fetch.toXml();
 }
 
+/**
+ * Parameters for constructing a {@link TalxisSavedQueryStrategy}.
+ */
 interface ITalxisSavedQueryStrategyParameters {
+    /** Callback that retrieves the system (shared) saved queries. */
     onGetSystemQueries: () => Promise<ISavedQuery[]>;
+    /** Logical name of the entity whose queries are managed (used as `talxis_returnedtypecode`). */
+    entityName: string;
+    /** Optional record ID used to scope queries to a specific record (`talxis_recordid`). When omitted, only queries with a null `talxis_recordid` are returned. */
     recordId?: string;
+    /** Optional owner ID used to filter queries by owner (`ownerid`). */
     ownerId?: string;
 }
 
 export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements ISavedQueryStrategy {
     private _recordId?: string;
+    private _parentEntityName: string;
     private _onGetSystemQueries: () => Promise<ISavedQuery[]>;
 
     constructor(parameters: ITalxisSavedQueryStrategyParameters) {
-        const fetchXml = _getFetchXml(parameters.recordId, parameters.ownerId);
+        const fetchXml = _getFetchXml(parameters.entityName, parameters.recordId, parameters.ownerId);
         super({ fetchXml });
+        this._parentEntityName = parameters.entityName;
         this._recordId = parameters.recordId;
         this._onGetSystemQueries = parameters.onGetSystemQueries;
     }
@@ -64,7 +76,7 @@ export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements IS
 
     public async onDeleteUserQueries(queryIds: string[]): Promise<IDeletedUserQueriesResult> {
         const result = await this.deleteRecords(queryIds);
-        if(result.success) {
+        if (result.success) {
             return {
                 success: true,
                 deletedQueryIds: queryIds
@@ -74,7 +86,7 @@ export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements IS
             return {
                 success: false,
                 deletedQueryIds: result.results.filter(r => r.success).map(r => r.recordId),
-                errors: result.results.filter(r => !r.success).map(r => ({queryId: r.recordId, error: r.errorMessage}))
+                errors: result.results.filter(r => !r.success).map(r => ({ queryId: r.recordId, error: r.errorMessage }))
             }
         }
     }
@@ -103,7 +115,7 @@ export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements IS
             'talxis_layoutjson': JSON.stringify(queryMetadata),
             'talxis_name': name,
             'talxis_description': description,
-            'talxis_returnedtypecode': this.getEntityName(),
+            'talxis_returnedtypecode': this._parentEntityName,
             'talxis_recordid': this._recordId ?? null,
         }
         const result = await window.Xrm.WebApi.createRecord('talxis_userquery', rawData);

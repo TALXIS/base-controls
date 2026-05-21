@@ -71,6 +71,7 @@ export const LookupMany = (props: ILookupManyProps) => {
                 menuPortalTarget: document.body,
                 value: selectedRecords,
                 menuPlacement: 'auto',
+                placeholder: '',
                 isClearable: false,
                 menuShouldScrollIntoView: false,
                 closeMenuOnSelect: false,

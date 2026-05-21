@@ -338,7 +338,9 @@ export class GridCustomizer implements IGridCustomizer {
         });
 
         if (position === 'child') {
-            overNode.setExpanded(true);
+            setTimeout(() => {
+                overNode.setExpanded(true);
+            }, 0);
         }
         this._gridApi.refreshCells({
             columns: [this._nativeColumns.subject],
