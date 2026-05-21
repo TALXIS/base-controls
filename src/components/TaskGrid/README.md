@@ -1,5 +1,7 @@
 # TaskGrid
 
+> ⚠️ **Work in progress** — this document is not final and is subject to change.
+
 A hierarchical task-management grid built on [AG Grid](https://www.ag-grid.com/). It renders tasks in a parent–child tree structure and supports drag-and-drop reordering, inline editing, saved views, custom columns, and template-based task creation.
 
 The control is headless by design: all data access and business logic is supplied by you through a **descriptor** and a set of **strategies**. A ready-made Dataverse implementation is included in `extensions/dataverse`, but you can create your own strategies to connect the grid to any data source.
@@ -270,6 +272,43 @@ export class MyGridCustomizer implements IGridCustomizerStrategy {
         }
         return colDefs;
     }
+}
+```
+
+### Custom cell renderer
+
+A cell renderer is a React component assigned to `colDef.cellRenderer`. Use `ICellProps` as the props type — the actual cell value is at `props.value.value`.
+
+The built-in `PercentComplete` renderer is a good reference:
+
+```tsx
+import { ProgressIndicator } from '@fluentui/react';
+import { Cell, ICellProps } from '@talxis/base-controls';
+import * as React from 'react';
+
+export const PercentComplete = (props: ICellProps) => {
+    const value = props.value.value;
+    const formattedValue = props.valueFormatted;
+
+    return (
+        <ProgressIndicator
+            percentComplete={value !== null ? value / 100 : 0}
+            description={formattedValue}
+        />
+    );
+};
+```
+
+Wire it up in `onGetColumnDefinitions`:
+
+```ts
+public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
+    for (const colDef of colDefs) {
+        if (colDef.colId === 'percentcomplete') {
+            colDef.cellRenderer = PercentComplete;
+        }
+    }
+    return colDefs;
 }
 ```
 
