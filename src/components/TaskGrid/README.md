@@ -277,24 +277,39 @@ export class MyGridCustomizer implements IGridCustomizerStrategy {
 
 ### Custom cell renderer
 
-A cell renderer is a React component assigned to `colDef.cellRenderer`. Use `ICellProps` as the props type — the actual cell value is at `props.value.value`.
-
-The built-in `PercentComplete` renderer is a good reference:
+A cell renderer is a React component assigned to `colDef.cellRenderer`. Use `ICellProps` as the props type. Get the `IRecord` instance from `props.data`, then read the column value with `record.getValue(props.colDef!.colId!)`.
 
 ```tsx
-import { ProgressIndicator } from '@fluentui/react';
-import { Cell, ICellProps } from '@talxis/base-controls';
 import * as React from 'react';
+import { IRecord } from '@talxis/client-libraries';
+import { ICellProps } from '@talxis/base-controls';
 
-export const PercentComplete = (props: ICellProps) => {
-    const value = props.value.value;
-    const formattedValue = props.valueFormatted;
+export const PriorityCellRenderer = (props: ICellProps) => {
+    const record: IRecord = props.data;
+    const priority = record.getValue(props.colDef!.colId!) as number | null;
+
+    if (priority === null || priority === undefined) {
+        return null;
+    }
+
+    const labels: Record<number, string> = { 1: 'Low', 2: 'Normal', 3: 'High' };
+    const colours: Record<number, string> = {
+        1: '#107c10',
+        2: '#0078d4',
+        3: '#d83b01',
+    };
 
     return (
-        <ProgressIndicator
-            percentComplete={value !== null ? value / 100 : 0}
-            description={formattedValue}
-        />
+        <span style={{
+            padding: '2px 8px',
+            borderRadius: 4,
+            color: '#fff',
+            backgroundColor: colours[priority] ?? '#666',
+            fontSize: 12,
+            fontWeight: 600,
+        }}>
+            {labels[priority] ?? String(priority)}
+        </span>
     );
 };
 ```
@@ -304,8 +319,8 @@ Wire it up in `onGetColumnDefinitions`:
 ```ts
 public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
     for (const colDef of colDefs) {
-        if (colDef.colId === 'percentcomplete') {
-            colDef.cellRenderer = PercentComplete;
+        if (colDef.colId === 'my_priority') {
+            colDef.cellRenderer = PriorityCellRenderer;
         }
     }
     return colDefs;
