@@ -2,7 +2,7 @@
 
 A hierarchical task-management grid built on [AG Grid](https://www.ag-grid.com/). It renders tasks in a parent–child tree structure and supports drag-and-drop reordering, inline editing, saved views, custom columns, and template-based task creation.
 
-The control is headless by design: all data access and business logic is supplied by you through a **descriptor** and a set of **strategies**. A ready-made Dataverse implementation is included in `extensions/dataverse`.
+The control is headless by design: all data access and business logic is supplied by you through a **descriptor** and a set of **strategies**. A ready-made Dataverse implementation is included in `extensions/dataverse`, but you can create your own strategies to connect the grid to any data source.
 
 ---
 
@@ -472,6 +472,73 @@ export class MyDescriptor extends Descriptor {
 | `isInlineCreateEnabled?` | When `true` (default), tasks are created inline via the Web API instead of opening a create form. |
 | `isEditingEnabled?` | When `false`, disables inline cell editing at the strategy level. |
 | `formStrategy?.onGetFormParameters` | `(operation, defaults) => params` — intercept and modify any form navigation call (`'create'`, `'edit'`, `'bulkEdit'`, `'open'`). |
+
+---
+
+### Lookup-many columns
+
+> **⚠️ WIP:** Lookup-many columns have known open issues — filter operators in the picker may not display correctly, and there are bugs to resolve around value input.
+
+A lookup-many column surfaces a multi-value relationship (1:N or N:N) directly as a grid cell. The dataverse `DataProviderStrategy` automatically detects lookup-many columns by their `_stub` name suffix, resolves the OData expand clause via relationship metadata, and handles associate/disassociate on save.
+
+#### Naming convention
+
+The column name must be the **OData navigation property name** of the relationship suffixed with `_stub`:
+
+```
+{navigationPropertyName}_stub
+```
+
+For a N:N relationship between `talxis_projecttask` and `talxis_tag` whose navigation property is `talxis_projecttask_talxis_Tag_talxis_Tag`, the column name is:
+
+```
+talxis_projecttask_talxis_Tag_talxis_Tag_stub
+```
+
+#### Defining the column in a system query
+
+Pass the column descriptor inside the `columns` array of an `ISavedQuery`. The `controls[0].bindings.FetchXml` binding is **required** — it defines how candidate records are loaded into the picker.
+
+```ts
+const COLUMNS: IColumn[] = [
+    { name: 'talxis_name', visualSizeFactor: 300 },
+    { name: 'statecode', isHidden: true },
+    { name: 'talxis_stackrankstring', isHidden: true },
+    { name: 'talxis_parentprojecttaskid', isHidden: true },
+    {
+        name: 'talxis_projecttask_talxis_Tag_talxis_Tag_stub',
+        isVirtual: true,
+        dataType: 'Lookup.Simple',
+        displayName: 'Tags',
+        visualSizeFactor: 300,
+        metadata: { Targets: ['talxis_tag'] },
+        controls: [{
+            appliesTo: 'both',
+            name: 'ColorfulLookupMany',
+            bindings: {
+                FetchXml: {
+                    value: '<fetch><entity name="talxis_tag"><attribute name="talxis_tagid" /><attribute name="talxis_name" /><attribute name="talxis_color" /></entity></fetch>',
+                    type: 'SingleLine.Text',
+                },
+                ColorPropertyName: {
+                    value: 'talxis_color',
+                    type: 'SingleLine.Text',
+                },
+            },
+        }],
+    },
+];
+```
+
+#### Available cell renderers
+
+| `controls[0].name` | Description | Extra bindings |
+|--------------------|-------------|----------------|
+| `LookupMany` *(default)* | Generic multi-record picker. | — |
+| `ColorfulLookupMany` | Picker with colored badge chips. | `ColorPropertyName` — attribute holding a hex color on the related entity. |
+| `PeopleLookupMany` | People-style avatar picker. | `ImageUrlPropertyName` — attribute holding a profile image URL on the related entity. |
+
+The `FetchXml` binding supports Liquid variables: `{{ taskId }}` (current task GUID) and `{{ projectId }}` (current project GUID, when available).
 
 ---
 
