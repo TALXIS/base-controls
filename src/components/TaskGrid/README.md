@@ -43,7 +43,7 @@ The descriptor wires your data and configuration into the grid. Create a class t
 
 | Method | Required | Description |
 |--------|:--------:|-------------|
-| `onGetNativeColumns()` | ✅ | Maps logical column roles to physical attribute names in your schema. |
+| `onGetFieldMapping()` | ✅ | Maps logical column roles to physical attribute names in your schema. |
 | `onCreateSavedQueryStrategy()` | ✅ | Returns the strategy that loads and persists saved views. |
 | `onCreateTaskStrategy(deps)` | ✅ | Returns the strategy handling all task CRUD, move and template operations. |
 | `onCreateUserQueryDataProvider()` | ✅ | Returns an `IDataProvider` that backs the save-view dialog. |
@@ -107,7 +107,7 @@ See the [Dataverse strategy](#dataverse-strategy-pre-made) section for the full 
 
 ---
 
-## `INativeColumns`
+## `IFieldMapping`
 
 Maps logical roles to physical attribute names in your entity schema.
 
@@ -430,7 +430,7 @@ The `baseFetchXml` supports [Liquid](https://shopify.github.io/liquid/) template
 | Property | Required | Description |
 |----------|:--------:|-------------|
 | `baseFetchXml` | ✅ | FetchXML string, optionally with Liquid template variables. |
-| `fieldMapping` | ✅ | `INativeColumns` (+ optional `projectId`) mapping roles to Dataverse attribute names. |
+| `fieldMapping` | ✅ | `IFieldMapping` (+ optional `projectId`) mapping roles to Dataverse attribute names. |
 | `systemQueries` | ✅ | `ISavedQuery[]`. At least one required. |
 | `project?` | — | `{ etn, id, name? }`. When `name` is omitted, the descriptor fetches it via the API. |
 | `userId?` | — | Current user GUID. Required for `TalxisSavedQueryStrategy` (user query persistence). |
@@ -441,9 +441,9 @@ The `baseFetchXml` supports [Liquid](https://shopify.github.io/liquid/) template
 | `createFormId?` | — | Form GUID for task creation. |
 | `bulkEditFormId?` | — | Form GUID for bulk task edit. |
 
-### `IDataverseEntityNativeColumns`
+### `IFieldMapping` (Dataverse)
 
-Extends `INativeColumns` with one additional field used by the Dataverse strategy:
+Extends `IFieldMapping` with one additional field used by the Dataverse strategy:
 
 | Property | Description |
 |----------|-------------|
