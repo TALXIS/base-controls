@@ -78,8 +78,6 @@ const descriptor = new Descriptor({
         subject:   'talxis_name',
         parentId:  'talxis_parentprojecttaskid',
         stackRank: 'talxis_stackrankstring',
-        stateCode: 'statecode',
-        path:      'talxis_path',
         projectId: 'talxis_projectid',
     },
     systemQueries: [
@@ -118,9 +116,8 @@ Maps logical roles to physical attribute names in your entity schema.
 | `subject` | ✅ | Display name / title. Always pinned left; never hidden. |
 | `parentId` | ✅ | Self-referential parent lookup — drives the tree hierarchy. |
 | `stackRank` | ✅ | Ordering attribute. Used for default sort and drag-and-drop reordering. |
-| `stateCode` | ✅ | Active/inactive status. Used by the *Hide inactive tasks* filter. |
-| `path` | — | Virtual breadcrumb column computed from ancestor names. Marked read-only automatically. Does not need to be a real schema attribute. |
-| `percentComplete?` | — | Numeric completion percentage. When present, rendered with a progress-bar cell renderer. |
+| `stateCode` | ✅ | Active/inactive status. Used by the *Hide inactive tasks* filter. The Dataverse strategy provides this automatically (always `statecode`) — you do not need to include it in `FieldMapping`. |
+| `path` | — | Virtual breadcrumb column computed from ancestor names. Never required. |
 
 ---
 
@@ -275,6 +272,15 @@ export class MyGridCustomizer implements IGridCustomizerStrategy {
 }
 ```
 
+### Built-in cell renderers
+
+The grid automatically applies built-in renderers when a column's control metadata declares a matching control name. You configure these in the same way as Lookup Many — through the column's `controls` metadata. Currently supported:
+
+| Control name | Applied as | Notes |
+|---|---|---|
+| `PercentComplete` | renderer + editor | Renders a progress bar and inline percentage editor. Set this control name on any numeric percentage column. |
+| `LookupMany` / `ColorfulLookupMany` / `PeopleLookupMany` | renderer | See [Lookup-many columns](#lookup-many-columns). Applied automatically to `_stub` columns by the Dataverse strategy. |
+
 ### Custom cell renderer
 
 A cell renderer is a React component assigned to `colDef.cellRenderer`. Use `ICellProps` as the props type. Get the `IRecord` instance from `props.data`, then read the column value with `record.getValue(props.colDef!.colId!)`.
@@ -384,8 +390,6 @@ const descriptor = new Descriptor({
         subject:   'talxis_name',
         parentId:  'talxis_parentprojecttaskid',
         stackRank: 'talxis_stackrankstring',
-        stateCode: 'statecode',
-        path:      'talxis_path',
         projectId: 'talxis_projectid',
     },
     systemQueries: [
