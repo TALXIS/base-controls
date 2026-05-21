@@ -4,7 +4,7 @@ import { useTaskDataProvider } from "../../../../..";
 import { ColorfulLookupMany, LookupMany, PeopleLookupMany } from "../../../../../components/grid/lookup-many";
 import { FetchXmlDataProviderFactory } from "./FetchXmlDataProviderFactory";
 import React from "react";
-import { IDataverseTaskStrategy } from "../../../TaskStrategy";
+import { IDataverseTaskStrategy } from "../../../DataverseTaskStrategy";
 
 interface ICellRendererProps extends ICellProps {
     fetchXml: string;

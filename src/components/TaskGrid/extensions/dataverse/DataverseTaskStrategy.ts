@@ -12,15 +12,29 @@ interface IFormParameters {
     navigationOptions: Xrm.Navigation.NavigationOptions;
 }
 
+/** Constructor parameters for {@link DataverseTaskStrategy}. */
 export interface IDataverseTaskStrategyParams {
+    /** FetchXML used to load tasks. May contain Liquid template variables (e.g. `{{ projectId }}`). */
     fetchXml: string;
+    /** When `true`, new tasks are created inline in the grid row without opening a form dialog. Defaults to `true`. */
     isInlineCreateEnabled?: boolean;
+    /** When `false`, the edit form is opened in read-only mode. Defaults to `true`. */
     isEditingEnabled?: boolean;
+    /** Form ID to open when editing a single existing task. */
     editFormId?: string;
+    /** Form ID to open when creating a new task via dialog (non-inline). */
     createFormId?: string;
+    /** Form ID to open when bulk-editing multiple selected tasks. */
     bulkEditFormId?: string;
+    /** Project record reference. When provided, new tasks are pre-linked to this project. */
     projectReference?: ComponentFramework.EntityReference;
+    /** When set, the task hierarchy is rooted at this task ID. */
     rootTaskId?: string;
+    /**
+     * Optional hook to intercept and override the `Xrm.Navigation.navigateTo` parameters for
+     * any form operation (`create`, `edit`, `bulkEdit`, `open`).
+     * Return the modified `pageInput` and `navigationOptions` to customize the dialog.
+     */
     formStrategy?: {
         onGetFormParameters?: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
     }
@@ -30,12 +44,23 @@ interface ILookupManyColumn extends IColumn {
     navigationPropertyName: string
 }
 
+/** Extends {@link ITaskDataProviderStrategy} with a Dataverse-specific accessor for the project reference. */
 export interface IDataverseTaskStrategy extends ITaskDataProviderStrategy {
+    /** Returns the resolved project entity reference, or `null` if no project was provided at construction time. */
     getProjectReference(): ComponentFramework.EntityReference | null;
 }
 
 const LIQUID = new Liquid();
 
+/**
+ * Ready-to-use {@link ITaskDataProviderStrategy} implementation for the Dataverse / Talxis platform.
+ *
+ * Handles all task CRUD operations, drag-and-drop reordering (via LexoRank), template-based creation,
+ * and lookup-many column rendering — all backed by the Xrm WebApi and FetchXML.
+ *
+ * Normally instantiated automatically by {@link DataverseTaskGridDescriptor}. Construct directly only
+ * when you need to pass a custom `formStrategy` or override specific behaviour.
+ */
 export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _fetchXml: string;
     private _entitySetName!: string;
@@ -56,6 +81,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _getFormParameters: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
 
 
+    /** @param params — see {@link IDataverseTaskStrategyParams} for full documentation of each option. */
     constructor(params: IDataverseTaskStrategyParams) {
         this._fetchXml = params.fetchXml;
         this._projectReference = params.projectReference;
@@ -94,6 +120,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         return records;
     }
 
+    /** Returns the project entity reference resolved during `onInitialize`, or `null` when none was provided. */
     public getProjectReference(): ComponentFramework.EntityReference | null {
         return this._projectReference ?? null;
     }
@@ -343,7 +370,11 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         }
     }
 
-    //Task Grid only works with auto save => we always expect only one diry field
+    /**
+     * Saves a single dirty field on a task record.
+     * Lookup-many fields are persisted through their dedicated {@link LookupManyHandler}; all other fields use the standard FetchXML provider save path.
+     * TaskGrid uses auto-save, so exactly one dirty field is expected per call.
+     */
     public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
         const dirtyField = record.getFields().find(field => field.isDirty());
         if (dirtyField?.getColumn().name.endsWith(LOOKUP_MANY_COLUMN_NAME_SUFFIX)) {
@@ -355,11 +386,13 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         }
     }
 
+    /** Returns `true` when the task's `stateCode` attribute equals `0` (active). */
     public onIsRecordActive(recordId: string): boolean {
         const record = this._provider.getRecordsMap()[recordId];
         return record.getValue(this._provider.getNativeColumns().stateCode) == 0;
     }
 
+    /** Opens the task record in a side dialog. When `context.columnName` is a lookup-many column, the dialog is focused on that column. */
     public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
         const { pageInput, navigationOptions } = this._getFormParameters('open', {
             pageInput: {
@@ -371,6 +404,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         });
         await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
     }
+    /** Returns the root task ID supplied at construction time, used to scope the displayed hierarchy. */
     public onGetRootTaskId?(): string | undefined {
         return this._rootTaskId;
     }

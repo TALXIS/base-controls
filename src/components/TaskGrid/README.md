@@ -12,9 +12,9 @@ The control is headless by design: all data access and business logic is supplie
 
 ```tsx
 import { TaskGrid } from '@talxis/base-controls';
-import { Descriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
+import { DataverseTaskGridDescriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
 
-const descriptor = new Descriptor({ /* see Dataverse strategy section */ });
+const descriptor = new DataverseTaskGridDescriptor({ /* see Dataverse strategy section */ });
 
 export const MyTaskGridPage = ({ pcfContext }) => (
     <TaskGrid
@@ -57,13 +57,13 @@ The descriptor wires your data and configuration into the grid. Create a class t
 
 ### Example
 
-The quickest way to get started is to use the built-in `Descriptor` from `extensions/dataverse`, which handles all Dataverse wiring for you:
+The quickest way to get started is to use the built-in `DataverseTaskGridDescriptor` from `extensions/dataverse`, which handles all Dataverse wiring for you:
 
 ```ts
 import { TaskGrid } from '@talxis/base-controls';
-import { Descriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
+import { DataverseTaskGridDescriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
 
-const descriptor = new Descriptor({
+const descriptor = new DataverseTaskGridDescriptor({
     baseFetchXml: `
         <fetch>
           <entity name="talxis_projecttask">
@@ -103,7 +103,7 @@ const descriptor = new Descriptor({
 <TaskGrid pcfContext={pcfContext} taskGridDescriptor={descriptor} />
 ```
 
-See the [Dataverse strategy](#dataverse-strategy-pre-made) section for the full `Descriptor` params reference and how to extend it.
+See the [Dataverse strategy](#dataverse-strategy-pre-made) section for the full `DataverseTaskGridDescriptor` params reference and how to extend it.
 
 ---
 
@@ -179,7 +179,7 @@ Handles all data access and mutation for tasks. Return an instance from `onCreat
 
 ### Dataverse example
 
-When targeting Dataverse, use `DataProviderStrategy` from `extensions/dataverse`. The base class implements the full `ITaskDataProviderStrategy` interface against the Xrm Web API — subclass it to override only what you need.
+When targeting Dataverse, use `DataverseTaskStrategy` from `extensions/dataverse`. The class implements the full `ITaskDataProviderStrategy` interface against the Xrm Web API — subclass it to override only what you need.
 
 See the [Dataverse strategy](#dataverse-strategy-pre-made) section for a full subclassing example.
 
@@ -198,7 +198,7 @@ Controls how system and user saved views are loaded and persisted.
 | `onCreateUserQuery(newQuery, currentQuery)` | Create a new view from the current state. Return `null` for user cancellation; throw on unexpected failure. |
 | `onEnableUserQueries?()` | Return `false` to disable personal views entirely. Defaults to `true`. |
 
-**Built-in implementation:** `TalxisSavedQueryStrategy` — stores user views as `talxis_userquery` records in Dataverse, scoped to a `recordId` and `ownerId`.
+**Built-in implementation:** `DataverseSavedQueryStrategy` — stores user views as `talxis_userquery` records in Dataverse, scoped to a `recordId` and `ownerId`.
 
 ### `ISavedQuery` shape
 
@@ -337,8 +337,6 @@ public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
 
 ## `ICustomColumnsStrategy`
 
-> **⚠️ WIP — not yet implemented in the Dataverse strategy.** Custom columns must be handled by a custom `DataProviderStrategy` subclass and a custom `ICustomColumnsStrategy` implementation if needed.
-
 Enables user-defined (dynamic) column definitions. Return an instance from `onCreateCustomColumnsStrategy`.
 
 | Method | Description |
@@ -351,7 +349,7 @@ Enables user-defined (dynamic) column definitions. Return an instance from `onCr
 | `onGetRawRecords()` | Fetch raw records for the custom column values. |
 | `onGetRawRecord(recordId)` | Fetch a single raw record by id. |
 
-**Built-in implementation:** `TalxisCustomColumnsStrategy` — stores definitions in `talxis_attributedefinition` and values in `talxis_attributevalue`.
+**Built-in implementation:** `DataverseCustomColumnsStrategy` — stores definitions in `talxis_attributedefinition` and values in `talxis_attributevalue`.
 
 ---
 
@@ -367,15 +365,18 @@ Enables user-defined (dynamic) column definitions. Return an instance from `onCr
 
 | Class | Role |
 |-------|------|
-| `Descriptor` | Drop-in `ITaskGridDescriptor` for Dataverse. Accepts a params object — no subclassing needed for the common case. |
-| `DataProviderStrategy` | `ITaskDataProviderStrategy` that talks to the Xrm Web API. Used internally by `Descriptor` but can be extended independently. |
+| `DataverseTaskGridDescriptor` | Drop-in `ITaskGridDescriptor` for Dataverse. Accepts a params object — no subclassing needed for the common case. |
+| `DataverseTaskStrategy` | `ITaskDataProviderStrategy` that talks to the Xrm Web API. Used internally by `DataverseTaskGridDescriptor` but can be extended independently. |
+| `DataverseSavedQueryStrategy` | `ISavedQueryStrategy` that persists user views as `talxis_userquery` Dataverse records. |
+| `DataverseGridCustomizerStrategy` | `IGridCustomizerStrategy` that wires lookup-many cell renderers. Returned by the descriptor automatically. |
+| `DataverseCustomColumnsStrategy` | `ICustomColumnsStrategy` backed by `talxis_attributedefinition` / `talxis_attributevalue`. |
 
-### Using `Descriptor` as-is
+### Using `DataverseTaskGridDescriptor` as-is
 
 ```ts
-import { Descriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
+import { DataverseTaskGridDescriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
 
-const descriptor = new Descriptor({
+const descriptor = new DataverseTaskGridDescriptor({
     baseFetchXml: `
         <fetch>
           <entity name="talxis_projecttask">
@@ -425,7 +426,7 @@ const descriptor = new Descriptor({
 
 The `baseFetchXml` supports [Liquid](https://shopify.github.io/liquid/) templates. The variable `{{ projectId }}` is automatically injected when a project reference is present.
 
-### `IDescriptorParams` reference
+### `IDataverseTaskGridDescriptorParams` reference
 
 | Property | Required | Description |
 |----------|:--------:|-------------|
@@ -433,7 +434,7 @@ The `baseFetchXml` supports [Liquid](https://shopify.github.io/liquid/) template
 | `fieldMapping` | ✅ | `IFieldMapping` (+ optional `projectId`) mapping roles to Dataverse attribute names. |
 | `systemQueries` | ✅ | `ISavedQuery[]`. At least one required. |
 | `project?` | — | `{ etn, id, name? }`. When `name` is omitted, the descriptor fetches it via the API. |
-| `userId?` | — | Current user GUID. Required for `TalxisSavedQueryStrategy` (user query persistence). |
+| `userId?` | — | Current user GUID. Required for `DataverseSavedQueryStrategy` (user query persistence). |
 | `agGridLicenseKey?` | — | AG Grid Enterprise license key. |
 | `gridParameters?` | — | `ITaskGridParameters` feature flags. |
 | `rootTaskId?` | — | Scope the tree to a subtree by providing the root task GUID. |
@@ -449,19 +450,19 @@ Extends `IFieldMapping` with one additional field used by the Dataverse strategy
 |----------|-------------|
 | `projectId?` | Attribute name of the project lookup on the task entity (e.g. `"talxis_projectid"`). When provided, new tasks are pre-filled with the current project reference. |
 
-### Extending `DataProviderStrategy`
+### Extending `DataverseTaskStrategy`
 
-Subclass `DataProviderStrategy` to override individual operations while keeping everything else intact.
+Subclass `DataverseTaskStrategy` to override individual operations while keeping everything else intact.
 
 ```ts
 import {
-    DataProviderStrategy,
-    IDataProviderStrategyParams,
+    DataverseTaskStrategy,
+    IDataverseTaskStrategyParams,
 } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
 import { IDeleteTasksResult } from '@talxis/base-controls';
 
-export class MyTaskStrategy extends DataProviderStrategy {
-    constructor(params: IDataProviderStrategyParams) {
+export class MyTaskStrategy extends DataverseTaskStrategy {
+    constructor(params: IDataverseTaskStrategyParams) {
         super({
             ...params,
             // Intercept any form navigation call to inject extra parameters.
@@ -505,21 +506,21 @@ export class MyTaskStrategy extends DataProviderStrategy {
 }
 ```
 
-To use a custom strategy with `Descriptor`, subclass it and override `onCreateTaskStrategy`:
+To use a custom strategy with `DataverseTaskGridDescriptor`, subclass it and override `onCreateTaskStrategy`:
 
 ```ts
-import { Descriptor, IDataProviderStrategyParams } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
+import { DataverseTaskGridDescriptor, IDataverseTaskStrategyParams } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
 import { ITaskStrategyDeps } from '@talxis/base-controls';
 import { MyTaskStrategy } from './MyTaskStrategy';
 
-export class MyDescriptor extends Descriptor {
+export class MyDescriptor extends DataverseTaskGridDescriptor {
     public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
         return new MyTaskStrategy(this.getStrategyParams());
     }
 }
 ```
 
-### `IDataProviderStrategyParams` reference
+### `IDataverseTaskStrategyParams` reference
 
 | Property | Description |
 |----------|-------------|
@@ -539,7 +540,7 @@ export class MyDescriptor extends Descriptor {
 
 > **⚠️ WIP:** Lookup-many columns have known open issues — filter operators in the picker may not display correctly, and there are bugs to resolve around value input.
 
-A lookup-many column surfaces a multi-value relationship (1:N or N:N) directly as a grid cell. The dataverse `DataProviderStrategy` automatically detects lookup-many columns by their `_stub` name suffix, resolves the OData expand clause via relationship metadata, and handles associate/disassociate on save.
+A lookup-many column surfaces a multi-value relationship (1:N or N:N) directly as a grid cell. The dataverse `DataverseTaskStrategy` automatically detects lookup-many columns by their `_stub` name suffix, resolves the OData expand clause via relationship metadata, and handles associate/disassociate on save.
 
 #### Naming convention
 

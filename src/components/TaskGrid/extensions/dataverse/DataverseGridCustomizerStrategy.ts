@@ -3,17 +3,28 @@ import { ITaskDataProvider } from "../../providers";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX } from "./lookup-many/LookupManyHandler";
 import { CellRenderer } from "./lookup-many/components/cell-renderer/CellRenderer";
 
+/**
+ * Ready-to-use {@link IGridCustomizerStrategy} for the Dataverse / Talxis platform.
+ *
+ * Automatically applies custom cell renderers to lookup-many columns (columns whose name
+ * ends with the lookup-many suffix). Returned by {@link DataverseTaskGridDescriptor} by default.
+ *
+ * Extend or replace this class via `onCreateGridCustomizerStrategy` on your descriptor when
+ * you need additional AG Grid column, editor, or row-class customizations.
+ */
 export class DataverseGridCustomizerStrategy implements IGridCustomizerStrategy {
     private _customizer!: IGridCustomizer;
     private _provider?: ITaskDataProvider;
     private _gridApi!: GridApi;
 
+    /** Stores references to the customizer, task data provider, and grid API. Called once by the internal `GridCustomizer` after the AG Grid instance is ready. */
     public onInitialize(customizer: IGridCustomizer): void {
         this._customizer = customizer;
         this._provider = customizer.getTaskDataProvider();
         this._gridApi = customizer.getGridApi();
     }
     
+    /** Injects the lookup-many {@link CellRenderer} and sets `autoHeight`/non-editable flags for any column whose name ends with the lookup-many suffix. */
     public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
         for (const colDef of colDefs) {
             const column = this._getProvider().getColumnsMap()[colDef.field!];

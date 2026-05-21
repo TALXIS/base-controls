@@ -7,29 +7,47 @@ export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 export const CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME = 'talxis_task_talxis_attributevalue_regardingobjectid';
 
+/** Constructor parameters for {@link DataverseCustomColumnsStrategy}. */
 interface IDataverseCustomColumnsStrategyParameters {
-    //entity name to fetch custom columns for
+    /** Logical name of the entity for which dynamic attribute definitions are managed (e.g. `"task"`). */
     entityName: string;
-    //record id to fetch custom columns for
+    /** Optional record ID used to scope attribute definitions to a specific parent record. */
     recordId?: string;
 }
 
+/**
+ * Extends {@link ICustomColumnsStrategy} with Dataverse-specific accessors needed to persist
+ * custom column values through the `talxis_attributevalue` entity.
+ */
 export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy {
+    /** Saves the dirty custom-column value on `record` to the appropriate `talxis_attributevalue` record, creating it if it doesn't exist yet. */
     saveValueToCustomColumn: (record: IRecord) => Promise<IRecordSaveOperationResult>;
+    /** Reads and returns the typed value for `column` from the raw attribute-value payload embedded in `rawRecord`. */
     getValueFromRawRecord: (recordId: string, rawRecord: IRawRecord, column: IColumn) => any;
 }
 
+/**
+ * Ready-to-use {@link ICustomColumnsStrategy} implementation for the Dataverse / Talxis platform.
+ *
+ * Dynamic (user-defined) columns are modelled as `talxis_attributedefinition` records.
+ * Column values are stored as `talxis_attributevalue` records linked to the task record.
+ *
+ * Pass an instance to the `onCreateCustomColumnsStrategy` hook of your descriptor to enable the
+ * custom-columns feature in the TaskGrid.
+ */
 export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsStrategy {
     private _entityName: string;
     private _recordId?: string;
     private _attributes: IAttribute[] = [];
     private _attributeIdsMap: Map<string, string> = new Map();
 
+    /** @param parameters — see {@link IDataverseCustomColumnsStrategyParameters}. */
     constructor(parameters: IDataverseCustomColumnsStrategyParameters) {
         this._entityName = parameters.entityName;
         this._recordId = parameters.recordId;
     }
 
+    /** Fetches the latest `talxis_attributedefinition` records for the entity/record scope and returns them as `IColumn[]`. */
     public async onRefresh(): Promise<IColumn[]> {
         const entityDefinition = await DynamicEntityDefinition.fetchForRecord(this._entityName, this._recordId);
         this._attributes = entityDefinition.Attributes;
@@ -45,6 +63,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
         throw new Error('Method not implemented.');
     }
 
+    /** Returns the currently cached attribute definitions as `IColumn[]` without a network fetch. */
     public onGetColumns(): IColumn[] {
         return this._attributes.map(attr => {
             const dataType = Attribute.GetDataTypeFromMetadata({ ...attr as any, attributeDescriptor: attr });
@@ -59,6 +78,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
         })
     }
 
+    /** Deletes the `talxis_attributedefinition` record backing `columnName`, then refreshes the column list. Returns the deleted column name. */
     public async onDeleteColumn(columnName: string): Promise<string | null> {
         const id = columnName.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
         await window.Xrm.WebApi.deleteRecord(ATTRIBUTE_DEFINITION_ENTITY_NAME, id);
@@ -66,6 +86,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
         return columnName
     }
 
+    /** Opens the `talxis_attributedefinition` entity record form in a side dialog. Returns the new column name (with the custom-column suffix) when the record is saved, or `null` when the dialog is dismissed. */
     public async onCreateColumn(): Promise<string | null> {
         const { savedEntityReference } = await window.Xrm.Navigation.navigateTo({
             entityName: ATTRIBUTE_DEFINITION_ENTITY_NAME,
@@ -86,6 +107,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
         else return null
     }
 
+    /** Opens the existing `talxis_attributedefinition` record in a side dialog for editing, then refreshes columns. Returns `columnName` unchanged. */
     public async onUpdateColumn(columnName: string): Promise<string | null> {
         const attributeDefinitionId = columnName.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
         await window.Xrm.Navigation.navigateTo({
@@ -99,6 +121,11 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
         return columnName;
     }
 
+    /**
+     * Upserts the `talxis_attributevalue` record for the dirty custom-column field on `record`.
+     * Creates a new record when no value exists yet; updates the existing one otherwise.
+     * @returns A save-operation result indicating success or the encountered error.
+     */
     public async saveValueToCustomColumn(record: IRecord): Promise<IRecordSaveOperationResult> {
         const dirtyField = record.getFields().find(field => field.isDirty());
         const column = dirtyField?.getColumn();
@@ -158,6 +185,11 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
         }
     }
 
+    /**
+     * Resolves the typed value for `column` from the embedded `talxis_attributevalue` collection inside `rawRecord`.
+     * Also caches the `talxis_attributevalueid` for subsequent upsert calls in {@link saveValueToCustomColumn}.
+     * @returns The typed column value, or `null` when no matching attribute value record is found.
+     */
     public getValueFromRawRecord(recordId: string, rawRecord: IRawRecord, column: IColumn) {
         const attribute = this._getAttributeFromRawRecord(recordId, rawRecord, column);
         if (attribute == null) {

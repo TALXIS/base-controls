@@ -45,6 +45,16 @@ interface IDataverseSavedQueryStrategyParameters {
     ownerId?: string;
 }
 
+/**
+ * Ready-to-use {@link ISavedQueryStrategy} implementation for the Dataverse / Talxis platform.
+ *
+ * Persists user-defined saved views as `talxis_userquery` records, optionally scoped to a
+ * specific parent record (`talxis_recordid`) and/or owner (`ownerid`).
+ * System queries are supplied via the `onGetSystemQueries` callback and are never persisted.
+ *
+ * Also acts as an `IDataProvider` (extends `FetchXmlDataProvider`) so it can be passed directly
+ * to the user-query creation dialog.
+ */
 export class DataverseSavedQueryStrategy extends FetchXmlDataProvider implements ISavedQueryStrategy {
     private _recordId?: string;
     private _parentEntityName: string;
@@ -58,6 +68,7 @@ export class DataverseSavedQueryStrategy extends FetchXmlDataProvider implements
         this._onGetSystemQueries = parameters.onGetSystemQueries;
     }
 
+    /** Fetches all `talxis_userquery` records matching the configured entity/record/owner scope and maps them to {@link ISavedQuery}. */
     public async onGetUserQueries(): Promise<ISavedQuery[]> {
         const result = await this.refresh();
         return result.map(r => {
@@ -70,10 +81,12 @@ export class DataverseSavedQueryStrategy extends FetchXmlDataProvider implements
         });
     }
 
+    /** Delegates to the `onGetSystemQueries` callback supplied at construction time. */
     public async onGetSystemQueries(): Promise<ISavedQuery[]> {
         return this._onGetSystemQueries();
     }
 
+    /** Deletes the specified `talxis_userquery` records and returns a per-query success/failure result. */
     public async onDeleteUserQueries(queryIds: string[]): Promise<IDeletedUserQueriesResult> {
         const result = await this.deleteRecords(queryIds);
         if (result.success) {
@@ -91,6 +104,7 @@ export class DataverseSavedQueryStrategy extends FetchXmlDataProvider implements
         }
     }
 
+    /** Serialises the current query metadata (columns, filters, sorting, …) to `talxis_layoutjson` and saves the record. Returns the query ID on success. */
     public async onUpdateUserQuery(currentQuery: ISavedQuery): Promise<string | null> {
         const record = this.getRecordsMap()[currentQuery.id];
         if (!record) {
@@ -105,6 +119,11 @@ export class DataverseSavedQueryStrategy extends FetchXmlDataProvider implements
         return currentQuery.id;
     }
 
+    /**
+     * Creates a new `talxis_userquery` record that captures the current grid state (columns, filters, sorting, …).
+     * A deterministic ID is generated with a `00001111` prefix so it sorts predictably alongside Dataverse-native GUIDs.
+     * @returns The new record ID on success.
+     */
     public async onCreateUserQuery(newQuery: { name: string; description?: string; }, currentQuery: ISavedQuery): Promise<string | null> {
         const userqueryid = `00001111${crypto.randomUUID().substring(8)}`;
         const { name, description } = newQuery;
