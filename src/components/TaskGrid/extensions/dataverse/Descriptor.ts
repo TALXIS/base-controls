@@ -1,6 +1,6 @@
 import { FetchXmlBuilder, IDataProvider } from "@talxis/client-libraries";
 import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, TalxisSavedQueryStrategy } from "../../data-providers";
-import { INativeColumns, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "../../interfaces";
+import { IFieldMapping as IFieldMappingBase, INativeColumns, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "../../interfaces";
 import { IGridCustomizerStrategy } from "../../components/grid";
 import { DataProviderStrategy } from "./DataProviderStrategy";
 import { GridCustomizer } from "./GridCustomizer";
@@ -10,10 +10,12 @@ export interface IProjectReference extends Omit<ComponentFramework.EntityReferen
     name?: string;
 }
 
+export interface IFieldMapping extends Omit<IFieldMappingBase, 'stateCode'> {}
+
 interface IDescriptorParams {
     baseFetchXml: string;
     //maps entity fields to TaskGrid expected fields (e.g. statecode -> stateCode)
-    fieldMapping: INativeColumns;
+    fieldMapping: IFieldMapping;
     //system views to be used as saved queries in TaskGrid
     systemQueries: ISavedQuery[];
     project?: IProjectReference;
@@ -29,7 +31,7 @@ interface IDescriptorParams {
 
 export class Descriptor implements ITaskGridDescriptor {
     private _fetchXml: string;
-    private _fieldMapping: INativeColumns;
+    private _fieldMapping: IFieldMapping;
     private _systemQueries: ISavedQuery[] = [];
     private _taskEntityName: string;
     private _editFormId?: string;
@@ -61,8 +63,13 @@ export class Descriptor implements ITaskGridDescriptor {
         this._projectReference = await this._getProjectReference();
     }
 
-    public onGetNativeColumns(): INativeColumns {
-        return this._fieldMapping;
+    public onGetFieldMapping(): IFieldMappingBase {
+        this
+        return {
+            ...this._fieldMapping,
+            //dataverse uses this for all entities
+            stateCode: 'statecode'
+        }
     }
 
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {

@@ -29,8 +29,6 @@ export interface IFieldMapping {
     stackRank: string;
     /** Active/inactive status attribute. Used by the "Hide inactive tasks" filter. */
     stateCode: string;
-    /** (Optional) Numeric completion percentage. When present, rendered with a progress-bar cell renderer. */
-    percentComplete?: string;
 }
 
 export interface INativeColumns extends IFieldMapping {
@@ -93,7 +91,7 @@ export interface ITaskStrategyDeps {
  */
 export interface ITaskGridDescriptor {
     /** Returns the mapping of logical column roles to physical schema attribute names. */
-    onGetNativeColumns: () => IFieldMapping;
+    onGetFieldMapping: () => IFieldMapping;
     /** Returns the strategy responsible for loading system/user views and persisting view changes. */
     onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
     /** Returns the strategy that handles all task CRUD, move, template and record-save operations. */

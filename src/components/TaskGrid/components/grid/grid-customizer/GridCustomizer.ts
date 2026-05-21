@@ -7,7 +7,7 @@ import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-h
 import { AddTaskButton } from "../cell-renderers/add-task-button";
 import { ILocalizationService } from "../../../../../utils";
 import { ITaskGridLabels } from "../../../labels";
-import { PercentComplete } from "../cell-renderers/percent-complete";
+import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
 import { INativeColumns, ITaskGridDatasetControl } from "../../../interfaces";
 
 export const ADD_TASK_COLUMN_NAME = 'addTask';
@@ -148,6 +148,7 @@ export class GridCustomizer implements IGridCustomizer {
             colDef.onCellDoubleClicked = () => { }
             const columnName = colDef.colId as string;
             const column = this._taskDataProvider.getColumnsMap()[columnName];
+            const controlName = column.controls?.[0]?.name;
             switch (columnName) {
                 case this._nativeColumns.subject: {
                     colDef.cellRenderer = GroupCell;
@@ -158,10 +159,9 @@ export class GridCustomizer implements IGridCustomizer {
                     colDef.lockPosition = true;
                     break;
                 }
-                case this._nativeColumns.percentComplete: {
-                    colDef.cellRenderer = PercentComplete;
-                    break;
-                }
+            }
+            if(controlName === PERCENT_COMPLETE_CONTROL_NAME) {
+                colDef.cellRenderer = PercentComplete;
             }
         }
 

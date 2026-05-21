@@ -53,7 +53,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     public getNativeColumns() {
         return {
-            ...this._descriptor.onGetNativeColumns(),
+            ...this._descriptor.onGetFieldMapping(),
             path: PATH_COLUMN_NAME
         }
     }

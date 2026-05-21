@@ -3,6 +3,8 @@ import { Cell, ICellProps } from "../../../../../Grid/cells/cell/Cell";
 import * as React from "react";
 import { getPercentCompleteStyles } from "./styles";
 
+export const PERCENT_COMPLETE_CONTROL_NAME = "PercentComplete";
+
 export const PercentComplete = (props: ICellProps) => {
     const value = props.value.value;
     const formattedValue = props.valueFormatted;
