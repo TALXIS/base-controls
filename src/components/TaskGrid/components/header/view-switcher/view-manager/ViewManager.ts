@@ -3,7 +3,7 @@ import { DatasetControl, IDatasetControl } from "../../../../../../utils/dataset
 import { ITaskGridDatasetControl } from "../../../../interfaces";
 import { ILocalizationService } from "../../../../../../utils";
 import { ITaskGridLabels } from "../../../../labels";
-import { IDeletedUserQueriesResult, ISavedQueryDataProvider } from "../../../../data-providers/saved-query-data-provider";
+import { IDeletedUserQueriesResult, ISavedQueryDataProvider } from "../../../../providers/saved-query";
 import { ErrorHelper } from "../../../../../../utils";
 
 export class ViewManager {

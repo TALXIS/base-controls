@@ -1,9 +1,9 @@
 import { Dataset } from "@talxis/client-libraries";
-import { ITaskDataProvider, TaskDataProvider } from "./data-providers/task-data-provider";
+import { ITaskDataProvider, TaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "../../utils";
 import { ITaskGridLabels } from "./labels";
-import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
-import { CustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
+import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
+import { CustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { TaskGridDatasetControl } from "./TaskGridDatasetControl";
 

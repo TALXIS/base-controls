@@ -2,13 +2,13 @@ import { IDatasetControlParameters } from "../DatasetControl";
 import { IDatasetControlEvents } from "../../utils/dataset-control";
 import { EditColumns, IEditColumns } from "../../utils/dataset-control/EditColumns";
 import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering } from "@talxis/client-libraries";
-import { IDeleteTasksResult, ITaskDataProvider } from "./data-providers/task-data-provider";
+import { IDeleteTasksResult, ITaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "../../utils";
 import { ITaskGridLabels } from "./labels";
-import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./data-providers/saved-query-data-provider";
+import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
-import { ICustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
+import { ICustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
 import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
 import { ErrorHelper } from "../../utils/error-handling";
 

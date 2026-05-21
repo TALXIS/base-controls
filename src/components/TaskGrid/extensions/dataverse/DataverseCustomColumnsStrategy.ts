@@ -1,31 +1,31 @@
 import { Attribute, DatasetConstants, DataType, DataTypes, FieldValue, IColumn, IEventEmitter, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
 import { DynamicEntityDefinition } from "@talxis/client-metadata";
 import { Attribute as IAttribute } from '@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition';
-import { ICustomColumnsStrategy } from "./CustomColumnsDataProvider";
+import { ICustomColumnsStrategy } from "../../providers/custom-columns/CustomColumnsDataProvider";
 
 export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 export const CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME = 'talxis_task_talxis_attributevalue_regardingobjectid';
 
-interface ITalxisCustomColumnsStrategyParameters {
+interface IDataverseCustomColumnsStrategyParameters {
     //entity name to fetch custom columns for
     entityName: string;
     //record id to fetch custom columns for
     recordId?: string;
 }
 
-export interface ITalxisCustomColumnsStrategy extends ICustomColumnsStrategy {
+export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy {
     saveValueToCustomColumn: (record: IRecord) => Promise<IRecordSaveOperationResult>;
     getValueFromRawRecord: (recordId: string, rawRecord: IRawRecord, column: IColumn) => any;
 }
 
-export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy {
+export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsStrategy {
     private _entityName: string;
     private _recordId?: string;
     private _attributes: IAttribute[] = [];
     private _attributeIdsMap: Map<string, string> = new Map();
 
-    constructor(parameters: ITalxisCustomColumnsStrategyParameters) {
+    constructor(parameters: IDataverseCustomColumnsStrategyParameters) {
         this._entityName = parameters.entityName;
         this._recordId = parameters.recordId;
     }

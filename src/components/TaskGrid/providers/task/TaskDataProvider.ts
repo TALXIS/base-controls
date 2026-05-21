@@ -4,7 +4,7 @@ import { ErrorHelper } from "../../../../utils/error-handling";
 import { ILocalizationService } from "../../../../utils";
 import { ITaskGridLabels } from "../../labels";
 import { INativeColumns } from "../../interfaces";
-import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "../saved-query-data-provider";
+import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "../saved-query";
 
 export interface IFailedRecord {
     id: string;

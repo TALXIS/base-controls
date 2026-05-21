@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ITaskDataProvider } from "./data-providers/task-data-provider";
+import { ITaskDataProvider } from "./providers/task";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";

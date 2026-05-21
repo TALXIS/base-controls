@@ -1,5 +1,5 @@
 import { FetchXmlBuilder, FetchXmlDataProvider } from "@talxis/client-libraries";
-import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy } from "./SavedQueryDataProvider";
+import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy } from "../../providers/saved-query/SavedQueryDataProvider";
 import { ErrorHelper } from "../../../../utils/error-handling";
 
 const FETCH_XML = `
@@ -32,9 +32,9 @@ const _getFetchXml = (entityName: string, recordId?: string, ownerId?: string) =
 }
 
 /**
- * Parameters for constructing a {@link TalxisSavedQueryStrategy}.
+ * Parameters for constructing a {@link DataverseSavedQueryStrategy}.
  */
-interface ITalxisSavedQueryStrategyParameters {
+interface IDataverseSavedQueryStrategyParameters {
     /** Callback that retrieves the system (shared) saved queries. */
     onGetSystemQueries: () => Promise<ISavedQuery[]>;
     /** Logical name of the entity whose queries are managed (used as `talxis_returnedtypecode`). */
@@ -45,12 +45,12 @@ interface ITalxisSavedQueryStrategyParameters {
     ownerId?: string;
 }
 
-export class TalxisSavedQueryStrategy extends FetchXmlDataProvider implements ISavedQueryStrategy {
+export class DataverseSavedQueryStrategy extends FetchXmlDataProvider implements ISavedQueryStrategy {
     private _recordId?: string;
     private _parentEntityName: string;
     private _onGetSystemQueries: () => Promise<ISavedQuery[]>;
 
-    constructor(parameters: ITalxisSavedQueryStrategyParameters) {
+    constructor(parameters: IDataverseSavedQueryStrategyParameters) {
         const fetchXml = _getFetchXml(parameters.entityName, parameters.recordId, parameters.ownerId);
         super({ fetchXml });
         this._parentEntityName = parameters.entityName;

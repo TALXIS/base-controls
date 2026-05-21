@@ -1,10 +1,10 @@
 import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer } from "@talxis/client-libraries";
-import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult } from "../../data-providers";
-import { IRecordTree } from "../../data-providers/task-data-provider/record-tree";
+import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult } from "../../providers";
+import { IRecordTree } from "../../providers/task/record-tree";
 import { LexoRank } from "../LexoRank";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
 import { Liquid } from "liquidjs";
-import { IFieldMapping } from "./Descriptor";
+import { IFieldMapping } from "./DataverseTaskGridDescriptor";
 
 
 interface IFormParameters {
@@ -12,7 +12,7 @@ interface IFormParameters {
     navigationOptions: Xrm.Navigation.NavigationOptions;
 }
 
-export interface IDataProviderStrategyParams {
+export interface IDataverseTaskStrategyParams {
     fetchXml: string;
     isInlineCreateEnabled?: boolean;
     isEditingEnabled?: boolean;
@@ -30,13 +30,13 @@ interface ILookupManyColumn extends IColumn {
     navigationPropertyName: string
 }
 
-export interface IDataProviderStrategy extends ITaskDataProviderStrategy {
+export interface IDataverseTaskStrategy extends ITaskDataProviderStrategy {
     getProjectReference(): ComponentFramework.EntityReference | null;
 }
 
 const LIQUID = new Liquid();
 
-export class DataProviderStrategy implements IDataProviderStrategy {
+export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _fetchXml: string;
     private _entitySetName!: string;
     private _entityName!: string;
@@ -56,7 +56,7 @@ export class DataProviderStrategy implements IDataProviderStrategy {
     private _getFormParameters: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
 
 
-    constructor(params: IDataProviderStrategyParams) {
+    constructor(params: IDataverseTaskStrategyParams) {
         this._fetchXml = params.fetchXml;
         this._projectReference = params.projectReference;
         this._editFormId = params.editFormId;

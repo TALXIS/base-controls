@@ -1,9 +1,9 @@
 import { ColDef, GridApi, IGridCustomizer, IGridCustomizerStrategy } from "../../components/grid";
-import { ITaskDataProvider } from "../../data-providers";
+import { ITaskDataProvider } from "../../providers";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX } from "./lookup-many/LookupManyHandler";
 import { CellRenderer } from "./lookup-many/components/cell-renderer/CellRenderer";
 
-export class GridCustomizer implements IGridCustomizerStrategy {
+export class DataverseGridCustomizerStrategy implements IGridCustomizerStrategy {
     private _customizer!: IGridCustomizer;
     private _provider?: ITaskDataProvider;
     private _gridApi!: GridApi;

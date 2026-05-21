@@ -4,7 +4,7 @@ import { useTaskDataProvider } from "../../../../..";
 import { ColorfulLookupMany, LookupMany, PeopleLookupMany } from "../../../../../components/grid/lookup-many";
 import { FetchXmlDataProviderFactory } from "./FetchXmlDataProviderFactory";
 import React from "react";
-import { IDataProviderStrategy } from "../../../DataProviderStrategy";
+import { IDataverseTaskStrategy } from "../../../TaskStrategy";
 
 interface ICellRendererProps extends ICellProps {
     fetchXml: string;
@@ -27,7 +27,7 @@ export const CellRenderer = (props: ICellRendererProps) => {
     const bindings = customControl?.bindings;
     const taskId = record.getRecordId();
     const provider = useTaskDataProvider();
-    const strategy: IDataProviderStrategy = useTaskDataProvider().getStrategy();
+    const strategy: IDataverseTaskStrategy = useTaskDataProvider().getStrategy();
     const projectReference = strategy.getProjectReference();
     const fetchXml = customControl?.bindings?.FetchXml.value;
     

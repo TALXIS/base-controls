@@ -1,9 +1,10 @@
 import { FetchXmlBuilder, IDataProvider } from "@talxis/client-libraries";
-import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, TalxisSavedQueryStrategy } from "../../data-providers";
+import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy } from "../../providers";
 import { IFieldMapping as IFieldMappingBase, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "../../interfaces";
 import { IGridCustomizerStrategy } from "../../components/grid";
-import { DataProviderStrategy } from "./DataProviderStrategy";
-import { GridCustomizer } from "./GridCustomizer";
+import { DataverseSavedQueryStrategy } from "./DataverseSavedQueryStrategy";
+import { DataverseTaskStrategy } from "./DataverseTaskStrategy";
+import { DataverseGridCustomizerStrategy } from "./DataverseGridCustomizerStrategy";
 
 export interface IProjectReference extends Omit<ComponentFramework.EntityReference, 'name'> {
     etn: string;
@@ -14,7 +15,7 @@ export interface IFieldMapping extends Omit<IFieldMappingBase, 'stateCode'> {
     projectId?: string;
 }
 
-interface IDescriptorParams {
+interface IDataverseTaskGridDescriptorParams {
     baseFetchXml: string;
     //maps entity fields to TaskGrid expected fields (e.g. statecode -> stateCode)
     fieldMapping: IFieldMapping;
@@ -31,7 +32,7 @@ interface IDescriptorParams {
     bulkEditFormId?: string;
 }
 
-export class Descriptor implements ITaskGridDescriptor {
+export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     private _fetchXml: string;
     private _fieldMapping: IFieldMapping;
     private _systemQueries: ISavedQuery[] = [];
@@ -42,11 +43,11 @@ export class Descriptor implements ITaskGridDescriptor {
     private _userId?: string;
     private _rootTaskId?: string;
     private _projectReference?: ComponentFramework.EntityReference;
-    private _params: IDescriptorParams;
+    private _params: IDataverseTaskGridDescriptorParams;
     private _gridParameters?: ITaskGridParameters;
     private _agGridLicenseKey?: string;
 
-    constructor(params: IDescriptorParams) {
+    constructor(params: IDataverseTaskGridDescriptorParams) {
         this._params = params;
         this._systemQueries = params.systemQueries;
         this._fieldMapping = params.fieldMapping;
@@ -76,7 +77,7 @@ export class Descriptor implements ITaskGridDescriptor {
 
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
         if (this._gridParameters?.enableUserQueries) {
-            return new TalxisSavedQueryStrategy({
+            return new DataverseSavedQueryStrategy({
                 onGetSystemQueries: async () => this._systemQueries,
                 ownerId: this._userId,
                 entityName: this._taskEntityName,
@@ -99,7 +100,7 @@ export class Descriptor implements ITaskGridDescriptor {
     }
 
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
-        return new DataProviderStrategy({
+        return new DataverseTaskStrategy({
             fetchXml: this._fetchXml,
             projectReference: this._projectReference,
             rootTaskId: this._rootTaskId,
@@ -110,7 +111,7 @@ export class Descriptor implements ITaskGridDescriptor {
         });
     }
     public onCreateUserQueryDataProvider(): IDataProvider {
-        const provider = new TalxisSavedQueryStrategy({
+        const provider = new DataverseSavedQueryStrategy({
             recordId: this._projectReference?.id.guid,
             entityName: this._taskEntityName,
             ownerId: this._userId,
@@ -137,7 +138,7 @@ export class Descriptor implements ITaskGridDescriptor {
     }
 
     public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy {
-        return new GridCustomizer();
+        return new DataverseGridCustomizerStrategy();
     }
 
     private async _getProjectReference(): Promise<ComponentFramework.EntityReference | undefined> {

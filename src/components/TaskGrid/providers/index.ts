@@ -1,3 +1,3 @@
-export * from './task-data-provider';
-export * from './saved-query-data-provider';
-export * from './custom-columns-data-provider';
+export * from './task';
+export * from './saved-query';
+export * from './custom-columns';

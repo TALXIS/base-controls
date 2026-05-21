@@ -7,7 +7,7 @@ import { DatasetControl as DatasetControlRenderer } from "../DatasetControl";
 import { useTheme } from "@fluentui/react";
 import { getDatasetControlStyles } from "./styles";
 import { Grid } from "./components/grid";
-import { ITaskDataProvider } from "./data-providers/task-data-provider";
+import { ITaskDataProvider } from "./providers/task";
 import { ITaskGridLabels } from "./labels";
 import { TASK_GRID_LABELS } from "./labels";
 import { ITaskGridState, TaskGridDatasetControlFactory } from "./TaskGridDatasetControlFactory";

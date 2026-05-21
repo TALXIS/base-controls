@@ -1,5 +1,5 @@
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
-import { ITaskDataProvider } from "../../../data-providers/task-data-provider";
+import { ITaskDataProvider } from "../../../providers/task";
 import { DatasetConstants, IColumn, IRawRecord, IRecord } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GroupCell } from "../group-cell";
