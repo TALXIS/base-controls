@@ -326,13 +326,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     private _loadState(state: ITaskGridState) {
         let currentQuery = this._savedQueryDataProvider.getCurrentQuery();
-        if (state.savedQuery) {
-            currentQuery = {
-                ...currentQuery,
-                ...state.savedQuery,
-            }
-        }
-        else {
+        if (!state.savedQuery) {
             state.savedQuery = currentQuery;
         }
         //some required columns might have been discared by edit columns

@@ -1,6 +1,6 @@
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
 import { ITaskDataProvider } from "../../../data-providers/task-data-provider";
-import { DatasetConstants, IRawRecord, IRecord } from "@talxis/client-libraries";
+import { DatasetConstants, IColumn, IRawRecord, IRecord } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
@@ -148,7 +148,8 @@ export class GridCustomizer implements IGridCustomizer {
             colDef.onCellDoubleClicked = () => { }
             const columnName = colDef.colId as string;
             const column = this._taskDataProvider.getColumnsMap()[columnName];
-            const controlName = column.controls?.[0]?.name;
+            const customCellRenderer = this._getCustomControlForColumn('renderer', column);
+            const customCellEditor = this._getCustomControlForColumn('editor', column);
             switch (columnName) {
                 case this._nativeColumns.subject: {
                     colDef.cellRenderer = GroupCell;
@@ -160,8 +161,11 @@ export class GridCustomizer implements IGridCustomizer {
                     break;
                 }
             }
-            if(controlName === PERCENT_COMPLETE_CONTROL_NAME) {
+            if(customCellRenderer === PERCENT_COMPLETE_CONTROL_NAME) {
                 colDef.cellRenderer = PercentComplete;
+            }
+            if(customCellEditor === PERCENT_COMPLETE_CONTROL_NAME) {
+                colDef.cellEditor = PercentComplete;
             }
         }
 
@@ -169,6 +173,11 @@ export class GridCustomizer implements IGridCustomizer {
         columnDefs = this._strategy?.onGetColumnDefinitions?.(columnDefs) ?? columnDefs;
         return columnDefs;
 
+    }
+
+    private _getCustomControlForColumn(role: 'editor' | 'renderer', column?: IColumn): string | null {
+        const control = column?.controls?.find(c => c.appliesTo === role || c.appliesTo === 'both');
+        return control?.name ?? null;
     }
 
     private _getColumnPriority(col: ColDef): number {

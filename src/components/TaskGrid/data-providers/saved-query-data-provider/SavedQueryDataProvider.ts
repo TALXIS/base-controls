@@ -211,6 +211,12 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             throw new Error('At least one system query is required');
         }
         this._currentQuery = allQueries.find(q => q.id === this._preferredQuery?.id) ?? userQueries[0] ?? systemQueries[0];
+        if(this._preferredQuery) {
+            this._currentQuery = {
+                ...this._currentQuery,
+                ...this._preferredQuery
+            }
+        }
         this.includeRequiredColumns(this._currentQuery.columns);
         this.harmonizeColumns(this._currentQuery.columns);
         this._currentQuery = {
