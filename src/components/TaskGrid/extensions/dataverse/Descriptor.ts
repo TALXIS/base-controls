@@ -1,6 +1,6 @@
 import { FetchXmlBuilder, IDataProvider } from "@talxis/client-libraries";
 import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, TalxisSavedQueryStrategy } from "../../data-providers";
-import { IFieldMapping as IFieldMappingBase, INativeColumns, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "../../interfaces";
+import { IFieldMapping as IFieldMappingBase, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "../../interfaces";
 import { IGridCustomizerStrategy } from "../../components/grid";
 import { DataProviderStrategy } from "./DataProviderStrategy";
 import { GridCustomizer } from "./GridCustomizer";
@@ -10,7 +10,9 @@ export interface IProjectReference extends Omit<ComponentFramework.EntityReferen
     name?: string;
 }
 
-export interface IFieldMapping extends Omit<IFieldMappingBase, 'stateCode'> {}
+export interface IFieldMapping extends Omit<IFieldMappingBase, 'stateCode'> {
+    projectId?: string;
+}
 
 interface IDescriptorParams {
     baseFetchXml: string;
@@ -68,7 +70,7 @@ export class Descriptor implements ITaskGridDescriptor {
         return {
             ...this._fieldMapping,
             //dataverse uses this for all entities
-            stateCode: 'statecode'
+            stateCode: 'statecode',
         }
     }
 

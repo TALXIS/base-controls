@@ -1,10 +1,10 @@
 import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer } from "@talxis/client-libraries";
 import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult } from "../../data-providers";
 import { IRecordTree } from "../../data-providers/task-data-provider/record-tree";
-import { INativeColumns } from "../../interfaces";
 import { LexoRank } from "../LexoRank";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
 import { Liquid } from "liquidjs";
+import { IFieldMapping } from "./Descriptor";
 
 
 interface IFormParameters {
@@ -28,10 +28,6 @@ export interface IDataProviderStrategyParams {
 
 interface ILookupManyColumn extends IColumn {
     navigationPropertyName: string
-}
-
-export interface IDataverseEntityNativeColumns extends INativeColumns {
-    projectId?: string;
 }
 
 export interface IDataProviderStrategy extends ITaskDataProviderStrategy {
@@ -198,8 +194,8 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         })
     }
 
-    private _getNativeColumns(): IDataverseEntityNativeColumns {
-        return this._provider.getNativeColumns() as IDataverseEntityNativeColumns;
+    private _getFieldMapping(): IFieldMapping {
+        return this._provider.getNativeColumns() as IFieldMapping;
     }
 
     private _getFetchXml(): string {
@@ -227,27 +223,27 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         };
         //prefill project
         if (this._projectReference) {
-            const projectIdColumnName = this._getNativeColumns().projectId;
+            const projectIdColumnName = this._getFieldMapping().projectId;
             data[`${projectIdColumnName}`] = this._projectReference.id.guid;
             data[`${projectIdColumnName}name`] = this._projectReference.name;
             data[`${projectIdColumnName}type`] = this._projectReference.etn;
         }
         //prefill parent task
         if (parentTaskId) {
-            const parentIdColumnName = this._getNativeColumns().parentId;
+            const parentIdColumnName = this._getFieldMapping().parentId;
             data[`${parentIdColumnName}`] = parentTaskId;
             data[`${parentIdColumnName}name`] = this._provider.getRecordsMap()[parentTaskId].getNamedReference().name;
             data[`${parentIdColumnName}type`] = this._entityName;
         }
         const node = this._taskTree.getNode(parentTaskId ?? null);
         let payload: { [key: string]: any } = {};
-        payload[`${this._getNativeColumns().stackRank}`] = await this._updateStackRank({ previousTaskId: undefined, nextTaskId: node.directChildren[0]?.getRecordId(), skipSave: true });
+        payload[`${this._getFieldMapping().stackRank}`] = await this._updateStackRank({ previousTaskId: undefined, nextTaskId: node.directChildren[0]?.getRecordId(), skipSave: true });
 
         if (this._projectReference) {
-            payload[`${await this._getNavigationalPropertyName(this._projectReference.etn!, this._getNativeColumns().projectId!)}@odata.bind`] = `/${this._projectMetadata?.EntitySetName}(${this._projectReference.id.guid})`;
+            payload[`${await this._getNavigationalPropertyName(this._projectReference.etn!, this._getFieldMapping().projectId!)}@odata.bind`] = `/${this._projectMetadata?.EntitySetName}(${this._projectReference.id.guid})`;
         }
         if (parentTaskId) {
-            payload[`${await this._getNavigationalPropertyName(this._entityName, this._getNativeColumns().parentId)}@odata.bind`] = `/${this._entitySetName}(${parentTaskId})`;
+            payload[`${await this._getNavigationalPropertyName(this._entityName, this._getFieldMapping().parentId)}@odata.bind`] = `/${this._entitySetName}(${parentTaskId})`;
         }
         if (this._isInlineCreateEnabled) {
             const result = await window.Xrm.WebApi.createRecord(this._entityName, payload);
@@ -313,12 +309,12 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         let payload: { [key: string]: any } = {};
         if (position === 'child') {
             //change parent
-            payload[`${await this._getNavigationalPropertyName(this._entityName, this._getNativeColumns().parentId)}@odata.bind`] = `/${this._entitySetName}(${movingToTaskId})`;
+            payload[`${await this._getNavigationalPropertyName(this._entityName, this._getFieldMapping().parentId)}@odata.bind`] = `/${this._entitySetName}(${movingToTaskId})`;
             const firstChild = this._taskTree.getNode(movingToTaskId).directChildren
                 .find(c => c.getRecordId() !== movingTaskId);
             if (firstChild) {
                 //change stack rank to be before first child
-                payload[`${this._getNativeColumns().stackRank}`] = await this._updateStackRank({ recordId: movingTaskId, previousTaskId: undefined, nextTaskId: firstChild.getRecordId(), skipSave: true });
+                payload[`${this._getFieldMapping().stackRank}`] = await this._updateStackRank({ recordId: movingTaskId, previousTaskId: undefined, nextTaskId: firstChild.getRecordId(), skipSave: true });
             }
             await window.Xrm.WebApi.updateRecord(this._entityName, movingTaskId, payload);
             const rawRecord = (await this.onGetRawRecords([movingTaskId]))[0];
@@ -326,7 +322,7 @@ export class DataProviderStrategy implements IDataProviderStrategy {
         }
         else {
             const movingToRecordParent = this._taskTree.getNodeMap().get(movingToRecord.getRecordId())?.parent;
-            payload[`${await this._getNavigationalPropertyName(this._entityName, this._getNativeColumns().parentId)}@odata.bind`] = movingToRecordParent ? `/${this._entitySetName}(${movingToRecordParent.getRecordId()})` : null;
+            payload[`${await this._getNavigationalPropertyName(this._entityName, this._getFieldMapping().parentId)}@odata.bind`] = movingToRecordParent ? `/${this._entitySetName}(${movingToRecordParent.getRecordId()})` : null;
 
             const movingToRecordNode = this._taskTree.getNodeMap().get(movingToRecord.getRecordId())!;
             const siblings = this._taskTree.getNodeMap().get(movingToRecordParent?.getRecordId() ?? null as any)?.directChildren ?? [];
@@ -340,7 +336,7 @@ export class DataProviderStrategy implements IDataProviderStrategy {
                 prevSiblingId = movingToRecord.getRecordId();
                 nextSiblingId = siblings[movingToRecordNode.index + 1]?.getRecordId();
             }
-            payload[`${this._getNativeColumns().stackRank}`] = await this._updateStackRank({ recordId: movingTaskId, previousTaskId: prevSiblingId, nextTaskId: nextSiblingId, skipSave: true });
+            payload[`${this._getFieldMapping().stackRank}`] = await this._updateStackRank({ recordId: movingTaskId, previousTaskId: prevSiblingId, nextTaskId: nextSiblingId, skipSave: true });
             await window.Xrm.WebApi.updateRecord(this._entityName, movingTaskId, payload);
             const rawRecord = (await this.onGetRawRecords([movingTaskId]))[0];
             return [rawRecord];
@@ -450,7 +446,7 @@ export class DataProviderStrategy implements IDataProviderStrategy {
     }
 
     private async _updateStackRank(params: { recordId?: string, previousTaskId?: string, nextTaskId?: string; skipSave?: boolean }): Promise<string> {
-        const stackRankCol = this._getNativeColumns().stackRank;
+        const stackRankCol = this._getFieldMapping().stackRank;
         const rawDataMap = this._provider.getRawDataMap();
 
         const prevRank = params.previousTaskId ? (rawDataMap[params.previousTaskId]?.[stackRankCol] as string) : undefined;
