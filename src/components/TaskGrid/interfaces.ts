@@ -20,7 +20,7 @@ export interface ITaskGridDatasetControlParameters {
 }
 
 /** Maps functional column roles to the physical attribute (field) names in the consuming entity's schema. */
-export interface INativeColumns {
+export interface IFieldMapping {
     /** Lookup attribute pointing to the parent task — drives the tree hierarchy. */
     parentId: string;
     /** Display name / title attribute. Always pinned left; never hidden by the control. */
@@ -29,10 +29,12 @@ export interface INativeColumns {
     stackRank: string;
     /** Active/inactive status attribute. Used by the "Hide inactive tasks" filter. */
     stateCode: string;
-    /** Virtual breadcrumb column. Its value is computed automatically from ancestor names and is never editable. */
-    path: string;
     /** (Optional) Numeric completion percentage. When present, rendered with a progress-bar cell renderer. */
     percentComplete?: string;
+}
+
+export interface INativeColumns extends IFieldMapping {
+    path: string;
 }
 
 /** Feature flags that control which UI elements are rendered in the grid header and ribbon. */
@@ -91,7 +93,7 @@ export interface ITaskStrategyDeps {
  */
 export interface ITaskGridDescriptor {
     /** Returns the mapping of logical column roles to physical schema attribute names. */
-    onGetNativeColumns: () => Omit<INativeColumns, 'path'>;
+    onGetNativeColumns: () => IFieldMapping;
     /** Returns the strategy responsible for loading system/user views and persisting view changes. */
     onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
     /** Returns the strategy that handles all task CRUD, move, template and record-save operations. */
