@@ -117,7 +117,7 @@ Maps logical roles to physical attribute names in your entity schema.
 |----------|:--------:|------|
 | `subject` | ✅ | Display name / title. Always pinned left; never hidden. |
 | `parentId` | ✅ | Self-referential parent lookup — drives the tree hierarchy. |
-| `stackRank` | ✅ | Numeric or string ordering attribute. Used for default sort and drag-and-drop reordering. |
+| `stackRank` | ✅ | Ordering attribute. Used for default sort and drag-and-drop reordering. |
 | `stateCode` | ✅ | Active/inactive status. Used by the *Hide inactive tasks* filter. |
 | `path` | — | Virtual breadcrumb column computed from ancestor names. Marked read-only automatically. Does not need to be a real schema attribute. |
 | `percentComplete?` | — | Numeric completion percentage. When present, rendered with a progress-bar cell renderer. |
@@ -354,6 +354,8 @@ Enables user-defined (dynamic) column definitions. Return an instance from `onCr
 > **⚠️ WIP:** Template-based task creation (`onCreateTemplateFromTask` / `onCreateTasksFromTemplate`) is not yet implemented in the Dataverse strategy. Calling either method will throw. Templating must be handled by a custom `DataProviderStrategy` subclass if needed.
 
 `extensions/dataverse` provides a ready-to-use `ITaskGridDescriptor` + `ITaskDataProviderStrategy` implementation that works against any Dataverse entity via the Xrm Web API and FetchXML.
+
+> **Stack ranking** — the Dataverse strategy uses the [LexoRank](https://www.npmjs.com/package/lexorank) algorithm for task ordering. The `stackRank` attribute **must be a text column**; the strategy reads and writes LexoRank strings directly. Drag-and-drop reordering is automatically suppressed when the grid is sorted by any other column.
 
 ### Classes
 
