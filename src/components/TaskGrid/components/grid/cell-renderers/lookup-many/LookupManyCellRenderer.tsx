@@ -1,16 +1,12 @@
-import { IRecord } from "@talxis/client-libraries";
-import { ICellProps } from "../../../../../../Grid/cells/cell/Cell";
+import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { useTaskDataProvider } from "../../../../..";
-import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "../../../../../components/grid/lookup-many";
-import { FetchXmlDataProviderFactory } from "./FetchXmlDataProviderFactory";
 import React, { useCallback, useEffect } from "react";
-import { IDataverseTaskStrategy } from "../../../DataverseTaskStrategy";
 import AsyncSelect from "react-select/async";
+import { ICellProps } from "../../../../../Grid/cells/cell/Cell";
+import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "../../lookup-many";
 
 interface ICellRendererProps extends ICellProps {
-    fetchXml: string;
-    onRecordSelect?: (selectedRecords: ComponentFramework.EntityReference[]) => void;
-    onRecordOpen?: (entityReference: ComponentFramework.EntityReference) => void;
+    dataProvider: IDataProvider;
 }
 
 enum ControlName {
@@ -19,31 +15,15 @@ enum ControlName {
     ColorfulLookupMany = 'ColorfulLookupMany',
 }
 
-export const CellRenderer = (props: ICellRendererProps) => {
-    const { api, baseColumn } = props;
+export const LookupManyCellRenderer = (props: ICellRendererProps) => {
+    const { api, baseColumn, dataProvider } = props;
     const record: IRecord = props.data;
-    //const isDisabled = !props.value.editing;
     const [isDisabled, setIsDisabled] = React.useState(true);
     const customControl = record.getColumnInfo(baseColumn.name).ui.getCustomControls([])?.[0];
     const controlName = customControl.name ?? ControlName.LookupMany as ControlName;
     const bindings = customControl?.bindings;
-    const taskId = record.getRecordId();
     const provider = useTaskDataProvider();
-    const strategy: IDataverseTaskStrategy = useTaskDataProvider().getStrategy();
-    const projectReference = strategy.getProjectReference();
-    const fetchXml = customControl?.bindings?.FetchXml.value;
-
-    if (!fetchXml) {
-        throw new Error('FetchXml for LookupMany is not defined in column metadata. Define it using the "LookupManyFetchXml" property.');
-    }
     const value: ComponentFramework.EntityReference[] | undefined = record.getValue(props.colDef!.colId!) as ComponentFramework.EntityReference[] | undefined;
-    const dataProvider = React.useMemo(() => FetchXmlDataProviderFactory.create({
-        fetchXml: fetchXml,
-        variables: {
-            taskId: taskId,
-            projectId: projectReference?.id.guid
-        }
-    }), []);
 
     const onSelectionChange = (selectedRecords: ComponentFramework.EntityReference[]) => {
         record.setValue(props.colDef!.colId!, selectedRecords);
@@ -74,10 +54,27 @@ export const CellRenderer = (props: ICellRendererProps) => {
             onRecordOpen,
             components: {
                 onRenderSelect: (selectProps) =>
-                    <AsyncSelect {...selectProps} autoFocus openMenuOnFocus openMenuOnClick onBlur={(e) => {
-                        selectProps.onBlur?.(e);
-                        onBlur();
-                    }} />
+                    <AsyncSelect {...selectProps}
+                        autoFocus
+                        openMenuOnFocus
+                        openMenuOnClick
+                        styles={{
+                            ...selectProps.styles,
+                            control: (base, props) => {
+                                return {
+                                    ...selectProps.styles?.control?.(base, props),
+                                    maxHeight: 200,
+                                    overflow: 'auto',
+                                    border: 'none',
+                                    background: 'none',
+                                    boxShadow: 'none',
+                                }
+                            }
+                        }}
+                        onBlur={(e) => {
+                            selectProps.onBlur?.(e);
+                            onBlur();
+                        }} />
             }
         }
     }

@@ -1,12 +1,9 @@
 import { IDataProvider } from '@talxis/client-libraries';
 import * as React from 'react';
-import { SelectInstance } from 'react-select';
 import { useLocalizationService } from '../../../context';
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
-import { getLookupManyStyles } from './styles';
 import { LookupManyComponents, ILookupManyComponents } from './components';
 import { LookupManyPropsContext } from './context';
-import { Callout } from '@fluentui/react';
 
 export interface ILookupManyProps {
     dataProvider: IDataProvider;
@@ -14,22 +11,31 @@ export interface ILookupManyProps {
     isDisabled?: boolean;
     selectedRecords?: ComponentFramework.EntityReference[];
     components?: Partial<ILookupManyComponents>;
-    onRecordSelect: (selectedRecords: ComponentFramework.EntityReference[]) => void;
+    onRecordSelect?: (selectedRecords: ComponentFramework.EntityReference[]) => void;
     onRecordOpen?: (record: ComponentFramework.EntityReference) => void;
 }
+
+//can be used as base for new lookup (is task grid independent)
 
 export const LookupMany = (props: ILookupManyProps) => {
     const { dataProvider, selectedRecords = [], isDisabled = false, onRecordSelect, onRecordOpen } = props;
     const components = { ...LookupManyComponents, ...props.components };
+    const defaultOptionsPromiseRef = React.useRef<Promise<any> | null>(null);
+    const defaultOptionsResolveRef = React.useRef<any>(null);
     const localizationService = useLocalizationService();
-    const ref = React.useRef<SelectInstance>(null);
-    const [renderKey, setRenderKey] = React.useState(0);
-    const [defaultOptions, setDefaultOptions] = React.useState<boolean>(false);
+    const hasBeenUnmountedRef = React.useRef(false);
     const MultiValueContainerComponent = React.useRef(components.onRenderMultiValueContainer);
     const MultiValueLabel = React.useRef(components.onRenderMultiValueLabel);
     const Option = React.useRef(components.onRenderOption);
 
     const onLoadOptions = async (inputValue: string): Promise<ComponentFramework.EntityReference[]> => {
+        if (!defaultOptionsPromiseRef.current) {
+            defaultOptionsPromiseRef.current = new Promise((resolve) => {
+                defaultOptionsResolveRef.current = resolve;
+            });
+        }
+        await defaultOptionsPromiseRef.current;
+        if(hasBeenUnmountedRef.current) return [];
         dataProvider.setSearchQuery(inputValue);
         const records = await dataProvider.refresh();
         return records.map(record => {
@@ -40,63 +46,52 @@ export const LookupMany = (props: ILookupManyProps) => {
         })
     }
 
-    const onKeyDown = (event: React.KeyboardEvent) => {
-        switch (event.key) {
-            case 'Enter': {
-                ref.current?.openMenu('first');
-            }
-        }
+    //resolve the promise so initial load starts
+    const onFocus = () => {
+        setTimeout(() => {
+            defaultOptionsResolveRef.current?.();
+        }, 0);
     }
 
-    const onMenuOpen = (isOpen: boolean) => {
-        const controlElement = ref.current?.controlRef;
-        if (isOpen && !defaultOptions) {
-            setDefaultOptions(true);
-            setRenderKey(prev => prev + 1);
+    React.useEffect(() => {
+        return () => {
+            hasBeenUnmountedRef.current = true;
+            defaultOptionsResolveRef.current?.();
         }
-        if (isOpen && controlElement) {
-            setTimeout(() => {
-                controlElement.scrollTop = controlElement.scrollHeight;
-            }, 0);
-        }
-    }
+    }, []);
+
 
     return <LookupManyPropsContext.Provider value={props}>
-        <React.Fragment key={renderKey}>
-            {components.onRenderSelect({
-                //@ts-ignore
-                ref: ref,
-                isMulti: true,
-                isDisabled: isDisabled,
-                menuPortalTarget: document.body,
-                value: selectedRecords,
-                menuPlacement: 'auto',
-                placeholder: '',
-                isClearable: false,
-                menuShouldScrollIntoView: false,
-                closeMenuOnSelect: false,
-                defaultOptions: defaultOptions,
-                styles: getLookupManyStyles(),
-                components: {
-                    IndicatorSeparator: () => <></>,
-                    DropdownIndicator: () => <></>,
-                    LoadingIndicator: () => <></>,
-                    MultiValueContainer: MultiValueContainerComponent.current,
-                    MultiValueRemove: MultiValueRemove,
-                    MultiValueLabel: MultiValueLabel.current,
-                    Option: Option.current,
-                },
-                onKeyDown: onKeyDown,
-                noOptionsMessage: () => localizationService.getLocalizedString('noRecordsFound'),
-                loadingMessage: () => localizationService.getLocalizedString('loading'),
-                getOptionValue: (record) => record.id.guid,
-                getOptionLabel: (record) => record.name,
-                onChange: (selectedRecords) => onRecordSelect(selectedRecords as ComponentFramework.EntityReference[]),
-                onMenuOpen: () => onMenuOpen(true),
-                onBlur: () => onMenuOpen(false),
-                loadOptions: onLoadOptions,
-                onNavigate: onRecordOpen
-            })}
-        </React.Fragment>
+        {components.onRenderSelect({
+            isMulti: true,
+            isDisabled: isDisabled,
+            menuPortalTarget: document.body,
+            value: selectedRecords,
+            menuPlacement: 'auto',
+            placeholder: '',
+            isClearable: false,
+            menuShouldScrollIntoView: false,
+            closeMenuOnSelect: false,
+            //@ts-ignore
+            defaultOptions: true,
+            components: {
+                IndicatorSeparator: () => <></>,
+                DropdownIndicator: () => <></>,
+                LoadingIndicator: () => <></>,
+                MultiValueContainer: MultiValueContainerComponent.current,
+                MultiValueRemove: MultiValueRemove,
+                MultiValueLabel: MultiValueLabel.current,
+                Option: Option.current,
+            },
+
+            noOptionsMessage: () => localizationService.getLocalizedString('noRecordsFound'),
+            loadingMessage: () => localizationService.getLocalizedString('loading'),
+            getOptionValue: (record) => record.id.guid,
+            getOptionLabel: (record) => record.name,
+            onChange: (selectedRecords) => onRecordSelect?.(selectedRecords as ComponentFramework.EntityReference[]),
+            onFocus: onFocus,
+            loadOptions: onLoadOptions,
+            onNavigate: onRecordOpen
+        })}
     </LookupManyPropsContext.Provider>
 }

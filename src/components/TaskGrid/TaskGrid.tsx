@@ -17,6 +17,7 @@ import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
 import { LocalizationService } from "../../utils";
 import { LookupMany } from "./components/grid/lookup-many";
 import { MemoryDataProvider } from "@talxis/client-libraries/dist/utils";
+import AsyncSelect from "react-select/async";
 
 interface ITaskGridProps {
     //should be replaced by Context API in future
@@ -71,16 +72,6 @@ export const TaskGrid = (props: ITaskGridProps) => {
             <LocalizationServiceContext.Provider value={localizationService}>
                 <AgGridLicenseKeyContext.Provider value={taskGridDescriptor.onGetAgGridLicenseKey?.() ?? null}>
                     <TaskGridComponentsContext.Provider value={components}>
-                        <LookupMany onRecordSelect={() => {}} dataProvider={new MemoryDataProvider({
-                            dataSource: [{
-                                id: 'id_1',
-                                name: 'test1'
-                            }],
-                            metadata: {
-                                PrimaryIdAttribute: 'id',
-                                PrimaryNameAttribute: 'name'
-                            }
-                        }) as any} />
                         <InternalTaskGridDatasetControl
                             key={instanceState.remountKey}
                             {...props}

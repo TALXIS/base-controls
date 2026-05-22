@@ -23,7 +23,7 @@ export class DataverseGridCustomizerStrategy implements IGridCustomizerStrategy 
         this._provider = customizer.getTaskDataProvider();
         this._gridApi = customizer.getGridApi();
     }
-    
+
     /** Injects the lookup-many {@link CellRenderer} and sets `autoHeight`/non-editable flags for any column whose name ends with the lookup-many suffix. */
     public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
         for (const colDef of colDefs) {
