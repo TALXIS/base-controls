@@ -41,7 +41,7 @@ export const LookupManyCellRenderer = (props: ICellRendererProps) => {
         });
     }
 
-    const onBlur = () => {
+    const onMenuClose = () => {
         setIsDisabled(true);
     }
 
@@ -71,9 +71,9 @@ export const LookupManyCellRenderer = (props: ICellRendererProps) => {
                                 }
                             }
                         }}
-                        onBlur={(e) => {
-                            selectProps.onBlur?.(e);
-                            onBlur();
+                        onMenuClose={() => {
+                            selectProps.onMenuClose?.();
+                            onMenuClose();
                         }} />
             }
         }

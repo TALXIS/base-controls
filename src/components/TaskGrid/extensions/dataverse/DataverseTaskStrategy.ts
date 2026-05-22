@@ -2,10 +2,9 @@ import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, Fetch
 import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult } from "../../providers";
 import { IRecordTree } from "../../providers/task/record-tree";
 import { LexoRank } from "../LexoRank";
-import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
 import { Liquid } from "liquidjs";
 import { IFieldMapping } from "./DataverseTaskGridDescriptor";
-import { LookupManyHelpers } from "../../helpers/lookup-many/LookupManyHelpers";
+import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
 
 
 interface IFormParameters {

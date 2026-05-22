@@ -1,7 +1,7 @@
 import { ColDef, GridApi, IGridCustomizer, IGridCustomizerStrategy } from "../../components/grid";
 import { ITaskDataProvider } from "../../providers";
+import { FetchXmlLookupManyCellRenderer } from "./lookup-many/cell-renderer/FetchXmlLookupManyCellRenderer";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX } from "./lookup-many/LookupManyHandler";
-import { CellRenderer } from "./lookup-many/components/cell-renderer/CellRenderer";
 
 /**
  * Ready-to-use {@link IGridCustomizerStrategy} for the Dataverse / Talxis platform.
@@ -29,7 +29,7 @@ export class DataverseGridCustomizerStrategy implements IGridCustomizerStrategy 
         for (const colDef of colDefs) {
             const column = this._getProvider().getColumnsMap()[colDef.field!];
             if (column?.name.endsWith(LOOKUP_MANY_COLUMN_NAME_SUFFIX)) {
-                colDef.cellRenderer = CellRenderer;
+                colDef.cellRenderer = FetchXmlLookupManyCellRenderer;
                 colDef.autoHeight = true;
                 colDef.editable = false;
                 colDef.suppressKeyboardEvent = () => true;
