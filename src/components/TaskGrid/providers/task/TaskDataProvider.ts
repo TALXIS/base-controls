@@ -4,7 +4,7 @@ import { ErrorHelper } from "../../../../utils/error-handling";
 import { ILocalizationService } from "../../../../utils";
 import { ITaskGridLabels } from "../../labels";
 import { INativeColumns } from "../../interfaces";
-import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "../saved-query";
+import { ISavedQueryDataProvider} from "../saved-query";
 
 export interface IFailedRecord {
     id: string;
@@ -452,7 +452,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private async _loadDataFromStrategy() {
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
-                const virtualColumns = structuredClone(this.getColumns().filter(col => col.isVirtual));
                 const { columns, rawData, metadata } = await this._strategy.onInitialize(this);
                 this.setDataSource(rawData);
                 this.setMetadata(metadata);

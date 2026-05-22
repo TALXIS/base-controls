@@ -1,7 +1,7 @@
 import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer, Operators, DataTypes } from "@talxis/client-libraries";
 import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult } from "../../providers";
 import { IRecordTree } from "../../providers/task/record-tree";
-import { LexoRank } from "../LexoRank";
+import {LexoRank} from "lexorank";
 import { Liquid } from "liquidjs";
 import { IFieldMapping } from "./DataverseTaskGridDescriptor";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
@@ -182,7 +182,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         this._provider = provider;
         this._taskTree = provider.getRecordTree();
         this._fetchXml = this._getFetchXml();
-        const virtualColumns = provider.getColumns().filter(col => col.isVirtual);
+        const virtualColumns = structuredClone(provider.getColumns().filter(col => col.isVirtual));
         this._fetchXmlDataProvider = new FetchXmlDataProvider({ fetchXml: this._fetchXml, loadAllRecords: true });
         this._fetchXmlDataProvider.setColumns(provider.getColumns());
         this._fetchXmlDataProvider.setLinking(provider.getLinking());
@@ -505,18 +505,18 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         const stackRankCol = this._getFieldMapping().stackRank;
         const rawDataMap = this._provider.getRawDataMap();
 
-        const prevRank = params.previousTaskId ? (rawDataMap[params.previousTaskId]?.[stackRankCol] as string) : undefined;
-        const nextRank = params.nextTaskId ? (rawDataMap[params.nextTaskId]?.[stackRankCol] as string) : undefined;
+        const prevRankStr = params.previousTaskId ? (rawDataMap[params.previousTaskId]?.[stackRankCol] as string) : undefined;
+        const nextRankStr = params.nextTaskId ? (rawDataMap[params.nextTaskId]?.[stackRankCol] as string) : undefined;
 
         let newRank: string;
-        if (prevRank && nextRank) {
-            newRank = LexoRank.between(prevRank, nextRank);
-        } else if (nextRank) {
-            newRank = LexoRank.before(nextRank);
-        } else if (prevRank) {
-            newRank = LexoRank.after(prevRank);
+        if (prevRankStr && nextRankStr) {
+            newRank = LexoRank.parse(prevRankStr).between(LexoRank.parse(nextRankStr)).format();
+        } else if (nextRankStr) {
+            newRank = LexoRank.parse(nextRankStr).genPrev().format();
+        } else if (prevRankStr) {
+            newRank = LexoRank.parse(prevRankStr).genNext().format();
         } else {
-            newRank = LexoRank.between(LexoRank.MIN, LexoRank.MAX);
+            newRank = LexoRank.middle().format();
         }
         if (!params.skipSave && params.recordId) {
             await window.Xrm.WebApi.updateRecord(this._entityName, params.recordId, {
