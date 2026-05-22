@@ -538,8 +538,6 @@ export class MyDescriptor extends DataverseTaskGridDescriptor {
 
 ### Lookup-many columns
 
-> **⚠️ WIP:** Lookup-many columns have known open issues — filter operators in the picker may not display correctly, and there are bugs to resolve around value input.
-
 A lookup-many column surfaces a multi-value relationship (1:N or N:N) directly as a grid cell. The dataverse `DataverseTaskStrategy` automatically detects lookup-many columns by their `_stub` name suffix, resolves the OData expand clause via relationship metadata, and handles associate/disassociate on save.
 
 #### Naming convention
