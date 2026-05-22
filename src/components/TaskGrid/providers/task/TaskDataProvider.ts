@@ -454,7 +454,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             operation: async () => {
                 const virtualColumns = structuredClone(this.getColumns().filter(col => col.isVirtual));
                 const { columns, rawData, metadata } = await this._strategy.onInitialize(this);
-                this._harmonizeVirtualColumns(virtualColumns, columns);
                 this.setDataSource(rawData);
                 this.setMetadata(metadata);
                 this.setColumns(columns);
@@ -463,16 +462,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })
-    }
-
-    //fetch xml provider will override virtual column metadata by default
-    private _harmonizeVirtualColumns(virtualColumns: IColumn[], columns: IColumn[]) {
-        columns.map((col, i) => {
-            const virtualCol = virtualColumns.find(virtualCol => virtualCol.name === col.name);
-            if (virtualCol) {
-                columns[i] = virtualCol;
-            }
-        });
     }
 
     private _createTasks(rawRecords: IRawRecord[], parentId?: string) {

@@ -10,7 +10,7 @@ export interface ILookupManyComponents {
     onRenderOption: (props: OptionProps<ComponentFramework.EntityReference, boolean, any>) => JSX.Element;
 }
 
-export const DEFAULT_COMPONENTS: ILookupManyComponents = {
+export const LookupManyComponents: ILookupManyComponents = {
     onRenderSelect: (selectProps) => <AsyncSelect {...selectProps} />,
     onRenderMultiValueContainer: (props) => <MultiValueContainer {...props} />,
     onRenderMultiValueLabel: (props) => <MultiValueLabel {...props} />,

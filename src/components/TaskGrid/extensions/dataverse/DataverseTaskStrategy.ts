@@ -1,10 +1,11 @@
-import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer } from "@talxis/client-libraries";
+import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer, Operators, DataTypes } from "@talxis/client-libraries";
 import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult } from "../../providers";
 import { IRecordTree } from "../../providers/task/record-tree";
 import { LexoRank } from "../LexoRank";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
 import { Liquid } from "liquidjs";
 import { IFieldMapping } from "./DataverseTaskGridDescriptor";
+import { LookupManyHelpers } from "../../helpers/lookup-many/LookupManyHelpers";
 
 
 interface IFormParameters {
@@ -182,7 +183,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         this._provider = provider;
         this._taskTree = provider.getRecordTree();
         this._fetchXml = this._getFetchXml();
-
+        const virtualColumns = provider.getColumns().filter(col => col.isVirtual);
         this._fetchXmlDataProvider = new FetchXmlDataProvider({ fetchXml: this._fetchXml, loadAllRecords: true });
         this._fetchXmlDataProvider.setColumns(provider.getColumns());
         this._fetchXmlDataProvider.setLinking(provider.getLinking());
@@ -191,6 +192,8 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         this._entitySetName = this._fetchXmlDataProvider.getMetadata().EntitySetName;
         this._lookupManyColumns = this._getLookupManyColumns();
         const columns = this._fetchXmlDataProvider.getColumns();
+        this._restoreVirtualColumnMetadata(virtualColumns, columns);
+        this._injectLookupManyFilterOperators(columns);
         const metadata = this._fetchXmlDataProvider.getMetadata();
         const fetchXmlProviderData = this._fetchXmlDataProvider.getRawData();
         const enrichedData = await this.onGetRawRecords(this._fetchXmlDataProvider.getSortedRecordIds(), this._fetchXmlDataProvider.getMetadata().PrimaryIdAttribute);
@@ -204,7 +207,6 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         if (this._projectReference) {
             this._projectMetadata = await window.Xrm.Utility.getEntityMetadata(this._projectReference.etn!);
         }
-
         return {
             rawData: finalRawData,
             columns,
@@ -217,6 +219,27 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
             return {
                 ...col,
                 navigationPropertyName: col.name.replace(LOOKUP_MANY_COLUMN_NAME_SUFFIX, '')
+            }
+        })
+    }
+
+    //fetch xml provider will override virtual column metadata by default, so we need to restore it after initialization.
+    private _restoreVirtualColumnMetadata(virtualColumns: IColumn[], columns: IColumn[]) {
+        columns.map((col, i) => {
+            const virtualCol = virtualColumns.find(virtualCol => virtualCol.name === col.name);
+            if (virtualCol) {
+                columns[i] = virtualCol;
+            }
+        });
+    }
+
+    private _injectLookupManyFilterOperators(columns: IColumn[]) {
+        columns.map(col => {
+            if (col.name.endsWith(LOOKUP_MANY_COLUMN_NAME_SUFFIX)) {
+                col.metadata = {
+                    ...col.metadata,
+                    SupportedFilterConditionOperators: Operators.GetOperatorsForDataType(DataTypes.MultiSelectOptionSet).map(op => op.Value)
+                }
             }
         })
     }
@@ -457,7 +480,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     }
 
     private async _editMultipleTasks(recordIds: string[]): Promise<IEditTasksResult | null> {
-        const { pageInput, navigationOptions} = this._getFormParameters('bulkEdit', {
+        const { pageInput, navigationOptions } = this._getFormParameters('bulkEdit', {
             //@ts-ignore - not documented, passing of record id array is possible in Power Apps - https://butenko.pro/2021/10/14/howto-open-bulk-editing-of-records-using-xrm-navigation-navigateto/
             pageInput: {
                 //@ts-ignore - typings

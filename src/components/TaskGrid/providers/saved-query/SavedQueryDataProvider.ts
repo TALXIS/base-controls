@@ -210,8 +210,9 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         if (this._systemQueries.length === 0) {
             throw new Error('At least one system query is required');
         }
-        this._currentQuery = allQueries.find(q => q.id === this._preferredQuery?.id) ?? userQueries[0] ?? systemQueries[0];
-        if(this._preferredQuery) {
+        const preferredQueryInAllQueries = allQueries.find(q => q.id === this._preferredQuery?.id);
+        this._currentQuery = preferredQueryInAllQueries ?? userQueries[0] ?? systemQueries[0];
+        if(preferredQueryInAllQueries) {
             this._currentQuery = {
                 ...this._currentQuery,
                 ...this._preferredQuery

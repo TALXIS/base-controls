@@ -355,7 +355,7 @@ Enables user-defined (dynamic) column definitions. Return an instance from `onCr
 
 ## Dataverse strategy (pre-made)
 
-> **⚠️ WIP:** Template-based task creation (`onCreateTemplateFromTask` / `onCreateTasksFromTemplate`) is not yet implemented in the Dataverse strategy. Calling either method will throw. Templating must be handled by a custom `DataProviderStrategy` subclass if needed.
+> **⚠️ WIP:** Template-based task creation (`onCreateTemplateFromTask` / `onCreateTasksFromTemplate`) is not yet implemented in the Dataverse strategy. Calling either method will throw. Templating must be handled by a custom `DataverseTaskStrategy` subclass if needed.
 
 `extensions/dataverse` provides a ready-to-use `ITaskGridDescriptor` + `ITaskDataProviderStrategy` implementation that works against any Dataverse entity via the Xrm Web API and FetchXML.
 

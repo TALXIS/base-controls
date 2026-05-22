@@ -4,11 +4,11 @@ export const getLookupManyStyles = (): StylesConfig<ComponentFramework.EntityRef
     return {
         control: (base) => ({
             ...base,
-            maxHeight: 200,
+/*             maxHeight: 200,
             overflow: 'auto',
             border: 'none',
             background: 'none',
-            boxShadow: 'none',
+            boxShadow: 'none', */
         }),
     };
 };

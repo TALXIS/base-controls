@@ -4,7 +4,7 @@ import { SelectInstance } from 'react-select';
 import { useLocalizationService } from '../../../context';
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
 import { getLookupManyStyles } from './styles';
-import { DEFAULT_COMPONENTS, ILookupManyComponents } from './components';
+import { LookupManyComponents, ILookupManyComponents } from './components';
 import { LookupManyPropsContext } from './context';
 import { Callout } from '@fluentui/react';
 
@@ -20,7 +20,7 @@ export interface ILookupManyProps {
 
 export const LookupMany = (props: ILookupManyProps) => {
     const { dataProvider, selectedRecords = [], isDisabled = false, onRecordSelect, onRecordOpen } = props;
-    const components = { ...DEFAULT_COMPONENTS, ...props.components };
+    const components = { ...LookupManyComponents, ...props.components };
     const localizationService = useLocalizationService();
     const ref = React.useRef<SelectInstance>(null);
     const [renderKey, setRenderKey] = React.useState(0);
