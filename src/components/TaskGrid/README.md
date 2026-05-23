@@ -436,11 +436,14 @@ The `baseFetchXml` supports [Liquid](https://shopify.github.io/liquid/) template
 | `project?` | — | `{ etn, id, name? }`. When `name` is omitted, the descriptor fetches it via the API. |
 | `userId?` | — | Current user GUID. Required for `DataverseSavedQueryStrategy` (user query persistence). |
 | `agGridLicenseKey?` | — | AG Grid Enterprise license key. |
+| `enableUserQueries?` | — | Set to `true` to enable personal saved views backed by `DataverseSavedQueryStrategy`. Defaults to `false`. |
 | `gridParameters?` | — | `ITaskGridParameters` feature flags. |
 | `rootTaskId?` | — | Scope the tree to a subtree by providing the root task GUID. |
 | `editFormId?` | — | Form GUID for single-task edit. |
 | `createFormId?` | — | Form GUID for task creation. |
 | `bulkEditFormId?` | — | Form GUID for bulk task edit. |
+| `enableCascadeDelete?` | — | When `true`, deleting a task also deletes its child tasks. Defaults to `false`. |
+| `enableDeletingTasksWithChildren?` | — | When `true`, tasks that have children can be deleted. When `false`, such tasks are excluded from deletion and an error is returned. Defaults to `false`. |
 
 ### `IFieldMapping` (Dataverse)
 
@@ -532,6 +535,8 @@ export class MyDescriptor extends DataverseTaskGridDescriptor {
 | `bulkEditFormId?` | Form GUID for bulk task edit. |
 | `isInlineCreateEnabled?` | When `true` (default), tasks are created inline via the Web API instead of opening a create form. |
 | `isEditingEnabled?` | When `false`, disables inline cell editing at the strategy level. |
+| `isCascadeDeleteEnabled?` | When `true`, deleting a task also deletes its child tasks. Defaults to `false`. |
+| `isDeletingTasksWithChildrenEnabled?` | When `true`, tasks that have children can be deleted. When `false`, such tasks are excluded from deletion and an error is returned. Defaults to `false`. |
 | `formStrategy?.onGetFormParameters` | `(operation, defaults) => params` — intercept and modify any form navigation call (`'create'`, `'edit'`, `'bulkEdit'`, `'open'`). |
 
 ---
