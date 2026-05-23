@@ -46,6 +46,10 @@ interface IDataverseTaskGridDescriptorParams {
     createFormId?: string;
     /** Form ID to open for bulk-editing multiple selected tasks. */
     bulkEditFormId?: string;
+    /** Set to `true` to enable cascade delete when deleting tasks with children. Defaults to `false`. */
+    enableCascadeDelete?: boolean;
+    /** Set to `true` to allow deletion of tasks that have child tasks. When `false`, such tasks are excluded from deletion and an error is returned. Defaults to `false`. */
+    enableDeletingTasksWithChildren?: boolean;
 }
 
 /**
@@ -145,6 +149,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             createFormId: this._createFormId,
             editFormId: this._editFormId,
             isInlineCreateEnabled: this._gridParameters?.enableInlineCreation ?? true,
+            isCascadeDeleteEnabled: this._params.enableCascadeDelete ?? false,
+            isDeletingTasksWithChildrenEnabled: this._params.enableDeletingTasksWithChildren ?? false,
         });
     }
     /** Returns a {@link DataverseSavedQueryStrategy} pre-configured as a data provider for the user-query creation/update dialog, with `talxis_name` and `talxis_description` columns. */

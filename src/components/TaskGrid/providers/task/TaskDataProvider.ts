@@ -189,8 +189,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _getColumnsWithUnusedVirtualColumns(columns: IColumn[]): IColumn[] {
         columns = [...columns];
         const columnsMap = new Map(columns.map(col => [col.name, col]));
-        const virtualColumns = this._savedQueryDataProvider.getSystemQueries().flatMap(query => query.columns).filter(column => column.isVirtual);
-        for (const virtualColumn of virtualColumns) {
+        const virtualColumns = new Map(this._savedQueryDataProvider.getSystemQueries().flatMap(query => query.columns).filter(column => column.isVirtual).map(col => [col.name, col]));
+        for (const virtualColumn of [...virtualColumns.values()]) {
             if (!columnsMap.has(virtualColumn.name)) {
                 columns.push({
                     ...virtualColumn,

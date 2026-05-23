@@ -84,10 +84,7 @@ export interface ISavedQueryDataProvider {
     deleteUserQueries: (queryIds: string[]) => Promise<IDeletedUserQueriesResult>;
     /** Fetches system and user queries from the strategy and sets the initial active query. */
     refresh: () => Promise<void>;
-    /** Ensures all required native columns (subject, parentId, stackRank, path, stateCode) are present in the provided columns array. */
-    includeRequiredColumns: (columns: IColumn[]) => void;
-    /** Enforces column constraints: subject is never hidden; path column is always read-only. */
-    harmonizeColumns: (columns: IColumn[]) => void;
+    
     destroy: () => void;
 }
 
@@ -142,10 +139,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         if (!query) {
             throw new Error(`Query with id ${id} not found. Make sure to call refresh() and wait for it to complete before accessing the saved query.`);
         }
-        return {
-            ...query,
-            ...this._parseSavedQueryMetadata(query)
-        }
+        return query;
     }
 
     public async updateUserQuery(provider: ITaskDataProvider): Promise<string | null> {
@@ -200,34 +194,43 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     }
 
     public async refresh() {
-        const systemQueries = await this._strategy.onGetSystemQueries();
-        const userQueries = await this._strategy.onGetUserQueries();
-        const allQueries = [...systemQueries, ...userQueries];
-        this._systemQueries = systemQueries;
-        const systemQueriesColumns = this._includePathColumn(systemQueries.flatMap(query => query.columns));
-        this._systemQueriesColumnsMap = new Map(systemQueriesColumns.map(col => [col.name, col]));
-        this._userQueries = userQueries;
-        if (this._systemQueries.length === 0) {
+        const _systemQueries = await this._strategy.onGetSystemQueries();
+        if(_systemQueries.length === 0) {
             throw new Error('At least one system query is required');
         }
+        this._includePathColumn(_systemQueries[0].columns);
+        const _userQueries = await this._strategy.onGetUserQueries();
+        this._systemQueriesColumnsMap = new Map(_systemQueries.flatMap(query => query.columns.map(col => [col.name, col])));
+        const enrichedSystemQueries = this._processQueries(_systemQueries);
+        const enrichedUserQueries = this._processQueries(_userQueries);
+
+        const allQueries = [...enrichedSystemQueries, ...enrichedUserQueries];
+        this._systemQueries = enrichedSystemQueries
+        this._userQueries = enrichedUserQueries;
+        this._systemQueriesColumnsMap = new Map(enrichedSystemQueries.flatMap(query => query.columns.map(col => [col.name, col])));
+
         const preferredQueryInAllQueries = allQueries.find(q => q.id === this._preferredQuery?.id);
-        this._currentQuery = preferredQueryInAllQueries ?? userQueries[0] ?? systemQueries[0];
+        this._currentQuery = preferredQueryInAllQueries ?? enrichedUserQueries[0] ?? enrichedSystemQueries[0];
         if(preferredQueryInAllQueries) {
             this._currentQuery = {
                 ...this._currentQuery,
                 ...this._preferredQuery
             }
         }
-        this.includeRequiredColumns(this._currentQuery.columns);
-        this.harmonizeColumns(this._currentQuery.columns);
-        this._currentQuery = {
-            ...this._currentQuery,
-            //makes sure custom columns from the current query are properly merged with the columns from the custom columns data provider strategy
-            ...this._parseSavedQueryMetadata(this._currentQuery)
-        }
     }
 
-    public includeRequiredColumns(columns: IColumn[]) {
+    private _processQueries(queries: ISavedQuery[]) {
+        return queries.map(query => {
+            this._includeRequiredColumns(query.columns);
+            this._harmonizeColumns(query.columns);
+            return {
+                ...query,
+                ...this._parseSavedQueryMetadata(query)
+            }
+        })
+    }
+
+    private _includeRequiredColumns(columns: IColumn[]) {
         const allQueries = [...this.getSystemQueries(), ...this.getUserQueries()];
         const allQueryColumns = [...new Map(allQueries.flatMap(query => query.columns.map(col => [col.name, col]))).values()];
         for (const requiredColumnName of REQUIRED_COLUMNS) {
@@ -243,7 +246,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         this._includePathColumn(columns);
     }
 
-    public harmonizeColumns(columns: IColumn[]) {
+    private _harmonizeColumns(columns: IColumn[]) {
         for (const column of columns) {
             switch (column.name) {
                 case this._nativeColumns.subject: {

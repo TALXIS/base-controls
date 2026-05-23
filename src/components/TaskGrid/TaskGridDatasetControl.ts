@@ -329,9 +329,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         if (!state.savedQuery) {
             state.savedQuery = currentQuery;
         }
-        //some required columns might have been discared by edit columns
-        this._savedQueryDataProvider.includeRequiredColumns(currentQuery.columns);
-        this._savedQueryDataProvider.harmonizeColumns(currentQuery.columns);
         //at this point current query might be missing required properties
         let { filtering, sorting, columns, searchQuery, linking } = currentQuery;
         this._dataProvider.setColumns(columns);

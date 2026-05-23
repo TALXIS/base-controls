@@ -1,7 +1,7 @@
 import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer, Operators, DataTypes } from "@talxis/client-libraries";
 import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult } from "../../providers";
 import { IRecordTree } from "../../providers/task/record-tree";
-import {LexoRank} from "lexorank";
+import { LexoRank } from "lexorank";
 import { Liquid } from "liquidjs";
 import { IFieldMapping } from "./DataverseTaskGridDescriptor";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
@@ -20,6 +20,10 @@ export interface IDataverseTaskStrategyParams {
     isInlineCreateEnabled?: boolean;
     /** When `false`, the edit form is opened in read-only mode. Defaults to `true`. */
     isEditingEnabled?: boolean;
+    /** When `true`, deleting a task will also delete its child tasks. Defaults to `false`. */
+    isCascadeDeleteEnabled?: boolean;
+    /** When `true`, deleting tasks with children is enabled. Defaults to `false`. */
+    isDeletingTasksWithChildrenEnabled?: boolean;
     /** Form ID to open when editing a single existing task. */
     editFormId?: string;
     /** Form ID to open when creating a new task via dialog (non-inline). */
@@ -76,6 +80,8 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _fetchXmlDataProvider!: IFetchXmlDataProvider;
     private _isInlineCreateEnabled: boolean;
     private _isEditingEnabled: boolean;
+    private _isDeletingTasksWithChildrenEnabled: boolean;
+    private _isCascadeDeleteEnabled: boolean;
     private _lookupManyColumns: ILookupManyColumn[] = [];
     private _lookupManyHandlers: { [colName: string]: LookupManyHandler } = {};
     private _getFormParameters: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
@@ -91,6 +97,8 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         this._bulkEditFormId = params.bulkEditFormId;
         this._isInlineCreateEnabled = params.isInlineCreateEnabled ?? true;
         this._isEditingEnabled = params.isEditingEnabled ?? true;
+        this._isDeletingTasksWithChildrenEnabled = params.isDeletingTasksWithChildrenEnabled ?? false;
+        this._isCascadeDeleteEnabled = params.isCascadeDeleteEnabled ?? false;
         this._getFormParameters = params.formStrategy?.onGetFormParameters ?? ((operation, defaultParameters) => defaultParameters);
     }
 
@@ -316,24 +324,40 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         }
     }
     public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
-        const result = await this._fetchXmlDataProvider.deleteRecords(taskIds);
-        if (result.success) {
-            return {
-                success: true,
-                deletedTaskIds: taskIds
+        const allTaskIds: Set<string> = new Set(taskIds);
+        let success = true;
+        const notDeletableTaskIds: string[] = [];
+        if (this._isCascadeDeleteEnabled) {
+            for (const taskId of taskIds) {
+                const children = this._taskTree.getNode(taskId)?.allChildren.map(c => c.getRecordId()) ?? [];
+                children.map(id => allTaskIds.add(id));
             }
         }
-        else {
-            return {
-                success: false,
-                deletedTaskIds: result.results.filter(result => result.success).map(result => result.recordId),
-                errors: result.results.filter(result => !result.success).map(result => {
-                    return {
-                        id: result.recordId,
-                        error: result.errorMessage
-                    }
-                })
+        if (!this._isDeletingTasksWithChildrenEnabled) {
+            for (const taskId of allTaskIds) {
+                if (this._taskTree.hasChildren(taskId)) {
+                    success = false;
+                    allTaskIds.delete(taskId);
+                    notDeletableTaskIds.push(taskId);
+                }
             }
+        }
+        const result = await this._fetchXmlDataProvider.deleteRecords([...allTaskIds]);
+        return {
+            success: result.success && success,
+            deletedTaskIds: [...allTaskIds],
+            errors: [...result.results.filter(result => !result.success).map(result => {
+                return {
+                    id: result.recordId,
+                    error: result.errorMessage
+                }
+            }), ...notDeletableTaskIds.map(id => {
+                return {
+                    id,
+                    //TODO: localize
+                    error: 'Cannot delete task with children.'
+                }
+            })]
         }
     }
     public onCreateTemplateFromTask(taskId: string): Promise<IRawRecord | null> {
