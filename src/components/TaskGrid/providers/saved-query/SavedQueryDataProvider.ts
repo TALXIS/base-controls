@@ -84,7 +84,7 @@ export interface ISavedQueryDataProvider {
     deleteUserQueries: (queryIds: string[]) => Promise<IDeletedUserQueriesResult>;
     /** Fetches system and user queries from the strategy and sets the initial active query. */
     refresh: () => Promise<void>;
-    
+
     destroy: () => void;
 }
 
@@ -194,29 +194,24 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     }
 
     public async refresh() {
-        const _systemQueries = await this._strategy.onGetSystemQueries();
-        if(_systemQueries.length === 0) {
+        const systemQueries = await this._strategy.onGetSystemQueries();
+        const userQueries = await this._strategy.onGetUserQueries();
+        if (systemQueries.length === 0) {
             throw new Error('At least one system query is required');
         }
-        this._includePathColumn(_systemQueries[0].columns);
-        const _userQueries = await this._strategy.onGetUserQueries();
-        this._systemQueriesColumnsMap = new Map(_systemQueries.flatMap(query => query.columns.map(col => [col.name, col])));
-        const enrichedSystemQueries = this._processQueries(_systemQueries);
-        const enrichedUserQueries = this._processQueries(_userQueries);
-
-        const allQueries = [...enrichedSystemQueries, ...enrichedUserQueries];
-        this._systemQueries = enrichedSystemQueries
-        this._userQueries = enrichedUserQueries;
-        this._systemQueriesColumnsMap = new Map(enrichedSystemQueries.flatMap(query => query.columns.map(col => [col.name, col])));
+        this._includePathColumn(systemQueries[0].columns);
+        const allQueries = [...systemQueries, ...userQueries];
+        this._systemQueries = systemQueries
+        this._userQueries = userQueries;
+        this._systemQueriesColumnsMap = new Map(systemQueries.flatMap(query => query.columns.map(col => [col.name, col])));
 
         const preferredQueryInAllQueries = allQueries.find(q => q.id === this._preferredQuery?.id);
-        this._currentQuery = preferredQueryInAllQueries ?? enrichedUserQueries[0] ?? enrichedSystemQueries[0];
-        if(preferredQueryInAllQueries) {
-            this._currentQuery = {
+        this._currentQuery = preferredQueryInAllQueries ?? userQueries[0] ?? systemQueries[0];
+        //preferred query might have some required columns missing
+        this._currentQuery = this._processQueries([{
                 ...this._currentQuery,
-                ...this._preferredQuery
-            }
-        }
+                ...(preferredQueryInAllQueries ? this._preferredQuery : {}),
+            }])[0];
     }
 
     private _processQueries(queries: ISavedQuery[]) {
@@ -240,7 +235,10 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
                 if (!columnFromQueries) {
                     throw new Error(`Required column ${mappedRequiredColumnName} is missing from both current query and all available queries`);
                 }
-                columns.push(columnFromQueries);
+                columns.push({
+                    ...columnFromQueries,
+                    isHidden: true
+                });
             }
         }
         this._includePathColumn(columns);
@@ -272,7 +270,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
                 displayName: this._localizationService.getLocalizedString('path'),
                 isVirtual: true,
                 visualSizeFactor: 300,
-                isHidden: this._currentQuery?.isFlatListEnabled ? false : true
+                isHidden: true
             })
         }
         return columns;
@@ -322,7 +320,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         // Enrich partial column definitions with full definitions from system queries
         let columns = parsed.columns.map(col => {
             const systemCol = this._systemQueriesColumnsMap.get(col.name);
-            if(!systemCol && col.isVirtual) {
+            if (!systemCol && col.isVirtual) {
                 throw new Error(`Virtual column ${col.name} is missing from system queries. Make sure all virtual columns are included in the system queries returned by the strategy's onGetSystemQueries method.`);
             }
             return systemCol ? { ...systemCol, ...col, metadata: { ...systemCol.metadata, ...col.metadata } } : col;

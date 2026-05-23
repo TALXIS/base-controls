@@ -346,6 +346,7 @@ export class RecordTree implements IRecordTree {
     }
 
     private _patchRecordPaths() {
+        if(!this._getTaskDataProvider().getColumnsMap()[this._getNativeColumns().path]) return;
         for (const record of this._records) {
             const path = this._buildPathForRecord(record.getRecordId());
             const field = record.getField(this._getNativeColumns().path);

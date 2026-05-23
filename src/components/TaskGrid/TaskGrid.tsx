@@ -15,9 +15,6 @@ import { Header } from "./components/header/Header";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
 import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
 import { LocalizationService } from "../../utils";
-import { LookupMany } from "./components/grid/lookup-many";
-import { MemoryDataProvider } from "@talxis/client-libraries/dist/utils";
-import AsyncSelect from "react-select/async";
 
 interface ITaskGridProps {
     //should be replaced by Context API in future

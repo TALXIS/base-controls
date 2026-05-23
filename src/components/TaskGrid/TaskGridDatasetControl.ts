@@ -309,6 +309,12 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
             this._state.savedQuery = {
                 id: this._changeToQueryId
             }
+            //@ts-ignore
+            if(this._state.AgGridState) {
+                //clean up AgGrid state as it might not be compatible with new query
+                //@ts-ignore
+                delete this._state.AgGridState;
+            }
         }
         else {
             const currentQueryId = this._savedQueryDataProvider.getCurrentQuery().id;

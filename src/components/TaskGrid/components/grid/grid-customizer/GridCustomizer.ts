@@ -106,7 +106,7 @@ export class GridCustomizer implements IGridCustomizer {
                     break;
                 }
                 case 'isServerSideGroupOpenByDefault': {
-                    originalSetGridOption(key, (params: IsServerSideGroupOpenByDefaultParams) => this._isServerSideGroupOpenByDefault(params));
+                    originalSetGridOption(key, (params: IsServerSideGroupOpenByDefaultParams) => this._isServerSideGroupOpenByDefault(params, (params) => value(params)));
                     break;
                 }
                 default: {
@@ -116,12 +116,16 @@ export class GridCustomizer implements IGridCustomizer {
         }
     }
 
-    private _isServerSideGroupOpenByDefault(params: IsServerSideGroupOpenByDefaultParams) {
-        if (!params.data) {
-            return false;
+    private _isServerSideGroupOpenByDefault(params: IsServerSideGroupOpenByDefaultParams, defaultAction: (params: IsServerSideGroupOpenByDefaultParams) => boolean): boolean {
+        if (!params.data || this._taskDataProvider.isFlatListEnabled()) {
+            return false
         }
         const matchingRecords = this._taskDataProvider.getRecordTree().getMatchingRecords();
-        return !matchingRecords[params.data.getRecordId()];
+        const result = !matchingRecords[params.data.getRecordId()];
+        if(result) {
+            return result;
+        }
+        return defaultAction(params);
     }
 
     private _injectAddTaskColumn(columnDefs: ColDef[]) {
