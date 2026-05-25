@@ -25,7 +25,7 @@ export const TargetSelector = (props: ITargetSelector) => {
                 <Link
                     onClick={() => onEntitySelected(null)}
                     className={styles.targetSelectorLink}
-                    data-selected={!entities.find(x => x.selected)}>All</Link>
+                    data-selected={!entities.find(x => x.selected)}>{labels.all()}</Link>
                 {loadedEntities &&
                     <>
                         {loadedEntities.map((entity) => {
