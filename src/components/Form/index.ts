@@ -7,3 +7,6 @@ export * from './form/useFieldValidation';
 export * from './form/useFormValidation';
 export * from './form/useFormDirty';
 export * from './interfaces';
+export * from './form/useFormUiState';
+export { XrmFormContext } from './form/xrm/XrmFormContext';
+export { XrmExecutionContext } from './form/xrm/XrmExecutionContext';

@@ -10,12 +10,15 @@ import {
     OptionSetDefinition,
     RequiredLevelEnum,
     parseFormXml,
+    serializeFormXml,
 } from "@talxis/client-metadata";
 import { ITheme } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
 import { ITranslation } from "../../../hooks";
 import { formTranslations } from "../translations";
 import { IForm, IFormOutputs, IFormParameters, IAttributeConfiguration, AttributeRequiredLevel, IAttributeOption, IFieldValidationResult, FieldValidator, VALID_RESULT } from "../interfaces";
+import { XrmFormContext } from "./xrm/XrmFormContext";
+import { XrmExecutionContext } from "./xrm/XrmExecutionContext";
 
 interface IFormDependencies {
     labels: Required<ITranslation<typeof formTranslations>>;
@@ -23,14 +26,6 @@ interface IFormDependencies {
     theme?: ITheme;
     metadataProvider?: IMetadataProvider;
     scriptLoader?: IScriptLoader;
-}
-
-/**
- * Reserved seam for future Power Apps-style form-event execution context.
- * Empty marker for now — see plan.md "Stubbed for later".
- */
-export interface IFormExecutionContext {
-    readonly __reserved?: never;
 }
 
 /**
@@ -71,6 +66,22 @@ export class FormModel {
     private _validationSubscribers = new Map<string, Set<() => void>>();
     private _formValidationSubscribers = new Set<() => void>();
     private _attachedRecord: IRecord | null = null;
+
+    // ------------------------------------------------------------------
+    // UI state (Xrm visibility / disabled / label overrides)
+    // ------------------------------------------------------------------
+    private _tabVisibilityOverrides = new Map<string, boolean>();
+    private _sectionVisibilityOverrides = new Map<string, boolean>();
+    private _controlVisibilityOverrides = new Map<string, boolean>();
+    private _controlDisabledOverrides = new Map<string, boolean>();
+    private _controlLabelOverrides = new Map<string, string>();
+    private _requiredLevelOverrides = new Map<string, Xrm.Attributes.RequirementLevel>();
+    private _uiStateSubscribers = new Set<() => void>();
+
+    // Lazily-created Xrm surface
+    private _formContext: Xrm.FormContext | null = null;
+    private _executionContext: Xrm.Events.EventContext | null = null;
+
     private _onFieldValueChanged = (columnName: string, _newValue: any) => {
         this._localDirty = true;
         this._notifyFormDirtySubscribers();
@@ -498,12 +509,184 @@ export class FormModel {
         this._formValidationSubscribers.forEach((cb) => { try { cb(); } catch { /* swallow */ } });
     }
 
+    // ------------------------------------------------------------------
+    // Xrm surface
+    // ------------------------------------------------------------------
+
+    public getFormContext(): Xrm.FormContext {
+        if (!this._formContext) {
+            this._formContext = new XrmFormContext(this);
+        }
+        return this._formContext!;
+    }
+
+    public getExecutionContext(): Xrm.Events.EventContext {
+        if (!this._executionContext) {
+            this._executionContext = new XrmExecutionContext(this);
+        }
+        return this._executionContext!;
+    }
+
+    // ------------------------------------------------------------------
+    // UI state overrides
+    // ------------------------------------------------------------------
+
+    public getTabVisible(name: string): boolean {
+        const override = this._tabVisibilityOverrides.get(name);
+        if (override !== undefined) return override;
+        const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === name);
+        return tab?.visible !== false;
+    }
+
+    public setTabVisible(name: string, visible: boolean): void {
+        this._tabVisibilityOverrides.set(name, visible);
+        this._notifyUiStateSubscribers();
+    }
+
+    public getSectionVisible(tabName: string, sectionName: string): boolean {
+        const key = `${tabName}:${sectionName}`;
+        const override = this._sectionVisibilityOverrides.get(key);
+        if (override !== undefined) return override;
+        const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === tabName);
+        const section = tab?.columns?.column
+            ?.flatMap((c) => c.sections?.section ?? [])
+            ?.find((s) => s.name === sectionName);
+        return section?.visible !== false;
+    }
+
+    public setSectionVisible(tabName: string, sectionName: string, visible: boolean): void {
+        const key = `${tabName}:${sectionName}`;
+        this._sectionVisibilityOverrides.set(key, visible);
+        this._notifyUiStateSubscribers();
+    }
+
+    public getControlVisible(controlId: string): boolean {
+        const override = this._controlVisibilityOverrides.get(controlId);
+        if (override !== undefined) return override;
+        const cell = this.findCellByControlId(controlId);
+        return cell?.visible !== false;
+    }
+
+    public setControlVisible(controlId: string, visible: boolean): void {
+        this._controlVisibilityOverrides.set(controlId, visible);
+        this._notifyUiStateSubscribers();
+    }
+
+    public getControlDisabled(controlId: string): boolean {
+        const override = this._controlDisabledOverrides.get(controlId);
+        if (override !== undefined) return override;
+        const cell = this.findCellByControlId(controlId);
+        return cell?.control?.disabled === true;
+    }
+
+    public setControlDisabled(controlId: string, disabled: boolean): void {
+        this._controlDisabledOverrides.set(controlId, disabled);
+        this._notifyUiStateSubscribers();
+    }
+
+    public getControlLabel(controlId: string): string | undefined {
+        return this._controlLabelOverrides.get(controlId);
+    }
+
+    public setControlLabel(controlId: string, label: string): void {
+        this._controlLabelOverrides.set(controlId, label);
+        this._notifyUiStateSubscribers();
+    }
+
+    public getRequiredLevelOverride(name: string): Xrm.Attributes.RequirementLevel | undefined {
+        return this._requiredLevelOverrides.get(name);
+    }
+
+    public setRequiredLevelOverride(name: string, level: Xrm.Attributes.RequirementLevel): void {
+        this._requiredLevelOverrides.set(name, level);
+        this._notifyUiStateSubscribers();
+    }
+
+    public subscribeUiState(cb: () => void): () => void {
+        this._uiStateSubscribers.add(cb);
+        return () => { this._uiStateSubscribers.delete(cb); };
+    }
+
     /**
-     * Reserved — see plan.md "Stubbed for later". Throws today; will be wired up
-     * when Power Apps-style script execution lands.
+     * Returns a serialized FormXml string with all current UI-state overrides
+     * (tab/section/control visibility, disabled) materialized into the XML.
+     * Useful for exporting the effective layout after Xrm manipulations.
      */
-    public getExecutionContext(): IFormExecutionContext {
-        throw new Error("[Form] getExecutionContext() is not implemented yet.");
+    public getEffectiveFormXmlString(): string {
+        const xml = this.getFormXml();
+        if (!xml) return '';
+        const effective: FormXml = {
+            ...xml,
+            tabs: {
+                tab: (xml.tabs?.tab ?? []).map((tab) => {
+                    const tabName = tab.name ?? '';
+                    return {
+                        ...tab,
+                        visible: this._tabVisibilityOverrides.has(tabName)
+                            ? this._tabVisibilityOverrides.get(tabName)!
+                            : tab.visible,
+                        columns: {
+                            column: (tab.columns?.column ?? []).map((col) => ({
+                                ...col,
+                                sections: {
+                                    section: (col.sections?.section ?? []).map((sec) => {
+                                        const key = `${tabName}:${sec.name ?? ''}`;
+                                        return {
+                                            ...sec,
+                                            visible: this._sectionVisibilityOverrides.has(key)
+                                                ? this._sectionVisibilityOverrides.get(key)!
+                                                : sec.visible,
+                                            rows: {
+                                                row: (sec.rows?.row ?? []).map((row) => ({
+                                                    ...row,
+                                                    cell: (row.cell ?? []).map((cell) => {
+                                                        const cid = cell.control?.id ?? '';
+                                                        return {
+                                                            ...cell,
+                                                            visible: (cid && this._controlVisibilityOverrides.has(cid))
+                                                                ? this._controlVisibilityOverrides.get(cid)!
+                                                                : cell.visible,
+                                                            control: cell.control ? {
+                                                                ...cell.control,
+                                                                disabled: (cid && this._controlDisabledOverrides.has(cid))
+                                                                    ? this._controlDisabledOverrides.get(cid)!
+                                                                    : cell.control.disabled,
+                                                            } : cell.control,
+                                                        };
+                                                    }),
+                                                })),
+                                            },
+                                        };
+                                    }),
+                                },
+                            })),
+                        },
+                    };
+                }),
+            },
+        };
+        return serializeFormXml(effective);
+    }
+
+    private _notifyUiStateSubscribers(): void {
+        this._uiStateSubscribers.forEach((cb) => { try { cb(); } catch { /* swallow */ } });
+    }
+
+    public findCellByControlId(controlId: string) {
+        const formXml = this.getFormXml();
+        if (!formXml) return undefined;
+        for (const tab of formXml.tabs?.tab ?? []) {
+            for (const col of tab.columns?.column ?? []) {
+                for (const sec of col.sections?.section ?? []) {
+                    for (const row of sec.rows?.row ?? []) {
+                        for (const cell of row.cell ?? []) {
+                            if (cell.control?.id === controlId) return cell;
+                        }
+                    }
+                }
+            }
+        }
+        return undefined;
     }
 
     /**
@@ -568,6 +751,15 @@ export class FormModel {
         this._validationSubscribers.clear();
         this._formValidationSubscribers.clear();
         this._localDirty = false;
+        this._tabVisibilityOverrides.clear();
+        this._sectionVisibilityOverrides.clear();
+        this._controlVisibilityOverrides.clear();
+        this._controlDisabledOverrides.clear();
+        this._controlLabelOverrides.clear();
+        this._requiredLevelOverrides.clear();
+        this._uiStateSubscribers.clear();
+        this._formContext = null;
+        this._executionContext = null;
     }
 
     /**

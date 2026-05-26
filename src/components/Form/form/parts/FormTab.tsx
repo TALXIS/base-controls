@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useFormInstance } from "../useFormInstance";
+import { useFormUiState } from "../useFormUiState";
 import { FormSection } from "./FormSection";
 
 /**
@@ -7,10 +8,17 @@ import { FormSection } from "./FormSection";
  */
 export const FormTab: React.FC = () => {
     const form = useFormInstance();
+    useFormUiState();
+
     const tab = form.getActiveTab();
     if (!tab) {
         return null;
     }
+
+    if (form.getTabVisible(tab.name ?? '') === false) {
+        return null;
+    }
+
     const columns = tab.columns?.column ?? [];
     const tabLabel = form.resolveLocalizedLabel(tab.labels, tab.name ?? "");
     const showLabel = tab.showlabel !== false;
@@ -27,6 +35,7 @@ export const FormTab: React.FC = () => {
                             <FormSection
                                 key={section.id ?? section.name ?? sectionIndex}
                                 section={section}
+                                tabName={tab.name ?? ''}
                             />
                         ))}
                     </div>
@@ -35,4 +44,3 @@ export const FormTab: React.FC = () => {
         </div>
     );
 };
-;

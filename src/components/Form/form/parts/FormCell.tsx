@@ -2,6 +2,7 @@ import * as React from "react";
 import type { FormXmlCell } from "@talxis/client-metadata";
 import { useFormInstance } from "../useFormInstance";
 import { useFieldValidation } from "../useFieldValidation";
+import { useFormUiState } from "../useFormUiState";
 import { UnsupportedControlError } from "../errors/UnsupportedControlError";
 import { isStandardControlClassId } from "./standardControlClassIds";
 import { FieldInput } from "./FieldInput";
@@ -18,9 +19,20 @@ export interface IFormCellProps {
  */
 export const FormCell: React.FC<IFormCellProps> = ({ cell }) => {
     const form = useFormInstance();
+    useFormUiState();
+
     const control = cell.control;
+    const controlId = control?.id ?? '';
+    const datafieldname = control?.datafieldname ?? '';
+
+    // All hooks must run unconditionally before any early return
+    const { result: validation } = useFieldValidation(datafieldname);
 
     if (!control) {
+        return null;
+    }
+
+    if (controlId && form.getControlVisible(controlId) === false) {
         return null;
     }
 
@@ -32,9 +44,7 @@ export const FormCell: React.FC<IFormCellProps> = ({ cell }) => {
         });
     }
 
-    const datafieldname = control.datafieldname;
     if (!datafieldname || !control.classid) {
-        // Standard classid without a datafieldname is treated as unsupported for MVP.
         throw new UnsupportedControlError({
             cellId: cell.id,
             classId: control.classid,
@@ -42,17 +52,25 @@ export const FormCell: React.FC<IFormCellProps> = ({ cell }) => {
         });
     }
 
-    const label = form.getFieldLabel(datafieldname, control);
-    const disabled = (control as any).disabled === true || (control as any).disabled === "true";
+    const labelOverride = controlId ? form.getControlLabel(controlId) : undefined;
+    const label = labelOverride ?? form.getFieldLabel(datafieldname, control);
+
+    const disabledOverride = controlId ? form.getControlDisabled(controlId) : undefined;
+    const disabled = disabledOverride !== undefined
+        ? disabledOverride
+        : ((control as any).disabled === true || (control as any).disabled === "true");
 
     let required = false;
     try {
-        required = form.getAttributeConfiguration(datafieldname).requiredLevel === 'required';
+        const override = controlId ? form.getRequiredLevelOverride(datafieldname) : undefined;
+        if (override !== undefined) {
+            required = override === 'required';
+        } else {
+            required = form.getAttributeConfiguration(datafieldname).requiredLevel === 'required';
+        }
     } catch {
         required = false;
     }
-
-    const { result: validation } = useFieldValidation(datafieldname);
 
     return (
         <div data-id={`${control.id ?? ''}.fieldControl_container`}>
