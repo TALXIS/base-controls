@@ -2,6 +2,7 @@ export * from './DatasetControl';
 export * from './DateTime';
 export * from './Decimal';
 export * from './DateTime';
+export * from './Form';
 export * from './Grid';
 export * from './GridCellRenderer';
 export * from './Lookup';
