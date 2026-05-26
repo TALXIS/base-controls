@@ -26,5 +26,9 @@ export const lookupTranslations = {
     placeholder: {
         1033: "Search",
         1029: "Vyhledejte"
+    },
+    all: {
+        1033: "All",
+        1029: "Vše"
     }
 }
