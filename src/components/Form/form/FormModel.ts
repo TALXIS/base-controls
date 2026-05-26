@@ -28,6 +28,12 @@ interface IFormDependencies {
     scriptLoader?: IScriptLoader;
 }
 
+interface IAttributeMetadataOverride {
+    requiredLevel?: Xrm.Attributes.RequirementLevel;
+    addedOptions?: IAttributeOption[];
+    removedOptionValues?: Set<number>;
+}
+
 /**
  * Reserved seam for future loading of `formLibraries` / web-resource scripts.
  * The default implementation in `FormModel` is a no-op.
@@ -51,7 +57,8 @@ export class FormModel {
     private _metadataProvider?: IMetadataProvider;
     private _scriptLoader: IScriptLoader;
 
-    private _parsedFormXml: FormXml | undefined;
+    private _originalFormXml: FormXml | undefined;
+    private _workingFormXml: FormXml | undefined;
     private _parsedFromRaw: string | null | undefined;
 
     private _resolvedEntity: IEntityDefinition | undefined;
@@ -68,14 +75,10 @@ export class FormModel {
     private _attachedRecord: IRecord | null = null;
 
     // ------------------------------------------------------------------
-    // UI state (Xrm visibility / disabled / label overrides)
+    // UI state (Xrm visibility / disabled / label overrides applied
+    // directly to _workingFormXml; metadata overrides kept separately)
     // ------------------------------------------------------------------
-    private _tabVisibilityOverrides = new Map<string, boolean>();
-    private _sectionVisibilityOverrides = new Map<string, boolean>();
-    private _controlVisibilityOverrides = new Map<string, boolean>();
-    private _controlDisabledOverrides = new Map<string, boolean>();
-    private _controlLabelOverrides = new Map<string, string>();
-    private _requiredLevelOverrides = new Map<string, Xrm.Attributes.RequirementLevel>();
+    private _metadataOverrides = new Map<string, IAttributeMetadataOverride>();
     private _uiStateSubscribers = new Set<() => void>();
 
     // Lazily-created Xrm surface
@@ -120,15 +123,23 @@ export class FormModel {
     public getFormXml(): FormXml | undefined {
         const raw = this._getProps().parameters.FormXml?.raw;
         if (raw == null || raw === "") {
-            this._parsedFormXml = undefined;
+            this._originalFormXml = undefined;
+            this._workingFormXml = undefined;
             this._parsedFromRaw = raw;
             return undefined;
         }
         if (raw !== this._parsedFromRaw) {
-            this._parsedFormXml = parseFormXml(raw);
+            this._originalFormXml = parseFormXml(raw);
+            this._workingFormXml = JSON.parse(JSON.stringify(this._originalFormXml));
             this._parsedFromRaw = raw;
         }
-        return this._parsedFormXml;
+        return this._workingFormXml;
+    }
+
+    public getOriginalFormXml(): FormXml | undefined {
+        // Ensure parsed
+        this.getFormXml();
+        return this._originalFormXml;
     }
 
     public getActiveTab(): FormXmlTab | undefined {
@@ -280,20 +291,37 @@ export class FormModel {
             );
         }
         const attr = entity.Attributes?.find((a) => a.LogicalName === name);
-        if (!attr) {
-            return {
-                requiredLevel: 'none',
-            };
+        const base: IAttributeConfiguration = attr
+            ? {
+                requiredLevel: mapRequiredLevel(attr.RequiredLevel),
+                options: mapOptions(attr.OptionSet),
+                format: attr.Format,
+                maxLength: attr.MaxLength,
+                minValue: attr.MinValue,
+                maxValue: attr.MaxValue,
+                targets: attr.Targets,
+            }
+            : { requiredLevel: 'none' };
+
+        // Apply runtime metadata overrides
+        const meta = this._metadataOverrides.get(name);
+        if (meta) {
+            if (meta.requiredLevel !== undefined) {
+                base.requiredLevel = meta.requiredLevel;
+            }
+            if (meta.addedOptions || meta.removedOptionValues) {
+                let opts = [...(base.options ?? [])];
+                if (meta.removedOptionValues) {
+                    opts = opts.filter((o) => !meta.removedOptionValues!.has(o.value));
+                }
+                if (meta.addedOptions) {
+                    opts = [...opts, ...meta.addedOptions];
+                }
+                base.options = opts;
+            }
         }
-        return {
-            requiredLevel: mapRequiredLevel(attr.RequiredLevel),
-            options: mapOptions(attr.OptionSet),
-            format: attr.Format,
-            maxLength: attr.MaxLength,
-            minValue: attr.MinValue,
-            maxValue: attr.MaxValue,
-            targets: attr.Targets,
-        };
+
+        return base;
     }
 
     // ------------------------------------------------------------------
@@ -528,78 +556,111 @@ export class FormModel {
     }
 
     // ------------------------------------------------------------------
-    // UI state overrides
+    // UI state setters — mutate _workingFormXml directly
     // ------------------------------------------------------------------
 
     public getTabVisible(name: string): boolean {
-        const override = this._tabVisibilityOverrides.get(name);
-        if (override !== undefined) return override;
         const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === name);
         return tab?.visible !== false;
     }
 
     public setTabVisible(name: string, visible: boolean): void {
-        this._tabVisibilityOverrides.set(name, visible);
+        const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === name);
+        if (tab) tab.visible = visible;
         this._notifyUiStateSubscribers();
     }
 
     public getSectionVisible(tabName: string, sectionName: string): boolean {
-        const key = `${tabName}:${sectionName}`;
-        const override = this._sectionVisibilityOverrides.get(key);
-        if (override !== undefined) return override;
-        const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === tabName);
-        const section = tab?.columns?.column
-            ?.flatMap((c) => c.sections?.section ?? [])
-            ?.find((s) => s.name === sectionName);
+        const section = this._findSection(tabName, sectionName);
         return section?.visible !== false;
     }
 
     public setSectionVisible(tabName: string, sectionName: string, visible: boolean): void {
-        const key = `${tabName}:${sectionName}`;
-        this._sectionVisibilityOverrides.set(key, visible);
+        const section = this._findSection(tabName, sectionName);
+        if (section) section.visible = visible;
         this._notifyUiStateSubscribers();
     }
 
     public getControlVisible(controlId: string): boolean {
-        const override = this._controlVisibilityOverrides.get(controlId);
-        if (override !== undefined) return override;
         const cell = this.findCellByControlId(controlId);
         return cell?.visible !== false;
     }
 
     public setControlVisible(controlId: string, visible: boolean): void {
-        this._controlVisibilityOverrides.set(controlId, visible);
+        const cell = this.findCellByControlId(controlId);
+        if (cell) cell.visible = visible;
         this._notifyUiStateSubscribers();
     }
 
     public getControlDisabled(controlId: string): boolean {
-        const override = this._controlDisabledOverrides.get(controlId);
-        if (override !== undefined) return override;
         const cell = this.findCellByControlId(controlId);
         return cell?.control?.disabled === true;
     }
 
     public setControlDisabled(controlId: string, disabled: boolean): void {
-        this._controlDisabledOverrides.set(controlId, disabled);
+        const cell = this.findCellByControlId(controlId);
+        if (cell?.control) cell.control.disabled = disabled;
         this._notifyUiStateSubscribers();
     }
 
     public getControlLabel(controlId: string): string | undefined {
-        return this._controlLabelOverrides.get(controlId);
+        const cell = this.findCellByControlId(controlId);
+        if (!cell?.control?.labels) return undefined;
+        const label = this.resolveLocalizedLabel(cell.control.labels, '');
+        return label || undefined;
     }
 
     public setControlLabel(controlId: string, label: string): void {
-        this._controlLabelOverrides.set(controlId, label);
+        const cell = this.findCellByControlId(controlId);
+        if (cell?.control) {
+            const lcid = this.getLanguageCode();
+            const existing = cell.control.labels?.label?.find((l) => l.languagecode === lcid);
+            if (existing) {
+                existing.description = label;
+            } else {
+                const prev = cell.control.labels?.label ?? [];
+                cell.control.labels = { label: [...prev, { languagecode: lcid, description: label }] };
+            }
+        }
         this._notifyUiStateSubscribers();
     }
 
+    // ------------------------------------------------------------------
+    // Attribute metadata overrides (_metadataOverrides)
+    // ------------------------------------------------------------------
+
     public getRequiredLevelOverride(name: string): Xrm.Attributes.RequirementLevel | undefined {
-        return this._requiredLevelOverrides.get(name);
+        return this._metadataOverrides.get(name)?.requiredLevel;
     }
 
     public setRequiredLevelOverride(name: string, level: Xrm.Attributes.RequirementLevel): void {
-        this._requiredLevelOverrides.set(name, level);
+        this._patchMeta(name, (o) => { o.requiredLevel = level; });
         this._notifyUiStateSubscribers();
+    }
+
+    public addAttributeOption(name: string, option: IAttributeOption, index?: number): void {
+        this._patchMeta(name, (o) => {
+            if (!o.addedOptions) o.addedOptions = [];
+            if (index != null) o.addedOptions.splice(index, 0, option);
+            else o.addedOptions.push(option);
+            o.removedOptionValues?.delete(option.value);
+        });
+        this._notifyUiStateSubscribers();
+    }
+
+    public removeAttributeOption(name: string, value: number): void {
+        this._patchMeta(name, (o) => {
+            if (!o.removedOptionValues) o.removedOptionValues = new Set();
+            o.removedOptionValues.add(value);
+            if (o.addedOptions) o.addedOptions = o.addedOptions.filter((opt) => opt.value !== value);
+        });
+        this._notifyUiStateSubscribers();
+    }
+
+    private _patchMeta(name: string, fn: (o: IAttributeMetadataOverride) => void): void {
+        let o = this._metadataOverrides.get(name);
+        if (!o) { o = {}; this._metadataOverrides.set(name, o); }
+        fn(o);
     }
 
     public subscribeUiState(cb: () => void): () => void {
@@ -608,68 +669,23 @@ export class FormModel {
     }
 
     /**
-     * Returns a serialized FormXml string with all current UI-state overrides
-     * (tab/section/control visibility, disabled) materialized into the XML.
-     * Useful for exporting the effective layout after Xrm manipulations.
+     * Returns a serialized FormXml string reflecting all current UI-state mutations
+     * (visibility, disabled, label) — trivially the working copy serialized.
      */
     public getEffectiveFormXmlString(): string {
         const xml = this.getFormXml();
-        if (!xml) return '';
-        const effective: FormXml = {
-            ...xml,
-            tabs: {
-                tab: (xml.tabs?.tab ?? []).map((tab) => {
-                    const tabName = tab.name ?? '';
-                    return {
-                        ...tab,
-                        visible: this._tabVisibilityOverrides.has(tabName)
-                            ? this._tabVisibilityOverrides.get(tabName)!
-                            : tab.visible,
-                        columns: {
-                            column: (tab.columns?.column ?? []).map((col) => ({
-                                ...col,
-                                sections: {
-                                    section: (col.sections?.section ?? []).map((sec) => {
-                                        const key = `${tabName}:${sec.name ?? ''}`;
-                                        return {
-                                            ...sec,
-                                            visible: this._sectionVisibilityOverrides.has(key)
-                                                ? this._sectionVisibilityOverrides.get(key)!
-                                                : sec.visible,
-                                            rows: {
-                                                row: (sec.rows?.row ?? []).map((row) => ({
-                                                    ...row,
-                                                    cell: (row.cell ?? []).map((cell) => {
-                                                        const cid = cell.control?.id ?? '';
-                                                        return {
-                                                            ...cell,
-                                                            visible: (cid && this._controlVisibilityOverrides.has(cid))
-                                                                ? this._controlVisibilityOverrides.get(cid)!
-                                                                : cell.visible,
-                                                            control: cell.control ? {
-                                                                ...cell.control,
-                                                                disabled: (cid && this._controlDisabledOverrides.has(cid))
-                                                                    ? this._controlDisabledOverrides.get(cid)!
-                                                                    : cell.control.disabled,
-                                                            } : cell.control,
-                                                        };
-                                                    }),
-                                                })),
-                                            },
-                                        };
-                                    }),
-                                },
-                            })),
-                        },
-                    };
-                }),
-            },
-        };
-        return serializeFormXml(effective);
+        return xml ? serializeFormXml(xml) : '';
     }
 
     private _notifyUiStateSubscribers(): void {
         this._uiStateSubscribers.forEach((cb) => { try { cb(); } catch { /* swallow */ } });
+    }
+
+    private _findSection(tabName: string, sectionName: string) {
+        const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === tabName);
+        return tab?.columns?.column
+            ?.flatMap((c) => c.sections?.section ?? [])
+            ?.find((s) => s.name === sectionName);
     }
 
     public findCellByControlId(controlId: string) {
@@ -751,13 +767,11 @@ export class FormModel {
         this._validationSubscribers.clear();
         this._formValidationSubscribers.clear();
         this._localDirty = false;
-        this._tabVisibilityOverrides.clear();
-        this._sectionVisibilityOverrides.clear();
-        this._controlVisibilityOverrides.clear();
-        this._controlDisabledOverrides.clear();
-        this._controlLabelOverrides.clear();
-        this._requiredLevelOverrides.clear();
+        this._metadataOverrides.clear();
         this._uiStateSubscribers.clear();
+        this._originalFormXml = undefined;
+        this._workingFormXml = undefined;
+        this._parsedFromRaw = undefined;
         this._formContext = null;
         this._executionContext = null;
     }
@@ -867,4 +881,3 @@ function mapOptions(optionSet: OptionSetDefinition | undefined): IAttributeOptio
 
 // Touch AttributeTypeEnum so the import is preserved for downstream type tooling
 void AttributeTypeEnum;
-

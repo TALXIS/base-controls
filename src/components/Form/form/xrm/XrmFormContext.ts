@@ -126,6 +126,14 @@ class XrmAttribute {
         this._form.setRequiredLevelOverride(this._name, level);
     }
 
+    addOption(option: { value: number; text?: string }, index?: number): void {
+        this._form.addAttributeOption(this._name, { value: option.value, label: option.text ?? String(option.value) }, index);
+    }
+
+    removeOption(value: number): void {
+        this._form.removeAttributeOption(this._name, value);
+    }
+
     getIsDirty(): boolean { return false; }
     setSubmitMode(_mode: Xrm.SubmitMode): void { /* noop */ }
     getSubmitMode(): Xrm.SubmitMode { return "dirty"; }
