@@ -27,10 +27,12 @@ export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy 
 }
 
 /**
- * Ready-to-use {@link ICustomColumnsStrategy} implementation for the Dataverse / Talxis platform.
+ * Work-in-progress {@link ICustomColumnsStrategy} implementation for the Dataverse / Talxis platform.
  *
  * Dynamic (user-defined) columns are modelled as `talxis_attributedefinition` records.
  * Column values are stored as `talxis_attributevalue` records linked to the task record.
+ *
+ * WARNING: This strategy is still WIP and should not yet be used in production.
  *
  * Pass an instance to the `onCreateCustomColumnsStrategy` hook of your descriptor to enable the
  * custom-columns feature in the TaskGrid.
