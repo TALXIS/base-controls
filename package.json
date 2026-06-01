@@ -84,7 +84,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
-    "@talxis/client-libraries": "1.2605.2-alpha",
+    "@talxis/client-libraries": "1.2605.2",
     "@talxis/client-metadata": "^0.0.3",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
@@ -104,7 +104,7 @@
   },
   "peerDependencies": {
     "@fluentui/react": "<=8.121.5",
-    "@talxis/react-components": "1.2605.1-alpha",
+    "@talxis/react-components": "1.2505.2",
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2"
   }
