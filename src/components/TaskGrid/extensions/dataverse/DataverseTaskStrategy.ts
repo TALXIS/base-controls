@@ -145,6 +145,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     }
 
     private async _convertLookupManyToEntityReference(data: IRawRecord[], col: IColumn): Promise<ComponentFramework.EntityReference[]> {
+        console.log(col.metadata?.Targets?.[0]);
         const metadata = await window.Xrm.Utility.getEntityMetadata(col.metadata?.Targets[0]);
         return data.map(record => {
             return {
