@@ -1,10 +1,11 @@
-import { FetchXmlBuilder, IDataProvider } from "@talxis/client-libraries";
+import { FetchXmlBuilder, IDataProvider, IRawRecord, IRecord, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
 import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy } from "../../providers";
 import { IFieldMapping as IFieldMappingBase, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "../../interfaces";
 import { IGridCustomizerStrategy } from "../../components/grid";
 import { DataverseSavedQueryStrategy } from "./DataverseSavedQueryStrategy";
 import { DataverseTaskStrategy } from "./DataverseTaskStrategy";
 import { DataverseGridCustomizerStrategy } from "./DataverseGridCustomizerStrategy";
+import { EntityDefinition } from "@talxis/client-metadata";
 
 /** Minimal reference to a project record. Use `name` when already known to skip a metadata fetch. */
 export interface IProjectReference extends Omit<ComponentFramework.EntityReference, 'name'> {
@@ -21,15 +22,22 @@ export interface IFieldMapping extends Omit<IFieldMappingBase, 'stateCode'> {
 }
 
 /** Constructor parameters for {@link DataverseTaskGridDescriptor}. */
-interface IDataverseTaskGridDescriptorParams {
+export interface IDataverseTaskGridDescriptorParams {
     /** FetchXML that drives the initial data load. May use Liquid template variables (e.g. `{{ projectId }}`). */
     baseFetchXml: string;
     /** Maps logical entity attribute names to the roles expected by TaskGrid (e.g. `statecode` → `stateCode`). */
     fieldMapping: IFieldMapping;
     /** System (non-deletable) views exposed in the view switcher. At least one is required. */
     systemQueries: ISavedQuery[];
-    /** Optional project record reference. When provided, new tasks are pre-linked to this project and `baseFetchXml` receives `{{ projectId }}`. */
-    project?: IProjectReference;
+    /** Optional source record. If provided, it's data will be propagated into liquid fetch XML templates. */
+    sourceRecord?: {
+        entityName: string;
+        id: string;
+    }
+    projectRecord?: {
+        entityName: string;
+        id: string;
+    }
     /** AG Grid Enterprise license key. Omit to run in community mode. */
     agGridLicenseKey?: string;
     /** Set to `true` to enable personal saved views (user queries) via {@link DataverseSavedQueryStrategy}. Defaults to `false`. */
@@ -78,7 +86,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     private _bulkEditFormId?: string;
     private _userId?: string;
     private _rootTaskId?: string;
-    private _projectReference?: ComponentFramework.EntityReference;
+    private _projectRecord?: ISingleRecord;
+    private _sourceRecord?: ISingleRecord;
     private _params: IDataverseTaskGridDescriptorParams;
     private _gridParameters?: ITaskGridParameters;
     private _agGridLicenseKey?: string;
@@ -101,7 +110,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
 
     /** Resolves the project entity reference (fetches display name when not supplied). Called once by the factory before any strategy is created. */
     public async onLoadDependencies(): Promise<void> {
-        this._projectReference = await this._getProjectReference();
+        this._projectRecord = await this._getProjectRecord();
+        this._sourceRecord = await this._getSourceRecord();
     }
 
     /** Returns the field mapping with `stateCode` hard-coded to `"statecode"` (standard Dataverse attribute name). */
@@ -121,7 +131,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
                 onGetSystemQueries: async () => this._systemQueries,
                 ownerId: this._userId,
                 entityName: this._taskEntityName,
-                recordId: this._projectReference?.id.guid
+                recordId: this._projectRecord?.getRecordId()
             });
         }
         return {
@@ -143,20 +153,19 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
         return new DataverseTaskStrategy({
             fetchXml: this._fetchXml,
-            projectReference: this._projectReference,
+            projectRecord: this._projectRecord,
             rootTaskId: this._rootTaskId,
             bulkEditFormId: this._bulkEditFormId,
             createFormId: this._createFormId,
             editFormId: this._editFormId,
-            isInlineCreateEnabled: this._gridParameters?.enableInlineCreation ?? true,
             isCascadeDeleteEnabled: this._params.enableCascadeDelete ?? false,
             isDeletingTasksWithChildrenEnabled: this._params.enableDeletingTasksWithChildren ?? false,
-        });
+        }, deps);
     }
     /** Returns a {@link DataverseSavedQueryStrategy} pre-configured as a data provider for the user-query creation/update dialog, with `talxis_name` and `talxis_description` columns. */
     public onCreateUserQueryDataProvider(): IDataProvider {
         const provider = new DataverseSavedQueryStrategy({
-            recordId: this._projectReference?.id.guid,
+            recordId: this._projectRecord?.getRecordId(),
             entityName: this._taskEntityName,
             ownerId: this._userId,
             onGetSystemQueries: async () => {
@@ -188,22 +197,32 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         return new DataverseGridCustomizerStrategy();
     }
 
-    private async _getProjectReference(): Promise<ComponentFramework.EntityReference | undefined> {
-        if (!this._params.project) return undefined;
-        if (this._params.project.name) {
-            return this._params.project as ComponentFramework.EntityReference;
-        }
-        else {
-            const projectId = this._params.project.id.guid;
-            const projectEntityName = this._params.project.etn;
-            const metadata = await window.Xrm.Utility.getEntityMetadata(projectEntityName);
-            const projectData = await window.Xrm.WebApi.retrieveRecord(projectEntityName, projectId, `?$select=${metadata.PrimaryNameAttribute}`);
+    private async _getProjectRecord(): Promise<ISingleRecord | undefined> {
+        if (!this._params.projectRecord) return undefined;
+        const projectId = this._params.projectRecord.id
+        const projectEntityName = this._params.projectRecord.entityName;
+        const metadata = await EntityDefinition.fromEntityName(projectEntityName);
+        const projectData = await window.Xrm.WebApi.retrieveRecord(projectEntityName, projectId, `?$select=${metadata.PrimaryNameAttribute}`);
+        const builder = new RecordBuilder({
+            data: projectData,
+            entityMetadata: metadata,
+            attributes: metadata.Attributes as any
+        });
+        return builder.getRecord()
+    }
 
-            return {
-                id: { guid: projectId },
-                name: projectData[metadata.PrimaryNameAttribute],
-                etn: projectEntityName
-            }
+    private async _getSourceRecord(): Promise<ISingleRecord | undefined> {
+        if (this._projectRecord && this._projectRecord.getRecordId()=== this._params.sourceRecord?.id) {
+            return this._projectRecord;
+        }
+        else if (this._params.sourceRecord) {
+            const result = await window.Xrm.WebApi.retrieveRecord(this._params.sourceRecord.entityName, this._params.sourceRecord.id);
+            const entityMetadata = await EntityDefinition.fromEntityName(this._params.sourceRecord.entityName);
+            const record = new RecordBuilder({
+                data: result,
+                entityMetadata: entityMetadata,
+                attributes: entityMetadata.Attributes as any
+            });
         }
     }
 

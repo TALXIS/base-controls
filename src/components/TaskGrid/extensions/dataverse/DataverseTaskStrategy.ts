@@ -1,10 +1,11 @@
-import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer, Operators, DataTypes } from "@talxis/client-libraries";
+import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer, Operators, DataTypes, ISingleRecord } from "@talxis/client-libraries";
 import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult } from "../../providers";
 import { IRecordTree } from "../../providers/task/record-tree";
 import { LexoRank } from "lexorank";
 import { Liquid } from "liquidjs";
 import { IFieldMapping } from "./DataverseTaskGridDescriptor";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
+import { ITaskStrategyDeps } from "../..";
 
 
 interface IFormParameters {
@@ -16,8 +17,6 @@ interface IFormParameters {
 export interface IDataverseTaskStrategyParams {
     /** FetchXML used to load tasks. May contain Liquid template variables (e.g. `{{ projectId }}`). */
     fetchXml: string;
-    /** When `true`, new tasks are created inline in the grid row without opening a form dialog. Defaults to `true`. */
-    isInlineCreateEnabled?: boolean;
     /** When `false`, the edit form is opened in read-only mode. Defaults to `true`. */
     isEditingEnabled?: boolean;
     /** When `true`, deleting a task will also delete its child tasks. Defaults to `false`. */
@@ -31,7 +30,9 @@ export interface IDataverseTaskStrategyParams {
     /** Form ID to open when bulk-editing multiple selected tasks. */
     bulkEditFormId?: string;
     /** Project record reference. When provided, new tasks are pre-linked to this project. */
-    projectReference?: ComponentFramework.EntityReference;
+    projectRecord?: ISingleRecord;
+    
+    sourceRecord?: ISingleRecord;
     /** When set, the task hierarchy is rooted at this task ID. */
     rootTaskId?: string;
     /**
@@ -51,6 +52,7 @@ interface ILookupManyColumn extends IColumn {
 interface ILookupManyColumnMetadata {
     LookupMany: {
         ReferencedEntityNavigationPropertyName: string;
+        Select?: string;
         CustomIntersection?: {
             ReferencingEntityNavigationPropertyName: string;
         }
@@ -79,6 +81,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _entitySetName!: string;
     private _entityName!: string;
     private _projectReference?: ComponentFramework.EntityReference;
+    private _projectRecord?: ISingleRecord;
     private _projectMetadata?: Xrm.Metadata.EntityMetadata;
     private _rootTaskId?: string;
     private _taskTree!: IRecordTree;
@@ -92,23 +95,26 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _isDeletingTasksWithChildrenEnabled: boolean;
     private _isCascadeDeleteEnabled: boolean;
     private _lookupManyColumns: ILookupManyColumn[] = [];
+    private _sourceRecord?: ISingleRecord;
     private _lookupManyHandlers: { [colName: string]: LookupManyHandler } = {};
     private _getFormParameters: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
 
 
     /** @param params — see {@link IDataverseTaskStrategyParams} for full documentation of each option. */
-    constructor(params: IDataverseTaskStrategyParams) {
+    constructor(params: IDataverseTaskStrategyParams, deps: ITaskStrategyDeps) {
         this._fetchXml = params.fetchXml;
-        this._projectReference = params.projectReference;
+        this._projectRecord = params.projectRecord;
+        this._projectReference = this._projectRecord?.getNamedReference();
         this._editFormId = params.editFormId;
         this._rootTaskId = params.rootTaskId;
         this._createFormId = params.createFormId;
         this._bulkEditFormId = params.bulkEditFormId;
-        this._isInlineCreateEnabled = params.isInlineCreateEnabled ?? true;
+        this._isInlineCreateEnabled = deps.enableInlineCreation;
         this._isEditingEnabled = params.isEditingEnabled ?? true;
         this._isDeletingTasksWithChildrenEnabled = params.isDeletingTasksWithChildrenEnabled ?? false;
         this._isCascadeDeleteEnabled = params.isCascadeDeleteEnabled ?? false;
         this._getFormParameters = params.formStrategy?.onGetFormParameters ?? ((operation, defaultParameters) => defaultParameters);
+        this._sourceRecord = params.sourceRecord;
     }
 
     public async onGetRawRecords(ids: string[], select?: string): Promise<IRawRecord[]> {
@@ -125,15 +131,15 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
             });
             this._lookupManyHandlers[col.name] = handler;
             await handler.init();
-            return handler.getExpand();
+            return handler.getExpand(col.metadata.LookupMany.Select);
         }));
 
-        const parts: string[] = [];
-        if (select) parts.push(`$select=${select}`);
-        if (expands.length > 0) parts.push(`$expand=${expands.join(',')}`);
+        const suffixParts: string[] = [];
+        if (select) suffixParts.push(`$select=${select}`);
+        if (expands.length > 0) suffixParts.push(`$expand=${expands.join(',')}`);
+        const querySuffix = suffixParts.length > 0 ? `&${suffixParts.join('&')}` : '';
 
-        const query = `?$filter=Microsoft.Dynamics.CRM.In(PropertyName='${this._fetchXmlDataProvider.getMetadata().PrimaryIdAttribute}', PropertyValues=[${ids.map((id) => `'${id}'`).join(',')}])${parts.length > 0 ? `&${parts.join('&')}` : ''}`;
-        records = await this._getRawRecordsByIds({ ids, query });
+        records = await this._getRawRecordsByIds({ ids, querySuffix });
 
         if (this._lookupManyColumns.length > 0) {
             await Promise.all(records.map(record => this._harmonizeLookupManyData(record)));
@@ -186,23 +192,14 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         });
     }
 
-    private _getPropertyFromPath(record: IRawRecord, path: string): any {
-        const parts = path.split('.');
-        let value = record;
-        for (const part of parts) {
-            value = value?.[part];
-        }
-        return value;
-    }
-
-    private async _getRawRecordsByIds(params: { ids: string[], query: string }): Promise<IRawRecord[]> {
+    private async _getRawRecordsByIds(params: { ids: string[], querySuffix?: string }): Promise<IRawRecord[]> {
         const maxIdsPerRequest = 800;
         const batches: string[][] = [];
-        const { ids, query } = params;
+        const { ids, querySuffix = '' } = params;
 
         let currentBatch: string[] = [];
         for (const [i, taskId] of Object.entries(ids)) {
-            if (currentBatch.length <= maxIdsPerRequest) {
+            if (currentBatch.length < maxIdsPerRequest) {
                 currentBatch.push(taskId);
             } else {
                 batches.push(currentBatch);
@@ -214,6 +211,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         }
 
         const batchedTasks: ComponentFramework.WebApi.Entity[][] = await Promise.all(batches.map(async (batchIds) => {
+            const query = `?$filter=Microsoft.Dynamics.CRM.In(PropertyName='${this._fetchXmlDataProvider.getMetadata().PrimaryIdAttribute}', PropertyValues=[${batchIds.map((id) => `'${id}'`).join(',')}])${querySuffix}`;
             const { entities } = await window.Xrm.WebApi.retrieveMultipleRecords(
                 this._entityName,
                 query
@@ -289,7 +287,14 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
 
     private _getFetchXml(): string {
         return LIQUID.parseAndRenderSync(this._fetchXml, {
-            projectId: this._projectReference?.id.guid,
+            project: {
+                id: this._projectReference?.id.guid,
+                ...this._projectRecord?.getRawData()
+            },
+            currentRecord: {
+                id: this._sourceRecord?.getNamedReference().id.guid,
+                ...this._sourceRecord?.getRawData()
+            }
         })
     }
 

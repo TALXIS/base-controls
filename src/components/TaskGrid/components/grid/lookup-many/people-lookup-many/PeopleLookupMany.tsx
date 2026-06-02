@@ -1,5 +1,5 @@
 import { ILookupManyProps, LookupMany } from "../LookupMany";
-import { DEFAULT_PEOPLE_LOOKUP_MANY_COMPONENTS } from "./components";
+import { DEFAULT_PEOPLE_LOOKUP_MANY_COMPONENTS } from "./components/components";
 import { PeopleLookupManyPropsContext } from "./context";
 
 export interface IPeopleLookupManyProps extends ILookupManyProps {
