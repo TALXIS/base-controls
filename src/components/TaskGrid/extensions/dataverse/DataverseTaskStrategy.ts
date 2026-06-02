@@ -45,7 +45,16 @@ export interface IDataverseTaskStrategyParams {
 }
 
 interface ILookupManyColumn extends IColumn {
-    navigationPropertyName: string
+    metadata: ILookupManyColumnMetadata;
+}
+
+interface ILookupManyColumnMetadata {
+    LookupMany: {
+        ReferencedEntityNavigationPropertyName: string;
+        CustomIntersection?: {
+            ReferencingEntityNavigationPropertyName: string;
+        }
+    }
 }
 
 /** Extends {@link ITaskDataProviderStrategy} with a Dataverse-specific accessor for the project reference. */
@@ -105,10 +114,14 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     public async onGetRawRecords(ids: string[], select?: string): Promise<IRawRecord[]> {
         let records: IRawRecord[] = [];
         const expands = await Promise.all(this._lookupManyColumns.map(async col => {
-            const referencedEntityNavigationPropertyName = col.navigationPropertyName;
+            const referencedEntityNavigationPropertyName = col.metadata.LookupMany.ReferencedEntityNavigationPropertyName;
+            const customIntersection = col.metadata.LookupMany.CustomIntersection;
             const handler = this._lookupManyHandlers[col.name] ?? new LookupManyHandler({
                 entityName: this._entityName,
-                navigationPropertyName: referencedEntityNavigationPropertyName
+                navigationPropertyName: referencedEntityNavigationPropertyName!,
+                customIntersection: customIntersection ? {
+                    referencingEntityNavigationPropertyName: customIntersection.ReferencingEntityNavigationPropertyName
+                } : undefined
             });
             this._lookupManyHandlers[col.name] = handler;
             await handler.init();
@@ -136,7 +149,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private async _harmonizeLookupManyData(record: IRawRecord): Promise<IRawRecord> {
         const nextLinkSuffix = '@odata.nextLink';
         for (const lookupManyCol of this._lookupManyColumns) {
-            const referencedEntityNavigationPropertyName = lookupManyCol.navigationPropertyName;
+            const referencedEntityNavigationPropertyName = lookupManyCol.metadata.LookupMany.ReferencedEntityNavigationPropertyName;
             record[lookupManyCol.name] = await this._convertLookupManyToEntityReference(record[referencedEntityNavigationPropertyName], lookupManyCol);
             delete record[referencedEntityNavigationPropertyName];
             delete record[`${referencedEntityNavigationPropertyName}${nextLinkSuffix}`];
@@ -145,18 +158,41 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     }
 
     private async _convertLookupManyToEntityReference(data: IRawRecord[], col: IColumn): Promise<ComponentFramework.EntityReference[]> {
-        console.log(col.metadata?.Targets?.[0]);
-        const metadata = await window.Xrm.Utility.getEntityMetadata(col.metadata?.Targets[0]);
+        const relatedEntityMetadata = await window.Xrm.Utility.getEntityMetadata(col.metadata?.Targets[0]);
+        const primaryIdAttribute: string = relatedEntityMetadata.PrimaryIdAttribute;
+        const primaryNameAttribute: string = relatedEntityMetadata.PrimaryNameAttribute;
+        const referencingEntityNavigationPropertyName = col.metadata?.LookupMany?.CustomIntersection?.ReferencingEntityNavigationPropertyName;
+        const lookupManyHandler = this._getLookupManyHandlerForColumn(col.name);
+
         return data.map(record => {
-            return {
-                id: {
-                    guid: record[metadata.PrimaryIdAttribute]
-                },
-                name: record[metadata.PrimaryNameAttribute],
-                etn: metadata.LogicalName,
-                rawData: record
+            let data = record;
+            if(referencingEntityNavigationPropertyName) {
+                data = record[referencingEntityNavigationPropertyName];
             }
+            const result = {
+                id: {
+                    guid: data[primaryIdAttribute]
+                },
+                name: data[primaryNameAttribute],
+                etn: relatedEntityMetadata.LogicalName,
+                rawData: data
+            }
+            if (lookupManyHandler.isCustomIntersection()) {
+                if (result.rawData) {
+                    result.rawData.__intersectionId = record[lookupManyHandler.getCustomIntersectionEntityMetadata().PrimaryIdAttribute];
+                }
+            }
+            return result;
         });
+    }
+
+    private _getPropertyFromPath(record: IRawRecord, path: string): any {
+        const parts = path.split('.');
+        let value = record;
+        for (const part of parts) {
+            value = value?.[part];
+        }
+        return value;
     }
 
     private async _getRawRecordsByIds(params: { ids: string[], query: string }): Promise<IRawRecord[]> {
@@ -223,12 +259,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     }
 
     private _getLookupManyColumns(): ILookupManyColumn[] {
-        return this._fetchXmlDataProvider.getColumns().filter(col => col.name.endsWith(LOOKUP_MANY_COLUMN_NAME_SUFFIX)).map(col => {
-            return {
-                ...col,
-                navigationPropertyName: col.name.replace(LOOKUP_MANY_COLUMN_NAME_SUFFIX, '')
-            }
-        })
+        return this._fetchXmlDataProvider.getColumns().filter(col => col.metadata?.LookupMany) as any;
     }
 
     //fetch xml provider will override virtual column metadata by default, so we need to restore it after initialization.
