@@ -90,7 +90,7 @@ class XrmAttribute {
 
     getName(): string { return this._name; }
     getValue(): any { return this._form.getValue(this._name); }
-    setValue(value: any): void { this._form.setValue(this._name, value); }
+    setValue(value: any): void { this._form.setValue(this._name, value, false); }
 
     getAttributeType(): Xrm.Attributes.AttributeType {
         const entity = this._form.getEntityDefinition();
@@ -137,9 +137,31 @@ class XrmAttribute {
     getIsDirty(): boolean { return false; }
     setSubmitMode(_mode: Xrm.SubmitMode): void { /* noop */ }
     getSubmitMode(): Xrm.SubmitMode { return "dirty"; }
-    fireOnChange(): void { /* noop */ }
-    addOnChange(_handler: Xrm.Events.ContextSensitiveHandler): void { /* noop */ }
-    removeOnChange(_handler: Xrm.Events.ContextSensitiveHandler): void { /* noop */ }
+
+    /**
+     * Triggers all OnChange handlers (FormXml-declared and code-registered) for this attribute.
+     */
+    fireOnChange(): void {
+        this._form.fireOnChange(this._name).catch((err) => {
+            console.error(`[Form] XrmAttribute.fireOnChange("${this._name}") failed:`, err);
+        });
+    }
+
+    /**
+     * Registers a handler to be invoked when this attribute's value changes.
+     * The execution context is automatically passed as the first argument.
+     */
+    addOnChange(handler: Xrm.Events.ContextSensitiveHandler): void {
+        this._form.addOnChangeHandler(this._name, handler);
+    }
+
+    /**
+     * Removes a previously registered OnChange handler for this attribute.
+     */
+    removeOnChange(handler: Xrm.Events.ContextSensitiveHandler): void {
+        this._form.removeOnChangeHandler(this._name, handler);
+    }
+
     getUserPrivilege(): Xrm.Privilege { return { canRead: true, canUpdate: true, canCreate: true }; }
 
     get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.StandardControl> {

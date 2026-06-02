@@ -19,6 +19,9 @@ import { formTranslations } from "../translations";
 import { IForm, IFormOutputs, IFormParameters, IAttributeConfiguration, AttributeRequiredLevel, IAttributeOption, IFieldValidationResult, FieldValidator, VALID_RESULT } from "../interfaces";
 import { XrmFormContext } from "./xrm/XrmFormContext";
 import { XrmExecutionContext } from "./xrm/XrmExecutionContext";
+import { XrmOnLoadEventArgs, XrmOnSaveEventArgs } from "./xrm/XrmEventArgs";
+
+const HANDLER_TIMEOUT_MS = 10_000;
 
 interface IFormDependencies {
     labels: Required<ITranslation<typeof formTranslations>>;
@@ -35,15 +38,27 @@ interface IAttributeMetadataOverride {
 }
 
 /**
- * Reserved seam for future loading of `formLibraries` / web-resource scripts.
- * The default implementation in `FormModel` is a no-op.
+ * Seam for loading and resolving FormXml `formLibraries` / web-resource scripts.
+ * The default implementation is a no-op that never resolves any functions.
  */
 export interface IScriptLoader {
+    /**
+     * Load (or ensure already loaded) the web-resource script identified by `libraryName`.
+     * Implementations should resolve once the script is ready to use.
+     */
     load(libraryName: string): Promise<void>;
+
+    /**
+     * Resolve a handler function by its library and dot-notation function path.
+     * Returns the function if found, or `null` if not available.
+     * Example: resolve("myapp_/scripts/handler.js", "MyNamespace.handleOnLoad")
+     */
+    resolve(libraryName: string, functionName: string): ((...args: any[]) => any) | null;
 }
 
 const NOOP_SCRIPT_LOADER: IScriptLoader = {
-    load: async () => { /* no-op MVP stub */ },
+    load: async () => { /* no-op stub */ },
+    resolve: () => null,
 };
 
 export interface IRegisteredField {
@@ -73,6 +88,9 @@ export class FormModel {
     private _validationSubscribers = new Map<string, Set<() => void>>();
     private _formValidationSubscribers = new Set<() => void>();
     private _attachedRecord: IRecord | null = null;
+
+    // Code-registered OnChange handlers (via XrmAttribute.addOnChange / removeOnChange)
+    private _codeOnChangeHandlers = new Map<string, Set<Xrm.Events.ContextSensitiveHandler>>();
 
     // ------------------------------------------------------------------
     // UI state (Xrm visibility / disabled / label overrides applied
@@ -223,7 +241,7 @@ export class FormModel {
         }
     }
 
-    public setValue(datafieldname: string, value: unknown): void {
+    public setValue(datafieldname: string, value: unknown, shouldFireOnChange: boolean = true): void {
         const record = this.getRecord();
         if (!record) {
             return;
@@ -235,6 +253,11 @@ export class FormModel {
         this._notifyFieldSubscribers(datafieldname);
         if (this._validationResults.has(datafieldname) || this._validators.has(datafieldname)) {
             this.validateField(datafieldname);
+        }
+        if (shouldFireOnChange) {
+            this.fireOnChange(datafieldname).catch((err) => {
+                console.error(`[Form] fireOnChange("${datafieldname}") rejected unexpectedly:`, err);
+            });
         }
     }
 
@@ -725,6 +748,266 @@ export class FormModel {
     }
 
     // ------------------------------------------------------------------
+    // Code-registered OnChange handlers (addOnChange / removeOnChange API)
+    // ------------------------------------------------------------------
+
+    /**
+     * Register a handler to be invoked when the given attribute's value changes.
+     * The execution context is automatically passed as the first argument.
+     * Called by `XrmAttribute.addOnChange`.
+     */
+    public addOnChangeHandler(name: string, handler: Xrm.Events.ContextSensitiveHandler): void {
+        let set = this._codeOnChangeHandlers.get(name);
+        if (!set) {
+            set = new Set();
+            this._codeOnChangeHandlers.set(name, set);
+        }
+        set.add(handler);
+    }
+
+    /**
+     * Remove a previously registered OnChange handler for the given attribute.
+     * Called by `XrmAttribute.removeOnChange`.
+     */
+    public removeOnChangeHandler(name: string, handler: Xrm.Events.ContextSensitiveHandler): void {
+        const set = this._codeOnChangeHandlers.get(name);
+        if (!set) return;
+        set.delete(handler);
+        if (set.size === 0) this._codeOnChangeHandlers.delete(name);
+    }
+
+    /**
+     * Fires the form `onload` event handlers declared in FormXml.
+     * Each async handler is awaited with a 10-second timeout (per Power Apps platform behaviour).
+     * `OnLoad` → `Loaded` is sequenced by `Form.tsx` after this Promise resolves.
+     */
+    public async fireOnLoad(): Promise<void> {
+        const args = new XrmOnLoadEventArgs();
+        await this._dispatchFormXmlEvent('onload', args);
+    }
+
+    /**
+     * Fires the form `loaded` event handlers declared in FormXml.
+     * Called by `Form.tsx` automatically after `fireOnLoad()` resolves.
+     */
+    public async fireLoaded(): Promise<void> {
+        await this._dispatchFormXmlEvent('loaded', null);
+    }
+
+    /**
+     * Fires the form `onsave` event handlers declared in FormXml.
+     * Returns `{ prevented: true }` if any handler called `eventArgs.preventDefault()`.
+     * Callers should abort the save operation when `prevented` is `true`.
+     *
+     * @param saveMode - XrmEnum.SaveMode value (default 1 = Save).
+     */
+    public async fireOnSave(saveMode: number = 1): Promise<{ prevented: boolean }> {
+        const args = new XrmOnSaveEventArgs(saveMode);
+        await this._dispatchFormXmlEvent('onsave', args);
+        return { prevented: args.isDefaultPrevented() };
+    }
+
+    /**
+     * Fires the `onchange` event handlers for the given attribute:
+     * 1. FormXml-declared handlers (via `_dispatchFormXmlEvent`).
+     * 2. Code-registered handlers added via `XrmAttribute.addOnChange`.
+     *
+     * Called automatically from `_onFieldValueChanged`; fire-and-forget from the
+     * synchronous change pipeline.
+     */
+    public async fireOnChange(attributeName: string): Promise<void> {
+        await this._dispatchFormXmlEvent('onchange', null, attributeName);
+        this._invokeCodeOnChangeHandlers(attributeName);
+    }
+
+    /**
+     * Invoke code-registered OnChange handlers for the given attribute.
+     * Handlers are called synchronously with the execution context; returned
+     * Promises are not awaited (matching Dynamics 365 programmatic-fireOnChange behaviour).
+     * Errors are caught and logged.
+     */
+    private _invokeCodeOnChangeHandlers(attributeName: string): void {
+        const handlers = this._codeOnChangeHandlers.get(attributeName);
+        if (!handlers || handlers.size === 0) return;
+
+        const execCtx = this.getExecutionContext() as XrmExecutionContext;
+        // Depth continues from where FormXml handlers left off; reset args to null for OnChange
+        execCtx.setEventArgs(null);
+
+        let depth = 0;
+        handlers.forEach((handler) => {
+            execCtx.setDepth(++depth);
+            try {
+                handler(execCtx as any);
+            } catch (err) {
+                console.error(`[Form] addOnChange handler for "${attributeName}" threw:`, err);
+            }
+        });
+    }
+
+    /**
+     * Dispatches FormXml event handlers for the given event name.
+     *
+     * - Reuses a single `XrmExecutionContext` for all handlers in the dispatch so that
+     *   `setSharedVariable` / `getSharedVariable` share state across the pipeline.
+     * - Sets `executionContext.depth` (1-based) before each handler call.
+     * - Awaits returned Promises with a 10-second timeout unless the handler called
+     *   `eventArgs.disableAsyncTimeout()` (OnSave only) synchronously.
+     * - Errors / rejections / timeouts are caught and logged; they never propagate.
+     */
+    private async _dispatchFormXmlEvent(
+        eventName: string,
+        eventArgs: XrmOnLoadEventArgs | XrmOnSaveEventArgs | null,
+        attribute?: string,
+    ): Promise<void> {
+        const formXml = this.getFormXml();
+        if (!formXml?.events?.event) {
+            return;
+        }
+
+        // Filter to enabled handlers for this event (and optionally attribute)
+        const events = formXml.events.event.filter((ev) => {
+            if (!ev.name || ev.name.toLowerCase() !== eventName.toLowerCase()) return false;
+            if (attribute !== undefined && ev.attribute !== attribute) return false;
+            return true;
+        });
+
+        if (events.length === 0) {
+            return;
+        }
+
+        // Collect all handlers across matching events, preserving declaration order
+        const handlers: Array<{
+            functionName: string;
+            libraryName: string;
+            passExecutionContext: boolean;
+            parameters: string | undefined;
+            enabled: boolean;
+        }> = [];
+
+        for (const ev of events) {
+            for (const handler of ev.Handlers?.Handler ?? []) {
+                if (handler.enabled === false) continue;
+                handlers.push({
+                    functionName: handler.functionName,
+                    libraryName: handler.libraryName,
+                    passExecutionContext: handler.passExecutionContext !== false,
+                    parameters: handler.parameters,
+                    enabled: true,
+                });
+            }
+        }
+
+        if (handlers.length === 0) {
+            return;
+        }
+
+        // Obtain (or create) a stable execution context; reset its shared state for this dispatch
+        const execCtx = this.getExecutionContext() as XrmExecutionContext;
+        execCtx.resetForDispatch();
+        execCtx.setEventArgs(eventArgs);
+
+        for (let i = 0; i < handlers.length; i++) {
+            const handler = handlers[i];
+            execCtx.setDepth(i + 1);
+
+            // Load the library (no-op if already loaded)
+            try {
+                await this._scriptLoader.load(handler.libraryName);
+            } catch (err) {
+                console.error(`[Form] Failed to load library "${handler.libraryName}":`, err);
+                this._invokeErrorCallback(eventArgs, err);
+                continue;
+            }
+
+            // Resolve the handler function
+            const fn = this._scriptLoader.resolve(handler.libraryName, handler.functionName);
+            if (!fn) {
+                // Library not loaded / function not found — silently skip
+                continue;
+            }
+
+            // Parse additional parameters (comma-separated string → array)
+            const extraParams = this._parseHandlerParameters(handler.parameters);
+
+            // Call the handler
+            let result: any;
+            try {
+                result = handler.passExecutionContext
+                    ? fn(execCtx, ...extraParams)
+                    : fn(...extraParams);
+            } catch (err) {
+                console.error(`[Form] Handler "${handler.functionName}" threw synchronously:`, err);
+                this._invokeErrorCallback(eventArgs, err);
+                continue;
+            }
+
+            // If the handler returned a Promise, await it (with optional timeout)
+            if (result && typeof result.then === 'function') {
+                // Check disableAsyncTimeout synchronously (flag must be set before any await)
+                const timeoutDisabled =
+                    eventArgs instanceof XrmOnSaveEventArgs && eventArgs.isAsyncTimeoutDisabled();
+
+                try {
+                    if (timeoutDisabled) {
+                        await result;
+                    } else {
+                        await this._withTimeout(result, HANDLER_TIMEOUT_MS, handler.functionName);
+                    }
+                } catch (err) {
+                    console.error(`[Form] Async handler "${handler.functionName}" failed:`, err);
+                    this._invokeErrorCallback(eventArgs, err);
+                }
+            }
+        }
+    }
+
+    private _parseHandlerParameters(raw: string | undefined): any[] {
+        if (!raw || raw.trim() === '') {
+            return [];
+        }
+        try {
+            return raw.split(',').map((s) => {
+                const trimmed = s.trim();
+                // Try to coerce to JSON primitive; fall back to the raw string
+                try { return JSON.parse(trimmed); } catch { return trimmed; }
+            });
+        } catch {
+            return [];
+        }
+    }
+
+    private _withTimeout(promise: Promise<any>, ms: number, fnName: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(() => {
+                reject(new Error(`[Form] Handler "${fnName}" timed out after ${ms}ms`));
+            }, ms);
+            promise.then(
+                () => { clearTimeout(timer); resolve(); },
+                (err) => { clearTimeout(timer); reject(err); },
+            );
+        });
+    }
+
+    private _invokeErrorCallback(
+        eventArgs: XrmOnLoadEventArgs | XrmOnSaveEventArgs | null,
+        err: unknown,
+    ): void {
+        const cb = eventArgs instanceof XrmOnLoadEventArgs
+            ? eventArgs.getErrorCallback()
+            : eventArgs instanceof XrmOnSaveEventArgs
+                ? eventArgs.getErrorCallback()
+                : null;
+        if (cb) {
+            try {
+                cb(err instanceof Error ? err : new Error(String(err)));
+            } catch {
+                /* swallow errors inside the error callback */
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Dirty tracking
     // ------------------------------------------------------------------
 
@@ -769,6 +1052,7 @@ export class FormModel {
         this._localDirty = false;
         this._metadataOverrides.clear();
         this._uiStateSubscribers.clear();
+        this._codeOnChangeHandlers.clear();
         this._originalFormXml = undefined;
         this._workingFormXml = undefined;
         this._parsedFromRaw = undefined;

@@ -40,6 +40,21 @@ export const Form = (props: IForm) => {
         form.syncRecordBinding();
     });
 
+    // Fire OnLoad once on mount, then Loaded after OnLoad resolves.
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            await form.fireOnLoad();
+            if (!cancelled) {
+                await form.fireLoaded();
+            }
+        })().catch((err) => {
+            console.error('[Form] OnLoad/Loaded dispatch error:', err);
+        });
+        return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // Clean up the ref on unmount.
     useEffect(() => {
         return () => {
