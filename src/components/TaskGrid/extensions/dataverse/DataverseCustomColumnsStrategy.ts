@@ -5,7 +5,7 @@ import { ICustomColumnsStrategy } from "../../providers/custom-columns/CustomCol
 
 export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
-export const CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME = 'talxis_task_talxis_attributevalue_regardingobjectid';
+const CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME = 'talxis_task_talxis_attributevalue_regardingobjectid';
 
 /** Constructor parameters for {@link DataverseCustomColumnsStrategy}. */
 interface IDataverseCustomColumnsStrategyParameters {
@@ -20,8 +20,10 @@ interface IDataverseCustomColumnsStrategyParameters {
  * custom column values through the `talxis_attributevalue` entity.
  */
 export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy {
-    /** Saves the dirty custom-column value on `record` to the appropriate `talxis_attributevalue` record, creating it if it doesn't exist yet. */
-    saveValueToCustomColumn: (record: IRecord) => Promise<IRecordSaveOperationResult>;
+    getNavigationPropertyName: () => string;
+    getAttributeDefinitionIdFromColumnName: (columnName: string) => string;
+    /** Returns the `$expand` query parameter needed to fetch the related `talxis_attributevalue` records. */
+    getExpand: () => string;
     /** Reads and returns the typed value for `column` from the raw attribute-value payload embedded in `rawRecord`. */
     getValueFromRawRecord: (recordId: string, rawRecord: IRawRecord, column: IColumn) => any;
 }
@@ -63,6 +65,14 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
 
     public async onGetRawRecord(recordId: string): Promise<IRawRecord> {
         throw new Error('Method not implemented.');
+    }
+
+    public getAttributeDefinitionIdFromColumnName(columnName: string): string {
+        return columnName.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
+    }
+
+    public getNavigationPropertyName(): string {
+        return CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME;
     }
 
     /** Returns the currently cached attribute definitions as `IColumn[]` without a network fetch. */
@@ -109,6 +119,12 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
         else return null
     }
 
+    public getExpand(): string {
+        return `${CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME}(
+                $select=talxis_serialized_value,talxis_text_value,talxis_int_value,talxis_decimal_value,_talxis_choice_value_value,talxis_bit_value,talxis_date_value,talxis_datetime_userlocal_value,talxis_datetime_tzi_value,_talxis_attributedefinitionid_value
+        )`
+    }
+
     /** Opens the existing `talxis_attributedefinition` record in a side dialog for editing, then refreshes columns. Returns `columnName` unchanged. */
     public async onUpdateColumn(columnName: string): Promise<string | null> {
         const attributeDefinitionId = columnName.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
@@ -128,23 +144,12 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
      * Creates a new record when no value exists yet; updates the existing one otherwise.
      * @returns A save-operation result indicating success or the encountered error.
      */
-    public async saveValueToCustomColumn(record: IRecord): Promise<IRecordSaveOperationResult> {
-        const dirtyField = record.getFields().find(field => field.isDirty());
-        const column = dirtyField?.getColumn();
-
-        if (!column?.name.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX)) {
-            return {
-                success: true,
-                fields: [],
-                recordId: record.getRecordId(),
-            }
-        }
+    public async onSaveValue(regardingRecordId: string, column: IColumn, value: any): Promise<IRecordSaveOperationResult> {
         const attributeDefinitionId = column.name.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
-        const regardingObjectId = record.getRecordId();
-        const attributeValueId = this._attributeIdsMap.get(`${regardingObjectId}_${attributeDefinitionId}`);
+        const attributeValueId = this._attributeIdsMap.get(`${regardingRecordId}_${attributeDefinitionId}`);
         const payload = {
-            [this._getFieldNameForColumn(column)]: this._getValueForPayload(record.getValue(column.name), column),
-            'talxis_serialized_value': this._getSerializedValue(record.getValue(column.name)),
+            [this._getFieldNameForColumn(column)]: this._getValueForPayload(value, column),
+            'talxis_serialized_value': this._getSerializedValue(value),
         }
 
         try {
@@ -153,9 +158,9 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
                 const result = await window.Xrm.WebApi.createRecord(ATTRIBUTE_VALUE_ENTITY_NAME, {
                     ...payload,
                     'talxis_attributedefinitionid@odata.bind': `/talxis_attributedefinitions(${attributeDefinitionId})`,
-                    'talxis_regardingobjectid_task@odata.bind': `/tasks(${regardingObjectId})`,
+                    'talxis_regardingobjectid_task@odata.bind': `/tasks(${regardingRecordId})`,
                 });
-                this._attributeIdsMap.set(`${regardingObjectId}_${attributeDefinitionId}`, result.id);
+                this._attributeIdsMap.set(`${regardingRecordId}_${attributeDefinitionId}`, result.id);
                 return {
                     success: true,
                     recordId: result.id,
@@ -205,7 +210,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
             const option = optionSet.find((option: any) => option.OptionId == attribute['_talxis_choice_value_value']);
             return option ? option.Value : null;
         }
-        return new FieldValue(attribute[fieldName], column.dataType).getValue();
+        return attribute[fieldName];
     }
 
     private _getAttributeFromRawRecord(recordId: string, rawRecord: IRawRecord, column: IColumn) {

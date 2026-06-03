@@ -5,6 +5,7 @@ import { ILocalizationService } from "../../../../utils";
 import { ITaskGridLabels } from "../../labels";
 import { INativeColumns } from "../../interfaces";
 import { ISavedQueryDataProvider} from "../saved-query";
+import { ICustomColumnsDataProvider } from "../custom-columns";
 
 export interface IFailedRecord {
     id: string;
@@ -25,6 +26,7 @@ export interface ITaskDataProviderParameters {
     localizationService: ILocalizationService<ITaskGridLabels>;
     strategy: ITaskDataProviderStrategy;
     savedQueryDataProvider: ISavedQueryDataProvider;
+    customColumnsDataProvider?: ICustomColumnsDataProvider;
     onIsFlatListEnabled: () => boolean;
 }
 
@@ -140,6 +142,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _taskTree: IRecordTree;
     private _strategy: ITaskDataProviderStrategy;
     private _savedQueryDataProvider: ISavedQueryDataProvider;
+    private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _onFlatListEnabled: () => boolean;
     public readonly taskEvents: EventEmitter<ITaskDataProviderEventListener> = new EventEmitter<ITaskDataProviderEventListener>();
 
@@ -155,6 +158,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         })
         this._localizationService = parameters.localizationService;
         this._strategy = parameters.strategy;
+        this._customColumnsDataProvider = parameters.customColumnsDataProvider;
         this._onFlatListEnabled = parameters.onIsFlatListEnabled;
     }
 
@@ -183,7 +187,10 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async onGetAvailableColumns(options?: { entityName?: string }): Promise<IColumn[]> {
-        return this._getColumnsWithUnusedVirtualColumns(await this._strategy.onGetAvailableColumns(options));
+        return [
+            ...this._getColumnsWithUnusedVirtualColumns(await this._strategy.onGetAvailableColumns(options)),
+            ...(this._customColumnsDataProvider ? this._customColumnsDataProvider.getColumns() : [])
+        ];
     }
 
     private _getColumnsWithUnusedVirtualColumns(columns: IColumn[]): IColumn[] {

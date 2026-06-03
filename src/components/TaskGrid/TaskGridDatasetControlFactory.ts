@@ -52,6 +52,7 @@ export class TaskGridDatasetControlFactory {
             nativeColumns: { ...parameters.taskGridDescriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME },
             strategy: taskStrategy,
             savedQueryDataProvider: savedQueryDataProvider,
+            customColumnsDataProvider: customColumnsDataProvider,
             onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider)
         });
 

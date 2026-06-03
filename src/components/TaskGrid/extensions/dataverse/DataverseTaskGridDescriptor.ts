@@ -1,11 +1,12 @@
 import { FetchXmlBuilder, IDataProvider, IRawRecord, IRecord, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
-import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy } from "../../providers";
+import { ICustomColumnsStrategy, IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy } from "../../providers";
 import { IFieldMapping as IFieldMappingBase, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "../../interfaces";
 import { IGridCustomizerStrategy } from "../../components/grid";
 import { DataverseSavedQueryStrategy } from "./DataverseSavedQueryStrategy";
 import { DataverseTaskStrategy } from "./DataverseTaskStrategy";
 import { DataverseGridCustomizerStrategy } from "./DataverseGridCustomizerStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
+import { DataverseCustomColumnsStrategy } from "./DataverseCustomColumnsStrategy";
 
 /** Minimal reference to a project record. Use `name` when already known to skip a metadata fetch. */
 export interface IProjectReference extends Omit<ComponentFramework.EntityReference, 'name'> {
@@ -146,7 +147,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
 
     /** Returns a {@link DataverseSavedQueryStrategy} when `enableUserQueries` is `true`, otherwise a read-only stub that exposes only the system queries. */
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
-        if (this._gridParameters?.enableUserQueries) {
+        if (this._gridParameters?.enableUserQueries !== false) {
             return new DataverseSavedQueryStrategy({
                 onGetSystemQueries: async () => this._systemQueries,
                 ownerId: this._userId,
@@ -167,6 +168,13 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
                 throw new Error("Function not implemented.");
             }
         }
+    }
+
+    public onCreateCustomColumnsStrategy(): ICustomColumnsStrategy | undefined {
+        return new DataverseCustomColumnsStrategy({
+            entityName: this._taskEntityName,
+            recordId: this._projectRecord?.getRecordId(),
+        })
     }
 
     /** Returns a {@link DataverseTaskStrategy} configured with the descriptor's FetchXML, form IDs, and project reference. */

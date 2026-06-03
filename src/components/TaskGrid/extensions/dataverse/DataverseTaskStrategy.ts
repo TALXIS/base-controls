@@ -1,11 +1,12 @@
-import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer, Operators, DataTypes, ISingleRecord } from "@talxis/client-libraries";
-import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult } from "../../providers";
+import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer, Operators, DataTypes, ISingleRecord, DatasetConstants } from "@talxis/client-libraries";
+import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult, ICustomColumnsDataProvider } from "../../providers";
 import { IRecordTree } from "../../providers/task/record-tree";
 import { LexoRank } from "lexorank";
 import { Liquid } from "liquidjs";
 import { IFieldMapping } from "./DataverseTaskGridDescriptor";
 import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
 import { ITaskStrategyDeps } from "../..";
+import { IDataverseCustomColumnsStrategy } from "./DataverseCustomColumnsStrategy";
 
 
 interface IFormParameters {
@@ -31,7 +32,7 @@ export interface IDataverseTaskStrategyParams {
     bulkEditFormId?: string;
     /** Project record reference. When provided, new tasks are pre-linked to this project. */
     projectRecord?: ISingleRecord;
-    
+
     sourceRecord?: ISingleRecord;
     /** When set, the task hierarchy is rooted at this task ID. */
     rootTaskId?: string;
@@ -88,7 +89,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _taskTree!: IRecordTree;
     private _provider!: ITaskDataProvider;
     private _editFormId?: string;
-    private _createFormId?: string
+    private _createFormId?: string;
     private _bulkEditFormId?: string;
     private _fetchXmlDataProvider!: IFetchXmlDataProvider;
     private _isInlineCreateEnabled: boolean;
@@ -96,7 +97,9 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _isDeletingTasksWithChildrenEnabled: boolean;
     private _isCascadeDeleteEnabled: boolean;
     private _lookupManyColumns: ILookupManyColumn[] = [];
+    private _customColumns: IColumn[] = [];
     private _sourceRecord?: ISingleRecord;
+    private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _lookupManyHandlers: { [colName: string]: LookupManyHandler } = {};
     private _getFormParameters: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
 
@@ -104,6 +107,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     /** @param params — see {@link IDataverseTaskStrategyParams} for full documentation of each option. */
     constructor(params: IDataverseTaskStrategyParams, deps: ITaskStrategyDeps) {
         this._fetchXml = params.fetchXml;
+        this._customColumnsDataProvider = deps.customColumnsDataProvider;
         this._projectRecord = params.projectRecord;
         this._projectReference = this._projectRecord?.getNamedReference();
         this._editFormId = params.editFormId;
@@ -135,6 +139,11 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
             return handler.getExpand(col.metadata.LookupMany.Select);
         }));
 
+        if (this._customColumns.length > 0) {
+            const strategy: IDataverseCustomColumnsStrategy = this._customColumnsDataProvider!.getStrategy();
+            expands.push(strategy.getExpand());
+        }
+
         const suffixParts: string[] = [];
         if (select) suffixParts.push(`$select=${select}`);
         if (expands.length > 0) suffixParts.push(`$expand=${expands.join(',')}`);
@@ -142,8 +151,11 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
 
         records = await this._getRawRecordsByIds({ ids, querySuffix });
 
-        if (this._lookupManyColumns.length > 0) {
-            await Promise.all(records.map(record => this._harmonizeLookupManyData(record)));
+        if (this._lookupManyColumns.length > 0 || this._customColumns.length > 0) {
+            for (const record of records) {
+                await this._harmonizeLookupManyData(record);
+                await this._harmonizenizeCustomColumnsData(record);
+            }
         }
         return records;
     }
@@ -153,6 +165,14 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     }
     public getSourceRecord(): ISingleRecord | null {
         return this._sourceRecord ?? null;
+    }
+
+    private async _harmonizenizeCustomColumnsData(record: IRawRecord): Promise<void> {
+        for (const col of this._customColumns) {
+            const strategy: IDataverseCustomColumnsStrategy = this._customColumnsDataProvider!.getStrategy();
+            const value = strategy.getValueFromRawRecord(record[this._fetchXmlDataProvider.getMetadata().PrimaryIdAttribute], record, col);
+            record[col.name] = value;
+        }
     }
 
     private async _harmonizeLookupManyData(record: IRawRecord): Promise<IRawRecord> {
@@ -175,7 +195,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
 
         return data.map(record => {
             let data = record;
-            if(referencingEntityNavigationPropertyName) {
+            if (referencingEntityNavigationPropertyName) {
                 data = record[referencingEntityNavigationPropertyName];
             }
             const result = {
@@ -235,8 +255,9 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         await this._fetchXmlDataProvider.refresh();
         this._entityName = this._fetchXmlDataProvider.getEntityName();
         this._entitySetName = this._fetchXmlDataProvider.getMetadata().EntitySetName;
-        this._lookupManyColumns = this._getLookupManyColumns();
         const columns = this._fetchXmlDataProvider.getColumns();
+        this._customColumns = this._getCustomColumns(columns);
+        this._lookupManyColumns = this._getLookupManyColumns(columns);
         this._restoreVirtualColumnMetadata(virtualColumns, columns);
         this._injectLookupManyFilterOperators(columns);
         const metadata = this._fetchXmlDataProvider.getMetadata();
@@ -259,8 +280,12 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         }
     }
 
-    private _getLookupManyColumns(): ILookupManyColumn[] {
-        return this._fetchXmlDataProvider.getColumns().filter(col => col.metadata?.LookupMany) as any;
+    private _getLookupManyColumns(columns: IColumn[]): ILookupManyColumn[] {
+        return columns.filter(col => col.metadata?.LookupMany) as any;
+    }
+
+    private _getCustomColumns(columns: IColumn[]): IColumn[] {
+        return columns.filter(col => this._customColumnsDataProvider?.isCustomColumn(col.name));
     }
 
     //fetch xml provider will override virtual column metadata by default, so we need to restore it after initialization.
@@ -463,9 +488,13 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
      */
     public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
         const dirtyField = record.getFields().find(field => field.isDirty());
-        if (dirtyField?.getColumn().name.endsWith(LOOKUP_MANY_COLUMN_NAME_SUFFIX)) {
-            const handler = this._getLookupManyHandlerForColumn(dirtyField.getColumn().name);
-            return handler.saveRecord(record, dirtyField.getColumn().name);
+        const column = dirtyField?.getColumn();
+        if (column?.metadata?.LookupMany) {
+            const handler = this._getLookupManyHandlerForColumn(column.name);
+            return handler.saveRecord(record, column.name);
+        }
+        else if (column?.name.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX)) {
+            return this._customColumnsDataProvider!.saveValue(record.getRecordId(), column, dirtyField?.getValue());
         }
         else {
             return (<FetchXmlDataProvider>this._fetchXmlDataProvider).onRecordSave(record);

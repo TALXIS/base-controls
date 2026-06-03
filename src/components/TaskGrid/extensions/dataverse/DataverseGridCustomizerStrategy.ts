@@ -28,7 +28,7 @@ export class DataverseGridCustomizerStrategy implements IGridCustomizerStrategy 
     public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
         for (const colDef of colDefs) {
             const column = this._getProvider().getColumnsMap()[colDef.field!];
-            if (column?.name.endsWith(LOOKUP_MANY_COLUMN_NAME_SUFFIX)) {
+            if (column?.metadata?.LookupMany) {
                 colDef.cellRenderer = FetchXmlLookupManyCellRenderer;
                 colDef.autoHeight = true;
                 colDef.editable = false;

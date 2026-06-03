@@ -203,7 +203,18 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         const allQueries = [...systemQueries, ...userQueries];
         this._systemQueries = systemQueries
         this._userQueries = userQueries;
-        this._systemQueriesColumnsMap = new Map(systemQueries.flatMap(query => query.columns.map(col => [col.name, col])));
+
+        const systemQueryColumnEntries = systemQueries.flatMap(
+            query => query.columns.map(col => [col.name, col] as [string, IColumn])
+        );
+        const customColumnEntries = this._customColumnsDataProvider
+            ? this._customColumnsDataProvider.getColumns().map(col => [col.name, col] as [string, IColumn])
+            : [];
+
+        this._systemQueriesColumnsMap = new Map<string, IColumn>([
+            ...systemQueryColumnEntries,
+            ...customColumnEntries
+        ]);
 
         const preferredQueryInAllQueries = allQueries.find(q => q.id === this._preferredQuery?.id);
         this._currentQuery = preferredQueryInAllQueries ?? userQueries[0] ?? systemQueries[0];
@@ -326,7 +337,9 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             return systemCol ? { ...systemCol, ...col, metadata: { ...systemCol.metadata, ...col.metadata } } : col;
         });
 
-        if (!this._customColumnsDataProvider) {
+        return { ...parsed, columns };
+
+/*         if (!this._customColumnsDataProvider) {
             return { ...parsed, columns };
         }
 
@@ -345,6 +358,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
                 ...parsed.filtering,
                 conditions: parsed.filtering.conditions.filter(condition => this._isCustomColumnResolvable(condition.attributeName, customColumnsMap))
             } : undefined
-        };
+        }; */
     }
 }
