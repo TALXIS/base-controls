@@ -62,7 +62,8 @@ interface ILookupManyColumnMetadata {
 /** Extends {@link ITaskDataProviderStrategy} with a Dataverse-specific accessor for the project reference. */
 export interface IDataverseTaskStrategy extends ITaskDataProviderStrategy {
     /** Returns the resolved project entity reference, or `null` if no project was provided at construction time. */
-    getProjectReference(): ComponentFramework.EntityReference | null;
+    getProjectRecord(): ISingleRecord | null;
+    getSourceRecord(): ISingleRecord | null;
 }
 
 const LIQUID = new Liquid();
@@ -147,9 +148,11 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         return records;
     }
 
-    /** Returns the project entity reference resolved during `onInitialize`, or `null` when none was provided. */
-    public getProjectReference(): ComponentFramework.EntityReference | null {
-        return this._projectReference ?? null;
+    public getProjectRecord(): ISingleRecord | null {
+        return this._projectRecord ?? null;
+    }
+    public getSourceRecord(): ISingleRecord | null {
+        return this._sourceRecord ?? null;
     }
 
     private async _harmonizeLookupManyData(record: IRawRecord): Promise<IRawRecord> {

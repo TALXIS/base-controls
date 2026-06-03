@@ -10,7 +10,7 @@ export const FetchXmlLookupManyCellRenderer = (props: ICellProps) => {
     const { baseColumn } = props;
     const record: IRecord = props.data;
     const strategy: IDataverseTaskStrategy = useTaskDataProvider().getStrategy();
-    const projectReference = strategy.getProjectReference();
+    const projectRecord = strategy.getProjectRecord();
     const customControl = record.getColumnInfo(baseColumn.name).ui.getCustomControls([])?.[0];
     const fetchXml = customControl?.bindings?.FetchXml.value;
     const taskId = record.getRecordId();
@@ -18,7 +18,7 @@ export const FetchXmlLookupManyCellRenderer = (props: ICellProps) => {
         fetchXml: fetchXml,
         variables: {
             taskId: taskId,
-            projectId: projectReference?.id.guid
+            projectId: projectRecord?.getRecordId()
         }
     }), []);
 

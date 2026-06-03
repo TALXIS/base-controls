@@ -216,7 +216,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return true;
     }
     public getHeight(): string | null {
-        return this._gridParameters.height ?? null;
+        return this._descriptor.onGetHeight?.() ?? null;
     }
     public getDataset(): IDataset {
         return this._dataset;
@@ -227,7 +227,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public getPcfContext(): ComponentFramework.Context<any> {
         return this._getPcfContext();
     }
-
     public isTaskEditingEnabled(): boolean {
         return this._gridParameters.enableTaskEditing ?? true;
     }

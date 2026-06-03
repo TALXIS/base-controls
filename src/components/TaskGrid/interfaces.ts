@@ -37,8 +37,7 @@ export interface INativeColumns extends IFieldMapping {
 
 /** Feature flags that control which UI elements are rendered in the grid header and ribbon. */
 export interface ITaskGridParameters {
-    /** Explicit CSS height for the grid container. When omitted the grid sizes to fit its parent. */
-    height?: string;
+    agGridLicenseKey?: string;
     /** Show drag handles and allow rows to be dragged for reordering. Defaults to `true`. Automatically suppressed when flat-list mode is active or sorting by a non-stack-rank column. */
     enableRowDragging?: boolean;
     /** Show the *Edit Columns* button in the ribbon. Defaults to `true`. */
@@ -99,14 +98,14 @@ export interface ITaskGridDescriptor {
     onCreateTaskStrategy: (deps: ITaskStrategyDeps) => ITaskDataProviderStrategy;
     /** Returns an `IDataProvider` that drives the user-query creation/update dialog. */
     onCreateUserQueryDataProvider: () => IDataProvider;
+    //** */
+    onGetHeight?: () => string | undefined;
     /** (Optional) Returns the strategy for managing dynamic (user-defined) columns. When provided, the custom-columns feature is enabled. */
     onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy | undefined;
     /** (Optional) Returns an `IDataProvider` for task templates. When provided, the template-based task creation feature is enabled. */
     onCreateTemplateDataProvider?: () => IDataProvider | undefined;
     /** (Optional) Returns a strategy for deep customization of AG Grid column definitions, renderers, editors, and row class rules. */
     onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
-    /** (Optional) Returns the AG Grid Enterprise license key. */
-    onGetAgGridLicenseKey?: () => string | undefined;
     /** (Optional) Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
     onGetControlId?: () => string;
     /** (Optional) Async hook called before any data provider is created. Use for lazy loading or authentication. */

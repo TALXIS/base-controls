@@ -60,14 +60,14 @@ export const TaskGrid = (props: ITaskGridProps) => {
 
     if (!instanceState) {
         return components.onRenderSkeleton({
-            height: taskGridDescriptor.onGetGridParameters?.().height ?? '400px'
+            height: taskGridDescriptor.onGetHeight?.() ?? '400px'
         })
     }
 
     return (
         <PcfContext.Provider value={pcfContextRef.current}>
             <LocalizationServiceContext.Provider value={localizationService}>
-                <AgGridLicenseKeyContext.Provider value={taskGridDescriptor.onGetAgGridLicenseKey?.() ?? null}>
+                <AgGridLicenseKeyContext.Provider value={taskGridDescriptor.onGetGridParameters?.()?.agGridLicenseKey ?? null}>
                     <TaskGridComponentsContext.Provider value={components}>
                         <InternalTaskGridDatasetControl
                             key={instanceState.remountKey}

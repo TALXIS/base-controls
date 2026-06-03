@@ -21,6 +21,19 @@ export interface IFieldMapping extends Omit<IFieldMappingBase, 'stateCode'> {
     projectId?: string;
 }
 
+/** Lightweight entity reference shape used when only logical name + id are available. */
+export interface IEntityRecordReference {
+    entityName: string;
+    id: string;
+}
+
+/** Input accepted for source/project: either a fully hydrated record or an entity reference. */
+export type RecordInput = IEntityRecordReference | ISingleRecord;
+
+const isSingleRecord = (record: RecordInput | undefined): record is ISingleRecord => {
+    return !!record && typeof (record as ISingleRecord).getRecordId === "function";
+};
+
 /** Constructor parameters for {@link DataverseTaskGridDescriptor}. */
 export interface IDataverseTaskGridDescriptorParams {
     /** FetchXML that drives the initial data load. May use Liquid template variables (e.g. `{{ projectId }}`). */
@@ -30,16 +43,13 @@ export interface IDataverseTaskGridDescriptorParams {
     /** System (non-deletable) views exposed in the view switcher. At least one is required. */
     systemQueries: ISavedQuery[];
     /** Optional source record. If provided, it's data will be propagated into liquid fetch XML templates. */
-    sourceRecord?: {
-        entityName: string;
-        id: string;
-    }
-    projectRecord?: {
-        entityName: string;
-        id: string;
-    }
+    sourceRecord?: RecordInput;
+
+    projectRecord?: RecordInput;
     /** AG Grid Enterprise license key. Omit to run in community mode. */
     agGridLicenseKey?: string;
+
+    height?: string;
     /** Set to `true` to enable personal saved views (user queries) via {@link DataverseSavedQueryStrategy}. Defaults to `false`. */
     enableUserQueries?: boolean;
     /** Fine-grained feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
@@ -77,10 +87,10 @@ export interface IDataverseTaskGridDescriptorParams {
  * ```
  */
 export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
-    private _fetchXml: string;
-    private _fieldMapping: IFieldMapping;
+    private _fetchXml!: string;
+    private _fieldMapping!: IFieldMapping;
     private _systemQueries: ISavedQuery[] = [];
-    private _taskEntityName: string;
+    private _taskEntityName!: string;
     private _editFormId?: string;
     private _createFormId?: string;
     private _bulkEditFormId?: string;
@@ -88,12 +98,21 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     private _rootTaskId?: string;
     private _projectRecord?: ISingleRecord;
     private _sourceRecord?: ISingleRecord;
-    private _params: IDataverseTaskGridDescriptorParams;
+    private _params!: IDataverseTaskGridDescriptorParams;
     private _gridParameters?: ITaskGridParameters;
     private _agGridLicenseKey?: string;
+    private _height?: string;
+    private _onInitialize: () => Promise<IDataverseTaskGridDescriptorParams>;
 
     /** @param params — see {@link IDataverseTaskGridDescriptorParams} for full documentation of each option. */
-    constructor(params: IDataverseTaskGridDescriptorParams) {
+    constructor(params: {onInitialize: () => Promise<IDataverseTaskGridDescriptorParams>; height?: string}) {
+        this._onInitialize = params.onInitialize;
+        this._height = params.height;
+    }
+
+    /** Resolves the project entity reference (fetches display name when not supplied). Called once by the factory before any strategy is created. */
+    public async onLoadDependencies(): Promise<void> {
+        const params = await this._onInitialize();
         this._params = params;
         this._systemQueries = params.systemQueries;
         this._fieldMapping = params.fieldMapping;
@@ -106,10 +125,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         this._agGridLicenseKey = params.agGridLicenseKey;
         this._gridParameters = params.gridParameters;
         this._taskEntityName = this._getTaskEntityNameFromFetchXml(params.baseFetchXml);
-    }
-
-    /** Resolves the project entity reference (fetches display name when not supplied). Called once by the factory before any strategy is created. */
-    public async onLoadDependencies(): Promise<void> {
         this._projectRecord = await this._getProjectRecord();
         this._sourceRecord = await this._getSourceRecord();
     }
@@ -122,6 +137,11 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             //dataverse uses this for all entities
             stateCode: 'statecode',
         }
+    }
+
+    //needs to be seperate from onGetGridParameters since it is also required for skeleton rendering before the instance is created
+    public onGetHeight(): string | undefined {
+        return this._height;
     }
 
     /** Returns a {@link DataverseSavedQueryStrategy} when `enableUserQueries` is `true`, otherwise a read-only stub that exposes only the system queries. */
@@ -154,6 +174,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         return new DataverseTaskStrategy({
             fetchXml: this._fetchXml,
             projectRecord: this._projectRecord,
+            sourceRecord: this._sourceRecord,
             rootTaskId: this._rootTaskId,
             bulkEditFormId: this._bulkEditFormId,
             createFormId: this._createFormId,
@@ -198,9 +219,14 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     private async _getProjectRecord(): Promise<ISingleRecord | undefined> {
-        if (!this._params.projectRecord) return undefined;
-        const projectId = this._params.projectRecord.id
-        const projectEntityName = this._params.projectRecord.entityName;
+        const projectRecord = this._params.projectRecord;
+        if (!projectRecord) return undefined;
+        if (isSingleRecord(projectRecord)) {
+            return projectRecord;
+        }
+
+        const projectId = projectRecord.id;
+        const projectEntityName = projectRecord.entityName;
         const metadata = await EntityDefinition.fromEntityName(projectEntityName);
         const projectData = await window.Xrm.WebApi.retrieveRecord(projectEntityName, projectId, `?$select=${metadata.PrimaryNameAttribute}`);
         const builder = new RecordBuilder({
@@ -208,22 +234,33 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             entityMetadata: metadata,
             attributes: metadata.Attributes as any
         });
-        return builder.getRecord()
+        return builder.getRecord();
     }
 
     private async _getSourceRecord(): Promise<ISingleRecord | undefined> {
-        if (this._projectRecord && this._projectRecord.getRecordId()=== this._params.sourceRecord?.id) {
+        const sourceRecord = this._params.sourceRecord;
+        if (!sourceRecord) {
+            return undefined;
+        }
+
+        const sourceRecordId = isSingleRecord(sourceRecord) ? sourceRecord.getRecordId() : sourceRecord.id;
+        if (this._projectRecord && this._projectRecord.getRecordId() === sourceRecordId) {
             return this._projectRecord;
         }
-        else if (this._params.sourceRecord) {
-            const result = await window.Xrm.WebApi.retrieveRecord(this._params.sourceRecord.entityName, this._params.sourceRecord.id);
-            const entityMetadata = await EntityDefinition.fromEntityName(this._params.sourceRecord.entityName);
-            const record = new RecordBuilder({
-                data: result,
-                entityMetadata: entityMetadata,
-                attributes: entityMetadata.Attributes as any
-            });
+
+        if (isSingleRecord(sourceRecord)) {
+            return sourceRecord;
         }
+        const result = await window.Xrm.WebApi.retrieveRecord(sourceRecord.entityName, sourceRecord.id);
+        const entityMetadata = await EntityDefinition.fromEntityName(sourceRecord.entityName);
+
+        const builder = new RecordBuilder({
+            data: result,
+            entityMetadata: entityMetadata,
+            attributes: entityMetadata.Attributes as any
+        });
+
+        return builder.getRecord();
     }
 
     private _getTaskEntityNameFromFetchXml(fetchXml: string): string {
