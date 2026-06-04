@@ -388,6 +388,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
             return null;
         }
     }
+    
     public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
         const allTaskIds: Set<string> = new Set(taskIds);
         let success = true;

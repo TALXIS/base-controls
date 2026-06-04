@@ -8,17 +8,10 @@ import { DataverseGridCustomizerStrategy } from "./DataverseGridCustomizerStrate
 import { EntityDefinition } from "@talxis/client-metadata";
 import { DataverseCustomColumnsStrategy } from "./DataverseCustomColumnsStrategy";
 
-/** Minimal reference to a project record. Use `name` when already known to skip a metadata fetch. */
-export interface IProjectReference extends Omit<ComponentFramework.EntityReference, 'name'> {
-    /** Logical entity name of the project entity (e.g. `"talxis_project"`). */
-    etn: string;
-    /** Display name of the project record. When provided, the descriptor skips a `getEntityMetadata` call during `onLoadDependencies`. */
-    name?: string;
-}
 
 /** Dataverse-specific field mapping. Extends the base with an optional project lookup column. */
 export interface IFieldMapping extends Omit<IFieldMappingBase, 'stateCode'> {
-    /** Logical name of the lookup attribute that points to the parent project record. Required when `project` is set on the descriptor. */
+    /** Logical name of the lookup attribute that points to the parent project record. Required when `projectRecord` is set on the descriptor. */
     projectId?: string;
 }
 
@@ -47,8 +40,6 @@ export interface IDataverseTaskGridDescriptorParams {
     sourceRecord?: RecordInput;
 
     projectRecord?: RecordInput;
-    /** AG Grid Enterprise license key. Omit to run in community mode. */
-    agGridLicenseKey?: string;
 
     height?: string;
     /** Set to `true` to enable personal saved views (user queries) via {@link DataverseSavedQueryStrategy}. Defaults to `false`. */
@@ -101,12 +92,11 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     private _sourceRecord?: ISingleRecord;
     private _params!: IDataverseTaskGridDescriptorParams;
     private _gridParameters?: ITaskGridParameters;
-    private _agGridLicenseKey?: string;
     private _height?: string;
     private _onInitialize: () => Promise<IDataverseTaskGridDescriptorParams>;
 
     /** @param params — see {@link IDataverseTaskGridDescriptorParams} for full documentation of each option. */
-    constructor(params: {onInitialize: () => Promise<IDataverseTaskGridDescriptorParams>; height?: string}) {
+    constructor(params: { onInitialize: () => Promise<IDataverseTaskGridDescriptorParams>; height?: string }) {
         this._onInitialize = params.onInitialize;
         this._height = params.height;
     }
@@ -123,7 +113,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         this._editFormId = params.editFormId;
         this._createFormId = params.createFormId;
         this._bulkEditFormId = params.bulkEditFormId;
-        this._agGridLicenseKey = params.agGridLicenseKey;
         this._gridParameters = params.gridParameters;
         this._taskEntityName = this._getTaskEntityNameFromFetchXml(params.baseFetchXml);
         this._projectRecord = await this._getProjectRecord();
@@ -211,11 +200,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         return provider;
     }
 
-    /** Returns the AG Grid Enterprise license key supplied at construction time, or `undefined` for community mode. */
-    public onGetAgGridLicenseKey() {
-        return this._agGridLicenseKey;
-    }
-
     /** Returns the feature flags supplied at construction time, or an empty object (all features enabled) when omitted. */
     public onGetGridParameters(): ITaskGridParameters {
         return this._gridParameters ?? {};
@@ -236,11 +220,13 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         const projectId = projectRecord.id;
         const projectEntityName = projectRecord.entityName;
         const metadata = await EntityDefinition.fromEntityName(projectEntityName);
+        //@ts-ignore - typings
+        const attributes = (await window.Xrm.Utility.getEntityMetadata(projectEntityName, metadata.Attributes.map(attr => attr.LogicalName))).Attributes.get().filter(attr => attr.IsValidForGrid);
         const projectData = await window.Xrm.WebApi.retrieveRecord(projectEntityName, projectId, `?$select=${metadata.PrimaryNameAttribute}`);
         const builder = new RecordBuilder({
             data: projectData,
             entityMetadata: metadata,
-            attributes: metadata.Attributes as any
+            attributes: attributes
         });
         return builder.getRecord();
     }
@@ -261,6 +247,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         }
         const result = await window.Xrm.WebApi.retrieveRecord(sourceRecord.entityName, sourceRecord.id);
         const entityMetadata = await EntityDefinition.fromEntityName(sourceRecord.entityName);
+        //@ts-ignore - typings
+        const attributes = (await window.Xrm.Utility.getEntityMetadata(sourceRecord.entityName, metadata.Attributes.map(attr => attr.LogicalName))).Attributes.get().filter(attr => attr.IsValidForGrid);
 
         const builder = new RecordBuilder({
             data: result,
