@@ -38,41 +38,41 @@ export interface INativeColumns extends IFieldMapping {
 /** Feature flags that control which UI elements are rendered in the grid header and ribbon. */
 export interface ITaskGridParameters {
     agGridLicenseKey?: string;
-    /** Show drag handles and allow rows to be dragged for reordering. Defaults to `true`. Automatically suppressed when flat-list mode is active or sorting by a non-stack-rank column. */
+    /** Show drag handles and allow rows to be dragged for reordering. Defaults to `false`. Automatically suppressed when flat-list mode is active or sorting by a non-stack-rank column. */
     enableRowDragging?: boolean;
-    /** Show the *Edit Columns* button in the ribbon. Defaults to `true`. */
+    /** Show the *Edit Columns* button in the ribbon. Defaults to `false`. */
     enableEditColumns?: boolean;
-    /** Enable editing of tasks directly in the grid. Defaults to `true`. */
+    /** Enable editing of tasks directly in the grid. Defaults to `false`. */
     enableTaskEditing?: boolean;
-    /** Enable creation of new tasks. Defaults to `true`. */
+    /** Enable creation of new tasks. Defaults to `false`. */
     enableTaskCreation?: boolean;
-    /** Enable deletion of tasks. Defaults to `true`. */
+    /** Enable deletion of tasks. Defaults to `false`. */
     enableTaskDeletion?: boolean;
-    /** Show the search / quick-find input. Defaults to `true`. */
+    /** Show the search / quick-find input. Defaults to `false`. */
     enableQuickFind?: boolean;
-    /** Show the view-switcher dropdown. Defaults to `true`. */
+    /** Show the view-switcher dropdown. Defaults to `false`. */
     enableViewSwitcher?: boolean;
-    /** Show the *Show hierarchy* toggle. Defaults to `true`. */
+    /** Show the *Show hierarchy* toggle. Defaults to `false`. */
     enableShowHierarchyToggle?: boolean;
-    /** Show the *Hide inactive tasks* toggle. Defaults to `true`. */
+    /** Show the *Hide inactive tasks* toggle. Defaults to `false`. */
     enableHideInactiveTasksToggle?: boolean;
-    /** Show the personal/system scope selector inside the Edit Columns panel. Defaults to `true`. */
+    /** Show the personal/system scope selector inside the Edit Columns panel. Defaults to `false`. */
     enableEditColumnsScopeSelector?: boolean;
-    /** Enable user queries. Defaults to `true`. */
+    /** Enable user queries. Defaults to `false`. */
     enableUserQueries?: boolean;
-    /** Show the query manager. Defaults to `true`. */
+    /** Show the query manager. Defaults to `false`. */
     enableQueryManager?: boolean;
-    /** Show the "Save as new" button in the query manager. Defaults to `true`. */
+    /** Show the "Save as new" button in the query manager. Defaults to `false`. */
     enableSaveAsNewQuery?: boolean;
-    /** Show the "Save changes" button in the query manager. Defaults to `true`. */
+    /** Show the "Save changes" button in the query manager. Defaults to `false`. */
     enableSaveQueryChanges?: boolean;
-    /** Enable creation of custom columns. Defaults to `true`. */
+    /** Enable creation of custom columns. Defaults to `false`. */
     enableCustomColumnCreation?: boolean;
-    /** Enable editing of custom columns. Defaults to `true`. */
+    /** Enable editing of custom columns. Defaults to `false`. */
     enableCustomColumnEditing?: boolean;
-    /** Enable deletion of custom columns. Defaults to `true`. */
+    /** Enable deletion of custom columns. Defaults to `false`. */
     enableCustomColumnDeletion?: boolean;
-    /** Enable inline creation of tasks. Defaults to `true`. */
+    /** Enable inline creation of tasks. Defaults to `false`. */
     enableInlineCreation?: boolean;
 }
 

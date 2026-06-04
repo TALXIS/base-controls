@@ -67,11 +67,11 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public isRowDraggingEnabled(): boolean {
-        return this._gridParameters.enableRowDragging ?? true;
+        return this._gridParameters.enableRowDragging ?? false;
     }
 
     public isEditColumnsScopeSelectorEnabled(): boolean {
-        return this._gridParameters.enableEditColumnsScopeSelector ?? true;
+        return this._gridParameters.enableEditColumnsScopeSelector ?? false;
     }
 
     public isTemplatingEnabled(): boolean {
@@ -83,26 +83,26 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public isHideInactiveTasksToggleVisible(): boolean {
-        return this._gridParameters.enableHideInactiveTasksToggle ?? true;
+        return this._gridParameters.enableHideInactiveTasksToggle ?? false;
     }
 
     public isCustomColumnCreationEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnCreation ?? true;
+        return this._gridParameters.enableCustomColumnCreation ?? false;
     }
     
     public isCustomColumnEditingEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnEditing ?? true;
+        return this._gridParameters.enableCustomColumnEditing ?? false;
     }
     public isCustomColumnDeletionEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnDeletion ?? true;
+        return this._gridParameters.enableCustomColumnDeletion ?? false;
     }
 
     public isInlineCreateEnabled(): boolean {
-        return this._gridParameters.enableInlineCreation ?? true;
+        return this._gridParameters.enableInlineCreation ?? false;
     }
 
     public isShowHierarchyToggleVisible(): boolean {
-        return this._gridParameters.enableShowHierarchyToggle ?? true;
+        return this._gridParameters.enableShowHierarchyToggle ?? false;
     }
 
     public getInactiveTasksVisibility() {
@@ -119,19 +119,19 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
     
     public isViewManagerEnabled(): boolean {
-        return this._gridParameters.enableQueryManager ?? true;
+        return this._gridParameters.enableQueryManager ?? false;
     }
 
     public isSaveQueryAsNewEnabled(): boolean {
-        return this._gridParameters.enableSaveAsNewQuery ?? true;
+        return this._gridParameters.enableSaveAsNewQuery ?? false;
     }
 
     public isSaveQueryChangesEnabled(): boolean {
-        return this._gridParameters.enableSaveQueryChanges ?? true;
+        return this._gridParameters.enableSaveQueryChanges ?? false;
     }
 
     public isUserQueriesFeatureEnabled(): boolean {
-        return this._gridParameters.enableUserQueries ?? true;
+        return this._gridParameters.enableUserQueries ?? false;
     }
 
     public getSavedQueryDataProvider() {
@@ -207,7 +207,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return false;
     }
     public isQuickFindVisible(): boolean {
-        return this._gridParameters.enableQuickFind ?? true;
+        return this._gridParameters.enableQuickFind ?? false;
     }
     public isAutoSaveEnabled(): boolean {
         return true;
@@ -228,15 +228,15 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._getPcfContext();
     }
     public isTaskEditingEnabled(): boolean {
-        return this._gridParameters.enableTaskEditing ?? true;
+        return this._gridParameters.enableTaskEditing ?? false;
     }
     public isTaskCreatingEnabled(): boolean {
         if(!this.isTaskEditingEnabled()) return false;
-        return this._gridParameters.enableTaskCreation ?? true;
+        return this._gridParameters.enableTaskCreation ?? false;
     }
     public isTaskDeletingEnabled(): boolean {
         if(!this.isTaskEditingEnabled()) return false;
-        return this._gridParameters.enableTaskDeletion ?? true;
+        return this._gridParameters.enableTaskDeletion ?? false;
     }
 
     public getParameters(): IDatasetControlParameters {
@@ -249,7 +249,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
                 raw: true
             },
             EnableEditColumns: {
-                raw: this._gridParameters.enableEditColumns ?? true
+                raw: this._gridParameters.enableEditColumns ?? false
             },
             EnableZebra: {
                 raw: false
