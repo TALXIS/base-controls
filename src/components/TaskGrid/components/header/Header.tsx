@@ -23,6 +23,17 @@ export const Header = (props: ITaskGridHeaderProps) => {
     const pcfContext = usePcfContext();
     const components = useTaskGridComponents();
 
+    const hasContent = () => {
+        return datasetControl.isViewSwitcherEnabled() ||
+            datasetControl.isTaskCreatingEnabled() ||
+            datasetControl.isTemplatingEnabled() ||
+            datasetControl.isTaskEditingEnabled() ||
+            datasetControl.isTaskDeletingEnabled() ||
+            datasetControl.isEditColumnsVisible() ||
+            datasetControl.isShowHierarchyToggleVisible() ||
+            datasetControl.isHideInactiveTasksToggleVisible();
+    }
+
     const createTaskFromTemplate = (templateId: string) => {
         provider.createTasksFromTemplate(templateId);
     }
@@ -141,17 +152,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
         ];
     }
 
-    const hasContent =
-        datasetControl.isViewSwitcherEnabled() ||
-        datasetControl.isTaskCreatingEnabled() ||
-        datasetControl.isTemplatingEnabled() ||
-        datasetControl.isTaskEditingEnabled() ||
-        datasetControl.isTaskDeletingEnabled() ||
-        datasetControl.isEditColumnsVisible() ||
-        datasetControl.isShowHierarchyToggleVisible() ||
-        datasetControl.isHideInactiveTasksToggleVisible();
-
-    if (!hasContent) return null;
+    if (!hasContent()) return <></>
 
     return props.defaultRender({
         ...props.headerProps,

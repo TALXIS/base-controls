@@ -4,6 +4,8 @@ import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
 import { ICellProps } from "../../../../../Grid/cells/cell/Cell";
 import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "../../lookup-many";
+import { useAgGridInstance } from "../../../../../Grid/grid/ag-grid/useAgGridInstance";
+import { useGridInstance } from "../../../../../Grid/grid/useGridInstance";
 
 interface ICellRendererProps extends ICellProps {
     dataProvider: IDataProvider;
@@ -23,6 +25,7 @@ export const LookupManyCellRenderer = (props: ICellRendererProps) => {
     const controlName = customControl.name ?? ControlName.LookupMany as ControlName;
     const bindings = customControl?.bindings;
     const provider = useTaskDataProvider();
+    const isNavigationEnabled = useGridInstance().isNavigationEnabled();
     const value: ComponentFramework.EntityReference[] | undefined = record.getValue(props.colDef!.colId!) as ComponentFramework.EntityReference[] | undefined;
 
     const onSelectionChange = (selectedRecords: ComponentFramework.EntityReference[]) => {
@@ -51,7 +54,7 @@ export const LookupManyCellRenderer = (props: ICellRendererProps) => {
             selectedRecords: value,
             isDisabled,
             onRecordSelect: onSelectionChange,
-            onRecordOpen,
+            onRecordOpen: isNavigationEnabled ? onRecordOpen : undefined,
             components: {
                 onRenderSelect: (selectProps) =>
                     <AsyncSelect {...selectProps}

@@ -231,11 +231,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._gridParameters.enableTaskEditing ?? false;
     }
     public isTaskCreatingEnabled(): boolean {
-        if(!this.isTaskEditingEnabled()) return false;
         return this._gridParameters.enableTaskCreation ?? false;
     }
     public isTaskDeletingEnabled(): boolean {
-        if(!this.isTaskEditingEnabled()) return false;
         return this._gridParameters.enableTaskDeletion ?? false;
     }
 
@@ -256,6 +254,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
             },
             EnableOptionSetColors: {
                 raw: true
+            },
+            EnableNavigation: {
+                raw: false
             },
             Height: {
                 raw: this.getHeight()

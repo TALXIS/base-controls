@@ -4,8 +4,6 @@ import { useLocalizationService } from '../../../context';
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
 import { LookupManyComponents, ILookupManyComponents } from './components/components';
 import { LookupManyPropsContext } from './context';
-import { ThemeProvider } from '@fluentui/react';
-import { components as selectComponents }   from 'react-select';
 
 
 
@@ -17,10 +15,6 @@ export interface ILookupManyProps {
     components?: Partial<ILookupManyComponents>;
     onRecordSelect?: (selectedRecords: ComponentFramework.EntityReference[]) => void;
     onRecordOpen?: (record: ComponentFramework.EntityReference) => void;
-}
-
-const ThemedMenu = (props: any) => {
-    return <ThemeProvider></ThemeProvider>
 }
 
 //can be used as base for new lookup (is task grid independent)

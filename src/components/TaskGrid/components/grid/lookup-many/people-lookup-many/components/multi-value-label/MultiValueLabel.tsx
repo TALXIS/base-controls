@@ -13,6 +13,7 @@ export const MultiValueLabel = (props: MultiValueGenericProps<ComponentFramework
     const persona = (
         <TooltipHost content={props.data.name}>
             <Persona
+                imageShouldFadeIn={false}
                 text={props.data.name}
                 size={PersonaSize.size24}
                 imageUrl={imageUrl}
