@@ -42,8 +42,6 @@ export interface ITaskDataProviderStrategy {
     onGetAvailableColumns: (options?: IAvailableColumnOptions) => Promise<IColumn[]>;
     /** Returns linked-entity columns that can be used for filtering and sorting. */
     onGetAvailableRelatedColumns: () => Promise<IAvailableRelatedColumn[]>;
-    /** Returns the attribute names that are searched when the user types in the quick-find input. */
-    onGetQuickFindColumns: () => string[];
     /** @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onCreateTask(parentTaskId?: string): Promise<IRawRecord | null>;
     /**
@@ -435,6 +433,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     public async refresh(): Promise<IRecord[]> {
         if (!this._hasDataBeenLoaded) {
             await this._loadDataFromStrategy();
+            //we need to artificially wait in order for any sync outside stuff to finish (like loading grid  to register events)
+            await new Promise(resolve => setTimeout(resolve, 0));
             this._hasDataBeenLoaded = true;
         }
         await super.refresh();

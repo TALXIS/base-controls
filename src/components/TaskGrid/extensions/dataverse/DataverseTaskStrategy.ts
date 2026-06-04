@@ -4,7 +4,7 @@ import { IRecordTree } from "../../providers/task/record-tree";
 import { LexoRank } from "lexorank";
 import { Liquid } from "liquidjs";
 import { IFieldMapping } from "./DataverseTaskGridDescriptor";
-import { LOOKUP_MANY_COLUMN_NAME_SUFFIX, LookupManyHandler } from "./lookup-many/LookupManyHandler";
+import { LookupManyHandler } from "./lookup-many/LookupManyHandler";
 import { ITaskStrategyDeps } from "../..";
 import { IDataverseCustomColumnsStrategy } from "./DataverseCustomColumnsStrategy";
 
@@ -300,7 +300,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
 
     private _injectLookupManyFilterOperators(columns: IColumn[]) {
         columns.map(col => {
-            if (col.name.endsWith(LOOKUP_MANY_COLUMN_NAME_SUFFIX)) {
+            if (col.metadata?.LookupMany) {
                 col.metadata = {
                     ...col.metadata,
                     SupportedFilterConditionOperators: Operators.GetOperatorsForDataType(DataTypes.MultiSelectOptionSet).map(op => op.Value)
@@ -332,9 +332,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
         return this._fetchXmlDataProvider.getAvailableRelatedColumns();
     }
-    public onGetQuickFindColumns(): string[] {
-        return [];
-    }
+    
     public async onCreateTask(parentTaskId?: string): Promise<IRawRecord | null> {
         const data: { [key: string]: any } = {};
         let pageInput: Xrm.Navigation.PageInputEntityRecord = {

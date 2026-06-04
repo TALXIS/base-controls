@@ -1,7 +1,6 @@
 import { ColDef, GridApi, IGridCustomizer, IGridCustomizerStrategy } from "../../components/grid";
 import { ITaskDataProvider } from "../../providers";
 import { FetchXmlLookupManyCellRenderer } from "./lookup-many/cell-renderer/FetchXmlLookupManyCellRenderer";
-import { LOOKUP_MANY_COLUMN_NAME_SUFFIX } from "./lookup-many/LookupManyHandler";
 
 /**
  * Ready-to-use {@link IGridCustomizerStrategy} for the Dataverse / Talxis platform.

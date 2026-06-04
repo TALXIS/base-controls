@@ -27,9 +27,57 @@ export const Header = (props: ITaskGridHeaderProps) => {
         provider.createTasksFromTemplate(templateId);
     }
 
+    const getNewSubMenuItems = (
+        isTemplatingEnabled: boolean,
+        isTaskAddingEnabled: boolean,
+        selectedIds: string[],
+        isLoading: boolean,
+    ): ICommandBarItemProps[] => {
+        return [
+            ...(isTaskAddingEnabled ? [{
+                key: 'addTopLevelTask',
+                disabled: isLoading,
+                iconProps: { iconName: 'AddToShoppingList' },
+                text: localizationService.getLocalizedString('topLevel'),
+                onClick: () => { provider.createTask(); }
+            }] : []),
+            ...(isTemplatingEnabled ? [
+                ...(isTaskAddingEnabled ? [{ key: 'divider', itemType: ContextualMenuItemType.Divider }] : []),
+                ...(selectedIds.length === 1 ? [{
+                    key: 'templateFromTask',
+                    iconProps: { iconName: 'PageList' },
+                    text: localizationService.getLocalizedString('templateFromTask'),
+                    disabled: isLoading,
+                    onClick: () => { provider.createTemplateFromTask(selectedIds[0]); }
+                }] : []),
+                ...(isTaskAddingEnabled ? [{
+                    key: 'taskFromTemplate',
+                    iconProps: { iconName: 'AddToShoppingList' },
+                    text: localizationService.getLocalizedString('taskFromTemplate'),
+                    disabled: isLoading,
+                    subMenuProps: {
+                        items: [{ key: 'dummy' }],
+                        focusZoneProps: {
+                            shouldInputLoseFocusOnArrowKey: () => true
+                        },
+                        onRenderMenuList: () => isLoading ? <></> : (
+                            <RecordSelector
+                                provider={datasetControl.getTemplateDataProvider()}
+                                onRenderRecord={(props, defaultRender) => defaultRender({
+                                    ...props,
+                                    iconProps: { iconName: 'AddToShoppingList' }
+                                })}
+                                onRecordSelected={createTaskFromTemplate} />
+                        )
+                    }
+                }] : [])
+            ] : [])
+        ];
+    }
+
     const getCommandBarItems = (items: ICommandBarItemProps[]): ICommandBarItemProps[] => {
         const isTemplatingEnabled = datasetControl.isTemplatingEnabled();
-        const isEditColumnsEnabled = datasetControl.getParameters().EnableEditColumns?.raw;
+        const isEditColumnsEnabled = datasetControl.isEditColumnsVisible();
         const isTaskAddingEnabled = datasetControl.isTaskCreatingEnabled();
         const isTaskEditingEnabled = datasetControl.isTaskEditingEnabled();
         const isTaskDeletingEnabled = datasetControl.isTaskDeletingEnabled();
@@ -39,54 +87,13 @@ export const Header = (props: ITaskGridHeaderProps) => {
         const isLoading = provider.isLoading();
 
         return [
-            ...((isTaskAddingEnabled || isTemplatingEnabled) ? [{
+            ...((getNewSubMenuItems(isTemplatingEnabled, isTaskAddingEnabled, selectedIds, isLoading).length > 0) ? [{
                 key: 'new',
                 text: localizationService.getLocalizedString('new'),
                 disabled: isLoading,
                 iconProps: { iconName: 'Add' },
                 onClick: (isTaskAddingEnabled && !isTemplatingEnabled) ? () => { provider.createTask(); } : undefined,
-                subMenuProps: (isTaskAddingEnabled && !isTemplatingEnabled) ? undefined : {
-                    items: [
-                        ...(isTaskAddingEnabled ? [{
-                            key: 'addTopLevelTask',
-                            disabled: isLoading,
-                            iconProps: { iconName: 'AddToShoppingList' },
-                            text: localizationService.getLocalizedString('topLevel'),
-                            onClick: () => { provider.createTask(); }
-                        }] : []),
-                        ...(isTemplatingEnabled ? [
-                            ...(isTaskAddingEnabled ? [{ key: 'divider', itemType: ContextualMenuItemType.Divider }] : []),
-                            ...(selectedIds.length === 1 ? [{
-                                key: 'templateFromTask',
-                                iconProps: { iconName: 'PageList' },
-                                text: localizationService.getLocalizedString('templateFromTask'),
-                                disabled: isLoading,
-                                onClick: () => { provider.createTemplateFromTask(selectedIds[0]); }
-                            }] : []),
-                            {
-                                key: 'taskFromTemplate',
-                                iconProps: { iconName: 'AddToShoppingList' },
-                                text: localizationService.getLocalizedString('taskFromTemplate'),
-                                disabled: isLoading,
-                                subMenuProps: {
-                                    items: [{ key: 'dummy' }],
-                                    focusZoneProps: {
-                                        shouldInputLoseFocusOnArrowKey: () => true
-                                    },
-                                    onRenderMenuList: () => isLoading ? <></> : (
-                                        <RecordSelector
-                                            provider={datasetControl.getTemplateDataProvider()}
-                                            onRenderRecord={(props, defaultRender) => defaultRender({
-                                                ...props,
-                                                iconProps: { iconName: 'AddToShoppingList' }
-                                            })}
-                                            onRecordSelected={createTaskFromTemplate} />
-                                    )
-                                }
-                            }
-                        ] : [])
-                    ]
-                }
+                subMenuProps: (isTaskAddingEnabled && !isTemplatingEnabled) ? undefined : { items: getNewSubMenuItems(isTemplatingEnabled, isTaskAddingEnabled, selectedIds, isLoading) }
             }] : []),
             ...(selectedIds.length !== 0 ? [
                 ...(isTaskEditingEnabled ? [{
@@ -134,11 +141,25 @@ export const Header = (props: ITaskGridHeaderProps) => {
         ];
     }
 
+    const hasContent =
+        datasetControl.isViewSwitcherEnabled() ||
+        datasetControl.isTaskCreatingEnabled() ||
+        datasetControl.isTemplatingEnabled() ||
+        datasetControl.isTaskEditingEnabled() ||
+        datasetControl.isTaskDeletingEnabled() ||
+        datasetControl.isEditColumnsVisible() ||
+        datasetControl.isShowHierarchyToggleVisible() ||
+        datasetControl.isHideInactiveTasksToggleVisible();
+
+    if (!hasContent) return null;
+
     return props.defaultRender({
         ...props.headerProps,
         onRenderRibbonQuickFindWrapper: (props, defaultRender) => {
             return <div className={styles.root}>
-                <ViewSwitcher />
+                {datasetControl.isViewSwitcherEnabled() &&
+                    <ViewSwitcher />
+                }
                 {defaultRender({
                     ...props,
                     ribbonQuickFindContainerProps: {

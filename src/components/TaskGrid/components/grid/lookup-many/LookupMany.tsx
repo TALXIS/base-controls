@@ -2,8 +2,12 @@ import { IDataProvider } from '@talxis/client-libraries';
 import * as React from 'react';
 import { useLocalizationService } from '../../../context';
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
-import { LookupManyComponents, ILookupManyComponents } from './components';
+import { LookupManyComponents, ILookupManyComponents } from './components/components';
 import { LookupManyPropsContext } from './context';
+import { ThemeProvider } from '@fluentui/react';
+import { components as selectComponents }   from 'react-select';
+
+
 
 export interface ILookupManyProps {
     dataProvider: IDataProvider;
@@ -13,6 +17,10 @@ export interface ILookupManyProps {
     components?: Partial<ILookupManyComponents>;
     onRecordSelect?: (selectedRecords: ComponentFramework.EntityReference[]) => void;
     onRecordOpen?: (record: ComponentFramework.EntityReference) => void;
+}
+
+const ThemedMenu = (props: any) => {
+    return <ThemeProvider></ThemeProvider>
 }
 
 //can be used as base for new lookup (is task grid independent)
@@ -26,6 +34,7 @@ export const LookupMany = (props: ILookupManyProps) => {
     const hasBeenUnmountedRef = React.useRef(false);
     const MultiValueContainerComponent = React.useRef(components.onRenderMultiValueContainer);
     const MultiValueLabel = React.useRef(components.onRenderMultiValueLabel);
+    const Menu = React.useRef(components.onRenderMenu);
     const Option = React.useRef(components.onRenderOption);
 
     const onLoadOptions = async (inputValue: string): Promise<ComponentFramework.EntityReference[]> => {
@@ -82,6 +91,7 @@ export const LookupMany = (props: ILookupManyProps) => {
                 MultiValueRemove: MultiValueRemove,
                 MultiValueLabel: MultiValueLabel.current,
                 Option: Option.current,
+                Menu: Menu.current
             },
 
             noOptionsMessage: () => localizationService.getLocalizedString('noRecordsFound'),

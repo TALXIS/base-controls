@@ -249,7 +249,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
                 raw: true
             },
             EnableEditColumns: {
-                raw: this._gridParameters.enableEditColumns ?? false
+                raw: this.isEditColumnsVisible()
             },
             EnableZebra: {
                 raw: false
@@ -276,8 +276,13 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return true;
     }
     public isEditColumnsVisible(): boolean {
-        return true;
+        return this._gridParameters.enableEditColumns ?? false;
     }
+    //required like this since task grid is using its own view switcher
+    public isViewSwitcherEnabled(): boolean {
+        return this._gridParameters.enableViewSwitcher ?? false;
+    }
+    //hide the native one
     public isViewSwitcherVisible(): boolean {
         return false;
     }

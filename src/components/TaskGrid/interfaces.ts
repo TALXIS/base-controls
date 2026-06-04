@@ -165,6 +165,7 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isTaskEditingEnabled: () => boolean;
     /** Returns `true` when task deletion is enabled. */
     isTaskDeletingEnabled: () => boolean;
+    isViewSwitcherEnabled: () => boolean;
     /** Returns `true` when a custom columns strategy was supplied through the descriptor. */
     isCustomColumnsEnabled: () => boolean;
     /** Whether the view manager is enabled (from `ITaskGridParameters.enableQueryManager`). */

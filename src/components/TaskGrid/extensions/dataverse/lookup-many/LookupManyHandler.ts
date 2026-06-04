@@ -8,9 +8,6 @@ enum RelationshipType {
     ManyToMany = 1
 }
 
-/** Suffix used for lookup-many task grid stub columns. */
-export const LOOKUP_MANY_COLUMN_NAME_SUFFIX = '_stub';
-
 /** Constructor parameters required to resolve relationship metadata. */
 interface IManyToManyTestParams {
     /** Parent entity navigation property name that identifies the relationship. */

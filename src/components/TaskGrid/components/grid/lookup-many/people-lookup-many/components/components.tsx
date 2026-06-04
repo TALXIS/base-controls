@@ -1,4 +1,4 @@
-import { ILookupManyComponents, LookupManyComponents } from "../../components";
+import { ILookupManyComponents, LookupManyComponents } from "../../components/components";
 import { MultiValueContainer } from "./multi-value-container";
 import { MultiValueLabel } from "./multi-value-label";
 import { Option } from "./option";
