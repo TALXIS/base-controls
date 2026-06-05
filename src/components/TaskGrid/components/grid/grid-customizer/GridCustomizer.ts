@@ -164,11 +164,17 @@ export class GridCustomizer implements IGridCustomizer {
                     break;
                 }
             }
-            if(customCellRenderer === PERCENT_COMPLETE_CONTROL_NAME) {
-                colDef.cellRenderer = PercentComplete;
+            switch(customCellRenderer) {
+                case PERCENT_COMPLETE_CONTROL_NAME: {
+                    colDef.cellRenderer = PercentComplete;
+                    break;
+                }
             }
-            if(customCellEditor === PERCENT_COMPLETE_CONTROL_NAME) {
-                colDef.cellEditor = PercentComplete;
+            switch (customCellEditor) {
+                case PERCENT_COMPLETE_CONTROL_NAME: {
+                    colDef.cellEditor = PercentComplete;
+                    break;
+                }
             }
         }
 

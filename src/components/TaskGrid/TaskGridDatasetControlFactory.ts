@@ -44,6 +44,7 @@ export class TaskGridDatasetControlFactory {
         const taskStrategy = parameters.taskGridDescriptor.onCreateTaskStrategy({
             templateDataProvider: templateDataProvider,
             customColumnsDataProvider: customColumnsDataProvider,
+            enableTaskEditing: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableTaskEditing ?? false,
             enableInlineCreation: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableInlineCreation ?? false,
         })
 

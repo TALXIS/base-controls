@@ -178,7 +178,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         if (hide) {
             const condition = stateCodeFilter.addCondition();
             condition.setOperator(Operators.Equal.Value);
-            condition.setValue([STATE_CODE_ACTIVE]);
+            condition.setValue(STATE_CODE_ACTIVE);
         }
         const filterExpression = filtering.getFilterExpression(Type.And.Value);
         if (filterExpression) {

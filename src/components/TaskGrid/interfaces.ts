@@ -81,6 +81,7 @@ export interface ITaskGridParameters {
 /** Available data providers injected into `ITaskDataProviderStrategy` at construction time. */
 export interface ITaskStrategyDeps {
     enableInlineCreation: boolean;
+    enableTaskEditing: boolean;
     /** Present when the consumer provided `onCreateCustomColumnsStrategy`. */
     customColumnsDataProvider?: ICustomColumnsDataProvider;
     /** Present when the consumer provided `onCreateTemplateDataProvider`. */

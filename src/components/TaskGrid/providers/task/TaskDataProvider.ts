@@ -80,8 +80,8 @@ export interface ITaskDataProviderEventListener {
     onAfterTaskMoved: (movingFromTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child') => void;
     onTaskDataUpdated: (data: IRawRecord[]) => void;
     onRecordTreeUpdated: (updatedParentIds: (string | undefined)[]) => void;
-    onBeforeDatasetItemsOpened: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean) => void;
-    onAfterDatasetItemsOpened: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean) => void;
+    onBeforeDatasetItemsOpened: (result: IOpenDatasetItemsResult | null) => void;
+    onAfterDatasetItemsOpened: (result: IOpenDatasetItemsResult | null) => void;
     onError: (error: any, message: string) => void;
 }
 
@@ -307,7 +307,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this.taskEvents.dispatchEvent('onBeforeDatasetItemsOpened', [entityReference], isTaskEntity);
         ErrorHelper.executeWithErrorHandling({
             operation: async () => {
-                const result = await this._strategy.onOpenDatasetItems([entityReference], isTaskEntity, context);
+                const result = await this._strategy.onOpenDatasetItems([entityReference], isTaskEntity);
                 if(result) this.updateTaskData(result.updatedRecords);
                 this.taskEvents.dispatchEvent('onAfterDatasetItemsOpened', [entityReference], isTaskEntity);
             },

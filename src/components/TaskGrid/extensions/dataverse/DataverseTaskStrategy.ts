@@ -115,7 +115,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         this._createFormId = params.createFormId;
         this._bulkEditFormId = params.bulkEditFormId;
         this._isInlineCreateEnabled = deps.enableInlineCreation;
-        this._isEditingEnabled = params.isEditingEnabled ?? true;
+        this._isEditingEnabled = deps.enableTaskEditing;
         this._isDeletingTasksWithChildrenEnabled = params.isDeletingTasksWithChildrenEnabled ?? false;
         this._isCascadeDeleteEnabled = params.isCascadeDeleteEnabled ?? false;
         this._getFormParameters = params.formStrategy?.onGetFormParameters ?? ((operation, defaultParameters) => defaultParameters);
