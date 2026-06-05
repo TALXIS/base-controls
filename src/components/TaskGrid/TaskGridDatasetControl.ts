@@ -380,15 +380,13 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksDeleted', (result) => this._onAfterTasksDeleted(result));
         this._dataProvider.taskEvents.addEventListener('onBeforeTaskMoved', () => this._dataProvider.setLoading(true));
-        this._dataProvider.taskEvents.addEventListener('onBeforeTasksEdited', () => this._dataProvider.setLoading(true));
-        this._dataProvider.taskEvents.addEventListener('onAfterTasksEdited', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksCreated', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onAfterTaskMoved', () => this._dataProvider.setLoading(false));
-        this._dataProvider.taskEvents.addEventListener('onBeforeDatasetItemOpened', () => this._dataProvider.setLoading(true));
-        this._dataProvider.taskEvents.addEventListener('onAfterDatasetItemOpened', () => this._dataProvider.setLoading(false));
+        this._dataProvider.taskEvents.addEventListener('onBeforeDatasetItemsOpened', () => this._dataProvider.setLoading(true));
+        this._dataProvider.taskEvents.addEventListener('onAfterDatasetItemsOpened', () => this._dataProvider.setLoading(false));
         this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
         this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryUpdated', (result) => this._dataProvider.setLoading(false));
     }

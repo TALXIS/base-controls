@@ -112,7 +112,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
                     text: localizationService.getLocalizedString('bulkEdit'),
                     disabled: isLoading,
                     iconProps: { iconName: 'Edit' },
-                    onClick: () => { provider.editTasks(selectedIds); }
+                    onClick: () => { provider.openTaskItems(selectedIds); }
                 }] : []),
                 ...(isTaskDeletingEnabled ? [{
                     key: 'delete',

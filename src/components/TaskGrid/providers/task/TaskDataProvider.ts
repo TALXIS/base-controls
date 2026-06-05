@@ -16,7 +16,7 @@ export type IDeleteTasksResult =
     | { success: true; deletedTaskIds: string[] }
     | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] };
 
-export type IEditTasksResult =
+export type IOpenDatasetItemsResult =
     | { success: true; updatedRecords: IRawRecord[] }
     | { success: false; updatedRecords: IRawRecord[]; errors: IFailedRecord[] };
 
@@ -55,19 +55,16 @@ export interface ITaskDataProviderStrategy {
     /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null>;
     /**
-     * @returns Result indicating which tasks were updated and which failed, or `null` if the operation was cancelled by the user.
-     * `success: true` means all tasks were updated. `success: false` means some or all failed.
-     * Throws on unexpected failure.
+     * Opens one or more dataset items. When `isTaskEntity` is `true` the references point to task records;
+     * when `false` they point to a related entity (e.g. a lookup target).
      */
-    onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
+    onOpenDatasetItems(entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean): Promise<IOpenDatasetItemsResult | null>;
     /** Moves a task to a new position relative to another task. Returns the updated raw records, or `null` on cancellation. */
     onMoveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null>;
     /** Persists inline cell edits for the given record. */
     onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult>;
     /** Returns whether the given task record is currently active (non-completed). */
     onIsRecordActive(recordId: string): boolean;
-    /** Opens the record detail view. Called when a user clicks a non-subject cell. */
-    onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void>;
     /** When provided, the task tree is scoped to the subtree of the returned task id. */
     onGetRootTaskId?: () => string | undefined
 }
@@ -81,12 +78,10 @@ export interface ITaskDataProviderEventListener {
     onAfterTasksCreated: (records: IRawRecord[] | null, parentId?: string) => void;
     onBeforeTaskMoved: () => void;
     onAfterTaskMoved: (movingFromTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child') => void;
-    onBeforeTasksEdited: (taskIds: string[]) => void;
     onTaskDataUpdated: (data: IRawRecord[]) => void;
-    onAfterTasksEdited: (result: IEditTasksResult | null) => void;
     onRecordTreeUpdated: (updatedParentIds: (string | undefined)[]) => void;
-    onBeforeDatasetItemOpened: (entityReference: ComponentFramework.EntityReference) => void;
-    onAfterDatasetItemOpened: (entityReference: ComponentFramework.EntityReference) => void;
+    onBeforeDatasetItemsOpened: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean) => void;
+    onAfterDatasetItemsOpened: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean) => void;
     onError: (error: any, message: string) => void;
 }
 
@@ -107,11 +102,10 @@ export interface ITaskDataProvider extends IDataProvider {
     /** Applies updated raw record data in-place and rebuilds the tree if hierarchy changed. */
     updateTaskData(newData: IRawRecord[]): void;
     /**
-     * @returns Result indicating which tasks were updated and which failed, or `null` if the operation was cancelled by the user.
-     * `success: true` means all tasks were updated. `success: false` means some or all failed — `updatedRecords` still contains the records that succeeded.
-     * Throws on unexpected failure.
+     * Opens one or more task records by id. Builds entity references from the current records map
+     * and delegates to `strategy.onOpenDatasetItems` with `isTaskEntity: true`.
      */
-    editTasks(taskIds: string[]): Promise<IEditTasksResult | null>;
+    openTaskItems(taskIds: string[]): Promise<IOpenDatasetItemsResult | null>;
     /** @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     createTask(parentTaskId?: string): Promise<IRawRecord | null>;
     /**
@@ -309,23 +303,16 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
-        //!context => double click on row, open edit form
-        //context.columnName === subject => click on subject cell, open edit form
-        const shouldInvokeEdit = !context || context?.columnName === this.getNativeColumns().subject;
-        if(shouldInvokeEdit) {
-            this.editTasks([entityReference.id.guid]);
-        }
-        //lookup opening
-        else {
-            this.taskEvents.dispatchEvent('onBeforeDatasetItemOpened', entityReference);
-            ErrorHelper.executeWithErrorHandling({
-                operation: async () => {
-                    await this._strategy.onOpenDatasetItem(entityReference, context);
-                    this.taskEvents.dispatchEvent('onAfterDatasetItemOpened', entityReference);
-                },
-                onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
-            })
-        }
+        const isTaskEntity = !context || context?.columnName === this.getNativeColumns().subject;
+        this.taskEvents.dispatchEvent('onBeforeDatasetItemsOpened', [entityReference], isTaskEntity);
+        ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                const result = await this._strategy.onOpenDatasetItems([entityReference], isTaskEntity, context);
+                if(result) this.updateTaskData(result.updatedRecords);
+                this.taskEvents.dispatchEvent('onAfterDatasetItemsOpened', [entityReference], isTaskEntity);
+            },
+            onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
+        });
     }
 
     public getSorting(): ComponentFramework.PropertyHelper.DataSetApi.SortStatus[] {
@@ -364,17 +351,25 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         })
     }
 
-    public async editTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
+    public async openTaskItems(taskIds: string[]): Promise<IOpenDatasetItemsResult | null> {
+        const entityReferences = taskIds.map(id => {
+            const record = this.getRecordsMap()[id];
+            return {
+                id: { guid: id },
+                etn: this.getEntityName(),
+                name: record?.getFormattedValue(this.getNativeColumns().subject) ?? undefined
+            } as ComponentFramework.EntityReference;
+        });
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
-                this.taskEvents.dispatchEvent('onBeforeTasksEdited', taskIds);
-                const result = await this._strategy.onEditTasks(taskIds);
+                this.taskEvents.dispatchEvent('onBeforeDatasetItemsOpened', entityReferences, true);
+                const result = await this._strategy.onOpenDatasetItems(entityReferences, true);
                 if (result !== null) this.updateTaskData(result.updatedRecords);
-                this.taskEvents.dispatchEvent('onAfterTasksEdited', result);
+                this.taskEvents.dispatchEvent('onAfterDatasetItemsOpened', entityReferences, true);
                 return result;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
-        })
+        });
     }
 
     public isRecordActive(recordId: string): boolean {

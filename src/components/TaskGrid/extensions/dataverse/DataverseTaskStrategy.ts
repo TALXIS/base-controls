@@ -1,5 +1,5 @@
 import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer, Operators, DataTypes, ISingleRecord, DatasetConstants } from "@talxis/client-libraries";
-import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IEditTasksResult, ICustomColumnsDataProvider } from "../../providers";
+import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IOpenDatasetItemsResult, ICustomColumnsDataProvider } from "../../providers";
 import { IRecordTree } from "../../providers/task/record-tree";
 import { LexoRank } from "lexorank";
 import { Liquid } from "liquidjs";
@@ -430,16 +430,27 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     public onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
         throw new Error("Method not implemented.");
     }
-    public async onEditTasks(taskIds: string[]): Promise<IEditTasksResult | null> {
-        if (taskIds.length === 1) {
-            const result = await this._editSingleTask(taskIds[0]);
-            if (!result) return null;
-            return {
-                success: true,
-                updatedRecords: [result]
-            }
+    public async onOpenDatasetItems(entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean ): Promise<IOpenDatasetItemsResult | null> {
+        if (!isTaskEntity) {
+            // Navigate to related entity (lookup target)
+            const { pageInput, navigationOptions } = this._getFormParameters('open', {
+                pageInput: {
+                    pageType: 'entityrecord',
+                    entityName: entityReferences[0].etn!,
+                    entityId: entityReferences[0].id.guid,
+                },
+                navigationOptions: this._getFormNavigationOptions()
+            });
+            await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
+            return null;
         }
-        return this._editMultipleTasks(taskIds);
+        if (entityReferences.length === 1) {
+            const rawRecord = await this._editSingleTask(entityReferences[0].id.guid);
+            if (!rawRecord) return null;
+            return { success: true, updatedRecords: [rawRecord] };
+        }
+        const result = await this._editMultipleTasks(entityReferences.map(ref => ref.id.guid));
+        return result;
     }
     public async onMoveTask(movingTaskId: string, movingToTaskId: string, position: "above" | "below" | "child"): Promise<IRawRecord[] | null> {
         const movingToRecord = this._provider.getRecordsMap()[movingToTaskId];
@@ -506,18 +517,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         return record.getValue(this._provider.getNativeColumns().stateCode) == 0;
     }
 
-    /** Opens the task record in a side dialog. When `context.columnName` is a lookup-many column, the dialog is focused on that column. */
-    public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
-        const { pageInput, navigationOptions } = this._getFormParameters('open', {
-            pageInput: {
-                pageType: 'entityrecord',
-                entityName: entityReference.etn!,
-                entityId: entityReference.id.guid,
-            },
-            navigationOptions: this._getFormNavigationOptions()
-        });
-        await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
-    }
+
     /** Returns the root task ID supplied at construction time, used to scope the displayed hierarchy. */
     public onGetRootTaskId?(): string | undefined {
         return this._rootTaskId;
@@ -570,7 +570,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         return result[0];
     }
 
-    private async _editMultipleTasks(recordIds: string[]): Promise<IEditTasksResult | null> {
+    private async _editMultipleTasks(recordIds: string[]): Promise<IOpenDatasetItemsResult | null> {
         const { pageInput, navigationOptions } = this._getFormParameters('bulkEdit', {
             //@ts-ignore - not documented, passing of record id array is possible in Power Apps - https://butenko.pro/2021/10/14/howto-open-bulk-editing-of-records-using-xrm-navigation-navigateto/
             pageInput: {
@@ -587,10 +587,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         });
         await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
         const rawRecords = await this.onGetRawRecords(recordIds);
-        return {
-            success: true,
-            updatedRecords: rawRecords
-        };
+        return { success: true, updatedRecords: rawRecords };
     }
 
     private async _updateStackRank(params: { recordId?: string, previousTaskId?: string, nextTaskId?: string; skipSave?: boolean }): Promise<string> {
