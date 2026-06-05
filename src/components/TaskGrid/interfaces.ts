@@ -76,6 +76,9 @@ export interface ITaskGridParameters {
     enableInlineCreation?: boolean;
     /** Enable navigation within the grid. Defaults to `false`. */
     enableNavigation?: boolean;
+    enableSorting?: boolean;
+    enableFiltering?: boolean;
+    rowHeight?: number;
 }
 
 /** Available data providers injected into `ITaskDataProviderStrategy` at construction time. */

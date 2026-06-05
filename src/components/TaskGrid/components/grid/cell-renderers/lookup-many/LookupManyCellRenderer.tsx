@@ -6,6 +6,7 @@ import { ICellProps } from "../../../../../Grid/cells/cell/Cell";
 import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "../../lookup-many";
 import { useAgGridInstance } from "../../../../../Grid/grid/ag-grid/useAgGridInstance";
 import { useGridInstance } from "../../../../../Grid/grid/useGridInstance";
+import { ThemeProvider } from "@fluentui/react";
 
 interface ICellRendererProps extends ICellProps {
     dataProvider: IDataProvider;
@@ -119,7 +120,7 @@ export const LookupManyCellRenderer = (props: ICellRendererProps) => {
         }
     }, [onSwitchToEditMode]);
 
-    return <div>
+    return <ThemeProvider>
         {getComponent()}
-    </div>
+    </ThemeProvider>
 }

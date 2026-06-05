@@ -236,7 +236,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         if (!sourceRecord) {
             return undefined;
         }
-
         const sourceRecordId = isSingleRecord(sourceRecord) ? sourceRecord.getRecordId() : sourceRecord.id;
         if (this._projectRecord && this._projectRecord.getRecordId() === sourceRecordId) {
             return this._projectRecord;
@@ -248,12 +247,12 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         const result = await window.Xrm.WebApi.retrieveRecord(sourceRecord.entityName, sourceRecord.id);
         const entityMetadata = await EntityDefinition.fromEntityName(sourceRecord.entityName);
         //@ts-ignore - typings
-        const attributes = (await window.Xrm.Utility.getEntityMetadata(sourceRecord.entityName, metadata.Attributes.map(attr => attr.LogicalName))).Attributes.get().filter(attr => attr.IsValidForGrid);
+        const attributes = (await window.Xrm.Utility.getEntityMetadata(sourceRecord.entityName, entityMetadata.Attributes.map(attr => attr.LogicalName))).Attributes.get().filter(attr => attr.IsValidForGrid);
 
         const builder = new RecordBuilder({
             data: result,
             entityMetadata: entityMetadata,
-            attributes: entityMetadata.Attributes as any
+            attributes: attributes
         });
 
         return builder.getRecord();

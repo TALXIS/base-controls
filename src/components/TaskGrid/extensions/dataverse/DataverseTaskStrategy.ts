@@ -518,7 +518,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     }
 
 
-    /** Returns the root task ID supplied at construction time, used to scope the displayed hierarchy. */
+    /** Returns the root task ID used to scope the displayed hierarchy. */
     public onGetRootTaskId?(): string | undefined {
         return this._rootTaskId;
     }

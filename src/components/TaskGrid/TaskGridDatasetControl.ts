@@ -263,7 +263,17 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
             },
             Height: {
                 raw: this.getHeight()
+            },
+            EnableSorting: {
+                raw: this._gridParameters.enableSorting ?? false
+            },
+            EnableFiltering: {
+                raw: this._gridParameters.enableFiltering ?? false
+            },
+            RowHeight: {
+                raw: this._gridParameters.rowHeight ?? null
             }
+            
         }
     }
     public async loadCommands(ids: string[]): Promise<void> {

@@ -1,4 +1,5 @@
-import { FetchXmlBuilder, FetchXmlDataProvider } from "@talxis/client-libraries";
+import { FetchXmlDataProvider } from "@talxis/client-libraries";
+import { Liquid } from "liquidjs";
 import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy } from "../../providers/saved-query/SavedQueryDataProvider";
 import { ErrorHelper } from "../../../../utils/error-handling";
 
@@ -9,26 +10,26 @@ const FETCH_XML = `
         <attribute name="talxis_name" />
         <attribute name="talxis_description" />
         <attribute name="talxis_layoutjson" />
+        <filter type="and">
+            <condition attribute="talxis_returnedtypecode" operator="eq" value="{{ entityName }}" />
+            {% if ownerId %}
+            <condition attribute="ownerid" operator="eq" value="{{ ownerId }}" />
+            {% endif %}
+            {% if recordId %}
+            <condition attribute="talxis_recordid" operator="eq" value="{{ recordId }}" />
+            {% else %}
+            <condition attribute="talxis_recordid" operator="null" />
+            {% endif %}
+        </filter>
         <order attribute="talxis_name" />
     </entity>
 </fetch>
 `
 
+const LIQUID = new Liquid();
+
 const _getFetchXml = (entityName: string, recordId?: string, ownerId?: string) => {
-    const fetch = FetchXmlBuilder.fetch.fromXml(FETCH_XML);
-    const filter = new FetchXmlBuilder.filter("and")
-    filter.addCondition(new FetchXmlBuilder.condition("talxis_returnedtypecode", FetchXmlBuilder.Operator.Equal, [new FetchXmlBuilder.value(entityName)]));
-    if (ownerId) {
-        filter.addCondition(new FetchXmlBuilder.condition("ownerid", FetchXmlBuilder.Operator.Equal, [new FetchXmlBuilder.value(ownerId)]))
-    }
-    if (recordId) {
-        filter.addCondition(new FetchXmlBuilder.condition("talxis_recordid", FetchXmlBuilder.Operator.Equal, [new FetchXmlBuilder.value(recordId)]))
-    }
-    else {
-        filter.addCondition(new FetchXmlBuilder.condition("talxis_recordid", FetchXmlBuilder.Operator.Null));
-    }
-    fetch.entity.addFilter(filter);
-    return fetch.toXml();
+    return LIQUID.parseAndRenderSync(FETCH_XML, { entityName, recordId, ownerId });
 }
 
 /**
