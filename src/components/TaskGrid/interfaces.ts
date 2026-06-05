@@ -74,6 +74,8 @@ export interface ITaskGridParameters {
     enableCustomColumnDeletion?: boolean;
     /** Enable inline creation of tasks. Defaults to `false`. */
     enableInlineCreation?: boolean;
+    /** Enable navigation within the grid. Defaults to `false`. */
+    enableNavigation?: boolean;
 }
 
 /** Available data providers injected into `ITaskDataProviderStrategy` at construction time. */
@@ -166,6 +168,7 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     /** Returns `true` when task deletion is enabled. */
     isTaskDeletingEnabled: () => boolean;
     isViewSwitcherEnabled: () => boolean;
+    isNavigationEnabled: () => boolean;
     /** Returns `true` when a custom columns strategy was supplied through the descriptor. */
     isCustomColumnsEnabled: () => boolean;
     /** Whether the view manager is enabled (from `ITaskGridParameters.enableQueryManager`). */

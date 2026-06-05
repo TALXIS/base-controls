@@ -236,6 +236,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public isTaskDeletingEnabled(): boolean {
         return this._gridParameters.enableTaskDeletion ?? false;
     }
+    public isNavigationEnabled(): boolean {
+        return this._gridParameters.enableNavigation ?? false;
+    }
 
     public getParameters(): IDatasetControlParameters {
         return {
@@ -256,7 +259,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
                 raw: true
             },
             EnableNavigation: {
-                raw: false
+                raw: this.isNavigationEnabled()
             },
             Height: {
                 raw: this.getHeight()

@@ -149,7 +149,6 @@ export class GridCustomizer implements IGridCustomizer {
     private _getColumnDefinitions(columnDefs: ColDef[]) {
         this._injectAddTaskColumn(columnDefs);
         for (const colDef of columnDefs) {
-            colDef.onCellDoubleClicked = () => { }
             const columnName = colDef.colId as string;
             const column = this._taskDataProvider.getColumnsMap()[columnName];
             const customCellRenderer = this._getCustomControlForColumn('renderer', column);
