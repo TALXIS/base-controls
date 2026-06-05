@@ -80,8 +80,8 @@ export interface ITaskDataProviderEventListener {
     onAfterTaskMoved: (movingFromTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child') => void;
     onTaskDataUpdated: (data: IRawRecord[]) => void;
     onRecordTreeUpdated: (updatedParentIds: (string | undefined)[]) => void;
-    onBeforeDatasetItemsOpened: (result: IOpenDatasetItemsResult | null) => void;
-    onAfterDatasetItemsOpened: (result: IOpenDatasetItemsResult | null) => void;
+    onBeforeDatasetItemsOpened: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean) => void;
+    onAfterDatasetItemsOpened: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean, result: IOpenDatasetItemsResult | null) => void;
     onError: (error: any, message: string) => void;
 }
 
@@ -309,7 +309,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             operation: async () => {
                 const result = await this._strategy.onOpenDatasetItems([entityReference], isTaskEntity);
                 if(result) this.updateTaskData(result.updatedRecords);
-                this.taskEvents.dispatchEvent('onAfterDatasetItemsOpened', [entityReference], isTaskEntity);
+                this.taskEvents.dispatchEvent('onAfterDatasetItemsOpened', [entityReference], isTaskEntity, result);
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         });
@@ -365,7 +365,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 this.taskEvents.dispatchEvent('onBeforeDatasetItemsOpened', entityReferences, true);
                 const result = await this._strategy.onOpenDatasetItems(entityReferences, true);
                 if (result !== null) this.updateTaskData(result.updatedRecords);
-                this.taskEvents.dispatchEvent('onAfterDatasetItemsOpened', entityReferences, true);
+                this.taskEvents.dispatchEvent('onAfterDatasetItemsOpened', entityReferences, true, result);
                 return result;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
