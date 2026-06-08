@@ -23,7 +23,7 @@ export const LookupManyCellRenderer = (props: ICellRendererProps) => {
     const record: IRecord = props.data;
     const [isDisabled, setIsDisabled] = React.useState(true);
     const customControl = record.getColumnInfo(baseColumn.name).ui.getCustomControls([])?.[0];
-    const controlName = customControl.name ?? ControlName.LookupMany as ControlName;
+    const controlName = (customControl?.name ?? ControlName.LookupMany) as ControlName;
     const bindings = customControl?.bindings;
     const provider = useTaskDataProvider();
     const isNavigationEnabled = useGridInstance().isNavigationEnabled();
