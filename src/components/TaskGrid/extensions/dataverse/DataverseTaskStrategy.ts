@@ -76,7 +76,7 @@ const LIQUID = new Liquid();
  * and lookup-many column rendering — all backed by the Xrm WebApi and FetchXML.
  *
  * Normally instantiated automatically by {@link DataverseTaskGridDescriptor}. Construct directly only
- * when you need to pass a custom `form` strategy or override specific behaviour.
+ * when you need to pass a custom `formStrategy` or override specific behaviour.
  */
 export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _fetchXml: string;
@@ -143,7 +143,6 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
             const strategy: IDataverseCustomColumnsStrategy = this._customColumnsDataProvider!.getStrategy();
             expands.push(strategy.getExpand());
         }
-
         const suffixParts: string[] = [];
         if (select) suffixParts.push(`$select=${select}`);
         if (expands.length > 0) suffixParts.push(`$expand=${expands.join(',')}`);
@@ -337,7 +336,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
         return this._fetchXmlDataProvider.getAvailableRelatedColumns();
     }
-    
+
     public async onCreateTask(parentTaskId?: string): Promise<IRawRecord | null> {
         const data: { [key: string]: any } = {};
         let pageInput: Xrm.Navigation.PageInputEntityRecord = {
@@ -391,7 +390,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
             return null;
         }
     }
-    
+
     public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
         const allTaskIds: Set<string> = new Set(taskIds);
         let success = true;
@@ -435,7 +434,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     public onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
         throw new Error("Method not implemented.");
     }
-    public async onOpenDatasetItems(entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean ): Promise<IOpenDatasetItemsResult | null> {
+    public async onOpenDatasetItems(entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean): Promise<IOpenDatasetItemsResult | null> {
         if (!isTaskEntity) {
             // Navigate to related entity (lookup target)
             const { pageInput, navigationOptions } = this._getFormParameters('open', {
