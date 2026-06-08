@@ -30,5 +30,9 @@ export const lookupTranslations = {
     record: {
         1033: "Record",
         1029: "Záznam"
+    },
+    all: {
+        1033: "All",
+        1029: "Vše"
     }
 }
