@@ -319,11 +319,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         }
     }
 
-    private _isCustomColumnResolvable(name: string, customColumnsMap: Map<string, IColumn>): boolean {
-        return !this._customColumnsDataProvider!.isCustomColumn(name) ||
-            !!customColumnsMap.get(name);
-    }
-
 
     private _parseSavedQueryMetadata(metadata: ISavedQueryMetadata): ISavedQueryMetadata {
         const parsed = metadata;
@@ -331,33 +326,9 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         // Enrich partial column definitions with full definitions from system queries
         let columns = parsed.columns.map(col => {
             const systemCol = this._systemQueriesColumnsMap.get(col.name);
-            if (!systemCol && col.isVirtual) {
-                throw new Error(`Virtual column ${col.name} is missing from system queries. Make sure all virtual columns are included in the system queries returned by the strategy's onGetSystemQueries method.`);
-            }
             return systemCol ? { ...systemCol, ...col, metadata: { ...systemCol.metadata, ...col.metadata } } : col;
         });
 
         return { ...parsed, columns };
-
-/*         if (!this._customColumnsDataProvider) {
-            return { ...parsed, columns };
-        }
-
-        const customColumnsMap = new Map(this._customColumnsDataProvider.getColumns().map(col => [col.name, col]));
-        columns = columns.filter(col => this._isCustomColumnResolvable(col.name, customColumnsMap));
-        columns = columns.map(col => {
-            const customCol = customColumnsMap.get(col.name);
-            return customCol ? { ...customCol, ...col, metadata: { ...customCol.metadata, ...col.metadata } } : col;
-        });
-
-        return {
-            ...parsed,
-            sorting: parsed.sorting?.filter(sort => this._isCustomColumnResolvable(sort.name, customColumnsMap)),
-            columns: columns,
-            filtering: parsed.filtering ? {
-                ...parsed.filtering,
-                conditions: parsed.filtering.conditions.filter(condition => this._isCustomColumnResolvable(condition.attributeName, customColumnsMap))
-            } : undefined
-        }; */
     }
 }
