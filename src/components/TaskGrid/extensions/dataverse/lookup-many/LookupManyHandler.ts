@@ -95,7 +95,7 @@ export class LookupManyHandler implements ILookupManyHandler {
         }
         else {
             const rel = relationship as IManyToManyRelationship;
-            return `${rel.Entity1NavigationPropertyName}${select ? `($select=${select})` : ''}`;
+            return `${this._navigationPropertyName}${select ? `($select=${select})` : ''}`;
         }
     }
 
