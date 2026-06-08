@@ -2,7 +2,7 @@ name: Build and Publish to NPM
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 permissions:
   id-token: write
