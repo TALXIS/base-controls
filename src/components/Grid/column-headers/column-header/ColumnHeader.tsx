@@ -27,7 +27,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
 
     //needs to be called with onTouchEnd as well since ag grid cancels the click event on them
     const onClick = () => {
-        if ((!column.isFilterable && column.disableSorting && !column.canBeAggregated && !column?.metadata?.CanBeGrouped)) {
+        if ((!column.isFilterable && column.disableSorting && !column.canBeAggregated && !column.canBeGrouped)) {
             return;
         }
         setColumnHeaderContextualMenuProps({

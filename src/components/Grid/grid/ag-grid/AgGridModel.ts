@@ -665,7 +665,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         const parameters = columnInfo.ui.getControlParameters({
             ...this._grid.getFieldBindingParameters(record, column, editing),
             ...control.getParameters(),
-        })
+        });
         if (column.oneClickEdit && record.getSummarizationType() === 'none') {
             editing = true;
         }
@@ -679,7 +679,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             aggregatedValue: value.aggregatedValue,
             loading: columnInfo.ui.isLoading(),
             errorMessage: columnInfo.errorMessage,
-            editable: columnInfo.security.editable,
+            editable: column.isEditable && columnInfo.security.editable,
             editing: editing,
             parameters: parameters,
             saving: record.isSaving(),

@@ -7,7 +7,7 @@ import { useDatasetControl, useLocalizationService, usePcfContext, useRootElemen
 import { OptionCommandBar } from './OptionCommandBar/OptionCommandBar';
 import { SortableItemCommandBar } from './SortableItemCommandBar/SortableItemCommandBar';
 import { CommandBar } from './CommandBar/CommandBar';
-import { ICustomColumnsDataProvider } from '../../../data-providers';
+import { ICustomColumnsDataProvider } from '../../../providers';
 
 
 interface IEditColumnsProps {
