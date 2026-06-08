@@ -17,8 +17,14 @@ export const FetchXmlLookupManyCellRenderer = (props: ICellProps) => {
     const dataProvider = React.useMemo(() => FetchXmlDataProviderFactory.create({
         fetchXml: fetchXml,
         variables: {
-            taskId: taskId,
-            projectId: projectRecord?.getRecordId()
+            task: {
+                id: taskId,
+                ...record.getRawData()
+            },
+            project: {
+                id: projectRecord?.getRecordId(),
+                ...projectRecord?.getRawData()
+            }
         }
     }), []);
 
