@@ -5,8 +5,8 @@ import { FetchXmlLookupManyCellRenderer } from "./lookup-many/cell-renderer/Fetc
 /**
  * Ready-to-use {@link IGridCustomizerStrategy} for the Dataverse / Talxis platform.
  *
- * Automatically applies custom cell renderers to lookup-many columns (columns whose name
- * ends with the lookup-many suffix). Returned by {@link DataverseTaskGridDescriptor} by default.
+ * Automatically applies custom cell renderers to lookup-many columns (columns whose
+ * `metadata.LookupMany` is set). Returned by {@link DataverseTaskGridDescriptor} by default.
  *
  * Extend or replace this class via `onCreateGridCustomizerStrategy` on your descriptor when
  * you need additional AG Grid column, editor, or row-class customizations.
@@ -23,7 +23,7 @@ export class DataverseGridCustomizerStrategy implements IGridCustomizerStrategy 
         this._gridApi = customizer.getGridApi();
     }
 
-    /** Injects the lookup-many {@link CellRenderer} and sets `autoHeight`/non-editable flags for any column whose name ends with the lookup-many suffix. */
+    /** Injects the lookup-many {@link CellRenderer} and sets `autoHeight`/non-editable flags for any column whose `metadata.LookupMany` is set. */
     public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
         for (const colDef of colDefs) {
             const column = this._getProvider().getColumnsMap()[colDef.field!];

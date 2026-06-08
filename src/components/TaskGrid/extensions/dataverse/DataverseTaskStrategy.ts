@@ -41,7 +41,7 @@ export interface IDataverseTaskStrategyParams {
      * any form operation (`create`, `edit`, `bulkEdit`, `open`).
      * Return the modified `pageInput` and `navigationOptions` to customize the dialog.
      */
-    formStrategy?: {
+    form?: {
         onGetFormParameters?: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
     }
 }
@@ -76,7 +76,7 @@ const LIQUID = new Liquid();
  * and lookup-many column rendering — all backed by the Xrm WebApi and FetchXML.
  *
  * Normally instantiated automatically by {@link DataverseTaskGridDescriptor}. Construct directly only
- * when you need to pass a custom `formStrategy` or override specific behaviour.
+ * when you need to pass a custom `form` strategy or override specific behaviour.
  */
 export class DataverseTaskStrategy implements IDataverseTaskStrategy {
     private _fetchXml: string;
@@ -118,7 +118,7 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         this._isEditingEnabled = deps.enableTaskEditing;
         this._isDeletingTasksWithChildrenEnabled = params.isDeletingTasksWithChildrenEnabled ?? false;
         this._isCascadeDeleteEnabled = params.isCascadeDeleteEnabled ?? false;
-        this._getFormParameters = params.formStrategy?.onGetFormParameters ?? ((operation, defaultParameters) => defaultParameters);
+        this._getFormParameters = params.form?.onGetFormParameters ?? ((operation, defaultParameters) => defaultParameters);
         this._sourceRecord = params.sourceRecord;
     }
 
