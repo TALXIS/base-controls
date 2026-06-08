@@ -4,7 +4,7 @@ import * as React from "react";
 import { withButtonLoading } from '@talxis/react-components';
 import { useDatasetControl, useLocalizationService, usePcfContext } from "../../../../context";
 import { useEventEmitter } from "../../../../../../hooks";
-import { ISavedQueryDataProvider, ISavedQueryDataProviderEvents } from "../../../../data-providers";
+import { ISavedQueryDataProvider, ISavedQueryDataProviderEvents } from "../../../../providers";
 
 interface ICreateViewDialog {
     onDismiss: () => void;

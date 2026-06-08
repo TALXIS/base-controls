@@ -2,12 +2,13 @@ import { IDatasetControlParameters } from "../DatasetControl";
 import { IDatasetControlEvents } from "../../utils/dataset-control";
 import { EditColumns, IEditColumns } from "../../utils/dataset-control/EditColumns";
 import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering } from "@talxis/client-libraries";
-import { IDeleteTasksResult, ITaskDataProvider } from "./data-providers/task-data-provider";
-import { ILocalizationService, ITaskGridLabels } from "./labels";
-import { ISavedQueryDataProvider } from "./data-providers/saved-query-data-provider";
+import { IDeleteTasksResult, ITaskDataProvider } from "./providers/task";
+import { ILocalizationService } from "../../utils";
+import { ITaskGridLabels } from "./labels";
+import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
-import { ICustomColumnsDataProvider } from "./data-providers/custom-columns-data-provider/CustomColumnsDataProvider";
+import { ICustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
 import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
 import { ErrorHelper } from "../../utils/error-handling";
 
@@ -51,7 +52,10 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public getNativeColumns() {
-        return this._descriptor.onGetNativeColumns();
+        return {
+            ...this._descriptor.onGetFieldMapping(),
+            path: PATH_COLUMN_NAME
+        }
     }
 
     public getLocalizationService() {
@@ -63,11 +67,11 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public isRowDraggingEnabled(): boolean {
-        return this._gridParameters.enableRowDragging ?? true;
+        return this._gridParameters.enableRowDragging ?? false;
     }
 
     public isEditColumnsScopeSelectorEnabled(): boolean {
-        return this._gridParameters.enableEditColumnsScopeSelector ?? true;
+        return this._gridParameters.enableEditColumnsScopeSelector ?? false;
     }
 
     public isTemplatingEnabled(): boolean {
@@ -79,22 +83,26 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public isHideInactiveTasksToggleVisible(): boolean {
-        return this._gridParameters.enableHideInactiveTasksToggle ?? true;
+        return this._gridParameters.enableHideInactiveTasksToggle ?? false;
     }
 
     public isCustomColumnCreationEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnCreation ?? true;
+        return this._gridParameters.enableCustomColumnCreation ?? false;
     }
     
     public isCustomColumnEditingEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnEditing ?? true;
+        return this._gridParameters.enableCustomColumnEditing ?? false;
     }
     public isCustomColumnDeletionEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnDeletion ?? true;
+        return this._gridParameters.enableCustomColumnDeletion ?? false;
+    }
+
+    public isInlineCreateEnabled(): boolean {
+        return this._gridParameters.enableInlineCreation ?? false;
     }
 
     public isShowHierarchyToggleVisible(): boolean {
-        return this._gridParameters.enableShowHierarchyToggle ?? true;
+        return this._gridParameters.enableShowHierarchyToggle ?? false;
     }
 
     public getInactiveTasksVisibility() {
@@ -111,19 +119,19 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
     
     public isViewManagerEnabled(): boolean {
-        return this._gridParameters.enableQueryManager ?? true;
+        return this._gridParameters.enableQueryManager ?? false;
     }
 
     public isSaveQueryAsNewEnabled(): boolean {
-        return this._gridParameters.enableSaveAsNewQuery ?? true;
+        return this._gridParameters.enableSaveAsNewQuery ?? false;
     }
 
     public isSaveQueryChangesEnabled(): boolean {
-        return this._gridParameters.enableSaveChangesToQuery ?? true;
+        return this._gridParameters.enableSaveQueryChanges ?? false;
     }
 
     public isUserQueriesFeatureEnabled(): boolean {
-        return this._gridParameters.enableUserQueries ?? true;
+        return this._gridParameters.enableUserQueries ?? false;
     }
 
     public getSavedQueryDataProvider() {
@@ -170,7 +178,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         if (hide) {
             const condition = stateCodeFilter.addCondition();
             condition.setOperator(Operators.Equal.Value);
-            condition.setValue([STATE_CODE_ACTIVE]);
+            condition.setValue(STATE_CODE_ACTIVE);
         }
         const filterExpression = filtering.getFilterExpression(Type.And.Value);
         if (filterExpression) {
@@ -199,7 +207,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return false;
     }
     public isQuickFindVisible(): boolean {
-        return this._gridParameters.enableQuickFind ?? true;
+        return this._gridParameters.enableQuickFind ?? false;
     }
     public isAutoSaveEnabled(): boolean {
         return true;
@@ -208,7 +216,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return true;
     }
     public getHeight(): string | null {
-        return this._gridParameters.height ?? null;
+        return this._descriptor.onGetHeight?.() ?? null;
     }
     public getDataset(): IDataset {
         return this._dataset;
@@ -219,17 +227,30 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public getPcfContext(): ComponentFramework.Context<any> {
         return this._getPcfContext();
     }
+    public isTaskEditingEnabled(): boolean {
+        return this._gridParameters.enableTaskEditing ?? false;
+    }
+    public isTaskCreatingEnabled(): boolean {
+        return this._gridParameters.enableTaskCreation ?? false;
+    }
+    public isTaskDeletingEnabled(): boolean {
+        return this._gridParameters.enableTaskDeletion ?? false;
+    }
+    public isNavigationEnabled(): boolean {
+        return this._gridParameters.enableNavigation ?? false;
+    }
+
     public getParameters(): IDatasetControlParameters {
         return {
             Grid: this.getDataset(),
             EnableEditing: {
-                raw: this._dataProvider.isTaskEditingEnabled()
+                raw: this.isTaskEditingEnabled()
             },
             EnableAutoSave: {
                 raw: true
             },
             EnableEditColumns: {
-                raw: this._gridParameters.enableEditColumns ?? true
+                raw: this.isEditColumnsVisible()
             },
             EnableZebra: {
                 raw: false
@@ -237,9 +258,22 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
             EnableOptionSetColors: {
                 raw: true
             },
+            EnableNavigation: {
+                raw: this.isNavigationEnabled()
+            },
             Height: {
                 raw: this.getHeight()
+            },
+            EnableSorting: {
+                raw: this._gridParameters.enableSorting ?? false
+            },
+            EnableFiltering: {
+                raw: this._gridParameters.enableFiltering ?? false
+            },
+            RowHeight: {
+                raw: this._gridParameters.rowHeight ?? null
             }
+            
         }
     }
     public async loadCommands(ids: string[]): Promise<void> {
@@ -256,8 +290,13 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return true;
     }
     public isEditColumnsVisible(): boolean {
-        return true;
+        return this._gridParameters.enableEditColumns ?? false;
     }
+    //required like this since task grid is using its own view switcher
+    public isViewSwitcherEnabled(): boolean {
+        return this._gridParameters.enableViewSwitcher ?? false;
+    }
+    //hide the native one
     public isViewSwitcherVisible(): boolean {
         return false;
     }
@@ -288,6 +327,12 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
             this._state.savedQuery = {
                 id: this._changeToQueryId
             }
+            //@ts-ignore
+            if(this._state.AgGridState) {
+                //clean up AgGrid state as it might not be compatible with new query
+                //@ts-ignore
+                delete this._state.AgGridState;
+            }
         }
         else {
             const currentQueryId = this._savedQueryDataProvider.getCurrentQuery().id;
@@ -305,18 +350,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     private _loadState(state: ITaskGridState) {
         let currentQuery = this._savedQueryDataProvider.getCurrentQuery();
-        if (state.savedQuery) {
-            currentQuery = {
-                ...currentQuery,
-                ...state.savedQuery,
-            }
-        }
-        else {
+        if (!state.savedQuery) {
             state.savedQuery = currentQuery;
         }
-        //some required columns might have been discared by edit columns
-        this._savedQueryDataProvider.includeRequiredColumns(currentQuery.columns);
-        this._savedQueryDataProvider.harmonizeColumns(currentQuery.columns);
         //at this point current query might be missing required properties
         let { filtering, sorting, columns, searchQuery, linking } = currentQuery;
         this._dataProvider.setColumns(columns);
@@ -354,13 +390,13 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksDeleted', (result) => this._onAfterTasksDeleted(result));
         this._dataProvider.taskEvents.addEventListener('onBeforeTaskMoved', () => this._dataProvider.setLoading(true));
-        this._dataProvider.taskEvents.addEventListener('onBeforeTasksEdited', () => this._dataProvider.setLoading(true));
-        this._dataProvider.taskEvents.addEventListener('onAfterTasksEdited', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksCreated', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onAfterTaskMoved', () => this._dataProvider.setLoading(false));
+        this._dataProvider.taskEvents.addEventListener('onBeforeDatasetItemsOpened', () => this._dataProvider.setLoading(true));
+        this._dataProvider.taskEvents.addEventListener('onAfterDatasetItemsOpened', () => this._dataProvider.setLoading(false));
         this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
         this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryUpdated', (result) => this._dataProvider.setLoading(false));
     }

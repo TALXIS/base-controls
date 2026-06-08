@@ -17,11 +17,5 @@ export const getPercentCompleteStyles = () => {
         itemProgress: {
             flexGrow: 1
         },
-        itemDescription: {
-            '::after': {
-                content: '"%"',
-                display: 'inline'
-            }
-        }
     })
 }

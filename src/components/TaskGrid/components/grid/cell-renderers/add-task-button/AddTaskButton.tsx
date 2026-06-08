@@ -13,7 +13,8 @@ export const AddTaskButton = (props: ICellProps) => {
     const datasetControl = useDatasetControl();
     const localizationService = useLocalizationService();
     const [isButtonMounted, setIsButtonMounted] = React.useState(true);
-    const isTaskAddingEnabled = taskDataProvider.isTaskAddingEnabled();
+    const isTaskAddingEnabled = datasetControl.isTaskCreatingEnabled();
+    const isTemplatingEnabled = datasetControl.isTemplatingEnabled();
 
     const addTaskFromTemplate = async (templateId: string) => {
         //this needs to be done so the button menu does not overlay the dialog
@@ -37,7 +38,7 @@ export const AddTaskButton = (props: ICellProps) => {
             iconProps: {
                 iconName: 'Add'
             },
-            onClick: () => {taskDataProvider.createTask(record.getRecordId())}
+            onClick: () => { taskDataProvider.createTask(record.getRecordId()) }
         },
         {
             key: 'divider',
@@ -79,15 +80,10 @@ export const AddTaskButton = (props: ICellProps) => {
     else if (isButtonVisible()) {
         return <IconButton
             className={`${styles.addTaskBtnRoot} talxis_task-grid_add-task-button`}
-            iconProps={{
-                iconName: 'Add'
-            }}
-            menuProps={{
-                items: getMenuItems()
-            }}
-            styles={{
-                menuIcon: styles.addTaskMenuIcon
-            }} />
+            iconProps={{ iconName: 'Add' }}
+            onClick={!isTemplatingEnabled ? () => taskDataProvider.createTask(record.getRecordId()) : undefined}
+            menuProps={isTemplatingEnabled ? { items: getMenuItems() } : undefined}
+            styles={{ menuIcon: styles.addTaskMenuIcon }} />
     }
     else {
         return <></>

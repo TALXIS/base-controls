@@ -105,6 +105,10 @@ export const Lookup = (props: ILookup) => {
         return mouseOver || isFocused;
     }
 
+    const getDisplayName = () => {
+        return props.parameters.value.attributes.DisplayName ?? labels.record();
+    }
+
     const getSecondaryName = async (result: ComponentFramework.LookupValue & {
         entityData: {
             [key: string]: any;
@@ -195,7 +199,7 @@ export const Lookup = (props: ILookup) => {
                 if (context.mode.isControlDisabled) {
                     return;
                 }
-                setPlaceholder(`${labels.placeholder()} ${props.parameters.value.attributes.DisplayName}`);
+                setPlaceholder(`${labels.placeholder()} ${getDisplayName()}`);
             },
             onMouseLeave: () => {
                 setPlaceholder("---");

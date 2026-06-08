@@ -1,6 +1,6 @@
 import { GridApi, IRowNode, RowDragEvent } from "@ag-grid-community/core";
 import { EventEmitter, IRecord } from "@talxis/client-libraries";
-import { ITaskDataProvider } from "../../../data-providers/task-data-provider";
+import { ITaskDataProvider } from "../../../providers/task";
 import { INativeColumns, ITaskGridDatasetControl } from "../../../interfaces";
 
 interface IGridDragHandlerParameters {

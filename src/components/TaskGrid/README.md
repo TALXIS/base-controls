@@ -1,18 +1,21 @@
 # TaskGrid
 
-A hierarchical task management grid built on [AG Grid](https://www.ag-grid.com/). It renders tasks in a parent-child tree structure with support for drag-and-drop reordering, inline editing, saved views, custom columns, and template-based task creation.
+> **Note:** For a minimal PCF wrapper and integration example, see [demo PCF](https://github.com/brYch97/task-pcf).
+
+
+A hierarchical task-management grid built on [AG Grid](https://www.ag-grid.com/). It renders tasks in a parent–child tree structure and supports drag-and-drop reordering, inline editing, saved views, custom columns, and template-based task creation.
+
+The control is headless by design: all data access and business logic is supplied by you through a **descriptor** and a set of **strategies**. A ready-made Dataverse implementation is included in `extensions/dataverse`, but you can create your own strategies to connect the grid to any data source.
 
 ---
 
 ## Usage
 
-Import and render the `<TaskGrid />` React component, passing it a `pcfContext` and your `ITaskGridDescriptor` implementation:
-
 ```tsx
 import { TaskGrid } from '@talxis/base-controls';
-import { MyDescriptor } from './MyDescriptor';
+import { DataverseTaskGridDescriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
 
-const descriptor = new MyDescriptor();
+const descriptor = new DataverseTaskGridDescriptor({ /* see Dataverse strategy section */ });
 
 export const MyTaskGridPage = ({ pcfContext }) => (
     <TaskGrid
@@ -26,508 +29,165 @@ export const MyTaskGridPage = ({ pcfContext }) => (
 
 | Prop | Required | Description |
 |------|:--------:|-------------|
-| `pcfContext` | ✅ | The PCF `ComponentFramework.Context` instance. Used for navigation, error dialogs, and environment utilities. |
-| `taskGridDescriptor` | ✅ | Your implementation of `ITaskGridDescriptor`. The single configuration entry point for all business logic. |
-| `labels?` | — | Partial `ITaskGridLabels` override. Any key you supply replaces the English default for that label. |
-| `components?` | — | Partial `ITaskGridComponents` override. Allows replacing the skeleton loader (`onRenderSkeleton`) or the command bar (`onRenderCommandBar`). |
-
-The component manages its own `ITaskGridState` (active view, filters, sorting, column widths, flat-list toggle) internally using a React ref. State survives remounts triggered by view changes.
+| `pcfContext` | ✅ | A `ComponentFramework.Context` instance. Used for navigation, error dialogs and environment utilities. |
+| `taskGridDescriptor` | ✅ | Your `ITaskGridDescriptor` implementation. The single entry point for all business logic and configuration. |
+| `labels?` | — | Partial `ITaskGridLabels` map. Any key you supply replaces the English default for that label. |
+| `components?` | — | Partial `ITaskGridComponents` map. Lets you replace the skeleton loader or the command bar. |
 
 ---
 
-## The Descriptor
+## The Descriptor (`ITaskGridDescriptor`)
 
-The descriptor is where you wire all business logic into the grid. Create a class that implements `ITaskGridDescriptor`.
+The descriptor wires your data and configuration into the grid. Create a class that implements `ITaskGridDescriptor`.
 
-### Minimal example
-
-```ts
-import {
-    ITaskGridDescriptor,
-    INativeColumns,
-    ITaskStrategyDeps,
-} from '@talxis/base-controls';
-import { ISavedQueryStrategy, ISavedQuery } from '@talxis/base-controls/dist/components/TaskGrid/data-providers';
-import { MyTaskStrategy } from './MyTaskStrategy';
-
-export class MyDescriptor implements ITaskGridDescriptor {
-
-    public onGetNativeColumns(): INativeColumns {
-        return {
-            subject:         'subject',
-            parentId:        'my_parenttaskid',
-            stackRank:       'my_stackrank',
-            stateCode:       'statecode',
-            path:            'talxis_path',  // virtual — computed by the grid
-            percentComplete: 'percentcomplete',
-        };
-    }
-
-    public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
-        return new MyTaskStrategy(deps);
-    }
-
-    public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
-        return {
-            onGetSystemQueries: async (): Promise<ISavedQuery[]> => [
-                {
-                    id: '00000000-0000-0000-0000-000000000000',
-                    name: 'All Tasks',
-                    isFlatListEnabled: false,
-                    columns: MY_DEFAULT_COLUMNS,
-                },
-            ],
-            onEnableUserQueries: () => true,
-            onGetUserQueries:    async () => [],
-            onCreateUserQuery:   async () => null,
-            onUpdateUserQuery:   async () => null,
-            onDeleteUserQueries: async () => ({ success: true, deletedQueryIds: [] }),
-        };
-    }
-
-    public onCreateUserQueryDataProvider() {
-        return new MyUserQueryProvider();
-    }
-}
-```
-
-### Full example — all optional features (in-memory)
-
-The `MemoryDescriptor` pattern shows every optional hook in action using in-memory data, making it ideal as a reference or for testing:
-
-```ts
-export class MemoryDescriptor implements ITaskGridDescriptor {
-
-    private _userQueries: ISavedQuery[] = [
-        {
-            id: 'uq-default-01-0000-0000-000000000000',
-            name: 'My Open Tasks',
-            isFlatListEnabled: false,
-            columns: COLUMNS.filter(c =>
-                c.isHidden ||
-                ['subject', 'statuscode', 'priority', 'scheduledend', 'assignedto'].includes(c.name)
-            ),
-            filtering: {
-                filterOperator: 1, // And
-                conditions: [{ attributeName: 'statecode', conditionOperator: 0, value: '0' }],
-            },
-        },
-    ];
-
-    public onGetNativeColumns(): INativeColumns {
-        return {
-            subject: SUBJECT_COL, parentId: PARENT_ID_COL, stackRank: STACK_RANK_COL,
-            path: PATH_COL, stateCode: STATE_CODE_COL, percentComplete: PERCENT_COMPLETE_COL,
-        };
-    }
-
-    public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
-        // deps.templateDataProvider is non-null because onCreateTemplateDataProvider is defined.
-        return new MemoryTaskStrategy(deps.templateDataProvider);
-    }
-
-    public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
-        return {
-            onGetSystemQueries: async () => [{
-                id: '00000000-0000-0000-0000-000000000000',
-                name: 'All Tasks',
-                isFlatListEnabled: false,
-                columns: COLUMNS.filter(c =>
-                    c.isHidden || ['subject', 'statuscode', 'priority', 'scheduledend', 'percentcomplete', 'assignedto', 'tags'].includes(c.name)
-                ),
-            }],
-            onEnableUserQueries: () => true,
-            onGetUserQueries: async () => [...this._userQueries],
-
-            onCreateUserQuery: async (newQuery, currentQuery) => {
-                const id = crypto.randomUUID();
-                this._userQueries.push({ ...currentQuery, id, name: newQuery.name });
-                return id;
-            },
-            onUpdateUserQuery: async (currentQuery) => {
-                const idx = this._userQueries.findIndex(q => q.id === currentQuery.id);
-                if (idx >= 0) this._userQueries[idx] = { ...currentQuery };
-                return currentQuery.id;
-            },
-            onDeleteUserQueries: async (queryIds) => {
-                const deleted: string[] = [];
-                for (const id of queryIds) {
-                    const idx = this._userQueries.findIndex(q => q.id === id);
-                    if (idx >= 0) { this._userQueries.splice(idx, 1); deleted.push(id); }
-                }
-                return { success: true, deletedQueryIds: deleted };
-            },
-        };
-    }
-
-    public onCreateUserQueryDataProvider() {
-        // The provider backs the rename / description fields in the save-view dialog.
-        const provider = new MemoryDataProvider({
-            dataSource: this._userQueries.map(q => ({ queryid: q.id, name: q.name })),
-            metadata: { PrimaryIdAttribute: 'queryid', LogicalName: 'mem_userquery' },
-        });
-        provider.setColumns([
-            { name: 'queryid', dataType: 'SingleLine.Text', displayName: 'ID', isHidden: true },
-            { name: 'name',    dataType: 'SingleLine.Text', displayName: 'Name', visualSizeFactor: 200 },
-        ]);
-        provider.addEventListener('onAfterRecordSaved', (result) => {
-            if (result.success) {
-                const updated = this._userQueries.find(q => q.id === result.recordId);
-                if (updated) updated.name = provider.getRecordsMap()[result.recordId].getValue('name');
-            }
-        });
-        return provider;
-    }
-
-    // Optional: returning a non-null provider enables the "Task from Template" button.
-    public onCreateTemplateDataProvider() {
-        const provider = new MemoryDataProvider({ dataSource: SAMPLE_TEMPLATES, metadata: TEMPLATE_METADATA });
-        provider.setColumns(TEMPLATE_COLUMNS);
-        return provider;
-    }
-
-    public onGetGridParameters(): ITaskGridParameters {
-        return {
-            height: '600px',
-            enableRowDragging: true,
-            enableEditColumns: true,
-            enableShowHierarchyToggle: true,
-            enableHideInactiveTasksToggle: true,
-            enableEditColumnsScopeSelector: false,
-        };
-    }
-}
-```
-
----
-
-## Descriptor interface reference
+### Interface
 
 | Method | Required | Description |
 |--------|:--------:|-------------|
-| `onGetNativeColumns()` | ✅ | Maps logical column roles to physical schema attribute names. |
-| `onCreateSavedQueryStrategy()` | ✅ | Returns the strategy for loading and persisting saved views. |
-| `onCreateTaskStrategy(deps)` | ✅ | Returns the strategy for all task CRUD, move, and template operations. `deps.templateDataProvider` and `deps.customColumnsDataProvider` are set when those features are enabled. |
+| `onGetFieldMapping()` | ✅ | Maps logical column roles to physical attribute names in your schema. |
+| `onCreateSavedQueryStrategy()` | ✅ | Returns the strategy that loads and persists saved views. |
+| `onCreateTaskStrategy(deps)` | ✅ | Returns the strategy handling all task CRUD, move and template operations. |
 | `onCreateUserQueryDataProvider()` | ✅ | Returns an `IDataProvider` that backs the save-view dialog. |
-| `onCreateCustomColumnsStrategy?()` | — | Enables dynamic (user-defined) columns. Provide `TalxisCustomColumnsStrategy` for Dataverse or your own `ICustomColumnsStrategy`. |
+| `onGetHeight?()` | — | Returns the container height as a CSS string. Falls back to filling the parent when omitted. |
+| `onCreateCustomColumnsStrategy?()` | — | Enables user-defined columns. Return a `ICustomColumnsStrategy` implementation. |
 | `onCreateTemplateDataProvider?()` | — | Enables template-based task creation. Return an `IDataProvider` whose records represent templates. |
-| `onCreateGridCustomizerStrategy?()` | — | Deep-customizes AG Grid column definitions, cell renderers, cell editors, and row class rules. |
-| `onGetAgGridLicenseKey?()` | — | Supplies the AG Grid Enterprise license key. |
-| `onGetControlId?()` | — | Returns a stable DOM identifier for the control. Auto-generated if omitted. |
-| `onLoadDependencies?()` | — | Async hook called once before providers are created. Use for authentication or data pre-loading. |
-| `onGetGridParameters?()` | — | Returns `ITaskGridParameters` UI feature flags. All flags default to `true` when omitted. |
+| `onCreateGridCustomizerStrategy?()` | — | Deep-customizes AG Grid column definitions, cell renderers, editors and row class rules. |
+| `onGetControlId?()` | — | Returns a stable DOM identifier. Auto-generated as a UUID when omitted. |
+| `onLoadDependencies?()` | — | Async hook called once before any provider is created. Use for pre-loading or authentication. |
+| `onGetGridParameters?()` | — | Returns `ITaskGridParameters` UI feature flags. All flags default to `false` when omitted. |
+
+### Example
+
+The quickest way to get started is to use the built-in `DataverseTaskGridDescriptor` from `extensions/dataverse`, which handles all Dataverse wiring for you:
+
+```ts
+import { TaskGrid } from '@talxis/base-controls';
+import { DataverseTaskGridDescriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
+
+const descriptor = new DataverseTaskGridDescriptor({
+    height: '600px',
+    onInitialize: async () => ({
+        baseFetchXml: `
+            <fetch>
+              <entity name="talxis_projecttask">
+                {% if projectId %}
+                <filter>
+                  <condition attribute="talxis_projectid" operator="eq" value="{{ projectId }}" />
+                </filter>
+                {% endif %}
+              </entity>
+            </fetch>`,
+        fieldMapping: {
+            subject:   'talxis_name',
+            parentId:  'talxis_parentprojecttaskid',
+            stackRank: 'talxis_stackrankstring',
+            projectId: 'talxis_projectid',
+        },
+        systemQueries: [
+            {
+                id: '00000000-0000-0000-0000-000000000001',
+                name: 'All Tasks',
+                columns: [
+                    { name: 'talxis_name' },
+                    { name: 'statecode' },
+                    { name: 'talxis_stackrankstring', isHidden: true },
+                    { name: 'talxis_parentprojecttaskid', isHidden: true },
+                ],
+                sorting: [{ name: 'talxis_stackrankstring', sortDirection: 0 }],
+            },
+        ],
+        projectRecord: { entityName: 'talxis_project', id: projectId },
+        userId:       currentUserId,
+        createFormId: '<form-guid>',
+        editFormId:   '<form-guid>',
+        gridParameters: { enableInlineCreation: true },
+    }),
+});
+
+<TaskGrid pcfContext={pcfContext} taskGridDescriptor={descriptor} />
+```
+
+See the [Dataverse strategy](#dataverse-strategy-pre-made) section for the full `DataverseTaskGridDescriptor` params reference and how to extend it.
 
 ---
 
-## `INativeColumns`
+## `IFieldMapping`
 
-Maps logical roles to the actual attribute names in your entity schema. All fields except `percentComplete` are required.
+Maps logical roles to physical attribute names in your entity schema.
 
-| Property | Role |
-|----------|------|
-| `subject` | Display name / title. Always pinned left; the grid never hides it. |
-| `parentId` | Lookup to the parent task — drives the tree hierarchy. |
-| `stackRank` | Numeric ordering field. Used for default sort and drag-and-drop reordering. |
-| `stateCode` | Active/inactive status. Used by the *Hide inactive tasks* filter. |
-| `path` | Virtual breadcrumb computed from ancestor names. Marked read-only automatically; does not need to be a real schema field. |
-| `percentComplete?` | (Optional) Numeric completion percentage. Rendered with a progress-bar cell renderer. |
+| Property | Required | Role |
+|----------|:--------:|------|
+| `subject` | ✅ | Display name / title. Always pinned left; never hidden. |
+| `parentId` | ✅ | Self-referential parent lookup — drives the tree hierarchy. |
+| `stackRank` | ✅ | Ordering attribute. Used for default sort and drag-and-drop reordering. |
+| `stateCode` | ✅ | Active/inactive status. Used by the *Hide inactive tasks* filter. The Dataverse strategy provides this automatically (always `statecode`) — you do not need to include it in `FieldMapping`.
 
 ---
 
 ## `ITaskGridParameters`
 
-Feature flags returned by `onGetGridParameters`. All properties are optional and default to `true`.
+Feature flags returned by `onGetGridParameters`. All properties are optional and **default to `false`** when not set.
 
-| Property | Default | Description |
-|----------|:-------:|-------------|
-| `height` | `null` | CSS height for the grid container. Omit to size the grid to its parent. |
-| `enableRowDragging` | `true` | Show drag handles and allow reordering. Suppressed automatically in flat-list mode or when sorted by a non-stack-rank column. |
-| `enableEditColumns` | `true` | Show the *Edit Columns* ribbon button. |
-| `enableQuickFind` | `true` | Show the quick-find search input. |
-| `enableViewSwitcher` | `true` | Show the view-switcher dropdown. |
-| `enableShowHierarchyToggle` | `true` | Show the *Show hierarchy* toggle. |
-| `enableHideInactiveTasksToggle` | `true` | Show the *Hide inactive tasks* toggle. |
-| `enableEditColumnsScopeSelector` | `true` | Show the personal/system scope selector inside the Edit Columns panel. |
+| Property | Description |
+|----------|-------------|
+| `enableRowDragging` | Show drag handles and allow rows to be reordered by dragging. Suppressed automatically in flat-list mode or when sorted by a non-stack-rank column. |
+| `enableEditColumns` | Show the *Edit Columns* ribbon button. |
+| `enableTaskEditing` | Allow inline cell editing. |
+| `enableTaskCreation` | Show the *New* button. |
+| `enableTaskDeletion` | Show the *Delete* button. |
+| `enableQuickFind` | Show the quick-find search input. |
+| `enableViewSwitcher` | Show the view-switcher dropdown. |
+| `enableShowHierarchyToggle` | Show the *Show hierarchy* toggle. |
+| `enableHideInactiveTasksToggle` | Show the *Hide inactive tasks* toggle. |
+| `enableEditColumnsScopeSelector` | Show the personal/system scope selector inside the Edit Columns panel. |
+| `enableUserQueries` | Allow users to create and manage personal saved views. |
+| `enableQueryManager` | Show the query manager panel. |
+| `enableSaveAsNewQuery` | Show the *Save as new* button in the query manager. |
+| `enableSaveQueryChanges` | Show the *Save changes* button in the query manager. |
+| `enableCustomColumnCreation` | Allow users to create custom columns. |
+| `enableCustomColumnEditing` | Allow users to edit custom column definitions. |
+| `enableCustomColumnDeletion` | Allow users to delete custom columns. |
+| `enableInlineCreation` | Create new task records inline (in the grid row) instead of opening a form. |
+| `enableNavigation` | Enable row navigation (clicking a row opens the record). |
+| `enableSorting` | Enable column header sorting. |
+| `enableFiltering` | Enable column header filtering. |
+| `rowHeight` | Override the default row height in pixels. Uses the AG Grid default when omitted. |
 
 ---
 
 ## `ITaskDataProviderStrategy`
 
-Handles all data access and mutation for tasks. Implement this and return it from `onCreateTaskStrategy`.
+Handles all data access and mutation for tasks. Return an instance from `onCreateTaskStrategy(deps)`.
 
-### Minimal in-memory implementation
+`deps` contains:
+- `deps.enableTaskEditing` — mirrors `ITaskGridParameters.enableTaskEditing`. Use to conditionally enable inline cell editing in the strategy.
+- `deps.enableInlineCreation` — mirrors `ITaskGridParameters.enableInlineCreation`. Use to choose between inline creation and opening a form.
+- `deps.templateDataProvider` — present when `onCreateTemplateDataProvider` is implemented.
+- `deps.customColumnsDataProvider` — present when `onCreateCustomColumnsStrategy` is implemented.
 
-```ts
-export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
-    private _data = new Map<string, IRawRecord>(
-        TASKS.map(t => [t[PRIMARY_ID] as string, { ...t }])
-    );
-    private _provider!: ITaskDataProvider;
-    private _taskTree!: IRecordTree;
-
-    public async onInitialize(provider: ITaskDataProvider) {
-        // Store the provider — needed in other methods.
-        this._provider = provider;
-        this._taskTree = provider.getRecordTree();
-        return {
-            columns:  COLUMNS,
-            rawData:  [...this._data.values()],
-            metadata: { PrimaryIdAttribute: PRIMARY_ID, LogicalName: ENTITY_NAME },
-        };
-    }
-
-    public async onGetRawRecords(ids: string[]): Promise<IRawRecord[]> {
-        return ids.flatMap(id => { const r = this._data.get(id); return r ? [r] : []; });
-    }
-
-    public async onGetAvailableColumns() { return COLUMNS.filter(c => !c.isHidden); }
-    public async onGetAvailableRelatedColumns() { return []; }
-    public onGetQuickFindColumns() { return [SUBJECT_COL, 'assignedto', 'tags']; }
-
-    public async onCreateTask(parentTaskId?: string): Promise<IRawRecord | null> {
-        const id = crypto.randomUUID();
-        const task: IRawRecord = {
-            [PRIMARY_ID]: id,
-            subject: 'New Task',
-            [PARENT_ID_VALUE_KEY]: parentTaskId ?? null,
-            [STACK_RANK_COL]: lexoRankBefore(minSiblingRank(parentTaskId, this._data)),
-            statecode: 0, statuscode: 1, percentcomplete: 0,
-        };
-        this._data.set(id, task);
-        return task;
-    }
-
-    public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult> {
-        // Recursively collect descendants so orphaned children are removed too.
-        const toDelete = new Set<string>();
-        for (const id of taskIds) this._collectDescendants(id, toDelete);
-        for (const id of toDelete) this._data.delete(id);
-        return { success: true, deletedTaskIds: [...toDelete] };
-    }
-
-    private _collectDescendants(id: string, result: Set<string>): void {
-        result.add(id);
-        for (const child of this._taskTree.getNode(id)?.directChildren ?? [])
-            this._collectDescendants(child.getRecordId(), result);
-    }
-
-    public async onEditTasks(_ids: string[]) {
-        // In-memory: editing happens inline — no modal needed.
-        return null;
-    }
-
-    public async onMoveTask(movingId: string, targetId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null> {
-        const moving = this._data.get(movingId)!;
-        const target = this._data.get(targetId)!;
-        if (position === 'child') {
-            moving[PARENT_ID_VALUE_KEY] = targetId;
-            moving[STACK_RANK_COL]      = lexoRankBefore(minChildRank(targetId, this._taskTree, this._data));
-        } else {
-            moving[PARENT_ID_VALUE_KEY] = target[PARENT_ID_VALUE_KEY];
-            moving[STACK_RANK_COL]      = lexoRankBetweenSiblings(targetId, position, this._taskTree, this._data);
-        }
-        this._data.set(movingId, moving);
-        return [moving];
-    }
-
-    public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
-        const existing = this._data.get(record.getRecordId());
-        if (!existing) return { success: false, recordId: record.getRecordId(), fields: [], errors: [{ message: 'Not found' }] };
-        for (const col of EDITABLE_COLUMNS) {
-            const val = record.getValue(col);
-            if (val !== undefined) existing[col] = val;
-        }
-        this._data.set(record.getRecordId(), existing);
-        return { success: true, recordId: record.getRecordId(), fields: EDITABLE_COLUMNS };
-    }
-
-    public async onCreateTemplateFromTask(taskId: string): Promise<IRawRecord | null> {
-        const task = this._data.get(taskId);
-        if (!task) return null;
-        const id = crypto.randomUUID();
-        const template = { mem_templateid: id, subject: task.subject };
-        SAMPLE_TEMPLATES.push(template);
-        this._templateDataProvider?.setDataSource(SAMPLE_TEMPLATES);
-        return template;
-    }
-
-    public async onCreateTasksFromTemplate(templateId: string, parentId?: string): Promise<IRawRecord[] | null> {
-        const template = this._templateDataProvider?.getRecordsMap()[templateId]?.getRawData();
-        if (!template) return null;
-        const created: IRawRecord[] = [];
-        this._createFromNodes(TEMPLATE_CHILDREN[templateId] ?? [], parentId, created);
-        return created;
-    }
-
-    public onIsRecordActive(recordId: string): boolean {
-        const statuscode = this._data.get(recordId)?.statuscode as number;
-        return statuscode !== 5 && statuscode !== 6; // 5 = Completed, 6 = Cancelled
-    }
-
-    public onOpenDatasetItem(_ref: ComponentFramework.EntityReference): void { /* no-op */ }
-}
-```
-
-### Strategy interface reference
+### Interface reference
 
 | Method | Description |
 |--------|-------------|
 | `onInitialize(provider)` | Called once on first load. Return `{ columns, rawData, metadata }`. Store the `provider` reference for use in other methods. |
-| `onGetRawRecords(ids)` | Fetch raw records by id. An empty array fetches all records. |
+| `onGetRawRecords(ids)` | Fetch raw records by id. Pass an empty array to fetch all. |
 | `onGetAvailableColumns(options?)` | Return all columns that can be displayed (native + custom). |
-| `onGetAvailableRelatedColumns()` | Return linked-entity columns for filtering/sorting. |
-| `onGetQuickFindColumns()` | Return attribute names searched by the quick-find input. |
-| `onCreateTask(parentTaskId?)` | Create a task (optionally as a child). Return raw record or `null` for cancellation. |
+| `onGetAvailableRelatedColumns()` | Return linked-entity columns available for filtering and sorting. |
+| `onCreateTask(parentTaskId?)` | Create a task, optionally as a child. Return the raw record or `null` for user cancellation. |
 | `onDeleteTasks(taskIds)` | Delete tasks. Return a per-task success/failure result. |
-| `onCreateTemplateFromTask(taskId)` | Create a template from a task. Return raw record or `null`. |
-| `onCreateTasksFromTemplate(templateId, parentId?)` | Instantiate tasks from a template. Return raw records or `null`. |
-| `onEditTasks(taskIds)` | Open edit form(s). Return updated records or `null` for cancellation. |
-| `onMoveTask(movingId, targetId, position)` | Move a task above, below, or as a child. Return updated records or `null` for cancellation. |
-| `onRecordSave(record)` | Persist inline cell edits. Return `IRecordSaveOperationResult`. |
+| `onMoveTask(movingId, targetId, position)` | Move a task `'above'`, `'below'`, or as `'child'` of target. Return updated records or `null` for cancellation. |
+| `onRecordSave(record)` | Persist an inline cell edit. Return `IRecordSaveOperationResult`. |
 | `onIsRecordActive(recordId)` | Return `false` for completed/cancelled tasks. Inactive rows receive a greyed-out style. |
-| `onOpenDatasetItem(entityReference, context?)` | Called on non-subject cell clicks. Open the record form or a related record. |
-| `onIsTaskAddingEnabled?()` | Defaults to `true`. Return `false` to hide the *New* button. |
-| `onIsTaskEditingEnabled?()` | Defaults to `true`. Return `false` to disable inline editing. |
-| `onIsTaskDeletingEnabled?()` | Defaults to `true`. Return `false` to hide the *Delete* button. |
+| `onOpenDatasetItems(entityReferences, isTaskEntity)` | Called on cell clicks to open records. `isTaskEntity: true` means the references are task records; `false` means a related entity (e.g. a lookup target). |
+| `onCreateTemplateFromTask(taskId)` | Create a template from a task. Return raw record or `null`. |
+| `onCreateTasksFromTemplate(templateId, parentId?)` | Instantiate tasks from a template. Return created raw records or `null`. |
 | `onGetRootTaskId?()` | Scope the tree to a subtree by returning the root task id. |
 
----
+### Dataverse example
 
-## `IGridCustomizerStrategy`
+When targeting Dataverse, use `DataverseTaskStrategy` from `extensions/dataverse`. The class implements the full `ITaskDataProviderStrategy` interface against the Xrm Web API — subclass it to override only what you need.
 
-Return this from `onCreateGridCustomizerStrategy` to deeply customize the AG Grid instance.
-
-### Example — custom renderers, editors, and record expressions
-
-```ts
-export class YungoGridCustomizerStrategy implements IGridCustomizerStrategy {
-    private _customizer!: IGridCustomizer;
-    private _taskDataProvider!: ITaskDataProvider;
-    private _loadingCells = new Map<string, Set<string>>();
-
-    public onInitialize(customizer: IGridCustomizer): void {
-        this._customizer = customizer;
-        this._taskDataProvider = customizer.getTaskDataProvider();
-
-        this._taskDataProvider.addEventListener('onRecordLoaded',     (record) => this._onRecordLoaded(record));
-        this._taskDataProvider.addEventListener('onAfterRecordSaved', (result) => this._onAfterRecordSaved(result));
-        this._taskDataProvider.taskEvents.addEventListener('onBeforeTasksEdited', (ids)    => this._snapshotBeforeEdit(ids));
-        this._taskDataProvider.taskEvents.addEventListener('onAfterTasksEdited',  (result) => this._refreshAfterEdit(result));
-    }
-
-    public onGetColumnDefinitions(colDefs: ColDef<IRecord>[]): ColDef<IRecord>[] {
-        for (const colDef of colDefs) {
-            switch (colDef.colId) {
-                case 'ntg_relatedfinancialmilestoneid':
-                    colDef.cellEditor = MilestoneCellEditor;
-                    break;
-                case TagDataProvider.TAG_COLUMN_NAME:
-                    colDef.cellRenderer = TagsCellRenderer;
-                    colDef.editable = false;
-                    colDef.suppressKeyboardEvent = () => true;
-                    break;
-                case AssigneeDataProvider.ASSIGNEE_COLUMN_NAME:
-                    colDef.cellRenderer = AssigneesCellRenderer;
-                    colDef.editable = false;
-                    break;
-            }
-        }
-        return colDefs;
-    }
-
-    private _onRecordLoaded(record: IRecord): void {
-        // registerExpressionDecorator is a no-op when the column is absent — safe to call unconditionally.
-
-        // Highlight overdue due-dates in red, today's due-date in yellow.
-        this._customizer.registerExpressionDecorator('scheduledend', () => {
-            record.expressions.ui.setCustomFormattingExpression('scheduledend', (cellTheme) => {
-                const raw = record.getValue('scheduledend');
-                if (!raw) return undefined;
-                const date = new Date(raw); date.setHours(0, 0, 0, 0);
-                const today = new Date(); today.setHours(0, 0, 0, 0);
-                if (date < today)  return { backgroundColor: cellTheme.semanticColors.errorBackground };
-                if (date.getTime() === today.getTime()) return { backgroundColor: cellTheme.semanticColors.warningBackground };
-                return undefined;
-            });
-        });
-
-        // Disable effort editing on parent tasks — values are server-aggregated.
-        this._customizer.registerExpressionDecorator('ntg_estimatedeffort', () => {
-            record.expressions.setDisabledExpression('ntg_estimatedeffort', () =>
-                !record.isActive() ||
-                this._taskDataProvider.getRecordTree().hasChildren(record.getRecordId())
-            );
-        });
-
-        // Suppress navigation link on milestone lookups.
-        this._customizer.registerExpressionDecorator('ntg_relatedfinancialmilestoneid', () => {
-            record.expressions.ui.setControlParametersExpression('ntg_relatedfinancialmilestoneid', (defaults) => ({
-                ...defaults, EnableNavigation: { raw: false }
-            }));
-        });
-
-        // Show a loading spinner for cells being refreshed in the background.
-        for (const col of this._taskDataProvider.getColumns()) {
-            if (!col.isHidden) {
-                this._customizer.registerExpressionDecorator(col.name, () => {
-                    record.expressions.ui.setLoadingExpression(col.name, () =>
-                        this._loadingCells.get(record.getRecordId())?.has(col.name) ?? false
-                    );
-                });
-            }
-        }
-    }
-
-    private async _onAfterRecordSaved(result: IRecordSaveOperationResult): Promise<void> {
-        if (!result.success) return;
-        const { recordId, fields } = result;
-
-        if (['ntg_actualeffort', 'ntg_remainingeffort', 'ntg_estimatedeffort'].some(f => fields.includes(f))) {
-            // Re-fetch ancestors so aggregated effort values update in the grid.
-            const node = this._taskDataProvider.getRecordTree().getNode(recordId);
-            await this._fetchAndShow([recordId, ...node.pathIds.slice(0, -1)], ['ntg_estimatedeffort', 'ntg_actualeffort', 'percentcomplete']);
-        }
-
-        if (fields.includes('statuscode')) {
-            const status = this._taskDataProvider.getRecordsMap()[recordId].getValue('statuscode');
-            if (status === CLOSED || status === CANCELLED) {
-                const node = this._taskDataProvider.getRecordTree().getNode(recordId);
-                await this._fetchAndShow([...node.allChildren.map(r => r.getRecordId()), recordId], ['statuscode', 'statecode']);
-            }
-        }
-    }
-
-    private async _fetchAndShow(ids: string[], columns: string[]): Promise<void> {
-        const columnSet = new Set(columns);
-        for (const id of ids) this._loadingCells.set(id, columnSet);
-        this._taskDataProvider.requestRender();
-        const rawData = await this._taskDataProvider.fetchRawRecords(ids);
-        this._taskDataProvider.updateTaskData(rawData);
-        this._loadingCells.clear();
-        this._taskDataProvider.requestRender();
-    }
-}
-```
-
-### Strategy interface reference
-
-| Method | Description |
-|--------|-------------|
-| `onInitialize(customizer)` | Called once after the grid is ready. Store the `customizer` reference for later. Subscribe to data provider events here. |
-| `onGetColumnDefinitions?(colDefs)` | Receives the computed column definitions and may return a modified array. |
-| `onGetRowClassRules?(rules)` | Receives the default row CSS class rules map and may extend or override it. |
-| `onGetCellRenderer?(colDef)` | Return a custom AG Grid cell renderer component, or `undefined` for the default. |
-| `onGetCellEditor?(colDef)` | Return a custom AG Grid cell editor component, or `undefined` for the default. |
-| `onRetrieveGridApi?(gridApi)` | Receive the raw `GridApi` instance if you need a persistent reference. |
-
-The `IGridCustomizer` passed to `onInitialize` exposes:
-
-| Method | Description |
-|--------|-------------|
-| `getGridApi()` | The raw AG Grid `GridApi`. |
-| `getTaskDataProvider()` | The `ITaskDataProvider` — use for `getRecordTree()`, `fetchRawRecords()`, `updateTaskData()`, etc. |
-| `getDatasetControl()` | The `ITaskGridDatasetControl` runtime interface. |
-| `registerExpressionDecorator(columnName, registrator)` | Calls `registrator()` only when the column exists in the current view. Safe to call for optional columns; no-ops when absent. |
+See the [Dataverse strategy](#dataverse-strategy-pre-made) section for a full subclassing example.
 
 ---
 
@@ -537,36 +197,436 @@ Controls how system and user saved views are loaded and persisted.
 
 | Method | Description |
 |--------|-------------|
-| `onGetSystemQueries()` | Return built-in (non-deletable) views. **At least one must be returned or the control throws.** |
+| `onGetSystemQueries()` | Return built-in (non-deletable) views. **At least one is required.** |
 | `onGetUserQueries()` | Return views saved by the current user. |
 | `onDeleteUserQueries(queryIds)` | Delete user views. Return a per-query success/failure result. |
 | `onUpdateUserQuery(currentQuery)` | Persist changes to an existing view. Return `null` for user cancellation; throw on unexpected failure. |
-| `onCreateUserQuery(newQuery, currentQuery)` | Create a new view. Return `null` for user cancellation; throw on unexpected failure. |
+| `onCreateUserQuery(newQuery, currentQuery)` | Create a new view from the current state. Return `null` for user cancellation; throw on unexpected failure. |
 | `onEnableUserQueries?()` | Return `false` to disable personal views entirely. Defaults to `true`. |
 
-**Built-in implementation:** `TalxisSavedQueryStrategy` — stores user views as `talxis_userquery` Dataverse records scoped to a `recordId` and `ownerId`.
+**Built-in implementation:** `DataverseSavedQueryStrategy` — stores user views as `talxis_userquery` records in Dataverse, scoped to a `recordId` and `ownerId`.
+
+### `ISavedQuery` shape
+
+| Property | Required | Description |
+|----------|:--------:|-------------|
+| `id` | ✅ | Stable UUID for this view. |
+| `name` | ✅ | Display name shown in the view-switcher. |
+| `columns` | ✅ | Array of `IColumn` descriptors. |
+| `sorting?` | — | Array of `{ name, sortDirection }`. `0` = ascending, `1` = descending. |
+| `filtering?` | — | `FilterExpression` object `{ filterOperator, conditions[], filters[] }`. `0` = OR, `1` = AND. |
+| `isFlatListEnabled?` | — | Start this view in flat-list mode. |
+| `quickFindColumns?` | — | Attribute names searched by the quick-find input when this view is active. |
+
+---
+
+## `IGridCustomizerStrategy`
+
+Return this from `onCreateGridCustomizerStrategy` to customize the underlying AG Grid instance.
+
+| Method | Description |
+|--------|-------------|
+| `onInitialize(customizer)` | Called once after the grid is ready. Store the `customizer` reference. Subscribe to data provider events here. |
+| `onGetColumnDefinitions?(colDefs)` | Receives computed column definitions. Return a modified array. |
+| `onGetRowClassRules?(rules)` | Receives the default row CSS class rules. Extend or override and return. |
+
+The `IGridCustomizer` passed to `onInitialize` exposes:
+
+| Method | Description |
+|--------|-------------|
+| `getGridApi()` | The raw AG Grid `GridApi`. |
+| `getTaskDataProvider()` | The `ITaskDataProvider` — use for `getRecordTree()`, `fetchRawRecords()`, `updateTaskData()`, etc. |
+| `getDatasetControl()` | The `ITaskGridDatasetControl` runtime interface. |
+| `registerExpressionDecorator(columnName, fn)` | Calls `fn()` only when the column exists in the current view. Safe to call unconditionally — no-ops when the column is absent. |
+
+### Example
+
+```ts
+export class MyGridCustomizer implements IGridCustomizerStrategy {
+    private _customizer!: IGridCustomizer;
+
+    public onInitialize(customizer: IGridCustomizer): void {
+        this._customizer = customizer;
+
+        customizer.getTaskDataProvider().addEventListener('onRecordLoaded', (record) => {
+            // Highlight overdue due-dates in red.
+            this._customizer.registerExpressionDecorator('scheduledend', () => {
+                record.expressions.ui.setCustomFormattingExpression('scheduledend', (theme) => {
+                    const raw = record.getValue('scheduledend');
+                    if (!raw) return undefined;
+                    const date  = new Date(raw);  date.setHours(0, 0, 0, 0);
+                    const today = new Date();     today.setHours(0, 0, 0, 0);
+                    return date < today
+                        ? { backgroundColor: theme.semanticColors.errorBackground }
+                        : undefined;
+                });
+            });
+        });
+    }
+
+    public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
+        for (const colDef of colDefs) {
+            if (colDef.colId === 'my_priority') {
+                colDef.cellRenderer = PriorityCellRenderer;
+            }
+        }
+        return colDefs;
+    }
+}
+```
+
+### Built-in cell renderers
+
+The grid automatically applies built-in renderers when a column's control metadata declares a matching control name. You configure these in the same way as Lookup Many — through the column's `controls` metadata. Currently supported:
+
+| Control name | Applied as | Notes |
+|---|---|---|
+| `PercentComplete` | renderer + editor | Renders a progress bar and inline percentage editor. Set this control name on any numeric percentage column. |
+| `LookupMany` / `ColorfulLookupMany` / `PeopleLookupMany` | renderer | See [Lookup-many columns](#lookup-many-columns). Applied automatically to columns whose `metadata.LookupMany` is set. |
+
+### Custom cell renderer
+
+A cell renderer is a React component assigned to `colDef.cellRenderer`. Use `ICellProps` as the props type. Get the `IRecord` instance from `props.data`, then read the column value with `record.getValue(props.colDef!.colId!)`.
+
+```tsx
+import * as React from 'react';
+import { IRecord } from '@talxis/client-libraries';
+import { ICellProps } from '@talxis/base-controls';
+
+export const PriorityCellRenderer = (props: ICellProps) => {
+    const record: IRecord = props.data;
+    const priority = record.getValue(props.colDef!.colId!) as number | null;
+
+    if (priority === null || priority === undefined) {
+        return null;
+    }
+
+    const labels: Record<number, string> = { 1: 'Low', 2: 'Normal', 3: 'High' };
+    const colours: Record<number, string> = {
+        1: '#107c10',
+        2: '#0078d4',
+        3: '#d83b01',
+    };
+
+    return (
+        <span style={{
+            padding: '2px 8px',
+            borderRadius: 4,
+            color: '#fff',
+            backgroundColor: colours[priority] ?? '#666',
+            fontSize: 12,
+            fontWeight: 600,
+        }}>
+            {labels[priority] ?? String(priority)}
+        </span>
+    );
+};
+```
+
+Wire it up in `onGetColumnDefinitions`:
+
+```ts
+public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
+    for (const colDef of colDefs) {
+        if (colDef.colId === 'my_priority') {
+            colDef.cellRenderer = PriorityCellRenderer;
+        }
+    }
+    return colDefs;
+}
+```
 
 ---
 
 ## `ICustomColumnsStrategy`
 
-Manages user-defined (dynamic) column definitions. Enable the feature by returning a strategy from `onCreateCustomColumnsStrategy`.
+Enables user-defined (dynamic) column definitions. Return an instance from `onCreateCustomColumnsStrategy`.
 
 | Method | Description |
 |--------|-------------|
-| `onRefresh()` | Load/reload all custom column definitions. Returns `IColumn[]`. |
-| `onGetColumns()` | Return cached columns synchronously. |
+| `onRefresh()` | Fetch/reload all custom column definitions. Returns `IColumn[]`. |
+| `onGetColumns()` | Return currently cached columns synchronously. |
 | `onCreateColumn()` | Open column-creation UI. Return the new column name or `null`. |
 | `onDeleteColumn(name)` | Delete the column. Return the column name or `null`. |
-| `onUpdateColumn(name)` | Open column-edit UI. Return the column name or `null`. |
+| `onUpdateColumn(name)` | Open column-edit UI. Return the updated column name or `null`. |
+| `onGetRawRecords()` | Fetch raw records for the custom column values. |
+| `onGetRawRecord(recordId)` | Fetch a single raw record by id. |
+| `onSaveValue(regardingRecordId, column, value)` | Persist a cell value for a custom column on the given record. |
 
-**Built-in implementation:** `TalxisCustomColumnsStrategy` — stores definitions in `talxis_attributedefinition` and values in `talxis_attributevalue`. Column names are suffixed with a custom-column sentinel so the control can distinguish them from native columns.
+**Built-in implementation:** `DataverseCustomColumnsStrategy` — stores definitions in `talxis_attributedefinition` and values in `talxis_attributevalue`.
+
+---
+
+## Dataverse strategy (pre-made)
+
+> **⚠️ WIP:** Template-based task creation (`onCreateTemplateFromTask` / `onCreateTasksFromTemplate`) is not yet implemented in the Dataverse strategy. Calling either method will throw. Templating must be handled by a custom `DataverseTaskStrategy` subclass if needed.
+
+`extensions/dataverse` provides a ready-to-use `ITaskGridDescriptor` + `ITaskDataProviderStrategy` implementation that works against any Dataverse entity via the Xrm Web API and FetchXML.
+
+> **Stack ranking** — the Dataverse strategy uses the [LexoRank](https://www.npmjs.com/package/lexorank) algorithm for task ordering. The `stackRank` attribute **must be a text column**; the strategy reads and writes LexoRank strings directly. Drag-and-drop reordering is automatically suppressed when the grid is sorted by any other column.
+
+### Classes
+
+| Class | Role |
+|-------|------|
+| `DataverseTaskGridDescriptor` | Drop-in `ITaskGridDescriptor` for Dataverse. Accepts a params object — no subclassing needed for the common case. |
+| `DataverseTaskStrategy` | `ITaskDataProviderStrategy` that talks to the Xrm Web API. Used internally by `DataverseTaskGridDescriptor` but can be extended independently. |
+| `DataverseSavedQueryStrategy` | `ISavedQueryStrategy` that persists user views as `talxis_userquery` Dataverse records. |
+| `DataverseGridCustomizerStrategy` | `IGridCustomizerStrategy` that wires lookup-many cell renderers. Returned by the descriptor automatically. |
+| `DataverseCustomColumnsStrategy` | `ICustomColumnsStrategy` backed by `talxis_attributedefinition` / `talxis_attributevalue`. |
+
+### Using `DataverseTaskGridDescriptor` as-is
+
+```ts
+import { DataverseTaskGridDescriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
+
+const descriptor = new DataverseTaskGridDescriptor({
+    height: '600px',
+    onInitialize: async () => ({
+        baseFetchXml: `
+            <fetch>
+              <entity name="talxis_projecttask">
+                {% if projectId %}
+                <filter>
+                  <condition attribute="talxis_projectid" operator="eq" value="{{ projectId }}" />
+                </filter>
+                {% endif %}
+              </entity>
+            </fetch>`,
+        fieldMapping: {
+            subject:   'talxis_name',
+            parentId:  'talxis_parentprojecttaskid',
+            stackRank: 'talxis_stackrankstring',
+            projectId: 'talxis_projectid',
+        },
+        systemQueries: [
+            {
+                id: '00000000-0000-0000-0000-000000000001',
+                name: 'All Tasks',
+                columns: [
+                    { name: 'talxis_name' },
+                    { name: 'statecode' },
+                    { name: 'talxis_stackrankstring', isHidden: true },
+                    { name: 'talxis_parentprojecttaskid', isHidden: true },
+                ],
+                sorting: [{ name: 'talxis_stackrankstring', sortDirection: 0 }],
+            },
+        ],
+        projectRecord: {
+            entityName: 'talxis_project',
+            id:         projectId,
+        },
+        userId:         currentUserId,
+        editFormId:     '<form-guid>',
+        createFormId:   '<form-guid>',
+        bulkEditFormId: '<form-guid>',
+        gridParameters: {
+            enableInlineCreation: true,
+        },
+    }),
+});
+
+<TaskGrid pcfContext={pcfContext} taskGridDescriptor={descriptor} />
+```
+
+The `baseFetchXml` supports [Liquid](https://shopify.github.io/liquid/) templates. The variable `{{ projectId }}` is automatically injected when a project reference is present.
+
+### `DataverseTaskGridDescriptor` constructor
+
+The descriptor takes two parameters:
+
+| Property | Required | Description |
+|----------|:--------:|-------------|
+| `onInitialize` | ✅ | Async factory called once before the grid mounts. Resolve all async data here (e.g. current user, project record) before returning the full params object. |
+| `height?` | — | CSS height for the grid container (e.g. `"600px"`, `"100%"`). Sizes to parent when omitted. |
+
+### `IDataverseTaskGridDescriptorParams` reference
+
+| Property | Required | Description |
+|----------|:--------:|-------------|
+| `baseFetchXml` | ✅ | FetchXML string, optionally with Liquid template variables. |
+| `fieldMapping` | ✅ | `IFieldMapping` (+ optional `projectId`) mapping roles to Dataverse attribute names. |
+| `systemQueries` | ✅ | `ISavedQuery[]`. At least one required. |
+| `projectRecord?` | — | The project associated with these tasks — either `{ entityName, id }` or a fully hydrated `ISingleRecord`. When provided, its id is injected into Liquid fetch templates as `{{ projectId }}`. |
+| `sourceRecord?` | — | An additional record whose id is available in Liquid templates (e.g. a sprint or board). |
+| `userId?` | — | Current user GUID. Required for `DataverseSavedQueryStrategy` (user query persistence). |
+| `enableUserQueries?` | — | Set to `true` to enable personal saved views backed by `DataverseSavedQueryStrategy`. Defaults to `false`. |
+| `gridParameters?` | — | `ITaskGridParameters` feature flags. |
+| `rootTaskId?` | — | Scope the tree to a subtree by providing the root task GUID. |
+| `editFormId?` | — | Form GUID for single-task edit. |
+| `createFormId?` | — | Form GUID for task creation. |
+| `bulkEditFormId?` | — | Form GUID for bulk task edit. |
+| `enableCascadeDelete?` | — | When `true`, deleting a task also deletes its child tasks. Defaults to `false`. |
+| `enableDeletingTasksWithChildren?` | — | When `true`, tasks that have children can be deleted. When `false`, such tasks are excluded from deletion and an error is returned. Defaults to `false`. |
+
+### `IFieldMapping` (Dataverse)
+
+Extends `IFieldMapping` with one additional field used by the Dataverse strategy:
+
+| Property | Description |
+|----------|-------------|
+| `projectId?` | Attribute name of the project lookup on the task entity (e.g. `"talxis_projectid"`). When provided, new tasks are pre-filled with the current project reference. |
+
+### Extending `DataverseTaskStrategy`
+
+Subclass `DataverseTaskStrategy` to override individual operations while keeping everything else intact.
+
+```ts
+import {
+    DataverseTaskStrategy,
+    IDataverseTaskStrategyParams,
+} from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
+import { IDeleteTasksResult } from '@talxis/base-controls';
+
+export class MyTaskStrategy extends DataverseTaskStrategy {
+    constructor(params: IDataverseTaskStrategyParams) {
+        super({
+            ...params,
+            // Intercept any form navigation call to inject extra parameters.
+            form: {
+                onGetFormParameters: (operation, defaults) => {
+                    if (operation === 'create') {
+                        return {
+                            ...defaults,
+                            pageInput: {
+                                ...defaults.pageInput,
+                                data: {
+                                    ...defaults.pageInput.data,
+                                    my_customfield: 'default-value',
+                                },
+                            },
+                        };
+                    }
+                    return defaults;
+                },
+            },
+        });
+    }
+
+    // Override: block deletion when the task has time entries.
+    public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
+        for (const id of taskIds) {
+            const { entities } = await window.Xrm.WebApi.retrieveMultipleRecords(
+                'talxis_timeentry',
+                `?$filter=talxis_projecttaskid eq '${id}'&$top=1&$select=talxis_timeentryid`
+            );
+            if (entities.length > 0) {
+                return {
+                    success: false,
+                    deletedTaskIds: [],
+                    errors: [{ id, error: 'Task has time entries and cannot be deleted.' }],
+                };
+            }
+        }
+        return super.onDeleteTasks(taskIds);
+    }
+}
+```
+
+To use a custom strategy with `DataverseTaskGridDescriptor`, subclass it and override `onCreateTaskStrategy`:
+
+```ts
+import { DataverseTaskGridDescriptor } from '@talxis/base-controls/dist/components/TaskGrid/extensions/dataverse';
+import { ITaskStrategyDeps } from '@talxis/base-controls';
+import { MyTaskStrategy } from './MyTaskStrategy';
+
+export class MyDescriptor extends DataverseTaskGridDescriptor {
+    public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
+        // Access the already-resolved descriptor fields via protected/public members,
+        // or construct strategy params from your own stored state.
+        return new MyTaskStrategy(/* your params */, deps);
+    }
+}
+```
+
+### `IDataverseTaskStrategyParams` reference
+
+| Property | Description |
+|----------|-------------|
+| `fetchXml` | The FetchXML string (Liquid already rendered at this point). |
+| `projectRecord?` | Resolved `ISingleRecord` for the project. New tasks are pre-linked to this record. |
+| `sourceRecord?` | An additional resolved `ISingleRecord` whose data is available as Liquid variables. |
+| `rootTaskId?` | Root task GUID for subtree scoping. |
+| `editFormId?` | Form GUID for single-task edit. |
+| `createFormId?` | Form GUID for task creation. |
+| `bulkEditFormId?` | Form GUID for bulk task edit. |
+| `isEditingEnabled?` | When `false`, disables inline cell editing at the strategy level. |
+| `isCascadeDeleteEnabled?` | When `true`, deleting a task also deletes its child tasks. Defaults to `false`. |
+| `isDeletingTasksWithChildrenEnabled?` | When `true`, tasks that have children can be deleted. When `false`, such tasks are excluded from deletion and an error is returned. Defaults to `false`. |
+| `form?.onGetFormParameters` | `(operation, defaults) => params` — intercept and modify any form navigation call (`'create'`, `'edit'`, `'bulkEdit'`, `'open'`). |
+
+---
+
+### Lookup-many columns
+
+A lookup-many column surfaces a multi-value relationship (1:N or N:N) directly as a grid cell. `DataverseTaskStrategy` detects lookup-many columns by the presence of `metadata.LookupMany` on the column definition, resolves the OData expand clause via the `ReferencedEntityNavigationPropertyName`, and handles associate/disassociate on save.
+
+#### Column name
+
+The column name can be any unique string. The relationship is identified not by the name but by `metadata.LookupMany.ReferencedEntityNavigationPropertyName` — the OData navigation property name of the relationship on the task entity.
+
+#### Defining the column in a system query
+
+Pass the column descriptor inside the `columns` array of an `ISavedQuery`. The `controls[0].bindings.FetchXml` binding is **required** — it defines how candidate records are loaded into the picker.
+
+```ts
+const COLUMNS: IColumn[] = [
+    { name: 'talxis_name', visualSizeFactor: 300 },
+    { name: 'statecode', isHidden: true },
+    { name: 'talxis_stackrankstring', isHidden: true },
+    { name: 'talxis_parentprojecttaskid', isHidden: true },
+    {
+        name: 'tags',            // any unique column name
+        isVirtual: true,
+        dataType: 'Lookup.Simple',
+        displayName: 'Tags',
+        visualSizeFactor: 300,
+        metadata: {
+            Targets: ['talxis_tag'],
+            LookupMany: {
+                ReferencedEntityNavigationPropertyName: 'talxis_projecttask_talxis_Tag_talxis_Tag',
+            },
+        },
+        controls: [{
+            appliesTo: 'both',
+            name: 'ColorfulLookupMany',
+            bindings: {
+                FetchXml: {
+                    value: '<fetch><entity name="talxis_tag"><attribute name="talxis_tagid" /><attribute name="talxis_name" /><attribute name="talxis_color" /></entity></fetch>',
+                    type: 'SingleLine.Text',
+                },
+                ColorPropertyName: {
+                    value: 'talxis_color',
+                    type: 'SingleLine.Text',
+                },
+            },
+        }],
+    },
+];
+```
+
+#### Available cell renderers
+
+| `controls[0].name` | Description | Extra bindings |
+|--------------------|-------------|----------------|
+| `LookupMany` *(default)* | Generic multi-record picker. | — |
+| `ColorfulLookupMany` | Picker with colored badge chips. | `ColorPropertyName` — attribute holding a hex color on the related entity. |
+| `PeopleLookupMany` | People-style avatar picker. | `ImageUrlPropertyName` — attribute holding a profile image URL on the related entity. |
+
+The `FetchXml` binding supports Liquid variables. Two objects are injected at render time:
+
+| Variable | Description |
+|---|---|
+| `{{ task.id }}` | GUID of the current task row. |
+| `{{ task.<attribute> }}` | Any raw attribute value on the current task record (e.g. `{{ task.talxis_projectid }}`). |
+| `{{ project.id }}` | GUID of the project record, when one was provided to the descriptor. |
+| `{{ project.<attribute> }}` | Any raw attribute value on the project record. |
 
 ---
 
 ## Localization
 
-Pass a `labels` prop to override any subset of UI strings. The full key set is defined in `ITaskGridLabels`. Some strings support Liquid-style variable interpolation (`{{ variableName }}`):
+Pass a `labels` prop to override any subset of UI strings. Some strings support Liquid-style variable interpolation (`{{ variableName }}`):
 
 ```tsx
 <TaskGrid
@@ -581,6 +641,8 @@ Pass a `labels` prop to override any subset of UI strings. The full key set is d
     }}
 />
 ```
+
+The full set of label keys is defined in `ITaskGridLabels`.
 
 ---
 
@@ -598,3 +660,4 @@ Pass a `components` prop to swap the skeleton loader or the command bar:
     }}
 />
 ```
+
