@@ -42,8 +42,6 @@ export interface IDataverseTaskGridDescriptorParams {
     projectRecord?: RecordInput;
 
     height?: string;
-    /** Set to `true` to enable personal saved views (user queries) via {@link DataverseSavedQueryStrategy}. Defaults to `false`. */
-    enableUserQueries?: boolean;
     /** Fine-grained feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
     gridParameters?: ITaskGridParameters;
     /** When set, the hierarchy is rooted at this task ID instead of showing all top-level tasks. */

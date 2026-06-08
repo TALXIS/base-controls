@@ -29,7 +29,7 @@ export const FetchXmlLookupManyCellRenderer = (props: ICellProps) => {
     }), []);
 
     if (!fetchXml) {
-        throw new Error('FetchXml for LookupMany is not defined in column metadata. Define it using the "LookupManyFetchXml" property.');
+        throw new Error('FetchXml for LookupMany is not defined in column metadata. Define it using the "FetchXml" property.');
     }
 
     return <LookupManyCellRenderer 

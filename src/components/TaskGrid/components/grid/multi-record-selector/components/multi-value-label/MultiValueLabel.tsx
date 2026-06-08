@@ -3,8 +3,9 @@ import { Link } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
 import { getMultiValueLabelStyles } from './styles';
 
-export const MultiValueLabel = ({ children, selectProps }: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
+export const MultiValueLabel = (props: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
     const styles = React.useMemo(() => getMultiValueLabelStyles(), []);
+    const {selectProps, data, children} = props;
     const { onNavigate } = selectProps as any;
 
     if (onNavigate) {
@@ -13,7 +14,7 @@ export const MultiValueLabel = ({ children, selectProps }: MultiValueGenericProp
                 styles={{root: styles.link}}
                 onClick={(e) => {
                     e.preventDefault();
-                    onNavigate();
+                    onNavigate(data);
                 }}
             >
                 {children}
