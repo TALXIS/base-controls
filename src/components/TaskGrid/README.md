@@ -611,7 +611,14 @@ const COLUMNS: IColumn[] = [
 | `ColorfulLookupMany` | Picker with colored badge chips. | `ColorPropertyName` — attribute holding a hex color on the related entity. |
 | `PeopleLookupMany` | People-style avatar picker. | `ImageUrlPropertyName` — attribute holding a profile image URL on the related entity. |
 
-The `FetchXml` binding supports Liquid variables: `{{ taskId }}` (current task GUID) and `{{ projectId }}` (current project GUID, when available).
+The `FetchXml` binding supports Liquid variables. Two objects are injected at render time:
+
+| Variable | Description |
+|---|---|
+| `{{ task.id }}` | GUID of the current task row. |
+| `{{ task.<attribute> }}` | Any raw attribute value on the current task record (e.g. `{{ task.talxis_projectid }}`). |
+| `{{ project.id }}` | GUID of the project record, when one was provided to the descriptor. |
+| `{{ project.<attribute> }}` | Any raw attribute value on the project record. |
 
 ---
 
