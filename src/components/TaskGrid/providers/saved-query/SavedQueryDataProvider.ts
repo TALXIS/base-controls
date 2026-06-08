@@ -85,10 +85,8 @@ export interface ISavedQueryDataProvider {
     /** Fetches system and user queries from the strategy and sets the initial active query. */
     refresh: () => Promise<void>;
 
+    /** Disposes event listeners and releases all resources held by the provider. */
     destroy: () => void;
-}
-
-interface ISavedQueryDataProviderParameters {
     nativeColumns: INativeColumns;
     localizationService: ILocalizationService<ITaskGridLabels>;
     customColumnsDataProvider?: ICustomColumnsDataProvider;

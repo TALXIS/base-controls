@@ -76,8 +76,11 @@ export interface ITaskGridParameters {
     enableInlineCreation?: boolean;
     /** Enable navigation within the grid. Defaults to `false`. */
     enableNavigation?: boolean;
+    /** Enable column sorting in the grid. Defaults to `false`. */
     enableSorting?: boolean;
+    /** Enable column filtering in the grid. Defaults to `false`. */
     enableFiltering?: boolean;
+    /** Override the default row height in pixels. Uses the AG Grid default when omitted. */
     rowHeight?: number;
 }
 
@@ -104,7 +107,7 @@ export interface ITaskGridDescriptor {
     onCreateTaskStrategy: (deps: ITaskStrategyDeps) => ITaskDataProviderStrategy;
     /** Returns an `IDataProvider` that drives the user-query creation/update dialog. */
     onCreateUserQueryDataProvider: () => IDataProvider;
-    //** */
+    /** (Optional) Returns the container height as a CSS string. Falls back to a default stretch when omitted. */
     onGetHeight?: () => string | undefined;
     /** (Optional) Returns the strategy for managing dynamic (user-defined) columns. When provided, the custom-columns feature is enabled. */
     onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy | undefined;
@@ -171,7 +174,9 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isTaskEditingEnabled: () => boolean;
     /** Returns `true` when task deletion is enabled. */
     isTaskDeletingEnabled: () => boolean;
+    /** Whether the view-switcher dropdown is visible (from `ITaskGridParameters.enableViewSwitcher`). */
     isViewSwitcherEnabled: () => boolean;
+    /** Whether grid navigation is enabled (from `ITaskGridParameters.enableNavigation`). */
     isNavigationEnabled: () => boolean;
     /** Returns `true` when a custom columns strategy was supplied through the descriptor. */
     isCustomColumnsEnabled: () => boolean;
@@ -189,5 +194,6 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isCustomColumnDeletionEnabled: () => boolean;
     /** Whether user queries are enabled (from `ITaskGridParameters.enableUserQueries`). */
     isUserQueriesFeatureEnabled: () => boolean;
+    /** Whether inline task creation is enabled (from `ITaskGridParameters.enableInlineCreation`). */
     isInlineCreateEnabled: () => boolean;
 }

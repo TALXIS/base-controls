@@ -16,13 +16,21 @@ interface IRecordTreeParameters {
 }
 
 export interface IRecordTree {
+    /** Builds (or rebuilds) the node map from the current provider records. Returns the resulting map keyed by record id. */
     build(): Map<string, ITreeNode>
+    /** Returns the current node map keyed by record id without triggering a rebuild. */
     getNodeMap(): Map<string, ITreeNode>;
+    /** Returns the tree node for the given record id. Pass `null` to get the virtual root node. */
     getNode(recordId: string | null): ITreeNode;
+    /** Returns the total number of unique records in the tree. */
     getTotalCount(): number;
+    /** Returns `true` when the tree is in flat-list mode (no parent-child hierarchy). */
     isFlat(): boolean;
+    /** Returns `true` when the record with the given id has at least one direct child. */
     hasChildren(recordId: string): boolean;
+    /** Returns a map of records that match the current search/filter, keyed by record id. */
     getMatchingRecords(): { [recordId: string]: IRecord };
+    /** Returns record ids in their computed display order (depth-first, stack-rank sorted). */
     getSortedIds(): string[];
 }
 

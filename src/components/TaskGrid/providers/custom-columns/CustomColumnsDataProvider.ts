@@ -19,6 +19,7 @@ export interface ICustomColumnsStrategy {
     /** Fetches a single raw record by its ID. */
     onGetRawRecord: (recordId: string) => Promise<IRawRecord>;
 
+    /** Persists a cell value for a custom column on the given record. */
     onSaveValue: (regardingRecordId: string, column: IColumn, value: any) => Promise<IRecordSaveOperationResult>;
 }
 
@@ -37,11 +38,13 @@ export interface ICustomColumnsDataProvider {
     /** Returns the currently cached list of custom columns. */
     getColumns: () => IColumn[];
 
+    /** Persists a cell value for a custom column on the given record. */
     saveValue: (regardingRecordId: string, column: IColumn, value: any) => Promise<IRecordSaveOperationResult>;
     /** Returns the underlying strategy cast to the given type for strategy-specific operations. */
     getStrategy<T extends ICustomColumnsStrategy>(): T;
     /** Returns `true` when the given column name is a custom (dynamic) column. */
     isCustomColumn: (columnName: string) => boolean;
+    /** Disposes event listeners and releases all resources held by the provider. */
     destroy: () => void;
 }
 
