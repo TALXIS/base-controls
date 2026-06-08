@@ -87,6 +87,9 @@ export interface ISavedQueryDataProvider {
 
     /** Disposes event listeners and releases all resources held by the provider. */
     destroy: () => void;
+}
+
+interface ISavedQueryDataProviderParameters {
     nativeColumns: INativeColumns;
     localizationService: ILocalizationService<ITaskGridLabels>;
     customColumnsDataProvider?: ICustomColumnsDataProvider;
@@ -218,9 +221,9 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         this._currentQuery = preferredQueryInAllQueries ?? userQueries[0] ?? systemQueries[0];
         //preferred query might have some required columns missing
         this._currentQuery = this._processQueries([{
-                ...this._currentQuery,
-                ...(preferredQueryInAllQueries ? this._preferredQuery : {}),
-            }])[0];
+            ...this._currentQuery,
+            ...(preferredQueryInAllQueries ? this._preferredQuery : {}),
+        }])[0];
     }
 
     private _processQueries(queries: ISavedQuery[]) {
