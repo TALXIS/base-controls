@@ -262,10 +262,15 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         this._injectLookupManyFilterOperators(columns);
         const metadata = this._fetchXmlDataProvider.getMetadata();
         const fetchXmlProviderData = this._fetchXmlDataProvider.getRawData();
-        const enrichedData = await this.onGetRawRecords(this._fetchXmlDataProvider.getSortedRecordIds(), this._fetchXmlDataProvider.getMetadata().PrimaryIdAttribute);
-        const finalRawData = fetchXmlProviderData.map((record, i) => {
+        const primaryIdAttribute = this._fetchXmlDataProvider.getMetadata().PrimaryIdAttribute;
+        const enrichedData = await this.onGetRawRecords(this._fetchXmlDataProvider.getSortedRecordIds(), primaryIdAttribute);
+        const enrichedDataMap = new Map<string, IRawRecord>(
+            enrichedData.map(record => [record[primaryIdAttribute] as string, record])
+        );
+        const finalRawData = fetchXmlProviderData.map((record) => {
+            const id = record[primaryIdAttribute] as string;
             return {
-                ...enrichedData[i],
+                ...enrichedDataMap.get(id),
                 ...record,
             }
         });
