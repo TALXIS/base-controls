@@ -1,6 +1,6 @@
 {
   "name": "@talxis/base-controls",
-  "version": "1.2605.2-alpha",
+  "version": "0.0.1",
   "description": "Set of React components that natively work with Power Apps Component Framework APIs.",
   "repository": {
     "type": "git",
