@@ -1134,9 +1134,13 @@ export class FormModel {
             .get(entityName)
             .then((def) => {
                 this._resolvedEntity = def;
+                this._notifyUiStateSubscribers();
                 return def;
             })
-            .catch(() => undefined);
+            .catch(() => {
+                this._notifyUiStateSubscribers();
+                return undefined;
+            });
     }
 }
 

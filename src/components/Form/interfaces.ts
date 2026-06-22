@@ -66,8 +66,9 @@ export interface IForm extends IControl<
     metadataProvider?: IMetadataProvider;
 
     /**
-     * Children for the codeful mode. Mutually exclusive with
-     * `parameters.FormXml` — passing both will throw at render time.
+     * Children for the codeful mode. When provided, they replace the default
+     * FormXml auto-layout render path, but `parameters.FormXml` may still be
+     * supplied so codeful children can receive and reuse formXml-derived props.
      */
     children?: React.ReactNode;
 

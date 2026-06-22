@@ -74,12 +74,6 @@ export const Form = (props: IForm) => {
     const hasFormXml = !!props.parameters.FormXml?.raw;
     const hasChildren = props.children !== undefined && props.children !== null;
 
-    if (hasFormXml && hasChildren) {
-        throw new Error(
-            "[Form] FormXml and children are mutually exclusive. Provide one or the other, not both."
-        );
-    }
-
     return (
         <FormContext.Provider value={form}>
             <div className={getClassNames([className])}>
