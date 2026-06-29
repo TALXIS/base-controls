@@ -18,6 +18,7 @@ export const Duration = (props: IDuration) => {
     const numberFormatting = context.userSettings.numberFormattingInfo;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const hoursPerDay = typeof parameters.HoursPerDay?.raw === 'number' && parameters.HoursPerDay.raw > 0 ? parameters.HoursPerDay.raw : 24;
+    const minutesPerDay = hoursPerDay * 60;
 
     const formatter = (value: number | null) => {
         if (typeof value === 'number') {
