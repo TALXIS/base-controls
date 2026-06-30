@@ -45,6 +45,9 @@ export const getEditColumnsStyles = (theme: ITheme) => {
             flexDirection: 'column',
             gap: 12
         },
+        headerText: {
+            whiteSpace: 'normal'
+        },
         selectors: {
             display: 'flex',
             flexDirection: 'column',

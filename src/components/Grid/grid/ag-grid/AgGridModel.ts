@@ -291,6 +291,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             case this._grid.isColumnEditable(column.name, e.data):
             //do not navigate on aggregated/grouped rows
             case e.data?.getSummarizationType() !== 'none':
+            //do not allow double click navigation for editable grids (it creates confusion between double clicking read only columns to navigate and double clicking editable columns to edit)
+            case this._grid.isEditingEnabled():
             //do not navigate on checkbox column
             case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY: {
                 break;
