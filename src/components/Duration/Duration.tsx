@@ -6,8 +6,8 @@ import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import numeral from "numeral";
 import { getDefaultDurationTranslations } from './translations';
 import { durationOptions } from "./durationOptions";
-import humanizeDuration, { Unit } from "humanize-duration";
-import { Numeral } from "@talxis/client-libraries";
+import humanizeDuration, { HumanizerOptions, Unit } from "humanize-duration";
+import { Formatting, Numeral } from "@talxis/client-libraries";
 
 export const Duration = (props: IDuration) => {
     const parameters = props.parameters;
@@ -15,24 +15,14 @@ export const Duration = (props: IDuration) => {
     const componentRef = useRef<IComboBox>(null);
     const context = props.context;
     const formattingInfo = context.userSettings;
-    //@ts-ignore - locale is part of UserSettings
-    const language = formattingInfo.locale;
     const numberFormatting = context.userSettings.numberFormattingInfo;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+    const hoursPerDay = typeof parameters.HoursPerDay?.raw === 'number' && parameters.HoursPerDay.raw > 0 ? parameters.HoursPerDay.raw : 24;
+    const minutesPerDay = hoursPerDay * 60;
 
     const formatter = (value: number | null) => {
-        //all duration formatting should happen here
         if (typeof value === 'number') {
-            const durationInMilliseconds = value * 60000;
-            const units: Unit[] = value < 60 ? ['m'] : value >= 1440 ? ['d'] : ['h'];
-            const options = {
-                units: units,
-                maxDecimalPoints: 2,
-                language: language.slice(0, language.indexOf("-")),
-                decimal: context.userSettings.numberFormattingInfo.numberDecimalSeparator,
-                fallbacks: ["en"]
-            };
-            return humanizeDuration(durationInMilliseconds, options);
+            return Formatting.Get().formatDuration(value, hoursPerDay);
         }
         return value;
     };
@@ -85,7 +75,7 @@ export const Duration = (props: IDuration) => {
             case 'hour':
                 return 60 * value;
             case 'day':
-                return 60 * value * 24;
+                return minutesPerDay * value;
             case 'minute':
             default:
                 return value;

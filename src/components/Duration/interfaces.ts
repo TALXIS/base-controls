@@ -9,6 +9,7 @@ export interface IDuration extends IControl<IDurationParameters, IDurationOutput
 
 export interface IDurationParameters extends IInputParameters {
     value: IWholeNumberProperty;
+    HoursPerDay?: Omit<IWholeNumberProperty, 'attributes'>;
 }
 
 export interface IDurationOutputs extends IOutputs {

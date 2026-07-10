@@ -291,6 +291,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             case this._grid.isColumnEditable(column.name, e.data):
             //do not navigate on aggregated/grouped rows
             case e.data?.getSummarizationType() !== 'none':
+            //do not allow double click navigation for editable grids (it creates confusion between double clicking read only columns to navigate and double clicking editable columns to edit)
+            case this._grid.isEditingEnabled():
             //do not navigate on checkbox column
             case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY: {
                 break;
@@ -665,7 +667,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         const parameters = columnInfo.ui.getControlParameters({
             ...this._grid.getFieldBindingParameters(record, column, editing),
             ...control.getParameters(),
-        })
+        });
         if (column.oneClickEdit && record.getSummarizationType() === 'none') {
             editing = true;
         }
@@ -679,7 +681,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             aggregatedValue: value.aggregatedValue,
             loading: columnInfo.ui.isLoading(),
             errorMessage: columnInfo.errorMessage,
-            editable: columnInfo.security.editable,
+            editable: column.isEditable && columnInfo.security.editable,
             editing: editing,
             parameters: parameters,
             saving: record.isSaving(),

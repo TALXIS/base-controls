@@ -88,7 +88,8 @@ export const EditColumns = (props: IEditColumnsProps) => {
                 footer: styles.panelFooter,
                 commands: styles.panelCommands,
                 scrollableContent: styles.panelScrollableContent,
-                content: styles.panelContent
+                content: styles.panelContent,
+                headerText: styles.headerText
             }}
             isFooterAtBottom
             onRenderFooterContent={() => {

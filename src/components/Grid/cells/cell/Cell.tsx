@@ -71,10 +71,10 @@ export const Cell = (props: ICellProps) => {
 
     const onCellClick = useCallback((e: MouseEvent) => {
         if (record.getDataProvider().getSummarizationType() === 'grouping' && !grid.isSelectionModifierKeyPressed()) {
-            e.stopPropagation();
+            //e.stopPropagation();
         }
         else if (node.isSelected()) {
-            e.stopPropagation();
+            //e.stopPropagation();
         }
     }, []);
 

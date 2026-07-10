@@ -52,6 +52,7 @@ const externalDeps = [
     'react-select/async',
     'hotkeys-js',
     'react-window',
+    "lexorank",
     'react-grid-layout',
     'react-grid-layout/css/styles.css',
     'react-resizable/css/styles.css',

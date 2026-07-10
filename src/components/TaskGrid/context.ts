@@ -1,8 +1,9 @@
 import * as React from "react";
-import { ITaskDataProvider } from "./data-providers/task-data-provider";
+import { ITaskDataProvider } from "./providers/task";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
-import { ITaskGridLabels, LocalizationService } from "./labels";
+import { ITaskGridLabels } from "./labels";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
+import { ILocalizationService } from "../../utils";
 
 export const PcfContext = React.createContext<ComponentFramework.Context<any> | null>(null);
 PcfContext.displayName = 'PcfContext';
@@ -22,7 +23,7 @@ TaskGridDescriptorContext.displayName = 'TaskGridDescriptor';
 export const RootElementIdContext = React.createContext<string>('');
 RootElementIdContext.displayName = 'RootElementId';
 
-export const LocalizationServiceContext = React.createContext<LocalizationService<ITaskGridLabels> | null>(null);
+export const LocalizationServiceContext = React.createContext<ILocalizationService<ITaskGridLabels> | null>(null);
 LocalizationServiceContext.displayName = 'LocalizationService';
 
 export const AgGridLicenseKeyContext = React.createContext<string | null>(null);

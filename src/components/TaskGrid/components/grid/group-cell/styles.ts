@@ -10,6 +10,9 @@ export const getGroupCellStyles = (theme: ITheme, expanded: boolean) => {
             '.ms-Link': {
                 fontWeight: '600'
             },
+            '[class^="valueContainer"]>span': {
+                fontWeight: '600',
+            },
             '>div': {
                 overflow: 'hidden'
             }

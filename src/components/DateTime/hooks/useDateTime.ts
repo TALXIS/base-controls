@@ -7,6 +7,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "../translations";
 import { ITranslation } from "../../../hooks";
 import { ITheme } from "@talxis/react-components";
+import { IFormatting } from "@talxis/client-libraries/dist/utils/formatting";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -34,7 +35,8 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const context = props.context;
     const behavior = boundValue.attributes.Behavior;
     const format = boundValue.attributes.Format ?? boundValue.type;
-    const dateFormattingInfo = context.userSettings.dateFormattingInfo;
+    //client libraries formatting contains dateFormattingInfo, fallback to user settings if it was not found (uses Power Apps formatting implementation)
+    const dateFormattingInfo = (<IFormatting>context.formatting).dateFormattingInfo ?? context.userSettings.dateFormattingInfo;
     const lastValidDateRef = useRef<Date | undefined>(undefined);
 
     const isDateTime = (() => {
@@ -151,7 +153,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const { value, labels, theme, setValue, onNotifyOutputChanged: onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
         formatter: formatDate,
         valueExtractor: dateExtractor,
-        defaultTranslations: getDefaultDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
+        defaultTranslations: getDefaultDateTimeTranslations(dateFormattingInfo)
     });
 
 
