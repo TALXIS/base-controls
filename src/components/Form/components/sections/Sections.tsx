@@ -1,44 +1,38 @@
 import * as React from "react";
-import { ResponsiveLayoutGrid } from "./ResponsiveLayoutGrid";
-import { SectionsContext } from "./SectionsContext";
+import { ResponsiveLayoutGrid } from "../shared";
+import { SectionsContext } from "./context";
+import { useColumnContext } from "../column";
 import {
     buildSequentialResponsiveLayouts,
     DEFAULT_STACK_LAYOUT_COLS,
     mergeResponsiveCols,
     normalizeLayoutKey,
     type FormResponsiveCols,
-} from "./layout";
+} from "../shared";
 
 type SectionChildProps = {
     visible?: boolean;
+    section?: {
+        visible?: boolean;
+    };
 };
 
 export interface IFormSectionsProps {
-    className?: string;
-    responsiveCols?: Partial<FormResponsiveCols>;
-    rowHeight?: number;
-    margin?: readonly [number, number];
-    containerPadding?: readonly [number, number];
     children?: React.ReactNode;
 }
 
-export const Sections: React.FC<IFormSectionsProps> = ({
-    className,
-    responsiveCols,
-    rowHeight = 48,
-    margin = [0, 16],
-    containerPadding = [0, 0],
-    children,
-}) => {
+export const Sections: React.FC<IFormSectionsProps> = ({ children }) => {
+    useColumnContext();
+
     const sectionChildren = React.Children.toArray(children)
         .filter((child): child is React.ReactElement<SectionChildProps> => React.isValidElement<SectionChildProps>(child))
-        .filter((child) => child.props.visible !== false);
+        .filter((child) => child.props.visible !== false && child.props.section?.visible !== false);
 
     if (sectionChildren.length === 0) {
         return null;
     }
 
-    const cols = mergeResponsiveCols(DEFAULT_STACK_LAYOUT_COLS, responsiveCols);
+    const cols = mergeResponsiveCols(DEFAULT_STACK_LAYOUT_COLS);
     const layouts = buildSequentialResponsiveLayouts(
         sectionChildren.map((child, index) => ({
             key: normalizeLayoutKey(child.key, `form-section-${index}`),
@@ -52,12 +46,11 @@ export const Sections: React.FC<IFormSectionsProps> = ({
         <SectionsContext.Provider value={true}>
             <ResponsiveLayoutGrid
                 dataId="form-sections"
-                className={className}
                 layouts={layouts}
                 cols={cols}
-                rowHeight={rowHeight}
-                margin={margin}
-                containerPadding={containerPadding}
+                rowHeight={48}
+                margin={[0, 16]}
+                containerPadding={[0, 0]}
             >
                 {sectionChildren}
             </ResponsiveLayoutGrid>

@@ -1,35 +1,33 @@
 import * as React from "react";
-import { RowsContext } from "./RowsContext";
-import { ResponsiveLayoutGrid } from "./ResponsiveLayoutGrid";
+import { RowsContext } from "./context";
+import { useSectionContext } from "../section";
+import { ResponsiveLayoutGrid } from "../shared";
 import {
     buildSequentialResponsiveLayouts,
     DEFAULT_STACK_LAYOUT_COLS,
     mergeResponsiveCols,
     normalizeLayoutKey,
     type FormResponsiveCols,
-} from "./layout";
+} from "../shared";
 
 type RowChildProps = {
-    layoutHeightUnits?: number;
+    children?: React.ReactNode;
 };
 
 export interface IFormRowsProps {
-    className?: string;
-    responsiveCols?: Partial<FormResponsiveCols>;
-    rowHeight?: number;
-    margin?: readonly [number, number];
-    containerPadding?: readonly [number, number];
     children?: React.ReactNode;
 }
 
-export const Rows: React.FC<IFormRowsProps> = ({
-    className,
-    responsiveCols,
-    rowHeight = 48,
-    margin = [0, 12],
-    containerPadding = [0, 0],
-    children,
-}) => {
+type CellLayoutProps = {
+    rowspan?: number;
+    cell?: {
+        rowspan?: number;
+    };
+};
+
+export const Rows: React.FC<IFormRowsProps> = ({ children }) => {
+    useSectionContext();
+
     const rowChildren = React.Children.toArray(children)
         .filter((child): child is React.ReactElement<RowChildProps> => React.isValidElement<RowChildProps>(child));
 
@@ -37,12 +35,12 @@ export const Rows: React.FC<IFormRowsProps> = ({
         return null;
     }
 
-    const cols = mergeResponsiveCols(DEFAULT_STACK_LAYOUT_COLS, responsiveCols);
+    const cols = mergeResponsiveCols(DEFAULT_STACK_LAYOUT_COLS);
     const layouts = buildSequentialResponsiveLayouts(
         rowChildren.map((child, index) => ({
             key: normalizeLayoutKey(child.key, `form-row-${index}`),
             span: 1,
-            height: child.props.layoutHeightUnits,
+            height: getRowHeightUnits(child.props.children),
         })),
         cols,
         () => 1,
@@ -52,15 +50,24 @@ export const Rows: React.FC<IFormRowsProps> = ({
         <RowsContext.Provider value={true}>
             <ResponsiveLayoutGrid
                 dataId="form-rows"
-                className={className}
                 layouts={layouts}
                 cols={cols}
-                rowHeight={rowHeight}
-                margin={margin}
-                containerPadding={containerPadding}
+                rowHeight={48}
+                margin={[0, 12]}
+                containerPadding={[0, 0]}
             >
                 {rowChildren}
             </ResponsiveLayoutGrid>
         </RowsContext.Provider>
+    );
+};
+
+const getRowHeightUnits = (children: React.ReactNode): number => {
+    const cellChildren = React.Children.toArray(children)
+        .filter((child): child is React.ReactElement<CellLayoutProps> => React.isValidElement<CellLayoutProps>(child));
+
+    return Math.max(
+        1,
+        ...cellChildren.map((child) => child.props.rowspan ?? child.props.cell?.rowspan ?? 1),
     );
 };

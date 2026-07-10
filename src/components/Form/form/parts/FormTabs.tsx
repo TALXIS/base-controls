@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Tabs } from "../../Tabs";
+import { Tabs } from "../../components";
 import { useFormInstance } from "../useFormInstance";
 import { FormTab } from "./FormTab";
 

@@ -1,9 +1,12 @@
 import * as React from "react";
 
 export interface IFormCellContextValue {
-    datafieldname?: string;
-    controlId?: string;
-    disabled?: boolean;
+    cellId?: string;
+    showLabel?: boolean;
+    visible?: boolean;
+    colspan?: number;
+    rowspan?: number;
+    userspacer?: boolean;
 }
 
 export const FormCellContext = React.createContext<IFormCellContextValue | null>(null);

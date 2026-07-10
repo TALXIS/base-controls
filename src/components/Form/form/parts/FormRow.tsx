@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { FormXmlRow } from "@talxis/client-metadata";
-import { Row } from "../../Row";
+import { Row } from "../../components";
 import { FormCell } from "./FormCell";
 
 export interface IFormRowProps {
@@ -8,12 +8,9 @@ export interface IFormRowProps {
 }
 
 export const FormRow: React.FC<IFormRowProps> = ({ row }) => {
-    const cells = row.cell ?? [];
-    const resolvedHeightUnits = Math.max(1, ...cells.map((cell) => cell.rowspan ?? 1));
-
     return (
-        <Row layoutHeightUnits={resolvedHeightUnits}>
-            {cells.map((cell, cellIndex) => (
+        <Row height={row.height}>
+            {(row.cell ?? []).map((cell, cellIndex) => (
                 <FormCell
                     key={cell.id ?? cellIndex}
                     cell={cell}

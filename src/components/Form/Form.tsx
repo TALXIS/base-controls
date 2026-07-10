@@ -1,11 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { getClassNames } from "@talxis/react-components";
-import { useControl } from "../../../hooks";
-import { IForm } from "../interfaces";
-import { formTranslations } from "../translations";
-import { FormContext } from "./FormContext";
-import { FormModel } from "./FormModel";
-import { FormTabs } from "./parts/FormTabs";
+import { useControl } from "../../hooks";
+import { IForm } from "./interfaces";
+import { formTranslations } from "./translations";
+import { FormContext } from "./form/FormContext";
+import { FormModel } from "./form/FormModel";
+import { FormTabs } from "./form/parts/FormTabs";
 
 const buildFormInstance = (onGetProps: () => IForm, labels: any, theme: any, metadataProvider?: any): FormModel => {
     return new FormModel({

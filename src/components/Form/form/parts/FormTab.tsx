@@ -1,7 +1,6 @@
 import * as React from "react";
 import type { FormXmlTab } from "@talxis/client-metadata";
-import { Tab } from "../../Tab";
-import { Columns } from "../../Columns";
+import { Columns, Tab } from "../../components";
 import { useFormInstance } from "../useFormInstance";
 import { FormColumn } from "./FormColumn";
 
@@ -17,17 +16,24 @@ export const FormTab: React.FC<IFormTabProps> = ({ tab }) => {
         <Tab
             id={tab.id}
             name={tab.name}
+            group={tab.group}
+            verticalLayout={tab.verticallayout}
             label={tabLabel}
             showLabel={tab.showlabel !== false}
+            labelId={tab.labelid}
+            isUserDefined={tab.IsUserDefined}
+            lockLevel={tab.locklevel}
+            addedBy={tab.addedby}
+            expanded={tab.expanded}
             visible={tab.visible !== false}
+            availableForPhone={tab.availableforphone}
+            collapsible={tab.collapsible}
         >
-            <Columns itemWidths={(tab.columns?.column ?? []).map((column) => column.width)}>
+            <Columns>
                 {(tab.columns?.column ?? []).map((column, columnIndex) => (
                     <FormColumn
                         key={`tab-column-${columnIndex}`}
                         column={column}
-                        tabName={tab.name ?? ""}
-                        columnIndex={columnIndex}
                     />
                 ))}
             </Columns>

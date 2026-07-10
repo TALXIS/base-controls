@@ -1,82 +1,82 @@
 import * as React from "react";
-import { FormLayoutContext } from "./FormLayoutContext";
-import { useRowContext } from "./RowContext";
-import { useFieldValidation } from "./form/useFieldValidation";
-import { useFormInstance } from "./form/useFormInstance";
-import { useFormUiState } from "./form/useFormUiState";
-import { FormCellContext } from "./FormCellContext";
+import { FormCellContext } from "./context";
+import { useSectionContext } from "../section";
+import { useFieldValidation } from "../../form/useFieldValidation";
+import { useFormInstance } from "../../form/useFormInstance";
+import { useFormUiState } from "../../form/useFormUiState";
+import { useRowContext } from "../row";
 
 export interface IFormCellProps {
     id?: string;
-    controlId?: string;
-    datafieldname?: string;
-    label?: React.ReactNode;
+    labelId?: string;
+    lockLevel?: number;
     showLabel?: boolean;
-    required?: boolean;
-    disabled?: boolean;
     visible?: boolean;
-    className?: string;
-    style?: React.CSSProperties;
     colspan?: number;
     rowspan?: number;
     userspacer?: boolean;
-    labelWidth?: number;
-    cellLabelAlignment?: "Center" | "Left" | "Right";
-    cellLabelPosition?: "Top" | "Left";
+    availableForPhone?: boolean;
+    isPreviewCell?: boolean;
+    isStreamCell?: boolean;
+    isChartCell?: boolean;
+    isTileCell?: boolean;
+    auto?: boolean;
+    addedBy?: string;
     children?: React.ReactNode;
 }
 
 export const Cell: React.FC<IFormCellProps> = ({
     id,
-    controlId,
-    datafieldname,
-    label,
+    labelId,
+    lockLevel,
     showLabel = true,
-    required,
-    disabled,
     visible = true,
-    className,
-    style,
+    colspan,
+    rowspan,
     userspacer = false,
-    labelWidth,
-    cellLabelAlignment,
-    cellLabelPosition,
+    availableForPhone,
+    isPreviewCell,
+    isStreamCell,
+    isChartCell,
+    isTileCell,
+    auto,
+    addedBy,
     children,
 }) => {
     useRowContext();
 
     const form = useFormInstance();
-    const layout = React.useContext(FormLayoutContext);
+    const section = useSectionContext();
     useFormUiState();
+    const control = getControlProps(children);
 
     if (visible === false) {
         return null;
     }
 
-    if (controlId && form.getControlVisible(controlId) === false) {
+    if (control?.id && form.getControlVisible(control.id) === false) {
         return null;
     }
 
-    const labelOverride = controlId ? form.getControlLabel(controlId) : undefined;
-    const resolvedLabel = label
-        ?? labelOverride
-        ?? (datafieldname ? form.getFieldLabel(datafieldname) : undefined);
+    const labelOverride = control?.id ? form.getControlLabel(control.id) : undefined;
+    const resolvedLabel = labelOverride
+        ?? (control?.datafieldname ? form.getFieldLabel(control.datafieldname) : undefined);
 
-    const disabledOverride = controlId ? form.getControlDisabled(controlId) : undefined;
-    const resolvedDisabled = disabled !== undefined
-        ? disabled
+    const disabledOverride = control?.id ? form.getControlDisabled(control.id) : undefined;
+    const resolvedDisabled = control?.disabled !== undefined
+        ? control.disabled
         : disabledOverride !== undefined
         ? disabledOverride
         : undefined;
 
-    let resolvedRequired = required ?? false;
-    if (required === undefined && datafieldname) {
+    let resolvedRequired = control?.isrequired ?? false;
+    if (control?.isrequired === undefined && control?.datafieldname) {
         try {
-            const override = controlId ? form.getRequiredLevelOverride(datafieldname) : undefined;
+            const override = control.id ? form.getRequiredLevelOverride(control.datafieldname) : undefined;
             if (override !== undefined) {
                 resolvedRequired = override === "required";
             } else {
-                resolvedRequired = form.getAttributeConfiguration(datafieldname).requiredLevel === "required";
+                resolvedRequired = form.getAttributeConfiguration(control.datafieldname).requiredLevel === "required";
             }
         } catch {
             resolvedRequired = false;
@@ -84,11 +84,10 @@ export const Cell: React.FC<IFormCellProps> = ({
     }
 
     const renderedChildren = injectDisabled(children, resolvedDisabled);
-    const resolvedLabelPosition = cellLabelPosition ?? layout.cellLabelPosition ?? "Top";
-    const resolvedLabelAlignment = cellLabelAlignment ?? layout.cellLabelAlignment ?? "Left";
-    const resolvedLabelWidth = labelWidth ?? layout.labelWidth;
+    const resolvedLabelPosition = section.cellLabelPosition ?? "Top";
+    const resolvedLabelAlignment = section.cellLabelAlignment ?? "Left";
+    const resolvedLabelWidth = section.labelWidth;
     const outerStyle = getCellContainerStyle({
-        baseStyle: style,
         labelPosition: resolvedLabelPosition,
         labelWidth: resolvedLabelWidth,
     });
@@ -97,15 +96,32 @@ export const Cell: React.FC<IFormCellProps> = ({
         : undefined;
 
     return (
-        <FormCellContext.Provider value={{ datafieldname, controlId, disabled: resolvedDisabled }}>
+        <FormCellContext.Provider
+            value={{
+                cellId: id,
+                showLabel,
+                visible,
+                colspan,
+                rowspan,
+                userspacer,
+            }}
+        >
             <div
-                data-id={`${controlId ?? id ?? datafieldname ?? "cell"}.fieldControl_container`}
-                className={className}
+                data-id={`${control?.id ?? id ?? control?.datafieldname ?? "cell"}.fieldControl_container`}
                 style={outerStyle}
+                data-label-id={labelId}
+                data-lock-level={lockLevel}
+                data-available-for-phone={availableForPhone}
+                data-is-preview-cell={isPreviewCell}
+                data-is-stream-cell={isStreamCell}
+                data-is-chart-cell={isChartCell}
+                data-is-tile-cell={isTileCell}
+                data-auto={auto}
+                data-added-by={addedBy}
             >
                 {showLabel && resolvedLabel ? (
                     <label
-                        htmlFor={datafieldname ? `field-${datafieldname}` : undefined}
+                        htmlFor={control?.datafieldname ? `field-${control.datafieldname}` : undefined}
                         style={{ textAlign: resolvedLabelAlignment.toLowerCase() as React.CSSProperties["textAlign"] }}
                     >
                         {resolvedLabel}
@@ -114,8 +130,8 @@ export const Cell: React.FC<IFormCellProps> = ({
                 ) : null}
                 <div style={contentStyle}>
                     {userspacer ? <div aria-hidden="true" /> : renderedChildren}
-                    {datafieldname ? (
-                        <CellValidationMessage datafieldname={datafieldname} controlId={controlId} />
+                    {control?.datafieldname ? (
+                        <CellValidationMessage datafieldname={control.datafieldname} controlId={control.id} />
                     ) : null}
                 </div>
             </div>
@@ -124,13 +140,11 @@ export const Cell: React.FC<IFormCellProps> = ({
 };
 
 interface ICellContainerStyleOptions {
-    baseStyle?: React.CSSProperties;
     labelPosition: "Top" | "Left";
     labelWidth?: number;
 }
 
 const getCellContainerStyle = ({
-    baseStyle,
     labelPosition,
     labelWidth,
 }: ICellContainerStyleOptions): React.CSSProperties => {
@@ -140,7 +154,6 @@ const getCellContainerStyle = ({
             : "minmax(140px, max-content) minmax(0, 1fr)";
 
         return {
-            ...baseStyle,
             display: "grid",
             gridTemplateColumns,
             alignItems: "start",
@@ -149,7 +162,6 @@ const getCellContainerStyle = ({
     }
 
     return {
-        ...baseStyle,
         display: "flex",
         flexDirection: "column",
         gap: 8,
@@ -182,4 +194,21 @@ const injectDisabled = (children: React.ReactNode, disabled: boolean | undefined
 
         return React.cloneElement(child as React.ReactElement<any>, { disabled });
     });
+};
+
+interface IControlChildProps {
+    id?: string;
+    classid?: string;
+    datafieldname?: string;
+    disabled?: boolean;
+    isrequired?: boolean;
+}
+
+const getControlProps = (children: React.ReactNode): IControlChildProps | null => {
+    const controlChild = React.Children.toArray(children)
+        .find((child): child is React.ReactElement<IControlChildProps> =>
+            React.isValidElement<IControlChildProps>(child) && "classid" in child.props,
+        );
+
+    return controlChild?.props ?? null;
 };

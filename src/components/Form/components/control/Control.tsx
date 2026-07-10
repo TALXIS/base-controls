@@ -1,32 +1,31 @@
 import * as React from "react";
-import { UnsupportedControlError } from "./form/errors/UnsupportedControlError";
-import { FieldInput } from "./form/parts/FieldInput";
-import { isStandardControlClassId } from "./form/parts/standardControlClassIds";
-import { useFormCellContext } from "./FormCellContext";
+import { useFormCellContext } from "../cell";
+import { UnsupportedControlError } from "../../form/errors/UnsupportedControlError";
+import { FieldInput } from "../../form/parts/FieldInput";
+import { isStandardControlClassId } from "../../form/parts/standardControlClassIds";
 
 export interface IFormControlProps {
+    id?: string;
     classid: string;
     datafieldname?: string;
-    controlId?: string;
     disabled?: boolean;
-    cellId?: string;
+    isrequired?: boolean;
+    relationship?: string;
 }
 
 export const Control: React.FC<IFormControlProps> = ({
+    id,
     classid,
     datafieldname,
-    controlId,
     disabled,
-    cellId,
 }) => {
     const cell = useFormCellContext();
-    const resolvedDatafieldname = datafieldname ?? cell.datafieldname ?? "";
-    const resolvedControlId = controlId ?? cell.controlId;
-    const resolvedDisabled = disabled ?? cell.disabled;
+    const resolvedDatafieldname = datafieldname ?? "";
+    const resolvedControlId = id;
 
     if (!isStandardControlClassId(classid)) {
         throw new UnsupportedControlError({
-            cellId,
+            cellId: cell.cellId,
             classId: classid,
             controlName: resolvedControlId,
         });
@@ -34,7 +33,7 @@ export const Control: React.FC<IFormControlProps> = ({
 
     if (!resolvedDatafieldname) {
         throw new UnsupportedControlError({
-            cellId,
+            cellId: cell.cellId,
             classId: classid,
             controlName: resolvedControlId,
         });
@@ -45,7 +44,7 @@ export const Control: React.FC<IFormControlProps> = ({
             classid={classid}
             datafieldname={resolvedDatafieldname}
             controlId={resolvedControlId}
-            disabled={resolvedDisabled}
+            disabled={disabled}
         />
     );
 };
