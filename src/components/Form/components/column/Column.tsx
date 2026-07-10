@@ -7,10 +7,10 @@ export interface IFormColumnProps {
     children?: React.ReactNode;
 }
 
-export const Column: React.FC<IFormColumnProps> = ({
+export const Column = ({
     width,
     children,
-}) => {
+}: IFormColumnProps) => {
     useColumnsContext();
 
     return (

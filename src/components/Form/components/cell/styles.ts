@@ -10,10 +10,26 @@ export const getCellStyles = (
     labelPosition: CellLabelPosition,
     labelAlignment: CellLabelAlignment,
     labelWidth: number | undefined,
+    labelTopBreakpoint: number | undefined,
     colspan: number | undefined,
     rowspan: number | undefined,
 ) => {
-    const gridColumn = colspan && colspan > 1 ? `span ${colspan}` : undefined;
+    return mergeStyleSets({
+        cell: {
+        },
+        label: {
+
+        },
+        content: {
+
+        },
+        error: {
+
+        }
+    });
+
+
+/*     const gridColumn = colspan && colspan > 1 ? `span ${colspan}` : undefined;
     const gridRow = rowspan && rowspan > 1 ? `span ${rowspan}` : undefined;
 
     // For "Left" position, use flex-wrap so the label moves on top automatically
@@ -48,13 +64,44 @@ export const getCellStyles = (
         }
         : {};
 
+    const leftToTopContainerQuery = labelPosition === "Left" && labelTopBreakpoint
+        ? {
+            [`@container (max-width: ${labelTopBreakpoint}px)`]: {
+                flexDirection: "column",
+                flexWrap: "nowrap",
+                gap: 4,
+            },
+        }
+        : {};
+
+    const labelContainerQuery = labelPosition === "Left" && labelTopBreakpoint
+        ? {
+            [`@container (max-width: ${labelTopBreakpoint}px)`]: {
+                flex: "1 1 auto",
+                maxWidth: "100%",
+                paddingTop: 0,
+            },
+        }
+        : {};
+
+    const contentContainerQuery = labelPosition === "Left" && labelTopBreakpoint
+        ? {
+            [`@container (max-width: ${labelTopBreakpoint}px)`]: {
+                flex: "1 1 auto",
+                minWidth: 0,
+                width: "100%",
+            },
+        }
+        : {};
+
     return mergeStyleSets({
         root: {
             gridColumn,
             gridRow,
             padding: "4px 0",
             minWidth: 0,
-            ...innerLayout
+            ...innerLayout,
+            ...leftToTopContainerQuery,
         },
         label: {
             ...labelLayout,
@@ -64,15 +111,17 @@ export const getCellStyles = (
             fontWeight: 600,
             textAlign: labelAlignment.toLowerCase() as "left" | "center" | "right",
             paddingTop: labelPosition === "Left" ? 6 : 0,
+            ...labelContainerQuery,
         },
         content: {
             ...contentLayout,
             minWidth: labelPosition === "Left" ? CONTENT_MIN_WIDTH : undefined,
+            ...contentContainerQuery,
         },
         error: {
             fontSize: theme.fonts.xSmall.fontSize,
             color: theme.semanticColors.errorText,
             marginTop: 2,
         },
-    });
+    }); */
 };

@@ -16,6 +16,7 @@ export interface ISectionContextValue {
     autoExpand?: boolean;
     columns?: number;
     labelWidth?: number;
+    cellLabelTopBreakpoint?: number;
     availableForPhone?: boolean;
     cellLabelAlignment?: "Center" | "Left" | "Right";
     cellLabelPosition?: "Top" | "Left";

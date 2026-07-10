@@ -6,6 +6,8 @@ import { formTranslations } from "./translations";
 import { FormContext } from "./form/FormContext";
 import { FormModel } from "./form/FormModel";
 import { FormTabs } from "./form/parts/FormTabs";
+import { FormComponentsContext } from "./context";
+import { FormComponents } from "./components/components";
 
 const buildFormInstance = (onGetProps: () => IForm, labels: any, theme: any, metadataProvider?: any): FormModel => {
     return new FormModel({
@@ -18,7 +20,7 @@ const buildFormInstance = (onGetProps: () => IForm, labels: any, theme: any, met
 
 export const Form = (props: IForm) => {
     const { labels, theme, className } = useControl('Form', props, formTranslations);
-
+    const components = useMemo(() => ({ ...FormComponents, ...props.components }), []);
     const propsRef = useRef<IForm>(props);
     propsRef.current = props;
 
@@ -52,7 +54,7 @@ export const Form = (props: IForm) => {
             console.error('[Form] OnLoad/Loaded dispatch error:', err);
         });
         return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Clean up the ref on unmount.
@@ -62,7 +64,7 @@ export const Form = (props: IForm) => {
                 props.formInstanceRef.current = null;
             }
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -76,10 +78,12 @@ export const Form = (props: IForm) => {
 
     return (
         <FormContext.Provider value={form}>
-            <div className={getClassNames([className])}>
-                {hasChildren && props.children}
-                {!hasChildren && hasFormXml && <FormTabs />}
-            </div>
+            <FormComponentsContext.Provider value={components}>
+                <div className={getClassNames([className])}>
+                    {hasChildren && props.children}
+                    {!hasChildren && hasFormXml && <FormTabs />}
+                </div>
+            </FormComponentsContext.Provider>
         </FormContext.Provider>
     );
 };

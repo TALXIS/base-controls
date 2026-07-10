@@ -10,7 +10,7 @@ export interface IFormRowProps {
     children?: React.ReactNode;
 }
 
-export const Row: React.FC<IFormRowProps> = ({ height, children }) => {
+export const Row = ({ height, children }: IFormRowProps) => {
     useRowsContext();
     const section = useSectionContext();
     const styles = getRowStyles(height, section.columns);

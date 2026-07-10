@@ -7,7 +7,7 @@ export interface IFormRowsProps {
     children?: React.ReactNode;
 }
 
-export const Rows: React.FC<IFormRowsProps> = ({ children }) => {
+export const Rows = ({ children }: IFormRowsProps) => {
     const section = useSectionContext();
 
     const rowChildren = React.Children.toArray(children).filter(React.isValidElement);

@@ -13,12 +13,12 @@ export interface IFormControlProps {
     relationship?: string;
 }
 
-export const Control: React.FC<IFormControlProps> = ({
+export const Control = ({
     id,
     classid,
     datafieldname,
     disabled,
-}) => {
+}: IFormControlProps) => {
     const cell = useFormCellContext();
     const resolvedDatafieldname = datafieldname ?? "";
     const resolvedControlId = id;

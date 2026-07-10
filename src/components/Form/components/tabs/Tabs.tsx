@@ -21,7 +21,7 @@ type TabChildProps = ITabEntryMetadata & {
     tab?: ITabEntryMetadata;
 };
 
-export const Tabs: React.FC<IFormTabsProps> = ({ children }) => {
+export const Tabs = ({ children }: IFormTabsProps) => {
     const formContext = React.useContext(FormContext);
     if (!formContext) {
         throw new Error("[Form] Tabs must be rendered inside Form.");

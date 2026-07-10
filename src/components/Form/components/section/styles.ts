@@ -7,6 +7,7 @@ export const getSectionStyles = (theme: ITheme, showBar: boolean | undefined) =>
             borderRadius: 2,
             backgroundColor: theme.semanticColors.bodyBackground,
             overflow: "hidden",
+            containerType: "inline-size",
         },
         header: {
             display: showBar !== false ? "flex" : "none",

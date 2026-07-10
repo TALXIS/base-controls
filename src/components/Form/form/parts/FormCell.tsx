@@ -6,7 +6,7 @@ export interface IFormCellProps {
     cell: FormXmlCell;
 }
 
-export const FormCell: React.FC<IFormCellProps> = ({ cell }) => {
+export const FormCell = ({ cell }: IFormCellProps) => {
     const control = cell.control;
     const isSpacer = cell.userspacer === true;
 

@@ -27,7 +27,7 @@ export interface IFormCellProps {
     children?: React.ReactNode;
 }
 
-export const Cell: React.FC<IFormCellProps> = ({
+export const Cell = ({
     id,
     labelId,
     lockLevel,
@@ -44,7 +44,7 @@ export const Cell: React.FC<IFormCellProps> = ({
     auto,
     addedBy,
     children,
-}) => {
+}: IFormCellProps) => {
     useRowContext();
 
     const theme = useTheme();
@@ -90,12 +90,24 @@ export const Cell: React.FC<IFormCellProps> = ({
     const resolvedLabelPosition = section.cellLabelPosition ?? "Top";
     const resolvedLabelAlignment = section.cellLabelAlignment ?? "Left";
     const resolvedLabelWidth = section.labelWidth;
-    const styles = getCellStyles(theme, resolvedLabelPosition, resolvedLabelAlignment, resolvedLabelWidth, colspan, rowspan);
+
+
+    console.log(section.cellLabelTopBreakpoint);
+
+    const styles = getCellStyles(
+        theme,
+        resolvedLabelPosition,
+        resolvedLabelAlignment,
+        resolvedLabelWidth,
+        section.cellLabelTopBreakpoint,
+        colspan,
+        rowspan,
+    );
 
     return (
         <FormCellContext.Provider value={{ cellId: id, showLabel, visible, colspan, rowspan, userspacer }}>
             <div
-                className={styles.root}
+                className={styles.cell}
                 data-id={`${control?.id ?? id ?? control?.datafieldname ?? "cell"}.fieldControl_container`}
                 data-label-id={labelId}
                 data-lock-level={lockLevel}
@@ -131,11 +143,11 @@ export const Cell: React.FC<IFormCellProps> = ({
     );
 };
 
-const CellValidationMessage: React.FC<{ datafieldname: string; controlId?: string; className?: string }> = ({
+const CellValidationMessage = ({
     datafieldname,
     controlId,
     className,
-}) => {
+}: { datafieldname: string; controlId?: string; className?: string }) => {
     const { result: validation } = useFieldValidation(datafieldname);
 
     return validation.error ? (

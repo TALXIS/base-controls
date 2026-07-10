@@ -1,4 +1,3 @@
-import * as React from "react";
 import type { FormXmlColumn } from "@talxis/client-metadata";
 import { Column, Sections } from "../../components";
 import { FormSection } from "./FormSection";
@@ -7,7 +6,7 @@ export interface IFormColumnProps {
     column: FormXmlColumn;
 }
 
-export const FormColumn: React.FC<IFormColumnProps> = ({ column }) => {
+export const FormColumn = ({ column }: IFormColumnProps) => {
     const sections = column.sections?.section ?? [];
 
     return (

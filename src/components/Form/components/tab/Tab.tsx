@@ -24,7 +24,7 @@ export interface IFormTabProps {
     children?: React.ReactNode;
 }
 
-export const Tab: React.FC<IFormTabProps> = ({
+export const Tab = ({
     id,
     name,
     group,
@@ -40,7 +40,7 @@ export const Tab: React.FC<IFormTabProps> = ({
     collapsible,
     label,
     children,
-}) => {
+}: IFormTabProps) => {
     const tabs = useTabsContext();
     const theme = useTheme();
 

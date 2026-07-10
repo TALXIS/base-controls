@@ -7,7 +7,7 @@ export interface IFormRowProps {
     row: FormXmlRow;
 }
 
-export const FormRow: React.FC<IFormRowProps> = ({ row }) => {
+export const FormRow = ({ row }: IFormRowProps) => {
     return (
         <Row height={row.height}>
             {(row.cell ?? []).map((cell, cellIndex) => (

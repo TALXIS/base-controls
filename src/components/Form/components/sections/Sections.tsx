@@ -14,7 +14,7 @@ export interface IFormSectionsProps {
     children?: React.ReactNode;
 }
 
-export const Sections: React.FC<IFormSectionsProps> = ({ children }) => {
+export const Sections = ({ children }: IFormSectionsProps) => {
     useColumnContext();
 
     const sectionChildren = React.Children.toArray(children)

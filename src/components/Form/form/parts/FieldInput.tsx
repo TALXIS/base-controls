@@ -29,7 +29,7 @@ export interface IFieldInputProps {
  * here falls back to a read-only `<input>` of the stringified value so the
  * cell is still visible (caller has already gated on `isStandardControlClassId`).
  */
-export const FieldInput: React.FC<IFieldInputProps> = ({ classid, datafieldname, controlId, disabled }) => {
+export const FieldInput = ({ classid, datafieldname, controlId, disabled }: IFieldInputProps) => {
     const normalized = classid.toLowerCase();
     const common = {
         datafieldname,
@@ -69,7 +69,7 @@ interface IBaseInputProps {
 
 const fieldDataId = (datafieldname: string) => `field-${datafieldname}`;
 
-const TextInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, disabled }) => {
+const TextInput = ({ datafieldname, controlId, disabled }: IBaseInputProps) => {
     const [value, setValue] = useFieldValue<string>(datafieldname);
     return (
         <input
@@ -83,7 +83,7 @@ const TextInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, disabl
     );
 };
 
-const TextAreaInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, disabled }) => {
+const TextAreaInput = ({ datafieldname, controlId, disabled }: IBaseInputProps) => {
     const [value, setValue] = useFieldValue<string>(datafieldname);
     return (
         <textarea
@@ -96,7 +96,7 @@ const TextAreaInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, di
     );
 };
 
-const BooleanInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, disabled }) => {
+const BooleanInput = ({ datafieldname, controlId, disabled }: IBaseInputProps) => {
     const [value, setValue] = useFieldValue<boolean>(datafieldname);
     return (
         <input
@@ -114,7 +114,7 @@ interface INumberInputProps extends IBaseInputProps {
     integerOnly?: boolean;
 }
 
-const NumberInput: React.FC<INumberInputProps> = ({ datafieldname, controlId, disabled, integerOnly }) => {
+const NumberInput = ({ datafieldname, controlId, disabled, integerOnly }: INumberInputProps) => {
     const [value, setValue] = useFieldValue<number>(datafieldname);
     const display = value === undefined || value === null || Number.isNaN(value as number) ? "" : String(value);
     return (
@@ -148,7 +148,7 @@ const toDateTimeLocal = (v: unknown): string => {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
-const DateTimeInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, disabled }) => {
+const DateTimeInput = ({ datafieldname, controlId, disabled }: IBaseInputProps) => {
     const [value, setValue] = useFieldValue<Date | string>(datafieldname);
     return (
         <input
@@ -172,7 +172,7 @@ const DateTimeInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, di
     );
 };
 
-const PicklistInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, disabled }) => {
+const PicklistInput = ({ datafieldname, controlId, disabled }: IBaseInputProps) => {
     const form = useFormInstance();
     const [value, setValue] = useFieldValue<number>(datafieldname);
     let options: { value: number; label: string }[] = [];
@@ -208,7 +208,7 @@ const PicklistInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, di
     );
 };
 
-const MultiSelectPicklistInput: React.FC<IBaseInputProps> = ({ datafieldname, controlId, disabled }) => {
+const MultiSelectPicklistInput = ({ datafieldname, controlId, disabled }: IBaseInputProps) => {
     const form = useFormInstance();
     const [value, setValue] = useFieldValue<number[]>(datafieldname);
     let options: { value: number; label: string }[] = [];
@@ -242,7 +242,7 @@ const MultiSelectPicklistInput: React.FC<IBaseInputProps> = ({ datafieldname, co
     );
 };
 
-const ReadOnlyFallback: React.FC<IBaseInputProps> = ({ datafieldname, controlId }) => {
+const ReadOnlyFallback = ({ datafieldname, controlId }: IBaseInputProps) => {
     const [value] = useFieldValue<unknown>(datafieldname);
     return (
         <span

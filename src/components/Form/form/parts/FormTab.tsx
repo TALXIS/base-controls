@@ -8,7 +8,7 @@ export interface IFormTabProps {
     tab: FormXmlTab;
 }
 
-export const FormTab: React.FC<IFormTabProps> = ({ tab }) => {
+export const FormTab = ({ tab }: IFormTabProps) => {
     const form = useFormInstance();
     const tabLabel = form.resolveLocalizedLabel(tab.labels, tab.name ?? "");
 

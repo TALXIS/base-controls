@@ -22,7 +22,7 @@ export interface IFormColumnsProps {
     children?: React.ReactNode;
 }
 
-export const Columns: React.FC<IFormColumnsProps> = ({ children }) => {
+export const Columns = ({ children }: IFormColumnsProps) => {
     useTabContext();
 
     const columnChildren = React.Children.toArray(children)

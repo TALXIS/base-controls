@@ -4,6 +4,7 @@ import { ITranslation } from "../../hooks";
 import { IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
 import { formTranslations } from "./translations";
+import { IFormComponents } from "./components/components";
 
 export interface IFormParameters extends IParameters {
     /**
@@ -79,6 +80,8 @@ export interface IForm extends IControl<
      * from parent UI such as a toolbar / submit button.
      */
     formInstanceRef?: React.MutableRefObject<unknown>;
+
+    components?: Partial<IFormComponents>;
 }
 
 /**

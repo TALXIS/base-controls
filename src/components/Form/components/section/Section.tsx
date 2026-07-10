@@ -23,6 +23,7 @@ export interface IFormSectionProps {
     autoExpand?: boolean;
     columns?: number;
     labelWidth?: number;
+    cellLabelTopBreakpoint?: number;
     availableForPhone?: boolean;
     cellLabelAlignment?: "Center" | "Left" | "Right";
     cellLabelPosition?: "Top" | "Left";
@@ -31,7 +32,7 @@ export interface IFormSectionProps {
     children?: React.ReactNode;
 }
 
-export const Section: React.FC<IFormSectionProps> = ({
+export const Section = ({
     id,
     name,
     group,
@@ -47,13 +48,14 @@ export const Section: React.FC<IFormSectionProps> = ({
     autoExpand,
     columns,
     labelWidth,
+    cellLabelTopBreakpoint,
     availableForPhone,
     cellLabelAlignment,
     cellLabelPosition,
     rowHeight,
     label,
     children,
-}) => {
+}: IFormSectionProps) => {
     useSectionsContext();
 
     const theme = useTheme();
@@ -86,6 +88,7 @@ export const Section: React.FC<IFormSectionProps> = ({
         autoExpand,
         columns,
         labelWidth,
+        cellLabelTopBreakpoint,
         availableForPhone,
         cellLabelAlignment,
         cellLabelPosition,
@@ -97,6 +100,7 @@ export const Section: React.FC<IFormSectionProps> = ({
         cellLabelAlignment,
         cellLabelPosition,
         columns,
+        cellLabelTopBreakpoint,
         group,
         height,
         id,

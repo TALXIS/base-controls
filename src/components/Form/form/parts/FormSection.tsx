@@ -1,40 +1,40 @@
-import * as React from "react";
 import type { FormXmlSection } from "@talxis/client-metadata";
-import { Rows, Section } from "../../components";
+import { Rows } from "../../components";
 import { useFormInstance } from "../useFormInstance";
 import { FormRow } from "./FormRow";
+import { useFormComponents } from "../../context";
 
 export interface IFormSectionProps {
     section: FormXmlSection;
 }
 
-export const FormSection: React.FC<IFormSectionProps> = ({ section }) => {
+export const FormSection = ({ section }: IFormSectionProps) => {
     const form = useFormInstance();
     const sectionLabel = form.resolveLocalizedLabel(section.labels, section.name ?? "");
+    const components = useFormComponents();
 
-    return (
-        <Section
-            id={section.id}
-            name={section.name}
-            group={section.group}
-            label={sectionLabel}
-            showLabel={section.showlabel !== false}
-            labelId={section.labelid}
-            showBar={section.showbar}
-            isUserDefined={section.IsUserDefined}
-            height={section.height}
-            lockLevel={section.locklevel}
-            layout={section.layout}
-            addedBy={section.addedby}
-            visible={section.visible !== false}
-            autoExpand={section.autoexpand}
-            columns={section.columns}
-            labelWidth={section.labelwidth}
-            availableForPhone={section.availableforphone}
-            cellLabelAlignment={section.celllabelalignment}
-            cellLabelPosition={section.celllabelposition}
-            rowHeight={section.rowheight}
-        >
+    const renderedSection = components.onRenderSection({
+        id: section.id,
+        name: section.name,
+        group: section.group,
+        label: sectionLabel,
+        showLabel: section.showlabel !== false,
+        labelId: section.labelid,
+        showBar: section.showbar,
+        isUserDefined: section.IsUserDefined,
+        height: section.height,
+        lockLevel: section.locklevel,
+        layout: section.layout,
+        addedBy: section.addedby,
+        visible: section.visible !== false,
+        autoExpand: section.autoexpand,
+        columns: section.columns,
+        labelWidth: section.labelwidth,
+        availableForPhone: section.availableforphone,
+        cellLabelAlignment: section.celllabelalignment,
+        cellLabelPosition: section.celllabelposition,
+        rowHeight: section.rowheight,
+        children: (
             <Rows>
                 {(section.rows?.row ?? []).map((row, rowIndex) => (
                     <FormRow
@@ -43,6 +43,8 @@ export const FormSection: React.FC<IFormSectionProps> = ({ section }) => {
                     />
                 ))}
             </Rows>
-        </Section>
-    );
+        )
+    });
+
+    return renderedSection == null ? null : <>{renderedSection}</>;
 };

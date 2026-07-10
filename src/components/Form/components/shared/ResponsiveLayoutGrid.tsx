@@ -15,7 +15,7 @@ export interface IResponsiveLayoutGridProps {
     children?: React.ReactNode;
 }
 
-export const ResponsiveLayoutGrid: React.FC<IResponsiveLayoutGridProps> = ({
+export const ResponsiveLayoutGrid = ({
     dataId,
     className,
     layouts,
@@ -24,7 +24,7 @@ export const ResponsiveLayoutGrid: React.FC<IResponsiveLayoutGridProps> = ({
     margin = [12, 12],
     containerPadding = [0, 0],
     children,
-}) => {
+}: IResponsiveLayoutGridProps) => {
     const { containerRef, width, mounted } = useContainerWidth();
     const { layout, cols: currentCols } = useResponsiveLayout<FormLayoutBreakpoint>({
         width,
