@@ -1,6 +1,6 @@
 import * as React from "react";
-import { RowsContext } from "./RowsContext";
 import { ResponsiveLayoutGrid } from "./ResponsiveLayoutGrid";
+import { SectionsContext } from "./SectionsContext";
 import {
     buildSequentialResponsiveLayouts,
     DEFAULT_STACK_LAYOUT_COLS,
@@ -9,11 +9,11 @@ import {
     type FormResponsiveCols,
 } from "./layout";
 
-type RowChildProps = {
-    layoutHeightUnits?: number;
+type SectionChildProps = {
+    visible?: boolean;
 };
 
-export interface IFormRowsProps {
+export interface IFormSectionsProps {
     className?: string;
     responsiveCols?: Partial<FormResponsiveCols>;
     rowHeight?: number;
@@ -22,36 +22,36 @@ export interface IFormRowsProps {
     children?: React.ReactNode;
 }
 
-export const Rows: React.FC<IFormRowsProps> = ({
+export const Sections: React.FC<IFormSectionsProps> = ({
     className,
     responsiveCols,
     rowHeight = 48,
-    margin = [0, 12],
+    margin = [0, 16],
     containerPadding = [0, 0],
     children,
 }) => {
-    const rowChildren = React.Children.toArray(children)
-        .filter((child): child is React.ReactElement<RowChildProps> => React.isValidElement<RowChildProps>(child));
+    const sectionChildren = React.Children.toArray(children)
+        .filter((child): child is React.ReactElement<SectionChildProps> => React.isValidElement<SectionChildProps>(child))
+        .filter((child) => child.props.visible !== false);
 
-    if (rowChildren.length === 0) {
+    if (sectionChildren.length === 0) {
         return null;
     }
 
     const cols = mergeResponsiveCols(DEFAULT_STACK_LAYOUT_COLS, responsiveCols);
     const layouts = buildSequentialResponsiveLayouts(
-        rowChildren.map((child, index) => ({
-            key: normalizeLayoutKey(child.key, `form-row-${index}`),
+        sectionChildren.map((child, index) => ({
+            key: normalizeLayoutKey(child.key, `form-section-${index}`),
             span: 1,
-            height: child.props.layoutHeightUnits,
         })),
         cols,
         () => 1,
     );
 
     return (
-        <RowsContext.Provider value={true}>
+        <SectionsContext.Provider value={true}>
             <ResponsiveLayoutGrid
-                dataId="form-rows"
+                dataId="form-sections"
                 className={className}
                 layouts={layouts}
                 cols={cols}
@@ -59,8 +59,8 @@ export const Rows: React.FC<IFormRowsProps> = ({
                 margin={margin}
                 containerPadding={containerPadding}
             >
-                {rowChildren}
+                {sectionChildren}
             </ResponsiveLayoutGrid>
-        </RowsContext.Provider>
+        </SectionsContext.Provider>
     );
 };

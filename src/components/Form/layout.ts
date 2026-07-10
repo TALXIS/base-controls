@@ -23,7 +23,7 @@ export const DEFAULT_COLUMN_LAYOUT_COLS: FormResponsiveCols = {
     lg: 12,
     md: 12,
     sm: 6,
-    xs: 1,
+    xs: 12,
     xxs: 1,
 };
 
@@ -56,6 +56,14 @@ export const mergeResponsiveCols = (
     ...defaults,
     ...overrides,
 });
+
+export const normalizeLayoutKey = (key: React.Key | null | undefined, fallback: string): string => {
+    if (key === null || key === undefined || key === "") {
+        return fallback;
+    }
+
+    return String(key).replace(/^(\.\$)+/, "");
+};
 
 export const normalizeSpan = (span: number | undefined, cols: number): number => {
     if (!Number.isFinite(span) || !span || span < 1) {

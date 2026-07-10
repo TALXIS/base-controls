@@ -2,7 +2,7 @@ import * as React from "react";
 import { UnsupportedControlError } from "./form/errors/UnsupportedControlError";
 import { FieldInput } from "./form/parts/FieldInput";
 import { isStandardControlClassId } from "./form/parts/standardControlClassIds";
-import { FormCellContext } from "./FormCellContext";
+import { useFormCellContext } from "./FormCellContext";
 
 export interface IFormControlProps {
     classid: string;
@@ -19,7 +19,7 @@ export const Control: React.FC<IFormControlProps> = ({
     disabled,
     cellId,
 }) => {
-    const cell = React.useContext(FormCellContext);
+    const cell = useFormCellContext();
     const resolvedDatafieldname = datafieldname ?? cell.datafieldname ?? "";
     const resolvedControlId = controlId ?? cell.controlId;
     const resolvedDisabled = disabled ?? cell.disabled;

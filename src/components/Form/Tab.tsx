@@ -1,5 +1,7 @@
 import * as React from "react";
 import { FormLayoutContext } from "./FormLayoutContext";
+import { ColumnsContext } from "./ColumnsContext";
+import { useTabsContext } from "./TabsContext";
 import { useFormInstance } from "./form/useFormInstance";
 import { useFormUiState } from "./form/useFormUiState";
 
@@ -24,6 +26,8 @@ export const Tab: React.FC<IFormTabProps> = ({
     triggerId,
     children,
 }) => {
+    useTabsContext();
+
     const form = useFormInstance();
     useFormUiState();
 
@@ -37,17 +41,19 @@ export const Tab: React.FC<IFormTabProps> = ({
 
     return (
         <FormLayoutContext.Provider value={{ tabName: name ?? "" }}>
-            <div
-                data-id={`tab-${name ?? id ?? ""}`}
-                id={panelId}
-                role="tabpanel"
-                aria-labelledby={triggerId}
-            >
-                {showLabel && label && (
-                    <h3 data-id={`tab-label-${name ?? id ?? ""}`}>{label}</h3>
-                )}
-                {children}
-            </div>
+            <ColumnsContext.Provider value={true}>
+                <div
+                    data-id={`tab-${name ?? id ?? ""}`}
+                    id={panelId}
+                    role="tabpanel"
+                    aria-labelledby={triggerId}
+                >
+                    {showLabel && label && (
+                        <h3 data-id={`tab-label-${name ?? id ?? ""}`}>{label}</h3>
+                    )}
+                    {children}
+                </div>
+            </ColumnsContext.Provider>
         </FormLayoutContext.Provider>
     );
 };

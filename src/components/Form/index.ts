@@ -13,6 +13,7 @@ export * from './Tabs';
 export * from './Tab';
 export * from './Columns';
 export * from './Column';
+export * from './Sections';
 export * from './Section';
 export * from './Rows';
 export * from './Row';

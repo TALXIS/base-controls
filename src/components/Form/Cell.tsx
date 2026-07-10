@@ -1,5 +1,6 @@
 import * as React from "react";
 import { FormLayoutContext } from "./FormLayoutContext";
+import { useRowContext } from "./RowContext";
 import { useFieldValidation } from "./form/useFieldValidation";
 import { useFormInstance } from "./form/useFormInstance";
 import { useFormUiState } from "./form/useFormUiState";
@@ -42,6 +43,8 @@ export const Cell: React.FC<IFormCellProps> = ({
     cellLabelPosition,
     children,
 }) => {
+    useRowContext();
+
     const form = useFormInstance();
     const layout = React.useContext(FormLayoutContext);
     useFormUiState();

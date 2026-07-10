@@ -1,4 +1,6 @@
 import * as React from "react";
+import { TabsContext } from "./TabsContext";
+import { FormContext } from "./form/FormContext";
 import { useFormInstance } from "./form/useFormInstance";
 import { useFormUiState } from "./form/useFormUiState";
 import { Tab, type IFormTabProps } from "./Tab";
@@ -10,6 +12,11 @@ export interface IFormTabsProps {
 }
 
 export const Tabs: React.FC<IFormTabsProps> = ({ id, className, children }) => {
+    const formContext = React.useContext(FormContext);
+    if (!formContext) {
+        throw new Error("[Form] Tabs must be rendered inside Form.");
+    }
+
     const form = useFormInstance();
     useFormUiState();
 
@@ -74,37 +81,39 @@ export const Tabs: React.FC<IFormTabsProps> = ({ id, className, children }) => {
     }
 
     return (
-        <div data-id={id ?? "form-tabs"} className={className}>
-            <div role="tablist" aria-orientation="horizontal">
-                {tabEntries.map(({ key, child }, index) => {
-                    const tabId = child.props.id ?? child.props.name ?? `tab-${index}`;
-                    const isSelected = activeTabEntry.key === key;
+        <TabsContext.Provider value={true}>
+            <div data-id={id ?? "form-tabs"} className={className}>
+                <div role="tablist" aria-orientation="horizontal">
+                    {tabEntries.map(({ key, child }, index) => {
+                        const tabId = child.props.id ?? child.props.name ?? `tab-${index}`;
+                        const isSelected = activeTabEntry.key === key;
 
-                    return (
-                        <button
-                            key={key}
-                            type="button"
-                            id={`${tabId}-trigger`}
-                            role="tab"
-                            aria-selected={isSelected}
-                            aria-controls={`${tabId}-panel`}
-                            onClick={() => {
-                                setSelectedKey(key);
-                                if (child.props.name) {
-                                    form.setActiveTab(child.props.name);
-                                }
-                            }}
-                        >
-                            {child.props.label ?? child.props.name ?? tabId}
-                        </button>
-                    );
+                        return (
+                            <button
+                                key={key}
+                                type="button"
+                                id={`${tabId}-trigger`}
+                                role="tab"
+                                aria-selected={isSelected}
+                                aria-controls={`${tabId}-panel`}
+                                onClick={() => {
+                                    setSelectedKey(key);
+                                    if (child.props.name) {
+                                        form.setActiveTab(child.props.name);
+                                    }
+                                }}
+                            >
+                                {child.props.label ?? child.props.name ?? tabId}
+                            </button>
+                        );
+                    })}
+                </div>
+                {React.cloneElement(activeTabEntry.child, {
+                    showLabel: false,
+                    panelId: `${activeTabEntry.child.props.id ?? activeTabEntry.child.props.name ?? "active-tab"}-panel`,
+                    triggerId: `${activeTabEntry.child.props.id ?? activeTabEntry.child.props.name ?? "active-tab"}-trigger`,
                 })}
             </div>
-            {React.cloneElement(activeTabEntry.child, {
-                showLabel: false,
-                panelId: `${activeTabEntry.child.props.id ?? activeTabEntry.child.props.name ?? "active-tab"}-panel`,
-                triggerId: `${activeTabEntry.child.props.id ?? activeTabEntry.child.props.name ?? "active-tab"}-trigger`,
-            })}
-        </div>
+        </TabsContext.Provider>
     );
 };

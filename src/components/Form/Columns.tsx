@@ -1,15 +1,18 @@
 import * as React from "react";
+import { ColumnsContext } from "./ColumnsContext";
 import { ResponsiveLayoutGrid } from "./ResponsiveLayoutGrid";
 import {
     buildSequentialResponsiveLayouts,
     DEFAULT_COLUMN_LAYOUT_COLS,
     mergeResponsiveCols,
+    normalizeLayoutKey,
     type FormResponsiveCols,
     widthToSpan,
 } from "./layout";
 
 type ColumnChildProps = {
     width?: React.CSSProperties["width"];
+    applyWidthStyle?: boolean;
 };
 
 export interface IFormColumnsProps {
@@ -26,7 +29,7 @@ export const Columns: React.FC<IFormColumnsProps> = ({
     className,
     itemWidths,
     responsiveCols,
-    rowHeight = 1,
+    rowHeight = 24,
     margin = [16, 16],
     containerPadding = [0, 0],
     children,
@@ -38,10 +41,12 @@ export const Columns: React.FC<IFormColumnsProps> = ({
         return null;
     }
 
+    const renderedChildren = columnChildren.map((child) => React.cloneElement(child, { applyWidthStyle: false }));
+
     const cols = mergeResponsiveCols(DEFAULT_COLUMN_LAYOUT_COLS, responsiveCols);
     const layouts = buildSequentialResponsiveLayouts(
         columnChildren.map((child, index) => ({
-            key: String(child.key ?? `form-column-${index}`),
+            key: normalizeLayoutKey(child.key, `form-column-${index}`),
             width: child.props.width ?? itemWidths?.[index],
         })),
         cols,
@@ -49,16 +54,18 @@ export const Columns: React.FC<IFormColumnsProps> = ({
     );
 
     return (
-        <ResponsiveLayoutGrid
-            dataId="form-columns"
-            className={className}
-            layouts={layouts}
-            cols={cols}
-            rowHeight={rowHeight}
-            margin={margin}
-            containerPadding={containerPadding}
-        >
-            {columnChildren}
-        </ResponsiveLayoutGrid>
+        <ColumnsContext.Provider value={true}>
+            <ResponsiveLayoutGrid
+                dataId="form-columns"
+                className={className}
+                layouts={layouts}
+                cols={cols}
+                rowHeight={rowHeight}
+                margin={margin}
+                containerPadding={containerPadding}
+            >
+                {renderedChildren}
+            </ResponsiveLayoutGrid>
+        </ColumnsContext.Provider>
     );
 };

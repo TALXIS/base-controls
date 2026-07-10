@@ -1,5 +1,7 @@
 import * as React from "react";
 import { FormLayoutContext } from "./FormLayoutContext";
+import { RowsContext } from "./RowsContext";
+import { useSectionsContext } from "./SectionsContext";
 import { useFormInstance } from "./form/useFormInstance";
 import { useFormUiState } from "./form/useFormUiState";
 
@@ -36,6 +38,8 @@ export const Section: React.FC<IFormSectionProps> = ({
     rowHeight,
     children,
 }) => {
+    useSectionsContext();
+
     const form = useFormInstance();
     const layout = React.useContext(FormLayoutContext);
     useFormUiState();
@@ -69,12 +73,14 @@ export const Section: React.FC<IFormSectionProps> = ({
 
     return (
         <FormLayoutContext.Provider value={nextLayout}>
-            <div data-id={`section-${name ?? id ?? ""}`} className={className} style={style}>
-                {showLabel && label && (
-                    <h4 data-id={`section-label-${name ?? id ?? ""}`}>{label}</h4>
-                )}
-                {children}
-            </div>
+            <RowsContext.Provider value={true}>
+                <div data-id={`section-${name ?? id ?? ""}`} className={className} style={style}>
+                    {showLabel && label && (
+                        <h4 data-id={`section-label-${name ?? id ?? ""}`}>{label}</h4>
+                    )}
+                    {children}
+                </div>
+            </RowsContext.Provider>
         </FormLayoutContext.Provider>
     );
 };
