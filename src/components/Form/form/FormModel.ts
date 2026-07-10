@@ -88,6 +88,7 @@ export class FormModel {
     private _validationSubscribers = new Map<string, Set<() => void>>();
     private _formValidationSubscribers = new Set<() => void>();
     private _attachedRecord: IRecord | null = null;
+    private _activeTabName: string | undefined;
 
     // Code-registered OnChange handlers (via XrmAttribute.addOnChange / removeOnChange)
     private _codeOnChangeHandlers = new Map<string, Set<Xrm.Events.ContextSensitiveHandler>>();
@@ -160,9 +161,45 @@ export class FormModel {
         return this._originalFormXml;
     }
 
-    public getActiveTab(): FormXmlTab | undefined {
+    public getTabs(): FormXmlTab[] {
         const formXml = this.getFormXml();
-        return formXml?.tabs?.tab?.[0];
+        return formXml?.tabs?.tab ?? [];
+    }
+
+    public getActiveTabName(): string | undefined {
+        const visibleTabs = this.getVisibleTabs();
+
+        if (visibleTabs.length === 0) {
+            this._activeTabName = undefined;
+            return undefined;
+        }
+
+        if (this._activeTabName) {
+            const matched = visibleTabs.find((tab) => tab.name === this._activeTabName);
+            if (matched?.name) {
+                return matched.name;
+            }
+        }
+
+        const fallback = visibleTabs.find((tab) => !!tab.name)?.name;
+        this._activeTabName = fallback;
+        return fallback;
+    }
+
+    public getActiveTab(): FormXmlTab | undefined {
+        const activeTabName = this.getActiveTabName();
+        return this.getVisibleTabs().find((tab) => tab.name === activeTabName)
+            ?? this.getVisibleTabs()[0];
+    }
+
+    public setActiveTab(name: string): void {
+        const tab = this.getVisibleTabs().find((currentTab) => currentTab.name === name);
+        if (!tab?.name || this._activeTabName === tab.name) {
+            return;
+        }
+
+        this._activeTabName = tab.name;
+        this._notifyUiStateSubscribers();
     }
 
     public getEntityDefinition(): IEntityDefinition | undefined {
@@ -590,6 +627,9 @@ export class FormModel {
     public setTabVisible(name: string, visible: boolean): void {
         const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === name);
         if (tab) tab.visible = visible;
+        if (!visible && this._activeTabName === name) {
+            this._activeTabName = undefined;
+        }
         this._notifyUiStateSubscribers();
     }
 
@@ -709,6 +749,10 @@ export class FormModel {
         return tab?.columns?.column
             ?.flatMap((c) => c.sections?.section ?? [])
             ?.find((s) => s.name === sectionName);
+    }
+
+    private getVisibleTabs(): FormXmlTab[] {
+        return this.getTabs().filter((tab) => tab.visible !== false);
     }
 
     public findCellByControlId(controlId: string) {
@@ -1052,6 +1096,7 @@ export class FormModel {
         this._localDirty = false;
         this._metadataOverrides.clear();
         this._uiStateSubscribers.clear();
+        this._activeTabName = undefined;
         this._codeOnChangeHandlers.clear();
         this._originalFormXml = undefined;
         this._workingFormXml = undefined;

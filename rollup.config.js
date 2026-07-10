@@ -51,7 +51,10 @@ const externalDeps = [
     'react-select',
     'react-select/async',
     'hotkeys-js',
-    'react-window'
+    'react-window',
+    'react-grid-layout',
+    'react-grid-layout/css/styles.css',
+    'react-resizable/css/styles.css',
 ]
 
 export default [

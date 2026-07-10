@@ -11,6 +11,12 @@ export interface IFormSectionProps {
     showLabel?: boolean;
     visible?: boolean;
     className?: string;
+    style?: React.CSSProperties;
+    columns?: number;
+    labelWidth?: number;
+    cellLabelAlignment?: "Center" | "Left" | "Right";
+    cellLabelPosition?: "Top" | "Left";
+    rowHeight?: number;
     children?: React.ReactNode;
 }
 
@@ -22,6 +28,12 @@ export const Section: React.FC<IFormSectionProps> = ({
     showLabel = true,
     visible = true,
     className,
+    style,
+    columns,
+    labelWidth,
+    cellLabelAlignment,
+    cellLabelPosition,
+    rowHeight,
     children,
 }) => {
     const form = useFormInstance();
@@ -37,12 +49,32 @@ export const Section: React.FC<IFormSectionProps> = ({
         return null;
     }
 
+    const nextLayout = React.useMemo(() => ({
+        ...layout,
+        tabName: resolvedTabName,
+        sectionColumns: columns ?? layout.sectionColumns,
+        labelWidth: labelWidth ?? layout.labelWidth,
+        cellLabelAlignment: cellLabelAlignment ?? layout.cellLabelAlignment,
+        cellLabelPosition: cellLabelPosition ?? layout.cellLabelPosition,
+        rowHeight: rowHeight ?? layout.rowHeight,
+    }), [
+        cellLabelAlignment,
+        cellLabelPosition,
+        columns,
+        labelWidth,
+        layout,
+        resolvedTabName,
+        rowHeight,
+    ]);
+
     return (
-        <div data-id={`section-${name ?? id ?? ""}`} className={className}>
-            {showLabel && label && (
-                <h4 data-id={`section-label-${name ?? id ?? ""}`}>{label}</h4>
-            )}
-            {children}
-        </div>
+        <FormLayoutContext.Provider value={nextLayout}>
+            <div data-id={`section-${name ?? id ?? ""}`} className={className} style={style}>
+                {showLabel && label && (
+                    <h4 data-id={`section-label-${name ?? id ?? ""}`}>{label}</h4>
+                )}
+                {children}
+            </div>
+        </FormLayoutContext.Provider>
     );
 };

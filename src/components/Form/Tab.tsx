@@ -9,6 +9,8 @@ export interface IFormTabProps {
     label?: React.ReactNode;
     showLabel?: boolean;
     visible?: boolean;
+    panelId?: string;
+    triggerId?: string;
     children?: React.ReactNode;
 }
 
@@ -18,6 +20,8 @@ export const Tab: React.FC<IFormTabProps> = ({
     label,
     showLabel = true,
     visible = true,
+    panelId,
+    triggerId,
     children,
 }) => {
     const form = useFormInstance();
@@ -33,7 +37,12 @@ export const Tab: React.FC<IFormTabProps> = ({
 
     return (
         <FormLayoutContext.Provider value={{ tabName: name ?? "" }}>
-            <div data-id={`tab-${name ?? id ?? ""}`}>
+            <div
+                data-id={`tab-${name ?? id ?? ""}`}
+                id={panelId}
+                role="tabpanel"
+                aria-labelledby={triggerId}
+            >
                 {showLabel && label && (
                     <h3 data-id={`tab-label-${name ?? id ?? ""}`}>{label}</h3>
                 )}

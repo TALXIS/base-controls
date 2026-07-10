@@ -5,7 +5,7 @@ import { IForm } from "../interfaces";
 import { formTranslations } from "../translations";
 import { FormContext } from "./FormContext";
 import { FormModel } from "./FormModel";
-import { FormTab } from "./parts/FormTab";
+import { FormTabs } from "./parts/FormTabs";
 
 const buildFormInstance = (onGetProps: () => IForm, labels: any, theme: any, metadataProvider?: any): FormModel => {
     return new FormModel({
@@ -78,7 +78,7 @@ export const Form = (props: IForm) => {
         <FormContext.Provider value={form}>
             <div className={getClassNames([className])}>
                 {hasChildren && props.children}
-                {!hasChildren && hasFormXml && <FormTab />}
+                {!hasChildren && hasFormXml && <FormTabs />}
             </div>
         </FormContext.Provider>
     );

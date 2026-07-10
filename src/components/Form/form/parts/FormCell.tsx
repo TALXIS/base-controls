@@ -9,21 +9,29 @@ export interface IFormCellProps {
 
 export const FormCell: React.FC<IFormCellProps> = ({ cell }) => {
     const control = cell.control;
+    const isSpacer = cell.userspacer === true;
 
-    if (!control) {
+    if (!control && !isSpacer) {
         return null;
     }
 
     return (
         <Cell
             id={cell.id}
-            controlId={control.id}
-            datafieldname={control.datafieldname}
+            controlId={control?.id}
+            datafieldname={control?.datafieldname}
+            visible={cell.visible !== false}
+            colspan={cell.colspan}
+            rowspan={cell.rowspan}
+            userspacer={isSpacer}
+            showLabel={cell.showlabel !== false}
         >
-            <Control
-                classid={control.classid ?? ""}
-                cellId={cell.id}
-            />
+            {control ? (
+                <Control
+                    classid={control.classid ?? ""}
+                    cellId={cell.id}
+                />
+            ) : null}
         </Cell>
     );
 };
