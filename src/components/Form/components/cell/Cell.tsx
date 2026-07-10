@@ -1,5 +1,7 @@
 import * as React from "react";
+import { Label, useTheme } from "@fluentui/react";
 import { FormCellContext } from "./context";
+import { getCellStyles } from "./styles";
 import { useSectionContext } from "../section";
 import { useFieldValidation } from "../../form/useFieldValidation";
 import { useFormInstance } from "../../form/useFormInstance";
@@ -45,6 +47,7 @@ export const Cell: React.FC<IFormCellProps> = ({
 }) => {
     useRowContext();
 
+    const theme = useTheme();
     const form = useFormInstance();
     const section = useSectionContext();
     useFormUiState();
@@ -87,28 +90,13 @@ export const Cell: React.FC<IFormCellProps> = ({
     const resolvedLabelPosition = section.cellLabelPosition ?? "Top";
     const resolvedLabelAlignment = section.cellLabelAlignment ?? "Left";
     const resolvedLabelWidth = section.labelWidth;
-    const outerStyle = getCellContainerStyle({
-        labelPosition: resolvedLabelPosition,
-        labelWidth: resolvedLabelWidth,
-    });
-    const contentStyle = resolvedLabelPosition === "Left"
-        ? { minWidth: 0 }
-        : undefined;
+    const styles = getCellStyles(theme, resolvedLabelPosition, resolvedLabelAlignment, resolvedLabelWidth, colspan, rowspan);
 
     return (
-        <FormCellContext.Provider
-            value={{
-                cellId: id,
-                showLabel,
-                visible,
-                colspan,
-                rowspan,
-                userspacer,
-            }}
-        >
+        <FormCellContext.Provider value={{ cellId: id, showLabel, visible, colspan, rowspan, userspacer }}>
             <div
+                className={styles.root}
                 data-id={`${control?.id ?? id ?? control?.datafieldname ?? "cell"}.fieldControl_container`}
-                style={outerStyle}
                 data-label-id={labelId}
                 data-lock-level={lockLevel}
                 data-available-for-phone={availableForPhone}
@@ -119,60 +107,41 @@ export const Cell: React.FC<IFormCellProps> = ({
                 data-auto={auto}
                 data-added-by={addedBy}
             >
-                {showLabel && resolvedLabel ? (
-                    <label
-                        htmlFor={control?.datafieldname ? `field-${control.datafieldname}` : undefined}
-                        style={{ textAlign: resolvedLabelAlignment.toLowerCase() as React.CSSProperties["textAlign"] }}
-                    >
-                        {resolvedLabel}
-                        {resolvedRequired ? <span data-id="required-indicator" aria-hidden="true"> *</span> : null}
-                    </label>
-                ) : null}
-                <div style={contentStyle}>
-                    {userspacer ? <div aria-hidden="true" /> : renderedChildren}
-                    {control?.datafieldname ? (
-                        <CellValidationMessage datafieldname={control.datafieldname} controlId={control.id} />
+                <div className={styles.inner}>
+                    {showLabel && resolvedLabel ? (
+                        <Label
+                            htmlFor={control?.datafieldname ? `field-${control.datafieldname}` : undefined}
+                            required={resolvedRequired}
+                            className={styles.label}
+                        >
+                            {resolvedLabel}
+                        </Label>
                     ) : null}
+                    <div className={styles.content}>
+                        {userspacer ? <div aria-hidden="true" /> : renderedChildren}
+                        {control?.datafieldname ? (
+                            <CellValidationMessage
+                                datafieldname={control.datafieldname}
+                                controlId={control.id}
+                                className={styles.error}
+                            />
+                        ) : null}
+                    </div>
                 </div>
             </div>
         </FormCellContext.Provider>
     );
 };
 
-interface ICellContainerStyleOptions {
-    labelPosition: "Top" | "Left";
-    labelWidth?: number;
-}
-
-const getCellContainerStyle = ({
-    labelPosition,
-    labelWidth,
-}: ICellContainerStyleOptions): React.CSSProperties => {
-    if (labelPosition === "Left") {
-        const gridTemplateColumns = labelWidth
-            ? `${labelWidth}px minmax(0, 1fr)`
-            : "minmax(140px, max-content) minmax(0, 1fr)";
-
-        return {
-            display: "grid",
-            gridTemplateColumns,
-            alignItems: "start",
-            columnGap: 12,
-        };
-    }
-
-    return {
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-    };
-};
-
-const CellValidationMessage: React.FC<{ datafieldname: string; controlId?: string }> = ({ datafieldname, controlId }) => {
+const CellValidationMessage: React.FC<{ datafieldname: string; controlId?: string; className?: string }> = ({
+    datafieldname,
+    controlId,
+    className,
+}) => {
     const { result: validation } = useFieldValidation(datafieldname);
 
     return validation.error ? (
-        <div data-id={`${controlId ?? datafieldname}.error`} role="alert">
+        <div data-id={`${controlId ?? datafieldname}.error`} role="alert" className={className}>
             {validation.errorMessage}
         </div>
     ) : null;

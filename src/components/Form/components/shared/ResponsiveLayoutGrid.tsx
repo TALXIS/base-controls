@@ -1,5 +1,5 @@
 import * as React from "react";
-import ReactGridLayout, { useContainerWidth, useResponsiveLayout, type Layout, type ResponsiveLayouts } from "react-grid-layout";
+import ReactGridLayout, { useContainerWidth, useResponsiveLayout, type Layout, type LayoutItem, type ResponsiveLayouts } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { DEFAULT_FORM_BREAKPOINTS, normalizeLayoutKey, type FormLayoutBreakpoint, type FormResponsiveCols } from "./layout";
@@ -80,12 +80,13 @@ export const ResponsiveLayoutGrid: React.FC<IResponsiveLayoutGridProps> = ({
         };
     }, [childEntries]);
 
-    const renderLayout = React.useMemo<Layout>(() => (
-        layout.map((item) => ({
+    const renderLayout = React.useMemo<Layout>(() => {
+        const withHeights = layout.map((item) => ({
             ...item,
             h: Math.max(item.h, getGridHeightUnits(measuredHeights[item.i], rowHeight, margin[1])),
-        }))
-    ), [layout, margin, measuredHeights, rowHeight]);
+        }));
+        return compactVertical(withHeights);
+    }, [layout, margin, measuredHeights, rowHeight]);
 
     return (
         <div ref={containerRef as React.RefObject<HTMLDivElement>} data-id={dataId} style={{ width: "100%" }}>
@@ -132,4 +133,38 @@ const getGridHeightUnits = (contentHeight: number | undefined, rowHeight: number
     }
 
     return Math.max(1, Math.ceil((contentHeight + marginY) / (rowHeight + marginY)));
+};
+
+/**
+ * Vertical compaction: re-places each item (sorted by original y then x) at the
+ * lowest y that doesn't overlap already-placed items. Fixes the case where `h`
+ * is updated after initial layout computation but `y` positions are stale.
+ */
+const compactVertical = (layout: Layout): Layout => {
+    const sorted = [...layout].sort((a, b) => a.y !== b.y ? a.y - b.y : a.x - b.x);
+    const placed: LayoutItem[] = [];
+
+    for (const item of sorted) {
+        let y = 0;
+
+        while (true) {
+            const collision = placed.find(
+                (p) =>
+                    p.x < item.x + item.w &&
+                    p.x + p.w > item.x &&
+                    p.y < y + item.h &&
+                    p.y + p.h > y,
+            );
+
+            if (!collision) {
+                break;
+            }
+
+            y = collision.y + collision.h;
+        }
+
+        placed.push({ ...item, y });
+    }
+
+    return placed;
 };

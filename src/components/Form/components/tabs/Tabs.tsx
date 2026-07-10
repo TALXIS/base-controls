@@ -1,5 +1,7 @@
 import * as React from "react";
+import { Pivot, PivotItem, useTheme } from "@fluentui/react";
 import { TabsContext } from "./context";
+import { getTabsStyles } from "./styles";
 import { FormContext } from "../../form/FormContext";
 import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
@@ -25,6 +27,7 @@ export const Tabs: React.FC<IFormTabsProps> = ({ children }) => {
         throw new Error("[Form] Tabs must be rendered inside Form.");
     }
 
+    const theme = useTheme();
     const form = useFormInstance();
     useFormUiState();
 
@@ -85,6 +88,8 @@ export const Tabs: React.FC<IFormTabsProps> = ({ children }) => {
         }
     }, [activeTabEntry, form]);
 
+    const styles = getTabsStyles(theme);
+
     if (!activeTabEntry) {
         return null;
     }
@@ -96,35 +101,38 @@ export const Tabs: React.FC<IFormTabsProps> = ({ children }) => {
                 activeTabName: activeTabEntry.metadata.name,
             }}
         >
-            <div data-id="form-tabs">
-                <div role="tablist" aria-orientation="horizontal">
+            <div data-id="form-tabs" className={styles.root}>
+                <Pivot
+                    className={styles.pivot}
+                    selectedKey={activeTabEntry.key}
+                    onLinkClick={(item) => {
+                        const key = item?.props.itemKey;
+                        if (!key) return;
+                        setSelectedKey(key);
+                        const entry = tabEntries.find((e) => e.key === key);
+                        if (entry?.metadata.name) {
+                            form.setActiveTab(entry.metadata.name);
+                        }
+                    }}
+                >
                     {tabEntries.map(({ key, metadata }, index) => {
                         const tabId = metadata.id ?? metadata.name ?? `tab-${index}`;
-                        const isSelected = activeTabEntry.key === key;
-
                         return (
-                            <button
+                            <PivotItem
                                 key={key}
-                                type="button"
+                                itemKey={key}
+                                headerText={String(metadata.label ?? metadata.name ?? tabId)}
                                 id={`${tabId}-trigger`}
-                                role="tab"
-                                aria-selected={isSelected}
                                 aria-controls={`${tabId}-panel`}
-                                onClick={() => {
-                                    setSelectedKey(key);
-                                    if (metadata.name) {
-                                        form.setActiveTab(metadata.name);
-                                    }
-                                }}
-                            >
-                                {metadata.label ?? metadata.name ?? tabId}
-                            </button>
+                            />
                         );
                     })}
+                </Pivot>
+                <div className={styles.panel}>
+                    {tabEntries.map(({ key, child }) => (
+                        <React.Fragment key={key}>{child}</React.Fragment>
+                    ))}
                 </div>
-                {tabEntries.map(({ key, child }) => (
-                    <React.Fragment key={key}>{child}</React.Fragment>
-                ))}
             </div>
         </TabsContext.Provider>
     );

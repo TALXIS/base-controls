@@ -1,6 +1,8 @@
 import * as React from "react";
+import { Text, useTheme } from "@fluentui/react";
 import { useSectionsContext } from "../sections";
 import { SectionContext } from "./context";
+import { getSectionStyles } from "./styles";
 import { useTabContext } from "../tab";
 import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
@@ -54,6 +56,7 @@ export const Section: React.FC<IFormSectionProps> = ({
 }) => {
     useSectionsContext();
 
+    const theme = useTheme();
     const form = useFormInstance();
     const tab = useTabContext();
     useFormUiState();
@@ -109,13 +112,21 @@ export const Section: React.FC<IFormSectionProps> = ({
         visible,
     ]);
 
+    const styles = getSectionStyles(theme, showBar);
+
     return (
         <SectionContext.Provider value={nextLayout}>
-            <div data-id={`section-${name ?? id ?? ""}`}>
-                {showLabel && label && (
-                    <h4 data-id={`section-label-${name ?? id ?? ""}`}>{label}</h4>
+            <div className={styles.root} data-id={`section-${name ?? id ?? ""}`}>
+                {showBar !== false && showLabel && label && (
+                    <div className={styles.header}>
+                        <Text variant="mediumPlus" className={styles.title} data-id={`section-label-${name ?? id ?? ""}`}>
+                            {label}
+                        </Text>
+                    </div>
                 )}
-                {children}
+                <div className={styles.body}>
+                    {children}
+                </div>
             </div>
         </SectionContext.Provider>
     );

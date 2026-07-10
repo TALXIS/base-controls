@@ -1,6 +1,8 @@
 import * as React from "react";
+import { Text, useTheme } from "@fluentui/react";
 import { useTabsContext } from "../tabs";
 import { TabContext } from "./context";
+import { getTabStyles } from "./styles";
 import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
 
@@ -40,6 +42,7 @@ export const Tab: React.FC<IFormTabProps> = ({
     children,
 }) => {
     const tabs = useTabsContext();
+    const theme = useTheme();
 
     const form = useFormInstance();
     useFormUiState();
@@ -61,6 +64,7 @@ export const Tab: React.FC<IFormTabProps> = ({
     }
 
     const tabId = id ?? name ?? "active-tab";
+    const styles = getTabStyles(theme);
 
     return (
         <TabContext.Provider
@@ -81,13 +85,16 @@ export const Tab: React.FC<IFormTabProps> = ({
             }}
         >
             <div
+                className={styles.panel}
                 data-id={`tab-${name ?? id ?? ""}`}
                 id={`${tabId}-panel`}
                 role="tabpanel"
                 aria-labelledby={`${tabId}-trigger`}
             >
                 {showLabel && label && (
-                    <h3 data-id={`tab-label-${name ?? id ?? ""}`}>{label}</h3>
+                    <Text variant="xLarge" className={styles.heading} data-id={`tab-label-${name ?? id ?? ""}`} block>
+                        {label}
+                    </Text>
                 )}
                 {children}
             </div>

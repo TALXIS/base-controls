@@ -1,14 +1,7 @@
 import * as React from "react";
-import { ResponsiveLayoutGrid } from "../shared";
 import { SectionsContext } from "./context";
+import { getSectionsStyles } from "./styles";
 import { useColumnContext } from "../column";
-import {
-    buildSequentialResponsiveLayouts,
-    DEFAULT_STACK_LAYOUT_COLS,
-    mergeResponsiveCols,
-    normalizeLayoutKey,
-    type FormResponsiveCols,
-} from "../shared";
 
 type SectionChildProps = {
     visible?: boolean;
@@ -32,28 +25,13 @@ export const Sections: React.FC<IFormSectionsProps> = ({ children }) => {
         return null;
     }
 
-    const cols = mergeResponsiveCols(DEFAULT_STACK_LAYOUT_COLS);
-    const layouts = buildSequentialResponsiveLayouts(
-        sectionChildren.map((child, index) => ({
-            key: normalizeLayoutKey(child.key, `form-section-${index}`),
-            span: 1,
-        })),
-        cols,
-        () => 1,
-    );
+    const styles = getSectionsStyles();
 
     return (
         <SectionsContext.Provider value={true}>
-            <ResponsiveLayoutGrid
-                dataId="form-sections"
-                layouts={layouts}
-                cols={cols}
-                rowHeight={48}
-                margin={[0, 16]}
-                containerPadding={[0, 0]}
-            >
+            <div data-id="form-sections" className={styles.root}>
                 {sectionChildren}
-            </ResponsiveLayoutGrid>
+            </div>
         </SectionsContext.Provider>
     );
 };
