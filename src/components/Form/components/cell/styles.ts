@@ -54,8 +54,8 @@ export const getCellStyles = (
             gridRow,
             padding: "4px 0",
             minWidth: 0,
+            ...innerLayout
         },
-        inner: innerLayout,
         label: {
             ...labelLayout,
             fontSize: theme.fonts.small.fontSize,

@@ -14,7 +14,7 @@ export interface ISectionContextValue {
     addedBy?: string;
     visible?: boolean;
     autoExpand?: boolean;
-    sectionColumns?: number;
+    columns?: number;
     labelWidth?: number;
     availableForPhone?: boolean;
     cellLabelAlignment?: "Center" | "Left" | "Right";

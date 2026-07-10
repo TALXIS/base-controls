@@ -84,7 +84,7 @@ export const Section: React.FC<IFormSectionProps> = ({
         addedBy,
         visible,
         autoExpand,
-        sectionColumns: columns,
+        columns,
         labelWidth,
         availableForPhone,
         cellLabelAlignment,

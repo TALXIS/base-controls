@@ -107,7 +107,6 @@ export const Cell: React.FC<IFormCellProps> = ({
                 data-auto={auto}
                 data-added-by={addedBy}
             >
-                <div className={styles.inner}>
                     {showLabel && resolvedLabel ? (
                         <Label
                             htmlFor={control?.datafieldname ? `field-${control.datafieldname}` : undefined}
@@ -127,7 +126,6 @@ export const Cell: React.FC<IFormCellProps> = ({
                             />
                         ) : null}
                     </div>
-                </div>
             </div>
         </FormCellContext.Provider>
     );

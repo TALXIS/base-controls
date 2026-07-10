@@ -16,12 +16,12 @@ export const Rows: React.FC<IFormRowsProps> = ({ children }) => {
         return null;
     }
 
-    const cols = Math.max(section.sectionColumns ?? 1, 1);
+    const cols = Math.max(section.columns ?? 1, 1);
     const styles = getRowsStyles(cols);
 
     return (
         <RowsContext.Provider value={true}>
-            <div data-id="form-rows" className={styles.root}>
+            <div data-id="form-rows" className={styles.rows}>
                 {rowChildren}
             </div>
         </RowsContext.Provider>
