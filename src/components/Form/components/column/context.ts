@@ -1,12 +1,9 @@
 import * as React from "react";
+import type { IFormColumnProps } from "./Column";
 
-export interface IColumnContextValue {
-    width?: React.CSSProperties["width"];
-}
+export const ColumnContext = React.createContext<IFormColumnProps | null>(null);
 
-export const ColumnContext = React.createContext<IColumnContextValue | null>(null);
-
-export const useColumnContext = (): IColumnContextValue => {
+export const useColumnContext = (): IFormColumnProps => {
     const context = React.useContext(ColumnContext);
     if (context === null) {
         throw new Error("[Form] Sections must be rendered inside Column.");

@@ -1,12 +1,9 @@
 import * as React from "react";
+import type { IFormRowProps } from "./Row";
 
-export interface IRowContextValue {
-    height?: string;
-}
+export const RowContext = React.createContext<IFormRowProps | null>(null);
 
-export const RowContext = React.createContext<IRowContextValue | null>(null);
-
-export const useRowContext = (): IRowContextValue => {
+export const useRowContext = (): IFormRowProps => {
     const context = React.useContext(RowContext);
     if (context === null) {
         throw new Error("[Form] Cell must be rendered inside Row.");

@@ -7,14 +7,12 @@ export interface IFormColumnProps {
     children?: React.ReactNode;
 }
 
-export const Column = ({
-    width,
-    children,
-}: IFormColumnProps) => {
+export const Column = (props: IFormColumnProps) => {
     useColumnsContext();
+    const { children } = props;
 
     return (
-        <ColumnContext.Provider value={{ width }}>
+        <ColumnContext.Provider value={props}>
             <div data-id="tab-column">
                 {children}
             </div>

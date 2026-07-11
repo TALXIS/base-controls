@@ -24,28 +24,20 @@ export interface IFormTabProps {
     children?: React.ReactNode;
 }
 
-export const Tab = ({
-    id,
-    name,
-    group,
-    verticalLayout,
-    showLabel = true,
-    labelId,
-    isUserDefined,
-    lockLevel,
-    addedBy,
-    expanded,
-    visible = true,
-    availableForPhone,
-    collapsible,
-    label,
-    children,
-}: IFormTabProps) => {
+export const Tab = (props: IFormTabProps) => {
     const tabs = useTabsContext();
     const theme = useTheme();
 
     const form = useFormInstance();
     useFormUiState();
+    const {
+        id,
+        name,
+        showLabel = true,
+        visible = true,
+        label,
+        children,
+    } = props;
 
     if (visible === false) {
         return null;
@@ -67,23 +59,7 @@ export const Tab = ({
     const styles = getTabStyles(theme);
 
     return (
-        <TabContext.Provider
-            value={{
-                id,
-                name,
-                group,
-                verticalLayout,
-                showLabel,
-                labelId,
-                isUserDefined,
-                lockLevel,
-                addedBy,
-                expanded,
-                visible,
-                availableForPhone,
-                collapsible,
-            }}
-        >
+        <TabContext.Provider value={props}>
             <div
                 className={styles.panel}
                 data-id={`tab-${name ?? id ?? ""}`}

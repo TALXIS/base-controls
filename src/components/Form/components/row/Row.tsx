@@ -10,14 +10,15 @@ export interface IFormRowProps {
     children?: React.ReactNode;
 }
 
-export const Row = ({ height, children }: IFormRowProps) => {
+export const Row = (props: IFormRowProps) => {
     useRowsContext();
     const section = useSectionContext();
+    const { height, children } = props;
     const styles = getRowStyles(height, section.columns);
 
     return (
         <div className={styles.row}>
-            <RowContext.Provider value={{ height }}>
+            <RowContext.Provider value={props}>
                 {children}
             </RowContext.Provider>
         </div>

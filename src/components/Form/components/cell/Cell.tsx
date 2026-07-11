@@ -29,33 +29,30 @@ export interface IFormCellProps {
 
 
 export const Cell = (props: IFormCellProps) => {
-    
-}
-
-export const Cell2 = ({
-    id,
-    labelId,
-    lockLevel,
-    showLabel = true,
-    visible = true,
-    colspan,
-    rowspan,
-    userspacer = false,
-    availableForPhone,
-    isPreviewCell,
-    isStreamCell,
-    isChartCell,
-    isTileCell,
-    auto,
-    addedBy,
-    children,
-}: IFormCellProps) => {
     useRowContext();
 
     const theme = useTheme();
     const form = useFormInstance();
     const section = useSectionContext();
     useFormUiState();
+    const {
+        id,
+        labelId,
+        lockLevel,
+        showLabel = true,
+        visible = true,
+        colspan,
+        rowspan,
+        userspacer = false,
+        availableForPhone,
+        isPreviewCell,
+        isStreamCell,
+        isChartCell,
+        isTileCell,
+        auto,
+        addedBy,
+        children,
+    } = props;
     const control = getControlProps(children);
 
     if (visible === false) {
@@ -110,7 +107,7 @@ export const Cell2 = ({
     );
 
     return (
-        <FormCellContext.Provider value={{ cellId: id, showLabel, visible, colspan, rowspan, userspacer }}>
+        <FormCellContext.Provider value={props}>
             <div
                 className={styles.cell}
                 data-id={`${control?.id ?? id ?? control?.datafieldname ?? "cell"}.fieldControl_container`}

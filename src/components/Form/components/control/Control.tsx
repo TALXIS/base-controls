@@ -25,7 +25,7 @@ export const Control = ({
 
     if (!isStandardControlClassId(classid)) {
         throw new UnsupportedControlError({
-            cellId: cell.cellId,
+            cellId: cell.id,
             classId: classid,
             controlName: resolvedControlId,
         });
@@ -33,7 +33,7 @@ export const Control = ({
 
     if (!resolvedDatafieldname) {
         throw new UnsupportedControlError({
-            cellId: cell.cellId,
+            cellId: cell.id,
             classId: classid,
             controlName: resolvedControlId,
         });

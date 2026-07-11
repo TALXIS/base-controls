@@ -32,36 +32,22 @@ export interface IFormSectionProps {
     children?: React.ReactNode;
 }
 
-export const Section = ({
-    id,
-    name,
-    group,
-    showLabel = true,
-    labelId,
-    showBar,
-    isUserDefined,
-    height,
-    lockLevel,
-    layout,
-    addedBy,
-    visible = true,
-    autoExpand,
-    columns,
-    labelWidth,
-    cellLabelTopBreakpoint,
-    availableForPhone,
-    cellLabelAlignment,
-    cellLabelPosition,
-    rowHeight,
-    label,
-    children,
-}: IFormSectionProps) => {
+export const Section = (props: IFormSectionProps) => {
     useSectionsContext();
 
     const theme = useTheme();
     const form = useFormInstance();
     const tab = useTabContext();
     useFormUiState();
+    const {
+        id,
+        name,
+        showLabel = true,
+        showBar,
+        visible = true,
+        label,
+        children,
+    } = props;
 
     if (visible === false) {
         return null;
@@ -72,54 +58,10 @@ export const Section = ({
         return null;
     }
 
-    const nextLayout = React.useMemo(() => ({
-        id,
-        name,
-        group,
-        showLabel,
-        labelId,
-        showBar,
-        isUserDefined,
-        height,
-        lockLevel,
-        layout,
-        addedBy,
-        visible,
-        autoExpand,
-        columns,
-        labelWidth,
-        cellLabelTopBreakpoint,
-        availableForPhone,
-        cellLabelAlignment,
-        cellLabelPosition,
-        rowHeight,
-    }), [
-        addedBy,
-        autoExpand,
-        availableForPhone,
-        cellLabelAlignment,
-        cellLabelPosition,
-        columns,
-        cellLabelTopBreakpoint,
-        group,
-        height,
-        id,
-        isUserDefined,
-        labelId,
-        labelWidth,
-        layout,
-        lockLevel,
-        name,
-        rowHeight,
-        showBar,
-        showLabel,
-        visible,
-    ]);
-
     const styles = getSectionStyles(theme, showBar);
 
     return (
-        <SectionContext.Provider value={nextLayout}>
+        <SectionContext.Provider value={props}>
             <div className={styles.root} data-id={`section-${name ?? id ?? ""}`}>
                 {showBar !== false && showLabel && label && (
                     <div className={styles.header}>
