@@ -22,13 +22,26 @@ export interface IFormCellProps {
     isStreamCell?: boolean;
     isChartCell?: boolean;
     isTileCell?: boolean;
+    
     auto?: boolean;
     addedBy?: string;
     children?: React.ReactNode;
 }
 
-
 export const Cell = (props: IFormCellProps) => {
+    const {visible = true, lockLevel, showLabel = true} = props;
+    const form = useFormInstance();
+    const [isDisabled, setIsDisabled] = React.useState<boolean>(false);
+    //this information actually comes from the control below => the control should call a method from a context to set the lock
+    
+
+    return <FormCellContext.Provider value={{...props, onSetDisabled: setIsDisabled}}>
+        <div>
+    </FormCellContext.Provider>;
+}
+
+
+export const Cell2 = (props: IFormCellProps) => {
     useRowContext();
 
     const theme = useTheme();

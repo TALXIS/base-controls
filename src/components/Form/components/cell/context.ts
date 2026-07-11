@@ -1,7 +1,12 @@
 import * as React from "react";
 import type { IFormCellProps } from "./Cell";
 
-export const FormCellContext = React.createContext<IFormCellProps | null>(null);
+export interface IFormCellContext extends IFormCellProps {
+    onSetDisabled: (disabled: boolean) => void;
+}
+
+export const FormCellContext = React.createContext<IFormCellContext| null>(null);
+
 
 export const useFormCellContext = (): IFormCellProps => {
     const context = React.useContext(FormCellContext);
