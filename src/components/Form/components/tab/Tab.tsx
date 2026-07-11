@@ -22,12 +22,12 @@ export interface IFormTabProps {
     availableForPhone?: boolean;
     collapsible?: boolean;
     label?: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 
-export const Tab = (props: {tab: IFormTabProps, children?: React.ReactNode}) => {
-    //check if child are of columns?
-    const tab = useTab(props.tab.id);
+export const Tab = (props: IFormTabProps) => {
+    const tab = useTab(props.id);
     return <>
         {props.children}
     </>

@@ -41,6 +41,7 @@ interface IAttributeMetadataOverride {
 
 export interface ITab extends IFormTabProps {
     id: string;
+    update: (props: IFormTabProps) => void;
 }
 
 export interface IColumn extends IFormColumnProps {
@@ -48,126 +49,27 @@ export interface IColumn extends IFormColumnProps {
 }
 
 export class Tab {
-    private _onGetProps: () => IFormTabProps;
+    public id: string = crypto.randomUUID();
+    public name?: IFormTabProps["name"];
+    public group?: IFormTabProps["group"];
+    public verticalLayout?: IFormTabProps["verticalLayout"];
+    public showLabel?: IFormTabProps["showLabel"];
+    public labelId?: IFormTabProps["labelId"];
+    public isUserDefined?: IFormTabProps["isUserDefined"];
+    public lockLevel?: IFormTabProps["lockLevel"];
+    public addedBy?: IFormTabProps["addedBy"];
+    public expanded?: IFormTabProps["expanded"];
+    public visible?: IFormTabProps["visible"];
+    public availableForPhone?: IFormTabProps["availableForPhone"];
+    public collapsible?: IFormTabProps["collapsible"];
+    public label?: IFormTabProps["label"];
 
-    constructor(onGetProps: () => IFormTabProps) {
-        this._onGetProps = onGetProps;
+    constructor(props: IFormTabProps) {
+        this.update(props);
     }
 
-    private _getProps(): IFormTabProps {
-        return this._onGetProps();
-    }
-
-    public get id(): string {
-        return this._getProps().id;
-    }
-
-    public set id(value: string) {
-        this._getProps().id = value;
-    }
-
-    public get name(): IFormTabProps["name"] {
-        return this._getProps().name;
-    }
-
-    public set name(value: IFormTabProps["name"]) {
-        this._getProps().name = value;
-    }
-
-    public get group(): IFormTabProps["group"] {
-        return this._getProps().group;
-    }
-
-    public set group(value: IFormTabProps["group"]) {
-        this._getProps().group = value;
-    }
-
-    public get verticalLayout(): IFormTabProps["verticalLayout"] {
-        return this._getProps().verticalLayout;
-    }
-
-    public set verticalLayout(value: IFormTabProps["verticalLayout"]) {
-        this._getProps().verticalLayout = value;
-    }
-
-    public get showLabel(): IFormTabProps["showLabel"] {
-        return this._getProps().showLabel;
-    }
-
-    public set showLabel(value: IFormTabProps["showLabel"]) {
-        this._getProps().showLabel = value;
-    }
-
-    public get labelId(): IFormTabProps["labelId"] {
-        return this._getProps().labelId;
-    }
-
-    public set labelId(value: IFormTabProps["labelId"]) {
-        this._getProps().labelId = value;
-    }
-
-    public get isUserDefined(): IFormTabProps["isUserDefined"] {
-        return this._getProps().isUserDefined;
-    }
-
-    public set isUserDefined(value: IFormTabProps["isUserDefined"]) {
-        this._getProps().isUserDefined = value;
-    }
-
-    public get lockLevel(): IFormTabProps["lockLevel"] {
-        return this._getProps().lockLevel;
-    }
-
-    public set lockLevel(value: IFormTabProps["lockLevel"]) {
-        this._getProps().lockLevel = value;
-    }
-
-    public get addedBy(): IFormTabProps["addedBy"] {
-        return this._getProps().addedBy;
-    }
-
-    public set addedBy(value: IFormTabProps["addedBy"]) {
-        this._getProps().addedBy = value;
-    }
-
-    public get expanded(): IFormTabProps["expanded"] {
-        return this._getProps().expanded;
-    }
-
-    public set expanded(value: IFormTabProps["expanded"]) {
-        this._getProps().expanded = value;
-    }
-
-    public get visible(): IFormTabProps["visible"] {
-        return this._getProps().visible;
-    }
-
-    public set visible(value: IFormTabProps["visible"]) {
-        this._getProps().visible = value;
-    }
-
-    public get availableForPhone(): IFormTabProps["availableForPhone"] {
-        return this._getProps().availableForPhone;
-    }
-
-    public set availableForPhone(value: IFormTabProps["availableForPhone"]) {
-        this._getProps().availableForPhone = value;
-    }
-
-    public get collapsible(): IFormTabProps["collapsible"] {
-        return this._getProps().collapsible;
-    }
-
-    public set collapsible(value: IFormTabProps["collapsible"]) {
-        this._getProps().collapsible = value;
-    }
-
-    public get label(): IFormTabProps["label"] {
-        return this._getProps().label;
-    }
-
-    public set label(value: IFormTabProps["label"]) {
-        this._getProps().label = value;
+    public update(props: IFormTabProps): void {
+        Object.assign(this, props);
     }
 }
 
@@ -181,7 +83,7 @@ export interface IForm {
     events: IEventEmitter<IFormEvents>;
     getTabs(): ITab[];
     getTab(id: string): ITab | null;
-    addTab(onGetProps: () => IFormTabProps): ITab;
+    addTab(props: IFormTabProps): ITab;
     getExpandedTab(): ITab | null;
     setExpandedTab(id: string): void;
 }
@@ -197,8 +99,8 @@ export class Form implements IForm {
         const tab = this._tabs.find((currentTab) => currentTab.id === id) ?? null;
         return tab;
     }
-    public addTab(onGetProps: () => IFormTabProps): ITab {
-        const tab = new Tab(onGetProps);
+    public addTab(props: IFormTabProps): ITab {
+        const tab = new Tab(props);
         if(this.getTab(tab.id)) {
             throw new Error(`[Form] Tab with id "${tab.id}" already exists.`);
         }

@@ -26,7 +26,9 @@ export interface IFormColumnsProps {
 }
 
 export const Columns = (props: IFormColumnProps) => {
-    const styles = useMemo(() => getColumnsStyles(), []);
+    const childrenArray = React.Children.toArray(props.children).filter(child => React.isValidElement(child));
+    const childCount = childrenArray.length;
+    const styles = useMemo(() => getColumnsStyles(), [childCount]);
 
     return <div className={styles.columns}>
         {props.children}
