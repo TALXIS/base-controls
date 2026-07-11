@@ -22,7 +22,6 @@ export interface IFormCellProps {
     isStreamCell?: boolean;
     isChartCell?: boolean;
     isTileCell?: boolean;
-    
     auto?: boolean;
     addedBy?: string;
     children?: React.ReactNode;
@@ -36,7 +35,7 @@ export const Cell = (props: IFormCellProps) => {
     
 
     return <FormCellContext.Provider value={{...props, onSetDisabled: setIsDisabled}}>
-        <div>
+        <div>cell</div>
     </FormCellContext.Provider>;
 }
 

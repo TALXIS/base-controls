@@ -1,4 +1,4 @@
-import { IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import {
     AttributeTypeEnum,
     FormXml,
@@ -16,16 +16,17 @@ import { ITheme } from "@talxis/react-components";
 import { getTheme } from "@fluentui/react";
 import { ITranslation } from "../../../hooks";
 import { formTranslations } from "../translations";
-import { IForm, IFormOutputs, IFormParameters, IAttributeConfiguration, AttributeRequiredLevel, IAttributeOption, IFieldValidationResult, FieldValidator, VALID_RESULT } from "../interfaces";
+import { IForm as IRuntimeForm, IFormOutputs, IFormParameters, IAttributeConfiguration, AttributeRequiredLevel, IAttributeOption, IFieldValidationResult, FieldValidator, VALID_RESULT } from "../interfaces";
 import { XrmFormContext } from "./xrm/XrmFormContext";
 import { XrmExecutionContext } from "./xrm/XrmExecutionContext";
 import { XrmOnLoadEventArgs, XrmOnSaveEventArgs } from "./xrm/XrmEventArgs";
+import { IFormColumnProps, IFormTabProps } from "../..";
 
 const HANDLER_TIMEOUT_MS = 10_000;
 
 interface IFormDependencies {
     labels: Required<ITranslation<typeof formTranslations>>;
-    onGetProps: () => IForm;
+    onGetProps: () => IRuntimeForm;
     theme?: ITheme;
     metadataProvider?: IMetadataProvider;
     scriptLoader?: IScriptLoader;
@@ -35,6 +36,214 @@ interface IAttributeMetadataOverride {
     requiredLevel?: Xrm.Attributes.RequirementLevel;
     addedOptions?: IAttributeOption[];
     removedOptionValues?: Set<number>;
+}
+
+
+export interface ITab extends IFormTabProps {
+    id: string;
+}
+
+export interface IColumn extends IFormColumnProps {
+    
+}
+
+export class Tab {
+    private _onGetProps: () => IFormTabProps;
+
+    constructor(onGetProps: () => IFormTabProps) {
+        this._onGetProps = onGetProps;
+    }
+
+    private _getProps(): IFormTabProps {
+        return this._onGetProps();
+    }
+
+    public get id(): string {
+        return this._getProps().id;
+    }
+
+    public set id(value: string) {
+        this._getProps().id = value;
+    }
+
+    public get name(): IFormTabProps["name"] {
+        return this._getProps().name;
+    }
+
+    public set name(value: IFormTabProps["name"]) {
+        this._getProps().name = value;
+    }
+
+    public get group(): IFormTabProps["group"] {
+        return this._getProps().group;
+    }
+
+    public set group(value: IFormTabProps["group"]) {
+        this._getProps().group = value;
+    }
+
+    public get verticalLayout(): IFormTabProps["verticalLayout"] {
+        return this._getProps().verticalLayout;
+    }
+
+    public set verticalLayout(value: IFormTabProps["verticalLayout"]) {
+        this._getProps().verticalLayout = value;
+    }
+
+    public get showLabel(): IFormTabProps["showLabel"] {
+        return this._getProps().showLabel;
+    }
+
+    public set showLabel(value: IFormTabProps["showLabel"]) {
+        this._getProps().showLabel = value;
+    }
+
+    public get labelId(): IFormTabProps["labelId"] {
+        return this._getProps().labelId;
+    }
+
+    public set labelId(value: IFormTabProps["labelId"]) {
+        this._getProps().labelId = value;
+    }
+
+    public get isUserDefined(): IFormTabProps["isUserDefined"] {
+        return this._getProps().isUserDefined;
+    }
+
+    public set isUserDefined(value: IFormTabProps["isUserDefined"]) {
+        this._getProps().isUserDefined = value;
+    }
+
+    public get lockLevel(): IFormTabProps["lockLevel"] {
+        return this._getProps().lockLevel;
+    }
+
+    public set lockLevel(value: IFormTabProps["lockLevel"]) {
+        this._getProps().lockLevel = value;
+    }
+
+    public get addedBy(): IFormTabProps["addedBy"] {
+        return this._getProps().addedBy;
+    }
+
+    public set addedBy(value: IFormTabProps["addedBy"]) {
+        this._getProps().addedBy = value;
+    }
+
+    public get expanded(): IFormTabProps["expanded"] {
+        return this._getProps().expanded;
+    }
+
+    public set expanded(value: IFormTabProps["expanded"]) {
+        this._getProps().expanded = value;
+    }
+
+    public get visible(): IFormTabProps["visible"] {
+        return this._getProps().visible;
+    }
+
+    public set visible(value: IFormTabProps["visible"]) {
+        this._getProps().visible = value;
+    }
+
+    public get availableForPhone(): IFormTabProps["availableForPhone"] {
+        return this._getProps().availableForPhone;
+    }
+
+    public set availableForPhone(value: IFormTabProps["availableForPhone"]) {
+        this._getProps().availableForPhone = value;
+    }
+
+    public get collapsible(): IFormTabProps["collapsible"] {
+        return this._getProps().collapsible;
+    }
+
+    public set collapsible(value: IFormTabProps["collapsible"]) {
+        this._getProps().collapsible = value;
+    }
+
+    public get label(): IFormTabProps["label"] {
+        return this._getProps().label;
+    }
+
+    public set label(value: IFormTabProps["label"]) {
+        this._getProps().label = value;
+    }
+}
+
+
+
+export interface IFormEvents {
+    onTabExpanded: (tab: ITab) => void;
+}
+
+export interface IForm {
+    events: IEventEmitter<IFormEvents>;
+    getTabs(): ITab[];
+    getTab(id: string): ITab | null;
+    addTab(onGetProps: () => IFormTabProps): ITab;
+    getExpandedTab(): ITab | null;
+    setExpandedTab(id: string): void;
+}
+
+export class Form implements IForm {
+    public readonly events: IEventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
+    private _tabs: ITab[] = [];
+
+    public getTabs(): ITab[] {
+        return this._tabs;
+    }
+    public getTab(id: string): ITab | null {
+        const tab = this._tabs.find((currentTab) => currentTab.id === id) ?? null;
+        return tab;
+    }
+    public addTab(onGetProps: () => IFormTabProps): ITab {
+        const tab = new Tab(onGetProps);
+        if(this.getTab(tab.id)) {
+            throw new Error(`[Form] Tab with id "${tab.id}" already exists.`);
+        }
+        this._tabs.push(tab);
+        return tab;
+    }
+    public getExpandedTab(): ITab {
+        return this._tabs.find(tab => tab.expanded) ?? this._tabs[0];
+    }
+    public setExpandedTab(id: string): void {
+        const oldExpandedTab = this.getExpandedTab();
+        oldExpandedTab.expanded = false;
+        const newExpandedTab = this.getTab(id);
+        
+        if (!newExpandedTab) {
+            throw new Error(`[Form] Tab with id "${id}" not found.`);
+        }
+        newExpandedTab.expanded = true;
+        this.events.dispatchEvent('onTabExpanded', newExpandedTab);
+    }
+    
+}
+
+
+export class Form2 implements IForm {
+    private _tabs: ITab[] = [];
+
+    public getTabs = (): ITab[] => {
+        return [...this._tabs];
+    };
+
+    public getTab = (id: string): ITab => {
+        const tab = this._tabs.find((currentTab) => currentTab.id === id);
+        if (!tab) {
+            throw new Error(`[Form] Tab with id "${id}" was not found.`);
+        }
+
+        return tab;
+    };
+
+    public addTab = (props: IFormTabProps): ITab => {
+        const tab = new Tab(props);
+        this._tabs.push(tab);
+        return tab;
+    };
 }
 
 /**
@@ -124,6 +333,10 @@ export class FormModel {
     }
 
     public getProps(): IForm {
+        return this._getProps();
+    }
+
+    public getRuntimeProps(): IRuntimeForm {
         return this._getProps();
     }
 

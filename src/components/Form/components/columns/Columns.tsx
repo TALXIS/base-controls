@@ -10,6 +10,9 @@ import {
     type FormResponsiveCols,
     widthToSpan,
 } from "../shared";
+import { IFormColumnProps } from "../..";
+import { getColumnsStyles } from "./styles";
+import { useMemo } from "react";
 
 type ColumnChildProps = {
     width?: React.CSSProperties["width"];
@@ -22,7 +25,15 @@ export interface IFormColumnsProps {
     children?: React.ReactNode;
 }
 
-export const Columns = ({ children }: IFormColumnsProps) => {
+export const Columns = (props: IFormColumnProps) => {
+    const styles = useMemo(() => getColumnsStyles(), []);
+
+    return <div className={styles.columns}>
+        {props.children}
+    </div>
+}
+
+/* export const Columns = ({ children }: IFormColumnsProps) => {
     useTabContext();
 
     const columnChildren = React.Children.toArray(children)
@@ -57,3 +68,4 @@ export const Columns = ({ children }: IFormColumnsProps) => {
         </ColumnsContext.Provider>
     );
 };
+ */

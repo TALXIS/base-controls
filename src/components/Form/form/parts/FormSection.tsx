@@ -13,7 +13,7 @@ export const FormSection = ({ section }: IFormSectionProps) => {
     const sectionLabel = form.resolveLocalizedLabel(section.labels, section.name ?? "");
     const components = useFormComponents();
 
-    const renderedSection = components.onRenderSection({
+    return components.onRenderSection({
         id: section.id,
         name: section.name,
         group: section.group,
@@ -45,6 +45,4 @@ export const FormSection = ({ section }: IFormSectionProps) => {
             </Rows>
         )
     });
-
-    return renderedSection == null ? null : <>{renderedSection}</>;
 };

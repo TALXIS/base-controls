@@ -1,10 +1,15 @@
 import * as React from "react";
-import { Pivot, PivotItem, useTheme } from "@fluentui/react";
+import { Pivot, useTheme, PivotItem } from "@fluentui/react";
 import { TabsContext } from "./context";
 import { getTabsStyles } from "./styles";
 import { FormContext } from "../../form/FormContext";
 import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
+import { useForm } from "../../form/context";
+import { IFormEvents } from "../../form/FormModel";
+import { useEventEmitter } from "../../../../hooks";
+import { useRerender } from "@talxis/react-components";
+import { Tab } from "../tab/Tab";
 
 export interface IFormTabsProps {
     children?: React.ReactNode;
@@ -21,7 +26,52 @@ type TabChildProps = ITabEntryMetadata & {
     tab?: ITabEntryMetadata;
 };
 
-export const Tabs = ({ children }: IFormTabsProps) => {
+
+export const Tabs = (props: IFormTabsProps) => {
+    const form = useForm();
+    const childrenArray = React.Children.toArray(props.children).filter(child => React.isValidElement(child));
+    const childrenArrayRef = React.useRef(childrenArray);
+    childrenArrayRef.current = childrenArray;
+    const rerender = useRerender();
+    useEventEmitter<IFormEvents>(form.events, 'onTabExpanded', rerender)
+
+    if (childrenArray.length === 0) {
+        throw new Error("[Form] Tabs must have at least one Tab child.");
+    }
+
+    const getExpandedTabId = (): string => {
+        let tab = form.getExpandedTab();
+        //can happen in codeful mode when whe are yet to build the model
+        if (!tab) {
+            const expandedChild = childrenArray.find(child => child.props.tab.expanded === true) ?? childrenArray[0];
+            return expandedChild.props.tab.id;
+        }
+        return tab.id;
+    }
+
+    const onRenderPivotItem = (child: React.ReactElement) => {
+        const id = child.props.tab.id;
+        const tab = form.getTab(id);
+        const name = tab?.name ?? child.props.tab.name ?? tab?.id ?? child.props.tab.id;
+
+        if (!tab) {
+            //closure
+            form.addTab(() => {
+                return childrenArrayRef.current.find(c => c.props.tab.id === id)?.props.tab
+            });
+        }
+        
+        return <PivotItem key={id} headerText={name} itemKey={id}>
+            {child}
+        </PivotItem>
+    }
+
+    return <Pivot selectedKey={getExpandedTabId()} onLinkClick={(item) => form.setExpandedTab(item?.props.itemKey!)}>
+        {childrenArray.map(child => onRenderPivotItem(child))}
+    </Pivot>
+}
+
+export const Tabs2 = ({ children }: IFormTabsProps) => {
     const formContext = React.useContext(FormContext);
     if (!formContext) {
         throw new Error("[Form] Tabs must be rendered inside Form.");

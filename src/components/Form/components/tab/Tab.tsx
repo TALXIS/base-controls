@@ -5,9 +5,10 @@ import { TabContext } from "./context";
 import { getTabStyles } from "./styles";
 import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
+import { useTab } from "./useTab";
 
 export interface IFormTabProps {
-    id?: string;
+    id: string;
     name?: string;
     group?: string;
     verticalLayout?: boolean;
@@ -21,10 +22,19 @@ export interface IFormTabProps {
     availableForPhone?: boolean;
     collapsible?: boolean;
     label?: React.ReactNode;
-    children?: React.ReactNode;
 }
 
-export const Tab = (props: IFormTabProps) => {
+
+export const Tab = (props: {tab: IFormTabProps, children?: React.ReactNode}) => {
+    //check if child are of columns?
+    const tab = useTab(props.tab.id);
+    return <>
+        {props.children}
+    </>
+}
+
+
+export const Tab2 = (props: IFormTabProps) => {
     const tabs = useTabsContext();
     const theme = useTheme();
 

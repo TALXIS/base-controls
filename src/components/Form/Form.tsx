@@ -3,22 +3,35 @@ import { getClassNames } from "@talxis/react-components";
 import { useControl } from "../../hooks";
 import { IForm } from "./interfaces";
 import { formTranslations } from "./translations";
-import { FormContext } from "./form/FormContext";
-import { FormModel } from "./form/FormModel";
+import { Form as FormModel, Tab } from "./form/FormModel";
 import { FormTabs } from "./form/parts/FormTabs";
 import { FormComponentsContext } from "./context";
 import { FormComponents } from "./components/components";
+import { FormContext } from "./form/context";
+import { Pivot } from "@fluentui/react";
 
-const buildFormInstance = (onGetProps: () => IForm, labels: any, theme: any, metadataProvider?: any): FormModel => {
-    return new FormModel({
+/* const buildFormInstance = (onGetProps: () => IForm, labels: any, theme: any, metadataProvider?: any): FormModel => {
+/*     return new FormModel({
         labels,
         onGetProps,
         theme,
         metadataProvider,
-    });
-};
+    }); */
 
-export const Form = (props: IForm) => {
+export interface IFormProps {
+    children?: React.ReactNode;
+}
+
+export const FormComponent = (props: IFormProps) => {
+    const { children } = props;
+    const form = useMemo(() => new FormModel(), []);
+
+    return <FormContext.Provider value={form}>
+        {children}
+    </FormContext.Provider>
+}
+
+/* export const Form2 = (props: IForm) => {
     const { labels, theme, className } = useControl('Form', props, formTranslations);
     const components = useMemo(() => ({ ...FormComponents, ...props.components }), []);
     const propsRef = useRef<IForm>(props);
@@ -87,3 +100,4 @@ export const Form = (props: IForm) => {
         </FormContext.Provider>
     );
 };
+ */
