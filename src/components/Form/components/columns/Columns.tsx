@@ -25,13 +25,15 @@ export interface IFormColumnsProps {
     children?: React.ReactNode;
 }
 
-export const Columns = (props: IFormColumnProps) => {
+export const Columns = (props: IFormColumnsProps) => {
     const childrenArray = React.Children.toArray(props.children).filter(child => React.isValidElement(child));
     const childCount = childrenArray.length;
-    const styles = useMemo(() => getColumnsStyles(), [childCount]);
+    const styles = useMemo(() => getColumnsStyles({} as any), [childCount]);
 
     return <div className={styles.columns}>
-        {props.children}
+        <ColumnsContext.Provider value={true}>
+            {props.children}
+        </ColumnsContext.Provider>
     </div>
 }
 
