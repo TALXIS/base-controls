@@ -8,3 +8,4 @@ export * from './rows';
 export * from './row';
 export * from './cell';
 export * from './control';
+export * from './components';

@@ -27,7 +27,12 @@ export interface IFormCellProps {
     children?: React.ReactNode;
 }
 
-export const Cell = ({
+
+export const Cell = (props: IFormCellProps) => {
+    
+}
+
+export const Cell2 = ({
     id,
     labelId,
     lockLevel,
