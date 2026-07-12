@@ -1,16 +1,17 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 
-export const getSectionStyles = (theme: ITheme, showBar: boolean | undefined) => {
+export const getSectionStyles = (theme: ITheme) => {
     return mergeStyleSets({
-        root: {
+        section: {
             border: `1px solid ${theme.semanticColors.bodyDivider}`,
             borderRadius: 2,
             backgroundColor: theme.semanticColors.bodyBackground,
             overflow: "hidden",
             containerType: "inline-size",
+            margin: 6
         },
         header: {
-            display: showBar !== false ? "flex" : "none",
+            display: "flex",
             alignItems: "center",
             padding: "8px 12px",
             backgroundColor: theme.semanticColors.bodyBackgroundChecked,

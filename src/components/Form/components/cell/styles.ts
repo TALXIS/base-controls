@@ -5,7 +5,15 @@ export type CellLabelAlignment = "Center" | "Left" | "Right";
 
 const CONTENT_MIN_WIDTH = 80;
 
-export const getCellStyles = (
+export const getCellStyles = () => {
+    return mergeStyleSets({
+        cell: {
+            
+        }
+    })
+}
+
+export const getCellStyles2 = (
     theme: ITheme,
     labelPosition: CellLabelPosition,
     labelAlignment: CellLabelAlignment,

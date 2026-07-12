@@ -8,21 +8,13 @@ export interface IFormRowsProps {
 }
 
 export const Rows = ({ children }: IFormRowsProps) => {
-    const section = useSectionContext();
-
-    const rowChildren = React.Children.toArray(children).filter(React.isValidElement);
-
-    if (rowChildren.length === 0) {
-        return null;
-    }
-
-    const cols = Math.max(section.columns ?? 1, 1);
-    const styles = getRowsStyles(cols);
+    useSectionContext();
+    const styles = React.useMemo(() => getRowsStyles(), []);
 
     return (
         <RowsContext.Provider value={true}>
             <div data-id="form-rows" className={styles.rows}>
-                {rowChildren}
+                {children}
             </div>
         </RowsContext.Provider>
     );

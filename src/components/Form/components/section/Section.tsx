@@ -6,6 +6,11 @@ import { getSectionStyles } from "./styles";
 import { useTabContext } from "../tab";
 import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
+import { useMemo } from "react";
+import { useForm } from "../../form/context";
+import type { ISection, ITab } from "../../form/FormModel";
+import type { IFormTabProps } from "../tab/Tab";
+import { useFormComponent } from "../../form/useFormComponent";
 
 export interface IFormSectionProps {
     id?: string;
@@ -33,6 +38,30 @@ export interface IFormSectionProps {
 }
 
 export const Section = (props: IFormSectionProps) => {
+    useSectionsContext()
+    const { children, showBar = true, showLabel = true, label, name, id } = props;
+    const section = useFormComponent('Section', props)
+    const theme = useTheme();
+    const styles = useMemo(() => getSectionStyles(theme), [theme]);
+    const isHeaderVisible = showBar && showLabel && label;
+
+    return <div className={styles.section} data-id={`section-${section.id}`}>
+        {isHeaderVisible && (
+            <div className={styles.header}>
+                <Text variant="mediumPlus" className={styles.title}>
+                    {label}
+                </Text>
+            </div>
+        )}
+        <div className={styles.body}>
+            <SectionContext.Provider value={section}>
+                {children}
+            </SectionContext.Provider>
+        </div>
+    </div>
+}
+
+export const Section2 = (props: IFormSectionProps) => {
     useSectionsContext();
 
     const theme = useTheme();

@@ -20,7 +20,7 @@ import { IForm as IRuntimeForm, IFormOutputs, IFormParameters, IAttributeConfigu
 import { XrmFormContext } from "./xrm/XrmFormContext";
 import { XrmExecutionContext } from "./xrm/XrmExecutionContext";
 import { XrmOnLoadEventArgs, XrmOnSaveEventArgs } from "./xrm/XrmEventArgs";
-import { IFormColumnProps, IFormTabProps } from "../..";
+import { IFormColumnProps, IFormSectionProps, IFormTabProps } from "../..";
 
 const HANDLER_TIMEOUT_MS = 10_000;
 
@@ -44,11 +44,51 @@ export interface ITab extends IFormTabProps {
     update: (props: IFormTabProps) => void;
 }
 
+export interface ISection extends IFormSectionProps {
+    id: string;
+    update: (props: IFormSectionProps) => void;
+}
+
 export interface IColumn extends IFormColumnProps {
     
 }
 
-export class Tab {
+
+export class Section implements ISection {
+    public id: string = crypto.randomUUID();
+    public name?: IFormSectionProps["name"];
+    public group?: IFormSectionProps["group"];
+    public showLabel?: IFormSectionProps["showLabel"];
+    public labelId?: IFormSectionProps["labelId"];
+    public showBar?: IFormSectionProps["showBar"];
+    public isUserDefined?: IFormSectionProps["isUserDefined"];
+    public height?: IFormSectionProps["height"];
+    public lockLevel?: IFormSectionProps["lockLevel"];
+    public layout?: IFormSectionProps["layout"];
+    public addedBy?: IFormSectionProps["addedBy"];
+    public visible?: IFormSectionProps["visible"];
+    public autoExpand?: IFormSectionProps["autoExpand"];
+    public columns?: IFormSectionProps["columns"];
+    public labelWidth?: IFormSectionProps["labelWidth"];
+    public cellLabelTopBreakpoint?: IFormSectionProps["cellLabelTopBreakpoint"];
+    public availableForPhone?: IFormSectionProps["availableForPhone"];
+    public cellLabelAlignment?: IFormSectionProps["cellLabelAlignment"];
+    public cellLabelPosition?: IFormSectionProps["cellLabelPosition"];
+    public rowHeight?: IFormSectionProps["rowHeight"];
+    public label?: IFormSectionProps["label"];
+
+    constructor(props: IFormSectionProps) {
+        this.update(props);
+    }
+
+    public update(props: IFormSectionProps): void {
+        Object.assign(this, props);
+    }
+}
+
+
+
+export class Tab implements ITab {
     public id: string = crypto.randomUUID();
     public name?: IFormTabProps["name"];
     public group?: IFormTabProps["group"];
@@ -80,17 +120,22 @@ export interface IFormEvents {
 }
 
 export interface IForm {
+    id: string;
     events: IEventEmitter<IFormEvents>;
     getTabs(): ITab[];
     getTab(id: string): ITab | null;
     addTab(props: IFormTabProps): ITab;
     getExpandedTab(): ITab | null;
-    setExpandedTab(id: string): void;
+    getSections: () => ISection[];
+    getSection: (id: string) => ISection | null;
+    addSection: (props: IFormSectionProps) => ISection;
 }
 
 export class Form implements IForm {
+    public id: string = crypto.randomUUID();
     public readonly events: IEventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _tabs: ITab[] = [];
+    private _sections: ISection[] = [];
 
     public getTabs(): ITab[] {
         return this._tabs;
@@ -110,16 +155,19 @@ export class Form implements IForm {
     public getExpandedTab(): ITab {
         return this._tabs.find(tab => tab.expanded) ?? this._tabs[0];
     }
-    public setExpandedTab(id: string): void {
-        const oldExpandedTab = this.getExpandedTab();
-        oldExpandedTab.expanded = false;
-        const newExpandedTab = this.getTab(id);
-        
-        if (!newExpandedTab) {
-            throw new Error(`[Form] Tab with id "${id}" not found.`);
+    public getSections(): ISection[] {
+        return this._sections;
+    }
+    public getSection(id: string): ISection | null {
+        return this._sections.find(section => section.id === id) ?? null;
+    }
+    public addSection(props: IFormSectionProps): ISection {
+        const section = new Section(props);
+        if(this.getSection(section.id)) {
+            throw new Error(`[Form] Section with id "${section.id}" already exists.`);
         }
-        newExpandedTab.expanded = true;
-        this.events.dispatchEvent('onTabExpanded', newExpandedTab);
+        this._sections.push(section);
+        return section;
     }
     
 }

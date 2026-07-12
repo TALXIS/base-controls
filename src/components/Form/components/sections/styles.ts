@@ -2,10 +2,9 @@ import { mergeStyleSets } from "@fluentui/react";
 
 export const getSectionsStyles = () => {
     return mergeStyleSets({
-        root: {
+        sections: {
             display: "flex",
-            flexDirection: "column",
-            gap: 16,
+            flexDirection: "column"
         },
     });
 };

@@ -8,7 +8,8 @@ import { FormTabs } from "./form/parts/FormTabs";
 import { FormComponentsContext } from "./context";
 import { FormComponents } from "./components/components";
 import { FormContext } from "./form/context";
-import { Pivot } from "@fluentui/react";
+import { initializeIcons, Pivot } from "@fluentui/react";
+import { getFormStyles } from "./form/styles";
 
 /* const buildFormInstance = (onGetProps: () => IForm, labels: any, theme: any, metadataProvider?: any): FormModel => {
 /*     return new FormModel({
@@ -22,12 +23,17 @@ export interface IFormProps {
     children?: React.ReactNode;
 }
 
+initializeIcons();
+
 export const FormComponent = (props: IFormProps) => {
     const { children } = props;
     const form = useMemo(() => new FormModel(), []);
+    const styles = useMemo(() => getFormStyles(), []);
 
     return <FormContext.Provider value={form}>
-        {children}
+        <div className={styles.form} data-id={`form-${form.id}`}>
+            {children}
+        </div>
     </FormContext.Provider>
 }
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Label, useTheme } from "@fluentui/react";
+import { Icon, Label, useTheme } from "@fluentui/react";
 import { FormCellContext } from "./context";
 import { getCellStyles } from "./styles";
 import { useSectionContext } from "../section";
@@ -7,10 +7,12 @@ import { useFieldValidation } from "../../form/useFieldValidation";
 import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
 import { useRowContext } from "../row";
+import { RequiredLevelEnum } from "@talxis/client-metadata";
 
 export interface IFormCellProps {
     id?: string;
     labelId?: string;
+    label?: string;
     lockLevel?: number;
     showLabel?: boolean;
     visible?: boolean;
@@ -28,14 +30,28 @@ export interface IFormCellProps {
 }
 
 export const Cell = (props: IFormCellProps) => {
-    const {visible = true, lockLevel, showLabel = true} = props;
+    const { visible = true, lockLevel, showLabel = true, label } = props;
     const form = useFormInstance();
-    const [isDisabled, setIsDisabled] = React.useState<boolean>(false);
-    //this information actually comes from the control below => the control should call a method from a context to set the lock
-    
+    const styles = React.useMemo(() => getCellStyles(), []);
+    const [isDisabled, setIsDisabled] = React.useState<boolean>(true);
+    const requirementLevel = RequiredLevelEnum.SystemRequired;
 
-    return <FormCellContext.Provider value={{...props, onSetDisabled: setIsDisabled}}>
-        <div>cell</div>
+    const showRequiredIndicator = () => {
+        //@ts-ignore
+        return requirementLevel && requirementLevel !== RequiredLevelEnum.None;
+    };
+
+
+    return <FormCellContext.Provider value={{ ...props, onSetDisabled: setIsDisabled }}>
+        <div className={styles.cell}>
+            {showLabel && label &&
+                <Label>
+                     {isDisabled && <Icon iconName="Lock" />}
+                    label {showRequiredIndicator() && <span>*</span>}
+                </Label>
+            }
+            <div>control</div>
+        </div>
     </FormCellContext.Provider>;
 }
 
@@ -83,8 +99,8 @@ export const Cell2 = (props: IFormCellProps) => {
     const resolvedDisabled = control?.disabled !== undefined
         ? control.disabled
         : disabledOverride !== undefined
-        ? disabledOverride
-        : undefined;
+            ? disabledOverride
+            : undefined;
 
     let resolvedRequired = control?.isrequired ?? false;
     if (control?.isrequired === undefined && control?.datafieldname) {
@@ -133,25 +149,25 @@ export const Cell2 = (props: IFormCellProps) => {
                 data-auto={auto}
                 data-added-by={addedBy}
             >
-                    {showLabel && resolvedLabel ? (
-                        <Label
-                            htmlFor={control?.datafieldname ? `field-${control.datafieldname}` : undefined}
-                            required={resolvedRequired}
-                            className={styles.label}
-                        >
-                            {resolvedLabel}
-                        </Label>
+                {showLabel && resolvedLabel ? (
+                    <Label
+                        htmlFor={control?.datafieldname ? `field-${control.datafieldname}` : undefined}
+                        required={resolvedRequired}
+                        className={styles.label}
+                    >
+                        {resolvedLabel}
+                    </Label>
+                ) : null}
+                <div className={styles.content}>
+                    {userspacer ? <div aria-hidden="true" /> : renderedChildren}
+                    {control?.datafieldname ? (
+                        <CellValidationMessage
+                            datafieldname={control.datafieldname}
+                            controlId={control.id}
+                            className={styles.error}
+                        />
                     ) : null}
-                    <div className={styles.content}>
-                        {userspacer ? <div aria-hidden="true" /> : renderedChildren}
-                        {control?.datafieldname ? (
-                            <CellValidationMessage
-                                datafieldname={control.datafieldname}
-                                controlId={control.id}
-                                className={styles.error}
-                            />
-                        ) : null}
-                    </div>
+                </div>
             </div>
         </FormCellContext.Provider>
     );
