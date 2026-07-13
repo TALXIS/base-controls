@@ -9,6 +9,11 @@ export const getCellStyles = () => {
     return mergeStyleSets({
         cell: {
             
+        },
+        labelContainer: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5
         }
     })
 }
@@ -26,6 +31,9 @@ export const getCellStyles2 = (
         cell: {
         },
         label: {
+
+        },
+        labelContainer: {
 
         },
         content: {

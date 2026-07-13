@@ -35,6 +35,10 @@ export const Cell = (props: IFormCellProps) => {
     const styles = React.useMemo(() => getCellStyles(), []);
     const [isDisabled, setIsDisabled] = React.useState<boolean>(true);
     const requirementLevel = RequiredLevelEnum.SystemRequired;
+    //@ts-ignore
+    const shouRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
+    const shouldRenderLabel = (showLabel && label) || shouRequiredIndicator;
+    const shouldRenderLabelContainer = shouldRenderLabel || isDisabled;
 
     const showRequiredIndicator = () => {
         //@ts-ignore
@@ -44,12 +48,16 @@ export const Cell = (props: IFormCellProps) => {
 
     return <FormCellContext.Provider value={{ ...props, onSetDisabled: setIsDisabled }}>
         <div className={styles.cell}>
-            {showLabel && label &&
-                <Label>
-                     {isDisabled && <Icon iconName="Lock" />}
-                    label {showRequiredIndicator() && <span>*</span>}
-                </Label>
-            }
+            {shouldRenderLabelContainer && 
+            <div className={styles.labelContainer}>
+                {isDisabled && <Icon iconName="Lock" />}
+                {shouldRenderLabel &&
+                    <Label required={showRequiredIndicator()}>
+                        {label}
+                    </Label>
+                }
+            </div>
+}
             <div>control</div>
         </div>
     </FormCellContext.Provider>;

@@ -4,7 +4,7 @@ import { IForm, ISection, ITab } from "./FormModel";
 
 type FormComponentType = 'Section' | 'Tab';
 
-const getMethods = (type: FormComponentType, form: IForm) => {
+const getMethods = (type: FormComponentType, form: IForm | ISection) => {
     if (type === 'Section') {
         return {
             getter: (id: string) => form.getSection(id),

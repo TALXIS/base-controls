@@ -20,7 +20,7 @@ import { IForm as IRuntimeForm, IFormOutputs, IFormParameters, IAttributeConfigu
 import { XrmFormContext } from "./xrm/XrmFormContext";
 import { XrmExecutionContext } from "./xrm/XrmExecutionContext";
 import { XrmOnLoadEventArgs, XrmOnSaveEventArgs } from "./xrm/XrmEventArgs";
-import { IFormColumnProps, IFormSectionProps, IFormTabProps } from "../..";
+import { IFormCellProps, IFormColumnProps, IFormSectionProps, IFormTabProps } from "../..";
 
 const HANDLER_TIMEOUT_MS = 10_000;
 
@@ -44,18 +44,34 @@ export interface ITab extends IFormTabProps {
     update: (props: IFormTabProps) => void;
 }
 
+export interface ICell extends IFormCellProps {
+    id: string;
+    update: (props: IFormCellProps) => void;
+}
+
+export interface ISectionEvents {
+    onCellAdded: (cell: ICell) => void;
+}
+
 export interface ISection extends IFormSectionProps {
     id: string;
+    events: IEventEmitter<ISectionEvents>
+    addCell: (props: IFormCellProps) => ICell;
+    getCells: () => ICell[];
+    getCell: (id: string) => ICell | null;
     update: (props: IFormSectionProps) => void;
 }
 
 export interface IColumn extends IFormColumnProps {
-    
+
 }
 
 
 export class Section implements ISection {
+    //we need to be aware which cells belong to a section
+    private _cells: ICell[] = [];
     public id: string = crypto.randomUUID();
+    public events: IEventEmitter<ISectionEvents> = new EventEmitter<ISectionEvents>();
     public name?: IFormSectionProps["name"];
     public group?: IFormSectionProps["group"];
     public showLabel?: IFormSectionProps["showLabel"];
@@ -84,9 +100,52 @@ export class Section implements ISection {
     public update(props: IFormSectionProps): void {
         Object.assign(this, props);
     }
+
+    public addCell(props: IFormCellProps): ICell {
+        const cell = new Cell(props);
+        if (this._cells.find(c => c.id === cell.id)) {
+            throw new Error(`[Form] Cell with id "${cell.id}" already exists in section "${this.id}".`);
+        }
+        this._cells.push(cell);
+        this.events.dispatchEvent('onCellAdded', cell);
+        return cell;
+    }
+
+    public getCells(): ICell[] {
+        return this._cells;
+    }
+
+    public getCell(id: string): ICell | null {
+        return this._cells.find(c => c.id === id) ?? null;
+    }
 }
 
+export class Cell implements ICell {
+    public id: string = crypto.randomUUID();
+    public labelId?: IFormCellProps["labelId"];
+    public label?: IFormCellProps["label"];
+    public lockLevel?: IFormCellProps["lockLevel"];
+    public showLabel?: IFormCellProps["showLabel"];
+    public visible?: IFormCellProps["visible"];
+    public colspan?: IFormCellProps["colspan"];
+    public rowspan?: IFormCellProps["rowspan"];
+    public userspacer?: IFormCellProps["userspacer"];
+    public availableForPhone?: IFormCellProps["availableForPhone"];
+    public isPreviewCell?: IFormCellProps["isPreviewCell"];
+    public isStreamCell?: IFormCellProps["isStreamCell"];
+    public isChartCell?: IFormCellProps["isChartCell"];
+    public isTileCell?: IFormCellProps["isTileCell"];
+    public auto?: IFormCellProps["auto"];
+    public addedBy?: IFormCellProps["addedBy"];
 
+    constructor(props: IFormCellProps) {
+        this.update(props);
+    }
+
+    public update(props: IFormCellProps): void {
+        Object.assign(this, props);
+    }
+}
 
 export class Tab implements ITab {
     public id: string = crypto.randomUUID();
@@ -122,6 +181,9 @@ export interface IFormEvents {
 export interface IForm {
     id: string;
     events: IEventEmitter<IFormEvents>;
+    getCell: (id: string) => ICell | null;
+    addCell: (props: IFormCellProps) => ICell;
+    getCells: () => ICell[];
     getTabs(): ITab[];
     getTab(id: string): ITab | null;
     addTab(props: IFormTabProps): ITab;
@@ -129,6 +191,7 @@ export interface IForm {
     getSections: () => ISection[];
     getSection: (id: string) => ISection | null;
     addSection: (props: IFormSectionProps) => ISection;
+
 }
 
 export class Form implements IForm {
@@ -146,7 +209,7 @@ export class Form implements IForm {
     }
     public addTab(props: IFormTabProps): ITab {
         const tab = new Tab(props);
-        if(this.getTab(tab.id)) {
+        if (this.getTab(tab.id)) {
             throw new Error(`[Form] Tab with id "${tab.id}" already exists.`);
         }
         this._tabs.push(tab);
@@ -163,1217 +226,25 @@ export class Form implements IForm {
     }
     public addSection(props: IFormSectionProps): ISection {
         const section = new Section(props);
-        if(this.getSection(section.id)) {
+        if (this.getSection(section.id)) {
             throw new Error(`[Form] Section with id "${section.id}" already exists.`);
         }
         this._sections.push(section);
         return section;
     }
-    
+    public getCell(id: string): ICell | null {
+        return this._sections.flatMap(section => section.getCells()).find(cell => cell.id === id) ?? null;
+    }
+    public getCells(): ICell[] {
+        return this._sections.flatMap(section => section.getCells());
+    }
+    //should only be called when adding without a section, otherwise use section.addCell
+    public addCell(props: IFormCellProps): ICell {
+        const cell = new Cell(props);
+        if(this.getCell(cell.id)) {
+            throw new Error(`[Form] Cell with id "${cell.id}" already exists.`);
+        }
+        return cell;
+    }
+
 }
-
-
-export class Form2 implements IForm {
-    private _tabs: ITab[] = [];
-
-    public getTabs = (): ITab[] => {
-        return [...this._tabs];
-    };
-
-    public getTab = (id: string): ITab => {
-        const tab = this._tabs.find((currentTab) => currentTab.id === id);
-        if (!tab) {
-            throw new Error(`[Form] Tab with id "${id}" was not found.`);
-        }
-
-        return tab;
-    };
-
-    public addTab = (props: IFormTabProps): ITab => {
-        const tab = new Tab(props);
-        this._tabs.push(tab);
-        return tab;
-    };
-}
-
-/**
- * Seam for loading and resolving FormXml `formLibraries` / web-resource scripts.
- * The default implementation is a no-op that never resolves any functions.
- */
-export interface IScriptLoader {
-    /**
-     * Load (or ensure already loaded) the web-resource script identified by `libraryName`.
-     * Implementations should resolve once the script is ready to use.
-     */
-    load(libraryName: string): Promise<void>;
-
-    /**
-     * Resolve a handler function by its library and dot-notation function path.
-     * Returns the function if found, or `null` if not available.
-     * Example: resolve("myapp_/scripts/handler.js", "MyNamespace.handleOnLoad")
-     */
-    resolve(libraryName: string, functionName: string): ((...args: any[]) => any) | null;
-}
-
-const NOOP_SCRIPT_LOADER: IScriptLoader = {
-    load: async () => { /* no-op stub */ },
-    resolve: () => null,
-};
-
-export interface IRegisteredField {
-    name: string;
-}
-
-export class FormModel {
-    private _getProps: () => IForm;
-    private _labels: Required<ITranslation<typeof formTranslations>>;
-    private _theme: ITheme;
-    private _metadataProvider?: IMetadataProvider;
-    private _scriptLoader: IScriptLoader;
-
-    private _originalFormXml: FormXml | undefined;
-    private _workingFormXml: FormXml | undefined;
-    private _parsedFromRaw: string | null | undefined;
-
-    private _resolvedEntity: IEntityDefinition | undefined;
-    private _entityResolutionPromise: Promise<IEntityDefinition | undefined> | null = null;
-
-    private _registeredFields = new Map<string, IRegisteredField>();
-    private _fieldSubscribers = new Map<string, Set<() => void>>();
-    private _formDirtySubscribers = new Set<() => void>();
-    private _localDirty = false;
-    private _validators = new Map<string, FieldValidator>();
-    private _validationResults = new Map<string, IFieldValidationResult>();
-    private _validationSubscribers = new Map<string, Set<() => void>>();
-    private _formValidationSubscribers = new Set<() => void>();
-    private _attachedRecord: IRecord | null = null;
-    private _activeTabName: string | undefined;
-
-    // Code-registered OnChange handlers (via XrmAttribute.addOnChange / removeOnChange)
-    private _codeOnChangeHandlers = new Map<string, Set<Xrm.Events.ContextSensitiveHandler>>();
-
-    // ------------------------------------------------------------------
-    // UI state (Xrm visibility / disabled / label overrides applied
-    // directly to _workingFormXml; metadata overrides kept separately)
-    // ------------------------------------------------------------------
-    private _metadataOverrides = new Map<string, IAttributeMetadataOverride>();
-    private _uiStateSubscribers = new Set<() => void>();
-
-    // Lazily-created Xrm surface
-    private _formContext: Xrm.FormContext | null = null;
-    private _executionContext: Xrm.Events.EventContext | null = null;
-
-    private _onFieldValueChanged = (columnName: string, _newValue: any) => {
-        this._localDirty = true;
-        this._notifyFormDirtySubscribers();
-        this._emitOutputs();
-        this._notifyFieldSubscribers(columnName);
-        if (this._validationResults.has(columnName) || this._validators.has(columnName)) {
-            this.validateField(columnName);
-        }
-    };
-
-    constructor({ onGetProps, labels, theme, metadataProvider, scriptLoader }: IFormDependencies) {
-        this._getProps = onGetProps;
-        this._labels = labels;
-        this._theme = theme ?? getTheme();
-        this._metadataProvider = metadataProvider;
-        this._scriptLoader = scriptLoader ?? NOOP_SCRIPT_LOADER;
-        this._attachRecordListeners();
-    }
-
-    public getProps(): IForm {
-        return this._getProps();
-    }
-
-    public getRuntimeProps(): IRuntimeForm {
-        return this._getProps();
-    }
-
-    public getRecord(): IRecord {
-        return this._getProps().parameters.Form;
-    }
-
-    public getTheme(): ITheme {
-        return this._theme;
-    }
-
-    public getLabels(): Required<ITranslation<typeof formTranslations>> {
-        return this._labels;
-    }
-
-    public getFormXml(): FormXml | undefined {
-        const raw = this._getProps().parameters.FormXml?.raw;
-        if (raw == null || raw === "") {
-            this._originalFormXml = undefined;
-            this._workingFormXml = undefined;
-            this._parsedFromRaw = raw;
-            return undefined;
-        }
-        if (raw !== this._parsedFromRaw) {
-            this._originalFormXml = parseFormXml(raw);
-            this._workingFormXml = JSON.parse(JSON.stringify(this._originalFormXml));
-            this._parsedFromRaw = raw;
-        }
-        return this._workingFormXml;
-    }
-
-    public getOriginalFormXml(): FormXml | undefined {
-        // Ensure parsed
-        this.getFormXml();
-        return this._originalFormXml;
-    }
-
-    public getTabs(): FormXmlTab[] {
-        const formXml = this.getFormXml();
-        return formXml?.tabs?.tab ?? [];
-    }
-
-    public getActiveTabName(): string | undefined {
-        const visibleTabs = this.getVisibleTabs();
-
-        if (visibleTabs.length === 0) {
-            this._activeTabName = undefined;
-            return undefined;
-        }
-
-        if (this._activeTabName) {
-            const matched = visibleTabs.find((tab) => tab.name === this._activeTabName);
-            if (matched?.name) {
-                return matched.name;
-            }
-        }
-
-        const fallback = visibleTabs.find((tab) => !!tab.name)?.name;
-        this._activeTabName = fallback;
-        return fallback;
-    }
-
-    public getActiveTab(): FormXmlTab | undefined {
-        const activeTabName = this.getActiveTabName();
-        return this.getVisibleTabs().find((tab) => tab.name === activeTabName)
-            ?? this.getVisibleTabs()[0];
-    }
-
-    public setActiveTab(name: string): void {
-        const tab = this.getVisibleTabs().find((currentTab) => currentTab.name === name);
-        if (!tab?.name || this._activeTabName === tab.name) {
-            return;
-        }
-
-        this._activeTabName = tab.name;
-        this._notifyUiStateSubscribers();
-    }
-
-    public getEntityDefinition(): IEntityDefinition | undefined {
-        const fromParams = this._getProps().parameters.EntityMetadata;
-        if (fromParams) {
-            return fromParams;
-        }
-        if (this._resolvedEntity) {
-            return this._resolvedEntity;
-        }
-        this._kickOffMetadataProviderResolution();
-        return undefined;
-    }
-
-    public isDialog(): boolean {
-        return this._getProps().parameters.IsDialog?.raw === true;
-    }
-
-    /**
-     * Resolves the active language LCID for formXml `<labels>` lookup, in order:
-     * 1. `parameters.LanguageCode.raw`
-     * 2. `context.userSettings.languageId`
-     * 3. 1033 (en-US)
-     */
-    public getLanguageCode(): number {
-        const explicit = this._getProps().parameters.LanguageCode?.raw;
-        if (typeof explicit === 'number' && !Number.isNaN(explicit) && explicit > 0) {
-            return explicit;
-        }
-        const fromContext = (this._getProps().context as any)?.userSettings?.languageId;
-        if (typeof fromContext === 'number' && !Number.isNaN(fromContext) && fromContext > 0) {
-            return fromContext;
-        }
-        return 1033;
-    }
-
-    /**
-     * Pick a label from a formXml `<labels>` node, matching the active LCID.
-     * Falls back to the first available label, then to the provided fallback.
-     */
-    public resolveLocalizedLabel(labels: FormXmlLabels | undefined, fallback: string): string {
-        const entries = labels?.label;
-        if (!entries || entries.length === 0) {
-            return fallback;
-        }
-        const lcid = this.getLanguageCode();
-        const exact = entries.find((l) => l.languagecode === lcid);
-        if (exact?.description) {
-            return exact.description;
-        }
-        const anyWithText = entries.find((l) => !!l.description);
-        return anyWithText?.description ?? fallback;
-    }
-
-    public getFieldLabel(datafieldname: string, control?: { labels?: FormXmlLabels }): string {
-        if (control?.labels) {
-            const fromXml = this.resolveLocalizedLabel(control.labels, '');
-            if (fromXml) {
-                return fromXml;
-            }
-        }
-        const entity = this.getEntityDefinition();
-        const attr = entity?.Attributes?.find((a) => a.LogicalName === datafieldname);
-        return attr?.DisplayName || datafieldname;
-    }
-
-    public getValue(datafieldname: string): unknown {
-        const record = this.getRecord();
-        if (!record) {
-            return undefined;
-        }
-        try {
-            return record.getValue(datafieldname);
-        } catch {
-            return undefined;
-        }
-    }
-
-    public setValue(datafieldname: string, value: unknown, shouldFireOnChange: boolean = true): void {
-        const record = this.getRecord();
-        if (!record) {
-            return;
-        }
-        record.setValue(datafieldname, value);
-        this._localDirty = true;
-        this._notifyFormDirtySubscribers();
-        this._emitOutputs();
-        this._notifyFieldSubscribers(datafieldname);
-        if (this._validationResults.has(datafieldname) || this._validators.has(datafieldname)) {
-            this.validateField(datafieldname);
-        }
-        if (shouldFireOnChange) {
-            this.fireOnChange(datafieldname).catch((err) => {
-                console.error(`[Form] fireOnChange("${datafieldname}") rejected unexpectedly:`, err);
-            });
-        }
-    }
-
-    /**
-     * Subscribe to value changes for a single attribute. The callback is invoked
-     * synchronously after the underlying record emits `onFieldValueChanged` for
-     * that column (or after a direct `setValue` on the model). Returns an
-     * unsubscribe function.
-     */
-    public subscribeFieldValue(name: string, cb: () => void): () => void {
-        let set = this._fieldSubscribers.get(name);
-        if (!set) {
-            set = new Set();
-            this._fieldSubscribers.set(name, set);
-        }
-        set.add(cb);
-        return () => {
-            const s = this._fieldSubscribers.get(name);
-            if (!s) return;
-            s.delete(cb);
-            if (s.size === 0) {
-                this._fieldSubscribers.delete(name);
-            }
-        };
-    }
-
-    private _notifyFieldSubscribers(name: string): void {
-        const set = this._fieldSubscribers.get(name);
-        if (!set) return;
-        set.forEach((cb) => {
-            try { cb(); } catch { /* swallow subscriber errors */ }
-        });
-    }
-
-    public register(field: IRegisteredField): void {
-        this._registeredFields.set(field.name, field);
-    }
-
-    public unregister(name: string): void {
-        this._registeredFields.delete(name);
-    }
-
-    public getRegisteredFields(): IRegisteredField[] {
-        return Array.from(this._registeredFields.values());
-    }
-
-    public getAttributeConfiguration(name: string): IAttributeConfiguration {
-        const entity = this.getEntityDefinition();
-        if (!entity) {
-            throw new Error(
-                `[Form] Cannot resolve attribute configuration for "${name}" — no IEntityDefinition is available. ` +
-                `Provide parameters.EntityMetadata or wire a metadata provider on the Form props ` +
-                `(use DynamicEntityDefinition / DynamicAttributesMetadataProvider for dialog / unbound scenarios).`
-            );
-        }
-        const attr = entity.Attributes?.find((a) => a.LogicalName === name);
-        const base: IAttributeConfiguration = attr
-            ? {
-                requiredLevel: mapRequiredLevel(attr.RequiredLevel),
-                options: mapOptions(attr.OptionSet),
-                format: attr.Format,
-                maxLength: attr.MaxLength,
-                minValue: attr.MinValue,
-                maxValue: attr.MaxValue,
-                targets: attr.Targets,
-            }
-            : { requiredLevel: 'none' };
-
-        // Apply runtime metadata overrides
-        const meta = this._metadataOverrides.get(name);
-        if (meta) {
-            if (meta.requiredLevel !== undefined) {
-                base.requiredLevel = meta.requiredLevel;
-            }
-            if (meta.addedOptions || meta.removedOptionValues) {
-                let opts = [...(base.options ?? [])];
-                if (meta.removedOptionValues) {
-                    opts = opts.filter((o) => !meta.removedOptionValues!.has(o.value));
-                }
-                if (meta.addedOptions) {
-                    opts = [...opts, ...meta.addedOptions];
-                }
-                base.options = opts;
-            }
-        }
-
-        return base;
-    }
-
-    // ------------------------------------------------------------------
-    // Validation
-    // ------------------------------------------------------------------
-
-    /**
-     * Register a custom validator for a single column. The validator runs after
-     * built-in required-level / max-length checks during `validateField`.
-     *
-     * When the wrapped `IRecord` exposes `expressions.setValidationExpression`
-     * (the real `@talxis/client-libraries` runtime), the validator is also
-     * forwarded so downstream consumers reading `record.getField(name).isValid()`
-     * stay in sync.
-     */
-    public setValidator(name: string, validator: FieldValidator): void {
-        this._validators.set(name, validator);
-        const record = this.getRecord() as any;
-        const setExpr = record?.expressions?.setValidationExpression;
-        if (typeof setExpr === 'function') {
-            try { setExpr.call(record.expressions, name, validator); } catch { /* ignore */ }
-        }
-    }
-
-    public clearValidator(name: string): void {
-        this._validators.delete(name);
-    }
-
-    public getValidator(name: string): FieldValidator | undefined {
-        return this._validators.get(name);
-    }
-
-    /**
-     * Runs all validation rules for the column and caches the result:
-     *   1. Required-level (`required` and value is empty → error).
-     *   2. Max-length for string attributes.
-     *   3. Custom validator registered via `setValidator`.
-     *   4. As a final fallback, defer to `record.getField(name).isValid()` if
-     *      the record exposes that surface (real `IRecord`).
-     *
-     * Subscribers attached via `subscribeFieldValidation` are notified.
-     */
-    public validateField(name: string): IFieldValidationResult {
-        const result = this._computeFieldValidation(name);
-        const prev = this._validationResults.get(name);
-        this._validationResults.set(name, result);
-        if (!prev || prev.error !== result.error || prev.errorMessage !== result.errorMessage) {
-            this._notifyValidationSubscribers(name);
-            this._notifyFormValidationSubscribers();
-        }
-        return result;
-    }
-
-    /**
-     * Returns the cached validation result for a column, or `VALID_RESULT` if
-     * the column has not been validated yet.
-     */
-    public getFieldError(name: string): IFieldValidationResult {
-        return this._validationResults.get(name) ?? VALID_RESULT;
-    }
-
-    /**
-     * Validates every known column (formXml cells + registered codeful fields
-     * + columns with a registered custom validator). Returns the overall
-     * validity of the form.
-     */
-    public validateForm(): boolean {
-        const names = this._collectKnownFieldNames();
-        let allValid = true;
-        for (const name of names) {
-            const r = this.validateField(name);
-            if (r.error) allValid = false;
-        }
-        return allValid;
-    }
-
-    /**
-     * Whether the form is currently valid based on cached validation results.
-     * Does not re-run any validators — call `validateForm` first to ensure
-     * the cache reflects current state.
-     */
-    public isFormValid(): boolean {
-        for (const r of this._validationResults.values()) {
-            if (r.error) return false;
-        }
-        const record = this.getRecord() as any;
-        if (typeof record?.isValid === 'function') {
-            try { return record.isValid() !== false; } catch { /* ignore */ }
-        }
-        return true;
-    }
-
-    public subscribeFieldValidation(name: string, cb: () => void): () => void {
-        let set = this._validationSubscribers.get(name);
-        if (!set) {
-            set = new Set();
-            this._validationSubscribers.set(name, set);
-        }
-        set.add(cb);
-        return () => {
-            const s = this._validationSubscribers.get(name);
-            if (!s) return;
-            s.delete(cb);
-            if (s.size === 0) this._validationSubscribers.delete(name);
-        };
-    }
-
-    public subscribeFormValidation(cb: () => void): () => void {
-        this._formValidationSubscribers.add(cb);
-        return () => { this._formValidationSubscribers.delete(cb); };
-    }
-
-    private _computeFieldValidation(name: string): IFieldValidationResult {
-        let cfg: IAttributeConfiguration | undefined;
-        try { cfg = this.getAttributeConfiguration(name); } catch { cfg = undefined; }
-
-        const value = this.getValue(name);
-
-        if (cfg?.requiredLevel === 'required' && this._isEmpty(value)) {
-            return {
-                error: true,
-                errorMessage: this._labels.requiredFieldError(),
-            };
-        }
-
-        if (cfg?.maxLength != null && typeof value === 'string' && value.length > cfg.maxLength) {
-            return {
-                error: true,
-                errorMessage: this._labels.maxLengthError({ max: cfg.maxLength }),
-            };
-        }
-
-        if (typeof value === 'number' && !Number.isNaN(value)) {
-            if (cfg?.minValue != null && value < cfg.minValue) {
-                return {
-                    error: true,
-                    errorMessage: this._labels.minValueError({ min: cfg.minValue }),
-                };
-            }
-            if (cfg?.maxValue != null && value > cfg.maxValue) {
-                return {
-                    error: true,
-                    errorMessage: this._labels.maxValueError({ max: cfg.maxValue }),
-                };
-            }
-        }
-
-        const custom = this._validators.get(name);
-        if (custom) {
-            try {
-                const r = custom();
-                if (r && r.error) {
-                    return { error: true, errorMessage: r.errorMessage ?? '' };
-                }
-            } catch (err) {
-                return {
-                    error: true,
-                    errorMessage: err instanceof Error ? err.message : 'Validator threw.',
-                };
-            }
-        }
-
-        const record = this.getRecord() as any;
-        if (typeof record?.getField === 'function') {
-            try {
-                const field = record.getField(name);
-                const r = field?.isValid?.();
-                if (r && r.error) {
-                    return { error: true, errorMessage: r.errorMessage ?? '' };
-                }
-            } catch { /* swallow — record may not implement getField */ }
-        }
-
-        return VALID_RESULT;
-    }
-
-    private _isEmpty(value: unknown): boolean {
-        if (value === undefined || value === null) return true;
-        if (typeof value === 'string') return value.length === 0;
-        if (Array.isArray(value)) return value.length === 0;
-        return false;
-    }
-
-    private _collectKnownFieldNames(): string[] {
-        const names = new Set<string>();
-        for (const v of this._validators.keys()) names.add(v);
-        for (const f of this._registeredFields.values()) names.add(f.name);
-        const tab = this.getActiveTab();
-        const columns = tab?.columns?.column ?? [];
-        for (const col of columns) {
-            const sections = col.sections?.section ?? [];
-            for (const sec of sections) {
-                const rows = sec.rows?.row ?? [];
-                for (const row of rows) {
-                    const cells = row.cell ?? [];
-                    for (const cell of cells) {
-                        const dfn = cell.control?.datafieldname;
-                        if (dfn) names.add(dfn);
-                    }
-                }
-            }
-        }
-        return Array.from(names);
-    }
-
-    private _notifyValidationSubscribers(name: string): void {
-        const set = this._validationSubscribers.get(name);
-        if (!set) return;
-        set.forEach((cb) => { try { cb(); } catch { /* swallow */ } });
-    }
-
-    private _notifyFormValidationSubscribers(): void {
-        this._formValidationSubscribers.forEach((cb) => { try { cb(); } catch { /* swallow */ } });
-    }
-
-    // ------------------------------------------------------------------
-    // Xrm surface
-    // ------------------------------------------------------------------
-
-    public getFormContext(): Xrm.FormContext {
-        if (!this._formContext) {
-            this._formContext = new XrmFormContext(this);
-        }
-        return this._formContext!;
-    }
-
-    public getExecutionContext(): Xrm.Events.EventContext {
-        if (!this._executionContext) {
-            this._executionContext = new XrmExecutionContext(this);
-        }
-        return this._executionContext!;
-    }
-
-    // ------------------------------------------------------------------
-    // UI state setters — mutate _workingFormXml directly
-    // ------------------------------------------------------------------
-
-    public getTabVisible(name: string): boolean {
-        const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === name);
-        return tab?.visible !== false;
-    }
-
-    public setTabVisible(name: string, visible: boolean): void {
-        const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === name);
-        if (tab) tab.visible = visible;
-        if (!visible && this._activeTabName === name) {
-            this._activeTabName = undefined;
-        }
-        this._notifyUiStateSubscribers();
-    }
-
-    public getSectionVisible(tabName: string, sectionName: string): boolean {
-        const section = this._findSection(tabName, sectionName);
-        return section?.visible !== false;
-    }
-
-    public setSectionVisible(tabName: string, sectionName: string, visible: boolean): void {
-        const section = this._findSection(tabName, sectionName);
-        if (section) section.visible = visible;
-        this._notifyUiStateSubscribers();
-    }
-
-    public getControlVisible(controlId: string): boolean {
-        const cell = this.findCellByControlId(controlId);
-        return cell?.visible !== false;
-    }
-
-    public setControlVisible(controlId: string, visible: boolean): void {
-        const cell = this.findCellByControlId(controlId);
-        if (cell) cell.visible = visible;
-        this._notifyUiStateSubscribers();
-    }
-
-    public getControlDisabled(controlId: string): boolean {
-        const cell = this.findCellByControlId(controlId);
-        return cell?.control?.disabled === true;
-    }
-
-    public setControlDisabled(controlId: string, disabled: boolean): void {
-        const cell = this.findCellByControlId(controlId);
-        if (cell?.control) cell.control.disabled = disabled;
-        this._notifyUiStateSubscribers();
-    }
-
-    public getControlLabel(controlId: string): string | undefined {
-        const cell = this.findCellByControlId(controlId);
-        if (!cell?.control?.labels) return undefined;
-        const label = this.resolveLocalizedLabel(cell.control.labels, '');
-        return label || undefined;
-    }
-
-    public setControlLabel(controlId: string, label: string): void {
-        const cell = this.findCellByControlId(controlId);
-        if (cell?.control) {
-            const lcid = this.getLanguageCode();
-            const existing = cell.control.labels?.label?.find((l) => l.languagecode === lcid);
-            if (existing) {
-                existing.description = label;
-            } else {
-                const prev = cell.control.labels?.label ?? [];
-                cell.control.labels = { label: [...prev, { languagecode: lcid, description: label }] };
-            }
-        }
-        this._notifyUiStateSubscribers();
-    }
-
-    // ------------------------------------------------------------------
-    // Attribute metadata overrides (_metadataOverrides)
-    // ------------------------------------------------------------------
-
-    public getRequiredLevelOverride(name: string): Xrm.Attributes.RequirementLevel | undefined {
-        return this._metadataOverrides.get(name)?.requiredLevel;
-    }
-
-    public setRequiredLevelOverride(name: string, level: Xrm.Attributes.RequirementLevel): void {
-        this._patchMeta(name, (o) => { o.requiredLevel = level; });
-        this._notifyUiStateSubscribers();
-    }
-
-    public addAttributeOption(name: string, option: IAttributeOption, index?: number): void {
-        this._patchMeta(name, (o) => {
-            if (!o.addedOptions) o.addedOptions = [];
-            if (index != null) o.addedOptions.splice(index, 0, option);
-            else o.addedOptions.push(option);
-            o.removedOptionValues?.delete(option.value);
-        });
-        this._notifyUiStateSubscribers();
-    }
-
-    public removeAttributeOption(name: string, value: number): void {
-        this._patchMeta(name, (o) => {
-            if (!o.removedOptionValues) o.removedOptionValues = new Set();
-            o.removedOptionValues.add(value);
-            if (o.addedOptions) o.addedOptions = o.addedOptions.filter((opt) => opt.value !== value);
-        });
-        this._notifyUiStateSubscribers();
-    }
-
-    private _patchMeta(name: string, fn: (o: IAttributeMetadataOverride) => void): void {
-        let o = this._metadataOverrides.get(name);
-        if (!o) { o = {}; this._metadataOverrides.set(name, o); }
-        fn(o);
-    }
-
-    public subscribeUiState(cb: () => void): () => void {
-        this._uiStateSubscribers.add(cb);
-        return () => { this._uiStateSubscribers.delete(cb); };
-    }
-
-    /**
-     * Returns a serialized FormXml string reflecting all current UI-state mutations
-     * (visibility, disabled, label) — trivially the working copy serialized.
-     */
-    public getEffectiveFormXmlString(): string {
-        const xml = this.getFormXml();
-        return xml ? serializeFormXml(xml) : '';
-    }
-
-    private _notifyUiStateSubscribers(): void {
-        this._uiStateSubscribers.forEach((cb) => { try { cb(); } catch { /* swallow */ } });
-    }
-
-    private _findSection(tabName: string, sectionName: string) {
-        const tab = this.getFormXml()?.tabs?.tab?.find((t) => t.name === tabName);
-        return tab?.columns?.column
-            ?.flatMap((c) => c.sections?.section ?? [])
-            ?.find((s) => s.name === sectionName);
-    }
-
-    private getVisibleTabs(): FormXmlTab[] {
-        return this.getTabs().filter((tab) => tab.visible !== false);
-    }
-
-    public findCellByControlId(controlId: string) {
-        const formXml = this.getFormXml();
-        if (!formXml) return undefined;
-        for (const tab of formXml.tabs?.tab ?? []) {
-            for (const col of tab.columns?.column ?? []) {
-                for (const sec of col.sections?.section ?? []) {
-                    for (const row of sec.rows?.row ?? []) {
-                        for (const cell of row.cell ?? []) {
-                            if (cell.control?.id === controlId) return cell;
-                        }
-                    }
-                }
-            }
-        }
-        return undefined;
-    }
-
-    /**
-     * Returns parsed event metadata from formXml for inspection only.
-     * No handlers are invoked.
-     */
-    public getEvents(): {
-        formEvents: FormXml['events'];
-        formLibraries: FormXml['formLibraries'];
-    } {
-        const formXml = this.getFormXml();
-        return {
-            formEvents: formXml?.events,
-            formLibraries: formXml?.formLibraries,
-        };
-    }
-
-    public getScriptLoader(): IScriptLoader {
-        return this._scriptLoader;
-    }
-
-    // ------------------------------------------------------------------
-    // Code-registered OnChange handlers (addOnChange / removeOnChange API)
-    // ------------------------------------------------------------------
-
-    /**
-     * Register a handler to be invoked when the given attribute's value changes.
-     * The execution context is automatically passed as the first argument.
-     * Called by `XrmAttribute.addOnChange`.
-     */
-    public addOnChangeHandler(name: string, handler: Xrm.Events.ContextSensitiveHandler): void {
-        let set = this._codeOnChangeHandlers.get(name);
-        if (!set) {
-            set = new Set();
-            this._codeOnChangeHandlers.set(name, set);
-        }
-        set.add(handler);
-    }
-
-    /**
-     * Remove a previously registered OnChange handler for the given attribute.
-     * Called by `XrmAttribute.removeOnChange`.
-     */
-    public removeOnChangeHandler(name: string, handler: Xrm.Events.ContextSensitiveHandler): void {
-        const set = this._codeOnChangeHandlers.get(name);
-        if (!set) return;
-        set.delete(handler);
-        if (set.size === 0) this._codeOnChangeHandlers.delete(name);
-    }
-
-    /**
-     * Fires the form `onload` event handlers declared in FormXml.
-     * Each async handler is awaited with a 10-second timeout (per Power Apps platform behaviour).
-     * `OnLoad` → `Loaded` is sequenced by `Form.tsx` after this Promise resolves.
-     */
-    public async fireOnLoad(): Promise<void> {
-        const args = new XrmOnLoadEventArgs();
-        await this._dispatchFormXmlEvent('onload', args);
-    }
-
-    /**
-     * Fires the form `loaded` event handlers declared in FormXml.
-     * Called by `Form.tsx` automatically after `fireOnLoad()` resolves.
-     */
-    public async fireLoaded(): Promise<void> {
-        await this._dispatchFormXmlEvent('loaded', null);
-    }
-
-    /**
-     * Fires the form `onsave` event handlers declared in FormXml.
-     * Returns `{ prevented: true }` if any handler called `eventArgs.preventDefault()`.
-     * Callers should abort the save operation when `prevented` is `true`.
-     *
-     * @param saveMode - XrmEnum.SaveMode value (default 1 = Save).
-     */
-    public async fireOnSave(saveMode: number = 1): Promise<{ prevented: boolean }> {
-        const args = new XrmOnSaveEventArgs(saveMode);
-        await this._dispatchFormXmlEvent('onsave', args);
-        return { prevented: args.isDefaultPrevented() };
-    }
-
-    /**
-     * Fires the `onchange` event handlers for the given attribute:
-     * 1. FormXml-declared handlers (via `_dispatchFormXmlEvent`).
-     * 2. Code-registered handlers added via `XrmAttribute.addOnChange`.
-     *
-     * Called automatically from `_onFieldValueChanged`; fire-and-forget from the
-     * synchronous change pipeline.
-     */
-    public async fireOnChange(attributeName: string): Promise<void> {
-        await this._dispatchFormXmlEvent('onchange', null, attributeName);
-        this._invokeCodeOnChangeHandlers(attributeName);
-    }
-
-    /**
-     * Invoke code-registered OnChange handlers for the given attribute.
-     * Handlers are called synchronously with the execution context; returned
-     * Promises are not awaited (matching Dynamics 365 programmatic-fireOnChange behaviour).
-     * Errors are caught and logged.
-     */
-    private _invokeCodeOnChangeHandlers(attributeName: string): void {
-        const handlers = this._codeOnChangeHandlers.get(attributeName);
-        if (!handlers || handlers.size === 0) return;
-
-        const execCtx = this.getExecutionContext() as XrmExecutionContext;
-        // Depth continues from where FormXml handlers left off; reset args to null for OnChange
-        execCtx.setEventArgs(null);
-
-        let depth = 0;
-        handlers.forEach((handler) => {
-            execCtx.setDepth(++depth);
-            try {
-                handler(execCtx as any);
-            } catch (err) {
-                console.error(`[Form] addOnChange handler for "${attributeName}" threw:`, err);
-            }
-        });
-    }
-
-    /**
-     * Dispatches FormXml event handlers for the given event name.
-     *
-     * - Reuses a single `XrmExecutionContext` for all handlers in the dispatch so that
-     *   `setSharedVariable` / `getSharedVariable` share state across the pipeline.
-     * - Sets `executionContext.depth` (1-based) before each handler call.
-     * - Awaits returned Promises with a 10-second timeout unless the handler called
-     *   `eventArgs.disableAsyncTimeout()` (OnSave only) synchronously.
-     * - Errors / rejections / timeouts are caught and logged; they never propagate.
-     */
-    private async _dispatchFormXmlEvent(
-        eventName: string,
-        eventArgs: XrmOnLoadEventArgs | XrmOnSaveEventArgs | null,
-        attribute?: string,
-    ): Promise<void> {
-        const formXml = this.getFormXml();
-        if (!formXml?.events?.event) {
-            return;
-        }
-
-        // Filter to enabled handlers for this event (and optionally attribute)
-        const events = formXml.events.event.filter((ev) => {
-            if (!ev.name || ev.name.toLowerCase() !== eventName.toLowerCase()) return false;
-            if (attribute !== undefined && ev.attribute !== attribute) return false;
-            return true;
-        });
-
-        if (events.length === 0) {
-            return;
-        }
-
-        // Collect all handlers across matching events, preserving declaration order
-        const handlers: Array<{
-            functionName: string;
-            libraryName: string;
-            passExecutionContext: boolean;
-            parameters: string | undefined;
-            enabled: boolean;
-        }> = [];
-
-        for (const ev of events) {
-            for (const handler of ev.Handlers?.Handler ?? []) {
-                if (handler.enabled === false) continue;
-                handlers.push({
-                    functionName: handler.functionName,
-                    libraryName: handler.libraryName,
-                    passExecutionContext: handler.passExecutionContext !== false,
-                    parameters: handler.parameters,
-                    enabled: true,
-                });
-            }
-        }
-
-        if (handlers.length === 0) {
-            return;
-        }
-
-        // Obtain (or create) a stable execution context; reset its shared state for this dispatch
-        const execCtx = this.getExecutionContext() as XrmExecutionContext;
-        execCtx.resetForDispatch();
-        execCtx.setEventArgs(eventArgs);
-
-        for (let i = 0; i < handlers.length; i++) {
-            const handler = handlers[i];
-            execCtx.setDepth(i + 1);
-
-            // Load the library (no-op if already loaded)
-            try {
-                await this._scriptLoader.load(handler.libraryName);
-            } catch (err) {
-                console.error(`[Form] Failed to load library "${handler.libraryName}":`, err);
-                this._invokeErrorCallback(eventArgs, err);
-                continue;
-            }
-
-            // Resolve the handler function
-            const fn = this._scriptLoader.resolve(handler.libraryName, handler.functionName);
-            if (!fn) {
-                // Library not loaded / function not found — silently skip
-                continue;
-            }
-
-            // Parse additional parameters (comma-separated string → array)
-            const extraParams = this._parseHandlerParameters(handler.parameters);
-
-            // Call the handler
-            let result: any;
-            try {
-                result = handler.passExecutionContext
-                    ? fn(execCtx, ...extraParams)
-                    : fn(...extraParams);
-            } catch (err) {
-                console.error(`[Form] Handler "${handler.functionName}" threw synchronously:`, err);
-                this._invokeErrorCallback(eventArgs, err);
-                continue;
-            }
-
-            // If the handler returned a Promise, await it (with optional timeout)
-            if (result && typeof result.then === 'function') {
-                // Check disableAsyncTimeout synchronously (flag must be set before any await)
-                const timeoutDisabled =
-                    eventArgs instanceof XrmOnSaveEventArgs && eventArgs.isAsyncTimeoutDisabled();
-
-                try {
-                    if (timeoutDisabled) {
-                        await result;
-                    } else {
-                        await this._withTimeout(result, HANDLER_TIMEOUT_MS, handler.functionName);
-                    }
-                } catch (err) {
-                    console.error(`[Form] Async handler "${handler.functionName}" failed:`, err);
-                    this._invokeErrorCallback(eventArgs, err);
-                }
-            }
-        }
-    }
-
-    private _parseHandlerParameters(raw: string | undefined): any[] {
-        if (!raw || raw.trim() === '') {
-            return [];
-        }
-        try {
-            return raw.split(',').map((s) => {
-                const trimmed = s.trim();
-                // Try to coerce to JSON primitive; fall back to the raw string
-                try { return JSON.parse(trimmed); } catch { return trimmed; }
-            });
-        } catch {
-            return [];
-        }
-    }
-
-    private _withTimeout(promise: Promise<any>, ms: number, fnName: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            const timer = setTimeout(() => {
-                reject(new Error(`[Form] Handler "${fnName}" timed out after ${ms}ms`));
-            }, ms);
-            promise.then(
-                () => { clearTimeout(timer); resolve(); },
-                (err) => { clearTimeout(timer); reject(err); },
-            );
-        });
-    }
-
-    private _invokeErrorCallback(
-        eventArgs: XrmOnLoadEventArgs | XrmOnSaveEventArgs | null,
-        err: unknown,
-    ): void {
-        const cb = eventArgs instanceof XrmOnLoadEventArgs
-            ? eventArgs.getErrorCallback()
-            : eventArgs instanceof XrmOnSaveEventArgs
-                ? eventArgs.getErrorCallback()
-                : null;
-        if (cb) {
-            try {
-                cb(err instanceof Error ? err : new Error(String(err)));
-            } catch {
-                /* swallow errors inside the error callback */
-            }
-        }
-    }
-
-    // ------------------------------------------------------------------
-    // Dirty tracking
-    // ------------------------------------------------------------------
-
-    /**
-     * Returns whether the form has unsaved changes. Delegates to
-     * `record.isDirty()` when available; falls back to a local flag
-     * that is set by `setValue` / `onFieldValueChanged`.
-     */
-    public isDirty(): boolean {
-        const record = this.getRecord() as any;
-        if (typeof record?.isDirty === 'function') {
-            try {
-                if (record.isDirty()) return true;
-            } catch { /* ignore */ }
-        }
-        return this._localDirty;
-    }
-
-    /**
-     * Subscribe to dirty-state changes. Callback is invoked whenever
-     * the form transitions between clean and dirty. Returns an unsubscribe
-     * function.
-     */
-    public subscribeFormDirty(cb: () => void): () => void {
-        this._formDirtySubscribers.add(cb);
-        return () => { this._formDirtySubscribers.delete(cb); };
-    }
-
-    private _notifyFormDirtySubscribers(): void {
-        this._formDirtySubscribers.forEach((cb) => { try { cb(); } catch { /* swallow */ } });
-    }
-
-    public destroy(): void {
-        this._detachRecordListeners();
-        this._registeredFields.clear();
-        this._fieldSubscribers.clear();
-        this._formDirtySubscribers.clear();
-        this._validators.clear();
-        this._validationResults.clear();
-        this._validationSubscribers.clear();
-        this._formValidationSubscribers.clear();
-        this._localDirty = false;
-        this._metadataOverrides.clear();
-        this._uiStateSubscribers.clear();
-        this._activeTabName = undefined;
-        this._codeOnChangeHandlers.clear();
-        this._originalFormXml = undefined;
-        this._workingFormXml = undefined;
-        this._parsedFromRaw = undefined;
-        this._formContext = null;
-        this._executionContext = null;
-    }
-
-    /**
-     * Hook called by `Form.tsx` after each render so the model can react to
-     * a possibly-swapped `IRecord` instance (rebind listeners).
-     */
-    public syncRecordBinding(): void {
-        const current = this.getRecord();
-        if (current !== this._attachedRecord) {
-            this._detachRecordListeners();
-            this._attachedRecord = current ?? null;
-            this._localDirty = false;
-            this._attachRecordListeners();
-            // Notify subscribers and outputs that dirty state reset to clean.
-            this._notifyFormDirtySubscribers();
-            this._emitOutputs();
-        }
-    }
-
-    private _attachRecordListeners(): void {
-        const record = this.getRecord();
-        if (!record) {
-            return;
-        }
-        this._attachedRecord = record;
-        const anyRecord = record as any;
-        if (typeof anyRecord.addEventListener === 'function') {
-            anyRecord.addEventListener('onFieldValueChanged', this._onFieldValueChanged);
-        }
-    }
-
-    private _detachRecordListeners(): void {
-        const record = this._attachedRecord;
-        if (!record) {
-            return;
-        }
-        const anyRecord = record as any;
-        if (typeof anyRecord.removeEventListener === 'function') {
-            anyRecord.removeEventListener('onFieldValueChanged', this._onFieldValueChanged);
-        }
-        this._attachedRecord = null;
-    }
-
-    private _emitOutputs(): void {
-        const props = this._getProps();
-        if (!props.onNotifyOutputChanged) {
-            return;
-        }
-        const record = props.parameters.Form;
-        const values: Record<string, unknown> = {};
-        if (record) {
-            const raw = record.getRawData?.();
-            if (raw && typeof raw === 'object') {
-                for (const key of Object.keys(raw)) {
-                    values[key] = raw[key];
-                }
-            }
-        }
-        const outputs: IFormOutputs = { values, dirty: this.isDirty() };
-        props.onNotifyOutputChanged(outputs);
-    }
-
-    private _kickOffMetadataProviderResolution(): void {
-        if (!this._metadataProvider || this._entityResolutionPromise) {
-            return;
-        }
-        const record = this.getRecord();
-        const entityName = (record as any)?.getNamedReference?.()?.etn
-            ?? (record as any)?.getRawData?.()?.['@odata.type'];
-        if (!entityName || typeof entityName !== 'string') {
-            return;
-        }
-        this._entityResolutionPromise = this._metadataProvider.entity
-            .get(entityName)
-            .then((def) => {
-                this._resolvedEntity = def;
-                this._notifyUiStateSubscribers();
-                return def;
-            })
-            .catch(() => {
-                this._notifyUiStateSubscribers();
-                return undefined;
-            });
-    }
-}
-
-function mapRequiredLevel(level: RequiredLevelEnum | undefined): AttributeRequiredLevel {
-    switch (level) {
-        case RequiredLevelEnum.SystemRequired:
-        case RequiredLevelEnum.ApplicationRequired:
-            return 'required';
-        case RequiredLevelEnum.Recommended:
-            return 'recommended';
-        default:
-            return 'none';
-    }
-}
-
-function mapOptions(optionSet: OptionSetDefinition | undefined): IAttributeOption[] | undefined {
-    if (!optionSet?.Options) {
-        return undefined;
-    }
-    return optionSet.Options.map((o: Option) => ({
-        value: o.Value,
-        label: o.Label,
-        color: o.Color,
-    }));
-}
-
-// Touch AttributeTypeEnum so the import is preserved for downstream type tooling
-void AttributeTypeEnum;

@@ -6,9 +6,10 @@ export const getColumnsStyles = (width: string, minWidth?: string) => {
     return mergeStyleSets({
         column: {
             flexBasis: width,
-            flex: 1,
+            flexShrink: 1,
+            flexGrow: 1,
             //should have default min width 
-            minWidth: minWidth ?? DEFAULT_MIN_WIDTH
+            //minWidth: minWidth ?? DEFAULT_MIN_WIDTH
         }
     })
 }
