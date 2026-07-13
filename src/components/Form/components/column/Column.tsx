@@ -2,12 +2,9 @@ import * as React from "react";
 import { useColumnsContext } from "../columns";
 import { getColumnsStyles } from "./styles";
 import { ColumnContext } from "./context";
+import type { IFormColumnProps } from "../../form/FormModel";
 
-export interface IFormColumnProps {
-    width: string;
-    minWidth?: string;
-    children?: React.ReactNode;
-}
+export type { IFormColumnProps } from "../../form/FormModel";
 
 export const Column = (props: IFormColumnProps) => {
     useColumnsContext("Column");

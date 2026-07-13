@@ -1,47 +1,120 @@
-import { IFormSectionProps, IFormTabProps } from "../components";
+import { useMemo, useRef } from "react";
 import { useForm } from "./context";
-import { IForm, ISection, ITab } from "./FormModel";
+import { ICell, IForm, IFormCellProps, IFormSectionProps, IFormTabProps, ISection, ITab, Section, Tab } from "./FormModel";
 
-type FormComponentType = 'Section' | 'Tab';
+type FormComponentType = 'Section' | 'Tab' | 'Cell';
+type FormComponentParentMap = {
+    Form: IForm;
+    Section: ISection;
+    Tab: ITab;
+};
+type FormComponentParentName = keyof FormComponentParentMap;
+type IFormComponentParent<TParentName extends FormComponentParentName = FormComponentParentName> = {
+    [TName in TParentName]: {
+        name: TName;
+        instance: FormComponentParentMap[TName];
+    };
+}[TParentName];
 
-const getMethods = (type: FormComponentType, form: IForm | ISection) => {
-    if (type === 'Section') {
-        return {
-            getter: (id: string) => form.getSection(id),
-            adder: (props: IFormSectionProps) => form.addSection(props),
-        };
-    } else {
-        return {
-            getter: (id: string) => form.getTab(id),
-            adder: (props: IFormTabProps) => form.addTab(props),
-        };
-    }       
+
+interface IGetMethodsParams {
+    id: string;
+    type: FormComponentType;
+    parent: IFormComponentParent;
+    form: IForm;
+}
+
+
+
+
+const getMethods = (params: IGetMethodsParams) => {
+    const { id, type, parent, form } = params;
+    switch (type) {
+        case 'Section': {
+            let tabParent: ITab = parent.instance as ITab;
+            if (parent.name !== 'Form') {
+                const tab = new Tab({
+                    id: crypto.randomUUID(),
+                });
+                tabParent = tab;
+                form.addTab(tab);
+            }
+            return {
+                getter: (id: string) => tabParent.getSection(id),
+                adder: (props: IFormSectionProps) => tabParent.addSection({
+                    ...props,
+                    id: id
+                }),
+            }
+        }
+        case 'Tab': {
+            if (parent.name !== 'Form') {
+                throw new Error(`[Form] Cannot add Tab to parent of type ${parent.name}.`);
+            }
+            return {
+                getter: (id: string) => parent.instance.getTab(id),
+                adder: (props: IFormTabProps) => parent.instance.addTab(props),
+            }
+        }
+        case 'Cell': {
+            let sectionParent: ISection = parent.instance as ISection;
+            if (parent.name !== 'Section') {
+                const section = new Section({
+                    id: crypto.randomUUID(),
+                });
+                const tab = new Tab({
+                    id: crypto.randomUUID(),
+                });
+                tab.addSection(section);
+                form.addTab(tab);
+            }
+            return {
+                getter: (id: string) => sectionParent.getCell(id),
+                adder: (props: IFormCellProps) => sectionParent.addCell({
+                    ...props,
+                    id: id
+                }),
+            }
+        }
+    }
 };
 
-export function useFormComponent(type: 'Section', props: IFormSectionProps): ISection;
-export function useFormComponent(type: 'Tab', props: IFormTabProps): ITab;
+export function useFormComponent(type: 'Section', props: IFormSectionProps, parent?: IFormComponentParent): ISection;
+export function useFormComponent(type: 'Tab', props: IFormTabProps, parent?: IFormComponentParent): ITab;
+export function useFormComponent(type: 'Cell', props: IFormCellProps, parent?: IFormComponentParent): ICell;
 export function useFormComponent(
     type: FormComponentType,
-    props: IFormSectionProps | IFormTabProps,
-): ISection | ITab {
-    let id = props.id;
-    const form = useForm();
-    
-    const { getter, adder } = getMethods(type, form) as {
-        getter: (id: string) => ISection | ITab | null;
-        adder: (props: IFormSectionProps | IFormTabProps) => ISection | ITab;
-    };
+    props: IFormSectionProps | IFormTabProps | IFormCellProps,
+    parent?: IFormComponentParent
 
-    if (!id) {
-        const newComponent = adder(props);
-        id = newComponent.id;
+): ISection | ITab | ICell {
+    const testRef = useRef(false);
+    const id = useMemo(() => props.id ?? window.crypto.randomUUID(), []);
+    const form = useForm();
+
+    parent = parent ?? {
+        name: 'Form',
+        instance: form
     }
-    const component = getter(id);
+
+    const { getter, adder } = getMethods({
+        form: form,
+        id: id,
+        type: type,
+        parent: parent!
+    }) as {
+        getter: (id: string) => ISection | ITab | ICell | null;
+        adder: (props: IFormSectionProps | IFormTabProps | IFormCellProps) => ISection | ITab | ICell;
+    };
+    let component = getter(id);
+    if (!component) {
+        component = adder(props);
+    }
 
     component?.update(props as any);
     if (!component) {
         return adder(props);
     }
-
+    testRef.current = true;
     return component;
 }

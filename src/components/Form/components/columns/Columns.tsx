@@ -10,7 +10,7 @@ import {
     type FormResponsiveCols,
     widthToSpan,
 } from "../shared";
-import { IFormColumnProps } from "../..";
+import type { IFormColumnProps } from "../../form/FormModel";
 import { getColumnsStyles } from "./styles";
 import { useMemo } from "react";
 

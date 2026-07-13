@@ -8,26 +8,9 @@ import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
 import { useRowContext } from "../row";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
+import type { IFormCellProps } from "../../form/FormModel";
 
-export interface IFormCellProps {
-    id?: string;
-    labelId?: string;
-    label?: string;
-    lockLevel?: number;
-    showLabel?: boolean;
-    visible?: boolean;
-    colspan?: number;
-    rowspan?: number;
-    userspacer?: boolean;
-    availableForPhone?: boolean;
-    isPreviewCell?: boolean;
-    isStreamCell?: boolean;
-    isChartCell?: boolean;
-    isTileCell?: boolean;
-    auto?: boolean;
-    addedBy?: string;
-    children?: React.ReactNode;
-}
+export type { IFormCellProps } from "../../form/FormModel";
 
 export const Cell = (props: IFormCellProps) => {
     const { visible = true, lockLevel, showLabel = true, label } = props;

@@ -1,13 +1,8 @@
 import * as React from "react";
-import type { IFormTabProps } from "./Tab";
+import { ITab } from "../../form/FormModel";
 
-export const TabContext = React.createContext<IFormTabProps | null>(null);
+export const TabContext = React.createContext<ITab | null>(null);
 
-export const useTabContext = (): IFormTabProps => {
-    const context = React.useContext(TabContext);
-    if (context === null) {
-        throw new Error("[Form] Section must be rendered inside Tab.");
-    }
-
-    return context;
+export const useTabContext = (): ITab | null => {
+    return React.useContext(TabContext);
 };

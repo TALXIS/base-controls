@@ -1,36 +1,22 @@
 import * as React from "react";
-import { Text, useTheme } from "@fluentui/react";
+import { PivotItem, Text, useTheme } from "@fluentui/react";
 import { useTabsContext } from "../tabs";
 import { TabContext } from "./context";
 import { getTabStyles } from "./styles";
 import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
-import { useTab } from "./useTab";
+import type { IFormTabProps } from "../../form/FormModel";
+import { useFormComponent } from "../../form/useFormComponent";
 
-export interface IFormTabProps {
-    id: string;
-    name?: string;
-    group?: string;
-    verticalLayout?: boolean;
-    showLabel?: boolean;
-    labelId?: string;
-    isUserDefined?: string;
-    lockLevel?: number;
-    addedBy?: string;
-    expanded?: boolean;
-    visible?: boolean;
-    availableForPhone?: boolean;
-    collapsible?: boolean;
-    label?: React.ReactNode;
-    children?: React.ReactNode;
-}
+export type { IFormTabProps } from "../../form/FormModel";
 
 
 export const Tab = (props: IFormTabProps) => {
-    const tab = useTab(props.id);
-    return <>
-        {props.children}
-    </>
+    const tab = useFormComponent('Tab', props);
+    const { children } = props;
+    return <TabContext.Provider value={tab}>
+        {children}
+    </TabContext.Provider>
 }
 
 

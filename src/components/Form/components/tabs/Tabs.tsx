@@ -7,188 +7,56 @@ import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
 import { useForm } from "../../form/context";
 import { IForm } from "../../form/FormModel";
+import { useRerender } from "@talxis/react-components";
+import { useFormComponent } from "../../form/useFormComponent";
 
 export interface IFormTabsProps {
     children?: React.ReactNode;
     onTabChange?: (tabId: string) => void;
 }
 
-interface ITabEntryMetadata {
-    id?: string;
-    name?: string;
-    label?: React.ReactNode;
-    visible?: boolean;
+//dummy tab to register the tab in the form model, but not render anything
+const DummyTab = (props: {children: React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>>}) => {
+    useFormComponent('Tab', props.children.props);
+    return <></>
 }
 
-type TabChildProps = ITabEntryMetadata & {
-    tab?: ITabEntryMetadata;
-};
+const getChildById = (id: string, children: (React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>>)[]) => {
+    return children.find(child => React.isValidElement(child) && child.props.id === id);
+}
 
-const updateChildTabProps = (form: IForm, childrenArray: React.ReactElement[]) => {
-    childrenArray.map(child => {
-        const tabId = child.props.id;
-        const tab = form.getTab(tabId);
+const updateChildTabs = (form: IForm, childrenArray: (React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>>)[]) => {
+    for (const child of childrenArray) {
+        const tab = form.getTab(child.props.id);
         tab?.update(child.props);
-        if (!tab) {
-            form.addTab(child.props);
-        }
-    })
+    }
 }
-
 
 export const Tabs = (props: IFormTabsProps) => {
     const form = useForm();
     const { children, onTabChange } = props;
     const childrenArray = React.Children.toArray(children).filter(child => React.isValidElement(child));
-    
-    if (childrenArray.length === 0) {
-        throw new Error("[Form] Tabs must have at least one Tab child.");
-    }
-    updateChildTabProps(form, childrenArray as React.ReactElement[]);
-    const tabs = form.getTabs();
+    const visibleTabs = form.getTabs().filter(tab => tab.visible !== false);
+    const rerender = useRerender();
+    updateChildTabs(form, childrenArray);
 
-    return <Pivot selectedKey={form.getExpandedTab()?.id} onLinkClick={(item) => onTabChange?.(item?.props.itemKey!)}>
-        {tabs.map(tab => <PivotItem key={tab.id} headerText={tab.name ?? tab.id} itemKey={tab.id}>
-            {childrenArray.find(child => child.props.id === tab.id)}
-        </PivotItem>)}
-    </Pivot>
+    React.useEffect(() => {
+        //update the form model with the latest tab props from children
+        rerender();
+    }, []);
+
+    if(form.getTabs().length === 0) {
+        return <>
+            {childrenArray.map((child) => <DummyTab key={child.key}>
+                {child}
+            </DummyTab>)}
+        </>
+    }
+    else {
+        return <Pivot selectedKey={form.getExpandedTab()?.id} onLinkClick={(item) => onTabChange?.(item?.props.itemKey!)}>
+            {visibleTabs.map(tab => <PivotItem key={tab.id} headerText={tab.label ?? tab.name ?? tab.id} itemKey={tab.id}>
+                {getChildById(tab.id, childrenArray)}
+            </PivotItem>)}
+        </Pivot>
+    }
 }
-
-export const Tabs2 = ({ children }: IFormTabsProps) => {
-    const formContext = React.useContext(FormContext);
-    if (!formContext) {
-        throw new Error("[Form] Tabs must be rendered inside Form.");
-    }
-
-    const theme = useTheme();
-    const form = useFormInstance();
-    useFormUiState();
-
-    const tabEntries = React.Children.toArray(children)
-        .filter((child): child is React.ReactElement<TabChildProps> => React.isValidElement<TabChildProps>(child))
-        .map((child, index) => ({
-            metadata: getTabEntryMetadata(child.props),
-            key: getTabEntryKey(getTabEntryMetadata(child.props), index),
-            child,
-        }))
-        .filter(({ metadata }) => {
-            if (metadata.visible === false) {
-                return false;
-            }
-
-            if (metadata.name) {
-                return form.getTabVisible(metadata.name) !== false;
-            }
-
-            return true;
-        });
-    const [selectedKey, setSelectedKey] = React.useState<string | undefined>(tabEntries[0]?.key);
-
-    const activeTabEntry = React.useMemo(() => {
-        if (tabEntries.length === 0) {
-            return null;
-        }
-
-        const activeName = form.getActiveTabName();
-        if (activeName) {
-            const matched = tabEntries.find(({ metadata }) => metadata.name === activeName);
-            if (matched) {
-                return matched;
-            }
-        }
-
-        if (selectedKey) {
-            const matched = tabEntries.find((entry) => entry.key === selectedKey);
-            if (matched) {
-                return matched;
-            }
-        }
-
-        return tabEntries[0];
-    }, [form, selectedKey, tabEntries]);
-
-    React.useEffect(() => {
-        const nextSelectedKey = activeTabEntry?.key;
-        if (nextSelectedKey && nextSelectedKey !== selectedKey) {
-            setSelectedKey(nextSelectedKey);
-        }
-    }, [activeTabEntry, selectedKey]);
-
-    React.useEffect(() => {
-        const nextActiveName = activeTabEntry?.metadata.name;
-        if (nextActiveName && nextActiveName !== form.getActiveTabName()) {
-            form.setActiveTab(nextActiveName);
-        }
-    }, [activeTabEntry, form]);
-
-    const styles = getTabsStyles(theme);
-
-    if (!activeTabEntry) {
-        return null;
-    }
-
-    return (
-        <TabsContext.Provider
-            value={{
-                activeTabId: activeTabEntry.metadata.id,
-                activeTabName: activeTabEntry.metadata.name,
-            }}
-        >
-            <div data-id="form-tabs" className={styles.root}>
-                <Pivot
-                    className={styles.pivot}
-                    selectedKey={activeTabEntry.key}
-                    onLinkClick={(item) => {
-                        const key = item?.props.itemKey;
-                        if (!key) return;
-                        setSelectedKey(key);
-                        const entry = tabEntries.find((e) => e.key === key);
-                        if (entry?.metadata.name) {
-                            form.setActiveTab(entry.metadata.name);
-                        }
-                    }}
-                >
-                    {tabEntries.map(({ key, metadata }, index) => {
-                        const tabId = metadata.id ?? metadata.name ?? `tab-${index}`;
-                        return (
-                            <PivotItem
-                                key={key}
-                                itemKey={key}
-                                headerText={String(metadata.label ?? metadata.name ?? tabId)}
-                                id={`${tabId}-trigger`}
-                                aria-controls={`${tabId}-panel`}
-                            />
-                        );
-                    })}
-                </Pivot>
-                <div className={styles.panel}>
-                    {tabEntries.map(({ key, child }) => (
-                        <React.Fragment key={key}>{child}</React.Fragment>
-                    ))}
-                </div>
-            </div>
-        </TabsContext.Provider>
-    );
-};
-
-const getTabEntryMetadata = (props: TabChildProps): ITabEntryMetadata => {
-    if (props.tab) {
-        return {
-            id: props.tab.id,
-            name: props.tab.name,
-            label: props.tab.label,
-            visible: props.tab.visible,
-        };
-    }
-
-    return {
-        id: props.id,
-        name: props.name,
-        label: props.label,
-        visible: props.visible,
-    };
-};
-
-const getTabEntryKey = (metadata: ITabEntryMetadata, index: number): string => {
-    return String(metadata.name ?? metadata.id ?? `tab-${index}`);
-};

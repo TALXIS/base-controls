@@ -8,38 +8,15 @@ import { useFormInstance } from "../../form/useFormInstance";
 import { useFormUiState } from "../../form/useFormUiState";
 import { useMemo } from "react";
 import { useForm } from "../../form/context";
-import type { ISection, ITab } from "../../form/FormModel";
-import type { IFormTabProps } from "../tab/Tab";
+import type { IFormSectionProps, ISection, ITab } from "../../form/FormModel";
 import { useFormComponent } from "../../form/useFormComponent";
 
-export interface IFormSectionProps {
-    id?: string;
-    name?: string;
-    group?: string;
-    showLabel?: boolean;
-    labelId?: string;
-    showBar?: boolean;
-    isUserDefined?: string;
-    height?: string;
-    lockLevel?: number;
-    layout?: string;
-    addedBy?: string;
-    visible?: boolean;
-    autoExpand?: boolean;
-    columns?: number;
-    labelWidth?: number;
-    cellLabelTopBreakpoint?: number;
-    availableForPhone?: boolean;
-    cellLabelAlignment?: "Center" | "Left" | "Right";
-    cellLabelPosition?: "Top" | "Left";
-    rowHeight?: number;
-    label?: React.ReactNode;
-    children?: React.ReactNode;
-}
+export type { IFormSectionProps } from "../../form/FormModel";
 
 export const Section = (props: IFormSectionProps) => {
     useSectionsContext()
     const { children, showBar = true, showLabel = true, label, name, id } = props;
+    const 
     const section = useFormComponent('Section', props)
     const theme = useTheme();
     const styles = useMemo(() => getSectionStyles(theme), [theme]);
