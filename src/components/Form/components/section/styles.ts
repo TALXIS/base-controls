@@ -1,6 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { ISection } from "../..";
 
-export const getSectionStyles = (theme: ITheme) => {
+export const getSectionStyles = (section: ISection, theme: ITheme) => {
     return mergeStyleSets({
         section: {
             border: `1px solid ${theme.semanticColors.bodyDivider}`,
@@ -8,7 +9,8 @@ export const getSectionStyles = (theme: ITheme) => {
             backgroundColor: theme.semanticColors.bodyBackground,
             overflow: "hidden",
             containerType: "inline-size",
-            margin: 6
+            margin: 6,
+            ...(section.visible === false ? {display: 'none'} : {})
         },
         header: {
             display: "flex",

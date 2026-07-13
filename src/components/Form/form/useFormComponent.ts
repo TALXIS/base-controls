@@ -32,12 +32,11 @@ const getMethods = (params: IGetMethodsParams) => {
     switch (type) {
         case 'Section': {
             let tabParent: ITab = parent.instance as ITab;
-            if (parent.name !== 'Form') {
-                const tab = new Tab({
+            if (parent.name !== 'Tab') {
+                tabParent = new Tab({
                     id: crypto.randomUUID(),
                 });
-                tabParent = tab;
-                form.addTab(tab);
+                form.addTab(tabParent);
             }
             return {
                 getter: (id: string) => tabParent.getSection(id),
@@ -59,13 +58,13 @@ const getMethods = (params: IGetMethodsParams) => {
         case 'Cell': {
             let sectionParent: ISection = parent.instance as ISection;
             if (parent.name !== 'Section') {
-                const section = new Section({
+                sectionParent = new Section({
                     id: crypto.randomUUID(),
                 });
                 const tab = new Tab({
                     id: crypto.randomUUID(),
                 });
-                tab.addSection(section);
+                tab.addSection(sectionParent);
                 form.addTab(tab);
             }
             return {
@@ -88,7 +87,6 @@ export function useFormComponent(
     parent?: IFormComponentParent
 
 ): ISection | ITab | ICell {
-    const testRef = useRef(false);
     const id = useMemo(() => props.id ?? window.crypto.randomUUID(), []);
     const form = useForm();
 
@@ -115,6 +113,5 @@ export function useFormComponent(
     if (!component) {
         return adder(props);
     }
-    testRef.current = true;
     return component;
 }

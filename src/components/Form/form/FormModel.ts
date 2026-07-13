@@ -20,6 +20,7 @@ import { IForm as IRuntimeForm, IFormOutputs, IFormParameters, IAttributeConfigu
 import { XrmFormContext } from "./xrm/XrmFormContext";
 import { XrmExecutionContext } from "./xrm/XrmExecutionContext";
 import { XrmOnLoadEventArgs, XrmOnSaveEventArgs } from "./xrm/XrmEventArgs";
+import { IFormControlProps } from "../components";
 
 const HANDLER_TIMEOUT_MS = 10_000;
 
@@ -96,7 +97,7 @@ export interface IFormSectionProps {
     cellLabelAlignment?: "Center" | "Left" | "Right";
     cellLabelPosition?: "Top" | "Left";
     rowHeight?: number;
-    label?: React.ReactNode;
+    label?: string;
     children?: React.ReactNode;
 }
 
@@ -120,6 +121,13 @@ export interface ITab extends WithRequiredId<IFormTabProps> {
     update: (props: IFormTabProps) => void;
 }
 
+export interface IControl extends WithRequiredId<IFormControlProps> {
+    addControl: (props: WithRequiredId<IFormControlProps>) => IControl;
+    getControls: () => IControl[];
+    getControl: (id: string) => IControl | null;
+    update: (props: IFormControlProps) => void;
+}
+
 export interface ICell extends WithRequiredId<IFormCellProps> {
     update: (props: IFormCellProps) => void;
 }
@@ -138,6 +146,10 @@ export interface ISection extends WithRequiredId<IFormSectionProps> {
 
 export interface IColumn extends IFormColumnProps {
 
+}
+
+export class Control implements IControl {
+    
 }
 
 

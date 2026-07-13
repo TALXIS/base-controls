@@ -10,10 +10,17 @@ export interface IFormRowProps {
 }
 
 export const Row = (props: IFormRowProps) => {
-    useRowsContext();
-    const section = useSectionContext();
+    const rowsContext = useRowsContext();
+    const sectionContext = useSectionContext();
+    
+    if (!rowsContext) {
+        throw new Error("[Form] Row must be rendered inside Rows.");
+    }
+    if(!sectionContext) {
+        throw new Error("[Form] Row must be rendered inside a Section.");
+    }
     const { height, children } = props;
-    const styles = getRowStyles(height, section.columns);
+    const styles = getRowStyles(height, sectionContext.columns);
 
     return (
         <div className={styles.row}>

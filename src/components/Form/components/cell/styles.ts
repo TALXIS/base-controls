@@ -1,14 +1,24 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { ICell, ISection } from "../..";
 
 export type CellLabelPosition = "Top" | "Left";
 export type CellLabelAlignment = "Center" | "Left" | "Right";
 
 const CONTENT_MIN_WIDTH = 80;
 
-export const getCellStyles = () => {
+const getDisplayValue = (section: ISection | null) => {
+    //if no section render => block
+    if (!section) return 'block';
+    //otherwise default is flex unless the section has a label position of "Top"
+    return section.cellLabelPosition === 'Top' ? 'block' : 'flex';
+}
+
+export const getCellStyles = (cell: ICell, section: ISection | null) => {
     return mergeStyleSets({
         cell: {
-            
+            display: getDisplayValue(section),
+            flexWrap: 'wrap',
+            ...(cell.visible === false ? {display: 'none'} : {})
         },
         labelContainer: {
             display: 'flex',
