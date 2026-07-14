@@ -37,19 +37,19 @@ export const Cell = (props: IFormCellProps) => {
 
     const [shouldRenderLockSpacer, setShouldRenderLockSpacer] = React.useState(false);
 
-/*     const toggleLockSpacer = () => {
-        if (!section) return;
-        if (!disabled) {
-            setShouldRenderLockSpacer(containsDisabledCells(section));
+    /*     const toggleLockSpacer = () => {
+            if (!section) return;
+            if (!disabled) {
+                setShouldRenderLockSpacer(containsDisabledCells(section));
+            }
         }
-    }
-
-    useEventEmitter<ISectionEvents>(section?.events ?? dummyEmitter, 'onCellDisabledChanged', toggleLockSpacer); */
-
-/*     React.useEffect(() => {
-        toggleLockSpacer();
-    }, []); */
     
+        useEventEmitter<ISectionEvents>(section?.events ?? dummyEmitter, 'onCellDisabledChanged', toggleLockSpacer); */
+
+    /*     React.useEffect(() => {
+            toggleLockSpacer();
+        }, []); */
+
 
 
     return <div className={styles.cell} data-id={`cell-${cell.id}`}>
@@ -57,15 +57,19 @@ export const Cell = (props: IFormCellProps) => {
             {shouldRenderLabelContainer &&
                 <div className={styles.labelContainer}>
                     {shouldRenderLabel &&
-                        <Label required={shouldRenderRequiredIndicator} className={styles.label}>
-                            {label}
-                        </Label>
+                        <div>
+                            <Label required={shouldRenderRequiredIndicator} className={styles.label}>
+                                {label}
+                            </Label>
+                        </div>
                     }
-                    {disabled && <Icon className={styles.lockIcon} iconName="Lock" />}
+                    <div>
+                    {disabled && <Icon iconName="Lock" className={styles.lockIcon} />}
+                    </div>
                 </div>
             }
         </CellContext.Provider>
-        <div>control</div>
+        <div className={styles.control}>control</div>
     </div>
 }
 

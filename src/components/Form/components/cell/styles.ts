@@ -21,7 +21,7 @@ export const getCellStyles = (cell: ICell, section: ISection | null) => {
             display: getDisplayValue(section),
             flexWrap: 'wrap',
             gap: 5,
-            ...(cell.visible === false ? {display: 'none'} : {})
+            ...(cell.visible === false ? { display: 'none' } : {})
         },
         lockIcon: {
             fontSize: 12,
@@ -30,11 +30,20 @@ export const getCellStyles = (cell: ICell, section: ISection | null) => {
             display: 'flex',
             alignItems: 'center',
             gap: 5,
-            width: labelWidth
         },
         label: {
             flex: 1,
-            minWidth: 0
+            minWidth: 0,
+            overflow: 'hidden',
+            width: labelWidth,
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            '-webkit-box-orient': 'vertical',
+            '-webkit-line-clamp': '3'
+        },
+        control: {
+            backgroundColor: 'lightgray',
+            minWidth: CONTENT_MIN_WIDTH,
         }
     })
 }
@@ -66,99 +75,99 @@ export const getCellStyles2 = (
     });
 
 
-/*     const gridColumn = colspan && colspan > 1 ? `span ${colspan}` : undefined;
-    const gridRow = rowspan && rowspan > 1 ? `span ${rowspan}` : undefined;
-
-    // For "Left" position, use flex-wrap so the label moves on top automatically
-    // when the container is too narrow (label + CONTENT_MIN_WIDTH + gap > container width).
-    const resolvedLabelWidth = labelWidth ?? 140;
-    const innerLayout = labelPosition === "Left"
-        ? {
-            display: "flex",
-            flexWrap: "wrap" as const,
-            alignItems: "flex-start",
-            gap: "4px 12px",
-        }
-        : {
-            display: "flex",
-            flexDirection: "column" as const,
-            gap: 4,
-        };
-
-    const labelLayout = labelPosition === "Left"
-        ? {
-            // Fixed label width; when it can't fit alongside content min-width it wraps
-            flex: `0 0 ${resolvedLabelWidth}px`,
-            maxWidth: `${resolvedLabelWidth}px`,
-        }
-        : {};
-
-    const contentLayout = labelPosition === "Left"
-        ? {
-            // Grows to fill remaining space; min-width forces wrapping when space is tight
-            flex: `1 1 ${CONTENT_MIN_WIDTH}px`,
-            minWidth: CONTENT_MIN_WIDTH,
-        }
-        : {};
-
-    const leftToTopContainerQuery = labelPosition === "Left" && labelTopBreakpoint
-        ? {
-            [`@container (max-width: ${labelTopBreakpoint}px)`]: {
-                flexDirection: "column",
-                flexWrap: "nowrap",
+    /*     const gridColumn = colspan && colspan > 1 ? `span ${colspan}` : undefined;
+        const gridRow = rowspan && rowspan > 1 ? `span ${rowspan}` : undefined;
+    
+        // For "Left" position, use flex-wrap so the label moves on top automatically
+        // when the container is too narrow (label + CONTENT_MIN_WIDTH + gap > container width).
+        const resolvedLabelWidth = labelWidth ?? 140;
+        const innerLayout = labelPosition === "Left"
+            ? {
+                display: "flex",
+                flexWrap: "wrap" as const,
+                alignItems: "flex-start",
+                gap: "4px 12px",
+            }
+            : {
+                display: "flex",
+                flexDirection: "column" as const,
                 gap: 4,
-            },
-        }
-        : {};
-
-    const labelContainerQuery = labelPosition === "Left" && labelTopBreakpoint
-        ? {
-            [`@container (max-width: ${labelTopBreakpoint}px)`]: {
-                flex: "1 1 auto",
-                maxWidth: "100%",
-                paddingTop: 0,
-            },
-        }
-        : {};
-
-    const contentContainerQuery = labelPosition === "Left" && labelTopBreakpoint
-        ? {
-            [`@container (max-width: ${labelTopBreakpoint}px)`]: {
-                flex: "1 1 auto",
+            };
+    
+        const labelLayout = labelPosition === "Left"
+            ? {
+                // Fixed label width; when it can't fit alongside content min-width it wraps
+                flex: `0 0 ${resolvedLabelWidth}px`,
+                maxWidth: `${resolvedLabelWidth}px`,
+            }
+            : {};
+    
+        const contentLayout = labelPosition === "Left"
+            ? {
+                // Grows to fill remaining space; min-width forces wrapping when space is tight
+                flex: `1 1 ${CONTENT_MIN_WIDTH}px`,
+                minWidth: CONTENT_MIN_WIDTH,
+            }
+            : {};
+    
+        const leftToTopContainerQuery = labelPosition === "Left" && labelTopBreakpoint
+            ? {
+                [`@container (max-width: ${labelTopBreakpoint}px)`]: {
+                    flexDirection: "column",
+                    flexWrap: "nowrap",
+                    gap: 4,
+                },
+            }
+            : {};
+    
+        const labelContainerQuery = labelPosition === "Left" && labelTopBreakpoint
+            ? {
+                [`@container (max-width: ${labelTopBreakpoint}px)`]: {
+                    flex: "1 1 auto",
+                    maxWidth: "100%",
+                    paddingTop: 0,
+                },
+            }
+            : {};
+    
+        const contentContainerQuery = labelPosition === "Left" && labelTopBreakpoint
+            ? {
+                [`@container (max-width: ${labelTopBreakpoint}px)`]: {
+                    flex: "1 1 auto",
+                    minWidth: 0,
+                    width: "100%",
+                },
+            }
+            : {};
+    
+        return mergeStyleSets({
+            root: {
+                gridColumn,
+                gridRow,
+                padding: "4px 0",
                 minWidth: 0,
-                width: "100%",
+                ...innerLayout,
+                ...leftToTopContainerQuery,
             },
-        }
-        : {};
-
-    return mergeStyleSets({
-        root: {
-            gridColumn,
-            gridRow,
-            padding: "4px 0",
-            minWidth: 0,
-            ...innerLayout,
-            ...leftToTopContainerQuery,
-        },
-        label: {
-            ...labelLayout,
-            fontSize: theme.fonts.small.fontSize,
-            fontFamily: theme.fonts.small.fontFamily,
-            color: theme.semanticColors.bodySubtext,
-            fontWeight: 600,
-            textAlign: labelAlignment.toLowerCase() as "left" | "center" | "right",
-            paddingTop: labelPosition === "Left" ? 6 : 0,
-            ...labelContainerQuery,
-        },
-        content: {
-            ...contentLayout,
-            minWidth: labelPosition === "Left" ? CONTENT_MIN_WIDTH : undefined,
-            ...contentContainerQuery,
-        },
-        error: {
-            fontSize: theme.fonts.xSmall.fontSize,
-            color: theme.semanticColors.errorText,
-            marginTop: 2,
-        },
-    }); */
+            label: {
+                ...labelLayout,
+                fontSize: theme.fonts.small.fontSize,
+                fontFamily: theme.fonts.small.fontFamily,
+                color: theme.semanticColors.bodySubtext,
+                fontWeight: 600,
+                textAlign: labelAlignment.toLowerCase() as "left" | "center" | "right",
+                paddingTop: labelPosition === "Left" ? 6 : 0,
+                ...labelContainerQuery,
+            },
+            content: {
+                ...contentLayout,
+                minWidth: labelPosition === "Left" ? CONTENT_MIN_WIDTH : undefined,
+                ...contentContainerQuery,
+            },
+            error: {
+                fontSize: theme.fonts.xSmall.fontSize,
+                color: theme.semanticColors.errorText,
+                marginTop: 2,
+            },
+        }); */
 };
