@@ -10,14 +10,15 @@ export const getSectionStyles = (section: ISection, theme: ITheme) => {
             overflow: "hidden",
             containerType: "inline-size",
             margin: 6,
+            boxShadow: theme.effects.elevation4,
             ...(section.visible === false ? {display: 'none'} : {})
         },
         header: {
             display: "flex",
             alignItems: "center",
             padding: "8px 12px",
-            backgroundColor: theme.semanticColors.bodyBackgroundChecked,
-            borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
+            //backgroundColor: theme.semanticColors.bodyBackgroundChecked,
+            //borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
         },
         title: {
             fontSize: theme.fonts.medium.fontSize,

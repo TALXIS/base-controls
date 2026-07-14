@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { getClassNames } from "@talxis/react-components";
-import { useControl } from "../../hooks";
+import { useControl, useControlTheme } from "../../hooks";
 import { IForm } from "./interfaces";
 import { formTranslations } from "./translations";
 import { Form as FormModel, Tab } from "./form/FormModel";
@@ -8,7 +8,7 @@ import { FormTabs } from "./form/parts/FormTabs";
 import { FormComponentsContext } from "./context";
 import { FormComponents } from "./components/components";
 import { FormContext } from "./form/context";
-import { initializeIcons, Pivot } from "@fluentui/react";
+import { initializeIcons, Pivot, ThemeProvider } from "@fluentui/react";
 import { getFormStyles } from "./form/styles";
 
 /* const buildFormInstance = (onGetProps: () => IForm, labels: any, theme: any, metadataProvider?: any): FormModel => {
@@ -29,11 +29,14 @@ export const FormComponent = (props: IFormProps) => {
     const { children } = props;
     const form = useMemo(() => new FormModel(), []);
     const styles = useMemo(() => getFormStyles(), []);
+    const theme = useControlTheme();
 
     return <FormContext.Provider value={form}>
-        <div className={styles.form} data-id={`form-${form.id}`}>
-            {children}
-        </div>
+        <ThemeProvider theme={theme}>
+            <div className={styles.form} data-id={`form-${form.id}`}>
+                {children}
+            </div>
+        </ThemeProvider>
     </FormContext.Provider>
 }
 

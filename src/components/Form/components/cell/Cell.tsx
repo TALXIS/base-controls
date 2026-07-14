@@ -1,14 +1,14 @@
 import * as React from "react";
-import { Icon, Label, MessageBar, TextField, useTheme } from "@fluentui/react";
+import { Icon, Label, TooltipHost, useTheme } from "@fluentui/react";
 import { CellContext } from "./context";
 import { getCellStyles } from "./styles";
 import { useSectionContext } from "../section";
-import { useFormInstance } from "../../form/useFormInstance";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import type { IFormCellProps, ISection, ISectionEvents } from "../../form/FormModel";
 import { useFormComponent } from "../../form/useFormComponent";
 import { useEventEmitter } from "../../../../hooks";
 import { EventEmitter } from "@talxis/client-libraries";
+import { TextField } from "@talxis/react-components";
 
 export type { IFormCellProps } from "../../form/FormModel";
 
@@ -25,7 +25,7 @@ export const Cell = (props: IFormCellProps) => {
         instance: section
     } : undefined);
 
-    const requirementLevel = RequiredLevelEnum.ApplicationRequired
+    const requirementLevel = RequiredLevelEnum.SystemRequired
     const { showLabel = true, label, disabled } = props;
     const theme = useTheme();
 
@@ -33,7 +33,7 @@ export const Cell = (props: IFormCellProps) => {
     const shouldRenderRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
     const shouldRenderLabel = (showLabel && label) || shouldRenderRequiredIndicator;
     const shouldRenderLabelContainer = shouldRenderLabel || disabled;
-    const styles = getCellStyles({cell, section, requirementLevel, theme});
+    const styles = getCellStyles({ cell, section, requirementLevel, theme });
     const dummyEmitter = React.useMemo(() => new EventEmitter<ISectionEvents>(), []);
 
     const [shouldRenderLockSpacer, setShouldRenderLockSpacer] = React.useState(false);
@@ -57,7 +57,9 @@ export const Cell = (props: IFormCellProps) => {
                 <div className={styles.labelContainer}>
                     {shouldRenderLabel &&
                         <Label className={styles.label}>
-                            {label}
+                            <TooltipHost content={label}>
+                                {label}
+                            </TooltipHost>
                         </Label>
                     }
                     {shouldRenderRequiredIndicator && <span className={styles.requiredIndicator}>*</span>}
@@ -69,7 +71,7 @@ export const Cell = (props: IFormCellProps) => {
             }
         </CellContext.Provider>
         <div className={styles.control}>
-            <TextField />
+            <TextField multiline value="" />
         </div>
     </div>
 }

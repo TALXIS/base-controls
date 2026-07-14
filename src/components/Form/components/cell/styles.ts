@@ -12,6 +12,7 @@ export interface ICellStylesParams {
     requirementLevel?: RequiredLevelEnum;
 }
 
+//could be props on CELL?
 const LABEL_DEFAULT_WIDTH = 115;
 const LABEL_TOP_BREAKPOINT = 200;
 
@@ -44,7 +45,6 @@ export const getCellStyles = ({ cell, section, requirementLevel, theme }: ICellS
         cell: {
             display: 'flex',
             flexDirection: getFlexDirection(section),
-            containerType: 'inline-size',
             gap: 5,
             ...(cell.visible === false ? { display: 'none' } : {}),
             [`@container (max-width: ${labelTopBreakpoint}px)`]: {
@@ -76,12 +76,17 @@ export const getCellStyles = ({ cell, section, requirementLevel, theme }: ICellS
             overflow: 'hidden',
             padding: 0,
             textOverflow: 'ellipsis',
+            overflowWrap: 'anywhere',
             display: '-webkit-box',
             '-webkit-box-orient': 'vertical',
             '-webkit-line-clamp': '3',
+             [`@container (max-width: ${labelTopBreakpoint}px)`]: {
+                width: '100%'
+            }
         },
         control: {
-            flexGrow: 1
+            flexGrow: 1,
+            overflow: 'auto'
         },
     })
 }
