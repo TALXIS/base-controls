@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Pivot, PivotItem } from "@fluentui/react";
+import { Pivot, PivotItem, IPivotProps, IPivotItemProps } from "@fluentui/react";
+import { TabComponents, type ITabsComponents } from "./components";
 import { useForm } from "../../form/context";
 import { IForm } from "../../form/FormModel";
 import { useRerender } from "@talxis/react-components";
@@ -7,7 +8,8 @@ import { useFormComponent } from "../../form/useFormComponent";
 
 export interface IFormTabsProps {
     children?: React.ReactNode;
-    onTabChange?: (tabId: string) => void;
+    components?: Partial<ITabsComponents>;
+    onChangeTab?: (tabId: string) => void;
 }
 
 //dummy tab to register the tab in the form model, but not render anything
@@ -29,7 +31,8 @@ const updateChildTabs = (form: IForm, childrenArray: (React.ReactPortal | React.
 
 export const Tabs = (props: IFormTabsProps) => {
     const form = useForm();
-    const { children, onTabChange } = props;
+    const { children, onChangeTab } = props;
+    const components = {...TabComponents, ...props.components};
     const childrenArray = React.Children.toArray(children).filter(child => React.isValidElement(child));
     const visibleTabs = form.getTabs().filter(tab => tab.visible !== false);
     const rerender = useRerender();
@@ -48,10 +51,13 @@ export const Tabs = (props: IFormTabsProps) => {
         </>
     }
     else {
-        return <Pivot selectedKey={form.getExpandedTab()?.id} onLinkClick={(item) => onTabChange?.(item?.props.itemKey!)}>
-            {visibleTabs.map(tab => <PivotItem key={tab.id} headerText={tab.label ?? tab.name ?? tab.id} itemKey={tab.id}>
-                {getChildById(tab.id, childrenArray)}
-            </PivotItem>)}
-        </Pivot>
+        return components.onRenderTabs({
+            form: form,
+            onChangeTab: onChangeTab,
+            children: visibleTabs.map(tab => components.onRenderTab({
+                tab: tab,
+                children: getChildById(tab.id, childrenArray)
+            }))
+        })
     }
 }
