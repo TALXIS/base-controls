@@ -1,50 +1,88 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { ICell, ISection } from "../..";
+import { RequiredLevelEnum } from "@talxis/client-metadata";
 
 export type CellLabelPosition = "Top" | "Left";
 export type CellLabelAlignment = "Center" | "Left" | "Right";
 
-const CONTENT_MIN_WIDTH = 80;
-const LABEL_DEFAULT_WIDTH = 140;
-
-const getDisplayValue = (section: ISection | null) => {
-    //if no section render => block
-    if (!section) return 'block';
-    //otherwise default is flex unless the section has a label position of "Top"
-    return section.cellLabelPosition === 'Top' ? 'block' : 'flex';
+export interface ICellStylesParams {
+    cell: ICell;
+    section: ISection | null;
+    theme: ITheme;
+    requirementLevel?: RequiredLevelEnum;
 }
 
-export const getCellStyles = (cell: ICell, section: ISection | null) => {
+const LABEL_DEFAULT_WIDTH = 115;
+const LABEL_TOP_BREAKPOINT = 200;
+
+const getFlexDirection = (section: ISection | null) => {
+    //if no section render => block
+    if (!section) return 'column';
+    //otherwise default is flex unless the section has a label position of "Top"
+    return section.cellLabelPosition === 'Top' ? 'column' : 'row';
+}
+
+const getRequirementLevelColor = (theme: ITheme, requirementLevel?: RequiredLevelEnum): string | undefined => {
+    switch (requirementLevel) {
+        case RequiredLevelEnum.SystemRequired: {
+            return theme.semanticColors.errorIcon;
+        }
+        case RequiredLevelEnum.ApplicationRequired:
+        case RequiredLevelEnum.Recommended: {
+            return theme.palette.yellowDark
+        }
+        default: {
+            return undefined;
+        }
+    }
+}
+
+export const getCellStyles = ({ cell, section, requirementLevel, theme }: ICellStylesParams) => {
     const labelWidth = section?.labelWidth ?? LABEL_DEFAULT_WIDTH;
+    const labelTopBreakpoint = section?.cellLabelTopBreakpoint ?? LABEL_TOP_BREAKPOINT;
     return mergeStyleSets({
         cell: {
-            display: getDisplayValue(section),
-            flexWrap: 'wrap',
+            display: 'flex',
+            flexDirection: getFlexDirection(section),
+            containerType: 'inline-size',
             gap: 5,
-            ...(cell.visible === false ? { display: 'none' } : {})
+            ...(cell.visible === false ? { display: 'none' } : {}),
+            [`@container (max-width: ${labelTopBreakpoint}px)`]: {
+                flexDirection: 'column',
+            }
         },
         lockIcon: {
             fontSize: 12,
             flexShrink: 0,
         },
+        lockSpacer: {
+            width: 16,
+            height: 16,
+        },
         labelContainer: {
             display: 'flex',
-            alignItems: 'center',
             gap: 5,
             minWidth: 0,
+            flexShrink: 1
+        },
+        requiredIndicator: {
+            fontSize: 12,
+            position: 'relative',
+            top: 2,
+            color: getRequirementLevelColor(theme, requirementLevel),
         },
         label: {
             width: labelWidth,
             overflow: 'hidden',
+            padding: 0,
             textOverflow: 'ellipsis',
             display: '-webkit-box',
             '-webkit-box-orient': 'vertical',
-            '-webkit-line-clamp': '3'
+            '-webkit-line-clamp': '3',
         },
         control: {
-            backgroundColor: 'lightgray',
-            minWidth: CONTENT_MIN_WIDTH,
-        }
+            flexGrow: 1
+        },
     })
 }
 

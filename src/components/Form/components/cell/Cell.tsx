@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Icon, Label, MessageBar } from "@fluentui/react";
+import { Icon, Label, MessageBar, TextField, useTheme } from "@fluentui/react";
 import { CellContext } from "./context";
 import { getCellStyles } from "./styles";
 import { useSectionContext } from "../section";
@@ -25,30 +25,29 @@ export const Cell = (props: IFormCellProps) => {
         instance: section
     } : undefined);
 
-    const requirementLevel = RequiredLevelEnum.SystemRequired;
+    const requirementLevel = RequiredLevelEnum.ApplicationRequired
     const { showLabel = true, label, disabled } = props;
+    const theme = useTheme();
 
     //@ts-ignore
     const shouldRenderRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
     const shouldRenderLabel = (showLabel && label) || shouldRenderRequiredIndicator;
     const shouldRenderLabelContainer = shouldRenderLabel || disabled;
-    const styles = React.useMemo(() => getCellStyles(cell, section), [cell.visible, section?.labelWidth]);
+    const styles = getCellStyles({cell, section, requirementLevel, theme});
     const dummyEmitter = React.useMemo(() => new EventEmitter<ISectionEvents>(), []);
 
     const [shouldRenderLockSpacer, setShouldRenderLockSpacer] = React.useState(false);
 
-    /*     const toggleLockSpacer = () => {
-            if (!section) return;
-            if (!disabled) {
-                setShouldRenderLockSpacer(containsDisabledCells(section));
-            }
-        }
-    
-        useEventEmitter<ISectionEvents>(section?.events ?? dummyEmitter, 'onCellDisabledChanged', toggleLockSpacer); */
+    const toggleLockSpacer = () => {
+        if (!section) return;
+        setShouldRenderLockSpacer(containsDisabledCells(section));
+    }
 
-    /*     React.useEffect(() => {
-            toggleLockSpacer();
-        }, []); */
+    useEventEmitter<ISectionEvents>(section?.events ?? dummyEmitter, 'onCellDisabledChanged', toggleLockSpacer);
+
+    React.useEffect(() => {
+        toggleLockSpacer();
+    }, []);
 
 
 
@@ -57,15 +56,21 @@ export const Cell = (props: IFormCellProps) => {
             {shouldRenderLabelContainer &&
                 <div className={styles.labelContainer}>
                     {shouldRenderLabel &&
-                        <Label required={shouldRenderRequiredIndicator} className={styles.label}>
+                        <Label className={styles.label}>
                             {label}
                         </Label>
                     }
-                    {disabled && <Icon iconName="Lock" className={styles.lockIcon} />}
+                    {shouldRenderRequiredIndicator && <span className={styles.requiredIndicator}>*</span>}
+                    {shouldRenderLockSpacer && <div className={styles.lockSpacer}>
+                        {disabled && <Icon iconName="Lock" className={styles.lockIcon} />}
+                    </div>
+                    }
                 </div>
             }
         </CellContext.Provider>
-        <div className={styles.control}>control</div>
+        <div className={styles.control}>
+            <TextField />
+        </div>
     </div>
 }
 

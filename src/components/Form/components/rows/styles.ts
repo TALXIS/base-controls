@@ -4,7 +4,8 @@ export const getRowsStyles = () => {
     return mergeStyleSets({
         rows: {
             display: "flex",
-            flexDirection: 'column'
+            flexDirection: 'column',
+            gap: 12
         }
     });
 };
