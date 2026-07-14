@@ -5,6 +5,7 @@ export type CellLabelPosition = "Top" | "Left";
 export type CellLabelAlignment = "Center" | "Left" | "Right";
 
 const CONTENT_MIN_WIDTH = 80;
+const LABEL_DEFAULT_WIDTH = 140;
 
 const getDisplayValue = (section: ISection | null) => {
     //if no section render => block
@@ -14,16 +15,26 @@ const getDisplayValue = (section: ISection | null) => {
 }
 
 export const getCellStyles = (cell: ICell, section: ISection | null) => {
+    const labelWidth = section?.labelWidth ?? LABEL_DEFAULT_WIDTH;
     return mergeStyleSets({
         cell: {
             display: getDisplayValue(section),
             flexWrap: 'wrap',
+            gap: 5,
             ...(cell.visible === false ? {display: 'none'} : {})
+        },
+        lockIcon: {
+            fontSize: 12,
         },
         labelContainer: {
             display: 'flex',
             alignItems: 'center',
-            gap: 5
+            gap: 5,
+            width: labelWidth
+        },
+        label: {
+            flex: 1,
+            minWidth: 0
         }
     })
 }

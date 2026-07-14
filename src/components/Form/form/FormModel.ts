@@ -71,6 +71,7 @@ export interface IFormCellProps {
     isStreamCell?: boolean;
     isChartCell?: boolean;
     isTileCell?: boolean;
+    disabled?: boolean;
     auto?: boolean;
     addedBy?: string;
     children?: React.ReactNode;
@@ -129,11 +130,12 @@ export interface IControl extends WithRequiredId<IFormControlProps> {
 }
 
 export interface ICell extends WithRequiredId<IFormCellProps> {
+    events: IEventEmitter<ICellEvents>;
     update: (props: IFormCellProps) => void;
 }
 
 export interface ISectionEvents {
-    onCellAdded: (cell: ICell) => void;
+    onCellDisabledChanged: (cell: ICell) => void;
 }
 
 export interface ISection extends WithRequiredId<IFormSectionProps> {
@@ -141,6 +143,9 @@ export interface ISection extends WithRequiredId<IFormSectionProps> {
     addCell: (props: WithRequiredId<IFormCellProps>) => ICell;
     getCells: () => ICell[];
     getCell: (id: string) => ICell | null;
+    addControl: (props: WithRequiredId<IFormControlProps>) => IControl;
+    getControls: () => IControl[];
+    getControl: (id: string) => IControl | null;
     update: (props: IFormSectionProps) => void;
 }
 
@@ -149,13 +154,45 @@ export interface IColumn extends IFormColumnProps {
 }
 
 export class Control implements IControl {
-    
+    private _controls: IControl[] = [];
+    public id!: string;
+    public classid!: IFormControlProps["classid"];
+    public datafieldname?: IFormControlProps["datafieldname"];
+    public disabled?: IFormControlProps["disabled"];
+    public isrequired?: IFormControlProps["isrequired"];
+    public relationship?: IFormControlProps["relationship"];
+
+    constructor(props: WithRequiredId<IFormControlProps>) {
+        this.update(props);
+    }
+
+    public addControl(props: WithRequiredId<IFormControlProps>): IControl {
+        const control = new Control(props);
+        if (this.getControl(control.id)) {
+            throw new Error(`[Form] Control with id "${control.id}" already exists in control "${this.id}".`);
+        }
+        this._controls.push(control);
+        return control;
+    }
+
+    public getControls(): IControl[] {
+        return this._controls;
+    }
+
+    public getControl(id: string): IControl | null {
+        return this._controls.find(control => control.id === id) ?? null;
+    }
+
+    public update(props: IFormControlProps): void {
+        Object.assign(this, props);
+    }
 }
 
 
 export class Section implements ISection {
     //we need to be aware which cells belong to a section
     private _cells: ICell[] = [];
+    private _controls: IControl[] = [];
     public id!: string;
     public events: IEventEmitter<ISectionEvents> = new EventEmitter<ISectionEvents>();
     public name?: IFormSectionProps["name"];
@@ -192,8 +229,8 @@ export class Section implements ISection {
         if (this._cells.find(c => c.id === cell.id)) {
             throw new Error(`[Form] Cell with id "${cell.id}" already exists in section "${this.id}".`);
         }
+        cell.events.addEventListener('onDisabledChanged', (this._onCellDisabledChanged));
         this._cells.push(cell);
-        this.events.dispatchEvent('onCellAdded', cell);
         return cell;
     }
 
@@ -204,10 +241,36 @@ export class Section implements ISection {
     public getCell(id: string): ICell | null {
         return this._cells.find(c => c.id === id) ?? null;
     }
+
+    public addControl(props: WithRequiredId<IFormControlProps>): IControl {
+        const control = new Control(props);
+        if (this.getControl(control.id)) {
+            throw new Error(`[Form] Control with id "${control.id}" already exists in section "${this.id}".`);
+        }
+        this._controls.push(control);
+        return control;
+    }
+
+    public getControls(): IControl[] {
+        return this._controls;
+    }
+
+    public getControl(id: string): IControl | null {
+        return this._controls.find(control => control.id === id) ?? null;
+    }
+
+    private _onCellDisabledChanged = (cell: ICell, disabled: boolean) => {
+        this.events.dispatchEvent('onCellDisabledChanged', cell);
+    }
+}
+
+export interface ICellEvents {
+    onDisabledChanged: (cell: ICell, disabled: boolean) => void;
 }
 
 export class Cell implements ICell {
     public id!: string;
+    public events: IEventEmitter<ICellEvents> = new EventEmitter<ICellEvents>();
     public labelId?: IFormCellProps["labelId"];
     public label?: IFormCellProps["label"];
     public lockLevel?: IFormCellProps["lockLevel"];
@@ -223,13 +286,18 @@ export class Cell implements ICell {
     public isTileCell?: IFormCellProps["isTileCell"];
     public auto?: IFormCellProps["auto"];
     public addedBy?: IFormCellProps["addedBy"];
+    public disabled?: IFormCellProps["disabled"];
 
     constructor(props: WithRequiredId<IFormCellProps>) {
-        this.update(props);
+        Object.assign(this, props);
     }
 
     public update(props: IFormCellProps): void {
+        const previousDisabled = this.disabled;
         Object.assign(this, props);
+        if (previousDisabled !== props.disabled) {
+            this.events.dispatchEvent('onDisabledChanged', this, !!this.disabled);
+        }
     }
 }
 
