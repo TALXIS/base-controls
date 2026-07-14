@@ -25,17 +25,17 @@ export const getCellStyles = (cell: ICell, section: ISection | null) => {
         },
         lockIcon: {
             fontSize: 12,
+            flexShrink: 0,
         },
         labelContainer: {
             display: 'flex',
             alignItems: 'center',
             gap: 5,
+            minWidth: 0,
         },
         label: {
-            flex: 1,
-            minWidth: 0,
-            overflow: 'hidden',
             width: labelWidth,
+            overflow: 'hidden',
             textOverflow: 'ellipsis',
             display: '-webkit-box',
             '-webkit-box-orient': 'vertical',

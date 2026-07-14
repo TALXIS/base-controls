@@ -57,15 +57,11 @@ export const Cell = (props: IFormCellProps) => {
             {shouldRenderLabelContainer &&
                 <div className={styles.labelContainer}>
                     {shouldRenderLabel &&
-                        <div>
-                            <Label required={shouldRenderRequiredIndicator} className={styles.label}>
-                                {label}
-                            </Label>
-                        </div>
+                        <Label required={shouldRenderRequiredIndicator} className={styles.label}>
+                            {label}
+                        </Label>
                     }
-                    <div>
                     {disabled && <Icon iconName="Lock" className={styles.lockIcon} />}
-                    </div>
                 </div>
             }
         </CellContext.Provider>
