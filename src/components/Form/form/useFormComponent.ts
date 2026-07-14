@@ -25,8 +25,6 @@ interface IGetMethodsParams {
 }
 
 
-
-
 const getMethods = (params: IGetMethodsParams) => {
     const { id, type, parent, form } = params;
     switch (type) {

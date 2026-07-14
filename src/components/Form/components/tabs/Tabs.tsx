@@ -1,10 +1,5 @@
 import * as React from "react";
-import { Pivot, useTheme, PivotItem } from "@fluentui/react";
-import { TabsContext } from "./context";
-import { getTabsStyles } from "./styles";
-import { FormContext } from "../../form/FormContext";
-import { useFormInstance } from "../../form/useFormInstance";
-import { useFormUiState } from "../../form/useFormUiState";
+import { Pivot, PivotItem } from "@fluentui/react";
 import { useForm } from "../../form/context";
 import { IForm } from "../../form/FormModel";
 import { useRerender } from "@talxis/react-components";
