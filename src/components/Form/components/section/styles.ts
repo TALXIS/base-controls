@@ -17,8 +17,8 @@ export const getSectionStyles = (section: ISection, theme: ITheme) => {
             display: "flex",
             alignItems: "center",
             padding: "8px 12px",
-            //backgroundColor: theme.semanticColors.bodyBackgroundChecked,
-            //borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
+            backgroundColor: theme.semanticColors.bodyBackgroundChecked,
+            borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
         },
         title: {
             fontSize: theme.fonts.medium.fontSize,

@@ -71,7 +71,7 @@ export const Cell = (props: IFormCellProps) => {
             }
         </CellContext.Provider>
         <div className={styles.control}>
-            <TextField multiline value="" />
+            <TextField value="" />
         </div>
     </div>
 }

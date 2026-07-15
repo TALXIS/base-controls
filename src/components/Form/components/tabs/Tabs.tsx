@@ -56,6 +56,8 @@ export const Tabs = (props: IFormTabsProps) => {
             onChangeTab: onChangeTab,
             children: visibleTabs.map(tab => components.onRenderTab({
                 tab: tab,
+                form: form,
+                onChangeTab: onChangeTab,
                 children: getChildById(tab.id, childrenArray)
             }))
         })

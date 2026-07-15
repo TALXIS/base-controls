@@ -10,7 +10,9 @@ export interface ITabsComponentProps {
 
 export interface ITabComponentProps {
     tab: ITab;
+    form: IForm;
     children: React.ReactNode;
+    onChangeTab?: (tabId: string) => void;
 }
 
 export interface ITabsComponents {

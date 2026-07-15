@@ -15,6 +15,8 @@ export interface ICellStylesParams {
 //could be props on CELL?
 const LABEL_DEFAULT_WIDTH = 115;
 const LABEL_TOP_BREAKPOINT = 200;
+const DEFAULT_CELL_SPAN = 1;
+const DEFAULT_CELL_ROWSPAN = 1;
 
 const getFlexDirection = (section: ISection | null) => {
     //if no section render => block
@@ -41,11 +43,16 @@ const getRequirementLevelColor = (theme: ITheme, requirementLevel?: RequiredLeve
 export const getCellStyles = ({ cell, section, requirementLevel, theme }: ICellStylesParams) => {
     const labelWidth = section?.labelWidth ?? LABEL_DEFAULT_WIDTH;
     const labelTopBreakpoint = section?.cellLabelTopBreakpoint ?? LABEL_TOP_BREAKPOINT;
+    const colSpan = cell.colspan ?? DEFAULT_CELL_SPAN;
+    const rowSpan = cell.rowspan ?? DEFAULT_CELL_ROWSPAN;
     return mergeStyleSets({
         cell: {
             display: 'flex',
             flexDirection: getFlexDirection(section),
             gap: 5,
+            height: '100%',
+            gridColumn: `span ${colSpan}`,
+            gridRow: `span ${rowSpan}`,
             ...(cell.visible === false ? { display: 'none' } : {}),
             [`@container (max-width: ${labelTopBreakpoint}px)`]: {
                 flexDirection: 'column',

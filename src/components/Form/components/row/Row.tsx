@@ -1,29 +1,21 @@
 import * as React from "react";
 import { RowContext } from "./context";
-import { useRowsContext } from "../rows";
 import { getRowStyles } from "./styles";
-import { useSectionContext } from "../..";
+import { useSectionContext } from "../section";
 
 export interface IFormRowProps {
     height?: string;
+    rowspan?: number;
     children?: React.ReactNode;
 }
 
 export const Row = (props: IFormRowProps) => {
-    const rowsContext = useRowsContext();
-    const sectionContext = useSectionContext();
-    
-    if (!rowsContext) {
-        throw new Error("[Form] Row must be rendered inside Rows.");
-    }
-    if(!sectionContext) {
-        throw new Error("[Form] Row must be rendered inside a Section.");
-    }
-    const { height, children } = props;
-    const styles = getRowStyles(height, sectionContext.columns);
-
+    const { rowspan, children } = props;
+    const section = useSectionContext();
+    const numOfCells = section?.columns;
+    const styles = getRowStyles({rowspan, height: props.height, numOfCells});
     return (
-        <div className={styles.row}>
+        <div className={styles.row} data-id="form-row">
             <RowContext.Provider value={props}>
                 {children}
             </RowContext.Provider>
