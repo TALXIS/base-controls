@@ -9,6 +9,7 @@ import { useFormComponent } from "../../form/useFormComponent";
 import { useEventEmitter } from "../../../../hooks";
 import { EventEmitter } from "@talxis/client-libraries";
 import { TextField } from "@talxis/react-components";
+import { useCellsContext } from "../cells/context";
 
 export type { IFormCellProps } from "../../form/FormModel";
 
@@ -19,11 +20,14 @@ const containsDisabledCells = (section: ISection) => {
 
 export const Cell = (props: IFormCellProps) => {
     const section = useSectionContext();
+    const cells = useCellsContext();
+    const { celllabelwidth, collapsebreakpoint } = {...cells};
 
     const cell = useFormComponent('Cell', props, section ? {
         name: 'Section',
         instance: section
     } : undefined);
+
 
     const requirementLevel = RequiredLevelEnum.SystemRequired
     const { showLabel = true, label, disabled } = props;
@@ -33,7 +37,7 @@ export const Cell = (props: IFormCellProps) => {
     const shouldRenderRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
     const shouldRenderLabel = (showLabel && label) || shouldRenderRequiredIndicator;
     const shouldRenderLabelContainer = shouldRenderLabel || disabled;
-    const styles = getCellStyles({ cell, section, requirementLevel, theme });
+    const styles = getCellStyles({ cell, section, requirementLevel, theme, labelCollapseBreakpoint: collapsebreakpoint, labelWidth: celllabelwidth });
     const dummyEmitter = React.useMemo(() => new EventEmitter<ISectionEvents>(), []);
 
     const [shouldRenderLockSpacer, setShouldRenderLockSpacer] = React.useState(false);
@@ -48,7 +52,6 @@ export const Cell = (props: IFormCellProps) => {
     React.useEffect(() => {
         toggleLockSpacer();
     }, []);
-
 
 
     return <div className={styles.cell} data-id={`cell-${cell.id}`}>
@@ -75,45 +78,3 @@ export const Cell = (props: IFormCellProps) => {
         </div>
     </div>
 }
-
-/* export const Cell = (props: IFormCellProps) => {
-    const form = useFormInstance();
-    const section = useSectionContext();
-
-    const cell = useFormComponent('Cell', props, section ? {
-        name: 'Section',
-        instance: section
-    } : undefined);
-
-    const { visible = true, lockLevel, showLabel = true, label } = props;
-
-    const styles = React.useMemo(() => getCellStyles(), []);
-    const [isDisabled, setIsDisabled] = React.useState<boolean>(true);
-    const requirementLevel = RequiredLevelEnum.SystemRequired;
-    //@ts-ignore
-    const shouRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
-    const shouldRenderLabel = (showLabel && label) || shouRequiredIndicator;
-    const shouldRenderLabelContainer = shouldRenderLabel || isDisabled;
-
-    const showRequiredIndicator = () => {
-        //@ts-ignore
-        return requirementLevel && requirementLevel !== RequiredLevelEnum.None;
-    };
-
-
-    return <FormCellContext.Provider value={{ ...props, onSetDisabled: setIsDisabled }}>
-        <div className={styles.cell}>
-            {shouldRenderLabelContainer &&
-                <div className={styles.labelContainer}>
-                    {isDisabled && <Icon iconName="Lock" />}
-                    {shouldRenderLabel &&
-                        <Label required={showRequiredIndicator()}>
-                            {label}
-                        </Label>
-                    }
-                </div>
-            }
-            <div>control</div>
-        </div>
-    </FormCellContext.Provider>;
-} */
