@@ -53,7 +53,7 @@ export const getCellStyles = ({ cell, section, requirementLevel, theme }: ICellS
             flexDirection: getFlexDirection(section),
             gap: 5,
             height: '100%',
-            minWidth: `min(100%, ${DEFAULT_CELL_MIN_WIDTH})`,
+            //minWidth: `min(100%, ${DEFAULT_CELL_MIN_WIDTH})`,
             gridColumn: `span ${colSpan}`,
             gridRow: `span ${rowSpan}`,
             ...(cell.visible === false ? { display: 'none' } : {}),
@@ -72,8 +72,7 @@ export const getCellStyles = ({ cell, section, requirementLevel, theme }: ICellS
         labelContainer: {
             display: 'flex',
             gap: 5,
-            minWidth: 0,
-            flexShrink: 1
+            flexShrink: 0
         },
         requiredIndicator: {
             fontSize: 12,
