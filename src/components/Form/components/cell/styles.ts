@@ -17,6 +17,7 @@ const LABEL_DEFAULT_WIDTH = 115;
 const LABEL_TOP_BREAKPOINT = 180;
 const DEFAULT_CELL_SPAN = 1;
 const DEFAULT_CELL_ROWSPAN = 1;
+export const DEFAULT_CELL_MIN_WIDTH = '180px';
 
 const getFlexDirection = (section: ISection | null) => {
     //if no section render => block
@@ -52,6 +53,7 @@ export const getCellStyles = ({ cell, section, requirementLevel, theme }: ICellS
             flexDirection: getFlexDirection(section),
             gap: 5,
             height: '100%',
+            minWidth: `min(100%, ${DEFAULT_CELL_MIN_WIDTH})`,
             gridColumn: `span ${colSpan}`,
             gridRow: `span ${rowSpan}`,
             ...(cell.visible === false ? { display: 'none' } : {}),

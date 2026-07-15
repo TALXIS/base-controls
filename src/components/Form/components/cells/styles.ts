@@ -1,24 +1,22 @@
 import { mergeStyleSets } from "@fluentui/react";
-import { useSectionContext } from "../section";
+import { DEFAULT_CELL_MIN_WIDTH } from "../cell/styles";
 
 interface ICellsStyleParams {
     numOfCells: number;
 }
 
-const GRID_LAYOUT_GAP = '10px';
-const GRID_ITEM_MIN_WIDTH = '180px';
-
+const GRID_LAYOUT_GAP = 10;
 
 export const getCellsStyles = (params: ICellsStyleParams) => {
-    const section = useSectionContext();
-    const numOfCells = section?.columns ?? params.numOfCells;
-    const maxColumnWidth = `calc((100% - ${(numOfCells - 1)} * ${GRID_LAYOUT_GAP}) / ${numOfCells})`;
+    const numOfColumns = Math.max(params.numOfCells, 1);
+    const totalGapWidth = `${Math.max(numOfColumns - 1, 0) * GRID_LAYOUT_GAP}px`;
+    const maxColumnWidth = `calc((100% - ${totalGapWidth}) / ${numOfColumns})`;
 
     return mergeStyleSets({
         cells: {
             display: 'grid',
-            //gridTemplateColumns: `repeat(auto-fill, minmax(max(${GRID_ITEM_MIN_WIDTH}, ${maxColumnWidth}), 1fr))`,
-            gap: GRID_LAYOUT_GAP
+            gap: `${GRID_LAYOUT_GAP}px`,
+            gridTemplateColumns: `repeat(auto-fit, minmax(max(min(100%, ${DEFAULT_CELL_MIN_WIDTH}), ${maxColumnWidth}), 1fr))`,
         }
     })
 }
