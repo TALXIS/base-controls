@@ -14,7 +14,7 @@ export interface ICellStylesParams {
 
 //could be props on CELL?
 const LABEL_DEFAULT_WIDTH = 115;
-const LABEL_TOP_BREAKPOINT = 200;
+const LABEL_TOP_BREAKPOINT = 180;
 const DEFAULT_CELL_SPAN = 1;
 const DEFAULT_CELL_ROWSPAN = 1;
 
@@ -45,7 +45,7 @@ export const getCellStyles = ({ cell, section, requirementLevel, theme }: ICellS
     const labelTopBreakpoint = section?.cellLabelTopBreakpoint ?? LABEL_TOP_BREAKPOINT;
     const colSpan = cell.colspan ?? DEFAULT_CELL_SPAN;
     const rowSpan = cell.rowspan ?? DEFAULT_CELL_ROWSPAN;
-    
+
     return mergeStyleSets({
         cell: {
             display: 'flex',
