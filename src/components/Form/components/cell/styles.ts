@@ -45,6 +45,7 @@ export const getCellStyles = ({ cell, section, requirementLevel, theme }: ICellS
     const labelTopBreakpoint = section?.cellLabelTopBreakpoint ?? LABEL_TOP_BREAKPOINT;
     const colSpan = cell.colspan ?? DEFAULT_CELL_SPAN;
     const rowSpan = cell.rowspan ?? DEFAULT_CELL_ROWSPAN;
+    
     return mergeStyleSets({
         cell: {
             display: 'flex',

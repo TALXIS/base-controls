@@ -14,6 +14,8 @@ export const Row = (props: IFormRowProps) => {
     const section = useSectionContext();
     const numOfCells = section?.columns;
     const styles = getRowStyles({rowspan, height: props.height, numOfCells});
+
+    return <>{children}</>
     return (
         <div className={styles.row} data-id="form-row">
             <RowContext.Provider value={props}>
