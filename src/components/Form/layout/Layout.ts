@@ -13,7 +13,7 @@ export interface IColumnBreakpoints {
 }
 
 export class Layout {
-    
+
     public static getNumberOfColumnsForWidth(width: number, breakpoints: IColumnBreakpoints) {
         if (width <= WIDTH_BREAKPOINT.xs) return breakpoints['xs'];
         if (width <= WIDTH_BREAKPOINT.sm) return breakpoints['sm'];
@@ -34,8 +34,6 @@ export class Layout {
     public static getColumnsContainerStyles(columnsPerRow: number): React.CSSProperties {
         return {
             display: 'grid',
-            opacity: 1,
-            transition: 'opacity 0.3s ease-in-out 0.5s',
             gridTemplateColumns: `repeat(${columnsPerRow}, 1fr)`,
         }
     }

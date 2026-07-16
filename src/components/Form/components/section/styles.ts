@@ -9,7 +9,7 @@ interface ISectionStyleParams {
 
 const SECTION_LAYOUT_GAP = 10;
 
-export const getSectionStyles = ({ section, theme  }: ISectionStyleParams) => {
+export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
     return mergeStyleSets({
         section: {
             border: `1px solid ${theme.semanticColors.bodyDivider}`,
@@ -18,6 +18,11 @@ export const getSectionStyles = ({ section, theme  }: ISectionStyleParams) => {
             overflow: "hidden",
             margin: 6,
             boxShadow: theme.effects.elevation4,
+            //used to cover up layout changes when resizing the section, so that the user doesn't see the layout change
+            transition: 'opacity 0.2s ease-in-out 0.01s',
+            '@starting-style': {
+                opacity: 0
+            },
             ...(section.visible === false ? { display: 'none' } : {})
         },
         header: {
@@ -38,9 +43,7 @@ export const getSectionStyles = ({ section, theme  }: ISectionStyleParams) => {
             padding: 12,
             containerType: 'inline-size',
             gap: `${SECTION_LAYOUT_GAP}px`,
-            '@starting-style': {
-                opacity: 0
-            }
+            opacity: 1,
         },
     });
 };
