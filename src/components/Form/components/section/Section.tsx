@@ -1,7 +1,6 @@
 import { Text, useTheme } from "@fluentui/react";
 import { SectionContext } from "./context";
 import { getSectionStyles } from "./styles";
-import { useTabContext } from "../tab";
 import React from "react";
 import { IColumnBreakpoints, Layout } from "../../layout";
 import { useCalculatedColumns } from "../../layout/useCalculatedColumns";
@@ -32,7 +31,6 @@ export interface ISectionProps {
 }
 
 export const Section = (props: ISectionProps) => {
-    
     const { children, showBar = true, showLabel = true, label, name, id } = props;
     const isHeaderVisible = showBar && showLabel && label;
 
@@ -42,15 +40,15 @@ export const Section = (props: ISectionProps) => {
     const breakpoints: Partial<IColumnBreakpoints> = { ...{ lg: cellComponents.length }, ...props.columns };
     const columnBreakpoints = { ...Layout.createDefaultColumnBreakpoints(breakpoints), ...props.columns };
 
-    const columnCalculation = useCalculatedColumns({
+    const {containerStyles} = useCalculatedColumns({
         breakpoints: columnBreakpoints,
         ref: bodyContainerRef
     });
 
     const theme = useTheme();
-    const styles = getSectionStyles({ section, theme, columnCalculation });
+    const styles = getSectionStyles({ section: props, theme });
 
-    return <div className={styles.section} data-id={`section-${section.id}`}>
+    return <div className={styles.section} data-id={`section-${id}`}>
         {isHeaderVisible && (
             <div className={styles.header}>
                 <Text variant="mediumPlus" className={styles.title}>
@@ -58,8 +56,8 @@ export const Section = (props: ISectionProps) => {
                 </Text>
             </div>
         )}
-        <div ref={bodyContainerRef} className={styles.body}>
-            <SectionContext.Provider value={section}>
+        <div ref={bodyContainerRef} className={styles.body} style={containerStyles}>
+            <SectionContext.Provider value={props}>
                 {children}
             </SectionContext.Provider>
         </div>

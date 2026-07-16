@@ -7,7 +7,7 @@ import { useCalculatedColumns } from "../../layout/useCalculatedColumns";
 
 export interface IColumnsProps {
     children?: React.ReactNode;
-    breakpoints?: IColumnBreakpoints;
+    breakpoints?: Partial<IColumnBreakpoints>;
 }
 
 export const Columns = (props: IColumnsProps) => {
@@ -16,14 +16,14 @@ export const Columns = (props: IColumnsProps) => {
     const breakpoints: Partial<IColumnBreakpoints> = { ...{ lg: columnComponents.length }, ...props.breakpoints };
     const columnBreakpoints = { ...Layout.createDefaultColumnBreakpoints(breakpoints), ...props.breakpoints };
 
-    const { containerStyles } = useCalculatedColumns({
+    const { containerStyles, columnsPerRow } = useCalculatedColumns({
         breakpoints: columnBreakpoints,
         ref: containerRef
     });
     const styles = useMemo(() => getColumnsStyles(), []);
 
     return <div className={styles.columns} style={containerStyles} ref={containerRef}>
-        <ColumnsContext.Provider value={true}>
+        <ColumnsContext.Provider value={{...props, columnsPerRow}}>
             {props.children}
         </ColumnsContext.Provider>
     </div>

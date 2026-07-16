@@ -1,4 +1,4 @@
-import * as React from "react";
+/* import * as React from "react";
 import { Icon, Label, TooltipHost, useTheme } from "@fluentui/react";
 import { CellContext } from "./context";
 import { getCellStyles } from "./styles";
@@ -91,4 +91,29 @@ export const Cell = (props: ICellProps) => {
             <TextField value="" />
         </div>
     </div>
+} */
+
+
+export interface ICellProps {
+    id?: string;
+    labelId?: string;
+    label?: string;
+    lockLevel?: number;
+    showLabel?: boolean;
+    visible?: boolean;
+    colspan?: number;
+    rowspan?: number;
+    userspacer?: boolean;
+    availableForPhone?: boolean;
+    isPreviewCell?: boolean;
+    isStreamCell?: boolean;
+    isChartCell?: boolean;
+    isTileCell?: boolean;
+    disabled?: boolean;
+    auto?: boolean;
+    addedBy?: string;
+    children?: React.ReactNode;
+}
+export const Cell = () => {
+    return <div>Cell</div>
 }

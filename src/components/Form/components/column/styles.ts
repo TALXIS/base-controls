@@ -1,15 +1,12 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-const DEFAULT_MIN_WIDTH = 300;
 
-export const getColumnsStyles = (width: string, minWidth?: string) => {
+export const getColumnsStyles = (colspan?: number) => {
     return mergeStyleSets({
         column: {
-            flexBasis: width,
-            flexShrink: 1,
-            flexGrow: 1,
-            //should have default min width 
-            //minWidth: minWidth ?? DEFAULT_MIN_WIDTH
+            ...(colspan ? {
+                gridColumn: `span ${colspan}`,
+            } : {})
         }
     })
 }

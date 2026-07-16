@@ -1,5 +1,4 @@
 import { TabContext } from "./context";
-import { useFormComponent } from "../../form/useFormComponent";
 
 export interface ITabProps {
     id: string;
@@ -20,9 +19,8 @@ export interface ITabProps {
 }
 
 export const Tab = (props: ITabProps) => {
-    const tab = useFormComponent('Tab', props);
     const { children } = props;
-    return <TabContext.Provider value={tab}>
+    return <TabContext.Provider value={props}>
         {children}
     </TabContext.Provider>
 }

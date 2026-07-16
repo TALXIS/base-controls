@@ -15,11 +15,13 @@ export const Tabs = (props: IFormTabsProps) => {
 
     return components.onRenderTabs({
         expandedTab: props.expandedTab,
-        onChangeTab: onChangeTab,
         children: tabComponents.map(tab => components.onRenderTab({
+            //@ts-ignore
             tab: tab.props,
             onChangeTab: onChangeTab,
+            //@ts-ignore
             children: tab.props.children
-        }))
+        })),
+        onChangeTab: onChangeTab,
     })
 }

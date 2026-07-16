@@ -5,13 +5,11 @@ import { IColumnCalculation } from "../../layout/useCalculatedColumns";
 interface ISectionStyleParams {
     section: ISectionProps;
     theme: ITheme;
-    columnCalculation: IColumnCalculation;
 }
 
 const SECTION_LAYOUT_GAP = 10;
 
-export const getSectionStyles = ({ section, theme, columnCalculation }: ISectionStyleParams) => {
-    const { numberOfColumns, firstRender } = columnCalculation;
+export const getSectionStyles = ({ section, theme  }: ISectionStyleParams) => {
     return mergeStyleSets({
         section: {
             border: `1px solid ${theme.semanticColors.bodyDivider}`,
@@ -38,11 +36,7 @@ export const getSectionStyles = ({ section, theme, columnCalculation }: ISection
         },
         body: {
             padding: 12,
-            display: 'grid',
-            opacity: firstRender ? 0 : 1,
-            transition: 'opacity 0.3s ease-in-out 0.5s',
             containerType: 'inline-size',
-            gridTemplateColumns: `repeat(${numberOfColumns}, 1fr)`,
             gap: `${SECTION_LAYOUT_GAP}px`,
         },
     });

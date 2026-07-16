@@ -10,7 +10,7 @@ interface IUseCalculatedColumnsParams {
 
 export interface IColumnCalculation {
     firstRender: boolean;
-    numberOfColumns: number;
+    columnsPerRow: number;
     containerStyles: React.CSSProperties;
 }
 
@@ -23,10 +23,10 @@ const getContainerStyles = (numOfColumns: number): React.CSSProperties => {
 
 export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
     const { ref, breakpoints, onGetNumberOfColumnsForWidth = Layout.getNumberOfColumnsForWidth } = params;
-    
+
     const [columnCalculation, setColumnCalculation] = React.useState<IColumnCalculation>({
         firstRender: true,
-        numberOfColumns: breakpoints.lg,
+        columnsPerRow: breakpoints.lg,
         containerStyles: getContainerStyles(breakpoints.lg)
     });
 
@@ -34,7 +34,7 @@ export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
         const numOfColumns = onGetNumberOfColumnsForWidth(entries[0].contentRect.width, breakpoints);
         setColumnCalculation({ 
             firstRender: false, 
-            numberOfColumns: numOfColumns,
+            columnsPerRow: numOfColumns,
             containerStyles: getContainerStyles(numOfColumns)
         });
     }), []);

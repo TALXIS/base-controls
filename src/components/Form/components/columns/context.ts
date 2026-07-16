@@ -1,12 +1,12 @@
 import * as React from "react";
+import { IColumnsProps } from "../..";
 
-export const ColumnsContext = React.createContext<boolean | null>(null);
+interface IColumnsContext extends IColumnsProps {
+    columnsPerRow: number;
+}
 
-export const useColumnsContext = (componentName: string): true => {
-    const context = React.useContext(ColumnsContext);
-    if (context === null) {
-        throw new Error(`[Form] ${componentName} must be rendered inside Columns.`);
-    }
+export const ColumnsContext = React.createContext<IColumnsContext | null>(null);
 
-    return true;
+export const useColumnsContext = (componentName: string): IColumnsContext | null => {
+    return React.useContext(ColumnsContext);
 };
