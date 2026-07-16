@@ -1,13 +1,9 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { mergeStyleSets } from "@fluentui/react";
 
-export const getTabStyles = (theme: ITheme) => {
+export const getTabStyles = () => {
     return mergeStyleSets({
-        panel: {
-            padding: "0 4px",
-        },
-        heading: {
-            marginBottom: 12,
-            color: theme.semanticColors.bodyText,
-        },
+        tab: {
+            gap: 12
+        }
     });
 };

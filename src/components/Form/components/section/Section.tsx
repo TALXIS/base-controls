@@ -21,7 +21,7 @@ export interface ISectionProps {
     autoExpand?: boolean;
     columns?: Partial<IColumnBreakpoints>;
     labelWidth?: number;
-    cellLabelTopBreakpoint?: number;
+    cellLabelCollapseBreakpoint?: number;
     availableForPhone?: boolean;
     cellLabelAlignment?: "Center" | "Left" | "Right";
     cellLabelPosition?: "Top" | "Left";
@@ -30,8 +30,13 @@ export interface ISectionProps {
     children?: React.ReactNode;
 }
 
+const isAnyChildCellDisabled = (children: (React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>>)[]): boolean => {
+    return children.some(child => child.props?.disabled);
+}
+
 export const Section = (props: ISectionProps) => {
     const { children, showBar = true, showLabel = true, label, name, id } = props;
+    const cells = React.Children.toArray(children).filter(child => React.isValidElement(child));
     const isHeaderVisible = showBar && showLabel && label;
 
     const bodyContainerRef = React.useRef<HTMLDivElement>(null);
@@ -57,7 +62,7 @@ export const Section = (props: ISectionProps) => {
             </div>
         )}
         <div ref={bodyContainerRef} className={styles.body} style={containerStyles}>
-            <SectionContext.Provider value={{...props, columnsPerRow, containerWidth }}>
+            <SectionContext.Provider value={{...props, columnsPerRow, containerWidth, showLockSpacer: isAnyChildCellDisabled(cells) }}>
                 {children}
             </SectionContext.Provider>
         </div>

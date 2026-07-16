@@ -28,17 +28,18 @@ export interface ICellProps {
     children?: React.ReactNode;
 }
 
-export const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 600;
+//default in Power Apps
+const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 371;
 
 
 const getCellLabelPosition = (section?: ISectionContext | null) => {
-    const { cellLabelPosition = 'Left', containerWidth } = section ?? {};
+    const { cellLabelPosition = 'Left', containerWidth, cellLabelCollapseBreakpoint = CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT } = section ?? {};
     
     if (cellLabelPosition !== 'Left') {
         return 'Top';
     }
 
-    return (containerWidth ?? 0) < CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT ? 'Top' : 'Left';
+    return (containerWidth ?? 0) < cellLabelCollapseBreakpoint ? 'Top' : 'Left';
 }
 
 export const Cell = (props: ICellProps) => {
@@ -47,6 +48,7 @@ export const Cell = (props: ICellProps) => {
     const theme = useTheme();
     const requirementLevel = RequiredLevelEnum.SystemRequired
     const { showLabel = true, label, disabled, id } = props;
+    const {showLockSpacer = false} = {...section}
 
     //@ts-ignore
     const shouldRenderRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
@@ -56,7 +58,6 @@ export const Cell = (props: ICellProps) => {
     const cellLabelPosition = getCellLabelPosition(section);
 
     const styles = getCellStyles({ cell: props, section, cellLabelPosition, theme, requirementLevel });
-    const [shouldRenderLockSpacer, setShouldRenderLockSpacer] = React.useState(false);
 
     return <div ref={containerRef} className={styles.cell} data-id={`cell-${id}`} style={layoutStyle}>
         {shouldRenderLabelContainer &&
@@ -69,7 +70,7 @@ export const Cell = (props: ICellProps) => {
                     </Label>
                 }
                 {shouldRenderRequiredIndicator && <span className={styles.requiredIndicator}>*</span>}
-                {shouldRenderLockSpacer && <div className={styles.lockSpacer}>
+                {showLockSpacer && <div className={styles.lockSpacer}>
                     {disabled && <Icon iconName="Lock" className={styles.lockIcon} />}
                 </div>
                 }

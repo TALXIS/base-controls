@@ -62,8 +62,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
             flexShrink: 0,
         },
         lockSpacer: {
-            width: 16,
-            height: 16,
+            width: 12,
         },
         labelContainer: {
             display: 'flex',

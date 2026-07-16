@@ -15,7 +15,6 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
             borderRadius: 2,
             backgroundColor: theme.semanticColors.bodyBackground,
             overflow: "hidden",
-            margin: 6,
             boxShadow: theme.effects.elevation4,
             opacity: 1,
             transform: "translateY(0)",
