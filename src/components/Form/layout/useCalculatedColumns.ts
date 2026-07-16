@@ -11,18 +11,32 @@ interface IUseCalculatedColumnsParams {
 export interface IColumnCalculation {
     firstRender: boolean;
     numberOfColumns: number;
+    containerStyles: React.CSSProperties;
+}
+
+const getContainerStyles = (numOfColumns: number): React.CSSProperties => {
+    return {
+        display: 'grid',
+        gridTemplateColumns: `repeat(${numOfColumns}, 1fr)`
+    }
 }
 
 export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
     const { ref, breakpoints, onGetNumberOfColumnsForWidth = Layout.getNumberOfColumnsForWidth } = params;
+    
     const [columnCalculation, setColumnCalculation] = React.useState<IColumnCalculation>({
         firstRender: true,
-        numberOfColumns: breakpoints.lg
+        numberOfColumns: breakpoints.lg,
+        containerStyles: getContainerStyles(breakpoints.lg)
     });
-    
+
     const observer = React.useMemo(() => new ResizeObserver((entries) => {
-        console.log(entries[0].contentRect.width)
-        setColumnCalculation({ firstRender: false, numberOfColumns: onGetNumberOfColumnsForWidth(entries[0].contentRect.width, breakpoints) });
+        const numOfColumns = onGetNumberOfColumnsForWidth(entries[0].contentRect.width, breakpoints);
+        setColumnCalculation({ 
+            firstRender: false, 
+            numberOfColumns: numOfColumns,
+            containerStyles: getContainerStyles(numOfColumns)
+        });
     }), []);
 
     React.useEffect(() => {

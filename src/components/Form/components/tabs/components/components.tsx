@@ -1,18 +1,17 @@
-import { IForm, ITab } from "../../../form/FormModel";
+import { ITabProps } from "../..";
 import { Pivot } from "./pivot";
 import { PivotItem } from "./pivot-item";
 
 export interface ITabsComponentProps {
-    form: IForm;
     children: React.ReactNode;
-    onChangeTab?: (tabId: string) => void;
+    expandedTab: string;
+    onChangeTab: (tabId: string) => void;
 }
 
 export interface ITabComponentProps {
-    tab: ITab;
-    form: IForm;
+    tab: ITabProps;
     children: React.ReactNode;
-    onChangeTab?: (tabId: string) => void;
+    onChangeTab: (tabId: string) => void;
 }
 
 export interface ITabsComponents {

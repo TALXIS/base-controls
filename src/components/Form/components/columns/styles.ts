@@ -2,11 +2,9 @@ import { mergeStyleSets } from "@fluentui/react";
 
 
 
-export const getColumnsStyles = (children: {width: string; minWidth?: string}[]) => {
+export const getColumnsStyles = () => {
     return mergeStyleSets({
         columns: {
-            display: 'flex',
-            flexWrap: 'wrap',
         }
     })
 }

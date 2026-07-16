@@ -32,13 +32,8 @@ export interface ISectionProps {
 }
 
 export const Section = (props: ISectionProps) => {
-    const tab = useTabContext();
-    const section = useFormComponent('Section', props, tab ? {
-        name: 'Tab',
-        instance: tab
-    } : undefined) as ISection;
-
-    const { children, showBar = true, showLabel = true, label, name, id } = section;
+    
+    const { children, showBar = true, showLabel = true, label, name, id } = props;
     const isHeaderVisible = showBar && showLabel && label;
 
     const bodyContainerRef = React.useRef<HTMLDivElement>(null);
