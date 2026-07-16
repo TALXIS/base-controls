@@ -1,9 +1,9 @@
-import { IFormSectionProps, Section } from "./section";
+import { ISectionProps, Section } from "./section";
 
 export interface IFormComponents {
-    onRenderSection: (props: IFormSectionProps) => React.ReactNode;
+    onRenderSection: (props: ISectionProps) => React.ReactNode;
 }
 
 export const FormComponents: IFormComponents = {
-    onRenderSection: (props: IFormSectionProps) => <Section {...props} />
+    onRenderSection: (props: ISectionProps) => <Section {...props} />
 }

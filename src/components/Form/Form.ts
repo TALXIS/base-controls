@@ -1,72 +1,9 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { IColumnBreakpoints } from "./layout";
 import { IFormControlProps } from "./components";
-
-
-
-export interface IFormTabProps {
-    id: string;
-    name?: string;
-    group?: string;
-    verticalLayout?: boolean;
-    showLabel?: boolean;
-    labelId?: string;
-    isUserDefined?: string;
-    lockLevel?: number;
-    addedBy?: string;
-    expanded?: boolean;
-    visible?: boolean;
-    availableForPhone?: boolean;
-    collapsible?: boolean;
-    label?: string;
-    children?: React.ReactNode;
-}
-
-export interface IFormCellProps {
-    id?: string;
-    labelId?: string;
-    label?: string;
-    lockLevel?: number;
-    showLabel?: boolean;
-    visible?: boolean;
-    colspan?: number;
-    rowspan?: number;
-    userspacer?: boolean;
-    availableForPhone?: boolean;
-    isPreviewCell?: boolean;
-    isStreamCell?: boolean;
-    isChartCell?: boolean;
-    isTileCell?: boolean;
-    disabled?: boolean;
-    auto?: boolean;
-    addedBy?: string;
-    children?: React.ReactNode;
-}
-
-export interface IFormSectionProps {
-    id?: string;
-    name?: string;
-    group?: string;
-    showLabel?: boolean;
-    labelId?: string;
-    showBar?: boolean;
-    isUserDefined?: string;
-    height?: string;
-    lockLevel?: number;
-    layout?: string;
-    addedBy?: string;
-    visible?: boolean;
-    autoExpand?: boolean;
-    columns?: Partial<IColumnBreakpoints>;
-    labelWidth?: number;
-    cellLabelTopBreakpoint?: number;
-    availableForPhone?: boolean;
-    cellLabelAlignment?: "Center" | "Left" | "Right";
-    cellLabelPosition?: "Top" | "Left";
-    rowHeight?: number;
-    label?: string;
-    children?: React.ReactNode;
-}
+import type { ICellProps } from "./components/cell";
+import type { IColumnProps } from "./components/column";
+import type { ISectionProps } from "./components/section";
+import type { ITabProps } from "./components/tab";
 
 export interface IRequiredId {
     id: string
@@ -74,18 +11,11 @@ export interface IRequiredId {
 
 type WithRequiredId<TProps extends { id?: string }> = Omit<TProps, 'id'> & IRequiredId;
 
-export interface IFormColumnProps {
-    width: string;
-    minWidth?: string;
-    children?: React.ReactNode;
-}
-
-
-export interface ITab extends WithRequiredId<IFormTabProps> {
-    addSection: (props: WithRequiredId<IFormSectionProps>) => ISection;
+export interface ITab extends WithRequiredId<ITabProps> {
+    addSection: (props: WithRequiredId<ISectionProps>) => ISection;
     getSections: () => ISection[];
     getSection: (id: string) => ISection | null;
-    update: (props: IFormTabProps) => void;
+    update: (props: ITabProps) => void;
 }
 
 export interface IControl extends WithRequiredId<IFormControlProps> {
@@ -95,27 +25,27 @@ export interface IControl extends WithRequiredId<IFormControlProps> {
     update: (props: IFormControlProps) => void;
 }
 
-export interface ICell extends WithRequiredId<IFormCellProps> {
+export interface ICell extends WithRequiredId<ICellProps> {
     events: IEventEmitter<ICellEvents>;
-    update: (props: IFormCellProps) => void;
+    update: (props: ICellProps) => void;
 }
 
 export interface ISectionEvents {
     onCellDisabledChanged: (cell: ICell) => void;
 }
 
-export interface ISection extends WithRequiredId<IFormSectionProps> {
+export interface ISection extends WithRequiredId<ISectionProps> {
     events: IEventEmitter<ISectionEvents>
-    addCell: (props: WithRequiredId<IFormCellProps>) => ICell;
+    addCell: (props: WithRequiredId<ICellProps>) => ICell;
     getCells: () => ICell[];
     getCell: (id: string) => ICell | null;
     addControl: (props: WithRequiredId<IFormControlProps>) => IControl;
     getControls: () => IControl[];
     getControl: (id: string) => IControl | null;
-    update: (props: IFormSectionProps) => void;
+    update: (props: ISectionProps) => void;
 }
 
-export interface IColumn extends IFormColumnProps {
+export interface IColumn extends IColumnProps {
 
 }
 
@@ -161,36 +91,36 @@ export class Section implements ISection {
     private _controls: IControl[] = [];
     public id!: string;
     public events: IEventEmitter<ISectionEvents> = new EventEmitter<ISectionEvents>();
-    public name?: IFormSectionProps["name"];
-    public group?: IFormSectionProps["group"];
-    public showLabel?: IFormSectionProps["showLabel"];
-    public labelId?: IFormSectionProps["labelId"];
-    public showBar?: IFormSectionProps["showBar"];
-    public isUserDefined?: IFormSectionProps["isUserDefined"];
-    public height?: IFormSectionProps["height"];
-    public lockLevel?: IFormSectionProps["lockLevel"];
-    public layout?: IFormSectionProps["layout"];
-    public addedBy?: IFormSectionProps["addedBy"];
-    public visible?: IFormSectionProps["visible"];
-    public autoExpand?: IFormSectionProps["autoExpand"];
-    public columns?: IFormSectionProps["columns"];
-    public labelWidth?: IFormSectionProps["labelWidth"];
-    public cellLabelTopBreakpoint?: IFormSectionProps["cellLabelTopBreakpoint"];
-    public availableForPhone?: IFormSectionProps["availableForPhone"];
-    public cellLabelAlignment?: IFormSectionProps["cellLabelAlignment"];
-    public cellLabelPosition?: IFormSectionProps["cellLabelPosition"];
-    public rowHeight?: IFormSectionProps["rowHeight"];
-    public label?: IFormSectionProps["label"];
+    public name?: ISectionProps["name"];
+    public group?: ISectionProps["group"];
+    public showLabel?: ISectionProps["showLabel"];
+    public labelId?: ISectionProps["labelId"];
+    public showBar?: ISectionProps["showBar"];
+    public isUserDefined?: ISectionProps["isUserDefined"];
+    public height?: ISectionProps["height"];
+    public lockLevel?: ISectionProps["lockLevel"];
+    public layout?: ISectionProps["layout"];
+    public addedBy?: ISectionProps["addedBy"];
+    public visible?: ISectionProps["visible"];
+    public autoExpand?: ISectionProps["autoExpand"];
+    public columns?: ISectionProps["columns"];
+    public labelWidth?: ISectionProps["labelWidth"];
+    public cellLabelTopBreakpoint?: ISectionProps["cellLabelTopBreakpoint"];
+    public availableForPhone?: ISectionProps["availableForPhone"];
+    public cellLabelAlignment?: ISectionProps["cellLabelAlignment"];
+    public cellLabelPosition?: ISectionProps["cellLabelPosition"];
+    public rowHeight?: ISectionProps["rowHeight"];
+    public label?: ISectionProps["label"];
 
-    constructor(props: WithRequiredId<IFormSectionProps>) {
+    constructor(props: WithRequiredId<ISectionProps>) {
         this.update(props);
     }
 
-    public update(props: IFormSectionProps): void {
+    public update(props: ISectionProps): void {
         Object.assign(this, props);
     }
 
-    public addCell(props: WithRequiredId<IFormCellProps>): ICell {
+    public addCell(props: WithRequiredId<ICellProps>): ICell {
         const cell = new Cell(props);
         if (this._cells.find(c => c.id === cell.id)) {
             throw new Error(`[Form] Cell with id "${cell.id}" already exists in section "${this.id}".`);
@@ -237,28 +167,28 @@ export interface ICellEvents {
 export class Cell implements ICell {
     public id!: string;
     public events: IEventEmitter<ICellEvents> = new EventEmitter<ICellEvents>();
-    public labelId?: IFormCellProps["labelId"];
-    public label?: IFormCellProps["label"];
-    public lockLevel?: IFormCellProps["lockLevel"];
-    public showLabel?: IFormCellProps["showLabel"];
-    public visible?: IFormCellProps["visible"];
-    public colspan?: IFormCellProps["colspan"];
-    public rowspan?: IFormCellProps["rowspan"];
-    public userspacer?: IFormCellProps["userspacer"];
-    public availableForPhone?: IFormCellProps["availableForPhone"];
-    public isPreviewCell?: IFormCellProps["isPreviewCell"];
-    public isStreamCell?: IFormCellProps["isStreamCell"];
-    public isChartCell?: IFormCellProps["isChartCell"];
-    public isTileCell?: IFormCellProps["isTileCell"];
-    public auto?: IFormCellProps["auto"];
-    public addedBy?: IFormCellProps["addedBy"];
-    public disabled?: IFormCellProps["disabled"];
+    public labelId?: ICellProps["labelId"];
+    public label?: ICellProps["label"];
+    public lockLevel?: ICellProps["lockLevel"];
+    public showLabel?: ICellProps["showLabel"];
+    public visible?: ICellProps["visible"];
+    public colspan?: ICellProps["colspan"];
+    public rowspan?: ICellProps["rowspan"];
+    public userspacer?: ICellProps["userspacer"];
+    public availableForPhone?: ICellProps["availableForPhone"];
+    public isPreviewCell?: ICellProps["isPreviewCell"];
+    public isStreamCell?: ICellProps["isStreamCell"];
+    public isChartCell?: ICellProps["isChartCell"];
+    public isTileCell?: ICellProps["isTileCell"];
+    public auto?: ICellProps["auto"];
+    public addedBy?: ICellProps["addedBy"];
+    public disabled?: ICellProps["disabled"];
 
-    constructor(props: WithRequiredId<IFormCellProps>) {
+    constructor(props: WithRequiredId<ICellProps>) {
         Object.assign(this, props);
     }
 
-    public update(props: IFormCellProps): void {
+    public update(props: ICellProps): void {
         const previousDisabled = this.disabled;
         Object.assign(this, props);
         if (previousDisabled !== props.disabled) {
@@ -270,25 +200,25 @@ export class Cell implements ICell {
 export class Tab implements ITab {
     private _sections: ISection[] = [];
     public id!: string;
-    public name?: IFormTabProps["name"];
-    public group?: IFormTabProps["group"];
-    public verticalLayout?: IFormTabProps["verticalLayout"];
-    public showLabel?: IFormTabProps["showLabel"];
-    public labelId?: IFormTabProps["labelId"];
-    public isUserDefined?: IFormTabProps["isUserDefined"];
-    public lockLevel?: IFormTabProps["lockLevel"];
-    public addedBy?: IFormTabProps["addedBy"];
-    public expanded?: IFormTabProps["expanded"];
-    public visible?: IFormTabProps["visible"];
-    public availableForPhone?: IFormTabProps["availableForPhone"];
-    public collapsible?: IFormTabProps["collapsible"];
-    public label?: IFormTabProps["label"];
+    public name?: ITabProps["name"];
+    public group?: ITabProps["group"];
+    public verticalLayout?: ITabProps["verticalLayout"];
+    public showLabel?: ITabProps["showLabel"];
+    public labelId?: ITabProps["labelId"];
+    public isUserDefined?: ITabProps["isUserDefined"];
+    public lockLevel?: ITabProps["lockLevel"];
+    public addedBy?: ITabProps["addedBy"];
+    public expanded?: ITabProps["expanded"];
+    public visible?: ITabProps["visible"];
+    public availableForPhone?: ITabProps["availableForPhone"];
+    public collapsible?: ITabProps["collapsible"];
+    public label?: ITabProps["label"];
 
-    constructor(props: WithRequiredId<IFormTabProps>) {
+    constructor(props: WithRequiredId<ITabProps>) {
         this.update(props);
     }
 
-    public addSection(props: WithRequiredId<IFormSectionProps>): ISection {
+    public addSection(props: WithRequiredId<ISectionProps>): ISection {
         const section = new Section(props);
         if (this.getSection(section.id)) {
             throw new Error(`[Form] Section with id "${section.id}" already exists in tab "${this.id}".`);
@@ -305,7 +235,7 @@ export class Tab implements ITab {
         return this._sections.find(section => section.id === id) ?? null;
     }
 
-    public update(props: IFormTabProps): void {
+    public update(props: ITabProps): void {
         Object.assign(this, props);
     }
 }
@@ -323,7 +253,7 @@ export interface IForm {
     getCells: () => ICell[];
     getTabs(): ITab[];
     getTab(id: string): ITab | null;
-    addTab(props: WithRequiredId<IFormTabProps>): ITab;
+    addTab(props: WithRequiredId<ITabProps>): ITab;
     getExpandedTab(): ITab | null;
     getSections: () => ISection[];
     getSection: (id: string) => ISection | null;
@@ -342,7 +272,7 @@ export class Form implements IForm {
         const tab = this._tabs.find((currentTab) => currentTab.id === id) ?? null;
         return tab;
     }
-    public addTab(props: WithRequiredId<IFormTabProps>): ITab {
+    public addTab(props: WithRequiredId<ITabProps>): ITab {
         const tab = new Tab(props);
         if (this.getTab(tab.id)) {
             throw new Error(`[Form] Tab with id "${tab.id}" already exists.`);

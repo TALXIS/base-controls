@@ -6,8 +6,32 @@ import React from "react";
 import { IColumnBreakpoints, Layout } from "../../layout";
 import { useCalculatedColumns } from "../../layout/useCalculatedColumns";
 
+export interface ISectionProps {
+    id?: string;
+    name?: string;
+    group?: string;
+    showLabel?: boolean;
+    labelId?: string;
+    showBar?: boolean;
+    isUserDefined?: string;
+    height?: string;
+    lockLevel?: number;
+    layout?: string;
+    addedBy?: string;
+    visible?: boolean;
+    autoExpand?: boolean;
+    columns?: Partial<IColumnBreakpoints>;
+    labelWidth?: number;
+    cellLabelTopBreakpoint?: number;
+    availableForPhone?: boolean;
+    cellLabelAlignment?: "Center" | "Left" | "Right";
+    cellLabelPosition?: "Top" | "Left";
+    rowHeight?: number;
+    label?: string;
+    children?: React.ReactNode;
+}
 
-export const Section = (props: IFormSectionProps) => {
+export const Section = (props: ISectionProps) => {
     const tab = useTabContext();
     const section = useFormComponent('Section', props, tab ? {
         name: 'Tab',

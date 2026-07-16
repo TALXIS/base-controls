@@ -1,11 +1,14 @@
 import * as React from "react";
 import { getColumnsStyles } from "./styles";
 import { ColumnContext } from "./context";
-import type { IFormColumnProps } from "../../form/FormModel";
 
-export type { IFormColumnProps } from "../../form/FormModel";
+export interface IColumnProps {
+    width: string;
+    minWidth?: string;
+    children?: React.ReactNode;
+}
 
-export const Column = (props: IFormColumnProps) => {
+export const Column = (props: IColumnProps) => {
     const { children, width, minWidth } = props;
     const styles = React.useMemo(() => getColumnsStyles(width, minWidth), [width, minWidth]);
     
