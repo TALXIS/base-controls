@@ -1,31 +1,16 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import type { ICellProps, ISectionProps } from "../..";
-import { RequiredLevelEnum } from "@talxis/client-metadata";
 
-export type CellLabelPosition = "Top" | "Left";
-export type CellLabelAlignment = "Center" | "Left" | "Right";
 
 export const CELL_LABEL_DEFAULT_WIDTH = 115;
-export const CELL_CONTROL_DEFAULT_MIN_WIDTH = 180;
-export const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 280;
-export const CELL_LABEL_CONTROL_GAP = 5;
 
-
-
-const getFlexDirection = (section: ISectionProps | null) => {
-    //if no section render => block
-    if (!section) return 'column';
-    //otherwise default is flex unless the section has a label position of "Top"
-    return section.cellLabelPosition === 'Top' ? 'column' : 'row';
-}
-
-const getRequirementLevelColor = (theme: ITheme, requirementLevel?: RequiredLevelEnum): string | undefined => {
-    switch (requirementLevel) {
-        case RequiredLevelEnum.SystemRequired: {
+const getRequirementLevelColor = (theme: ITheme, requiredLevel?: ICellProps['requiredLevel']): string | undefined => {
+    switch (requiredLevel) {
+        case "SystemRequired": {
             return theme.semanticColors.errorIcon;
         }
-        case RequiredLevelEnum.ApplicationRequired:
-        case RequiredLevelEnum.Recommended: {
+        case "ApplicationRequired":
+        case "BusinessRequired": {
             return theme.palette.yellowDark
         }
         default: {
@@ -36,15 +21,14 @@ const getRequirementLevelColor = (theme: ITheme, requirementLevel?: RequiredLeve
 
 interface ICellStylesParams {
     cell: ICellProps;
+    cellLabelPosition: "Top" | "Left";
     theme: ITheme;
-    requirementLevel?: RequiredLevelEnum;
-    cellLabelPosition: CellLabelPosition;
     section?: ISectionProps | null,
 }
 
 
 export const getCellStyles = (params: ICellStylesParams) => {
-    const {cell, section, cellLabelPosition, theme, requirementLevel } = params;
+    const {cell, section, theme, cellLabelPosition } = params;
     const rowspan = cell.rowspan ?? 1;
     const labelWidth = section?.labelWidth ?? CELL_LABEL_DEFAULT_WIDTH;
 
@@ -52,7 +36,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
         cell: {
             display: 'flex',
             flexDirection: cellLabelPosition === 'Top' ? 'column' : 'row',
-            gap: CELL_LABEL_CONTROL_GAP,
+            gap: 5,
             height: '100%',
             gridRow: `span ${rowspan}`,
             ...(cell.visible === false ? { display: 'none' } : {}),
@@ -73,7 +57,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
             fontSize: 12,
             position: 'relative',
             top: 2,
-            color: getRequirementLevelColor(theme, requirementLevel),
+            color: getRequirementLevelColor(theme, cell.requiredLevel),
         },
         label: {
             width: cellLabelPosition === 'Left' ? labelWidth : '100%',
