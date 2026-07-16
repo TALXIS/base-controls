@@ -14,20 +14,13 @@ export interface IColumnCalculation {
     containerStyles: React.CSSProperties;
 }
 
-const getContainerStyles = (numOfColumns: number): React.CSSProperties => {
-    return {
-        display: 'grid',
-        gridTemplateColumns: `repeat(${numOfColumns}, 1fr)`
-    }
-}
-
 export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
     const { ref, breakpoints, onGetNumberOfColumnsForWidth = Layout.getNumberOfColumnsForWidth } = params;
 
     const [columnCalculation, setColumnCalculation] = React.useState<IColumnCalculation>({
         firstRender: true,
         columnsPerRow: breakpoints.lg,
-        containerStyles: getContainerStyles(breakpoints.lg)
+        containerStyles: Layout.getColumnsContainerStyles(breakpoints.lg)
     });
 
     const observer = React.useMemo(() => new ResizeObserver((entries) => {
@@ -35,7 +28,7 @@ export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
         setColumnCalculation({ 
             firstRender: false, 
             columnsPerRow: numOfColumns,
-            containerStyles: getContainerStyles(numOfColumns)
+            containerStyles: Layout.getColumnsContainerStyles(numOfColumns)
         });
     }), []);
 

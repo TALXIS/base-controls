@@ -38,6 +38,9 @@ export const getSectionStyles = ({ section, theme  }: ISectionStyleParams) => {
             padding: 12,
             containerType: 'inline-size',
             gap: `${SECTION_LAYOUT_GAP}px`,
+            '@starting-style': {
+                opacity: 0
+            }
         },
     });
 };

@@ -13,11 +13,12 @@ export interface IColumnBreakpoints {
 }
 
 export class Layout {
-    public static getNumberOfColumnsForWidth(width: number, breakpointMap: IColumnBreakpoints) {
-        if (width <= WIDTH_BREAKPOINT.xs) return breakpointMap['xs'];
-        if (width <= WIDTH_BREAKPOINT.sm) return breakpointMap['sm'];
-        if (width <= WIDTH_BREAKPOINT.md) return breakpointMap['md'];
-        return breakpointMap['lg'];
+    
+    public static getNumberOfColumnsForWidth(width: number, breakpoints: IColumnBreakpoints) {
+        if (width <= WIDTH_BREAKPOINT.xs) return breakpoints['xs'];
+        if (width <= WIDTH_BREAKPOINT.sm) return breakpoints['sm'];
+        if (width <= WIDTH_BREAKPOINT.md) return breakpoints['md'];
+        return breakpoints['lg'];
     }
 
     public static createDefaultColumnBreakpoints(breakpoints?: Partial<IColumnBreakpoints>): IColumnBreakpoints {
@@ -28,6 +29,21 @@ export class Layout {
             'sm': Math.min(definedBreakpoint, 2),
             'xs': 1,
         };
+    }
+
+    public static getColumnsContainerStyles(columnsPerRow: number): React.CSSProperties {
+        return {
+            display: 'grid',
+            opacity: 1,
+            transition: 'opacity 0.3s ease-in-out 0.5s',
+            gridTemplateColumns: `repeat(${columnsPerRow}, 1fr)`,
+        }
+    }
+
+    public static getColumnStyles(requestedColspan: number = 1, columnsPerRow: number = 1): React.CSSProperties {
+        return {
+            gridColumn: `span ${Math.min(requestedColspan, columnsPerRow)}`
+        }
     }
 
 }

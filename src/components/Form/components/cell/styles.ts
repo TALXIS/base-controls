@@ -5,23 +5,12 @@ import { RequiredLevelEnum } from "@talxis/client-metadata";
 export type CellLabelPosition = "Top" | "Left";
 export type CellLabelAlignment = "Center" | "Left" | "Right";
 
-export interface ICellStylesParams {
-    labelWidth?: number;
-    labelCollapseBreakpoint?: number;
-    cell: ICellProps;
-    section: ISectionProps | null;
-    theme: ITheme;
-    requirementLevel?: RequiredLevelEnum;
-}
-
 export const CELL_LABEL_DEFAULT_WIDTH = 115;
 export const CELL_CONTROL_DEFAULT_MIN_WIDTH = 180;
 export const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 280;
 export const CELL_LABEL_CONTROL_GAP = 5;
 
 
-const DEFAULT_CELL_SPAN = 1;
-const DEFAULT_CELL_ROWSPAN = 1;
 
 const getFlexDirection = (section: ISectionProps | null) => {
     //if no section render => block
@@ -45,24 +34,28 @@ const getRequirementLevelColor = (theme: ITheme, requirementLevel?: RequiredLeve
     }
 }
 
-export const getCellStyles = ({ cell, section, requirementLevel, theme, labelWidth, labelCollapseBreakpoint }: ICellStylesParams) => {
-    labelWidth = labelWidth ?? CELL_LABEL_DEFAULT_WIDTH;
-    labelCollapseBreakpoint = labelCollapseBreakpoint ?? CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT;
-    const colSpan = cell.colspan ?? DEFAULT_CELL_SPAN;
-    const rowSpan = cell.rowspan ?? DEFAULT_CELL_ROWSPAN;
+interface ICellStylesParams {
+    cell: ICellProps;
+    theme: ITheme;
+    requirementLevel?: RequiredLevelEnum;
+    cellLabelPosition: CellLabelPosition;
+    section?: ISectionProps | null,
+}
+
+
+export const getCellStyles = (params: ICellStylesParams) => {
+    const {cell, section, cellLabelPosition, theme, requirementLevel } = params;
+    const rowspan = cell.rowspan ?? 1;
+    const labelWidth = section?.labelWidth ?? CELL_LABEL_DEFAULT_WIDTH;
 
     return mergeStyleSets({
         cell: {
             display: 'flex',
-            flexDirection: getFlexDirection(section),
+            flexDirection: cellLabelPosition === 'Top' ? 'column' : 'row',
             gap: CELL_LABEL_CONTROL_GAP,
             height: '100%',
-            gridColumn: `span ${colSpan}`,
-            gridRow: `span ${rowSpan}`,
+            gridRow: `span ${rowspan}`,
             ...(cell.visible === false ? { display: 'none' } : {}),
-            [`@container (max-width: ${labelCollapseBreakpoint}px)`]: {
-                flexDirection: 'column',
-            }
         },
         lockIcon: {
             fontSize: 12,
@@ -84,7 +77,7 @@ export const getCellStyles = ({ cell, section, requirementLevel, theme, labelWid
             color: getRequirementLevelColor(theme, requirementLevel),
         },
         label: {
-            width: labelWidth,
+            width: cellLabelPosition === 'Left' ? labelWidth : '100%',
             overflow: 'hidden',
             padding: 0,
             textOverflow: 'ellipsis',
@@ -92,9 +85,6 @@ export const getCellStyles = ({ cell, section, requirementLevel, theme, labelWid
             display: '-webkit-box',
             '-webkit-box-orient': 'vertical',
             '-webkit-line-clamp': '3',
-             [`@container (max-width: ${labelCollapseBreakpoint}px)`]: {
-                width: '100%'
-            }
         },
         control: {
             flexGrow: 1,

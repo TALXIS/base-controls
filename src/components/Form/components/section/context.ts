@@ -1,8 +1,12 @@
 import * as React from "react";
 import { ISectionProps } from "./Section";
 
-export const SectionContext = React.createContext<ISectionProps | null>(null);
+interface ISectionContext extends ISectionProps {
+    columnsPerRow: number;
+}
 
-export const useSectionContext = (): ISectionProps | null => {
+export const SectionContext = React.createContext<ISectionContext | null>(null);
+
+export const useSectionContext = (): ISectionContext | null => {
     return React.useContext(SectionContext);
 };

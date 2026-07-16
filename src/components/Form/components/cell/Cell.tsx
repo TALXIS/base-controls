@@ -1,14 +1,11 @@
-/* import * as React from "react";
+import * as React from "react";
 import { Icon, Label, TooltipHost, useTheme } from "@fluentui/react";
-import { CellContext } from "./context";
 import { getCellStyles } from "./styles";
 import { useSectionContext } from "../section";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import type { ISection, ISectionEvents } from "../../form/FormModel";
-import { useFormComponent } from "../../form/useFormComponent";
-import { useEventEmitter } from "../../../../hooks";
-import { EventEmitter } from "@talxis/client-libraries";
 import { TextField } from "@talxis/react-components";
+import { IColumnBreakpoints, Layout } from "../../layout";
+import { useCalculatedColumns } from "../../layout/useCalculatedColumns";
 
 export interface ICellProps {
     id?: string;
@@ -31,89 +28,55 @@ export interface ICellProps {
     children?: React.ReactNode;
 }
 
-const containsDisabledCells = (section: ISection) => {
-    return section.getCells().filter(cell => cell.visible !== false).some(cell => cell.disabled);
-}
-
+export const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 280;
 
 export const Cell = (props: ICellProps) => {
+    const containerRef = React.useRef<HTMLDivElement>(null);
     const section = useSectionContext();
-    const cell = useFormComponent('Cell', props, section ? {
-        name: 'Section',
-        instance: section
-    } : undefined);
-
-    const requirementLevel = RequiredLevelEnum.SystemRequired
-    const { showLabel = true, label, disabled } = props;
     const theme = useTheme();
+    const requirementLevel = RequiredLevelEnum.SystemRequired
+    const { showLabel = true, label, disabled, id } = props;
+
+    const { columnsPerRow } = useCalculatedColumns({
+        breakpoints: Layout.createDefaultColumnBreakpoints(),
+        ref: containerRef,
+        onGetNumberOfColumnsForWidth: (containerWidth) => getNumberOfColumnsForWidth(containerWidth)
+    });
 
     //@ts-ignore
     const shouldRenderRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
     const shouldRenderLabel = (showLabel && label) || shouldRenderRequiredIndicator;
     const shouldRenderLabelContainer = shouldRenderLabel || disabled;
-    const styles = getCellStyles({ cell, section, requirementLevel, theme, labelCollapseBreakpoint: 300, labelWidth: 115 });
-    const dummyEmitter = React.useMemo(() => new EventEmitter<ISectionEvents>(), []);
-
+    const layoutStyle = Layout.getColumnStyles(props.colspan, section?.columnsPerRow);
+    const cellLabelPosition = columnsPerRow > 1 ? 'Left' : section?.cellLabelPosition ?? 'Top';
+    const styles = getCellStyles({ cell: props, section, cellLabelPosition, theme, requirementLevel});
     const [shouldRenderLockSpacer, setShouldRenderLockSpacer] = React.useState(false);
 
-    const toggleLockSpacer = () => {
-        if (!section) return;
-        setShouldRenderLockSpacer(containsDisabledCells(section));
+    const getNumberOfColumnsForWidth = (containerWidth: number) => {
+        if(section?.cellLabelPosition === 'Top') return 1;
+        return containerWidth <= CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT ? 1 : 2;
     }
 
-    useEventEmitter<ISectionEvents>(section?.events ?? dummyEmitter, 'onCellDisabledChanged', toggleLockSpacer);
 
-    React.useEffect(() => {
-        toggleLockSpacer();
-    }, []);
-
-
-    return <div className={styles.cell} data-id={`cell-${cell.id}`}>
-        <CellContext.Provider value={cell}>
-            {shouldRenderLabelContainer &&
-                <div className={styles.labelContainer}>
-                    {shouldRenderLabel &&
-                        <Label className={styles.label}>
-                            <TooltipHost content={label}>
-                                {label}
-                            </TooltipHost>
-                        </Label>
-                    }
-                    {shouldRenderRequiredIndicator && <span className={styles.requiredIndicator}>*</span>}
-                    {shouldRenderLockSpacer && <div className={styles.lockSpacer}>
-                        {disabled && <Icon iconName="Lock" className={styles.lockIcon} />}
-                    </div>
-                    }
+    return <div ref={containerRef} className={styles.cell} data-id={`cell-${id}`} style={layoutStyle}>
+        {shouldRenderLabelContainer &&
+            <div className={styles.labelContainer}>
+                {shouldRenderLabel &&
+                    <Label className={styles.label}>
+                        <TooltipHost content={label}>
+                            {label}
+                        </TooltipHost>
+                    </Label>
+                }
+                {shouldRenderRequiredIndicator && <span className={styles.requiredIndicator}>*</span>}
+                {shouldRenderLockSpacer && <div className={styles.lockSpacer}>
+                    {disabled && <Icon iconName="Lock" className={styles.lockIcon} />}
                 </div>
-            }
-        </CellContext.Provider>
+                }
+            </div>
+        }
         <div className={styles.control}>
             <TextField value="" />
         </div>
     </div>
-} */
-
-
-export interface ICellProps {
-    id?: string;
-    labelId?: string;
-    label?: string;
-    lockLevel?: number;
-    showLabel?: boolean;
-    visible?: boolean;
-    colspan?: number;
-    rowspan?: number;
-    userspacer?: boolean;
-    availableForPhone?: boolean;
-    isPreviewCell?: boolean;
-    isStreamCell?: boolean;
-    isChartCell?: boolean;
-    isTileCell?: boolean;
-    disabled?: boolean;
-    auto?: boolean;
-    addedBy?: string;
-    children?: React.ReactNode;
-}
-export const Cell = () => {
-    return <div>Cell</div>
 }
