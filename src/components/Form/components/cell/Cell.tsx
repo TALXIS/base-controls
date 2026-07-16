@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Icon, Label, TooltipHost, useTheme } from "@fluentui/react";
 import { getCellStyles } from "./styles";
-import { useSectionContext } from "../section";
+import { ISectionContext, useSectionContext } from "../section";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { TextField } from "@talxis/react-components";
 import { IColumnBreakpoints, Layout } from "../../layout";
@@ -28,7 +28,18 @@ export interface ICellProps {
     children?: React.ReactNode;
 }
 
-export const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 280;
+export const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 600;
+
+
+const getCellLabelPosition = (section?: ISectionContext | null) => {
+    const { cellLabelPosition = 'Left', containerWidth } = section ?? {};
+    
+    if (cellLabelPosition !== 'Left') {
+        return 'Top';
+    }
+
+    return (containerWidth ?? 0) < CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT ? 'Top' : 'Left';
+}
 
 export const Cell = (props: ICellProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -37,26 +48,15 @@ export const Cell = (props: ICellProps) => {
     const requirementLevel = RequiredLevelEnum.SystemRequired
     const { showLabel = true, label, disabled, id } = props;
 
-    const { columnsPerRow } = useCalculatedColumns({
-        breakpoints: Layout.createDefaultColumnBreakpoints(),
-        ref: containerRef,
-        onGetNumberOfColumnsForWidth: (containerWidth) => getNumberOfColumnsForWidth(containerWidth)
-    });
-
     //@ts-ignore
     const shouldRenderRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
     const shouldRenderLabel = (showLabel && label) || shouldRenderRequiredIndicator;
     const shouldRenderLabelContainer = shouldRenderLabel || disabled;
     const layoutStyle = Layout.getColumnStyles(props.colspan, section?.columnsPerRow);
-    const cellLabelPosition = columnsPerRow > 1 ? 'Left' : section?.cellLabelPosition ?? 'Top';
-    const styles = getCellStyles({ cell: props, section, cellLabelPosition, theme, requirementLevel});
+    const cellLabelPosition = getCellLabelPosition(section);
+
+    const styles = getCellStyles({ cell: props, section, cellLabelPosition, theme, requirementLevel });
     const [shouldRenderLockSpacer, setShouldRenderLockSpacer] = React.useState(false);
-
-    const getNumberOfColumnsForWidth = (containerWidth: number) => {
-        if(section?.cellLabelPosition === 'Top') return 1;
-        return containerWidth <= CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT ? 1 : 2;
-    }
-
 
     return <div ref={containerRef} className={styles.cell} data-id={`cell-${id}`} style={layoutStyle}>
         {shouldRenderLabelContainer &&

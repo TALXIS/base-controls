@@ -12,6 +12,7 @@ export interface IColumnCalculation {
     firstRender: boolean;
     columnsPerRow: number;
     containerStyles: React.CSSProperties;
+    containerWidth: number;
 }
 
 export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
@@ -20,14 +21,17 @@ export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
     const [columnCalculation, setColumnCalculation] = React.useState<IColumnCalculation>({
         firstRender: true,
         columnsPerRow: breakpoints.lg,
+        containerWidth: 0,
         containerStyles: Layout.getColumnsContainerStyles(breakpoints.lg)
     });
 
     const observer = React.useMemo(() => new ResizeObserver((entries) => {
-        const numOfColumns = onGetNumberOfColumnsForWidth(entries[0].contentRect.width, breakpoints);
+        const containerWidth = entries[0].contentRect.width;
+        const numOfColumns = onGetNumberOfColumnsForWidth(containerWidth, breakpoints);
         setColumnCalculation({ 
             firstRender: false, 
             columnsPerRow: numOfColumns,
+            containerWidth: containerWidth,
             containerStyles: Layout.getColumnsContainerStyles(numOfColumns)
         });
     }), []);

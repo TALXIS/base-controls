@@ -40,7 +40,7 @@ export const Section = (props: ISectionProps) => {
     const breakpoints: Partial<IColumnBreakpoints> = { ...{ lg: cellComponents.length }, ...props.columns };
     const columnBreakpoints = { ...Layout.createDefaultColumnBreakpoints(breakpoints), ...props.columns };
 
-    const {containerStyles, columnsPerRow} = useCalculatedColumns({
+    const {containerStyles, columnsPerRow, containerWidth} = useCalculatedColumns({
         breakpoints: columnBreakpoints,
         ref: bodyContainerRef
     });
@@ -57,7 +57,7 @@ export const Section = (props: ISectionProps) => {
             </div>
         )}
         <div ref={bodyContainerRef} className={styles.body} style={containerStyles}>
-            <SectionContext.Provider value={{...props, columnsPerRow}}>
+            <SectionContext.Provider value={{...props, columnsPerRow, containerWidth }}>
                 {children}
             </SectionContext.Provider>
         </div>

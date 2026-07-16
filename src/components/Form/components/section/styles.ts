@@ -1,6 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import type { ISectionProps } from "../..";
-import { IColumnCalculation } from "../../layout/useCalculatedColumns";
 
 interface ISectionStyleParams {
     section: ISectionProps;
@@ -18,10 +17,12 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
             overflow: "hidden",
             margin: 6,
             boxShadow: theme.effects.elevation4,
-            //used to cover up layout changes when resizing the section, so that the user doesn't see the layout change
-            transition: 'opacity 0.2s ease-in-out 0.01s',
+            opacity: 1,
+            transform: "translateY(0)",
+            transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease-out 0.01s",
             '@starting-style': {
-                opacity: 0
+                opacity: 0,
+                transform: "translateY(-16px)"
             },
             ...(section.visible === false ? { display: 'none' } : {})
         },
@@ -43,7 +44,6 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
             padding: 12,
             containerType: 'inline-size',
             gap: `${SECTION_LAYOUT_GAP}px`,
-            opacity: 1,
         },
     });
 };
