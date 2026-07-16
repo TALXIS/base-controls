@@ -7,6 +7,11 @@ interface IColumnsContext extends IColumnsProps {
 
 export const ColumnsContext = React.createContext<IColumnsContext | null>(null);
 
-export const useColumnsContext = (componentName: string): IColumnsContext | null => {
-    return React.useContext(ColumnsContext);
+export const useColumnsContext = (componentName: string): IColumnsContext => {
+    const context = React.useContext(ColumnsContext);
+    if (context === null) {
+        throw new Error(`[Form] ${componentName} must be rendered inside Columns.`);
+    }
+
+    return context;
 };

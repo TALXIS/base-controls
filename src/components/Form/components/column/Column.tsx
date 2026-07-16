@@ -1,6 +1,6 @@
 import * as React from "react";
 import { getColumnsStyles } from "./styles";
-import { ColumnsContext } from "../columns";
+import { useColumnsContext } from "../columns";
 import { ColumnContext } from "./context";
 
 export interface IColumnProps {
@@ -10,9 +10,8 @@ export interface IColumnProps {
 
 export const Column = (props: IColumnProps) => {
     const { children, colspan } = props;
-    const styles = React.useMemo(() => getColumnsStyles(colspan), [colspan]);
-    const columnsContext = React.useContext(ColumnsContext);
-    console.log(columnsContext);
+    const { columnsPerRow = 1 } = useColumnsContext("Column");
+    const styles = React.useMemo(() => getColumnsStyles({ columnsPerRow, colspan }), [columnsPerRow, colspan]);
     
     return <div className={styles.column}>
         <ColumnContext.Provider value={props}>
