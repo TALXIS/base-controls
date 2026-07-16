@@ -1,8 +1,8 @@
 import * as React from "react";
-import { ITab } from "../../form/FormModel";
+import type { ITabProps } from "./Tab";
 
-export const TabContext = React.createContext<ITab | null>(null);
+export const TabContext = React.createContext<ITabProps | null>(null);
 
-export const useTabContext = (): ITab | null => {
+export const useTabContext = (): ITabProps | null => {
     return React.useContext(TabContext);
 };

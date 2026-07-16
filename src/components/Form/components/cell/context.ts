@@ -1,9 +1,9 @@
 import * as React from "react";
-import { ICell } from "../..";
+import type { ICellProps } from "./Cell";
 
-export const CellContext = React.createContext<ICell| null>(null);
+export const CellContext = React.createContext<ICellProps | null>(null);
 
 
-export const useFormCellContext = (): ICell | null => {
+export const useFormCellContext = (): ICellProps | null => {
     return React.useContext(CellContext);
 };

@@ -7,6 +7,7 @@ import { getFormStyles } from "./styles";
 
 
 export interface IFormProps {
+    id?: string;
     children?: React.ReactNode;
 }
 
@@ -14,6 +15,7 @@ export interface IFormProps {
 initializeIcons();
 
 export const Form = (props: IFormProps) => {
+    const id = useMemo(() => props.id ?? crypto.randomUUID(), [props.id]);
     const { children } = props;
     const form = useMemo(() => new FormModel(), []);
     const styles = useMemo(() => getFormStyles(), []);
@@ -21,7 +23,7 @@ export const Form = (props: IFormProps) => {
 
     return <FormContext.Provider value={form}>
         <ThemeProvider theme={theme}>
-            <div className={styles.form} data-id={`form-${form.id}`}>
+            <div className={styles.form} data-id={`form-${ud}`}>
                 {children}
             </div>
         </ThemeProvider>

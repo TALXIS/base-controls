@@ -1,5 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { ICell, ISection } from "../..";
+import type { ICellProps, ISectionProps } from "../..";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 
 export type CellLabelPosition = "Top" | "Left";
@@ -8,8 +8,8 @@ export type CellLabelAlignment = "Center" | "Left" | "Right";
 export interface ICellStylesParams {
     labelWidth?: number;
     labelCollapseBreakpoint?: number;
-    cell: ICell;
-    section: ISection | null;
+    cell: ICellProps;
+    section: ISectionProps | null;
     theme: ITheme;
     requirementLevel?: RequiredLevelEnum;
 }
@@ -23,7 +23,7 @@ export const CELL_LABEL_CONTROL_GAP = 5;
 const DEFAULT_CELL_SPAN = 1;
 const DEFAULT_CELL_ROWSPAN = 1;
 
-const getFlexDirection = (section: ISection | null) => {
+const getFlexDirection = (section: ISectionProps | null) => {
     //if no section render => block
     if (!section) return 'column';
     //otherwise default is flex unless the section has a label position of "Top"

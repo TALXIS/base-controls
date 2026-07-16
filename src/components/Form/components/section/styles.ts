@@ -1,9 +1,9 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { ISection } from "../..";
+import type { ISectionProps } from "../..";
 import { IColumnCalculation } from "../../layout/useCalculatedColumns";
 
 interface ISectionStyleParams {
-    section: ISection;
+    section: ISectionProps;
     theme: ITheme;
     columnCalculation: IColumnCalculation;
 }
