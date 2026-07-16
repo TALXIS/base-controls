@@ -1,5 +1,5 @@
 import { mergeStyleSets } from "@fluentui/react";
-import { IColumnCalculation } from "../../layout/useNumberOfColumns";
+import { IColumnCalculation } from "../../layout/useCalculatedColumns";
 
 const GRID_LAYOUT_GAP = 10;
 

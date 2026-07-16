@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { getCellsStyles } from "./styles";
 import { CellsContext } from "./context";
 import { IColumnBreakpoints, Layout } from "../../layout";
-import { useNumberOfColumns } from "../../layout/useNumberOfColumns";
+import { useCalculatedColumns } from "../../layout/useCalculatedColumns";
 
 
 export interface ICellsProps {
@@ -21,7 +21,7 @@ export const Cells = (props: ICellsProps) => {
     const breakpoints: Partial<IColumnBreakpoints> = { ...{ lg: childrenArray.length }, ...props.columns };
     const columnBreakpoints = { ...Layout.createDefaultColumnBreakpoints(breakpoints), ...props.columns };
 
-    const columnCalculation= useNumberOfColumns({
+    const columnCalculation= useCalculatedColumns({
         breakpoints: columnBreakpoints,
         ref: ref
     });

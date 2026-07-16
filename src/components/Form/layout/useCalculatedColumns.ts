@@ -2,7 +2,7 @@ import React from "react";
 import { IColumnBreakpoints, Layout } from "./Layout";
 
 
-interface IUseNumberOfColumnsParams {
+interface IUseCalculatedColumnsParams {
     ref: React.RefObject<HTMLDivElement>;
     breakpoints: IColumnBreakpoints;
     onGetNumberOfColumnsForWidth?: (containerWidth: number, breakpoints: IColumnBreakpoints) => number;
@@ -13,7 +13,7 @@ export interface IColumnCalculation {
     value: number;
 }
 
-export const useNumberOfColumns = (params: IUseNumberOfColumnsParams) => {
+export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
     const { ref, breakpoints, onGetNumberOfColumnsForWidth = Layout.getNumberOfColumnsForWidth } = params;
     const [columnCalculation, setColumnCalculation] = React.useState<IColumnCalculation>({
         firstRender: true,

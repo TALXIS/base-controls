@@ -11,7 +11,7 @@ export type { IFormSectionProps } from "../../form/FormModel";
 
 export const Section = (props: IFormSectionProps) => {
     const tab = useTabContext();
-
+    
     const section = useFormComponent('Section', props, tab ? {
         name: 'Tab',
         instance: tab
