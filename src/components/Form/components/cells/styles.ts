@@ -1,24 +1,23 @@
 import { mergeStyleSets } from "@fluentui/react";
-
-interface ICellsStyleParams {
-    collapsebreakpoint: number;
-    numOfCells: number;
-}
+import { IColumnCalculation } from "../../layout/useNumberOfColumns";
 
 const GRID_LAYOUT_GAP = 10;
 
-export const getCellsStyles = (params: ICellsStyleParams) => {
-    const numOfColumns = Math.max(params.numOfCells, 1);
-    const cellsMinWidth = `${params.collapsebreakpoint}px`;
-    const totalGapWidth = `${Math.max(numOfColumns - 1, 0) * GRID_LAYOUT_GAP}px`;
-    const maxColumnWidth = `calc((100% - ${totalGapWidth}) / ${numOfColumns})`;
+interface ICellsStyleParams {
+    columnCalculation: IColumnCalculation;
+}
 
+export const getCellsStyles = (params: ICellsStyleParams) => {
+    const { columnCalculation } = params;
+    const {value, firstRender} = columnCalculation;
     return mergeStyleSets({
         cells: {
             display: 'grid',
+            opacity: firstRender ? 0 : 1,
+            transition: 'opacity 0.3s ease-in-out 0.5s',
             containerType: 'inline-size',
+            gridTemplateColumns: `repeat(${value}, 1fr)`,
             gap: `${GRID_LAYOUT_GAP}px`,
-            gridTemplateColumns: `repeat(auto-fit, minmax(max(min(100%, ${cellsMinWidth}), ${maxColumnWidth}), 1fr))`,
         }
     })
 }

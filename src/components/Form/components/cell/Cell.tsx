@@ -21,7 +21,7 @@ const containsDisabledCells = (section: ISection) => {
 export const Cell = (props: IFormCellProps) => {
     const section = useSectionContext();
     const cells = useCellsContext();
-    const { celllabelwidth, collapsebreakpoint } = {...cells};
+    const { celllabelwidth } = {...cells};
 
     const cell = useFormComponent('Cell', props, section ? {
         name: 'Section',
@@ -37,7 +37,7 @@ export const Cell = (props: IFormCellProps) => {
     const shouldRenderRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
     const shouldRenderLabel = (showLabel && label) || shouldRenderRequiredIndicator;
     const shouldRenderLabelContainer = shouldRenderLabel || disabled;
-    const styles = getCellStyles({ cell, section, requirementLevel, theme, labelCollapseBreakpoint: collapsebreakpoint, labelWidth: celllabelwidth });
+    const styles = getCellStyles({ cell, section, requirementLevel, theme, labelCollapseBreakpoint: 300, labelWidth: celllabelwidth });
     const dummyEmitter = React.useMemo(() => new EventEmitter<ISectionEvents>(), []);
 
     const [shouldRenderLockSpacer, setShouldRenderLockSpacer] = React.useState(false);
