@@ -4,7 +4,6 @@ import { ISectionProps } from "./Section";
 export interface ISectionContext extends ISectionProps {
     columnsPerRow: number;
     containerWidth: number;
-    showLockSpacer: boolean;
 }
 
 export const SectionContext = React.createContext<ISectionContext | null>(null);

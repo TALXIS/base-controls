@@ -30,10 +30,6 @@ export interface ISectionProps {
     children?: React.ReactNode;
 }
 
-const isAnyChildCellDisabled = (children: (React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>>)[]): boolean => {
-    return children.some(child => child.props?.disabled);
-}
-
 export const Section = (props: ISectionProps) => {
     const { children, showBar = true, showLabel = true, label, name, id } = props;
     const cells = React.Children.toArray(children).filter(child => React.isValidElement(child));
@@ -62,7 +58,7 @@ export const Section = (props: ISectionProps) => {
             </div>
         )}
         <div ref={bodyContainerRef} className={styles.body} style={containerStyles}>
-            <SectionContext.Provider value={{...props, columnsPerRow, containerWidth, showLockSpacer: isAnyChildCellDisabled(cells) }}>
+            <SectionContext.Provider value={{...props, columnsPerRow, containerWidth }}>
                 {children}
             </SectionContext.Provider>
         </div>

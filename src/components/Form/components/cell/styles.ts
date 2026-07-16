@@ -28,7 +28,7 @@ interface ICellStylesParams {
 
 
 export const getCellStyles = (params: ICellStylesParams) => {
-    const {cell, section, theme, cellLabelPosition } = params;
+    const { cell, section, theme, cellLabelPosition } = params;
     const rowspan = cell.rowspan ?? 1;
     const labelWidth = section?.labelWidth ?? CELL_LABEL_DEFAULT_WIDTH;
 
@@ -41,26 +41,20 @@ export const getCellStyles = (params: ICellStylesParams) => {
             gridRow: `span ${rowspan}`,
             ...(cell.visible === false ? { display: 'none' } : {}),
         },
-        lockIcon: {
+        lockIndicator: {
             fontSize: 12,
             flexShrink: 0,
         },
-        lockSpacer: {
+        lockSlot: {
             width: 12,
         },
-        labelContainer: {
-            display: 'flex',
-            gap: 5,
-            flexShrink: 0
-        },
-        requiredIndicator: {
+        requiredMark: {
             fontSize: 12,
             position: 'relative',
             top: 2,
             color: getRequirementLevelColor(theme, cell.requiredLevel),
         },
-        label: {
-            width: cellLabelPosition === 'Left' ? labelWidth : '100%',
+        labelText: {
             overflow: 'hidden',
             padding: 0,
             textOverflow: 'ellipsis',
@@ -68,6 +62,11 @@ export const getCellStyles = (params: ICellStylesParams) => {
             display: '-webkit-box',
             '-webkit-box-orient': 'vertical',
             '-webkit-line-clamp': '3',
+        },
+        labelWrapper: {
+            display: 'flex',
+            width: cellLabelPosition === 'Left' ? labelWidth : '100%',
+            gap: 5
         },
         control: {
             flexGrow: 1,
