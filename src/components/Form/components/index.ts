@@ -4,8 +4,6 @@ export * from './columns';
 export * from './column';
 export * from './sections';
 export * from './section';
-export * from './rows';
-export * from './row';
 export * from './cell';
 export * from './control';
 export * from './components';

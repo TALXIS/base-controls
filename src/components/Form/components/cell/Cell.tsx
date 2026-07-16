@@ -9,7 +9,6 @@ import { useFormComponent } from "../../form/useFormComponent";
 import { useEventEmitter } from "../../../../hooks";
 import { EventEmitter } from "@talxis/client-libraries";
 import { TextField } from "@talxis/react-components";
-import { useCellsContext } from "../cells/context";
 
 export type { IFormCellProps } from "../../form/FormModel";
 
@@ -20,14 +19,10 @@ const containsDisabledCells = (section: ISection) => {
 
 export const Cell = (props: IFormCellProps) => {
     const section = useSectionContext();
-    const cells = useCellsContext();
-    const { celllabelwidth } = {...cells};
-
     const cell = useFormComponent('Cell', props, section ? {
         name: 'Section',
         instance: section
     } : undefined);
-
 
     const requirementLevel = RequiredLevelEnum.SystemRequired
     const { showLabel = true, label, disabled } = props;
@@ -37,7 +32,7 @@ export const Cell = (props: IFormCellProps) => {
     const shouldRenderRequiredIndicator = requirementLevel && requirementLevel !== RequiredLevelEnum.None;
     const shouldRenderLabel = (showLabel && label) || shouldRenderRequiredIndicator;
     const shouldRenderLabelContainer = shouldRenderLabel || disabled;
-    const styles = getCellStyles({ cell, section, requirementLevel, theme, labelCollapseBreakpoint: 300, labelWidth: celllabelwidth });
+    const styles = getCellStyles({ cell, section, requirementLevel, theme, labelCollapseBreakpoint: 300, labelWidth: 115 });
     const dummyEmitter = React.useMemo(() => new EventEmitter<ISectionEvents>(), []);
 
     const [shouldRenderLockSpacer, setShouldRenderLockSpacer] = React.useState(false);

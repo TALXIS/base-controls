@@ -1,42 +1,8 @@
-import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
-import {
-    AttributeTypeEnum,
-    FormXml,
-    FormXmlLabels,
-    FormXmlTab,
-    IEntityDefinition,
-    IMetadataProvider,
-    Option,
-    OptionSetDefinition,
-    RequiredLevelEnum,
-    parseFormXml,
-    serializeFormXml,
-} from "@talxis/client-metadata";
-import { ITheme } from "@talxis/react-components";
-import { getTheme } from "@fluentui/react";
-import { ITranslation } from "../../../hooks";
-import { formTranslations } from "../translations";
-import { IForm as IRuntimeForm, IFormOutputs, IFormParameters, IAttributeConfiguration, AttributeRequiredLevel, IAttributeOption, IFieldValidationResult, FieldValidator, VALID_RESULT } from "../interfaces";
-import { XrmFormContext } from "./xrm/XrmFormContext";
-import { XrmExecutionContext } from "./xrm/XrmExecutionContext";
-import { XrmOnLoadEventArgs, XrmOnSaveEventArgs } from "./xrm/XrmEventArgs";
-import { IFormControlProps } from "../components";
+import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
+import { IColumnBreakpoints } from "./layout";
+import { IFormControlProps } from "./components";
 
-const HANDLER_TIMEOUT_MS = 10_000;
 
-interface IFormDependencies {
-    labels: Required<ITranslation<typeof formTranslations>>;
-    onGetProps: () => IRuntimeForm;
-    theme?: ITheme;
-    metadataProvider?: IMetadataProvider;
-    scriptLoader?: IScriptLoader;
-}
-
-interface IAttributeMetadataOverride {
-    requiredLevel?: Xrm.Attributes.RequirementLevel;
-    addedOptions?: IAttributeOption[];
-    removedOptionValues?: Set<number>;
-}
 
 export interface IFormTabProps {
     id: string;
@@ -91,7 +57,7 @@ export interface IFormSectionProps {
     addedBy?: string;
     visible?: boolean;
     autoExpand?: boolean;
-    columns?: number;
+    columns?: Partial<IColumnBreakpoints>;
     labelWidth?: number;
     cellLabelTopBreakpoint?: number;
     availableForPhone?: boolean;

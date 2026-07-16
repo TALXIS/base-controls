@@ -10,19 +10,19 @@ interface IUseCalculatedColumnsParams {
 
 export interface IColumnCalculation {
     firstRender: boolean;
-    value: number;
+    numberOfColumns: number;
 }
 
 export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
     const { ref, breakpoints, onGetNumberOfColumnsForWidth = Layout.getNumberOfColumnsForWidth } = params;
     const [columnCalculation, setColumnCalculation] = React.useState<IColumnCalculation>({
         firstRender: true,
-        value: breakpoints.lg
+        numberOfColumns: breakpoints.lg
     });
     
     const observer = React.useMemo(() => new ResizeObserver((entries) => {
         console.log(entries[0].contentRect.width)
-        setColumnCalculation({ firstRender: false, value: onGetNumberOfColumnsForWidth(entries[0].contentRect.width, breakpoints) });
+        setColumnCalculation({ firstRender: false, numberOfColumns: onGetNumberOfColumnsForWidth(entries[0].contentRect.width, breakpoints) });
     }), []);
 
     React.useEffect(() => {
