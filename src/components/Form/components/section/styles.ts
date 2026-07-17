@@ -29,15 +29,14 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
             display: "flex",
             alignItems: "center",
             padding: "8px 12px",
-            backgroundColor: theme.semanticColors.bodyBackgroundChecked,
+            backgroundColor: theme.palette.themeLighter,
             borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
         },
         title: {
             fontSize: theme.fonts.medium.fontSize,
             fontFamily: theme.fonts.medium.fontFamily,
             fontWeight: 600,
-            color: theme.semanticColors.bodyText,
-            margin: 0,
+            color: `contrast-color(${theme.palette.themeLighter})`,
         },
         body: {
             padding: 12,
