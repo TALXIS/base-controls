@@ -1,5 +1,5 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { parseFormXml, FormXml, FormXmlTabs, FormXmlTab, FormXmlOpaqueNode, FormXmlPrimitiveValue, FormXmlColumns, FormXmlEvents, FormXmlHeaderFooter, FormXmlLabels, FormXmlAncestor, FormXmlClientResources, FormXmlControlDescriptions, FormXmlDisplayConditions, FormXmlExternalDependencies, FormXmlFormParameters, FormXmlHiddenControls, FormXmlLibraryType, FormXmlNavigation, FormXmlOpaqueElement } from "@talxis/client-metadata";
+import { parseFormXml, FormXml, FormXmlTabs, FormXmlTab, FormXmlOpaqueNode, FormXmlPrimitiveValue, FormXmlColumns, FormXmlEvents, FormXmlHeaderFooter, FormXmlLabels, FormXmlAncestor, FormXmlClientResources, FormXmlControlDescriptions, FormXmlDisplayConditions, FormXmlExternalDependencies, FormXmlFormParameters, FormXmlHiddenControls, FormXmlLibraryType, FormXmlNavigation, FormXmlOpaqueElement, FormXmlColumn, FormXmlSections } from "@talxis/client-metadata";
 
 const LCID_ENGLISH_US = 1033;
 
@@ -22,10 +22,36 @@ export interface ITabs extends FormXmlTabs {
 
 export interface ITab extends FormXmlTab {
     id: string;
+    form: IXrmForm;
+    getLocalizedLabel: () => string | null;
+    getColumns: () => IColumn[];
+
+}
+
+export interface IColumn extends FormXmlColumn {
+    getColspan: () => number;
+}
+
+export class Column implements IColumn {
+    width: string = '100%';
+    sections?: FormXmlSections | undefined;
+    private _tabColumnCount: number;
+
+    constructor(column: FormXmlColumn, tabColumnCount: number) {
+        Object.assign(this, column);
+        this._tabColumnCount = Math.max(tabColumnCount, 1);
+    }
+
+    public getColspan(): number {
+        const widthPercentage = parseInt(this.width.replace('%', ''));
+
+        return Math.max(1, Math.round((widthPercentage / 100) * this._tabColumnCount));
+    }
 
 }
 
 export class Tab implements ITab {
+    public form: IXrmForm;
     public group?: string | undefined;
     public name?: string | undefined;
     public verticallayout?: boolean | undefined;
@@ -48,11 +74,23 @@ export class Tab implements ITab {
     public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
     public additionalElements?: FormXmlOpaqueNode[] | undefined;
 
-    constructor(tab: FormXmlTab) {
+    private _columns: IColumn[] = [];
+
+    constructor(tab: FormXmlTab, form: IXrmForm) {
         Object.assign(this, tab);
+        this.form = form;
         this.id = tab.id ?? tab.name ?? window.crypto.randomUUID();
+        const tabColumnCount = tab.columns?.column?.length ?? 1;
+        this._columns = tab.columns?.column?.map(col => new Column(col, tabColumnCount)) ?? [];
     }
 
+    public getColumns(): IColumn[] {
+        return this._columns;
+    }
+
+    public getLocalizedLabel(): string | null {
+        return this.form.getLocalizedLabel(this.labels);
+    }
 }
 
 export class Tabs implements ITabs {
@@ -69,9 +107,9 @@ export class Tabs implements ITabs {
     public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
     public additionalElements?: FormXmlOpaqueNode[] | undefined;
 
-    constructor(tabs: FormXmlTabs) {
+    constructor(tabs: FormXmlTabs, form: IXrmForm) {
         Object.assign(this, tabs);
-        this.tab = tabs.tab.map(t => new Tab(t));
+        this.tab = tabs.tab.map(tab => new Tab(tab, form));
     }
 
     public getExpandedTab(): ITab {
@@ -93,7 +131,7 @@ export class Tabs implements ITabs {
 }
 
 export interface IXrmForm extends FormXml {
-    getLocalizedLabel: (labels: FormXmlLabels) => string | null;
+    getLocalizedLabel: (labels?: FormXmlLabels) => string | null;
 }
 
 
@@ -129,12 +167,12 @@ export class XrmForm implements IXrmForm {
         this._lcid = params.lcid;
         const formXml = parseFormXml(params.formXml);
         Object.assign(this, formXml);
-        this.tabs = new Tabs(formXml.tabs);
+        this.tabs = new Tabs(formXml.tabs, this);
     }
 
-    public getLocalizedLabel(labels: FormXmlLabels): string | null {
-        const localizedLabel = labels.label?.find(label => label.languagecode === this._lcid);
-        const fallbackLabel = labels.label?.find(label => label.languagecode === LCID_ENGLISH_US) ?? labels.label?.[0];
+    public getLocalizedLabel(labels?: FormXmlLabels): string | null {
+        const localizedLabel = labels?.label?.find(label => label.languagecode === this._lcid);
+        const fallbackLabel = labels?.label?.find(label => label.languagecode === LCID_ENGLISH_US) ?? labels?.label?.[0];
 
         return localizedLabel?.description ?? fallbackLabel?.description ?? null;
     }
