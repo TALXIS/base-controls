@@ -10,6 +10,6 @@ export const XrmTab = ({ tab, id, label }: { tab: ITab, id: string, label?: stri
     }
 
     return <Tab onColumnsPerRowChanged={onColumnsPerRowChanged} style={{}} key={tab.id} id={tab.id} label={label}>
-        {tab.getColumns().map((col, i) => <XrmColumn key={i} column={col} />)}
+        {tab.getColumns().map((col, i) => <Column />)}
     </Tab>
 }
