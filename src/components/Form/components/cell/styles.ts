@@ -49,9 +49,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
         lockIndicator: {
             fontSize: 12,
             flexShrink: 0,
-        },
-        lockSlot: {
-            width: 12,
+            marginLeft: 'auto'
         },
         requiredMark: {
             fontSize: 12,
@@ -67,7 +65,6 @@ export const getCellStyles = (params: ICellStylesParams) => {
             display: '-webkit-box',
             '-webkit-box-orient': 'vertical',
             '-webkit-line-clamp': '3',
-            //flexGrow: cellLabelPosition === 'Top' ? 1 : 0,
         },
         labelWrapper: {
             display: 'flex',
