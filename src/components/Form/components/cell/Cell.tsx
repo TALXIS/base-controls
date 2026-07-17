@@ -10,7 +10,6 @@ export interface ICellProps {
     labelId?: string;
     label?: string;
     lockLevel?: number;
-    showLabel?: boolean;
     visible?: boolean;
     colspan?: number;
     rowspan?: number;
@@ -45,24 +44,24 @@ export const Cell = (props: ICellProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const section = useSectionContext();
     const theme = useTheme();
-    const { showLabel = true, label, disabled, id, requiredLevel } = props;
-    const { showLockSpacer = false } = { ...section }
+    const { label, disabled, id, requiredLevel } = props;
 
-    const shouldRenderLabel = showLabel || label || requiredLevel || disabled
-    const shouldRenderLabelRow = shouldRenderLabel || disabled;
+    const shouldRenderLabelWrapper = label || requiredLevel || disabled
     const layoutStyle = Layout.getColumnStyles(props.colspan, section?.columnsPerRow);
     const cellLabelPosition = getCellLabelPosition(section);
 
     const styles = getCellStyles({ cell: props, section, cellLabelPosition, theme });
 
     return <div ref={containerRef} className={styles.cell} data-id={`cell-${id}`} style={layoutStyle}>
-        {shouldRenderLabel &&
+        {shouldRenderLabelWrapper &&
             <div className={styles.labelWrapper}>
-                <Label className={styles.labelText}>
-                    <TooltipHost content={label}>
-                        {label}
-                    </TooltipHost>
-                </Label>
+                {label &&
+                    <Label className={styles.labelText}>
+                        <TooltipHost content={label}>
+                            {label}
+                        </TooltipHost>
+                    </Label>
+                }
                 {requiredLevel && <span className={styles.requiredMark}>*</span>}
                 {disabled && <Icon iconName="Lock" className={styles.lockIndicator} />}
 

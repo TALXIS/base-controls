@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { TabContext } from "./context";
-import { IColumnBreakpoints, Layout } from "../../layout";
+import { ILayoutBreakpoints, Layout } from "../../layout";
 import { useCalculatedColumns } from "../../layout/useCalculatedColumns";
 import { getTabStyles } from "./styles";
 
@@ -20,16 +20,28 @@ export interface ITabProps {
     collapsible?: boolean;
     label?: string;
     children?: React.ReactNode;
-    breakpoints?: Partial<IColumnBreakpoints>;
+    /**
+     * Configures how many layout columns this Tab renders at each breakpoint
+     * based on the width of the Tab itself. This controls the responsive grid
+     * layout only, so the configured column count can be higher than the number
+     * of rendered child cells/components.
+     *
+     * Breakpoint keys:
+     * - `lg`: width above 996px
+     * - `md`: width up to 996px
+     * - `sm`: width up to 768px
+     * - `xs`: width up to 480px
+     */
+    layout?: Partial<ILayoutBreakpoints>;
 }
 
 export const Tab = (props: ITabProps) => {
     const { children, id } = props;
     const containerRef = React.useRef<HTMLDivElement>(null);
     const columnComponents = React.Children.toArray(props.children).filter(child => React.isValidElement(child));
-    const breakpoints: Partial<IColumnBreakpoints> = { ...{ lg: columnComponents.length }, ...props.breakpoints };
+    const breakpoints: Partial<ILayoutBreakpoints> = { ...{ lg: columnComponents.length }, ...props.layout };
     const styles = useMemo(() => getTabStyles(), [])
-    const columnBreakpoints = { ...Layout.createDefaultColumnBreakpoints(breakpoints), ...props.breakpoints };
+    const columnBreakpoints = { ...Layout.createDefaultColumnBreakpoints(breakpoints), ...props.layout };
 
     const { containerStyles, columnsPerRow } = useCalculatedColumns({
         breakpoints: columnBreakpoints,
@@ -42,4 +54,3 @@ export const Tab = (props: ITabProps) => {
         </TabContext.Provider>
     </div>
 }
-

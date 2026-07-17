@@ -1,11 +1,11 @@
 import React from "react";
-import { IColumnBreakpoints, Layout } from "./Layout";
+import { ILayoutBreakpoints, Layout } from "./Layout";
 
 
 interface IUseCalculatedColumnsParams {
     ref: React.RefObject<HTMLDivElement>;
-    breakpoints: IColumnBreakpoints;
-    onGetNumberOfColumnsForWidth?: (containerWidth: number, breakpoints: IColumnBreakpoints) => number;
+    breakpoints: ILayoutBreakpoints;
+    onGetNumberOfColumnsForWidth?: (containerWidth: number, breakpoints: ILayoutBreakpoints) => number;
 }
 
 export interface IColumnCalculation {

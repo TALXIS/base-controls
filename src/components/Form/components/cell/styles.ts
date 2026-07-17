@@ -26,11 +26,16 @@ interface ICellStylesParams {
     section?: ISectionProps | null,
 }
 
+const getLabelWidth = (cell: ICellProps, cellLabelPosition: "Top" | "Left", section?: ISectionProps | null): string | undefined => {
+    if(!cell.label || cellLabelPosition === 'Top') return undefined;
+    return section?.labelWidth ? `${section.labelWidth}px` : `${CELL_LABEL_DEFAULT_WIDTH}px`;
+}
+
 
 export const getCellStyles = (params: ICellStylesParams) => {
     const { cell, section, theme, cellLabelPosition } = params;
     const rowspan = cell.rowspan ?? 1;
-    const labelWidth = section?.labelWidth ?? CELL_LABEL_DEFAULT_WIDTH;
+    const labelWidth = getLabelWidth(cell, cellLabelPosition, section);
 
     return mergeStyleSets({
         cell: {
@@ -62,11 +67,13 @@ export const getCellStyles = (params: ICellStylesParams) => {
             display: '-webkit-box',
             '-webkit-box-orient': 'vertical',
             '-webkit-line-clamp': '3',
+            //flexGrow: cellLabelPosition === 'Top' ? 1 : 0,
         },
         labelWrapper: {
             display: 'flex',
-            width: cellLabelPosition === 'Left' ? labelWidth : '100%',
-            gap: 5
+            width: labelWidth,
+            gap: 5,
+            flexShrink: 0
         },
         control: {
             flexGrow: 1,

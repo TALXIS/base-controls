@@ -5,7 +5,7 @@ export enum WIDTH_BREAKPOINT {
     xs = 480,
 }
 
-export interface IColumnBreakpoints {
+export interface ILayoutBreakpoints {
     'lg': number;
     'md': number;
     'sm': number;
@@ -14,14 +14,14 @@ export interface IColumnBreakpoints {
 
 export class Layout {
 
-    public static getNumberOfColumnsForWidth(width: number, breakpoints: IColumnBreakpoints) {
+    public static getNumberOfColumnsForWidth(width: number, breakpoints: ILayoutBreakpoints) {
         if (width <= WIDTH_BREAKPOINT.xs) return breakpoints['xs'];
         if (width <= WIDTH_BREAKPOINT.sm) return breakpoints['sm'];
         if (width <= WIDTH_BREAKPOINT.md) return breakpoints['md'];
         return breakpoints['lg'];
     }
 
-    public static createDefaultColumnBreakpoints(breakpoints?: Partial<IColumnBreakpoints>): IColumnBreakpoints {
+    public static createDefaultColumnBreakpoints(breakpoints?: Partial<ILayoutBreakpoints>): ILayoutBreakpoints {
         let definedBreakpoint = breakpoints?.lg ?? breakpoints?.md ?? breakpoints?.sm ?? breakpoints?.xs ?? 1;
         return {
             'lg': definedBreakpoint,
