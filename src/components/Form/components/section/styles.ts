@@ -12,7 +12,7 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
     return mergeStyleSets({
         section: {
             border: `1px solid ${theme.semanticColors.bodyDivider}`,
-            borderRadius: 2,
+            borderRadius: 8,
             backgroundColor: theme.semanticColors.bodyBackground,
             overflow: "hidden",
             boxShadow: theme.effects.elevation4,
@@ -29,14 +29,15 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
             display: "flex",
             alignItems: "center",
             padding: "8px 12px",
-            backgroundColor: theme.palette.themeLighter,
+            backgroundColor: theme.palette.neutralLighterAlt,
             borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
         },
         title: {
             fontSize: theme.fonts.medium.fontSize,
             fontFamily: theme.fonts.medium.fontFamily,
             fontWeight: 600,
-            color: `contrast-color(${theme.palette.themeLighter})`,
+            //textTransform: "uppercase",
+            color: theme.semanticColors.bodyText,
         },
         body: {
             padding: 12,
