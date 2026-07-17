@@ -4,6 +4,7 @@ import { getCellStyles } from "./styles";
 import { ISectionContext, useSectionContext } from "../section";
 import { TextField } from "@talxis/react-components";
 import { Layout } from "../../layout";
+import { RequiredLevelEnum } from "@talxis/client-metadata";
 
 export interface ICellProps {
     id?: string;
@@ -14,7 +15,7 @@ export interface ICellProps {
     colspan?: number;
     rowspan?: number;
     userspacer?: boolean;
-    requiredLevel?: "SystemRequired" | "ApplicationRequired" | "BusinessRequired";
+    requiredLevel?: "SystemRequired" | "ApplicationRequired" | "BusinessRequired" | 'Recommended';
     availableForPhone?: boolean;
     isPreviewCell?: boolean;
     isStreamCell?: boolean;
@@ -46,7 +47,7 @@ export const Cell = (props: ICellProps) => {
     const theme = useTheme();
     const { label, disabled, id, requiredLevel } = props;
 
-    const shouldRenderLabelWrapper = label || requiredLevel || disabled
+    const shouldRenderLabelWrapper = label || disabled
     const layoutStyle = Layout.getColumnStyles(props.colspan, section?.columnsPerRow);
     const cellLabelPosition = getCellLabelPosition(section);
 
@@ -62,7 +63,14 @@ export const Cell = (props: ICellProps) => {
                         </TooltipHost>
                     </Label>
                 }
-                {requiredLevel && <span className={styles.requiredMark}>*</span>}
+                {requiredLevel && label &&
+                    <div className={styles.requiredLevelMark}>
+                        {requiredLevel !== 'Recommended' ? 
+                            <span >*</span> :
+                            <Icon className={styles.recommendedMark} iconName='Add' />
+                        }
+                    </div>
+                }
                 {disabled && <Icon iconName="Lock" className={styles.lockIndicator} />}
 
             </div>

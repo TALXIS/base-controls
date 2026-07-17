@@ -6,8 +6,13 @@ export const CELL_LABEL_DEFAULT_WIDTH = 115;
 
 const getRequirementLevelColor = (theme: ITheme, requiredLevel?: ICellProps['requiredLevel']): string | undefined => {
     switch (requiredLevel) {
-        case "SystemRequired": {
+        case "SystemRequired":
+        case "ApplicationRequired":
+        case "BusinessRequired": {
             return theme.semanticColors.errorIcon;
+        }
+        case 'Recommended': {
+            return theme.palette.blueMid;
         }
         case "ApplicationRequired":
         case "BusinessRequired": {
@@ -49,13 +54,18 @@ export const getCellStyles = (params: ICellStylesParams) => {
         lockIndicator: {
             fontSize: 12,
             flexShrink: 0,
-            marginLeft: 'auto'
-        },
-        requiredMark: {
-            fontSize: 12,
+            marginLeft: 'auto',
             position: 'relative',
-            top: 2,
+            top: 1
+        },
+        requiredLevelMark: {
+            fontSize: 12,
             color: getRequirementLevelColor(theme, cell.requiredLevel),
+        },
+        recommendedMark: {
+            fontSize: 6,
+            position: 'relative',
+            top: -2
         },
         labelText: {
             overflow: 'hidden',
