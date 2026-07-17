@@ -19,7 +19,10 @@ export const XrmForm = () => {
     return <Form>
         <Tabs expandedTab={selectedTab.id} onChangeTab={(tabId) => tabs.setExpandedTab(tabId)}>
             {visibleTabs.map(tab => <Tab layout={{
-                lg: tab.getColumns().length,
+                lg: 100,
+                md: 100,
+                sm: 100,
+                xs: 100
             }} key={tab.id} id={tab.id} label={tab.getLocalizedLabel() ?? undefined}>
                 {tab.getColumns().map(col => <Column colspan={col.getColspan()}>
                     Column

@@ -44,7 +44,7 @@ export class Column implements IColumn {
 
     public getColspan(): number {
         const widthPercentage = parseInt(this.width.replace('%', ''));
-
+        return widthPercentage;
         return Math.max(1, Math.round((widthPercentage / 100) * this._tabColumnCount));
     }
 
