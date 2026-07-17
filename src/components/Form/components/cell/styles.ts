@@ -65,6 +65,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
             display: '-webkit-box',
             '-webkit-box-orient': 'vertical',
             '-webkit-line-clamp': '3',
+            flexGrow: cellLabelPosition === 'Top' ? 0 : 1,
         },
         labelWrapper: {
             display: 'flex',
