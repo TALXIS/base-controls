@@ -1,5 +1,5 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { parseFormXml, FormXml, FormXmlTabs, FormXmlTab, FormXmlOpaqueNode, FormXmlPrimitiveValue, FormXmlColumns, FormXmlEvents, FormXmlHeaderFooter, FormXmlLabels, FormXmlAncestor, FormXmlClientResources, FormXmlControlDescriptions, FormXmlDisplayConditions, FormXmlExternalDependencies, FormXmlFormParameters, FormXmlHiddenControls, FormXmlLibraryType, FormXmlNavigation, FormXmlOpaqueElement, FormXmlColumn, FormXmlSections } from "@talxis/client-metadata";
+import { parseFormXml, FormXml, FormXmlTabs, FormXmlTab, FormXmlOpaqueNode, FormXmlPrimitiveValue, FormXmlColumns, FormXmlEvents, FormXmlHeaderFooter, FormXmlLabels, FormXmlAncestor, FormXmlClientResources, FormXmlControlDescriptions, FormXmlDisplayConditions, FormXmlExternalDependencies, FormXmlFormParameters, FormXmlHiddenControls, FormXmlLibraryType, FormXmlNavigation, FormXmlOpaqueElement, FormXmlColumn, FormXmlSections, FormXmlSection, FormXmlCell } from "@talxis/client-metadata";
 
 const LCID_ENGLISH_US = 1033;
 
@@ -28,17 +28,69 @@ export interface ITab extends FormXmlTab {
 
 }
 
+export interface ISection extends FormXmlSection {
+    getLocalizedLabel: () => string | null;
+}
+
 export interface IColumn extends FormXmlColumn {
+    getSections: () => ISection[];
+}
+
+export interface ICell extends FormXmlCell {
+    
+}
+
+export class Cell implements ICell {
+    
+}
+
+export class Section implements ISection {
+    public id?: string | undefined;
+    public form: IXrmForm;
+    public name?: string | undefined;
+    public group?: string | undefined;
+    public showlabel?: boolean | undefined;
+    public labelid?: string | undefined;
+    public showbar?: boolean | undefined;
+    public isuserdefined?: string | undefined;
+    public height?: string | undefined;
+    public locklevel?: number | undefined;
+    public addedby?: string | undefined;
+    public visible?: boolean | undefined;
+    public autoexpand?: boolean | undefined;
+    public labelwidth?: number | undefined;
+    public availableforphone?: boolean | undefined;
+    public celllabelalignment?: "Center" | "Left" | "Right" | undefined;
+    public celllabelposition?: "Top" | "Left" | undefined;
+    public rowheight?: number | undefined;
+    public labels?: FormXmlLabels | undefined;
+    public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
+    public additionalElements?: FormXmlOpaqueNode[] | undefined;
+
+    constructor(section: FormXmlSection, form: IXrmForm) {
+        Object.assign(this, section);
+        this.form = form;
+    }
+
+    public getLocalizedLabel(): string | null {
+        return this.form.getLocalizedLabel(this.labels);
+    }
 }
 
 export class Column implements IColumn {
-    width: string = '100%';
-    sections?: FormXmlSections | undefined;
+    public width: string = '100%';
+    public sections?: FormXmlSections | undefined;
 
-    constructor(column: FormXmlColumn ) {
+    private _sections: ISection[] = [];
+
+    constructor(column: FormXmlColumn, form: IXrmForm) {
         Object.assign(this, column);
+        this._sections = column.sections?.section?.map(section => new Section(section, form)) ?? [];
     }
 
+    public getSections(): ISection[] {
+        return this._sections;
+    }
 }
 
 export class Tab implements ITab {
@@ -71,8 +123,7 @@ export class Tab implements ITab {
         Object.assign(this, tab);
         this.form = form;
         this.id = tab.id ?? tab.name ?? window.crypto.randomUUID();
-        const tabColumnCount = tab.columns?.column?.length ?? 1;
-        this._columns = tab.columns?.column?.map(col => new Column(col)) ?? [];
+        this._columns = tab.columns?.column?.map(col => new Column(col, form)) ?? [];
     }
 
     public getColumns(): IColumn[] {
