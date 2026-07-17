@@ -1,10 +1,12 @@
 import * as React from "react";
 import { TabComponents, type ITabsComponents } from "./components";
 
+export type TabLikeChild = React.ReactElement<{ id: string; label?: string; }>;
+
 export interface IFormTabsProps {
     expandedTab: string;
     onChangeTab: (tabId: string) => void;
-    children?: React.ReactNode;
+    children?: TabLikeChild | TabLikeChild[];
     components?: Partial<ITabsComponents>;
 }
 

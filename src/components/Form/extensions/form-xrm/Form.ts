@@ -29,23 +29,14 @@ export interface ITab extends FormXmlTab {
 }
 
 export interface IColumn extends FormXmlColumn {
-    getColspan: () => number;
 }
 
 export class Column implements IColumn {
     width: string = '100%';
     sections?: FormXmlSections | undefined;
-    private _tabColumnCount: number;
 
-    constructor(column: FormXmlColumn, tabColumnCount: number) {
+    constructor(column: FormXmlColumn ) {
         Object.assign(this, column);
-        this._tabColumnCount = Math.max(tabColumnCount, 1);
-    }
-
-    public getColspan(): number {
-        const widthPercentage = parseInt(this.width.replace('%', ''));
-        return widthPercentage;
-        return Math.max(1, Math.round((widthPercentage / 100) * this._tabColumnCount));
     }
 
 }
@@ -81,7 +72,7 @@ export class Tab implements ITab {
         this.form = form;
         this.id = tab.id ?? tab.name ?? window.crypto.randomUUID();
         const tabColumnCount = tab.columns?.column?.length ?? 1;
-        this._columns = tab.columns?.column?.map(col => new Column(col, tabColumnCount)) ?? [];
+        this._columns = tab.columns?.column?.map(col => new Column(col)) ?? [];
     }
 
     public getColumns(): IColumn[] {

@@ -33,6 +33,7 @@ export interface ITabProps {
      * - `xs`: width up to 480px
      */
     layout?: Partial<ILayoutBreakpoints>;
+    style?: React.CSSProperties;
 }
 
 export const Tab = (props: ITabProps) => {
@@ -48,7 +49,7 @@ export const Tab = (props: ITabProps) => {
         ref: containerRef
     });
 
-    return <div className={styles.tab} data-id={id} ref={containerRef} style={containerStyles}>
+    return <div className={styles.tab} data-id={id} ref={containerRef} style={{ ...containerStyles, ...props.style }}>
         <TabContext.Provider value={{...props, columnsPerRow }}>
             {children}
         </TabContext.Provider>

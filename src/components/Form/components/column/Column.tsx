@@ -7,6 +7,7 @@ import { useTabContext } from "../tab/context";
 export interface IColumnProps {
     colspan?: number;
     children?: React.ReactNode;
+    style?: React.CSSProperties;
 }
 
 export const Column = (props: IColumnProps) => {
@@ -15,7 +16,7 @@ export const Column = (props: IColumnProps) => {
     const styles = React.useMemo(() => getColumnStyles(), []);
     const layoutStyle = Layout.getColumnStyles(colspan, columnsPerRow);
     
-    return <div className={styles.column} style={layoutStyle}>
+    return <div className={styles.column} style={{ ...layoutStyle, ...props.style }}>
         <ColumnContext.Provider value={props}>
             {children}
         </ColumnContext.Provider>
