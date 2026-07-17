@@ -30,6 +30,7 @@ export interface ITab extends FormXmlTab {
 
 export interface ISection extends FormXmlSection {
     getLocalizedLabel: () => string | null;
+    getCells: () => ICell[];
 }
 
 export interface IColumn extends FormXmlColumn {
@@ -37,11 +38,37 @@ export interface IColumn extends FormXmlColumn {
 }
 
 export interface ICell extends FormXmlCell {
-    
+    getLocalizedLabel: () => string | null;
 }
 
 export class Cell implements ICell {
-    
+    public form: IXrmForm;
+    public id?: string | undefined;
+    public showlabel?: boolean | undefined;
+    public labelid?: string | undefined;
+    public locklevel?: number | undefined;
+    public rowspan?: number | undefined;
+    public colspan?: number | undefined;
+    public userspacer?: boolean | undefined;
+    public ispreviewcell?: boolean | undefined;
+    public visible?: boolean | undefined;
+    public availableforphone?: boolean | undefined;
+    public isstreamcell?: boolean | undefined;
+    public ischartcell?: boolean | undefined;
+    public istilecell?: boolean | undefined;
+    public labels?: FormXmlLabels | undefined;
+    public control?: FormXmlCell["control"];
+    public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
+    public additionalElements?: FormXmlOpaqueNode[] | undefined;
+
+    constructor(cell: FormXmlCell, form: IXrmForm) {
+        Object.assign(this, cell);
+        this.form = form;
+    }
+
+    public getLocalizedLabel(): string | null {
+        return this.form.getLocalizedLabel(this.labels);
+    }
 }
 
 export class Section implements ISection {
@@ -64,16 +91,24 @@ export class Section implements ISection {
     public celllabelposition?: "Top" | "Left" | undefined;
     public rowheight?: number | undefined;
     public labels?: FormXmlLabels | undefined;
+    public rows?: FormXmlSection["rows"];
     public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
     public additionalElements?: FormXmlOpaqueNode[] | undefined;
+
+    private _cells: ICell[] = [];
 
     constructor(section: FormXmlSection, form: IXrmForm) {
         Object.assign(this, section);
         this.form = form;
+        this._cells = section.rows?.row?.flatMap(row => row.cell?.map(cell => new Cell(cell, form)) ?? []) ?? [];
     }
 
     public getLocalizedLabel(): string | null {
         return this.form.getLocalizedLabel(this.labels);
+    }
+
+    public getCells(): ICell[] {
+        return this._cells;
     }
 }
 
