@@ -4,6 +4,7 @@ import { FORM_XML } from './formXml'
 import { Form, Tabs, Tab, Column } from "../../../../components";
 import { useEventEmitter } from "../../../../../../hooks";
 import { useRerender } from "@talxis/react-components";
+import { XrmTab } from "./xrm-tab/XrmTab";
 
 
 //here we are expecting all dependencies such as labels metadata etc to be loaded
@@ -18,16 +19,7 @@ export const XrmForm = () => {
 
     return <Form>
         <Tabs expandedTab={selectedTab.id} onChangeTab={(tabId) => tabs.setExpandedTab(tabId)}>
-            {visibleTabs.map(tab => <Tab layout={{
-                lg: 100,
-                md: 100,
-                sm: 100,
-                xs: 100
-            }} key={tab.id} id={tab.id} label={tab.getLocalizedLabel() ?? undefined}>
-                {tab.getColumns().map(col => <Column colspan={col.getColspan()}>
-                    Column
-                </Column>)}
-            </Tab>)}
+            {visibleTabs.map(tab => <XrmTab key={tab.id} tab={tab} />)}
         </Tabs>
     </Form>
 }
