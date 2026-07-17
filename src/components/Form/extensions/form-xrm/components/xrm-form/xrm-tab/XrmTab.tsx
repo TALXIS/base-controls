@@ -4,13 +4,12 @@ import { XrmColumn } from "../xrm-column/XrmColumn";
 
 export const XrmTab = ({ tab, id, label }: { tab: ITab, id: string, label?: string }) => {
     const columns = tab.getColumns();
-    
-    const getTabLayoutStyle = () => {
-        const colWidths = columns.map(c => c.width);
 
+    const onColumnsPerRowChanged = (newColumnsPerRow: number) => {
+        const colWidths = columns.map(c => c.width);
     }
 
-    return <Tab style={{}} key={tab.id} id={tab.id} label={label}>
+    return <Tab onColumnsPerRowChanged={onColumnsPerRowChanged} style={{}} key={tab.id} id={tab.id} label={label}>
         {tab.getColumns().map((col, i) => <XrmColumn key={i} column={col} />)}
     </Tab>
 }

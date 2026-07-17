@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { TabContext } from "./context";
 import { ILayoutBreakpoints, Layout } from "../../layout";
 import { useCalculatedColumns } from "../../layout/useCalculatedColumns";
@@ -34,6 +34,7 @@ export interface ITabProps {
      */
     layout?: Partial<ILayoutBreakpoints>;
     style?: React.CSSProperties;
+    onColumnsPerRowChanged?: (columnsPerRow: number) => void;
 }
 
 export const Tab = (props: ITabProps) => {
@@ -48,6 +49,10 @@ export const Tab = (props: ITabProps) => {
         breakpoints: columnBreakpoints,
         ref: containerRef
     });
+
+    useEffect(() => {
+        props.onColumnsPerRowChanged?.(columnsPerRow);
+    }, [columnsPerRow, props.onColumnsPerRowChanged]);
 
     return <div className={styles.tab} data-id={id} ref={containerRef} style={{ ...containerStyles, ...props.style }}>
         <TabContext.Provider value={{...props, columnsPerRow }}>
