@@ -5,6 +5,7 @@ import { ISectionContext, useSectionContext } from "../section";
 import { TextField } from "@talxis/react-components";
 import { Layout } from "../../layout";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
+import { useFieldContext } from "../field/context";
 
 export interface ICellProps {
     id?: string;
@@ -41,12 +42,13 @@ const getCellLabelPosition = (section?: ISectionContext | null) => {
     return (containerWidth ?? 0) < cellLabelCollapseBreakpoint ? 'Top' : 'Left';
 }
 
+
 export const Cell = (props: ICellProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const section = useSectionContext();
+    const field = useFieldContext();
     const theme = useTheme();
-    const { label, disabled, id, requiredLevel = RequiredLevelEnum.None} = props;
-
+    const { label, disabled = field?.isDisabled(), id, requiredLevel = field?.isDisabled() ? RequiredLevelEnum.SystemRequired : RequiredLevelEnum.None } = props;
     const shouldRenderLabelWrapper = label || disabled
     const layoutStyle = Layout.getColumnStyles(props.colspan, section?.columnsPerRow);
     const cellLabelPosition = getCellLabelPosition(section);
