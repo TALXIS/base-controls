@@ -18,7 +18,7 @@ export const XrmForm = () => {
 
     return <Form>
         <Tabs expandedTab={selectedTab.id} onChangeTab={(tabId) => tabs.setExpandedTab(tabId)}>
-            {tabs.getVisibleTabs().map(tab => <XrmTab id={tab.id} key={tab.id} tab={tab} label={tab.getLocalizedLabel() ?? undefined} />)}
+            {tabs.getVisibleTabs().map(tab => <XrmTab id={tab.id} key={tab.id} tab={tab} label={tab.getLabel() ?? undefined} />)}
         </Tabs>
     </Form>
 }

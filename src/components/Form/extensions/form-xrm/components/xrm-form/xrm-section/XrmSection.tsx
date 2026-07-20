@@ -12,13 +12,13 @@ export interface IXrmSectionProps {
 export const XrmSection = (props: IXrmSectionProps) => {
     const { section } = props;
     const rerender = useRerender();
-    useEventEmitter(section.events, ['onCellSetVisible'], rerender);
+    useEventEmitter(section.events, ['onCellSetVisible', 'onLabelSet'], rerender);
 
     return <Section
         cellLabelPosition={section.getCellLabelPosition()}
         showLabel={section.showlabel}
         labelWidth={section.labelwidth}
-        label={section.getLocalizedLabel() ?? undefined}
+        label={section.getLabel() ?? undefined}
     >
         {section.getVisibleCells().map((cell, index) => <XrmCell key={cell.id ?? index} cell={cell} />)}
     </Section>;

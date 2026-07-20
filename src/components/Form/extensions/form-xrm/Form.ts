@@ -32,7 +32,7 @@ export interface ITab extends Omit<FormXmlTab, 'events' | 'columns'> {
     id: string;
     form: IXrmForm;
     events: IEventEmitter<ITabEvents>;
-    getLocalizedLabel: () => string | null;
+    getLabel: () => string | null;
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setLabel: (label: string) => void;
@@ -45,15 +45,17 @@ export interface ITab extends Omit<FormXmlTab, 'events' | 'columns'> {
 export interface ISectionEvents {
     onSetVisible: (visible: boolean) => void;
     onCellSetVisible: (cellId: string, visible: boolean) => void;
+    onLabelSet: (label: string) => void;
 }
 
 export interface ISection extends Omit<FormXmlSection, 'events'> {
     events: IEventEmitter<ISectionEvents>;
-    getLocalizedLabel: () => string | null;
+    getLabel: () => string | null;
     getCells: () => ICell[];
     getVisibleCells: () => ICell[];
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
+    setLabel: (label: string) => void;
     getCellLabelPosition: () => "Top" | "Left";
 }
 
@@ -65,15 +67,17 @@ export interface IColumn extends FormXmlColumn {
 export interface ICellEvents {
     onSetVisible: (visible: boolean) => void;
     onSetDisabled: (disabled: boolean) => void;
+    onLabelSet: (label: string) => void;
 }
 
 export interface ICell extends Omit<FormXmlCell, 'events'> {
     events: IEventEmitter<ICellEvents>;
-    getLocalizedLabel: () => string | null;
+    getLabel: () => string | null;
     getDisabled: () => boolean;
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setDisabled: (disabled: boolean) => void;
+    setLabel: (label: string) => void;
 }
 
 export interface IControl extends FormXmlControl {
@@ -108,6 +112,7 @@ export class Cell implements ICell {
     public events: IEventEmitter<ICellEvents> = new EventEmitter<ICellEvents>();
 
     private _disabled?: boolean;
+    private _customLabel?: string;
 
 
     constructor(cell: FormXmlCell, form: IXrmForm) {
@@ -117,8 +122,8 @@ export class Cell implements ICell {
         this._disabled = cell.control?.disabled;
     }
 
-    public getLocalizedLabel(): string | null {
-        return this.form.getLocalizedLabel(this.labels);
+    public getLabel(): string | null {
+        return this._customLabel ?? this.form.getLabel(this.labels);
     }
 
     public setVisible(visible: boolean): void {
@@ -129,6 +134,11 @@ export class Cell implements ICell {
     public setDisabled(disabled: boolean): void {
         this._disabled = disabled;
         this.events.dispatchEvent("onSetDisabled", disabled);
+    }
+
+    public setLabel(label: string): void {
+        this._customLabel = label;
+        this.events.dispatchEvent("onLabelSet", label);
     }
 
     //MDA forms default
@@ -168,6 +178,7 @@ export class Section implements ISection {
     public events: IEventEmitter<ISectionEvents> = new EventEmitter<ISectionEvents>();
 
     private _cells: ICell[] = [];
+    private _customLabel?: string;
 
     constructor(section: FormXmlSection, form: IXrmForm) {
         Object.assign(this, section);
@@ -176,8 +187,8 @@ export class Section implements ISection {
         this._registerCellEvents(this._cells);
     }
 
-    public getLocalizedLabel(): string | null {
-        return this.form.getLocalizedLabel(this.labels);
+    public getLabel(): string | null {
+        return this._customLabel ?? this.form.getLabel(this.labels);
     }
 
     public getCells(): ICell[] {
@@ -191,6 +202,11 @@ export class Section implements ISection {
     public setVisible(visible: boolean): void {
         this.visible = visible;
         this.events.dispatchEvent("onSetVisible", visible);
+    }
+
+    public setLabel(label: string): void {
+        this._customLabel = label;
+        this.events.dispatchEvent("onLabelSet", label);
     }
 
     //MDA forms default
@@ -274,8 +290,8 @@ export class Tab implements ITab {
         return this.getColumns().flatMap(column => column.getVisibleSections());
     }
 
-    public getLocalizedLabel(): string | null {
-        return this._customLabel ?? this.form.getLocalizedLabel(this.labels);
+    public getLabel(): string | null {
+        return this._customLabel ?? this.form.getLabel(this.labels);
     }
 
     public setVisible(visible: boolean): void {
@@ -360,7 +376,7 @@ export class Tabs implements ITabs {
 
 export interface IXrmForm extends Omit<FormXml, 'tabs'> {
     tabs: ITabs;
-    getLocalizedLabel: (labels?: FormXmlLabels) => string | null;
+    getLabel: (labels?: FormXmlLabels) => string | null;
 }
 
 
@@ -399,7 +415,7 @@ export class XrmForm implements IXrmForm {
         this.tabs = new Tabs(formXml.tabs, this);
     }
 
-    public getLocalizedLabel(labels?: FormXmlLabels): string | null {
+    public getLabel(labels?: FormXmlLabels): string | null {
         const localizedLabel = labels?.label?.find(label => label.languagecode === this._lcid);
         const fallbackLabel = labels?.label?.find(label => label.languagecode === LCID_ENGLISH_US) ?? labels?.label?.[0];
 
