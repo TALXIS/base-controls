@@ -6,6 +6,7 @@ import { XrmSection } from "../xrm-section";
 import { useEventEmitter } from "../../../../../../../hooks";
 import { useRerender } from "@talxis/react-components";
 
+
 export const XrmTab = ({ tab, id, label }: { tab: ITab, id: string, label?: string }) => {
     const columns = tab.getColumns();
     const [gridTemplateColumnsOverride, setGridTemplateColumnsOverride] = React.useState<string>();
@@ -16,7 +17,7 @@ export const XrmTab = ({ tab, id, label }: { tab: ITab, id: string, label?: stri
         setGridTemplateColumnsOverride(getXrmTabGridTemplateColumns(columns, newColumnsPerRow));
     }, [columns]);
 
-    return <Tab onColumnsPerRowChanged={onColumnsPerRowChanged} style={{ gridTemplateColumns: gridTemplateColumnsOverride }} key={tab.id} id={tab.id} label={label}>
+    return <Tab onColumnsPerRowChanged={onColumnsPerRowChanged} style={{ gridTemplateColumns: gridTemplateColumnsOverride }} key={tab.id} id={tab.id} label={tab.getLabel() ?? undefined}>
         {columns.map((col, i) => <Column key={i}>
             {col.getVisibleSections().map((section, i) => <XrmSection key={section.id ?? i} section={section} />)}
         </Column>)}

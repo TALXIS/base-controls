@@ -10,10 +10,13 @@ import { XrmTab } from "./xrm-tab/XrmTab";
 //here we are expecting all dependencies such as labels metadata etc to be loaded
 export const XrmForm = () => {
     const form = useMemo(() => new XrmFormClass({ formXml: FORM_XML, lcid: 1029 }), []);
+    //@ts-ignore
+    window.form = form
     const tabs = form.tabs;
     const selectedTab = form.tabs.getExpandedTab();
     const rerender = useRerender();
     
+    useEventEmitter(form.events, ['onRenderRequested'], rerender);
     useEventEmitter(tabs.events, ['onTabChange', 'onTabSetVisible'], rerender);
 
     return <Form>

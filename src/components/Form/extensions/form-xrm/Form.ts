@@ -1,5 +1,5 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { parseFormXml, FormXml, FormXmlTabs, FormXmlTab, FormXmlOpaqueNode, FormXmlPrimitiveValue, FormXmlColumns, FormXmlEvents, FormXmlHeaderFooter, FormXmlLabels, FormXmlAncestor, FormXmlClientResources, FormXmlControlDescriptions, FormXmlDisplayConditions, FormXmlExternalDependencies, FormXmlFormParameters, FormXmlHiddenControls, FormXmlLibraryType, FormXmlNavigation, FormXmlOpaqueElement, FormXmlColumn, FormXmlSections, FormXmlSection, FormXmlCell, FormXmlControl } from "@talxis/client-metadata";
+import { parseFormXml, FormXml, FormXmlTabs, FormXmlTab, FormXmlOpaqueNode, FormXmlPrimitiveValue, FormXmlColumns, FormXmlEvents, FormXmlHeaderFooter, FormXmlLabels, FormXmlAncestor, FormXmlClientResources, FormXmlControlDescriptions, FormXmlDisplayConditions, FormXmlExternalDependencies, FormXmlFormParameters, FormXmlHiddenControls, FormXmlLibraryType, FormXmlNavigation, FormXmlOpaqueElement, FormXmlColumn, FormXmlSections, FormXmlSection, FormXmlCell, FormXmlControl, RequiredLevelEnum } from "@talxis/client-metadata";
 
 const LCID_ENGLISH_US = 1033;
 
@@ -68,6 +68,7 @@ export interface ICellEvents {
     onSetVisible: (visible: boolean) => void;
     onSetDisabled: (disabled: boolean) => void;
     onLabelSet: (label: string) => void;
+    onRequiredLevelSet: (requiredLevel: RequiredLevelEnum) => void;
 }
 
 export interface ICell extends Omit<FormXmlCell, 'events'> {
@@ -78,6 +79,8 @@ export interface ICell extends Omit<FormXmlCell, 'events'> {
     setVisible: (visible: boolean) => void;
     setDisabled: (disabled: boolean) => void;
     setLabel: (label: string) => void;
+    getRequiredLevel: () => RequiredLevelEnum;
+    setRequiredLevel: (requiredLevel: RequiredLevelEnum) => void;
 }
 
 export interface IControl extends FormXmlControl {
@@ -113,6 +116,7 @@ export class Cell implements ICell {
 
     private _disabled?: boolean;
     private _customLabel?: string;
+    private _requiredLevel?: RequiredLevelEnum;
 
 
     constructor(cell: FormXmlCell, form: IXrmForm) {
@@ -123,7 +127,7 @@ export class Cell implements ICell {
     }
 
     public getLabel(): string | null {
-        return this._customLabel ?? this.form.getLabel(this.labels);
+        return this._customLabel ?? this.form.getLocalizedLabel(this.labels);
     }
 
     public setVisible(visible: boolean): void {
@@ -149,6 +153,15 @@ export class Cell implements ICell {
     //MDA forms default
     public getDisabled(): boolean {
         return this._disabled ?? false;
+    }
+
+    public getRequiredLevel(): RequiredLevelEnum {
+        return this._requiredLevel ?? RequiredLevelEnum.None;
+    }
+
+    public setRequiredLevel(requiredLevel: RequiredLevelEnum): void {
+        this._requiredLevel = requiredLevel;
+        this.events.dispatchEvent("onRequiredLevelSet", requiredLevel);
     }
 }
 
@@ -188,7 +201,7 @@ export class Section implements ISection {
     }
 
     public getLabel(): string | null {
-        return this._customLabel ?? this.form.getLabel(this.labels);
+        return this._customLabel ?? this.form.getLocalizedLabel(this.labels);
     }
 
     public getCells(): ICell[] {
@@ -291,7 +304,7 @@ export class Tab implements ITab {
     }
 
     public getLabel(): string | null {
-        return this._customLabel ?? this.form.getLabel(this.labels);
+        return this._customLabel ?? this.form.getLocalizedLabel(this.labels);
     }
 
     public setVisible(visible: boolean): void {
@@ -311,6 +324,7 @@ export class Tab implements ITab {
     public setLabel(label: string): void {
         this._customLabel = label;
         this.events.dispatchEvent("onLabelSet", label);
+        this.form.requestRender();
     }
 
     private _registerSectionEvents(sections: ISection[]): void {
@@ -374,9 +388,16 @@ export class Tabs implements ITabs {
     }
 }
 
-export interface IXrmForm extends Omit<FormXml, 'tabs'> {
+export interface IXrmFormEvents {
+    onRenderRequested: () => void;
+}
+
+export interface IXrmForm extends Omit<FormXml, 'tabs' | 'events'> {
     tabs: ITabs;
-    getLabel: (labels?: FormXmlLabels) => string | null;
+    events: IEventEmitter<IXrmFormEvents>;
+    getVisibleTabs: () => ITab[];
+    getLocalizedLabel: (labels?: FormXmlLabels) => string | null;
+    requestRender: () => void;
 }
 
 
@@ -388,7 +409,7 @@ export class XrmForm implements IXrmForm {
     public tabs: ITabs;
     public header?: FormXmlHeaderFooter | undefined;
     public footer?: FormXmlHeaderFooter | undefined;
-    public events?: FormXmlEvents | undefined;
+    public events: IEventEmitter<IXrmFormEvents>;
     public formLibraries?: FormXmlLibraryType | undefined;
     public externaldependencies?: FormXmlExternalDependencies | undefined;
     public formparameters?: FormXmlFormParameters | undefined;
@@ -412,14 +433,22 @@ export class XrmForm implements IXrmForm {
         this._lcid = params.lcid;
         const formXml = parseFormXml(params.formXml);
         Object.assign(this, formXml);
+        this.events = new EventEmitter<IXrmFormEvents>();
         this.tabs = new Tabs(formXml.tabs, this);
     }
 
-    public getLabel(labels?: FormXmlLabels): string | null {
+    public getLocalizedLabel(labels?: FormXmlLabels): string | null {
         const localizedLabel = labels?.label?.find(label => label.languagecode === this._lcid);
         const fallbackLabel = labels?.label?.find(label => label.languagecode === LCID_ENGLISH_US) ?? labels?.label?.[0];
-
         return localizedLabel?.description ?? fallbackLabel?.description ?? null;
+    }
+
+    public getVisibleTabs(): ITab[] {
+        return this.tabs.getVisibleTabs();
+    }
+
+    public requestRender(): void {
+        this.events.dispatchEvent("onRenderRequested");
     }
 
 }
