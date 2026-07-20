@@ -25,6 +25,7 @@ export interface ITabs extends Omit<FormXmlTabs, 'tab'> {
 export interface ITabEvents {
     onSetVisible: (visible: boolean) => void;
     onSectionSetVisible: (sectionId: string, visible: boolean) => void;
+    onLabelSet: (label: string) => void;
 }
 
 export interface ITab extends Omit<FormXmlTab, 'events' | 'columns'> {
@@ -34,6 +35,7 @@ export interface ITab extends Omit<FormXmlTab, 'events' | 'columns'> {
     getLocalizedLabel: () => string | null;
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
+    setLabel: (label: string) => void;
     getColumns: () => IColumn[];
     getVisibleSections: () => ISection[];
     getSections: () => ISection[];
@@ -253,6 +255,8 @@ export class Tab implements ITab {
     public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
     public additionalElements?: FormXmlOpaqueNode[] | undefined;
 
+    private _customLabel?: string;
+
 
     constructor(tab: FormXmlTab, form: IXrmForm) {
         Object.assign(this, tab);
@@ -271,7 +275,7 @@ export class Tab implements ITab {
     }
 
     public getLocalizedLabel(): string | null {
-        return this.form.getLocalizedLabel(this.labels);
+        return this._customLabel ?? this.form.getLocalizedLabel(this.labels);
     }
 
     public setVisible(visible: boolean): void {
@@ -286,6 +290,11 @@ export class Tab implements ITab {
     //MDA forms default
     public getVisible(): boolean {
         return this.visible ?? true;
+    }
+
+    public setLabel(label: string): void {
+        this._customLabel = label;
+        this.events.dispatchEvent("onLabelSet", label);
     }
 
     private _registerSectionEvents(sections: ISection[]): void {
