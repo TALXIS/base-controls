@@ -24,9 +24,10 @@ export interface ITabs extends Omit<FormXmlTabs, 'tab'> {
 
 export interface ITabEvents {
     onSetVisible: (visible: boolean) => void;
+    onSectionSetVisible: (sectionId: string, visible: boolean) => void;
 }
 
-export interface ITab extends Omit<FormXmlTab, 'events'> {
+export interface ITab extends Omit<FormXmlTab, 'events' | 'columns'> {
     id: string;
     form: IXrmForm;
     events: IEventEmitter<ITabEvents>;
@@ -35,6 +36,7 @@ export interface ITab extends Omit<FormXmlTab, 'events'> {
     setVisible: (visible: boolean) => void;
     getColumns: () => IColumn[];
     getVisibleSections: () => ISection[];
+    getSections: () => ISection[];
 
 }
 
@@ -247,26 +249,25 @@ export class Tab implements ITab {
     public labels?: FormXmlLabels | undefined;
     public tabheader?: FormXmlHeaderFooter | undefined;
     public tabfooter?: FormXmlHeaderFooter | undefined;
-    //@ts-ignore - typings
-    public columns: FormXmlColumns;
+    public columns: IColumn[];
     public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
     public additionalElements?: FormXmlOpaqueNode[] | undefined;
 
-    private _columns: IColumn[] = [];
 
     constructor(tab: FormXmlTab, form: IXrmForm) {
         Object.assign(this, tab);
         this.form = form;
         this.id = tab.id ?? tab.name ?? window.crypto.randomUUID();
-        this._columns = tab.columns?.column?.map(col => new Column(col, form)) ?? [];
+        this.columns = tab.columns?.column?.map(col => new Column(col, form)) ?? [];
+        this._registerSectionEvents(this.getSections());
     }
 
     public getColumns(): IColumn[] {
-        return this._columns;
+        return this.columns
     }
 
     public getVisibleSections(): ISection[] {
-        return this._columns.flatMap(column => column.getVisibleSections());
+        return this.getColumns().flatMap(column => column.getVisibleSections());
     }
 
     public getLocalizedLabel(): string | null {
@@ -278,9 +279,21 @@ export class Tab implements ITab {
         this.events.dispatchEvent("onSetVisible", visible);
     }
 
+    public getSections(): ISection[] {
+        return this.getColumns().flatMap(column => column.getSections());
+    }
+
     //MDA forms default
     public getVisible(): boolean {
         return this.visible ?? true;
+    }
+
+    private _registerSectionEvents(sections: ISection[]): void {
+        for (const section of sections) {
+            section.events.addEventListener("onSetVisible", (visible) => {
+                this.events.dispatchEvent("onSectionSetVisible", section.id ?? "", visible);
+            });
+        }
     }
 }
 
