@@ -1,11 +1,13 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import type { ICellProps, ISectionProps } from "../..";
+import type { ISectionContext } from "../..";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 
 
 export const CELL_LABEL_DEFAULT_WIDTH = 115;
+//default in Power Apps
+const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 371;
 
-const getRequirementLevelColor = (theme: ITheme, requiredLevel?: RequiredLevelEnum): string | undefined => {
+const getRequirementLevelColor = (theme: ITheme, requiredLevel: RequiredLevelEnum): string | undefined => {
     switch (requiredLevel) {
         case RequiredLevelEnum.SystemRequired:
         case RequiredLevelEnum.ApplicationRequired: {
@@ -21,22 +23,36 @@ const getRequirementLevelColor = (theme: ITheme, requiredLevel?: RequiredLevelEn
 }
 
 interface ICellStylesParams {
-    cell: ICellProps;
-    cellLabelPosition: "Top" | "Left";
+    requiredLevel: RequiredLevelEnum,
     theme: ITheme;
-    section?: ISectionProps | null,
+    label?: string | null
+    rowspan?: number;
+    section?: ISectionContext | null,
 }
 
-const getLabelWidth = (cell: ICellProps, cellLabelPosition: "Top" | "Left", section?: ISectionProps | null): string | undefined => {
-    if(!cell.label || cellLabelPosition === 'Top') return undefined;
+const getLabelWidth = (params: { section?: ISectionContext | null, cellLabelPosition: "Top" | "Left", cellLabel?: string | null }): string | undefined => {
+    const { section, cellLabelPosition, cellLabel } = params;
+
+    if (!cellLabel || cellLabelPosition === 'Top') return undefined;
     return section?.labelWidth ? `${section.labelWidth}px` : `${CELL_LABEL_DEFAULT_WIDTH}px`;
 }
 
 
+const getCellLabelPosition = (section?: ISectionContext | null) => {
+    const { cellLabelPosition = 'Left', containerWidth, cellLabelCollapseBreakpoint = CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT } = section ?? {};
+
+    if (cellLabelPosition !== 'Left') {
+        return 'Top';
+    }
+
+    return (containerWidth ?? 0) < cellLabelCollapseBreakpoint ? 'Top' : 'Left';
+}
+
+
 export const getCellStyles = (params: ICellStylesParams) => {
-    const { cell, section, theme, cellLabelPosition } = params;
-    const rowspan = cell.rowspan ?? 1;
-    const labelWidth = getLabelWidth(cell, cellLabelPosition, section);
+    const { section, theme, rowspan = 1, requiredLevel } = params;
+    const cellLabelPosition = getCellLabelPosition(section);
+    const labelWidth = getLabelWidth({ section, cellLabelPosition, cellLabel: params.label });
 
     return mergeStyleSets({
         cell: {
@@ -44,8 +60,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
             flexDirection: cellLabelPosition === 'Top' ? 'column' : 'row',
             gap: 5,
             height: '100%',
-            gridRow: `span ${rowspan}`,
-            ...(cell.visible === false ? { display: 'none' } : {}),
+            gridRow: `span ${rowspan}`
         },
         lockIndicator: {
             fontSize: 12,
@@ -56,7 +71,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
         },
         requiredLevelMark: {
             fontSize: 12,
-            color: getRequirementLevelColor(theme, cell.requiredLevel),
+            color: getRequirementLevelColor(theme, requiredLevel),
         },
         recommendedMark: {
             fontSize: 6,

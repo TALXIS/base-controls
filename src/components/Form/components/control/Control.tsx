@@ -1,36 +1,33 @@
-import { IColumn, IField } from "@talxis/client-libraries";
-import { IBinding, NestedControlRenderer } from "../../../NestedControlRenderer";
+import { NestedControlRenderer } from "../../../NestedControlRenderer";
 import { useFieldContext } from "../field/context";
+import { BaseControls } from "../../../../utils";
 
 
 
 export interface IFormControlProps {
-    id?: string;
-    datafieldname?: string;
-    disabled?: boolean;
-    bindings?: {[key: string]: IBinding};
-    column?: IColumn;
-    onOutputChanged?: (outputs: any) => void;
 
 }
 
+
+
 export const Control = (props: IFormControlProps) => {
     const field = useFieldContext();
-    const { id, datafieldname, bindings, disabled = field?.isDisabled(), onOutputChanged } = props;
+    if (!field) throw new Error("Control must be used within a FieldContext.Provider");
+    const disabled = field.isDisabled();
+    const column = field.getColumn();
 
     const onNotifyOutputChanged = (outputs: any) => {
-        onOutputChanged?.(outputs);
-        field?.setValue(outputs.value);
+        field.setValue(outputs.value);
     }
 
-    return <NestedControlRenderer 
+    return <NestedControlRenderer
         context={{} as any}
         parameters={{
-        ControlName: '',
-        ControlStates: {
-            isControlDisabled: disabled
-        }
-    }}
-    onNotifyOutputChanged={onNotifyOutputChanged}  
+            ControlName: BaseControls.GetControlNameForDataType(column.dataType),
+            ControlStates: {
+                isControlDisabled: disabled
+            }
+        }}
+        onNotifyOutputChanged={onNotifyOutputChanged}
     />
 }

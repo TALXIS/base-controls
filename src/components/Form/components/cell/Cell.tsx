@@ -28,32 +28,20 @@ export interface ICellProps {
     children?: React.ReactNode;
 }
 
-//default in Power Apps
-const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 371;
-
-
-const getCellLabelPosition = (section?: ISectionContext | null) => {
-    const { cellLabelPosition = 'Left', containerWidth, cellLabelCollapseBreakpoint = CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT } = section ?? {};
-
-    if (cellLabelPosition !== 'Left') {
-        return 'Top';
-    }
-
-    return (containerWidth ?? 0) < cellLabelCollapseBreakpoint ? 'Top' : 'Left';
-}
-
-
 export const Cell = (props: ICellProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const section = useSectionContext();
     const field = useFieldContext();
     const theme = useTheme();
-    const { label, disabled = field?.isDisabled(), id, requiredLevel = field?.isDisabled() ? RequiredLevelEnum.SystemRequired : RequiredLevelEnum.None } = props;
+    const { label = field?.getColumn().displayName, disabled = field?.isDisabled(), id, requiredLevel = field?.isDisabled() ? RequiredLevelEnum.SystemRequired : RequiredLevelEnum.None } = props;
     const shouldRenderLabelWrapper = label || disabled
     const layoutStyle = Layout.getColumnStyles(props.colspan, section?.columnsPerRow);
-    const cellLabelPosition = getCellLabelPosition(section);
 
-    const styles = getCellStyles({ cell: props, section, cellLabelPosition, theme });
+    const styles = getCellStyles({
+        requiredLevel: requiredLevel,
+        section,
+        theme
+    });
 
     return <div ref={containerRef} className={styles.cell} data-id={`cell-${id}`} style={layoutStyle}>
         {shouldRenderLabelWrapper &&
