@@ -82,6 +82,7 @@ export class Cell implements ICell {
     public control?: FormXmlControl;
     public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
     public additionalElements?: FormXmlOpaqueNode[] | undefined;
+    public events: IEventEmitter<ICellEvents> = new EventEmitter<ICellEvents>();
 
     private _disabled?: boolean;
 
@@ -99,10 +100,12 @@ export class Cell implements ICell {
 
     public setVisible(visible: boolean): void {
         this.visible = visible;
+        this.events.dispatchEvent("onSetVisible", visible);
     }
 
     public setDisabled(disabled: boolean): void {
         this._disabled = disabled;
+        this.events.dispatchEvent("onSetDisabled", disabled);
     }
 
     //MDA forms default
