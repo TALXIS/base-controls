@@ -77,7 +77,7 @@ export const Cell = (props: ICellProps) => {
         }
 
         <div className={styles.control}>
-            <TextField multiline value="" />
+            <TextField value="" />
         </div>
     </div>
 }

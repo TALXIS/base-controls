@@ -1,7 +1,8 @@
 import React from "react";
-import { Column, Section, Tab } from "../../../../../components";
+import { Column, Tab } from "../../../../../components";
 import { ITab } from "../../../Form";
 import { getXrmTabGridTemplateColumns } from "./getXrmTabGridTemplateColumns";
+import { XrmSection } from "../xrm-section";
 
 export const XrmTab = ({ tab, id, label }: { tab: ITab, id: string, label?: string }) => {
     const columns = tab.getColumns();
@@ -13,12 +14,7 @@ export const XrmTab = ({ tab, id, label }: { tab: ITab, id: string, label?: stri
 
     return <Tab onColumnsPerRowChanged={onColumnsPerRowChanged} style={{ gridTemplateColumns: gridTemplateColumnsOverride }} key={tab.id} id={tab.id} label={label}>
         {columns.map((col, i) => <Column key={i}>
-            {col.getSections().map((section, i) => <Section key={i}
-                cellLabelPosition={section.celllabelposition}
-                showLabel={section.showlabel}
-                labelWidth={section.labelwidth}
-                label={section.getLocalizedLabel() ?? undefined} />)
-            }
+            {col.getSections().map((section, i) => <XrmSection key={section.id ?? i} section={section} />)}
         </Column>)}
     </Tab>
 }

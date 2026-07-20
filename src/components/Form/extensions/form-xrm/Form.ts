@@ -31,6 +31,8 @@ export interface ITab extends FormXmlTab {
 export interface ISection extends FormXmlSection {
     getLocalizedLabel: () => string | null;
     getCells: () => ICell[];
+    getVisibleCells: () => ICell[];
+    getCellLabelPosition: () => "Top" | "Left";
 }
 
 export interface IColumn extends FormXmlColumn {
@@ -109,6 +111,17 @@ export class Section implements ISection {
 
     public getCells(): ICell[] {
         return this._cells;
+        return this._cells;
+    }
+
+    //MDA forms default
+    public getVisibleCells(): ICell[] {
+        return this._cells.filter(cell => cell.visible ?? true);
+    }
+    
+    //MDA forms default
+    public getCellLabelPosition(): "Top" | "Left" {
+        return this.celllabelposition ?? "Left";
     }
 }
 
