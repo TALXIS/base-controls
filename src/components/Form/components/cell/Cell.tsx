@@ -33,14 +33,16 @@ export const Cell = (props: ICellProps) => {
     const section = useSectionContext();
     const field = useFieldContext();
     const theme = useTheme();
-    const { label = field?.getColumn().displayName, disabled = field?.isDisabled(), id, requiredLevel = field?.isDisabled() ? RequiredLevelEnum.SystemRequired : RequiredLevelEnum.None } = props;
+    const { label = field?.getColumn().displayName, disabled = field?.isDisabled(), id, requiredLevel = field?.isDisabled() ? RequiredLevelEnum.SystemRequired : RequiredLevelEnum.None, rowspan } = props;
     const shouldRenderLabelWrapper = label || disabled
     const layoutStyle = Layout.getColumnStyles(props.colspan, section?.columnsPerRow);
 
     const styles = getCellStyles({
         requiredLevel: requiredLevel,
         section,
-        theme
+        theme,
+        label,
+        rowspan
     });
 
     return <div ref={containerRef} className={styles.cell} data-id={`cell-${id}`} style={layoutStyle}>
