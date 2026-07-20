@@ -12,14 +12,13 @@ export const XrmForm = () => {
     const form = useMemo(() => new XrmFormClass({ formXml: FORM_XML, lcid: 1029 }), []);
     const tabs = form.tabs;
     const selectedTab = form.tabs.getExpandedTab();
-    const visibleTabs = tabs.tab.filter(t => t.visible !== false);
     const rerender = useRerender();
     
-    useEventEmitter(tabs.events, ['onTabChange'], rerender);
+    useEventEmitter(tabs.events, ['onTabChange', 'onTabSetVisible'], rerender);
 
     return <Form>
         <Tabs expandedTab={selectedTab.id} onChangeTab={(tabId) => tabs.setExpandedTab(tabId)}>
-            {visibleTabs.map(tab => <XrmTab id={tab.id} key={tab.id} tab={tab} label={tab.getLocalizedLabel() ?? undefined} />)}
+            {tabs.getVisibleTabs().map(tab => <XrmTab id={tab.id} key={tab.id} tab={tab} label={tab.getLocalizedLabel() ?? undefined} />)}
         </Tabs>
     </Form>
 }

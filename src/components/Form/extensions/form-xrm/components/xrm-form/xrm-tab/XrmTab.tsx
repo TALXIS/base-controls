@@ -14,7 +14,7 @@ export const XrmTab = ({ tab, id, label }: { tab: ITab, id: string, label?: stri
 
     return <Tab onColumnsPerRowChanged={onColumnsPerRowChanged} style={{ gridTemplateColumns: gridTemplateColumnsOverride }} key={tab.id} id={tab.id} label={label}>
         {columns.map((col, i) => <Column key={i}>
-            {col.getSections().map((section, i) => <XrmSection key={section.id ?? i} section={section} />)}
+            {col.getVisibleSections().map((section, i) => <XrmSection key={section.id ?? i} section={section} />)}
         </Column>)}
     </Tab>
 }

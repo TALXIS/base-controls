@@ -11,32 +11,51 @@ export interface IFormProps {
 
 export interface ITabsEvents {
     onTabChange: (tabId: string) => void;
+    onTabSetVisible: (tabId: string, visible: boolean) => void;
 }
 
-export interface ITabs extends FormXmlTabs {
-    getExpandedTab: () => ITab;
-    setExpandedTab: (tabId: string) => void;
+export interface ITabs extends Omit<FormXmlTabs, 'tab'> {
     tab: ITab[];
     events: IEventEmitter<ITabsEvents>;
+    getExpandedTab: () => ITab;
+    getVisibleTabs: () => ITab[];
+    setExpandedTab: (tabId: string) => void;
 }
 
-export interface ITab extends FormXmlTab {
+export interface ITabEvents {
+    onSetVisible: (visible: boolean) => void;
+}
+
+export interface ITab extends Omit<FormXmlTab, 'events'> {
     id: string;
     form: IXrmForm;
+    events: IEventEmitter<ITabEvents>;
     getLocalizedLabel: () => string | null;
+    getVisible: () => boolean;
+    setVisible: (visible: boolean) => void;
     getColumns: () => IColumn[];
+    getVisibleSections: () => ISection[];
 
 }
 
-export interface ISection extends FormXmlSection {
+export interface ISectionEvents {
+    onSetVisible: (visible: boolean) => void;
+    onCellSetVisible: (cellId: string, visible: boolean) => void;
+}
+
+export interface ISection extends Omit<FormXmlSection, 'events'> {
+    events: IEventEmitter<ISectionEvents>;
     getLocalizedLabel: () => string | null;
     getCells: () => ICell[];
     getVisibleCells: () => ICell[];
+    getVisible: () => boolean;
+    setVisible: (visible: boolean) => void;
     getCellLabelPosition: () => "Top" | "Left";
 }
 
 export interface IColumn extends FormXmlColumn {
     getSections: () => ISection[];
+    getVisibleSections: () => ISection[];
 }
 
 export interface ICellEvents {
@@ -142,6 +161,7 @@ export class Section implements ISection {
     public rows?: FormXmlSection["rows"];
     public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
     public additionalElements?: FormXmlOpaqueNode[] | undefined;
+    public events: IEventEmitter<ISectionEvents> = new EventEmitter<ISectionEvents>();
 
     private _cells: ICell[] = [];
 
@@ -149,6 +169,7 @@ export class Section implements ISection {
         Object.assign(this, section);
         this.form = form;
         this._cells = section.rows?.row?.flatMap(row => row.cell?.map(cell => new Cell(cell, form)) ?? []) ?? [];
+        this._registerCellEvents(this._cells);
     }
 
     public getLocalizedLabel(): string | null {
@@ -162,10 +183,28 @@ export class Section implements ISection {
     public getVisibleCells(): ICell[] {
         return this._cells.filter(cell => cell.getVisible());
     }
-    
+
+    public setVisible(visible: boolean): void {
+        this.visible = visible;
+        this.events.dispatchEvent("onSetVisible", visible);
+    }
+
+    //MDA forms default
+    public getVisible(): boolean {
+        return this.visible ?? true;
+    }
+
     //MDA forms default
     public getCellLabelPosition(): "Top" | "Left" {
         return this.celllabelposition ?? "Left";
+    }
+
+    private _registerCellEvents(cells: ICell[]): void {
+        for (const cell of cells) {
+            cell.events.addEventListener("onSetVisible", (visible) => {
+                this.events.dispatchEvent("onCellSetVisible", cell.id ?? "", visible);
+            });
+        }
     }
 }
 
@@ -183,10 +222,15 @@ export class Column implements IColumn {
     public getSections(): ISection[] {
         return this._sections;
     }
+
+    public getVisibleSections(): ISection[] {
+        return this._sections.filter(section => section.getVisible());
+    }
 }
 
 export class Tab implements ITab {
     public form: IXrmForm;
+    public events: IEventEmitter<ITabEvents> = new EventEmitter<ITabEvents>();
     public group?: string | undefined;
     public name?: string | undefined;
     public verticallayout?: boolean | undefined;
@@ -205,7 +249,6 @@ export class Tab implements ITab {
     public tabfooter?: FormXmlHeaderFooter | undefined;
     //@ts-ignore - typings
     public columns: FormXmlColumns;
-    public events?: FormXmlEvents | undefined;
     public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
     public additionalElements?: FormXmlOpaqueNode[] | undefined;
 
@@ -222,8 +265,22 @@ export class Tab implements ITab {
         return this._columns;
     }
 
+    public getVisibleSections(): ISection[] {
+        return this._columns.flatMap(column => column.getVisibleSections());
+    }
+
     public getLocalizedLabel(): string | null {
         return this.form.getLocalizedLabel(this.labels);
+    }
+
+    public setVisible(visible: boolean): void {
+        this.visible = visible;
+        this.events.dispatchEvent("onSetVisible", visible);
+    }
+
+    //MDA forms default
+    public getVisible(): boolean {
+        return this.visible ?? true;
     }
 }
 
@@ -244,15 +301,23 @@ export class Tabs implements ITabs {
     constructor(tabs: FormXmlTabs, form: IXrmForm) {
         Object.assign(this, tabs);
         this.tab = tabs.tab.map(tab => new Tab(tab, form));
+        this._registerTabEvents(this.tab);
     }
 
     public getExpandedTab(): ITab {
-        const expandedTab = this.tab.find(t => t.expanded) ?? this.tab[0];
-        if (!expandedTab) {
+        const expandedTab = this.tab.find(t => t.expanded && t.getVisible());
+        const fallbackTab = this.getVisibleTabs()[0] ?? this.tab.find(t => t.expanded) ?? this.tab[0];
+        const resolvedTab = expandedTab ?? fallbackTab;
+        if (!resolvedTab) {
             throw new Error("No tabs found in form XML");
         }
-        return expandedTab;
+        return resolvedTab;
     }
+
+    public getVisibleTabs(): ITab[] {
+        return this.tab.filter(tab => tab.getVisible());
+    }
+
     public setExpandedTab(tabId: string): void {
         const newExpandedTab = this.tab.find(t => t.id === tabId);
         if (!newExpandedTab) {
@@ -262,9 +327,18 @@ export class Tabs implements ITabs {
         newExpandedTab.expanded = true;
         this.events.dispatchEvent("onTabChange", tabId);
     }
+
+    private _registerTabEvents(tabs: ITab[]): void {
+        for (const tab of tabs) {
+            tab.events.addEventListener("onSetVisible", (visible) => {
+                this.events.dispatchEvent("onTabSetVisible", tab.id, visible);
+            });
+        }
+    }
 }
 
-export interface IXrmForm extends FormXml {
+export interface IXrmForm extends Omit<FormXml, 'tabs'> {
+    tabs: ITabs;
     getLocalizedLabel: (labels?: FormXmlLabels) => string | null;
 }
 
