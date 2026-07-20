@@ -4,7 +4,6 @@ import { getCellStyles } from "./styles";
 import { ISectionContext, useSectionContext } from "../section";
 import { TextField } from "@talxis/react-components";
 import { Layout } from "../../layout";
-import { RequiredLevelEnum } from "@talxis/client-metadata";
 
 export interface ICellProps {
     id?: string;

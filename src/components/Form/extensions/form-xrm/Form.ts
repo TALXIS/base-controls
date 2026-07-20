@@ -1,5 +1,5 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { parseFormXml, FormXml, FormXmlTabs, FormXmlTab, FormXmlOpaqueNode, FormXmlPrimitiveValue, FormXmlColumns, FormXmlEvents, FormXmlHeaderFooter, FormXmlLabels, FormXmlAncestor, FormXmlClientResources, FormXmlControlDescriptions, FormXmlDisplayConditions, FormXmlExternalDependencies, FormXmlFormParameters, FormXmlHiddenControls, FormXmlLibraryType, FormXmlNavigation, FormXmlOpaqueElement, FormXmlColumn, FormXmlSections, FormXmlSection, FormXmlCell } from "@talxis/client-metadata";
+import { parseFormXml, FormXml, FormXmlTabs, FormXmlTab, FormXmlOpaqueNode, FormXmlPrimitiveValue, FormXmlColumns, FormXmlEvents, FormXmlHeaderFooter, FormXmlLabels, FormXmlAncestor, FormXmlClientResources, FormXmlControlDescriptions, FormXmlDisplayConditions, FormXmlExternalDependencies, FormXmlFormParameters, FormXmlHiddenControls, FormXmlLibraryType, FormXmlNavigation, FormXmlOpaqueElement, FormXmlColumn, FormXmlSections, FormXmlSection, FormXmlCell, FormXmlControl } from "@talxis/client-metadata";
 
 const LCID_ENGLISH_US = 1033;
 
@@ -39,8 +39,28 @@ export interface IColumn extends FormXmlColumn {
     getSections: () => ISection[];
 }
 
-export interface ICell extends FormXmlCell {
+export interface ICellEvents {
+    onSetVisible: (visible: boolean) => void;
+    onSetDisabled: (disabled: boolean) => void;
+}
+
+export interface ICell extends Omit<FormXmlCell, 'events'> {
+    events: IEventEmitter<ICellEvents>;
     getLocalizedLabel: () => string | null;
+    getDisabled: () => boolean;
+    getVisible: () => boolean;
+    setVisible: (visible: boolean) => void;
+    setDisabled: (disabled: boolean) => void;
+}
+
+export interface IControl extends FormXmlControl {
+}
+
+export class Control implements IControl {
+
+    constructor(control: FormXmlControl) {
+        Object.assign(this, control);
+    }
 }
 
 export class Cell implements ICell {
@@ -59,17 +79,40 @@ export class Cell implements ICell {
     public ischartcell?: boolean | undefined;
     public istilecell?: boolean | undefined;
     public labels?: FormXmlLabels | undefined;
-    public control?: FormXmlCell["control"];
+    public control?: FormXmlControl;
     public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
     public additionalElements?: FormXmlOpaqueNode[] | undefined;
+
+    private _disabled?: boolean;
+
 
     constructor(cell: FormXmlCell, form: IXrmForm) {
         Object.assign(this, cell);
         this.form = form;
+        this.control = cell.control ? new Control(cell.control) : undefined;
+        this._disabled = cell.control?.disabled;
     }
 
     public getLocalizedLabel(): string | null {
         return this.form.getLocalizedLabel(this.labels);
+    }
+
+    public setVisible(visible: boolean): void {
+        this.visible = visible;
+    }
+
+    public setDisabled(disabled: boolean): void {
+        this._disabled = disabled;
+    }
+
+    //MDA forms default
+    public getVisible(): boolean {
+        return this.visible ?? true;
+    }
+
+    //MDA forms default
+    public getDisabled(): boolean {
+        return this._disabled ?? false;
     }
 }
 
@@ -111,12 +154,10 @@ export class Section implements ISection {
 
     public getCells(): ICell[] {
         return this._cells;
-        return this._cells;
     }
 
-    //MDA forms default
     public getVisibleCells(): ICell[] {
-        return this._cells.filter(cell => cell.visible ?? true);
+        return this._cells.filter(cell => cell.getVisible());
     }
     
     //MDA forms default

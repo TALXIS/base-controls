@@ -1,6 +1,6 @@
 import { Section } from "../../../../../components";
 import { ISection } from "../../../Form";
-import { XrmCell } from "../../xrm-cell/XrmCell";
+import { XrmCell } from "../xrm-cell/XrmCell";
 
 export interface IXrmSectionProps {
     section: ISection;
