@@ -318,13 +318,12 @@ export class Tabs implements ITabs {
     }
 
     public getExpandedTab(): ITab {
-        const expandedTab = this.tab.find(t => t.expanded && t.getVisible());
-        const fallbackTab = this.getVisibleTabs()[0] ?? this.tab.find(t => t.expanded) ?? this.tab[0];
-        const resolvedTab = expandedTab ?? fallbackTab;
-        if (!resolvedTab) {
-            throw new Error("No tabs found in form XML");
+        const visibleTabs = this.getVisibleTabs();
+        const expandedTab = visibleTabs.find(tab => tab.expanded) ?? visibleTabs[0];
+        if (!expandedTab) {
+            throw new Error("No visible tabs found in form XML");
         }
-        return resolvedTab;
+        return expandedTab;
     }
 
     public getVisibleTabs(): ITab[] {
@@ -332,9 +331,9 @@ export class Tabs implements ITabs {
     }
 
     public setExpandedTab(tabId: string): void {
-        const newExpandedTab = this.tab.find(t => t.id === tabId);
+        const newExpandedTab = this.getVisibleTabs().find(tab => tab.id === tabId);
         if (!newExpandedTab) {
-            throw new Error(`Tab with id ${tabId} not found in form XML`);
+            throw new Error(`Visible tab with id ${tabId} not found in form XML`);
         }
         this.getExpandedTab().expanded = false;
         newExpandedTab.expanded = true;
@@ -342,11 +341,11 @@ export class Tabs implements ITabs {
     }
 
     private _registerTabEvents(tabs: ITab[]): void {
-        for (const tab of tabs) {
+        tabs.map(tab => {
             tab.events.addEventListener("onSetVisible", (visible) => {
                 this.events.dispatchEvent("onTabSetVisible", tab.id, visible);
             });
-        }
+        });
     }
 }
 
