@@ -1,22 +1,18 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import type { ICellProps, ISectionProps } from "../..";
+import { RequiredLevelEnum } from "@talxis/client-metadata";
 
 
 export const CELL_LABEL_DEFAULT_WIDTH = 115;
 
-const getRequirementLevelColor = (theme: ITheme, requiredLevel?: ICellProps['requiredLevel']): string | undefined => {
+const getRequirementLevelColor = (theme: ITheme, requiredLevel?: RequiredLevelEnum): string | undefined => {
     switch (requiredLevel) {
-        case "SystemRequired":
-        case "ApplicationRequired":
-        case "BusinessRequired": {
+        case RequiredLevelEnum.SystemRequired:
+        case RequiredLevelEnum.ApplicationRequired: {
             return theme.semanticColors.errorIcon;
         }
-        case 'Recommended': {
+        case RequiredLevelEnum.Recommended: {
             return theme.palette.blueMid;
-        }
-        case "ApplicationRequired":
-        case "BusinessRequired": {
-            return theme.palette.yellowDark
         }
         default: {
             return undefined;

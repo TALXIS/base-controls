@@ -5,9 +5,12 @@ import { useRerender } from "@talxis/react-components";
 
 export const XrmCell = ({ cell }: { cell: ICell }) => {
     const rerender = useRerender();
-    useEventEmitter(cell.events, ['onSetDisabled', 'onLabelSet'], rerender);
-    
-    return <Cell colspan={cell.colspan} rowspan={cell.rowspan} label={cell.getLabel() ?? undefined} disabled={cell.getDisabled()}>
+    useEventEmitter(cell.events, ['onSetDisabled', 'onLabelSet', 'onRequiredLevelSet'], rerender);
 
-    </Cell>
+    return <Cell
+        colspan={cell.colspan}
+        rowspan={cell.rowspan}
+        requiredLevel={cell.getRequiredLevel()}
+        label={cell.getLabel() ?? undefined}
+        disabled={cell.getDisabled()} />
 }
