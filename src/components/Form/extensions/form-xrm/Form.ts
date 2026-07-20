@@ -131,16 +131,28 @@ export class Cell implements ICell {
     }
 
     public setVisible(visible: boolean): void {
+        if (this.getVisible() === visible) {
+            return;
+        }
+
         this.visible = visible;
         this.events.dispatchEvent("onSetVisible", visible);
     }
 
     public setDisabled(disabled: boolean): void {
+        if (this.getDisabled() === disabled) {
+            return;
+        }
+
         this._disabled = disabled;
         this.events.dispatchEvent("onSetDisabled", disabled);
     }
 
     public setLabel(label: string): void {
+        if (this.getLabel() === label) {
+            return;
+        }
+
         this._customLabel = label;
         this.events.dispatchEvent("onLabelSet", label);
     }
@@ -160,6 +172,10 @@ export class Cell implements ICell {
     }
 
     public setRequiredLevel(requiredLevel: RequiredLevelEnum): void {
+        if (this.getRequiredLevel() === requiredLevel) {
+            return;
+        }
+
         this._requiredLevel = requiredLevel;
         this.events.dispatchEvent("onRequiredLevelSet", requiredLevel);
     }
@@ -213,11 +229,19 @@ export class Section implements ISection {
     }
 
     public setVisible(visible: boolean): void {
+        if (this.getVisible() === visible) {
+            return;
+        }
+
         this.visible = visible;
         this.events.dispatchEvent("onSetVisible", visible);
     }
 
     public setLabel(label: string): void {
+        if (this.getLabel() === label) {
+            return;
+        }
+
         this._customLabel = label;
         this.events.dispatchEvent("onLabelSet", label);
     }
@@ -308,6 +332,10 @@ export class Tab implements ITab {
     }
 
     public setVisible(visible: boolean): void {
+        if (this.getVisible() === visible) {
+            return;
+        }
+
         this.visible = visible;
         this.events.dispatchEvent("onSetVisible", visible);
     }
@@ -322,6 +350,10 @@ export class Tab implements ITab {
     }
 
     public setLabel(label: string): void {
+        if (this.getLabel() === label) {
+            return;
+        }
+
         this._customLabel = label;
         this.events.dispatchEvent("onLabelSet", label);
         this.form.requestRender();
@@ -374,7 +406,12 @@ export class Tabs implements ITabs {
         if (!newExpandedTab) {
             throw new Error(`Visible tab with id ${tabId} not found in form XML`);
         }
-        this.getExpandedTab().expanded = false;
+        const expandedTab = this.getExpandedTab();
+        if (expandedTab.id === tabId) {
+            return;
+        }
+
+        expandedTab.expanded = false;
         newExpandedTab.expanded = true;
         this.events.dispatchEvent("onTabChange", tabId);
     }
