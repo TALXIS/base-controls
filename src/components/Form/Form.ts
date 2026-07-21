@@ -1,18 +1,15 @@
-import { IColumn, IField, IFieldValidationResult, IMemoryProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import {  IField, IFieldValidationResult, IMemoryProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
+import { IFormStrategy, IOnLoadResult } from "./stragegies/interfaces";
 
 export interface IFormParams {
-    data: { [key: string]: any }[];
-    columns: IColumn[];
-    metadata: {
-        PrimaryIdAttribute: string;
-        PrimaryNameAttribute: string;
-    }
+    deps: IOnLoadResult;
+    strategy: IFormStrategy;
 }
 
 export interface IForm {
     isDirty: () => boolean;
-    clearChanges: () => void;
+    isValid: () => boolean;
     save: () => Promise<void>;
     getRecord(): IRecord;
     getField: (fieldName: string) => IField;
@@ -27,7 +24,7 @@ export class Form implements IForm {
     private _dataProvider: IMemoryProvider;
 
     constructor(params: IFormParams) {
-        this._dataProvider = this._createDataProvider(params);
+        this._dataProvider = this._createDataProvider(params.deps);
         this._record = this._dataProvider.getRecords()[0];
     }
 
@@ -57,8 +54,8 @@ export class Form implements IForm {
         return this._dataProvider.isDirty();
     }
 
-    public clearChanges(): void {
-        this._dataProvider.clearChanges();
+    public isValid(): boolean {
+        return this._dataProvider.isValid();
     }
 
     public async save(): Promise<void> {
@@ -88,11 +85,11 @@ export class Form implements IForm {
         }
     }
 
-    private _createDataProvider(params: IFormParams): IMemoryProvider {
-        const { data, columns, metadata } = params;
+    private _createDataProvider(deps: IOnLoadResult): IMemoryProvider {
+        const { data, columns, metadata } = deps;
 
         const provider = new MemoryDataProvider({
-            dataSource: data,
+            dataSource: [data],
             metadata: metadata
         });
 
