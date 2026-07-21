@@ -2,14 +2,15 @@ import { useMemo } from "react";
 import { IOnLoadResult } from "../../stragegies/interfaces";
 import { useControlTheme } from "../../../../hooks";
 import { initializeIcons, ThemeProvider } from "@fluentui/react";
-import { Form as FormModel, IFormParams } from '../../Form';
+import { Form as FormModel } from '../../Form';
 import { FormContext, RecordContext } from "./context";
 import { getFormStyles } from "./styles";
 import { IFormStrategy } from "../../stragegies/interfaces";
 import React from "react";
+import { Skeleton } from "../skeleton";
 
 
-export interface IFormProps extends IFormParams {
+export interface IFormProps {
     strategy: IFormStrategy;
     children?: React.ReactNode;
 }
@@ -48,7 +49,7 @@ export const Form = (props: IFormProps) => {
 
 
     if (!formDeps) {
-        return <div>loading</div>
+        return <Skeleton />
     }
 
     return <FormInternal deps={formDeps} strategy={strategy}>
@@ -64,7 +65,7 @@ export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
         strategy: strategy,
         deps: deps
     }), []);
-    
+
     const record = form.getRecord();
     const id = record.getRecordId();
     const styles = useMemo(() => getFormStyles(), []);

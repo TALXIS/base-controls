@@ -14,13 +14,14 @@ export class MemoryStrategy implements IFormStrategy {
     private _metadata: IOnLoadResult['metadata'];
 
     constructor(params: IMemoryStrategyParams) {
-
         this._data = params.data;
         this._columns = params.columns;
         this._metadata = params.metadata;
     }
 
     public async onLoad(): Promise<IOnLoadResult> {
+        //simulate loading
+        await new Promise(resolve => setTimeout(resolve, 5000));
         return {
             columns: this._columns,
             data: this._data,
