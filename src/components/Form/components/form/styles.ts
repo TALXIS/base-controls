@@ -1,11 +1,16 @@
-import { mergeStyleSets } from "@fluentui/react"
+import { mergeStyleSets } from "@fluentui/react";
+
+export const FLEX_STYLES = {
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+}
 
 export const getFormStyles = () => {
     return mergeStyleSets({
         form: {
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12
+            ...FLEX_STYLES,
+            gap: 12,
         }
     })
 }
