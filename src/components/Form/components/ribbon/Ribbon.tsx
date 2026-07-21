@@ -14,7 +14,7 @@ export interface IFormRibbonProps {
 export const Ribbon = (props: IFormRibbonProps) => {
     const theme = useTheme();
     const form = useFormContext();
-    const record = form.getRecord();
+    const record = form.getRecord()
     const isDirty = form.isDirty();
     const styles = useMemo(() => getRibbonStyles(theme), [theme]);
     const components = { ...RibbonComponents, ...props.components };
@@ -43,8 +43,10 @@ export const Ribbon = (props: IFormRibbonProps) => {
         return [{
             key: 'save',
             text: 'Save',
-            disabled: !isDirty,
-            iconProps: { iconName: 'Save' }
+            iconProps: { iconName: 'Save' },
+            onClick: () => {
+                form.save();
+            }
         }]
     }
 

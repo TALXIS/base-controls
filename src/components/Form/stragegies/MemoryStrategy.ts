@@ -21,7 +21,7 @@ export class MemoryStrategy implements IFormStrategy {
 
     public async onLoad(): Promise<IOnLoadResult> {
         //simulate loading
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        //await new Promise(resolve => setTimeout(resolve, 5000));
         return {
             columns: this._columns,
             data: this._data,

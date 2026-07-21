@@ -22,8 +22,10 @@ export interface IForm {
 export class Form implements IForm {
     private _record: IRecord;
     private _dataProvider: IMemoryProvider;
+    private _strategy: IFormStrategy;
 
     constructor(params: IFormParams) {
+        this._strategy = params.strategy;
         this._dataProvider = this._createDataProvider(params.deps);
         this._record = this._dataProvider.getRecords()[0];
     }
@@ -59,7 +61,9 @@ export class Form implements IForm {
     }
 
     public async save(): Promise<void> {
-        
+        const result = await this._dataProvider.save();
+        if(result.some(r => !r.success)) return;
+        return this._strategy.onSave({});
     }
 
     public static getRequiredLevelEnumFromXrm(requiredLevel?: Xrm.Attributes.RequirementLevel): RequiredLevelEnum {

@@ -12,7 +12,6 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
     return mergeStyleSets({
         section: {
             border: `1px solid ${theme.semanticColors.bodyDivider}`,
-            borderRadius: 8,
             backgroundColor: theme.semanticColors.bodyBackground,
             overflow: "hidden",
             boxShadow: theme.effects.elevation4,

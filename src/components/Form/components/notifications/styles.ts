@@ -1,7 +1,6 @@
 import { ITheme, mergeStyleSets } from '@fluentui/react';
 
 export const getNotificationsStyles = (theme: ITheme, isUnfolded: boolean) => {
-	console.log('isUnfolded', isUnfolded);
 	return mergeStyleSets({
 		notification: {
 			flexDirection: 'row',
@@ -9,7 +8,7 @@ export const getNotificationsStyles = (theme: ITheme, isUnfolded: boolean) => {
 		groupedNotification: {
 			cursor: 'pointer',
 		},
-		innerText: {
+		groupedInnerText: {
 			fontWeight: 600
 		},
 		actions: {

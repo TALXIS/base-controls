@@ -46,7 +46,6 @@ export const getSkeletonStyles = (theme: ITheme) => {
 		section: {
 			display: 'flex',
 			flexDirection: 'column',
-			minHeight: 240,
 			border: `1px solid ${theme.semanticColors.bodyDivider}`,
 			borderRadius: 8,
 			backgroundColor: theme.semanticColors.bodyBackground,
