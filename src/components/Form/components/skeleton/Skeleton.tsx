@@ -13,7 +13,7 @@ export const Skeleton = (props: ISkeletonProps) => {
 	const theme = useTheme();
 	const styles = useMemo(() => getSkeletonStyles(theme), [theme]);
 	const {
-		sectionCount = 5,
+		sectionCount = 6,
 		fieldsPerSection = 5,
 		showNotifications = false,
 		showRibbon = true,

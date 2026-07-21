@@ -7,6 +7,7 @@ export const getSkeletonStyles = (theme: ITheme) => {
 			flexDirection: 'column',
 			gap: 12,
 			padding: 12,
+			containerType: 'inline-size',
 		},
 		tabs: {
 			display: 'flex',
@@ -33,12 +34,19 @@ export const getSkeletonStyles = (theme: ITheme) => {
 		},
 		body: {
 			display: 'grid',
-			gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+			gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
 			gap: 12,
+			'@container (min-width: 768px)': {
+				gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+			},
+			'@container (min-width: 1200px)': {
+				gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+			},
 		},
 		section: {
 			display: 'flex',
 			flexDirection: 'column',
+			minHeight: 240,
 			border: `1px solid ${theme.semanticColors.bodyDivider}`,
 			borderRadius: 8,
 			backgroundColor: theme.semanticColors.bodyBackground,
