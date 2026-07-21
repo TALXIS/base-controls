@@ -6,6 +6,7 @@ import { TextField } from "@talxis/react-components";
 import { Layout } from "../../layout";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { useFieldContext } from "../field/context";
+import { Form } from "../../Form";
 
 export interface ICellProps {
     id?: string;
@@ -33,7 +34,15 @@ export const Cell = (props: ICellProps) => {
     const section = useSectionContext();
     const field = useFieldContext();
     const theme = useTheme();
-    const { label = field?.getColumn().displayName, disabled = field?.isDisabled(), id, requiredLevel = field?.isDisabled() ? RequiredLevelEnum.SystemRequired : RequiredLevelEnum.None, rowspan } = props;
+    
+    const {
+        id,
+        rowspan,
+        label = field?.getColumn().displayName,
+        disabled = field?.isDisabled(),
+        requiredLevel = Form.getRequiredLevelEnumFromXrm(field?.getRequiredLevel())
+    } = props;
+
     const shouldRenderLabelWrapper = label || disabled
     const layoutStyle = Layout.getColumnStyles(props.colspan, section?.columnsPerRow);
 
@@ -69,7 +78,7 @@ export const Cell = (props: ICellProps) => {
         }
 
         <div className={styles.control}>
-            <TextField value="" />
+            {props.children}
         </div>
     </div>
 }

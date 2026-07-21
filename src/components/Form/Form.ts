@@ -11,6 +11,9 @@ export interface IFormParams {
 }
 
 export interface IForm {
+    isDirty: () => boolean;
+    clearChanges: () => void;
+    save: () => Promise<void>;
     getRecord(): IRecord;
     getField: (fieldName: string) => IField;
     setFieldDisabled: (fieldName: string, disabled: boolean) => void;
@@ -50,10 +53,20 @@ export class Form implements IForm {
         this._record.expressions.setValidationExpression(fieldName, () => validationResult);
     }
 
-    public static getRequiredLevelEnumFromString(requiredLevel: string): RequiredLevelEnum {
+    public isDirty(): boolean {
+        return this._dataProvider.isDirty();
+    }
+
+    public clearChanges(): void {
+        this._dataProvider.clearChanges();
+    }
+
+    public async save(): Promise<void> {
+        
+    }
+
+    public static getRequiredLevelEnumFromXrm(requiredLevel?: Xrm.Attributes.RequirementLevel): RequiredLevelEnum {
         switch (requiredLevel) {
-            case 'none':
-                return RequiredLevelEnum.None;
             case 'required':
                 return RequiredLevelEnum.ApplicationRequired;
             case 'recommended':
@@ -63,23 +76,9 @@ export class Form implements IForm {
         }
     }
 
-    public static getRequiredLevelStringFromEnum(requiredLevel: RequiredLevelEnum): string {
+    public static getXrmRequirementLevelFromEnum(requiredLevel?: RequiredLevelEnum): Xrm.Attributes.RequirementLevel {
         switch (requiredLevel) {
-            case RequiredLevelEnum.None:
-                return 'none';
-            case RequiredLevelEnum.ApplicationRequired:
-                return 'required';
-            case RequiredLevelEnum.Recommended:
-                return 'recommended';
-            default:
-                return 'none';
-        }
-    }
-
-    public static getXrmRequirementLevelFromEnum(requiredLevel: RequiredLevelEnum): Xrm.Attributes.RequirementLevel {
-        switch (requiredLevel) {
-            case RequiredLevelEnum.None:
-                return 'none';
+            case RequiredLevelEnum.SystemRequired:
             case RequiredLevelEnum.ApplicationRequired:
                 return 'required';
             case RequiredLevelEnum.Recommended:

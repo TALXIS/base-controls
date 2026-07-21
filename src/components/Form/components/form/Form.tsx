@@ -13,8 +13,24 @@ export interface IFormProps extends IFormParams {
 //TOOD: remove me
 initializeIcons();
 
+const mock = (lcid: number) => {
+    window.Xrm = {
+        Utility: {
+            //@ts-ignore
+            getGlobalContext: () => {
+                return {
+                    userSettings: {
+                        languageId: lcid
+                    }
+                }
+            }
+        }
+    }
+}
+
 export const Form = (props: IFormProps) => {
     const { children, ...rest } = props;
+    mock(1029);
     const form = useMemo(() => new FormModel(rest), []);
     const record = form.getRecord();
     const id = record.getRecordId();
