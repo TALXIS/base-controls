@@ -11,7 +11,7 @@ export interface IFormParams {
 export interface IFormEvents {
     onError: (error: any, message: string) => void;
     onBeforeSave: () => void;
-    onAfterSave: (result: IRecordSaveOperationResult) => void;
+    onAfterSave: (result: IRecordSaveOperationResult, updatedData?: { [key: string]: any }) => void;
 }
 
 export interface IForm {
@@ -19,6 +19,7 @@ export interface IForm {
     saveOperationPerformed: boolean;
     isDirty: () => boolean;
     isValid: () => boolean;
+    getData: () => { [key: string]: any };
     save: () => Promise<void>;
     getRecord(): IRecord;
     getField: (fieldName: string) => IField;
@@ -75,26 +76,31 @@ export class Form implements IForm {
         return this._dataProvider.isValid();
     }
 
+    public getData(): { [key: string]: any } {
+        return this._record.getRawData();
+    }
+
     public async save(): Promise<void> {
         ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 this._saveOperationPerformed = true;
                 this.events.dispatchEvent('onBeforeSave');
-                await new Promise(resolve => setTimeout(resolve, 3000)); //simulate network delay
                 const dirtyFields = this._record.getFields().filter(f => f.isDirty());
                 const result = await this._record.save();
                 //validation failed
                 if (!result.success) {
                     this.events.dispatchEvent('onAfterSave', result);
                 }
+                else {
+                    const rawData = this._record.getRawData();
+                    const changedData = Object.fromEntries(
+                        dirtyFields.map(f => [f.getColumn().name, rawData[f.getColumn().name]])
+                    );
 
-                const rawData = this._record.getRawData();
-                const changedData = Object.fromEntries(
-                    dirtyFields.map(f => [f.getColumn().name, rawData[f.getColumn().name]])
-                );
+                    await this._strategy.onSave(changedData);
+                    this.events.dispatchEvent('onAfterSave', result, changedData);
+                }
 
-                await this._strategy.onSave(changedData);
-                this.events.dispatchEvent('onAfterSave', result);
             },
             onError: (error, message) => {
                 this.events.dispatchEvent('onAfterSave', {

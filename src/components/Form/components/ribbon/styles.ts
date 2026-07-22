@@ -14,6 +14,9 @@ export const getRibbonStyles = (theme: ITheme) => {
         },
         unsavedChangesIcon: {
             color: `${theme.palette.yellowDark} !important`
+        },
+        savedIcon: {
+            color: `${theme.palette.greenDark} !important`
         }
     });
 };

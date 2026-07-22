@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { IOnLoadResult } from "../../stragegies/interfaces";
 import { useControlTheme, useEventEmitter } from "../../../../hooks";
 import { initializeIcons, ThemeProvider } from "@fluentui/react";
-import { Form as FormModel } from '../../Form';
+import { Form as FormModel, IForm, IFormEvents } from '../../Form';
 import { FormContext, RecordContext } from "./context";
 import { getFormStyles } from "./styles";
 import { IFormStrategy } from "../../stragegies/interfaces";
@@ -14,6 +14,9 @@ import { IRecordEvents } from "@talxis/client-libraries";
 
 export interface IFormProps {
     strategy: IFormStrategy;
+    onBeforeSave?: IFormEvents['onBeforeSave'];
+    onAfterSave?: IFormEvents['onAfterSave'];
+    onError?: IFormEvents['onError'];
     onFormReady?: (api: FormModel) => void;
     children?: React.ReactNode;
 }
@@ -70,6 +73,11 @@ export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
         onFormReady?.(instance);
         return instance;
     }, []);
+
+    //propagate these props for easy React consumer access
+    useEventEmitter<IFormEvents>(form.events, 'onAfterSave', props?.onAfterSave ?? (() => { }));
+    useEventEmitter<IFormEvents>(form.events, 'onBeforeSave', props?.onBeforeSave ?? (() => { }));
+    useEventEmitter<IFormEvents>(form.events, 'onError', props?.onError ?? (() => { }));
 
     const record = form.getRecord();
     const id = record.getRecordId();

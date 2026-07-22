@@ -8,6 +8,10 @@ export interface IMemoryStrategyParams {
 }
 
 
+/**
+ * An in-memory form strategy that keeps all data locally without
+ * performing any network requests. When data is saved, it is merged into the original object passed via the constructor.
+ */
 export class MemoryStrategy implements IFormStrategy {
     private _data: {[key: string]: any} = {};
     private _columns: IColumn[] = [];
@@ -19,9 +23,10 @@ export class MemoryStrategy implements IFormStrategy {
         this._metadata = params.metadata;
     }
 
+    /**
+     * Returns the columns, data, and metadata held in memory.
+     */
     public async onLoad(): Promise<IOnLoadResult> {
-        //simulate loading
-        //await new Promise(resolve => setTimeout(resolve, 5000));
         return {
             columns: this._columns,
             data: this._data,
@@ -29,7 +34,12 @@ export class MemoryStrategy implements IFormStrategy {
         };
     }
 
+    /**
+     * Shallow-merges the changed field values into the in-memory data store.
+     * Because `this._data` is the same reference passed via the constructor,
+     * the caller's original object is also updated.
+     */
     public async onSave(data: {[key: string]: any}): Promise<void> {
-        console.log('MemoryStrategy.onSave', data);
+        Object.assign(this._data, data);
     }
 }

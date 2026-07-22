@@ -4,7 +4,7 @@ import { RibbonComponents, type IRibbonComponents } from "./components";
 import { getRibbonStyles } from "./styles";
 import { useFormContext } from "../form/context";
 import { useEventEmitter } from "../../../../hooks";
-import { IRecordEvents } from "@talxis/client-libraries";
+import { IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useRerender, withButtonLoading } from "@talxis/react-components";
 import React from "react";
 
@@ -13,6 +13,8 @@ export interface IFormRibbonProps {
 }
 
 const SaveButton = withButtonLoading(CommandBarButton);
+const SUCCESS_STATE_TIMEOUT = 2000;
+type TSaveButtonState = 'save' | 'saving' | 'saved';
 
 //TODO: in future, ribbon base component that will only handle the UI (like when action is pending, it might already be somwhere, but coupled to some model or something)
 //various wrappers will then leverage this base commponent
@@ -24,12 +26,44 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const isDirty = form.isDirty();
     const styles = useMemo(() => getRibbonStyles(theme), [theme]);
     const components = { ...RibbonComponents, ...props.components };
-    const [isSaving, setIsSaving] = React.useState(false);
+    const [saveButtonState, setSaveButtonState] = React.useState<TSaveButtonState>('save');
+    const successStateTimeout = React.useRef<number | null>(null);
     const rerender = useRerender();
 
     useEventEmitter<IRecordEvents>(record, ['onFieldValueChanged'], rerender);
-    useEventEmitter(form.events, ['onBeforeSave'], () => setIsSaving(true));
-    useEventEmitter(form.events, ['onAfterSave'], () => setIsSaving(false));
+
+    const clearSuccessStateTimeout = () => {
+        if (successStateTimeout.current === null) {
+            return;
+        }
+
+        window.clearTimeout(successStateTimeout.current);
+        successStateTimeout.current = null;
+    };
+
+    React.useEffect(() => {
+        return () => clearSuccessStateTimeout();
+    }, []);
+
+    useEventEmitter(form.events, ['onBeforeSave'], () => {
+        clearSuccessStateTimeout();
+        setSaveButtonState('saving');
+    });
+
+    useEventEmitter(form.events, ['onAfterSave'], (result: IRecordSaveOperationResult) => {
+        clearSuccessStateTimeout();
+
+        if (!result.success) {
+            setSaveButtonState('save');
+            return;
+        }
+
+        setSaveButtonState('saved');
+        successStateTimeout.current = window.setTimeout(() => {
+            setSaveButtonState('save');
+            successStateTimeout.current = null;
+        }, SUCCESS_STATE_TIMEOUT);
+    });
 
     const getFarItems = (): ICommandBarItemProps[] => {
         return isDirty ? [{
@@ -52,19 +86,39 @@ export const Ribbon = (props: IFormRibbonProps) => {
         return [{
             key: 'save',
             commandBarButtonAs: (props) => <SaveButton
-                text={'Save'}
-                isLoading={isSaving}
+                text={getSaveText()}
+                isLoading={saveButtonState === 'saving'}
                 onClick={() => form.save()}
-                iconProps={{ iconName: 'Save' }}
+                iconProps={getSaveIconProps()}
             />
         }]
     }
 
     const getSaveText = () => {
-        if (isSaving) {
+        if (saveButtonState === 'saving') {
             return 'Saving...';
         }
-        
+
+        if (saveButtonState === 'saved') {
+            return 'Saved!';
+        }
+
+        return 'Save';
+    }
+
+    const getSaveIconProps = () => {
+        if (saveButtonState === 'saved') {
+            return {
+                iconName: 'SkypeCircleCheck',
+                styles: {
+                    root: styles.savedIcon
+                }
+            };
+        }
+
+        return {
+            iconName: 'Save'
+        };
     }
 
     return components.onRenderCommandBar({
