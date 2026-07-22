@@ -14,6 +14,7 @@ import { IRecordEvents } from "@talxis/client-libraries";
 
 export interface IFormProps {
     strategy: IFormStrategy;
+    onFormReady?: (api: FormModel) => void;
     children?: React.ReactNode;
 }
 
@@ -37,7 +38,7 @@ const mock = (lcid: number) => {
 
 export const Form = (props: IFormProps) => {
     mock(1029);
-    const { strategy, children } = props;
+    const { strategy } = props;
     const [formDeps, setFormDeps] = React.useState<IOnLoadResult | null>(null);
 
     const onLoad = async () => {
@@ -54,19 +55,21 @@ export const Form = (props: IFormProps) => {
         return <Skeleton />
     }
 
-    return <FormInternal deps={formDeps} strategy={strategy}>
-        {children}
-    </FormInternal>
+    return <FormInternal {...props} deps={formDeps} />
 }
 
 
 export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
-    const { children, strategy, deps } = props;
+    const { children, strategy, deps, onFormReady } = props;
 
-    const form = useMemo(() => new FormModel({
-        strategy: strategy,
-        deps: deps
-    }), []);
+    const form = useMemo(() => {
+        const instance = new FormModel({
+            strategy: strategy,
+            deps: deps
+        });
+        onFormReady?.(instance);
+        return instance;
+    }, []);
 
     const record = form.getRecord();
     const id = record.getRecordId();

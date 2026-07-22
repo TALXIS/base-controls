@@ -1,13 +1,19 @@
-import { IField, IFieldValidationResult, IMemoryProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IMemoryProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { IFormStrategy, IOnLoadResult } from "./stragegies/interfaces";
+import { ErrorHelper } from "../../utils";
 
 export interface IFormParams {
     deps: IOnLoadResult;
     strategy: IFormStrategy;
 }
 
+export interface IFormEvents {
+    onError: (error: any, message: string) => void;
+}
+
 export interface IForm {
+    events: IEventEmitter<IFormEvents>;
     isDirty: () => boolean;
     isValid: () => boolean;
     save: () => Promise<void>;
@@ -15,11 +21,12 @@ export interface IForm {
     getField: (fieldName: string) => IField;
     setFieldDisabled: (fieldName: string, disabled: boolean) => void;
     setFieldRequiredLevel: (fieldName: string, requiredLevel: RequiredLevelEnum) => void;
-    setFieldValidationResult: (fieldName: string, validationResult: IFieldValidationResult) => void;
+    setFieldValid: (fieldName: string, validation: IFieldValidationResult) => void;
 }
 
 
 export class Form implements IForm {
+    public events: IEventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _record: IRecord;
     private _dataProvider: IMemoryProvider;
     private _strategy: IFormStrategy;
@@ -48,8 +55,8 @@ export class Form implements IForm {
         });
     }
 
-    public setFieldValidationResult(fieldName: string, validationResult: IFieldValidationResult): void {
-        this._record.expressions.setValidationExpression(fieldName, () => validationResult);
+    public setFieldValid(fieldName: string, validation: IFieldValidationResult): void {
+        this._record.expressions.setValidationExpression(fieldName, () => validation);
     }
 
     public isDirty(): boolean {
@@ -61,15 +68,20 @@ export class Form implements IForm {
     }
 
     public async save(): Promise<void> {
-        const dirtyFields = this._record.getFields().filter(f => f.isDirty());
-        const result = await this._record.save();
-        //validation failed
-        if (result.success) return;
-        const rawData = this._record.getRawData();
-        const changedData = Object.fromEntries(
-            dirtyFields.map(f => [f.getColumn().name, rawData[f.getColumn().name]])
-        );
-        return this._strategy.onSave(changedData);
+        ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                const dirtyFields = this._record.getFields().filter(f => f.isDirty());
+                const result = await this._record.save();
+                //validation failed
+                if (result.success) return;
+                const rawData = this._record.getRawData();
+                const changedData = Object.fromEntries(
+                    dirtyFields.map(f => [f.getColumn().name, rawData[f.getColumn().name]])
+                );
+                return this._strategy.onSave(changedData);
+            },
+            onError: (error, message) => this.events.dispatchEvent('onError', error, message)
+        })
     }
 
     public static getRequiredLevelEnumFromXrm(requiredLevel?: Xrm.Attributes.RequirementLevel): RequiredLevelEnum {

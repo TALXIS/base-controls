@@ -1,13 +1,13 @@
-import { Formatting, IColumn, IRecordEvents, Sanitizer } from "@talxis/client-libraries";
+import { Formatting, IColumn, IFieldValidationResult, IRecordEvents, Sanitizer } from "@talxis/client-libraries";
 import { NestedControlRenderer } from "../../../NestedControlRenderer";
 import { useFieldContext } from "../field/context";
 import { BaseControls } from "../../../../utils";
-import { useRerender } from "@talxis/react-components";
-import { useEventEmitter } from "../../../../hooks";
 import { getControlStyles } from "./styles";
 import { useMemo } from "react";
 import { MessageBar, MessageBarType } from "@fluentui/react";
 import { useFormContext } from "../form/context";
+import React from "react";
+import { useEventEmitter } from "../../../../hooks";
 
 
 
@@ -95,15 +95,16 @@ const createMockPcfContext = (
 }
 
 export const Control = (props: IFormControlProps) => {
-    const form = useFormContext();
     const field = useFieldContext();
     const record = field?.getRecord();
     if (!field || !record) throw new Error("Control must be used within a FieldContext.Provider");
     const disabled = field.isDisabled();
     const column = field.getColumn();
     const context = createMockPcfContext();
-    const validationResult = form.isDirty() ? field.isValid() : undefined;
+    const [validationResult, setValidationResult] = React.useState<IFieldValidationResult | null>(null);
     const styles = useMemo(() => getControlStyles(), []);
+
+    useEventEmitter<IRecordEvents>(record, 'onAfterSaved', () => setValidationResult(field.isValid()));
 
 
     const onNotifyOutputChanged = (outputs: any) => {
