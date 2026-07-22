@@ -1,4 +1,4 @@
-import {  IField, IFieldValidationResult, IMemoryProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { IField, IFieldValidationResult, IMemoryProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { IFormStrategy, IOnLoadResult } from "./stragegies/interfaces";
 
@@ -61,9 +61,15 @@ export class Form implements IForm {
     }
 
     public async save(): Promise<void> {
-        const result = await this._dataProvider.save();
-        if(result.some(r => !r.success)) return;
-        return this._strategy.onSave({});
+        const dirtyFields = this._record.getFields().filter(f => f.isDirty());
+        const result = await this._record.save();
+        //validation failed
+        if (result.success) return;
+        const rawData = this._record.getRawData();
+        const changedData = Object.fromEntries(
+            dirtyFields.map(f => [f.getColumn().name, rawData[f.getColumn().name]])
+        );
+        return this._strategy.onSave(changedData);
     }
 
     public static getRequiredLevelEnumFromXrm(requiredLevel?: Xrm.Attributes.RequirementLevel): RequiredLevelEnum {

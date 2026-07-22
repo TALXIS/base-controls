@@ -20,7 +20,7 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const components = { ...RibbonComponents, ...props.components };
     const rerender = useRerender();
 
-    useEventEmitter<IRecordEvents>(record, ['onFieldValueChanged'], rerender);
+    useEventEmitter<IRecordEvents>(record, ['onFieldValueChanged', 'onAfterSaved'], rerender);
 
     const getFarItems = (): ICommandBarItemProps[] => {
         return isDirty ? [{

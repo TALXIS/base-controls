@@ -102,15 +102,9 @@ export const Control = (props: IFormControlProps) => {
     const disabled = field.isDisabled();
     const column = field.getColumn();
     const context = createMockPcfContext();
-    const rerender = useRerender();
     const validationResult = form.isDirty() ? field.isValid() : undefined;
     const styles = useMemo(() => getControlStyles(), []);
 
-    useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', (columnName: string) => {
-        if (columnName === column.name) {
-            rerender();
-        }
-    });
 
     const onNotifyOutputChanged = (outputs: any) => {
         field.setValue(outputs.value);

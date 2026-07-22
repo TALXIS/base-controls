@@ -30,6 +30,6 @@ export class MemoryStrategy implements IFormStrategy {
     }
 
     public async onSave(data: {[key: string]: any}): Promise<void> {
-        throw new Error('Not implemented');
+        console.log('MemoryStrategy.onSave', data);
     }
 }

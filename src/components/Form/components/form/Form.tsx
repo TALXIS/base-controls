@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { IOnLoadResult } from "../../stragegies/interfaces";
-import { useControlTheme } from "../../../../hooks";
+import { useControlTheme, useEventEmitter } from "../../../../hooks";
 import { initializeIcons, ThemeProvider } from "@fluentui/react";
 import { Form as FormModel } from '../../Form';
 import { FormContext, RecordContext } from "./context";
@@ -8,6 +8,8 @@ import { getFormStyles } from "./styles";
 import { IFormStrategy } from "../../stragegies/interfaces";
 import React from "react";
 import { Skeleton } from "../skeleton";
+import { useRerender } from "@talxis/react-components";
+import { IRecordEvents } from "@talxis/client-libraries";
 
 
 export interface IFormProps {
