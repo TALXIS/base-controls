@@ -88,10 +88,9 @@ export const Ribbon = (props: IFormRibbonProps) => {
             key: 'save',
             commandBarButtonAs: (props) => <SaveButton
                 text={getSaveText()}
+                //TODO: investigate why onClick is getting canceled
+                onMouseUp={() => form.save()}
                 isLoading={saveButtonState === 'saving'}
-                onClick={() => {
-                     form.save();
-                }}
                 iconProps={getSaveIconProps()}
             />
         }]

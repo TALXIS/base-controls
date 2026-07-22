@@ -1,4 +1,3 @@
-import React from "react";
 import { useRerender } from "@talxis/react-components";
 import { Section } from "../../../../../components";
 import { ISection } from "../../../Form";
@@ -20,6 +19,8 @@ export const XrmSection = (props: IXrmSectionProps) => {
         labelWidth={section.labelwidth}
         label={section.getLabel() ?? undefined}
     >
-        {section.getVisibleCells().map((cell, index) => <XrmCell key={cell.id ?? index} cell={cell} />)}
+        {section.getVisibleCells().map((cell, index) => {
+            return <XrmCell key={cell.id ?? index} cell={cell} />
+        })}
     </Section>;
 };

@@ -1,8 +1,7 @@
 import * as React from "react";
 import { Icon, Label, TooltipHost, useTheme } from "@fluentui/react";
 import { getCellStyles } from "./styles";
-import { ISectionContext, useSectionContext } from "../section";
-import { TextField } from "@talxis/react-components";
+import { useSectionContext } from "../section";
 import { Layout } from "../../layout";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { useFieldContext } from "../field/context";
