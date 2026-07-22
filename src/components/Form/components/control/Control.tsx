@@ -8,6 +8,7 @@ import { MessageBar, MessageBarType } from "@fluentui/react";
 import { useFormContext } from "../form/context";
 import React from "react";
 import { useEventEmitter } from "../../../../hooks";
+import { useField } from "../field";
 
 
 
@@ -96,7 +97,8 @@ const createMockPcfContext = (
 
 export const Control = (props: IFormControlProps) => {
     const form = useFormContext();
-    const field = useFieldContext();
+    const fieldName = useFieldContext();
+    const field = useField(fieldName)
     const record = field?.getRecord();
     if (!field || !record) throw new Error("Control must be used within a FieldContext.Provider");
     const disabled = field.isDisabled();

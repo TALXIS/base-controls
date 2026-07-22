@@ -1,8 +1,7 @@
 import React from "react";
-import { IField } from "@talxis/client-libraries";
 
-export const FieldContext = React.createContext<IField | null>(null);
+export const FieldContext = React.createContext<string | null>(null);
 
-export const useFieldContext = (): IField | null => {
+export const useFieldContext = (): string | null => {
     return React.useContext(FieldContext);
 }

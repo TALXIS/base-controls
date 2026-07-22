@@ -9,6 +9,7 @@ export interface IFormParams {
 }
 
 export interface IFormEvents {
+    onFieldValueChanged: (fieldName: string, newValue: any) => void;
     onError: (error: any, message: string) => void;
     onBeforeSave: () => void;
     onAfterSave: (result: IRecordSaveOperationResult, updatedData?: { [key: string]: any }) => void;
@@ -17,6 +18,7 @@ export interface IFormEvents {
 export interface IForm {
     events: IEventEmitter<IFormEvents>;
     saveOperationPerformed: boolean;
+    getValidationSummary: () => IValidation[];
     isDirty: () => boolean;
     isValid: () => boolean;
     getData: () => { [key: string]: any };
@@ -28,6 +30,10 @@ export interface IForm {
     setFieldValid: (fieldName: string, validation: IFieldValidationResult) => void;
 }
 
+export interface IValidation extends IFieldValidationResult {
+    fieldName: string;
+}
+
 
 export class Form implements IForm {
     public readonly events: IEventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
@@ -35,11 +41,13 @@ export class Form implements IForm {
     private _dataProvider: IMemoryProvider;
     private _strategy: IFormStrategy;
     private _saveOperationPerformed: boolean = false;
+    private _validationSummary: IValidation[] = [];
 
     constructor(params: IFormParams) {
         this._strategy = params.strategy;
         this._dataProvider = this._createDataProvider(params.deps);
         this._record = this._dataProvider.getRecords()[0];
+        this._registerEventHandlers();
     }
 
     public get saveOperationPerformed(): boolean {
@@ -80,10 +88,13 @@ export class Form implements IForm {
         return this._record.getRawData();
     }
 
+    public getValidationSummary(): IValidation[] {
+        return this._validationSummary;
+    }
+
     public async save(): Promise<void> {
         ErrorHelper.executeWithErrorHandling({
             operation: async () => {
-                this._saveOperationPerformed = true;
                 this.events.dispatchEvent('onBeforeSave');
                 const dirtyFields = this._record.getFields().filter(f => f.isDirty());
                 const result = await this._record.save();
@@ -103,15 +114,6 @@ export class Form implements IForm {
 
             },
             onError: (error, message) => {
-                this.events.dispatchEvent('onAfterSave', {
-                    fields: [],
-                    recordId: this._record.getRecordId(),
-                    success: false,
-                    errors: [{
-                        message: message,
-                    }]
-
-                })
                 this.events.dispatchEvent('onError', error, message)
             }
         })
@@ -151,5 +153,24 @@ export class Form implements IForm {
         provider.setColumns(columns);
         provider.refreshSync();
         return provider;
+    }
+
+    private _registerEventHandlers(): void {
+        this._record.addEventListener('onBeforeSaved', () => {
+            this._saveOperationPerformed = true;
+            this.events.dispatchEvent('onBeforeSave');
+        })
+        this._record.addEventListener('onAfterSaved', (result) => this._createValidationSummary(result));
+        this._record.addEventListener('onFieldValueChanged', (fieldName, newValue) => this.events.dispatchEvent('onFieldValueChanged', fieldName, newValue));
+    }
+
+    private _createValidationSummary(saveOperationResult: IRecordSaveOperationResult) {
+        this._validationSummary = saveOperationResult.errors?.map(error => {
+            return {
+                fieldName: error.fieldName!,
+                error: true,
+                errorMessage: error.message
+            }
+        }) ?? [];
     }
 }

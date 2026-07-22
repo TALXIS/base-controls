@@ -77,7 +77,10 @@ export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
     //propagate these props for easy React consumer access
     useEventEmitter<IFormEvents>(form.events, 'onAfterSave', props?.onAfterSave ?? (() => { }));
     useEventEmitter<IFormEvents>(form.events, 'onBeforeSave', props?.onBeforeSave ?? (() => { }));
-    useEventEmitter<IFormEvents>(form.events, 'onError', props?.onError ?? (() => { }));
+    useEventEmitter<IFormEvents>(form.events, 'onError', (error: any, message: string) => {
+        props?.onError?.(error, message);
+        alert(message);
+    });
 
     const record = form.getRecord();
     const id = record.getRecordId();

@@ -43,7 +43,6 @@ export interface ISectionProps {
 
 export const Section = (props: ISectionProps) => {
     const { children, showBar = true, showLabel = true, label, name, id } = props;
-    const cells = React.Children.toArray(children).filter(child => React.isValidElement(child));
     const isHeaderVisible = showBar && showLabel && label;
 
     const bodyContainerRef = React.useRef<HTMLDivElement>(null);

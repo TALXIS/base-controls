@@ -4,7 +4,7 @@ import { RibbonComponents, type IRibbonComponents } from "./components";
 import { getRibbonStyles } from "./styles";
 import { useFormContext } from "../form/context";
 import { useEventEmitter } from "../../../../hooks";
-import { IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useRerender, withButtonLoading } from "@talxis/react-components";
 import React from "react";
 
@@ -30,7 +30,8 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const successStateTimeout = React.useRef<number | null>(null);
     const rerender = useRerender();
 
-    useEventEmitter<IRecordEvents>(record, ['onFieldValueChanged'], rerender);
+    useEventEmitter(record, ['onFieldValueChanged'], rerender);
+    useEventEmitter(form.events, 'onError', () => setSaveButtonState('save'));
 
     const clearSuccessStateTimeout = () => {
         if (successStateTimeout.current === null) {
@@ -88,7 +89,9 @@ export const Ribbon = (props: IFormRibbonProps) => {
             commandBarButtonAs: (props) => <SaveButton
                 text={getSaveText()}
                 isLoading={saveButtonState === 'saving'}
-                onClick={() => form.save()}
+                onClick={() => {
+                     form.save();
+                }}
                 iconProps={getSaveIconProps()}
             />
         }]

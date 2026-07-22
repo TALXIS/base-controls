@@ -1,38 +1,28 @@
-import React from 'react';
 import { useFormContext } from '../form/context';
-import { useEventEmitter } from '../../../../hooks';
-import { IRecord, IRecordSaveOperationResult } from '@talxis/client-libraries';
+import { IRecord } from '@talxis/client-libraries';
 import { INotificationsProps, Notifications as NotificationsBase } from '../../../Notifications';
+import { useValidationSummary } from '../form';
+import { IValidation } from '../../Form';
 
-const onAfterSaved = (record: IRecord, result: IRecordSaveOperationResult) => {
-	const errors = result.errors ?? [];
-	const notifications = errors.map(error => {
-		const column = record.getField(error.fieldName!).getColumn();
+const getValidationNotifications = (record: IRecord, validationSummary: IValidation[]) => {
+	return validationSummary.map(validation => {
+		const column = record.getField(validation.fieldName).getColumn();
 		const displayName = column.displayName ?? column.name;
-		const message = `<strong>${displayName}</strong>: ${error.message}`;
+		const message = `<strong>${displayName}</strong>: ${validation.errorMessage}`;
 		return {
 			text: message,
-			level: 'ERROR' as const
+			level: validation.error ? 'ERROR' as const : 'WARNING' as const
 		}
 	});
-	return notifications;
 }
 
 export const Notifications = (props: INotificationsProps) => {
 	const form = useFormContext();
 	const record = form.getRecord();
 	const { messages = [] } = props;
-	const [globalErrorNotifications, setGlobalErrorNotifications] = React.useState<INotificationsProps['messages']>([]);
-	const [validationNotifications, setValidationNotifications] = React.useState<INotificationsProps['messages']>([]);
+	const validationSummary = useValidationSummary();
+	const validationNotifications = getValidationNotifications(record, validationSummary);
 
 
-	useEventEmitter(form.events, 'onAfterSave', (result: IRecordSaveOperationResult) => {
-		setValidationNotifications(onAfterSaved(record, result));
-		setGlobalErrorNotifications([]);
-	});
-	useEventEmitter(form.events, 'onError', (error, message) => {
-		setGlobalErrorNotifications([{ text: message, level: 'ERROR' as const }]);
-	});
-
-	return <NotificationsBase {...props} messages={[...messages, ...validationNotifications ?? [], ...globalErrorNotifications ?? []]} />;
+	return <NotificationsBase {...props} messages={[...messages, ...validationNotifications ?? []]} />;
 };

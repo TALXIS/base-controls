@@ -7,6 +7,7 @@ import { Layout } from "../../layout";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { useFieldContext } from "../field/context";
 import { Form } from "../../Form";
+import { useField } from "../field";
 
 export interface ICellProps {
     id?: string;
@@ -32,9 +33,10 @@ export interface ICellProps {
 export const Cell = (props: ICellProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const section = useSectionContext();
-    const field = useFieldContext();
+    const fieldName = useFieldContext();
+    const field = useField(fieldName);
     const theme = useTheme();
-    
+
     const {
         id,
         rowspan,
