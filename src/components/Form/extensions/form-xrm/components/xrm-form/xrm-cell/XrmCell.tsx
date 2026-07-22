@@ -1,5 +1,6 @@
 import { useEventEmitter } from "../../../../../../../hooks";
 import { Cell, Field } from "../../../../../components"
+import { Control } from "../../../../../components/control";
 import { ICell } from "../../../Form";
 import { useRerender } from "@talxis/react-components";
 
@@ -11,7 +12,11 @@ export const XrmCell = ({ cell }: { cell: ICell }) => {
         <Cell
             colspan={cell.colspan}
             rowspan={cell.rowspan}
-            label={cell.getLabel() ?? undefined} />
+            label={cell.getLabel() ?? undefined}>
+                {cell.control?.datafieldname && 
+                                    <Control />
+                }
+            </Cell>
     </Field>
 
 }

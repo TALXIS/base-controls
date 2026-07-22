@@ -70,9 +70,13 @@ export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
             strategy: strategy,
             deps: deps
         });
-        onFormReady?.(instance);
         return instance;
     }, []);
+
+    const record = form.getRecord();
+    const id = record.getRecordId();
+    const styles = useMemo(() => getFormStyles(), []);
+    const theme = useControlTheme();
 
     //propagate these props for easy React consumer access
     useEventEmitter<IFormEvents>(form.events, 'onAfterSave', props?.onAfterSave ?? (() => { }));
@@ -82,10 +86,10 @@ export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
         alert(message);
     });
 
-    const record = form.getRecord();
-    const id = record.getRecordId();
-    const styles = useMemo(() => getFormStyles(), []);
-    const theme = useControlTheme();
+    React.useEffect(() => {
+        onFormReady?.(form);
+    }, []);
+
 
     return <FormContext.Provider value={form}>
         <RecordContext.Provider value={record}>
