@@ -95,16 +95,15 @@ const createMockPcfContext = (
 }
 
 export const Control = (props: IFormControlProps) => {
+    const form = useFormContext();
     const field = useFieldContext();
     const record = field?.getRecord();
     if (!field || !record) throw new Error("Control must be used within a FieldContext.Provider");
     const disabled = field.isDisabled();
     const column = field.getColumn();
     const context = createMockPcfContext();
-    const [validationResult, setValidationResult] = React.useState<IFieldValidationResult | null>(null);
+    const validationResult = form.saveOperationPerformed ? field.isValid() : null;
     const styles = useMemo(() => getControlStyles(), []);
-
-    useEventEmitter<IRecordEvents>(record, 'onAfterSaved', () => setValidationResult(field.isValid()));
 
 
     const onNotifyOutputChanged = (outputs: any) => {

@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import type { ISectionContext } from "../..";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
+import { ISectionContext } from "../section";
 
 
 export const CELL_LABEL_DEFAULT_WIDTH = 115;

@@ -6,5 +6,5 @@ export * from './cell';
 export * from './field';
 export * from './form';
 export * from './ribbon';
-export * from './notifications';
 export * from './skeleton';
+export * from './notifications';

@@ -18,7 +18,7 @@ export const Field = (props: IFieldProps) => {
     const column = field.getColumn();
     const rerender = useRerender();
 
-    useEventEmitter<IRecordEvents>(record, 'onAfterSaved', rerender)
+    useEventEmitter(form.events, 'onAfterSave', rerender);
 
     useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', (columnName: string) => {
         if (columnName === column.name) {

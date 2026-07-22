@@ -1,5 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import type { ISectionProps } from "../..";
+import { ISectionProps } from "./Section";
 
 interface ISectionStyleParams {
     section: ISectionProps;

@@ -8,6 +8,7 @@ export * from './GridCellRenderer';
 export * from './Lookup';
 export * from './MultiSelectOptionSet';
 export * from './NestedControlRenderer';
+export * from './Notifications';
 export * from './OptionSet';
 export * from './TextField';
 export * from './TwoOptions';

@@ -1,4 +1,4 @@
-import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IMemoryProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IMemoryProvider, IRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { IFormStrategy, IOnLoadResult } from "./stragegies/interfaces";
 import { ErrorHelper } from "../../utils";
@@ -10,10 +10,13 @@ export interface IFormParams {
 
 export interface IFormEvents {
     onError: (error: any, message: string) => void;
+    onBeforeSave: () => void;
+    onAfterSave: (result: IRecordSaveOperationResult) => void;
 }
 
 export interface IForm {
     events: IEventEmitter<IFormEvents>;
+    saveOperationPerformed: boolean;
     isDirty: () => boolean;
     isValid: () => boolean;
     save: () => Promise<void>;
@@ -26,15 +29,20 @@ export interface IForm {
 
 
 export class Form implements IForm {
-    public events: IEventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
+    public readonly events: IEventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _record: IRecord;
     private _dataProvider: IMemoryProvider;
     private _strategy: IFormStrategy;
+    private _saveOperationPerformed: boolean = false;
 
     constructor(params: IFormParams) {
         this._strategy = params.strategy;
         this._dataProvider = this._createDataProvider(params.deps);
         this._record = this._dataProvider.getRecords()[0];
+    }
+
+    public get saveOperationPerformed(): boolean {
+        return this._saveOperationPerformed;
     }
 
     public getRecord(): IRecord {
@@ -70,17 +78,36 @@ export class Form implements IForm {
     public async save(): Promise<void> {
         ErrorHelper.executeWithErrorHandling({
             operation: async () => {
+                this._saveOperationPerformed = true;
+                this.events.dispatchEvent('onBeforeSave');
+                await new Promise(resolve => setTimeout(resolve, 3000)); //simulate network delay
                 const dirtyFields = this._record.getFields().filter(f => f.isDirty());
                 const result = await this._record.save();
                 //validation failed
-                if (result.success) return;
+                if (!result.success) {
+                    this.events.dispatchEvent('onAfterSave', result);
+                }
+
                 const rawData = this._record.getRawData();
                 const changedData = Object.fromEntries(
                     dirtyFields.map(f => [f.getColumn().name, rawData[f.getColumn().name]])
                 );
-                return this._strategy.onSave(changedData);
+
+                await this._strategy.onSave(changedData);
+                this.events.dispatchEvent('onAfterSave', result);
             },
-            onError: (error, message) => this.events.dispatchEvent('onError', error, message)
+            onError: (error, message) => {
+                this.events.dispatchEvent('onAfterSave', {
+                    fields: [],
+                    recordId: this._record.getRecordId(),
+                    success: false,
+                    errors: [{
+                        message: message,
+                    }]
+
+                })
+                this.events.dispatchEvent('onError', error, message)
+            }
         })
     }
 
