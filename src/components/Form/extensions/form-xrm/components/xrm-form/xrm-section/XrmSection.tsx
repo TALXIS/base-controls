@@ -11,7 +11,7 @@ export interface IXrmSectionProps {
 export const XrmSection = (props: IXrmSectionProps) => {
     const { section } = props;
     const rerender = useRerender();
-    useEventEmitter(section.events, ['onCellSetVisible', 'onLabelSet'], rerender);
+    useEventEmitter(section.events, ['onCellVisibilityChanged', 'onLabelChanged'], rerender);
 
     return <Section
         cellLabelPosition={section.getCellLabelPosition()}

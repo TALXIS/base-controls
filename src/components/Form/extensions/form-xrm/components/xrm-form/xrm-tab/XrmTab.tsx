@@ -11,7 +11,7 @@ export const XrmTab = ({ tab, id, label }: { tab: IFormXmlTab, id: string, label
     const columns = tab.getColumns();
     const [gridTemplateColumnsOverride, setGridTemplateColumnsOverride] = React.useState<string>();
     const rerender = useRerender();
-    useEventEmitter(tab.events, ['onSectionSetVisible', 'onLabelSet'], rerender)
+    useEventEmitter(tab.events, ['onSectionVisibilityChanged', 'onLabelChanged'], rerender)
 
     const onColumnsPerRowChanged = React.useCallback((newColumnsPerRow: number) => {
         setGridTemplateColumnsOverride(getXrmTabGridTemplateColumns(columns, newColumnsPerRow));

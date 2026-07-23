@@ -36,8 +36,8 @@ export interface IFormXmlFormProps {
 
 
 export interface IFormXmlTabsEvents {
-    onTabChange: (tabId: string) => void;
-    onTabSetVisible: (tabId: string, visible: boolean) => void;
+    onExpandedTabChanged: (tabId: string) => void;
+    onTabVisibilityChanged: (tabId: string, visible: boolean) => void;
 }
 
 export interface IFormXmlTabs extends Omit<MetadataFormXmlTabs, 'tab'> {
@@ -49,9 +49,9 @@ export interface IFormXmlTabs extends Omit<MetadataFormXmlTabs, 'tab'> {
 }
 
 export interface IFormXmlTabEvents {
-    onSetVisible: (visible: boolean) => void;
-    onSectionSetVisible: (sectionId: string, visible: boolean) => void;
-    onLabelSet: (label: string) => void;
+    onVisibilityChanged: (visible: boolean) => void;
+    onSectionVisibilityChanged: (sectionId: string, visible: boolean) => void;
+    onLabelChanged: (label: string) => void;
 }
 
 export interface IFormXmlTab extends Omit<MetadataFormXmlTab, 'events' | 'columns'> {
@@ -62,7 +62,6 @@ export interface IFormXmlTab extends Omit<MetadataFormXmlTab, 'events' | 'column
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setLabel: (label: string) => void;
-    
     getColumns: () => IFormXmlColumn[];
     getVisibleSections: () => IFormXmlSection[];
     getSections: () => IFormXmlSection[];
@@ -70,9 +69,9 @@ export interface IFormXmlTab extends Omit<MetadataFormXmlTab, 'events' | 'column
 }
 
 export interface IFormXmlSectionEvents {
-    onSetVisible: (visible: boolean) => void;
-    onCellSetVisible: (cellId: string, visible: boolean) => void;
-    onLabelSet: (label: string) => void;
+    onVisibilityChanged: (visible: boolean) => void;
+    onCellVisibilityChanged: (cellId: string, visible: boolean) => void;
+    onLabelChanged: (label: string) => void;
 }
 
 export interface IFormXmlSection extends Omit<MetadataFormXmlSection, 'events'> {
@@ -93,9 +92,9 @@ export interface IFormXmlColumn extends MetadataFormXmlColumn {
 }
 
 export interface IFormXmlCellEvents {
-    onSetVisible: (visible: boolean) => void;
-    onDisabledSet: (disabled: boolean) => void;
-    onLabelSet: (label: string) => void;
+    onVisibilityChanged: (visible: boolean) => void;
+    onDisabledChanged: (disabled: boolean) => void;
+    onLabelChanged: (label: string) => void;
 }
 
 export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'control'> {
@@ -166,7 +165,7 @@ export class FormXmlCell implements IFormXmlCell {
         }
 
         this.visible = visible;
-        this.events.dispatchEvent("onSetVisible", visible);
+        this.events.dispatchEvent("onVisibilityChanged", visible);
     }
 
     public setLabel(label: string): void {
@@ -175,7 +174,7 @@ export class FormXmlCell implements IFormXmlCell {
         }
 
         this._customLabel = label;
-        this.events.dispatchEvent("onLabelSet", label);
+        this.events.dispatchEvent("onLabelChanged", label);
     }
 
     public getDisabled(): boolean {
@@ -188,7 +187,7 @@ export class FormXmlCell implements IFormXmlCell {
         }
         if(this.control) {
             this.control.disabled = disabled;
-            this.events.dispatchEvent("onDisabledSet", disabled);
+            this.events.dispatchEvent("onDisabledChanged", disabled);
         }
     }
 
@@ -255,7 +254,7 @@ export class FormXmlSection implements IFormXmlSection {
         }
 
         this.visible = visible;
-        this.events.dispatchEvent("onSetVisible", visible);
+        this.events.dispatchEvent("onVisibilityChanged", visible);
     }
 
     public setLabel(label: string): void {
@@ -264,7 +263,7 @@ export class FormXmlSection implements IFormXmlSection {
         }
 
         this._customLabel = label;
-        this.events.dispatchEvent("onLabelSet", label);
+        this.events.dispatchEvent("onLabelChanged", label);
     }
 
     //MDA forms default
@@ -279,8 +278,8 @@ export class FormXmlSection implements IFormXmlSection {
 
     private _registerCellEvents(cells: IFormXmlCell[]): void {
         for (const cell of cells) {
-            cell.events.addEventListener("onSetVisible", (visible) => {
-                this.events.dispatchEvent("onCellSetVisible", cell.id ?? "", visible);
+            cell.events.addEventListener("onVisibilityChanged", (visible) => {
+                this.events.dispatchEvent("onCellVisibilityChanged", cell.id ?? "", visible);
             });
         }
     }
@@ -358,7 +357,7 @@ export class FormXmlTab implements IFormXmlTab {
         }
 
         this.visible = visible;
-        this.events.dispatchEvent("onSetVisible", visible);
+        this.events.dispatchEvent("onVisibilityChanged", visible);
     }
 
     public getSections(): IFormXmlSection[] {
@@ -375,14 +374,14 @@ export class FormXmlTab implements IFormXmlTab {
             return;
         }
         this._customLabel = label;
-        this.events.dispatchEvent("onLabelSet", label);
+        this.events.dispatchEvent("onLabelChanged", label);
         this.form.requestRender();
     }
 
     private _registerSectionEvents(sections: IFormXmlSection[]): void {
         for (const section of sections) {
-            section.events.addEventListener("onSetVisible", (visible) => {
-                this.events.dispatchEvent("onSectionSetVisible", section.id ?? "", visible);
+            section.events.addEventListener("onVisibilityChanged", (visible) => {
+                this.events.dispatchEvent("onSectionVisibilityChanged", section.id ?? "", visible);
             });
         }
     }
@@ -432,13 +431,13 @@ export class FormXmlTabs implements IFormXmlTabs {
         }
         expandedTab.expanded = false;
         newExpandedTab.expanded = true;
-        this.events.dispatchEvent("onTabChange", tabId);
+        this.events.dispatchEvent("onExpandedTabChanged", tabId);
     }
 
     private _registerTabEvents(tabs: IFormXmlTab[]): void {
         tabs.map(tab => {
-            tab.events.addEventListener("onSetVisible", (visible) => {
-                this.events.dispatchEvent("onTabSetVisible", tab.id, visible);
+            tab.events.addEventListener("onVisibilityChanged", (visible) => {
+                this.events.dispatchEvent("onTabVisibilityChanged", tab.id, visible);
             });
         });
     }

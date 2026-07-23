@@ -44,7 +44,7 @@ const XrmFormInternal = ({ formXmlModel }: { formXmlModel: FormXmlForm }) => {
     const rerender = useRerender();
 
     useEventEmitter(formXmlModel.events, ['onRenderRequested'], rerender);
-    useEventEmitter(tabs.events, ['onTabChange', 'onTabSetVisible'], rerender);
+    useEventEmitter(tabs.events, ['onExpandedTabChanged', 'onTabVisibilityChanged'], rerender);
 
     return <>
         <Notifications />

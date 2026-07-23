@@ -110,7 +110,6 @@ class XrmTab {
     }
 
     public setFocus(): void {
-        this._tab.
         notImplemented("XrmTab.setFocus");
     }
 

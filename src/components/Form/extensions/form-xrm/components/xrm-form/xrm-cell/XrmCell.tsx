@@ -6,7 +6,7 @@ import { useRerender } from "@talxis/react-components";
 
 export const XrmCell = ({ cell }: { cell: IFormXmlCell }) => {
     const rerender = useRerender();
-    useEventEmitter(cell.events, ['onLabelSet', 'onDisabledSet'], rerender);
+    useEventEmitter(cell.events, ['onLabelChanged', 'onDisabledChanged'], rerender);
 
     return <Field name={cell.control?.datafieldname}>
         <Cell
