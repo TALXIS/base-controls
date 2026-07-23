@@ -22,27 +22,27 @@ interface IXrmFormProps {
 //here we are expecting all dependencies such as labels metadata etc to be loaded
 export const XrmForm = (props: IXrmFormProps) => {
     const { strategy } = props;
-    const [formXmlForm, setFormXmlForm] = React.useState<FormXmlForm | null>(null);
+    const [formXmlModel, setFormXmlModel] = React.useState<FormXmlForm | null>(null);
 
     const onFormReady = (form: IForm) => {
         const formXml = strategy.onGetFormXml();
-        const nextFormXmlForm = new FormXmlForm({ formXml, lcid: 1029, form });
-        setFormXmlForm(nextFormXmlForm);
+        const nextFormXmlModel = new FormXmlForm({ formXml, lcid: 1029, form });
+        setFormXmlModel(nextFormXmlModel);
         //@ts-ignore
-        window.form = nextFormXmlForm;
+        window.form = nextFormXmlModel;
     }
 
     return <Form strategy={strategy} onFormReady={onFormReady}>
-        {formXmlForm && <XrmFormInternal formXmlForm={formXmlForm} />}
+        {formXmlModel && <XrmFormInternal formXmlModel={formXmlModel} />}
     </Form>
 }
 
-const XrmFormInternal = ({ formXmlForm }: { formXmlForm: FormXmlForm }) => {
-    const tabs = formXmlForm.tabs;
-    const selectedTab = formXmlForm.tabs.getExpandedTab();
+const XrmFormInternal = ({ formXmlModel }: { formXmlModel: FormXmlForm }) => {
+    const tabs = formXmlModel.tabs;
+    const selectedTab = formXmlModel.tabs.getExpandedTab();
     const rerender = useRerender();
 
-    useEventEmitter(formXmlForm.events, ['onRenderRequested'], rerender);
+    useEventEmitter(formXmlModel.events, ['onRenderRequested'], rerender);
     useEventEmitter(tabs.events, ['onTabChange', 'onTabSetVisible'], rerender);
 
     return <>

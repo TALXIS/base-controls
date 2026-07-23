@@ -56,7 +56,7 @@ export interface IFormXmlTabEvents {
 
 export interface IFormXmlTab extends Omit<MetadataFormXmlTab, 'events' | 'columns'> {
     id: string;
-    form: IFormXmlForm;
+    form: IFormXmlModel;
     events: IEventEmitter<IFormXmlTabEvents>;
     getLabel: () => string | null;
     getVisible: () => boolean;
@@ -118,7 +118,7 @@ export class FormXmlControl implements IFormXmlControl {
 }
 
 export class FormXmlCell implements IFormXmlCell {
-    public form: IFormXmlForm;
+    public form: IFormXmlModel;
     public id?: string | undefined;
     public showlabel?: boolean | undefined;
     public labelid?: string | undefined;
@@ -141,7 +141,7 @@ export class FormXmlCell implements IFormXmlCell {
     private _customLabel?: string;
 
 
-    constructor(cell: MetadataFormXmlCell, form: IFormXmlForm) {
+    constructor(cell: MetadataFormXmlCell, form: IFormXmlModel) {
         Object.assign(this, cell);
         this.form = form;
         this.control = cell.control ? new FormXmlControl(cell.control) : undefined;
@@ -191,7 +191,7 @@ export class FormXmlCell implements IFormXmlCell {
 
 export class FormXmlSection implements IFormXmlSection {
     public id?: string | undefined;
-    public form: IFormXmlForm;
+    public form: IFormXmlModel;
     public name?: string | undefined;
     public group?: string | undefined;
     public showlabel?: boolean | undefined;
@@ -217,7 +217,7 @@ export class FormXmlSection implements IFormXmlSection {
     private _cells: IFormXmlCell[] = [];
     private _customLabel?: string;
 
-    constructor(section: MetadataFormXmlSection, form: IFormXmlForm) {
+    constructor(section: MetadataFormXmlSection, form: IFormXmlModel) {
         Object.assign(this, section);
         this.form = form;
         this._cells = section.rows?.row?.flatMap(row => row.cell?.map(cell => new FormXmlCell(cell, form)) ?? []) ?? [];
@@ -279,7 +279,7 @@ export class FormXmlColumn implements IFormXmlColumn {
 
     private _sections: IFormXmlSection[] = [];
 
-    constructor(column: MetadataFormXmlColumn, form: IFormXmlForm) {
+    constructor(column: MetadataFormXmlColumn, form: IFormXmlModel) {
         Object.assign(this, column);
         this._sections = column.sections?.section?.map(section => new FormXmlSection(section, form)) ?? [];
     }
@@ -294,7 +294,7 @@ export class FormXmlColumn implements IFormXmlColumn {
 }
 
 export class FormXmlTab implements IFormXmlTab {
-    public form: IFormXmlForm;
+    public form: IFormXmlModel;
     public events: IEventEmitter<IFormXmlTabEvents> = new EventEmitter<IFormXmlTabEvents>();
     public group?: string | undefined;
     public name?: string | undefined;
@@ -319,7 +319,7 @@ export class FormXmlTab implements IFormXmlTab {
     private _customLabel?: string;
 
 
-    constructor(tab: MetadataFormXmlTab, form: IFormXmlForm) {
+    constructor(tab: MetadataFormXmlTab, form: IFormXmlModel) {
         Object.assign(this, tab);
         this.form = form;
         this.id = tab.id ?? tab.name ?? window.crypto.randomUUID();
@@ -390,7 +390,7 @@ export class FormXmlTabs implements IFormXmlTabs {
     public additionalAttributes?: Record<string, MetadataFormXmlPrimitiveValue> | undefined;
     public additionalElements?: MetadataFormXmlOpaqueNode[] | undefined;
 
-    constructor(tabs: MetadataFormXmlTabs, form: IFormXmlForm) {
+    constructor(tabs: MetadataFormXmlTabs, form: IFormXmlModel) {
         Object.assign(this, tabs);
         this.tab = tabs.tab.map(tab => new FormXmlTab(tab, form));
         this._registerTabEvents(this.tab);
@@ -437,7 +437,7 @@ export interface IFormXmlFormEvents {
     onRenderRequested: () => void;
 }
 
-export interface IFormXmlForm extends Omit<MetadataFormXml, 'tabs' | 'events'> {
+export interface IFormXmlModel extends Omit<MetadataFormXml, 'tabs' | 'events'> {
     tabs: IFormXmlTabs;
     events: IEventEmitter<IFormXmlFormEvents>;
     getForm:() => IForm;
@@ -452,7 +452,7 @@ export interface IFormXmlForm extends Omit<MetadataFormXml, 'tabs' | 'events'> {
 
 
 
-export class FormXmlForm implements IFormXmlForm {
+export class FormXmlForm implements IFormXmlModel {
     public ancestor?: MetadataFormXmlAncestor | undefined;
     public hiddencontrols?: MetadataFormXmlHiddenControls | undefined;
     public controlDescriptions?: MetadataFormXmlControlDescriptions | undefined;

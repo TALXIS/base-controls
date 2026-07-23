@@ -1,6 +1,6 @@
 import { Attribute, IField, LookupSanitizer } from "@talxis/client-libraries";
 import { Form, IForm } from "../Form";
-import { IFormXmlCell, IFormXmlForm, IFormXmlSection, IFormXmlTab } from "./form-xrm/FormXmlForm";
+import { IFormXmlCell, IFormXmlModel, IFormXmlSection, IFormXmlTab } from "./form-xrm/FormXmlForm";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
 import { Sanitizer } from '@talxis/client-libraries';
 
@@ -35,7 +35,7 @@ function notImplemented(name: string): never {
 class XrmSection {
     private _section: IFormXmlSection;
 
-    constructor(form: IFormXmlForm, name: string) {
+    constructor(form: IFormXmlModel, name: string) {
         const section = form.getSections().find((s) => s.name === name)!;
         if (!section) {
             throw new Error(`[XrmSection] Section with name "${name}" not found.`);
@@ -72,7 +72,7 @@ class XrmSection {
 class XrmTab {
     private _tab: IFormXmlTab;
 
-    constructor(form: IFormXmlForm, name: string) {
+    constructor(form: IFormXmlModel, name: string) {
         const tab = form.getTabs().find((t) => t.name === name);
         if (!tab) {
             throw new Error(`[XrmTab] Tab with name "${name}" not found.`);
@@ -122,10 +122,10 @@ class XrmTab {
 
 class XrmAttribute {
     private _name: string;
-    private _form: IFormXmlForm;
+    private _form: IFormXmlModel;
     private _onChangeHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(form: IFormXmlForm, name: string) {
+    constructor(form: IFormXmlModel, name: string) {
         this._form = form;
         this._name = name;
         this._registerEventListeners();
@@ -253,10 +253,10 @@ class XrmAttribute {
 
 class XrmControl {
     private _controlId: string;
-    private _form: IFormXmlForm;
+    private _form: IFormXmlModel;
     private _cell: IFormXmlCell;
 
-    constructor(form: IFormXmlForm, controlId: string) {
+    constructor(form: IFormXmlModel, controlId: string) {
         this._form = form;
         this._controlId = controlId;
         const cell = form.getCells().find((c) => c.control?.id === controlId);
@@ -315,10 +315,10 @@ class XrmControl {
 }
 
 class XrmEntity {
-    private _form: IFormXmlForm;
+    private _form: IFormXmlModel;
     private _onSaveHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(form: IFormXmlForm) {
+    constructor(form: IFormXmlModel) {
         this._form = form;
     }
 
@@ -374,10 +374,10 @@ class XrmData {
     public readonly attributes: any;
     public readonly process: any;
 
-    private _form: IFormXmlForm;
+    private _form: IFormXmlModel;
 
 
-    constructor(form: IFormXmlForm) {
+    constructor(form: IFormXmlModel) {
         this._form = form;
         this.entity = new XrmEntity(form);
         this.attributes = this._createAttributeCollection();
@@ -423,9 +423,9 @@ class XrmUi {
     readonly footerSection: any;
     readonly quickForms: any;
 
-    private _form: IFormXmlForm;
+    private _form: IFormXmlModel
 
-    constructor(form: IFormXmlForm) {
+    constructor(form: IFormXmlModel) {
         this._form = form;
         this.controls = this._createControlsCollection();
     }
@@ -476,11 +476,11 @@ class XrmUi {
 }
 
 export class XrmFormContext {
-    private _form: IFormXmlForm;
+    private _form: IFormXmlModel;
     readonly data: XrmData;
     readonly ui: XrmUi;
 
-    constructor(form: IFormXmlForm) {
+    constructor(form: IFormXmlModel) {
         this._form = form;
         this.data = new XrmData(form);
         this.ui = new XrmUi(form);
@@ -494,7 +494,7 @@ export class XrmFormContext {
         return this.ui.controls.get(nameOrIndexOrDelegate);
     }
 
-    public getFormXmlForm(): IFormXmlForm {
+    public getFormXmlModel(): IFormXmlModel {
         return this._form;
     }
 }
