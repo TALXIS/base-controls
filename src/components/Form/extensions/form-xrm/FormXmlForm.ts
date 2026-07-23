@@ -62,6 +62,7 @@ export interface IFormXmlTab extends Omit<MetadataFormXmlTab, 'events' | 'column
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setLabel: (label: string) => void;
+    
     getColumns: () => IFormXmlColumn[];
     getVisibleSections: () => IFormXmlSection[];
     getSections: () => IFormXmlSection[];
@@ -373,7 +374,6 @@ export class FormXmlTab implements IFormXmlTab {
         if (this.getLabel() === label) {
             return;
         }
-
         this._customLabel = label;
         this.events.dispatchEvent("onLabelSet", label);
         this.form.requestRender();
@@ -430,7 +430,6 @@ export class FormXmlTabs implements IFormXmlTabs {
         if (expandedTab.id === tabId) {
             return;
         }
-
         expandedTab.expanded = false;
         newExpandedTab.expanded = true;
         this.events.dispatchEvent("onTabChange", tabId);

@@ -56,7 +56,7 @@ export const Cell = (props: ICellProps) => {
         rowspan
     });
 
-    return <div ref={containerRef} className={styles.cell} data-id={`cell-${id}`} style={layoutStyle}>
+    return <div ref={containerRef} data-field-name={fieldName} className={styles.cell} style={layoutStyle}>
         <DisabledContext.Provider value={disabled ?? false}>
             {shouldRenderLabelWrapper &&
                 <div className={styles.labelWrapper}>

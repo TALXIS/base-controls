@@ -65,7 +65,7 @@ export class Form implements IForm {
     }
 
     public getFields(): IField[] {
-        return this._record.getFields();
+        return this._record.getColumns().map(column => this._record.getField(column.name));
     }
 
     public getMetadata() {
