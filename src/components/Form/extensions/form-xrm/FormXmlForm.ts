@@ -50,6 +50,7 @@ export interface IFormXmlTabs extends Omit<MetadataFormXmlTabs, 'tab'> {
 
 export interface IFormXmlTabEvents {
     onVisibilityChanged: (visible: boolean) => void;
+    onExpandedChanged: (expanded: boolean) => void;
     onSectionVisibilityChanged: (sectionId: string, visible: boolean) => void;
     onLabelChanged: (label: string) => void;
 }
@@ -59,6 +60,8 @@ export interface IFormXmlTab extends Omit<MetadataFormXmlTab, 'events' | 'column
     formXmlModel: IFormXmlModel;
     events: IEventEmitter<IFormXmlTabEvents>;
     getLabel: () => string | null;
+    setExpanded: () => void;
+    getExpanded: () => boolean;
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setLabel: (label: string) => void;
@@ -368,6 +371,14 @@ export class FormXmlTab implements IFormXmlTab {
     public getVisible(): boolean {
         return this.visible ?? true;
     }
+    
+    public getExpanded(): boolean {
+        return this.expanded ?? false;
+    }
+
+    public setExpanded(): void {
+        this.formXmlModel.tabs.setExpandedTab(this.id);
+    }
 
     public setLabel(label: string): void {
         if (this.getLabel() === label) {
@@ -409,7 +420,7 @@ export class FormXmlTabs implements IFormXmlTabs {
 
     public getExpandedTab(): IFormXmlTab {
         const visibleTabs = this.getVisibleTabs();
-        const expandedTab = visibleTabs.find(tab => tab.expanded) ?? visibleTabs[0];
+        const expandedTab = visibleTabs.find(tab => tab.getExpanded()) ?? visibleTabs[0];
         if (!expandedTab) {
             throw new Error("No visible tabs found in form XML");
         }

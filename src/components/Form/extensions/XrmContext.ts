@@ -71,9 +71,9 @@ class XrmSection {
 
 class XrmTab {
     public readonly sections: Xrm.Collection.ItemCollection<XrmSection>;
-
     private _tab: IFormXmlTab;
     private _formContext: XrmFormContext;
+    private _tabStateChangeHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
     constructor(tab: IFormXmlTab, formContext: XrmFormContext) {
         this._formContext = formContext;
@@ -102,21 +102,48 @@ class XrmTab {
     }
 
     public getDisplayState(): Xrm.DisplayState {
-        notImplemented("XrmTab.getDisplayState");
+        return this._tab.getExpanded() ? "expanded" : "collapsed";
     }
 
     public setDisplayState(state: Xrm.DisplayState): void {
-        notImplemented("XrmTab.setDisplayState");
+        if(state === "expanded") {
+            this.setFocus();
+        }
     }
 
     public setFocus(): void {
-        notImplemented("XrmTab.setFocus");
+        this._tab.setExpanded();
+    }
+
+    public addTabStateChange(handler: Xrm.Events.ContextSensitiveHandler): void {
+        this._tabStateChangeHandlerSet.add(handler);
+    }
+
+    public removeTabStateChange(handler: Xrm.Events.ContextSensitiveHandler): void {
+        this._tabStateChangeHandlerSet.delete(handler);
     }
 
     private _createSectionsCollection(): Xrm.Collection.ItemCollection<XrmSection> {
         const sections = this._tab.getSections();
         return makeItemCollection(sections.map((s) => new XrmSection(s, this._formContext)), (s) => s.getName()) as any;
     }
+
+    private _registerEventListeners() {
+        this._formContext.getFormXmlModel().tabs.events.addEventListener('onExpandedTabChanged', (tabId: string) => {
+            
+        });
+    }
+
+    private _fireOnTabStateChange() {
+        this._tabStateChangeHandlerSet.forEach((handler) => {
+            try {
+                handler({} as any);
+            } catch (err) {
+                console.error(`[Form] XrmTab.onTabStateChange handler failed for tab "${this._tab.name}":`, err);
+            }
+        });
+    }
+
 }
 
 class XrmAttribute {
