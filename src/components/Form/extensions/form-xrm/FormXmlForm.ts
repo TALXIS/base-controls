@@ -56,7 +56,7 @@ export interface IFormXmlTabEvents {
 
 export interface IFormXmlTab extends Omit<MetadataFormXmlTab, 'events' | 'columns'> {
     id: string;
-    form: IFormXmlModel;
+    formXmlModel: IFormXmlModel;
     events: IEventEmitter<IFormXmlTabEvents>;
     getLabel: () => string | null;
     getVisible: () => boolean;
@@ -126,7 +126,7 @@ export class FormXmlControl implements IFormXmlControl {
 }
 
 export class FormXmlCell implements IFormXmlCell {
-    public form: IFormXmlModel;
+    public formXmlModel: IFormXmlModel;
     public id?: string | undefined;
     public showlabel?: boolean | undefined;
     public labelid?: string | undefined;
@@ -149,14 +149,14 @@ export class FormXmlCell implements IFormXmlCell {
     private _customLabel?: string;
 
 
-    constructor(cell: MetadataFormXmlCell, form: IFormXmlModel) {
+    constructor(cell: MetadataFormXmlCell, formXmlModel: IFormXmlModel) {
         Object.assign(this, cell);
-        this.form = form;
+        this.formXmlModel = formXmlModel;
         this.control = cell.control ? new FormXmlControl(cell.control, this) : undefined;
     }
 
     public getLabel(): string | null {
-        return this._customLabel ?? this.form.getLocalizedLabel(this.labels);
+        return this._customLabel ?? this.formXmlModel.getLocalizedLabel(this.labels);
     }
 
     public setVisible(visible: boolean): void {
@@ -199,7 +199,7 @@ export class FormXmlCell implements IFormXmlCell {
 
 export class FormXmlSection implements IFormXmlSection {
     public id?: string | undefined;
-    public form: IFormXmlModel;
+    public formXmlModel: IFormXmlModel;
     public name?: string | undefined;
     public group?: string | undefined;
     public showlabel?: boolean | undefined;
@@ -225,15 +225,15 @@ export class FormXmlSection implements IFormXmlSection {
     private _cells: IFormXmlCell[] = [];
     private _customLabel?: string;
 
-    constructor(section: MetadataFormXmlSection, form: IFormXmlModel) {
+    constructor(section: MetadataFormXmlSection, formXmlModel: IFormXmlModel) {
         Object.assign(this, section);
-        this.form = form;
-        this._cells = section.rows?.row?.flatMap(row => row.cell?.map(cell => new FormXmlCell(cell, form)) ?? []) ?? [];
+        this.formXmlModel = formXmlModel;
+        this._cells = section.rows?.row?.flatMap(row => row.cell?.map(cell => new FormXmlCell(cell, formXmlModel)) ?? []) ?? [];
         this._registerCellEvents(this._cells);
     }
 
     public getLabel(): string | null {
-        return this._customLabel ?? this.form.getLocalizedLabel(this.labels);
+        return this._customLabel ?? this.formXmlModel.getLocalizedLabel(this.labels);
     }
 
     public getCells(): IFormXmlCell[] {
@@ -291,9 +291,9 @@ export class FormXmlColumn implements IFormXmlColumn {
 
     private _sections: IFormXmlSection[] = [];
 
-    constructor(column: MetadataFormXmlColumn, form: IFormXmlModel) {
+    constructor(column: MetadataFormXmlColumn, formXmlModel: IFormXmlModel) {
         Object.assign(this, column);
-        this._sections = column.sections?.section?.map(section => new FormXmlSection(section, form)) ?? [];
+        this._sections = column.sections?.section?.map(section => new FormXmlSection(section, formXmlModel)) ?? [];
     }
 
     public getSections(): IFormXmlSection[] {
@@ -306,7 +306,7 @@ export class FormXmlColumn implements IFormXmlColumn {
 }
 
 export class FormXmlTab implements IFormXmlTab {
-    public form: IFormXmlModel;
+    public formXmlModel: IFormXmlModel;
     public events: IEventEmitter<IFormXmlTabEvents> = new EventEmitter<IFormXmlTabEvents>();
     public group?: string | undefined;
     public name?: string | undefined;
@@ -331,11 +331,11 @@ export class FormXmlTab implements IFormXmlTab {
     private _customLabel?: string;
 
 
-    constructor(tab: MetadataFormXmlTab, form: IFormXmlModel) {
+    constructor(tab: MetadataFormXmlTab, formXmlModel: IFormXmlModel) {
         Object.assign(this, tab);
-        this.form = form;
+        this.formXmlModel = formXmlModel;
         this.id = tab.id ?? tab.name ?? window.crypto.randomUUID();
-        this.columns = tab.columns?.column?.map(col => new FormXmlColumn(col, form)) ?? [];
+        this.columns = tab.columns?.column?.map(col => new FormXmlColumn(col, formXmlModel)) ?? [];
         this._registerSectionEvents(this.getSections());
     }
 
@@ -348,7 +348,7 @@ export class FormXmlTab implements IFormXmlTab {
     }
 
     public getLabel(): string | null {
-        return this._customLabel ?? this.form.getLocalizedLabel(this.labels);
+        return this._customLabel ?? this.formXmlModel.getLocalizedLabel(this.labels);
     }
 
     public setVisible(visible: boolean): void {
@@ -375,7 +375,7 @@ export class FormXmlTab implements IFormXmlTab {
         }
         this._customLabel = label;
         this.events.dispatchEvent("onLabelChanged", label);
-        this.form.requestRender();
+        this.formXmlModel.requestRender();
     }
 
     private _registerSectionEvents(sections: IFormXmlSection[]): void {
@@ -401,9 +401,9 @@ export class FormXmlTabs implements IFormXmlTabs {
     public additionalAttributes?: Record<string, MetadataFormXmlPrimitiveValue> | undefined;
     public additionalElements?: MetadataFormXmlOpaqueNode[] | undefined;
 
-    constructor(tabs: MetadataFormXmlTabs, form: IFormXmlModel) {
+    constructor(tabs: MetadataFormXmlTabs, formXmlModel: IFormXmlModel) {
         Object.assign(this, tabs);
-        this.tab = tabs.tab.map(tab => new FormXmlTab(tab, form));
+        this.tab = tabs.tab.map(tab => new FormXmlTab(tab, formXmlModel));
         this._registerTabEvents(this.tab);
     }
 
