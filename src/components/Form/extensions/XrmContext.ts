@@ -1,8 +1,7 @@
-import { Attribute, IField, LookupSanitizer } from "@talxis/client-libraries";
-import { Form, IForm } from "../Form";
+import { IField } from "@talxis/client-libraries";
+import { Form } from "../Form";
 import { IFormXmlCell, IFormXmlModel, IFormXmlSection, IFormXmlTab } from "./form-xrm/FormXmlForm";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
-import { Sanitizer } from '@talxis/client-libraries';
 
 function makeItemCollection<T>(items: T[], getNameFn: (item: T) => string): Xrm.Collection.ItemCollection<T> {
     return {
@@ -35,8 +34,8 @@ function notImplemented(name: string): never {
 class XrmSection {
     private _section: IFormXmlSection;
 
-    constructor(form: IFormXmlModel, name: string) {
-        const section = form.getSections().find((s) => s.name === name)!;
+    constructor(formXmlModel: IFormXmlModel, name: string) {
+        const section = formXmlModel.getSections().find((s) => s.name === name)!;
         if (!section) {
             throw new Error(`[XrmSection] Section with name "${name}" not found.`);
         }
@@ -72,8 +71,8 @@ class XrmSection {
 class XrmTab {
     private _tab: IFormXmlTab;
 
-    constructor(form: IFormXmlModel, name: string) {
-        const tab = form.getTabs().find((t) => t.name === name);
+    constructor(formXmlModel: IFormXmlModel, name: string) {
+        const tab = formXmlModel.getTabs().find((t) => t.name === name);
         if (!tab) {
             throw new Error(`[XrmTab] Tab with name "${name}" not found.`);
         }
@@ -122,11 +121,11 @@ class XrmTab {
 
 class XrmAttribute {
     private _name: string;
-    private _form: IFormXmlModel;
+    private _formXmlModel: IFormXmlModel;
     private _onChangeHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(form: IFormXmlModel, name: string) {
-        this._form = form;
+    constructor(formXmlModel: IFormXmlModel, name: string) {
+        this._formXmlModel = formXmlModel;
         this._name = name;
         this._registerEventListeners();
     }
@@ -183,7 +182,7 @@ class XrmAttribute {
     }
 
     public setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {
-        this._form.getForm().setFieldRequiredLevel(this._name, Form.getRequiredLevelEnumFromXrm(level));
+        this._formXmlModel.getForm().setFieldRequiredLevel(this._name, Form.getRequiredLevelEnumFromXrm(level));
     }
 
     public addOption(option: { value: number; text?: string }, index?: number): void {
@@ -240,11 +239,11 @@ class XrmAttribute {
     }
 
     private _getField(): IField {
-        return this._form.getForm().getField(this._name);
+        return this._formXmlModel.getForm().getField(this._name);
     }
 
     private _registerEventListeners() {
-        this._form.getForm().events.addEventListener('onFieldValueChanged', (fieldName: string, newValue: any) => {
+        this._formXmlModel.getForm().events.addEventListener('onFieldValueChanged', (fieldName: string, newValue: any) => {
             if (fieldName !== this._name) return;
             this.fireOnChange();
         });
@@ -253,13 +252,13 @@ class XrmAttribute {
 
 class XrmControl {
     private _controlId: string;
-    private _form: IFormXmlModel;
+    private _formXmlModel: IFormXmlModel;
     private _cell: IFormXmlCell;
 
-    constructor(form: IFormXmlModel, controlId: string) {
-        this._form = form;
+    constructor(formXmlModel: IFormXmlModel, controlId: string) {
+        this._formXmlModel = formXmlModel;
         this._controlId = controlId;
-        const cell = form.getCells().find((c) => c.control?.id === controlId);
+        const cell = formXmlModel.getCells().find((c) => c.control?.id === controlId);
         if (!cell) {
             throw new Error(`[XrmControl] Controls that are not part of a cell are not supported. ControlId: ${controlId}`);
         }
@@ -315,11 +314,11 @@ class XrmControl {
 }
 
 class XrmEntity {
-    private _form: IFormXmlModel;
+    private _formXmlModel: IFormXmlModel;
     private _onSaveHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(form: IFormXmlModel) {
-        this._form = form;
+    constructor(formXmlModel: IFormXmlModel) {
+        this._formXmlModel = formXmlModel;
     }
 
     public getId(): string {
@@ -341,10 +340,10 @@ class XrmEntity {
     }
 
     public getPrimaryAttributeValue(): string {
-        return this._form.getForm().getMetadata().PrimaryNameAttribute;
+        return this._formXmlModel.getForm().getMetadata().PrimaryNameAttribute;
     }
     public isValid(): boolean {
-        return this._form.getForm().isValid();
+        return this._formXmlModel.getForm().isValid();
     }
 
     public addOnSave(handler: Xrm.Events.ContextSensitiveHandler): void {
@@ -356,7 +355,7 @@ class XrmEntity {
     }
 
     public save(saveMode?: string) {
-        this._form.getForm().save();
+        this._formXmlModel.getForm().save();
     }
 
     get attributes(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
@@ -365,7 +364,7 @@ class XrmEntity {
     }
 
     private _getRecordReference(): ComponentFramework.EntityReference {
-        return this._form.getForm().getRecordReference();
+        return this._formXmlModel.getForm().getRecordReference();
     }
 }
 
@@ -374,26 +373,26 @@ class XrmData {
     public readonly attributes: any;
     public readonly process: any;
 
-    private _form: IFormXmlModel;
+    private _formXmlModel: IFormXmlModel;
 
 
-    constructor(form: IFormXmlModel) {
-        this._form = form;
-        this.entity = new XrmEntity(form);
+    constructor(formXmlModel: IFormXmlModel) {
+        this._formXmlModel = formXmlModel;
+        this.entity = new XrmEntity(formXmlModel);
         this.attributes = this._createAttributeCollection();
         this.process = {};
     }
 
     public getIsDirty(): boolean {
-        return this._form.getForm().isDirty();
+        return this._formXmlModel.getForm().isDirty();
     }
 
     public isValid(): boolean {
-        return this._form.getForm().isValid();
+        return this._formXmlModel.getForm().isValid();
     }
 
     public save(saveOptions?: any) {
-        return this._form.getForm().save();
+        return this._formXmlModel.getForm().save();
     }
 
     public refresh(save?: boolean): Xrm.Async.PromiseLike<any> {
@@ -408,8 +407,8 @@ class XrmData {
     }
 
     private _createAttributeCollection(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
-        const fields = this._form.getForm().getFields();
-        const attributes = fields.map((f) => new XrmAttribute(this._form, f.getColumn().name));
+        const fields = this._formXmlModel.getForm().getFields();
+        const attributes = fields.map((f) => new XrmAttribute(this._formXmlModel, f.getColumn().name));
         return makeItemCollection(attributes, (a) => a.getName()) as any;
     }
 }
@@ -423,10 +422,10 @@ class XrmUi {
     readonly footerSection: any;
     readonly quickForms: any;
 
-    private _form: IFormXmlModel
+    private _formXmlModel: IFormXmlModel;
 
-    constructor(form: IFormXmlModel) {
-        this._form = form;
+    constructor(formXmlModel: IFormXmlModel) {
+        this._formXmlModel = formXmlModel;
         this.controls = this._createControlsCollection();
     }
 
@@ -470,20 +469,20 @@ class XrmUi {
     }
 
     private _createControlsCollection(): Xrm.Collection.ItemCollection<Xrm.Controls.Control> {
-        const controls = this._form.getControls();
-        return makeItemCollection(controls.map((c) => new XrmControl(this._form, c.id!)), (c) => c.getName()) as any;
+        const controls = this._formXmlModel.getControls();
+        return makeItemCollection(controls.map((c) => new XrmControl(this._formXmlModel, c.id!)), (c) => c.getName()) as any;
     }
 }
 
 export class XrmFormContext {
-    private _form: IFormXmlModel;
+    private _formXmlModel: IFormXmlModel;
     readonly data: XrmData;
     readonly ui: XrmUi;
 
-    constructor(form: IFormXmlModel) {
-        this._form = form;
-        this.data = new XrmData(form);
-        this.ui = new XrmUi(form);
+    constructor(formXmlModel: IFormXmlModel) {
+        this._formXmlModel = formXmlModel;
+        this.data = new XrmData(formXmlModel);
+        this.ui = new XrmUi(formXmlModel);
     }
 
     public getAttribute(nameOrIndexOrDelegate?: any): any {
@@ -495,6 +494,6 @@ export class XrmFormContext {
     }
 
     public getFormXmlModel(): IFormXmlModel {
-        return this._form;
+        return this._formXmlModel;
     }
 }
