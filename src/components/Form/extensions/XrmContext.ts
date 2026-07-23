@@ -1,7 +1,8 @@
-import { Attribute, IField } from "@talxis/client-libraries";
-import { IForm } from "../Form";
-import { IXrmForm } from "./form-xrm/Form";
+import { Attribute, IField, LookupSanitizer } from "@talxis/client-libraries";
+import { Form, IForm } from "../Form";
+import { ICell, ISection, ITab, IXrmForm } from "./form-xrm/Form";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
+import { Sanitizer } from '@talxis/client-libraries';
 
 function makeItemCollection<T>(items: T[], getNameFn: (item: T) => string): Xrm.Collection.ItemCollection<T> {
     return {
@@ -32,52 +33,89 @@ function notImplemented(name: string): never {
 }
 
 class XrmSection {
-    private _tabName: string;
-    private _sectionName: string;
-    private _form: FormModel;
+    private _section: ISection;
 
-    constructor(form: FormModel, tabName: string, sectionName: string) {
-        this._form = form;
-        this._tabName = tabName;
-        this._sectionName = sectionName;
+    constructor(form: IXrmForm, name: string) {
+        const section = form.getSections().find((s) => s.name === name)!;
+        if (!section) {
+            throw new Error(`[XrmSection] Section with name "${name}" not found.`);
+        }
+        this._section = section;
     }
 
-    getName(): string { return this._sectionName; }
-    getLabel(): string { return this._sectionName; }
-    setLabel(_label: string): void { /* not tracked */ }
-    getVisible(): boolean { return this._form.getSectionVisible(this._tabName, this._sectionName); }
-    setVisible(visible: boolean): void { this._form.setSectionVisible(this._tabName, this._sectionName, visible); }
+    public getName(): string {
+        return this._section.name ?? '';
+    }
 
-    get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.Control> {
+    public getLabel(): string {
+        return this._section.getLabel() ?? '';
+    }
+
+    public setLabel(label: string): void {
+        this._section.setLabel(label);
+    }
+
+    public getVisible(): boolean {
+        return this._section.getVisible();
+    }
+
+    public setVisible(visible: boolean): void {
+        this._section.setVisible(visible);
+    }
+
+    public get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.Control> {
+        //TODO: implement me!
         return makeItemCollection([], () => "") as any;
     }
 }
 
 class XrmTab {
-    private _tabName: string;
-    private _form: FormModel;
-    private _sections: XrmSection[];
+    private _tab: ITab;
 
-    constructor(form: FormModel, tabName: string) {
-        this._form = form;
-        this._tabName = tabName;
-        const tab = form.getFormXml()?.tabs?.tab?.find((t) => t.name === tabName);
-        this._sections = (tab?.columns?.column ?? [])
-            .flatMap((c) => c.sections?.section ?? [])
-            .filter((s) => !!s.name)
-            .map((s) => new XrmSection(form, tabName, s.name!));
+    constructor(form: IXrmForm, name: string) {
+        const tab = form.getTabs().find((t) => t.name === name);
+        if (!tab) {
+            throw new Error(`[XrmTab] Tab with name "${name}" not found.`);
+        }
+        this._tab = tab;
     }
 
-    getName(): string { return this._tabName; }
-    getLabel(): string { return this._tabName; }
-    setLabel(_label: string): void { /* not tracked */ }
-    getVisible(): boolean { return this._form.getTabVisible(this._tabName); }
-    setVisible(visible: boolean): void { this._form.setTabVisible(this._tabName, visible); }
-    getDisplayState(): Xrm.DisplayState { return "expanded"; }
-    setDisplayState(_state: Xrm.DisplayState): void { /* noop */ }
-    setFocus(): void { /* noop */ }
+    public getName(): string {
+        return this._tab.name ?? '';
+    }
 
-    get sections(): Xrm.Collection.ItemCollection<Xrm.Controls.Section> {
+    public getLabel(): string {
+        return this._tab.getLabel() ?? '';
+    }
+
+    public setLabel(label: string): void {
+        this._tab.setLabel(label);
+    }
+
+    public getVisible(): boolean {
+        return this._tab.getVisible();
+    }
+
+    public setVisible(visible: boolean): void {
+        this._tab.setVisible(visible);
+    }
+
+    public getDisplayState(): Xrm.DisplayState {
+        notImplemented("XrmTab.getDisplayState");
+    }
+
+    public setDisplayState(state: Xrm.DisplayState): void {
+        notImplemented("XrmTab.setDisplayState");
+    }
+
+    public setFocus(): void {
+        notImplemented("XrmTab.setFocus");
+    }
+
+
+    public get sections(): Xrm.Collection.ItemCollection<Xrm.Controls.Section> {
+        //TODO: implement me!
+        //@ts-ignore
         return makeItemCollection(this._sections, (s) => s.getName()) as any;
     }
 }
@@ -85,11 +123,12 @@ class XrmTab {
 class XrmAttribute {
     private _name: string;
     private _form: IXrmForm;
-
+    private _onChangeHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
     constructor(form: IXrmForm, name: string) {
         this._form = form;
         this._name = name;
+        this._registerEventListeners();
     }
 
     public getName(): string {
@@ -104,60 +143,78 @@ class XrmAttribute {
 
     public getAttributeType(): Xrm.Attributes.AttributeType {
         const dataType = this._getField().getColumn().dataType;
-    }
-
-    getAttributeType(): Xrm.Attributes.AttributeType {
-        const entity = this._form.getEntityDefinition();
-        const attr = entity?.Attributes?.find((a) => a.LogicalName === this._name);
-        if (!attr) return "string";
-        const t = String(attr.AttributeType ?? "").toLowerCase();
-        if (t === "boolean") return "boolean";
-        if (t === "integer" || t === "bigint") return "integer";
-        if (t === "decimal" || t === "double") return "decimal";
-        if (t === "money") return "money";
-        if (t === "datetime") return "datetime";
-        if (t === "lookup" || t === "customer" || t === "owner") return "lookup";
-        if (t === "picklist" || t === "state" || t === "status") return "optionset";
-        if (t === "memo") return "memo";
-        return "string";
-    }
-
-    getRequiredLevel(): Xrm.Attributes.RequirementLevel {
-        const override = this._form.getRequiredLevelOverride(this._name);
-        if (override !== undefined) return override;
-        let level: string | undefined;
-        try {
-            level = this._form.getAttributeConfiguration(this._name).requiredLevel;
-        } catch {
-            level = "none";
+        switch (dataType) {
+            case DataTypes.TwoOptions:
+                return "boolean";
+            case DataTypes.WholeNone:
+            case DataTypes.WholeDuration:
+            case DataTypes.WholeLanguage:
+            case DataTypes.WholeTimeZone:
+                return "integer";
+            case DataTypes.Decimal:
+                return "decimal";
+            case DataTypes.Currency:
+                return "money";
+            case DataTypes.DateAndTimeDateAndTime:
+            case DataTypes.DateAndTimeDateOnly:
+                return "datetime";
+            case DataTypes.LookupSimple:
+            case DataTypes.LookupCustomer:
+            case DataTypes.LookupOwner:
+            case DataTypes.LookupRegarding:
+                return "lookup";
+            case DataTypes.OptionSet:
+            case DataTypes.MultiSelectOptionSet:
+                return "optionset";
+            case DataTypes.Multiple:
+                return "memo";
+            case DataTypes.SingleLineText:
+            case DataTypes.SingleLineTextArea:
+            case DataTypes.SingleLineEmail:
+            case DataTypes.SingleLinePhone:
+            case DataTypes.SingleLineUrl:
+            default:
+                return "string";
         }
-        if (level === "required") return "required";
-        if (level === "recommended") return "recommended";
-        return "none";
     }
 
-    setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {
-        this._form.setRequiredLevelOverride(this._name, level);
+    public getRequiredLevel(): Xrm.Attributes.RequirementLevel {
+        return this._getField().getRequiredLevel();
     }
 
-    addOption(option: { value: number; text?: string }, index?: number): void {
-        this._form.addAttributeOption(this._name, { value: option.value, label: option.text ?? String(option.value) }, index);
+    public setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {
+        this._form.getForm().setFieldRequiredLevel(this._name, Form.getRequiredLevelEnumFromXrm(level));
     }
 
-    removeOption(value: number): void {
-        this._form.removeAttributeOption(this._name, value);
+    public addOption(option: { value: number; text?: string }, index?: number): void {
+        notImplemented("XrmAttribute.addOption");
     }
 
-    getIsDirty(): boolean { return false; }
-    setSubmitMode(_mode: Xrm.SubmitMode): void { /* noop */ }
-    getSubmitMode(): Xrm.SubmitMode { return "dirty"; }
+    public removeOption(value: number): void {
+        notImplemented("XrmAttribute.removeOption");
+    }
 
+    public getIsDirty(): boolean {
+        return this._getField().isDirty();
+    }
+
+    public getSubmitMode(): Xrm.SubmitMode {
+        return 'dirty'
+    }
+
+    public setSubmitMode(mode: Xrm.SubmitMode): void {
+        notImplemented("XrmAttribute.setSubmitMode");
+    }
     /**
      * Triggers all OnChange handlers (FormXml-declared and code-registered) for this attribute.
      */
-    fireOnChange(): void {
-        this._form.fireOnChange(this._name).catch((err) => {
-            console.error(`[Form] XrmAttribute.fireOnChange("${this._name}") failed:`, err);
+    public fireOnChange(): void {
+        this._onChangeHandlerSet.forEach((handler) => {
+            try {
+                handler({} as any);
+            } catch (err) {
+                console.error(`[Form] XrmAttribute.onChange handler failed for attribute "${this._name}":`, err);
+            }
         });
     }
 
@@ -165,161 +222,263 @@ class XrmAttribute {
      * Registers a handler to be invoked when this attribute's value changes.
      * The execution context is automatically passed as the first argument.
      */
-    addOnChange(handler: Xrm.Events.ContextSensitiveHandler): void {
-        this._form.addOnChangeHandler(this._name, handler);
+    public addOnChange(handler: Xrm.Events.ContextSensitiveHandler): void {
+        this._onChangeHandlerSet.add(handler);
     }
 
     /**
      * Removes a previously registered OnChange handler for this attribute.
      */
-    removeOnChange(handler: Xrm.Events.ContextSensitiveHandler): void {
-        this._form.removeOnChangeHandler(this._name, handler);
+    public removeOnChange(handler: Xrm.Events.ContextSensitiveHandler): void {
+        this._onChangeHandlerSet.delete(handler);
     }
 
-    getUserPrivilege(): Xrm.Privilege { return { canRead: true, canUpdate: true, canCreate: true }; }
+    public getUserPrivilege(): Xrm.Privilege { return { canRead: true, canUpdate: true, canCreate: true }; }
 
-    get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.StandardControl> {
+    public get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.StandardControl> {
         return makeItemCollection([], () => "") as any;
     }
 
     private _getField(): IField {
         return this._form.getForm().getField(this._name);
     }
+
+    private _registerEventListeners() {
+        this._form.getForm().events.addEventListener('onFieldValueChanged', (fieldName: string, newValue: any) => {
+            if (fieldName !== this._name) return;
+            this.fireOnChange();
+        });
+    }
 }
 
 class XrmControl {
     private _controlId: string;
-    private _form: FormModel;
+    private _form: IXrmForm;
+    private _cell: ICell;
 
-    constructor(form: FormModel, controlId: string) {
+    constructor(form: IXrmForm, controlId: string) {
         this._form = form;
         this._controlId = controlId;
+        const cell = form.getCells().find((c) => c.control?.id === controlId);
+        if (!cell) {
+            throw new Error(`[XrmControl] Controls that are not part of a cell are not supported. ControlId: ${controlId}`);
+        }
+        this._cell = cell;
     }
 
-    getName(): string { return this._controlId; }
-    getVisible(): boolean { return this._form.getControlVisible(this._controlId); }
-    setVisible(visible: boolean): void { this._form.setControlVisible(this._controlId, visible); }
-    getDisabled(): boolean { return this._form.getControlDisabled(this._controlId); }
-    setDisabled(disabled: boolean): void { this._form.setControlDisabled(this._controlId, disabled); }
-
-    getLabel(): string {
-        const override = this._form.getControlLabel(this._controlId);
-        if (override !== undefined) return override;
-        const cell = this._form.findCellByControlId(this._controlId);
-        const dfn = cell?.control?.datafieldname;
-        return this._form.getFieldLabel(dfn ?? this._controlId, cell?.control);
+    public getName(): string {
+        return this._controlId;
     }
 
-    setLabel(label: string): void { this._form.setControlLabel(this._controlId, label); }
-
-    getAttribute(): Xrm.Attributes.Attribute | null {
-        const cell = this._form.findCellByControlId(this._controlId);
-        const dfn = cell?.control?.datafieldname;
-        if (!dfn) return null;
-        return new XrmAttribute(this._form, dfn) as any;
+    public getVisible(): boolean {
+        return this._cell.getVisible();
     }
 
-    getControlType(): Xrm.Controls.ControlType { return "standard"; }
-    focus(): void { /* noop */ }
-    addNotification(_notification: any): void { /* noop */ }
-    clearNotification(_uniqueId?: string): void { /* noop */ }
+    public setVisible(visible: boolean): void {
+        this._cell.setVisible(visible);
+    }
+
+    public getDisabled(): boolean {
+        return this._cell.getDisabled();
+    }
+
+    public setDisabled(disabled: boolean): void {
+        this._cell.setDisabled(disabled);
+    }
+
+    public getLabel(): string {
+        return this._cell.getLabel() ?? '';
+    }
+
+    public setLabel(label: string): void {
+        this._cell.setLabel(label);
+    }
+
+    public getAttribute(): Xrm.Attributes.Attribute | null {
+        //TODO: IMPLEMENT ME!
+        throw new Error("XrmControl.getAttribute is not implemented yet.");
+    }
+
+    public getControlType(): Xrm.Controls.ControlType {
+        return 'standard';
+    }
+    public focus(): void {
+        notImplemented("XrmControl.focus");
+    }
+
+    public addNotification(notification: any) {
+        notImplemented("XrmControl.addNotification");
+    }
+    public clearNotification(uniqueId?: string) {
+        notImplemented("XrmControl.clearNotification");
+    }
 }
 
 class XrmEntity {
-    private _form: FormModel;
+    private _formContext: XrmFormContext;
+    private _onSaveHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(form: FormModel) {
-        this._form = form;
+    constructor(formContext: XrmFormContext) {
+        this._formContext = formContext;
     }
 
-    getId(): string { return this._form.getRecord()?.getRecordId?.() ?? ""; }
-    getEntityName(): string {
-        const namedReference = this._form.getRecord()?.getNamedReference?.() as any;
-        return namedReference?.entityType ?? namedReference?.etn ?? "";
+    public getId(): string {
+        return this._getRecordReference().id.guid;
     }
-    getEntityReference(): Xrm.EntityReference {
+
+    public getEntityName(): string {
+        return this._getRecordReference().etn ?? '';
+    }
+
+    public getEntityReference(): Xrm.EntityReference {
+        const recordReference = this._getRecordReference();
         return {
-            id: this.getId(),
-            entityType: this.getEntityName(),
-            name: (this._form.getRecord()?.getNamedReference?.() as any)?.name ?? "",
-        } as any;
+            Id: recordReference.id.guid,
+            TypeName: recordReference.etn ?? '',
+            Name: recordReference.name ?? '',
+            TypeCode: 0
+        }
     }
-    getPrimaryAttributeValue(): string { return ""; }
-    isValid(): boolean { return true; }
-    addOnSave(_handler: Xrm.Events.ContextSensitiveHandler): void { /* noop */ }
-    removeOnSave(_handler: Xrm.Events.ContextSensitiveHandler): void { /* noop */ }
-    save(_saveMode?: string): void { notImplemented("data.entity.save"); }
+
+    public getPrimaryAttributeValue(): string {
+        return this._formContext.getForm().getForm().getMetadata().PrimaryNameAttribute;
+    }
+    public isValid(): boolean {
+        return this._formContext.getForm().getForm().isValid();
+    }
+
+    public addOnSave(handler: Xrm.Events.ContextSensitiveHandler): void {
+        this._onSaveHandlerSet.add(handler);
+    }
+
+    public removeOnSave(handler: Xrm.Events.ContextSensitiveHandler): void {
+        this._onSaveHandlerSet.delete(handler);
+    }
+
+    public save(saveMode?: string) {
+        this._formContext.getForm().getForm().save();
+    }
 
     get attributes(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
+        //TODO: implement me!
         return makeItemCollection([], () => "") as any;
+    }
+
+    private _getRecordReference(): ComponentFramework.EntityReference {
+        return this._formContext.getForm().getForm().getRecordReference();
     }
 }
 
 class XrmData {
-    private _form: FormModel;
-    readonly entity: any;
-    readonly attributes: any;
-    readonly process: any;
+    public readonly entity: any;
+    public readonly attributes: any;
+    public readonly process: any;
 
-    constructor(form: FormModel) {
+    private _form: IXrmForm;
+
+
+    constructor(form: IXrmForm) {
         this._form = form;
         this.entity = new XrmEntity(form);
-        this.attributes = makeItemCollection([], () => "");
+        this.attributes = this._createAttributeCollection();
         this.process = {};
     }
 
-    getIsDirty(): boolean { return this._form.isDirty(); }
-    isValid(): boolean { return true; }
-    addOnLoad(_handler: Xrm.Events.DataLoadEventHandler): void { /* noop */ }
-    removeOnLoad(_handler: Xrm.Events.DataLoadEventHandler): void { /* noop */ }
-    save(_saveOptions?: any): Xrm.Async.PromiseLike<any> { notImplemented("data.save"); }
-    refresh(_save?: boolean): Xrm.Async.PromiseLike<any> { notImplemented("data.refresh"); }
+    public getIsDirty(): boolean {
+        return this._form.getForm().isDirty();
+    }
+
+    public isValid(): boolean {
+        return this._form.getForm().isValid();
+    }
+
+    public save(saveOptions?: any) {
+        return this._form.getForm().save();
+    }
+
+    public refresh(save?: boolean): Xrm.Async.PromiseLike<any> {
+        notImplemented("data.refresh");
+    }
+
+    public addOnLoad(handler: Xrm.Events.DataLoadEventHandler): void {
+        notImplemented("data.addOnLoad");
+    }
+    public removeOnLoad(handler: Xrm.Events.DataLoadEventHandler): void {
+        notImplemented("data.removeOnLoad");
+    }
+
+    private _createAttributeCollection(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
+        const fields = this._form.getForm().getFields();
+        const attributes = fields.map((f) => new XrmAttribute(this._form, f.getColumn().name));
+        return makeItemCollection(attributes, (a) => a.getName()) as any;
+    }
 }
 
 class XrmUi {
     readonly tabs: any;
-    readonly controls: any;
+    readonly controls: Xrm.Collection.ItemCollection<Xrm.Controls.Control>;
     readonly formSelector: any;
     readonly navigation: any;
     readonly process: any;
     readonly footerSection: any;
     readonly quickForms: any;
 
-    constructor(form: FormModel) {
-        const tabs = (form.getFormXml()?.tabs?.tab ?? [])
-            .filter((t) => !!t.name)
-            .map((t) => new XrmTab(form, t.name!));
+    private _form: IXrmForm;
 
-        this.tabs = makeItemCollection(tabs, (t) => t.getName());
-        this.controls = makeItemCollection([], () => "");
-        this.formSelector = {
-            items: makeItemCollection([], () => ""),
-            getCurrentItem: () => null,
-        };
-        this.navigation = {
-            items: makeItemCollection([], () => ""),
-        };
-        this.process = {};
-        this.footerSection = {};
-        this.quickForms = makeItemCollection([], () => "");
+    constructor(form: IXrmForm) {
+        this._form = form;
+        this.controls = this._createControlsCollection();
     }
 
-    getFormType(): XrmEnum.FormType { return 2; }
-    getViewPortWidth(): number { return 0; }
-    getViewPortHeight(): number { return 0; }
-    refreshRibbon(_refreshAll?: boolean): void { /* noop */ }
-    setFormEntityName(_name: string): void { /* noop */ }
-    addOnLoad(_handler: Xrm.Events.ContextSensitiveHandler): void { /* noop */ }
-    removeOnLoad(_handler: Xrm.Events.ContextSensitiveHandler): void { /* noop */ }
-    setFormNotification(_message: string, _level: string, _uniqueId: string): boolean { return true; }
-    clearFormNotification(_uniqueId: string): boolean { return true; }
-    close(): void { /* noop */ }
+    public getFormType(): XrmEnum.FormType {
+        return 2;
+    }
+
+    public getViewPortHeight(): number {
+        return 0;
+    }
+
+    public getViewPortWidth(): number {
+        return 0;
+    }
+
+    public refreshRibbon(refreshAll?: boolean): void {
+        notImplemented("ui.refreshRibbon");
+    }
+
+    public setFormEntityName(name: string): void {
+        notImplemented("ui.setFormEntityName");
+    }
+
+    public addOnLoad(handler: Xrm.Events.ContextSensitiveHandler): void {
+        notImplemented("ui.addOnLoad");
+    }
+    public removeOnLoad(handler: Xrm.Events.ContextSensitiveHandler): void {
+        notImplemented("ui.removeOnLoad");
+    }
+
+    public setFormNotification(message: string, level: string, uniqueId: string): boolean {
+        //TODO: implement me!
+        return true;
+    }
+    public clearFormNotification(uniqueId: string): boolean {
+        //TODO: implement me!
+        return true;
+    }
+    public close(): void {
+        notImplemented("ui.close");
+    }
+
+    private _createControlsCollection(): Xrm.Collection.ItemCollection<Xrm.Controls.Control> {
+        const controls = this._form.getControls();
+        return makeItemCollection(controls.map((c) => new XrmControl(this._form, c.id!)), (c) => c.getName()) as any;
+    }
 }
 
 export class XrmFormContext {
     private _form: IXrmForm
-    readonly data: any;
-    readonly ui: any;
+    readonly data: XrmData;
+    readonly ui: XrmUi;
 
     constructor(form: IXrmForm) {
         this._form = form;
@@ -327,29 +486,15 @@ export class XrmFormContext {
         this.ui = new XrmUi(form);
     }
 
-    getAttribute(nameOrIndexOrDelegate?: any): any {
-        if (nameOrIndexOrDelegate === undefined || nameOrIndexOrDelegate === null) {
-            return [];
-        }
-        if (typeof nameOrIndexOrDelegate === "string") {
-            return new XrmAttribute(this._form, nameOrIndexOrDelegate) as any;
-        }
-        if (typeof nameOrIndexOrDelegate === "function") {
-            return [];
-        }
-        notImplemented("getAttribute with index");
+    public getAttribute(nameOrIndexOrDelegate?: any): any {
+        return this.data.attributes.get(nameOrIndexOrDelegate);
     }
 
-    getControl(nameOrIndexOrDelegate?: any): any {
-        if (nameOrIndexOrDelegate === undefined || nameOrIndexOrDelegate === null) {
-            return [];
-        }
-        if (typeof nameOrIndexOrDelegate === "string") {
-            return new XrmControl(this._form, nameOrIndexOrDelegate) as any;
-        }
-        if (typeof nameOrIndexOrDelegate === "function") {
-            return [];
-        }
-        notImplemented("getControl with index");
+    public getControl(nameOrIndexOrDelegate?: any): any {
+        return this.ui.controls.get(nameOrIndexOrDelegate);
+    }
+
+    public getForm(): IXrmForm {
+        return this._form;
     }
 }

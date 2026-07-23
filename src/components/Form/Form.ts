@@ -18,12 +18,15 @@ export interface IFormEvents {
 export interface IForm {
     events: IEventEmitter<IFormEvents>;
     saveOperationPerformed: boolean;
+    getRecordReference: () => ComponentFramework.EntityReference;
     getValidationSummary: () => IValidation[];
+    getMetadata: () => { PrimaryIdAttribute: string; PrimaryNameAttribute: string };
     isDirty: () => boolean;
     isValid: () => boolean;
     getData: () => { [key: string]: any };
     save: () => Promise<void>;
     getRecord(): IRecord;
+    getFields: () => IField[];
     getField: (fieldName: string) => IField;
     setFieldRequiredLevel: (fieldName: string, requiredLevel: RequiredLevelEnum) => void;
     setFieldValid: (fieldName: string, validation: IFieldValidationResult) => void;
@@ -59,6 +62,18 @@ export class Form implements IForm {
 
     public getField(fieldName: string): IField {
         return this._record.getField(fieldName);
+    }
+
+    public getFields(): IField[] {
+        return this._record.getFields();
+    }
+
+    public getMetadata() {
+        return this._dataProvider.getMetadata() as any;
+    }
+
+    public getRecordReference(): ComponentFramework.EntityReference {
+        return this._record.getNamedReference();
     }
 
     public setFieldRequiredLevel(fieldName: string, requiredLevel: RequiredLevelEnum): void {

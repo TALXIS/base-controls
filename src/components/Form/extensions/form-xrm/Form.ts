@@ -417,6 +417,10 @@ export interface IXrmForm extends Omit<FormXml, 'tabs' | 'events'> {
     events: IEventEmitter<IXrmFormEvents>;
     getForm:() => IForm;
     getVisibleTabs: () => ITab[];
+    getSections: () => ISection[];
+    getCells: () => ICell[];
+    getControls: () => IControl[];
+    getTabs: () => ITab[];
     getLocalizedLabel: (labels?: FormXmlLabels) => string | null;
     requestRender: () => void;
 }
@@ -472,6 +476,22 @@ export class XrmForm implements IXrmForm {
 
     public getForm(): IForm {
         return this._form;
+    }
+
+    public getCells(): ICell[] {
+        return this.tabs.tab.flatMap(tab => tab.getSections().flatMap(section => section.getCells()));
+    }
+
+    public getControls(): IControl[] {
+        return this.getCells().filter(cell => cell.control).map(cell => cell.control!);
+    }
+
+    public getTabs(): ITab[] {
+        return this.tabs.tab;
+    }
+
+    public getSections(): ISection[] {
+        return this.tabs.tab.flatMap(tab => tab.getSections());
     }
 
     public requestRender(): void {
