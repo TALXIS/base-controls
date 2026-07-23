@@ -35,12 +35,8 @@ class XrmSection {
     private _formContext: XrmFormContext;
     private _section: IFormXmlSection;
 
-    constructor(formContext: XrmFormContext, name: string) {
+    constructor(section: IFormXmlSection, formContext: XrmFormContext) {
         this._formContext = formContext;
-        const section = this._getFormXmlModel().getSections().find((s) => s.name === name)!;
-        if (!section) {
-            throw new Error(`[XrmSection] Section with name "${name}" not found.`);
-        }
         this._section = section;
     }
 
@@ -65,8 +61,9 @@ class XrmSection {
     }
 
     public get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.Control> {
-        //TODO: implement me!
-        return makeItemCollection([], () => "") as any;
+        //scoped to the section
+        //TODO: only controls in section?
+        return this._formContext.ui.controls;
     }
 
     private _getFormXmlModel(): IFormXmlModel {
@@ -75,16 +72,14 @@ class XrmSection {
 }
 
 class XrmTab {
-    private _formContext: XrmFormContext;
     private _tab: IFormXmlTab;
+    private _formContext: XrmFormContext;
+    private _sections: Xrm.Collection.ItemCollection<XrmSection>;
 
-    constructor(formContext: XrmFormContext, name: string) {
+    constructor(tab: IFormXmlTab, formContext: XrmFormContext) {
         this._formContext = formContext;
-        const tab = this._getFormXmlModel().getTabs().find((t) => t.name === name);
-        if (!tab) {
-            throw new Error(`[XrmTab] Tab with name "${name}" not found.`);
-        }
         this._tab = tab;
+        this._sections = this._createSectionsCollection();
     }
 
     public getName(): string {
@@ -119,11 +114,15 @@ class XrmTab {
         notImplemented("XrmTab.setFocus");
     }
 
-
-    public get sections(): Xrm.Collection.ItemCollection<Xrm.Controls.Section> {
+    public get sections(): Xrm.Collection.ItemCollection<XrmSection> {
         //TODO: implement me!
         //@ts-ignore
         return makeItemCollection(this._sections, (s) => s.getName()) as any;
+    }
+
+    private _createSectionsCollection(): Xrm.Collection.ItemCollection<XrmSection> {
+        const sections = this._tab.getSections();
+        return makeItemCollection(sections.map((s) => new XrmSection(s, this._formContext)), (s) => s.getName()) as any;
     }
 
     private _getFormXmlModel(): IFormXmlModel {
@@ -247,6 +246,7 @@ class XrmAttribute {
     public getUserPrivilege(): Xrm.Privilege { return { canRead: true, canUpdate: true, canCreate: true }; }
 
     public get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.StandardControl> {
+        //scoped to the attribute
         return makeItemCollection([], () => "") as any;
     }
 
@@ -379,7 +379,7 @@ class XrmEntity {
     }
 
     get attributes(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
-        return makeItemCollection([], () => "") as any;
+        return this._formContext.data.attributes;
     }
 
     private _getRecordReference(): ComponentFramework.EntityReference {
@@ -393,7 +393,7 @@ class XrmEntity {
 
 class XrmData {
     public readonly entity: any;
-    public readonly attributes: any;
+    public readonly attributes: Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute>;
     public readonly process: any;
 
     private _onLoadHandlerSet: Set<Xrm.Events.DataLoadEventHandler> = new Set();
@@ -443,8 +443,8 @@ class XrmData {
 }
 
 class XrmUi {
-    readonly tabs: any;
-    readonly controls: Xrm.Collection.ItemCollection<Xrm.Controls.Control>;
+    readonly tabs: Xrm.Collection.ItemCollection<XrmTab>;
+    readonly controls: Xrm.Collection.ItemCollection<XrmControl>;
     readonly formSelector: any;
     readonly navigation: any;
     readonly process: any;
@@ -452,9 +452,11 @@ class XrmUi {
     readonly quickForms: any;
 
     private _formContext: XrmFormContext;
+    private _onLoadHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
     constructor(formContext: XrmFormContext) {
         this._formContext = formContext;
+        this.tabs = this._createTabsCollection();
         this.controls = this._createControlsCollection();
     }
 
@@ -479,10 +481,10 @@ class XrmUi {
     }
 
     public addOnLoad(handler: Xrm.Events.ContextSensitiveHandler): void {
-        notImplemented("ui.addOnLoad");
+        this._onLoadHandlerSet.add(handler);
     }
     public removeOnLoad(handler: Xrm.Events.ContextSensitiveHandler): void {
-        notImplemented("ui.removeOnLoad");
+        this._onLoadHandlerSet.delete(handler);
     }
 
     public setFormNotification(message: string, level: string, uniqueId: string): boolean {
@@ -497,9 +499,14 @@ class XrmUi {
         notImplemented("ui.close");
     }
 
-    private _createControlsCollection(): Xrm.Collection.ItemCollection<Xrm.Controls.Control> {
+    private _createControlsCollection(): Xrm.Collection.ItemCollection<XrmControl> {
         const controls = this._getFormXmlModel().getControls();
         return makeItemCollection(controls.map((c) => new XrmControl(this._formContext, c.id!)), (c) => c.getName()) as any;
+    }
+
+    private _createTabsCollection(): Xrm.Collection.ItemCollection<XrmTab> {
+        const tabs = this._getFormXmlModel().getTabs();
+        return makeItemCollection(tabs.map((t) => new XrmTab(t, this._formContext)), (t) => t.getName()) as any;
     }
 
     private _getFormXmlModel(): IFormXmlModel {
