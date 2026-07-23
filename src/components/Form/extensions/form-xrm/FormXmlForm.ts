@@ -78,6 +78,7 @@ export interface IFormXmlSection extends Omit<MetadataFormXmlSection, 'events'> 
     events: IEventEmitter<IFormXmlSectionEvents>;
     getLabel: () => string | null;
     getCells: () => IFormXmlCell[];
+    getControls: () => IFormXmlControl[];
     getVisibleCells: () => IFormXmlCell[];
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
@@ -108,12 +109,19 @@ export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'cont
 }
 
 export interface IFormXmlControl extends MetadataFormXmlControl {
+    getCell: () => IFormXmlCell;
 }
 
 export class FormXmlControl implements IFormXmlControl {
 
-    constructor(control: MetadataFormXmlControl) {
+    private _cell: IFormXmlCell;
+    constructor(control: MetadataFormXmlControl, cell: IFormXmlCell) {
         Object.assign(this, control);
+        this._cell = cell;
+    }
+
+    public getCell(): IFormXmlCell {
+        return this._cell;
     }
 }
 
@@ -144,7 +152,7 @@ export class FormXmlCell implements IFormXmlCell {
     constructor(cell: MetadataFormXmlCell, form: IFormXmlModel) {
         Object.assign(this, cell);
         this.form = form;
-        this.control = cell.control ? new FormXmlControl(cell.control) : undefined;
+        this.control = cell.control ? new FormXmlControl(cell.control, this) : undefined;
     }
 
     public getLabel(): string | null {
@@ -230,6 +238,10 @@ export class FormXmlSection implements IFormXmlSection {
 
     public getCells(): IFormXmlCell[] {
         return this._cells;
+    }
+
+    public getControls(): IFormXmlControl[] {
+        return this._cells.filter(cell => cell.control).map(cell => cell.control!);
     }
 
     public getVisibleCells(): IFormXmlCell[] {

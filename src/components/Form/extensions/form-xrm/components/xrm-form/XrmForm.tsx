@@ -6,6 +6,7 @@ import { XrmTab } from "./xrm-tab/XrmTab";
 import { IFormStrategy } from "../../../../stragegies";
 import React from "react";
 import { IForm } from '../../../../Form';
+import { XrmFormContext } from '../../../XrmContext';
 
 
 
@@ -16,10 +17,10 @@ export interface IXrmFormStrategy extends IFormStrategy {
 
 interface IXrmFormProps {
     strategy: IXrmFormStrategy;
+    onFormReady?: (formContext: XrmFormContext) => void;
 }
 
 
-//here we are expecting all dependencies such as labels metadata etc to be loaded
 export const XrmForm = (props: IXrmFormProps) => {
     const { strategy } = props;
     const [formXmlModel, setFormXmlModel] = React.useState<FormXmlForm | null>(null);
@@ -27,9 +28,9 @@ export const XrmForm = (props: IXrmFormProps) => {
     const onFormReady = (form: IForm) => {
         const formXml = strategy.onGetFormXml();
         const nextFormXmlModel = new FormXmlForm({ formXml, lcid: 1029, form });
+        const formContext = new XrmFormContext(nextFormXmlModel);
+        props.onFormReady?.(formContext);
         setFormXmlModel(nextFormXmlModel);
-        //@ts-ignore
-        window.form = nextFormXmlModel;
     }
 
     return <Form strategy={strategy} onFormReady={onFormReady}>

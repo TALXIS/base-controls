@@ -1,6 +1,6 @@
 import { IField } from "@talxis/client-libraries";
 import { Form } from "../Form";
-import { IFormXmlCell, IFormXmlModel, IFormXmlSection, IFormXmlTab } from "./form-xrm/FormXmlForm";
+import { IFormXmlCell, IFormXmlControl, IFormXmlModel, IFormXmlSection, IFormXmlTab } from "./form-xrm/FormXmlForm";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
 
 function makeItemCollection<T>(items: T[], getNameFn: (item: T) => string): Xrm.Collection.ItemCollection<T> {
@@ -32,6 +32,7 @@ function notImplemented(name: string): never {
 }
 
 class XrmSection {
+
     private _formContext: XrmFormContext;
     private _section: IFormXmlSection;
 
@@ -60,26 +61,24 @@ class XrmSection {
         this._section.setVisible(visible);
     }
 
-    public get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.Control> {
-        //scoped to the section
-        //TODO: only controls in section?
-        return this._formContext.ui.controls;
-    }
-
-    private _getFormXmlModel(): IFormXmlModel {
-        return this._formContext.getFormXmlModel();
+    public get controls(): Xrm.Collection.ItemCollection<XrmControl> {
+        const controls = this._formContext.ui.controls.get();
+        const sectionFormXmlControlsMap = new Map(this._section.getControls().map((c) => [c.id, c]));
+        const sectionControls = controls.filter((c) => sectionFormXmlControlsMap.has(c.getName()));
+        return makeItemCollection(sectionControls, (c) => c.getName()) as any;
     }
 }
 
 class XrmTab {
+    public readonly sections: Xrm.Collection.ItemCollection<XrmSection>;
+
     private _tab: IFormXmlTab;
     private _formContext: XrmFormContext;
-    private _sections: Xrm.Collection.ItemCollection<XrmSection>;
 
     constructor(tab: IFormXmlTab, formContext: XrmFormContext) {
         this._formContext = formContext;
         this._tab = tab;
-        this._sections = this._createSectionsCollection();
+        this.sections = this._createSectionsCollection();
     }
 
     public getName(): string {
@@ -114,39 +113,31 @@ class XrmTab {
         notImplemented("XrmTab.setFocus");
     }
 
-    public get sections(): Xrm.Collection.ItemCollection<XrmSection> {
-        //TODO: implement me!
-        //@ts-ignore
-        return makeItemCollection(this._sections, (s) => s.getName()) as any;
-    }
-
     private _createSectionsCollection(): Xrm.Collection.ItemCollection<XrmSection> {
         const sections = this._tab.getSections();
         return makeItemCollection(sections.map((s) => new XrmSection(s, this._formContext)), (s) => s.getName()) as any;
     }
-
-    private _getFormXmlModel(): IFormXmlModel {
-        return this._formContext.getFormXmlModel();
-    }
 }
 
 class XrmAttribute {
-    private _name: string;
+    private _field: IField;
     private _formContext: XrmFormContext;
     private _onChangeHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(formContext: XrmFormContext, name: string) {
+    constructor(field: IField, formContext: XrmFormContext) {
+        this._field = field;
         this._formContext = formContext;
-        this._name = name;
         this._registerEventListeners();
     }
 
     public getName(): string {
-        return this._name;
+        return this._field.getColumn().name;
     }
+
     public getValue(): any {
         return this._getField().getValue();
     }
+
     public setValue(value: any): void {
         this._getField().setValue(value);
     }
@@ -193,7 +184,7 @@ class XrmAttribute {
     }
 
     public setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {
-        this._getFormXmlModel().getForm().setFieldRequiredLevel(this._name, Form.getRequiredLevelEnumFromXrm(level));
+        this._getFormXmlModel().getForm().setFieldRequiredLevel(this.getName(), Form.getRequiredLevelEnumFromXrm(level));
     }
 
     public addOption(option: { value: number; text?: string }, index?: number): void {
@@ -223,7 +214,7 @@ class XrmAttribute {
             try {
                 handler({} as any);
             } catch (err) {
-                console.error(`[Form] XrmAttribute.onChange handler failed for attribute "${this._name}":`, err);
+                console.error(`[Form] XrmAttribute.onChange handler failed for attribute "${this._field.getColumn().name}":`, err);
             }
         });
     }
@@ -243,20 +234,24 @@ class XrmAttribute {
         this._onChangeHandlerSet.delete(handler);
     }
 
-    public getUserPrivilege(): Xrm.Privilege { return { canRead: true, canUpdate: true, canCreate: true }; }
-
-    public get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.StandardControl> {
-        //scoped to the attribute
-        return makeItemCollection([], () => "") as any;
+    public getUserPrivilege(): Xrm.Privilege {
+        return { canRead: true, canUpdate: true, canCreate: true };
     }
 
+    public get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.StandardControl> {
+        const allControls = this._formContext.ui.controls.get();
+        const attributeControls = allControls.filter((c) => c.getAttribute()?.getName() === this.getName());
+        return makeItemCollection(attributeControls, (c) => c.getName()) as any;
+    }
+
+
     private _getField(): IField {
-        return this._getFormXmlModel().getForm().getField(this._name);
+        return this._getFormXmlModel().getForm().getField(this.getName());
     }
 
     private _registerEventListeners() {
         this._getFormXmlModel().getForm().events.addEventListener('onFieldValueChanged', (fieldName: string, newValue: any) => {
-            if (fieldName !== this._name) return;
+            if (fieldName !== this.getName()) return;
             this.fireOnChange();
         });
     }
@@ -267,22 +262,18 @@ class XrmAttribute {
 }
 
 class XrmControl {
-    private _controlId: string;
+    private _control: IFormXmlControl;
     private _formContext: XrmFormContext;
     private _cell: IFormXmlCell;
 
-    constructor(formContext: XrmFormContext, controlId: string) {
+    constructor(control: IFormXmlControl, formContext: XrmFormContext) {
         this._formContext = formContext;
-        this._controlId = controlId;
-        const cell = this._getFormXmlModel().getCells().find((c) => c.control?.id === controlId);
-        if (!cell) {
-            throw new Error(`[XrmControl] Controls that are not part of a cell are not supported. ControlId: ${controlId}`);
-        }
-        this._cell = cell;
+        this._control = control;
+        this._cell = control.getCell();
     }
 
     public getName(): string {
-        return this._controlId;
+        return this._control.id ?? '';
     }
 
     public getVisible(): boolean {
@@ -309,9 +300,11 @@ class XrmControl {
         this._cell.setLabel(label);
     }
 
-    public getAttribute(): Xrm.Attributes.Attribute | null {
-        //TODO: IMPLEMENT ME!
-        throw new Error("XrmControl.getAttribute is not implemented yet.");
+    public getAttribute(): XrmAttribute | null {
+        if (this._control.datafieldname) {
+            return this._formContext.data.attributes.get(this._control.datafieldname) as any;
+        }
+        return null;
     }
 
     public getControlType(): Xrm.Controls.ControlType {
@@ -433,7 +426,7 @@ class XrmData {
 
     private _createAttributeCollection(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
         const fields = this._getFormXmlModel().getForm().getFields();
-        const attributes = fields.map((f) => new XrmAttribute(this._formContext, f.getColumn().name));
+        const attributes = fields.map((f) => new XrmAttribute(f, this._formContext));
         return makeItemCollection(attributes, (a) => a.getName()) as any;
     }
 
@@ -501,7 +494,7 @@ class XrmUi {
 
     private _createControlsCollection(): Xrm.Collection.ItemCollection<XrmControl> {
         const controls = this._getFormXmlModel().getControls();
-        return makeItemCollection(controls.map((c) => new XrmControl(this._formContext, c.id!)), (c) => c.getName()) as any;
+        return makeItemCollection(controls.map((c) => new XrmControl(c, this._formContext)), (c) => c.getName()) as any;
     }
 
     private _createTabsCollection(): Xrm.Collection.ItemCollection<XrmTab> {
