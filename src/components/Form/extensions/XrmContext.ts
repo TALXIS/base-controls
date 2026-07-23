@@ -359,7 +359,6 @@ class XrmEntity {
     }
 
     get attributes(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
-        //TODO: implement me!
         return makeItemCollection([], () => "") as any;
     }
 
@@ -373,6 +372,7 @@ class XrmData {
     public readonly attributes: any;
     public readonly process: any;
 
+    private _onLoadHandlerSet: Set<Xrm.Events.DataLoadEventHandler> = new Set();
     private _formXmlModel: IFormXmlModel;
 
 
@@ -400,10 +400,11 @@ class XrmData {
     }
 
     public addOnLoad(handler: Xrm.Events.DataLoadEventHandler): void {
-        notImplemented("data.addOnLoad");
+        this._onLoadHandlerSet.add(handler);
     }
+
     public removeOnLoad(handler: Xrm.Events.DataLoadEventHandler): void {
-        notImplemented("data.removeOnLoad");
+        this._onLoadHandlerSet.delete(handler);
     }
 
     private _createAttributeCollection(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
