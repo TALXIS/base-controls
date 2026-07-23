@@ -1,5 +1,5 @@
 import { XrmForm as XrmFormClass } from '../../Form'
-import { Form, Tabs } from "../../../../components";
+import { Form, Notifications, Ribbon, Tabs } from "../../../../components";
 import { useEventEmitter } from "../../../../../../hooks";
 import { useRerender } from "@talxis/react-components";
 import { XrmTab } from "./xrm-tab/XrmTab";
@@ -44,7 +44,11 @@ const XrmFormInternal = ({ xrmForm }: { xrmForm: XrmFormClass }) => {
     useEventEmitter(xrmForm.events, ['onRenderRequested'], rerender);
     useEventEmitter(tabs.events, ['onTabChange', 'onTabSetVisible'], rerender);
 
-    return <Tabs expandedTab={selectedTab.id} onChangeTab={(tabId) => tabs.setExpandedTab(tabId)}>
-        {tabs.getVisibleTabs().map(tab => <XrmTab id={tab.id} key={tab.id} tab={tab} label={tab.getLabel() ?? undefined} />)}
-    </Tabs>
+    return <>
+        <Notifications />
+        <Ribbon />
+        <Tabs expandedTab={selectedTab.id} onChangeTab={(tabId) => tabs.setExpandedTab(tabId)}>
+            {tabs.getVisibleTabs().map(tab => <XrmTab id={tab.id} key={tab.id} tab={tab} label={tab.getLabel() ?? undefined} />)}
+        </Tabs>
+    </>
 }
