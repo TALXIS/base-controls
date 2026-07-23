@@ -1,4 +1,4 @@
-import { XrmForm as XrmFormClass } from '../../Form'
+import { FormXmlForm } from '../../FormXmlForm'
 import { Form, Notifications, Ribbon, Tabs } from "../../../../components";
 import { useEventEmitter } from "../../../../../../hooks";
 import { useRerender } from "@talxis/react-components";
@@ -22,26 +22,27 @@ interface IXrmFormProps {
 //here we are expecting all dependencies such as labels metadata etc to be loaded
 export const XrmForm = (props: IXrmFormProps) => {
     const { strategy } = props;
-    const [xrmForm, setXrmForm] = React.useState<XrmFormClass | null>(null);
+    const [formXmlForm, setFormXmlForm] = React.useState<FormXmlForm | null>(null);
 
     const onFormReady = (form: IForm) => {
         const formXml = strategy.onGetFormXml();
-        setXrmForm(new XrmFormClass({ formXml, lcid: 1029, form }));
+        const nextFormXmlForm = new FormXmlForm({ formXml, lcid: 1029, form });
+        setFormXmlForm(nextFormXmlForm);
         //@ts-ignore
-        window.form = xrmForm;
+        window.form = nextFormXmlForm;
     }
 
     return <Form strategy={strategy} onFormReady={onFormReady}>
-        {xrmForm && <XrmFormInternal xrmForm={xrmForm} />}
+        {formXmlForm && <XrmFormInternal formXmlForm={formXmlForm} />}
     </Form>
 }
 
-const XrmFormInternal = ({ xrmForm }: { xrmForm: XrmFormClass }) => {
-    const tabs = xrmForm.tabs;
-    const selectedTab = xrmForm.tabs.getExpandedTab();
+const XrmFormInternal = ({ formXmlForm }: { formXmlForm: FormXmlForm }) => {
+    const tabs = formXmlForm.tabs;
+    const selectedTab = formXmlForm.tabs.getExpandedTab();
     const rerender = useRerender();
 
-    useEventEmitter(xrmForm.events, ['onRenderRequested'], rerender);
+    useEventEmitter(formXmlForm.events, ['onRenderRequested'], rerender);
     useEventEmitter(tabs.events, ['onTabChange', 'onTabSetVisible'], rerender);
 
     return <>

@@ -1,6 +1,6 @@
-import { IColumn } from "../../../Form";
+import { IFormXmlColumn } from "../../../FormXmlForm";
 
-export const getXrmTabGridTemplateColumns = (columns: IColumn[], columnsPerRow: number): string | undefined => {
+export const getXrmTabGridTemplateColumns = (columns: IFormXmlColumn[], columnsPerRow: number): string | undefined => {
     if (columns.length === 0 || columnsPerRow <= 0) {
         return undefined;
     }

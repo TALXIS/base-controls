@@ -1,79 +1,104 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { parseFormXml, FormXml, FormXmlTabs, FormXmlTab, FormXmlOpaqueNode, FormXmlPrimitiveValue, FormXmlColumns, FormXmlEvents, FormXmlHeaderFooter, FormXmlLabels, FormXmlAncestor, FormXmlClientResources, FormXmlControlDescriptions, FormXmlDisplayConditions, FormXmlExternalDependencies, FormXmlFormParameters, FormXmlHiddenControls, FormXmlLibraryType, FormXmlNavigation, FormXmlOpaqueElement, FormXmlColumn, FormXmlSections, FormXmlSection, FormXmlCell, FormXmlControl, RequiredLevelEnum } from "@talxis/client-metadata";
+import {
+    parseFormXml,
+    FormXml as MetadataFormXml,
+    FormXmlTabs as MetadataFormXmlTabs,
+    FormXmlTab as MetadataFormXmlTab,
+    FormXmlOpaqueNode as MetadataFormXmlOpaqueNode,
+    FormXmlPrimitiveValue as MetadataFormXmlPrimitiveValue,
+    FormXmlHeaderFooter as MetadataFormXmlHeaderFooter,
+    FormXmlLabels as MetadataFormXmlLabels,
+    FormXmlAncestor as MetadataFormXmlAncestor,
+    FormXmlClientResources as MetadataFormXmlClientResources,
+    FormXmlControlDescriptions as MetadataFormXmlControlDescriptions,
+    FormXmlDisplayConditions as MetadataFormXmlDisplayConditions,
+    FormXmlExternalDependencies as MetadataFormXmlExternalDependencies,
+    FormXmlFormParameters as MetadataFormXmlFormParameters,
+    FormXmlHiddenControls as MetadataFormXmlHiddenControls,
+    FormXmlLibraryType as MetadataFormXmlLibraryType,
+    FormXmlNavigation as MetadataFormXmlNavigation,
+    FormXmlOpaqueElement as MetadataFormXmlOpaqueElement,
+    FormXmlColumn as MetadataFormXmlColumn,
+    FormXmlSections as MetadataFormXmlSections,
+    FormXmlSection as MetadataFormXmlSection,
+    FormXmlCell as MetadataFormXmlCell,
+    FormXmlControl as MetadataFormXmlControl,
+} from "@talxis/client-metadata";
 import { IForm } from "../../Form";
 
 const LCID_ENGLISH_US = 1033;
 
-export interface IFormProps {
+export interface IFormXmlFormProps {
     formXml: string;
     form: IForm;
     lcid: number;
 }
 
 
-export interface ITabsEvents {
+export interface IFormXmlTabsEvents {
     onTabChange: (tabId: string) => void;
     onTabSetVisible: (tabId: string, visible: boolean) => void;
 }
 
-export interface ITabs extends Omit<FormXmlTabs, 'tab'> {
-    tab: ITab[];
-    events: IEventEmitter<ITabsEvents>;
-    getExpandedTab: () => ITab;
-    getVisibleTabs: () => ITab[];
+export interface IFormXmlTabs extends Omit<MetadataFormXmlTabs, 'tab'> {
+    tab: IFormXmlTab[];
+    events: IEventEmitter<IFormXmlTabsEvents>;
+    getExpandedTab: () => IFormXmlTab;
+    getVisibleTabs: () => IFormXmlTab[];
     setExpandedTab: (tabId: string) => void;
 }
 
-export interface ITabEvents {
+export interface IFormXmlTabEvents {
     onSetVisible: (visible: boolean) => void;
     onSectionSetVisible: (sectionId: string, visible: boolean) => void;
     onLabelSet: (label: string) => void;
 }
 
-export interface ITab extends Omit<FormXmlTab, 'events' | 'columns'> {
+export interface IFormXmlTab extends Omit<MetadataFormXmlTab, 'events' | 'columns'> {
     id: string;
-    form: IXrmForm;
-    events: IEventEmitter<ITabEvents>;
+    form: IFormXmlForm;
+    events: IEventEmitter<IFormXmlTabEvents>;
     getLabel: () => string | null;
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setLabel: (label: string) => void;
-    getColumns: () => IColumn[];
-    getVisibleSections: () => ISection[];
-    getSections: () => ISection[];
+    getColumns: () => IFormXmlColumn[];
+    getVisibleSections: () => IFormXmlSection[];
+    getSections: () => IFormXmlSection[];
 
 }
 
-export interface ISectionEvents {
+export interface IFormXmlSectionEvents {
     onSetVisible: (visible: boolean) => void;
     onCellSetVisible: (cellId: string, visible: boolean) => void;
     onLabelSet: (label: string) => void;
 }
 
-export interface ISection extends Omit<FormXmlSection, 'events'> {
-    events: IEventEmitter<ISectionEvents>;
+export interface IFormXmlSection extends Omit<MetadataFormXmlSection, 'events'> {
+    events: IEventEmitter<IFormXmlSectionEvents>;
     getLabel: () => string | null;
-    getCells: () => ICell[];
-    getVisibleCells: () => ICell[];
+    getCells: () => IFormXmlCell[];
+    getVisibleCells: () => IFormXmlCell[];
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setLabel: (label: string) => void;
     getCellLabelPosition: () => "Top" | "Left";
 }
 
-export interface IColumn extends FormXmlColumn {
-    getSections: () => ISection[];
-    getVisibleSections: () => ISection[];
+export interface IFormXmlColumn extends MetadataFormXmlColumn {
+    getSections: () => IFormXmlSection[];
+    getVisibleSections: () => IFormXmlSection[];
 }
 
-export interface ICellEvents {
+export interface IFormXmlCellEvents {
     onSetVisible: (visible: boolean) => void;
     onDisabledSet: (disabled: boolean) => void;
     onLabelSet: (label: string) => void;
 }
 
-export interface ICell extends Omit<FormXmlCell, 'events'> {
-    events: IEventEmitter<ICellEvents>;
+export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'control'> {
+    control?: IFormXmlControl;
+    events: IEventEmitter<IFormXmlCellEvents>;
     getLabel: () => string | null;
     getDisabled: () => boolean;
     setDisabled: (disabled: boolean) => void;
@@ -82,18 +107,18 @@ export interface ICell extends Omit<FormXmlCell, 'events'> {
     setLabel: (label: string) => void;
 }
 
-export interface IControl extends FormXmlControl {
+export interface IFormXmlControl extends MetadataFormXmlControl {
 }
 
-export class Control implements IControl {
+export class FormXmlControl implements IFormXmlControl {
 
-    constructor(control: FormXmlControl) {
+    constructor(control: MetadataFormXmlControl) {
         Object.assign(this, control);
     }
 }
 
-export class Cell implements ICell {
-    public form: IXrmForm;
+export class FormXmlCell implements IFormXmlCell {
+    public form: IFormXmlForm;
     public id?: string | undefined;
     public showlabel?: boolean | undefined;
     public labelid?: string | undefined;
@@ -107,19 +132,19 @@ export class Cell implements ICell {
     public isstreamcell?: boolean | undefined;
     public ischartcell?: boolean | undefined;
     public istilecell?: boolean | undefined;
-    public labels?: FormXmlLabels | undefined;
-    public control?: FormXmlControl;
-    public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
-    public additionalElements?: FormXmlOpaqueNode[] | undefined;
-    public events: IEventEmitter<ICellEvents> = new EventEmitter<ICellEvents>();
+    public labels?: MetadataFormXmlLabels | undefined;
+    public control?: IFormXmlControl;
+    public additionalAttributes?: Record<string, MetadataFormXmlPrimitiveValue> | undefined;
+    public additionalElements?: MetadataFormXmlOpaqueNode[] | undefined;
+    public events: IEventEmitter<IFormXmlCellEvents> = new EventEmitter<IFormXmlCellEvents>();
 
     private _customLabel?: string;
 
 
-    constructor(cell: FormXmlCell, form: IXrmForm) {
+    constructor(cell: MetadataFormXmlCell, form: IFormXmlForm) {
         Object.assign(this, cell);
         this.form = form;
-        this.control = cell.control ? new Control(cell.control) : undefined;
+        this.control = cell.control ? new FormXmlControl(cell.control) : undefined;
     }
 
     public getLabel(): string | null {
@@ -164,9 +189,9 @@ export class Cell implements ICell {
     }
 }
 
-export class Section implements ISection {
+export class FormXmlSection implements IFormXmlSection {
     public id?: string | undefined;
-    public form: IXrmForm;
+    public form: IFormXmlForm;
     public name?: string | undefined;
     public group?: string | undefined;
     public showlabel?: boolean | undefined;
@@ -183,19 +208,19 @@ export class Section implements ISection {
     public celllabelalignment?: "Center" | "Left" | "Right" | undefined;
     public celllabelposition?: "Top" | "Left" | undefined;
     public rowheight?: number | undefined;
-    public labels?: FormXmlLabels | undefined;
-    public rows?: FormXmlSection["rows"];
-    public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
-    public additionalElements?: FormXmlOpaqueNode[] | undefined;
-    public events: IEventEmitter<ISectionEvents> = new EventEmitter<ISectionEvents>();
+    public labels?: MetadataFormXmlLabels | undefined;
+    public rows?: MetadataFormXmlSection["rows"];
+    public additionalAttributes?: Record<string, MetadataFormXmlPrimitiveValue> | undefined;
+    public additionalElements?: MetadataFormXmlOpaqueNode[] | undefined;
+    public events: IEventEmitter<IFormXmlSectionEvents> = new EventEmitter<IFormXmlSectionEvents>();
 
-    private _cells: ICell[] = [];
+    private _cells: IFormXmlCell[] = [];
     private _customLabel?: string;
 
-    constructor(section: FormXmlSection, form: IXrmForm) {
+    constructor(section: MetadataFormXmlSection, form: IFormXmlForm) {
         Object.assign(this, section);
         this.form = form;
-        this._cells = section.rows?.row?.flatMap(row => row.cell?.map(cell => new Cell(cell, form)) ?? []) ?? [];
+        this._cells = section.rows?.row?.flatMap(row => row.cell?.map(cell => new FormXmlCell(cell, form)) ?? []) ?? [];
         this._registerCellEvents(this._cells);
     }
 
@@ -203,11 +228,11 @@ export class Section implements ISection {
         return this._customLabel ?? this.form.getLocalizedLabel(this.labels);
     }
 
-    public getCells(): ICell[] {
+    public getCells(): IFormXmlCell[] {
         return this._cells;
     }
 
-    public getVisibleCells(): ICell[] {
+    public getVisibleCells(): IFormXmlCell[] {
         return this._cells.filter(cell => cell.getVisible());
     }
 
@@ -239,7 +264,7 @@ export class Section implements ISection {
         return this.celllabelposition ?? "Left";
     }
 
-    private _registerCellEvents(cells: ICell[]): void {
+    private _registerCellEvents(cells: IFormXmlCell[]): void {
         for (const cell of cells) {
             cell.events.addEventListener("onSetVisible", (visible) => {
                 this.events.dispatchEvent("onCellSetVisible", cell.id ?? "", visible);
@@ -248,29 +273,29 @@ export class Section implements ISection {
     }
 }
 
-export class Column implements IColumn {
+export class FormXmlColumn implements IFormXmlColumn {
     public width: string = '100%';
-    public sections?: FormXmlSections | undefined;
+    public sections?: MetadataFormXmlSections | undefined;
 
-    private _sections: ISection[] = [];
+    private _sections: IFormXmlSection[] = [];
 
-    constructor(column: FormXmlColumn, form: IXrmForm) {
+    constructor(column: MetadataFormXmlColumn, form: IFormXmlForm) {
         Object.assign(this, column);
-        this._sections = column.sections?.section?.map(section => new Section(section, form)) ?? [];
+        this._sections = column.sections?.section?.map(section => new FormXmlSection(section, form)) ?? [];
     }
 
-    public getSections(): ISection[] {
+    public getSections(): IFormXmlSection[] {
         return this._sections;
     }
 
-    public getVisibleSections(): ISection[] {
+    public getVisibleSections(): IFormXmlSection[] {
         return this._sections.filter(section => section.getVisible());
     }
 }
 
-export class Tab implements ITab {
-    public form: IXrmForm;
-    public events: IEventEmitter<ITabEvents> = new EventEmitter<ITabEvents>();
+export class FormXmlTab implements IFormXmlTab {
+    public form: IFormXmlForm;
+    public events: IEventEmitter<IFormXmlTabEvents> = new EventEmitter<IFormXmlTabEvents>();
     public group?: string | undefined;
     public name?: string | undefined;
     public verticallayout?: boolean | undefined;
@@ -284,29 +309,29 @@ export class Tab implements ITab {
     public visible?: boolean | undefined;
     public availableforphone?: boolean | undefined;
     public collapsible?: boolean | undefined;
-    public labels?: FormXmlLabels | undefined;
-    public tabheader?: FormXmlHeaderFooter | undefined;
-    public tabfooter?: FormXmlHeaderFooter | undefined;
-    public columns: IColumn[];
-    public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
-    public additionalElements?: FormXmlOpaqueNode[] | undefined;
+    public labels?: MetadataFormXmlLabels | undefined;
+    public tabheader?: MetadataFormXmlHeaderFooter | undefined;
+    public tabfooter?: MetadataFormXmlHeaderFooter | undefined;
+    public columns: IFormXmlColumn[];
+    public additionalAttributes?: Record<string, MetadataFormXmlPrimitiveValue> | undefined;
+    public additionalElements?: MetadataFormXmlOpaqueNode[] | undefined;
 
     private _customLabel?: string;
 
 
-    constructor(tab: FormXmlTab, form: IXrmForm) {
+    constructor(tab: MetadataFormXmlTab, form: IFormXmlForm) {
         Object.assign(this, tab);
         this.form = form;
         this.id = tab.id ?? tab.name ?? window.crypto.randomUUID();
-        this.columns = tab.columns?.column?.map(col => new Column(col, form)) ?? [];
+        this.columns = tab.columns?.column?.map(col => new FormXmlColumn(col, form)) ?? [];
         this._registerSectionEvents(this.getSections());
     }
 
-    public getColumns(): IColumn[] {
+    public getColumns(): IFormXmlColumn[] {
         return this.columns
     }
 
-    public getVisibleSections(): ISection[] {
+    public getVisibleSections(): IFormXmlSection[] {
         return this.getColumns().flatMap(column => column.getVisibleSections());
     }
 
@@ -323,7 +348,7 @@ export class Tab implements ITab {
         this.events.dispatchEvent("onSetVisible", visible);
     }
 
-    public getSections(): ISection[] {
+    public getSections(): IFormXmlSection[] {
         return this.getColumns().flatMap(column => column.getSections());
     }
 
@@ -342,7 +367,7 @@ export class Tab implements ITab {
         this.form.requestRender();
     }
 
-    private _registerSectionEvents(sections: ISection[]): void {
+    private _registerSectionEvents(sections: IFormXmlSection[]): void {
         for (const section of sections) {
             section.events.addEventListener("onSetVisible", (visible) => {
                 this.events.dispatchEvent("onSectionSetVisible", section.id ?? "", visible);
@@ -351,8 +376,8 @@ export class Tab implements ITab {
     }
 }
 
-export class Tabs implements ITabs {
-    public events: EventEmitter<ITabsEvents> = new EventEmitter<ITabsEvents>();
+export class FormXmlTabs implements IFormXmlTabs {
+    public events: EventEmitter<IFormXmlTabsEvents> = new EventEmitter<IFormXmlTabsEvents>();
     public showlabels?: boolean | undefined;
     public addedby?: string | undefined;
     public filterby?: string | undefined;
@@ -361,17 +386,17 @@ export class Tabs implements ITabs {
     public primaryentitylogicalname?: string | undefined;
     public entityview?: string | undefined;
     public tilespresent?: boolean | undefined;
-    public tab: ITab[] = [];
-    public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
-    public additionalElements?: FormXmlOpaqueNode[] | undefined;
+    public tab: IFormXmlTab[] = [];
+    public additionalAttributes?: Record<string, MetadataFormXmlPrimitiveValue> | undefined;
+    public additionalElements?: MetadataFormXmlOpaqueNode[] | undefined;
 
-    constructor(tabs: FormXmlTabs, form: IXrmForm) {
+    constructor(tabs: MetadataFormXmlTabs, form: IFormXmlForm) {
         Object.assign(this, tabs);
-        this.tab = tabs.tab.map(tab => new Tab(tab, form));
+        this.tab = tabs.tab.map(tab => new FormXmlTab(tab, form));
         this._registerTabEvents(this.tab);
     }
 
-    public getExpandedTab(): ITab {
+    public getExpandedTab(): IFormXmlTab {
         const visibleTabs = this.getVisibleTabs();
         const expandedTab = visibleTabs.find(tab => tab.expanded) ?? visibleTabs[0];
         if (!expandedTab) {
@@ -380,7 +405,7 @@ export class Tabs implements ITabs {
         return expandedTab;
     }
 
-    public getVisibleTabs(): ITab[] {
+    public getVisibleTabs(): IFormXmlTab[] {
         return this.tab.filter(tab => tab.getVisible());
     }
 
@@ -399,7 +424,7 @@ export class Tabs implements ITabs {
         this.events.dispatchEvent("onTabChange", tabId);
     }
 
-    private _registerTabEvents(tabs: ITab[]): void {
+    private _registerTabEvents(tabs: IFormXmlTab[]): void {
         tabs.map(tab => {
             tab.events.addEventListener("onSetVisible", (visible) => {
                 this.events.dispatchEvent("onTabSetVisible", tab.id, visible);
@@ -408,42 +433,42 @@ export class Tabs implements ITabs {
     }
 }
 
-export interface IXrmFormEvents {
+export interface IFormXmlFormEvents {
     onRenderRequested: () => void;
 }
 
-export interface IXrmForm extends Omit<FormXml, 'tabs' | 'events'> {
-    tabs: ITabs;
-    events: IEventEmitter<IXrmFormEvents>;
+export interface IFormXmlForm extends Omit<MetadataFormXml, 'tabs' | 'events'> {
+    tabs: IFormXmlTabs;
+    events: IEventEmitter<IFormXmlFormEvents>;
     getForm:() => IForm;
-    getVisibleTabs: () => ITab[];
-    getSections: () => ISection[];
-    getCells: () => ICell[];
-    getControls: () => IControl[];
-    getTabs: () => ITab[];
-    getLocalizedLabel: (labels?: FormXmlLabels) => string | null;
+    getVisibleTabs: () => IFormXmlTab[];
+    getSections: () => IFormXmlSection[];
+    getCells: () => IFormXmlCell[];
+    getControls: () => IFormXmlControl[];
+    getTabs: () => IFormXmlTab[];
+    getLocalizedLabel: (labels?: MetadataFormXmlLabels) => string | null;
     requestRender: () => void;
 }
 
 
 
-export class XrmForm implements IXrmForm {
-    public ancestor?: FormXmlAncestor | undefined;
-    public hiddencontrols?: FormXmlHiddenControls | undefined;
-    public controlDescriptions?: FormXmlControlDescriptions | undefined;
-    public tabs: ITabs;
-    public header?: FormXmlHeaderFooter | undefined;
-    public footer?: FormXmlHeaderFooter | undefined;
-    public events: IEventEmitter<IXrmFormEvents>;
-    public formLibraries?: FormXmlLibraryType | undefined;
-    public externaldependencies?: FormXmlExternalDependencies | undefined;
-    public formparameters?: FormXmlFormParameters | undefined;
-    public clientresources?: FormXmlClientResources | undefined;
-    public Navigation?: FormXmlNavigation | undefined;
-    public DisplayConditions?: FormXmlDisplayConditions | undefined;
-    public RibbonDiffXml?: FormXmlOpaqueElement | undefined;
-    public additionalAttributes?: Record<string, FormXmlPrimitiveValue> | undefined;
-    public additionalElements?: FormXmlOpaqueNode[] | undefined;
+export class FormXmlForm implements IFormXmlForm {
+    public ancestor?: MetadataFormXmlAncestor | undefined;
+    public hiddencontrols?: MetadataFormXmlHiddenControls | undefined;
+    public controlDescriptions?: MetadataFormXmlControlDescriptions | undefined;
+    public tabs: IFormXmlTabs;
+    public header?: MetadataFormXmlHeaderFooter | undefined;
+    public footer?: MetadataFormXmlHeaderFooter | undefined;
+    public events: IEventEmitter<IFormXmlFormEvents>;
+    public formLibraries?: MetadataFormXmlLibraryType | undefined;
+    public externaldependencies?: MetadataFormXmlExternalDependencies | undefined;
+    public formparameters?: MetadataFormXmlFormParameters | undefined;
+    public clientresources?: MetadataFormXmlClientResources | undefined;
+    public Navigation?: MetadataFormXmlNavigation | undefined;
+    public DisplayConditions?: MetadataFormXmlDisplayConditions | undefined;
+    public RibbonDiffXml?: MetadataFormXmlOpaqueElement | undefined;
+    public additionalAttributes?: Record<string, MetadataFormXmlPrimitiveValue> | undefined;
+    public additionalElements?: MetadataFormXmlOpaqueNode[] | undefined;
     public enablerelatedinformation?: boolean | undefined;
     public relatedInformationCollapsed?: boolean | undefined;
     public hasmargin?: boolean | undefined;
@@ -455,22 +480,22 @@ export class XrmForm implements IXrmForm {
     private _lcid: number;
     private _form: IForm;
 
-    constructor(params: IFormProps) {
+    constructor(params: IFormXmlFormProps) {
         this._lcid = params.lcid;
         this._form = params.form;
         const formXml = parseFormXml(params.formXml);
         Object.assign(this, formXml);
-        this.events = new EventEmitter<IXrmFormEvents>();
-        this.tabs = new Tabs(formXml.tabs, this);
+        this.events = new EventEmitter<IFormXmlFormEvents>();
+        this.tabs = new FormXmlTabs(formXml.tabs, this);
     }
 
-    public getLocalizedLabel(labels?: FormXmlLabels): string | null {
+    public getLocalizedLabel(labels?: MetadataFormXmlLabels): string | null {
         const localizedLabel = labels?.label?.find(label => label.languagecode === this._lcid);
         const fallbackLabel = labels?.label?.find(label => label.languagecode === LCID_ENGLISH_US) ?? labels?.label?.[0];
         return localizedLabel?.description ?? fallbackLabel?.description ?? null;
     }
 
-    public getVisibleTabs(): ITab[] {
+    public getVisibleTabs(): IFormXmlTab[] {
         return this.tabs.getVisibleTabs();
     }
 
@@ -478,19 +503,19 @@ export class XrmForm implements IXrmForm {
         return this._form;
     }
 
-    public getCells(): ICell[] {
+    public getCells(): IFormXmlCell[] {
         return this.tabs.tab.flatMap(tab => tab.getSections().flatMap(section => section.getCells()));
     }
 
-    public getControls(): IControl[] {
+    public getControls(): IFormXmlControl[] {
         return this.getCells().filter(cell => cell.control).map(cell => cell.control!);
     }
 
-    public getTabs(): ITab[] {
+    public getTabs(): IFormXmlTab[] {
         return this.tabs.tab;
     }
 
-    public getSections(): ISection[] {
+    public getSections(): IFormXmlSection[] {
         return this.tabs.tab.flatMap(tab => tab.getSections());
     }
 

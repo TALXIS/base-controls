@@ -1,11 +1,11 @@
 import { useRerender } from "@talxis/react-components";
 import { Section } from "../../../../../components";
-import { ISection } from "../../../Form";
+import { IFormXmlSection } from "../../../FormXmlForm";
 import { XrmCell } from "../xrm-cell/XrmCell";
 import { useEventEmitter } from "../../../../../../../hooks";
 
 export interface IXrmSectionProps {
-    section: ISection;
+    section: IFormXmlSection;
 }
 
 export const XrmSection = (props: IXrmSectionProps) => {

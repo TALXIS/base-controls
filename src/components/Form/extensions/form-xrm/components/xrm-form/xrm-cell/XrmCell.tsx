@@ -1,10 +1,10 @@
 import { useEventEmitter } from "../../../../../../../hooks";
 import { Cell, Field } from "../../../../../components"
 import { Control } from "../../../../../components/control";
-import { ICell } from "../../../Form";
+import { IFormXmlCell } from "../../../FormXmlForm";
 import { useRerender } from "@talxis/react-components";
 
-export const XrmCell = ({ cell }: { cell: ICell }) => {
+export const XrmCell = ({ cell }: { cell: IFormXmlCell }) => {
     const rerender = useRerender();
     useEventEmitter(cell.events, ['onLabelSet', 'onDisabledSet'], rerender);
 

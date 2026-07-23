@@ -1,13 +1,13 @@
 import React from "react";
 import { Column, Tab } from "../../../../../components";
-import { ITab } from "../../../Form";
+import { IFormXmlTab } from "../../../FormXmlForm";
 import { getXrmTabGridTemplateColumns } from "./getXrmTabGridTemplateColumns";
 import { XrmSection } from "../xrm-section";
 import { useEventEmitter } from "../../../../../../../hooks";
 import { useRerender } from "@talxis/react-components";
 
 
-export const XrmTab = ({ tab, id, label }: { tab: ITab, id: string, label?: string }) => {
+export const XrmTab = ({ tab, id, label }: { tab: IFormXmlTab, id: string, label?: string }) => {
     const columns = tab.getColumns();
     const [gridTemplateColumnsOverride, setGridTemplateColumnsOverride] = React.useState<string>();
     const rerender = useRerender();
