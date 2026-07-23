@@ -1,4 +1,4 @@
-import { Formatting, IColumn, IFieldValidationResult, IRecordEvents, Sanitizer } from "@talxis/client-libraries";
+import { Formatting, IColumn, IField, Sanitizer } from "@talxis/client-libraries";
 import { NestedControlRenderer } from "../../../NestedControlRenderer";
 import { useFieldContext } from "../field/context";
 import { BaseControls } from "../../../../utils";
@@ -6,14 +6,24 @@ import { getControlStyles } from "./styles";
 import { useMemo } from "react";
 import { MessageBar, MessageBarType } from "@fluentui/react";
 import { useFormContext } from "../form/context";
-import React from "react";
-import { useEventEmitter } from "../../../../hooks";
 import { useField } from "../field";
+import { useDisabledContext } from "../cell";
 
 
 
-export interface IFormControlProps {
-
+export interface IControlProps {
+    id?: string;
+    uniqueid?: string
+    classid?: string;
+    labelid?: string;
+    datafieldname?: string;
+    disabled?: boolean;
+    addedby?: string;
+    isunbound?: boolean;
+    isrequired?: boolean;
+    relationship?: string;
+    indicationOfSubgrid?: boolean;
+    parameters?: any
 }
 
 const getControlValue = (column: IColumn, value: any): any => {
@@ -95,18 +105,13 @@ const createMockPcfContext = (
     } as ComponentFramework.Context<any>;
 }
 
-export const Control = (props: IFormControlProps) => {
+const BoundControl = (props: IControlProps & {field: IField}) => {
+    const { disabled = useDisabledContext(), field } = props;
     const form = useFormContext();
-    const fieldName = useFieldContext();
-    const field = useField(fieldName)
-    const record = field?.getRecord();
-    if (!field || !record) throw new Error("Control must be used within a FieldContext.Provider");
-    const disabled = field.isDisabled();
     const column = field.getColumn();
     const context = createMockPcfContext();
     const validationResult = form.saveOperationPerformed ? field.isValid() : null;
     const styles = useMemo(() => getControlStyles(), []);
-
 
     const onNotifyOutputChanged = (outputs: any) => {
         field.setValue(outputs.value);
@@ -144,4 +149,15 @@ export const Control = (props: IFormControlProps) => {
             </MessageBar>
         }
     </div>
+}
+
+export const Control = (props: IControlProps) => {
+    const fieldName = useFieldContext();
+    const field = useField(fieldName);
+
+    if (!field) {
+        return <div>Unbound control</div>
+    }
+
+    return <BoundControl {...props} field={field} />
 }

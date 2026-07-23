@@ -814,77 +814,13 @@ export const FORM_XML = `
 			<columns>
 				<column width="100%">
 					<sections>
-						<section name="clientcontracts" id="{d1274874-c812-4c17-a2c7-d55954958510}" IsUserDefined="0" locklevel="0" showlabel="true" showbar="false" layout="varwidth" celllabelalignment="Left" celllabelposition="Left" columns="1" labelwidth="115">
-							<labels>
-								<label description="KLIENTSKÉ SMLOUVY" languagecode="1029" />
-								<label description="CLIENT CONTRACTS" languagecode="1033" />
-							</labels>
-							<rows>
-								<row>
-									<cell locklevel="0" id="{b8177d93-a75e-445b-bf0b-d34caa822e2c}" rowspan="4" colspan="1" auto="false" showlabel="false">
-										<labels>
-											<label description="Client Contracts" languagecode="1033" />
-											<label description="Smlouvy" languagecode="1029" />
-										</labels>
-										<control indicationOfSubgrid="true" id="clientcontractssubgrid" classid="{E7A81278-8635-4D9E-8D4D-59480B391C5B}" uniqueid="{eb796b7b-52ae-4756-97d9-0a7cf61a2a3b}">
-											<parameters>
-												<RecordsPerPage>15</RecordsPerPage>
-												<AutoExpand>Fixed</AutoExpand>
-												<EnableQuickFind>true</EnableQuickFind>
-												<EnableViewPicker>false</EnableViewPicker>
-												<EnableChartPicker>false</EnableChartPicker>
-												<TargetEntityType>talxis_contract</TargetEntityType>
-												<ViewId>{9D6CB487-67B9-EE11-A569-000D3AB3405B}</ViewId>
-												<ViewIds>{9D6CB487-67B9-EE11-A569-000D3AB3405B}</ViewIds>
-												<RelationshipName>talxis_account_talxis_contract_counterpartyid</RelationshipName>
-											</parameters>
-										</control>
-									</cell>
-								</row>
-								<row />
-								<row />
-								<row />
-							</rows>
-						</section>
-						<section name="weeeproductssection" id="{b95fccab-1ef8-429b-a90e-d32baf732569}" IsUserDefined="0" locklevel="0" showlabel="true" showbar="false" layout="varwidth" celllabelalignment="Left" celllabelposition="Left" columns="1" labelwidth="115">
-							<labels>
-								<label description="VYRÁBĚNÉ / DOVÁŽENÉ ZNAČKY" languagecode="1029" />
-								<label description="MANUFACTURED / IMPORTED BRANDS" languagecode="1033" />
-							</labels>
-							<rows>
-								<row>
-									<cell locklevel="0" id="{0194b125-5ccc-4afa-9dab-ac3cd59374a5}" rowspan="4" colspan="1" auto="false" showlabel="false">
-										<labels>
-											<label description="WEEE Products" languagecode="1033" />
-											<label description="Značky výrobků" languagecode="1029" />
-										</labels>
-										<control indicationOfSubgrid="true" id="weeeproductssubgrid" classid="{E7A81278-8635-4D9E-8D4D-59480B391C5B}" uniqueid="{2db242fe-f3e9-4905-b66d-23ca6d576b80}">
-											<parameters>
-												<RecordsPerPage>15</RecordsPerPage>
-												<AutoExpand>Fixed</AutoExpand>
-												<EnableQuickFind>true</EnableQuickFind>
-												<EnableViewPicker>false</EnableViewPicker>
-												<EnableChartPicker>false</EnableChartPicker>
-												<TargetEntityType>talxis_weeeproduct</TargetEntityType>
-												<ViewId>{1EDC2776-6AB9-EE11-A569-000D3AB1B3E1}</ViewId>
-												<ViewIds>{1EDC2776-6AB9-EE11-A569-000D3AB1B3E1}</ViewIds>
-												<RelationshipName>talxis_account_talxis_weeeproduct_accountid</RelationshipName>
-											</parameters>
-										</control>
-									</cell>
-								</row>
-								<row />
-								<row />
-								<row />
-							</rows>
-						</section>
 						<section name="isoh2systemsection" id="{bc1ee855-c104-4b55-ac37-5501f945ba4e}" visible="true" IsUserDefined="0" locklevel="0" showlabel="true" showbar="false" layout="varwidth" celllabelalignment="Left" celllabelposition="Left" columns="1" labelwidth="115">
 							<labels>
 								<label description="ISOH2 SYNC" languagecode="1033" />
 							</labels>
 							<rows>
 								<row>
-									<cell id="{a88514e5-9f6b-4fa8-8cab-2d457cd2861e}" visible="false" labelid="{f9c7e9e5-5a4c-403b-a8ee-9868aa7d0cb9}">
+									<cell id="{a88514e5-9f6b-4fa8-8cab-2d457cd2861e}" visible="true" labelid="{f9c7e9e5-5a4c-403b-a8ee-9868aa7d0cb9}">
 										<labels>
 											<label description="Zápis do ISOH je podmíněn platnou klientskou smlouvou podtypu 'VYR'." languagecode="1029" />
 											<label description="The organization must be connected to ISOH as a Producer with an active contract." languagecode="1033" />

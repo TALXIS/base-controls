@@ -25,7 +25,6 @@ export interface IForm {
     save: () => Promise<void>;
     getRecord(): IRecord;
     getField: (fieldName: string) => IField;
-    setFieldDisabled: (fieldName: string, disabled: boolean) => void;
     setFieldRequiredLevel: (fieldName: string, requiredLevel: RequiredLevelEnum) => void;
     setFieldValid: (fieldName: string, validation: IFieldValidationResult) => void;
 }
@@ -60,10 +59,6 @@ export class Form implements IForm {
 
     public getField(fieldName: string): IField {
         return this._record.getField(fieldName);
-    }
-
-    public setFieldDisabled(fieldName: string, disabled: boolean): void {
-        this._record.expressions.setDisabledExpression(fieldName, () => disabled);
     }
 
     public setFieldRequiredLevel(fieldName: string, requiredLevel: RequiredLevelEnum): void {

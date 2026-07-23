@@ -68,12 +68,15 @@ export interface IColumn extends FormXmlColumn {
 
 export interface ICellEvents {
     onSetVisible: (visible: boolean) => void;
+    onDisabledSet: (disabled: boolean) => void;
     onLabelSet: (label: string) => void;
 }
 
 export interface ICell extends Omit<FormXmlCell, 'events'> {
     events: IEventEmitter<ICellEvents>;
     getLabel: () => string | null;
+    getDisabled: () => boolean;
+    setDisabled: (disabled: boolean) => void;
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setLabel: (label: string) => void;
@@ -84,12 +87,8 @@ export interface IControl extends FormXmlControl {
 
 export class Control implements IControl {
 
-    constructor(control: FormXmlControl, xrmForm: IXrmForm) {
+    constructor(control: FormXmlControl) {
         Object.assign(this, control);
-
-        if(control.datafieldname && control.disabled != undefined) {
-            xrmForm.getForm().setFieldDisabled(control.datafieldname, control.disabled);
-        }
     }
 }
 
@@ -120,7 +119,7 @@ export class Cell implements ICell {
     constructor(cell: FormXmlCell, form: IXrmForm) {
         Object.assign(this, cell);
         this.form = form;
-        this.control = cell.control ? new Control(cell.control, form) : undefined;
+        this.control = cell.control ? new Control(cell.control) : undefined;
     }
 
     public getLabel(): string | null {
@@ -143,6 +142,20 @@ export class Cell implements ICell {
 
         this._customLabel = label;
         this.events.dispatchEvent("onLabelSet", label);
+    }
+
+    public getDisabled(): boolean {
+        return this.control?.disabled ?? false;
+    }
+
+    public setDisabled(disabled: boolean): void {
+        if(this.getDisabled() === disabled) {
+            return;
+        }
+        if(this.control) {
+            this.control.disabled = disabled;
+            this.events.dispatchEvent("onDisabledSet", disabled);
+        }
     }
 
     //MDA forms default

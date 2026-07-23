@@ -7,6 +7,7 @@ import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { useFieldContext } from "../field/context";
 import { Form } from "../../Form";
 import { useField } from "../field";
+import { DisabledContext } from "./context";
 
 export interface ICellProps {
     id?: string;
@@ -39,8 +40,8 @@ export const Cell = (props: ICellProps) => {
     const {
         id,
         rowspan,
+        disabled,
         label = field?.getColumn().displayName,
-        disabled = field?.isDisabled(),
         requiredLevel = Form.getRequiredLevelEnumFromXrm(field?.getRequiredLevel())
     } = props;
 
@@ -56,30 +57,32 @@ export const Cell = (props: ICellProps) => {
     });
 
     return <div ref={containerRef} className={styles.cell} data-id={`cell-${id}`} style={layoutStyle}>
-        {shouldRenderLabelWrapper &&
-            <div className={styles.labelWrapper}>
-                {label &&
-                    <Label className={styles.labelText}>
-                        <TooltipHost content={label}>
-                            {label}
-                        </TooltipHost>
-                    </Label>
-                }
-                {requiredLevel !== RequiredLevelEnum.None && label &&
-                    <div className={styles.requiredLevelMark}>
-                        {requiredLevel !== RequiredLevelEnum.Recommended ?
-                            <span >*</span> :
-                            <Icon className={styles.recommendedMark} iconName='Add' />
-                        }
-                    </div>
-                }
-                {disabled && <Icon iconName="Lock" className={styles.lockIndicator} />}
+        <DisabledContext.Provider value={disabled ?? false}>
+            {shouldRenderLabelWrapper &&
+                <div className={styles.labelWrapper}>
+                    {label &&
+                        <Label className={styles.labelText}>
+                            <TooltipHost content={label}>
+                                {label}
+                            </TooltipHost>
+                        </Label>
+                    }
+                    {requiredLevel !== RequiredLevelEnum.None && label &&
+                        <div className={styles.requiredLevelMark}>
+                            {requiredLevel !== RequiredLevelEnum.Recommended ?
+                                <span >*</span> :
+                                <Icon className={styles.recommendedMark} iconName='Add' />
+                            }
+                        </div>
+                    }
+                    {disabled && <Icon iconName="Lock" className={styles.lockIndicator} />}
 
+                </div>
+            }
+
+            <div className={styles.control}>
+                {props.children}
             </div>
-        }
-
-        <div className={styles.control}>
-            {props.children}
-        </div>
+        </DisabledContext.Provider>
     </div>
 }
