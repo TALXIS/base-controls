@@ -3,15 +3,13 @@ import { Column, Tab } from "../../../../../components";
 import { IFormXmlTab } from "../../../FormXmlForm";
 import { getXrmTabGridTemplateColumns } from "./getXrmTabGridTemplateColumns";
 import { XrmSection } from "../xrm-section";
-import { useEventEmitter } from "../../../../../../../hooks";
-import { useRerender } from "@talxis/react-components";
+import { useTab } from "./useTab";
 
 
 export const XrmTab = ({ tab, id, label }: { tab: IFormXmlTab, id: string, label?: string }) => {
+    tab = useTab(tab);
     const columns = tab.getColumns();
     const [gridTemplateColumnsOverride, setGridTemplateColumnsOverride] = React.useState<string>();
-    const rerender = useRerender();
-    useEventEmitter(tab.events, ['onSectionVisibilityChanged', 'onLabelChanged'], rerender)
 
     const onColumnsPerRowChanged = React.useCallback((newColumnsPerRow: number) => {
         setGridTemplateColumnsOverride(getXrmTabGridTemplateColumns(columns, newColumnsPerRow));

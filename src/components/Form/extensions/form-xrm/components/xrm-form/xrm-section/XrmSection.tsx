@@ -1,17 +1,14 @@
-import { useRerender } from "@talxis/react-components";
 import { Section } from "../../../../../components";
 import { IFormXmlSection } from "../../../FormXmlForm";
 import { XrmCell } from "../xrm-cell/XrmCell";
-import { useEventEmitter } from "../../../../../../../hooks";
+import { useSection } from "./useSection";
 
 export interface IXrmSectionProps {
     section: IFormXmlSection;
 }
 
 export const XrmSection = (props: IXrmSectionProps) => {
-    const { section } = props;
-    const rerender = useRerender();
-    useEventEmitter(section.events, ['onCellVisibilityChanged', 'onLabelChanged'], rerender);
+    const section = useSection(props.section);
 
     return <Section
         cellLabelPosition={section.getCellLabelPosition()}
