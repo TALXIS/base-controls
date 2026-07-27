@@ -152,6 +152,7 @@ const BoundControl = (props: IControlProps & {field: IField}) => {
 }
 
 export const Control = (props: IControlProps) => {
+    console.log('Rendering Control', props.datafieldname);
     const {disabled = false} = props;
     const fieldName = useFieldContext();
     const field = useField(fieldName);

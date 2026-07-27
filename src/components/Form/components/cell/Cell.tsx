@@ -56,12 +56,11 @@ export const Cell = (props: ICellProps) => {
     });
 
     const onDisabledChange = React.useCallback((newDisabled: boolean) => {
-        if(newDisabled == disabled) return;
         setDisabled(newDisabled);
     }, []);
 
     return <div ref={containerRef} data-field-name={fieldName} className={styles.cell} style={layoutStyle}>
-        <DisabledContext.Provider value={{ onDisabledChange }}>
+        <DisabledContext.Provider value={{ onDisabledChange}}>
             {shouldRenderLabelWrapper &&
                 <div className={styles.labelWrapper}>
                     {label &&
