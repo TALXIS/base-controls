@@ -19,5 +19,5 @@ export const useEventEmitter = <T extends { [K in keyof T]: (...args: any[]) => 
                 emitter.removeEventListener(event, memoizedCallback as T[keyof T]);
             })
         };
-    }, []);
+    }, [emitter, event, memoizedCallback]);
 };

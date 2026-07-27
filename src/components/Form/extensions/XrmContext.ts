@@ -1,6 +1,6 @@
 import { IField } from "@talxis/client-libraries";
 import { Form } from "../Form";
-import { IFormXmlCell, IFormXmlControl, IFormXmlModel, IFormXmlSection, IFormXmlTab } from "./form-xrm/FormXmlForm";
+import { IFormXmlCell, IFormXmlControl, IFormXmlModel, IFormXmlSection, IFormXmlTab, INotification } from "./form-xrm/FormXmlForm";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
 
 function makeItemCollection<T>(items: T[], getNameFn: (item: T) => string): Xrm.Collection.ItemCollection<T> {
@@ -472,6 +472,7 @@ class XrmUi {
     readonly quickForms: any;
 
     private _formContext: XrmFormContext;
+    private _notificationMap: Map<string, INotification> = new Map();
     private _onLoadHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
     constructor(formContext: XrmFormContext) {
@@ -507,13 +508,17 @@ class XrmUi {
         this._onLoadHandlerSet.delete(handler);
     }
 
-    public setFormNotification(message: string, level: string, uniqueId: string): boolean {
-        //TODO: implement me!
+    public setFormNotification(message: string, level: INotification['level'], uniqueId: string): boolean {
+        this._notificationMap.set(uniqueId ?? crypto.randomUUID(), { message, level });
+        this._getFormXmlModel().setNotifications(Array.from(this._notificationMap.values()));
         return true;
     }
     public clearFormNotification(uniqueId: string): boolean {
-        //TODO: implement me!
-        return true;
+        const result = this._notificationMap.delete(uniqueId);
+        if (result) {
+            this._getFormXmlModel().setNotifications(Array.from(this._notificationMap.values()));
+        }
+        return result;
     }
     public close(): void {
         notImplemented("ui.close");

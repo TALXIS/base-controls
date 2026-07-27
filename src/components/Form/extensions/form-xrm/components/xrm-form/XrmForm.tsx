@@ -7,6 +7,8 @@ import { IFormStrategy } from "../../../../stragegies";
 import React from "react";
 import { IForm } from '../../../../Form';
 import { XrmFormContext } from '../../../XrmContext';
+import { XrmNotifications } from './xrm-notifications/XrmNotifications';
+import { FormXmlContext } from './context';
 
 
 
@@ -38,19 +40,26 @@ export const XrmForm = (props: IXrmFormProps) => {
     </Form>
 }
 
+const getNotifications = (formXmlModel: FormXmlForm) => {
+    return formXmlModel.getNotifications().map(notification => ({
+        text: notification.message,
+        level: notification.level
+    }));
+}
+
 const XrmFormInternal = ({ formXmlModel }: { formXmlModel: FormXmlForm }) => {
     const tabs = formXmlModel.tabs;
     const selectedTab = formXmlModel.tabs.getExpandedTab();
+    const notifications = getNotifications(formXmlModel);
     const rerender = useRerender();
 
     useEventEmitter(formXmlModel.events, ['onRenderRequested'], rerender);
-    useEventEmitter(tabs.events, ['onTabFocusChanged', 'onTabVisibilityChanged'], rerender);
+    useEventEmitter(tabs.events, ['onExpandedTabChanged', 'onTabVisibilityChanged'], rerender);
 
-    return <>
-        <Notifications />
-        <Ribbon />
-        <Tabs expandedTab={selectedTab.id} onChangeTab={(tabId) => tabs.setExpandedTab(tabId)}>
+    return <FormXmlContext.Provider value={formXmlModel}>
+        <XrmNotifications />
+        <Tabs key={selectedTab.id} expandedTab={selectedTab.id} onChangeTab={(tabId) => tabs.setExpandedTab(tabId)}>
             {tabs.getVisibleTabs().map(tab => <XrmTab id={tab.id} key={tab.id} tab={tab} label={tab.getLabel() ?? undefined} />)}
         </Tabs>
-    </>
+    </FormXmlContext.Provider>
 }

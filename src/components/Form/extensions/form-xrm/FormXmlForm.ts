@@ -36,6 +36,7 @@ export interface IFormXmlFormProps {
 
 
 export interface IFormXmlTabsEvents {
+    onExpandedTabChanged: (tabId: string) => void;
     onTabFocusChanged: (tabId: string, focused: boolean) => void;
     onTabVisibilityChanged: (tabId: string, visible: boolean) => void;
 }
@@ -444,6 +445,7 @@ export class FormXmlTabs implements IFormXmlTabs {
         newExpandedTab.expanded = true;
         this.events.dispatchEvent("onTabFocusChanged", expandedTab.id, false);
         this.events.dispatchEvent("onTabFocusChanged", newExpandedTab.id, true);
+        this.events.dispatchEvent("onExpandedTabChanged", newExpandedTab.id);
     }
 
     private _registerTabEvents(tabs: IFormXmlTab[]): void {
@@ -457,6 +459,7 @@ export class FormXmlTabs implements IFormXmlTabs {
 
 export interface IFormXmlFormEvents {
     onRenderRequested: () => void;
+    onNotificationsChanged: (notifications: INotification[]) => void;
 }
 
 export interface IFormXmlModel extends Omit<MetadataFormXml, 'tabs' | 'events'> {
@@ -468,8 +471,15 @@ export interface IFormXmlModel extends Omit<MetadataFormXml, 'tabs' | 'events'> 
     getCells: () => IFormXmlCell[];
     getControls: () => IFormXmlControl[];
     getTabs: () => IFormXmlTab[];
+    getNotifications: () => INotification[];
+    setNotifications: (notifications: INotification[]) => void;
     getLocalizedLabel: (labels?: MetadataFormXmlLabels) => string | null;
     requestRender: () => void;
+}
+
+export interface INotification {
+    message: string;
+    level: 'ERROR' | 'WARNING' | 'INFO';
 }
 
 
@@ -501,6 +511,7 @@ export class FormXmlForm implements IFormXmlModel {
 
     private _lcid: number;
     private _form: IForm;
+    private _notifications: INotification[] = [];
 
     constructor(params: IFormXmlFormProps) {
         this._lcid = params.lcid;
@@ -523,6 +534,15 @@ export class FormXmlForm implements IFormXmlModel {
 
     public getForm(): IForm {
         return this._form;
+    }
+
+    public getNotifications(): INotification[] {
+        return this._notifications;
+    }
+
+    public setNotifications(notifications: INotification[]): void {
+        this._notifications = notifications;
+        this.events.dispatchEvent("onNotificationsChanged", notifications);
     }
 
     public getCells(): IFormXmlCell[] {
