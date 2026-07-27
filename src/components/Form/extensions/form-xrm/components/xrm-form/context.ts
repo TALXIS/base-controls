@@ -1,6 +1,6 @@
 import React from "react";
 import { IFormXmlModel } from "../../FormXmlForm";
-import { XrmFormContext as XrmFormContextClass } from "../../../XrmContext";
+import { XrmFormContext as XrmFormContextClass } from "../../xrm-context";
 
 export const FormXmlContext = React.createContext<IFormXmlModel | null>(null);
 export const XrmFormContext = React.createContext<XrmFormContextClass| null>(null);
