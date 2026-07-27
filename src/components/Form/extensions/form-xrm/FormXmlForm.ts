@@ -1,4 +1,4 @@
-import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IFieldValidationResult } from "@talxis/client-libraries";
 import {
     parseFormXml,
     FormXml as MetadataFormXml,
@@ -114,11 +114,14 @@ export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'cont
 
 export interface IFormXmlControl extends MetadataFormXmlControl {
     getCell: () => IFormXmlCell;
+    setValidation: (validation: IFieldValidationResult) => void;
+    getValidation: () => IFieldValidationResult | null;
 }
 
 export class FormXmlControl implements IFormXmlControl {
-
     private _cell: IFormXmlCell;
+    private _validation?: IFieldValidationResult;
+
     constructor(control: MetadataFormXmlControl, cell: IFormXmlCell) {
         Object.assign(this, control);
         this._cell = cell;
@@ -126,6 +129,14 @@ export class FormXmlControl implements IFormXmlControl {
 
     public getCell(): IFormXmlCell {
         return this._cell;
+    }
+
+    public setValidation(validation: IFieldValidationResult): void {
+        this._validation = validation;
+    }
+
+    public getValidation(): IFieldValidationResult | null {
+        return this._validation ?? null;
     }
 }
 

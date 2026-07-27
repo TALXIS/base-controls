@@ -169,6 +169,10 @@ class XrmAttribute {
         this._getField().setValue(value);
     }
 
+    public setIsValid(bool: boolean, message?: string): void {
+        
+    }
+
     public getAttributeType(): Xrm.Attributes.AttributeType {
         const dataType = this._getField().getColumn().dataType;
         switch (dataType) {
