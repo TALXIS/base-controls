@@ -1,6 +1,7 @@
 import { Section } from "../../../../../components";
 import { IFormXmlSection } from "../../../FormXmlForm";
 import { XrmCell } from "../xrm-cell/XrmCell";
+import { XrmField } from "../xrm-field";
 import { useSection } from "./useSection";
 
 export interface IXrmSectionProps {
@@ -17,7 +18,9 @@ export const XrmSection = (props: IXrmSectionProps) => {
         label={section.getLabel() ?? undefined}
     >
         {section.getVisibleCells().map((cell, index) => {
-            return <XrmCell key={cell.id ?? index} cell={cell} />
+            return <XrmField control={cell.control}>
+                <XrmCell key={cell.id ?? index} cell={cell} />
+            </XrmField>
         })}
     </Section>;
 };

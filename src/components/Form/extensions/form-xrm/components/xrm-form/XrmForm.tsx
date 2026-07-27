@@ -9,6 +9,7 @@ import { XrmFormContext } from '../../../XrmContext';
 import { XrmNotifications } from './xrm-notifications/XrmNotifications';
 import { FormXmlContext } from './context';
 import { XrmTabs } from './xrm-tabs/XrmTabs';
+import { XrmRibbon } from './xrm-ribbon';
 
 
 
@@ -46,6 +47,7 @@ const XrmFormInternal = ({ formXmlModel }: { formXmlModel: FormXmlForm }) => {
     useEventEmitter(formXmlModel.events, ['onRenderRequested'], rerender);
 
     return <FormXmlContext.Provider value={formXmlModel}>
+        <XrmRibbon />
         <XrmNotifications />
         <XrmTabs />
     </FormXmlContext.Provider>
