@@ -36,7 +36,7 @@ export interface IFormXmlFormProps {
 
 
 export interface IFormXmlTabsEvents {
-    onExpandedTabChanged: (tabId: string) => void;
+    onTabFocusChanged: (tabId: string, focused: boolean) => void;
     onTabVisibilityChanged: (tabId: string, visible: boolean) => void;
 }
 
@@ -185,10 +185,10 @@ export class FormXmlCell implements IFormXmlCell {
     }
 
     public setDisabled(disabled: boolean): void {
-        if(this.getDisabled() === disabled) {
+        if (this.getDisabled() === disabled) {
             return;
         }
-        if(this.control) {
+        if (this.control) {
             this.control.disabled = disabled;
             this.events.dispatchEvent("onDisabledChanged", disabled);
         }
@@ -371,7 +371,7 @@ export class FormXmlTab implements IFormXmlTab {
     public getVisible(): boolean {
         return this.visible ?? true;
     }
-    
+
     public getExpanded(): boolean {
         return this.expanded ?? false;
     }
@@ -390,11 +390,11 @@ export class FormXmlTab implements IFormXmlTab {
     }
 
     private _registerSectionEvents(sections: IFormXmlSection[]): void {
-        for (const section of sections) {
+        sections.map(section => {
             section.events.addEventListener("onVisibilityChanged", (visible) => {
                 this.events.dispatchEvent("onSectionVisibilityChanged", section.id ?? "", visible);
             });
-        }
+        })
     }
 }
 
@@ -442,7 +442,8 @@ export class FormXmlTabs implements IFormXmlTabs {
         }
         expandedTab.expanded = false;
         newExpandedTab.expanded = true;
-        this.events.dispatchEvent("onExpandedTabChanged", tabId);
+        this.events.dispatchEvent("onTabFocusChanged", expandedTab.id, false);
+        this.events.dispatchEvent("onTabFocusChanged", newExpandedTab.id, true);
     }
 
     private _registerTabEvents(tabs: IFormXmlTab[]): void {
@@ -461,7 +462,7 @@ export interface IFormXmlFormEvents {
 export interface IFormXmlModel extends Omit<MetadataFormXml, 'tabs' | 'events'> {
     tabs: IFormXmlTabs;
     events: IEventEmitter<IFormXmlFormEvents>;
-    getForm:() => IForm;
+    getForm: () => IForm;
     getVisibleTabs: () => IFormXmlTab[];
     getSections: () => IFormXmlSection[];
     getCells: () => IFormXmlCell[];

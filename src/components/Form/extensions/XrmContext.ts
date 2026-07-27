@@ -79,6 +79,7 @@ class XrmTab {
         this._formContext = formContext;
         this._tab = tab;
         this.sections = this._createSectionsCollection();
+        this._registerEventListeners();
     }
 
     public getName(): string {
@@ -106,9 +107,7 @@ class XrmTab {
     }
 
     public setDisplayState(state: Xrm.DisplayState): void {
-        if(state === "expanded") {
-            this.setFocus();
-        }
+        throw new Error("XrmTab.setDisplayState is not supported. Use setFocus() instead.");
     }
 
     public setFocus(): void {
@@ -129,8 +128,9 @@ class XrmTab {
     }
 
     private _registerEventListeners() {
-        this._formContext.getFormXmlModel().tabs.events.addEventListener('onExpandedTabChanged', (tabId: string) => {
-            
+        this._formContext.getFormXmlModel().tabs.events.addEventListener('onTabFocusChanged', (tabId: string, focused: boolean) => {
+            if (tabId !== this._tab.id) return;
+            this._fireOnTabStateChange();
         });
     }
 
