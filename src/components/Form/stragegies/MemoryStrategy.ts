@@ -1,4 +1,4 @@
-import { IColumn } from "@talxis/client-libraries";
+import { IColumn, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { IFormStrategy, IOnLoadResult } from "./interfaces";
 
 export interface IMemoryStrategyParams {
@@ -39,7 +39,12 @@ export class MemoryStrategy implements IFormStrategy {
      * Because `this._data` is the same reference passed via the constructor,
      * the caller's original object is also updated.
      */
-    public async onSave(data: {[key: string]: any}): Promise<void> {
+    public async onSave(data: {[key: string]: any}): Promise<IRecordSaveOperationResult> {
         Object.assign(this._data, data);
+        return {
+            success: true,
+            fields: Object.keys(data),
+            recordId: this._data[this._metadata.PrimaryIdAttribute],
+        }
     }
 }

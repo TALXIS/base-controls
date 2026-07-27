@@ -242,9 +242,6 @@ class XrmAttribute {
     public setSubmitMode(mode: Xrm.SubmitMode): void {
         notImplemented("XrmAttribute.setSubmitMode");
     }
-    /**
-     * Triggers all OnChange handlers (FormXml-declared and code-registered) for this attribute.
-     */
     public fireOnChange(): void {
         this._onChangeHandlerSet.forEach((handler) => {
             try {
@@ -255,17 +252,10 @@ class XrmAttribute {
         });
     }
 
-    /**
-     * Registers a handler to be invoked when this attribute's value changes.
-     * The execution context is automatically passed as the first argument.
-     */
     public addOnChange(handler: Xrm.Events.ContextSensitiveHandler): void {
         this._onChangeHandlerSet.add(handler);
     }
 
-    /**
-     * Removes a previously registered OnChange handler for this attribute.
-     */
     public removeOnChange(handler: Xrm.Events.ContextSensitiveHandler): void {
         this._onChangeHandlerSet.delete(handler);
     }
@@ -355,10 +345,6 @@ class XrmControl {
     }
     public clearNotification(uniqueId?: string) {
         notImplemented("XrmControl.clearNotification");
-    }
-
-    private _getFormXmlModel(): IFormXmlModel {
-        return this._formContext.getFormXmlModel();
     }
 }
 

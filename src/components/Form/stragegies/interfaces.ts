@@ -1,4 +1,4 @@
-import { IColumn } from "@talxis/client-libraries";
+import { IColumn, IRecordSaveOperationResult } from "@talxis/client-libraries";
 
 export interface IOnLoadResult {
     columns: IColumn[];
@@ -9,7 +9,11 @@ export interface IOnLoadResult {
     }
 }
 
+export interface IOnSaveParams {
+    data: {[key: string]: any};
+}
+
 export interface IFormStrategy {
     onLoad: () => Promise<IOnLoadResult>;
-    onSave: (data: {[key: string]: any}) => Promise<void>;
+    onSave: (params: IOnSaveParams) => Promise<IRecordSaveOperationResult>;
 }

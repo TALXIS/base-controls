@@ -121,25 +121,20 @@ export class Form implements IForm {
                 this.events.dispatchEvent('onBeforeSave');
                 const dirtyFields = this._record.getFields().filter(f => f.isDirty());
                 const result = await this._record.save();
-                //validation failed
                 if (!result.success) {
                     this.events.dispatchEvent('onAfterSave', result);
-                }
-                else {
-                    this._registerExistingExpressions();
-                    const rawData = this._record.getRawData();
-                    const changedData = Object.fromEntries(
-                        dirtyFields.map(f => [f.getColumn().name, rawData[f.getColumn().name]])
-                    );
-                    await this._strategy.onSave(changedData);
-                    this.events.dispatchEvent('onAfterSave', result, changedData);
+                    return;
                 }
 
+                this._registerExistingExpressions();
+                const changedData = this._getChangedData(dirtyFields);  
+                const saveResult = await this._strategy.onSave({ data: changedData });
+                this.events.dispatchEvent('onAfterSave', saveResult, changedData);
             },
             onError: (error, message) => {
-                this.events.dispatchEvent('onError', error, message)
+                this.events.dispatchEvent('onError', error, message);
             }
-        })
+        });
     }
 
     public static getRequiredLevelEnumFromXrm(requiredLevel?: Xrm.Attributes.RequirementLevel): RequiredLevelEnum {
@@ -204,5 +199,13 @@ export class Form implements IForm {
         this._validationExpressions.forEach((expression, fieldName) => {
             this._record.expressions.setValidationExpression(fieldName, expression);
         });
+    }
+
+    private _getChangedData(dirtyFields: IField[]): { [key: string]: any } {
+        const rawData = this._record.getRawData();
+
+        return Object.fromEntries(
+            dirtyFields.map(field => [field.getColumn().name, rawData[field.getColumn().name]])
+        );
     }
 }

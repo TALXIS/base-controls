@@ -9,6 +9,7 @@ import { useRerender, withButtonLoading } from "@talxis/react-components";
 import React from "react";
 
 export interface IFormRibbonProps {
+    onSave?: () => void;
     components?: Partial<IRibbonComponents>;
 }
 
@@ -20,6 +21,7 @@ type TSaveButtonState = 'save' | 'saving' | 'saved';
 //various wrappers will then leverage this base commponent
 
 export const Ribbon = (props: IFormRibbonProps) => {
+    const {onSave} = props;
     const theme = useTheme();
     const form = useFormContext();
     const record = form.getRecord()
@@ -89,7 +91,9 @@ export const Ribbon = (props: IFormRibbonProps) => {
             commandBarButtonAs: (props) => <SaveButton
                 text={getSaveText()}
                 //TODO: investigate why onClick is getting canceled
-                onMouseUp={() => form.save()}
+                onMouseUp={() => {
+                    onSave?.() ?? form.save();
+                }}
                 isLoading={saveButtonState === 'saving'}
                 iconProps={getSaveIconProps()}
             />
