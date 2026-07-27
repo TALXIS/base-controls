@@ -550,7 +550,6 @@ class XrmUi {
     public setFormEntityName(name: string): void {
         notImplemented("ui.setFormEntityName");
     }
-
     public addOnLoad(handler: Xrm.Events.ContextSensitiveHandler): void {
         this._onLoadHandlerSet.add(handler);
     }
