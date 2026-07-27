@@ -1,5 +1,5 @@
-import { IFormXmlControl } from "../../../FormXmlForm"
-import { Control } from "../../../../../components/control";
+import { IFormXmlControl } from "../../FormXmlForm"
+import { Control } from "../../../../components/control";
 import { useXrmControl } from "./useXrmControl";
 
 export const XrmControl = (props: {control: IFormXmlControl}) => {

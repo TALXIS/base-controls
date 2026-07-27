@@ -1,6 +1,6 @@
 import { useRerender } from "@talxis/react-components";
-import { useEventEmitter } from "../../../../../../../hooks";
-import { IFormXmlTab } from "../../../FormXmlForm";
+import { useEventEmitter } from "../../../../../../hooks";
+import { IFormXmlTab } from "../../FormXmlForm";
 
 export const useTab = (tab: IFormXmlTab) => {
     const rerender = useRerender();

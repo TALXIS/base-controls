@@ -6,10 +6,10 @@ import { IFormStrategy } from "../../../../stragegies";
 import React from "react";
 import { IForm } from '../../../../Form';
 import { XrmFormContext as XrmFormContextClass } from '../../xrm-context';
-import { XrmNotifications } from './xrm-notifications/XrmNotifications';
-import { FormXmlContext, XrmFormContext } from './context';
-import { XrmTabs } from './xrm-tabs/XrmTabs';
-import { XrmRibbon } from './xrm-ribbon';
+import { XrmNotifications } from '../xrm-notifications/XrmNotifications';
+import { FormXmlContext, XrmFormContext } from '../context';
+import { XrmTabs } from '../xrm-tabs/XrmTabs';
+import { XrmRibbon } from '../xrm-ribbon';
 
 
 

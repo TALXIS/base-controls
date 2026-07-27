@@ -1,5 +1,5 @@
-import { Section } from "../../../../../components";
-import { IFormXmlSection } from "../../../FormXmlForm";
+import { Section } from "../../../../components";
+import { IFormXmlSection } from "../../FormXmlForm";
 import { XrmCell } from "../xrm-cell/XrmCell";
 import { XrmField } from "../xrm-field";
 import { useSection } from "./useSection";

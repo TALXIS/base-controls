@@ -1,5 +1,5 @@
-import { Cell } from "../../../../../components"
-import { IFormXmlCell } from "../../../FormXmlForm";
+import { Cell } from "../../../../components"
+import { IFormXmlCell } from "../../FormXmlForm";
 import { XrmControl } from "../xrm-control";
 import { useCell } from "./useCell";
 

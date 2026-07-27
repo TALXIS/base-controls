@@ -1,5 +1,5 @@
-import { Notifications } from "../../../../../components";
-import { INotification } from "../../../FormXmlForm";
+import { Notifications } from "../../../../components";
+import { INotification } from "../../FormXmlForm";
 import { useNotifications } from "./useNotifications";
 
 const getNotifications = (notifications: INotification[]) => {

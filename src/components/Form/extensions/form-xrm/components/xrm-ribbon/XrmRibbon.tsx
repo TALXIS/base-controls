@@ -1,4 +1,4 @@
-import { Ribbon } from "../../../../../components/ribbon"
+import { Ribbon } from "../../../../components/ribbon"
 import { useXrmFormContext } from "../context";
 
 

@@ -1,5 +1,5 @@
 import { useRerender } from "@talxis/react-components";
-import { useEventEmitter } from "../../../../../../../hooks";
+import { useEventEmitter } from "../../../../../../hooks";
 import { useFormXmlContext } from "../context";
 
 export const useNotifications = () => {
