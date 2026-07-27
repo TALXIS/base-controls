@@ -24,6 +24,7 @@ import {
     FormXmlCell as MetadataFormXmlCell,
     FormXmlControl as MetadataFormXmlControl,
     RequiredLevelEnum,
+    FormXmlControlParameters,
 } from "@talxis/client-metadata";
 import { IForm } from "../../Form";
 
@@ -98,11 +99,11 @@ export interface IFormXmlColumn extends MetadataFormXmlColumn {
 
 export interface IFormXmlCellEvents {
     onVisibilityChanged: (visible: boolean) => void;
-    onDisabledChanged: (disabled: boolean) => void;
     onLabelChanged: (label: string) => void;
 }
 
 export interface IFormXmlControlEvents {
+    onDisabledChanged: (disabled: boolean) => void;
     onValidationChanged: (validation: IFieldValidationResult | null) => void;
 }
 
@@ -110,8 +111,6 @@ export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'cont
     control?: IFormXmlControl;
     events: IEventEmitter<IFormXmlCellEvents>;
     getLabel: () => string | null;
-    getDisabled: () => boolean;
-    setDisabled: (disabled: boolean) => void;
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setLabel: (label: string) => void;
@@ -119,6 +118,8 @@ export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'cont
 
 export interface IFormXmlControl extends MetadataFormXmlControl {
     events: IEventEmitter<IFormXmlControlEvents>;
+    setDisabled: (disabled: boolean) => void;
+    getDisabled: () => boolean;
     getCell: () => IFormXmlCell;
 }
 
@@ -129,6 +130,31 @@ export class FormXmlControl implements IFormXmlControl {
     constructor(control: MetadataFormXmlControl, cell: IFormXmlCell) {
         Object.assign(this, control);
         this._cell = cell;
+    }
+    public id?: string | undefined;
+    public uniqueid?: string | undefined;
+    public classid?: string | undefined;
+    public labelid?: string | undefined;
+    public datafieldname?: string | undefined;
+    public disabled?: boolean | undefined;
+    public addedby?: string | undefined;
+    public isunbound?: boolean | undefined;
+    public isrequired?: boolean | undefined;
+    public relationship?: string | undefined;
+    public indicationOfSubgrid?: boolean | undefined;
+    public labels?: MetadataFormXmlLabels | undefined;
+    public parameters?: FormXmlControlParameters | undefined;
+    public additionalAttributes?: Record<string, MetadataFormXmlPrimitiveValue> | undefined;
+    public additionalElements?: MetadataFormXmlOpaqueNode[] | undefined;
+
+    public getDisabled(): boolean {
+        return this.disabled ?? false;
+    }
+
+    public setDisabled(disabled: boolean): void {
+        if (this.getDisabled() === disabled) return;
+        this.disabled = disabled;
+        this.events.dispatchEvent("onDisabledChanged", disabled);
     }
 
     public getCell(): IFormXmlCell {
@@ -186,20 +212,6 @@ export class FormXmlCell implements IFormXmlCell {
 
         this._customLabel = label;
         this.events.dispatchEvent("onLabelChanged", label);
-    }
-
-    public getDisabled(): boolean {
-        return this.control?.disabled ?? false;
-    }
-
-    public setDisabled(disabled: boolean): void {
-        if (this.getDisabled() === disabled) {
-            return;
-        }
-        if (this.control) {
-            this.control.disabled = disabled;
-            this.events.dispatchEvent("onDisabledChanged", disabled);
-        }
     }
 
     //MDA forms default

@@ -1,6 +1,6 @@
 import { Cell } from "../../../../../components"
-import { Control } from "../../../../../components/control";
 import { IFormXmlCell } from "../../../FormXmlForm";
+import { XrmControl } from "../xrm-control";
 import { useCell } from "./useCell";
 
 export const XrmCell = ({ cell }: { cell: IFormXmlCell }) => {
@@ -9,9 +9,8 @@ export const XrmCell = ({ cell }: { cell: IFormXmlCell }) => {
     return <Cell
         colspan={cell.colspan}
         rowspan={cell.rowspan}
-        disabled={cell.getDisabled()}
         label={cell.getLabel() ?? undefined}>
-        <Control />
+        {cell.control && <XrmControl control={cell.control} />}
     </Cell>
 
 }

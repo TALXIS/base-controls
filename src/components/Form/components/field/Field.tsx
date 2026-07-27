@@ -13,7 +13,7 @@ interface IFieldProps {
 
 export const Field = (props: IFieldProps) => {
     const form = useFormContext();
-    const { name, children, requiredLevel, validation, disabled } = props;
+    const { name, children, requiredLevel, validation } = props;
 
     if(name) {
         if(requiredLevel != null) {
@@ -21,9 +21,6 @@ export const Field = (props: IFieldProps) => {
         }
         if(validation != null) {
             form.setFieldValid(name, validation);
-        }
-        if(disabled != null) {
-            form.setFieldDisabled(name, disabled);
         }
     }
 

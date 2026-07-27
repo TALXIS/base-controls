@@ -24,7 +24,6 @@ export interface ICellProps {
     isStreamCell?: boolean;
     isChartCell?: boolean;
     isTileCell?: boolean;
-    disabled?: boolean;
     auto?: boolean;
     addedBy?: string;
     children?: React.ReactNode;
@@ -36,11 +35,11 @@ export const Cell = (props: ICellProps) => {
     const fieldName = useFieldContext();
     const field = useField(fieldName);
     const theme = useTheme();
+    const [disabled, setDisabled] = React.useState<boolean>(false);
 
     const {
         id,
         rowspan,
-        disabled,
         label = field?.getColumn().displayName,
         requiredLevel = Form.getRequiredLevelEnumFromXrm(field?.getRequiredLevel())
     } = props;
@@ -56,8 +55,13 @@ export const Cell = (props: ICellProps) => {
         rowspan
     });
 
+    const onDisabledChange = React.useCallback((newDisabled: boolean) => {
+        if(newDisabled == disabled) return;
+        setDisabled(newDisabled);
+    }, []);
+
     return <div ref={containerRef} data-field-name={fieldName} className={styles.cell} style={layoutStyle}>
-        <DisabledContext.Provider value={disabled ?? false}>
+        <DisabledContext.Provider value={{ onDisabledChange }}>
             {shouldRenderLabelWrapper &&
                 <div className={styles.labelWrapper}>
                     {label &&

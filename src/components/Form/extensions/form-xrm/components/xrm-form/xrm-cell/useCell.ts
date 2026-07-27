@@ -4,7 +4,7 @@ import { IFormXmlCell } from "../../../FormXmlForm";
 
 export const useCell = (cell: IFormXmlCell) => {
     const rerender = useRerender();
-    useEventEmitter(cell.events, ['onLabelChanged', 'onDisabledChanged'], rerender);
+    useEventEmitter(cell.events, ['onLabelChanged'], rerender);
 
     return cell;
 }

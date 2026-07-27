@@ -321,11 +321,11 @@ class XrmControl {
     }
 
     public getDisabled(): boolean {
-        return this._cell.getDisabled();
+        return this._control.getDisabled();
     }
 
     public setDisabled(disabled: boolean): void {
-        this._cell.setDisabled(disabled);
+        this._control.setDisabled(disabled);
     }
 
     public getLabel(): string {

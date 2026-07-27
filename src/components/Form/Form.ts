@@ -29,7 +29,6 @@ export interface IForm {
     getRecord(): IRecord;
     getFields: () => IField[];
     getField: (fieldName: string) => IField;
-    setFieldDisabled: (fieldName: string, disabled: boolean) => void;
     setFieldRequiredLevel: (fieldName: string, requiredLevel: RequiredLevelEnum) => void;
     setFieldValid: (fieldName: string, validation: IFieldValidationResult) => void;
 }
@@ -92,12 +91,6 @@ export class Form implements IForm {
         this._validationExpressions.set(fieldName, () => validation);
         this._record.expressions.setValidationExpression(fieldName, () => this._validationExpressions.get(fieldName)!());
     }
-
-    public setFieldDisabled(fieldName: string, disabled: boolean): void {
-        this._disabledExpressions.set(fieldName, () => disabled);
-        this._record.expressions.setDisabledExpression(fieldName, () => this._disabledExpressions.get(fieldName)!());
-    }
-
 
     public destroy(): void {
         this._validationExpressions.clear();
@@ -210,9 +203,6 @@ export class Form implements IForm {
         });
         this._validationExpressions.forEach((expression, fieldName) => {
             this._record.expressions.setValidationExpression(fieldName, expression);
-        });
-        this._disabledExpressions.forEach((expression, fieldName) => {
-            this._record.expressions.setDisabledExpression(fieldName, expression);
         });
     }
 }

@@ -3,7 +3,7 @@ import { NestedControlRenderer } from "../../../NestedControlRenderer";
 import { useFieldContext } from "../field/context";
 import { BaseControls } from "../../../../utils";
 import { getControlStyles } from "./styles";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { MessageBar, MessageBarType } from "@fluentui/react";
 import { useFormContext } from "../form/context";
 import { useField } from "../field";
@@ -106,7 +106,7 @@ const createMockPcfContext = (
 }
 
 const BoundControl = (props: IControlProps & {field: IField}) => {
-    const { disabled = useDisabledContext(), field } = props;
+    const { disabled = false,  field } = props;
     const form = useFormContext();
     const column = field.getColumn();
     const context = createMockPcfContext();
@@ -152,8 +152,14 @@ const BoundControl = (props: IControlProps & {field: IField}) => {
 }
 
 export const Control = (props: IControlProps) => {
+    const {disabled = false} = props;
     const fieldName = useFieldContext();
     const field = useField(fieldName);
+    const disabledContext = useDisabledContext();
+
+    useEffect(() => {
+        disabledContext?.onDisabledChange(disabled);
+    }, [disabled, disabledContext?.onDisabledChange]);
 
     if (!field) {
         return <div>Unbound control</div>
