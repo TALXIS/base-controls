@@ -31,6 +31,12 @@ function notImplemented(name: string): never {
     throw new Error(`[XrmFormContext] ${name} is not implemented.`);
 }
 
+type XrmOnSaveHandler = Xrm.Events.SaveEventHandler | Xrm.Events.SaveEventHandlerAsync;
+
+function isPromiseLike<T>(value: T | PromiseLike<T>): value is PromiseLike<T> {
+    return typeof value === "object" && value !== null && "then" in value;
+}
+
 class XrmSection {
 
     private _formContext: XrmFormContext;
@@ -350,7 +356,7 @@ class XrmControl {
 
 class XrmEntity {
     private _formContext: XrmFormContext;
-    private _onSaveHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
+    private _onSaveHandlerSet: Set<XrmOnSaveHandler> = new Set();
 
     constructor(formContext: XrmFormContext) {
         this._formContext = formContext;
@@ -381,20 +387,63 @@ class XrmEntity {
         return this._getFormXmlModel().getForm().isValid();
     }
 
-    public addOnSave(handler: Xrm.Events.ContextSensitiveHandler): void {
+    public addOnSave(handler: Xrm.Events.SaveEventHandler | Xrm.Events.SaveEventHandlerAsync): void {
         this._onSaveHandlerSet.add(handler);
     }
 
-    public removeOnSave(handler: Xrm.Events.ContextSensitiveHandler): void {
+    public removeOnSave(handler: Xrm.Events.SaveEventHandler | Xrm.Events.SaveEventHandlerAsync): void {
         this._onSaveHandlerSet.delete(handler);
     }
 
-    public save(saveMode?: string) {
-        this._getFormXmlModel().getForm().save();
+    public async save(): Promise<void> {
+        if (!this._getFormXmlModel().getForm().isValid()) {
+            return;
+        }
+
+        const eventState = {
+            defaultPrevented: false,
+        };
+
+        const handlerResults = Array.from(this._onSaveHandlerSet.values()).map(async (handler) => {
+            const eventArgs = this._createSaveEventArgs(eventState);
+            const executionContext = this._createSaveEventContext(eventArgs);
+
+            try {
+                const result = handler(executionContext);
+
+                if (isPromiseLike(result)) {
+                    await result;
+                }
+            } catch (error) {
+                console.error("[Form] XrmEntity.onSave handler failed:", error);
+            }
+        });
+
+        await Promise.all(handlerResults);
+
+        if (eventState.defaultPrevented) {
+            return;
+        }
+
+        await this._getFormXmlModel().getForm().save();
     }
 
     get attributes(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
         return this._formContext.data.attributes;
+    }
+
+    private _createSaveEventArgs(eventState: { defaultPrevented: boolean }): Xrm.Events.SaveEventArgumentsAsync {
+        return {
+            preventDefault: () => {
+                eventState.defaultPrevented = true;
+            }
+        } as any;
+    }
+
+    private _createSaveEventContext(eventArgs: Xrm.Events.SaveEventArgumentsAsync): Xrm.Events.SaveEventContextAsync {
+        return {
+            getEventArgs: () => eventArgs,
+        } as any;
     }
 
     private _getRecordReference(): ComponentFramework.EntityReference {
@@ -430,8 +479,14 @@ class XrmData {
         return this._getFormXmlModel().getForm().isValid();
     }
 
-    public save(saveOptions?: any) {
-        return this.entity.save(saveOptions);
+    public save(saveOptions?: Xrm.SaveOptions) {
+        void saveOptions;
+
+        if (!this.getIsDirty()) {
+            return Promise.resolve(undefined);
+        }
+
+        return this.entity.save();
     }
 
     public refresh(save?: boolean): Xrm.Async.PromiseLike<any> {
