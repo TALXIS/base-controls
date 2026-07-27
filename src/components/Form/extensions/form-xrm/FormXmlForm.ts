@@ -23,6 +23,7 @@ import {
     FormXmlSection as MetadataFormXmlSection,
     FormXmlCell as MetadataFormXmlCell,
     FormXmlControl as MetadataFormXmlControl,
+    RequiredLevelEnum,
 } from "@talxis/client-metadata";
 import { IForm } from "../../Form";
 
@@ -492,11 +493,14 @@ export interface INotification {
 
 export interface IFormXmlAttributeEvents {
     onValidationChanged: (validation: IFieldValidationResult | null) => void;
+    onRequiredLevelChanged: (requiredLevel: RequiredLevelEnum) => void;
 }
 
 export interface IFormXmlAttribute {
     events: IEventEmitter<IFormXmlAttributeEvents>;
     getField: () => IField;
+    getRequiredLevel: () => RequiredLevelEnum | null;
+    setRequiredLevel: (requiredLevel: RequiredLevelEnum) => void;
     getValidation: () => IFieldValidationResult | null;
     setValidation: (validation: IFieldValidationResult) => void;
 }
@@ -505,6 +509,7 @@ export interface IFormXmlAttribute {
 export class FormXmlAttribute implements IFormXmlAttribute {
     public readonly events: IEventEmitter<IFormXmlAttributeEvents> = new EventEmitter<IFormXmlAttributeEvents>();
     private _validation: IFieldValidationResult | null = null;
+    private _requiredLevel: RequiredLevelEnum | null = null;
     private _field: IField;
 
     constructor(field: IField) {
@@ -516,8 +521,19 @@ export class FormXmlAttribute implements IFormXmlAttribute {
     }
 
     public setValidation(validation: IFieldValidationResult): void {
+        if(this._validation?.error === validation.error && this._validation?.errorMessage === validation.errorMessage) return;
         this._validation = validation;
         this.events.dispatchEvent("onValidationChanged", validation);
+    }
+
+    public getRequiredLevel(): RequiredLevelEnum | null {
+        return this._requiredLevel;
+    }
+
+    public setRequiredLevel(requiredLevel: RequiredLevelEnum): void {
+        if(this._requiredLevel === requiredLevel) return;
+        this._requiredLevel = requiredLevel;
+        this.events.dispatchEvent("onRequiredLevelChanged", requiredLevel);
     }
 
     public getField(): IField {

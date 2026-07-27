@@ -5,15 +5,18 @@ import { useXrmAttribute } from "./useXrmAttribute";
 interface IXrmFieldProps {
     children?: React.ReactNode;
     control?: IFormXmlControl;
+    //has to be like this so children rerenders when field event emitter toggles
+    onRenderChildren?: () => React.ReactNode;
 }
 
 export const XrmField = (props: IXrmFieldProps) => {
-    const { children } = props;
+    const { onRenderChildren } = props;
     const datafieldname = props.control?.datafieldname;
     const attribute = useXrmAttribute(props.control?.datafieldname);
     const validation = attribute?.getValidation();
+    const requiredLevel = attribute?.getRequiredLevel();
 
-    return <Field name={datafieldname} validation={validation}>
-        {children}
+    return <Field name={datafieldname} validation={validation} requiredLevel={requiredLevel}>
+        {onRenderChildren?.()}
     </Field>
 }

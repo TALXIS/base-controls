@@ -220,7 +220,7 @@ class XrmAttribute {
     }
 
     public setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {
-        this._getFormXmlModel().getForm().setFieldRequiredLevel(this.getName(), Form.getRequiredLevelEnumFromXrm(level));
+        this._attribute.setRequiredLevel(Form.getRequiredLevelEnumFromXrm(level));
     }
 
     public addOption(option: { value: number; text?: string }, index?: number): void {

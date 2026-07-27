@@ -9,7 +9,7 @@ export const useXrmAttribute = (name?: string): IFormXmlAttribute | null => {
     const attribute = formXmlModel.getAttribute(name);
     const rerender = useRerender();
 
-    useEventEmitter(attribute!.events, ['onValidationChanged'], rerender);
+    useEventEmitter(attribute!.events, ['onValidationChanged', 'onRequiredLevelChanged'], rerender);
 
     return attribute;
 }
