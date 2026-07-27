@@ -25,9 +25,11 @@ export interface IForm {
     isValid: () => boolean;
     getData: () => { [key: string]: any };
     save: () => Promise<void>;
+    destroy: () => void;
     getRecord(): IRecord;
     getFields: () => IField[];
     getField: (fieldName: string) => IField;
+    setFieldDisabled: (fieldName: string, disabled: boolean) => void;
     setFieldRequiredLevel: (fieldName: string, requiredLevel: RequiredLevelEnum) => void;
     setFieldValid: (fieldName: string, validation: IFieldValidationResult) => void;
 }
@@ -44,6 +46,9 @@ export class Form implements IForm {
     private _strategy: IFormStrategy;
     private _saveOperationPerformed: boolean = false;
     private _validationSummary: IValidation[] = [];
+    private _validationExpressions: Map<string, () => IFieldValidationResult> = new Map();
+    private _requiredLevelExpressions: Map<string, () => Xrm.Attributes.RequirementLevel> = new Map();
+    private _disabledExpressions: Map<string, () => boolean> = new Map();
 
     constructor(params: IFormParams) {
         this._strategy = params.strategy;
@@ -77,13 +82,28 @@ export class Form implements IForm {
     }
 
     public setFieldRequiredLevel(fieldName: string, requiredLevel: RequiredLevelEnum): void {
-        this._record.expressions.setRequiredLevelExpression(fieldName, () => {
+        this._requiredLevelExpressions.set(fieldName, () => {
             return Form.getXrmRequirementLevelFromEnum(requiredLevel);
         });
+        this._record.expressions.setRequiredLevelExpression(fieldName, () => this._requiredLevelExpressions.get(fieldName)!());
     }
 
     public setFieldValid(fieldName: string, validation: IFieldValidationResult): void {
-        this._record.expressions.setValidationExpression(fieldName, () => validation);
+        this._validationExpressions.set(fieldName, () => validation);
+        this._record.expressions.setValidationExpression(fieldName, () => this._validationExpressions.get(fieldName)!());
+    }
+
+    public setFieldDisabled(fieldName: string, disabled: boolean): void {
+        this._disabledExpressions.set(fieldName, () => disabled);
+        this._record.expressions.setDisabledExpression(fieldName, () => this._disabledExpressions.get(fieldName)!());
+    }
+
+
+    public destroy(): void {
+        this._validationExpressions.clear();
+        this._requiredLevelExpressions.clear();
+        this._disabledExpressions.clear();
+        this._dataProvider.destroy();
     }
 
     public isDirty(): boolean {
@@ -113,11 +133,11 @@ export class Form implements IForm {
                     this.events.dispatchEvent('onAfterSave', result);
                 }
                 else {
+                    this._registerExistingExpressions();
                     const rawData = this._record.getRawData();
                     const changedData = Object.fromEntries(
                         dirtyFields.map(f => [f.getColumn().name, rawData[f.getColumn().name]])
                     );
-
                     await this._strategy.onSave(changedData);
                     this.events.dispatchEvent('onAfterSave', result, changedData);
                 }
@@ -182,5 +202,17 @@ export class Form implements IForm {
                 errorMessage: error.message
             }
         }) ?? [];
+    }
+
+    private _registerExistingExpressions(): void {
+        this._requiredLevelExpressions.forEach((expression, fieldName) => {
+            this._record.expressions.setRequiredLevelExpression(fieldName, expression);
+        });
+        this._validationExpressions.forEach((expression, fieldName) => {
+            this._record.expressions.setValidationExpression(fieldName, expression);
+        });
+        this._disabledExpressions.forEach((expression, fieldName) => {
+            this._record.expressions.setDisabledExpression(fieldName, expression);
+        });
     }
 }

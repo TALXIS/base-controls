@@ -5,6 +5,7 @@ import { useFormContext } from "../form/context";
 
 interface IFieldProps {
     name?: string;
+    disabled?: boolean;
     requiredLevel?: RequiredLevelEnum | null;
     validation?: IFieldValidationResult | null;
     children?: React.ReactNode;
@@ -12,7 +13,7 @@ interface IFieldProps {
 
 export const Field = (props: IFieldProps) => {
     const form = useFormContext();
-    const { name, children, requiredLevel, validation } = props;
+    const { name, children, requiredLevel, validation, disabled } = props;
 
     if(name) {
         if(requiredLevel != null) {
@@ -20,6 +21,9 @@ export const Field = (props: IFieldProps) => {
         }
         if(validation != null) {
             form.setFieldValid(name, validation);
+        }
+        if(disabled != null) {
+            form.setFieldDisabled(name, disabled);
         }
     }
 
