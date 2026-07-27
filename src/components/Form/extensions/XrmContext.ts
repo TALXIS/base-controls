@@ -407,7 +407,7 @@ class XrmEntity {
 }
 
 class XrmData {
-    public readonly entity: any;
+    public readonly entity: XrmEntity;
     public readonly attributes: Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute>;
     public readonly process: any;
 
@@ -431,7 +431,7 @@ class XrmData {
     }
 
     public save(saveOptions?: any) {
-        return this._getFormXmlModel().getForm().save();
+        return this.entity.save(saveOptions);
     }
 
     public refresh(save?: boolean): Xrm.Async.PromiseLike<any> {
