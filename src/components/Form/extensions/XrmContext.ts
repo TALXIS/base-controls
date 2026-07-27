@@ -1,6 +1,6 @@
 import { IField } from "@talxis/client-libraries";
 import { Form } from "../Form";
-import { IFormXmlCell, IFormXmlControl, IFormXmlModel, IFormXmlSection, IFormXmlTab, INotification } from "./form-xrm/FormXmlForm";
+import { IFormXmlAttribute, IFormXmlCell, IFormXmlControl, IFormXmlModel, IFormXmlSection, IFormXmlTab, INotification } from "./form-xrm/FormXmlForm";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
 
 function makeItemCollection<T>(items: T[], getNameFn: (item: T) => string): Xrm.Collection.ItemCollection<T> {
@@ -147,12 +147,14 @@ class XrmTab {
 }
 
 class XrmAttribute {
+    private _attribute: IFormXmlAttribute;
     private _field: IField;
     private _formContext: XrmFormContext;
     private _onChangeHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(field: IField, formContext: XrmFormContext) {
-        this._field = field;
+    constructor(attribute: IFormXmlAttribute, formContext: XrmFormContext) {
+        this._attribute = attribute;
+        this._field = attribute.getField();
         this._formContext = formContext;
         this._registerEventListeners();
     }
@@ -170,7 +172,10 @@ class XrmAttribute {
     }
 
     public setIsValid(bool: boolean, message?: string): void {
-        
+        this._attribute.setValidation({
+            error: !bool,
+            errorMessage: message ?? ''
+        })
     }
 
     public getAttributeType(): Xrm.Attributes.AttributeType {
@@ -456,9 +461,9 @@ class XrmData {
     }
 
     private _createAttributeCollection(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
-        const fields = this._getFormXmlModel().getForm().getFields();
-        const attributes = fields.map((f) => new XrmAttribute(f, this._formContext));
-        return makeItemCollection(attributes, (a) => a.getName()) as any;
+        const attributes = this._getFormXmlModel().getAttributes();
+        const xrmAttributes = attributes.map((a) => new XrmAttribute(a, this._formContext));
+        return makeItemCollection(xrmAttributes, (a) => a.getName()) as any;
     }
 
     private _getFormXmlModel(): IFormXmlModel {

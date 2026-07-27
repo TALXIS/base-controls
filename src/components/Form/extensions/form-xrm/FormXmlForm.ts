@@ -1,4 +1,4 @@
-import { EventEmitter, IEventEmitter, IFieldValidationResult } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter, IField, IFieldValidationResult } from "@talxis/client-libraries";
 import {
     parseFormXml,
     FormXml as MetadataFormXml,
@@ -101,6 +101,10 @@ export interface IFormXmlCellEvents {
     onLabelChanged: (label: string) => void;
 }
 
+export interface IFormXmlControlEvents {
+    onValidationChanged: (validation: IFieldValidationResult | null) => void;
+}
+
 export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'control'> {
     control?: IFormXmlControl;
     events: IEventEmitter<IFormXmlCellEvents>;
@@ -113,14 +117,13 @@ export interface IFormXmlCell extends Omit<MetadataFormXmlCell, 'events' | 'cont
 }
 
 export interface IFormXmlControl extends MetadataFormXmlControl {
+    events: IEventEmitter<IFormXmlControlEvents>;
     getCell: () => IFormXmlCell;
-    setValidation: (validation: IFieldValidationResult) => void;
-    getValidation: () => IFieldValidationResult | null;
 }
 
 export class FormXmlControl implements IFormXmlControl {
+    public readonly events: IEventEmitter<IFormXmlControlEvents> = new EventEmitter<IFormXmlControlEvents>();
     private _cell: IFormXmlCell;
-    private _validation?: IFieldValidationResult;
 
     constructor(control: MetadataFormXmlControl, cell: IFormXmlCell) {
         Object.assign(this, control);
@@ -129,14 +132,6 @@ export class FormXmlControl implements IFormXmlControl {
 
     public getCell(): IFormXmlCell {
         return this._cell;
-    }
-
-    public setValidation(validation: IFieldValidationResult): void {
-        this._validation = validation;
-    }
-
-    public getValidation(): IFieldValidationResult | null {
-        return this._validation ?? null;
     }
 }
 
@@ -480,6 +475,8 @@ export interface IFormXmlModel extends Omit<MetadataFormXml, 'tabs' | 'events'> 
     getVisibleTabs: () => IFormXmlTab[];
     getSections: () => IFormXmlSection[];
     getCells: () => IFormXmlCell[];
+    getAttribute: (name: string) => IFormXmlAttribute | null;
+    getAttributes: () => IFormXmlAttribute[];
     getControls: () => IFormXmlControl[];
     getTabs: () => IFormXmlTab[];
     getNotifications: () => INotification[];
@@ -491,6 +488,41 @@ export interface IFormXmlModel extends Omit<MetadataFormXml, 'tabs' | 'events'> 
 export interface INotification {
     message: string;
     level: 'ERROR' | 'WARNING' | 'INFO';
+}
+
+export interface IFormXmlAttributeEvents {
+    onValidationChanged: (validation: IFieldValidationResult | null) => void;
+}
+
+export interface IFormXmlAttribute {
+    events: IEventEmitter<IFormXmlAttributeEvents>;
+    getField: () => IField;
+    getValidation: () => IFieldValidationResult | null;
+    setValidation: (validation: IFieldValidationResult) => void;
+}
+
+
+export class FormXmlAttribute implements IFormXmlAttribute {
+    public readonly events: IEventEmitter<IFormXmlAttributeEvents> = new EventEmitter<IFormXmlAttributeEvents>();
+    private _validation: IFieldValidationResult | null = null;
+    private _field: IField;
+
+    constructor(field: IField) {
+        this._field = field;
+    }
+
+    public getValidation(): IFieldValidationResult | null {
+        return this._validation;
+    }
+
+    public setValidation(validation: IFieldValidationResult): void {
+        this._validation = validation;
+        this.events.dispatchEvent("onValidationChanged", validation);
+    }
+
+    public getField(): IField {
+        return this._field;
+    }
 }
 
 
@@ -523,6 +555,7 @@ export class FormXmlForm implements IFormXmlModel {
     private _lcid: number;
     private _form: IForm;
     private _notifications: INotification[] = [];
+    private _attributes: Map<string, IFormXmlAttribute> = new Map();
 
     constructor(params: IFormXmlFormProps) {
         this._lcid = params.lcid;
@@ -531,6 +564,7 @@ export class FormXmlForm implements IFormXmlModel {
         Object.assign(this, formXml);
         this.events = new EventEmitter<IFormXmlFormEvents>();
         this.tabs = new FormXmlTabs(formXml.tabs, this);
+        this._createAttributes();
     }
 
     public getLocalizedLabel(labels?: MetadataFormXmlLabels): string | null {
@@ -564,6 +598,14 @@ export class FormXmlForm implements IFormXmlModel {
         return this.getCells().filter(cell => cell.control).map(cell => cell.control!);
     }
 
+    public getAttributes(): IFormXmlAttribute[] {
+        return Array.from(this._attributes.values());
+    }
+
+    public getAttribute(name: string): IFormXmlAttribute | null {
+        return this._attributes.get(name) ?? null;
+    }
+
     public getTabs(): IFormXmlTab[] {
         return this.tabs.tab;
     }
@@ -574,6 +616,12 @@ export class FormXmlForm implements IFormXmlModel {
 
     public requestRender(): void {
         this.events.dispatchEvent("onRenderRequested");
+    }
+
+    private _createAttributes() {
+        this.getForm().getFields().map(field => {
+            this._attributes.set(field.getColumn().name, new FormXmlAttribute(field));
+        });
     }
 
 }
