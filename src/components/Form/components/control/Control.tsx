@@ -53,8 +53,8 @@ const getControlValue = (column: IColumn, value: any): any => {
     }
 }
 
-const BoundControl = (props: IControlProps & {field: IField}) => {
-    const { disabled = false,  field } = props;
+const BoundControl = (props: IControlProps & { field: IField }) => {
+    const { disabled = false, field } = props;
     const form = useFormContext();
     const column = field.getColumn();
     const context = usePcfContext();
@@ -100,8 +100,7 @@ const BoundControl = (props: IControlProps & {field: IField}) => {
 }
 
 export const Control = (props: IControlProps) => {
-    console.log('Rendering Control', props.datafieldname);
-    const {disabled = false} = props;
+    const { disabled = false } = props;
     const fieldName = useFieldContext();
     const field = useField(fieldName);
     const disabledContext = useDisabledContext();
@@ -111,7 +110,9 @@ export const Control = (props: IControlProps) => {
     }, [disabled, disabledContext?.onDisabledChange]);
 
     if (!field) {
-        return <div>Unbound control</div>
+        return <MessageBar messageBarType={MessageBarType.error}>
+            Unbound controls are currently not supported.
+        </MessageBar>
     }
 
     return <BoundControl {...props} field={field} />

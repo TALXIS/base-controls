@@ -30,7 +30,7 @@ export class PcfContextFactory {
         const { baseContext, userSettings, mode, factory } = params;
         const xrm = XrmFactory.createXrm({ userSettings });
 
-        return {
+        const context: ComponentFramework.Context<any, any> = {
             formatting: Formatting.Get(),
             client: new Client(),
             userSettings: baseContext?.userSettings ?? xrm.Utility.getGlobalContext().userSettings as any,
@@ -45,6 +45,8 @@ export class PcfContextFactory {
             resources: baseContext?.resources ?? new Resources(),
             factory: baseContext?.factory ?? this._createFactoryApi(factory),
         };
+        context.userSettings.numberFormattingInfo = Formatting.Get().numberFormattingInfo;
+        return context;
     }
 
     /**

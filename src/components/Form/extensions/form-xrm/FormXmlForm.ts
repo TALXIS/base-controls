@@ -27,6 +27,7 @@ import {
     FormXmlControlParameters,
 } from "@talxis/client-metadata";
 import { IForm } from "../../Form";
+import { XrmFactory } from "../../../../utils/adapters/xrm";
 
 const LCID_ENGLISH_US = 1033;
 
@@ -586,7 +587,7 @@ export class FormXmlForm implements IFormXmlModel {
     private _attributes: Map<string, IFormXmlAttribute> = new Map();
 
     constructor(params: IFormXmlFormProps) {
-        this._lcid = params.lcid;
+        this._lcid = XrmFactory.createXrm().Utility.getGlobalContext().userSettings.languageId;
         this._form = params.form;
         const formXml = parseFormXml(params.formXml);
         Object.assign(this, formXml);
