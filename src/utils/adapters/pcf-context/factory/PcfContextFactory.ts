@@ -10,7 +10,15 @@ interface IPcfContextFactoryParams {
     factory?: IFactoryApiParams;
 }
 
+/**
+ * Creates a PCF context by reusing surfaces from an existing base context when
+ * available and filling the remaining gaps with local sample implementations.
+ */
 export class PcfContextFactory {
+    /**
+     * Builds a PCF context from the provided base context and per-surface
+     * override params.
+     */
     public static createContext(params: IPcfContextFactoryParams = {}): ComponentFramework.Context<any, any> {
         if(!window.Xrm) {
             //call the Xrm creation code?
@@ -34,6 +42,10 @@ export class PcfContextFactory {
         };
     }
 
+    /**
+     * Creates the sample factory surface and wires the optional requestRender
+     * callback through the factory event emitter.
+     */
     private static _createFactoryApi(params?: IFactoryApiParams): ComponentFramework.Factory {
         const factory = new FactoryApi();
         if (params?.requestRender) {
