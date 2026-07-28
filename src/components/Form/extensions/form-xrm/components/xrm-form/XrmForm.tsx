@@ -10,6 +10,7 @@ import { XrmNotifications } from '../xrm-notifications/XrmNotifications';
 import { FormXmlContext, XrmFormContext } from '../context';
 import { XrmTabs } from '../xrm-tabs/XrmTabs';
 import { XrmRibbon } from '../xrm-ribbon';
+import { IFormApi, IFormApiInternal } from '../../../../FormApi';
 
 
 
@@ -28,7 +29,8 @@ export const XrmForm = (props: IXrmFormProps) => {
     const { strategy } = props;
     const [form, setForm] = React.useState<{ xmlModel: FormXmlForm, xrmFormContext: XrmFormContextClass } | null>(null);
 
-    const onFormReady = (form: IForm) => {
+    const onFormReady = (api: IFormApi) => {
+        const form = (api as IFormApiInternal)._getForm();
         const formXml = strategy.onGetFormXml();
         const nextFormXmlModel = new FormXmlForm({ formXml, lcid: 1029, form });
         const formContext = new XrmFormContextClass(nextFormXmlModel);
@@ -36,7 +38,7 @@ export const XrmForm = (props: IXrmFormProps) => {
         props.onFormReady?.(formContext);
     }
 
-    return <Form strategy={strategy} _onFormReady={onFormReady}>
+    return <Form strategy={strategy} onFormReady={onFormReady}>
         {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} />}
     </Form>
 }

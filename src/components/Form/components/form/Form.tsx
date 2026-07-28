@@ -16,7 +16,6 @@ export interface IFormProps {
     onBeforeSave?: IFormEvents['onBeforeSave'];
     onAfterSave?: IFormEvents['onAfterSave'];
     onError?: IFormEvents['onError'];
-    _onFormReady?: (api: FormModel) => void;
     onFormReady?: (api: IFormApi) => void;
     children?: React.ReactNode;
 }
@@ -31,7 +30,12 @@ export const Form = (props: IFormProps) => {
     const onLoad = async () => {
         const result = await strategy.onLoad();
         setFormDeps(result);
-    }
+    };
+
+    const onRefreshRequested = async () => {
+        setFormDeps(null);
+        await onLoad();
+    };
 
     React.useEffect(() => {
         onLoad();
@@ -42,7 +46,7 @@ export const Form = (props: IFormProps) => {
         return <Skeleton />
     }
 
-    return <FormInternal {...props} deps={formDeps} onRefreshRequested={() => {}} />
+    return <FormInternal {...props} deps={formDeps} onRefreshRequested={onRefreshRequested} />
 }
 
 
