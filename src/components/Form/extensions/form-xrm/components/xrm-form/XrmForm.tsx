@@ -19,9 +19,14 @@ export interface IXrmFormStrategy extends IFormStrategy {
     onGetFormXml: () => string;
 }
 
+export interface IOnFormReadyParams {
+    formContext: XrmFormContextClass;
+    api: IFormApi;
+}
+
 interface IXrmFormProps {
     strategy: IXrmFormStrategy;
-    onFormReady?: (formContext: XrmFormContextClass) => void;
+    onFormReady?: (params: IOnFormReadyParams) => void;
 }
 
 
@@ -35,7 +40,7 @@ export const XrmForm = (props: IXrmFormProps) => {
         const nextFormXmlModel = new FormXmlForm({ formXml, lcid: 1029, form });
         const formContext = new XrmFormContextClass(nextFormXmlModel);
         setForm({ xmlModel: nextFormXmlModel, xrmFormContext: formContext });
-        props.onFormReady?.(formContext);
+        props.onFormReady?.({ formContext, api });
     }
 
     return <Form strategy={strategy} onFormReady={onFormReady}>
