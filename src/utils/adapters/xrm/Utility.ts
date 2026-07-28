@@ -1,4 +1,5 @@
 import { GlobalContext, IGlobalContextParams } from "./GlobalContext";
+import { notImplemented } from "./utils";
 
 export class Utility {
     private _globalContext: Xrm.GlobalContext;
@@ -11,7 +12,9 @@ export class Utility {
         return this._globalContext;
     }
 
-    public setGlobalContext(globalContext: Xrm.GlobalContext): void {
-        this._globalContext = globalContext;
+    public getEntityMetadata(entityName: string, attributes?: string[]): Promise<Xrm.Metadata.EntityMetadata> {
+        void entityName;
+        void attributes;
+        return notImplemented("Utility.getEntityMetadata");
     }
 }
