@@ -22,23 +22,7 @@ export interface IFormProps {
 //TOOD: remove me
 initializeIcons();
 
-const mock = (lcid: number) => {
-    window.Xrm = {
-        Utility: {
-            //@ts-ignore
-            getGlobalContext: () => {
-                return {
-                    userSettings: {
-                        languageId: lcid
-                    }
-                }
-            }
-        }
-    }
-}
-
 export const Form = (props: IFormProps) => {
-    mock(1029);
     const { strategy } = props;
     const [formDeps, setFormDeps] = React.useState<IOnLoadResult | null>(null);
 

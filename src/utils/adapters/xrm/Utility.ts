@@ -1,4 +1,4 @@
-import { GlobalContext, IGlobalContextParams } from "./GlobalContext";
+import { GlobalContext } from "./GlobalContext";
 import { notImplemented } from "./utils";
 
 export class Utility {
