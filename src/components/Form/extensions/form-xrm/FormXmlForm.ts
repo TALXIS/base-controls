@@ -257,6 +257,7 @@ export class FormXmlSection implements IFormXmlSection {
     }
 
     public getLabel(): string | null {
+        if (this.showlabel === false) return null;
         return this._customLabel ?? this.formXmlModel.getLocalizedLabel(this.labels);
     }
 
