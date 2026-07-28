@@ -15,6 +15,17 @@ export interface IFormEvents {
     onAfterSave: (result: IRecordSaveOperationResult, updatedData?: { [key: string]: any }) => void;
 }
 
+/**
+ * Parameters that control save behavior.
+ */
+interface ISaveParams {
+    /**
+     * Can be used to block the save operation after successful validation.
+     * If true, the save operation will be blocked with negative onAfterSave event result.
+     */
+    blocker?: () => Promise<boolean>;
+}
+
 export interface IForm {
     events: IEventEmitter<IFormEvents>;
     saveOperationPerformed: boolean;
@@ -24,7 +35,7 @@ export interface IForm {
     isDirty: () => boolean;
     isValid: () => boolean;
     getData: () => { [key: string]: any };
-    save: () => Promise<void>;
+    save: (params?: ISaveParams) => Promise<void>;
     destroy: () => void;
     getRecord(): IRecord;
     getFields: () => IField[];
@@ -115,21 +126,31 @@ export class Form implements IForm {
         return this._validationSummary;
     }
 
-    public async save(): Promise<void> {
+    public async save(params?: ISaveParams): Promise<void> {
+        const { blocker } = params ?? {};
+
         ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 this._saveOperationPerformed = true;
                 this.events.dispatchEvent('onBeforeSave');
+
                 const dirtyFields = this._record.getFields().filter(f => f.isDirty());
                 const result = await this._record.save();
                 this._createValidationSummary(result);
+
                 if (!result.success) {
                     this.events.dispatchEvent('onAfterSave', result);
                     return;
                 }
 
                 this._registerExistingExpressions();
-                const changedData = this._getChangedData(dirtyFields);  
+                const changedData = this._getChangedData(dirtyFields);
+
+                if (await blocker?.()) {
+                    this.events.dispatchEvent('onAfterSave', this._createBlockedSaveResult());
+                    return;
+                }
+
                 const saveResult = await this._strategy.onSave({ data: changedData });
                 this.events.dispatchEvent('onAfterSave', saveResult, changedData);
             },
@@ -204,5 +225,13 @@ export class Form implements IForm {
         return Object.fromEntries(
             dirtyFields.map(field => [field.getColumn().name, rawData[field.getColumn().name]])
         );
+    }
+
+    private _createBlockedSaveResult(): IRecordSaveOperationResult {
+        return {
+            success: false,
+            fields: [],
+            recordId: this._record.getRecordId(),
+        };
     }
 }

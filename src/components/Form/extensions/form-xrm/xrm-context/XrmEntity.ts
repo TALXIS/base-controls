@@ -46,10 +46,9 @@ export class XrmEntity {
     }
 
     public async save(saveOptions?: Xrm.SaveOptions): Promise<void> {
-        if (!this._formContext.getFormXmlModel().getForm().isValid()) {
-            return;
-        }
-
+        return this._formContext.getFormXmlModel().getForm().save({
+            
+        });
         const eventState = {
             defaultPrevented: false,
         };
