@@ -11,6 +11,7 @@ import { FormXmlContext, XrmFormContext } from '../context';
 import { XrmTabs } from '../xrm-tabs/XrmTabs';
 import { XrmRibbon } from '../xrm-ribbon';
 import { IFormApi, IFormApiInternal } from '../../../../FormApi';
+import { IFormEvents } from '../../../../Form';
 
 
 
@@ -27,6 +28,7 @@ export interface IOnFormReadyParams {
 interface IXrmFormProps {
     strategy: IXrmFormStrategy;
     onFormReady?: (params: IOnFormReadyParams) => void;
+    onAfterSave?: IFormEvents["onAfterSave"];
 }
 
 
@@ -43,7 +45,7 @@ export const XrmForm = (props: IXrmFormProps) => {
         props.onFormReady?.({ formContext, api });
     }
 
-    return <Form strategy={strategy} onFormReady={onFormReady}>
+    return <Form strategy={strategy} onFormReady={onFormReady} onAfterSave={props.onAfterSave}>
         {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} />}
     </Form>
 }
