@@ -47,38 +47,39 @@ export class XrmEntity {
 
     public async save(saveOptions?: Xrm.SaveOptions): Promise<void> {
         return this._formContext.getFormXmlModel().getForm().save({
-            
+            blocker: this._createSaveBlocker(),
         });
-        const eventState = {
-            defaultPrevented: false,
-        };
-
-        const handlerResults = Array.from(this._onSaveHandlerSet.values()).map(async (handler) => {
-            const eventArgs = this._createSaveEventArgs(eventState);
-            const executionContext = this._createSaveEventContext(eventArgs);
-
-            try {
-                const result = handler(executionContext);
-
-                if (isPromiseLike(result)) {
-                    await result;
-                }
-            } catch (error) {
-                console.error("[Form] XrmEntity.onSave handler failed:", error);
-            }
-        });
-
-        await Promise.all(handlerResults);
-
-        if (eventState.defaultPrevented) {
-            return;
-        }
-
-        await this._formContext.getFormXmlModel().getForm().save();
     }
 
     get attributes(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
         return this._formContext.data.attributes;
+    }
+
+    private _createSaveBlocker(): () => Promise<boolean> {
+        return async () => {
+            const eventState = {
+                defaultPrevented: false,
+            };
+
+            const handlerResults = Array.from(this._onSaveHandlerSet.values()).map(async (handler) => {
+                const eventArgs = this._createSaveEventArgs(eventState);
+                const executionContext = this._createSaveEventContext(eventArgs);
+
+                try {
+                    const result = handler(executionContext);
+
+                    if (isPromiseLike(result)) {
+                        await result;
+                    }
+                } catch (error) {
+                    console.error("[Form] XrmEntity.onSave handler failed:", error);
+                }
+            });
+
+            await Promise.all(handlerResults);
+
+            return eventState.defaultPrevented;
+        };
     }
 
     private _createSaveEventArgs(eventState: { defaultPrevented: boolean }): Xrm.Events.SaveEventArgumentsAsync {
