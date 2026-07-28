@@ -118,9 +118,11 @@ export class Form implements IForm {
     public async save(): Promise<void> {
         ErrorHelper.executeWithErrorHandling({
             operation: async () => {
+                this._saveOperationPerformed = true;
                 this.events.dispatchEvent('onBeforeSave');
                 const dirtyFields = this._record.getFields().filter(f => f.isDirty());
                 const result = await this._record.save();
+                this._createValidationSummary(result);
                 if (!result.success) {
                     this.events.dispatchEvent('onAfterSave', result);
                     return;
@@ -174,11 +176,6 @@ export class Form implements IForm {
     }
 
     private _registerEventHandlers(): void {
-        this._record.addEventListener('onBeforeSaved', () => {
-            this._saveOperationPerformed = true;
-            this.events.dispatchEvent('onBeforeSave');
-        })
-        this._record.addEventListener('onAfterSaved', (result) => this._createValidationSummary(result));
         this._record.addEventListener('onFieldValueChanged', (fieldName, newValue) => this.events.dispatchEvent('onFieldValueChanged', fieldName, newValue));
     }
 
