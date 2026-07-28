@@ -1,13 +1,10 @@
-import { GlobalContext, IGlobalContextParams } from "./GlobalContext";
-import { INavigationParams, Navigation } from "./Navigation";
-import { IUtilityParams, Utility } from "./Utility";
-import { IWebApiParams, WebApi } from "./WebApi";
+import { GlobalContext, IGlobalContextParams, IGlobalContextUserSettingsParams } from "./GlobalContext";
+import { Navigation } from "./Navigation";
+import { Utility } from "./Utility";
+import { WebApi } from "./WebApi";
 
 interface IXrmFactoryParams {
-    globalContext?: IGlobalContextParams;
-    utility?: IUtilityParams;
-    navigation?: INavigationParams;
-    webApi?: IWebApiParams;
+    userSettings?: IGlobalContextUserSettingsParams;
 }
 
 export class XrmFactory {
@@ -16,16 +13,20 @@ export class XrmFactory {
             return window.Xrm;
         }
 
-        const globalContext = new GlobalContext(params.globalContext);
-        const utility = new Utility({
-            ...params.utility,
-            globalContext: params.utility?.globalContext ?? globalContext,
-        });
-
-        return {
+        const globalContextParams: IGlobalContextParams = {
+            userSettings: params.userSettings,
+        };
+        const globalContext = new GlobalContext(globalContextParams) as any;
+        const utility = new Utility(globalContext);
+        const xrm = {
             Utility: utility as any,
             Navigation: new Navigation() as any,
             WebApi: new WebApi() as any,
         } as Xrm.XrmStatic;
+
+        window.Xrm = xrm;
+        globalContext.initializeFormatting();
+
+        return xrm;
     }
 }

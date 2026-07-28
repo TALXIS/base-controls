@@ -5,8 +5,14 @@ import { FactoryApi, IFactoryApiParams } from "./FactoryApi";
 import { IModeParams, Mode } from "./Mode";
 import { Resources } from "./Resources";
 
+interface IPcfContextUserSettingsParams {
+    lcid?: number;
+    formatInfoCultureName?: string;
+}
+
 interface IPcfContextFactoryParams {
     baseContext?: ComponentFramework.Context<any, any>;
+    userSettings?: IPcfContextUserSettingsParams;
     mode?: IModeParams;
     factory?: IFactoryApiParams;
 }
@@ -21,8 +27,8 @@ export class PcfContextFactory {
      * override params.
      */
     public static createContext(params: IPcfContextFactoryParams = {}): ComponentFramework.Context<any, any> {
-        const { baseContext, mode, factory } = params;
-        const xrm = XrmFactory.createXrm();
+        const { baseContext, userSettings, mode, factory } = params;
+        const xrm = XrmFactory.createXrm({ userSettings });
 
         return {
             formatting: Formatting.Get(),

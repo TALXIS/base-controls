@@ -1,8 +1,5 @@
 import { notImplemented } from "./utils";
 
-export interface IWebApiParams {
-}
-
 export class WebApi {
     public createRecord(entityLogicalName: string, record: any): Xrm.Async.PromiseLike<Xrm.CreateResponse> {
         void entityLogicalName;
