@@ -8,6 +8,7 @@ import { getFormStyles } from "./styles";
 import { IFormStrategy } from "../../stragegies/interfaces";
 import React from "react";
 import { Skeleton } from "../skeleton";
+import { FormApi, IFormApi } from "../../FormApi";
 
 
 export interface IFormProps {
@@ -15,7 +16,8 @@ export interface IFormProps {
     onBeforeSave?: IFormEvents['onBeforeSave'];
     onAfterSave?: IFormEvents['onAfterSave'];
     onError?: IFormEvents['onError'];
-    onFormReady?: (api: FormModel) => void;
+    _onFormReady?: (api: FormModel) => void;
+    onFormReady?: (api: IFormApi) => void;
     children?: React.ReactNode;
 }
 
@@ -55,6 +57,10 @@ export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
         return instance;
     }, []);
 
+    const formApi = useMemo(() => {
+        return new FormApi(form);
+    }, [form]);
+
     const record = form.getRecord();
     const id = record.getRecordId();
     const styles = useMemo(() => getFormStyles(), []);
@@ -69,7 +75,7 @@ export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
     });
 
     React.useEffect(() => {
-        onFormReady?.(form);
+        onFormReady?.(formApi);
     }, []);
 
 

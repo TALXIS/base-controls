@@ -6,12 +6,14 @@ import { ErrorHelper } from "../../utils";
 export interface IFormParams {
     deps: IOnLoadResult;
     strategy: IFormStrategy;
+
 }
 
 export interface IFormEvents {
     onFieldValueChanged: (fieldName: string, newValue: any) => void;
     onError: (error: any, message: string) => void;
     onBeforeSave: () => void;
+    onRefreshRequested: () => void;
     onAfterSave: (result: IRecordSaveOperationResult, updatedData?: { [key: string]: any }) => void;
 }
 
@@ -35,6 +37,7 @@ export interface IForm {
     isDirty: () => boolean;
     isValid: () => boolean;
     getData: () => { [key: string]: any };
+    refresh: () => void;
     save: (params?: ISaveParams) => Promise<void>;
     destroy: () => void;
     getRecord(): IRecord;
@@ -120,6 +123,10 @@ export class Form implements IForm {
 
     public getData(): { [key: string]: any } {
         return this._record.getRawData();
+    }
+
+    public refresh() {
+        this.events.dispatchEvent('onRefreshRequested');
     }
 
     public getValidationSummary(): IValidation[] {

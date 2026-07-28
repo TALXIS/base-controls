@@ -36,7 +36,7 @@ export const XrmForm = (props: IXrmFormProps) => {
         props.onFormReady?.(formContext);
     }
 
-    return <Form strategy={strategy} onFormReady={onFormReady}>
+    return <Form strategy={strategy} _onFormReady={onFormReady}>
         {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} />}
     </Form>
 }
