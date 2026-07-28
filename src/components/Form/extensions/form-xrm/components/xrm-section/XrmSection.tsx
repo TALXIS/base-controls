@@ -15,6 +15,9 @@ export const XrmSection = (props: IXrmSectionProps) => {
         cellLabelPosition={section.getCellLabelPosition()}
         showLabel={section.showlabel}
         labelWidth={section.labelwidth}
+        layout={{
+            lg: section.getNumberOfColumns(),
+        }}
         label={section.getLabel() ?? undefined}
     >
         {section.getVisibleCells().map((cell, index) => {

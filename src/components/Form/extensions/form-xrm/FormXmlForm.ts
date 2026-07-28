@@ -81,7 +81,7 @@ export interface IFormXmlSectionEvents {
     onLabelChanged: (label: string) => void;
 }
 
-export interface IFormXmlSection extends Omit<MetadataFormXmlSection, 'events'> {
+export interface IFormXmlSection extends Omit<MetadataFormXmlSection, 'events' | 'columns'> {
     events: IEventEmitter<IFormXmlSectionEvents>;
     getLabel: () => string | null;
     getCells: () => IFormXmlCell[];
@@ -90,6 +90,7 @@ export interface IFormXmlSection extends Omit<MetadataFormXmlSection, 'events'> 
     getVisible: () => boolean;
     setVisible: (visible: boolean) => void;
     setLabel: (label: string) => void;
+    getNumberOfColumns: () => number;
     getCellLabelPosition: () => "Top" | "Left";
 }
 
@@ -229,6 +230,7 @@ export class FormXmlSection implements IFormXmlSection {
     public showlabel?: boolean | undefined;
     public labelid?: string | undefined;
     public showbar?: boolean | undefined;
+    public columns?: string | undefined;
     public isuserdefined?: string | undefined;
     public height?: string | undefined;
     public locklevel?: number | undefined;
@@ -271,6 +273,10 @@ export class FormXmlSection implements IFormXmlSection {
 
     public getVisibleCells(): IFormXmlCell[] {
         return this._cells.filter(cell => cell.getVisible());
+    }
+
+    public getNumberOfColumns(): number {
+        return this.columns?.length ?? 1;
     }
 
     public setVisible(visible: boolean): void {
