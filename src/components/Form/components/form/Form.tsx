@@ -42,12 +42,12 @@ export const Form = (props: IFormProps) => {
         return <Skeleton />
     }
 
-    return <FormInternal {...props} deps={formDeps} />
+    return <FormInternal {...props} deps={formDeps} onRefreshRequested={() => {}} />
 }
 
 
-export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
-    const { children, strategy, deps, onFormReady } = props;
+export const FormInternal = (props: IFormProps & { deps: IOnLoadResult, onRefreshRequested: () => void }) => {
+    const { children, strategy, deps, onFormReady, onRefreshRequested } = props;
 
     const form = useMemo(() => {
         const instance = new FormModel({
@@ -71,8 +71,8 @@ export const FormInternal = (props: IFormProps & { deps: IOnLoadResult }) => {
     useEventEmitter<IFormEvents>(form.events, 'onBeforeSave', props?.onBeforeSave ?? (() => { }));
     useEventEmitter<IFormEvents>(form.events, 'onError', (error: any, message: string) => {
         props?.onError?.(error, message);
-        alert(message);
     });
+    useEventEmitter(form.events, 'onRefreshRequested', onRefreshRequested);
 
     React.useEffect(() => {
         onFormReady?.(formApi);
