@@ -10,22 +10,10 @@ import { useField } from "../field";
 import { DisabledContext } from "./context";
 
 export interface ICellProps {
-    id?: string;
-    labelId?: string;
     label?: string;
-    lockLevel?: number;
-    visible?: boolean;
     colspan?: number;
     rowspan?: number;
-    userspacer?: boolean;
     requiredLevel?: RequiredLevelEnum;
-    availableForPhone?: boolean;
-    isPreviewCell?: boolean;
-    isStreamCell?: boolean;
-    isChartCell?: boolean;
-    isTileCell?: boolean;
-    auto?: boolean;
-    addedBy?: string;
     children?: React.ReactNode;
 }
 
@@ -38,7 +26,6 @@ export const Cell = (props: ICellProps) => {
     const [disabled, setDisabled] = React.useState<boolean>(false);
 
     const {
-        id,
         rowspan,
         label = field?.getColumn().displayName,
         requiredLevel = Form.getRequiredLevelEnumFromXrm(field?.getRequiredLevel())

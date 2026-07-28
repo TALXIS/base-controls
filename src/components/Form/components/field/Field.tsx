@@ -5,7 +5,6 @@ import { useFormContext } from "../form/context";
 
 interface IFieldProps {
     name?: string;
-    disabled?: boolean;
     requiredLevel?: RequiredLevelEnum | null;
     validation?: IFieldValidationResult | null;
     children?: React.ReactNode;

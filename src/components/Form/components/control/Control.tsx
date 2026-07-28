@@ -1,4 +1,4 @@
-import { Formatting, IColumn, IField, Sanitizer } from "@talxis/client-libraries";
+import { IColumn, IField, Sanitizer } from "@talxis/client-libraries";
 import { NestedControlRenderer } from "../../../NestedControlRenderer";
 import { useFieldContext } from "../field/context";
 import { BaseControls, usePcfContext } from "../../../../utils";
@@ -12,18 +12,7 @@ import { useDisabledContext } from "../cell";
 
 
 export interface IControlProps {
-    id?: string;
-    uniqueid?: string
-    classid?: string;
-    labelid?: string;
-    datafieldname?: string;
     disabled?: boolean;
-    addedby?: string;
-    isunbound?: boolean;
-    isrequired?: boolean;
-    relationship?: string;
-    indicationOfSubgrid?: boolean;
-    parameters?: any
 }
 
 const getControlValue = (column: IColumn, value: any): any => {

@@ -7,17 +7,9 @@ import { useCalculatedColumns } from "../../layout/useCalculatedColumns";
 
 export interface ISectionProps {
     id?: string;
-    name?: string;
-    group?: string;
     showLabel?: boolean;
-    labelId?: string;
     showBar?: boolean;
-    isUserDefined?: string;
-    height?: string;
-    lockLevel?: number;
-    addedBy?: string;
     visible?: boolean;
-    autoExpand?: boolean;
     /**
      * Configures how many layout columns this Section renders at each breakpoint
      * based on the width of the Section itself. This controls the responsive grid
@@ -33,16 +25,13 @@ export interface ISectionProps {
     layout?: Partial<ILayoutBreakpoints>;
     labelWidth?: number;
     cellLabelCollapseBreakpoint?: number;
-    availableForPhone?: boolean;
-    cellLabelAlignment?: "Center" | "Left" | "Right";
     cellLabelPosition?: "Top" | "Left";
-    rowHeight?: number;
     label?: string;
     children?: React.ReactNode;
 }
 
 export const Section = (props: ISectionProps) => {
-    const { children, showBar = true, showLabel = true, label, name, id } = props;
+    const { children, showBar = true, showLabel = true, label, id } = props;
     const isHeaderVisible = showBar && showLabel && label;
 
     const bodyContainerRef = React.useRef<HTMLDivElement>(null);
