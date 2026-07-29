@@ -14,18 +14,14 @@ export const getSkeletonStyles = (theme: ITheme) => {
             width: '100%',
         },
         ribbon: {
-            overflow: 'hidden',
-            border: `1px solid ${theme.semanticColors.bodyDivider}`,
-            boxShadow: theme.effects.elevation4,
-            backgroundColor: theme.semanticColors.bodyBackground,
-            padding: '0 8px',
+            padding: '0 4px',
         },
         tabs: {
             display: 'flex',
             gap: 12,
-            padding: '0 8px',
+            padding: '0 4px',
             alignItems: 'center',
-            height: 32,
+            height: 36,
         },
         tabMarker: {
             minWidth: 44,
@@ -36,29 +32,28 @@ export const getSkeletonStyles = (theme: ITheme) => {
             gap: 12,
         },
         section: {
-            border: `1px solid ${theme.semanticColors.bodyDivider}`,
+            borderRadius: 8,
+            border: `1px solid ${theme.palette.neutralLight}`,
             backgroundColor: theme.semanticColors.bodyBackground,
             boxShadow: theme.effects.elevation4,
             overflow: 'hidden',
         },
         sectionHeader: {
-            padding: '10px 12px',
-            borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
-            backgroundColor: theme.palette.neutralLighterAlt,
+            padding: '12px 16px 4px 16px',
         },
         sectionContent: {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: 12,
-            padding: 12,
+            gap: 10,
+            padding: '8px 16px 16px 16px',
         },
         field: {
             display: 'flex',
             flexDirection: 'column',
-            gap: 6,
+            gap: 8,
         },
         fieldLabel: {
-            width: '45%',
+            width: '38%',
         },
         fieldControl: {
             width: '100%',
