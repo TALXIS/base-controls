@@ -85,7 +85,7 @@
     "@fluentui/react-migration-v8-v9": "^9.6.20",
     "@fluentui/style-utilities": "^8.11.4",
     "@talxis/client-libraries": "^1.2606.5",
-    "@talxis/client-metadata": "/Users/dominikbrych/Repos/NETWORG/form/client-metadata",
+    "@talxis/client-metadata": "^0.0.6",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
     "debounce": "^2.2.0",
