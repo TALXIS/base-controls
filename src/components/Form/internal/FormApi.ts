@@ -1,8 +1,5 @@
+import { IFormApi } from "../FormApi";
 import { IForm } from "./FormModel";
-
-export interface IFormApi {
-    refresh: () => void;
-}
 
 export interface IFormApiInternal extends IFormApi {
     _getForm(): IForm;

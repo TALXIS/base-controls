@@ -8,7 +8,8 @@ import { getFormStyles } from "./styles";
 import { IFormStrategy } from "../../../stragegies/interfaces";
 import React from "react";
 import { FormUi } from "../../ui";
-import { FormApi, IFormApi } from "../../../internal/FormApi";
+import { IFormApi } from "../../../FormApi";
+import { FormApi } from "../../../internal/FormApi";
 import { PcfContext } from "../../../../../utils";
 
 export interface IFormProps {

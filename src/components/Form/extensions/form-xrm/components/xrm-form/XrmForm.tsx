@@ -10,7 +10,8 @@ import { XrmNotifications } from '../xrm-notifications';
 import { FormXmlContext, XrmFormContext } from '../context';
 import { XrmTabs } from '../xrm-tabs';
 import { XrmRibbon } from '../xrm-ribbon';
-import { IFormApi, IFormApiInternal } from '../../../../internal/FormApi';
+import { IFormApi } from '../../../../FormApi';
+import { IFormApiInternal } from '../../../../internal/FormApi';
 
 export interface IXrmFormStrategy extends IFormStrategy {
     //will run after onload
