@@ -1,4 +1,4 @@
-import { Section } from "../../../../components";
+import { Section } from "../../../../components/adapters";
 import { IFormXmlSection } from "../../FormXmlForm";
 import { XrmCell } from "../xrm-cell/XrmCell";
 import { XrmField } from "../xrm-field";

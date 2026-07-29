@@ -1,6 +1,6 @@
 import { IField } from "@talxis/client-libraries";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
-import { Form } from "../../../Form";
+import { FormModel } from "../../../internal/FormModel";
 import type { IFormXmlAttribute } from "../FormXmlForm";
 import { makeItemCollection } from "./collection";
 import type { XrmControl } from "./XrmControl";
@@ -81,7 +81,7 @@ export class XrmAttribute {
     }
 
     public setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {
-        this._attribute.setRequiredLevel(Form.getRequiredLevelEnumFromXrm(level));
+        this._attribute.setRequiredLevel(FormModel.getRequiredLevelEnumFromXrm(level));
     }
 
     public addOption(option: { value: number; text?: string }, index?: number): void {

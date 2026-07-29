@@ -1,4 +1,4 @@
-import { Cell } from "../../../../components"
+import { Cell } from "../../../../components/adapters"
 import { IFormXmlCell } from "../../FormXmlForm";
 import { XrmControl } from "../xrm-control";
 import { useCell } from "./useCell";

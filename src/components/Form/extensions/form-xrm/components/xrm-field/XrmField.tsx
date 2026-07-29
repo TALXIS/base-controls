@@ -1,4 +1,4 @@
-import { Field } from "../../../../components";
+import { Field } from "../../../../components/adapters";
 import { IFormXmlControl } from "../../FormXmlForm";
 import { useXrmAttribute } from "./useXrmAttribute";
 

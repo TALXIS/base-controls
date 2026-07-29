@@ -4,14 +4,13 @@ import { useEventEmitter } from "../../../../../../hooks";
 import { useRerender } from "@talxis/react-components";
 import { IFormStrategy } from "../../../../stragegies";
 import React from "react";
-import { IForm } from '../../../../Form';
+import { IForm, IFormEvents } from '../../../../internal/FormModel';
 import { XrmFormContext as XrmFormContextClass } from '../../xrm-context';
 import { XrmNotifications } from '../xrm-notifications/XrmNotifications';
 import { FormXmlContext, XrmFormContext } from '../context';
 import { XrmTabs } from '../xrm-tabs/XrmTabs';
 import { XrmRibbon } from '../xrm-ribbon';
-import { IFormApi, IFormApiInternal } from '../../../../FormApi';
-import { IFormEvents } from '../../../../Form';
+import { IFormApi, IFormApiInternal } from '../../../../internal/FormApi';
 
 
 

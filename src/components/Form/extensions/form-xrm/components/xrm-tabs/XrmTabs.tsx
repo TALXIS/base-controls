@@ -1,4 +1,4 @@
-import { Tabs } from "../../../../components";
+import { Tabs } from "../../../../components/adapters";
 import { XrmTab } from "../xrm-tab";
 import { useTabs } from "./useTabs";
 

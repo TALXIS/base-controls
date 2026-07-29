@@ -2,7 +2,7 @@ import { useFormContext } from '../root/context';
 import { IRecord } from '@talxis/client-libraries';
 import { INotificationsProps, Notifications as NotificationsBase } from '../../../../Notifications';
 import { useValidationSummary } from '../root';
-import { IValidation } from '../../../Form';
+import { IValidation } from '../../../internal/FormModel';
 
 const getValidationNotifications = (record: IRecord, validationSummary: IValidation[]) => {
 	return validationSummary.map(validation => {

@@ -26,7 +26,7 @@ import {
     RequiredLevelEnum,
     FormXmlControlParameters,
 } from "@talxis/client-metadata";
-import { IForm } from "../../Form";
+import { IForm } from "../../internal/FormModel";
 import { XrmFactory } from "../../../../utils/adapters/xrm";
 
 const LCID_ENGLISH_US = 1033;

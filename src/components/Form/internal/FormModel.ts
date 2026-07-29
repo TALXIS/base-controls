@@ -1,12 +1,11 @@
 import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IMemoryProvider, IRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { IFormStrategy, IOnLoadResult } from "./stragegies/interfaces";
-import { ErrorHelper } from "../../utils";
+import { IFormStrategy, IOnLoadResult } from "../stragegies/interfaces";
+import { ErrorHelper } from "../../../utils";
 
 export interface IFormParams {
     deps: IOnLoadResult;
     strategy: IFormStrategy;
-
 }
 
 export interface IFormEvents {
@@ -17,14 +16,7 @@ export interface IFormEvents {
     onAfterSave: (result: IRecordSaveOperationResult, updatedData?: { [key: string]: any }) => void;
 }
 
-/**
- * Parameters that control save behavior.
- */
 interface ISaveParams {
-    /**
-     * Can be used to block the save operation after successful validation.
-     * If true, the save operation will be blocked with negative onAfterSave event result.
-     */
     blocker?: () => Promise<boolean>;
 }
 
@@ -51,8 +43,7 @@ export interface IValidation extends IFieldValidationResult {
     fieldName: string;
 }
 
-
-export class Form implements IForm {
+export class FormModel implements IForm {
     public readonly events: IEventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _record: IRecord;
     private _dataProvider: IMemoryProvider;
@@ -96,7 +87,7 @@ export class Form implements IForm {
 
     public setFieldRequiredLevel(fieldName: string, requiredLevel: RequiredLevelEnum): void {
         this._requiredLevelExpressions.set(fieldName, () => {
-            return Form.getXrmRequirementLevelFromEnum(requiredLevel);
+            return FormModel.getXrmRequirementLevelFromEnum(requiredLevel);
         });
         this._record.expressions.setRequiredLevelExpression(fieldName, () => this._requiredLevelExpressions.get(fieldName)!());
     }

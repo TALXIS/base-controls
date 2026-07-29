@@ -2,13 +2,13 @@ import { useMemo } from "react";
 import { IOnLoadResult } from "../../../stragegies/interfaces";
 import { useControlTheme, useEventEmitter } from "../../../../../hooks";
 import { initializeIcons, ThemeProvider } from "@fluentui/react";
-import { Form as FormModel, IFormEvents } from '../../../Form';
+import { FormModel, IFormEvents } from '../../../internal/FormModel';
 import { FormContext, RecordContext } from "./context";
 import { getFormStyles } from "./styles";
 import { IFormStrategy } from "../../../stragegies/interfaces";
 import React from "react";
 import { FormUi } from "../../ui";
-import { FormApi, IFormApi } from "../../../FormApi";
+import { FormApi, IFormApi } from "../../../internal/FormApi";
 
 export interface IFormProps {
     strategy: IFormStrategy;

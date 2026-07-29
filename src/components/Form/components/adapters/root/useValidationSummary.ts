@@ -1,6 +1,6 @@
 import React from "react";
 import { useFormContext } from "./context";
-import { IValidation } from "../../../Form";
+import { IValidation } from "../../../internal/FormModel";
 import { useEventEmitter } from "../../../../../hooks";
 
 export const useValidationSummary = (): IValidation[] => {

@@ -1,4 +1,4 @@
-import { Notifications } from "../../../../components";
+import { Notifications } from "../../../../components/adapters";
 import { INotification } from "../../FormXmlForm";
 import { useNotifications } from "./useNotifications";
 
