@@ -5,10 +5,13 @@ import { XrmFormContext as XrmFormContextClass } from "../xrm-context";
 export const FormXmlContext = React.createContext<IFormXmlModel | null>(null);
 export const XrmFormContext = React.createContext<XrmFormContextClass| null>(null);
 
+FormXmlContext.displayName = "FormXmlContext";
+XrmFormContext.displayName = "XrmFormContext";
+
 export const useFormXmlContext = () => {
     const context = React.useContext(FormXmlContext);
     if (!context) {
-        throw new Error("useFormXmlContext must be used within a FormXmlContext.Provider");
+        throw new Error(`This component must be rendered within ${FormXmlContext.displayName}.Provider.`);
     }
     return context;
 }
@@ -16,7 +19,7 @@ export const useFormXmlContext = () => {
 export const useXrmFormContext = () => {
     const context = React.useContext(XrmFormContext);
     if (!context) {
-        throw new Error("useXrmFormContext must be used within a XrmFormContext.Provider");
+        throw new Error(`This component must be rendered within ${XrmFormContext.displayName}.Provider.`);
     }
     return context;
 }
