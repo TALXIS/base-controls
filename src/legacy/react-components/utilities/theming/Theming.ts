@@ -132,6 +132,13 @@ export class Theming {
                     }
                 }
             },
+            Label: {
+                styles: {
+                    root: {
+                        fontWeight: 'normal'
+                    }
+                }
+            },
             ChoiceGroupOption: {
                 styles: {
                     field: {

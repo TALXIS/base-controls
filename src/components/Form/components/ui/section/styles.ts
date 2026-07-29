@@ -11,13 +11,14 @@ const SECTION_LAYOUT_GAP = 10;
 export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
     return mergeStyleSets({
         section: {
-            border: `1px solid ${theme.semanticColors.bodyDivider}`,
+            borderRadius: 8,
+            border: `1px solid ${theme.palette.neutralLight}`,
             backgroundColor: theme.semanticColors.bodyBackground,
             overflow: "hidden",
             boxShadow: theme.effects.elevation4,
             opacity: 1,
             transform: "translateY(0)",
-            transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease-out 0.01s",
+                        transition: "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease-out 0.01s",
             '@starting-style': {
                 opacity: 0,
                 transform: "translateY(-16px)"
@@ -27,9 +28,7 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
         header: {
             display: "flex",
             alignItems: "center",
-            padding: "8px 12px",
-            backgroundColor: theme.palette.neutralLighterAlt,
-            borderBottom: `1px solid ${theme.semanticColors.bodyDivider}`,
+            padding: "12px 16px 4px 16px",
         },
         title: {
             fontSize: theme.fonts.medium.fontSize,
@@ -38,7 +37,7 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
             color: theme.semanticColors.bodyText,
         },
         body: {
-            padding: 12,
+            padding: "16px 16px 16px 16px",
             containerType: 'inline-size',
             gap: `${SECTION_LAYOUT_GAP}px`,
         },

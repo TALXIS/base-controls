@@ -7,7 +7,8 @@ export const getTabStyles = () => {
             flexGrow: 1,
             overflow: 'auto',
             gridAutoRows: 'min-content',
-            paddingTop: 12
+            padding: 2,
+            paddingTop: 12,
         }
     });
 };
