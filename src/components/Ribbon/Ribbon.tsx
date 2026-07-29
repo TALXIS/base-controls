@@ -1,4 +1,5 @@
-import { CommandBar, getClassNames, ICommandBarItemProps, useRerender } from "../../legacy/react-components";
+import { CommandBar, ICommandBarItemProps, useRerender } from "../../legacy/react-components";
+import { getClassNames } from "../../utils";
 import { useControl } from "../../hooks"
 import { IRibbon } from "./interfaces"
 import { useMemo, useRef } from "react";

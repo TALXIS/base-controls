@@ -3,7 +3,8 @@ import { Ribbon } from "../Ribbon/Ribbon";
 import { IGridInlineRibbon } from "./interfaces"
 import { GridInlineRibbonModel, IGridInlineRibbonModelEvents } from "./GridInlineRibbonModel";
 import { useEventEmitter } from "../../hooks/useEventEmitter";
-import { getClassNames, useRerender, useResizeObserver } from "../../legacy/react-components";
+import { useRerender, useResizeObserver } from "../../legacy/react-components";
+import { getClassNames } from "../../utils";
 import { ICommandBar } from "@fluentui/react";
 import { getGridInlineRibbonStyles } from "./styles";
 import { DataProvider } from "@talxis/client-libraries";

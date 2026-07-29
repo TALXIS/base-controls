@@ -82,7 +82,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
-    "@fluentui/style-utilities": "^8.121.7",
+    "@fluentui/style-utilities": "^8.11.4",
     "@talxis/client-libraries": "^1.2606.5",
     "@talxis/client-metadata": "/Users/dominikbrych/Repos/NETWORG/form/client-metadata",
     "color": "^4.2.3",

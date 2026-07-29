@@ -3,7 +3,7 @@ import * as React from "react"
 import { getViewManagerDialogStyles } from "./styles";
 import { DatasetControl as DatasetControlRenderer } from '../../../../../DatasetControl';
 import { Grid } from '../../../../../Grid';
-import { getClassNames } from "../../../../../../legacy/react-components";
+import { getClassNames } from "../../../../../../utils";
 import { ViewManager } from "./ViewManager";
 import { useDatasetControl, useLocalizationService, useRootElementId } from "../../../../context";
 

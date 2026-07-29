@@ -3,7 +3,7 @@ import { GridCellRendererModel } from "./GridCellRendererModel";
 import { useControl } from "../../hooks";
 import { Icon, Label, ThemeProvider, Text } from "@fluentui/react";
 import { IGridCellRenderer } from "./interfaces";
-import { getClassNames } from "../../legacy/react-components";
+import { getClassNames } from "../../utils";
 import { getGridCellRendererStyles } from "./styles";
 import { ValueRenderer } from "./ValueRenderer/ValueRenderer";
 import { ModelContext } from "./useModel";
