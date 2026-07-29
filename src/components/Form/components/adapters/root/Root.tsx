@@ -3,15 +3,17 @@ import { IOnLoadResult } from "../../../stragegies/interfaces";
 import { useControlTheme, useEventEmitter } from "../../../../../hooks";
 import { initializeIcons, ThemeProvider } from "@fluentui/react";
 import { FormModel, IFormEvents } from '../../../internal/FormModel';
-import { FormContext, RecordContext } from "./context";
+import { FormContext } from "./context";
 import { getFormStyles } from "./styles";
 import { IFormStrategy } from "../../../stragegies/interfaces";
 import React from "react";
 import { FormUi } from "../../ui";
 import { FormApi, IFormApi } from "../../../internal/FormApi";
+import { PcfContext } from "../../../..";
 
 export interface IFormProps {
     strategy: IFormStrategy;
+    pcfContext?: ComponentFramework.Context<any, any> ;
     onBeforeSave?: IFormEvents['onBeforeSave'];
     onAfterSave?: IFormEvents['onAfterSave'];
     onError?: IFormEvents['onError'];
@@ -47,7 +49,7 @@ export const Root = (props: IFormProps) => {
 };
 
 export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefreshRequested: () => void }) => {
-    const { children, strategy, deps, onFormReady, onRefreshRequested } = props;
+    const { children, strategy, deps, pcfContext, onFormReady, onRefreshRequested } = props;
 
     const form = useMemo(() => {
         const instance = new FormModel({
@@ -76,14 +78,13 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     React.useEffect(() => {
         onFormReady?.(formApi);
     }, []);
-
-    return <FormContext.Provider value={form}>
-        <RecordContext.Provider value={record}>
-            <ThemeProvider theme={theme}>
-                <div className={styles.form} data-id={`form-${id}`}>
-                    {children}
-                </div>
-            </ThemeProvider>
-        </RecordContext.Provider>
-    </FormContext.Provider>
+    return <PcfContext.Provider value={pcfContext ?? null}>
+        <FormContext.Provider value={form}>
+                <ThemeProvider theme={theme}>
+                    <div className={styles.form} data-id={`form-${id}`}>
+                        {children}
+                    </div>
+                </ThemeProvider>
+        </FormContext.Provider>
+    </PcfContext.Provider>
 }
