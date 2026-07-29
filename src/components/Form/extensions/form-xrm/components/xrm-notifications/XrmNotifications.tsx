@@ -1,4 +1,4 @@
-import { Form } from "../../../../components";
+import { Form } from "../../../../components/Form";
 import { INotification } from "../../FormXmlForm";
 import { useNotifications } from "./useNotifications";
 

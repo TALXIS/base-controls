@@ -1,5 +1,5 @@
 import React from "react";
-import { Form } from "../../../../components";
+import { Form } from "../../../../components/Form";
 import { IFormXmlTab } from "../../FormXmlForm";
 import { getXrmTabGridTemplateColumns } from "./getXrmTabGridTemplateColumns";
 import { XrmSection } from "../xrm-section";

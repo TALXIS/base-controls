@@ -1,4 +1,4 @@
-import { Form } from "../../../../components";
+import { Form } from "../../../../components/Form";
 import { XrmTab } from "../xrm-tab";
 import { useTabs } from "./useTabs";
 

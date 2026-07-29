@@ -1,1 +1,1 @@
-export { Form } from './adapters';
+export { Form } from './Form';
