@@ -54,6 +54,16 @@ export class XrmUi {
         this._onLoadHandlerSet.delete(handler);
     }
 
+    public fireOnLoad(): void {
+        this._onLoadHandlerSet.forEach((handler) => {
+            try {
+                handler({} as any);
+            } catch (error) {
+                console.error("[Form] XrmUi.onLoad handler failed:", error);
+            }
+        });
+    }
+
     public setFormNotification(message: string, level: INotification['level'], uniqueId: string): boolean {
         this._notificationMap.set(uniqueId ?? crypto.randomUUID(), { message, level });
         this._formContext.getFormXmlModel().setNotifications(Array.from(this._notificationMap.values()));

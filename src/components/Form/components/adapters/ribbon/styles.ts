@@ -4,8 +4,8 @@ export const getRibbonStyles = (theme: ITheme) => {
     return mergeStyleSets({
         ribbon: {
             padding: 0,
-            boxShadow: theme.effects.elevation4,
-            border: `1px solid ${theme.semanticColors.bodyDivider}`,
+            //boxShadow: theme.effects.elevation4,
+            //border: `1px solid ${theme.semanticColors.bodyDivider}`,
         },
         unsavedChangesLabel: {
             fontWeight: 600,

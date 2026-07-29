@@ -44,6 +44,16 @@ export class XrmData {
         this._onLoadHandlerSet.delete(handler);
     }
 
+    public fireOnLoad(): void {
+        this._onLoadHandlerSet.forEach((handler) => {
+            try {
+                handler({} as any);
+            } catch (error) {
+                console.error("[Form] XrmData.onLoad handler failed:", error);
+            }
+        });
+    }
+
     private _createAttributeCollection(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
         const attributes = this._formContext.getFormXmlModel().getAttributes();
         const xrmAttributes = attributes.map((a) => new XrmAttribute(a, this._formContext));
