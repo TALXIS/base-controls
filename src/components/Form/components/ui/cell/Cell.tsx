@@ -3,7 +3,7 @@ import { Icon, Label, TooltipHost, useTheme } from "@fluentui/react";
 import { getCellStyles } from "./styles";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { DisabledContext } from "./context";
-import { useSectionContext } from "../../section";
+import { useSectionContext } from "../section";
 import { Layout } from "../../../layout";
 
 export interface ICellProps {

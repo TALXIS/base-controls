@@ -1,7 +1,7 @@
 import { ICellProps } from "../../ui/cell";
 import { FormUi } from "../../ui";
-import { useFieldContext } from "../../field/context";
-import { useField } from "../../field";
+import { useFieldContext } from "../field/context";
+import { useField } from "../field";
 import { Form } from "../../../Form";
 
 export const Cell = (props: ICellProps) => {
