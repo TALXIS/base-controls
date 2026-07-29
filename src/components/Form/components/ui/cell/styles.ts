@@ -60,7 +60,8 @@ export const getCellStyles = (params: ICellStylesParams) => {
             flexDirection: cellLabelPosition === 'Top' ? 'column' : 'row',
             gap: 5,
             height: '100%',
-            gridRow: `span ${rowspan}`
+            gridRow: `span ${rowspan}`,
+            minHeight: 32
         },
         lockIndicator: {
             fontSize: 12,
@@ -96,7 +97,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
         },
         control: {
             flexGrow: 1,
-            overflow: 'auto'
+            overflow: 'auto',
         },
     })
 }
