@@ -1,5 +1,5 @@
 import { ProgressIndicator } from "@fluentui/react";
-import { Cell, ICellProps } from "../../../../../Grid/cells/cell/Cell";
+import { Cell, ICellProps } from "@components/Grid/cells/cell/Cell";
 import * as React from "react";
 import { getPercentCompleteStyles } from "./styles";
 

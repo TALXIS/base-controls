@@ -1,5 +1,5 @@
 import { ISpinnerProps, ThemeProvider, Spinner as FluentSpinner } from "@fluentui/react";
-import { useV9StyledV8Theme } from "../../utilities/theming/hooks";
+import { useV9StyledV8Theme } from "@legacy/utilities/theming/hooks";
 
 export const Spinner = (props: ISpinnerProps) => {
     const v9Theme = useV9StyledV8Theme();

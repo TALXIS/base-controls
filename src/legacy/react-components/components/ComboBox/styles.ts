@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { errorOpacityAnim, errorTransformAnim } from "../../utilities/components/InputErrorMessage/styles";
-import { borderAnim } from "../../utilities/styles";
+import { errorOpacityAnim, errorTransformAnim } from "@legacy/utilities/components/InputErrorMessage/styles";
+import { borderAnim } from "@legacy/utilities/styles";
 
 export const getComboBoxStyles = (theme: ITheme) => {
     return mergeStyleSets({

@@ -1,7 +1,7 @@
-import { ITextFieldProps } from "../../legacy/react-components";
-import { IStringProperty, ITwoOptionsProperty } from "../../interfaces";
-import { IControl, IOutputs } from "../../interfaces/context";
-import { IInputParameters } from "../../interfaces/parameters";
+import { ITextFieldProps } from "@legacy";
+import { IStringProperty, ITwoOptionsProperty } from "@interfaces";
+import { IControl, IOutputs } from "@interfaces/context";
+import { IInputParameters } from "@interfaces/parameters";
 
 export interface ITextField extends IControl<ITextFieldParameters, ITextFieldOutputs, any, ITextFieldProps> {
 }

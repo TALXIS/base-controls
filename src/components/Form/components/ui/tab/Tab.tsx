@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { TabContext } from "./context";
-import { ILayoutBreakpoints, Layout } from "../../../layout";
-import { useCalculatedColumns } from "../../../layout/useCalculatedColumns";
+import { ILayoutBreakpoints, Layout } from "@components/Form/layout";
+import { useCalculatedColumns } from "@components/Form/layout/useCalculatedColumns";
 import { getTabStyles } from "./styles";
 
 export interface ITabProps {

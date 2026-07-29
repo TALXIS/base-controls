@@ -1,8 +1,8 @@
 import { ITheme } from "@fluentui/react";
 import { useRef, useState } from "react";
-import { ICommandBarItemProps } from "../../../components/CommandBar/CommandBar";
+import { ICommandBarItemProps } from "@legacy/components/CommandBar/CommandBar";
 import { IInputButtons } from "./InputButtons";
-import { useRerender } from "../../../hooks";
+import { useRerender } from "@legacy/hooks";
 
 export const useInputButtons = (props: IInputButtons, theme: ITheme): {items: ICommandBarItemProps[]} => {
     const clickToCopyActiveRef = useRef<boolean>(false);

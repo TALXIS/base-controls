@@ -2,8 +2,8 @@ import { Text, useTheme } from "@fluentui/react";
 import { SectionContext } from "./context";
 import { getSectionStyles } from "./styles";
 import React from "react";
-import { ILayoutBreakpoints, Layout } from "../../../layout";
-import { useCalculatedColumns } from "../../../layout/useCalculatedColumns";
+import { ILayoutBreakpoints, Layout } from "@components/Form/layout";
+import { useCalculatedColumns } from "@components/Form/layout/useCalculatedColumns";
 
 export interface ISectionProps {
     id?: string;

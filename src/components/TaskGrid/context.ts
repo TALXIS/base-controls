@@ -3,7 +3,7 @@ import { ITaskDataProvider } from "./providers/task";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
-import { ILocalizationService } from "../../utils";
+import { ILocalizationService } from "@utils";
 
 export const PcfContext = React.createContext<ComponentFramework.Context<any> | null>(null);
 PcfContext.displayName = 'PcfContext';

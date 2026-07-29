@@ -1,5 +1,5 @@
 import { IComboBoxOption, ITheme } from "@fluentui/react";
-import { ColorfulOption } from "../../legacy/react-components";
+import { ColorfulOption } from "@legacy";
 
 export const onRenderColorfulOption = (options: ComponentFramework.PropertyHelper.OptionMetadata[], option: IComboBoxOption | undefined, theme: ITheme) => {
     if (!option) {

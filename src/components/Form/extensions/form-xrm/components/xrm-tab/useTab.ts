@@ -1,6 +1,6 @@
-import { useRerender } from "../../../../../../legacy/react-components";
-import { useEventEmitter } from "../../../../../../hooks";
-import { IFormXmlTab } from "../../internal/FormXmlForm";
+import { useRerender } from "@legacy";
+import { useEventEmitter } from "@hooks";
+import { IFormXmlTab } from "@components/Form/extensions/form-xrm/internal/FormXmlForm";
 
 export const useTab = (tab: IFormXmlTab) => {
     const rerender = useRerender();

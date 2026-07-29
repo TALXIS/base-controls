@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Cell, ICellProps } from '../../../../Grid/cells/cell/Cell'
+import { Cell, ICellProps } from '@components/Grid/cells/cell/Cell'
 import { IRecord } from "@talxis/client-libraries";
 import { getTheme, IconButton } from "@fluentui/react";
-import { useRerender } from '../../../../../legacy/react-components';
+import { useRerender } from '@legacy';
 import { getGroupCellStyles } from "./styles";
 import { useRef } from "react";
-import { useTaskDataProvider } from "../../../context";
+import { useTaskDataProvider } from "@components/TaskGrid/context";
 
 interface IProps extends ICellProps {
     data: IRecord;

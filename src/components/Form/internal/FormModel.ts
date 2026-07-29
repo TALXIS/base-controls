@@ -1,7 +1,7 @@
 import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IMemoryProvider, IRecord, IRecordSaveOperationResult, MemoryDataProvider } from "@talxis/client-libraries";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { IFormStrategy, IOnLoadResult } from "../stragegies/interfaces";
-import { ErrorHelper } from "../../../utils";
+import { ErrorHelper } from "@utils";
 
 export interface IFormParams {
     deps: IOnLoadResult;

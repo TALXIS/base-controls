@@ -1,7 +1,7 @@
 import { FetchXmlDataProvider } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
-import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy } from "../../providers/saved-query/SavedQueryDataProvider";
-import { ErrorHelper } from "../../../../utils/error-handling";
+import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy } from "@components/TaskGrid/providers/saved-query/SavedQueryDataProvider";
+import { ErrorHelper } from "@utils/error-handling";
 
 const FETCH_XML = `
 <fetch count="5000" page="1">

@@ -3,9 +3,9 @@ import { CommandBarButton, type ICommandBarItemProps, useTheme } from "@fluentui
 import { IRibbonComponents, RibbonComponents } from "./components";
 import { getRibbonStyles } from "./styles";
 import { useFormContext } from "../root/context";
-import { useEventEmitter } from "../../../../../hooks";
+import { useEventEmitter } from "@hooks";
 import { IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { useRerender, withButtonLoading } from "../../../../../legacy/react-components";
+import { useRerender, withButtonLoading } from "@legacy";
 import React from "react";
 
 export interface IFormRibbonProps {

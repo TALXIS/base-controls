@@ -1,2 +1,2 @@
 export * from './XrmForm';
-export type { XrmFormContext } from '../../xrm-context';
+export type { XrmFormContext } from '@components/Form/extensions/form-xrm/xrm-context';

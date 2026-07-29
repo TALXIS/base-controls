@@ -1,10 +1,10 @@
-import { IHeaderProps } from "../../../DatasetControl/interfaces"
-import { ICommandBarItemProps } from "../../../../legacy/react-components";
+import { IHeaderProps } from "@components/DatasetControl/interfaces"
+import { ICommandBarItemProps } from "@legacy";
 import * as React from "react"
 import { CommandBarButton, ContextualMenuItemType, useTheme } from "@fluentui/react";
 import { getHeaderStyles } from "./styles";
 import { SettingsCallout } from "./settings-callout";
-import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider, useTaskGridComponents } from "../../context";
+import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
 import { RecordSelector } from "../grid/record-selector";
 import { ViewSwitcher } from "./view-switcher";
 import { EditColumns } from "./edit-columns/EditColumns";

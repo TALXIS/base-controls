@@ -3,7 +3,7 @@ import { IFooterProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { getPaginationStyles } from "./styles";
 import { useMemo } from "react";
-import { CommandBar } from "../../../legacy/react-components";
+import { CommandBar } from "@legacy";
 import { PaginationModel } from "./PaginationModel";
 import { IInternalDataProvider } from "@talxis/client-libraries";
 

@@ -1,6 +1,6 @@
 import { BaseSlots, createTheme, getColorFromString, ICheckboxStyleProps, isDark, IThemeRules, IToggleStyleProps, ThemeGenerator, themeRulesStandardCreator, ITheme as IBaseTheme, IEffects, IButtonStyles, IComboBoxOptionStyles, ICalloutContentStyleProps, ICalloutContentStyles, ContextualMenuItem, IContextualMenuItemProps, IContextualMenuItemStyleProps, IContextualMenuItemStyles, ContextualMenuBase, ContextualMenuItemBase, IContextualMenuStyleProps, IContextualMenuStyles, IContextualMenuItem, IChoiceGroupOptionStyleProps, IChoiceGroupOptionStyles, ICheckStyleProps, ICheckboxStyles, IComboBoxStyles, ComponentsStyles, ChoiceGroupOption, mergeThemes } from "@fluentui/react";
 import Color from 'color';
-import { DeepPartial } from "../../interfaces/components";
+import { DeepPartial } from "@legacy/interfaces/components";
 import { MemoryCache } from '@talxis/client-libraries/dist/helpers/cache/MemoryCache';
 
 const ThemeCache = new MemoryCache<ITheme>();

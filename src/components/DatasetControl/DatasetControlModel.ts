@@ -1,6 +1,6 @@
 import { IInternalDataProvider } from "@talxis/client-libraries";
-import { ITranslation } from "../../hooks";
-import { IDatasetControl } from "../../utils/dataset-control";
+import { ITranslation } from "@hooks";
+import { IDatasetControl } from "@utils/dataset-control";
 import { datasetControlTranslations } from "./translations";
 
 type Labels = Required<ITranslation<typeof datasetControlTranslations>>;

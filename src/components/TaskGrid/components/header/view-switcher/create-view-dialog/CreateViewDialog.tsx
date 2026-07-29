@@ -1,10 +1,10 @@
 import { DefaultButton, Dialog, DialogFooter, MessageBar, MessageBarType, PrimaryButton } from "@fluentui/react";
-import { TextField } from "../../../../../TextField";
+import { TextField } from "@components/TextField";
 import * as React from "react";
-import { withButtonLoading } from '../../../../../../legacy/react-components';
-import { useDatasetControl, useLocalizationService, usePcfContext } from "../../../../context";
-import { useEventEmitter } from "../../../../../../hooks";
-import { ISavedQueryDataProvider, ISavedQueryDataProviderEvents } from "../../../../providers";
+import { withButtonLoading } from '@legacy';
+import { useDatasetControl, useLocalizationService, usePcfContext } from "@components/TaskGrid/context";
+import { useEventEmitter } from "@hooks";
+import { ISavedQueryDataProvider, ISavedQueryDataProviderEvents } from "@components/TaskGrid/providers";
 
 interface ICreateViewDialog {
     onDismiss: () => void;

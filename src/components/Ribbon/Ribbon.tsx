@@ -1,12 +1,12 @@
-import { CommandBar, ICommandBarItemProps, useRerender } from "../../legacy/react-components";
-import { getClassNames } from "../../utils";
-import { useControl } from "../../hooks"
+import { CommandBar, ICommandBarItemProps, useRerender } from "@legacy";
+import { getClassNames } from "@utils";
+import { useControl } from "@hooks"
 import { IRibbon } from "./interfaces"
 import { useMemo, useRef } from "react";
 import { getRibbonStyles } from "./styles";
 import { getIcon, Shimmer, ThemeProvider } from "@fluentui/react";
 import { IRibbonModelEvents, RibbonModel } from "./RibbonModel";
-import { useEventEmitter } from "../../hooks/useEventEmitter";
+import { useEventEmitter } from "@hooks/useEventEmitter";
 
 const fluentIconMap: { [key: string]: string } = {
     'Activate': 'ActivateOrders',

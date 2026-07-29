@@ -1,5 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { borderAnim } from "../../utilities/styles";
+import { borderAnim } from "@legacy/utilities/styles";
 
 export const getTextFieldStyles = (theme: ITheme) => {
     return mergeStyleSets({

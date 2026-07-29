@@ -4,12 +4,15 @@ import { ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui
 import { CommandBarButton } from "@fluentui/react";
 import { IEntity, ILookupTranslations } from "../interfaces";
 import { getLookupStyles } from "../styles";
-import { StringProps } from '../../../types';
 import { useLoadedEntities } from "../hooks/useLoadedEntities";
 import React from 'react';
 
+type ILabelProps<T> = {
+    [Property in keyof T]: (variables?: any) => string;
+};
+
 interface IRecordCreator {
-    labels: Required<StringProps<ILookupTranslations>>,
+    labels: Required<ILabelProps<ILookupTranslations>>,
     entities: IEntity[];
     onCreateRecord: (entityName: string) => void;
 }

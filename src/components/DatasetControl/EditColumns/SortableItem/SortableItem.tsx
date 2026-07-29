@@ -4,9 +4,9 @@ import { IColumn } from "@talxis/client-libraries";
 import { getSortableItemStyles } from "./styles";
 import { useMemo } from "react";
 import { useTheme, Text, ThemeProvider } from "@fluentui/react";
-import { useModel } from "../../useModel";
+import { useModel } from "@components/DatasetControl/useModel";
 import { useEditColumns } from "../useEditColumns";
-import { useThemeGenerator } from "../../../../legacy/react-components";
+import { useThemeGenerator } from "@legacy";
 
 export const SortableItem = (props: { column: IColumn }) => {
     const { column } = props;

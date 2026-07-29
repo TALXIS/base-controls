@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
-import { useModel } from "../../useModel";
-import { IFileRendererProps as IFileRendererPropsBase } from "../../interfaces";
+import { useModel } from "@components/GridCellRenderer/useModel";
+import { IFileRendererProps as IFileRendererPropsBase } from "@components/GridCellRenderer/interfaces";
 import { Link, SpinnerSize, Image, Icon, ImageFit } from "@fluentui/react";
 import { getFileRendererStyles } from "./styles";
-import { Spinner } from "../../../../legacy/react-components";
+import { Spinner } from "@legacy";
 
 interface IFileRendererProps {
     onRenderFile: (props: IFileRendererPropsBase, defaultRender: (props: IFileRendererPropsBase) => React.ReactElement) => React.ReactElement;

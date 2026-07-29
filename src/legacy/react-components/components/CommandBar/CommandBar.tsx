@@ -1,9 +1,9 @@
 import { CommandBar as FluentCommandBar, IButtonProps, ICommandBarProps as ICommandBarPropsBase, useTheme } from '@fluentui/react';
-import { useClassNames } from "../../hooks/useClassNames";
+import { useClassNames } from "@legacy/hooks/useClassNames";
 import { useMemo } from "react";
 import { getCommandBarStyles } from "./styles";
 import { ICommandBarItemProps as ICommandBarItemPropsBase } from "@fluentui/react";
-import { ITheme, Theming } from '../../utilities';
+import { ITheme, Theming } from '@legacy/utilities';
 
 
 /**  

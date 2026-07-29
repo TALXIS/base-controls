@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { components, OptionProps } from 'react-select';
 import { useTheme } from '@fluentui/react';
-import { useColorfulLookupManyProps } from '../../context';
+import { useColorfulLookupManyProps } from '@components/TaskGrid/components/grid/lookup-many/colorful-lookup-many/context';
 import { getOptionStyles } from './styles';
 
 export const Option = (props: OptionProps<ComponentFramework.EntityReference, boolean, any>) => {

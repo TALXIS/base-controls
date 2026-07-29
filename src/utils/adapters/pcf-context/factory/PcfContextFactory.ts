@@ -1,10 +1,10 @@
 import { Client, Formatting } from "@talxis/client-libraries";
-import { XrmFactory } from "../../xrm";
+import { XrmFactory } from "@utils/adapters/xrm";
 import { Device } from "./Device";
 import { FactoryApi, IFactoryApiParams } from "./FactoryApi";
 import { IModeParams, Mode } from "./Mode";
 import { Resources } from "./Resources";
-import { ControlTheme } from "../../../theme";
+import { ControlTheme } from "@utils/theme";
 
 interface IPcfContextUserSettingsParams {
     lcid?: number;

@@ -3,12 +3,12 @@ import { IComponentProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { useMemo, useState } from "react";
 import { getHeaderStyles } from "./styles";
-import { ICommandBarItemProps, useRerender } from "../../../legacy/react-components";
+import { ICommandBarItemProps, useRerender } from "@legacy";
 import { QuickFind } from "../QuickFind/QuickFind";
-import { Ribbon } from "../../Ribbon/Ribbon";
-import { useEventEmitter } from "../../../hooks/useEventEmitter";
+import { Ribbon } from "@components/Ribbon/Ribbon";
+import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
-import { IDatasetControlEvents } from "../../../utils/dataset-control";
+import { IDatasetControlEvents } from "@utils/dataset-control";
 import { EditColumns } from "../EditColumns/EditColumns";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {

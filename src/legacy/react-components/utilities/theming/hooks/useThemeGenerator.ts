@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { DeepPartial } from "../../../interfaces/components"
+import { DeepPartial } from "@legacy/interfaces/components"
 import { ITheme, Theming } from "../Theming";
 
 /**

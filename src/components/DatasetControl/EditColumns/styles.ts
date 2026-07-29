@@ -1,5 +1,5 @@
 import { mergeStyleSets } from "@fluentui/react"
-import { ITheme } from "../../../legacy/react-components";
+import { ITheme } from "@legacy";
 
 export const getEditColumnsStyles = (theme: ITheme) => {
     return mergeStyleSets({

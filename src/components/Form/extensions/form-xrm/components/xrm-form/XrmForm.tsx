@@ -1,17 +1,17 @@
-import { FormXmlForm } from '../../internal/FormXmlForm';
-import { Form } from "../../../../components/Form";
-import { useEventEmitter } from "../../../../../../hooks";
-import { useRerender } from "../../../../../../legacy/react-components";
-import { IFormStrategy } from "../../../../stragegies";
+import { FormXmlForm } from '@components/Form/extensions/form-xrm/internal/FormXmlForm';
+import { Form } from "@components/Form/components/Form";
+import { useEventEmitter } from "@hooks";
+import { useRerender } from "@legacy";
+import { IFormStrategy } from "@components/Form/stragegies";
 import React from "react";
-import { IFormEvents } from '../../../../internal/FormModel';
-import { XrmFormContext as XrmFormContextClass } from '../../xrm-context';
+import { IFormEvents } from '@components/Form/internal/FormModel';
+import { XrmFormContext as XrmFormContextClass } from '@components/Form/extensions/form-xrm/xrm-context';
 import { XrmNotifications } from '../xrm-notifications';
 import { FormXmlContext, XrmFormContext } from '../context';
 import { XrmTabs } from '../xrm-tabs';
 import { XrmRibbon } from '../xrm-ribbon';
-import { IFormApi } from '../../../../FormApi';
-import { IFormApiInternal } from '../../../../internal/FormApi';
+import { IFormApi } from '@components/Form/FormApi';
+import { IFormApiInternal } from '@components/Form/internal/FormApi';
 
 export interface IXrmFormStrategy extends IFormStrategy {
     //will run after onload

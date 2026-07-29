@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { getKeyboardShortcutHintStyles } from './styles';
 import { useTheme, Text } from '@fluentui/react';
-import { useShortcut } from '../../hooks';
+import { useShortcut } from '@legacy/hooks';
 import { Client, Keys, KeyType, SystemPlatform } from '@talxis/client-libraries';
 
 export const keyMappings: { [key: string]: { [key: string]: string } } = {

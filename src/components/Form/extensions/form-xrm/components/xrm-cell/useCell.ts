@@ -1,6 +1,6 @@
-import { useRerender } from "../../../../../../legacy/react-components";
-import { useEventEmitter } from "../../../../../../hooks";
-import { IFormXmlCell } from "../../internal/FormXmlForm";
+import { useRerender } from "@legacy";
+import { useEventEmitter } from "@hooks";
+import { IFormXmlCell } from "@components/Form/extensions/form-xrm/internal/FormXmlForm";
 
 export const useCell = (cell: IFormXmlCell) => {
     const rerender = useRerender();

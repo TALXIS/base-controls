@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { IComboBoxProps as IComboBoxPropsBase, IComboBox, ComboBox as ComboBoxBase, getCommandBarStyles, useTheme, ISelectableOption, ICommandBarItemProps, PrimaryButton, TextField, Icon, ThemeProvider } from "@fluentui/react";
-import { ICopyButton, IDeleteButton, IDisabled, IErrorMessage, IPrefix, IReadOnly, ISuffix } from '../../interfaces/components';
-import { useClassNames } from '../../hooks/useClassNames';
-import { InputButtons } from '../../utilities/components/InputButtons/InputButtons';
+import { ICopyButton, IDeleteButton, IDisabled, IErrorMessage, IPrefix, IReadOnly, ISuffix } from '@legacy/interfaces/components';
+import { useClassNames } from '@legacy/hooks/useClassNames';
+import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
 import { getComboBoxStyles } from './styles';
 import ReactDOM from 'react-dom';
 

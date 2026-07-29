@@ -1,8 +1,8 @@
-import { ICommandBarItemProps } from '../../../../../../legacy/react-components';
+import { ICommandBarItemProps } from '@legacy';
 import * as React from 'react';
-import { components, ISortableItemCommandBarProps } from '../../../../../DatasetControl/EditColumns/components';
+import { components, ISortableItemCommandBarProps } from '@components/DatasetControl/EditColumns/components';
 import { useTaskGridEditColumns } from '../useTaskGridEditColumns';
-import { useDatasetControl } from '../../../../context';
+import { useDatasetControl } from '@components/TaskGrid/context';
 
 
 export const SortableItemCommandBar = (props: ISortableItemCommandBarProps) => {

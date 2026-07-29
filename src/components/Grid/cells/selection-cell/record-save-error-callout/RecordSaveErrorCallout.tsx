@@ -2,8 +2,8 @@ import { useMemo } from "react"
 import { getRecordSaveErrorCalloutStyles } from "./styles"
 import { Callout, Link, Text, ThemeProvider } from "@fluentui/react";
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { useControlTheme } from "../../../../../utils";
-import { useGridInstance } from "../../../grid/useGridInstance";
+import { useControlTheme } from "@utils";
+import { useGridInstance } from "@components/Grid/grid/useGridInstance";
 
 interface IRecordSaveCalloutProps {
     targetId: string;

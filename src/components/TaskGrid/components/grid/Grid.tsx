@@ -1,6 +1,6 @@
-import { IGrid, Grid as GridBase } from "../../../Grid"
+import { IGrid, Grid as GridBase } from "@components/Grid"
 import * as React from "react"
-import { useAgGridLicenseKey, useDatasetControl, useTaskDataProvider, useTaskGridDescriptor } from "../../context";
+import { useAgGridLicenseKey, useDatasetControl, useTaskDataProvider, useTaskGridDescriptor } from "@components/TaskGrid/context";
 import { GridReadyEvent } from "@ag-grid-community/core";
 import { GridCustomizer } from "./grid-customizer/GridCustomizer";
 import { IRecord } from "@talxis/client-libraries";

@@ -2,11 +2,11 @@ import { ThemeProvider, useTheme } from "@fluentui/react";
 import { getSuffixStyles } from "./styles";
 import { useInputButtons } from "./useInputButtons";
 import { useMemo } from "react";
-import { CommandBar, ICommandBarItemProps } from "../../../components/CommandBar/CommandBar";
-import { useClassNames } from "../../../hooks/useClassNames";
-import { ICopyButton } from "../../../interfaces/components";
-import { useThemeGenerator } from "../../theming/hooks/useThemeGenerator";
-import { Theming } from "../../theming";
+import { CommandBar, ICommandBarItemProps } from "@legacy/components/CommandBar/CommandBar";
+import { useClassNames } from "@legacy/hooks/useClassNames";
+import { ICopyButton } from "@legacy/interfaces/components";
+import { useThemeGenerator } from "@legacy/utilities/theming/hooks/useThemeGenerator";
+import { Theming } from "@legacy/utilities/theming";
 
 export interface IInputButtons {
     /**

@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { IComboBox, ITimePickerProps as ITimePickerPropsBase, useTheme } from "@fluentui/react";
 import { TimePicker as TimePickerBase } from "@fluentui/react";
-import { IReadOnly, IDisabled } from '../../interfaces/components';
-import { useClassNames } from '../../hooks/useClassNames';
-import { InputButtons } from '../../utilities/components/InputButtons/InputButtons';
+import { IReadOnly, IDisabled } from '@legacy/interfaces/components';
+import { useClassNames } from '@legacy/hooks/useClassNames';
+import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
 import { getComboBoxStyles } from '../ComboBox/styles';
-import { InputErrorMessage } from '../../utilities/components/InputErrorMessage/InputErrorMessage';
+import { InputErrorMessage } from '@legacy/utilities/components/InputErrorMessage/InputErrorMessage';
 import { ICommandBarItemProps } from '../CommandBar/CommandBar';
 export interface ITimePickerProps extends ITimePickerPropsBase, IReadOnly,
     IDisabled {

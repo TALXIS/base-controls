@@ -1,13 +1,13 @@
 
 import * as React from 'react';
 import { DatePicker as DatePickerBase, ICommandBarItemProps, IDatePicker, ITextField } from "@fluentui/react";
-import { IReadOnly, IErrorMessage, IDisabled, IDeleteButton, ISuffix, IPrefix, ICopyButton } from '../../interfaces/components';
+import { IReadOnly, IErrorMessage, IDisabled, IDeleteButton, ISuffix, IPrefix, ICopyButton } from '@legacy/interfaces/components';
 import { useTheme } from "@fluentui/react";
 import { IDatePickerProps as IDatePickerPropsBase } from "@fluentui/react";
 import { getDatePickerStyles } from './styles';
-import { InputButtons } from '../../utilities/components/InputButtons/InputButtons';
-import { ITheme } from '../../utilities';
-import { useClassNames } from '../../hooks/useClassNames';
+import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
+import { ITheme } from '@legacy/utilities';
+import { useClassNames } from '@legacy/hooks/useClassNames';
 
 
 export interface IDatePickerProps extends IDatePickerPropsBase, IReadOnly,

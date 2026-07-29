@@ -1,5 +1,5 @@
 import React from "react";
-import { IForm } from "../../../internal/FormModel";
+import { IForm } from "@components/Form/internal/FormModel";
 import { IRecord } from "@talxis/client-libraries";
 
 export const FormContext = React.createContext<IForm | null>(null);

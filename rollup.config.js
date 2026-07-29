@@ -1,16 +1,22 @@
+import alias from '@rollup/plugin-alias';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import postcss from 'rollup-plugin-postcss';
-import dts from 'rollup-plugin-dts';
 import resolve from '@rollup/plugin-node-resolve';
 import del from 'rollup-plugin-delete';
 import { glob } from 'glob';
 import path from 'path';
 
 const inputs = glob.sync("src/**/index.ts");
+const srcRoot = path.resolve('src');
+const internalAliases = ['@components', '@hooks', '@interfaces', '@legacy', '@utils'];
 
 const isBareImport = (id) => {
     if (id.startsWith('\0') || id.startsWith('.') || id.startsWith('/') || path.isAbsolute(id)) {
+        return false;
+    }
+
+    if (id.startsWith('@/') || internalAliases.some((aliasName) => id === aliasName || id.startsWith(`${aliasName}/`))) {
         return false;
     }
 
@@ -33,6 +39,16 @@ export default [
         },
         plugins: [
             del({ hook: "buildStart", targets: ['dist/*'] }),
+            alias({
+                entries: [
+                    { find: '@components', replacement: `${srcRoot}/components` },
+                    { find: '@hooks', replacement: `${srcRoot}/hooks` },
+                    { find: '@interfaces', replacement: `${srcRoot}/interfaces` },
+                    { find: '@legacy', replacement: `${srcRoot}/legacy/react-components` },
+                    { find: '@utils', replacement: `${srcRoot}/utils` },
+                    { find: /^@\//, replacement: `${srcRoot}/` },
+                ],
+            }),
             commonjs(),
             resolve(),
             typescript({
@@ -41,14 +57,6 @@ export default [
                 inlineSources: true,
             }),
             postcss(),
-        ],
-    },
-    {
-        input: ['dist/index.d.ts'],
-        output: [{ file: 'dist/index.d.ts', format: "esm" }],
-        external: [/\.css$/],
-        plugins: [
-            dts(),
         ],
     },
 ];

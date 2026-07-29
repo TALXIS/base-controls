@@ -1,14 +1,14 @@
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
-import { ITaskDataProvider } from "../../../providers/task";
+import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import { DatasetConstants, IColumn, IRawRecord, IRecord } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
 import { AddTaskButton } from "../cell-renderers/add-task-button";
-import { ILocalizationService } from "../../../../../utils";
-import { ITaskGridLabels } from "../../../labels";
+import { ILocalizationService } from "@utils";
+import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
-import { INativeColumns, ITaskGridDatasetControl } from "../../../interfaces";
+import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
 
 export const ADD_TASK_COLUMN_NAME = 'addTask';
 

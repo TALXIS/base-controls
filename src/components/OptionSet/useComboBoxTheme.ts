@@ -1,7 +1,7 @@
 import { IOptionSet } from "./interfaces";
 import { ITheme, Theme } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
-import { Theming, useThemeGenerator } from "../../legacy/react-components";
+import { Theming, useThemeGenerator } from "@legacy";
 
 export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, ITheme] => {
     const boundValue = props.parameters.value;

@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react"
 import { IColumn } from "@talxis/client-libraries"
-import { getJustifyContent } from "../../../grid/styles"
+import { getJustifyContent } from "@components/Grid/grid/styles"
 
 export const getNotificationStyles = (isActionColumn: boolean, columnAlignment: Required<IColumn['alignment']>) => {
     return mergeStyleSets({

@@ -1,9 +1,9 @@
 import { ICommandBarItemProps, useTheme, ICommandBar, PrimaryButton, DefaultButton, Link, Icon, ThemeProvider, Callout, Text } from "@fluentui/react";
 import { IAddControlNotificationOptions, ICustomColumnFormatting, IControlNotificationAction, IColumn } from "@talxis/client-libraries";
-import { CommandBar, useResizeObserver, useThemeGenerator } from "../../../../../legacy/react-components";
+import { CommandBar, useResizeObserver, useThemeGenerator } from "@legacy";
 import { useMemo, useState, useRef, useEffect } from "react";
-import { useControlTheme } from "../../../../../utils";
-import { useGridInstance } from "../../../grid/useGridInstance";
+import { useControlTheme } from "@utils";
+import { useGridInstance } from "@components/Grid/grid/useGridInstance";
 import { getNotificationStyles } from "./styles";
 
 interface INotifications {

@@ -4,7 +4,7 @@ import { getCellStyles } from "./styles";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { DisabledContext } from "./context";
 import { useSectionContext } from "../section";
-import { Layout } from "../../../layout";
+import { Layout } from "@components/Form/layout";
 
 export interface ICellProps {
     label?: string;

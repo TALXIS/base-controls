@@ -1,7 +1,7 @@
 import { Attribute, DatasetConstants, DataType, DataTypes, FieldValue, IColumn, IEventEmitter, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
 import { DynamicEntityDefinition } from "@talxis/client-metadata";
 import { Attribute as IAttribute } from '@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition';
-import { ICustomColumnsStrategy } from "../../providers/custom-columns/CustomColumnsDataProvider";
+import { ICustomColumnsStrategy } from "@components/TaskGrid/providers/custom-columns/CustomColumnsDataProvider";
 
 export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';

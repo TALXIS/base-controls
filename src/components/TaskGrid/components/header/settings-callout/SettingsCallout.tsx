@@ -1,7 +1,7 @@
 import { Label, Toggle } from "@fluentui/react";
 import * as React from "react"
 import { getSettingsCalloutStyles } from "./styles";
-import { useDatasetControl, useLocalizationService, useTaskDataProvider } from "../../../context";
+import { useDatasetControl, useLocalizationService, useTaskDataProvider } from "@components/TaskGrid/context";
 
 export const SettingsCallout = () => {
     const localizationService = useLocalizationService();

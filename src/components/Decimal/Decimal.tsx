@@ -1,9 +1,9 @@
-import { TextField } from "../../legacy/react-components";
-import { useInputBasedControl } from "../../hooks/useInputBasedControl";
+import { TextField } from "@legacy";
+import { useInputBasedControl } from "@hooks/useInputBasedControl";
 import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
 import React, { useEffect, useMemo, useRef } from "react";
 import numeral from "numeral";
-import { CURRENCY_NEGATIVE_PATTERN, CURRENCY_POSITIVE_PATTERN, NUMBER_NEGATIVE_PATTERN } from "../../constants";
+import { CURRENCY_NEGATIVE_PATTERN, CURRENCY_POSITIVE_PATTERN, NUMBER_NEGATIVE_PATTERN } from "@/constants";
 import { ICommandBarItemProps, ThemeProvider } from "@fluentui/react";
 import { ArrowButtons, IArrowButtons } from "./components/ArrowButtons";
 import { Numeral } from "@talxis/client-libraries";

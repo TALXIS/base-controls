@@ -1,6 +1,6 @@
 import { Icon } from '@fluentui/react';
 import { Text } from '@fluentui/react';
-import { useGridInstance } from '../../grid/useGridInstance';
+import { useGridInstance } from '@components/Grid/grid/useGridInstance';
 import { emptyRecordStyles } from './styles';
 
 export const EmptyRecords = () => {

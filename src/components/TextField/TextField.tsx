@@ -1,5 +1,5 @@
-import { TextField as TextFieldBase } from "../../legacy/react-components";
-import { useInputBasedControl } from '../../hooks/useInputBasedControl';
+import { TextField as TextFieldBase } from "@legacy";
+import { useInputBasedControl } from '@hooks/useInputBasedControl';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
 import { ICommandBarItemProps, ThemeProvider } from '@fluentui/react';
 import { DataTypes } from "@talxis/client-libraries";

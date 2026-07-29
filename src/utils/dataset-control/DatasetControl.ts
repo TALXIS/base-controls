@@ -1,6 +1,6 @@
 import { Client, DataProvider, EventEmitter, ICommand, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors } from "@talxis/client-libraries";
 import debounce from "debounce";
-import { IDatasetControlParameters } from "../../components/DatasetControl/interfaces";
+import { IDatasetControlParameters } from "@components/DatasetControl/interfaces";
 import { EditColumns, IEditColumns } from "./EditColumns";
 
 

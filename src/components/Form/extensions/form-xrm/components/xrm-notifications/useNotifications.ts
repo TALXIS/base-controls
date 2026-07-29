@@ -1,5 +1,5 @@
-import { useRerender } from "../../../../../../legacy/react-components";
-import { useEventEmitter } from "../../../../../../hooks";
+import { useRerender } from "@legacy";
+import { useEventEmitter } from "@hooks";
 import { useFormXmlContext } from "../context";
 
 export const useNotifications = () => {

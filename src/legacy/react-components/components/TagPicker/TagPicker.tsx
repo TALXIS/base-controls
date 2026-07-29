@@ -12,12 +12,12 @@ import { CommandBar } from '../CommandBar/CommandBar';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { Text } from '@fluentui/react'
-import { IDisabled, IErrorMessage, IReadOnly } from '../../interfaces/components';
+import { IDisabled, IErrorMessage, IReadOnly } from '@legacy/interfaces/components';
 import { getSuggestionsStyles, getTagPickerStyles } from './styles';
 import { useTheme } from '@fluentui/react';
-import { useClassNames } from '../../hooks/useClassNames';
-import { InputErrorMessage } from '../../utilities/components/InputErrorMessage/InputErrorMessage';
-import { InputButtons } from '../../utilities/components/InputButtons/InputButtons';
+import { useClassNames } from '@legacy/hooks/useClassNames';
+import { InputErrorMessage } from '@legacy/utilities/components/InputErrorMessage/InputErrorMessage';
+import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
 
 /**  
  * Extented native `ICommandBarItemProps` (https://developer.microsoft.com/en-us/fluentui#/controls/web/commandbar#ICommandBarItemProps) interface to allow showing of buttons only when cursor hovers over the picker.

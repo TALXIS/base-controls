@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { Spinner, useRerender } from "../../../../legacy/react-components";
+import { Spinner, useRerender } from "@legacy";
 import { Checkbox, IconButton, SpinnerSize, ThemeProvider } from "@fluentui/react";
-import { useEventEmitter } from "../../../../hooks";
+import { useEventEmitter } from "@hooks";
 import { CheckmarkCircle24Filled, ErrorCircle24Filled } from "@fluentui/react-icons";
 import { getSelectionCellStyles } from "./styles";
-import { useAgGridInstance } from "../../grid/ag-grid/useAgGridInstance";
-import { useGridInstance } from "../../grid/useGridInstance";
+import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
+import { useGridInstance } from "@components/Grid/grid/useGridInstance";
 import { RecordSaveErrorCallout } from "./record-save-error-callout/RecordSaveErrorCallout";
 
 interface ISelectionCellProps extends ICellRendererParams {

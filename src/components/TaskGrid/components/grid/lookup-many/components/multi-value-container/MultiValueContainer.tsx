@@ -2,8 +2,8 @@ import * as React from 'react';
 import { useTheme } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
 import { getMultiValueContainerStyles } from './styles';
-import { useLookupManyProps } from '../../context';
-import { getClassNames } from '../../../../../../../utils';
+import { useLookupManyProps } from '@components/TaskGrid/components/grid/lookup-many/context';
+import { getClassNames } from '@utils';
 
 interface IMultiValueProps extends MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any> {
     className?: string;

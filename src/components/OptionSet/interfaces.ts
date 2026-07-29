@@ -1,7 +1,7 @@
-import { IComboBoxProps } from "../../legacy/react-components";
-import { IOptionSetProperty, ITwoOptionsProperty } from "../../interfaces";
-import { IControl, IOutputs } from "../../interfaces/context";
-import { IInputParameters } from "../../interfaces/parameters";
+import { IComboBoxProps } from "@legacy";
+import { IOptionSetProperty, ITwoOptionsProperty } from "@interfaces";
+import { IControl, IOutputs } from "@interfaces/context";
+import { IInputParameters } from "@interfaces/parameters";
 
 export interface IOptionSet extends IControl<IOptionSetParameters, IOptionSetOutputs, any, IComboBoxProps> {
 }

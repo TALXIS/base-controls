@@ -1,13 +1,13 @@
-import { DatasetControl } from "../../../../DatasetControl"
+import { DatasetControl } from "@components/DatasetControl"
 import { Dataset, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { DatasetControl as DatasetControlModel } from '../../../../../utils/dataset-control';
+import { DatasetControl as DatasetControlModel } from '@utils/dataset-control';
 import * as React from "react"
-import { Spinner } from "../../../../../legacy/react-components";
-import { getClassNames } from "../../../../../utils";
+import { Spinner } from "@legacy";
+import { getClassNames } from "@utils";
 import { CommandBarButton, Icon, useTheme, Text, IButtonProps, DirectionalHint } from "@fluentui/react";
 import { getRecordSelectorStyles } from "./styles";
 import { FixedSizeList } from 'react-window';
-import { useLocalizationService, usePcfContext } from "../../../context";
+import { useLocalizationService, usePcfContext } from "@components/TaskGrid/context";
 
 interface IRecordSelectorProps {
     provider: IDataProvider;

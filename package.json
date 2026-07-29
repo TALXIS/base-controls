@@ -18,6 +18,7 @@
   ],
   "devDependencies": {
     "@babel/core": "^7.16.12",
+    "@rollup/plugin-alias": "^3.1.9",
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.0.6",
     "@rollup/plugin-typescript": "^8.3.0",
@@ -53,8 +54,8 @@
     "webpack": "^5.68.0"
   },
   "scripts": {
-    "build": "rollup -c",
-    "yalc": "rollup -c && yalc publish --sig"
+    "build": "rollup -c && node ./scripts/resolve-dts-aliases.mjs && rollup -c rollup.dts.config.js",
+    "yalc": "npm run build && yalc publish --sig"
   },
   "browserslist": {
     "production": [
@@ -97,10 +98,10 @@
     "lodash": "^4.17.21",
     "merge-anything": "^5.1.7",
     "numeral": "^2.0.6",
+    "react-grid-layout": "^2.2.3",
     "react-select": "^5.10.2",
     "react-window": "1.8.10",
     "use-debounce": "^10.0.1",
-    "react-grid-layout": "^2.2.3",
     "validator": "^13.11.9"
   },
   "peerDependencies": {

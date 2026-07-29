@@ -1,7 +1,7 @@
-import { ITagPickerProps } from "../../legacy/react-components";
-import { ILookupProperty, ITwoOptionsProperty } from "../../interfaces";
-import { IControl, IOutputs, ITranslations } from "../../interfaces/context";
-import { IBaseParameters } from "../../interfaces/parameters";
+import { ITagPickerProps } from "@legacy";
+import { ILookupProperty, ITwoOptionsProperty } from "@interfaces";
+import { IControl, IOutputs, ITranslations } from "@interfaces/context";
+import { IBaseParameters } from "@interfaces/parameters";
 import { lookupTranslations } from "./translations";
 
 export interface ILookup extends IControl<ILookupParameters, ILookupOutputs, Partial<ITranslations<typeof lookupTranslations>>, ITagPickerProps> {

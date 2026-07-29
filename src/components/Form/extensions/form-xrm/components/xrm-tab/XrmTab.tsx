@@ -1,6 +1,6 @@
 import React from "react";
-import { Form } from "../../../../components/Form";
-import { IFormXmlTab } from "../../internal/FormXmlForm";
+import { Form } from "@components/Form/components/Form";
+import { IFormXmlTab } from "@components/Form/extensions/form-xrm/internal/FormXmlForm";
 import { getXrmTabGridTemplateColumns } from "./getXrmTabGridTemplateColumns";
 import { XrmSection } from "../xrm-section";
 import { useTab } from "./useTab";

@@ -1,16 +1,16 @@
 import { useMemo } from "react";
-import { IOnLoadResult } from "../../../stragegies/interfaces";
-import { useControlTheme, useEventEmitter } from "../../../../../hooks";
+import { IOnLoadResult } from "@components/Form/stragegies/interfaces";
+import { useControlTheme, useEventEmitter } from "@hooks";
 import { initializeIcons, ThemeProvider } from "@fluentui/react";
-import { FormModel, IFormEvents } from '../../../internal/FormModel';
+import { FormModel, IFormEvents } from '@components/Form/internal/FormModel';
 import { FormContext } from "./context";
 import { getFormStyles } from "./styles";
-import { IFormStrategy } from "../../../stragegies/interfaces";
+import { IFormStrategy } from "@components/Form/stragegies/interfaces";
 import React from "react";
-import { FormUi } from "../../ui";
-import { IFormApi } from "../../../FormApi";
-import { FormApi } from "../../../internal/FormApi";
-import { PcfContextProvider } from "../../../../../utils";
+import { FormUi } from "@components/Form/components/ui";
+import { IFormApi } from "@components/Form/FormApi";
+import { FormApi } from "@components/Form/internal/FormApi";
+import { PcfContextProvider } from "@utils";
 
 export interface IFormProps {
     strategy: IFormStrategy;

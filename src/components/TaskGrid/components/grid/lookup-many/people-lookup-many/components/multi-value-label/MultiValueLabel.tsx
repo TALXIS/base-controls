@@ -2,8 +2,8 @@ import * as React from 'react';
 import { Persona, PersonaSize, TooltipHost } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
 import { getMultiValueLabelStyles } from './styles';
-import { usePeopleLookupManyProps } from '../../context';
-import { MultiValueLabel as MultiValueLabelBase } from '../../../components/multi-value-label';
+import { usePeopleLookupManyProps } from '@components/TaskGrid/components/grid/lookup-many/people-lookup-many/context';
+import { MultiValueLabel as MultiValueLabelBase } from '@components/TaskGrid/components/grid/lookup-many/components/multi-value-label';
 
 export const MultiValueLabel = (props: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
     const styles = React.useMemo(() => getMultiValueLabelStyles(), []);

@@ -1,7 +1,7 @@
 import { FetchXmlBuilder, IDataProvider, IRawRecord, IRecord, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
-import { ICustomColumnsStrategy, IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy } from "../../providers";
-import { IFieldMapping as IFieldMappingBase, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "../../interfaces";
-import { IGridCustomizerStrategy } from "../../components/grid";
+import { ICustomColumnsStrategy, IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy } from "@components/TaskGrid/providers";
+import { IFieldMapping as IFieldMappingBase, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
+import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
 import { DataverseSavedQueryStrategy } from "./DataverseSavedQueryStrategy";
 import { DataverseTaskStrategy } from "./DataverseTaskStrategy";
 import { DataverseGridCustomizerStrategy } from "./DataverseGridCustomizerStrategy";

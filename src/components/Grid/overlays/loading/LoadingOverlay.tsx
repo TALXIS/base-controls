@@ -1,6 +1,6 @@
 import { SpinnerSize, Text } from '@fluentui/react';
-import { Spinner } from '../../../../legacy/react-components';
-import { useGridInstance } from '../../grid/useGridInstance';
+import { Spinner } from '@legacy';
+import { useGridInstance } from '@components/Grid/grid/useGridInstance';
 import { useMemo } from 'react';
 import { getLoadingOverlayStyles } from './styles';
 

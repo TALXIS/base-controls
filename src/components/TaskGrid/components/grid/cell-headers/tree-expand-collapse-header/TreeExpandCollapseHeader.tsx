@@ -1,8 +1,8 @@
 import { IconButton } from "@fluentui/react";
-import { ICellProps } from "../../../../../Grid/cells/cell/Cell"
+import { ICellProps } from "@components/Grid/cells/cell/Cell"
 import * as React from "react"
 import { getTreeExpandCollapseHeaderStyles } from "./styles";
-import { useTaskDataProvider } from "../../../../context";
+import { useTaskDataProvider } from "@components/TaskGrid/context";
 
 export const TreeExpandCollapseHeader = (props: ICellProps) => {
     const styles = React.useMemo(() => getTreeExpandCollapseHeaderStyles(), []);

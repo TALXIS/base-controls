@@ -1,6 +1,6 @@
 import { IField } from "@talxis/client-libraries";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
-import { FormModel } from "../../../internal/FormModel";
+import { FormModel } from "@components/Form/internal/FormModel";
 import type { IFormXmlAttribute } from "../internal/FormXmlForm";
 import { makeItemCollection } from "./collection";
 import type { XrmControl } from "./XrmControl";

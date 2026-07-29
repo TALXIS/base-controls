@@ -1,5 +1,5 @@
 import { ITheme, mergeStyles, mergeStyleSets } from "@fluentui/style-utilities";
-import { borderAnim } from "../../utilities/styles";
+import { borderAnim } from "@legacy/utilities/styles";
 
 
 export const getTagPickerStyles = (theme: ITheme) => {

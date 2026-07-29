@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef } from "react";
 import { Ribbon } from "../Ribbon/Ribbon";
 import { IGridInlineRibbon } from "./interfaces"
 import { GridInlineRibbonModel, IGridInlineRibbonModelEvents } from "./GridInlineRibbonModel";
-import { useEventEmitter } from "../../hooks/useEventEmitter";
-import { useRerender, useResizeObserver } from "../../legacy/react-components";
-import { getClassNames } from "../../utils";
+import { useEventEmitter } from "@hooks/useEventEmitter";
+import { useRerender, useResizeObserver } from "@legacy";
+import { getClassNames } from "@utils";
 import { ICommandBar } from "@fluentui/react";
 import { getGridInlineRibbonStyles } from "./styles";
 import { DataProvider } from "@talxis/client-libraries";
