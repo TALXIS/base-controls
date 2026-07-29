@@ -45,9 +45,9 @@ export const XrmForm = (props: IXrmFormProps) => {
         props.onFormReady?.({ formContext, api });
     }
 
-    return <Form strategy={strategy} onFormReady={onFormReady} onAfterSave={props.onAfterSave}>
+    return <Form.Root strategy={strategy} onFormReady={onFormReady} onAfterSave={props.onAfterSave}>
         {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} />}
-    </Form>
+    </Form.Root>
 }
 
 const XrmFormInternal = ({ formXmlModel, xrmFormContext }: { formXmlModel: FormXmlForm, xrmFormContext: XrmFormContextClass }) => {

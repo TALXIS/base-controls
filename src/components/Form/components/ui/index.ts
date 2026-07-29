@@ -1,11 +1,13 @@
 //ui components do not have any dependencies on the form, so they can be used in other contexts as well
 
-import { Cell, ICellProps } from "./cell";
+import { Cell } from "./cell";
+
+export * from "./cell";
     
 export interface IFormUi {
-    Cell: React.FC<ICellProps>;
+    Cell: typeof Cell;
 }
 
 export const FormUi: IFormUi = {
-    Cell: Cell
+    Cell
 }

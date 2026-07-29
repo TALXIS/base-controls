@@ -7,7 +7,7 @@ import { useEffect, useMemo } from "react";
 import { MessageBar, MessageBarType } from "@fluentui/react";
 import { useFormContext } from "../form/context";
 import { useField } from "../field";
-import { useDisabledContext } from "../cell";
+import { useDisabledContext } from "../ui/cell";
 
 
 
