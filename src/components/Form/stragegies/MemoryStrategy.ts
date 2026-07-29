@@ -2,51 +2,57 @@ import { IColumn, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { IFormStrategy, IOnLoadResult, IOnSaveParams } from "./interfaces";
 
 export interface IMemoryStrategyParams {
-    columns: IColumn[];
-    data: {[key: string]: any};
-    metadata: IOnLoadResult['metadata'];
+    onGetColumns: () => IColumn[];
+    onGetData: () => { [key: string]: any };
+    onGetMetadata: () => IOnLoadResult['metadata'];
 }
 
 
 /**
- * An in-memory form strategy that keeps all data locally without
- * performing any network requests. When data is saved, it is merged into the original object passed via the constructor.
+ * An in-memory form strategy that keeps all data locally without performing
+ * any network requests.
+ *
+ * Data, columns, and metadata are resolved lazily through constructor-supplied
+ * getter callbacks so consumers can expose live state instead of a one-time
+ * snapshot.
  */
 export class MemoryStrategy implements IFormStrategy {
-    private _data: {[key: string]: any} = {};
-    private _columns: IColumn[] = [];
-    private _metadata: IOnLoadResult['metadata'];
+    private _onGetData: () => { [key: string]: any };
+    private _onGetColumns: () => IColumn[];
+    private _onGetMetadata: () => IOnLoadResult['metadata'];
 
     constructor(params: IMemoryStrategyParams) {
-        this._data = params.data;
-        this._columns = params.columns;
-        this._metadata = params.metadata;
+        this._onGetData = params.onGetData;
+        this._onGetColumns = params.onGetColumns;
+        this._onGetMetadata = params.onGetMetadata;
     }
 
     /**
-     * Returns the columns, data, and metadata held in memory.
+     * Returns the current columns, data, and metadata from the configured
+     * getter callbacks.
      */
     public async onLoad(): Promise<IOnLoadResult> {
         return {
-            columns: this._columns,
-            data: this._data,
-            metadata: this._metadata,
+            columns: this._onGetColumns(),
+            data: this._onGetData(),
+            metadata: this._onGetMetadata(),
         };
     }
 
     /**
-     * Shallow-merges the changed field values into the in-memory data store.
-     * Because `this._data` is the same reference passed via the constructor,
-     * the caller's original object is also updated.
+     * Shallow-merges changed field values into the current in-memory data
+     * object returned by the configured data getter.
      */
     public async onSave(params: IOnSaveParams): Promise<IRecordSaveOperationResult> {
         const { data } = params;
+        const currentData = this._onGetData();
+        const metadata = this._onGetMetadata();
 
-        Object.assign(this._data, data);
+        Object.assign(currentData, data);
         return {
             success: true,
             fields: Object.keys(data),
-            recordId: this._data[this._metadata.PrimaryIdAttribute],
+            recordId: currentData[metadata.PrimaryIdAttribute],
         }
     }
 }

@@ -1,20 +1,18 @@
 import { useMemo } from "react";
 import { IOnLoadResult } from "@components/Form/stragegies/interfaces";
-import { useControlTheme, useEventEmitter } from "@hooks";
-import { initializeIcons, ThemeProvider } from "@fluentui/react";
+import { useEventEmitter } from "@hooks";
+import { initializeIcons } from "@fluentui/react";
 import { FormModel, IFormEvents } from '@components/Form/internal/FormModel';
 import { FormContext } from "./context";
 import { getFormStyles } from "./styles";
 import { IFormStrategy } from "@components/Form/stragegies/interfaces";
 import React from "react";
 import { FormUi } from "@components/Form/components/ui";
-import { PcfContextProvider } from "@utils";
 import { FormApi } from "@components/Form/internal/FormApi";
 import { IFormApi } from "@components/Form/interfaces";
 
 export interface IFormProps {
     strategy: IFormStrategy;
-    pcfContext?: ComponentFramework.Context<any, any>;
     children?: React.ReactNode;
     onBeforeSave?: IFormEvents['onBeforeSave'];
     onAfterSave?: IFormEvents['onAfterSave'];
@@ -50,7 +48,7 @@ export const Root = (props: IFormProps) => {
 };
 
 export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefreshRequested: () => void }) => {
-    const { children, strategy, deps, pcfContext, onFormReady, onRefreshRequested } = props;
+    const { children, strategy, deps, onFormReady, onRefreshRequested } = props;
 
     const form = useMemo(() => {
         const instance = new FormModel({
@@ -78,11 +76,11 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     React.useEffect(() => {
         onFormReady?.(formApi);
     }, []);
-    return <PcfContextProvider context={pcfContext}>
+    return (
         <FormContext.Provider value={form}>
             <div className={styles.form} data-id={`form-${id}`}>
                 {children}
             </div>
         </FormContext.Provider>
-    </PcfContextProvider>
+    )
 }
