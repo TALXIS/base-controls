@@ -1,4 +1,4 @@
-import { IFormXmlControl } from "../../FormXmlForm"
+import { IFormXmlControl } from "../../internal/FormXmlForm"
 import { Form } from "../../../../components/Form";
 import { useXrmControl } from "./useXrmControl";
 

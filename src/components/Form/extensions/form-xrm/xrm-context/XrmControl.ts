@@ -1,4 +1,4 @@
-import type { IFormXmlCell, IFormXmlControl } from "../FormXmlForm";
+import type { IFormXmlCell, IFormXmlControl } from "../internal/FormXmlForm";
 import type { XrmAttribute } from "./XrmAttribute";
 import type { XrmFormContext } from "./XrmFormContext";
 import { notImplemented } from "./utils";

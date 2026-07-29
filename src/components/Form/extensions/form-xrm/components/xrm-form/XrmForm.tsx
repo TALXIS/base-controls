@@ -1,18 +1,16 @@
-import { FormXmlForm } from '../../FormXmlForm'
+import { FormXmlForm } from '../../internal/FormXmlForm';
 import { Form } from "../../../../components/Form";
 import { useEventEmitter } from "../../../../../../hooks";
 import { useRerender } from "@talxis/react-components";
 import { IFormStrategy } from "../../../../stragegies";
 import React from "react";
-import { IForm, IFormEvents } from '../../../../internal/FormModel';
+import { IFormEvents } from '../../../../internal/FormModel';
 import { XrmFormContext as XrmFormContextClass } from '../../xrm-context';
-import { XrmNotifications } from '../xrm-notifications/XrmNotifications';
+import { XrmNotifications } from '../xrm-notifications';
 import { FormXmlContext, XrmFormContext } from '../context';
-import { XrmTabs } from '../xrm-tabs/XrmTabs';
+import { XrmTabs } from '../xrm-tabs';
 import { XrmRibbon } from '../xrm-ribbon';
 import { IFormApi, IFormApiInternal } from '../../../../internal/FormApi';
-
-
 
 export interface IXrmFormStrategy extends IFormStrategy {
     //will run after onload

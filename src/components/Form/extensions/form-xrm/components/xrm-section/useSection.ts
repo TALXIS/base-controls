@@ -1,6 +1,6 @@
 import { useRerender } from "@talxis/react-components";
 import { useEventEmitter } from "../../../../../../hooks";
-import { IFormXmlSection } from "../../FormXmlForm";
+import { IFormXmlSection } from "../../internal/FormXmlForm";
 
 export const useSection = (section: IFormXmlSection) => {
     const rerender = useRerender();

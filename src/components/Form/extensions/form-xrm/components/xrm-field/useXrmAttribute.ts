@@ -1,5 +1,5 @@
 import { useRerender } from "@talxis/react-components";
-import { IFormXmlAttribute } from "../../FormXmlForm";
+import { IFormXmlAttribute } from "../../internal/FormXmlForm";
 import { useFormXmlContext } from "../context";
 import { useEventEmitter } from "../../../../../../hooks";
 

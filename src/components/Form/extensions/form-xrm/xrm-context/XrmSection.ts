@@ -1,4 +1,4 @@
-import type { IFormXmlSection } from "../FormXmlForm";
+import type { IFormXmlSection } from "../internal/FormXmlForm";
 import { makeItemCollection } from "./collection";
 import type { XrmControl } from "./XrmControl";
 import type { XrmFormContext } from "./XrmFormContext";
