@@ -11,7 +11,7 @@ import { Lookup } from '../Lookup';
 import { OptionSet } from '../OptionSet';
 import { BaseControls } from '../../utils';
 import { getNestedControlStyles } from './styles';
-import { Spinner, useRerender } from '@talxis/react-components';
+import { Spinner, useRerender } from '../../legacy/react-components';
 import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } from '@fluentui/react';
 import ReactDOM from 'react-dom';
 import { useControlLabels } from '../../hooks';

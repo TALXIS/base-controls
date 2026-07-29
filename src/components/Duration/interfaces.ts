@@ -1,4 +1,4 @@
-import { IComboBoxProps } from "@talxis/react-components";
+import { IComboBoxProps } from "../../legacy/react-components";
 import { IWholeNumberProperty } from "../../interfaces";
 import { IControl, IOutputs, ITranslations } from "../../interfaces/context";
 import { IInputParameters } from "../../interfaces/parameters";

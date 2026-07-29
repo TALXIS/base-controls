@@ -3,7 +3,7 @@ import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeProvider } from "@fluentui/react";
-import { IItemProps, TagPicker } from "@talxis/react-components";
+import { IItemProps, TagPicker } from "../../legacy/react-components";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "../../hooks/useMouseOver";
 import { getLookupStyles, getSuggestionsCalloutStyles } from "./styles";

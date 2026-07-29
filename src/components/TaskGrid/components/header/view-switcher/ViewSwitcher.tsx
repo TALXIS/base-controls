@@ -5,7 +5,7 @@ import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataPr
 import { CreateViewDialog } from "./create-view-dialog";
 import { ViewManagerDialog } from "./view-manager";
 import { useEventEmitter } from "../../../../../hooks";
-import { withButtonLoading } from "@talxis/react-components";
+import { withButtonLoading } from "../../../../../legacy/react-components";
 
 const CommandBarButton = withButtonLoading(CommandBarButtonBase);
 

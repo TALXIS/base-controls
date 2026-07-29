@@ -1,5 +1,5 @@
 import { components } from "../../../../../DatasetControl/EditColumns/components";
-import { ICommandBarItemProps, ICommandBarProps } from "@talxis/react-components";
+import { ICommandBarItemProps, ICommandBarProps } from "../../../../../../legacy/react-components";
 import * as React from 'react';
 import { useTaskGridEditColumns } from "../useTaskGridEditColumns";
 import { useLocalizationService } from "../../../../context";

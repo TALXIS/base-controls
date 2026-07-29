@@ -5,7 +5,7 @@ import { getValueRendererStyles } from "./styles";
 import { ColorfulOptionSetValueRenderer } from "./ColorfulOptionSetValueRenderer/ColorfulOptionSetValueRenderer";
 import { useModel } from "../useModel";
 import { FileRenderer } from "./FileRenderer/FileRenderer";
-import { getClassNames } from "@talxis/react-components";
+import { getClassNames } from "../../../legacy/react-components";
 
 export const ValueRenderer = (props: IValueRendererProps) => {
     const model = useModel();

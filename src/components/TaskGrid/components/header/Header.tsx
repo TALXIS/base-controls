@@ -1,5 +1,5 @@
 import { IHeaderProps } from "../../../DatasetControl/interfaces"
-import { ICommandBarItemProps } from "@talxis/react-components";
+import { ICommandBarItemProps } from "../../../../legacy/react-components";
 import * as React from "react"
 import { CommandBarButton, ContextualMenuItemType, useTheme } from "@fluentui/react";
 import { getHeaderStyles } from "./styles";

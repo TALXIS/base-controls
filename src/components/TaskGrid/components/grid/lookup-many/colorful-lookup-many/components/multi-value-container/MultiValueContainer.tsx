@@ -1,6 +1,6 @@
 import { ThemeProvider, useTheme } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
-import { Theming, useThemeGenerator } from '@talxis/react-components';
+import { Theming, useThemeGenerator } from '../../../../../../../../legacy/react-components';
 import { MultiValueContainer as NativeMultiValueContainer } from '../../../components/multi-value-container/MultiValueContainer';
 import { useColorfulLookupManyProps } from '../../context';
 

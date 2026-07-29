@@ -4,7 +4,7 @@ import { IControl, IStringProperty, ITwoOptionsProperty } from "../../interfaces
 import { IGridOutputs, IGridParameters } from "../Grid";
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
-import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "@talxis/react-components";
+import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "../../legacy/react-components";
 import React from "react";
 import { IRibbonComponentProps } from "../Ribbon/interfaces";
 import { IDatasetControl } from "../../utils/dataset-control";

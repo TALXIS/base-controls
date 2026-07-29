@@ -54,8 +54,6 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "documentation": "start-storybook -p 6006",
-    "build-documentation": "build-storybook",
     "yalc": "rollup -c && yalc publish --sig"
   },
   "browserslist": {
@@ -84,6 +82,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
+    "@fluentui/style-utilities": "^8.121.7",
     "@talxis/client-libraries": "^1.2606.5",
     "@talxis/client-metadata": "/Users/dominikbrych/Repos/NETWORG/form/client-metadata",
     "color": "^4.2.3",
@@ -95,6 +94,7 @@
     "humanize-duration": "^3.32.0",
     "lexorank": "^1.0.5",
     "liquidjs": "^9.43.0",
+    "lodash": "^4.17.21",
     "merge-anything": "^5.1.7",
     "numeral": "^2.0.6",
     "react-select": "^5.10.2",
@@ -105,7 +105,6 @@
   },
   "peerDependencies": {
     "@fluentui/react": "<=8.121.5",
-    "@talxis/react-components": "1.2505.2",
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2"
   }

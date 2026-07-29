@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { Spinner, useRerender } from "@talxis/react-components";
+import { Spinner, useRerender } from "../../../../legacy/react-components";
 import { Checkbox, IconButton, SpinnerSize, ThemeProvider } from "@fluentui/react";
 import { useEventEmitter } from "../../../../hooks";
 import { CheckmarkCircle24Filled, ErrorCircle24Filled } from "@fluentui/react-icons";

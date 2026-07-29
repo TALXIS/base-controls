@@ -5,7 +5,7 @@ import { getRibbonStyles } from "./styles";
 import { useFormContext } from "../root/context";
 import { useEventEmitter } from "../../../../../hooks";
 import { IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { useRerender, withButtonLoading } from "@talxis/react-components";
+import { useRerender, withButtonLoading } from "../../../../../legacy/react-components";
 import React from "react";
 
 export interface IFormRibbonProps {

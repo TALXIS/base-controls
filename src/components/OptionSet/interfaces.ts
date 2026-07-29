@@ -1,4 +1,4 @@
-import { IComboBoxProps } from "@talxis/react-components";
+import { IComboBoxProps } from "../../legacy/react-components";
 import { IOptionSetProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
 import { IInputParameters } from "../../interfaces/parameters";

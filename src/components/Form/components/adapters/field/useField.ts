@@ -1,4 +1,4 @@
-import { useRerender } from "@talxis/react-components";
+import { useRerender } from "../../../../../legacy/react-components";
 import { useFormContext } from "../root/context";
 import { useEventEmitter } from "../../../../../hooks";
 import { IField } from "@talxis/client-libraries";

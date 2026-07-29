@@ -3,7 +3,7 @@ import { ITranslation, useControl } from "../../../hooks";
 import { IEntity, ILayout, ILookup, IMetadata } from "../interfaces";
 import { lookupTranslations } from "../translations";
 import { useFetchXml } from "./useFetchXml";
-import { ITheme } from "@talxis/react-components";
+import { ITheme } from "../../../legacy/react-components";
 import dayjs from "dayjs";
 
 export const useLookup = (props: ILookup): [

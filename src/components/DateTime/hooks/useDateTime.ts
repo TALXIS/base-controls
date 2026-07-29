@@ -6,7 +6,7 @@ import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "../translations";
 import { ITranslation } from "../../../hooks";
-import { ITheme } from "@talxis/react-components";
+import { ITheme } from "../../../legacy/react-components";
 import { IFormatting } from "@talxis/client-libraries/dist/utils/formatting";
 
 dayjs.extend(customParseFormat);

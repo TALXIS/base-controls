@@ -1,4 +1,4 @@
-import { CommandBar as BaseCommandBar, ICommandBarProps} from "@talxis/react-components";
+import { CommandBar as BaseCommandBar, ICommandBarProps} from "../../../../legacy/react-components";
 
 export const CommandBar = (props: ICommandBarProps) => {
     const {items = [], farItems = []} = props;

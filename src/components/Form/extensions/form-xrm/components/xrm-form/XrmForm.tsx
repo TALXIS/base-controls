@@ -1,7 +1,7 @@
 import { FormXmlForm } from '../../internal/FormXmlForm';
 import { Form } from "../../../../components/Form";
 import { useEventEmitter } from "../../../../../../hooks";
-import { useRerender } from "@talxis/react-components";
+import { useRerender } from "../../../../../../legacy/react-components";
 import { IFormStrategy } from "../../../../stragegies";
 import React from "react";
 import { IFormEvents } from '../../../../internal/FormModel';

@@ -6,7 +6,7 @@ import { IGridColumn } from '../../grid/GridModel';
 import { ColumnHeaderContextualMenu, IColumnHeaderContextualMenuProps } from './ColumnHeaderContextualMenu';
 import { FilterCallout } from './FilterCallout';
 import { NestedControlRenderer } from '../../../NestedControlRenderer';
-import { useRerender } from '@talxis/react-components';
+import { useRerender } from '../../../../legacy/react-components';
 import { useAgGridInstance } from '../../grid/ag-grid/useAgGridInstance';
 import { useEventEmitter } from '../../../../hooks/useEventEmitter';
 import { IAgGridModelEvents } from '../../grid/ag-grid/AgGridModel';

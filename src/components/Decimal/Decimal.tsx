@@ -1,4 +1,4 @@
-import { TextField } from "@talxis/react-components";
+import { TextField } from "../../legacy/react-components";
 import { useInputBasedControl } from "../../hooks/useInputBasedControl";
 import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
 import React, { useEffect, useMemo, useRef } from "react";

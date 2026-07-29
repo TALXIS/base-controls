@@ -1,6 +1,6 @@
 import { AggregationFunction, DataProvider, DataType, DataTypes, FieldValue, Filtering, Formatting, Grouping, IColumn, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IInternalDataProvider, IRecord, Sanitizer, Sorting, TotalRow } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
-import { ITheme, Theming } from "@talxis/react-components";
+import { ITheme, Theming } from "../../../legacy/react-components";
 import { getTheme } from "@fluentui/react";
 import { gridTranslations } from "../translations";
 import { ITranslation } from "../../../hooks";

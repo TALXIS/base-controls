@@ -1,7 +1,7 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyleSets } from "@fluentui/react";
 import { IRecord, Constants, DataProvider, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { useThemeGenerator, getClassNames, useRerender } from "@talxis/react-components";
+import { useThemeGenerator, getClassNames, useRerender } from "../../../../legacy/react-components";
 import { useMemo, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "../../../../utils";
 import { ICellValues } from "../../grid/ag-grid/AgGridModel";

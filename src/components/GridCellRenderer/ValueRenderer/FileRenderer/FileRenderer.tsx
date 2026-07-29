@@ -3,7 +3,7 @@ import { useModel } from "../../useModel";
 import { IFileRendererProps as IFileRendererPropsBase } from "../../interfaces";
 import { Link, SpinnerSize, Image, Icon, ImageFit } from "@fluentui/react";
 import { getFileRendererStyles } from "./styles";
-import { Spinner } from "@talxis/react-components";
+import { Spinner } from "../../../../legacy/react-components";
 
 interface IFileRendererProps {
     onRenderFile: (props: IFileRendererPropsBase, defaultRender: (props: IFileRendererPropsBase) => React.ReactElement) => React.ReactElement;

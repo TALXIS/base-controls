@@ -1,4 +1,4 @@
-import { ComboBox } from "@talxis/react-components";
+import { ComboBox } from "../../legacy/react-components";
 import { useEffect, useMemo, useRef } from 'react';
 import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';

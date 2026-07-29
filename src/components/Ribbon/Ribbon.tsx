@@ -1,4 +1,4 @@
-import { CommandBar, getClassNames, ICommandBarItemProps, useRerender } from "@talxis/react-components";
+import { CommandBar, getClassNames, ICommandBarItemProps, useRerender } from "../../legacy/react-components";
 import { useControl } from "../../hooks"
 import { IRibbon } from "./interfaces"
 import { useMemo, useRef } from "react";

@@ -1,4 +1,4 @@
-import { ICommandBarItemProps } from '@talxis/react-components';
+import { ICommandBarItemProps } from '../../../../../../legacy/react-components';
 import * as React from 'react';
 import { components, ISortableItemCommandBarProps } from '../../../../../DatasetControl/EditColumns/components';
 import { useTaskGridEditColumns } from '../useTaskGridEditColumns';

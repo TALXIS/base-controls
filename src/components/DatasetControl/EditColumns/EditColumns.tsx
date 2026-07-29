@@ -7,7 +7,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem/SortableItem";
 import { useEventEmitter } from "../../../hooks";
-import { useRerender, Spinner } from "@talxis/react-components";
+import { useRerender, Spinner } from "../../../legacy/react-components";
 import { ColumnSelector } from "./ColumnSelector/ColumnSelector";
 import { useShouldRemount } from "../../../hooks/useShouldRemount";
 import { ScopeSelector } from "./ScopeSelector/ScopeSelector";

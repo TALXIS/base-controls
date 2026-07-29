@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { IColorfulOptionSetValueRendererProps as IColorfulOptionSetValueRendererPropsBase, IColorfulOptionValueRendererProps as IColorfulOptionValueRendererPropsBase } from "../../interfaces"
 import { getColorfulOptionSetValuesRendererStyles, getColorfulOptionValueRendererStyles } from "./styles";
 import { PartialTheme, Text, ThemeProvider, useTheme, merge } from "@fluentui/react";
-import { Theming, useThemeGenerator } from "@talxis/react-components";
+import { Theming, useThemeGenerator } from "../../../../legacy/react-components";
 import { useModel } from "../../useModel";
 
 interface IColorfulOptionSetValueRendererProps {

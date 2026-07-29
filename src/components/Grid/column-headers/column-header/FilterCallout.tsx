@@ -1,7 +1,7 @@
 import { Callout, IconButton, ICalloutProps } from '@fluentui/react';
 import { Text } from '@fluentui/react';
 import { DatasetColumnFiltering } from '../../../DatasetControl/Filtering/DatasetColumnFiltering';
-import { getClassNames } from '@talxis/react-components';
+import { getClassNames } from '../../../../legacy/react-components';
 import { useEffect } from 'react';
 import { IGridColumn } from '../../grid/GridModel';
 import { useGridInstance } from '../../grid/useGridInstance';

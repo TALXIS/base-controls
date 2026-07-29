@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ISkeletonProps } from "./skeleton";
 import { Skeleton } from "./skeleton";
-import { ICommandBarProps } from "@talxis/react-components";
+import { ICommandBarProps } from "../../../legacy/react-components";
 import { CommandBar } from "./header/command-bar";
 
 export interface ITaskGridComponents {

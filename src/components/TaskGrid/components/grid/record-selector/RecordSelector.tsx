@@ -2,7 +2,7 @@ import { DatasetControl } from "../../../../DatasetControl"
 import { Dataset, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { DatasetControl as DatasetControlModel } from '../../../../../utils/dataset-control';
 import * as React from "react"
-import { getClassNames, Spinner } from "@talxis/react-components";
+import { getClassNames, Spinner } from "../../../../../legacy/react-components";
 import { CommandBarButton, Icon, useTheme, Text, IButtonProps, DirectionalHint } from "@fluentui/react";
 import { getRecordSelectorStyles } from "./styles";
 import { FixedSizeList } from 'react-window';

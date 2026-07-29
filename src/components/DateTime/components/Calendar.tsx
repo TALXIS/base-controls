@@ -3,7 +3,7 @@ import { useTheme } from "@fluentui/react";
 import { Calendar as CalendarBase } from '@fluentui/react/lib/Calendar';
 import { useEffect, useRef, useState } from "react";
 import { getDateTimeStyles } from "../styles";
-import { ITimePickerProps, TimePicker } from "@talxis/react-components";
+import { ITimePickerProps, TimePicker } from "../../../legacy/react-components";
 import dayjs from "dayjs";
 import React from 'react';
 

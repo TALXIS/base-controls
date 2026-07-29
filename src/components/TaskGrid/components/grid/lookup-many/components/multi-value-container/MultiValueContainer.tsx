@@ -3,7 +3,7 @@ import { useTheme } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
 import { getMultiValueContainerStyles } from './styles';
 import { useLookupManyProps } from '../../context';
-import { getClassNames } from '@talxis/react-components';
+import { getClassNames } from '../../../../../../../legacy/react-components';
 
 interface IMultiValueProps extends MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any> {
     className?: string;

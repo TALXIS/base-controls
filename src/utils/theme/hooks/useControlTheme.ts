@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ControlTheme, IFluentDesignState } from "../ControlTheme";
-import { ITheme } from "@talxis/react-components";
+import { ITheme } from "../../../legacy/react-components";
 
 export const useControlTheme = (fluentDesignLanguage?: IFluentDesignState): ITheme => {
     const id = fluentDesignLanguage?.v8FluentOverrides?.id;

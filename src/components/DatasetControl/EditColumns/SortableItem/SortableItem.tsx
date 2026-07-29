@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { useTheme, Text, ThemeProvider } from "@fluentui/react";
 import { useModel } from "../../useModel";
 import { useEditColumns } from "../useEditColumns";
-import { useThemeGenerator } from "@talxis/react-components";
+import { useThemeGenerator } from "../../../../legacy/react-components";
 
 export const SortableItem = (props: { column: IColumn }) => {
     const { column } = props;

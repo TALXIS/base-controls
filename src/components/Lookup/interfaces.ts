@@ -1,4 +1,4 @@
-import { ITagPickerProps } from "@talxis/react-components";
+import { ITagPickerProps } from "../../legacy/react-components";
 import { ILookupProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IControl, IOutputs, ITranslations } from "../../interfaces/context";
 import { IBaseParameters } from "../../interfaces/parameters";

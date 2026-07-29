@@ -1,5 +1,5 @@
 import * as React from "react";
-import {  ICommandBarItemProps } from "@talxis/react-components";
+import {  ICommandBarItemProps } from "../../../../../../legacy/react-components";
 import { getCustomColumnSuffixStyles } from "./styles";
 import { useTaskGridEditColumns } from "../useTaskGridEditColumns";
 import { IOptionCommandBarProps, components } from "../../../../../DatasetControl/EditColumns/components";

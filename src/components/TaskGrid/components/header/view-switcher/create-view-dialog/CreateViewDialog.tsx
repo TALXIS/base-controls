@@ -1,7 +1,7 @@
 import { DefaultButton, Dialog, DialogFooter, MessageBar, MessageBarType, PrimaryButton } from "@fluentui/react";
 import { TextField } from "../../../../../TextField";
 import * as React from "react";
-import { withButtonLoading } from '@talxis/react-components';
+import { withButtonLoading } from '../../../../../../legacy/react-components';
 import { useDatasetControl, useLocalizationService, usePcfContext } from "../../../../context";
 import { useEventEmitter } from "../../../../../../hooks";
 import { ISavedQueryDataProvider, ISavedQueryDataProviderEvents } from "../../../../providers";

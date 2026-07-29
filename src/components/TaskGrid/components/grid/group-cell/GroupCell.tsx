@@ -2,7 +2,7 @@ import * as React from "react";
 import { Cell, ICellProps } from '../../../../Grid/cells/cell/Cell'
 import { IRecord } from "@talxis/client-libraries";
 import { getTheme, IconButton } from "@fluentui/react";
-import { useRerender } from '@talxis/react-components';
+import { useRerender } from '../../../../../legacy/react-components';
 import { getGroupCellStyles } from "./styles";
 import { useRef } from "react";
 import { useTaskDataProvider } from "../../../context";

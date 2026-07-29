@@ -1,4 +1,4 @@
-import { useRerender } from "@talxis/react-components";
+import { useRerender } from "../../../../../../legacy/react-components";
 import { useEventEmitter } from "../../../../../../hooks";
 import { IFormXmlTab } from "../../internal/FormXmlForm";
 

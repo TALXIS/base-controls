@@ -1,6 +1,6 @@
 import { ICommand } from "@talxis/client-libraries";
 import { IControl } from "../../interfaces/context";
-import { ICommandBarProps } from "@talxis/react-components";
+import { ICommandBarProps } from "../../legacy/react-components";
 import { ITwoOptionsProperty } from "../../interfaces";
 import { IShimmerProps, ThemeProviderProps } from "@fluentui/react";
 

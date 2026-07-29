@@ -1,4 +1,4 @@
-import { ITextFieldProps } from "@talxis/react-components";
+import { ITextFieldProps } from "../../legacy/react-components";
 import { IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IControl, IOutputs } from "../../interfaces/context";
 import { IInputParameters } from "../../interfaces/parameters";

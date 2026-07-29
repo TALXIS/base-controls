@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useControl } from "../../hooks";
 import { ThemeProvider } from "@fluentui/react";
 import { datasetControlTranslations } from "./translations";
-import { useRerender } from "@talxis/react-components";
+import { useRerender } from "../../legacy/react-components";
 import { DatasetControlModel } from "./DatasetControlModel";
 import { ModelContext } from "./useModel";
 import { Pagination } from "./Pagination/Pagination";

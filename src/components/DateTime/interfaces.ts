@@ -1,4 +1,4 @@
-import { IDatePickerProps } from "@talxis/react-components";
+import { IDatePickerProps } from "../../legacy/react-components";
 import { IDateTimeProperty, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
 import { IControl, IOutputs, ITranslations } from "../../interfaces/context";
 import { IInputParameters } from "../../interfaces/parameters";

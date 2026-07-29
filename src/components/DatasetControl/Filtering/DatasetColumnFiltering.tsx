@@ -5,7 +5,7 @@ import { IDatasetColumnFiltering } from "./interfaces";
 import { datasetColumnFilteringTranslations } from "./translations";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DatasetColumnFilteringModel, IDatasetColumnFilteringModelEvents } from "./DatasetColumnFilteringModel";
-import { useRerender } from "@talxis/react-components";
+import { useRerender } from "../../../legacy/react-components";
 import { NestedControlRenderer } from "../../NestedControlRenderer";
 import React from "react";
 import { getDatasetColumnFilteringStyles } from "./styles";

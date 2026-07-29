@@ -5,7 +5,7 @@ import { AgGridModel } from "./ag-grid/AgGridModel";
 import { AgGridReact } from "@ag-grid-community/react";
 import { LoadingOverlay } from "../overlays/loading/LoadingOverlay";
 import { EmptyRecords } from "../overlays/empty-records/EmptyRecordsOverlay";
-import { getClassNames, ITheme, useStateValues } from "@talxis/react-components";
+import { getClassNames, ITheme, useStateValues } from "../../../legacy/react-components";
 import { IGrid } from "../interfaces";
 import { GridModel } from "./GridModel";
 import { useControl } from "../../../hooks";
