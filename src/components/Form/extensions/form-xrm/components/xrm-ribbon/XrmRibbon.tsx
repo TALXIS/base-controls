@@ -1,4 +1,4 @@
-import { Ribbon } from "../../../../components/adapters"
+import { Form } from "../../../../components"
 import { useXrmFormContext } from "../context";
 
 
@@ -6,5 +6,5 @@ import { useXrmFormContext } from "../context";
 //then have the form ribbon that adds the various events and etc, then we can use that ribbon here and override the ribbon button
 export const XrmRibbon = () => {
     const formContext = useXrmFormContext();
-    return <Ribbon onSave={() => formContext.data.save()} />
+    return <Form.Ribbon onSave={() => formContext.data.save()} />
 }

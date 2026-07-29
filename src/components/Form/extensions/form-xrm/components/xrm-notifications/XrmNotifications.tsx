@@ -1,4 +1,4 @@
-import { Notifications } from "../../../../components/adapters";
+import { Form } from "../../../../components";
 import { INotification } from "../../FormXmlForm";
 import { useNotifications } from "./useNotifications";
 
@@ -12,5 +12,5 @@ const getNotifications = (notifications: INotification[]) => {
 export const XrmNotifications = () => {
     const notifications = getNotifications(useNotifications());
 
-    return <Notifications messages={notifications} />
+    return <Form.Notifications messages={notifications} />
 }

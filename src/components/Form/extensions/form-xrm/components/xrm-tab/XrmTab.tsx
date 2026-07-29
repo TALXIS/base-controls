@@ -1,5 +1,5 @@
 import React from "react";
-import { Column, Tab } from "../../../../components/adapters";
+import { Form } from "../../../../components";
 import { IFormXmlTab } from "../../FormXmlForm";
 import { getXrmTabGridTemplateColumns } from "./getXrmTabGridTemplateColumns";
 import { XrmSection } from "../xrm-section";
@@ -15,9 +15,9 @@ export const XrmTab = ({ tab, id, label }: { tab: IFormXmlTab, id: string, label
         setGridTemplateColumnsOverride(getXrmTabGridTemplateColumns(columns, newColumnsPerRow));
     }, [columns]);
 
-    return <Tab onColumnsPerRowChanged={onColumnsPerRowChanged} style={{ gridTemplateColumns: gridTemplateColumnsOverride }} key={tab.id} id={tab.id} label={tab.getLabel() ?? undefined}>
-        {columns.map((col, i) => <Column key={i}>
+    return <Form.Tab onColumnsPerRowChanged={onColumnsPerRowChanged} style={{ gridTemplateColumns: gridTemplateColumnsOverride }} key={tab.id} id={tab.id} label={tab.getLabel() ?? undefined}>
+        {columns.map((col, i) => <Form.Column key={i}>
             {col.getVisibleSections().map((section, i) => <XrmSection key={section.id ?? i} section={section} />)}
-        </Column>)}
-    </Tab>
+        </Form.Column>)}
+    </Form.Tab>
 }

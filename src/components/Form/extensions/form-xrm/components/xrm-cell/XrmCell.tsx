@@ -1,4 +1,4 @@
-import { Cell } from "../../../../components/adapters"
+import { Form } from "../../../../components"
 import { IFormXmlCell } from "../../FormXmlForm";
 import { XrmControl } from "../xrm-control";
 import { useCell } from "./useCell";
@@ -6,11 +6,11 @@ import { useCell } from "./useCell";
 export const XrmCell = ({ cell }: { cell: IFormXmlCell }) => {
     cell = useCell(cell);
 
-    return <Cell
+    return <Form.Cell
         colspan={cell.colspan}
         rowspan={cell.rowspan}
         label={cell.getLabel() ?? undefined}>
         {cell.control && <XrmControl control={cell.control} />}
-    </Cell>
+    </Form.Cell>
 
 }

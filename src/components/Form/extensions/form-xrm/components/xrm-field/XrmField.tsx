@@ -1,4 +1,4 @@
-import { Field } from "../../../../components/adapters";
+import { Form } from "../../../../components";
 import { IFormXmlControl } from "../../FormXmlForm";
 import { useXrmAttribute } from "./useXrmAttribute";
 
@@ -16,7 +16,7 @@ export const XrmField = (props: IXrmFieldProps) => {
     const validation = attribute?.getValidation();
     const requiredLevel = attribute?.getRequiredLevel();
 
-    return <Field name={datafieldname} validation={validation} requiredLevel={requiredLevel}>
+    return <Form.Field name={datafieldname} validation={validation} requiredLevel={requiredLevel}>
         {onRenderChildren?.()}
-    </Field>
+    </Form.Field>
 }
