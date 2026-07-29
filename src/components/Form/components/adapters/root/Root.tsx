@@ -10,7 +10,7 @@ import React from "react";
 import { FormUi } from "../../ui";
 import { IFormApi } from "../../../FormApi";
 import { FormApi } from "../../../internal/FormApi";
-import { PcfContext } from "../../../../../utils";
+import { PcfContextProvider } from "../../../../../utils";
 
 export interface IFormProps {
     strategy: IFormStrategy;
@@ -67,7 +67,6 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     const record = form.getRecord();
     const id = record.getRecordId();
     const styles = useMemo(() => getFormStyles(), []);
-    const theme = useControlTheme();
 
     useEventEmitter<IFormEvents>(form.events, 'onAfterSave', props?.onAfterSave ?? (() => { }));
     useEventEmitter<IFormEvents>(form.events, 'onBeforeSave', props?.onBeforeSave ?? (() => { }));
@@ -79,13 +78,11 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     React.useEffect(() => {
         onFormReady?.(formApi);
     }, []);
-    return <PcfContext.Provider value={pcfContext ?? null}>
+    return <PcfContextProvider context={pcfContext}>
         <FormContext.Provider value={form}>
-            <ThemeProvider theme={theme}>
-                <div className={styles.form} data-id={`form-${id}`}>
-                    {children}
-                </div>
-            </ThemeProvider>
+            <div className={styles.form} data-id={`form-${id}`}>
+                {children}
+            </div>
         </FormContext.Provider>
-    </PcfContext.Provider>
+    </PcfContextProvider>
 }

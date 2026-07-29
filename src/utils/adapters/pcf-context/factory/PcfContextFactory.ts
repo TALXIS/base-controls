@@ -4,6 +4,7 @@ import { Device } from "./Device";
 import { FactoryApi, IFactoryApiParams } from "./FactoryApi";
 import { IModeParams, Mode } from "./Mode";
 import { Resources } from "./Resources";
+import { ControlTheme } from "../../../theme";
 
 interface IPcfContextUserSettingsParams {
     lcid?: number;
@@ -15,6 +16,7 @@ interface IPcfContextFactoryParams {
     userSettings?: IPcfContextUserSettingsParams;
     mode?: IModeParams;
     factory?: IFactoryApiParams;
+    fluentDesignLanguage?: ComponentFramework.FluentDesignState
 }
 
 /**
@@ -27,7 +29,7 @@ export class PcfContextFactory {
      * override params.
      */
     public static createContext(params: IPcfContextFactoryParams = {}): ComponentFramework.Context<any, any> {
-        const { baseContext, userSettings, mode, factory } = params;
+        const { baseContext, userSettings, mode, factory, fluentDesignLanguage } = params;
         const xrm = XrmFactory.createXrm({ userSettings });
 
         const context: ComponentFramework.Context<any, any> = {
@@ -44,6 +46,7 @@ export class PcfContextFactory {
             updatedProperties: baseContext?.updatedProperties ?? [],
             resources: baseContext?.resources ?? new Resources(),
             factory: baseContext?.factory ?? this._createFactoryApi(factory),
+            //fluentDesignLanguage: fluentDesignLanguage ?? baseContext?.fluentDesignLanguage
         };
         context.userSettings.numberFormattingInfo = Formatting.Get().numberFormattingInfo;
         return context;

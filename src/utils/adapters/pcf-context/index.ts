@@ -1,2 +1,2 @@
 export * from './PcfContextProvider';
-export * from './context';
+export { usePcfContext } from './context';

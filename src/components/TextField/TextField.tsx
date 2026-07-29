@@ -3,6 +3,7 @@ import { useInputBasedControl } from '../../hooks/useInputBasedControl';
 import { ITextField, ITextFieldOutputs, ITextFieldParameters } from './interfaces';
 import { ICommandBarItemProps, ThemeProvider } from '@fluentui/react';
 import { DataTypes } from "@talxis/client-libraries";
+import { TextField as FluentTextField } from "@fluentui/react";
 
 export const TextField = (props: ITextField) => {
     const context = props.context;
@@ -118,6 +119,7 @@ export const TextField = (props: ITextField) => {
     })
     return (
         <ThemeProvider style={isTextArea ? { height: '100%' } : undefined} applyTo="none" theme={theme}>
+            <FluentTextField value={'fluent'}  />
             <TextFieldBase {...componentProps} />
         </ThemeProvider>
     );
