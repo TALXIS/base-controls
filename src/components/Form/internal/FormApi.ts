@@ -1,11 +1,11 @@
-import type { FormApi } from "../interfaces";
+import { IFormApi } from "../interfaces";
 import { IForm } from "./FormModel";
 
-export interface IFormApiInternal extends FormApi {
+export interface IFormApiInternal extends IFormApi {
     _getForm(): IForm;
 }
 
-export class InternalFormApi implements IFormApiInternal {
+export class FormApi implements IFormApiInternal {
     private _form: IForm;
 
     constructor(form: IForm) {

@@ -8,9 +8,9 @@ import { getFormStyles } from "./styles";
 import { IFormStrategy } from "@components/Form/stragegies/interfaces";
 import React from "react";
 import { FormUi } from "@components/Form/components/ui";
-import type { FormApi } from "@components/Form/interfaces";
-import { InternalFormApi } from "@components/Form/internal/FormApi";
 import { PcfContextProvider } from "@utils";
+import { FormApi } from "@components/Form/internal/FormApi";
+import { IFormApi } from "@components/Form/interfaces";
 
 export interface IFormProps {
     strategy: IFormStrategy;
@@ -19,7 +19,7 @@ export interface IFormProps {
     onBeforeSave?: IFormEvents['onBeforeSave'];
     onAfterSave?: IFormEvents['onAfterSave'];
     onError?: IFormEvents['onError'];
-    onFormReady?: (api: FormApi) => void;
+    onFormReady?: (api: IFormApi) => void;
 }
 
 initializeIcons();
@@ -61,7 +61,7 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     }, []);
 
     const formApi = useMemo(() => {
-        return new InternalFormApi(form);
+        return new FormApi(form);
     }, [form]);
 
     const record = form.getRecord();

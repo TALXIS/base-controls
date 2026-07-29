@@ -1,5 +1,3 @@
-export interface FormApi {
+export interface IFormApi {
     refresh: () => void;
 }
-
-export type IFormApi = FormApi;
