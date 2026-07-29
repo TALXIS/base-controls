@@ -20,13 +20,29 @@ interface IPcfContextFactoryParams {
 }
 
 /**
- * Creates a PCF context by reusing surfaces from an existing base context when
- * available and filling the remaining gaps with local sample implementations.
+ * Creates PCF context objects as a compatibility layer for non-PCF
+ * environments.
+ *
+ * When a base context is provided, existing surfaces are reused. Missing
+ * surfaces are filled from helper implementations or Xrm-backed fallbacks so
+ * PCF-dependent code can continue to run even when no real PCF host is
+ * available.
  */
 export class PcfContextFactory {
     /**
-     * Builds a PCF context from the provided base context and per-surface
-     * override params.
+     * Builds a context by combining the optional base context with generated
+     * fallback implementations.
+     *
+     * Fallback precedence is:
+     * provided `baseContext` surface -> generated fallback surface.
+     *
+     * The generated context always gets fresh formatting and client helpers,
+     * and its `userSettings.numberFormattingInfo` is synchronized with the
+     * current formatting configuration.
+     *
+     * @param params Optional inputs used to seed or override individual PCF
+     * context surfaces.
+     * @returns A context object shaped like a PCF runtime context.
      */
     public static createContext(params: IPcfContextFactoryParams = {}): ComponentFramework.Context<any, any> {
         const { baseContext, userSettings, mode, factory, fluentDesignLanguage } = params;
@@ -54,8 +70,15 @@ export class PcfContextFactory {
     }
 
     /**
-     * Creates the sample factory surface and wires the optional requestRender
-     * callback through the factory event emitter.
+        * Creates the fallback factory surface used when no base factory is
+        * available.
+        *
+        * If `requestRender` is provided, it is forwarded through the factory's
+        * `onRequestRender` event so consumers can react to render requests the
+        * same way they would in a hosted PCF environment.
+        *
+        * @param params Optional factory configuration.
+        * @returns A factory surface compatible with the PCF context contract.
      */
     private static _createFactoryApi(params?: IFactoryApiParams): ComponentFramework.Factory {
         const factory = new FactoryApi();
