@@ -1,10 +1,10 @@
 import { useRerender } from "@legacy";
-import { useFormContext } from "../root/context";
+import { useForm } from "../root/context";
 import { useEventEmitter } from "@hooks";
 import { IField } from "@talxis/client-libraries";
 
 export const useField = (name?: string | null): IField | null => {
-    const form = useFormContext();
+    const form = useForm();
     const field = name ? form.getField(name) : null;
     const _rerender = useRerender();
 

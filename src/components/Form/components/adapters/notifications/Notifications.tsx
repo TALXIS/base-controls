@@ -1,4 +1,4 @@
-import { useFormContext } from '../root/context';
+import { useForm } from '../root/context';
 import { IRecord } from '@talxis/client-libraries';
 import { INotificationsProps, Notifications as NotificationsBase } from '@components/Notifications';
 import { useValidationSummary } from '../root';
@@ -17,7 +17,7 @@ const getValidationNotifications = (record: IRecord, validationSummary: IValidat
 }
 
 export const Notifications = (props: INotificationsProps) => {
-	const form = useFormContext();
+	const form = useForm();
 	const record = form.getRecord();
 	const { messages = [] } = props;
 	const validationSummary = useValidationSummary();

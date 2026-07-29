@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { CommandBarButton, type ICommandBarItemProps, useTheme } from "@fluentui/react";
 import { IRibbonComponents, RibbonComponents } from "./components";
 import { getRibbonStyles } from "./styles";
-import { useFormContext } from "../root/context";
+import { useForm } from "../root/context";
 import { useEventEmitter } from "@hooks";
 import { IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useRerender, withButtonLoading } from "@legacy";
@@ -19,7 +19,7 @@ type TSaveButtonState = 'save' | 'saving' | 'saved';
 
 export const Ribbon = (props: IFormRibbonProps) => {
     const { onSave } = props;
-    const form = useFormContext();
+    const form = useForm();
     const record = form.getRecord();
     const isDirty = form.isDirty();
     const theme = useTheme();

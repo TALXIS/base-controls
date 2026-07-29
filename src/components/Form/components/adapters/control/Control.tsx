@@ -1,11 +1,11 @@
 import { IColumn, IField, Sanitizer } from "@talxis/client-libraries";
 import { NestedControlRenderer } from "@components/NestedControlRenderer";
-import { useFieldContext } from "../field/context";
+import { useFieldName } from "../field/context";
 import { BaseControls, usePcfContext } from "@utils";
 import { getControlStyles } from "./styles";
 import { useEffect, useMemo } from "react";
 import { MessageBar, MessageBarType } from "@fluentui/react";
-import { useFormContext } from "../root/context";
+import { useForm } from "../root/context";
 import { useField } from "../field";
 import { useDisabledContext } from "@components/Form/components/ui/cell";
 import { TextField } from "@components/TextField";
@@ -45,7 +45,7 @@ const getControlValue = (column: IColumn, value: any): any => {
 
 const BoundControl = (props: IControlProps & { field: IField }) => {
     const { disabled = false, field } = props;
-    const form = useFormContext();
+    const form = useForm();
     const column = field.getColumn();
     const context = usePcfContext();
     const validationResult = form.saveOperationPerformed ? field.isValid() : null;
@@ -91,7 +91,7 @@ const BoundControl = (props: IControlProps & { field: IField }) => {
 
 export const Control = (props: IControlProps) => {
     const { disabled = false } = props;
-    const fieldName = useFieldContext();
+    const fieldName = useFieldName();
     const field = useField(fieldName);
     const disabledContext = useDisabledContext();
 
