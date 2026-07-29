@@ -13,12 +13,12 @@ import { PcfContext } from "../../../..";
 
 export interface IFormProps {
     strategy: IFormStrategy;
-    pcfContext?: ComponentFramework.Context<any, any> ;
+    pcfContext?: ComponentFramework.Context<any, any>;
+    children?: React.ReactNode;
     onBeforeSave?: IFormEvents['onBeforeSave'];
     onAfterSave?: IFormEvents['onAfterSave'];
     onError?: IFormEvents['onError'];
     onFormReady?: (api: IFormApi) => void;
-    children?: React.ReactNode;
 }
 
 initializeIcons();
@@ -80,11 +80,11 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     }, []);
     return <PcfContext.Provider value={pcfContext ?? null}>
         <FormContext.Provider value={form}>
-                <ThemeProvider theme={theme}>
-                    <div className={styles.form} data-id={`form-${id}`}>
-                        {children}
-                    </div>
-                </ThemeProvider>
+            <ThemeProvider theme={theme}>
+                <div className={styles.form} data-id={`form-${id}`}>
+                    {children}
+                </div>
+            </ThemeProvider>
         </FormContext.Provider>
     </PcfContext.Provider>
 }
