@@ -1,1 +1,1 @@
-export * from './xrm-form-adapter';
+export * from './pcf-xrm-form-adapter';

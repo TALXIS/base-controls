@@ -1,19 +1,24 @@
 import type { IXrmFormStrategy } from '../../components/xrm-form/XrmForm';
 import type { XrmFormContext } from '../../xrm-context';
 import { IFormConfig, XrmClientApiStrategyFactory } from '../../strategies/XrmClientApiStrategyFactory';
+import type { IFormLabels } from '@components/Form/labels';
+import { ControlTheme } from '@utils/theme';
+import type { ITheme } from '@legacy';
 
-export interface IXrmFormAdapterInputs {
+export interface IPcfXrmFormAdapterInputs {
     Height?: ComponentFramework.PropertyTypes.StringProperty;
     ClientApiWebResourceName: ComponentFramework.PropertyTypes.StringProperty;
     ClientApiConfigFunctionName: ComponentFramework.PropertyTypes.StringProperty;
     ClientApiFormContextFunctionName?: ComponentFramework.PropertyTypes.StringProperty;
 }
 
-export interface IXrmFormAdapterRenderProps<IInputs extends IXrmFormAdapterInputs> {
+export interface IPcfXrmFormAdapterRenderProps<IInputs extends IPcfXrmFormAdapterInputs> {
     container: HTMLDivElement;
     context: ComponentFramework.Context<IInputs>;
     strategy: IXrmFormStrategy;
     strategyVersion: string;
+    labels: Partial<IFormLabels>;
+    theme: ITheme;
     onFormReady: (formContext: XrmFormContext) => Promise<void>;
 }
 
@@ -21,7 +26,7 @@ export interface IXrmFormAdapterRenderProps<IInputs extends IXrmFormAdapterInput
  * Helper class that keeps Form PCF wrappers thin by owning the Xrm client-api
  * setup, strategy refresh flow, and host container layout.
  */
-export class XrmFormAdapter<IInputs extends IXrmFormAdapterInputs> {
+export class PcfXrmFormAdapter<IInputs extends IPcfXrmFormAdapterInputs> {
     private _container!: HTMLDivElement;
     private _context!: ComponentFramework.Context<IInputs>;
     private _strategy?: IXrmFormStrategy;
@@ -37,7 +42,7 @@ export class XrmFormAdapter<IInputs extends IXrmFormAdapterInputs> {
 
     public updateView(
         context: ComponentFramework.Context<IInputs>,
-        onRenderForm: (props: IXrmFormAdapterRenderProps<IInputs>) => void,
+        onRenderForm: (props: IPcfXrmFormAdapterRenderProps<IInputs>) => void,
         onRenderLoading?: (container: HTMLDivElement) => void,
     ): void {
         this._context = context;
@@ -52,6 +57,8 @@ export class XrmFormAdapter<IInputs extends IXrmFormAdapterInputs> {
             context: this._context,
             strategy: this._strategy,
             strategyVersion: this._strategyVersion,
+            labels: this._getLabels(),
+            theme: this._getTheme(),
             onFormReady: (formContext) => this._executeClientApiFormContextScript(formContext),
         });
     }
@@ -97,6 +104,20 @@ export class XrmFormAdapter<IInputs extends IXrmFormAdapterInputs> {
 
         this._container.style.boxSizing = 'border-box';
         this._container.style.padding = height === '100%' ? '16px' : '';
+    }
+
+    private _getLabels(): Partial<IFormLabels> {
+        return {
+            save: this._context.resources.getString('save'),
+            saving: this._context.resources.getString('saving'),
+            saved: this._context.resources.getString('saved'),
+            unsavedChanges: this._context.resources.getString('unsavedChanges'),
+            groupedNotificationsSummary: this._context.resources.getString('groupedNotificationsSummary'),
+        };
+    }
+
+    private _getTheme(): ITheme {
+        return ControlTheme.GetV8ThemeFromFluentDesignLanguage(this._context.fluentDesignLanguage);
     }
 
     private _getRequiredParameterValue(value: string | null | undefined, parameterName: string): string {

@@ -143,6 +143,12 @@ export class FormModel implements IForm {
                 this.events.dispatchEvent('onBeforeSave');
 
                 const dirtyFields = this._record.getFields().filter(f => f.isDirty());
+                const validationSummary: IValidation[] = dirtyFields.map(f => {
+                    return {
+                        fieldName: f.getColumn().name,
+                        ...f.isValid()
+                    }
+                });
                 const result = await this._record.save();
                 this._createValidationSummary(result);
 
