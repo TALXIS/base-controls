@@ -32,7 +32,8 @@ export class XrmEntity implements IXrmEntityContext {
     }
 
     public getPrimaryAttributeValue(): string {
-        return this._formContext.getFormXmlModel().getForm().getMetadata().PrimaryNameAttribute;
+        const form = this._formContext.getFormXmlModel().getForm();
+        return form.getRecord().getNamedReference().name
     }
 
     public isValid(): boolean {

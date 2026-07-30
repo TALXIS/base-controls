@@ -1,5 +1,5 @@
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { useTaskDataProvider } from "@components";
+import { useTaskDataProvider } from "@components/TaskGrid/context";
 import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
 import { ICellProps } from "@components/Grid/cells/cell/Cell";

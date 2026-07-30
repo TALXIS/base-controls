@@ -1,5 +1,5 @@
 import { IRecord } from "@talxis/client-libraries";
-import { useTaskDataProvider } from "@components";
+import { useTaskDataProvider } from "@components/TaskGrid/context";
 import { FetchXmlDataProviderFactory } from "./FetchXmlDataProviderFactory";
 import React from "react";
 import { LookupManyCellRenderer } from '@components/TaskGrid/components/grid/cell-renderers/lookup-many'
