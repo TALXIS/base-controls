@@ -28,8 +28,6 @@ export const Notifications = (props: IFormNotificationsProps) => {
 	const mergedMessages = [...messages, ...validationNotifications ?? []];
 
 	return <NotificationsBase {...props} labels={{
-		groupedNotificationsSummary: localizationService.getLocalizedString('groupedNotificationsSummary', {
-			count: mergedMessages.length.toString()
-		})
+		groupedNotificationsSummary: localizationService.getLocalizedString('groupedNotificationsSummary')
 	}} messages={mergedMessages} />;
 };

@@ -96,8 +96,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
             flexShrink: 0
         },
         control: {
-            flexGrow: 1,
-            overflow: 'auto',
+            flexGrow: 1
         },
     })
 }

@@ -8,12 +8,18 @@ export interface IFormParams {
     strategy: IFormStrategy;
 }
 
+interface onAfterSaveParams {
+    result: IRecordSaveOperationResult;
+    changedData?: { [key: string]: any };
+    currentData?: { [key: string]: any };
+}
+
 export interface IFormEvents {
     onFieldValueChanged: (fieldName: string, newValue: any) => void;
     onError: (error: any, message: string) => void;
     onBeforeSave: () => void;
     onRefreshRequested: () => void;
-    onAfterSave: (result: IRecordSaveOperationResult, updatedData?: { [key: string]: any }) => void;
+    onAfterSave: (params: onAfterSaveParams) => void;
 }
 
 interface ISaveParams {
@@ -28,8 +34,8 @@ export interface IForm {
     getMetadata: () => { PrimaryIdAttribute: string; PrimaryNameAttribute: string };
     isDirty: () => boolean;
     isValid: () => boolean;
-    getData: () => { [key: string]: any };
     refresh: () => void;
+    getData: () => { [key: string]: any };
     save: (params?: ISaveParams) => Promise<void>;
     destroy: () => void;
     getRecord(): IRecord;
@@ -113,7 +119,7 @@ export class FormModel implements IForm {
     }
 
     public getData(): { [key: string]: any } {
-        return this._record.getRawData();
+        return this._record.toRawData();
     }
 
     public refresh() {
@@ -137,7 +143,7 @@ export class FormModel implements IForm {
                 this._createValidationSummary(result);
 
                 if (!result.success) {
-                    this.events.dispatchEvent('onAfterSave', result);
+                    this.events.dispatchEvent('onAfterSave', { result });
                     return;
                 }
 
@@ -145,12 +151,16 @@ export class FormModel implements IForm {
                 const changedData = this._getChangedData(dirtyFields);
 
                 if (await blocker?.()) {
-                    this.events.dispatchEvent('onAfterSave', this._createBlockedSaveResult());
+                    this.events.dispatchEvent('onAfterSave', { result: this._createBlockedSaveResult() });
                     return;
                 }
 
                 const saveResult = await this._strategy.onSave({ data: changedData });
-                this.events.dispatchEvent('onAfterSave', saveResult, changedData);
+                this.events.dispatchEvent('onAfterSave', {
+                    result: saveResult,
+                    changedData,
+                    currentData: this.getData(),
+                });
             },
             onError: (error, message) => {
                 this.events.dispatchEvent('onError', error, message);
