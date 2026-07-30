@@ -52,7 +52,7 @@ export const Ribbon = (props: IFormRibbonProps) => {
         setSaveButtonState('saving');
     });
 
-    useEventEmitter(form.events, ['onAfterSave'], (result: IRecordSaveOperationResult) => {
+    useEventEmitter(form.events, ['onAfterSave'], ({ result }: { result: IRecordSaveOperationResult }) => {
         clearSuccessStateTimeout();
 
         if (!result.success) {

@@ -11,7 +11,6 @@ export interface IFormParams {
 interface onAfterSaveParams {
     result: IRecordSaveOperationResult;
     changedData?: { [key: string]: any };
-    currentData?: { [key: string]: any };
 }
 
 export interface IFormEvents {
@@ -35,6 +34,11 @@ export interface IForm {
     isDirty: () => boolean;
     isValid: () => boolean;
     refresh: () => void;
+
+    /**
+     * Returns the current data held by the form, including in-progress values
+     * that may currently be invalid.
+     */
     getData: () => { [key: string]: any };
     save: (params?: ISaveParams) => Promise<void>;
     destroy: () => void;
@@ -159,7 +163,6 @@ export class FormModel implements IForm {
                 this.events.dispatchEvent('onAfterSave', {
                     result: saveResult,
                     changedData,
-                    currentData: this.getData(),
                 });
             },
             onError: (error, message) => {

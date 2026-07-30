@@ -16,6 +16,10 @@ export class FormApi implements IFormApiInternal {
         return this._form;
     }
 
+    public getData(): { [key: string]: any } {
+        return this._form.getData();
+    }
+
     public refresh(): void {
         this._form.refresh();
     }
