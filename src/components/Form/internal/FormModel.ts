@@ -143,14 +143,23 @@ export class FormModel implements IForm {
                 this.events.dispatchEvent('onBeforeSave');
 
                 const dirtyFields = this._record.getFields().filter(f => f.isDirty());
-                const validationSummary: IValidation[] = dirtyFields.map(f => {
-                    return {
-                        fieldName: f.getColumn().name,
-                        ...f.isValid()
-                    }
-                });
                 const result = await this._record.save();
-                this._createValidationSummary(result);
+                this._createValidationSummary(dirtyFields);
+
+                if(this._validationSummary.flatMap(v => v.error).length > 0) {
+                    this.events.dispatchEvent('onAfterSave', {
+                        result: {
+                            success: false,
+                            fields: dirtyFields.map(f => f.getColumn().name),
+                            recordId: this._record.getRecordId(),
+                            errors: this._validationSummary.flatMap(v => v.error).map(e => {
+                                return {
+                                    message: e,
+                                }
+                            })
+                        },
+                    }); 
+                }
 
                 if (!result.success) {
                     this.events.dispatchEvent('onAfterSave', { result });
@@ -220,14 +229,13 @@ export class FormModel implements IForm {
         this._record.addEventListener('onFieldValueChanged', (fieldName, newValue) => this.events.dispatchEvent('onFieldValueChanged', fieldName, newValue));
     }
 
-    private _createValidationSummary(saveOperationResult: IRecordSaveOperationResult) {
-        this._validationSummary = saveOperationResult.errors?.map(error => {
+    private _createValidationSummary(dirtyFields: IField[]) {
+        this._validationSummary = dirtyFields.map(field => {
             return {
-                fieldName: error.fieldName!,
-                error: true,
-                errorMessage: error.message
+                fieldName: field.getColumn().name,
+                ...field.isValid()
             }
-        }) ?? [];
+        });
     }
 
     private _registerExistingExpressions(): void {
