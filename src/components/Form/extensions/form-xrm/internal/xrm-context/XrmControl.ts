@@ -1,5 +1,5 @@
-import type { IFormXmlCell, IFormXmlControl } from "../internal/FormXmlForm";
-import type { IXrmAttributeContext, IXrmControlContext } from "./interfaces";
+import type { IFormXmlCell, IFormXmlControl } from "../FormXmlForm";
+import type { IXrmAttributeContext, IXrmControlContext } from "../../interfaces";
 import type { IXrmFormContextInternal } from "./XrmFormContext";
 import { notImplemented } from "./utils";
 

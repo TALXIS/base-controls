@@ -1,4 +1,4 @@
-import type { IXrmAttributeContext, IXrmEntityContext } from "./interfaces";
+import type { IXrmAttributeContext, IXrmEntityContext } from "../../interfaces";
 import type { IXrmFormContextInternal } from "./XrmFormContext";
 import { isPromiseLike } from "./utils";
 

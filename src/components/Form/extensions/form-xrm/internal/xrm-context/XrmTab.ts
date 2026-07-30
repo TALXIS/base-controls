@@ -1,6 +1,6 @@
-import type { IFormXmlTab } from "../internal/FormXmlForm";
+import type { IFormXmlTab } from "../FormXmlForm";
 import { makeItemCollection } from "./collection";
-import type { IXrmSectionContext, IXrmTabContext } from "./interfaces";
+import type { IXrmSectionContext, IXrmTabContext } from "../../interfaces";
 import type { IXrmFormContextInternal } from "./XrmFormContext";
 import { XrmSection } from "./XrmSection";
 

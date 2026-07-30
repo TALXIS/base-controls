@@ -1,5 +1,5 @@
 import type { IXrmFormStrategy } from '../../components/xrm-form/XrmForm';
-import type { IXrmFormContext } from '../../xrm-context';
+import type { IXrmFormContext } from '../../interfaces';
 import { IFormConfig, XrmClientApiStrategyFactory } from '../../strategies/XrmClientApiStrategyFactory';
 import type { IFormLabels } from '@components/Form/labels';
 import { ControlTheme } from '@utils/theme';

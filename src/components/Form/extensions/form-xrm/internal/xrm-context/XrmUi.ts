@@ -1,7 +1,7 @@
-import type { INotification } from "../internal/FormXmlForm";
+import type { INotification } from "../FormXmlForm";
 import { makeItemCollection } from "./collection";
 import { XrmControl } from "./XrmControl";
-import type { IXrmControlContext, IXrmTabContext } from "./interfaces";
+import type { IXrmControlContext, IXrmTabContext } from "../../interfaces";
 import type { IXrmFormContextInternal, IXrmUiContextInternal } from "./XrmFormContext";
 import { XrmTab } from "./XrmTab";
 import { notImplemented } from "./utils";

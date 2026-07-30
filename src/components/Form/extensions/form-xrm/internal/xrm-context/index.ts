@@ -7,4 +7,4 @@ export type {
     IXrmSectionContext,
     IXrmTabContext,
     IXrmUiContext,
-} from './interfaces';
+} from '../../interfaces';

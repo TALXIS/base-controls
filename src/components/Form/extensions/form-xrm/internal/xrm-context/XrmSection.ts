@@ -1,6 +1,6 @@
-import type { IFormXmlSection } from "../internal/FormXmlForm";
+import type { IFormXmlSection } from "../FormXmlForm";
 import { makeItemCollection } from "./collection";
-import type { IXrmControlContext, IXrmSectionContext } from "./interfaces";
+import type { IXrmControlContext, IXrmSectionContext } from "../../interfaces";
 import type { IXrmFormContextInternal } from "./XrmFormContext";
 
 export class XrmSection implements IXrmSectionContext {

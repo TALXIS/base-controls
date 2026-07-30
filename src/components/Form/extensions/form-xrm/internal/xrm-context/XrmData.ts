@@ -1,4 +1,4 @@
-import type { IXrmAttributeContext } from "./interfaces";
+import type { IXrmAttributeContext } from "../../interfaces";
 import type { IXrmDataContextInternal, IXrmFormContextInternal } from "./XrmFormContext";
 import { XrmAttribute } from "./XrmAttribute";
 import { XrmEntity } from "./XrmEntity";

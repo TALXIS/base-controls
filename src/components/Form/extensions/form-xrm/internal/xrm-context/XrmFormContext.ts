@@ -1,5 +1,5 @@
-import type { IFormXmlModel } from "../internal/FormXmlForm";
-import type { IXrmDataContext, IXrmFormContext, IXrmUiContext } from "./interfaces";
+import type { IFormXmlModel } from "../FormXmlForm";
+import type { IXrmDataContext, IXrmFormContext, IXrmUiContext } from "../../interfaces";
 import { XrmData } from "./XrmData";
 import { XrmUi } from "./XrmUi";
 
