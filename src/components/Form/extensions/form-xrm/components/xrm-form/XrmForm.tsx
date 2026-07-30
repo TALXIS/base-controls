@@ -12,6 +12,7 @@ import { XrmTabs } from '../xrm-tabs';
 import { XrmRibbon } from '../xrm-ribbon';
 import { IFormApi } from '@components/Form/interfaces';
 import { IFormApiInternal } from '@components/Form/internal/FormApi';
+import { IFormLabels } from '@components/Form/labels';
 
 export interface IXrmFormStrategy extends IFormStrategy {
     //will run after onload
@@ -27,6 +28,7 @@ interface IXrmFormProps {
     strategy: IXrmFormStrategy;
     onFormReady?: (params: IOnFormReadyParams) => void;
     onAfterSave?: IFormEvents["onAfterSave"];
+    labels?: Partial<IFormLabels>;
 }
 
 
@@ -43,7 +45,7 @@ export const XrmForm = (props: IXrmFormProps) => {
         props.onFormReady?.({ formContext, api });
     }
 
-    return <Form.Root strategy={strategy} onFormReady={onFormReady} onAfterSave={props.onAfterSave}>
+    return <Form.Root strategy={strategy} onFormReady={onFormReady} onAfterSave={props.onAfterSave} labels={props.labels}>
         {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} />}
     </Form.Root>
 }
