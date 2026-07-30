@@ -9,6 +9,7 @@ export class XrmEntity {
 
     constructor(formContext: XrmFormContext) {
         this._formContext = formContext;
+        this._registerEventListeners();
     }
 
     public getId(): string {
@@ -53,6 +54,12 @@ export class XrmEntity {
 
     get attributes(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
         return this._formContext.data.attributes;
+    }
+
+    private _registerEventListeners(): void {
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', () => {
+            this._onSaveHandlerSet.clear();
+        });
     }
 
     private _createSaveBlocker(): () => Promise<boolean> {

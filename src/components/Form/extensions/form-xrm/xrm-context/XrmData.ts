@@ -17,6 +17,7 @@ export class XrmData {
         this.entity = new XrmEntity(formContext);
         this.attributes = this._createAttributeCollection();
         this.process = {};
+        this._registerEventListeners();
     }
 
     public getIsDirty(): boolean {
@@ -56,7 +57,12 @@ export class XrmData {
 
     private _createAttributeCollection(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
         const attributes = this._formContext.getFormXmlModel().getAttributes();
-        const xrmAttributes = attributes.map((a) => new XrmAttribute(a, this._formContext));
-        return makeItemCollection(xrmAttributes, (a) => a.getName()) as any;
+        return makeItemCollection(attributes.map((attribute) => new XrmAttribute(attribute, this._formContext)), (attribute) => attribute.getName()) as any;
+    }
+
+    private _registerEventListeners(): void {
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', () => {
+            this._onLoadHandlerSet.clear();
+        });
     }
 }

@@ -62,10 +62,8 @@ export class XrmTab {
     }
 
     private _registerEventListeners() {
-        this._formContext.getFormXmlModel().tabs.events.addEventListener('onTabFocusChanged', (tabId: string, focused: boolean) => {
-            if (tabId !== this._tab.id) return;
-            this._fireOnTabStateChange();
-        });
+        this._formContext.getFormXmlModel().tabs.events.addEventListener('onTabFocusChanged', this._tabFocusChangedHandler);
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', this._formDestroyedHandler);
     }
 
     private _fireOnTabStateChange() {
@@ -77,4 +75,14 @@ export class XrmTab {
             }
         });
     }
+
+    private _tabFocusChangedHandler = (tabId: string): void => {
+        if (tabId !== this._tab.id) return;
+        this._fireOnTabStateChange();
+    };
+
+    private _formDestroyedHandler = (): void => {
+        this._formContext.getFormXmlModel().tabs.events.removeEventListener('onTabFocusChanged', this._tabFocusChangedHandler);
+        this._tabStateChangeHandlerSet.clear();
+    };
 }

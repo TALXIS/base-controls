@@ -57,7 +57,7 @@ const XrmFormInternal = ({ formXmlModel, xrmFormContext }: { formXmlModel: FormX
     React.useEffect(() => {
         xrmFormContext.data.fireOnLoad();
         xrmFormContext.ui.fireOnLoad();
-    }, [xrmFormContext]);
+    }, []);
 
     return <FormXmlContext.Provider value={formXmlModel}>
         <XrmFormContext.Provider value={xrmFormContext}>

@@ -137,9 +137,16 @@ export class XrmAttribute {
     }
 
     private _registerEventListeners() {
-        this._formContext.getFormXmlModel().getForm().events.addEventListener('onFieldValueChanged', (fieldName: string, newValue: any) => {
-            if (fieldName !== this.getName()) return;
-            this.fireOnChange();
-        });
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onFieldValueChanged', this._formFieldValueChangedHandler);
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', this._formDestroyedHandler);
     }
+
+    private _formFieldValueChangedHandler = (fieldName: string): void => {
+        if (fieldName !== this.getName()) return;
+        this.fireOnChange();
+    };
+
+    private _formDestroyedHandler = (): void => {
+        this._onChangeHandlerSet.clear();
+    };
 }

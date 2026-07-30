@@ -22,6 +22,7 @@ export class XrmUi {
         this._formContext = formContext;
         this.tabs = this._createTabsCollection();
         this.controls = this._createControlsCollection();
+        this._registerEventListeners();
     }
 
     public getFormType(): XrmEnum.FormType {
@@ -89,6 +90,13 @@ export class XrmUi {
 
     private _createTabsCollection(): Xrm.Collection.ItemCollection<XrmTab> {
         const tabs = this._formContext.getFormXmlModel().getTabs();
-        return makeItemCollection(tabs.map((t) => new XrmTab(t, this._formContext)), (t) => t.getName()) as any;
+        return makeItemCollection(tabs.map((tab) => new XrmTab(tab, this._formContext)), (tab) => tab.getName()) as any;
+    }
+
+    private _registerEventListeners(): void {
+        this._formContext.getFormXmlModel().getForm().events.addEventListener('onDestroy', () => {
+            this._onLoadHandlerSet.clear();
+            this._notificationMap.clear();
+        });
     }
 }

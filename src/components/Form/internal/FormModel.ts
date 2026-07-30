@@ -19,6 +19,7 @@ export interface IFormEvents {
     onBeforeSave: () => void;
     onRefreshRequested: () => void;
     onAfterSave: (params: onAfterSaveParams) => void;
+    onDestroy: () => void;
 }
 
 interface ISaveParams {
@@ -54,7 +55,7 @@ export interface IValidation extends IFieldValidationResult {
 }
 
 export class FormModel implements IForm {
-    public readonly events: IEventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
+    public readonly events: EventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _record: IRecord;
     private _dataProvider: IMemoryProvider;
     private _strategy: IFormStrategy;
@@ -108,6 +109,8 @@ export class FormModel implements IForm {
     }
 
     public destroy(): void {
+        this.events.dispatchEvent('onDestroy');
+        this.events.clearEventListeners();
         this._validationExpressions.clear();
         this._requiredLevelExpressions.clear();
         this._disabledExpressions.clear();

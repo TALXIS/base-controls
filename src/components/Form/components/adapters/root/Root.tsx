@@ -82,7 +82,11 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
 
     React.useEffect(() => {
         onFormReady?.(formApi);
+        return () => {
+            form.destroy();
+        };
     }, []);
+
     return (
         <FormLocalizationServiceContext.Provider value={localizationService}>
             <FormContext.Provider value={form}>
