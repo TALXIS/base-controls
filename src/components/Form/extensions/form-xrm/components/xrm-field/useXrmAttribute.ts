@@ -1,5 +1,5 @@
 import { useRerender } from "@legacy";
-import { IFormXmlAttribute } from "@components/Form/extensions/form-xrm/internal/FormXmlForm";
+import { IFormXmlAttribute } from "@components/Form/extensions/form-xrm/internal/form-xml-form";
 import { useFormXmlContext } from "../context";
 import { useEventEmitter } from "@hooks";
 

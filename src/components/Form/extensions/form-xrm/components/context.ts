@@ -1,5 +1,5 @@
 import React from "react";
-import { IFormXmlModel } from "../internal/FormXmlForm";
+import { IFormXmlModel } from "../internal/form-xml-form";
 import type { IXrmFormContext } from "../interfaces";
 
 export const FormXmlContext = React.createContext<IFormXmlModel | null>(null);

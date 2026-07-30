@@ -1,5 +1,5 @@
 import { Form } from "@components/Form/components/Form";
-import { IFormXmlControl } from "@components/Form/extensions/form-xrm/internal/FormXmlForm";
+import { IFormXmlControl } from "@components/Form/extensions/form-xrm/internal/form-xml-form";
 import { useXrmAttribute } from "./useXrmAttribute";
 
 interface IXrmFieldProps {

@@ -1,4 +1,4 @@
-import { FormXmlForm } from '@components/Form/extensions/form-xrm/internal/FormXmlForm';
+import { FormXmlForm } from '@components/Form/extensions/form-xrm/internal/form-xml-form';
 import { Form } from "@components/Form/components/Form";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
