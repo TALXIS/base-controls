@@ -4,7 +4,6 @@ import { IRibbonComponents, RibbonComponents } from "./components";
 import { getRibbonStyles } from "./styles";
 import { useForm } from "../root/context";
 import { useEventEmitter } from "@hooks";
-import { IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useRerender, withButtonLoading } from "@legacy";
 import React from "react";
 import { useLocalizationService } from "../root/context";
@@ -52,10 +51,10 @@ export const Ribbon = (props: IFormRibbonProps) => {
         setSaveButtonState('saving');
     });
 
-    useEventEmitter(form.events, ['onAfterSave'], ({ result }: { result: IRecordSaveOperationResult }) => {
+    useEventEmitter(form.events, ['onAfterSave'], ({ success }: { success: boolean }) => {
         clearSuccessStateTimeout();
 
-        if (!result.success) {
+        if (!success) {
             setSaveButtonState('save');
             return;
         }

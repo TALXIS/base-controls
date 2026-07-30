@@ -13,6 +13,13 @@ export const Notifications = (props: IFormNotificationsProps) => {
 
 	const getValidationNotifications = () => {
 		return validationSummary.map((validation) => {
+			if (!validation.fieldName) {
+				return {
+					text: validation.errorMessage ?? '',
+					level: validation.error ? 'ERROR' as const : 'WARNING' as const,
+				};
+			}
+
 			const column = record.getField(validation.fieldName).getColumn();
 			const displayName = column.displayName ?? column.name;
 

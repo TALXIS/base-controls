@@ -9,12 +9,12 @@ export interface IFormParams {
 }
 
 interface onAfterSaveParams {
-    result: IRecordSaveOperationResult;
-    changedData?: { [key: string]: any };
+    success: boolean;
 }
 
 export interface IFormEvents {
     onFieldValueChanged: (fieldName: string, newValue: any) => void;
+    onValidationSummaryChanged: (validationSummary: IValidation[]) => void;
     onError: (error: any, message: string) => void;
     onBeforeSave: () => void;
     onRefreshRequested: () => void;
@@ -50,7 +50,7 @@ export interface IForm {
 }
 
 export interface IValidation extends IFieldValidationResult {
-    fieldName: string;
+    fieldName?: string;
 }
 
 export class FormModel implements IForm {
@@ -142,35 +142,18 @@ export class FormModel implements IForm {
                 this._saveOperationPerformed = true;
                 this.events.dispatchEvent('onBeforeSave');
 
-                const dirtyFields = this._record.getFields().filter(f => f.isDirty());
-                const result = await this._record.save();
-                this._createValidationSummary(dirtyFields);
+                const dirtyFields = this._getDirtyFields();
+                this._createValidationSummaryFromDirtyFields(dirtyFields);
 
-                if(this._validationSummary.flatMap(v => v.error).length > 0) {
-                    this.events.dispatchEvent('onAfterSave', {
-                        result: {
-                            success: false,
-                            fields: dirtyFields.map(f => f.getColumn().name),
-                            recordId: this._record.getRecordId(),
-                            errors: this._validationSummary.flatMap(v => v.error).map(e => {
-                                return {
-                                    message: e,
-                                }
-                            })
-                        },
-                    }); 
-                }
-
-                if (!result.success) {
-                    this.events.dispatchEvent('onAfterSave', { result });
+                if (this._validationSummary.length > 0) {
+                    this.events.dispatchEvent('onAfterSave', { success: false });
                     return;
                 }
 
-                this._registerExistingExpressions();
                 const changedData = this._getChangedData(dirtyFields);
 
                 if (await blocker?.()) {
-                    this.events.dispatchEvent('onAfterSave', { result: this._createBlockedSaveResult() });
+                    this.events.dispatchEvent('onAfterSave', { success: false });
                     return;
                 }
 
@@ -178,10 +161,17 @@ export class FormModel implements IForm {
                     updatedData: changedData,
                     recordId: this._record.getRecordId(),
                 });
-                this.events.dispatchEvent('onAfterSave', {
-                    result: saveResult,
-                    changedData,
-                });
+
+                if (!saveResult.success) {
+                    this._createValidationSummaryFromSaveResult(saveResult);
+                    this.events.dispatchEvent('onAfterSave', { success: false });
+                    return;
+                }
+
+                await this._record.save();
+                this._registerExistingExpressions();
+                this._createValidationSummaryFromDirtyFields(this._getDirtyFields());
+                this.events.dispatchEvent('onAfterSave', { success: true });
             },
             onError: (error, message) => {
                 this.events.dispatchEvent('onError', error, message);
@@ -226,16 +216,11 @@ export class FormModel implements IForm {
     }
 
     private _registerEventHandlers(): void {
-        this._record.addEventListener('onFieldValueChanged', (fieldName, newValue) => this.events.dispatchEvent('onFieldValueChanged', fieldName, newValue));
+        this._record.addEventListener('onFieldValueChanged', this._handleFieldValueChanged);
     }
 
-    private _createValidationSummary(dirtyFields: IField[]) {
-        this._validationSummary = dirtyFields.map(field => {
-            return {
-                fieldName: field.getColumn().name,
-                ...field.isValid()
-            }
-        });
+    private _handleFieldValueChanged = (fieldName: string, newValue: any): void => {
+        this.events.dispatchEvent('onFieldValueChanged', fieldName, newValue);
     }
 
     private _registerExistingExpressions(): void {
@@ -255,11 +240,33 @@ export class FormModel implements IForm {
         );
     }
 
-    private _createBlockedSaveResult(): IRecordSaveOperationResult {
-        return {
-            success: false,
-            fields: [],
-            recordId: this._record.getRecordId(),
-        };
+    private _getDirtyFields(): IField[] {
+        return this._record.getFields().filter(field => field.isDirty());
     }
+
+    private _createValidationSummaryFromDirtyFields(dirtyFields: IField[]): void {
+        this._validationSummary = dirtyFields
+            .map(field => {
+                return {
+                    fieldName: field.getColumn().name,
+                    ...field.isValid()
+                };
+            })
+            .filter(validation => !!validation.error);
+        this.events.dispatchEvent('onValidationSummaryChanged', this._validationSummary);
+    }
+
+    private _createValidationSummaryFromSaveResult(saveResult: IRecordSaveOperationResult): void {
+        this._validationSummary = (saveResult.errors ?? []).map(error => {
+            const errorWithFieldName = error as { fieldName?: string; message?: string };
+
+            return {
+                fieldName: errorWithFieldName.fieldName,
+                error: true,
+                errorMessage: error.message ?? '',
+            };
+        });
+        this.events.dispatchEvent('onValidationSummaryChanged', this._validationSummary);
+    }
+
 }
