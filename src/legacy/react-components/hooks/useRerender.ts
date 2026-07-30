@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 
 export const useRerender = () => {
     const mountedRef = useRef(false);
-    const [_, toggle] = useState<boolean>(false);
+    const [, setRenderToken] = useState(() => Symbol("render"));
 
     useEffect(() => {
         mountedRef.current = true;
@@ -15,6 +15,6 @@ export const useRerender = () => {
         if(!mountedRef.current) {
             return;
         }
-        toggle((prev) => !prev);
+        setRenderToken(Symbol("render"));
     }
 }
