@@ -1,5 +1,5 @@
 import type { IXrmFormStrategy } from '../../components/xrm-form/XrmForm';
-import type { XrmFormContext } from '../../xrm-context';
+import type { IXrmFormContext } from '../../xrm-context';
 import { IFormConfig, XrmClientApiStrategyFactory } from '../../strategies/XrmClientApiStrategyFactory';
 import type { IFormLabels } from '@components/Form/labels';
 import { ControlTheme } from '@utils/theme';
@@ -19,7 +19,7 @@ export interface IPcfXrmFormAdapterRenderProps<IInputs extends IPcfXrmFormAdapte
     strategyVersion: string;
     labels: Partial<IFormLabels>;
     theme: ITheme;
-    onFormReady: (formContext: XrmFormContext) => Promise<void>;
+    onFormReady: (formContext: IXrmFormContext) => Promise<void>;
 }
 
 /**
@@ -83,7 +83,7 @@ export class PcfXrmFormAdapter<IInputs extends IPcfXrmFormAdapterInputs> {
         );
     }
 
-    private async _executeClientApiFormContextScript(formContext: XrmFormContext): Promise<void> {
+    private async _executeClientApiFormContextScript(formContext: IXrmFormContext): Promise<void> {
         const clientApiFormContextFunctionName = this._context.parameters.ClientApiFormContextFunctionName?.raw;
         if (!clientApiFormContextFunctionName) {
             return;

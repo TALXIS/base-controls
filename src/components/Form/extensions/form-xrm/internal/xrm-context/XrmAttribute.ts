@@ -3,17 +3,17 @@ import { DataTypes } from "@talxis/client-libraries/dist/utils";
 import { FormModel } from "@components/Form/internal/FormModel";
 import type { IFormXmlAttribute } from "../internal/FormXmlForm";
 import { makeItemCollection } from "./collection";
-import type { XrmControl } from "./XrmControl";
-import type { XrmFormContext } from "./XrmFormContext";
+import type { IXrmAttributeContext, IXrmControlContext } from "./interfaces";
+import type { IXrmFormContextInternal } from "./XrmFormContext";
 import { notImplemented } from "./utils";
 
-export class XrmAttribute {
+export class XrmAttribute implements IXrmAttributeContext {
     private _attribute: IFormXmlAttribute;
     private _field: IField;
-    private _formContext: XrmFormContext;
+    private _formContext: IXrmFormContextInternal;
     private _onChangeHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(attribute: IFormXmlAttribute, formContext: XrmFormContext) {
+    constructor(attribute: IFormXmlAttribute, formContext: IXrmFormContextInternal) {
         this._attribute = attribute;
         this._field = attribute.getField();
         this._formContext = formContext;
@@ -126,7 +126,7 @@ export class XrmAttribute {
         return { canRead: true, canUpdate: true, canCreate: true };
     }
 
-    public get controls(): Xrm.Collection.ItemCollection<Xrm.Controls.StandardControl> {
+    public get controls(): Xrm.Collection.ItemCollection<IXrmControlContext> {
         const allControls = this._formContext.ui.controls.get();
         const attributeControls = allControls.filter((c) => c.getAttribute()?.getName() === this.getName());
         return makeItemCollection(attributeControls, (c) => c.getName()) as any;

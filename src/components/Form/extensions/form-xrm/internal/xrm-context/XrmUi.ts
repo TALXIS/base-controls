@@ -1,24 +1,25 @@
 import type { INotification } from "../internal/FormXmlForm";
 import { makeItemCollection } from "./collection";
 import { XrmControl } from "./XrmControl";
-import type { XrmFormContext } from "./XrmFormContext";
+import type { IXrmControlContext, IXrmTabContext } from "./interfaces";
+import type { IXrmFormContextInternal, IXrmUiContextInternal } from "./XrmFormContext";
 import { XrmTab } from "./XrmTab";
 import { notImplemented } from "./utils";
 
-export class XrmUi {
-    readonly tabs: Xrm.Collection.ItemCollection<XrmTab>;
-    readonly controls: Xrm.Collection.ItemCollection<XrmControl>;
+export class XrmUi implements IXrmUiContextInternal {
+    readonly tabs: Xrm.Collection.ItemCollection<IXrmTabContext>;
+    readonly controls: Xrm.Collection.ItemCollection<IXrmControlContext>;
     readonly formSelector: any;
     readonly navigation: any;
     readonly process: any;
     readonly footerSection: any;
     readonly quickForms: any;
 
-    private _formContext: XrmFormContext;
+    private _formContext: IXrmFormContextInternal;
     private _notificationMap: Map<string, INotification> = new Map();
     private _onLoadHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(formContext: XrmFormContext) {
+    constructor(formContext: IXrmFormContextInternal) {
         this._formContext = formContext;
         this.tabs = this._createTabsCollection();
         this.controls = this._createControlsCollection();
@@ -83,12 +84,12 @@ export class XrmUi {
         notImplemented("ui.close");
     }
 
-    private _createControlsCollection(): Xrm.Collection.ItemCollection<XrmControl> {
+    private _createControlsCollection(): Xrm.Collection.ItemCollection<IXrmControlContext> {
         const controls = this._formContext.getFormXmlModel().getControls();
         return makeItemCollection(controls.map((c) => new XrmControl(c, this._formContext)), (c) => c.getName()) as any;
     }
 
-    private _createTabsCollection(): Xrm.Collection.ItemCollection<XrmTab> {
+    private _createTabsCollection(): Xrm.Collection.ItemCollection<IXrmTabContext> {
         const tabs = this._formContext.getFormXmlModel().getTabs();
         return makeItemCollection(tabs.map((tab) => new XrmTab(tab, this._formContext)), (tab) => tab.getName()) as any;
     }

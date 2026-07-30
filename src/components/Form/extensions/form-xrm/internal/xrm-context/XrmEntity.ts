@@ -1,13 +1,14 @@
-import type { XrmFormContext } from "./XrmFormContext";
+import type { IXrmAttributeContext, IXrmEntityContext } from "./interfaces";
+import type { IXrmFormContextInternal } from "./XrmFormContext";
 import { isPromiseLike } from "./utils";
 
 type XrmOnSaveHandler = Xrm.Events.SaveEventHandler | Xrm.Events.SaveEventHandlerAsync;
 
-export class XrmEntity {
-    private _formContext: XrmFormContext;
+export class XrmEntity implements IXrmEntityContext {
+    private _formContext: IXrmFormContextInternal;
     private _onSaveHandlerSet: Set<XrmOnSaveHandler> = new Set();
 
-    constructor(formContext: XrmFormContext) {
+    constructor(formContext: IXrmFormContextInternal) {
         this._formContext = formContext;
         this._registerEventListeners();
     }
@@ -47,12 +48,13 @@ export class XrmEntity {
     }
 
     public async save(saveOptions?: Xrm.SaveOptions): Promise<void> {
+        void saveOptions;
         return this._formContext.getFormXmlModel().getForm().save({
             blocker: this._createSaveBlocker(),
         });
     }
 
-    get attributes(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
+    get attributes(): Xrm.Collection.ItemCollection<IXrmAttributeContext> {
         return this._formContext.data.attributes;
     }
 

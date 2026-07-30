@@ -1,15 +1,16 @@
 import type { IFormXmlTab } from "../internal/FormXmlForm";
 import { makeItemCollection } from "./collection";
-import type { XrmFormContext } from "./XrmFormContext";
+import type { IXrmSectionContext, IXrmTabContext } from "./interfaces";
+import type { IXrmFormContextInternal } from "./XrmFormContext";
 import { XrmSection } from "./XrmSection";
 
-export class XrmTab {
-    public readonly sections: Xrm.Collection.ItemCollection<XrmSection>;
+export class XrmTab implements IXrmTabContext {
+    public readonly sections: Xrm.Collection.ItemCollection<IXrmSectionContext>;
     private _tab: IFormXmlTab;
-    private _formContext: XrmFormContext;
+    private _formContext: IXrmFormContextInternal;
     private _tabStateChangeHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
 
-    constructor(tab: IFormXmlTab, formContext: XrmFormContext) {
+    constructor(tab: IFormXmlTab, formContext: IXrmFormContextInternal) {
         this._formContext = formContext;
         this._tab = tab;
         this.sections = this._createSectionsCollection();
@@ -56,7 +57,7 @@ export class XrmTab {
         this._tabStateChangeHandlerSet.delete(handler);
     }
 
-    private _createSectionsCollection(): Xrm.Collection.ItemCollection<XrmSection> {
+    private _createSectionsCollection(): Xrm.Collection.ItemCollection<IXrmSectionContext> {
         const sections = this._tab.getSections();
         return makeItemCollection(sections.map((s) => new XrmSection(s, this._formContext)), (s) => s.getName()) as any;
     }

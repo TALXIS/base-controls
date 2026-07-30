@@ -1,13 +1,13 @@
 import type { IFormXmlSection } from "../internal/FormXmlForm";
 import { makeItemCollection } from "./collection";
-import type { XrmControl } from "./XrmControl";
-import type { XrmFormContext } from "./XrmFormContext";
+import type { IXrmControlContext, IXrmSectionContext } from "./interfaces";
+import type { IXrmFormContextInternal } from "./XrmFormContext";
 
-export class XrmSection {
-    private _formContext: XrmFormContext;
+export class XrmSection implements IXrmSectionContext {
+    private _formContext: IXrmFormContextInternal;
     private _section: IFormXmlSection;
 
-    constructor(section: IFormXmlSection, formContext: XrmFormContext) {
+    constructor(section: IFormXmlSection, formContext: IXrmFormContextInternal) {
         this._formContext = formContext;
         this._section = section;
     }
@@ -32,7 +32,7 @@ export class XrmSection {
         this._section.setVisible(visible);
     }
 
-    public get controls(): Xrm.Collection.ItemCollection<XrmControl> {
+    public get controls(): Xrm.Collection.ItemCollection<IXrmControlContext> {
         const controls = this._formContext.ui.controls.get();
         const sectionFormXmlControlsMap = new Map(this._section.getControls().map((c) => [c.id, c]));
         const sectionControls = controls.filter((c) => sectionFormXmlControlsMap.has(c.getName()));

@@ -1,18 +1,19 @@
-import type { XrmFormContext } from "./XrmFormContext";
+import type { IXrmAttributeContext } from "./interfaces";
+import type { IXrmDataContextInternal, IXrmFormContextInternal } from "./XrmFormContext";
 import { XrmAttribute } from "./XrmAttribute";
 import { XrmEntity } from "./XrmEntity";
 import { makeItemCollection } from "./collection";
 import { notImplemented } from "./utils";
 
-export class XrmData {
+export class XrmData implements IXrmDataContextInternal {
     public readonly entity: XrmEntity;
-    public readonly attributes: Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute>;
+    public readonly attributes: Xrm.Collection.ItemCollection<IXrmAttributeContext>;
     public readonly process: any;
 
     private _onLoadHandlerSet: Set<Xrm.Events.DataLoadEventHandler> = new Set();
-    private _formContext: XrmFormContext;
+    private _formContext: IXrmFormContextInternal;
 
-    constructor(formContext: XrmFormContext) {
+    constructor(formContext: IXrmFormContextInternal) {
         this._formContext = formContext;
         this.entity = new XrmEntity(formContext);
         this.attributes = this._createAttributeCollection();
@@ -55,7 +56,7 @@ export class XrmData {
         });
     }
 
-    private _createAttributeCollection(): Xrm.Collection.ItemCollection<Xrm.Attributes.Attribute> {
+    private _createAttributeCollection(): Xrm.Collection.ItemCollection<IXrmAttributeContext> {
         const attributes = this._formContext.getFormXmlModel().getAttributes();
         return makeItemCollection(attributes.map((attribute) => new XrmAttribute(attribute, this._formContext)), (attribute) => attribute.getName()) as any;
     }

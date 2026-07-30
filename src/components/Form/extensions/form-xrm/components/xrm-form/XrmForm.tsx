@@ -5,7 +5,9 @@ import { useRerender } from "@legacy";
 import { IFormStrategy } from "@components/Form/stragegies";
 import React from "react";
 import { IFormEvents } from '@components/Form/internal/FormModel';
-import { XrmFormContext as XrmFormContextClass } from '@components/Form/extensions/form-xrm/xrm-context';
+import type { IXrmFormContext } from '@components/Form/extensions/form-xrm/xrm-context/interfaces';
+import type { IXrmFormContextInternal } from '@components/Form/extensions/form-xrm/xrm-context/XrmFormContext';
+import { createXrmFormContext } from '@components/Form/extensions/form-xrm/xrm-context/XrmFormContext';
 import { XrmNotifications } from '../xrm-notifications';
 import { FormXmlContext, XrmFormContext } from '../context';
 import { XrmTabs } from '../xrm-tabs';
@@ -20,7 +22,7 @@ export interface IXrmFormStrategy extends IFormStrategy {
 }
 
 export interface IOnFormReadyParams {
-    formContext: XrmFormContextClass;
+    formContext: IXrmFormContext;
     api: IFormApi;
 }
 
@@ -34,13 +36,13 @@ interface IXrmFormProps {
 
 export const XrmForm = (props: IXrmFormProps) => {
     const { strategy } = props;
-    const [form, setForm] = React.useState<{ xmlModel: FormXmlForm, xrmFormContext: XrmFormContextClass } | null>(null);
+    const [form, setForm] = React.useState<{ xmlModel: FormXmlForm, xrmFormContext: IXrmFormContextInternal } | null>(null);
 
     const onFormReady = (api: IFormApi) => {
         const form = (api as IFormApiInternal)._getForm();
         const formXml = strategy.onGetFormXml();
         const nextFormXmlModel = new FormXmlForm({ formXml, lcid: 1029, form });
-        const formContext = new XrmFormContextClass(nextFormXmlModel);
+        const formContext = createXrmFormContext(nextFormXmlModel);
         setForm({ xmlModel: nextFormXmlModel, xrmFormContext: formContext });
         props.onFormReady?.({ formContext, api });
     }
@@ -50,7 +52,7 @@ export const XrmForm = (props: IXrmFormProps) => {
     </Form.Root>
 }
 
-const XrmFormInternal = ({ formXmlModel, xrmFormContext }: { formXmlModel: FormXmlForm, xrmFormContext: XrmFormContextClass }) => {
+const XrmFormInternal = ({ formXmlModel, xrmFormContext }: { formXmlModel: FormXmlForm, xrmFormContext: IXrmFormContextInternal }) => {
     const rerender = useRerender();
 
     useEventEmitter(formXmlModel.events, ['onRenderRequested'], rerender);

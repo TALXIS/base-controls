@@ -1,14 +1,14 @@
 import type { IFormXmlCell, IFormXmlControl } from "../internal/FormXmlForm";
-import type { XrmAttribute } from "./XrmAttribute";
-import type { XrmFormContext } from "./XrmFormContext";
+import type { IXrmAttributeContext, IXrmControlContext } from "./interfaces";
+import type { IXrmFormContextInternal } from "./XrmFormContext";
 import { notImplemented } from "./utils";
 
-export class XrmControl {
+export class XrmControl implements IXrmControlContext {
     private _control: IFormXmlControl;
-    private _formContext: XrmFormContext;
+    private _formContext: IXrmFormContextInternal;
     private _cell: IFormXmlCell;
 
-    constructor(control: IFormXmlControl, formContext: XrmFormContext) {
+    constructor(control: IFormXmlControl, formContext: IXrmFormContextInternal) {
         this._formContext = formContext;
         this._control = control;
         this._cell = control.getCell();
@@ -42,7 +42,7 @@ export class XrmControl {
         this._cell.setLabel(label);
     }
 
-    public getAttribute(): XrmAttribute | null {
+    public getAttribute(): IXrmAttributeContext | null {
         if (this._control.datafieldname) {
             return this._formContext.data.attributes.get(this._control.datafieldname) as any;
         }
