@@ -604,8 +604,8 @@ export class FormXmlForm implements IFormXmlModel {
     }
 
     public getLocalizedLabel(labels?: MetadataFormXmlLabels): string | null {
-        const localizedLabel = labels?.label?.find(label => label.languagecode == this._lcid);
-        const fallbackLabel = labels?.label?.find(label => label.languagecode == LCID_ENGLISH_US) ?? labels?.label?.[0];
+        const localizedLabel = labels?.label?.find(label => label.languagecode === this._lcid);
+        const fallbackLabel = labels?.label?.find(label => label.languagecode === LCID_ENGLISH_US) ?? labels?.label?.[0];
         return localizedLabel?.description ?? fallbackLabel?.description ?? null;
     }
 
