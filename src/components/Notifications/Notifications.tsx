@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { ContextualMenu, IconButton, IMessageBarStyles, MessageBar, MessageBarType, useTheme } from '@fluentui/react';
 import { INotificationsComponents } from './components';
 import { getNotificationsStyles } from './styles';
+import { LocalizationService } from '@utils';
+import { INotificationsLabels, NOTIFICATIONS_LABELS } from './labels';
 
 export interface INotificationsProps {
 	messages?: {
@@ -9,6 +11,7 @@ export interface INotificationsProps {
 		level: 'ERROR' | 'WARNING' | 'INFO';
 	}[],
 	components?: Partial<INotificationsComponents>;
+	labels?: Partial<INotificationsLabels>;
 }
 
 const getMessageBarType = (messages: INotificationsProps['messages'] = []): MessageBarType => {
@@ -21,10 +24,14 @@ const getMessageBarType = (messages: INotificationsProps['messages'] = []): Mess
 
 export const Notifications = (props: INotificationsProps) => {
 	const theme = useTheme();
-	const { messages = [] } = props;
+	const { labels, messages = [] } = props;
 	const [isUnfolded, setIsUnfolded] = React.useState(false);
 	const styles = useMemo(() => getNotificationsStyles(theme, isUnfolded), [theme, isUnfolded]);
 	const groupedNotificationRef = React.useRef<HTMLDivElement>(null);
+	const localizationService = useMemo(() => new LocalizationService({
+		...NOTIFICATIONS_LABELS,
+		...labels,
+	}), []);
 
 	const messageBarStyles: IMessageBarStyles = {
 		root: styles.notification,
@@ -50,7 +57,9 @@ export const Notifications = (props: INotificationsProps) => {
 				<IconButton styles={{ root: styles.chevronBtn, icon: styles.chevronBtnIcon }} iconProps={{ iconName: 'ChevronDown' }} />
 			}
 		>
-			Máte {messages.length} oznámení. Výběrem je zobrazíte.
+			{localizationService.getLocalizedString("groupedNotificationsSummary", {
+				count: messages.length.toString(),
+			})}
 		</MessageBar>
 		{isUnfolded &&
 			<ContextualMenu

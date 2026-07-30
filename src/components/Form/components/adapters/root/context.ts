@@ -1,14 +1,18 @@
 import React from "react";
 import { IForm } from "@components/Form/internal/FormModel";
+import { ILocalizationService, useContextWithNullCheck } from "@utils";
+import { IFormLabels } from "@components/Form/labels";
 
 export const FormContext = React.createContext<IForm | null>(null);
+export const FormLocalizationServiceContext = React.createContext<ILocalizationService<IFormLabels> | null>(null);
 
 FormContext.displayName = "FormContext";
+FormLocalizationServiceContext.displayName = "FormLocalizationService";
 
 export const useForm = (): IForm => {
-    const context = React.useContext(FormContext);
-    if(!context) {
-        throw new Error(`This component must be rendered within ${FormContext.displayName}.Provider.`);
-    }
-    return context;
-}
+    return useContextWithNullCheck(FormContext);
+};
+
+export const useLocalizationService = (): ILocalizationService<IFormLabels> => {
+    return useContextWithNullCheck(FormLocalizationServiceContext);
+};

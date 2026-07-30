@@ -7,6 +7,7 @@ import { useEventEmitter } from "@hooks";
 import { IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useRerender, withButtonLoading } from "@legacy";
 import React from "react";
+import { useLocalizationService } from "../root/context";
 
 export interface IFormRibbonProps {
     onSave?: () => void;
@@ -25,6 +26,7 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const theme = useTheme();
     const styles = useMemo(() => getRibbonStyles(theme), [theme]);
     const components = { ...RibbonComponents, ...props.components };
+    const localizationService = useLocalizationService();
     const [saveButtonState, setSaveButtonState] = React.useState<TSaveButtonState>('save');
     const successStateTimeout = React.useRef<number | null>(null);
     const rerender = useRerender();
@@ -68,7 +70,7 @@ export const Ribbon = (props: IFormRibbonProps) => {
     const getFarItems = (): ICommandBarItemProps[] => {
         return isDirty ? [{
             key: 'unsaved-changes',
-            text: 'Unsaved changes',
+            text: localizationService.getLocalizedString('unsavedChanges'),
             iconProps: {
                 iconName: 'Warning',
                 styles: {
@@ -98,14 +100,14 @@ export const Ribbon = (props: IFormRibbonProps) => {
 
     const getSaveText = () => {
         if (saveButtonState === 'saving') {
-            return 'Saving...';
+            return localizationService.getLocalizedString('saving');
         }
 
         if (saveButtonState === 'saved') {
-            return 'Saved!';
+            return localizationService.getLocalizedString('saved');
         }
 
-        return 'Save';
+        return localizationService.getLocalizedString('save');
     };
 
     const getSaveIconProps = () => {
