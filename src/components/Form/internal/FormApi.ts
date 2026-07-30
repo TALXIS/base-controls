@@ -1,4 +1,4 @@
-import { IFormApi } from "../interfaces";
+import { IApiField, IFormApi } from "../interfaces";
 import { IForm } from "./FormModel";
 
 export interface IFormApiInternal extends IFormApi {
@@ -18,6 +18,10 @@ export class FormApi implements IFormApiInternal {
 
     public getData(): { [key: string]: any } {
         return this._form.getData();
+    }
+
+    public getField(fieldName: string): IApiField {
+        return this._form.getField(fieldName);
     }
 
     public refresh(): void {

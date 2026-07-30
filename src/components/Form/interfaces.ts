@@ -1,3 +1,8 @@
+export interface IApiField {
+    getValue: () => any;
+    setValue: (value: any) => void;
+}
+
 export interface IFormApi {
     refresh: () => void;
 
@@ -6,4 +11,6 @@ export interface IFormApi {
      * that may currently be invalid.
      */
     getData: () => { [key: string]: any };
+
+    getField: (fieldName: string) => IApiField;
 }

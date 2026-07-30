@@ -44,15 +44,14 @@ export class MemoryStrategy implements IFormStrategy {
      * object returned by the configured data getter.
      */
     public async onSave(params: IOnSaveParams): Promise<IRecordSaveOperationResult> {
-        const { data } = params;
+        const { updatedData, recordId } = params;
         const currentData = this._onGetData();
-        const metadata = this._onGetMetadata();
 
-        Object.assign(currentData, data);
+        Object.assign(currentData, updatedData);
         return {
             success: true,
-            fields: Object.keys(data),
-            recordId: currentData[metadata.PrimaryIdAttribute],
+            fields: Object.keys(updatedData),
+            recordId,
         }
     }
 }

@@ -10,7 +10,8 @@ export interface IOnLoadResult {
 }
 
 export interface IOnSaveParams {
-    data: {[key: string]: any};
+    updatedData: {[key: string]: any};
+    recordId: string;
 }
 
 export interface IFormStrategy {

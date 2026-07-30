@@ -159,7 +159,10 @@ export class FormModel implements IForm {
                     return;
                 }
 
-                const saveResult = await this._strategy.onSave({ data: changedData });
+                const saveResult = await this._strategy.onSave({
+                    updatedData: changedData,
+                    recordId: this._record.getRecordId(),
+                });
                 this.events.dispatchEvent('onAfterSave', {
                     result: saveResult,
                     changedData,
