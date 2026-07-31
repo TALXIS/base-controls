@@ -1,5 +1,5 @@
 import { Form } from "@components/Form/components/Form";
-import { IFormXmlSection } from "@components/Form/extensions/form-xrm/internal/form-xml-form";
+import { IFormXmlSection } from "@components/Form/extensions/xrm-form/internal/form-xml-form";
 import { XrmCell } from "../xrm-cell/XrmCell";
 import { XrmField } from "../xrm-field";
 import { useSection } from "./useSection";

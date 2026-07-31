@@ -1,6 +1,6 @@
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks";
-import { IFormXmlTab } from "@components/Form/extensions/form-xrm/internal/form-xml-form";
+import { IFormXmlTab } from "@components/Form/extensions/xrm-form/internal/form-xml-form";
 
 export const useTab = (tab: IFormXmlTab) => {
     const rerender = useRerender();

@@ -2,22 +2,16 @@
 
 `XrmForm` builds on top of the base `Form` runtime and adds a curated Xrm-like form context plus FormXml-driven layout.
 
-It is for consumers who want:
+It provides:
 
 - the base React Form runtime
 - an Xrm-shaped runtime surface (`formContext`, `data`, `ui`, attributes, tabs, controls, save hooks)
 - FormXml-driven layout behavior
-
-It does **not** aim to provide full parity with the Microsoft model-driven app client API.
+- a public `IXrmFormContext`
+- `onFormReady({ formContext, api })`
+- `strategy.onGetFormXml()`
 
 ## What `XrmForm` adds
-
-Compared with `Form.Root`, `XrmForm` additionally provides:
-
-- `strategy.onGetFormXml()`
-- `onFormReady({ formContext, api })`
-- an exposed `IXrmFormContext`
-- Xrm-shaped `data`, `ui`, `entity`, `attribute`, `tab`, `section`, and `control` APIs
 
 The layout is driven from FormXml, while persistence still comes from the base Form strategy contract.
 
@@ -48,9 +42,8 @@ const strategy = new XrmMemoryStrategy({
     PrimaryIdAttribute: "accountid",
     PrimaryNameAttribute: "name",
   }),
+  onGetFormXml: () => formXml,
 });
-
-strategy.onGetFormXml = () => formXml;
 
 export const AccountXrmForm = () => {
   return (
@@ -102,15 +95,7 @@ onFormReady={({ formContext }) => {
 - `formContext.getAttribute(...)`
 - `formContext.getControl(...)`
 
-### Supported subset expectations
-
-The exposed context is intentionally **subset-based**:
-
-- the documented interfaces in `interfaces.ts` are the contract
-- some Microsoft Xrm surfaces are present only as reserved `any` placeholders (`process`, `navigation`, `quickForms`, `formSelector`, `footerSection`)
-- behavior is implemented only where the runtime currently supports it
-
-If something is not represented in the exported public interfaces, do not assume it is supported.
+The documented interfaces in `interfaces.ts` are the public contract. The context also exposes reserved surfaces such as `process`, `navigation`, `quickForms`, `formSelector`, and `footerSection` where those runtime shapes are part of the current API.
 
 ## Relationship to Microsoft documentation
 
@@ -139,18 +124,3 @@ That means you can combine:
 
 - React event-driven orchestration from the base Form runtime
 - Xrm-style runtime interactions from `formContext`
-
-## What this runtime can and cannot do
-
-### Good fit
-
-- form experiences that want an Xrm-like programming surface
-- code that needs tabs, controls, attributes, and entity save hooks
-- FormXml-driven layout with React hosting
-
-### Not the goal
-
-- full Microsoft platform parity
-- undocumented compatibility with every Xrm client API member
-- host-specific application bootstrapping
-- bypassing the base Form strategy contract for load/save

@@ -1,11 +1,11 @@
-import { FormXmlForm } from '@components/Form/extensions/form-xrm/internal/form-xml-form';
+import { FormXmlForm } from '@components/Form/extensions/xrm-form/internal/form-xml-form';
 import { Form } from "@components/Form/components/Form";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import React from "react";
-import type { IXrmFormContext, IXrmFormProps } from '@components/Form/extensions/form-xrm/interfaces';
-import type { IXrmFormContextInternal } from '@components/Form/extensions/form-xrm/internal/xrm-context/XrmFormContext';
-import { createXrmFormContext } from '@components/Form/extensions/form-xrm/internal/xrm-context/XrmFormContext';
+import type { IXrmFormContext, IXrmFormProps } from '@components/Form/extensions/xrm-form/interfaces';
+import type { IXrmFormContextInternal } from '@components/Form/extensions/xrm-form/internal/xrm-context/XrmFormContext';
+import { createXrmFormContext } from '@components/Form/extensions/xrm-form/internal/xrm-context/XrmFormContext';
 import { XrmNotifications } from '../xrm-notifications';
 import { FormXmlContext, XrmFormContext } from '../context';
 import { XrmTabs } from '../xrm-tabs';

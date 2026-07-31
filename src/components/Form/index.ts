@@ -4,5 +4,5 @@ export {
 export * from './interfaces';
 export * from './hooks';
 export * from './labels';
-export * from './extensions/form-xrm';
+export * from './extensions/xrm-form';
 export * from './strategies';
