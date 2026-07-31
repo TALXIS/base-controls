@@ -58,6 +58,14 @@ export const AccountXrmForm = () => {
 };
 ```
 
+## Loading lifecycle note
+
+This runtime differs slightly from the usual Xrm mental model around form-load timing.
+
+When `onFormReady({ formContext, api })` fires in this implementation, the form is already fully loaded together with its data. That means the exposed `formContext` is ready for data access, attribute access, UI work, and event subscription immediately.
+
+In practice, this makes `onFormReady` the main point where you can start working with the Xrm-like runtime surface.
+
 ## Public form context surface
 
 The main public handle is `IXrmFormContext`.
@@ -90,8 +98,7 @@ onFormReady={({ formContext }) => {
 - `formContext.ui`
   - tabs and controls
   - form notifications
-  - ribbon refresh
-  - viewport information
+  - onLoad handlers
 - `formContext.getAttribute(...)`
 - `formContext.getControl(...)`
 
