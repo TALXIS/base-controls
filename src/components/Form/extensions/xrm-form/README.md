@@ -98,7 +98,6 @@ onFormReady={({ formContext }) => {
 - `formContext.ui`
   - tabs and controls
   - form notifications
-  - onLoad handlers
 - `formContext.getAttribute(...)`
 - `formContext.getControl(...)`
 
