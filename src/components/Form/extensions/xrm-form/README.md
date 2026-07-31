@@ -63,6 +63,30 @@ The strategy behind the form is still driven by:
 
 This should follow the same `IColumn[]` field shape used across the Base Controls ecosystem.
 
+Example:
+
+```ts
+const columns = [
+  {
+    name: "name",
+    alias: "name",
+    displayName: "Name",
+    dataType: "SingleLine.Text",
+    metadata: { IsValidForUpdate: true },
+  },
+  {
+    name: "ownerid",
+    alias: "ownerid",
+    displayName: "Owner",
+    dataType: "Lookup.Owner",
+    metadata: {
+      IsValidForUpdate: true,
+      Targets: ["systemuser", "team"],
+    },
+  },
+];
+```
+
 ### `metadata`
 
 `metadata` is the minimal record-level metadata object:
@@ -90,6 +114,18 @@ That means:
 - formatted values and option-set values can stay in their Dataverse-style structure
 
 So even though the layout is FormXml-driven, the underlying record payload should still be treated as a Dataverse-shaped record object.
+
+Example:
+
+```ts
+const data = {
+  accountid: "11111111-1111-1111-1111-111111111111",
+  name: "Contoso Ltd.",
+  "_ownerid_value": "33333333-3333-3333-3333-333333333333",
+  "_ownerid_value@OData.Community.Display.V1.FormattedValue": "Local Demo User",
+  "_ownerid_value@Microsoft.Dynamics.CRM.lookuplogicalname": "systemuser",
+};
+```
 
 ## Loading lifecycle note
 

@@ -68,6 +68,30 @@ The form runtime is driven by three related inputs from the strategy:
 
 In practice, this should follow the same field/column shape you already use elsewhere in the Base Controls ecosystem through `IColumn[]`.
 
+Example:
+
+```ts
+const columns = [
+  {
+    name: "name",
+    alias: "name",
+    displayName: "Name",
+    dataType: "SingleLine.Text",
+    metadata: { IsValidForUpdate: true },
+  },
+  {
+    name: "primarycontactid",
+    alias: "primarycontactid",
+    displayName: "Primary Contact",
+    dataType: "Lookup.Simple",
+    metadata: {
+      IsValidForUpdate: true,
+      Targets: ["contact"],
+    },
+  },
+];
+```
+
 ### `metadata`
 
 `metadata` is the minimal record-level metadata object:
@@ -95,6 +119,19 @@ That means:
 - option sets and formatted values can follow the same Dataverse conventions if you already have them available
 
 So the form runtime should be treated as consuming a Dataverse-like record object, not a custom remapped view model.
+
+Example:
+
+```ts
+const data = {
+  accountid: "11111111-1111-1111-1111-111111111111",
+  name: "Contoso Ltd.",
+  telephone1: "+420 123 456 789",
+  "_primarycontactid_value": "22222222-2222-2222-2222-222222222222",
+  "_primarycontactid_value@OData.Community.Display.V1.FormattedValue": "Adele Vance",
+  "_primarycontactid_value@Microsoft.Dynamics.CRM.lookuplogicalname": "contact",
+};
+```
 
 ## Layout and responsiveness
 
