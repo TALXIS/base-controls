@@ -175,6 +175,20 @@ Useful callbacks:
 - `onDirtyStateChanged(isDirty)`
 - `onError(error, message)`
 
+### `Form.Control`
+
+`Form.Control` is the default bound field renderer.
+
+When used inside a `Form.Field`, it currently resolves a matching Base Control from the bound field data type and connects that control to the field value, formatted value, validation state, and disabled state.
+
+In practice, that means `Form.Control` is the runtime bridge between:
+
+- the field metadata/data type
+- the in-memory form field value
+- the matching Base Control implementation used to edit that field
+
+It is intended for the standard “pick the correct control for this field” path, while custom rendering can still be done by composing your own field content instead of using `Form.Control`.
+
 ### `Form.Ribbon`
 
 `Form.Ribbon` renders the built-in command bar for save interactions.
