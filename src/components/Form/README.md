@@ -175,6 +175,43 @@ Useful callbacks:
 - `onDirtyStateChanged(isDirty)`
 - `onError(error, message)`
 
+### `Form.Ribbon`
+
+`Form.Ribbon` renders the built-in command bar for save interactions.
+
+It:
+
+- triggers `form.save()` by default
+- reflects save lifecycle states such as saving and saved
+- shows the built-in unsaved-changes indicator when the form is dirty
+- can be overridden with a custom `onSave`
+
+```tsx
+<Form.Ribbon />
+```
+
+### `Form.Notifications`
+
+`Form.Notifications` renders form-level notifications.
+
+It merges:
+
+- messages passed directly through its `messages` prop
+- validation-summary messages produced by the form runtime
+
+That makes it the default place to surface validation problems discovered during save or from custom validation fed through `Form.Field`.
+
+```tsx
+<Form.Notifications
+  messages={[
+    {
+      text: "This form is in review mode.",
+      level: "INFO",
+    },
+  ]}
+/>
+```
+
 ### `IFormApi`
 
 The imperative API surfaced by `onFormReady` currently allows you to:
