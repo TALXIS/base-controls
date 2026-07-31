@@ -124,7 +124,7 @@ const Example = () => {
   const [activeTab, setActiveTab] = React.useState("general");
 
   return (
-    <Form.Tabs expandedTab={activeTab} onChangeTab={setActiveTab}>
+    <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
       <Form.Tab id="general" label="General">
         {/* ... */}
       </Form.Tab>

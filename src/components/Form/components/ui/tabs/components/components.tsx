@@ -3,7 +3,7 @@ import { Pivot } from "./pivot";
 export interface ITabsComponentProps {
     children: React.ReactNode;
     expandedTab: string;
-    onChangeTab: (tabId: string) => void;
+    onTabChange: (tabId: string) => void;
 }
 
 export interface ITabsComponents {

@@ -17,7 +17,7 @@ export const Pivot = (props: ITabsComponentProps) => {
             root: styles.pivot,
             itemContainer: styles.itemContainer
         }}
-        onLinkClick={(item) => props.onChangeTab?.(item?.props.itemKey!)}>
+        onLinkClick={(item) => props.onTabChange?.(item?.props.itemKey!)}>
         {childrenArray.map(child => {
             if (!child.props.id) throw new Error("Tab child is missing required 'id' prop");
             return <PivotItem
