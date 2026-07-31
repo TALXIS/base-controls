@@ -30,10 +30,13 @@ export class FormXmlSection implements IFormXmlSection {
 
     private _cells: IFormXmlCell[] = [];
     private _customLabel?: string;
+    //the xsd has columns as number (1, 11, 111...)
+    private _columnsString: string;
 
     constructor(section: MetadataFormXmlSection, formXmlModel: IFormXmlModel) {
         Object.assign(this, section);
         this.formXmlModel = formXmlModel;
+        this._columnsString = section.columns?.toString() ?? '1';
         this._cells = section.rows?.row?.flatMap(row => row.cell?.map(cell => new FormXmlCell(cell, formXmlModel)) ?? []) ?? [];
         this._registerCellEvents(this._cells);
     }
@@ -56,7 +59,7 @@ export class FormXmlSection implements IFormXmlSection {
     }
 
     public getNumberOfColumns(): number {
-        return this.columns?.length ?? 1;
+        return this._columnsString.length;
     }
 
     public setVisible(visible: boolean): void {

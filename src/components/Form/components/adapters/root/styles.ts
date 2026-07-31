@@ -11,6 +11,7 @@ export const getFormStyles = () => {
         form: {
             ...FLEX_STYLES,
             gap: 12,
+            textAlign: 'left'
         }
     })
 }
