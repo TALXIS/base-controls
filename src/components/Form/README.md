@@ -2,18 +2,12 @@
 
 `Form` is the React-composed form runtime for building record-driven forms from layout components and a load/save strategy.
 
-It gives you:
+It provides:
 
 - a declarative component model: `Form.Root`, `Form.Tabs`, `Form.Tab`, `Form.Section`, `Form.Field`, `Form.Control`, ...
 - built-in record binding through `Form.Field`
 - built-in save flow, notifications, validation summary, and dirty tracking
 - public events and an imperative `IFormApi` for external React orchestration
-
-It does **not** give you:
-
-- a ready-made persistence layer by itself; saving/loading comes from your strategy
-- arbitrary app-state management outside of the form model
-- automatic host/bootstrap setup beyond the small context-provider note below
 
 ## Default usage model
 
@@ -267,20 +261,4 @@ This is useful for:
 - rendering placeholders or skeleton structures
 - composing custom screens that should not depend on the form model
 
-These UI pieces do **not** provide field binding, save behavior, validation orchestration, or form events by themselves.
-
-## What this runtime can and cannot do
-
-### Good fit
-
-- record-driven React forms
-- responsive tab/column/section-based form layouts
-- strategy-based load/save pipelines
-- custom field validation layered on top of the built-in runtime
-- reacting to dirty state, validation summary, and save lifecycle in React
-
-### Not the goal
-
-- host/bootstrap documentation
-- non-record-oriented freeform state management
-- replacing your data source contract; the strategy still defines load/save behavior
+The UI layer is presentational. Form binding, save behavior, validation orchestration, and runtime events come from `Form.Root` and the adapter components.
