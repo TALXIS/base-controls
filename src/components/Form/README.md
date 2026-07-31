@@ -11,9 +11,9 @@ It gives you:
 
 It does **not** give you:
 
-- host-specific integration rules
-- full Xrm form-context compatibility
 - a ready-made persistence layer by itself; saving/loading comes from your strategy
+- arbitrary app-state management outside of the form model
+- automatic host/bootstrap setup beyond the small context-provider note below
 
 ## Default usage model
 
@@ -56,6 +56,88 @@ export const AccountForm = () => {
         </Form.Tab>
       </Form.Tabs>
     </Form.Root>
+  );
+};
+```
+
+## Layout and responsiveness
+
+The runtime is built around a small layout hierarchy:
+
+- `Form.Tabs` chooses the active tab
+- `Form.Tab` defines a responsive grid of columns
+- `Form.Column` represents one grid column and can span multiple responsive columns
+- `Form.Section` defines a responsive grid of cells within a column
+- `Form.Cell` is the per-field visual container
+
+### Tab layout
+
+`Form.Tab` uses width-based breakpoints to decide how many columns are rendered per row.
+
+Available breakpoints:
+
+- `lg`
+- `md`
+- `sm`
+- `xs`
+
+If you provide only `lg`, the remaining breakpoints are derived automatically:
+
+- `md` defaults to at most `3`
+- `sm` defaults to at most `2`
+- `xs` defaults to `1`
+
+Example:
+
+```tsx
+<Form.Tab id="general" label="General" layout={{ lg: 3, md: 2 }}>
+  <Form.Column>
+    {/* ... */}
+  </Form.Column>
+  <Form.Column colspan={2}>
+    {/* spans two columns when the active breakpoint allows it */}
+  </Form.Column>
+</Form.Tab>
+```
+
+### Section layout
+
+`Form.Section` uses the same breakpoint model for its inner cell grid.
+
+```tsx
+<Form.Section label="Details" layout={{ lg: 2, sm: 1 }}>
+  <Form.Field name="name">
+    <Form.Cell>
+      <Form.Control />
+    </Form.Cell>
+  </Form.Field>
+  <Form.Field name="phone">
+    <Form.Cell>
+      <Form.Control />
+    </Form.Cell>
+  </Form.Field>
+</Form.Section>
+```
+
+The number of rendered cells per row is recalculated from the current rendered width, so the same form can collapse naturally as its container gets narrower.
+
+### Tabs are controlled
+
+`Form.Tabs` is a controlled component. You provide the active tab id and handle tab changes yourself.
+
+```tsx
+const Example = () => {
+  const [activeTab, setActiveTab] = React.useState("general");
+
+  return (
+    <Form.Tabs expandedTab={activeTab} onChangeTab={setActiveTab}>
+      <Form.Tab id="general" label="General">
+        {/* ... */}
+      </Form.Tab>
+      <Form.Tab id="details" label="Details">
+        {/* ... */}
+      </Form.Tab>
+    </Form.Tabs>
   );
 };
 ```
@@ -192,13 +274,13 @@ These UI pieces do **not** provide field binding, save behavior, validation orch
 ### Good fit
 
 - record-driven React forms
+- responsive tab/column/section-based form layouts
 - strategy-based load/save pipelines
 - custom field validation layered on top of the built-in runtime
 - reacting to dirty state, validation summary, and save lifecycle in React
 
 ### Not the goal
 
-- full Microsoft Xrm compatibility
 - host/bootstrap documentation
 - non-record-oriented freeform state management
 - replacing your data source contract; the strategy still defines load/save behavior
