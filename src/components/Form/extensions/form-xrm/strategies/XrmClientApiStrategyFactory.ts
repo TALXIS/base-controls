@@ -1,7 +1,7 @@
 import { IOnSaveParams } from "@components/Form/stragegies";
 import { IColumn } from "@talxis/client-libraries";
 import { XrmMemoryStrategy } from "./XrmMemoryStrategy";
-import { IXrmFormStrategy } from "../components/xrm-form";
+import type { IXrmFormStrategy } from "../interfaces";
 
 export type ISaveResponse = { success: true } | { success: false, error: string };
 

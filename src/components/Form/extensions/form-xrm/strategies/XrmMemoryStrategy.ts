@@ -1,5 +1,5 @@
 import { IMemoryStrategyParams, MemoryStrategy } from "@components/Form/stragegies";
-import { IXrmFormStrategy } from "../components/xrm-form";
+import type { IXrmFormStrategy } from "../interfaces";
 
 interface IXrmMemoryStrategyParams extends IMemoryStrategyParams {
     onGetFormXml: () => string;

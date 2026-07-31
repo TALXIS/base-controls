@@ -5,23 +5,12 @@ import { initializeIcons } from "@fluentui/react";
 import { FormModel, IFormEvents } from '@components/Form/internal/FormModel';
 import { FormContext, FormLocalizationServiceContext } from "./context";
 import { getFormStyles } from "./styles";
-import { IFormStrategy } from "@components/Form/stragegies/interfaces";
 import React from "react";
 import { FormUi } from "@components/Form/components/ui";
 import { FormApi } from "@components/Form/internal/FormApi";
-import { IFormApi } from "@components/Form/interfaces";
-import { FORM_LABELS, IFormLabels } from "@components/Form/labels";
+import { IFormAfterSaveParams, IFormProps, IValidation } from "@components/Form/interfaces";
+import { FORM_LABELS } from "@components/Form/labels";
 import { LocalizationService } from "@utils";
-
-export interface IFormProps {
-    strategy: IFormStrategy;
-    children?: React.ReactNode;
-    onBeforeSave?: IFormEvents['onBeforeSave'];
-    onAfterSave?: IFormEvents['onAfterSave'];
-    onError?: IFormEvents['onError'];
-    onFormReady?: (api: IFormApi) => void;
-    labels?: Partial<IFormLabels>;
-}
 
 export const Root = (props: IFormProps) => {
     const { strategy } = props;
@@ -73,12 +62,13 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     const id = record.getRecordId();
     const styles = useMemo(() => getFormStyles(), []);
 
-    useEventEmitter<IFormEvents>(form.events, 'onAfterSave', props?.onAfterSave ?? (() => { }));
-    useEventEmitter<IFormEvents>(form.events, 'onBeforeSave', props?.onBeforeSave ?? (() => { }));
-    useEventEmitter<IFormEvents>(form.events, 'onError', (error: any, message: string) => {
-        props?.onError?.(error, message);
-    });
+    useEventEmitter<IFormEvents>(form.events, 'onAfterSave', (params: IFormAfterSaveParams) => props.onAfterSave?.(params));
+    useEventEmitter<IFormEvents>(form.events, 'onBeforeSave', () => props.onBeforeSave?.());
+    useEventEmitter<IFormEvents>(form.events, 'onDirtyStateChanged', (isDirty: boolean) => props.onDirtyStateChanged?.(isDirty));
+    useEventEmitter<IFormEvents>(form.events, 'onError', (error: any, message: string) => props.onError?.(error, message));
+    useEventEmitter<IFormEvents>(form.events, 'onFieldValueChanged', (fieldName: string, newValue: any) => props.onFieldValueChanged?.(fieldName, newValue));
     useEventEmitter(form.events, 'onRefreshRequested', onRefreshRequested);
+    useEventEmitter<IFormEvents>(form.events, 'onValidationSummaryChanged', (validationSummary: IValidation[]) => props.onValidationSummaryChanged?.(validationSummary));
 
     React.useEffect(() => {
         onFormReady?.(formApi);

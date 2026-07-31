@@ -1,3 +1,7 @@
+import type { IFormApi, IFormEventHandlers } from "@components/Form/interfaces";
+import type { IFormLabels } from "@components/Form/labels";
+import type { IFormStrategy } from "@components/Form/stragegies";
+
 export interface IXrmSectionContext {
     getName(): string;
     getLabel(): string;
@@ -105,4 +109,19 @@ export interface IXrmFormContext {
     readonly ui: IXrmUiContext;
     getAttribute(nameOrIndexOrDelegate?: any): any;
     getControl(nameOrIndexOrDelegate?: any): any;
+}
+
+export interface IXrmFormStrategy extends IFormStrategy {
+    onGetFormXml: () => string;
+}
+
+export interface IOnXrmFormReadyParams {
+    formContext: IXrmFormContext;
+    api: IFormApi;
+}
+
+export interface IXrmFormProps extends Partial<IFormEventHandlers> {
+    strategy: IXrmFormStrategy;
+    onFormReady?: (params: IOnXrmFormReadyParams) => void;
+    labels?: Partial<IFormLabels>;
 }

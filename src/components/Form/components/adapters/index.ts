@@ -11,5 +11,5 @@ export { Cell } from './cell';
 export { Skeleton } from '../ui/skeleton';
 export type { ICellProps } from '../ui';
 export { Root as FormRoot, RootInternal as FormInternal } from './root';
-export type { IFormProps } from './root';
+export type { IFormProps } from '@components/Form/interfaces';
 export { useValidationSummary } from './root';

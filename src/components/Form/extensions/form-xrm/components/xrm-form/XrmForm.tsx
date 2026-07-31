@@ -2,10 +2,8 @@ import { FormXmlForm } from '@components/Form/extensions/form-xrm/internal/form-
 import { Form } from "@components/Form/components/Form";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
-import { IFormStrategy } from "@components/Form/stragegies";
 import React from "react";
-import { IFormEvents } from '@components/Form/internal/FormModel';
-import type { IXrmFormContext } from '@components/Form/extensions/form-xrm/interfaces';
+import type { IXrmFormContext, IXrmFormProps } from '@components/Form/extensions/form-xrm/interfaces';
 import type { IXrmFormContextInternal } from '@components/Form/extensions/form-xrm/internal/xrm-context/XrmFormContext';
 import { createXrmFormContext } from '@components/Form/extensions/form-xrm/internal/xrm-context/XrmFormContext';
 import { XrmNotifications } from '../xrm-notifications';
@@ -14,24 +12,6 @@ import { XrmTabs } from '../xrm-tabs';
 import { XrmRibbon } from '../xrm-ribbon';
 import { IFormApi } from '@components/Form/interfaces';
 import { IFormApiInternal } from '@components/Form/internal/FormApi';
-import { IFormLabels } from '@components/Form/labels';
-
-export interface IXrmFormStrategy extends IFormStrategy {
-    //will run after onload
-    onGetFormXml: () => string;
-}
-
-export interface IOnFormReadyParams {
-    formContext: IXrmFormContext;
-    api: IFormApi;
-}
-
-interface IXrmFormProps {
-    strategy: IXrmFormStrategy;
-    onFormReady?: (params: IOnFormReadyParams) => void;
-    onAfterSave?: IFormEvents["onAfterSave"];
-    labels?: Partial<IFormLabels>;
-}
 
 
 export const XrmForm = (props: IXrmFormProps) => {
@@ -47,7 +27,17 @@ export const XrmForm = (props: IXrmFormProps) => {
         props.onFormReady?.({ formContext, api });
     }
 
-    return <Form.Root strategy={strategy} onFormReady={onFormReady} onAfterSave={props.onAfterSave} labels={props.labels}>
+    return <Form.Root
+        strategy={strategy}
+        onAfterSave={props.onAfterSave}
+        onBeforeSave={props.onBeforeSave}
+        onDirtyStateChanged={props.onDirtyStateChanged}
+        onError={props.onError}
+        onFieldValueChanged={props.onFieldValueChanged}
+        onFormReady={onFormReady}
+        onValidationSummaryChanged={props.onValidationSummaryChanged}
+        labels={props.labels}
+    >
         {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} />}
     </Form.Root>
 }

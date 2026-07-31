@@ -1,4 +1,4 @@
-import type { IXrmFormStrategy } from '../../components/xrm-form/XrmForm';
+import type { IXrmFormStrategy } from '../../interfaces';
 import type { IXrmFormContext } from '../../interfaces';
 import { IFormConfig, XrmClientApiStrategyFactory } from '../../strategies/XrmClientApiStrategyFactory';
 import type { IFormLabels } from '@components/Form/labels';

@@ -2,23 +2,15 @@ import { EventEmitter, IEventEmitter, IField, IFieldValidationResult, IMemoryPro
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { IFormStrategy, IOnLoadResult } from "../stragegies/interfaces";
 import { ErrorHelper } from "@utils";
+import { IFormAfterSaveParams, IFormEventHandlers, IValidation } from "../interfaces";
 
 export interface IFormParams {
     deps: IOnLoadResult;
     strategy: IFormStrategy;
 }
 
-interface onAfterSaveParams {
-    success: boolean;
-}
-
-export interface IFormEvents {
-    onFieldValueChanged: (fieldName: string, newValue: any) => void;
-    onValidationSummaryChanged: (validationSummary: IValidation[]) => void;
-    onError: (error: any, message: string) => void;
-    onBeforeSave: () => void;
+export interface IFormEvents extends IFormEventHandlers {
     onRefreshRequested: () => void;
-    onAfterSave: (params: onAfterSaveParams) => void;
     onDestroy: () => void;
 }
 
@@ -50,10 +42,6 @@ export interface IForm {
     setFieldValid: (fieldName: string, validation: IFieldValidationResult) => void;
 }
 
-export interface IValidation extends IFieldValidationResult {
-    fieldName?: string;
-}
-
 export class FormModel implements IForm {
     public readonly events: EventEmitter<IFormEvents> = new EventEmitter<IFormEvents>();
     private _record: IRecord;
@@ -64,11 +52,13 @@ export class FormModel implements IForm {
     private _validationExpressions: Map<string, () => IFieldValidationResult> = new Map();
     private _requiredLevelExpressions: Map<string, () => Xrm.Attributes.RequirementLevel> = new Map();
     private _disabledExpressions: Map<string, () => boolean> = new Map();
+    private _isDirty: boolean = false;
 
     constructor(params: IFormParams) {
         this._strategy = params.strategy;
         this._dataProvider = this._createDataProvider(params.deps);
         this._record = this._dataProvider.getRecords()[0];
+        this._isDirty = this.isDirty();
         this._registerEventHandlers();
     }
 
@@ -149,14 +139,14 @@ export class FormModel implements IForm {
                 this._createValidationSummaryFromDirtyFields(dirtyFields);
 
                 if (this._validationSummary.length > 0) {
-                    this.events.dispatchEvent('onAfterSave', { success: false });
+                    this._dispatchAfterSave({ success: false });
                     return;
                 }
 
                 const changedData = this._getChangedData(dirtyFields);
 
                 if (await blocker?.()) {
-                    this.events.dispatchEvent('onAfterSave', { success: false });
+                    this._dispatchAfterSave({ success: false });
                     return;
                 }
 
@@ -167,14 +157,15 @@ export class FormModel implements IForm {
 
                 if (!saveResult.success) {
                     this._createValidationSummaryFromSaveResult(saveResult);
-                    this.events.dispatchEvent('onAfterSave', { success: false });
+                    this._dispatchAfterSave({ success: false });
                     return;
                 }
 
                 await this._record.save();
                 this._registerExistingExpressions();
                 this._createValidationSummaryFromDirtyFields(this._getDirtyFields());
-                this.events.dispatchEvent('onAfterSave', { success: true });
+                this._dispatchDirtyStateIfChanged();
+                this._dispatchAfterSave({ success: true });
             },
             onError: (error, message) => {
                 this.events.dispatchEvent('onError', error, message);
@@ -224,6 +215,19 @@ export class FormModel implements IForm {
 
     private _handleFieldValueChanged = (fieldName: string, newValue: any): void => {
         this.events.dispatchEvent('onFieldValueChanged', fieldName, newValue);
+        this._dispatchDirtyStateIfChanged();
+    }
+
+    private _dispatchAfterSave(params: IFormAfterSaveParams): void {
+        this.events.dispatchEvent('onAfterSave', params);
+    }
+
+    private _dispatchDirtyStateIfChanged(): void {
+        const isDirty = this.isDirty();
+        if(this._isDirty === isDirty) return;
+
+        this._isDirty = isDirty;
+        this.events.dispatchEvent('onDirtyStateChanged', isDirty);
     }
 
     private _registerExistingExpressions(): void {
