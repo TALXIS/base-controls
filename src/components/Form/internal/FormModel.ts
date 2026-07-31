@@ -136,7 +136,7 @@ export class FormModel implements IForm {
                 this.events.dispatchEvent('onBeforeSave');
 
                 const dirtyFields = this._getDirtyFields();
-                this._createValidationSummaryFromDirtyFields(dirtyFields);
+                this._createValidationSummaryFromFields(this.getFields());
 
                 if (this._validationSummary.length > 0) {
                     this._dispatchAfterSave({ success: false });
@@ -163,7 +163,7 @@ export class FormModel implements IForm {
 
                 await this._record.save();
                 this._registerExistingExpressions();
-                this._createValidationSummaryFromDirtyFields(this._getDirtyFields());
+                this._createValidationSummaryFromFields(this.getFields());
                 this._dispatchDirtyStateIfChanged();
                 this._dispatchAfterSave({ success: true });
             },
@@ -251,8 +251,8 @@ export class FormModel implements IForm {
         return this._record.getFields().filter(field => field.isDirty());
     }
 
-    private _createValidationSummaryFromDirtyFields(dirtyFields: IField[]): void {
-        this._validationSummary = dirtyFields
+    private _createValidationSummaryFromFields(fields: IField[]): void {
+        this._validationSummary = fields
             .map(field => {
                 return {
                     fieldName: field.getColumn().name,
