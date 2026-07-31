@@ -3,7 +3,6 @@ import type { IXrmDataContextInternal, IXrmFormContextInternal } from "./XrmForm
 import { XrmAttribute } from "./XrmAttribute";
 import { XrmEntity } from "./XrmEntity";
 import { makeItemCollection } from "./collection";
-import { notImplemented } from "./utils";
 
 export class XrmData implements IXrmDataContextInternal {
     public readonly entity: XrmEntity;
@@ -33,9 +32,8 @@ export class XrmData implements IXrmDataContextInternal {
         return this.entity.save(saveOptions);
     }
 
-    public refresh(save?: boolean): Xrm.Async.PromiseLike<any> {
-        void save;
-        notImplemented("data.refresh");
+    public async refresh(save?: boolean): Promise<void> {
+        this._formContext.getFormXmlModel().getForm().refresh();
     }
 
     public addOnLoad(handler: Xrm.Events.DataLoadEventHandler): void {

@@ -66,16 +66,10 @@ export interface IXrmAttributeContext {
     getRequiredLevel(): Xrm.Attributes.RequirementLevel;
     /** Updates the required level. */
     setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void;
-    /** Adds an option to option-based attributes. */
-    addOption(option: { value: number; text?: string }, index?: number): void;
-    /** Removes an option from option-based attributes. */
-    removeOption(value: number): void;
     /** Indicates whether the attribute is dirty. */
     getIsDirty(): boolean;
     /** Returns the submit mode. */
     getSubmitMode(): Xrm.SubmitMode;
-    /** Updates the submit mode. */
-    setSubmitMode(mode: Xrm.SubmitMode): void;
     /** Fires the change handlers for the attribute. */
     fireOnChange(): void;
     /** Subscribes to attribute change notifications. */
@@ -110,12 +104,6 @@ export interface IXrmControlContext {
     getAttribute(): IXrmAttributeContext | null;
     /** Returns the control type. */
     getControlType(): Xrm.Controls.ControlType;
-    /** Focuses the control. */
-    focus(): void;
-    /** Adds a control notification. */
-    addNotification(notification: any): void;
-    /** Clears a control notification. */
-    clearNotification(uniqueId?: string): void;
 }
 
 /**
@@ -158,8 +146,8 @@ export interface IXrmDataContext {
     isValid(): boolean;
     /** Triggers a save through the base Form runtime. */
     save(saveOptions?: Xrm.SaveOptions): Promise<void>;
-    /** Refreshes the underlying form runtime. */
-    refresh(save?: boolean): Xrm.Async.PromiseLike<any>;
+    /** Refreshes the underlying form runtime. The save parameter is currently ignored. */
+    refresh(save?: boolean): Promise<void>;
     /** Subscribes to data-load handlers. */
     addOnLoad(handler: Xrm.Events.DataLoadEventHandler): void;
     /** Unsubscribes from data-load handlers. */
@@ -186,14 +174,6 @@ export interface IXrmUiContext {
     readonly quickForms: any;
     /** Returns the current form type. */
     getFormType(): XrmEnum.FormType;
-    /** Returns the viewport height. */
-    getViewPortHeight(): number;
-    /** Returns the viewport width. */
-    getViewPortWidth(): number;
-    /** Requests ribbon refresh. */
-    refreshRibbon(refreshAll?: boolean): void;
-    /** Overrides the runtime form entity name. */
-    setFormEntityName(name: string): void;
     /** Subscribes to UI load handlers. */
     addOnLoad(handler: Xrm.Events.ContextSensitiveHandler): void;
     /** Unsubscribes from UI load handlers. */
@@ -202,14 +182,12 @@ export interface IXrmUiContext {
     setFormNotification(message: string, level: 'ERROR' | 'WARNING' | 'INFO', uniqueId: string): boolean;
     /** Clears a form-level notification. */
     clearFormNotification(uniqueId: string): boolean;
-    /** Requests the host to close the form. */
-    close(): void;
 }
 
 /**
- * Curated Xrm-like form context exposed by `XrmForm`.
+ * Microsoft form-context-compatible public context exposed by `XrmForm`.
  *
- * This is intentionally a subset of the broader Microsoft Xrm form context API.
+ * This is intentionally the documented subset of the broader Microsoft form context API.
  */
 export interface IXrmFormContext {
     /** Data API for the current form. */
@@ -227,7 +205,7 @@ export interface IXrmFormContext {
  */
 export interface IXrmFormStrategy extends IFormStrategy {
     /**
-     * Returns the FormXml definition used to build the Xrm-like layout model.
+     * Returns the FormXml definition used to build the form layout model.
      */
     onGetFormXml: () => string;
 }
@@ -236,7 +214,7 @@ export interface IXrmFormStrategy extends IFormStrategy {
  * Payload delivered when `XrmForm` becomes ready.
  */
 export interface IOnXrmFormReadyParams {
-    /** Public Xrm-like form context. */
+    /** Public form context surface. */
     formContext: IXrmFormContext;
     /** Base Form imperative API. */
     api: IFormApi;
@@ -248,7 +226,7 @@ export interface IOnXrmFormReadyParams {
 export interface IXrmFormProps extends Partial<IFormEventHandlers> {
     /** Strategy responsible for loading/saving the record and supplying FormXml. */
     strategy: IXrmFormStrategy;
-    /** Fired when the Xrm-like runtime and the base Form API are ready. */
+    /** Fired when the form context runtime and the base Form API are ready. */
     onFormReady?: (params: IOnXrmFormReadyParams) => void;
     /** Localized label overrides for the base Form UI. */
     labels?: Partial<IFormLabels>;

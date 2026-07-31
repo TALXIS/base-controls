@@ -1,11 +1,11 @@
 # XrmForm
 
-`XrmForm` builds on top of the base `Form` runtime and adds a curated Xrm-like form context plus FormXml-driven layout.
+`XrmForm` builds on top of the base `Form` runtime and adds a Microsoft form-context-compatible runtime surface plus FormXml-driven layout.
 
 It provides:
 
 - the base React Form runtime
-- an Xrm-shaped runtime surface (`formContext`, `data`, `ui`, attributes, tabs, controls, save hooks)
+- a Microsoft form-context-compatible runtime surface (`formContext`, `data`, `ui`, attributes, tabs, controls, save hooks)
 - FormXml-driven layout behavior
 - a public `IXrmFormContext`
 - `onFormReady({ formContext, api })`
@@ -64,7 +64,7 @@ This runtime differs slightly from the usual Xrm mental model around form-load t
 
 When `onFormReady({ formContext, api })` fires in form, the form is already fully loaded together with its data. That means the exposed `formContext` is ready for data access, attribute access, UI work, and event subscription immediately.
 
-In practice, this makes `onFormReady` the main point where you can start working with the Xrm-like runtime surface.
+In practice, this makes `onFormReady` the main point where you can start working with the form context runtime surface.
 
 ## Public form context surface
 
@@ -94,7 +94,8 @@ onFormReady={({ formContext }) => {
   - entity save hooks
   - attribute collection
   - dirty/valid checks
-  - refresh/save forwarding
+  - save forwarding
+  - refresh forwarding
 - `formContext.ui`
   - tabs and controls
   - form notifications
@@ -103,9 +104,11 @@ onFormReady={({ formContext }) => {
 
 The documented interfaces in `interfaces.ts` are the public contract. The context also exposes reserved surfaces such as `process`, `navigation`, `quickForms`, `formSelector`, and `footerSection` where those runtime shapes are part of the current API.
 
+Execution-context support is currently very limited. In most handlers it is effectively an empty object. The main meaningful execution-context behavior today is in entity save handlers, where you can call `executionContext.getEventArgs().preventDefault()` to stop the save.
+
 ## Relationship to Microsoft documentation
 
-The API shape is inspired by the Microsoft model-driven app Client API, especially the form context model:
+The exported API is meant to work in the same way as the Microsoft model-driven app form context for the documented surface, especially around the form context model:
 
 - [formContext reference](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext)
 - [formContext.data](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-data)
