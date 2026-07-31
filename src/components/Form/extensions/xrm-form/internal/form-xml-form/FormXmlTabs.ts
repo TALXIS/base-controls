@@ -47,8 +47,10 @@ export class FormXmlTabs implements IFormXmlTabs {
             return;
         }
 
-        expandedTab.expanded = false;
+        const allExpandedTabs = this.tab.filter(tab => tab.getExpanded());
+        allExpandedTabs.map(tab => tab.expanded = false);
         newExpandedTab.expanded = true;
+        
         this.events.dispatchEvent("onTabFocusChanged", expandedTab.id, false);
         this.events.dispatchEvent("onTabFocusChanged", newExpandedTab.id, true);
         this.events.dispatchEvent("onExpandedTabChanged", newExpandedTab.id);
