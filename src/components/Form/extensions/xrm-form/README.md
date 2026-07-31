@@ -21,6 +21,8 @@ import { PcfContextProvider } from "@talxis/base-controls";
 </PcfContextProvider>
 ```
 
+Lookup fields currently only work in environments where `window.Xrm` is available, for example when the form is wrapped as a PCF in a model-driven app.
+
 ## Basic usage
 
 ```tsx
@@ -157,23 +159,11 @@ onFormReady={({ formContext }) => {
 }}
 ```
 
-`formContext` exposes the expected top-level entry points such as `data`, `ui`, `getAttribute(...)`, and `getControl(...)`.
+`formContext` exposes the expected top-level entry points such as `data`, `ui`, `getAttribute(...)`, and `getControl(...)`. For the broader conceptual model, see the Microsoft docs for [formContext](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/clientapi-form-context), [formContext.data](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-data), [formContext.ui](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-ui), [attribute methods](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/attributes), and [control methods](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/controls).
 
 The documented interfaces in `interfaces.ts` are the public contract. The context also exposes reserved surfaces such as `process`, `navigation`, `quickForms`, `formSelector`, and `footerSection` where those runtime shapes are part of the current API.
 
 Execution-context support is currently very limited. In most handlers it is effectively an empty object. The main meaningful execution-context behavior today is in entity save handlers, where you can call `executionContext.getEventArgs().preventDefault()` to stop the save.
-
-## Relationship to Microsoft documentation
-
-The exported API is meant to work in the same way as the Microsoft model-driven app form context for the documented surface, especially around the form context model:
-
-- [formContext reference](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/clientapi-form-context)
-- [formContext.data](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-data)
-- [formContext.ui](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-ui)
-- [attribute methods](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/attributes)
-- [control methods](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/controls)
-
-Use those Microsoft docs as conceptual background, but treat this package’s exported interfaces as the authoritative list of what is actually available here.
 
 ## Public React events
 

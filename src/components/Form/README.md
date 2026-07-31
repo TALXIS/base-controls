@@ -232,6 +232,8 @@ import { PcfContextProvider } from "@talxis/base-controls";
 
 When you are not inside a PCF host, omit `context` and optionally provide fallback user settings through the provider.
 
+Lookup fields currently only work in environments where `window.Xrm` is available, for example when the form is wrapped as a PCF in a model-driven app.
+
 ## Public runtime API
 
 ### `Form.Root`
