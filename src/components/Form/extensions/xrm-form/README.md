@@ -1,15 +1,6 @@
 # XrmForm
 
-`XrmForm` builds on top of the base `Form` runtime and adds a Microsoft form-context-compatible runtime surface plus FormXml-driven layout.
-
-It provides:
-
-- the base React Form runtime
-- a Microsoft form-context-compatible runtime surface (`formContext`, `data`, `ui`, attributes, tabs, controls, save hooks)
-- FormXml-driven layout behavior
-- a public `IXrmFormContext`
-- `onFormReady({ formContext, api })`
-- `strategy.onGetFormXml()`
+`XrmForm` builds on top of the base `Form` runtime, exposes a Microsoft form-context-compatible `formContext`, and is meant to be manipulated in the same fashion as an MDA form while using FormXml-driven layout.
 
 ## What `XrmForm` adds
 
@@ -88,19 +79,7 @@ onFormReady={({ formContext }) => {
 }}
 ```
 
-### Available top-level members
-
-- `formContext.data`
-  - entity save hooks
-  - attribute collection
-  - dirty/valid checks
-  - save forwarding
-  - refresh forwarding
-- `formContext.ui`
-  - tabs and controls
-  - form notifications
-- `formContext.getAttribute(...)`
-- `formContext.getControl(...)`
+`formContext` exposes the expected top-level entry points such as `data`, `ui`, `getAttribute(...)`, and `getControl(...)`.
 
 The documented interfaces in `interfaces.ts` are the public contract. The context also exposes reserved surfaces such as `process`, `navigation`, `quickForms`, `formSelector`, and `footerSection` where those runtime shapes are part of the current API.
 
