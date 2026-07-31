@@ -49,6 +49,48 @@ export const AccountXrmForm = () => {
 };
 ```
 
+## Record contract: columns, metadata, and data
+
+The strategy behind the form is still driven by:
+
+- `columns`
+- `metadata`
+- `data`
+
+### `columns`
+
+`columns` is the field-definition array for the record. Each item describes one available field, its logical name, display name, and data type.
+
+This should follow the same `IColumn[]` field shape used across the Base Controls ecosystem.
+
+### `metadata`
+
+`metadata` is the minimal record-level metadata object:
+
+```ts
+{
+  PrimaryIdAttribute: string;
+  PrimaryNameAttribute: string;
+}
+```
+
+`PrimaryIdAttribute` identifies the record id field and `PrimaryNameAttribute` identifies the primary text field.
+
+### `data`
+
+`data` is the current record payload. Its structure should match the Dataverse record shape you normally get from a retrieve operation.
+
+That means:
+
+- direct field values are stored under their logical names
+- lookup values use the usual Dataverse lookup conventions, for example:
+  - `_primarycontactid_value`
+  - `_primarycontactid_value@OData.Community.Display.V1.FormattedValue`
+  - `_primarycontactid_value@Microsoft.Dynamics.CRM.lookuplogicalname`
+- formatted values and option-set values can stay in their Dataverse-style structure
+
+So even though the layout is FormXml-driven, the underlying record payload should still be treated as a Dataverse-shaped record object.
+
 ## Loading lifecycle note
 
 This runtime differs slightly from the usual Xrm mental model around form-load timing.

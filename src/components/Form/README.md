@@ -54,6 +54,48 @@ export const AccountForm = () => {
 };
 ```
 
+## Record contract: columns, metadata, and data
+
+The form runtime is driven by three related inputs from the strategy:
+
+- `columns`
+- `metadata`
+- `data`
+
+### `columns`
+
+`columns` is the field-definition array for the record. Each item describes one field that the form can bind to, including its logical name, display name, and data type.
+
+In practice, this should follow the same field/column shape you already use elsewhere in the Base Controls ecosystem through `IColumn[]`.
+
+### `metadata`
+
+`metadata` is the minimal record-level metadata object:
+
+```ts
+{
+  PrimaryIdAttribute: string;
+  PrimaryNameAttribute: string;
+}
+```
+
+`PrimaryIdAttribute` identifies the record id field and `PrimaryNameAttribute` identifies the primary text field for the record.
+
+### `data`
+
+`data` is the actual record payload for the current row. Its structure should match what you typically get back from Dataverse when retrieving a record.
+
+That means:
+
+- regular scalar fields are stored under their logical names
+- lookups use the Dataverse lookup payload shape, for example:
+  - `_primarycontactid_value`
+  - `_primarycontactid_value@OData.Community.Display.V1.FormattedValue`
+  - `_primarycontactid_value@Microsoft.Dynamics.CRM.lookuplogicalname`
+- option sets and formatted values can follow the same Dataverse conventions if you already have them available
+
+So the form runtime should be treated as consuming a Dataverse-like record object, not a custom remapped view model.
+
 ## Layout and responsiveness
 
 The runtime is built around a small layout hierarchy:
@@ -183,7 +225,7 @@ When used inside a `Form.Field`, it currently resolves a matching Base Control f
 
 In practice, that means `Form.Control` is the runtime bridge between:
 
-- the field metadata/data type
+- the field data type
 - the in-memory form field value
 - the matching Base Control implementation used to edit that field
 
