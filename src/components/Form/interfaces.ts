@@ -1,7 +1,7 @@
 import { IFieldValidationResult } from "@talxis/client-libraries";
 import type { ReactNode } from "react";
 import type { IFormLabels } from "./labels";
-import type { IFormStrategy } from "./stragegies/interfaces";
+import type { IFormStrategy } from "./strategies/interfaces";
 
 /**
  * Minimal public field API exposed through {@link IFormApi}.

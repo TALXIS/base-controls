@@ -1,4 +1,4 @@
-import { IMemoryStrategyParams, MemoryStrategy } from "@components/Form/stragegies";
+import { IMemoryStrategyParams, MemoryStrategy } from "@components/Form/strategies";
 import type { IXrmFormStrategy } from "../interfaces";
 
 interface IXrmMemoryStrategyParams extends IMemoryStrategyParams {

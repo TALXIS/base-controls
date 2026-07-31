@@ -1,4 +1,4 @@
-import { IOnSaveParams } from "@components/Form/stragegies";
+import { IOnSaveParams } from "@components/Form/strategies";
 import { IColumn } from "@talxis/client-libraries";
 import { XrmMemoryStrategy } from "./XrmMemoryStrategy";
 import type { IXrmFormStrategy } from "../interfaces";

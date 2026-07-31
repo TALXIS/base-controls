@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { IOnLoadResult } from "@components/Form/stragegies/interfaces";
+import { IOnLoadResult } from "@components/Form/strategies/interfaces";
 import { useEventEmitter } from "@hooks";
 import { initializeIcons } from "@fluentui/react";
 import { FormModel, IFormEvents } from '@components/Form/internal/FormModel';

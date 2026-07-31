@@ -5,4 +5,4 @@ export * from './interfaces';
 export * from './hooks';
 export * from './labels';
 export * from './extensions/form-xrm';
-export * from './stragegies';
+export * from './strategies';

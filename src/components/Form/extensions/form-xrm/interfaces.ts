@@ -1,6 +1,6 @@
 import type { IFormApi, IFormEventHandlers } from "@components/Form/interfaces";
 import type { IFormLabels } from "@components/Form/labels";
-import type { IFormStrategy } from "@components/Form/stragegies";
+import type { IFormStrategy } from "@components/Form/strategies";
 
 /**
  * Public Xrm section context exposed by `XrmForm`.
@@ -59,7 +59,7 @@ export interface IXrmAttributeContext {
     /** Updates the current in-memory value. */
     setValue(value: any): void;
     /** Applies a validation result to the attribute. */
-    setIsValid(bool: boolean, message?: string): void;
+    setIsValid(isValid: boolean, message?: string): void;
     /** Returns the Xrm attribute type. */
     getAttributeType(): Xrm.Attributes.AttributeType;
     /** Returns the current required level. */

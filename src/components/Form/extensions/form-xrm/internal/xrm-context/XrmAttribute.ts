@@ -32,9 +32,9 @@ export class XrmAttribute implements IXrmAttributeContext {
         this._getField().setValue(value);
     }
 
-    public setIsValid(bool: boolean, message?: string): void {
+    public setIsValid(isValid: boolean, message?: string): void {
         this._attribute.setValidation({
-            error: !bool,
+            error: !isValid,
             errorMessage: message ?? ''
         });
     }
