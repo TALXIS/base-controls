@@ -7,6 +7,7 @@ import { useSectionContext } from "../section";
 import { Layout } from "@components/Form/layout";
 
 export interface ICellProps {
+    id?: string;
     label?: string;
     colspan?: number;
     rowspan?: number;
@@ -41,7 +42,7 @@ export const Cell = (props: ICellProps) => {
         setDisabled(newDisabled);
     }, []);
 
-    return <div ref={containerRef} className={styles.cell} style={layoutStyle}>
+    return <div ref={containerRef} className={styles.cell} data-id={props.id ? `cell-${props.id}` : undefined} style={layoutStyle}>
         <DisabledContext.Provider value={{ onDisabledChange}}>
             {shouldRenderLabelWrapper &&
                 <div className={styles.labelWrapper}>

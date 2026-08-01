@@ -12,6 +12,7 @@ export const XrmSection = (props: IXrmSectionProps) => {
     const section = useSection(props.section);
 
     return <Form.Section
+        id={section.id ?? section.name ?? undefined}
         cellLabelPosition={section.getCellLabelPosition()}
         showLabel={section.showlabel}
         labelWidth={section.labelwidth}

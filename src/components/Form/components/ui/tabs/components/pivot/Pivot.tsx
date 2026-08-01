@@ -24,6 +24,7 @@ export const Pivot = (props: ITabsComponentProps) => {
                 className={styles.pivotItem}
                 itemKey={child.props.id}
                 headerText={child.props.label || child.props.id}
+                headerButtonProps={{ "data-id": `tab-header-${child.props.id}` }}
                 children={child}
             />;
         })}

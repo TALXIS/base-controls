@@ -7,6 +7,7 @@ export const XrmCell = ({ cell }: { cell: IFormXmlCell }) => {
     cell = useCell(cell);
 
     return <Form.Cell
+        id={cell.id ?? cell.control?.datafieldname ?? undefined}
         colspan={cell.colspan}
         rowspan={cell.rowspan}
         label={cell.getLabel() ?? undefined}>
