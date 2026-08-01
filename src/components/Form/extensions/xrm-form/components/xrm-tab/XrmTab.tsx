@@ -16,7 +16,7 @@ export const XrmTab = ({ tab, id, label }: { tab: IFormXmlTab, id: string, label
     }, [columns]);
 
     return <Form.Tab onColumnsPerRowChanged={onColumnsPerRowChanged} style={{ gridTemplateColumns: gridTemplateColumnsOverride }} key={tab.id} id={tab.id} label={tab.getLabel() ?? undefined}>
-        {columns.map((col, i) => <Form.Column key={i}>
+        {columns.map((col, i) => <Form.Column key={i} dataId={`column-${tab.id ?? id}-${i}`}>
             {col.getVisibleSections().map((section, i) => <XrmSection key={section.id ?? i} section={section} />)}
         </Form.Column>)}
     </Form.Tab>
