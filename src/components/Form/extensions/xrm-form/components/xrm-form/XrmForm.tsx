@@ -12,7 +12,7 @@ import { XrmTabs } from '../xrm-tabs';
 import { XrmRibbon } from '../xrm-ribbon';
 import { IFormApi } from '@components/Form/interfaces';
 import { IFormApiInternal } from '@components/Form/internal/FormApi';
-import { XrmControlComponentsContext } from '../xrm-control/context';
+import { XrmFormComponentsContext } from './context';
 
 
 export const XrmForm = (props: IXrmFormProps) => {
@@ -62,11 +62,11 @@ const XrmFormInternal = ({
 
     return <FormXmlContext.Provider value={formXmlModel}>
         <XrmFormContext.Provider value={xrmFormContext}>
-            <XrmControlComponentsContext.Provider value={components ?? null}>
+            <XrmFormComponentsContext.Provider value={components ?? null}>
                 <XrmRibbon />
                 <XrmNotifications />
                 <XrmTabs />
-            </XrmControlComponentsContext.Provider>
+            </XrmFormComponentsContext.Provider>
         </XrmFormContext.Provider>
     </FormXmlContext.Provider>
 }
