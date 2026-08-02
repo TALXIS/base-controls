@@ -7,7 +7,7 @@ interface ISectionStyleParams {
 }
 
 const SECTION_LAYOUT_GAP = 10;
-const SECTION_DEFAULT_ROW_HEIGHT = 12;
+const SECTION_DEFAULT_ROW_HEIGHT = 10;
 
 export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
     return mergeStyleSets({
