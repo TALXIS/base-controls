@@ -6,3 +6,4 @@ yalc.lock
 .yalc
 **/.DS_Store
 /stats.html
+/.playwright-cli/
