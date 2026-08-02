@@ -10,7 +10,7 @@ import { MultiSelectOptionSet } from '../MultiSelectOptionSet';
 import { Lookup } from '../Lookup';
 import { OptionSet } from '../OptionSet';
 import { BaseControls } from '@utils';
-import { getNestedControlStyles } from './styles';
+import { getInternalNestedControlStyles, getNestedControlStyles } from './styles';
 import { Spinner, useRerender } from '@legacy';
 import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } from '@fluentui/react';
 import ReactDOM from 'react-dom';
@@ -220,6 +220,7 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
     const { control, parameters, componentProps, labels } = props;
     const customControlContainerRef = useRef<HTMLDivElement>(null);
     const errorMessage = control?.getErrorMessage();
+    const styles = useMemo(() => getInternalNestedControlStyles(), []);
     const rerender = useRerender();
 
     useImperativeHandle(ref, () => {
@@ -247,7 +248,7 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
     }
 
     return (
-        <div {...componentProps.rootContainerProps}>
+        <div className={styles.nestedControlContainer} {...componentProps.rootContainerProps}>
             {(!control || control.isLoading() || props.componentProps.onOverrideIsLoading?.()) && <div {...componentProps?.loadingProps?.containerProps}>{renderLoading()}</div>
             }
             {errorMessage &&
@@ -257,6 +258,6 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
                     {labels.control()} <b>{parameters.ControlName}</b> {labels.failedToLoad()}.
                 </MessageBar>
             }
-            <div ref={customControlContainerRef} style={errorMessage ? {display: 'none'} : undefined} {...componentProps.controlContainerProps} />
+            <div className={styles.nestedControl} ref={customControlContainerRef} style={errorMessage ? {display: 'none'} : undefined} {...componentProps.controlContainerProps} />
         </div>)
 })

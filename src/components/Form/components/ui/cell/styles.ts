@@ -95,7 +95,9 @@ export const getCellStyles = (params: ICellStylesParams) => {
             gap: 5,
             flexShrink: 0
         },
-        control: {
+        cellControl: {
+            display: 'flex',
+            flexDirection: 'column',
             flexGrow: 1
         },
     })

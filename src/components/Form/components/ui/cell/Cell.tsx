@@ -66,7 +66,7 @@ export const Cell = (props: ICellProps) => {
                 </div>
             }
 
-            <div className={styles.control}>
+            <div className={styles.cellControl}>
                 {props.children}
             </div>
         </DisabledContext.Provider>

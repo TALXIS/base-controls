@@ -55,7 +55,7 @@ const BoundControl = (props: IControlProps & { field: IField }) => {
         field.setValue(outputs.value);
     }
 
-    return <div className={styles.controlContainer}>
+    return <div className={styles.control}>
         <NestedControlRenderer
             context={context}
             parameters={{
