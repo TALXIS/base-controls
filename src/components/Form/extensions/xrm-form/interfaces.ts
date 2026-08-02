@@ -2,6 +2,7 @@ import type { IFormApi, IFormEventHandlers } from "@components/Form/interfaces";
 import type { IFormLabels } from "@components/Form/labels";
 import type { IFormStrategy } from "@components/Form/strategies";
 import type { IControlComponents } from "@components/Form/components/adapters/control/components";
+import { ITabsComponents } from "@components/Form/components/ui";
 
 /**
  * Public Xrm section context exposed by `XrmForm`.
@@ -237,4 +238,6 @@ export interface IXrmFormProps extends Partial<IFormEventHandlers> {
 
 export interface IXrmFormComponents {
     control: Partial<IControlComponents>;
+    tabs: Partial<ITabsComponents>;
 }
+
