@@ -7,7 +7,10 @@ import { FormModel } from "@components/Form/internal/FormModel";
 export const Cell = (props: ICellProps) => {
     const fieldName = useFieldName();
     const field = useField(fieldName);
-    const {requiredLevel = FormModel.getRequiredLevelEnumFromXrm(field?.getRequiredLevel()), label = field?.getColumn().displayName} = props;
+    const hasExplicitLabelProp = Object.prototype.hasOwnProperty.call(props, "label");
+    
+    const label = hasExplicitLabelProp ? props.label : field?.getColumn().displayName;
+    const { requiredLevel = FormModel.getRequiredLevelEnumFromXrm(field?.getRequiredLevel())} = props;
 
     return <FormUi.Cell {...props} requiredLevel={requiredLevel} label={label} />
 }
