@@ -5,8 +5,7 @@ import { useField } from "../field";
 import { FormModel } from "@components/Form/internal/FormModel";
 
 export const Cell = (props: ICellProps) => {
-    const fieldName = useFieldName();
-    const field = useField(fieldName);
+    const field = useField();
     const hasExplicitLabelProp = Object.prototype.hasOwnProperty.call(props, "label");
     
     const label = hasExplicitLabelProp ? props.label : field?.getColumn().displayName;
