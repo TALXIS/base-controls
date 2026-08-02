@@ -7,6 +7,7 @@ interface ISectionStyleParams {
 }
 
 const SECTION_LAYOUT_GAP = 10;
+const SECTION_DEFAULT_ROW_HEIGHT = 32;
 
 export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
     return mergeStyleSets({
@@ -40,6 +41,7 @@ export const getSectionStyles = ({ section, theme }: ISectionStyleParams) => {
             padding: "16px 16px 16px 16px",
             containerType: 'inline-size',
             gap: `${SECTION_LAYOUT_GAP}px`,
+            gridAutoRows: `minmax(${SECTION_DEFAULT_ROW_HEIGHT}px, auto)`,
         },
     });
 };
