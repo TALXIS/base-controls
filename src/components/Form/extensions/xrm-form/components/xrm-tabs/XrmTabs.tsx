@@ -1,12 +1,14 @@
 import { Form } from "@components/Form/components/Form";
 import { XrmTab } from "../xrm-tab";
 import { useTabs } from "./useTabs";
+import { useXrmFormComponents } from "../xrm-form";
 
 export const XrmTabs = () => {
     const tabs = useTabs();
     const selectedTab = tabs.getExpandedTab();
+    const components = useXrmFormComponents();
 
-    return <Form.Tabs key={selectedTab.id} expandedTab={selectedTab.id} onTabChange={(tabId) => tabs.setExpandedTab(tabId)}>
+    return <Form.Tabs key={selectedTab.id} components={components.tabs} expandedTab={selectedTab.id} onTabChange={(tabId) => tabs.setExpandedTab(tabId)}>
         {tabs.getVisibleTabs().map(tab => <XrmTab id={tab.id} key={tab.id} tab={tab} label={tab.getLabel() ?? undefined} />)}
     </Form.Tabs>
 }
