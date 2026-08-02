@@ -9,6 +9,7 @@ import { ControlComponents, IControlComponents } from "./components";
 import { ControlComponentContext, useControlComponents } from "./context";
 
 export interface IControlProps {
+    id?: string;
     disabled?: boolean;
     components?: Partial<IControlComponents>;
 }

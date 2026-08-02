@@ -1,6 +1,7 @@
 import type { IFormApi, IFormEventHandlers } from "@components/Form/interfaces";
 import type { IFormLabels } from "@components/Form/labels";
 import type { IFormStrategy } from "@components/Form/strategies";
+import type { IControlComponents } from "@components/Form/components/adapters/control/components";
 
 /**
  * Public Xrm section context exposed by `XrmForm`.
@@ -230,4 +231,10 @@ export interface IXrmFormProps extends Partial<IFormEventHandlers> {
     onFormReady?: (params: IOnXrmFormReadyParams) => void;
     /** Localized label overrides for the base Form UI. */
     labels?: Partial<IFormLabels>;
+    /** Top-level Xrm overridable UI configuration. */
+    components?: Partial<IXrmFormComponents>;
+}
+
+export interface IXrmFormComponents {
+    control: Partial<IControlComponents>;
 }

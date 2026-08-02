@@ -12,6 +12,7 @@ import { XrmTabs } from '../xrm-tabs';
 import { XrmRibbon } from '../xrm-ribbon';
 import { IFormApi } from '@components/Form/interfaces';
 import { IFormApiInternal } from '@components/Form/internal/FormApi';
+import { XrmControlComponentsContext } from '../xrm-control/context';
 
 
 export const XrmForm = (props: IXrmFormProps) => {
@@ -38,11 +39,19 @@ export const XrmForm = (props: IXrmFormProps) => {
         onValidationSummaryChanged={props.onValidationSummaryChanged}
         labels={props.labels}
     >
-        {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} />}
+        {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} components={props.components} />}
     </Form.Root>
 }
 
-const XrmFormInternal = ({ formXmlModel, xrmFormContext }: { formXmlModel: FormXmlForm, xrmFormContext: IXrmFormContextInternal }) => {
+const XrmFormInternal = ({
+    formXmlModel,
+    xrmFormContext,
+    components,
+}: {
+    formXmlModel: FormXmlForm,
+    xrmFormContext: IXrmFormContextInternal,
+    components?: IXrmFormProps['components'],
+}) => {
     const rerender = useRerender();
 
     useEventEmitter(formXmlModel.events, ['onRenderRequested'], rerender);
@@ -53,9 +62,11 @@ const XrmFormInternal = ({ formXmlModel, xrmFormContext }: { formXmlModel: FormX
 
     return <FormXmlContext.Provider value={formXmlModel}>
         <XrmFormContext.Provider value={xrmFormContext}>
-            <XrmRibbon />
-            <XrmNotifications />
-            <XrmTabs />
+            <XrmControlComponentsContext.Provider value={components ?? null}>
+                <XrmRibbon />
+                <XrmNotifications />
+                <XrmTabs />
+            </XrmControlComponentsContext.Provider>
         </XrmFormContext.Provider>
     </FormXmlContext.Provider>
 }
