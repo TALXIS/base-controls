@@ -3,7 +3,7 @@ import { Form } from "@components/Form/components/Form";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import React from "react";
-import type { IXrmFormContext, IXrmFormProps } from '@components/Form/extensions/xrm-form/interfaces';
+import type { IXrmFormComponents, IXrmFormContext, IXrmFormProps } from '@components/Form/extensions/xrm-form/interfaces';
 import type { IXrmFormContextInternal } from '@components/Form/extensions/xrm-form/internal/xrm-context/XrmFormContext';
 import { createXrmFormContext } from '@components/Form/extensions/xrm-form/internal/xrm-context/XrmFormContext';
 import { XrmNotifications } from '../xrm-notifications';
@@ -13,10 +13,12 @@ import { XrmRibbon } from '../xrm-ribbon';
 import { IFormApi } from '@components/Form/interfaces';
 import { IFormApiInternal } from '@components/Form/internal/FormApi';
 import { XrmFormComponentsContext } from './context';
+import { XrmFormComponents } from './components';
 
 
 export const XrmForm = (props: IXrmFormProps) => {
     const { strategy } = props;
+    const components = {...XrmFormComponents, ...props.components};
     const [form, setForm] = React.useState<{ xmlModel: FormXmlForm, xrmFormContext: IXrmFormContextInternal } | null>(null);
 
     const onFormReady = (api: IFormApi) => {
@@ -39,7 +41,7 @@ export const XrmForm = (props: IXrmFormProps) => {
         onValidationSummaryChanged={props.onValidationSummaryChanged}
         labels={props.labels}
     >
-        {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} components={props.components} />}
+        {form && <XrmFormInternal formXmlModel={form.xmlModel} xrmFormContext={form.xrmFormContext} components={components} />}
     </Form.Root>
 }
 
@@ -50,7 +52,7 @@ const XrmFormInternal = ({
 }: {
     formXmlModel: FormXmlForm,
     xrmFormContext: IXrmFormContextInternal,
-    components?: IXrmFormProps['components'],
+    components: IXrmFormComponents
 }) => {
     const rerender = useRerender();
 
@@ -62,7 +64,7 @@ const XrmFormInternal = ({
 
     return <FormXmlContext.Provider value={formXmlModel}>
         <XrmFormContext.Provider value={xrmFormContext}>
-            <XrmFormComponentsContext.Provider value={components ?? null}>
+            <XrmFormComponentsContext.Provider value={components}>
                 <XrmRibbon />
                 <XrmNotifications />
                 <XrmTabs />
