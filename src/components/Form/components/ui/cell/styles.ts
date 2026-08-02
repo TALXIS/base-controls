@@ -4,6 +4,7 @@ import { ISectionContext } from "../section";
 
 
 export const CELL_LABEL_DEFAULT_WIDTH = 115;
+const CELL_DEFAULT_HEIGHT = 32;
 //default in Power Apps
 const CELL_DEFAULT_LABEL_COLLAPSE_BREAKPOINT = 371;
 
@@ -61,7 +62,7 @@ export const getCellStyles = (params: ICellStylesParams) => {
             gap: 5,
             height: '100%',
             gridRow: `span ${rowspan}`,
-            minHeight: 32
+            minHeight: 32 * rowspan
         },
         lockIndicator: {
             fontSize: 12,
