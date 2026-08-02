@@ -6,6 +6,7 @@ import { useTabContext } from "../tab";
 
 export interface IColumnProps {
     id?: string;
+    //this is because of form builder => TODO: solve more cleanly
     dataId?: string;
     colspan?: number;
     children?: React.ReactNode;
