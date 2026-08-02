@@ -1,7 +1,7 @@
 import { Form } from "@components/Form/components/Form";
 import { XrmTab } from "../xrm-tab";
 import { useTabs } from "./useTabs";
-import { useXrmFormComponents } from "../xrm-form";
+import { useXrmFormComponents } from "../xrm-form/context";
 
 export const XrmTabs = () => {
     const tabs = useTabs();
