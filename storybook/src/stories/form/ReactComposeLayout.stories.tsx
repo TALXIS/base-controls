@@ -282,6 +282,78 @@ const layoutExamples: ILayoutExample[] = [
   );
 };`,
     },
+    {
+        id: 'cell-span',
+        title: 'Cell rowspan and colspan',
+        summary: 'Use `Form.Cell colspan` and `rowspan` when a field or custom content should span across multiple grid tracks.',
+        notes: [
+            '`colspan` is useful for wider controls such as multiline text, maps, or custom composite content.',
+            '`rowspan` helps when one cell should stay taller while neighboring cells stack beside it; multiline fields are a common fit.',
+            'These options work inside the section grid, so they combine naturally with `Form.Section layout`.',
+        ],
+        code: `const FormExample = () => {
+  const [activeTab, setActiveTab] = React.useState("span");
+
+  return (
+    <Form.Root {...formProps}>
+      <Form.Notifications />
+      <Form.Ribbon />
+      <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
+        <Form.Tab id="span" label="Span" layout={{ lg: 1 }}>
+          <Form.Column>
+            <Form.Section label="Grid spanning" layout={{ xs: 1, md: 2, lg: 3 }} cellLabelPosition="Top">
+              <Form.Field name="text">
+                <Form.Cell label="Title">
+                  <Form.Control />
+                </Form.Cell>
+              </Form.Field>
+              <Form.Field name="phone">
+                <Form.Cell label="Phone">
+                  <Form.Control />
+                </Form.Cell>
+              </Form.Field>
+              <Form.Field name="url">
+                <Form.Cell label="Website">
+                  <Form.Control />
+                </Form.Cell>
+              </Form.Field>
+              <Form.Field name="multilinetext">
+                <Form.Cell label="Long description" colspan={2} rowspan={10}>
+                  <Form.Control />
+                </Form.Cell>
+              </Form.Field>
+              <Form.Cell label="Office map">
+                <OpenMap
+                  latitude={50.0755}
+                  longitude={14.4378}
+                  zoom={13}
+                  title="Prague office"
+                  description="A custom cell can also span, but this example keeps the emphasis on the multiline field."
+                />
+              </Form.Cell>
+              <Form.Field name="optionset">
+                <Form.Cell label="Stage">
+                  <Form.Control />
+                </Form.Cell>
+              </Form.Field>
+              <Form.Field name="twooptions">
+                <Form.Cell label="Approved">
+                  <Form.Control />
+                </Form.Cell>
+              </Form.Field>
+              <Form.Field name="dateonly">
+                <Form.Cell label="Start date" colspan={2}>
+                  <Form.Control />
+                </Form.Cell>
+              </Form.Field>
+            </Form.Section>
+          </Form.Column>
+        </Form.Tab>
+      </Form.Tabs>
+    </Form.Root>
+  );
+};`,
+    },
 ]
 
 interface ILayoutExampleCardProps {
