@@ -18,53 +18,42 @@ interface IXrmPlaygroundArgs {
 }
 
 const meta = {
-    title: 'Form/Xrm/Playground',
+    title: 'Form/Xrm',
     tags: ['autodocs'],
-    args: {
-        view: 'preview',
-        builderEditorMode: 'ui',
-        dataEditorMode: 'json',
-        modelEditorMode: 'ui',
-        showPreviewXml: false,
-    },
-    argTypes: {
-        view: {
-            control: 'inline-radio',
-            options: ['preview', 'builder', 'data', 'model'],
-        },
-        builderEditorMode: {
-            control: 'inline-radio',
-            options: ['ui', 'xml'],
-            if: { arg: 'view', eq: 'builder' },
-        },
-        dataEditorMode: {
-            control: 'inline-radio',
-            options: ['ui', 'json'],
-            if: { arg: 'view', eq: 'data' },
-        },
-        modelEditorMode: {
-            control: 'inline-radio',
-            options: ['ui', 'json'],
-            if: { arg: 'view', eq: 'model' },
-        },
-        showPreviewXml: {
-            control: 'boolean',
-            if: { arg: 'view', eq: 'preview' },
-        },
-    },
     parameters: {
+        controls: { disable: true },
         docs: {
+            story: {
+                inline: true,
+            },
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            controls: { disable: true },
             description: {
-                component: 'Unified Xrm playground for previewing the FormXml runtime and switching into builder, data, or model authoring through Storybook controls.',
+                component: `
+Use Xrm Form when the form should be driven by FormXml and expose Xrm-style form context behavior.
+
+This page focuses on the main Xrm Form authoring surface. Use the FormXml toggle to switch between the live form preview and the code editor.
+                `.trim(),
             },
         },
     },
-    render: (args: IXrmPlaygroundArgs) => renderStory(
+} satisfies Meta<IXrmPlaygroundArgs>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+export const Docs: Story = {
+    render: () => renderStory(
         <XrmMode
-            initialView={args.view}
-            initialBuilderEditorMode={args.builderEditorMode}
-            initialDataEditorMode={args.dataEditorMode}
-            initialModelEditorMode={args.modelEditorMode}
+            initialView="preview"
+            initialBuilderEditorMode="ui"
+            initialDataEditorMode="json"
+            initialModelEditorMode="ui"
+            initialShowPreviewXml={false}
             hideWorkspaceViewPivot
             hideBuilderEditorModeToggle
             hideDataEditorModeToggle
@@ -72,17 +61,4 @@ const meta = {
             useStorybookViewport
         />,
     ),
-} satisfies Meta<IXrmPlaygroundArgs>
-
-export default meta
-
-type Story = StoryObj<typeof meta>
-
-export const Playground: Story = {}
-
-export const FormXmlAuthoring: Story = {
-    args: {
-        view: 'builder',
-        builderEditorMode: 'xml',
-    },
 }

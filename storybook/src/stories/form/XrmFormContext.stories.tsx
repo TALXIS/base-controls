@@ -14,7 +14,7 @@ const scenarioOptions = xrmBusinessFlowScenarios.map((scenario) => scenario.id)
 const scenarioLabels = Object.fromEntries(xrmBusinessFlowScenarios.map((scenario) => [scenario.id, scenario.title]))
 
 const meta = {
-    title: 'Form/Xrm/Advanced/Form context',
+    title: 'Form/Xrm/Form context',
     tags: ['autodocs'],
     args: {
         scenarioId: scenarioOptions[0],

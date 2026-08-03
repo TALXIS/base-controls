@@ -816,6 +816,7 @@ interface IXrmModeProps {
     hideFormContextScenarioPanel?: boolean
     hideFormContextConsole?: boolean
     showFormContextCodePanel?: boolean
+    initialShowPreviewXml?: boolean
 }
 
 export const XrmMode = (props: IXrmModeProps) => {
@@ -825,7 +826,7 @@ export const XrmMode = (props: IXrmModeProps) => {
     const [xmlError, setXmlError] = useState<string | null>(null)
     const [json, setJson] = useState(() => serializeRecord(props.initialView === "form-context" ? getFormContextRecord() : getXrmRecord()))
     const [dataEditorMode, setDataEditorMode] = useState<"ui" | "json">(props.initialDataEditorMode ?? "ui")
-    const [showPreviewXml, setShowPreviewXml] = useState(false)
+    const [showPreviewXml, setShowPreviewXml] = useState(props.initialShowPreviewXml ?? false)
     const [modelColumns, setModelColumns] = useModelColumns(props.initialView === "form-context" ? formContextModelStore : xrmModelStore)
     const [jsonError, setJsonError] = useState<string | null>(null)
     const [builderEditorMode, setBuilderEditorMode] = useState<"ui" | "xml">(props.initialBuilderEditorMode ?? "ui")
@@ -1405,8 +1406,8 @@ export const XrmMode = (props: IXrmModeProps) => {
                                 onChange={setViewportWidth}
                             />
                         </div>}
-                        <div className={`${styles.previewEditorLayout} ${!showPreviewXml ? styles.previewEditorLayoutExpanded : ""}`.trim()}>
-                            <div className={styles.previewColumn}>
+                        {!showPreviewXml && (
+                            <div className={styles.fullScreenSurface}>
                                 <div className={styles.previewSurface}>
                                     <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
                                         <XrmForm
@@ -1425,24 +1426,20 @@ export const XrmMode = (props: IXrmModeProps) => {
                                     </div>
                                 </div>
                             </div>
+                        )}
 
-                            {showPreviewXml && (
-                                <Stack className={styles.previewColumn}>
-                                    <Stack className={`${styles.card} ${styles.previewEditorCard}`.trim()}>
-                                        <Stack tokens={{ childrenGap: 16 }} className={`${styles.cardBody} ${styles.fillBody}`.trim()}>
-                                            <div className={styles.editorSurface}>
-                                                <FormXmlEditor value={xml} onChange={setXml} />
-                                            </div>
-                                            {xmlError && (
-                                                <MessageBar className={styles.editorStatus} messageBarType={MessageBarType.error} isMultiline>
-                                                    <pre className="toast-details">{xmlError}</pre>
-                                                </MessageBar>
-                                            )}
-                                        </Stack>
-                                    </Stack>
-                                </Stack>
-                            )}
-                        </div>
+                        {showPreviewXml && (
+                            <>
+                                <div className={styles.editorSurface}>
+                                    <FormXmlEditor value={xml} onChange={setXml} />
+                                </div>
+                                {xmlError && (
+                                    <MessageBar className={styles.editorStatus} messageBarType={MessageBarType.error} isMultiline>
+                                        <pre className="toast-details">{xmlError}</pre>
+                                    </MessageBar>
+                                )}
+                            </>
+                        )}
                     </div>
                 )}
 
