@@ -185,6 +185,14 @@ const styles = mergeStyleSets({
         minHeight: 360,
         height: 360,
     },
+    fullScreenSurface: {
+        display: "flex",
+        flex: 1,
+        minHeight: 0,
+        minWidth: 0,
+        width: "100%",
+        overflow: "hidden",
+    },
 })
 
 type TComposeWorkspaceView = "preview" | "data" | "model"
@@ -406,8 +414,8 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
                                 onChange={setViewportWidth}
                             />
                         </div>}
-                        <div className={`${styles.previewEditorLayout} ${!showPreviewCode ? styles.previewEditorLayoutExpanded : ''}`.trim()}>
-                            <div className={styles.previewColumn}>
+                        {!showPreviewCode && (
+                            <div className={styles.fullScreenSurface}>
                                 <div className={styles.previewSurface}>
                                     <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
                                         <LiveFormCode
@@ -420,34 +428,31 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
                                     </div>
                                 </div>
                             </div>
+                        )}
 
-                            {showPreviewCode && (
-                                <Stack className={styles.previewColumn}>
-                                    <Stack className={`${styles.card} ${styles.previewEditorCard}`.trim()}>
-                                        <Stack tokens={{ childrenGap: 16 }} className={`${styles.cardBody} ${styles.fillBody}`.trim()}>
-                                            <div className={styles.editorSurface}>
-                                                {tabsFlavor === "pivot" ? (
-                                                    <FormCodeEditor
-                                                        value={code}
-                                                        onChange={setCode}
-                                                    />
-                                                ) : (
-                                                    <ReactComposeCodeViewer
-                                                        value={stepperFormCode.replaceAll('__STEPPER_ORIENTATION__', stepperOrientation)}
-                                                        label="Stepper override TSX"
-                                                    />
-                                                )}
-                                            </div>
-                                            {tabsFlavor === "pivot" && compileError && (
-                                                <MessageBar className={styles.editorStatus} messageBarType={MessageBarType.error} isMultiline>
-                                                    <pre className="toast-details">{compileError}</pre>
-                                                </MessageBar>
-                                            )}
-                                        </Stack>
-                                    </Stack>
-                                </Stack>
-                            )}
-                        </div>
+                        {showPreviewCode && (
+                            <div className={styles.fullScreenSurface}>
+                                <div className={styles.editorSurface}>
+                                    {tabsFlavor === "pivot" ? (
+                                        <FormCodeEditor
+                                            value={code}
+                                            onChange={setCode}
+                                        />
+                                    ) : (
+                                        <ReactComposeCodeViewer
+                                            value={stepperFormCode.replaceAll('__STEPPER_ORIENTATION__', stepperOrientation)}
+                                            label="Stepper override TSX"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {tabsFlavor === "pivot" && compileError && showPreviewCode && (
+                            <MessageBar className={styles.editorStatus} messageBarType={MessageBarType.error} isMultiline>
+                                <pre className="toast-details">{compileError}</pre>
+                            </MessageBar>
+                        )}
                     </Stack>
                 )}
             </Stack>

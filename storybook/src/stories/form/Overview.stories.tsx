@@ -1,5 +1,6 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
+import { MessageBarType } from '@fluentui/react'
 import { Form } from '@talxis/base-controls/components/Form'
 import { getOverviewStrategy } from '../../form/overview/overviewModel'
 import { renderStory } from './storyHelpers'
@@ -9,30 +10,74 @@ const OverviewForm = () => {
 
     return (
         <Form.Root strategy={getOverviewStrategy()}>
-            <Form.Notifications />
+            <Form.Notifications
+                messages={[
+                    {
+                        id: 'overview-info',
+                        type: MessageBarType.info,
+                        text: 'This example shows the runtime with notifications, ribbon save state, tabs, sections, and multi-column layout enabled together.',
+                    },
+                    {
+                        id: 'overview-warning',
+                        type: MessageBarType.warning,
+                        text: 'Approval is still required because the approved budget is lower than the estimated value.',
+                    },
+                ]}
+            />
+            <Form.Ribbon />
             <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
                 <Form.Tab id="overview" label="Overview">
                     <Form.Column>
                         <Form.Section label="Project" layout={{ lg: 2 }}>
                             <Form.Field name="company"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                             <Form.Field name="contact"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="owner"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                             <Form.Field name="phone"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                             <Form.Field name="workspace"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="trackerUrl"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                        </Form.Section>
+                        <Form.Section label="Scope" layout={{ lg: 1 }}>
+                            <Form.Field name="summary"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="scope"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                         </Form.Section>
                     </Form.Column>
                     <Form.Column>
-                        <Form.Section label="Delivery status" layout={{ lg: 1 }}>
+                        <Form.Section label="Delivery status" layout={{ lg: 2 }}>
                             <Form.Field name="engagementStage"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="priority"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                             <Form.Field name="needsApproval"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                             <Form.Field name="estimatedValue"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="approvedBudget"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="targetDate"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="kickoffDate"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                        </Form.Section>
+                    </Form.Column>
+                </Form.Tab>
+                <Form.Tab id="delivery" label="Delivery">
+                    <Form.Column>
+                        <Form.Section label="Assignment" layout={{ lg: 1 }}>
+                            <Form.Field name="accountManager"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="deliveryRegion"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                        </Form.Section>
+                    </Form.Column>
+                    <Form.Column>
+                        <Form.Section label="Timeline" layout={{ lg: 1 }}>
+                            <Form.Field name="kickoffDate"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                             <Form.Field name="targetDate"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                         </Form.Section>
                     </Form.Column>
                 </Form.Tab>
-                <Form.Tab id="narrative" label="Narrative">
+                <Form.Tab id="governance" label="Governance">
                     <Form.Column>
-                        <Form.Section label="Why this runtime helps" layout={{ lg: 1 }}>
-                            <Form.Field name="summary"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                        <Form.Section label="Approvals" layout={{ lg: 1 }}>
+                            <Form.Field name="needsApproval"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="priority"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                        </Form.Section>
+                    </Form.Column>
+                    <Form.Column>
+                        <Form.Section label="Financials" layout={{ lg: 1 }}>
+                            <Form.Field name="estimatedValue"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+                            <Form.Field name="approvedBudget"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
                         </Form.Section>
                     </Form.Column>
                 </Form.Tab>
@@ -77,10 +122,6 @@ Go to [**React compose Playground**](?path=/docs/form-react-compose-playground--
 Choose this path when the form should be driven by FormXml and expose Xrm form context APIs.
 
 Go to [**Xrm Playground**](?path=/docs/form-xrm-playground--docs).
-
-## Advanced topics
-
-The **Advanced** sections keep customization and runtime-behavior demos separate from the main playgrounds so the primary flow stays easier to scan.
                 `.trim(),
             },
         },
