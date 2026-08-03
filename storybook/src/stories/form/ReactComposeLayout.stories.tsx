@@ -85,11 +85,15 @@ const styles = mergeStyleSets({
     },
     viewportWindow: {
         minWidth: 320,
-        transition: 'width 120ms ease-out',
         flexShrink: 0,
     },
     zoomedViewport: {
         transformOrigin: 'top center',
+    },
+    zoomShell: {
+        display: 'flex',
+        justifyContent: 'center',
+        width: '100%',
     },
     note: {
         color: theme.palette.neutralSecondary,
@@ -375,19 +379,26 @@ const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
                             <FormCodeEditor value={example.code} onChange={() => undefined} />
                         ) : (
                             <div
-                                className={styles.zoomedViewport}
+                                className={styles.zoomShell}
                                 style={{
-                                    width: `${viewportWidth}px`,
-                                    transform: `scale(${zoomPercent / 100})`,
+                                    height: `${420 * (zoomPercent / 100)}px`,
                                 }}
                             >
-                                <LiveFormCode
-                                    code={example.code}
-                                    formProps={formProps}
-                                    useField={useField}
-                                    fluent={fluent}
-                                    onError={setCompileError}
-                                />
+                                <div
+                                    className={styles.zoomedViewport}
+                                    style={{
+                                        width: `${viewportWidth}px`,
+                                        transform: `scale(${zoomPercent / 100})`,
+                                    }}
+                                >
+                                    <LiveFormCode
+                                        code={example.code}
+                                        formProps={formProps}
+                                        useField={useField}
+                                        fluent={fluent}
+                                        onError={setCompileError}
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>
