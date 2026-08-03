@@ -27,7 +27,6 @@ const styles = mergeStyleSets({
     page: {
         display: 'flex',
         flexDirection: 'column',
-        gap: 24,
     },
     section: {
     },
@@ -291,6 +290,7 @@ interface ILayoutExampleCardProps {
 
 const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
     const { example } = props
+    const [code, setCode] = useState(example.code)
     const [showCode, setShowCode] = useState(false)
     const [viewportWidth, setViewportWidth] = useState(960)
     const [zoomPercent, setZoomPercent] = useState(100)
@@ -376,7 +376,7 @@ const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
                 <div className={styles.previewFrame}>
                     <div className={styles.viewportWindow} style={{ width: showCode ? '100%' : `${viewportWidth}px` }}>
                         {showCode ? (
-                            <FormCodeEditor value={example.code} onChange={() => undefined} />
+                            <FormCodeEditor value={code} onChange={setCode} />
                         ) : (
                             <div
                                 className={styles.zoomShell}
@@ -392,7 +392,7 @@ const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
                                     }}
                                 >
                                     <LiveFormCode
-                                        code={example.code}
+                                        code={code}
                                         formProps={formProps}
                                         useField={useField}
                                         fluent={fluent}
