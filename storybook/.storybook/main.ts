@@ -12,7 +12,7 @@ const config: StorybookConfig = {
     options: {},
   },
   docs: {
-    autodocs: false,
+    autodocs: 'tag',
   },
   typescript: {
     reactDocgen: false,

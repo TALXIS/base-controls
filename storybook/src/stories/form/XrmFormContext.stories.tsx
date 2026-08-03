@@ -4,6 +4,7 @@ import React from 'react'
 
 const meta = {
     title: 'Form/Xrm/Form Context/Demos',
+    tags: ['autodocs'],
 } satisfies Meta
 
 export default meta

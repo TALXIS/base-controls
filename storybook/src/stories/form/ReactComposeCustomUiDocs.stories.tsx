@@ -1,8 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
+const Empty = () => null;
+
 const meta = {
   title: 'Form/React compose/Custom UI',
+  component: Empty,
   parameters: {
     docs: {
       page: () => (
@@ -55,4 +58,6 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Docs: Story = {};
+export const Docs: Story = {
+  render: Empty,
+};

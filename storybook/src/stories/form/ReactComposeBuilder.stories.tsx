@@ -6,6 +6,7 @@ const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' 
 
 const meta = {
     title: 'Form/React compose/Builder',
+    tags: ['autodocs'],
 } satisfies Meta
 
 export default meta

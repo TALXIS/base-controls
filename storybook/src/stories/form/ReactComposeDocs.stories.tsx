@@ -3,6 +3,8 @@ import React from 'react';
 import { defaultFormCode } from '../../form/react-form/defaultFormCode';
 import { stepperFormCode } from '../../form/react-form/stepperFormCode';
 
+const Empty = () => null;
+
 const preStyle: React.CSSProperties = {
   whiteSpace: 'pre-wrap',
   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
@@ -16,6 +18,7 @@ const preStyle: React.CSSProperties = {
 
 const meta = {
   title: 'Form/React compose/Overview',
+  component: Empty,
   parameters: {
     docs: {
       page: () => (
@@ -85,4 +88,6 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Docs: Story = {};
+export const Docs: Story = {
+  render: Empty,
+};
