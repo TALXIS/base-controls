@@ -1,123 +1,62 @@
+import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { XrmMode } from '../../form/xrm-form/XrmMode'
-import React from 'react'
+import { xrmBusinessFlowScenarios } from '../../form/xrm-form/xrmBusinessFlows'
+import { renderStory } from './storyHelpers'
+
+interface IXrmFormContextArgs {
+    scenarioId: string
+    showCodePanel: boolean
+    showConsole: boolean
+}
+
+const scenarioOptions = xrmBusinessFlowScenarios.map((scenario) => scenario.id)
+const scenarioLabels = Object.fromEntries(xrmBusinessFlowScenarios.map((scenario) => [scenario.id, scenario.title]))
 
 const meta = {
-    title: 'Form/Xrm/Form Context/Demos',
+    title: 'Form/Xrm/Advanced/Form context',
     tags: ['autodocs'],
+    args: {
+        scenarioId: scenarioOptions[0],
+        showCodePanel: true,
+        showConsole: false,
+    },
+    argTypes: {
+        scenarioId: {
+            control: 'select',
+            options: scenarioOptions,
+            mapping: undefined,
+            labels: scenarioLabels,
+        },
+        showCodePanel: {
+            control: 'boolean',
+        },
+        showConsole: {
+            control: 'boolean',
+        },
+    },
     parameters: {
         docs: {
             description: {
-                component: `
-Work with an Xrm-compatible formContext that follows the Microsoft mental model while running on top of the Form runtime.
-
-Use these demos when the interesting part is not layout authoring, but driving runtime behavior through formContext APIs such as field events, visibility changes, notifications, and save handling.
-                `.trim(),
+                component: 'Runtime-focused Xrm formContext workflows. Pick a scenario with controls instead of navigating across many nearly identical stories.',
             },
         },
     },
-} satisfies Meta
+    render: (args: IXrmFormContextArgs) => renderStory(
+        <XrmMode
+            initialView="form-context"
+            initialFormContextScenarioId={args.scenarioId}
+            formContextScenarioIds={[args.scenarioId]}
+            hideWorkspaceViewPivot
+            useStorybookViewport
+            showFormContextCodePanel={args.showCodePanel}
+            hideFormContextConsole={!args.showConsole}
+        />,
+    ),
+} satisfies Meta<IXrmFormContextArgs>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' }}>{node}</div>
-
-export const QualificationReview: Story = {
-    name: 'Qualification Review',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused formContext workflow showing qualification review behavior with the live preview on the left and only the matching demo controls plus code on the right.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="form-context"
-        initialFormContextScenarioId="qualification-review"
-        formContextScenarioIds={["qualification-review"]}
-        hideWorkspaceViewPivot
-        useStorybookViewport
-        showFormContextCodePanel
-        hideFormContextConsole
-    />),
-}
-
-export const DigitalEngagement: Story = {
-    name: 'Digital Engagement Route',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused formContext workflow showing the digital engagement route with only the matching demo controls and code beside the preview.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="form-context"
-        initialFormContextScenarioId="digital-engagement"
-        formContextScenarioIds={["digital-engagement"]}
-        hideWorkspaceViewPivot
-        useStorybookViewport
-        showFormContextCodePanel
-        hideFormContextConsole
-    />),
-}
-
-export const FinancialApproval: Story = {
-    name: 'Financial Approval Checkpoint',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused formContext workflow showing the financial approval checkpoint with only the matching demo controls and code beside the preview.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="form-context"
-        initialFormContextScenarioId="financial-approval"
-        formContextScenarioIds={["financial-approval"]}
-        hideWorkspaceViewPivot
-        useStorybookViewport
-        showFormContextCodePanel
-        hideFormContextConsole
-    />),
-}
-
-export const SchedulingHandoff: Story = {
-    name: 'Scheduling Handoff',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused formContext workflow showing the scheduling handoff behavior with only the matching demo controls and code beside the preview.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="form-context"
-        initialFormContextScenarioId="scheduling-handoff"
-        formContextScenarioIds={["scheduling-handoff"]}
-        hideWorkspaceViewPivot
-        useStorybookViewport
-        showFormContextCodePanel
-        hideFormContextConsole
-    />),
-}
-
-export const Console: Story = {
-    name: 'Console',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused live console view for formContext event reactions, separated from the workflow stories so the right side stays lighter there.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="form-context"
-        hideWorkspaceViewPivot
-        useStorybookViewport
-        hideFormContextScenarioPanel
-        hideFormContextConsole={false}
-    />),
-}
+export const FormContextScenarios: Story = {}

@@ -1,89 +1,69 @@
+import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { XrmMode } from '../../form/xrm-form/XrmMode'
-import React from 'react'
+import { renderStory } from './storyHelpers'
 
-const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' }}>{node}</div>
+type TXrmCustomComponentsFlavor = 'controls' | 'tabs'
+type TCustomTabsOrientation = 'horizontal' | 'vertical'
+
+interface IXrmCustomUiArgs {
+    flavor: TXrmCustomComponentsFlavor
+    tabsOrientation: TCustomTabsOrientation
+    showCode: boolean
+    showData: boolean
+    showXml: boolean
+}
 
 const meta = {
-    title: 'Form/Xrm/Custom UI',
+    title: 'Form/Xrm/Advanced/Custom UI',
     tags: ['autodocs'],
+    args: {
+        flavor: 'controls',
+        tabsOrientation: 'horizontal',
+        showCode: true,
+        showData: false,
+        showXml: false,
+    },
+    argTypes: {
+        flavor: {
+            control: 'inline-radio',
+            options: ['controls', 'tabs'],
+        },
+        tabsOrientation: {
+            control: 'inline-radio',
+            options: ['horizontal', 'vertical'],
+            if: { arg: 'flavor', eq: 'tabs' },
+        },
+        showCode: { control: 'boolean' },
+        showData: { control: 'boolean' },
+        showXml: { control: 'boolean' },
+    },
     parameters: {
         docs: {
             description: {
-                component: `
-Override parts of the Xrm presentation layer while keeping the same underlying form runtime.
-
-Use this section for focused demos of top-level custom controls and custom tab rendering while preserving the same data binding, field state, and Xrm-oriented lifecycle underneath.
-                `.trim(),
+                component: 'Focused Xrm presentation override demo. Keep the code and supporting panels only when you want to study or adapt the override implementation.',
             },
         },
     },
-} satisfies Meta
+    render: (args: IXrmCustomUiArgs) => renderStory(
+        <XrmMode
+            initialView="custom-components"
+            initialCustomComponentsFlavor={args.flavor}
+            initialCustomTabsOrientation={args.tabsOrientation}
+            initialShowCustomComponentsCode={args.showCode}
+            initialShowCustomComponentsData={args.showData}
+            initialShowCustomComponentsXml={args.showXml}
+            hideWorkspaceViewPivot
+            hideCustomComponentsPivot
+            hideCustomTabsOrientationSelector
+            hideCustomComponentsEditorToggles
+            useStorybookViewport
+        />,
+    ),
+} satisfies Meta<IXrmCustomUiArgs>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const CustomControls: Story = {
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused live demo of top-level control overrides for selected Xrm control ids.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="custom-components"
-        initialCustomComponentsFlavor="controls"
-        hideWorkspaceViewPivot
-        hideCustomComponentsPivot
-        useStorybookViewport
-        initialShowCustomComponentsCode
-        initialShowCustomComponentsData
-        initialShowCustomComponentsXml
-    />),
-}
-
-export const CustomTabs: Story = {
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused live demo of the Xrm tabs override using the Material UI Stepper pattern.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="custom-components"
-        initialCustomComponentsFlavor="tabs"
-        hideWorkspaceViewPivot
-        hideCustomComponentsPivot
-        useStorybookViewport
-        initialShowCustomComponentsCode
-        initialShowCustomComponentsData
-        initialShowCustomComponentsXml
-        initialCustomTabsOrientation="horizontal"
-        hideCustomTabsOrientationSelector
-    />),
-}
-
-export const CustomTabsVertical: Story = {
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused live demo of the Xrm tabs override using the vertical Material UI Stepper pattern.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="custom-components"
-        initialCustomComponentsFlavor="tabs"
-        hideWorkspaceViewPivot
-        hideCustomComponentsPivot
-        useStorybookViewport
-        initialShowCustomComponentsCode
-        initialShowCustomComponentsData
-        initialShowCustomComponentsXml
-        initialCustomTabsOrientation="vertical"
-        hideCustomTabsOrientationSelector
-    />),
-}
+export const CustomUi: Story = {}

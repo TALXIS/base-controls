@@ -1,92 +1,88 @@
+import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { XrmMode } from '../../form/xrm-form/XrmMode'
-import React from 'react'
+import { renderStory } from './storyHelpers'
 
-const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' }}>{node}</div>
+type TXrmWorkspaceView = 'preview' | 'builder' | 'data' | 'model'
+
+type TBuilderEditorMode = 'ui' | 'xml'
+type TDataEditorMode = 'ui' | 'json'
+type TModelEditorMode = 'ui' | 'json'
+
+interface IXrmPlaygroundArgs {
+    view: TXrmWorkspaceView
+    builderEditorMode: TBuilderEditorMode
+    dataEditorMode: TDataEditorMode
+    modelEditorMode: TModelEditorMode
+    showPreviewXml: boolean
+}
 
 const meta = {
-    title: 'Form/Xrm/Builder',
+    title: 'Form/Xrm/Playground',
     tags: ['autodocs'],
+    args: {
+        view: 'preview',
+        builderEditorMode: 'ui',
+        dataEditorMode: 'json',
+        modelEditorMode: 'ui',
+        showPreviewXml: false,
+    },
+    argTypes: {
+        view: {
+            control: 'inline-radio',
+            options: ['preview', 'builder', 'data', 'model'],
+        },
+        builderEditorMode: {
+            control: 'inline-radio',
+            options: ['ui', 'xml'],
+            if: { arg: 'view', eq: 'builder' },
+        },
+        dataEditorMode: {
+            control: 'inline-radio',
+            options: ['ui', 'json'],
+            if: { arg: 'view', eq: 'data' },
+        },
+        modelEditorMode: {
+            control: 'inline-radio',
+            options: ['ui', 'json'],
+            if: { arg: 'view', eq: 'model' },
+        },
+        showPreviewXml: {
+            control: 'boolean',
+            if: { arg: 'view', eq: 'preview' },
+        },
+    },
     parameters: {
         docs: {
             description: {
-                component: `
-Use the Xrm Builder section when the form layout comes from FormXml and the runtime should feel like an Xrm form.
-
-This area is designed for deeper exploration: preview the live form, inspect record data, and evolve the FormXml-backed model while staying on the same Xrm-aware runtime.
-                `.trim(),
+                component: 'Unified Xrm playground for previewing the FormXml runtime and switching into builder, data, or model authoring through Storybook controls.',
             },
         },
     },
-} satisfies Meta
+    render: (args: IXrmPlaygroundArgs) => renderStory(
+        <XrmMode
+            initialView={args.view}
+            initialBuilderEditorMode={args.builderEditorMode}
+            initialDataEditorMode={args.dataEditorMode}
+            initialModelEditorMode={args.modelEditorMode}
+            hideWorkspaceViewPivot
+            hideBuilderEditorModeToggle
+            hideDataEditorModeToggle
+            hideModelEditorModeToggle
+            useStorybookViewport
+        />,
+    ),
+} satisfies Meta<IXrmPlaygroundArgs>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Preview: Story = {
-    parameters: {
-        docs: {
-            description: {
-                story: 'Preview the current FormXml layout with the same data and model that the builder edits, and use the in-story FormXml toggle to inspect or edit the current XML in Monaco.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="preview"
-        hideWorkspaceViewPivot
-        useStorybookViewport
-    />),
-}
+export const Playground: Story = {}
 
-export const Builder: Story = {
-    name: 'Form Xml',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Build the form visually by default, then use the in-story toggle to switch to the Monaco FormXml editor when needed.',
-            },
-        },
+export const FormXmlAuthoring: Story = {
+    args: {
+        view: 'builder',
+        builderEditorMode: 'xml',
     },
-    render: () => renderStory(<XrmMode
-        initialView="builder"
-        hideWorkspaceViewPivot
-        useStorybookViewport
-        initialBuilderEditorMode="ui"
-    />),
-}
-
-export const DataEditor: Story = {
-    name: 'Data',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Inspect and edit the same builder record data as raw JSON.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="data"
-        hideWorkspaceViewPivot
-        useStorybookViewport
-        initialDataEditorMode="json"
-        hideDataEditorModeToggle
-    />),
-}
-
-export const Model: Story = {
-    name: 'Model',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Edit the field model through the guided UI by default, then use the in-story toggle to switch to the Monaco JSON editor when needed.',
-            },
-        },
-    },
-    render: () => renderStory(<XrmMode
-        initialView="model"
-        hideWorkspaceViewPivot
-        useStorybookViewport
-        initialModelEditorMode="ui"
-    />),
 }

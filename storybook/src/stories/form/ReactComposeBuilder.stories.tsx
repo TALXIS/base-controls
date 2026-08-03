@@ -1,60 +1,79 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { ReactComposeMode } from '../../form/react-form/ReactComposeMode'
+import { renderStory } from './storyHelpers'
 
-const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' }}>{node}</div>
+type TComposeWorkspaceView = 'preview' | 'data' | 'model'
+type TComposeTabsFlavor = 'pivot' | 'stepper'
+type TComposeStepperOrientation = 'horizontal' | 'vertical'
+
+interface IReactComposeStoryArgs {
+    view: TComposeWorkspaceView
+    tabsFlavor: TComposeTabsFlavor
+    stepperOrientation: TComposeStepperOrientation
+    showCode: boolean
+}
 
 const meta = {
-    title: 'Form/React compose/Builder',
+    title: 'Form/React compose/Playground',
     tags: ['autodocs'],
+    args: {
+        view: 'preview',
+        tabsFlavor: 'pivot',
+        stepperOrientation: 'horizontal',
+        showCode: false,
+    },
+    argTypes: {
+        view: {
+            control: 'inline-radio',
+            options: ['preview', 'data', 'model'],
+        },
+        tabsFlavor: {
+            control: 'inline-radio',
+            options: ['pivot', 'stepper'],
+        },
+        stepperOrientation: {
+            control: 'inline-radio',
+            options: ['horizontal', 'vertical'],
+            if: { arg: 'tabsFlavor', eq: 'stepper' },
+        },
+        showCode: {
+            control: 'boolean',
+            if: { arg: 'view', eq: 'preview' },
+        },
+    },
     parameters: {
         docs: {
             description: {
-                component: `
-Use the Builder section when you want to inspect how a React-composed form is assembled and supported.
-
-This area keeps the editable surfaces split by concern: preview, record data, and model definition. It is intentionally more tool-like than the Overview page and is meant for deeper exploration once the basic runtime concept is clear.
-                `.trim(),
+                component: 'One Storybook-native playground for React-authored forms. Use controls to switch between preview, data, and model instead of browsing multiple near-identical stories.',
             },
         },
     },
-} satisfies Meta
+    render: (args: IReactComposeStoryArgs) => renderStory(
+        <ReactComposeMode
+            initialView={args.view}
+            initialTabsFlavor={args.tabsFlavor}
+            initialStepperOrientation={args.stepperOrientation}
+            initialShowPreviewCode={args.showCode}
+            hideTabsFlavorPivot
+            hideWorkspaceViewPivot
+            hidePreviewCodeToggle
+            useStorybookViewport
+        />,
+    ),
+} satisfies Meta<IReactComposeStoryArgs>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Preview: Story = {
-    parameters: {
-        docs: {
-            description: {
-                story: 'Preview the current React-composed form with the same model and data used by the builder stories.',
-            },
-        },
-    },
-    render: () => renderStory(<ReactComposeMode initialView="preview" hideTabsFlavorPivot hideWorkspaceViewPivot useStorybookViewport initialShowPreviewCode />),
-}
+export const Playground: Story = {}
 
-export const DataEditor: Story = {
-    name: 'Data',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Inspect and edit the same React compose record data as raw JSON.',
-            },
-        },
+export const StepperExample: Story = {
+    args: {
+        view: 'preview',
+        tabsFlavor: 'stepper',
+        stepperOrientation: 'horizontal',
+        showCode: true,
     },
-    render: () => renderStory(<ReactComposeMode initialView="data" hideTabsFlavorPivot hideWorkspaceViewPivot useStorybookViewport />),
-}
-
-export const Model: Story = {
-    name: 'Model',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Edit the field model through the guided UI by default, then use the in-story toggle to switch to the Monaco JSON editor when needed.',
-            },
-        },
-    },
-    render: () => renderStory(<ReactComposeMode initialView="model" hideTabsFlavorPivot hideWorkspaceViewPivot useStorybookViewport />),
 }

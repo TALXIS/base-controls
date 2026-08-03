@@ -1,66 +1,49 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { ReactComposeMode } from '../../form/react-form/ReactComposeMode'
+import { renderStory } from './storyHelpers'
 
-const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' }}>{node}</div>
+type TComposeStepperOrientation = 'horizontal' | 'vertical'
+
+interface IReactComposeCustomUiArgs {
+    stepperOrientation: TComposeStepperOrientation
+}
 
 const meta = {
-    title: 'Form/React compose/Custom UI',
+    title: 'Form/React compose/Advanced/Custom UI',
     tags: ['autodocs'],
+    args: {
+        stepperOrientation: 'horizontal',
+    },
+    argTypes: {
+        stepperOrientation: {
+            control: 'inline-radio',
+            options: ['horizontal', 'vertical'],
+        },
+    },
     parameters: {
         docs: {
             description: {
-                component: `
-Replace selected presentation layers in the React compose model without changing the underlying form runtime.
-
-Custom components can still communicate with the form through hooks like useField, so you keep the same live binding, validation flow, and save behavior while swapping out the visual layer.
-                `.trim(),
+                component: 'Focused demo for swapping the default React compose tabs for a Stepper-based presentation. The code panel stays because authoring the override is the point here.',
             },
         },
     },
-} satisfies Meta
+    render: (args: IReactComposeCustomUiArgs) => renderStory(
+        <ReactComposeMode
+            initialTabsFlavor="stepper"
+            initialStepperOrientation={args.stepperOrientation}
+            initialView="preview"
+            hideTabsFlavorPivot
+            hideWorkspaceViewPivot
+            hidePreviewCodeToggle
+            useStorybookViewport
+            initialShowPreviewCode
+        />,
+    ),
+} satisfies Meta<IReactComposeCustomUiArgs>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const StepperTabs: Story = {
-    name: 'Custom Tabs',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused live demo of the React compose tabs override using the horizontal Material UI Stepper pattern.',
-            },
-        },
-    },
-    render: () => renderStory(<ReactComposeMode
-        initialTabsFlavor="stepper"
-        initialStepperOrientation="horizontal"
-        initialView="preview"
-        hideTabsFlavorPivot
-        hidePreviewCodeToggle
-        hideWorkspaceViewPivot
-        useStorybookViewport
-    />),
-}
-
-export const StepperTabsVertical: Story = {
-    name: 'Custom Tabs Vertical',
-    parameters: {
-        docs: {
-            description: {
-                story: 'Focused live demo of the React compose tabs override using the vertical Material UI Stepper pattern.',
-            },
-        },
-    },
-    render: () => renderStory(<ReactComposeMode
-        initialTabsFlavor="stepper"
-        initialStepperOrientation="vertical"
-        initialView="preview"
-        initialShowPreviewCode={false}
-        hideTabsFlavorPivot
-        hidePreviewCodeToggle
-        hideWorkspaceViewPivot
-        useStorybookViewport
-    />),
-}
+export const CustomUi: Story = {}
