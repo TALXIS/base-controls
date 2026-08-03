@@ -55,7 +55,9 @@
   },
   "scripts": {
     "build": "rollup -c && node ./scripts/resolve-dts-aliases.mjs && rollup -c rollup.dts.config.js",
-    "yalc": "npm run build && yalc publish --sig"
+    "yalc": "npm run build && yalc publish --sig",
+    "storybook": "npm --prefix ./storybook run storybook",
+    "build-storybook": "npm --prefix ./storybook run build-storybook"
   },
   "browserslist": {
     "production": [

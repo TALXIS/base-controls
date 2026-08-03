@@ -7,3 +7,7 @@ yalc.lock
 **/.DS_Store
 /stats.html
 /.playwright-cli/
+
+*storybook.log
+storybook/node_modules
+storybook/storybook-static
