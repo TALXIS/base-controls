@@ -7,6 +7,17 @@ const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' 
 const meta = {
     title: 'Form/Xrm/Builder',
     tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: `
+Use XrmForm when the form structure comes from FormXml and you need Xrm-aware runtime behavior.
+
+This Builder section lets you preview the current form, edit the FormXml layout, inspect record data, and evolve the field model while staying on top of the same Xrm-aware runtime.
+                `.trim(),
+            },
+        },
+    },
 } satisfies Meta
 
 export default meta

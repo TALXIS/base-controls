@@ -5,6 +5,17 @@ import React from 'react'
 const meta = {
     title: 'Form/Xrm/Form Context/Demos',
     tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: `
+Work with an Xrm-compatible formContext that follows the Microsoft mental model while running on top of the Form runtime.
+
+Use these demos when the interesting part is not layout authoring, but driving runtime behavior through formContext APIs such as field events, visibility changes, notifications, and save handling.
+                `.trim(),
+            },
+        },
+    },
 } satisfies Meta
 
 export default meta

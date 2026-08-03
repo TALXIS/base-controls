@@ -7,6 +7,17 @@ const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' 
 const meta = {
     title: 'Form/Xrm/Custom UI',
     tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: `
+Override parts of the Xrm presentation layer while keeping the same underlying form runtime.
+
+Use this section for focused demos of top-level custom controls and custom tab rendering while preserving the same data binding, field state, and Xrm-oriented lifecycle underneath.
+                `.trim(),
+            },
+        },
+    },
 } satisfies Meta
 
 export default meta

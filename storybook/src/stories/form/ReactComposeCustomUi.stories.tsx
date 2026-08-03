@@ -7,6 +7,17 @@ const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' 
 const meta = {
     title: 'Form/React compose/Custom UI',
     tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: `
+Replace selected presentation layers in the React compose model without changing the underlying form runtime.
+
+Custom components can still communicate with the form through hooks like useField, so you keep the same live binding, validation flow, and save behavior while swapping out the visual layer.
+                `.trim(),
+            },
+        },
+    },
 } satisfies Meta
 
 export default meta

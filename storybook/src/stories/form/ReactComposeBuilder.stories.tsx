@@ -7,6 +7,19 @@ const renderStory = (node: React.ReactNode) => <div style={{ minHeight: '100vh' 
 const meta = {
     title: 'Form/React compose/Builder',
     tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: `
+The React compose model is the default way to work with the Form runtime.
+
+You start with Form.Root, provide a strategy that knows how to load and save the record, and then describe the layout with tabs, sections, fields, cells, and controls. The form behavior stays in the runtime while the layout stays in React, which keeps the API readable and refactor-friendly.
+
+Use this Builder section to preview the form and inspect or edit its supporting inputs like data and model definition.
+                `.trim(),
+            },
+        },
+    },
 } satisfies Meta
 
 export default meta
