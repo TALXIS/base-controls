@@ -1,36 +1,98 @@
-import type { StorybookConfig } from '@storybook/react-webpack5';
+import type { StorybookConfig } from '@storybook/react-vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const storybookDir = path.dirname(fileURLToPath(import.meta.url));
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)', '../src/**/*.mdx'],
-  addons: [
-    '@storybook/addon-webpack5-compiler-swc',
-    '@storybook/addon-a11y',
-    '@storybook/addon-docs',
-  ],
-  framework: '@storybook/react-webpack5',
-  typescript: {
-    reactDocgen: 'react-docgen-typescript',
+  addons: ['@storybook/addon-a11y', '@storybook/addon-docs'],
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
   },
-  webpackFinal: async (config) => {
+  docs: {
+    autodocs: false,
+  },
+  typescript: {
+    reactDocgen: false,
+  },
+  async viteFinal(config) {
     config.resolve ??= {};
-    config.resolve.alias = {
-      ...(config.resolve.alias ?? {}),
-      '@talxis/base-controls': path.resolve(__dirname, '../../src'),
-      '@components': path.resolve(__dirname, '../../src/components'),
-      '@hooks': path.resolve(__dirname, '../../src/hooks'),
-      '@interfaces': path.resolve(__dirname, '../../src/interfaces'),
-      '@legacy': path.resolve(__dirname, '../../src/legacy/react-components'),
-      '@utils': path.resolve(__dirname, '../../src/utils'),
-      '@': path.resolve(__dirname, '../../src'),
-      react: path.resolve(__dirname, '../node_modules/react'),
-      'react-dom': path.resolve(__dirname, '../node_modules/react-dom'),
-    };
-    config.resolve.extensions = [...(config.resolve.extensions ?? []), '.ts', '.tsx'];
+    config.resolve.alias = [
+      ...(Array.isArray(config.resolve.alias) ? config.resolve.alias : []),
+      {
+        find: /^@talxis\/base-controls$/,
+        replacement: path.resolve(storybookDir, '../../src/index.ts'),
+      },
+      {
+        find: /^@talxis\/base-controls\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/$1'),
+      },
+      {
+        find: /^@components$/,
+        replacement: path.resolve(storybookDir, '../../src/components/index.ts'),
+      },
+      {
+        find: /^@components\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/components/$1'),
+      },
+      {
+        find: /^@hooks$/,
+        replacement: path.resolve(storybookDir, '../../src/hooks/index.ts'),
+      },
+      {
+        find: /^@hooks\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/hooks/$1'),
+      },
+      {
+        find: /^@interfaces$/,
+        replacement: path.resolve(storybookDir, '../../src/interfaces/index.ts'),
+      },
+      {
+        find: /^@interfaces\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/interfaces/$1'),
+      },
+      {
+        find: /^@legacy$/,
+        replacement: path.resolve(storybookDir, '../../src/legacy/react-components/index.ts'),
+      },
+      {
+        find: /^@legacy\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/legacy/react-components/$1'),
+      },
+      {
+        find: /^@utils$/,
+        replacement: path.resolve(storybookDir, '../../src/utils/index.ts'),
+      },
+      {
+        find: /^@utils\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/utils/$1'),
+      },
+      {
+        find: /^@\/(.*)$/,
+        replacement: path.resolve(storybookDir, '../../src/$1'),
+      },
+      {
+        find: /^react$/,
+        replacement: path.resolve(storybookDir, '../node_modules/react'),
+      },
+      {
+        find: /^react-dom$/,
+        replacement: path.resolve(storybookDir, '../node_modules/react-dom'),
+      },
+      {
+        find: '@storybook/react-dom-shim',
+        replacement: path.resolve(storybookDir, './react-dom-shim.ts'),
+      },
+    ];
+
+    config.server ??= {};
+    config.server.fs ??= {};
+    config.server.fs.allow = [
+      ...(config.server.fs.allow ?? []),
+      path.resolve(storybookDir, '../..'),
+    ];
 
     return config;
   },

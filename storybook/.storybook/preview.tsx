@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/react-webpack5';
+import type { Preview } from '@storybook/react-vite';
 import React from 'react';
 import 'leaflet/dist/leaflet.css';
 import { PcfContextProvider } from '@talxis/base-controls/utils';
