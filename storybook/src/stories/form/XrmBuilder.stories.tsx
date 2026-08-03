@@ -11,9 +11,9 @@ const meta = {
         docs: {
             description: {
                 component: `
-Use XrmForm when the form structure comes from FormXml and you need Xrm-aware runtime behavior.
+Use the Xrm Builder section when the form layout comes from FormXml and the runtime should feel like an Xrm form.
 
-This Builder section lets you preview the current form, edit the FormXml layout, inspect record data, and evolve the field model while staying on top of the same Xrm-aware runtime.
+This area is designed for deeper exploration: preview the live form, inspect record data, and evolve the FormXml-backed model while staying on the same Xrm-aware runtime.
                 `.trim(),
             },
         },

@@ -11,11 +11,9 @@ const meta = {
         docs: {
             description: {
                 component: `
-The React compose model is the default way to work with the Form runtime.
+Use the Builder section when you want to inspect how a React-composed form is assembled and supported.
 
-You start with Form.Root, provide a strategy that knows how to load and save the record, and then describe the layout with tabs, sections, fields, cells, and controls. The form behavior stays in the runtime while the layout stays in React, which keeps the API readable and refactor-friendly.
-
-Use this Builder section to preview the form and inspect or edit its supporting inputs like data and model definition.
+This area keeps the editable surfaces split by concern: preview, record data, and model definition. It is intentionally more tool-like than the Overview page and is meant for deeper exploration once the basic runtime concept is clear.
                 `.trim(),
             },
         },
