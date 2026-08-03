@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { CommandBar, DefaultButton, Dialog, DialogFooter, DialogType, ICommandBarItemProps, MessageBar, MessageBarType, Pivot, PivotItem, PrimaryButton, Slider, Stack, Text, Toggle, getTheme, mergeStyleSets } from "@fluentui/react"
+import { ComboBox, CommandBar, DefaultButton, Dialog, DialogFooter, DialogType, ICommandBarItemProps, MessageBar, MessageBarType, Pivot, PivotItem, PrimaryButton, Slider, Stack, Text, Toggle, getTheme, mergeStyleSets } from "@fluentui/react"
 import { FormXmlSectionBuilder, FormXmlTabBuilder, parseFormXml, serializeFormXml } from "@talxis/client-metadata"
 import { XrmForm } from "@talxis/base-controls/components/Form"
 import type { IFormApi, IXrmFormContext } from "@talxis/base-controls/components/Form"
@@ -529,16 +529,17 @@ const styles = mergeStyleSets({
         flex: 1,
         minHeight: 0,
         overflow: "auto",
-        padding: 18,
+        padding: 0,
     },
     showcaseLayout: {
         display: "grid",
-        gridTemplateColumns: "minmax(420px, 560px) minmax(620px, 1fr)",
+        gridTemplateColumns: "minmax(0, 1fr) minmax(420px, 0.9fr)",
         gap: 24,
         minHeight: 0,
-        alignItems: "start",
-        "@media (max-width: 1480px)": {
-            gridTemplateColumns: "minmax(380px, 500px) minmax(0, 1fr)",
+        width: "100%",
+        alignItems: "stretch",
+        "@media (max-width: 1280px)": {
+            gridTemplateColumns: "1fr",
         },
     },
     showcaseLayoutExpanded: {
@@ -552,14 +553,14 @@ const styles = mergeStyleSets({
         minHeight: 0,
     },
     showcasePreviewCard: {
-        minHeight: 540,
+        minHeight: 420,
     },
     showcasePreviewCardExpanded: {
-        minHeight: 720,
+        minHeight: 420,
     },
     showcaseEditorCard: {
-        minHeight: 360,
-        height: 360,
+        minHeight: 560,
+        height: 560,
     },
     showcaseCallout: {
         borderRadius: 10,
@@ -944,6 +945,30 @@ export const XrmMode = (props: IXrmModeProps) => {
             }
         }
     }, [customComponentsXml])
+
+    useEffect(() => {
+        setShowCustomComponentsCode(props.initialShowCustomComponentsCode ?? false)
+    }, [props.initialShowCustomComponentsCode])
+
+    useEffect(() => {
+        setShowCustomComponentsData(props.initialShowCustomComponentsData ?? false)
+    }, [props.initialShowCustomComponentsData])
+
+    useEffect(() => {
+        setShowCustomComponentsXml(props.initialShowCustomComponentsXml ?? false)
+    }, [props.initialShowCustomComponentsXml])
+
+    useEffect(() => {
+        if (props.initialCustomComponentsFlavor) {
+            setCustomComponentsFlavor(props.initialCustomComponentsFlavor)
+        }
+    }, [props.initialCustomComponentsFlavor])
+
+    useEffect(() => {
+        if (props.initialCustomTabsOrientation) {
+            setCustomTabsOrientation(props.initialCustomTabsOrientation)
+        }
+    }, [props.initialCustomTabsOrientation])
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
@@ -1571,19 +1596,20 @@ export const XrmMode = (props: IXrmModeProps) => {
                                     <Stack tokens={{ childrenGap: 16 }} className={styles.cardBody}>
                                         {customComponentsFlavor === "controls" ? undefined : !props.hideCustomTabsOrientationSelector && (
                                             <Stack horizontal tokens={{ childrenGap: 12 }} verticalAlign="center" wrap>
-                                                <Text variant="small">Orientation</Text>
-                                                <Pivot
+                                                <Text variant="small">Tabs orientation</Text>
+                                                <ComboBox
                                                     selectedKey={customTabsOrientation}
-                                                    onLinkClick={(item) => {
-                                                        const nextOrientation = item?.props.itemKey as "horizontal" | "vertical" | undefined
-                                                        if (nextOrientation) {
+                                                    options={[
+                                                        { key: "horizontal", text: "Horizontal" },
+                                                        { key: "vertical", text: "Vertical" },
+                                                    ]}
+                                                    onChange={(_event, option) => {
+                                                        const nextOrientation = option?.key
+                                                        if (nextOrientation === "horizontal" || nextOrientation === "vertical") {
                                                             setCustomTabsOrientation(nextOrientation)
                                                         }
                                                     }}
-                                                >
-                                                    <PivotItem itemKey="horizontal" headerText="Horizontal" />
-                                                    <PivotItem itemKey="vertical" headerText="Vertical" />
-                                                </Pivot>
+                                                />
                                             </Stack>
                                         )}
                                         <div className={styles.previewSurface}>
