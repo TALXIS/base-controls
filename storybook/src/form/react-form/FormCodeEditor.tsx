@@ -12,18 +12,15 @@ const theme = getTheme()
 const styles = mergeStyleSets({
     root: {
         width: "100%",
-        height: "100%",
         display: "flex",
         flexDirection: "column",
-        minHeight: 0,
     },
     label: {
         marginBottom: 8,
         flexShrink: 0,
     },
     frame: {
-        flex: 1,
-        minHeight: 0,
+        height: 640,
         overflow: "hidden",
         border: `1px solid ${theme.palette.neutralQuaternaryAlt}`,
         borderRadius: 8,
@@ -222,7 +219,7 @@ export const FormCodeEditor = (props: IFormCodeEditorProps) => {
         <div className={styles.frame}>
             <Editor
                 path="file:///sandbox/form-snippet.tsx"
-                height="100%"
+                height="640px"
                 defaultLanguage="typescript"
                 language="typescript"
                 value={value}
@@ -235,7 +232,7 @@ export const FormCodeEditor = (props: IFormCodeEditorProps) => {
                     fontSize: 13,
                     lineNumbersMinChars: 3,
                     minimap: { enabled: false },
-                    padding: { top: 12, bottom: 12 },
+                    padding: { top: 12, bottom: 0 },
                     quickSuggestions: {
                         comments: false,
                         other: true,
