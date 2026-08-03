@@ -12,6 +12,8 @@ import { IFormAfterSaveParams, IFormProps, IValidation } from "@components/Form/
 import { FORM_LABELS } from "@components/Form/labels";
 import { LocalizationService } from "@utils";
 
+initializeIcons();
+
 export const Root = (props: IFormProps) => {
     const { strategy } = props;
     const [formDeps, setFormDeps] = React.useState<IOnLoadResult | null>(null);
