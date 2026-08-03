@@ -401,7 +401,7 @@ const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
         <div className={styles.exampleCard}>
             <div className={styles.exampleHeader}>
                 <div className={styles.exampleCopy}>
-                    <Text variant="large">{example.title}</Text>
+                    <Text variant="large" styles={{ root: { fontWeight: 600 } }}>{example.title}</Text>
                     <Text>{example.summary}</Text>
                 </div>
                 <Toggle
@@ -485,29 +485,7 @@ const LayoutDocsPage = () => {
     return (
         <div className={styles.page}>
             <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                    <Text variant="xLarge">Responsive layout in React compose</Text>
-                    <Text>
-                        React compose exposes responsive layout directly on the authored components. In practice, the two main places to shape responsiveness are
-                        {' '}
-                        <code>Form.Tab</code>
-                        {' '}
-                        and
-                        {' '}
-                        <code>Form.Section</code>
-                        .
-                    </Text>
-                </div>
-                <div className={styles.sectionBody}>
-                    <ul className={styles.bullets}>
-                        <li><Text><code>Form.Tab layout</code> controls how many top-level columns the tab shows per breakpoint.</Text></li>
-                        <li><Text><code>Form.Section layout</code> controls how many cells render per row inside that section.</Text></li>
-                        <li><Text><code>labelWidth</code>, <code>cellLabelPosition</code>, and <code>cellLabelCollapseBreakpoint</code> tune label behavior within sections.</Text></li>
-                    </ul>
-                    <Text className={styles.note}>
-                        Each example below renders a live form preview and includes a Code toggle so you can inspect the exact Monaco-backed TSX that powers it.
-                    </Text>
-                </div>
+                <div className={styles.sectionBody} />
             </div>
 
             {layoutExamples.map((example) => (
@@ -554,7 +532,13 @@ const meta = {
                 component: `
 Use this page to explore how responsive layout is authored directly in React compose.
 
-The examples focus on the main layout controls exposed by \`Form.Tab\` and \`Form.Section\`, including breakpoint maps and label behavior. Each example can switch between a live form preview and the code editor that powers it.
+The two main places to shape responsiveness are \`Form.Tab\` and \`Form.Section\`.
+
+- \`Form.Tab layout\` controls how many top-level columns the tab shows per breakpoint.
+- \`Form.Section layout\` controls how many cells render per row inside that section.
+- \`labelWidth\`, \`cellLabelPosition\`, and \`cellLabelCollapseBreakpoint\` tune label behavior within sections.
+
+Each example below renders a live form preview and includes a Code toggle so you can inspect the exact Monaco-backed TSX that powers it.
                 `.trim(),
             },
         },

@@ -468,7 +468,7 @@ const CustomComponentsExampleCard = (props: ICustomComponentsExampleCardProps) =
         <div>
             <div className={styles.exampleHeader}>
                 <div className={styles.exampleCopy}>
-                    <Text variant="large">{example.title}</Text>
+                    <Text variant="large" styles={{ root: { fontWeight: 600 } }}>{example.title}</Text>
                     <Text>{example.summary}</Text>
                 </div>
                 <Toggle
@@ -511,23 +511,7 @@ const CustomComponentsDocsPage = () => {
     return (
         <div className={styles.page}>
             <div>
-                <div className={styles.sectionHeader}>
-                    <Text variant="xLarge">Custom components in React compose</Text>
-                    <Text>
-                        React compose lets you keep the form runtime while replacing or extending parts of the UI with custom React components.
-                    </Text>
-                </div>
-                <div className={styles.sectionBody}>
-                    <ul className={styles.bullets}>
-                        <li><Text>Override larger presentation layers such as tabs with `components` props.</Text></li>
-                        <li><Text>Author field-specific custom UI by combining `Form.Field`, `Form.Cell`, and `useField`.</Text></li>
-                        <li><Text>Render selected groups through a custom section component when you need a different section look and want to place the fields directly inside it.</Text></li>
-                        <li><Text>Mix runtime-managed controls with custom content cells in the same layout.</Text></li>
-                    </ul>
-                    <Text className={styles.note}>
-                        Each example below renders a live form preview and can switch to the Monaco-backed code editor that powers it.
-                    </Text>
-                </div>
+                <div className={styles.sectionBody} />
             </div>
 
             {customComponentsExamples.map((example) => (
@@ -574,7 +558,12 @@ const meta = {
                 component: `
 Use this page to explore how React compose can be extended with custom presentation components and custom field content.
 
-The examples cover replacing the tabs renderer, composing custom field UI with \`useField\`, embedding richer custom content alongside standard runtime fields, and rendering selected groups through a custom section component that places fields directly.
+- Override larger presentation layers such as tabs with \`components\` props.
+- Author field-specific custom UI by combining \`Form.Field\`, \`Form.Cell\`, and \`useField\`.
+- Render selected groups through a custom section component when you need a different section look and want to place the fields directly inside it.
+- Mix runtime-managed controls with custom content cells in the same layout.
+
+Each example below renders a live form preview and can switch to the Monaco-backed code editor that powers it.
                 `.trim(),
             },
         },
