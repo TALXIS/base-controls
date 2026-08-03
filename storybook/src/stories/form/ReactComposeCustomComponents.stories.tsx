@@ -68,27 +68,12 @@ const styles = mergeStyleSets({
         flexDirection: 'column',
         gap: 12,
     },
-    viewportToolbar: {
-        paddingBottom: 4,
-        maxWidth: 560,
-    },
     previewFrame: {
         minHeight: 420,
         width: '100%',
-        overflow: 'auto',
-        display: 'flex',
-        justifyContent: 'center',
+        overflow: 'hidden',
     },
     viewportWindow: {
-        minWidth: 320,
-        flexShrink: 0,
-    },
-    zoomedViewport: {
-        transformOrigin: 'top center',
-    },
-    zoomShell: {
-        display: 'flex',
-        justifyContent: 'center',
         width: '100%',
     },
     note: {
@@ -122,39 +107,60 @@ const customComponentsExamples: ICustomComponentsExample[] = [
 const getStepIndex = (tabId) => Math.max(stepperTabs.findIndex((tab) => tab.id === tabId), 0);
 
 function StepperTabs(props) {
-  const { children, expandedTab, onTabChange } = props;
+  const { children, expandedTab, onTabChange, orientation } = props;
   const tabs = React.Children.toArray(children).filter(React.isValidElement);
   const activeStepIndex = getStepIndex(expandedTab);
   const activeTab = tabs.find((tab) => tab.props.id === expandedTab) ?? tabs[0] ?? null;
 
   return (
     <Stack tokens={{ childrenGap: 12 }}>
-      <MuiStepper nonLinear activeStep={activeStepIndex}>
-        {tabs.map((tab) => (
-          <MuiStep key={tab.props.id}>
-            <MuiStepButton color="inherit" onClick={() => onTabChange(tab.props.id)}>
-              {tab.props.label || tab.props.id}
-            </MuiStepButton>
-          </MuiStep>
-        ))}
+      <MuiStepper nonLinear orientation={orientation} activeStep={activeStepIndex}>
+        {tabs.map((tab) => {
+          const isActive = tab.props.id === expandedTab;
+
+          return (
+            <MuiStep key={tab.props.id} expanded={orientation === "vertical" ? isActive : undefined}>
+              <MuiStepButton color="inherit" onClick={() => onTabChange(tab.props.id)}>
+                {tab.props.label || tab.props.id}
+              </MuiStepButton>
+              {orientation === "vertical" ? <MuiStepContent>{tab}</MuiStepContent> : null}
+            </MuiStep>
+          );
+        })}
       </MuiStepper>
-      {activeTab}
+      {orientation === "horizontal" ? activeTab : null}
     </Stack>
   );
 }
 
 const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("general");
+  const [orientation, setOrientation] = React.useState("horizontal");
 
   return (
     <Form.Root {...formProps}>
       <Form.Notifications />
       <Form.Ribbon />
+      <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 12 }}>
+        <FluentText>Tabs orientation</FluentText>
+        <ComboBox
+          selectedKey={orientation}
+          options={[
+            { key: "horizontal", text: "Horizontal" },
+            { key: "vertical", text: "Vertical" },
+          ]}
+          onChange={(_event, option) => {
+            if (option?.key) {
+              setOrientation(String(option.key));
+            }
+          }}
+        />
+      </Stack>
       <Form.Tabs
         expandedTab={activeTab}
         onTabChange={setActiveTab}
         components={{
-          onRenderTabs: (tabsProps) => <StepperTabs {...tabsProps} />,
+          onRenderTabs: (tabsProps) => <StepperTabs {...tabsProps} orientation={orientation} />,
         }}
       >
         <Form.Tab id="general" label="General">
@@ -256,17 +262,27 @@ const FormExample = () => {
         title: 'Mix runtime fields with custom content cells',
         summary: 'Custom components do not have to replace the whole form surface; they can be introduced selectively alongside standard fields.',
         notes: [
-            'This is useful for maps, summaries, helper panels, or domain-specific visualizations embedded in the form layout.',
-            'The composed layout stays declarative because the custom content still lives inside `Form.Cell`.',
+            'This is useful for summaries, helper panels, or domain-specific visualizations embedded in the form layout.',
+            'Keeping the custom content compact usually reads better than mixing several large custom surfaces in one section.',
         ],
         code: `function SummaryPanel() {
   const textField = useField("text");
+  const phoneField = useField("phone");
   const stageField = useField("optionset");
 
   return (
-    <Stack tokens={{ childrenGap: 8 }}>
+    <Stack
+      tokens={{ childrenGap: 8 }}
+      styles={{
+        root: {
+          padding: 12,
+          border: "1px solid #e1dfdd",
+        },
+      }}
+    >
       <FluentText variant="mediumPlus">Record summary</FluentText>
       <FluentText>Name: {String(textField?.getValue() ?? "-")}</FluentText>
+      <FluentText>Phone: {String(phoneField?.getValue() ?? "-")}</FluentText>
       <FluentText>Stage: {String(stageField?.getValue() ?? "-")}</FluentText>
     </Stack>
   );
@@ -294,16 +310,108 @@ const FormExample = () => {
               <Form.Cell label="Live summary">
                 <SummaryPanel />
               </Form.Cell>
-              <Form.Cell label="Office map">
+              <Form.Field name="multilinetext">
+                <Form.Cell label="Notes">
+                  <Form.Control />
+                </Form.Cell>
+              </Form.Field>
+            </Form.Section>
+          </Form.Column>
+        </Form.Tab>
+      </Form.Tabs>
+    </Form.Root>
+  );
+};`,
+    },
+    {
+        id: 'custom-sections-and-labels',
+        title: 'Render cells through a custom section component',
+        summary: 'When the default section look is not enough, you can render the fields directly through your own custom section component inside `Form.Root`.',
+        notes: [
+            'A custom section can render `Form.Field` and `Form.Cell` directly while taking full control over header and body presentation.',
+            'This is useful when one area needs branded visuals or a distinct framing that the stock section chrome does not provide.',
+        ],
+        code: `function CustomSection(props) {
+  return (
+    <Stack
+      tokens={{ childrenGap: 12 }}
+      styles={{
+        root: {
+          padding: 16,
+          background: "#ffffff",
+          borderLeft: "4px solid #0078d4",
+        },
+      }}
+    >
+      <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }}>
+        <Icon iconName="Design" />
+        <FluentText variant="large">{props.title}</FluentText>
+      </Stack>
+      <FluentText styles={{ root: { color: "#605e5c" } }}>{props.subtitle}</FluentText>
+      <Stack tokens={{ childrenGap: 10 }}>
+        {props.children}
+      </Stack>
+    </Stack>
+  );
+}
+
+function GuidancePanel() {
+  return (
+    <Stack
+      tokens={{ childrenGap: 8 }}
+      styles={{
+        root: {
+          padding: 12,
+          background: "#ffffff",
+        },
+      }}
+    >
+      <FluentText variant="mediumPlus">Author guidance</FluentText>
+      <FluentText>
+        Any custom React can live inside Form.Root. That includes custom headings, grouped guidance, summaries, and bespoke layout wrappers.
+      </FluentText>
+    </Stack>
+  );
+}
+
+const FormExample = () => {
+  const [activeTab, setActiveTab] = React.useState("workspace");
+
+  return (
+    <Form.Root {...formProps}>
+      <Form.Notifications />
+      <Form.Ribbon />
+      <GuidancePanel />
+      <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
+        <Form.Tab id="workspace" label="Workspace" layout={{ xs: 1, lg: 2 }}>
+          <Form.Column>
+            <Form.Section label="Standard section" layout={{ lg: 1 }}>
+              <Form.Field name="text"><Form.Cell label="Name"><Form.Control /></Form.Cell></Form.Field>
+              <Form.Field name="phone"><Form.Cell label="Phone"><Form.Control /></Form.Cell></Form.Field>
+              <Form.Field name="url"><Form.Cell label="Website"><Form.Control /></Form.Cell></Form.Field>
+            </Form.Section>
+          </Form.Column>
+          <Form.Column>
+            <CustomSection
+                title="Custom-looking section"
+                subtitle="This section is fully custom and renders the fields directly."
+            >
+              <Form.Cell label="Map">
                 <OpenMap
                   latitude={50.0755}
                   longitude={14.4378}
                   zoom={13}
                   title="Prague office"
-                  description="Custom content can sit beside runtime-managed fields."
+                  description="A custom section component can render the fields and choose its own framing."
                 />
               </Form.Cell>
-            </Form.Section>
+              <Form.Field name="multilinetext">
+                <Form.Cell label="Notes">
+                  <Form.Control />
+                </Form.Cell>
+              </Form.Field>
+              <GuidancePanel />
+            </CustomSection>
           </Form.Column>
         </Form.Tab>
       </Form.Tabs>
@@ -321,8 +429,6 @@ const CustomComponentsExampleCard = (props: ICustomComponentsExampleCardProps) =
     const { example } = props
     const [code, setCode] = useState(example.code)
     const [showCode, setShowCode] = useState(false)
-    const [viewportWidth, setViewportWidth] = useState(960)
-    const [zoomPercent, setZoomPercent] = useState(100)
     const [compileError, setCompileError] = useState<string | null>(null)
     const strategy = useMemo(() => getMemoryStrategy(), [])
     const formApiRef = useRef<IFormApi | null>(null)
@@ -380,59 +486,18 @@ const CustomComponentsExampleCard = (props: ICustomComponentsExampleCardProps) =
                         </li>
                     ))}
                 </ul>
-                {!showCode ? (
-                    <div className={styles.viewportToolbar}>
-                        <Stack tokens={{ childrenGap: 8 }}>
-                            <Slider
-                                label="Viewport width"
-                                min={320}
-                                max={1920}
-                                step={10}
-                                value={viewportWidth}
-                                showValue
-                                valueFormat={(value) => `${value}px`}
-                                onChange={setViewportWidth}
-                            />
-                            <Slider
-                                label="Zoom"
-                                min={50}
-                                max={150}
-                                step={5}
-                                value={zoomPercent}
-                                showValue
-                                valueFormat={(value) => `${value}%`}
-                                onChange={setZoomPercent}
-                            />
-                        </Stack>
-                    </div>
-                ) : null}
                 <div className={styles.previewFrame}>
-                    <div className={styles.viewportWindow} style={{ width: showCode ? '100%' : `${viewportWidth}px` }}>
+                    <div className={styles.viewportWindow}>
                         {showCode ? (
                             <FormCodeEditor value={code} onChange={setCode} />
                         ) : (
-                            <div
-                                className={styles.zoomShell}
-                                style={{
-                                    height: `${420 * (zoomPercent / 100)}px`,
-                                }}
-                            >
-                                <div
-                                    className={styles.zoomedViewport}
-                                    style={{
-                                        width: `${viewportWidth}px`,
-                                        transform: `scale(${zoomPercent / 100})`,
-                                    }}
-                                >
-                                    <LiveFormCode
-                                        code={code}
-                                        formProps={formProps}
-                                        useField={useField}
-                                        fluent={fluent}
-                                        onError={setCompileError}
-                                    />
-                                </div>
-                            </div>
+                            <LiveFormCode
+                                code={code}
+                                formProps={formProps}
+                                useField={useField}
+                                fluent={fluent}
+                                onError={setCompileError}
+                            />
                         )}
                     </div>
                 </div>
@@ -456,6 +521,7 @@ const CustomComponentsDocsPage = () => {
                     <ul className={styles.bullets}>
                         <li><Text>Override larger presentation layers such as tabs with `components` props.</Text></li>
                         <li><Text>Author field-specific custom UI by combining `Form.Field`, `Form.Cell`, and `useField`.</Text></li>
+                        <li><Text>Render selected groups through a custom section component when you need a different section look and want to place the fields directly inside it.</Text></li>
                         <li><Text>Mix runtime-managed controls with custom content cells in the same layout.</Text></li>
                     </ul>
                     <Text className={styles.note}>
@@ -508,7 +574,7 @@ const meta = {
                 component: `
 Use this page to explore how React compose can be extended with custom presentation components and custom field content.
 
-The examples cover replacing the tabs renderer, composing custom field UI with \`useField\`, and embedding richer custom content alongside standard runtime fields.
+The examples cover replacing the tabs renderer, composing custom field UI with \`useField\`, embedding richer custom content alongside standard runtime fields, and rendering selected groups through a custom section component that places fields directly.
                 `.trim(),
             },
         },
