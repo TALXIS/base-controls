@@ -10,7 +10,7 @@ interface IReactComposeCustomUiArgs {
 }
 
 const meta = {
-    title: 'Form/React compose/Advanced/Custom UI',
+    title: 'Form/React compose/Custom UI',
     tags: ['autodocs'],
     args: {
         stepperOrientation: 'horizontal',
