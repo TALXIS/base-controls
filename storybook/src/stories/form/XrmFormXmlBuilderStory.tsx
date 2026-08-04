@@ -33,7 +33,18 @@ const styles = mergeStyleSets({
     root: {
         display: 'flex',
         flexDirection: 'column',
+        boxSizing: 'border-box',
+        width: '100vw',
+        height: '100vh',
+        padding: 16,
         gap: 16,
+        overflow: 'hidden',
+    },
+    content: {
+        flex: 1,
+        minHeight: 0,
+        minWidth: 0,
+        overflow: 'auto',
     },
     pivot: {
         flexShrink: 0,
@@ -85,23 +96,25 @@ export const XrmFormXmlBuilderStory = () => {
                 <PivotItem itemKey="formxml" headerText="FormXml" />
             </Pivot>
 
-            {activeView === 'builder' && (
-                <FormXmlBuilderPanel
-                    formXmlText={formXmlText}
-                    parsedFormXml={parsedFormXml.value}
-                    builderError={parsedFormXml.error}
-                    onFormXmlTextChange={setFormXmlText}
-                />
-            )}
+            <div className={styles.content}>
+                {activeView === 'builder' && (
+                    <FormXmlBuilderPanel
+                        formXmlText={formXmlText}
+                        parsedFormXml={parsedFormXml.value}
+                        builderError={parsedFormXml.error}
+                        onFormXmlTextChange={setFormXmlText}
+                    />
+                )}
 
-            {activeView === 'formxml' && <FormXmlEditor value={formXmlText} onChange={setFormXmlText} />}
+                {activeView === 'formxml' && <FormXmlEditor value={formXmlText} onChange={setFormXmlText} />}
 
-            {activeView === 'preview' && (
-                <XrmForm
-                    key={previewKey}
-                    strategy={builderStrategy}
-                />
-            )}
+                {activeView === 'preview' && (
+                    <XrmForm
+                        key={previewKey}
+                        strategy={builderStrategy}
+                    />
+                )}
+            </div>
         </div>
     )
 }

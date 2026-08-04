@@ -1,13 +1,12 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { XrmFormXmlBuilderStory } from './XrmFormXmlBuilderStory'
-import { renderStory } from './storyHelpers'
 
 const meta = {
-    title: 'Form/Xrm/FormXml builder',
-    tags: ['autodocs'],
+    title: 'Form/Xrm/Builder docs',
     parameters: {
         controls: { disable: true },
+        docsOnly: true,
         docs: {
             story: {
                 inline: true,
@@ -34,7 +33,5 @@ type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
     name: 'Overview',
-    render: () => renderStory(
-        <XrmFormXmlBuilderStory />,
-    ),
+    render: () => <XrmFormXmlBuilderStory />,
 }

@@ -94,7 +94,6 @@ const config: StorybookConfig = {
       ...(config.server.fs.allow ?? []),
       path.resolve(storybookDir, '../..'),
     ];
-
     return config;
   },
 };

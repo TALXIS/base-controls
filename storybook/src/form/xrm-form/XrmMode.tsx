@@ -7,7 +7,6 @@ import { XrmForm } from "@talxis/base-controls/components/Form"
 import type { IFormApi, IXrmFormContext } from "@talxis/base-controls/components/Form"
 import { ControlComponents } from "@talxis/base-controls/components/Form/components/adapters/control"
 import { useField } from "@talxis/base-controls/components/Form"
-import { FormXmlBuilderPanel } from "./FormXmlBuilderPanel"
 import { FormXmlEditor } from "./FormXmlEditor"
 import { RecordDataEditor } from "../react-form/RecordDataEditor"
 import { XrmRecordBuilderPanel } from "./XrmRecordBuilderPanel"
@@ -748,7 +747,7 @@ const formatScenarioScript = (scenario: IXrmBusinessFlowScenario) => {
     ].join("\n")
 }
 
-type TXrmWorkspaceView = "preview" | "builder" | "data" | "model" | "form-context" | "custom-components"
+type TXrmWorkspaceView = "preview" | "data" | "model" | "form-context" | "custom-components"
 type TXrmCustomComponentsFlavor = "controls" | "tabs"
 
 interface IFormContextDocsExample {
@@ -774,10 +773,8 @@ interface IXrmModeProps {
     hideCustomComponentsPivot?: boolean
     useStorybookViewport?: boolean
     initialModelEditorMode?: "ui" | "json"
-    initialBuilderEditorMode?: "ui" | "xml"
     initialDataEditorMode?: "ui" | "json"
     hideModelEditorModeToggle?: boolean
-    hideBuilderEditorModeToggle?: boolean
     hideDataEditorModeToggle?: boolean
     initialShowCustomComponentsCode?: boolean
     initialShowCustomComponentsData?: boolean
@@ -805,9 +802,6 @@ export const XrmMode = (props: IXrmModeProps) => {
     const [showPreviewXml, setShowPreviewXml] = useState(props.initialShowPreviewXml ?? false)
     const [modelColumns, setModelColumns] = useModelColumns(props.initialView === "form-context" ? formContextSandbox.modelStore : xrmModelStore)
     const [jsonError, setJsonError] = useState<string | null>(null)
-    const [builderEditorMode, setBuilderEditorMode] = useState<"ui" | "xml">(props.initialBuilderEditorMode ?? "ui")
-    const [builderUndoCount, setBuilderUndoCount] = useState(0)
-    const builderUndoRef = useRef<(() => void) | null>(null)
     const [showResetDialog, setShowResetDialog] = useState(false)
     const [previewInstanceKey, setPreviewInstanceKey] = useState(0)
     const [customComponentsPreviewKey, setCustomComponentsPreviewKey] = useState(0)
@@ -1243,16 +1237,9 @@ export const XrmMode = (props: IXrmModeProps) => {
         setCurrentFormXml(nextXml)
         setXml(nextXml)
         setXmlError(null)
-        setBuilderEditorMode("ui")
-        setBuilderUndoCount(0)
-        builderUndoRef.current = null
         apiRef.current?.refresh()
         setPreviewInstanceKey((value) => value + 1)
         setShowResetDialog(false)
-    }
-
-    const undoBuilderChange = () => {
-        builderUndoRef.current?.()
     }
 
     const copyFormXml = async () => {
@@ -1263,32 +1250,6 @@ export const XrmMode = (props: IXrmModeProps) => {
     const commandBarItems = useMemo<ICommandBarItemProps[]>(() => {
         if (activeView === "preview") {
             return []
-        }
-
-        if (activeView === "builder") {
-            return [
-                {
-                    key: "copy-form-xml",
-                    text: "Copy FormXml",
-                    iconProps: { iconName: "Copy" },
-                    onClick: () => {
-                        void copyFormXml()
-                    },
-                },
-                {
-                    key: "undo-builder",
-                    text: "Undo",
-                    iconProps: { iconName: "Undo" },
-                    disabled: builderUndoCount === 0,
-                    onClick: undoBuilderChange,
-                },
-                {
-                    key: "reset-builder",
-                    text: "Reset",
-                    iconProps: { iconName: "Refresh" },
-                    onClick: () => setShowResetDialog(true),
-                },
-            ]
         }
 
         if (activeView === "model") {
@@ -1334,7 +1295,7 @@ export const XrmMode = (props: IXrmModeProps) => {
         }
 
         return []
-    }, [activeScenario, activeScenarioScript, activeView, applyScenario, builderEditorMode, builderUndoCount, formContext, modelColumns, props.formContextDocsExample, resetInteractionPreview, runFormContextScript])
+    }, [activeScenario, activeScenarioScript, activeView, applyScenario, formContext, modelColumns, props.formContextDocsExample, resetInteractionPreview, runFormContextScript])
 
     const commandBarControls = useMemo<React.ReactNode>(() => {
         if (activeView === "preview") {
@@ -1343,17 +1304,6 @@ export const XrmMode = (props: IXrmModeProps) => {
                 inlineLabel
                 checked={showPreviewXml}
                 onChange={(_event, checked) => setShowPreviewXml(!!checked)}
-                styles={{ root: styles.toolbarToggle }}
-            />
-        }
-
-        if (activeView === "builder" && !props.hideBuilderEditorModeToggle) {
-            return <Toggle
-                label=""
-                onText="XML"
-                offText="Visual builder"
-                checked={builderEditorMode === "xml"}
-                onChange={(_event, checked) => setBuilderEditorMode(checked ? "xml" : "ui")}
                 styles={{ root: styles.toolbarToggle }}
             />
         }
@@ -1393,7 +1343,7 @@ export const XrmMode = (props: IXrmModeProps) => {
         }
 
         return null
-    }, [activeView, builderEditorMode, dataEditorMode, modelEditorMode, props.hideBuilderEditorModeToggle, props.hideDataEditorModeToggle, props.hideFormContextCodePanel, props.hideModelEditorModeToggle, showFormContextCode, showPreviewXml])
+    }, [activeView, dataEditorMode, modelEditorMode, props.hideDataEditorModeToggle, props.hideFormContextCodePanel, props.hideModelEditorModeToggle, showFormContextCode, showPreviewXml])
 
     return <>
         <div className={styles.modeLayout}>
@@ -1413,7 +1363,6 @@ export const XrmMode = (props: IXrmModeProps) => {
                     <PivotItem itemKey="preview" headerText="Preview" />
                     <PivotItem itemKey="data" headerText="Data" />
                     <PivotItem itemKey="model" headerText="Model" />
-                    <PivotItem itemKey="builder" headerText="Builder" />
                     <PivotItem itemKey="custom-components" headerText="Custom components" />
                     <PivotItem itemKey="form-context" headerText="Form context" />
                 </Pivot>}
@@ -1468,43 +1417,6 @@ export const XrmMode = (props: IXrmModeProps) => {
                         )}
 
                         {showPreviewXml && (
-                            <>
-                                <div className={styles.editorSurface}>
-                                    <FormXmlEditor value={xml} onChange={setXml} />
-                                </div>
-                                {xmlError && (
-                                    <MessageBar className={styles.editorStatus} messageBarType={MessageBarType.error} isMultiline>
-                                        <pre className="toast-details">{xmlError}</pre>
-                                    </MessageBar>
-                                )}
-                            </>
-                        )}
-                    </div>
-                )}
-
-                {activeView === "builder" && (
-                    <div className={`${styles.cardBody} ${styles.scrollBody}`}>
-                        {xmlError && (
-                            <MessageBar messageBarType={MessageBarType.warning} isMultiline>
-                                Fix the raw FormXml first to re-enable graphical editing.
-                            </MessageBar>
-                        )}
-                        {builderEditorMode === "ui" ? (
-                            <div className={styles.builderViewportShell}>
-                                <div className={styles.builderViewportWindow} style={{ width: '100%' }}>
-                                    <FormXmlBuilderPanel
-                                        formXmlText={xml}
-                                        parsedFormXml={parsedFormXml.value}
-                                        builderError={parsedFormXml.error}
-                                        onFormXmlTextChange={setXml}
-                                        onUndoStackChange={(count, undo) => {
-                                            setBuilderUndoCount(count)
-                                            builderUndoRef.current = undo
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        ) : (
                             <>
                                 <div className={styles.editorSurface}>
                                     <FormXmlEditor value={xml} onChange={setXml} />
