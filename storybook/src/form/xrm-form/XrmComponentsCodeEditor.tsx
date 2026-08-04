@@ -1,4 +1,4 @@
-import Editor, { OnMount } from "@monaco-editor/react"
+import Editor, { BeforeMount, OnMount } from "@monaco-editor/react"
 import { Stack, Text, mergeStyleSets } from "@fluentui/react"
 import type * as MonacoNamespace from "monaco-editor"
 
@@ -244,31 +244,54 @@ const configureMonaco = (monaco: typeof MonacoNamespace) => {
         noSyntaxValidation: false,
     })
 
-    typescript.typescriptDefaults.setExtraLibs([
-        {
-            content: xrmComponentsDeclarations,
-            filePath: "file:///sandbox/xrm-components-runtime.d.ts",
-        },
-    ])
+    typescript.javascriptDefaults.setCompilerOptions({
+        allowJs: true,
+        allowNonTsExtensions: true,
+        checkJs: true,
+        esModuleInterop: true,
+        noEmit: true,
+        target: typescript.ScriptTarget.ES2020,
+        typeRoots: ["node_modules/@types"],
+    })
+
+    typescript.javascriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: false,
+        noSyntaxValidation: false,
+    })
 }
 
 const formContextScenarioDeclarations = `${baseXrmDeclarations}
 declare const formContext: IXrmFormContext | null;
-declare function onExecuteScenario(formContext: IXrmFormContext | null): void;
+declare const onExecuteScenario: (formContext: IXrmFormContext | null) => void;
 `
 
 export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) => {
-    const handleMount: OnMount = (_, monaco) => {
+    const handleBeforeMount: BeforeMount = (monaco) => {
         configureMonaco(monaco)
+    }
+
+    const handleMount: OnMount = (_, monaco) => {
         const declarations = props.declarations
             ?? (props.kind === "form-context" ? formContextScenarioDeclarations : xrmComponentsDeclarations)
+        const filePath = props.kind === "form-context"
+            ? "file:///sandbox/xrm-form-context-runtime.d.ts"
+            : "file:///sandbox/xrm-components-runtime.d.ts"
 
         monaco.languages.typescript.typescriptDefaults.setExtraLibs([
             {
                 content: declarations,
-                filePath: "file:///sandbox/xrm-components-runtime.d.ts",
+                filePath,
             },
         ])
+
+        if (props.language === "javascript") {
+            monaco.languages.typescript.javascriptDefaults.setExtraLibs([
+                {
+                    content: declarations,
+                    filePath,
+                },
+            ])
+        }
     }
 
     return <Stack className={styles.root}>
@@ -282,6 +305,7 @@ export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) =>
                 defaultLanguage={props.language ?? "typescript"}
                 language={props.language ?? "typescript"}
                 value={props.value}
+                beforeMount={handleBeforeMount}
                 onMount={handleMount}
                 options={{
                     automaticLayout: true,

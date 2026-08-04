@@ -346,12 +346,9 @@ const styles = mergeStyleSets({
     },
     formContextLayout: {
         display: "grid",
-        gridTemplateColumns: "minmax(420px, 560px) minmax(620px, 1fr)",
+        gridTemplateColumns: "minmax(0, 1fr)",
         gap: 24,
         alignItems: "start",
-        "@media (max-width: 1480px)": {
-            gridTemplateColumns: "minmax(380px, 500px) minmax(0, 1fr)",
-        },
     },
     editorsColumn: {
         display: "flex",
@@ -781,6 +778,13 @@ const getEmptyScenarioScript = (scenario: IXrmBusinessFlowScenario) => {
 type TXrmWorkspaceView = "preview" | "builder" | "data" | "model" | "form-context" | "custom-components"
 type TXrmCustomComponentsFlavor = "controls" | "tabs"
 
+interface IFormContextDocsExample {
+    title: string
+    summary: string
+    code: string
+    runner?: string
+}
+
 interface IXrmModeProps {
     initialView?: TXrmWorkspaceView
     initialCustomComponentsFlavor?: TXrmCustomComponentsFlavor
@@ -803,8 +807,10 @@ interface IXrmModeProps {
     hideCustomComponentsEditorToggles?: boolean
     hideFormContextScenarioPanel?: boolean
     hideFormContextConsole?: boolean
-    showFormContextCodePanel?: boolean
+    hideFormContextCodePanel?: boolean
+    initialShowFormContextCode?: boolean
     initialShowPreviewXml?: boolean
+    formContextDocsExample?: IFormContextDocsExample
 }
 
 export const XrmMode = (props: IXrmModeProps) => {
@@ -827,7 +833,7 @@ export const XrmMode = (props: IXrmModeProps) => {
     const [customTabsPreviewKey, setCustomTabsPreviewKey] = useState(0)
     const [formContext, setFormContext] = useState<IXrmFormContext | null>(null)
     const [activeScenarioId, setActiveScenarioId] = useState<string | null>(props.initialFormContextScenarioId ?? null)
-    const [formContextScenarioScripts, setFormContextScenarioScripts] = useState<Record<string, string>>(() => Object.fromEntries(xrmBusinessFlowScenarios.map((scenario) => [scenario.id, formatScenarioScript(scenario)])))
+    const [formContextScenarioScripts, setFormContextScenarioScripts] = useState<Record<string, string>>(() => Object.fromEntries(xrmBusinessFlowScenarios.map((scenario) => [scenario.id, getEmptyScenarioScript(scenario)])))
     const [demoEvents, setDemoEvents] = useState<IXrmDemoEvent[]>([])
     const apiRef = useRef<IFormApi | null>(null)
     const customComponentsApiRef = useRef<IFormApi | null>(null)
@@ -840,6 +846,7 @@ export const XrmMode = (props: IXrmModeProps) => {
     const [customComponentsXmlError, setCustomComponentsXmlError] = useState<string | null>(null)
     const [customComponentsJson, setCustomComponentsJson] = useState(() => serializeRecord(customComponentsRecord))
     const [customComponentsJsonError, setCustomComponentsJsonError] = useState<string | null>(null)
+    const [showFormContextCode, setShowFormContextCode] = useState(props.initialShowFormContextCode ?? false)
     const [showCustomComponentsCode, setShowCustomComponentsCode] = useState(props.initialShowCustomComponentsCode ?? false)
     const [showCustomComponentsData, setShowCustomComponentsData] = useState(props.initialShowCustomComponentsData ?? false)
     const [showCustomComponentsXml, setShowCustomComponentsXml] = useState(props.initialShowCustomComponentsXml ?? false)
@@ -896,6 +903,10 @@ export const XrmMode = (props: IXrmModeProps) => {
         return xrmBusinessFlowScenarios.find((scenario) => scenario.id === activeScenarioId) ?? null
     }, [activeScenarioId])
     const activeScenarioScript = useMemo(() => {
+        if (props.formContextDocsExample) {
+            return props.formContextDocsExample.code
+        }
+
         if (!activeScenario) {
             return [
                 "// Select a form context scenario to inspect and edit the runtime script.",
@@ -904,7 +915,7 @@ export const XrmMode = (props: IXrmModeProps) => {
         }
 
         return formContextScenarioScripts[activeScenario.id] ?? formatScenarioScript(activeScenario)
-    }, [activeScenario, formContextScenarioScripts])
+    }, [activeScenario, formContextScenarioScripts, props.formContextDocsExample])
     const parsedFormXml = useMemo(() => {
         try {
             return {
@@ -1178,6 +1189,24 @@ export const XrmMode = (props: IXrmModeProps) => {
         appendDemoEvent("scenario", `Applied ${scenario.title}.`)
     }
 
+    const runFormContextScript = useCallback((script: string) => {
+        if (!formContext) {
+            return
+        }
+
+        try {
+            const executableScript = props.formContextDocsExample
+                ? [script, props.formContextDocsExample.runner ?? "onExecuteScenario(formContext)"].join("\n\n")
+                : script
+            const runScenario = new Function("formContext", "resetXrmBusinessFlows", executableScript) as (formContext: IXrmFormContext, resetXrmBusinessFlows: typeof resetXrmBusinessFlows) => void
+            runScenario(formContext, resetXrmBusinessFlows)
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            appendDemoEvent("scenario.error", `Scenario script failed: ${message}`)
+            console.log("Scenario script failed", { message })
+        }
+    }, [appendDemoEvent, formContext, props.formContextDocsExample])
+
     const triggerSaveHandlers = () => {
         if (!formContext) {
             return
@@ -1282,8 +1311,13 @@ export const XrmMode = (props: IXrmModeProps) => {
                     key: "run-form-context-code",
                     text: "Run code",
                     iconProps: { iconName: "Play" },
-                    disabled: !formContext || !activeScenario,
+                    disabled: !formContext || (!activeScenario && !props.formContextDocsExample),
                     onClick: () => {
+                        if (props.formContextDocsExample) {
+                            runFormContextScript(activeScenarioScript)
+                            return
+                        }
+
                         if (!activeScenario) {
                             return
                         }
@@ -1301,7 +1335,7 @@ export const XrmMode = (props: IXrmModeProps) => {
         }
 
         return []
-    }, [activeScenario, activeView, applyScenario, builderEditorMode, builderUndoCount, formContext, modelColumns, resetInteractionPreview, viewportWidth])
+    }, [activeScenario, activeScenarioScript, activeView, applyScenario, builderEditorMode, builderUndoCount, formContext, modelColumns, props.formContextDocsExample, resetInteractionPreview, runFormContextScript, viewportWidth])
 
     const commandBarControls = useMemo<React.ReactNode>(() => {
         if (activeView === "preview") {
@@ -1348,8 +1382,19 @@ export const XrmMode = (props: IXrmModeProps) => {
             />
         }
 
+        if (activeView === "form-context" && !props.hideFormContextCodePanel) {
+            return <Toggle
+                label=""
+                onText="Code"
+                offText="Form"
+                checked={showFormContextCode}
+                onChange={(_event, checked) => setShowFormContextCode(!!checked)}
+                styles={{ root: styles.toolbarToggle }}
+            />
+        }
+
         return null
-    }, [activeView, builderEditorMode, dataEditorMode, modelEditorMode, props.hideBuilderEditorModeToggle, props.hideDataEditorModeToggle, props.hideModelEditorModeToggle, showPreviewXml])
+    }, [activeView, builderEditorMode, dataEditorMode, modelEditorMode, props.hideBuilderEditorModeToggle, props.hideDataEditorModeToggle, props.hideFormContextCodePanel, props.hideModelEditorModeToggle, showFormContextCode, showPreviewXml])
 
     return <>
         <div className={styles.modeLayout}>
@@ -1676,34 +1721,36 @@ export const XrmMode = (props: IXrmModeProps) => {
                 {activeView === "form-context" && (
                     <div className={styles.formContextBody}>
                         <div className={styles.formContextLayout}>
-                            <div className={styles.previewColumn}>
-                                <div className={styles.previewSurface}>
-                                    <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
-                                        <XrmForm
-                                            key={previewInstanceKey}
-                                            strategy={strategy}
-                                            onAfterSave={({ success }) => {
-                                                const currentData = apiRef.current?.getData()
-                                                console.log(success ? "Form saved" : "Save failed", { success, currentData })
-                                                setJson(serializeRecord(currentRecord))
-                                            }}
-                                            onFormReady={(params) => {
-                                                apiRef.current = params.api
-                                                setFormContext(params.formContext)
-                                            }}
-                                        />
+                            {!showFormContextCode && (
+                                <div className={styles.previewColumn}>
+                                    <div className={styles.previewSurface}>
+                                        <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
+                                            <XrmForm
+                                                key={previewInstanceKey}
+                                                strategy={strategy}
+                                                onAfterSave={({ success }) => {
+                                                    const currentData = apiRef.current?.getData()
+                                                    console.log(success ? "Form saved" : "Save failed", { success, currentData })
+                                                    setJson(serializeRecord(currentRecord))
+                                                }}
+                                                onFormReady={(params) => {
+                                                    apiRef.current = params.api
+                                                    setFormContext(params.formContext)
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
-                            <Stack className={styles.editorsColumn}>
-                                {props.showFormContextCodePanel && (
+                            {showFormContextCode && !props.hideFormContextCodePanel && (
+                                <Stack className={styles.editorsColumn}>
                                     <Stack className={styles.card}>
                                         <Stack tokens={{ childrenGap: 16 }} className={`${styles.cardBody} ${styles.fillBody}`.trim()}>
                                             <div className={styles.editorSurface}>
                                                 <XrmComponentsCodeEditor
                                                     value={activeScenarioScript}
-                                                    label="Scenario script"
+                                                    label=""
                                                     language="javascript"
                                                     path="file:///sandbox/xrm-form-context-scenario.js"
                                                     height="520px"
@@ -1723,8 +1770,11 @@ export const XrmMode = (props: IXrmModeProps) => {
                                             </div>
                                         </Stack>
                                     </Stack>
-                                )}
+                                </Stack>
+                            )}
 
+                            {!props.formContextDocsExample && (
+                            <Stack className={styles.editorsColumn}>
                                 {!props.hideFormContextConsole && (
                                     <Stack className={styles.card}>
                                         <Stack tokens={{ childrenGap: 16 }} className={styles.cardBody}>
@@ -1766,6 +1816,7 @@ export const XrmMode = (props: IXrmModeProps) => {
                                     </Stack>
                                 )}
                             </Stack>
+                            )}
                         </div>
                     </div>
                 )}

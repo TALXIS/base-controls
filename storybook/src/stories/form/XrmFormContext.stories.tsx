@@ -1,45 +1,40 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { XrmMode } from '../../form/xrm-form/XrmMode'
-import { xrmBusinessFlowScenarios } from '../../form/xrm-form/xrmBusinessFlows'
 import { renderStory } from './storyHelpers'
 
 interface IXrmFormContextArgs {
-    scenarioId: string
-    showCodePanel: boolean
-    showConsole: boolean
 }
 
-const scenarioOptions = xrmBusinessFlowScenarios.map((scenario) => scenario.id)
-const scenarioLabels = Object.fromEntries(xrmBusinessFlowScenarios.map((scenario) => [scenario.id, scenario.title]))
+const formContextDocsCode = `const onExecuteScenario = (formContext) => {
+  if (!formContext) return;
+
+  const targetDate = formContext.getAttribute("targetDate");
+  const approvedBudget = formContext.getAttribute("approvedBudget");
+  const metricsTab = formContext.ui.tabs.get("MetricsTab");
+
+  targetDate?.setRequiredLevel("required");
+  approvedBudget?.setValue(125000);
+  approvedBudget?.fireOnChange();
+  metricsTab?.setVisible(true);
+  formContext.ui.setFormNotification(
+    "Custom Form context code ran successfully.",
+    "INFO",
+    "docs-form-context"
+  );
+};`
 
 const meta = {
     title: 'Form/Xrm/Form context',
     tags: ['autodocs'],
-    args: {
-        scenarioId: scenarioOptions[0],
-        showCodePanel: true,
-        showConsole: false,
-    },
-    argTypes: {
-        scenarioId: {
-            control: 'select',
-            options: scenarioOptions,
-            mapping: undefined,
-            labels: scenarioLabels,
-        },
-        showCodePanel: {
-            control: 'boolean',
-        },
-        showConsole: {
-            control: 'boolean',
-        },
-    },
     parameters: {
+        controls: { disable: true },
         docs: {
             description: {
                 component: `
 \`formContext\` is the Xrm runtime handle exposed by \`XrmForm\`, which builds on top of the base Form runtime, keeps the layout FormXml-driven, and exposes an API shaped to be compatible with the Microsoft model-driven-app \`formContext\` programming model.
+
+This docs page focuses on the interactive runtime surface: the form preview is shown first, and the **Code** toggle switches to a Monaco editor where you can edit the method executed by the **Run code** action.
 
 ## Retrieving formContext
 
@@ -88,15 +83,18 @@ Microsoft Learn references:
             },
         },
     },
-    render: (args: IXrmFormContextArgs) => renderStory(
+    render: () => renderStory(
         <XrmMode
             initialView="form-context"
-            initialFormContextScenarioId={args.scenarioId}
-            formContextScenarioIds={[args.scenarioId]}
             hideWorkspaceViewPivot
             useStorybookViewport
-            showFormContextCodePanel={args.showCodePanel}
-            hideFormContextConsole={!args.showConsole}
+            hideFormContextScenarioPanel
+            hideFormContextConsole
+            formContextDocsExample={{
+                title: 'Run custom Form context code',
+                summary: 'Switch to Code to edit the Monaco snippet. The editor exposes IXrmFormContext members for intellisense, and Run code invokes onExecuteScenario against the live preview.',
+                code: formContextDocsCode,
+            }}
         />,
     ),
 } satisfies Meta<IXrmFormContextArgs>
@@ -105,4 +103,4 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const FormContextScenarios: Story = {}
+export const Docs: Story = {}
