@@ -1,29 +1,40 @@
 import type { Preview } from '@storybook/react-vite';
 import React from 'react';
+import { ThemeProvider } from '@fluentui/react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
-import { PcfContextProvider } from '@talxis/base-controls/utils';
+import { PcfContextProvider, usePcfContext } from '@talxis/base-controls/utils';
+import { useControlTheme } from '@talxis/base-controls/hooks';
+
+const StorybookProviders = ({ children }: { children?: React.ReactNode }) => {
+  const context = usePcfContext();
+  const theme = useControlTheme(context.fluentDesignLanguage);
+
+  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+};
 
 const preview: Preview = {
   decorators: [
     (Story) => (
       <PcfContextProvider>
-        <>
-          <style>
-            {`
-              .sbdocs-content p,
-              .sbdocs-content li {
-                font-size: 16px;
-                line-height: 1.65;
-              }
+        <StorybookProviders>
+          <>
+            <style>
+              {`
+                .sbdocs-content p,
+                .sbdocs-content li {
+                  font-size: 16px;
+                  line-height: 1.65;
+                }
 
-              .form-strategy-hidden-preview.sbdocs-preview {
-                display: none;
-              }
-            `}
-          </style>
-          <Story />
-        </>
+                .form-strategy-hidden-preview.sbdocs-preview {
+                  display: none;
+                }
+              `}
+            </style>
+            <Story />
+          </>
+        </StorybookProviders>
       </PcfContextProvider>
     ),
   ],
