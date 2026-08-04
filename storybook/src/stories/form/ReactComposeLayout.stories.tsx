@@ -15,9 +15,9 @@ import { Form, useField } from '@talxis/base-controls/components/Form'
 import type { IFormApi } from '@talxis/base-controls/components/Form'
 import { renderStory } from './storyHelpers'
 import { FormCodeEditor } from '../../form/react-form/FormCodeEditor'
-import { LiveFormCode } from '../../form/react-form/LiveFormCode'
 import { OpenMap } from '../../form/react-form/OpenMap'
 import { getDemoRecord, getMemoryStrategy } from '../../form/shared/formModel'
+import { ReactComposeLivePreview } from './ReactComposeLivePreview'
 
 const theme = getTheme()
 
@@ -68,6 +68,16 @@ interface ILayoutExample {
     code: string
 }
 
+const sharedStrategyCode = `const strategy = new MemoryStrategy({
+  onGetData: () => recordData,
+  onGetColumns: () => modelColumns,
+  onGetMetadata: () => ({
+    PrimaryIdAttribute: "id",
+    PrimaryNameAttribute: "text",
+  }),
+});
+`
+
 const layoutExamples: ILayoutExample[] = [
     {
         id: 'tab-breakpoints',
@@ -77,11 +87,12 @@ const layoutExamples: ILayoutExample[] = [
             '`layout={{ xs: 1, md: 2, lg: 3 }}` lets one tab collapse from three columns down to one as space tightens.',
             'This is the main lever for overall form density within a tab.',
         ],
-        code: `const FormExample = () => {
+        code: `${sharedStrategyCode}
+const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("profile");
 
   return (
-    <Form.Root {...formProps}>
+    <Form.Root strategy={strategy}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -118,11 +129,12 @@ const layoutExamples: ILayoutExample[] = [
             '`layout={{ xs: 1, sm: 2, lg: 4 }}` is ideal when one section should progressively densify.',
             'Tab layout decides column shells; section layout decides the grid inside each shell.',
         ],
-        code: `const FormExample = () => {
+        code: `${sharedStrategyCode}
+const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("overview");
 
   return (
-    <Form.Root {...formProps}>
+    <Form.Root strategy={strategy}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -153,11 +165,12 @@ const layoutExamples: ILayoutExample[] = [
             'A tab can collapse from two columns to one while each section also changes its own internal grid.',
             'This is useful when the page should keep logical groupings even as each group repacks its fields.',
         ],
-        code: `const FormExample = () => {
+        code: `${sharedStrategyCode}
+const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("workspace");
 
   return (
-    <Form.Root {...formProps}>
+    <Form.Root strategy={strategy}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -203,11 +216,12 @@ const layoutExamples: ILayoutExample[] = [
             '`cellLabelCollapseBreakpoint` flips labels above controls below a chosen width.',
             '`labelWidth` keeps left-aligned labels visually consistent across cells.',
         ],
-        code: `const FormExample = () => {
+        code: `${sharedStrategyCode}
+const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("labels");
 
   return (
-    <Form.Root {...formProps}>
+    <Form.Root strategy={strategy}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -252,11 +266,12 @@ const layoutExamples: ILayoutExample[] = [
             '`rowspan` helps when one cell should stay taller while neighboring cells stack beside it; multiline fields are a common fit.',
             'These options work inside the section grid, so they combine naturally with `Form.Section layout`.',
         ],
-        code: `const FormExample = () => {
+        code: `${sharedStrategyCode}
+const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("span");
 
   return (
-    <Form.Root {...formProps}>
+    <Form.Root strategy={strategy}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -338,19 +353,6 @@ const renderLayoutExample = (example: ILayoutExample) => {
         [strategy],
     )
 
-    const fluent = useMemo(
-        () => ({
-            Stack,
-            FluentText: Text,
-            TextField,
-            Icon,
-            ComboBox,
-            IconButton,
-            OpenMap,
-        }),
-        [],
-    )
-
     return (
         <div>
             <div className={styles.exampleHeader}>
@@ -370,11 +372,9 @@ const renderLayoutExample = (example: ILayoutExample) => {
                                 <FormCodeEditor value={code} onChange={setCode} />
                             </div>
                         ) : (
-                            <LiveFormCode
+                            <ReactComposeLivePreview
                                 code={code}
                                 formProps={formProps}
-                                useField={useField}
-                                fluent={fluent}
                                 onError={setCompileError}
                             />
                         )}

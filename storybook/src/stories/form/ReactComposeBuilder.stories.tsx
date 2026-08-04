@@ -2,9 +2,8 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import Editor from '@monaco-editor/react'
 import { IconButton, Toggle, mergeStyleSets } from '@fluentui/react'
-import { ReactComposeMode } from '../../form/react-form/ReactComposeMode'
 import { getDemoRecord, getFormColumns } from '../../form/shared/formModel'
-import { FormCodeEditor } from '../../form/react-form/FormCodeEditor'
+import { ReactComposeOverviewPreview } from './ReactComposeOverviewPreview'
 import { renderStory } from './storyHelpers'
 
 const codeBlockStyles = mergeStyleSets({
@@ -37,7 +36,7 @@ const codeBlockStyles = mergeStyleSets({
         paddingBottom: 8,
     },
     editor: {
-        height: 220,
+        height: 520,
     },
     codeEditor: {
         border: '1px solid #edebe9',
@@ -63,7 +62,7 @@ const StaticCodeBlock = (props: { title: string; value?: string; language?: 'jso
                 <div className={codeBlockStyles.editor}>
                     {props.children ?? (
                         <Editor
-                            height="220px"
+                            height="100%"
                             defaultLanguage={props.language ?? 'json'}
                             language={props.language ?? 'json'}
                             value={props.value}
@@ -106,29 +105,7 @@ const ReactComposeOverviewStory = () => {
                 />
             </div>
             <div style={{ minHeight: 0, flex: 1 }}>
-                {showCode ? (
-                    <div className={codeBlockStyles.codeEditor}>
-                        <ReactComposeMode
-                            initialView="preview"
-                            initialTabsFlavor="pivot"
-                            hideTabsFlavorPivot
-                            hideWorkspaceViewPivot
-                            useStorybookViewport
-                            renderPreviewCodeBeforePreview
-                            renderPreviewCode={({ code, onChange }) => (
-                                <FormCodeEditor value={code} onChange={onChange} />
-                            )}
-                        />
-                    </div>
-                ) : (
-                    <ReactComposeMode
-                        initialView="preview"
-                        initialTabsFlavor="pivot"
-                        hideTabsFlavorPivot
-                        hideWorkspaceViewPivot
-                        useStorybookViewport
-                    />
-                )}
+                <ReactComposeOverviewPreview showCode={showCode} />
             </div>
         </div>
     )

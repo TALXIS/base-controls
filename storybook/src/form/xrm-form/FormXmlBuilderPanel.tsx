@@ -3,13 +3,13 @@ import { DndContext, DragEndEvent, DragMoveEvent, DragOverlay, DragOverEvent, Dr
 import { horizontalListSortingStrategy, SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS as DndCss } from "@dnd-kit/utilities"
 import { XrmForm } from "@talxis/base-controls/components/Form"
+import type { IXrmFormStrategy } from "@talxis/base-controls/components/Form"
 import type { IXrmFormContext } from "@talxis/base-controls/components/Form"
 import { serializeFormXml } from "@talxis/client-metadata"
 import type { FormXml, FormXmlCell, FormXmlSection } from "@talxis/client-metadata"
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { getFormColumns } from "../shared/formModel"
 import { DEFAULT_LANGUAGE_CODE, getClassIdForColumn } from "./constants"
-import { getXrmStrategy, setCurrentFormXml } from "./xrmModel"
 import {
     addColumnToFormXml,
     addFieldRowToFormXml,
@@ -46,6 +46,7 @@ interface IFormXmlBuilderPanelProps {
     parsedFormXml: FormXml | null
     builderError: string | null
     onFormXmlTextChange: (value: string) => void
+    strategy: IXrmFormStrategy
     onUndoStackChange?: (count: number, undo: (() => void) | null) => void
 }
 
@@ -619,7 +620,14 @@ const useLongPressDragCursor = () => {
     return { start, clear }
 }
 
-export const FormXmlBuilderPanel = ({ formXmlText, parsedFormXml, builderError, onFormXmlTextChange, onUndoStackChange }: IFormXmlBuilderPanelProps) => {
+export const FormXmlBuilderPanel = ({
+    formXmlText,
+    parsedFormXml,
+    builderError,
+    onFormXmlTextChange,
+    strategy,
+    onUndoStackChange,
+}: IFormXmlBuilderPanelProps) => {
     const [undoStack, setUndoStack] = useState<string[]>([])
     const [selection, setSelection] = useState<TSelection>({ type: "tab", tabIndex: 0 })
     const [contextMenu, setContextMenu] = useState<IContextMenuState | null>(null)
@@ -708,7 +716,6 @@ export const FormXmlBuilderPanel = ({ formXmlText, parsedFormXml, builderError, 
 
         setUndoStack((current) => [...current, formXmlText])
         const nextXml = serializeFormXml(updater(parsedFormXml))
-        setCurrentFormXml(nextXml)
         onFormXmlTextChange(nextXml)
     }
 
@@ -719,7 +726,6 @@ export const FormXmlBuilderPanel = ({ formXmlText, parsedFormXml, builderError, 
                 return current
             }
 
-            setCurrentFormXml(previousXml)
             onFormXmlTextChange(previousXml)
             return current.slice(0, -1)
         })
@@ -2309,7 +2315,7 @@ export const FormXmlBuilderPanel = ({ formXmlText, parsedFormXml, builderError, 
                         <div className={styles.previewBase}>
                             <XrmForm
                                 key={formXmlText}
-                                strategy={getXrmStrategy()}
+                                strategy={strategy}
                                 onFormReady={({ formContext }) => {
                                     formContextRef.current = formContext
                                     const expandedIdx = Math.max(0, tabs.findIndex((tab) => tab.expanded))

@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { XrmMode } from '../../form/xrm-form/XrmMode'
 import { overviewFormContextExample } from './formContextExamples'
+import { XrmFormContextOverviewPreview } from './XrmFormContextOverviewPreview'
 import { renderStory } from './storyHelpers'
 
 interface IXrmFormContextArgs {
@@ -69,14 +69,7 @@ For ready-made patterns built on the same runtime, go to [**Samples**](?path=/do
         },
     },
     render: () => renderStory(
-        <XrmMode
-            initialView="form-context"
-            hideWorkspaceViewPivot
-            useStorybookViewport
-            hideFormContextScenarioPanel
-            hideFormContextConsole
-            formContextDocsExample={overviewFormContextExample}
-        />,
+        <XrmFormContextOverviewPreview docsExample={overviewFormContextExample} />,
     ),
 } satisfies Meta<IXrmFormContextArgs>
 

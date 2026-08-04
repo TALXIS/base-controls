@@ -13,7 +13,7 @@ interface IXrmComponentsCodeEditorProps {
     readOnly?: boolean
     onChange?: (value: string) => void
     declarations?: string
-    kind?: "components" | "form-context"
+    kind?: "components" | "form-context" | "overview"
     resetToken?: string | number
 }
 
@@ -136,7 +136,40 @@ interface IXrmFormContext {
 
 const xrmComponentsDeclarations = `${xrmTypeBridgeDeclarations}
 declare const React: typeof import("react");
-declare const XrmForm: any;
+interface IXrmMemoryStrategyParams {
+  onGetData: () => any;
+  onGetColumns: () => any[];
+  onGetMetadata: () => any;
+  onGetFormXml: () => string;
+}
+interface IXrmControlComponents {
+  onRenderControl?: (props: IXrmControlRenderProps) => React.ReactNode;
+}
+interface IXrmTabsComponents {
+  onRenderTabs?: (props: {
+    children?: React.ReactNode;
+    expandedTab: string;
+    onTabChange: (tabId: string) => void;
+  }) => React.ReactNode;
+}
+interface IXrmFormProps {
+  strategy: IXrmFormStrategy;
+  components?: {
+    control?: IXrmControlComponents;
+    tabs?: IXrmTabsComponents;
+  };
+}
+declare const XrmForm: React.ComponentType<IXrmFormProps>;
+declare const XrmMemoryStrategy: new (params: IXrmMemoryStrategyParams) => IXrmFormStrategy;
+declare const formMetadata: {
+  PrimaryIdAttribute: string;
+  PrimaryNameAttribute: string;
+};
+declare const getCustomComponentsFormXml: () => string;
+declare const getCustomComponentsRecord: () => Record<string, any>;
+declare const xrmCustomComponentsModelStore: {
+  getRuntimeColumns: () => any[];
+};
 declare const ControlComponents: {
   onRenderControl: (props: IXrmControlRenderProps) => React.ReactNode;
 };
@@ -162,13 +195,11 @@ interface IXrmFormReadyParams {
   api: unknown;
 }
 
-interface IXrmFormProps {
-  strategy: unknown;
-  components?: {
-    control?: {
-      onRenderControl?: (props: IXrmControlRenderProps) => React.ReactNode;
-    };
-  };
+interface IXrmFormStrategy {
+  onGetData(): any;
+  onGetColumns(): any[];
+  onGetMetadata(): any;
+  onGetFormXml(): string;
 }
 `
 

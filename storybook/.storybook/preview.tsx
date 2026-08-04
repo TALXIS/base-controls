@@ -80,7 +80,18 @@ const preview: Preview = {
       storySort: {
         order: [
           'Form',
-          ['Get started', ['Overview', 'Form strategy']],
+          [
+            'Get started',
+            ['Overview', 'Form strategy'],
+            'React compose',
+            [
+              'Xrm',
+              'Overview',
+              'FormXml Builder',
+              'Custom Components',
+              ['Form Context', 'Overview', 'Samples'],
+            ],
+          ],
           'Providers',
         ],
       },

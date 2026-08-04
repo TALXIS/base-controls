@@ -2,11 +2,11 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import Editor from '@monaco-editor/react'
 import { IconButton, Toggle, mergeStyleSets } from '@fluentui/react'
-import { XrmMode } from '../../form/xrm-form/XrmMode'
 import { FormXmlEditor } from '../../form/xrm-form/FormXmlEditor'
 import { defaultFormXml } from '../../form/xrm-form/defaultFormXml'
-import { XrmComponentsCodeEditor } from '../../form/xrm-form/XrmComponentsCodeEditor'
+import { XrmOverviewCodeEditor } from '../../form/xrm-form/XrmOverviewCodeEditor'
 import { getCurrentFormXml, getXrmRecord, setCurrentFormXml, xrmModelStore } from '../../form/xrm-form/xrmModel'
+import { XrmOverviewPreview } from './XrmOverviewPreview'
 import { renderStory } from './storyHelpers'
 
 const codeBlockStyles = mergeStyleSets({
@@ -52,29 +52,18 @@ const codeBlockStyles = mergeStyleSets({
     },
 })
 
-const xrmFormReactSnippet = `import React from "react";
-import { formMetadata } from "../shared/formModel";
-import { defaultFormXml } from "./defaultFormXml";
-import { IXrmFormStrategy, MemoryStrategy, XrmForm } from "@talxis/base-controls/components/Form";
-import { getXrmRecord, xrmModelStore } from "./xrmModel";
-
-const record = getXrmRecord();
+const xrmFormReactSnippet = `const record = getXrmRecord();
 const columns = xrmModelStore.getRuntimeColumns();
-const formXml = defaultFormXml;
+const formXml = currentFormXml;
 
-class StorybookXrmStrategy extends MemoryStrategy implements IXrmFormStrategy {
-  public onGetFormXml(): string {
-    return formXml;
-  }
-}
-
-const strategy = new StorybookXrmStrategy({
+const strategy = new XrmMemoryStrategy({
   onGetData: () => record,
   onGetColumns: () => columns,
   onGetMetadata: () => formMetadata,
+  onGetFormXml: () => formXml,
 });
 
-export const XrmOverviewExample = () => {
+const XrmOverviewExample = () => {
   return <XrmForm strategy={strategy} />;
 };`
 
@@ -123,13 +112,12 @@ const StaticCodeBlock = (props: { title: string; value?: string; language?: 'jso
 
 const XrmOverviewStory = () => {
     const [showCode, setShowCode] = React.useState(false)
+    const [code, setCode] = React.useState(xrmFormReactSnippet)
     const [formXml, setFormXml] = React.useState(() => getCurrentFormXml())
-    const [previewKey, setPreviewKey] = React.useState(0)
 
     React.useEffect(() => {
         const timeoutId = window.setTimeout(() => {
             setCurrentFormXml(formXml)
-            setPreviewKey((value) => value + 1)
         }, 300)
 
         return () => window.clearTimeout(timeoutId)
@@ -153,24 +141,16 @@ const XrmOverviewStory = () => {
                 />
             </div>
             <div style={{ minHeight: 0, flex: 1 }}>
-                {showCode ? (
-                    <div className={codeBlockStyles.codeEditor}>
-                        <XrmComponentsCodeEditor
-                            value={xrmFormReactSnippet}
-                            label="Using XrmForm in React"
-                            path="file:///sandbox/xrm-form-overview.tsx"
-                            readOnly
-                        />
-                    </div>
-                ) : (
-                    <XrmMode
-                        key={previewKey}
-                        initialView="preview"
-                        hideWorkspaceViewPivot
-                        hidePreviewXmlToggle
-                        useStorybookViewport
-                    />
-                )}
+                <XrmOverviewPreview
+                    formXml={formXml}
+                    code={code}
+                    showCode={showCode}
+                    renderCodeEditor={(value, onChange) => (
+                        <div className={codeBlockStyles.codeEditor}>
+                            <XrmOverviewCodeEditor value={value} onChange={onChange} />
+                        </div>
+                    )}
+                />
             </div>
         </div>
     )

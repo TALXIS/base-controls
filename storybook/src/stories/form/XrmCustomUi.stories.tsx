@@ -1,7 +1,8 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { Text, getTheme, mergeStyleSets } from '@fluentui/react'
-import { XrmMode } from '../../form/xrm-form/XrmMode'
+import { Text, Toggle, getTheme, mergeStyleSets } from '@fluentui/react'
+import { XrmComponentsCodeEditor } from '../../form/xrm-form/XrmComponentsCodeEditor'
+import { XrmCustomComponentsLivePreview } from './XrmCustomComponentsLivePreview'
 import { renderStory } from './storyHelpers'
 
 const theme = getTheme()
@@ -51,6 +52,11 @@ const styles = mergeStyleSets({
         width: '100%',
         overflow: 'hidden',
     },
+    codeFrame: {
+        border: `1px solid ${theme.palette.neutralLight}`,
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
     viewportWindow: {
         width: '100%',
     },
@@ -62,7 +68,6 @@ interface IXrmCustomComponentsExample {
     summary: string
     notes: string[]
     code: string
-    render: () => React.ReactNode
 }
 
 const customComponentsExamples: IXrmCustomComponentsExample[] = [
@@ -74,60 +79,155 @@ const customComponentsExamples: IXrmCustomComponentsExample[] = [
             'Use this when specific Xrm controls need a tailored visual treatment.',
             'The form remains model-driven; only the rendered control presentation changes.',
         ],
-        code: `import { XrmForm } from "@talxis/base-controls/components/Form";
-import { ControlComponents } from "@talxis/base-controls/components/Form/components/adapters/control";
-import { FormControl, Slider as MuiSlider, TextField as MuiTextField } from "@mui/material";
+        code: `const strategy = new XrmMemoryStrategy({
+  onGetData: () => getCustomComponentsRecord(),
+  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
+  onGetMetadata: () => formMetadata,
+  onGetFormXml: () => getCustomComponentsFormXml(),
+});
 
-const customControlIdSet = new Set(["customLeadName", "customPhoneNumber", "customEngagementStage", "customMomentumScore", "customWorkspaceUrl", "customNotesPanel"]);
+const customControlIds = new Set(["customLeadName", "customPhoneNumber", "customEngagementStage", "customMomentumScore", "customWorkspaceUrl", "customNotesPanel"]);
 
-const customControlComponents = {
-  control: {
-    onRenderControl: (props) => {
-      const controlName = props.id ?? "";
+const LeadNameControl = () => {
+  const field = useField();
 
-      if (!customControlIdSet.has(controlName)) {
-        return ControlComponents.onRenderControl(props);
-      }
-
-      if (controlName === "customLeadName") {
-        return <MuiTextField fullWidth size="small" variant="outlined" label="Lead name" />;
-      }
-
-      if (controlName === "customPhoneNumber") {
-        return <MuiTextField fullWidth size="small" variant="outlined" label="Primary phone" />;
-      }
-
-      if (controlName === "customWorkspaceUrl") {
-        return <MuiTextField fullWidth size="small" variant="outlined" label="Workspace URL" />;
-      }
-
-      if (controlName === "customMomentumScore") {
-        return <MuiSlider value={72} />;
-      }
-
-      if (controlName === "customEngagementStage") {
-        return <FormControl fullWidth size="small">...</FormControl>;
-      }
-
-      return ControlComponents.onRenderControl(props);
-    },
-  },
+  return (
+    <MuiTextField
+      fullWidth
+      size="small"
+      variant="outlined"
+      label="Lead name"
+      value={String(field?.getValue() ?? "")}
+      onChange={(event) => field?.setValue(event.target.value)}
+    />
+  );
 };
 
-<XrmForm strategy={strategy} components={customControlComponents} />`,
-        render: () => (
-            <XrmMode
-                initialView="custom-components"
-                initialCustomComponentsFlavor="controls"
-                initialShowCustomComponentsData={false}
-                initialShowCustomComponentsXml={false}
-                hideWorkspaceViewPivot
-                hideCustomComponentsPivot
-                hideCustomTabsOrientationSelector
-                hideCustomComponentsEditorToggles
-                useStorybookViewport
-            />
-        ),
+const PhoneNumberControl = () => {
+  const field = useField();
+
+  return (
+    <MuiTextField
+      fullWidth
+      size="small"
+      variant="outlined"
+      label="Primary phone"
+      value={String(field?.getValue() ?? "")}
+      onChange={(event) => field?.setValue(event.target.value)}
+    />
+  );
+};
+
+const WorkspaceUrlControl = () => {
+  const field = useField();
+
+  return (
+    <MuiTextField
+      fullWidth
+      size="small"
+      variant="outlined"
+      label="Workspace URL"
+      value={String(field?.getValue() ?? "")}
+      onChange={(event) => field?.setValue(event.target.value)}
+    />
+  );
+};
+
+const MomentumScoreControl = () => {
+  const field = useField();
+  const value = Number(field?.getValue() ?? 0);
+
+  return (
+    <MuiSlider
+      min={0}
+      max={100}
+      step={1}
+      value={value}
+      onChange={(_event, nextValue) => field?.setValue(nextValue)}
+    />
+  );
+};
+
+const EngagementStageControl = () => {
+  const field = useField();
+
+  return (
+    <FormControl fullWidth size="small">
+      <InputLabel id="engagement-stage-label">Engagement stage</InputLabel>
+      <Select
+        labelId="engagement-stage-label"
+        label="Engagement stage"
+        value={Number(field?.getValue() ?? 1)}
+        onChange={(event) => field?.setValue(event.target.value)}
+      >
+        <MenuItem value={1}>New</MenuItem>
+        <MenuItem value={2}>Qualified</MenuItem>
+        <MenuItem value={3}>Ready</MenuItem>
+      </Select>
+    </FormControl>
+  );
+};
+
+const NotesControl = () => {
+  const field = useField();
+
+  return (
+    <MuiTextField
+      fullWidth
+      multiline
+      minRows={4}
+      variant="outlined"
+      label="Narrative notes"
+      value={String(field?.getValue() ?? "")}
+      onChange={(event) => field?.setValue(event.target.value)}
+    />
+  );
+};
+
+const XrmCustomComponentsExample = () => {
+  return (
+    <XrmForm
+      strategy={strategy}
+      components={{
+        control: {
+          onRenderControl: (props) => {
+            const controlName = props.id ?? "";
+
+            if (!customControlIds.has(controlName)) {
+              return ControlComponents.onRenderControl(props);
+            }
+
+            if (controlName === "customLeadName") {
+              return <LeadNameControl />;
+            }
+
+            if (controlName === "customPhoneNumber") {
+              return <PhoneNumberControl />;
+            }
+
+            if (controlName === "customWorkspaceUrl") {
+              return <WorkspaceUrlControl />;
+            }
+
+            if (controlName === "customMomentumScore") {
+              return <MomentumScoreControl />;
+            }
+
+            if (controlName === "customEngagementStage") {
+              return <EngagementStageControl />;
+            }
+
+            if (controlName === "customNotesPanel") {
+              return <NotesControl />;
+            }
+
+            return ControlComponents.onRenderControl(props);
+          },
+        },
+      }}
+    />
+  );
+};`,
     },
     {
         id: 'tabs',
@@ -137,10 +237,12 @@ const customControlComponents = {
             'The example keeps the orientation switch inside the rendered preview, matching the React compose tabs demo.',
             'The code view isolates the custom tabs implementation without showing extra data or FormXml panels.',
         ],
-        code: `import React from "react";
-import { ComboBox, Stack, Text } from "@fluentui/react";
-import { Step, StepButton, StepContent, Stepper } from "@mui/material";
-import { XrmForm } from "@talxis/base-controls/components/Form";
+        code: `const strategy = new XrmMemoryStrategy({
+  onGetData: () => getCustomComponentsRecord(),
+  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
+  onGetMetadata: () => formMetadata,
+  onGetFormXml: () => getCustomComponentsFormXml(),
+});
 
 function XrmStepperTabs(props) {
   const { children, expandedTab, onTabChange, orientation } = props;
@@ -169,49 +271,82 @@ function XrmStepperTabs(props) {
   );
 }
 
-const [orientation, setOrientation] = React.useState("horizontal");
+const XrmCustomComponentsExample = () => {
+  const [orientation, setOrientation] = React.useState("horizontal");
 
-<>
-  <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 12 }}>
-    <Text>Tabs orientation</Text>
-    <ComboBox
-      selectedKey={orientation}
-      options={[
-        { key: "horizontal", text: "Horizontal" },
-        { key: "vertical", text: "Vertical" },
-      ]}
-      onChange={(_event, option) => {
-        if (option?.key) {
-          setOrientation(String(option.key));
-        }
-      }}
-    />
-  </Stack>
-  <XrmForm
-    strategy={strategy}
-    components={{
-      tabs: {
-        onRenderTabs: (tabsProps) => <XrmStepperTabs {...tabsProps} orientation={orientation} />,
-      },
-    }}
-  />
-</>`,
-        render: () => (
-            <XrmMode
-                initialView="custom-components"
-                initialCustomComponentsFlavor="tabs"
-                initialCustomTabsOrientation="horizontal"
-                initialShowCustomComponentsData={false}
-                initialShowCustomComponentsXml={false}
-                hideWorkspaceViewPivot
-                hideCustomComponentsPivot
-                hideCustomTabsOrientationSelector={false}
-                hideCustomComponentsEditorToggles
-                useStorybookViewport
-            />
-        ),
+  return (
+    <Stack tokens={{ childrenGap: 16 }}>
+      <Stack horizontal tokens={{ childrenGap: 12 }} verticalAlign="center" wrap>
+        <Text variant="small">Tabs orientation</Text>
+        <ComboBox
+          selectedKey={orientation}
+          options={[
+            { key: "horizontal", text: "Horizontal" },
+            { key: "vertical", text: "Vertical" },
+          ]}
+          onChange={(_event, option) => {
+            if (option?.key) {
+              setOrientation(String(option.key));
+            }
+          }}
+        />
+      </Stack>
+
+      <XrmForm
+        key={orientation}
+        strategy={strategy}
+        components={{
+          tabs: {
+            onRenderTabs: (tabsProps) => <XrmStepperTabs {...tabsProps} orientation={orientation} />,
+          },
+        }}
+      />
+    </Stack>
+  );
+};`,
     },
 ]
+
+const renderCustomComponentsExample = (example: IXrmCustomComponentsExample) => {
+    const [code, setCode] = React.useState(example.code)
+    const [showCode, setShowCode] = React.useState(false)
+    const [compileError, setCompileError] = React.useState<string | null>(null)
+
+    return (
+        <div>
+            <div className={styles.exampleHeader}>
+                <div className={styles.exampleCopy} />
+                <Toggle
+                    label="Code"
+                    inlineLabel
+                    checked={showCode}
+                    onChange={(_event, checked) => setShowCode(!!checked)}
+                />
+            </div>
+            <div className={styles.exampleBody}>
+                <div className={styles.previewFrame}>
+                    <div className={styles.viewportWindow}>
+                        {showCode ? (
+                            <div className={styles.codeFrame}>
+                                <XrmComponentsCodeEditor
+                                    value={code}
+                                    onChange={setCode}
+                                    readOnly={false}
+                                    label=""
+                                    kind="components"
+                                    height="640px"
+                                />
+                            </div>
+                        ) : (
+                            <XrmCustomComponentsLivePreview code={code} onError={setCompileError} />
+                        )}
+                    </div>
+                </div>
+                {compileError ? <Text variant="small" styles={{ root: { color: theme.palette.redDark } }}>{compileError}</Text> : null}
+            </div>
+        </div>
+    )
+}
 
 const meta = {
     title: 'Form/Xrm/Custom Components',
@@ -267,7 +402,7 @@ Swaps selected Xrm controls with custom React renderers while keeping the same f
             },
         },
     },
-    render: () => renderStory(samplesById.controls.render(), 18),
+    render: () => renderStory(renderCustomComponentsExample(samplesById.controls), 18),
 }
 
 export const ReplaceTabsRenderer: Story = {
@@ -289,5 +424,5 @@ Replaces the default tabs shell with a custom stepper-based renderer while prese
             },
         },
     },
-    render: () => renderStory(samplesById.tabs.render(), 18),
+    render: () => renderStory(renderCustomComponentsExample(samplesById.tabs), 18),
 }
