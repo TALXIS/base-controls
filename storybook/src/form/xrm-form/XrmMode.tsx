@@ -1,6 +1,7 @@
 import * as Babel from "@babel/standalone"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { ComboBox, CommandBar, DefaultButton, Dialog, DialogFooter, DialogType, ICommandBarItemProps, MessageBar, MessageBarType, Pivot, PivotItem, PrimaryButton, Slider, Stack, Text, Toggle, getTheme, mergeStyleSets } from "@fluentui/react"
+import { ComboBox, DefaultButton, Dialog, DialogFooter, DialogType, MessageBar, MessageBarType, Pivot, PivotItem, PrimaryButton, Slider, Stack, Text, Toggle, getTheme, mergeStyleSets } from "@fluentui/react"
+import { CommandBar, ICommandBarItemProps } from "@legacy"
 import { FormXmlSectionBuilder, FormXmlTabBuilder, parseFormXml, serializeFormXml } from "@talxis/client-metadata"
 import { XrmForm } from "@talxis/base-controls/components/Form"
 import type { IFormApi, IXrmFormContext } from "@talxis/base-controls/components/Form"
@@ -1219,9 +1220,6 @@ export const XrmMode = (props: IXrmModeProps) => {
     const resetInteractionPreview = () => {
         const scenarioIdToKeep = activeScenarioId ?? visibleFormContextScenarios[0]?.id ?? null
 
-        if (formContext) {
-            resetXrmBusinessFlows(formContext)
-        }
         setFormContextScenarioScripts(() => Object.fromEntries(
             xrmBusinessFlowScenarios.map((scenario) => [scenario.id, getEmptyScenarioScript(scenario)])
         ))
@@ -1315,7 +1313,6 @@ export const XrmMode = (props: IXrmModeProps) => {
                     key: "run-form-context-code",
                     text: "Run code",
                     iconProps: { iconName: "Play" },
-                    disabled: !formContext || (!activeScenario && !props.formContextDocsExample),
                     onClick: () => {
                         if (props.formContextDocsExample) {
                             runFormContextScript(activeScenarioScript)
@@ -1724,7 +1721,7 @@ export const XrmMode = (props: IXrmModeProps) => {
 
                 {activeView === "form-context" && (
                     <div>
-                        {!showFormContextCode && (
+                        <div style={{ display: showFormContextCode ? "none" : "block" }}>
                             <div className={styles.previewSurface}>
                                 <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
                                     <XrmForm
@@ -1742,11 +1739,12 @@ export const XrmMode = (props: IXrmModeProps) => {
                                     />
                                 </div>
                             </div>
-                        )}
+                        </div>
 
-                        {showFormContextCode && !props.hideFormContextCodePanel && (
+                        <div style={{ display: showFormContextCode && !props.hideFormContextCodePanel ? "block" : "none" }}>
                             <XrmComponentsCodeEditor
                                 key={props.formContextDocsExample ? formContextDocsEditorKey : activeScenarioId ?? "form-context"}
+                                resetToken={props.formContextDocsExample ? formContextDocsEditorKey : activeScenarioId ?? "form-context"}
                                 value={activeScenarioScript}
                                 label=""
                                 language="typescript"
@@ -1772,7 +1770,7 @@ export const XrmMode = (props: IXrmModeProps) => {
                                     }))
                                 }}
                             />
-                        )}
+                        </div>
 
                         {!props.formContextDocsExample && !props.hideFormContextConsole && (
                             <div className={styles.consoleWindow}>

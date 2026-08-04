@@ -2,8 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { Form, useField } from "@talxis/base-controls/components/Form"
 import type { IFormApi } from "@talxis/base-controls/components/Form"
 import {
-    CommandBar,
-    ICommandBarItemProps,
     Icon,
     IconButton,
     MessageBar,
@@ -19,6 +17,7 @@ import {
     getTheme,
     mergeStyleSets,
 } from "@fluentui/react"
+import { CommandBar, ICommandBarItemProps } from "@legacy"
 import { getDemoRecord, getMemoryStrategy } from "../shared/formModel"
 import { defaultFormCode } from "./defaultFormCode"
 import { FormCodeEditor } from "./FormCodeEditor"

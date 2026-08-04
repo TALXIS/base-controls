@@ -1,7 +1,7 @@
 import Editor, { BeforeMount, OnMount } from "@monaco-editor/react"
 import { Stack, Text, mergeStyleSets } from "@fluentui/react"
 import type * as MonacoNamespace from "monaco-editor"
-import { useEffect, useRef } from "react"
+import { useMemo, useRef } from "react"
 
 interface IXrmComponentsCodeEditorProps {
     value: string
@@ -14,6 +14,7 @@ interface IXrmComponentsCodeEditorProps {
     onChange?: (value: string) => void
     declarations?: string
     kind?: "components" | "form-context"
+    resetToken?: string | number
 }
 
 const defaultEditorHeight = "520px"
@@ -212,6 +213,10 @@ declare const formContext: IXrmFormContext;
 
 export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) => {
     const editorRef = useRef<MonacoNamespace.editor.IStandaloneCodeEditor | null>(null)
+    const editorInstanceKey = useMemo(
+        () => `${props.path ?? "file:///sandbox/xrm-components-snippet.tsx"}::${String(props.resetToken ?? "")}`,
+        [props.path, props.resetToken],
+    )
 
     const handleBeforeMount: BeforeMount = (monaco) => {
         configureMonaco(monaco)
@@ -239,27 +244,18 @@ export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) =>
         ])
     }
 
-    useEffect(() => {
-        const editor = editorRef.current
-
-        if (!editor || editor.getValue() === props.value) {
-            return
-        }
-
-        editor.setValue(props.value)
-    }, [props.value])
-
     return <Stack className={styles.root}>
         <Text variant="medium" className={styles.label}>
             {props.label ?? "React injection example"}
         </Text>
         <div className={styles.frame} style={{ height: props.height ?? defaultEditorHeight, maxHeight: props.maxHeight }}>
             <Editor
+                key={editorInstanceKey}
                 path={props.path ?? "file:///sandbox/xrm-components-snippet.tsx"}
                 height={props.height ?? defaultEditorHeight}
                 defaultLanguage={props.language ?? "typescript"}
                 language={props.language ?? "typescript"}
-                value={props.value}
+                defaultValue={props.value}
                 beforeMount={handleBeforeMount}
                 onMount={handleMount}
                 options={{
