@@ -100,9 +100,9 @@ Form is a record-driven form runtime.
 
 It gives you the pieces that usually have to be wired by hand: layout, field binding, validation, notifications, tab and section structure, dirty tracking, and save orchestration working as one system.
 
-The same runtime can be authored directly in React or driven from an Xrm/FormXml model.
+The same runtime can be authored directly in React or driven from an Xrm/FormXml model. Both paths share the same core runtime, but they differ in how the layout is authored and how the runtime surface is exposed.
 
-## What it can do
+## What you get from the runtime
 
 - Bind fields to a shared runtime instead of managing each control in isolation.
 - Keep validation, notifications, and form state coordinated across the full page.
@@ -116,12 +116,27 @@ Form supports two authoring models over the same runtime. Choose the one that ma
 ### React compose
 Choose this path when you want to author the layout directly in JSX with \`Form.Root\`, tabs, sections, fields, and optional React-level UI overrides.
 
+This is the best fit when:
+
+- the form layout should live in React code
+- you want component-level composition and custom rendering directly in JSX
+- you do not need an Xrm-style \`formContext\` API surface
+
 Go to [**React compose Playground**](?path=/docs/form-react-compose-playground--docs).
 
 ### Xrm
 Choose this path when the form should be driven by FormXml and expose Xrm form context APIs.
 
-Go to [**Xrm Playground**](?path=/docs/form-xrm-playground--docs).
+\`XrmForm\` builds on top of the base Form runtime, keeps the layout FormXml-driven, and exposes a Microsoft form-context-compatible \`formContext\` surface while persistence still comes from the base Form strategy contract.
+
+This is the best fit when:
+
+- the layout is defined in FormXml
+- the record payload already follows Dataverse conventions
+- you want to script against \`formContext\` in a model-driven-app style
+- you want to combine Base Controls React events with Xrm-style runtime access
+
+Go to [**Xrm Playground**](?path=/docs/form-xrm-playground--docs) or [**Xrm Form context**](?path=/docs/form-xrm-form-context--docs).
                 `.trim(),
             },
         },
