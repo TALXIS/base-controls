@@ -8,7 +8,7 @@ export const XrmTabs = () => {
     const selectedTab = tabs.getExpandedTab();
     const components = useXrmFormComponents();
 
-    return <Form.Tabs key={selectedTab.id} components={components.tabs} expandedTab={selectedTab.id} onTabChange={(tabId) => tabs.setExpandedTab(tabId)}>
+    return <Form.Tabs components={components.tabs} expandedTab={selectedTab.id} onTabChange={(tabId) => tabs.setExpandedTab(tabId)}>
         {tabs.getVisibleTabs().map(tab => <XrmTab id={tab.id} key={tab.id} tab={tab} label={tab.getLabel() ?? undefined} />)}
     </Form.Tabs>
 }

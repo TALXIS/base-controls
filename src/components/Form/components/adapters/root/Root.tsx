@@ -19,18 +19,18 @@ export const Root = (props: IFormProps) => {
     const [formDeps, setFormDeps] = React.useState<IOnLoadResult | null>(null);
 
     const onLoad = async () => {
+        setFormDeps(null);
         const result = await strategy.onLoad();
         setFormDeps(result);
     };
 
     const onRefreshRequested = async () => {
-        setFormDeps(null);
         await onLoad();
     };
 
     React.useEffect(() => {
         onLoad();
-    }, []);
+    }, [strategy]);
 
     if (!formDeps) {
         return <FormUi.Skeleton />

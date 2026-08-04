@@ -22,7 +22,8 @@ export const XrmSection = (props: IXrmSectionProps) => {
         label={section.getLabel() ?? undefined}
     >
         {section.getVisibleCells().map((cell, index) => {
-            return <XrmField control={cell.control} onRenderChildren={() => <XrmCell key={cell.id ?? index} cell={cell} />} />
+            const key = cell.id ?? index;
+            return <XrmField key={key} control={cell.control} onRenderChildren={() => <XrmCell key={key} cell={cell} />} />
         })}
     </Form.Section>;
 };
