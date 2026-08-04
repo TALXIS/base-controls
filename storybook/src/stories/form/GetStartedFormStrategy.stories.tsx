@@ -138,7 +138,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Docs: Story = {
-    render: () => renderStory(<DocsPlaceholder />, 24),
+    render: () => renderStory(<DocsPlaceholder />),
     parameters: {
         docs: {
             canvas: {

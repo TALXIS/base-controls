@@ -51,15 +51,7 @@ const strategy = new XrmMemoryStrategy({
 });
 
 export const AccountXrmForm = () => {
-  return (
-    <XrmForm
-      strategy={strategy}
-      onFormReady={({ formContext, api }) => {
-        console.log(formContext.data.entity.getId());
-        console.log(api.getData());
-      }}
-    />
-  );
+  return <XrmForm strategy={strategy} />;
 };
 \`\`\`
 

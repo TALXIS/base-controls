@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { XrmMode } from '../../form/xrm-form/XrmMode'
+import { XrmFormXmlBuilderStory } from './XrmFormXmlBuilderStory'
 import { renderStory } from './storyHelpers'
 
 const meta = {
@@ -21,7 +21,7 @@ const meta = {
                 component: `
 Use this page to author FormXml through a builder-focused surface. The UI builder lets you work with tabs, columns, sections, and fields visually while keeping the underlying FormXml editable in Monaco.
 
-Use the FormXml toggle to switch between the UI builder and the raw FormXml editor.
+Use the FormXml toggle to switch between the UI builder and the raw FormXml editor. The preview below renders the same dedicated builder state, so changes stay isolated from the other Xrm stories.
                 `.trim(),
             },
         },
@@ -34,13 +34,6 @@ type Story = StoryObj<typeof meta>
 
 export const Docs: Story = {
     render: () => renderStory(
-        <XrmMode
-            initialView="builder"
-            initialBuilderEditorMode="ui"
-            hideWorkspaceViewPivot
-            hideDataEditorModeToggle
-            hideModelEditorModeToggle
-            useStorybookViewport
-        />,
+        <XrmFormXmlBuilderStory />,
     ),
 }

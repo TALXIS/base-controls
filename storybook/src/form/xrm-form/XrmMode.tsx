@@ -275,12 +275,9 @@ const styles = mergeStyleSets({
         minWidth: 0,
     },
     workspaceTabsBody: {
-        padding: "0 18px",
-        borderBottom: `1px solid ${theme.palette.neutralLight}`,
         flexShrink: 0,
         height: 43,
         minHeight: 43,
-        background: theme.palette.white,
         selectors: {
             "& .ms-Pivot": {
                 height: "100%",
@@ -295,19 +292,12 @@ const styles = mergeStyleSets({
         },
     },
     commandBarBody: {
-        borderBottom: `1px solid ${theme.palette.neutralLight}`,
         flexShrink: 0,
-        background: theme.palette.white,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         gap: 12,
         flexWrap: "wrap",
-        selectors: {
-            "& .ms-CommandBar": {
-                background: theme.palette.white,
-            },
-        },
     },
     commandBarMain: {
         flex: "1 1 320px",
@@ -321,13 +311,11 @@ const styles = mergeStyleSets({
         flex: "0 1 auto",
         flexWrap: "wrap",
         minWidth: 0,
-        padding: "8px 12px",
     },
     toolbarToggle: {
         marginBottom: 0,
     },
     viewportToolbar: {
-        padding: "8px 0 0",
         flexShrink: 0,
     },
     previewEditorLayout: {
@@ -384,7 +372,6 @@ const styles = mergeStyleSets({
         minHeight: 0,
     },
     cardBody: {
-        padding: 18,
         minHeight: 0,
     },
     previewSurface: {

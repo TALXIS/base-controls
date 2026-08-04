@@ -1,13 +1,11 @@
 import Editor, { OnMount } from "@monaco-editor/react"
-import { Stack, Text, getTheme, mergeStyleSets } from "@fluentui/react"
+import { Stack, Text, mergeStyleSets } from "@fluentui/react"
 import type * as MonacoNamespace from "monaco-editor"
 
 interface IFormCodeEditorProps {
     value: string
     onChange: (value: string) => void
 }
-
-const theme = getTheme()
 
 const styles = mergeStyleSets({
     root: {
@@ -22,8 +20,6 @@ const styles = mergeStyleSets({
     frame: {
         height: 640,
         overflow: "hidden",
-        border: `1px solid ${theme.palette.neutralQuaternaryAlt}`,
-        borderRadius: 8,
     },
 })
 

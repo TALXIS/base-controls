@@ -1,13 +1,11 @@
 import Editor from "@monaco-editor/react"
-import { Stack, Text, getTheme, mergeStyleSets } from "@fluentui/react"
+import { Stack, Text, mergeStyleSets } from "@fluentui/react"
 import { useMemo } from "react"
 
 interface IFormXmlEditorProps {
     value: string
     onChange: (value: string) => void
 }
-
-const theme = getTheme()
 
 const styles = mergeStyleSets({
     root: {
@@ -25,8 +23,6 @@ const styles = mergeStyleSets({
         minHeight: 520,
         height: 520,
         overflow: "hidden",
-        border: `1px solid ${theme.palette.neutralQuaternaryAlt}`,
-        borderRadius: 8,
     },
 })
 

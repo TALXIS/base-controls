@@ -1,5 +1,5 @@
 import Editor, { OnMount } from "@monaco-editor/react"
-import { Stack, Text, getTheme, mergeStyleSets } from "@fluentui/react"
+import { Stack, Text, mergeStyleSets } from "@fluentui/react"
 import type * as MonacoNamespace from "monaco-editor"
 
 interface IXrmComponentsCodeEditorProps {
@@ -17,8 +17,6 @@ interface IXrmComponentsCodeEditorProps {
 
 const defaultEditorHeight = "520px"
 
-const theme = getTheme()
-
 const styles = mergeStyleSets({
     root: {
         width: "100%",
@@ -35,8 +33,6 @@ const styles = mergeStyleSets({
         flex: 1,
         minHeight: defaultEditorHeight,
         overflow: "visible",
-        border: `1px solid ${theme.palette.neutralQuaternaryAlt}`,
-        borderRadius: 8,
     },
 })
 

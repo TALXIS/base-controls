@@ -30,14 +30,12 @@ const styles = mergeStyleSets({
         flexDirection: 'column',
     },
     sectionHeader: {
-        padding: 20,
         borderBottom: `1px solid ${theme.palette.neutralLight}`,
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
     },
     sectionBody: {
-        padding: 20,
         display: 'flex',
         flexDirection: 'column',
         gap: 16,
@@ -47,7 +45,6 @@ const styles = mergeStyleSets({
         paddingLeft: 20,
     },
     exampleHeader: {
-        padding: '16px 18px',
         borderBottom: `1px solid ${theme.palette.neutralLighter}`,
         display: 'flex',
         alignItems: 'center',
@@ -63,7 +60,6 @@ const styles = mergeStyleSets({
         flex: 1,
     },
     exampleBody: {
-        padding: 18,
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
