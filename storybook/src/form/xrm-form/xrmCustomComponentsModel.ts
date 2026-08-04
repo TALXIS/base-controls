@@ -168,7 +168,7 @@ const customComponentsRecord = {
     id: "custom-components-demo",
     text: "Northwind Design Review",
     phone: "+420 721 333 999",
-    url: "https://northwind.example.com/workspace",
+    url: "https://example.com",
     optionset: 2,
     number: 72,
     multilinetext: "The custom renderer highlights only selected control ids. All other controls intentionally fall back to the stock Form control renderer.",

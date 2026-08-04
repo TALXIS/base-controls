@@ -30,7 +30,7 @@ Each sample below keeps its own isolated form instance, so **Run code** and **Cl
 - financial approval
 - scheduling handoff
 
-If you want to start from a blank editable snippet instead, go to [**Overview**](?path=/docs/form-xrm-form-context-overview--docs).
+If you want to start from a blank editable snippet instead, go to [**Overview**](?path=/story/form-xrm-form-context-overview--overview).
                 `.trim(),
             },
         },

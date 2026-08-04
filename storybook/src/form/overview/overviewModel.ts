@@ -128,7 +128,7 @@ const overviewRecord = {
     contact: 'Alicia Turner',
     owner: 'Pavel Hruby',
     phone: '+420 777 100 200',
-    workspace: 'https://northwind.example.com/forms/expansion',
+    workspace: 'https://github.com/',
     engagementStage: 2,
     priority: 3,
     needsApproval: 1,
@@ -140,7 +140,7 @@ const overviewRecord = {
     kickoffDate: '2026-08-20',
     accountManager: 'Patrik Novak',
     deliveryRegion: 'Central Europe',
-    trackerUrl: 'https://northwind.example.com/projects/expansion-tracker',
+    trackerUrl: 'https://example.com',
 }
 
 export const overviewModelStore = createModelStore(overviewColumns)
