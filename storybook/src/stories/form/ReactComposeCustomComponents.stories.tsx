@@ -361,7 +361,6 @@ const FormExample = () => {
     <Form.Root {...formProps}>
       <Form.Notifications />
       <Form.Ribbon />
-      <GuidancePanel />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
         <Form.Tab id="workspace" label="Workspace" layout={{ xs: 1, lg: 2 }}>
           <Form.Column>
@@ -414,8 +413,9 @@ const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
             onFormReady: (api: IFormApi) => {
                 formApiRef.current = api
             },
-            onAfterSave: () => {
-                formApiRef.current?.refresh()
+            onAfterSave: ({ success }: { success: boolean }) => {
+                const currentData = formApiRef.current?.getData()
+                console.log(success ? "Form saved" : "Save failed", { success, currentData })
             },
         } as React.ComponentProps<typeof Form.Root>),
         [strategy],
