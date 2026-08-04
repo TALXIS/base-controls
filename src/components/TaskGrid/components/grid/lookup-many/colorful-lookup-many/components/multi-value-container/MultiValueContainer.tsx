@@ -1,8 +1,8 @@
 import { ThemeProvider, useTheme } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
-import { Theming, useThemeGenerator } from '@talxis/react-components';
-import { MultiValueContainer as NativeMultiValueContainer } from '../../../components/multi-value-container/MultiValueContainer';
-import { useColorfulLookupManyProps } from '../../context';
+import { Theming, useThemeGenerator } from '@legacy';
+import { MultiValueContainer as NativeMultiValueContainer } from '@components/TaskGrid/components/grid/lookup-many/components/multi-value-container/MultiValueContainer';
+import { useColorfulLookupManyProps } from '@components/TaskGrid/components/grid/lookup-many/colorful-lookup-many/context';
 
 export const MultiValueContainer = (props: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
     const theme = useTheme();

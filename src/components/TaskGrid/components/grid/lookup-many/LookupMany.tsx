@@ -1,6 +1,6 @@
 import { IDataProvider } from '@talxis/client-libraries';
 import * as React from 'react';
-import { useLocalizationService } from '../../../context';
+import { useLocalizationService } from '@components/TaskGrid/context';
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
 import { LookupManyComponents, ILookupManyComponents } from './components/components';
 import { LookupManyPropsContext } from './context';

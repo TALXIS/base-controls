@@ -1,8 +1,8 @@
-import { components } from "../../../../../DatasetControl/EditColumns/components";
-import { ICommandBarItemProps, ICommandBarProps } from "@talxis/react-components";
+import { components } from "@components/DatasetControl/EditColumns/components";
+import { ICommandBarItemProps, ICommandBarProps } from "@legacy";
 import * as React from 'react';
 import { useTaskGridEditColumns } from "../useTaskGridEditColumns";
-import { useLocalizationService } from "../../../../context";
+import { useLocalizationService } from "@components/TaskGrid/context";
 
 
 export const CommandBar = (props: ICommandBarProps) => {

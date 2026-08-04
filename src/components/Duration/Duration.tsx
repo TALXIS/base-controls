@@ -1,6 +1,6 @@
-import { ComboBox } from "@talxis/react-components";
+import { ComboBox } from "@legacy";
 import { useEffect, useMemo, useRef } from 'react';
-import { useInputBasedControl } from '../../hooks/useInputBasedControl';
+import { useInputBasedControl } from '@hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import numeral from "numeral";

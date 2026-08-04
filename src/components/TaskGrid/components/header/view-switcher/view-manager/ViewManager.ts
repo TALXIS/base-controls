@@ -1,10 +1,10 @@
 import { Dataset, ICommand, IDataProvider, IDataset, IRetrieveRecordCommandOptions } from "@talxis/client-libraries";
-import { DatasetControl, IDatasetControl } from "../../../../../../utils/dataset-control";
-import { ITaskGridDatasetControl } from "../../../../interfaces";
-import { ILocalizationService } from "../../../../../../utils";
-import { ITaskGridLabels } from "../../../../labels";
-import { IDeletedUserQueriesResult, ISavedQueryDataProvider } from "../../../../providers/saved-query";
-import { ErrorHelper } from "../../../../../../utils";
+import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
+import { ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
+import { ILocalizationService } from "@utils";
+import { ITaskGridLabels } from "@components/TaskGrid/labels";
+import { IDeletedUserQueriesResult, ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
+import { ErrorHelper } from "@utils";
 
 export class ViewManager {
     private _taskGridDatasetControl: ITaskGridDatasetControl;

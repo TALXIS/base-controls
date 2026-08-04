@@ -1,9 +1,9 @@
 import { DataTypes, EventEmitter, IColumn, IEventEmitter, IFetchXmlDataProviderColumn } from "@talxis/client-libraries";
 import { ITaskDataProvider } from "../task";
 import { ICustomColumnsDataProvider } from "../custom-columns/CustomColumnsDataProvider";
-import { INativeColumns } from "../../interfaces";
-import { ErrorHelper, ILocalizationService } from "../../../../utils";
-import { ITaskGridLabels } from "../../labels";
+import { INativeColumns } from "@components/TaskGrid/interfaces";
+import { ErrorHelper, ILocalizationService } from "@utils";
+import { ITaskGridLabels } from "@components/TaskGrid/labels";
 
 
 export interface ICreateUserQueryParams {

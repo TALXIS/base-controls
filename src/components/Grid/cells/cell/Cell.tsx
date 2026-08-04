@@ -1,20 +1,21 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyleSets } from "@fluentui/react";
 import { IRecord, Constants, DataProvider, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { useThemeGenerator, getClassNames, useRerender } from "@talxis/react-components";
+import { useThemeGenerator, useRerender } from "@legacy";
+import { getClassNames } from "@utils";
 import { useMemo, useEffect, useRef, useCallback } from "react";
-import { useControlTheme } from "../../../../utils";
-import { ICellValues } from "../../grid/ag-grid/AgGridModel";
-import { IGridColumn } from "../../grid/GridModel";
-import { useGridInstance } from "../../grid/useGridInstance";
+import { useControlTheme } from "@utils";
+import { ICellValues } from "@components/Grid/grid/ag-grid/AgGridModel";
+import { IGridColumn } from "@components/Grid/grid/GridModel";
+import { useGridInstance } from "@components/Grid/grid/useGridInstance";
 import { CellContent } from "./content/CellContent";
 import { Notifications } from "./notifications/Notifications";
 import { getCellStyles, getInnerCellStyles } from "./styles";
-import { useAgGridInstance } from "../../grid/ag-grid/useAgGridInstance";
+import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
 import ReactDOM from "react-dom";
-import { GridContext } from "../../grid/GridContext";
-import { AgGridContext } from "../../grid/ag-grid/AgGridContext";
-import { useEventEmitter } from "../../../../hooks/useEventEmitter";
+import { GridContext } from "@components/Grid/grid/GridContext";
+import { AgGridContext } from "@components/Grid/grid/ag-grid/AgGridContext";
+import { useEventEmitter } from "@hooks/useEventEmitter";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;

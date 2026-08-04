@@ -1,4 +1,4 @@
-import { ICommandBarProps } from "@talxis/react-components";
+import { ICommandBarProps } from "@legacy";
 import { CommandBar } from "./CommandBar/CommandBar";
 import { IColumn } from "@talxis/client-libraries";
 import { GroupBase, OptionProps } from "react-select";

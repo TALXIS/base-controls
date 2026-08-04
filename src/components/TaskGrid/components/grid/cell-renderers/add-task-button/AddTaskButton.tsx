@@ -1,10 +1,10 @@
 import { ContextualMenuItemType, Icon, IconButton, IContextualMenuItem } from "@fluentui/react"
-import { ICellProps } from "../../../../../Grid/cells/cell/Cell"
+import { ICellProps } from "@components/Grid/cells/cell/Cell"
 import * as React from "react"
 import { getAddTaskButtonStyles } from "./styles";
 import { IRecord } from "@talxis/client-libraries";
-import { RecordSelector } from "../../record-selector/RecordSelector";
-import { useDatasetControl, useLocalizationService, useTaskDataProvider, useTaskGridDescriptor } from "../../../../context";
+import { RecordSelector } from "@components/TaskGrid/components/grid/record-selector/RecordSelector";
+import { useDatasetControl, useLocalizationService, useTaskDataProvider, useTaskGridDescriptor } from "@components/TaskGrid/context";
 
 export const AddTaskButton = (props: ICellProps) => {
     const styles = React.useMemo(() => getAddTaskButtonStyles(), []);

@@ -1,16 +1,16 @@
 import { IDatasetControlParameters } from "../DatasetControl";
-import { IDatasetControlEvents } from "../../utils/dataset-control";
-import { EditColumns, IEditColumns } from "../../utils/dataset-control/EditColumns";
+import { IDatasetControlEvents } from "@utils/dataset-control";
+import { EditColumns, IEditColumns } from "@utils/dataset-control/EditColumns";
 import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering } from "@talxis/client-libraries";
 import { IDeleteTasksResult, ITaskDataProvider } from "./providers/task";
-import { ILocalizationService } from "../../utils";
+import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ICustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
 import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
-import { ErrorHelper } from "../../utils/error-handling";
+import { ErrorHelper } from "@utils/error-handling";
 
 const STATE_CODE_ACTIVE = 0;
 

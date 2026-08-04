@@ -1,13 +1,13 @@
-import { EditColumns as EditColumnsBase, IEditColumnsRef } from '../../../../DatasetControl/EditColumns/EditColumns';
+import { EditColumns as EditColumnsBase, IEditColumnsRef } from '@components/DatasetControl/EditColumns/EditColumns';
 import * as React from 'react';
 import { getEditColumnsStyles } from './styles';
-import { useIsLoading } from '../../../../../hooks';
+import { useIsLoading } from '@hooks';
 import { TaskGridEditColumnsContext } from './useTaskGridEditColumns';
-import { useDatasetControl, useLocalizationService, usePcfContext, useRootElementId } from '../../../context';
+import { useDatasetControl, useLocalizationService, usePcfContext, useRootElementId } from '@components/TaskGrid/context';
 import { OptionCommandBar } from './OptionCommandBar/OptionCommandBar';
 import { SortableItemCommandBar } from './SortableItemCommandBar/SortableItemCommandBar';
 import { CommandBar } from './CommandBar/CommandBar';
-import { ICustomColumnsDataProvider } from '../../../providers';
+import { ICustomColumnsDataProvider } from '@components/TaskGrid/providers';
 
 
 interface IEditColumnsProps {

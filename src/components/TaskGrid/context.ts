@@ -3,7 +3,7 @@ import { ITaskDataProvider } from "./providers/task";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
-import { ILocalizationService } from "../../utils";
+import { ILocalizationService, useContextWithNullCheck } from "@utils";
 
 export const PcfContext = React.createContext<ComponentFramework.Context<any> | null>(null);
 PcfContext.displayName = 'PcfContext';
@@ -28,14 +28,6 @@ LocalizationServiceContext.displayName = 'LocalizationService';
 
 export const AgGridLicenseKeyContext = React.createContext<string | null>(null);
 AgGridLicenseKeyContext.displayName = 'AgGridLicenseKey';
-
-const useContextWithNullCheck = <T>(ctx: React.Context<T | null>): T => {
-    const value = React.useContext(ctx);
-    if (value == null) {
-        throw new Error(`Context "${ctx.displayName ?? 'unknown'}" is not provided.`);
-    }
-    return value;
-}
 
 export const useTaskGridDescriptor = () => {
     return useContextWithNullCheck(TaskGridDescriptorContext);

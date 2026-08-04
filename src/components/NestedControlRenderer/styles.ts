@@ -1,5 +1,11 @@
 import { mergeStyleSets } from "@fluentui/react";
 
+const FLEX_STYLE = {
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+}
+
 export const getNestedControlStyles = (isBaseControl: boolean) => {
     return mergeStyleSets({
         customControlContainer: {
@@ -13,6 +19,17 @@ export const getNestedControlStyles = (isBaseControl: boolean) => {
         },
         messageBarBtn: {
             minHeight: 'inherit'
+        }
+    })
+}
+
+export const getInternalNestedControlStyles = () => {
+    return mergeStyleSets({
+        nestedControlContainer: {
+            ...FLEX_STYLE
+        },
+        nestedControl: {
+            ...FLEX_STYLE
         }
     })
 }

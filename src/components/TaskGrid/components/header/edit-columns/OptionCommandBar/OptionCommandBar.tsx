@@ -1,9 +1,9 @@
 import * as React from "react";
-import {  ICommandBarItemProps } from "@talxis/react-components";
+import {  ICommandBarItemProps } from "@legacy";
 import { getCustomColumnSuffixStyles } from "./styles";
 import { useTaskGridEditColumns } from "../useTaskGridEditColumns";
-import { IOptionCommandBarProps, components } from "../../../../../DatasetControl/EditColumns/components";
-import { useDatasetControl } from "../../../../context";
+import { IOptionCommandBarProps, components } from "@components/DatasetControl/EditColumns/components";
+import { useDatasetControl } from "@components/TaskGrid/context";
 
 
 export const OptionCommandBar = (props: IOptionCommandBarProps) => {

@@ -1,6 +1,6 @@
 import { Dataset } from "@talxis/client-libraries";
 import { ITaskDataProvider, TaskDataProvider } from "./providers/task";
-import { ILocalizationService } from "../../utils";
+import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
 import { CustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";

@@ -1,12 +1,12 @@
 import { DefaultButton, DirectionalHint, PrimaryButton, ThemeProvider } from "@fluentui/react";
-import { useControl, useEventEmitter } from "../../../hooks"
-import { OptionSet } from "../../OptionSet";
+import { useControl, useEventEmitter } from "@hooks"
+import { OptionSet } from "@components/OptionSet";
 import { IDatasetColumnFiltering } from "./interfaces";
 import { datasetColumnFilteringTranslations } from "./translations";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DatasetColumnFilteringModel, IDatasetColumnFilteringModelEvents } from "./DatasetColumnFilteringModel";
-import { useRerender } from "@talxis/react-components";
-import { NestedControlRenderer } from "../../NestedControlRenderer";
+import { useRerender } from "@legacy";
+import { NestedControlRenderer } from "@components/NestedControlRenderer";
 import React from "react";
 import { getDatasetColumnFilteringStyles } from "./styles";
 import { useDebouncedCallback } from "use-debounce";

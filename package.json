@@ -18,6 +18,7 @@
   ],
   "devDependencies": {
     "@babel/core": "^7.16.12",
+    "@rollup/plugin-alias": "^3.1.9",
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.0.6",
     "@rollup/plugin-typescript": "^8.3.0",
@@ -53,10 +54,10 @@
     "webpack": "^5.68.0"
   },
   "scripts": {
-    "build": "rollup -c",
-    "documentation": "start-storybook -p 6006",
-    "build-documentation": "build-storybook",
-    "yalc": "rollup -c && yalc publish --sig"
+    "build": "rollup -c && node ./scripts/resolve-dts-aliases.mjs && rollup -c rollup.dts.config.js",
+    "yalc": "npm run build && yalc publish --sig",
+    "storybook": "npm --prefix ./storybook run storybook",
+    "build-storybook": "npm --prefix ./storybook run build-storybook"
   },
   "browserslist": {
     "production": [
@@ -84,8 +85,9 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@fluentui/react-migration-v8-v9": "^9.6.20",
+    "@fluentui/style-utilities": "^8.11.4",
     "@talxis/client-libraries": "^1.2606.5",
-    "@talxis/client-metadata": "^0.0.4",
+    "@talxis/client-metadata": "^0.0.7",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
     "debounce": "^2.2.0",
@@ -95,6 +97,7 @@
     "humanize-duration": "^3.32.0",
     "lexorank": "^1.0.5",
     "liquidjs": "^9.43.0",
+    "lodash": "^4.17.21",
     "merge-anything": "^5.1.7",
     "numeral": "^2.0.6",
     "react-select": "^5.10.2",
@@ -104,7 +107,6 @@
   },
   "peerDependencies": {
     "@fluentui/react": "<=8.121.5",
-    "@talxis/react-components": "1.2505.2",
     "react": "^16.8.6 || ^17.0.2",
     "react-dom": "^16.8.6 || ^17.0.2"
   }

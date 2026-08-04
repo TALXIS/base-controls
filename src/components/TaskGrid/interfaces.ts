@@ -1,12 +1,12 @@
 import { IDataset, IDataProvider } from "@talxis/client-libraries";
-import { IDatasetControl } from "../../utils/dataset-control";
+import { IDatasetControl } from "@utils/dataset-control";
 import { IGridCustomizerStrategy } from "./components/grid/grid-customizer";
 import { ICustomColumnsDataProvider, ICustomColumnsStrategy } from "./providers/custom-columns/CustomColumnsDataProvider";
 import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
-import { ILocalizationService } from "../../utils";
+import { ILocalizationService } from "@utils";
 
 export interface ITaskGridDatasetControlParameters {
     dataset: IDataset;

@@ -1,13 +1,13 @@
 import { Callout, IconButton, ICalloutProps } from '@fluentui/react';
 import { Text } from '@fluentui/react';
-import { DatasetColumnFiltering } from '../../../DatasetControl/Filtering/DatasetColumnFiltering';
-import { getClassNames } from '@talxis/react-components';
+import { DatasetColumnFiltering } from '@components/DatasetControl/Filtering/DatasetColumnFiltering';
+import { getClassNames } from '@utils';
 import { useEffect } from 'react';
-import { IGridColumn } from '../../grid/GridModel';
-import { useGridInstance } from '../../grid/useGridInstance';
+import { IGridColumn } from '@components/Grid/grid/GridModel';
+import { useGridInstance } from '@components/Grid/grid/useGridInstance';
 import { filterCalloutStyles } from './styles';
-import { ILookup } from '../../../Lookup';
-import { INestedControlRenderer } from '../../../NestedControlRenderer/interfaces';
+import { ILookup } from '@components/Lookup';
+import { INestedControlRenderer } from '@components/NestedControlRenderer/interfaces';
 import { IInternalDataProvider } from '@talxis/client-libraries';
 
 export interface IFilterCallout extends ICalloutProps {

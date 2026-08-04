@@ -1,5 +1,5 @@
-import { ColDef, GridApi, IGridCustomizer, IGridCustomizerStrategy } from "../../components/grid";
-import { ITaskDataProvider } from "../../providers";
+import { ColDef, GridApi, IGridCustomizer, IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
+import { ITaskDataProvider } from "@components/TaskGrid/providers";
 import { FetchXmlLookupManyCellRenderer } from "./lookup-many/cell-renderer/FetchXmlLookupManyCellRenderer";
 
 /**

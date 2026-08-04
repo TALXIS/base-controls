@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
 import { Calendar, IInternalCalendarProps } from "./components/Calendar";
-import { DatePicker } from "@talxis/react-components";
-import { useControlSizing } from "../../hooks/useControlSizing";
+import { DatePicker } from "@legacy";
+import { useControlSizing } from "@hooks/useControlSizing";
 import dayjs from "dayjs";
 import { useDebouncedCallback } from "use-debounce";
 

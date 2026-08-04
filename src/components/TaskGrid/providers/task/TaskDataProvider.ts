@@ -1,9 +1,9 @@
 import { EventEmitter, GetDataEvent, IAvailableColumnOptions, IAvailableRelatedColumn, IColumn, ICommand, IDataProvider, IDataProviderEventListeners, IEventBubbleOptions, IEventEmitter, IRawRecord, IRecord, IRecordSaveOperationResult, IRetrievedData, IRetrieveRecordCommandOptions, MemoryDataProvider, Operators, Type } from "@talxis/client-libraries";
 import { IRecordTree, RecordTree } from "./record-tree/RecordTree";
-import { ErrorHelper } from "../../../../utils/error-handling";
-import { ILocalizationService } from "../../../../utils";
-import { ITaskGridLabels } from "../../labels";
-import { INativeColumns } from "../../interfaces";
+import { ErrorHelper } from "@utils/error-handling";
+import { ILocalizationService } from "@utils";
+import { ITaskGridLabels } from "@components/TaskGrid/labels";
+import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { ISavedQueryDataProvider} from "../saved-query";
 import { ICustomColumnsDataProvider } from "../custom-columns";
 

@@ -3,7 +3,7 @@ import * as React from 'react';
 import { SelectInstance } from 'react-select';
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
-import { useLocalizationService } from '../../../context';
+import { useLocalizationService } from '@components/TaskGrid/context';
 import { MultiValueContainer } from './components/multi-value-container/MultiValueContainer';
 import { MultiValueRemove } from './components/multi-value-remove/MultiValueRemove';
 import { MultiValueLabel } from './components/multi-value-label/MultiValueLabel';

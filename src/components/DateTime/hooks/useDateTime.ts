@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
-import { useInputBasedControl } from "../../../hooks/useInputBasedControl";
+import { useInputBasedControl } from "@hooks/useInputBasedControl";
 import { IDateTime, IDateTimeOutputs, IDateTimeParameters } from "../interfaces";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "../translations";
-import { ITranslation } from "../../../hooks";
-import { ITheme } from "@talxis/react-components";
+import { ITranslation } from "@hooks";
+import { ITheme } from "@legacy";
 import { IFormatting } from "@talxis/client-libraries/dist/utils/formatting";
 
 dayjs.extend(customParseFormat);

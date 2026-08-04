@@ -2,7 +2,7 @@ import { IAvailableRelatedColumn } from "@talxis/client-libraries";
 import { Selector } from "../Selector/Selector";
 import { useEditColumns } from "../useEditColumns";
 import { useEffect, useState } from "react";
-import { useModel } from "../../useModel";
+import { useModel } from "@components/DatasetControl/useModel";
 
 
 export const ScopeSelector = () => {

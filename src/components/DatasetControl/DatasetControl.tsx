@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useRef } from "react";
-import { useControl } from "../../hooks";
+import { useControl } from "@hooks";
 import { ThemeProvider } from "@fluentui/react";
 import { datasetControlTranslations } from "./translations";
-import { useRerender } from "@talxis/react-components";
+import { useRerender } from "@legacy";
 import { DatasetControlModel } from "./DatasetControlModel";
 import { ModelContext } from "./useModel";
 import { Pagination } from "./Pagination/Pagination";
 import { getDatasetControlStyles } from "./styles";
 import { Header } from "./Header/Header";
-import { useEventEmitter } from "../../hooks/useEventEmitter";
+import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
 import { IDatasetControlProps } from "./interfaces";
 

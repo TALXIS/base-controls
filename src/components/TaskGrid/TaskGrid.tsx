@@ -1,5 +1,5 @@
-import { useEventEmitter } from "../../hooks/useEventEmitter"
-import { IDatasetControlEvents } from "../../utils/dataset-control";
+import { useEventEmitter } from "@hooks/useEventEmitter"
+import { IDatasetControlEvents } from "@utils/dataset-control";
 import { useRef } from "react";
 import * as React from "react";
 import { AgGridLicenseKeyContext, DatasetControlContext, LocalizationServiceContext, PcfContext, RootElementIdContext, TaskDataProviderContext, TaskGridComponentsContext, TaskGridDescriptorContext, usePcfContext } from "./context";
@@ -14,7 +14,7 @@ import { ITaskGridState, TaskGridDatasetControlFactory } from "./TaskGridDataset
 import { Header } from "./components/header/Header";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
 import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
-import { LocalizationService } from "../../utils";
+import { LocalizationService } from "@utils";
 
 interface ITaskGridProps {
     //should be replaced by Context API in future

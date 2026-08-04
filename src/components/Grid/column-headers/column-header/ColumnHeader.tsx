@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CommandBarButton, Icon, Label, useTheme } from '@fluentui/react';
 import React from 'react';
-import { useGridInstance } from '../../grid/useGridInstance';
-import { IGridColumn } from '../../grid/GridModel';
+import { useGridInstance } from '@components/Grid/grid/useGridInstance';
+import { IGridColumn } from '@components/Grid/grid/GridModel';
 import { ColumnHeaderContextualMenu, IColumnHeaderContextualMenuProps } from './ColumnHeaderContextualMenu';
 import { FilterCallout } from './FilterCallout';
-import { NestedControlRenderer } from '../../../NestedControlRenderer';
-import { useRerender } from '@talxis/react-components';
-import { useAgGridInstance } from '../../grid/ag-grid/useAgGridInstance';
-import { useEventEmitter } from '../../../../hooks/useEventEmitter';
-import { IAgGridModelEvents } from '../../grid/ag-grid/AgGridModel';
+import { NestedControlRenderer } from '@components/NestedControlRenderer';
+import { useRerender } from '@legacy';
+import { useAgGridInstance } from '@components/Grid/grid/ag-grid/useAgGridInstance';
+import { useEventEmitter } from '@hooks/useEventEmitter';
+import { IAgGridModelEvents } from '@components/Grid/grid/ag-grid/AgGridModel';
 
 export interface IColumnHeader {
     baseColumn: IGridColumn;

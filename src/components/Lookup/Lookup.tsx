@@ -3,15 +3,15 @@ import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeProvider } from "@fluentui/react";
-import { IItemProps, TagPicker } from "@talxis/react-components";
+import { IItemProps, TagPicker } from "@legacy";
 import { TargetSelector } from "./components/TargetSelector";
-import { useMouseOver } from "../../hooks/useMouseOver";
+import { useMouseOver } from "@hooks/useMouseOver";
 import { getLookupStyles, getSuggestionsCalloutStyles } from "./styles";
 import { IBasePicker } from "@fluentui/react/lib/components/pickers/BasePicker.types";
 import { ITag } from "@fluentui/react/lib/components/pickers/TagPicker/TagPicker.types";
 import { RecordCreator } from "./components/RecordCreator";
-import { useFocusIn } from "../../hooks/useFocusIn";
-import { useControlSizing } from "../../hooks/useControlSizing";
+import { useFocusIn } from "@hooks/useFocusIn";
+import { useControlSizing } from "@hooks/useControlSizing";
 import dayjs from "dayjs";
 
 export const Lookup = (props: ILookup) => {

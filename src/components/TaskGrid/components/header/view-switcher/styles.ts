@@ -1,5 +1,5 @@
 import { mergeStyleSets } from "@fluentui/react"
-import { ITheme } from "@talxis/react-components"
+import { ITheme } from "@legacy"
 
 export const getViewSwitcherStyles = (theme: ITheme) => {
     return mergeStyleSets({

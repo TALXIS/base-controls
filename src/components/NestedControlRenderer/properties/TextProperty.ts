@@ -1,4 +1,4 @@
-import { IStringProperty } from "../../../interfaces";
+import { IStringProperty } from "@interfaces";
 import { Property } from "./Property";
 
 export class TextProperty extends Property {

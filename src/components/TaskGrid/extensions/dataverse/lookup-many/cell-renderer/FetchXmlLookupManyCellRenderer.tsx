@@ -1,10 +1,10 @@
 import { IRecord } from "@talxis/client-libraries";
-import { useTaskDataProvider } from "../../../../..";
+import { useTaskDataProvider } from "@components/TaskGrid/context";
 import { FetchXmlDataProviderFactory } from "./FetchXmlDataProviderFactory";
 import React from "react";
-import { LookupManyCellRenderer } from '../../../../components/grid/cell-renderers/lookup-many'
-import { ICellProps } from "../../../../../Grid/cells/cell/Cell";
-import { IDataverseTaskStrategy } from "../../DataverseTaskStrategy";
+import { LookupManyCellRenderer } from '@components/TaskGrid/components/grid/cell-renderers/lookup-many'
+import { ICellProps } from "@components/Grid/cells/cell/Cell";
+import { IDataverseTaskStrategy } from "@components/TaskGrid/extensions/dataverse/DataverseTaskStrategy";
 
 export const FetchXmlLookupManyCellRenderer = (props: ICellProps) => {
     const { baseColumn } = props;

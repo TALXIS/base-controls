@@ -1,7 +1,7 @@
 import { IDataset, IRecord } from "@talxis/client-libraries";
-import { IControl } from "../../interfaces/context";
+import { IControl } from "@interfaces/context";
 import { IRibbonComponentProps } from "../Ribbon/interfaces";
-import { IStringProperty } from "../../interfaces";
+import { IStringProperty } from "@interfaces";
 
 export interface IGridInlineRibbon extends IControl<IRibbonParameters, any, any, IGridInlineRibbonComponentProps> {
 }

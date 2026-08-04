@@ -1,11 +1,11 @@
 import { AggregationFunction, DataProvider, DataType, DataTypes, FieldValue, Filtering, Formatting, Grouping, IColumn, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IDataset, IGroupByMetadata, IInternalDataProvider, IRecord, Sanitizer, Sorting, TotalRow } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
-import { ITheme, Theming } from "@talxis/react-components";
+import { ITheme, Theming } from "@legacy";
 import { getTheme } from "@fluentui/react";
 import { gridTranslations } from "../translations";
-import { ITranslation } from "../../../hooks";
-import { IBinding } from "../../NestedControlRenderer/interfaces";
-import { BaseControls, IFluentDesignState } from "../../../utils";
+import { ITranslation } from "@hooks";
+import { IBinding } from "@components/NestedControlRenderer/interfaces";
+import { BaseControls, IFluentDesignState } from "@utils";
 import { IGrid, IGridParameters } from "../interfaces";
 import { CHECKBOX_COLUMN_KEY } from "../constants";
 import { Type as FilterType } from "@talxis/client-libraries";

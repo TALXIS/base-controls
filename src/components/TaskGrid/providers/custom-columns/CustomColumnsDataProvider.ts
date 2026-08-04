@@ -1,5 +1,5 @@
 import { DatasetConstants, IColumn, IEventEmitter, EventEmitter, IRawRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { ErrorHelper } from "../../../../utils";
+import { ErrorHelper } from "@utils";
 
 
 /** Strategy interface for managing user-defined (dynamic) column definitions. */

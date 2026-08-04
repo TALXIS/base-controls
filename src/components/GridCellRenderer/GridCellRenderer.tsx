@@ -1,9 +1,9 @@
 import { useMemo, useRef } from "react";
 import { GridCellRendererModel } from "./GridCellRendererModel";
-import { useControl } from "../../hooks";
+import { useControl } from "@hooks";
 import { Icon, Label, ThemeProvider, Text } from "@fluentui/react";
 import { IGridCellRenderer } from "./interfaces";
-import { getClassNames } from "@talxis/react-components";
+import { getClassNames } from "@utils";
 import { getGridCellRendererStyles } from "./styles";
 import { ValueRenderer } from "./ValueRenderer/ValueRenderer";
 import { ModelContext } from "./useModel";

@@ -1,11 +1,11 @@
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { useTaskDataProvider } from "../../../../..";
+import { useTaskDataProvider } from "@components/TaskGrid/context";
 import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
-import { ICellProps } from "../../../../../Grid/cells/cell/Cell";
-import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "../../lookup-many";
-import { useAgGridInstance } from "../../../../../Grid/grid/ag-grid/useAgGridInstance";
-import { useGridInstance } from "../../../../../Grid/grid/useGridInstance";
+import { ICellProps } from "@components/Grid/cells/cell/Cell";
+import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/components/grid/lookup-many";
+import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
+import { useGridInstance } from "@components/Grid/grid/useGridInstance";
 import { ThemeProvider } from "@fluentui/react";
 
 interface ICellRendererProps extends ICellProps {

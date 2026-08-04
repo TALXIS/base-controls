@@ -1,7 +1,7 @@
 import { Client, Dataset, FetchXmlBuilder, IColumn, IDataset, PowerAppsDatasetProvider } from "@talxis/client-libraries";
 import { mergeStyles } from "@fluentui/react";
-import { IDatasetControlParameters, IDatasetControlProps } from "../../../components";
-import { DatasetControl, IDatasetControl } from "../../dataset-control";
+import { IDatasetControlParameters, IDatasetControlProps } from "@components";
+import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
 
 interface IInputs {
     Grid: ComponentFramework.PropertyTypes.DataSet;

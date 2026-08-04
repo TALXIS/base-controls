@@ -1,5 +1,5 @@
 import { Filtering, IColumn, IDataset } from "@talxis/client-libraries";
-import { IControl, IParameters, ITwoOptionsProperty } from "../../interfaces";
+import { IControl, IParameters, ITwoOptionsProperty } from "@interfaces";
 import { IButtonProps, IIconProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 import { gridColumnHeaderTranslations } from "./translations";
 

@@ -3,8 +3,8 @@ import { ContextualMenu, ContextualMenuItemType, IContextualMenuItem, IContextua
 import { Filter24Regular, ArrowSortUp24Regular, ArrowSortDown24Regular, FilterDismiss24Regular, Dismiss24Regular, Autosum24Regular, GroupList24Regular, AppsList24Regular } from '@fluentui/react-icons';
 import { getColumnHeaderContextualMenuStyles } from './styles';
 import { DataTypes } from '@talxis/client-libraries';
-import { useGridInstance } from '../../grid/useGridInstance';
-import { IGridColumn } from '../../grid/GridModel';
+import { useGridInstance } from '@components/Grid/grid/useGridInstance';
+import { IGridColumn } from '@components/Grid/grid/GridModel';
 
 export interface IColumnHeaderContextualMenuProps extends Omit<IContextualMenuProps, 'items'> {
     column: IGridColumn;

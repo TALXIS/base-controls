@@ -1,7 +1,7 @@
 import { IToggleProps } from "@fluentui/react";
-import { ITwoOptionsProperty } from "../../interfaces";
-import { IControl, IOutputs } from "../../interfaces/context";
-import { IBaseParameters } from "../../interfaces/parameters";
+import { ITwoOptionsProperty } from "@interfaces";
+import { IControl, IOutputs } from "@interfaces/context";
+import { IBaseParameters } from "@interfaces/parameters";
 
 export interface ITwoOptions extends IControl<ITwoOptionsParameters, ITwoOptionsOutputs, any, IToggleProps> {
 }

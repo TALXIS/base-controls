@@ -3,7 +3,7 @@ import { GroupBase } from 'react-select';
 import { Callout, DirectionalHint, TooltipHost, useTheme, Text } from "@fluentui/react";
 import AsyncSelect from 'react-select/async';
 import { AsyncProps } from 'react-select/dist/declarations/src/useAsync';
-import { useModel } from "../../useModel";
+import { useModel } from "@components/DatasetControl/useModel";
 import { components } from 'react-select';
 import { useMemo } from "react";
 import React from "react";

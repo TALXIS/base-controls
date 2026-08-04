@@ -1,7 +1,7 @@
 import { AgGridReactProps } from "@ag-grid-community/react";
-import { ITranslation } from "../../hooks";
-import { IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "../../interfaces";
-import { IControl, IOutputs } from "../../interfaces/context";
+import { ITranslation } from "@hooks";
+import { IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@interfaces";
+import { IControl, IOutputs } from "@interfaces/context";
 import { gridTranslations } from "./translations";
 import { IDataset } from "@talxis/client-libraries";
 

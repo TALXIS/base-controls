@@ -1,0 +1,33 @@
+{
+  "name": "@talxis/base-controls-storybook",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@babel/standalone": "^7.29.7",
+    "@emotion/react": "11.11.4",
+    "@emotion/styled": "11.11.5",
+    "@monaco-editor/react": "^4.7.0",
+    "@mui/material": "^5.16.14",
+    "@talxis/base-controls": "file:..",
+    "leaflet": "^1.9.4",
+    "monaco-editor": "^0.52.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-leaflet": "^3.2.5"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^10.5.5",
+    "@storybook/addon-docs": "^10.5.5",
+    "@storybook/react-vite": "^10.5.5",
+    "@types/node": "^20.17.57",
+    "@types/react": "17.0.90",
+    "@types/react-dom": "^17.0.21",
+    "storybook": "^10.5.5",
+    "typescript": "^4.9.5",
+    "vite": "^7.1.0"
+  }
+}
