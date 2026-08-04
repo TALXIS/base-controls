@@ -53,6 +53,11 @@ const styles = mergeStyleSets({
         width: '100%',
         overflow: 'hidden',
     },
+    codeFrame: {
+        border: `1px solid ${theme.palette.neutralLight}`,
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
     viewportWindow: {
         width: '100%',
     },
@@ -185,7 +190,7 @@ const FormExample = () => {
             'You can read and write the bound field value while keeping validation, save flow, and notifications integrated.',
         ],
         code: `function RatingButtons() {
-  const field = useField("number");
+  const field = useField();
   const currentValue = Number(field?.getValue() ?? 0);
 
   return (
@@ -454,7 +459,9 @@ const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
                 <div className={styles.previewFrame}>
                     <div className={styles.viewportWindow}>
                         {showCode ? (
-                            <FormCodeEditor value={code} onChange={setCode} />
+                            <div className={styles.codeFrame}>
+                                <FormCodeEditor value={code} onChange={setCode} />
+                            </div>
                         ) : (
                             <LiveFormCode
                                 code={code}

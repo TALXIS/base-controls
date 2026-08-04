@@ -40,7 +40,10 @@ const codeBlockStyles = mergeStyleSets({
         height: 220,
     },
     codeEditor: {
+        border: '1px solid #edebe9',
+        borderRadius: 8,
         height: 640,
+        overflow: 'hidden',
     },
 })
 
@@ -103,19 +106,29 @@ const ReactComposeOverviewStory = () => {
                 />
             </div>
             <div style={{ minHeight: 0, flex: 1 }}>
-                <ReactComposeMode
-                    initialView="preview"
-                    initialTabsFlavor="pivot"
-                    hideTabsFlavorPivot
-                    hideWorkspaceViewPivot
-                    useStorybookViewport
-                    renderPreviewCodeBeforePreview={showCode}
-                    renderPreviewCode={({ code, onChange }) => (
-                        <div className={codeBlockStyles.codeEditor}>
-                            <FormCodeEditor value={code} onChange={onChange} />
-                        </div>
-                    )}
-                />
+                {showCode ? (
+                    <div className={codeBlockStyles.codeEditor}>
+                        <ReactComposeMode
+                            initialView="preview"
+                            initialTabsFlavor="pivot"
+                            hideTabsFlavorPivot
+                            hideWorkspaceViewPivot
+                            useStorybookViewport
+                            renderPreviewCodeBeforePreview
+                            renderPreviewCode={({ code, onChange }) => (
+                                <FormCodeEditor value={code} onChange={onChange} />
+                            )}
+                        />
+                    </div>
+                ) : (
+                    <ReactComposeMode
+                        initialView="preview"
+                        initialTabsFlavor="pivot"
+                        hideTabsFlavorPivot
+                        hideWorkspaceViewPivot
+                        useStorybookViewport
+                    />
+                )}
             </div>
         </div>
     )

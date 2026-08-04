@@ -47,6 +47,11 @@ const styles = mergeStyleSets({
         width: '100%',
         overflow: 'hidden',
     },
+    codeFrame: {
+        border: `1px solid ${theme.palette.neutralLight}`,
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
     viewportWindow: {
         width: '100%',
     },
@@ -361,7 +366,9 @@ const renderLayoutExample = (example: ILayoutExample) => {
                 <div className={styles.previewFrame}>
                     <div className={styles.viewportWindow}>
                         {showCode ? (
-                            <FormCodeEditor value={code} onChange={setCode} />
+                            <div className={styles.codeFrame}>
+                                <FormCodeEditor value={code} onChange={setCode} />
+                            </div>
                         ) : (
                             <LiveFormCode
                                 code={code}
