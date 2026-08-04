@@ -4,7 +4,6 @@ import {
     ComboBox,
     Icon,
     IconButton,
-    Link,
     Slider,
     Stack,
     Text,
@@ -25,24 +24,14 @@ import { getMemoryStrategy } from '../../form/shared/formModel'
 const theme = getTheme()
 
 const styles = mergeStyleSets({
-    page: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    sectionHeader: {
-        borderBottom: `1px solid ${theme.palette.neutralLight}`,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-    },
-    sectionBody: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-    },
     bullets: {
         margin: 0,
         paddingLeft: 20,
+    },
+    exampleBody: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
     },
     exampleHeader: {
         borderBottom: `1px solid ${theme.palette.neutralLighter}`,
@@ -58,11 +47,6 @@ const styles = mergeStyleSets({
         gap: 6,
         minWidth: 0,
         flex: 1,
-    },
-    exampleBody: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
     },
     previewFrame: {
         minHeight: 420,
@@ -417,12 +401,7 @@ const FormExample = () => {
     },
 ]
 
-interface ICustomComponentsExampleCardProps {
-    example: ICustomComponentsExample
-}
-
-const CustomComponentsExampleCard = (props: ICustomComponentsExampleCardProps) => {
-    const { example } = props
+const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
     const [code, setCode] = useState(example.code)
     const [showCode, setShowCode] = useState(false)
     const [compileError, setCompileError] = useState<string | null>(null)
@@ -463,10 +442,7 @@ const CustomComponentsExampleCard = (props: ICustomComponentsExampleCardProps) =
     return (
         <div>
             <div className={styles.exampleHeader}>
-                <div className={styles.exampleCopy}>
-                    <Text variant="large" styles={{ root: { fontWeight: 600 } }}>{example.title}</Text>
-                    <Text>{example.summary}</Text>
-                </div>
+                <div className={styles.exampleCopy} />
                 <Toggle
                     label="Code"
                     inlineLabel
@@ -475,13 +451,6 @@ const CustomComponentsExampleCard = (props: ICustomComponentsExampleCardProps) =
                 />
             </div>
             <div className={styles.exampleBody}>
-                <ul className={styles.bullets}>
-                    {example.notes.map((note) => (
-                        <li key={note}>
-                            <Text>{note}</Text>
-                        </li>
-                    ))}
-                </ul>
                 <div className={styles.previewFrame}>
                     <div className={styles.viewportWindow}>
                         {showCode ? (
@@ -503,39 +472,6 @@ const CustomComponentsExampleCard = (props: ICustomComponentsExampleCardProps) =
     )
 }
 
-const CustomComponentsDocsPage = () => {
-    return (
-        <div className={styles.page}>
-            <div>
-                <div className={styles.sectionBody} />
-            </div>
-
-            {customComponentsExamples.map((example) => (
-                <CustomComponentsExampleCard key={example.id} example={example} />
-            ))}
-
-            <div>
-                <div className={styles.sectionHeader}>
-                    <Text variant="large">Where to use it</Text>
-                </div>
-                <div className={styles.sectionBody}>
-                    <ul className={styles.bullets}>
-                        <li><Text>Swap out presentation shells without throwing away the form runtime.</Text></li>
-                        <li><Text>Build higher-level UI for specific fields when a stock control is not enough.</Text></li>
-                        <li><Text>Embed richer visual or contextual helpers directly into the authored form layout.</Text></li>
-                    </ul>
-                    <Text>
-                        For responsive layout authoring, go to
-                        {' '}
-                        <Link href="?path=/docs/form-react-compose-layout--docs">Layout</Link>
-                        .
-                    </Text>
-                </div>
-            </div>
-        </div>
-    )
-}
-
 const meta = {
     title: 'Form/React compose/Custom Components',
     tags: ['autodocs'],
@@ -552,14 +488,12 @@ const meta = {
             controls: { disable: true },
             description: {
                 component: `
-Use this page to explore how React compose can be extended with custom presentation components and custom field content.
+Build custom presentation layers and field-specific UI on top of the React compose form runtime.
 
-- Override larger presentation layers such as tabs with \`components\` props.
-- Author field-specific custom UI by combining \`Form.Field\`, \`Form.Cell\`, and \`useField\`.
-- Render selected groups through a custom section component when you need a different section look and want to place the fields directly inside it.
-- Mix runtime-managed controls with custom content cells in the same layout.
-
-Each example below renders a live form preview and can switch to the Monaco-backed code editor that powers it.
+- Replace larger presentation shells such as tabs when navigation should follow a stepper, wizard, sidebar, or another domain-specific pattern.
+- Compose read/write custom field widgets that still participate in validation, notifications, and save flow.
+- Mix runtime-managed controls with summaries, helper panels, maps, and other embedded custom content.
+- Render fields through a custom section wrapper when one area needs distinct framing beyond the stock section chrome.
                 `.trim(),
             },
         },
@@ -570,7 +504,92 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Overview: Story = {
-    name: 'Overview',
-    render: () => renderStory(<CustomComponentsDocsPage />),
+const samplesById = Object.fromEntries(customComponentsExamples.map((sample) => [sample.id, sample])) as Record<string, ICustomComponentsExample>
+
+export const ReplaceTabsRenderer: Story = {
+    name: 'Replace the tabs renderer',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Uses \`Form.Tabs components.onRenderTabs\` to swap the default tab header with a stepper-style presentation component.
+
+- replaces only the tabs shell
+- keeps the tab state and content on the same runtime
+- supports horizontal and vertical orientations
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-tabs']), 18),
+}
+
+export const ComposeCustomFieldContent: Story = {
+    name: 'Compose custom field content',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Shows how to build custom read/write field UI with \`Form.Field\`, \`Form.Cell\`, and \`useField\` while staying inside the form runtime.
+
+- binds custom widgets to form-managed values
+- keeps validation and save flow integrated
+- mixes stock controls with custom field projections
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-field-content']), 18),
+}
+
+export const MixRuntimeFieldsWithCustomContentCells: Story = {
+    name: 'Mix runtime fields with custom content cells',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Adds compact custom summary content alongside standard runtime-managed fields in the same authored layout.
+
+- keeps standard controls where they already fit
+- embeds helper or summary panels selectively
+- uses custom content cells without replacing the whole form surface
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-rich-cells']), 18),
+}
+
+export const RenderCellsThroughCustomSectionComponent: Story = {
+    name: 'Render cells through a custom section component',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Renders fields through a fully custom section wrapper when one area needs distinct framing beyond the stock section chrome.
+
+- places custom React directly inside \`Form.Root\`
+- renders \`Form.Field\` and \`Form.Cell\` through a custom wrapper
+- combines branded framing with runtime-backed form fields
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-sections-and-labels']), 18),
 }

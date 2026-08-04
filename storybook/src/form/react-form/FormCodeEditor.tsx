@@ -28,8 +28,14 @@ declare const Stack: any;
 declare const FluentText: any;
 declare const TextField: any;
 declare const Icon: any;
+declare const ComboBox: any;
+declare const IconButton: any;
 declare const Slider: any;
 declare const OpenMap: any;
+declare const MuiStepper: any;
+declare const MuiStep: any;
+declare const MuiStepButton: any;
+declare const MuiStepContent: any;
 
 interface ISandboxFieldValidationResult {
   error: boolean;

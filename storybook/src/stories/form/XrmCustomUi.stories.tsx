@@ -1,8 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { Text, Toggle, getTheme, mergeStyleSets } from '@fluentui/react'
+import { Text, getTheme, mergeStyleSets } from '@fluentui/react'
 import { XrmMode } from '../../form/xrm-form/XrmMode'
-import { XrmComponentsCodeEditor } from '../../form/xrm-form/XrmComponentsCodeEditor'
 import { renderStory } from './storyHelpers'
 
 const theme = getTheme()
@@ -214,80 +213,10 @@ const [orientation, setOrientation] = React.useState("horizontal");
     },
 ]
 
-interface IXrmCustomComponentsExampleCardProps {
-    example: IXrmCustomComponentsExample
-}
-
-const XrmCustomComponentsExampleCard = (props: IXrmCustomComponentsExampleCardProps) => {
-    const { example } = props
-    const [showCode, setShowCode] = React.useState(false)
-
-    return (
-        <div>
-            <div className={styles.exampleHeader}>
-                <div className={styles.exampleCopy}>
-                    <Text variant="large" styles={{ root: { fontWeight: 600 } }}>{example.title}</Text>
-                    <Text>{example.summary}</Text>
-                </div>
-                <Toggle
-                    label="Code"
-                    inlineLabel
-                    checked={showCode}
-                    onChange={(_event, checked) => setShowCode(!!checked)}
-                />
-            </div>
-            <div className={styles.exampleBody}>
-                <ul className={styles.bullets}>
-                    {example.notes.map((note) => (
-                        <li key={note}>
-                            <Text>{note}</Text>
-                        </li>
-                    ))}
-                </ul>
-                <div className={styles.previewFrame}>
-                    <div className={styles.viewportWindow}>
-                        {showCode ? (
-                            <XrmComponentsCodeEditor value={example.code} />
-                        ) : (
-                            example.render()
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-const XrmCustomUiDocsPage = () => {
-    return (
-        <div className={styles.page}>
-            <div>
-                <div className={styles.sectionBody} />
-            </div>
-
-            {customComponentsExamples.map((example) => (
-                <XrmCustomComponentsExampleCard key={example.id} example={example} />
-            ))}
-
-            <div>
-                <div className={styles.sectionHeader}>
-                    <Text variant="large">Where to use it</Text>
-                </div>
-                <div className={styles.sectionBody}>
-                    <ul className={styles.bullets}>
-                        <li><Text>Swap out selected Xrm presentation layers without throwing away the FormXml-driven runtime.</Text></li>
-                        <li><Text>Customize individual controls when the default Xrm projection is not enough.</Text></li>
-                        <li><Text>Replace the tabs shell while keeping the same runtime-backed tab content and navigation behavior.</Text></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    )
-}
-
 const meta = {
     title: 'Form/Xrm/Custom Components',
     tags: ['autodocs'],
+    name: 'Overview',
     parameters: {
         controls: { disable: true },
         docs: {
@@ -301,12 +230,12 @@ const meta = {
             controls: { disable: true },
             description: {
                 component: `
-Use this page to explore how Xrm UI can be customized while staying on top of the FormXml-driven runtime.
+These stories show common ways to customize Xrm presentation while keeping the FormXml-driven runtime in place.
 
 - Replace control presentation for selected Xrm controls.
 - Replace the tabs renderer with a custom tabs shell.
 
-Each example below renders a live preview and can switch to the Monaco-backed code editor that powers it.
+Each story keeps its own isolated form instance and opens directly in the live preview surface tailored to that customization scenario.
                 `.trim(),
             },
         },
@@ -317,7 +246,48 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Overview: Story = {
-    name: 'Overview',
-    render: () => renderStory(<XrmCustomUiDocsPage />),
+const samplesById = Object.fromEntries(customComponentsExamples.map((sample) => [sample.id, sample])) as Record<string, IXrmCustomComponentsExample>
+
+export const ReplaceControlPresentation: Story = {
+    name: 'Replace control presentation',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Swaps selected Xrm controls with custom React renderers while keeping the same formContext-driven behavior and FormXml layout.
+
+- targets individual controls without replacing the whole form shell
+- keeps the Xrm runtime contract intact
+- focuses on tailored field visuals for selected controls
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(samplesById.controls.render(), 18),
+}
+
+export const ReplaceTabsRenderer: Story = {
+    name: 'Replace the tabs renderer',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Replaces the default tabs shell with a custom stepper-based renderer while preserving the same runtime-backed tab content and navigation.
+
+- swaps only the tabs presentation layer
+- keeps tab state and content driven by the Xrm runtime
+- supports switching between horizontal and vertical orientations
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(samplesById.tabs.render(), 18),
 }
