@@ -6,7 +6,9 @@ import { renderStory } from './storyHelpers'
 interface IXrmFormContextArgs {
 }
 
-const formContextDocsCode = `const onExecuteScenario = (formContext: IXrmFormContext) => {
+const formContextDocsCode = `// Use formContext inside this method to read values and manipulate the form UI.
+
+const onExecuteScenario = (formContext: IXrmFormContext) => {
   const targetDate = formContext.getAttribute("targetDate");
   const approvedBudget = formContext.getAttribute("approvedBudget");
   const metricsTab = formContext.ui.tabs.get("MetricsTab");
@@ -90,7 +92,7 @@ Microsoft Learn references:
             hideFormContextConsole
             formContextDocsExample={{
                 title: 'Run custom Form context code',
-                summary: 'Switch to Code to edit the Monaco snippet. The editor exposes IXrmFormContext members for intellisense, and Run code invokes onExecuteScenario against the live preview.',
+                summary: 'Switch to Code to edit the Monaco snippet. The editor exposes the official Xrm form context members for intellisense, and Run code invokes onExecuteScenario against the live preview.',
                 code: formContextDocsCode,
             }}
         />,

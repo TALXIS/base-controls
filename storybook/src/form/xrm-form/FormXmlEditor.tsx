@@ -56,7 +56,7 @@ export const FormXmlEditor = (props: IFormXmlEditorProps) => {
                         horizontal: "auto",
                         vertical: "auto",
                     },
-                    scrollBeyondLastLine: true,
+                    scrollBeyondLastLine: false,
                     smoothScrolling: true,
                     tabSize: 2,
                     wordWrap: "on",

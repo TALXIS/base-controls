@@ -1,3 +1,4 @@
+import * as Babel from "@babel/standalone"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ComboBox, CommandBar, DefaultButton, Dialog, DialogFooter, DialogType, ICommandBarItemProps, MessageBar, MessageBarType, Pivot, PivotItem, PrimaryButton, Slider, Stack, Text, Toggle, getTheme, mergeStyleSets } from "@fluentui/react"
 import { FormXmlSectionBuilder, FormXmlTabBuilder, parseFormXml, serializeFormXml } from "@talxis/client-metadata"
@@ -226,6 +227,13 @@ export const CustomXrmStepperForm = () => {
     />
   );
 };`
+
+const transpileExecutableScript = (code: string, filename: string) => {
+    return Babel.transform(code, {
+        presets: [["typescript", { allExtensions: true, isTSX: false }]],
+        filename,
+    }).code ?? ""
+}
 
 const serializeRecord = (record: { [key: string]: any }) => JSON.stringify(record, null, 2)
 const maxEventLogEntries = 200
@@ -766,6 +774,13 @@ interface IFormContextDocsExample {
     runner?: string
 }
 
+const emptyFormContextDocsScript = [
+    "// Use formContext inside this method to read values and manipulate the form UI.",
+    "",
+    "const onExecuteScenario = (formContext: IXrmFormContext) => {",
+    "}",
+].join("\n")
+
 interface IXrmModeProps {
     initialView?: TXrmWorkspaceView
     initialCustomComponentsFlavor?: TXrmCustomComponentsFlavor
@@ -815,6 +830,8 @@ export const XrmMode = (props: IXrmModeProps) => {
     const [formContext, setFormContext] = useState<IXrmFormContext | null>(null)
     const [activeScenarioId, setActiveScenarioId] = useState<string | null>(props.initialFormContextScenarioId ?? null)
     const [formContextScenarioScripts, setFormContextScenarioScripts] = useState<Record<string, string>>(() => Object.fromEntries(xrmBusinessFlowScenarios.map((scenario) => [scenario.id, getEmptyScenarioScript(scenario)])))
+    const [formContextDocsScript, setFormContextDocsScript] = useState(() => props.formContextDocsExample?.code ?? emptyFormContextDocsScript)
+    const [formContextDocsEditorKey, setFormContextDocsEditorKey] = useState(0)
     const [demoEvents, setDemoEvents] = useState<IXrmDemoEvent[]>([])
     const apiRef = useRef<IFormApi | null>(null)
     const customComponentsApiRef = useRef<IFormApi | null>(null)
@@ -885,7 +902,7 @@ export const XrmMode = (props: IXrmModeProps) => {
     }, [activeScenarioId])
     const activeScenarioScript = useMemo(() => {
         if (props.formContextDocsExample) {
-            return props.formContextDocsExample.code
+            return formContextDocsScript
         }
 
         if (!activeScenario) {
@@ -896,7 +913,7 @@ export const XrmMode = (props: IXrmModeProps) => {
         }
 
         return formContextScenarioScripts[activeScenario.id] ?? formatScenarioScript(activeScenario)
-    }, [activeScenario, formContextScenarioScripts, props.formContextDocsExample])
+    }, [activeScenario, formContextDocsScript, formContextScenarioScripts, props.formContextDocsExample])
     const parsedFormXml = useMemo(() => {
         try {
             return {
@@ -1157,7 +1174,8 @@ export const XrmMode = (props: IXrmModeProps) => {
         const scenarioScript = formContextScenarioScripts[scenario.id] ?? scenario.code
 
         try {
-            const runScenario = new Function("formContext", "resetXrmBusinessFlows", scenarioScript) as (formContext: IXrmFormContext, resetXrmBusinessFlows: typeof resetXrmBusinessFlows) => void
+            const executableScript = transpileExecutableScript(scenarioScript, `xrm-scenario-${scenario.id}.ts`)
+            const runScenario = new Function("formContext", "resetXrmBusinessFlows", executableScript) as (formContext: IXrmFormContext, resetXrmBusinessFlows: typeof resetXrmBusinessFlows) => void
             runScenario(formContext, resetXrmBusinessFlows)
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error)
@@ -1176,9 +1194,10 @@ export const XrmMode = (props: IXrmModeProps) => {
         }
 
         try {
-            const executableScript = props.formContextDocsExample
+            const sourceScript = props.formContextDocsExample
                 ? [script, props.formContextDocsExample.runner ?? "onExecuteScenario(formContext)"].join("\n\n")
                 : script
+            const executableScript = transpileExecutableScript(sourceScript, "xrm-form-context-docs.ts")
             const runScenario = new Function("formContext", "resetXrmBusinessFlows", executableScript) as (formContext: IXrmFormContext, resetXrmBusinessFlows: typeof resetXrmBusinessFlows) => void
             runScenario(formContext, resetXrmBusinessFlows)
         } catch (error) {
@@ -1206,6 +1225,10 @@ export const XrmMode = (props: IXrmModeProps) => {
         setFormContextScenarioScripts(() => Object.fromEntries(
             xrmBusinessFlowScenarios.map((scenario) => [scenario.id, getEmptyScenarioScript(scenario)])
         ))
+        if (props.formContextDocsExample) {
+            setFormContextDocsScript(emptyFormContextDocsScript)
+            setFormContextDocsEditorKey((value) => value + 1)
+        }
         setActiveScenarioId(scenarioIdToKeep)
         setFormContext(null)
         setDemoEvents([])
@@ -1723,14 +1746,22 @@ export const XrmMode = (props: IXrmModeProps) => {
 
                         {showFormContextCode && !props.hideFormContextCodePanel && (
                             <XrmComponentsCodeEditor
+                                key={props.formContextDocsExample ? formContextDocsEditorKey : activeScenarioId ?? "form-context"}
                                 value={activeScenarioScript}
                                 label=""
                                 language="typescript"
-                                path="file:///sandbox/xrm-form-context-scenario.ts"
+                                path={props.formContextDocsExample
+                                    ? `file:///sandbox/xrm-form-context-docs-${formContextDocsEditorKey}.ts`
+                                    : "file:///sandbox/xrm-form-context-scenario.ts"}
                                 height="520px"
                                 kind="form-context"
                                 readOnly={false}
                                 onChange={(value) => {
+                                    if (props.formContextDocsExample) {
+                                        setFormContextDocsScript(value)
+                                        return
+                                    }
+
                                     if (!activeScenario) {
                                         return
                                     }

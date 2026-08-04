@@ -11,3 +11,5 @@ yalc.lock
 *storybook.log
 storybook/node_modules
 storybook/storybook-static
+
+.chrome-profile
