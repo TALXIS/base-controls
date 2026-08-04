@@ -15,6 +15,10 @@ const meta = {
             story: {
                 inline: true,
             },
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
             description: {
                 component: `
 These samples show common business flows implemented against the Xrm \`formContext\` runtime.
@@ -41,6 +45,10 @@ export const QualificationReview: Story = {
     name: 'Qualification review',
     parameters: {
         docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
             description: {
                 story: `
 Mimics a lead qualification step where identity and contact data become required and phone formatting is validated before handoff.
@@ -60,6 +68,10 @@ export const DigitalEngagement: Story = {
     name: 'Digital engagement route',
     parameters: {
         docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
             description: {
                 story: `
 Shows a digital-only path where phone is hidden, web contact becomes primary, and the URL must be secure.
@@ -79,6 +91,10 @@ export const FinancialApproval: Story = {
     name: 'Financial approval checkpoint',
     parameters: {
         docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
             description: {
                 story: `
 Simulates a review stage where metrics become partially read-only and duration is validated against an approval threshold.
@@ -98,6 +114,10 @@ export const SchedulingHandoff: Story = {
     name: 'Scheduling handoff',
     parameters: {
         docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
             description: {
                 story: `
 Demonstrates a late-stage handoff where scheduling fields are promoted and secondary handoff content is hidden.

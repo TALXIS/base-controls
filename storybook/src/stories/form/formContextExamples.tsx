@@ -1,7 +1,6 @@
 import React from 'react'
-import { Toggle, getTheme, mergeStyleSets } from '@fluentui/react'
+import { getTheme, mergeStyleSets } from '@fluentui/react'
 import { XrmMode } from '../../form/xrm-form/XrmMode'
-import { XrmComponentsCodeEditor } from '../../form/xrm-form/XrmComponentsCodeEditor'
 import { xrmBusinessFlowScenarios } from '../../form/xrm-form/xrmBusinessFlows'
 
 const theme = getTheme()
@@ -35,19 +34,7 @@ export const overviewFormContextExample: IFormContextDocsExample = {
     code: `// Use formContext inside this method to read values and manipulate the form UI.
 
 const onExecuteScenario = (formContext: IXrmFormContext) => {
-  const targetDate = formContext.getAttribute("targetDate");
-  const approvedBudget = formContext.getAttribute("approvedBudget");
-  const metricsTab = formContext.ui.tabs.get("MetricsTab");
 
-  targetDate?.setRequiredLevel("required");
-  approvedBudget?.setValue(125000);
-  approvedBudget?.fireOnChange();
-  metricsTab?.setVisible(true);
-  formContext.ui.setFormNotification(
-    "Custom Form context code ran successfully.",
-    "INFO",
-    "docs-form-context"
-  );
 };`,
 }
 
@@ -75,35 +62,17 @@ interface IFormContextSamplePreviewProps {
 
 export const FormContextSamplePreview = (props: IFormContextSamplePreviewProps) => {
     const { sample } = props
-    const [showCode, setShowCode] = React.useState(false)
 
     return (
-        <div>
-            <Toggle
-                label="Code"
-                inlineLabel
-                checked={showCode}
-                onChange={(_event, checked) => setShowCode(!!checked)}
+        <div className={styles.previewFrame}>
+            <XrmMode
+                initialView="form-context"
+                hideWorkspaceViewPivot
+                useStorybookViewport
+                hideFormContextScenarioPanel
+                hideFormContextConsole
+                formContextDocsExample={sample.docsExample}
             />
-            <div className={styles.previewFrame}>
-                {showCode ? (
-                    <XrmComponentsCodeEditor
-                        value={sample.docsExample.code}
-                        label=""
-                        kind="form-context"
-                        readOnly
-                    />
-                ) : (
-                    <XrmMode
-                        initialView="form-context"
-                        hideWorkspaceViewPivot
-                        useStorybookViewport
-                        hideFormContextScenarioPanel
-                        hideFormContextConsole
-                        formContextDocsExample={sample.docsExample}
-                    />
-                )}
-            </div>
         </div>
     )
 }
