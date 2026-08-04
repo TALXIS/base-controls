@@ -1,4 +1,4 @@
-import { IField } from "@talxis/client-libraries";
+import { IField, IFieldValidationResult } from "@talxis/client-libraries";
 import { DataTypes } from "@talxis/client-libraries/dist/utils";
 import { FormModel } from "@components/Form/internal/FormModel";
 import type { IFormXmlAttribute } from "../form-xml-form";
@@ -12,6 +12,7 @@ export class XrmAttribute implements IXrmAttributeContext {
     private _field: IField;
     private _formContext: IXrmFormContextInternal;
     private _onChangeHandlerSet: Set<Xrm.Events.ContextSensitiveHandler> = new Set();
+    private _suppressNextOnChange = false;
 
     constructor(attribute: IFormXmlAttribute, formContext: IXrmFormContextInternal) {
         this._attribute = attribute;
@@ -29,14 +30,22 @@ export class XrmAttribute implements IXrmAttributeContext {
     }
 
     public setValue(value: any): void {
+        // Real Xrm.Page doesn't fire onChange handlers for a scripted setValue() call unless
+        // the script explicitly calls fireOnChange() afterwards.
+        this._suppressNextOnChange = true;
         this._getField().setValue(value);
     }
 
     public setIsValid(isValid: boolean, message?: string): void {
-        this._attribute.setValidation({
+        const validation: IFieldValidationResult = {
             error: !isValid,
             errorMessage: message ?? ''
-        });
+        };
+        // Write through to the live form immediately - the FormXmlAttribute cache alone only
+        // reaches the record via a mounted Form.Field's render effect, which doesn't happen
+        // for attributes whose cell is currently hidden.
+        this._formContext.getFormXmlModel().getForm().setFieldValid(this.getName(), validation);
+        this._attribute.setValidation(validation);
     }
 
     public getAttributeType(): Xrm.Attributes.AttributeType {
@@ -81,7 +90,12 @@ export class XrmAttribute implements IXrmAttributeContext {
     }
 
     public setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {
-        this._attribute.setRequiredLevel(FormModel.getRequiredLevelEnumFromXrm(level));
+        const requiredLevel = FormModel.getRequiredLevelEnumFromXrm(level);
+        // Write through to the live form immediately - see setIsValid() for why the
+        // FormXmlAttribute cache alone isn't enough.
+        //along with validation - this is a struturual issue where its only propagated via rendered fields => we need to keep these settings on the form itself
+        this._formContext.getFormXmlModel().getForm().setFieldRequiredLevel(this.getName(), requiredLevel);
+        this._attribute.setRequiredLevel(requiredLevel);
     }
 
     public addOption(option: { value: number; text?: string }, index?: number): void {
@@ -143,6 +157,12 @@ export class XrmAttribute implements IXrmAttributeContext {
 
     private _formFieldValueChangedHandler = (fieldName: string): void => {
         if (fieldName !== this.getName()) return;
+
+        if (this._suppressNextOnChange) {
+            this._suppressNextOnChange = false;
+            return;
+        }
+
         this.fireOnChange();
     };
 

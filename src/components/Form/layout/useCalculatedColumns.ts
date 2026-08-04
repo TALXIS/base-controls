@@ -25,11 +25,14 @@ export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
         containerStyles: Layout.getColumnsContainerStyles(breakpoints.lg)
     });
 
+    const breakpointsRef = React.useRef(breakpoints);
+    breakpointsRef.current = breakpoints;
+
     const observer = React.useMemo(() => new ResizeObserver((entries) => {
         const containerWidth = entries[0].contentRect.width;
-        const numOfColumns = onGetNumberOfColumnsForWidth(containerWidth, breakpoints);
-        setColumnCalculation({ 
-            firstRender: false, 
+        const numOfColumns = onGetNumberOfColumnsForWidth(containerWidth, breakpointsRef.current);
+        setColumnCalculation({
+            firstRender: false,
             columnsPerRow: numOfColumns,
             containerWidth: containerWidth,
             containerStyles: Layout.getColumnsContainerStyles(numOfColumns)
@@ -43,6 +46,20 @@ export const useCalculatedColumns = (params: IUseCalculatedColumnsParams) => {
             observer.disconnect();
         }
     }, []);
+
+    React.useEffect(() => {
+        setColumnCalculation((current) => {
+            const numOfColumns = onGetNumberOfColumnsForWidth(current.containerWidth, breakpointsRef.current);
+            if (numOfColumns === current.columnsPerRow) {
+                return current;
+            }
+            return {
+                ...current,
+                columnsPerRow: numOfColumns,
+                containerStyles: Layout.getColumnsContainerStyles(numOfColumns)
+            };
+        });
+    }, [breakpoints]);
 
     return columnCalculation;
 }

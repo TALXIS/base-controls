@@ -22,13 +22,22 @@ export class Layout {
     }
 
     public static createDefaultColumnBreakpoints(breakpoints?: Partial<ILayoutBreakpoints>): ILayoutBreakpoints {
-        let definedBreakpoint = breakpoints?.lg ?? breakpoints?.md ?? breakpoints?.sm ?? breakpoints?.xs ?? 1;
+        const definedBreakpoint = Layout._firstPositive(breakpoints?.lg, breakpoints?.md, breakpoints?.sm, breakpoints?.xs);
         return {
             'lg': definedBreakpoint,
             'md': Math.min(definedBreakpoint, 3),
             'sm': Math.min(definedBreakpoint, 2),
             'xs': 1,
         };
+    }
+
+    private static _firstPositive(...values: (number | undefined)[]): number {
+        for (const value of values) {
+            if (value !== undefined && value !== null && value > 0) {
+                return value;
+            }
+        }
+        return 1;
     }
 
     public static getColumnsContainerStyles(columnsPerRow: number): React.CSSProperties {

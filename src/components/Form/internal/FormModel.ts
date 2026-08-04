@@ -135,7 +135,6 @@ export class FormModel implements IForm {
                 this._saveOperationPerformed = true;
                 this.events.dispatchEvent('onBeforeSave');
 
-                const dirtyFields = this._getDirtyFields();
                 this._createValidationSummaryFromFields(this.getFields());
 
                 if (this._validationSummary.length > 0) {
@@ -143,12 +142,14 @@ export class FormModel implements IForm {
                     return;
                 }
 
-                const changedData = this._getChangedData(dirtyFields);
-
                 if (await blocker?.()) {
                     this._dispatchAfterSave({ success: false });
                     return;
                 }
+
+                // Computed after the blocker so any values a before-save handler sets are
+                // included in what actually gets persisted.
+                const changedData = this._getChangedData(this._getDirtyFields());
 
                 const saveResult = await this._strategy.onSave({
                     updatedData: changedData,
