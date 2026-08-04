@@ -20,8 +20,8 @@ export const Notifications = (props: IFormNotificationsProps) => {
 				};
 			}
 
-			const column = record.getField(validation.fieldName).getColumn();
-			const displayName = column.displayName ?? column.name;
+			const field = record.getFields().find((field) => field.getColumn().name === validation.fieldName);
+			const displayName = field?.getColumn().displayName ?? validation.fieldName;
 
 			return {
 				text: `<strong>${displayName}</strong>: ${validation.errorMessage}`,
