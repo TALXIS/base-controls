@@ -165,8 +165,8 @@ interface IReactComposeModeProps {
     hideWorkspaceViewPivot?: boolean
     useStorybookViewport?: boolean
     hideModelEditorModeToggle?: boolean
-    initialShowPreviewCode?: boolean
-    hidePreviewCodeToggle?: boolean
+    renderPreviewCode?: (props: { code: string; onChange: (value: string) => void }) => React.ReactNode
+    renderPreviewCodeBeforePreview?: boolean
 }
 
 export const ReactComposeMode = (props: IReactComposeModeProps) => {
@@ -175,7 +175,6 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
     const [modelEditorMode, setModelEditorMode] = useState<"ui" | "json">(props.initialModelEditorMode ?? "ui")
     const stepperOrientation: TComposeStepperOrientation = props.initialStepperOrientation ?? "horizontal"
     const [code, setCode] = useState(defaultFormCode)
-    const [showPreviewCode, setShowPreviewCode] = useState(props.initialShowPreviewCode ?? false)
     const [compileError, setCompileError] = useState<string | null>(null)
     const [jsonError, setJsonError] = useState<string | null>(null)
     const [recordData, setRecordData] = useState(() => serializeRecord(getDemoRecord()))
@@ -206,20 +205,6 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
     }, [activeView, modelColumns])
 
     const commandBarControls = useMemo<React.ReactNode>(() => {
-        if (activeView === "preview") {
-            if (props.hidePreviewCodeToggle) {
-                return null
-            }
-
-            return <Toggle
-                label="Code"
-                inlineLabel
-                checked={showPreviewCode}
-                onChange={(_event, checked) => setShowPreviewCode(!!checked)}
-                styles={{ root: styles.toolbarToggle }}
-            />
-        }
-
         if (activeView !== "model") {
             return null
         }
@@ -236,7 +221,7 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
             onChange={(_event, checked) => setModelEditorMode(checked ? "json" : "ui")}
             styles={{ root: styles.toolbarToggle }}
         />
-    }, [activeView, modelEditorMode, props.hideModelEditorModeToggle, props.hidePreviewCodeToggle, showPreviewCode])
+    }, [activeView, modelEditorMode, props.hideModelEditorModeToggle])
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
@@ -353,45 +338,29 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
 
                 {activeView === "preview" && (
                     <div className={styles.fillBody} style={{ gap: 12 }}>
-                        {!showPreviewCode && (
-                            <div className={styles.fullScreenSurface}>
-                                <div className={styles.previewSurface}>
-                                    <div className={styles.viewportWindow} style={{ width: '100%' }}>
-                                        <LiveFormCode
-                                            code={tabsFlavor === "pivot" ? code : stepperFormCode.replaceAll('__STEPPER_ORIENTATION__', stepperOrientation)}
-                                            formProps={formProps}
-                                            useField={useField}
-                                            fluent={fluent}
-                                            onError={tabsFlavor === "pivot" ? setCompileError : undefined}
-                                        />
-                                    </div>
+                        {tabsFlavor === "pivot" && props.renderPreviewCodeBeforePreview && props.renderPreviewCode?.({ code, onChange: setCode })}
+
+                        <div className={styles.fullScreenSurface}>
+                            <div className={styles.previewSurface}>
+                                <div className={styles.viewportWindow} style={{ width: '100%' }}>
+                                    <LiveFormCode
+                                        code={tabsFlavor === "pivot" ? code : stepperFormCode.replaceAll('__STEPPER_ORIENTATION__', stepperOrientation)}
+                                        formProps={formProps}
+                                        useField={useField}
+                                        fluent={fluent}
+                                        onError={tabsFlavor === "pivot" ? setCompileError : undefined}
+                                    />
                                 </div>
                             </div>
-                        )}
+                        </div>
 
-                        {showPreviewCode && (
-                            <div className={styles.fullScreenSurface}>
-                                <div className={styles.editorSurface}>
-                                    {tabsFlavor === "pivot" ? (
-                                        <FormCodeEditor
-                                            value={code}
-                                            onChange={setCode}
-                                        />
-                                    ) : (
-                                        <ReactComposeCodeViewer
-                                            value={stepperFormCode.replaceAll('__STEPPER_ORIENTATION__', stepperOrientation)}
-                                            label="Stepper override TSX"
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {tabsFlavor === "pivot" && compileError && showPreviewCode && (
+                        {tabsFlavor === "pivot" && compileError && (
                             <MessageBar className={styles.editorStatus} messageBarType={MessageBarType.error} isMultiline>
                                 <pre className="toast-details">{compileError}</pre>
                             </MessageBar>
                         )}
+
+                        {tabsFlavor === "pivot" && !props.renderPreviewCodeBeforePreview && props.renderPreviewCode?.({ code, onChange: setCode })}
                     </div>
                 )}
         </div>

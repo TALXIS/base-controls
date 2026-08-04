@@ -1,5 +1,5 @@
 import Editor, { OnMount } from "@monaco-editor/react"
-import { Stack, Text, mergeStyleSets } from "@fluentui/react"
+import { Stack, mergeStyleSets } from "@fluentui/react"
 import type * as MonacoNamespace from "monaco-editor"
 
 interface IFormCodeEditorProps {
@@ -36,7 +36,13 @@ declare const MuiStepper: any;
 declare const MuiStep: any;
 declare const MuiStepButton: any;
 declare const MuiStepContent: any;
-
+declare const MemoryStrategy: new (config: {
+  onGetData: () => any;
+  onGetColumns: () => any;
+  onGetMetadata: () => any;
+}) => unknown;
+declare const recordData: Record<string, any>;
+declare const modelColumns: any[];
 interface ISandboxFieldValidationResult {
   error: boolean;
   errorMessage: string;
@@ -177,7 +183,6 @@ declare const Form: {
 };
 
 declare const useField: (name?: string | null) => ISandboxField | null;
-declare const formProps: ISandboxFormProps;
 `
 
 const configureMonaco = (monaco: typeof MonacoNamespace) => {
@@ -215,9 +220,6 @@ export const FormCodeEditor = (props: IFormCodeEditorProps) => {
     }
 
     return <Stack className={styles.root}>
-        <Text variant="medium" className={styles.label}>
-            Form TSX
-        </Text>
         <div className={styles.frame}>
             <Editor
                 path="file:///sandbox/form-snippet.tsx"

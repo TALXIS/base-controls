@@ -1,9 +1,10 @@
 import * as Babel from "@babel/standalone"
 import React, { useEffect, useMemo, useRef } from "react"
-import { Form, useField } from "@talxis/base-controls/components/Form"
+import { Form, MemoryStrategy, useField } from "@talxis/base-controls/components/Form"
 import { ComboBox, Icon, IconButton, Slider, Stack, Text, TextField } from "@fluentui/react"
 import { OpenMap } from "./OpenMap"
 import { Step, StepButton, StepContent, Stepper } from "@mui/material"
+import { getDemoRecord, getFormColumns } from "../shared/formModel"
 
 interface ILiveFormCodeProps {
     code: string
@@ -58,6 +59,9 @@ export const LiveFormCode = (props: ILiveFormCodeProps) => {
                 "MuiStep",
                 "MuiStepButton",
                 "MuiStepContent",
+                "MemoryStrategy",
+                "recordData",
+                "modelColumns",
                 "getFormProps",
                 `Object.defineProperty(this, "formProps", { get: getFormProps, configurable: true });
                  const formProps = new Proxy({}, {
@@ -69,6 +73,8 @@ export const LiveFormCode = (props: ILiveFormCodeProps) => {
                  return typeof FormExample !== "undefined" ? FormExample : null;`,
             )
 
+            const recordData = getDemoRecord()
+            const modelColumns = getFormColumns()
             const Component = factory(
                 React,
                 Form,
@@ -81,11 +87,14 @@ export const LiveFormCode = (props: ILiveFormCodeProps) => {
                  fluent.IconButton,
                  fluent.Slider,
                  fluent.OpenMap,
-                fluent.MuiStepper,
-                fluent.MuiStep,
-                fluent.MuiStepButton,
-                fluent.MuiStepContent,
-                () => formPropsRef.current,
+                 fluent.MuiStepper,
+                 fluent.MuiStep,
+                 fluent.MuiStepButton,
+                 fluent.MuiStepContent,
+                 MemoryStrategy,
+                 recordData,
+                 modelColumns,
+                 () => formPropsRef.current,
             ) as React.ComponentType | null
 
             return { Component, error: null as string | null }

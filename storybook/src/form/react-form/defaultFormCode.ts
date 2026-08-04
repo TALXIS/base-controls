@@ -1,8 +1,17 @@
-export const defaultFormCode = `const FormExample = () => {
+export const defaultFormCode = `const strategy = new MemoryStrategy({
+  onGetData: () => recordData,
+  onGetColumns: () => modelColumns,
+  onGetMetadata: () => ({
+    PrimaryIdAttribute: "id",
+    PrimaryNameAttribute: "text",
+  }),
+});
+
+const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("general");
 
   return (
-    <Form.Root {...formProps}>
+    <Form.Root strategy={strategy}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
