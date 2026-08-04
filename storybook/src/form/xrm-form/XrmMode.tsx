@@ -1329,8 +1329,7 @@ export const XrmMode = (props: IXrmModeProps) => {
 
         if (activeView === "builder" && !props.hideBuilderEditorModeToggle) {
             return <Toggle
-                label="Builder mode"
-                inlineLabel
+                label=""
                 onText="XML"
                 offText="Visual builder"
                 checked={builderEditorMode === "xml"}

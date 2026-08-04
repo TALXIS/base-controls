@@ -113,6 +113,8 @@ The same runtime can be authored directly in React or driven from an Xrm/FormXml
 
 Form supports two authoring models over the same runtime. Choose the one that matches where your form definition lives and how you want to work.
 
+Before choosing the layout authoring path, see [**Form strategy**](?path=/docs/form-get-started-form-strategy--docs) for the shared \`IFormStrategy\` contract and the \`columns\` / \`metadata\` / \`data\` shape both paths expect.
+
 ### React compose
 Choose this path when you want to author the layout directly in JSX with \`Form.Root\`, tabs, sections, fields, and optional React-level UI overrides.
 

@@ -15,6 +15,10 @@ const preview: Preview = {
                 font-size: 16px;
                 line-height: 1.65;
               }
+
+              .form-strategy-hidden-preview.sbdocs-preview {
+                display: none;
+              }
             `}
           </style>
           <Story />

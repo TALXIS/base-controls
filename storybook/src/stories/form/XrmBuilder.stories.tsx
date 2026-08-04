@@ -33,9 +33,39 @@ const meta = {
             controls: { disable: true },
             description: {
                 component: `
-Use Xrm Form when the form should be driven by FormXml and expose Xrm-style form context behavior.
+Use Xrm Form when the form should be driven by FormXml and expose \`formContext\`. This page focuses on the main Xrm Form authoring surface: the FormXml-driven layout, record payload, and builder-oriented workflow. Use the FormXml toggle to switch between the live form preview and the code editor.
 
-This page focuses on the main Xrm Form authoring surface. Use the FormXml toggle to switch between the live form preview and the code editor.
+## Basic usage in React
+
+\`\`\`tsx
+import { XrmForm, XrmMemoryStrategy } from "@talxis/base-controls/components/Form";
+
+const strategy = new XrmMemoryStrategy({
+  onGetData: () => record,
+  onGetColumns: () => columns,
+  onGetMetadata: () => ({
+    PrimaryIdAttribute: "accountid",
+    PrimaryNameAttribute: "name",
+  }),
+  onGetFormXml: () => formXml,
+});
+
+export const AccountXrmForm = () => {
+  return (
+    <XrmForm
+      strategy={strategy}
+      onFormReady={({ formContext, api }) => {
+        console.log(formContext.data.entity.getId());
+        console.log(api.getData());
+      }}
+    />
+  );
+};
+\`\`\`
+
+## Related docs
+
+For the runtime \`formContext\` API surface and lifecycle guidance, go to [**Form context**](?path=/docs/form-xrm-form-context--docs).
                 `.trim(),
             },
         },
