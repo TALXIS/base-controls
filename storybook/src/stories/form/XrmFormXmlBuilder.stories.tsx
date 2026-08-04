@@ -21,7 +21,7 @@ const meta = {
                 component: `
 Use this page to author FormXml through a builder-focused surface. The UI builder lets you work with tabs, columns, sections, and fields visually while keeping the underlying FormXml editable in Monaco.
 
-Use the FormXml toggle to switch between the UI builder and the raw FormXml editor. The preview below renders the same dedicated builder state, so changes stay isolated from the other Xrm stories.
+Use the pivot to switch between Preview, Builder, and FormXml. All three views share the same dedicated builder state, so changes stay isolated from the other Xrm stories.
                 `.trim(),
             },
         },

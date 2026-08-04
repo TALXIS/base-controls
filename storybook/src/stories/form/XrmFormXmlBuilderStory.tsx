@@ -1,5 +1,5 @@
 import React from 'react'
-import { Toggle, mergeStyleSets } from '@fluentui/react'
+import { Pivot, PivotItem, mergeStyleSets } from '@fluentui/react'
 import { parseFormXml } from '@talxis/client-metadata'
 import { XrmForm } from '@talxis/base-controls/components/Form'
 import type { IXrmFormStrategy } from '@talxis/base-controls/components/Form'
@@ -13,6 +13,8 @@ import { formMetadata, getDemoRecord } from '../../form/shared/formModel'
 const builderModelStore = createModelStore()
 
 let currentFormXml = defaultFormXml
+
+type TBuilderView = 'preview' | 'builder' | 'formxml'
 
 class StorybookFormXmlBuilderStrategy extends MemoryStrategy implements IXrmFormStrategy {
     public onGetFormXml(): string {
@@ -33,14 +35,13 @@ const styles = mergeStyleSets({
         flexDirection: 'column',
         gap: 16,
     },
-    toggleRow: {
-        display: 'flex',
-        justifyContent: 'flex-end',
+    pivot: {
+        flexShrink: 0,
     },
 })
 
 export const XrmFormXmlBuilderStory = () => {
-    const [showXml, setShowXml] = React.useState(false)
+    const [activeView, setActiveView] = React.useState<TBuilderView>('builder')
     const [formXmlText, setFormXmlText] = React.useState(defaultFormXml)
     const [previewKey, setPreviewKey] = React.useState(0)
 
@@ -69,19 +70,22 @@ export const XrmFormXmlBuilderStory = () => {
 
     return (
         <div className={styles.root}>
-            <div className={styles.toggleRow}>
-                <Toggle
-                    label=""
-                    onText="FormXml"
-                    offText="UI builder"
-                    checked={showXml}
-                    onChange={(_event, checked) => setShowXml(!!checked)}
-                />
-            </div>
+            <Pivot
+                className={styles.pivot}
+                selectedKey={activeView}
+                onLinkClick={(item) => {
+                    const nextView = item?.props.itemKey as TBuilderView | undefined
+                    if (nextView) {
+                        setActiveView(nextView)
+                    }
+                }}
+            >
+                <PivotItem itemKey="preview" headerText="Preview" />
+                <PivotItem itemKey="builder" headerText="Builder" />
+                <PivotItem itemKey="formxml" headerText="FormXml" />
+            </Pivot>
 
-            {showXml ? (
-                <FormXmlEditor value={formXmlText} onChange={setFormXmlText} />
-            ) : (
+            {activeView === 'builder' && (
                 <FormXmlBuilderPanel
                     formXmlText={formXmlText}
                     parsedFormXml={parsedFormXml.value}
@@ -90,10 +94,14 @@ export const XrmFormXmlBuilderStory = () => {
                 />
             )}
 
-            <XrmForm
-                key={previewKey}
-                strategy={builderStrategy}
-            />
+            {activeView === 'formxml' && <FormXmlEditor value={formXmlText} onChange={setFormXmlText} />}
+
+            {activeView === 'preview' && (
+                <XrmForm
+                    key={previewKey}
+                    strategy={builderStrategy}
+                />
+            )}
         </div>
     )
 }
