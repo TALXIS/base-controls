@@ -785,6 +785,7 @@ interface IXrmModeProps {
     hideFormContextScenarioPanel?: boolean
     hideFormContextConsole?: boolean
     hideFormContextCodePanel?: boolean
+    hidePreviewXmlToggle?: boolean
     initialShowFormContextCode?: boolean
     initialShowPreviewXml?: boolean
     formContextDocsExample?: IFormContextDocsExample
@@ -1298,7 +1299,7 @@ export const XrmMode = (props: IXrmModeProps) => {
     }, [activeScenario, activeScenarioScript, activeView, applyScenario, formContext, modelColumns, props.formContextDocsExample, resetInteractionPreview, runFormContextScript])
 
     const commandBarControls = useMemo<React.ReactNode>(() => {
-        if (activeView === "preview") {
+        if (activeView === "preview" && !props.hidePreviewXmlToggle) {
             return <Toggle
                 label="FormXml"
                 inlineLabel
@@ -1343,7 +1344,7 @@ export const XrmMode = (props: IXrmModeProps) => {
         }
 
         return null
-    }, [activeView, dataEditorMode, modelEditorMode, props.hideDataEditorModeToggle, props.hideFormContextCodePanel, props.hideModelEditorModeToggle, showFormContextCode, showPreviewXml])
+    }, [activeView, dataEditorMode, modelEditorMode, props.hideDataEditorModeToggle, props.hideFormContextCodePanel, props.hideModelEditorModeToggle, props.hidePreviewXmlToggle, showFormContextCode, showPreviewXml])
 
     return <>
         <div className={styles.modeLayout}>

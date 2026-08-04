@@ -5,6 +5,7 @@ import { useMemo } from "react"
 interface IFormXmlEditorProps {
     value: string
     onChange: (value: string) => void
+    hideLabel?: boolean
 }
 
 const styles = mergeStyleSets({
@@ -27,13 +28,15 @@ const styles = mergeStyleSets({
 })
 
 export const FormXmlEditor = (props: IFormXmlEditorProps) => {
-    const { onChange, value } = props
+    const { hideLabel, onChange, value } = props
     const formattedValue = useMemo(() => formatXml(value), [value])
 
     return <Stack className={styles.root}>
-        <Text variant="medium" className={styles.label}>
-            FormXml
-        </Text>
+        {!hideLabel && (
+            <Text variant="medium" className={styles.label}>
+                FormXml
+            </Text>
+        )}
         <div className={styles.frame}>
             <Editor
                 height="520px"
