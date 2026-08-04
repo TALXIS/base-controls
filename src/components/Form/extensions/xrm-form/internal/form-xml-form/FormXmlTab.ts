@@ -4,7 +4,7 @@ import { FormXmlColumn } from "./FormXmlColumn";
 
 export class FormXmlTab implements IFormXmlTab {
     public formXmlModel: IFormXmlModel;
-    public events: IEventEmitter<IFormXmlTabEvents> = new EventEmitter<IFormXmlTabEvents>();
+    public events: IEventEmitter<IFormXmlTabEvents>;
     public group?: string | undefined;
     public name?: string | undefined;
     public verticallayout?: boolean | undefined;
@@ -30,6 +30,7 @@ export class FormXmlTab implements IFormXmlTab {
     constructor(tab: MetadataFormXmlTab, formXmlModel: IFormXmlModel) {
         Object.assign(this, tab);
         this.formXmlModel = formXmlModel;
+        this.events = new EventEmitter<IFormXmlTabEvents>();
         this.id = tab.id ?? tab.name ?? window.crypto.randomUUID();
         this.columns = tab.columns?.column?.map(col => new FormXmlColumn(col, formXmlModel)) ?? [];
         this._registerSectionEvents(this.getSections());

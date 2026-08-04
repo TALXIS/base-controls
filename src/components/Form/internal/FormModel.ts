@@ -130,7 +130,7 @@ export class FormModel implements IForm {
     public async save(params?: ISaveParams): Promise<void> {
         const { blocker } = params ?? {};
 
-        ErrorHelper.executeWithErrorHandling({
+        return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 this._saveOperationPerformed = true;
                 this.events.dispatchEvent('onBeforeSave');

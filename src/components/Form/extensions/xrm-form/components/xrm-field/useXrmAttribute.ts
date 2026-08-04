@@ -4,12 +4,11 @@ import { useFormXmlContext } from "../context";
 import { useEventEmitter } from "@hooks";
 
 export const useXrmAttribute = (name?: string): IFormXmlAttribute | null => {
-    if(!name) return null;
     const formXmlModel = useFormXmlContext();
-    const attribute = formXmlModel.getAttribute(name);
+    const attribute = name ? formXmlModel.getAttribute(name) : null;
     const rerender = useRerender();
 
-    useEventEmitter(attribute!.events, ['onValidationChanged', 'onRequiredLevelChanged'], rerender);
+    useEventEmitter(attribute?.events, ['onValidationChanged', 'onRequiredLevelChanged'], rerender);
 
     return attribute;
 }

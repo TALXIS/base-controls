@@ -89,7 +89,11 @@ export const Ribbon = (props: IFormRibbonProps) => {
             commandBarButtonAs: () => <SaveButton
                 text={getSaveText()}
                 onMouseUp={() => {
-                    onSave?.() ?? form.save();
+                    if (onSave) {
+                        onSave();
+                    } else {
+                        form.save();
+                    }
                 }}
                 isLoading={saveButtonState === 'saving'}
                 iconProps={getSaveIconProps()}

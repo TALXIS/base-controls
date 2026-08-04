@@ -21,13 +21,14 @@ export class FormXmlCell implements IFormXmlCell {
     public control?: IFormXmlControl;
     public additionalAttributes?: Record<string, MetadataFormXmlPrimitiveValue> | undefined;
     public additionalElements?: MetadataFormXmlOpaqueNode[] | undefined;
-    public events: IEventEmitter<IFormXmlCellEvents> = new EventEmitter<IFormXmlCellEvents>();
+    public events: IEventEmitter<IFormXmlCellEvents>;
 
     private _customLabel?: string;
 
     constructor(cell: MetadataFormXmlCell, formXmlModel: IFormXmlModel) {
         Object.assign(this, cell);
         this.formXmlModel = formXmlModel;
+        this.events = new EventEmitter<IFormXmlCellEvents>();
         this.control = cell.control ? new FormXmlControl(cell.control, this) : undefined;
     }
 
