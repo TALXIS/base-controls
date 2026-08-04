@@ -86,9 +86,6 @@ const styles = mergeStyleSets({
     toolbarToggle: {
         marginBottom: 0,
     },
-    viewportToolbar: {
-        flexShrink: 0,
-    },
     previewSurface: {
         display: "flex",
         flex: 1,
@@ -181,7 +178,6 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
     const [showPreviewCode, setShowPreviewCode] = useState(props.initialShowPreviewCode ?? false)
     const [compileError, setCompileError] = useState<string | null>(null)
     const [jsonError, setJsonError] = useState<string | null>(null)
-    const [viewportWidth, setViewportWidth] = useState(960)
     const [recordData, setRecordData] = useState(() => serializeRecord(getDemoRecord()))
     const [modelColumns, setModelColumns] = useModelColumns(reactModelStore)
     const formApiRef = useRef<IFormApi | null>(null)
@@ -357,26 +353,10 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
 
                 {activeView === "preview" && (
                     <div className={styles.fillBody} style={{ gap: 12 }}>
-                        {!props.useStorybookViewport && <div className={styles.viewportToolbar}>
-                            <Slider
-                                label="Viewport width"
-                                styles={{
-                                    root: { width: "100%", margin: 0 },
-                                    slideBox: { width: "100%" },
-                                }}
-                                min={320}
-                                max={1440}
-                                step={10}
-                                value={viewportWidth}
-                                showValue
-                                valueFormat={(nextValue) => `${nextValue}px`}
-                                onChange={setViewportWidth}
-                            />
-                        </div>}
                         {!showPreviewCode && (
                             <div className={styles.fullScreenSurface}>
                                 <div className={styles.previewSurface}>
-                                    <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
+                                    <div className={styles.viewportWindow} style={{ width: '100%' }}>
                                         <LiveFormCode
                                             code={tabsFlavor === "pivot" ? code : stepperFormCode.replaceAll('__STEPPER_ORIENTATION__', stepperOrientation)}
                                             formProps={formProps}

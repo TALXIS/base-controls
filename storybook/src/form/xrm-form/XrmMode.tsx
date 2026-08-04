@@ -1,6 +1,6 @@
 import * as Babel from "@babel/standalone"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { ComboBox, DefaultButton, Dialog, DialogFooter, DialogType, MessageBar, MessageBarType, Pivot, PivotItem, PrimaryButton, Slider, Stack, Text, Toggle, getTheme, mergeStyleSets } from "@fluentui/react"
+import { ComboBox, DefaultButton, Dialog, DialogFooter, DialogType, MessageBar, MessageBarType, Pivot, PivotItem, PrimaryButton, Stack, Text, Toggle, getTheme, mergeStyleSets } from "@fluentui/react"
 import { CommandBar, ICommandBarItemProps } from "@legacy"
 import { FormXmlSectionBuilder, FormXmlTabBuilder, parseFormXml, serializeFormXml } from "@talxis/client-metadata"
 import { XrmForm } from "@talxis/base-controls/components/Form"
@@ -310,9 +310,6 @@ const styles = mergeStyleSets({
     },
     toolbarToggle: {
         marginBottom: 0,
-    },
-    viewportToolbar: {
-        flexShrink: 0,
     },
     previewEditorLayout: {
         display: "grid",
@@ -809,7 +806,6 @@ export const XrmMode = (props: IXrmModeProps) => {
     const [modelColumns, setModelColumns] = useModelColumns(props.initialView === "form-context" ? formContextSandbox.modelStore : xrmModelStore)
     const [jsonError, setJsonError] = useState<string | null>(null)
     const [builderEditorMode, setBuilderEditorMode] = useState<"ui" | "xml">(props.initialBuilderEditorMode ?? "ui")
-    const [viewportWidth, setViewportWidth] = useState(960)
     const [builderUndoCount, setBuilderUndoCount] = useState(0)
     const builderUndoRef = useRef<(() => void) | null>(null)
     const [showResetDialog, setShowResetDialog] = useState(false)
@@ -1338,7 +1334,7 @@ export const XrmMode = (props: IXrmModeProps) => {
         }
 
         return []
-    }, [activeScenario, activeScenarioScript, activeView, applyScenario, builderEditorMode, builderUndoCount, formContext, modelColumns, props.formContextDocsExample, resetInteractionPreview, runFormContextScript, viewportWidth])
+    }, [activeScenario, activeScenarioScript, activeView, applyScenario, builderEditorMode, builderUndoCount, formContext, modelColumns, props.formContextDocsExample, resetInteractionPreview, runFormContextScript])
 
     const commandBarControls = useMemo<React.ReactNode>(() => {
         if (activeView === "preview") {
@@ -1449,26 +1445,10 @@ export const XrmMode = (props: IXrmModeProps) => {
 
                 {activeView === "preview" && (
                     <div className={`${styles.cardBody} ${styles.fillBody}`}>
-                        {!props.useStorybookViewport && <div className={styles.viewportToolbar}>
-                            <Slider
-                                label="Viewport width"
-                                styles={{
-                                    root: { width: "100%", margin: 0 },
-                                    slideBox: { width: "100%" },
-                                }}
-                                min={320}
-                                max={1440}
-                                step={10}
-                                value={viewportWidth}
-                                showValue
-                                valueFormat={(value) => `${value}px`}
-                                onChange={setViewportWidth}
-                            />
-                        </div>}
                         {!showPreviewXml && (
                             <div className={styles.fullScreenSurface}>
                                 <div className={styles.previewSurface}>
-                                    <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
+                                    <div className={styles.viewportWindow} style={{ width: '100%' }}>
                                         <XrmForm
                                             key={previewInstanceKey}
                                             strategy={strategy}
@@ -1504,22 +1484,6 @@ export const XrmMode = (props: IXrmModeProps) => {
 
                 {activeView === "builder" && (
                     <div className={`${styles.cardBody} ${styles.scrollBody}`}>
-                        {!props.useStorybookViewport && <div className={styles.viewportToolbar}>
-                            <Slider
-                                label="Viewport width"
-                                styles={{
-                                    root: { width: "100%", margin: 0 },
-                                    slideBox: { width: "100%" },
-                                }}
-                                min={320}
-                                max={1440}
-                                step={10}
-                                value={viewportWidth}
-                                showValue
-                                valueFormat={(value) => `${value}px`}
-                                onChange={setViewportWidth}
-                            />
-                        </div>}
                         {xmlError && (
                             <MessageBar messageBarType={MessageBarType.warning} isMultiline>
                                 Fix the raw FormXml first to re-enable graphical editing.
@@ -1527,7 +1491,7 @@ export const XrmMode = (props: IXrmModeProps) => {
                         )}
                         {builderEditorMode === "ui" ? (
                             <div className={styles.builderViewportShell}>
-                                <div className={styles.builderViewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
+                                <div className={styles.builderViewportWindow} style={{ width: '100%' }}>
                                     <FormXmlBuilderPanel
                                         formXmlText={xml}
                                         parsedFormXml={parsedFormXml.value}
@@ -1725,7 +1689,7 @@ export const XrmMode = (props: IXrmModeProps) => {
                     <div>
                         <div style={{ display: showFormContextCode ? "none" : "block" }}>
                             <div className={styles.previewSurface}>
-                                <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
+                                <div className={styles.viewportWindow} style={{ width: '100%' }}>
                                     <XrmForm
                                         key={previewInstanceKey}
                                         strategy={strategy}

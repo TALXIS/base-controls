@@ -4,7 +4,6 @@ import {
     ComboBox,
     Icon,
     IconButton,
-    Slider,
     Stack,
     Text,
     TextField,
@@ -43,27 +42,12 @@ const styles = mergeStyleSets({
         flexDirection: 'column',
         gap: 12,
     },
-    viewportToolbar: {
-        paddingBottom: 4,
-        maxWidth: 560,
-    },
     previewFrame: {
         minHeight: 420,
         width: '100%',
-        overflow: 'auto',
-        display: 'flex',
-        justifyContent: 'center',
+        overflow: 'hidden',
     },
     viewportWindow: {
-        minWidth: 320,
-        flexShrink: 0,
-    },
-    zoomedViewport: {
-        transformOrigin: 'top center',
-    },
-    zoomShell: {
-        display: 'flex',
-        justifyContent: 'center',
         width: '100%',
     },
     note: {
@@ -331,8 +315,6 @@ const layoutExamples: ILayoutExample[] = [
 const renderLayoutExample = (example: ILayoutExample) => {
     const [code, setCode] = useState(example.code)
     const [showCode, setShowCode] = useState(false)
-    const [viewportWidth, setViewportWidth] = useState(960)
-    const [zoomPercent, setZoomPercent] = useState(100)
     const [compileError, setCompileError] = useState<string | null>(null)
     const strategy = useMemo(() => getMemoryStrategy(), [])
     const formApiRef = useRef<IFormApi | null>(null)
@@ -359,7 +341,6 @@ const renderLayoutExample = (example: ILayoutExample) => {
             Icon,
             ComboBox,
             IconButton,
-            Slider,
             OpenMap,
         }),
         [],
@@ -377,59 +358,18 @@ const renderLayoutExample = (example: ILayoutExample) => {
                 />
             </div>
             <div className={styles.exampleBody}>
-                {!showCode ? (
-                    <div className={styles.viewportToolbar}>
-                        <Stack tokens={{ childrenGap: 8 }}>
-                            <Slider
-                                label="Viewport width"
-                                min={320}
-                                max={1920}
-                                step={10}
-                                value={viewportWidth}
-                                showValue
-                                valueFormat={(value) => `${value}px`}
-                                onChange={setViewportWidth}
-                            />
-                            <Slider
-                                label="Zoom"
-                                min={50}
-                                max={150}
-                                step={5}
-                                value={zoomPercent}
-                                showValue
-                                valueFormat={(value) => `${value}%`}
-                                onChange={setZoomPercent}
-                            />
-                        </Stack>
-                    </div>
-                ) : null}
                 <div className={styles.previewFrame}>
-                    <div className={styles.viewportWindow} style={{ width: showCode ? '100%' : `${viewportWidth}px` }}>
+                    <div className={styles.viewportWindow}>
                         {showCode ? (
                             <FormCodeEditor value={code} onChange={setCode} />
                         ) : (
-                            <div
-                                className={styles.zoomShell}
-                                style={{
-                                    height: `${420 * (zoomPercent / 100)}px`,
-                                }}
-                            >
-                                <div
-                                    className={styles.zoomedViewport}
-                                    style={{
-                                        width: `${viewportWidth}px`,
-                                        transform: `scale(${zoomPercent / 100})`,
-                                    }}
-                                >
-                                    <LiveFormCode
-                                        code={code}
-                                        formProps={formProps}
-                                        useField={useField}
-                                        fluent={fluent}
-                                        onError={setCompileError}
-                                    />
-                                </div>
-                            </div>
+                            <LiveFormCode
+                                code={code}
+                                formProps={formProps}
+                                useField={useField}
+                                fluent={fluent}
+                                onError={setCompileError}
+                            />
                         )}
                     </div>
                 </div>
