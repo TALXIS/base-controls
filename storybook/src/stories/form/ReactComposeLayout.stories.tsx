@@ -4,7 +4,6 @@ import {
     ComboBox,
     Icon,
     IconButton,
-    Link,
     Slider,
     Stack,
     Text,
@@ -24,29 +23,6 @@ import { getDemoRecord, getMemoryStrategy } from '../../form/shared/formModel'
 const theme = getTheme()
 
 const styles = mergeStyleSets({
-    page: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    section: {
-    },
-    sectionHeader: {
-        borderBottom: `1px solid ${theme.palette.neutralLight}`,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-    },
-    sectionBody: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-    },
-    bullets: {
-        margin: 0,
-        paddingLeft: 20,
-    },
-    exampleCard: {
-    },
     exampleHeader: {
         borderBottom: `1px solid ${theme.palette.neutralLighter}`,
         display: 'flex',
@@ -352,12 +328,7 @@ const layoutExamples: ILayoutExample[] = [
     },
 ]
 
-interface ILayoutExampleCardProps {
-    example: ILayoutExample
-}
-
-const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
-    const { example } = props
+const renderLayoutExample = (example: ILayoutExample) => {
     const [code, setCode] = useState(example.code)
     const [showCode, setShowCode] = useState(false)
     const [viewportWidth, setViewportWidth] = useState(960)
@@ -372,8 +343,9 @@ const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
             onFormReady: (api: IFormApi) => {
                 formApiRef.current = api
             },
-            onAfterSave: () => {
-                formApiRef.current?.refresh()
+            onAfterSave: ({ success }: { success: boolean }) => {
+                const currentData = formApiRef.current?.getData()
+                console.log(success ? "Form saved" : "Save failed", { success, currentData })
             },
         } as React.ComponentProps<typeof Form.Root>),
         [strategy],
@@ -394,12 +366,9 @@ const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
     )
 
     return (
-        <div className={styles.exampleCard}>
+        <div>
             <div className={styles.exampleHeader}>
-                <div className={styles.exampleCopy}>
-                    <Text variant="large" styles={{ root: { fontWeight: 600 } }}>{example.title}</Text>
-                    <Text>{example.summary}</Text>
-                </div>
+                <div className={styles.exampleCopy} />
                 <Toggle
                     label="Code"
                     inlineLabel
@@ -408,13 +377,6 @@ const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
                 />
             </div>
             <div className={styles.exampleBody}>
-                <ul className={styles.bullets}>
-                    {example.notes.map((note) => (
-                        <li key={note}>
-                            <Text>{note}</Text>
-                        </li>
-                    ))}
-                </ul>
                 {!showCode ? (
                     <div className={styles.viewportToolbar}>
                         <Stack tokens={{ childrenGap: 8 }}>
@@ -477,39 +439,6 @@ const LayoutExampleCard = (props: ILayoutExampleCardProps) => {
     )
 }
 
-const LayoutDocsPage = () => {
-    return (
-        <div className={styles.page}>
-            <div className={styles.section}>
-                <div className={styles.sectionBody} />
-            </div>
-
-            {layoutExamples.map((example) => (
-                <LayoutExampleCard key={example.id} example={example} />
-            ))}
-
-            <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                    <Text variant="large">How to think about it</Text>
-                </div>
-                <div className={styles.sectionBody}>
-                    <ul className={styles.bullets}>
-                        <li><Text>Start with tab-level columns to define the broad page structure.</Text></li>
-                        <li><Text>Then use section-level layout to decide how dense each group of fields should become at different widths.</Text></li>
-                        <li><Text>Use label behavior props when horizontal labels are great on desktop but should stack vertically on narrower containers.</Text></li>
-                    </ul>
-                    <Text>
-                        For broader runtime authoring, go back to
-                        {' '}
-                        <Link href="?path=/docs/form-react-compose--docs">React compose</Link>
-                        .
-                    </Text>
-                </div>
-            </div>
-        </div>
-    )
-}
-
 const meta = {
     title: 'Form/React compose/Layout',
     tags: ['autodocs'],
@@ -526,15 +455,12 @@ const meta = {
             controls: { disable: true },
             description: {
                 component: `
-Use this page to explore how responsive layout is authored directly in React compose.
+Build responsive React compose layouts by combining tab-level columns, section-level grids, label behavior, and grid spanning.
 
-The two main places to shape responsiveness are \`Form.Tab\` and \`Form.Section\`.
-
-- \`Form.Tab layout\` controls how many top-level columns the tab shows per breakpoint.
-- \`Form.Section layout\` controls how many cells render per row inside that section.
-- \`labelWidth\`, \`cellLabelPosition\`, and \`cellLabelCollapseBreakpoint\` tune label behavior within sections.
-
-Each example below renders a live form preview and includes a Code toggle so you can inspect the exact Monaco-backed TSX that powers it.
+- Use \`Form.Tab layout\` to shape the broad column structure of the page.
+- Use \`Form.Section layout\` to control the cell grid density inside each section.
+- Tune labels with \`labelWidth\`, \`cellLabelPosition\`, and \`cellLabelCollapseBreakpoint\`.
+- Use \`colspan\` and \`rowspan\` when fields or custom content should span across multiple grid tracks.
                 `.trim(),
             },
         },
@@ -545,7 +471,114 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Overview: Story = {
-    name: 'Overview',
-    render: () => renderStory(<LayoutDocsPage />),
+const samplesById = Object.fromEntries(layoutExamples.map((sample) => [sample.id, sample])) as Record<string, ILayoutExample>
+
+export const TabLayoutBreakpoints: Story = {
+    name: 'Tab layout breakpoints',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Uses \`Form.Tab layout\` to control how many top-level columns render at each breakpoint.
+
+- collapses from multiple columns down to one as space tightens
+- controls the broad page density for a tab
+- keeps each section in its own top-level column shell
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderLayoutExample(samplesById['tab-breakpoints']), 18),
+}
+
+export const SectionLayoutGrids: Story = {
+    name: 'Section layout grids',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Uses \`Form.Section layout\` to control how many cells render per row inside a section.
+
+- densifies one section progressively across breakpoints
+- separates section grid behavior from tab column behavior
+- fits wider sets of fields into a single responsive section
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderLayoutExample(samplesById['section-grid']), 18),
+}
+
+export const CombineTabAndSectionResponsiveness: Story = {
+    name: 'Combine tab and section responsiveness',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Combines tab and section breakpoint maps to create coarse and fine-grained responsive behavior together.
+
+- lets tabs collapse independently from section grids
+- keeps logical groups intact while each group repacks its fields
+- mixes responsive field grids with richer custom content cells
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderLayoutExample(samplesById['mixed-columns-and-sections']), 18),
+}
+
+export const SectionLabelBehavior: Story = {
+    name: 'Section label behavior',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Uses \`labelWidth\`, \`cellLabelPosition\`, and \`cellLabelCollapseBreakpoint\` to tune how labels behave as sections get narrower.
+
+- keeps denser horizontal labels where space allows
+- collapses labels above controls below a chosen width
+- aligns left labels consistently across fields
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderLayoutExample(samplesById['section-label-behavior']), 18),
+}
+
+export const CellRowspanAndColspan: Story = {
+    name: 'Cell rowspan and colspan',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Uses \`Form.Cell colspan\` and \`rowspan\` when fields or custom content should span across multiple grid tracks.
+
+- gives larger cells more room within the section grid
+- supports multiline fields, maps, and other wider content
+- combines naturally with responsive section layouts
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderLayoutExample(samplesById['cell-span']), 18),
 }
