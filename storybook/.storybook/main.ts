@@ -13,6 +13,7 @@ const config: StorybookConfig = {
   },
   docs: {
     autodocs: 'tag',
+    defaultName: 'Overview',
   },
   typescript: {
     reactDocgen: false,

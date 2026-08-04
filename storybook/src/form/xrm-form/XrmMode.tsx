@@ -12,7 +12,7 @@ import { FormXmlEditor } from "./FormXmlEditor"
 import { RecordDataEditor } from "../react-form/RecordDataEditor"
 import { XrmRecordBuilderPanel } from "./XrmRecordBuilderPanel"
 import { getCurrentFormXml, getXrmRecord, getXrmStrategy, setCurrentFormXml } from "./xrmModel"
-import { formContextModelStore, getFormContextRecord, getFormContextStrategy, getFormContextXml, setFormContextXml } from "./formContextModel"
+import { createFormContextSandboxState } from "./formContextModel"
 import { IXrmBusinessFlowScenario, resetXrmBusinessFlows, xrmBusinessFlowScenarios } from "./xrmBusinessFlows"
 import { ModelBuilderPanel } from "../shared/ModelBuilderPanel"
 import { useModelColumns } from "../shared/useModelColumns"
@@ -751,20 +751,6 @@ const formatScenarioScript = (scenario: IXrmBusinessFlowScenario) => {
     ].join("\n")
 }
 
-const getEmptyScenarioScript = (scenario: IXrmBusinessFlowScenario) => {
-    const functionName = getScenarioFunctionName()
-
-    return [
-        `// ${scenario.title}`,
-        `const ${functionName} = (formContext) => {`,
-        `  if (!formContext) return;`,
-        ``,
-        `}`,
-        ``,
-        `${functionName}(formContext)`,
-    ].join("\n")
-}
-
 type TXrmWorkspaceView = "preview" | "builder" | "data" | "model" | "form-context" | "custom-components"
 type TXrmCustomComponentsFlavor = "controls" | "tabs"
 
@@ -811,14 +797,16 @@ interface IXrmModeProps {
 }
 
 export const XrmMode = (props: IXrmModeProps) => {
+    const formContextSandboxRef = useRef(createFormContextSandboxState())
+    const formContextSandbox = formContextSandboxRef.current
     const [activeView, setActiveView] = useState<TXrmWorkspaceView>(props.initialView ?? "preview")
     const [modelEditorMode, setModelEditorMode] = useState<"ui" | "json">(props.initialModelEditorMode ?? "ui")
-    const [xml, setXml] = useState(() => props.initialView === "form-context" ? getFormContextXml() : getCurrentFormXml())
+    const [xml, setXml] = useState(() => props.initialView === "form-context" ? formContextSandbox.getXml() : getCurrentFormXml())
     const [xmlError, setXmlError] = useState<string | null>(null)
-    const [json, setJson] = useState(() => serializeRecord(props.initialView === "form-context" ? getFormContextRecord() : getXrmRecord()))
+    const [json, setJson] = useState(() => serializeRecord(props.initialView === "form-context" ? formContextSandbox.getRecord() : getXrmRecord()))
     const [dataEditorMode, setDataEditorMode] = useState<"ui" | "json">(props.initialDataEditorMode ?? "ui")
     const [showPreviewXml, setShowPreviewXml] = useState(props.initialShowPreviewXml ?? false)
-    const [modelColumns, setModelColumns] = useModelColumns(props.initialView === "form-context" ? formContextModelStore : xrmModelStore)
+    const [modelColumns, setModelColumns] = useModelColumns(props.initialView === "form-context" ? formContextSandbox.modelStore : xrmModelStore)
     const [jsonError, setJsonError] = useState<string | null>(null)
     const [builderEditorMode, setBuilderEditorMode] = useState<"ui" | "xml">(props.initialBuilderEditorMode ?? "ui")
     const [viewportWidth, setViewportWidth] = useState(960)
@@ -830,15 +818,15 @@ export const XrmMode = (props: IXrmModeProps) => {
     const [customTabsPreviewKey, setCustomTabsPreviewKey] = useState(0)
     const [formContext, setFormContext] = useState<IXrmFormContext | null>(null)
     const [activeScenarioId, setActiveScenarioId] = useState<string | null>(props.initialFormContextScenarioId ?? null)
-    const [formContextScenarioScripts, setFormContextScenarioScripts] = useState<Record<string, string>>(() => Object.fromEntries(xrmBusinessFlowScenarios.map((scenario) => [scenario.id, getEmptyScenarioScript(scenario)])))
+    const [formContextScenarioScripts, setFormContextScenarioScripts] = useState<Record<string, string>>(() => Object.fromEntries(xrmBusinessFlowScenarios.map((scenario) => [scenario.id, formatScenarioScript(scenario)])))
     const [formContextDocsScript, setFormContextDocsScript] = useState(() => props.formContextDocsExample?.code ?? emptyFormContextDocsScript)
     const [formContextDocsEditorKey, setFormContextDocsEditorKey] = useState(0)
     const [demoEvents, setDemoEvents] = useState<IXrmDemoEvent[]>([])
     const apiRef = useRef<IFormApi | null>(null)
     const customComponentsApiRef = useRef<IFormApi | null>(null)
     const nextEventIdRef = useRef(0)
-    const currentRecord = useMemo(() => props.initialView === "form-context" ? getFormContextRecord() : getXrmRecord(), [props.initialView])
-    const strategy = useMemo(() => props.initialView === "form-context" ? getFormContextStrategy() : getXrmStrategy(), [props.initialView])
+    const currentRecord = useMemo(() => props.initialView === "form-context" ? formContextSandbox.getRecord() : getXrmRecord(), [formContextSandbox, props.initialView])
+    const strategy = useMemo(() => props.initialView === "form-context" ? formContextSandbox.getStrategy() : getXrmStrategy(), [formContextSandbox, props.initialView])
     const customComponentsRecord = useMemo(() => getCustomComponentsRecord(), [])
     const customComponentsStrategy = useMemo(() => getCustomComponentsStrategy(), [])
     const [customComponentsXml, setCustomComponentsXml] = useState(() => getCustomComponentsFormXml())
@@ -915,6 +903,20 @@ export const XrmMode = (props: IXrmModeProps) => {
 
         return formContextScenarioScripts[activeScenario.id] ?? formatScenarioScript(activeScenario)
     }, [activeScenario, formContextDocsScript, formContextScenarioScripts, props.formContextDocsExample])
+    const defaultFormContextScript = useMemo(() => {
+        if (props.formContextDocsExample) {
+            return props.formContextDocsExample.code
+        }
+
+        if (!activeScenario) {
+            return [
+                "// Select a form context scenario to inspect and edit the runtime script.",
+                "// Reapply the scenario to execute the current code in this editor.",
+            ].join("\n")
+        }
+
+        return formatScenarioScript(activeScenario)
+    }, [activeScenario, props.formContextDocsExample])
     const parsedFormXml = useMemo(() => {
         try {
             return {
@@ -976,14 +978,14 @@ export const XrmMode = (props: IXrmModeProps) => {
 
                 setXmlError(null)
 
-                const currentXml = props.initialView === "form-context" ? getFormContextXml() : getCurrentFormXml()
+                const currentXml = props.initialView === "form-context" ? formContextSandbox.getXml() : getCurrentFormXml()
 
                 if (xml === currentXml) {
                     return
                 }
 
                 if (props.initialView === "form-context") {
-                    setFormContextXml(xml)
+                    formContextSandbox.setXml(xml)
                 } else {
                     setCurrentFormXml(xml)
                 }
@@ -994,7 +996,7 @@ export const XrmMode = (props: IXrmModeProps) => {
         }, 300)
 
         return () => window.clearTimeout(timeoutId)
-    }, [parsedFormXml.error, parsedFormXml.value, props.initialView, xml])
+    }, [formContextSandbox, parsedFormXml.error, parsedFormXml.value, props.initialView, xml])
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
@@ -1221,10 +1223,10 @@ export const XrmMode = (props: IXrmModeProps) => {
         const scenarioIdToKeep = activeScenarioId ?? visibleFormContextScenarios[0]?.id ?? null
 
         setFormContextScenarioScripts(() => Object.fromEntries(
-            xrmBusinessFlowScenarios.map((scenario) => [scenario.id, getEmptyScenarioScript(scenario)])
+            xrmBusinessFlowScenarios.map((scenario) => [scenario.id, formatScenarioScript(scenario)])
         ))
         if (props.formContextDocsExample) {
-            setFormContextDocsScript(emptyFormContextDocsScript)
+            setFormContextDocsScript(defaultFormContextScript)
             setFormContextDocsEditorKey((value) => value + 1)
         }
         setActiveScenarioId(scenarioIdToKeep)

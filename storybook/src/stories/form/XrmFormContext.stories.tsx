@@ -1,31 +1,14 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { XrmMode } from '../../form/xrm-form/XrmMode'
+import { overviewFormContextExample } from './formContextExamples'
 import { renderStory } from './storyHelpers'
 
 interface IXrmFormContextArgs {
 }
 
-const formContextDocsCode = `// Use formContext inside this method to read values and manipulate the form UI.
-
-const onExecuteScenario = (formContext: IXrmFormContext) => {
-  const targetDate = formContext.getAttribute("targetDate");
-  const approvedBudget = formContext.getAttribute("approvedBudget");
-  const metricsTab = formContext.ui.tabs.get("MetricsTab");
-
-  targetDate?.setRequiredLevel("required");
-  approvedBudget?.setValue(125000);
-  approvedBudget?.fireOnChange();
-  metricsTab?.setVisible(true);
-  formContext.ui.setFormNotification(
-    "Custom Form context code ran successfully.",
-    "INFO",
-    "docs-form-context"
-  );
-};`
-
 const meta = {
-    title: 'Form/Xrm/Form context',
+    title: 'Form/Xrm/Form Context/Overview',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -34,7 +17,7 @@ const meta = {
                 component: `
 \`formContext\` is the Xrm runtime handle exposed by \`XrmForm\`, which builds on top of the base Form runtime, keeps the layout FormXml-driven, and exposes an API shaped to be compatible with the Microsoft model-driven-app \`formContext\` programming model.
 
-This docs page focuses on the interactive runtime surface: the form preview is shown first, and the **Code** toggle switches to a Monaco editor where you can edit the method executed by the **Run code** action.
+This overview page focuses on the interactive runtime surface: the form preview is shown first, and the **Code** toggle switches to a Monaco editor where you can edit the method executed by the **Run code** action.
 
 ## Retrieving formContext
 
@@ -79,6 +62,8 @@ Microsoft Learn references:
 - [formContext.ui](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-ui)
 - [attribute methods](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/attributes)
 - [control methods](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/controls)
+
+For ready-made patterns built on the same runtime, go to [**Samples**](?path=/docs/form-xrm-form-context-samples--docs).
                 `.trim(),
             },
         },
@@ -90,11 +75,7 @@ Microsoft Learn references:
             useStorybookViewport
             hideFormContextScenarioPanel
             hideFormContextConsole
-            formContextDocsExample={{
-                title: 'Run custom Form context code',
-                summary: 'Switch to Code to edit the Monaco snippet. The editor exposes the official Xrm form context members for intellisense, and Run code invokes onExecuteScenario against the live preview.',
-                code: formContextDocsCode,
-            }}
+            formContextDocsExample={overviewFormContextExample}
         />,
     ),
 } satisfies Meta<IXrmFormContextArgs>
@@ -103,4 +84,6 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Docs: Story = {}
+export const Overview: Story = {
+    name: 'Overview',
+}

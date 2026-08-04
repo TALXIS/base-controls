@@ -57,7 +57,7 @@ export const AccountXrmForm = () => {
 
 ## Related docs
 
-For the runtime \`formContext\` API surface and lifecycle guidance, go to [**Form context**](?path=/docs/form-xrm-form-context--docs).
+For the runtime \`formContext\` API surface and lifecycle guidance, go to [**Overview**](?path=/docs/form-xrm-form-context-overview--docs) or [**Samples**](?path=/docs/form-xrm-form-context-samples--docs).
                 `.trim(),
             },
         },
@@ -68,7 +68,8 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Docs: Story = {
+export const Overview: Story = {
+    name: 'Overview',
     render: () => renderStory(
         <XrmMode
             initialView="preview"
