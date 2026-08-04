@@ -59,19 +59,6 @@ const styles = mergeStyleSets({
         minHeight: 0,
         minWidth: 0,
     },
-    card: {
-        display: "flex",
-        flexDirection: "column",
-        flex: 1,
-        minHeight: 0,
-        minWidth: 0,
-    },
-    cardBody: {
-        minHeight: 0,
-        display: "flex",
-        flexDirection: "column",
-        flex: 1,
-    },
     workspaceTabsBody: {
         flexShrink: 0,
         height: 43,
@@ -89,26 +76,13 @@ const styles = mergeStyleSets({
             },
         },
     },
-    commandBarBody: {
-        flexShrink: 0,
+    toolbarRow: {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         gap: 12,
         flexWrap: "wrap",
-    },
-    commandBarMain: {
-        flex: "1 1 320px",
-        minWidth: 0,
-    },
-    commandBarControls: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-end",
-        gap: 12,
-        flex: "0 1 auto",
-        flexWrap: "wrap",
-        minWidth: 0,
+        flexShrink: 0,
     },
     toolbarToggle: {
         marginBottom: 0,
@@ -311,7 +285,6 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
     )
 
     return <div className={styles.modeLayout}>
-            <Stack className={styles.card}>
                 {!props.hideTabsFlavorPivot && <Pivot
                     className={styles.workspaceTabsBody}
                     selectedKey={tabsFlavor}
@@ -346,8 +319,8 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
                 </Pivot>}
 
                 {(commandBarItems.length > 0 || commandBarControls) && (
-                    <div className={styles.commandBarBody}>
-                        <div className={styles.commandBarMain}>
+                    <div className={styles.toolbarRow}>
+                        <div style={{ flex: "1 1 320px", minWidth: 0 }}>
                             <CommandBar
                                 items={commandBarItems}
                                 styles={{
@@ -355,23 +328,23 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
                                 }}
                             />
                         </div>
-                        {commandBarControls && <div className={styles.commandBarControls}>{commandBarControls}</div>}
+                        {commandBarControls && <div>{commandBarControls}</div>}
                     </div>
                 )}
 
                 {activeView === "model" && (
-                    <Stack tokens={{ childrenGap: 16 }} className={`${styles.cardBody} ${styles.fillBody}`.trim()}>
+                    <div className={styles.fillBody} style={{ gap: 16 }}>
                         <ModelBuilderPanel
                             columns={modelColumns}
                             editorMode={modelEditorMode}
                             onEditorModeChange={setModelEditorMode}
                             onChange={setModelColumns}
                         />
-                    </Stack>
+                    </div>
                 )}
 
                 {activeView === "data" && (
-                    <Stack tokens={{ childrenGap: 16 }} className={`${styles.cardBody} ${styles.fillBody}`.trim()}>
+                    <div className={styles.fillBody} style={{ gap: 16 }}>
                         <div className={styles.editorSurface}>
                             <RecordDataEditor value={recordData} onChange={setRecordData} />
                         </div>
@@ -380,11 +353,11 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
                                 <pre className="toast-details">{jsonError}</pre>
                             </MessageBar>
                         )}
-                    </Stack>
+                    </div>
                 )}
 
                 {activeView === "preview" && (
-                    <Stack tokens={{ childrenGap: 12 }} className={`${styles.cardBody} ${styles.fillBody}`.trim()}>
+                    <div className={styles.fillBody} style={{ gap: 12 }}>
                         {!props.useStorybookViewport && <div className={styles.viewportToolbar}>
                             <Slider
                                 label="Viewport width"
@@ -440,8 +413,7 @@ export const ReactComposeMode = (props: IReactComposeModeProps) => {
                                 <pre className="toast-details">{compileError}</pre>
                             </MessageBar>
                         )}
-                    </Stack>
+                    </div>
                 )}
-            </Stack>
         </div>
 }

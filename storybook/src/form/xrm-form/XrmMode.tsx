@@ -291,26 +291,13 @@ const styles = mergeStyleSets({
             },
         },
     },
-    commandBarBody: {
-        flexShrink: 0,
+    toolbarRow: {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         gap: 12,
         flexWrap: "wrap",
-    },
-    commandBarMain: {
-        flex: "1 1 320px",
-        minWidth: 0,
-    },
-    commandBarControls: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-end",
-        gap: 12,
-        flex: "0 1 auto",
-        flexWrap: "wrap",
-        minWidth: 0,
+        flexShrink: 0,
     },
     toolbarToggle: {
         marginBottom: 0,
@@ -508,12 +495,6 @@ const styles = mergeStyleSets({
         width: "100%",
         maxWidth: "100%",
         minHeight: 0,
-    },
-    formContextBody: {
-        flex: 1,
-        minHeight: 0,
-        overflow: "auto",
-        padding: 0,
     },
     showcaseLayout: {
         display: "grid",
@@ -1420,8 +1401,8 @@ export const XrmMode = (props: IXrmModeProps) => {
                 </Pivot>}
 
                 {(commandBarItems.length > 0 || commandBarControls) && (
-                    <div className={styles.commandBarBody}>
-                        <div className={styles.commandBarMain}>
+                    <div className={styles.toolbarRow}>
+                        <div style={{ flex: "1 1 320px", minWidth: 0 }}>
                             <CommandBar
                                 items={commandBarItems}
                                 styles={{
@@ -1429,7 +1410,7 @@ export const XrmMode = (props: IXrmModeProps) => {
                                 }}
                             />
                         </div>
-                        {commandBarControls && <div className={styles.commandBarControls}>{commandBarControls}</div>}
+                        {commandBarControls && <div>{commandBarControls}</div>}
                     </div>
                 )}
 
@@ -1719,105 +1700,85 @@ export const XrmMode = (props: IXrmModeProps) => {
                 )}
 
                 {activeView === "form-context" && (
-                    <div className={styles.formContextBody}>
-                        <div className={styles.formContextLayout}>
-                            {!showFormContextCode && (
-                                <div className={styles.previewColumn}>
-                                    <div className={styles.previewSurface}>
-                                        <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
-                                            <XrmForm
-                                                key={previewInstanceKey}
-                                                strategy={strategy}
-                                                onAfterSave={({ success }) => {
-                                                    const currentData = apiRef.current?.getData()
-                                                    console.log(success ? "Form saved" : "Save failed", { success, currentData })
-                                                    setJson(serializeRecord(currentRecord))
-                                                }}
-                                                onFormReady={(params) => {
-                                                    apiRef.current = params.api
-                                                    setFormContext(params.formContext)
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
+                    <div>
+                        {!showFormContextCode && (
+                            <div className={styles.previewSurface}>
+                                <div className={styles.viewportWindow} style={{ width: props.useStorybookViewport ? '100%' : `${viewportWidth}px` }}>
+                                    <XrmForm
+                                        key={previewInstanceKey}
+                                        strategy={strategy}
+                                        onAfterSave={({ success }) => {
+                                            const currentData = apiRef.current?.getData()
+                                            console.log(success ? "Form saved" : "Save failed", { success, currentData })
+                                            setJson(serializeRecord(currentRecord))
+                                        }}
+                                        onFormReady={(params) => {
+                                            apiRef.current = params.api
+                                            setFormContext(params.formContext)
+                                        }}
+                                    />
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {showFormContextCode && !props.hideFormContextCodePanel && (
-                                <Stack className={styles.editorsColumn}>
-                                    <Stack className={styles.card}>
-                                        <Stack tokens={{ childrenGap: 16 }} className={`${styles.cardBody} ${styles.fillBody}`.trim()}>
-                                            <div className={styles.editorSurface}>
-                                                <XrmComponentsCodeEditor
-                                                    value={activeScenarioScript}
-                                                    label=""
-                                                    language="javascript"
-                                                    path="file:///sandbox/xrm-form-context-scenario.js"
-                                                    height="520px"
-                                                    kind="form-context"
-                                                    readOnly={false}
-                                                    onChange={(value) => {
-                                                        if (!activeScenario) {
-                                                            return
-                                                        }
+                        {showFormContextCode && !props.hideFormContextCodePanel && (
+                            <XrmComponentsCodeEditor
+                                value={activeScenarioScript}
+                                label=""
+                                language="typescript"
+                                path="file:///sandbox/xrm-form-context-scenario.ts"
+                                height="520px"
+                                kind="form-context"
+                                readOnly={false}
+                                onChange={(value) => {
+                                    if (!activeScenario) {
+                                        return
+                                    }
 
-                                                        setFormContextScenarioScripts((current) => ({
-                                                            ...current,
-                                                            [activeScenario.id]: value,
-                                                        }))
-                                                    }}
-                                                />
-                                            </div>
-                                        </Stack>
-                                    </Stack>
-                                </Stack>
-                            )}
+                                    setFormContextScenarioScripts((current) => ({
+                                        ...current,
+                                        [activeScenario.id]: value,
+                                    }))
+                                }}
+                            />
+                        )}
 
-                            {!props.formContextDocsExample && (
-                            <Stack className={styles.editorsColumn}>
-                                {!props.hideFormContextConsole && (
-                                    <Stack className={styles.card}>
-                                        <Stack tokens={{ childrenGap: 16 }} className={styles.cardBody}>
-                                            <div className={styles.consoleWindow}>
-                                                <div className={styles.consoleToolbar}>
-                                                    <Stack tokens={{ childrenGap: 2 }}>
-                                                        <Text variant="medium" className={styles.consoleTitle}>
-                                                            formContext console
-                                                        </Text>
-                                                        <Text variant="small" className={styles.consoleHint}>
-                                                            {demoEvents.length} event{demoEvents.length === 1 ? "" : "s"} captured
-                                                        </Text>
-                                                    </Stack>
-                                                    <DefaultButton
-                                                        text="Clear console"
-                                                        onClick={clearConsole}
-                                                    />
+                        {!props.formContextDocsExample && !props.hideFormContextConsole && (
+                            <div className={styles.consoleWindow}>
+                                <div className={styles.consoleToolbar}>
+                                    <div>
+                                        <Text variant="medium" className={styles.consoleTitle}>
+                                            formContext console
+                                        </Text>
+                                        <Text variant="small" className={styles.consoleHint}>
+                                            {demoEvents.length} event{demoEvents.length === 1 ? "" : "s"} captured
+                                        </Text>
+                                    </div>
+                                    <DefaultButton
+                                        text="Clear console"
+                                        onClick={clearConsole}
+                                    />
+                                </div>
+                                <div className={`${styles.consoleBody} ${styles.eventLog}`.trim()}>
+                                    {demoEvents.length === 0 ? (
+                                        <Text variant="small" className={styles.consoleEmpty}>
+                                            No events yet. Switch tabs in the preview, edit a field, apply a preset, or trigger save.
+                                        </Text>
+                                    ) : (
+                                        <>
+                                            {demoEvents.map((event) => (
+                                                <div key={event.id} className={styles.eventLogItem}>
+                                                    <Text variant="xSmall" className={styles.eventLogMeta}>
+                                                        [{event.timestamp}] {event.category}
+                                                    </Text>
+                                                    <Text variant="small" className={styles.eventLogText}>{event.message}</Text>
                                                 </div>
-                                                <div className={`${styles.consoleBody} ${styles.eventLog}`.trim()}>
-                                                    {demoEvents.length === 0 ? (
-                                                        <Text variant="small" className={styles.consoleEmpty}>
-                                                            No events yet. Switch tabs in the preview, edit a field, apply a preset, or trigger save.
-                                                        </Text>
-                                                    ) : (
-                                                        <>
-                                                            {demoEvents.map((event) => (
-                                                                <div key={event.id} className={styles.eventLogItem}>
-                                                                    <Text variant="xSmall" className={styles.eventLogMeta}>
-                                                                        [{event.timestamp}] {event.category}
-                                                                    </Text>
-                                                                    <Text variant="small" className={styles.eventLogText}>{event.message}</Text>
-                                                                </div>
-                                                            ))}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </Stack>
-                                    </Stack>
-                                )}
-                            </Stack>
-                            )}
-                        </div>
+                                            ))}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </Stack>

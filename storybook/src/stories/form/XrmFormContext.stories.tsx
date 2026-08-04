@@ -6,9 +6,7 @@ import { renderStory } from './storyHelpers'
 interface IXrmFormContextArgs {
 }
 
-const formContextDocsCode = `const onExecuteScenario = (formContext) => {
-  if (!formContext) return;
-
+const formContextDocsCode = `const onExecuteScenario = (formContext: IXrmFormContext) => {
   const targetDate = formContext.getAttribute("targetDate");
   const approvedBudget = formContext.getAttribute("approvedBudget");
   const metricsTab = formContext.ui.tabs.get("MetricsTab");

@@ -16,7 +16,6 @@ interface IXrmComponentsCodeEditorProps {
 }
 
 const defaultEditorHeight = "520px"
-
 const styles = mergeStyleSets({
     root: {
         width: "100%",
@@ -261,8 +260,7 @@ const configureMonaco = (monaco: typeof MonacoNamespace) => {
 }
 
 const formContextScenarioDeclarations = `${baseXrmDeclarations}
-declare const formContext: IXrmFormContext | null;
-declare const onExecuteScenario: (formContext: IXrmFormContext | null) => void;
+declare const formContext: IXrmFormContext;
 `
 
 export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) => {
@@ -283,15 +281,12 @@ export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) =>
                 filePath,
             },
         ])
-
-        if (props.language === "javascript") {
-            monaco.languages.typescript.javascriptDefaults.setExtraLibs([
-                {
-                    content: declarations,
-                    filePath,
-                },
-            ])
-        }
+        monaco.languages.typescript.javascriptDefaults.setExtraLibs([
+            {
+                content: declarations,
+                filePath,
+            },
+        ])
     }
 
     return <Stack className={styles.root}>
