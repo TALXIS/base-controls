@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import Editor from '@monaco-editor/react'
-import { IconButton, mergeStyleSets } from '@fluentui/react'
+import { IconButton, Toggle, mergeStyleSets } from '@fluentui/react'
 import { ReactComposeMode } from '../../form/react-form/ReactComposeMode'
 import { getDemoRecord, getFormColumns } from '../../form/shared/formModel'
 import { FormCodeEditor } from '../../form/react-form/FormCodeEditor'
@@ -29,6 +29,12 @@ const codeBlockStyles = mergeStyleSets({
         borderBottom: '1px solid #edebe9',
         fontSize: 14,
         fontWeight: 600,
+    },
+    previewHeader: {
+        borderBottom: '1px solid #edebe9',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        paddingBottom: 8,
     },
     editor: {
         height: 220,
@@ -81,29 +87,39 @@ const StaticCodeBlock = (props: { title: string; value?: string; language?: 'jso
     )
 }
 
-const ReactComposeOverviewStory = () => (
-    <div className={codeBlockStyles.root}>
-        <StaticCodeBlock title="Model" value={JSON.stringify(getFormColumns(), null, 2)} />
-        <StaticCodeBlock title="Data" value={JSON.stringify(getDemoRecord(), null, 2)} />
-        <div style={{ minHeight: 0, flex: 1 }}>
-            <ReactComposeMode
-                initialView="preview"
-                initialTabsFlavor="pivot"
-                hideTabsFlavorPivot
-                hideWorkspaceViewPivot
-                useStorybookViewport
-                renderPreviewCodeBeforePreview
-                renderPreviewCode={({ code, onChange }) => (
-                    <StaticCodeBlock title="Code">
+const ReactComposeOverviewStory = () => {
+    const [showCode, setShowCode] = React.useState(false)
+
+    return (
+        <div className={codeBlockStyles.root}>
+            <StaticCodeBlock title="Model" value={JSON.stringify(getFormColumns(), null, 2)} />
+            <StaticCodeBlock title="Data" value={JSON.stringify(getDemoRecord(), null, 2)} />
+            <div className={codeBlockStyles.previewHeader}>
+                <Toggle
+                    label="Code"
+                    inlineLabel
+                    checked={showCode}
+                    onChange={(_event, checked) => setShowCode(!!checked)}
+                />
+            </div>
+            <div style={{ minHeight: 0, flex: 1 }}>
+                <ReactComposeMode
+                    initialView="preview"
+                    initialTabsFlavor="pivot"
+                    hideTabsFlavorPivot
+                    hideWorkspaceViewPivot
+                    useStorybookViewport
+                    renderPreviewCodeBeforePreview={showCode}
+                    renderPreviewCode={({ code, onChange }) => (
                         <div className={codeBlockStyles.codeEditor}>
                             <FormCodeEditor value={code} onChange={onChange} />
                         </div>
-                    </StaticCodeBlock>
-                )}
-            />
+                    )}
+                />
+            </div>
         </div>
-    </div>
-)
+    )
+}
 
 const meta = {
     title: 'Form/React compose',
