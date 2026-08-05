@@ -1,11 +1,13 @@
-name: Build and Publish to NPM
+name: Build, Publish, and Deploy Storybook
 
 on:
   release:
     types: [published]
 
 permissions:
+  contents: read
   id-token: write
+  pages: write
 
 jobs:
   build_and_publish:
@@ -29,3 +31,18 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npm publish
+      - run: npm --prefix ./storybook install
+      - run: npm run build-storybook
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./storybook/storybook-static
+
+  deploy_storybook:
+    needs: build_and_publish
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
