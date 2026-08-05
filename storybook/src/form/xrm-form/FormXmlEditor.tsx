@@ -1,6 +1,7 @@
 import Editor from "@monaco-editor/react"
 import { Stack, Text, mergeStyleSets } from "@fluentui/react"
 import { useMemo } from "react"
+import { baseEditorOptions } from "../shared/monacoEditor"
 
 interface IFormXmlEditorProps {
     value: string
@@ -45,24 +46,10 @@ export const FormXmlEditor = (props: IFormXmlEditorProps) => {
                 value={formattedValue}
                 onChange={(nextValue) => onChange(formatXml(nextValue ?? ""))}
                 options={{
-                    automaticLayout: true,
-                    bracketPairColorization: { enabled: true },
-                    fontLigatures: true,
-                    fontSize: 13,
+                    ...baseEditorOptions,
                     formatOnPaste: true,
                     formatOnType: true,
-                    lineNumbersMinChars: 3,
-                    minimap: { enabled: false },
                     padding: { top: 12, bottom: 12 },
-                    scrollbar: {
-                        alwaysConsumeMouseWheel: true,
-                        horizontal: "auto",
-                        vertical: "auto",
-                    },
-                    scrollBeyondLastLine: false,
-                    smoothScrolling: true,
-                    tabSize: 2,
-                    wordWrap: "on",
                 }}
                 theme="vs-light"
             />

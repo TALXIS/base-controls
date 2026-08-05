@@ -1,7 +1,7 @@
 import Editor, { BeforeMount, OnMount } from "@monaco-editor/react"
 import { Stack, Text, mergeStyleSets } from "@fluentui/react"
-import type * as MonacoNamespace from "monaco-editor"
-import { useMemo, useRef } from "react"
+import { useMemo } from "react"
+import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs } from "../shared/monacoEditor"
 
 interface IXrmComponentsCodeEditorProps {
     value: string
@@ -177,7 +177,6 @@ declare const MuiTextField: any;
 declare const MuiSlider: any;
 declare const FormControl: any;
 declare const InputLabel: any;
-declare const MuiTextField: any;
 declare const Select: any;
 declare const MenuItem: any;
 declare const useField: (name?: string | null) => {
@@ -203,76 +202,28 @@ interface IXrmFormStrategy {
 }
 `
 
-const configureMonaco = (monaco: typeof MonacoNamespace) => {
-    const { typescript } = monaco.languages
-
-    typescript.typescriptDefaults.setCompilerOptions({
-        allowJs: true,
-        allowNonTsExtensions: true,
-        esModuleInterop: true,
-        jsx: typescript.JsxEmit.React,
-        module: typescript.ModuleKind.ESNext,
-        noEmit: true,
-        target: typescript.ScriptTarget.ES2020,
-        typeRoots: ["node_modules/@types"],
-    })
-
-    typescript.typescriptDefaults.setDiagnosticsOptions({
-        noSemanticValidation: false,
-        noSyntaxValidation: false,
-    })
-
-    typescript.javascriptDefaults.setCompilerOptions({
-        allowJs: true,
-        allowNonTsExtensions: true,
-        checkJs: true,
-        esModuleInterop: true,
-        noEmit: true,
-        target: typescript.ScriptTarget.ES2020,
-        typeRoots: ["node_modules/@types"],
-    })
-
-    typescript.javascriptDefaults.setDiagnosticsOptions({
-        noSemanticValidation: false,
-        noSyntaxValidation: false,
-    })
-}
-
 const formContextScenarioDeclarations = `${xrmTypeBridgeDeclarations}
 declare const formContext: IXrmFormContext;
 `
 
 export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) => {
-    const editorRef = useRef<MonacoNamespace.editor.IStandaloneCodeEditor | null>(null)
     const editorInstanceKey = useMemo(
         () => `${props.path ?? "file:///sandbox/xrm-components-snippet.tsx"}::${String(props.resetToken ?? "")}`,
         [props.path, props.resetToken],
     )
 
     const handleBeforeMount: BeforeMount = (monaco) => {
-        configureMonaco(monaco)
+        configureTypeScriptCompiler(monaco, { javascript: true })
     }
 
-    const handleMount: OnMount = (editor, monaco) => {
-        editorRef.current = editor
+    const handleMount: OnMount = (_, monaco) => {
         const declarations = props.declarations
             ?? (props.kind === "form-context" ? formContextScenarioDeclarations : xrmComponentsDeclarations)
         const filePath = props.kind === "form-context"
             ? "file:///sandbox/xrm-form-context-runtime.d.ts"
             : "file:///sandbox/xrm-components-runtime.d.ts"
 
-        monaco.languages.typescript.typescriptDefaults.setExtraLibs([
-            {
-                content: declarations,
-                filePath,
-            },
-        ])
-        monaco.languages.typescript.javascriptDefaults.setExtraLibs([
-            {
-                content: declarations,
-                filePath,
-            },
-        ])
+        registerExtraLibs(monaco, declarations, filePath, { javascript: true })
     }
 
     return <Stack className={styles.root}>
@@ -290,25 +241,11 @@ export const XrmComponentsCodeEditor = (props: IXrmComponentsCodeEditorProps) =>
                 beforeMount={handleBeforeMount}
                 onMount={handleMount}
                 options={{
-                    automaticLayout: true,
-                    bracketPairColorization: { enabled: true },
+                    ...baseEditorOptions,
                     domReadOnly: props.readOnly ?? true,
-                    fontLigatures: true,
-                    fontSize: 13,
-                    lineNumbersMinChars: 3,
-                    minimap: { enabled: false },
                     padding: { top: 12, bottom: 12 },
                     quickSuggestions: false,
                     readOnly: props.readOnly ?? true,
-                    scrollbar: {
-                        alwaysConsumeMouseWheel: true,
-                        horizontal: "auto",
-                        vertical: "auto",
-                    },
-                    scrollBeyondLastLine: false,
-                    smoothScrolling: true,
-                    tabSize: 2,
-                    wordWrap: "on",
                 }}
                 onChange={(value) => props.onChange?.(value ?? "")}
                 theme="vs-light"

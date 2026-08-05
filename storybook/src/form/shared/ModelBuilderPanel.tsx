@@ -1,9 +1,10 @@
 import Editor from "@monaco-editor/react"
 import { DefaultButton, Dropdown, IDropdownOption, IconButton, MessageBar, MessageBarType, Separator, SpinButton, Stack, Text, TextField, getTheme, mergeStyleSets } from "@fluentui/react"
-import { DataTypes, IColumn } from "@talxis/client-libraries"
+import { IColumn } from "@talxis/client-libraries"
 import { useEffect, useMemo, useState } from "react"
-import { IModelOption, createModelColumn, getModelTypeDefinition, modelTypeDefinitions } from "./modelDefinition"
+import { IModelOption, TSupportedModelDataType, createModelColumn, getModelTypeDefinition, modelTypeDefinitions } from "./modelDefinition"
 import { parseModelColumns, serializeModelColumns } from "./modelStore"
+import { baseEditorOptions } from "./monacoEditor"
 
 interface IModelBuilderPanelProps {
     columns: IColumn[]
@@ -223,8 +224,8 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
         updateColumns((current) => current.map((column, index) => (index === selectedIndex ? updater(column) : column)))
     }
 
-    const addColumn = (dataType: string) => {
-        const created = createModelColumn(dataType as any)
+    const addColumn = (dataType: TSupportedModelDataType) => {
+        const created = createModelColumn(dataType)
         const nextName = createUniqueName(created.name, columns)
         const nextColumn = {
             ...created,
@@ -280,24 +281,10 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                             setJsonError(null)
                         }}
                         options={{
-                            automaticLayout: true,
-                            bracketPairColorization: { enabled: true },
-                            fontLigatures: true,
-                            fontSize: 13,
+                            ...baseEditorOptions,
                             formatOnPaste: true,
                             formatOnType: true,
-                            lineNumbersMinChars: 3,
-                            minimap: { enabled: false },
                             padding: { top: 12, bottom: 12 },
-                            scrollbar: {
-                                alwaysConsumeMouseWheel: true,
-                                horizontal: "auto",
-                                vertical: "auto",
-                            },
-                            scrollBeyondLastLine: false,
-                            smoothScrolling: true,
-                            tabSize: 2,
-                            wordWrap: "on",
                         }}
                         theme="vs-light"
                     />
@@ -318,7 +305,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                             label="Add field"
                             placeholder="Choose a field type"
                             options={dataTypeOptions}
-                            onChange={(_event, option) => option && addColumn(String(option.key))}
+                            onChange={(_event, option) => option && addColumn(option.key as TSupportedModelDataType)}
                         />
                     </div>
                     <div className={styles.list}>
@@ -383,8 +370,8 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                                             return
                                         }
 
-                                        const dataType = String(option.key)
-                                        const template = createModelColumn(dataType as DataTypes)
+                                        const dataType = option.key as TSupportedModelDataType
+                                        const template = createModelColumn(dataType)
                                         updateSelectedColumn((column) => ({
                                             ...column,
                                             dataType,

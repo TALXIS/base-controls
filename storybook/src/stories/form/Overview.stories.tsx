@@ -94,6 +94,10 @@ const meta = {
             story: {
                 inline: true,
             },
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
             description: {
                 component: `
 Form is a record-driven form runtime.

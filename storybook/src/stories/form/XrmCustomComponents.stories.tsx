@@ -1,66 +1,8 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { Text, Toggle, getTheme, mergeStyleSets } from '@fluentui/react'
 import { XrmComponentsCodeEditor } from '../../form/xrm-form/XrmComponentsCodeEditor'
 import { XrmCustomComponentsLivePreview } from './XrmCustomComponentsLivePreview'
-import { renderStory } from './storyHelpers'
-
-const theme = getTheme()
-
-const styles = mergeStyleSets({
-    page: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    sectionHeader: {
-        borderBottom: `1px solid ${theme.palette.neutralLight}`,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-    },
-    sectionBody: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-    },
-    bullets: {
-        margin: 0,
-        paddingLeft: 20,
-    },
-    exampleHeader: {
-        borderBottom: `1px solid ${theme.palette.neutralLighter}`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 16,
-        flexWrap: 'wrap',
-    },
-    exampleCopy: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 6,
-        minWidth: 0,
-        flex: 1,
-    },
-    exampleBody: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-    },
-    previewFrame: {
-        minHeight: 420,
-        width: '100%',
-        overflow: 'hidden',
-    },
-    codeFrame: {
-        border: `1px solid ${theme.palette.neutralLight}`,
-        borderRadius: 8,
-        overflow: 'hidden',
-    },
-    viewportWindow: {
-        width: '100%',
-    },
-})
+import { ExampleRunner, renderStory } from './storyHelpers'
 
 interface IXrmCustomComponentsExample {
     id: string
@@ -309,49 +251,29 @@ const XrmCustomComponentsExample = () => {
 
 const renderCustomComponentsExample = (example: IXrmCustomComponentsExample) => {
     const [code, setCode] = React.useState(example.code)
-    const [showCode, setShowCode] = React.useState(false)
     const [compileError, setCompileError] = React.useState<string | null>(null)
 
     return (
-        <div>
-            <div className={styles.exampleHeader}>
-                <div className={styles.exampleCopy} />
-                <Toggle
-                    label="Code"
-                    inlineLabel
-                    checked={showCode}
-                    onChange={(_event, checked) => setShowCode(!!checked)}
+        <ExampleRunner
+            error={compileError}
+            renderPreview={() => <XrmCustomComponentsLivePreview code={code} onError={setCompileError} />}
+            renderCode={() => (
+                <XrmComponentsCodeEditor
+                    value={code}
+                    onChange={setCode}
+                    readOnly={false}
+                    label=""
+                    kind="components"
+                    height="640px"
                 />
-            </div>
-            <div className={styles.exampleBody}>
-                <div className={styles.previewFrame}>
-                    <div className={styles.viewportWindow}>
-                        {showCode ? (
-                            <div className={styles.codeFrame}>
-                                <XrmComponentsCodeEditor
-                                    value={code}
-                                    onChange={setCode}
-                                    readOnly={false}
-                                    label=""
-                                    kind="components"
-                                    height="640px"
-                                />
-                            </div>
-                        ) : (
-                            <XrmCustomComponentsLivePreview code={code} onError={setCompileError} />
-                        )}
-                    </div>
-                </div>
-                {compileError ? <Text variant="small" styles={{ root: { color: theme.palette.redDark } }}>{compileError}</Text> : null}
-            </div>
-        </div>
+            )}
+        />
     )
 }
 
 const meta = {
     title: 'Form/Xrm/Custom Components',
     tags: ['autodocs'],
-    name: 'Overview',
     parameters: {
         controls: { disable: true },
         docs: {
@@ -362,15 +284,18 @@ const meta = {
                 sourceState: 'none',
                 additionalActions: [],
             },
-            controls: { disable: true },
             description: {
                 component: `
-These stories show common ways to customize Xrm presentation while keeping the FormXml-driven runtime in place.
+Replace parts of the Xrm rendering with your own components while the layout stays driven by FormXml.
 
-- Replace control presentation for selected Xrm controls.
-- Replace the tabs renderer with a custom tabs shell.
+These stories keep the same FormXml-driven structure and \`formContext\` surface; only the rendering of selected pieces changes.
 
-Each story keeps its own isolated form instance and opens directly in the live preview surface tailored to that customization scenario.
+## What you can replace
+
+- **Control presentation** — swap the rendered UI for selected Xrm controls without touching the rest of the form.
+- **Tabs shell** — replace the tabs renderer with a custom stepper, wizard, or other navigation shell while tab state and content stay runtime-driven.
+
+Each story runs its own isolated form instance and opens directly in the live preview for that scenario.
                 `.trim(),
             },
         },
@@ -402,7 +327,7 @@ Swaps selected Xrm controls with custom React renderers while keeping the same f
             },
         },
     },
-    render: () => renderStory(renderCustomComponentsExample(samplesById.controls), 18),
+    render: () => renderStory(renderCustomComponentsExample(samplesById.controls)),
 }
 
 export const ReplaceTabsRenderer: Story = {
@@ -424,5 +349,5 @@ Replaces the default tabs shell with a custom stepper-based renderer while prese
             },
         },
     },
-    render: () => renderStory(renderCustomComponentsExample(samplesById.tabs), 18),
+    render: () => renderStory(renderCustomComponentsExample(samplesById.tabs)),
 }

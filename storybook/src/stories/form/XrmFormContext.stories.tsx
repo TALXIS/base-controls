@@ -13,6 +13,13 @@ const meta = {
     parameters: {
         controls: { disable: true },
         docs: {
+            story: {
+                inline: true,
+            },
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
             description: {
                 component: `
 \`formContext\` is the Xrm runtime handle exposed by \`XrmForm\`, which builds on top of the base Form runtime, keeps the layout FormXml-driven, and exposes an API shaped to be compatible with the Microsoft model-driven-app \`formContext\` programming model.

@@ -1,70 +1,11 @@
 import React, { useMemo, useRef, useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import {
-    ComboBox,
-    Icon,
-    IconButton,
-    Slider,
-    Stack,
-    Text,
-    TextField,
-    Toggle,
-    getTheme,
-    mergeStyleSets,
-} from '@fluentui/react'
-import { Step, StepButton, StepContent, Stepper } from '@mui/material'
-import { Form, useField } from '@talxis/base-controls/components/Form'
+import { Form } from '@talxis/base-controls/components/Form'
 import type { IFormApi } from '@talxis/base-controls/components/Form'
-import { renderStory } from './storyHelpers'
+import { ExampleRunner, renderStory } from './storyHelpers'
 import { FormCodeEditor } from '../../form/react-form/FormCodeEditor'
-import { OpenMap } from '../../form/react-form/OpenMap'
 import { getMemoryStrategy } from '../../form/shared/formModel'
 import { ReactComposeLivePreview } from './ReactComposeLivePreview'
-
-const theme = getTheme()
-
-const styles = mergeStyleSets({
-    bullets: {
-        margin: 0,
-        paddingLeft: 20,
-    },
-    exampleBody: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-    },
-    exampleHeader: {
-        borderBottom: `1px solid ${theme.palette.neutralLighter}`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 16,
-        flexWrap: 'wrap',
-    },
-    exampleCopy: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 6,
-        minWidth: 0,
-        flex: 1,
-    },
-    previewFrame: {
-        minHeight: 420,
-        width: '100%',
-        overflow: 'hidden',
-    },
-    codeFrame: {
-        border: `1px solid ${theme.palette.neutralLight}`,
-        borderRadius: 8,
-        overflow: 'hidden',
-    },
-    viewportWindow: {
-        width: '100%',
-    },
-    note: {
-        color: theme.palette.neutralSecondary,
-    },
-})
 
 interface ICustomComponentsExample {
     id: string
@@ -718,7 +659,6 @@ const FormExample = () => {
 
 const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
     const [code, setCode] = useState(example.code)
-    const [showCode, setShowCode] = useState(false)
     const [compileError, setCompileError] = useState<string | null>(null)
     const strategy = useMemo(() => getMemoryStrategy(), [])
     const formApiRef = useRef<IFormApi | null>(null)
@@ -738,36 +678,18 @@ const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
     )
 
     return (
-        <div>
-            <div className={styles.exampleHeader}>
-                <div className={styles.exampleCopy} />
-                <Toggle
-                    label="Code"
-                    inlineLabel
-                    checked={showCode}
-                    onChange={(_event, checked) => setShowCode(!!checked)}
+        <ExampleRunner
+            error={compileError}
+            renderPreview={() => (
+                <ReactComposeLivePreview
+                    code={code}
+                    codePreview={example.previewCode ?? example.code}
+                    formProps={formProps}
+                    onError={setCompileError}
                 />
-            </div>
-            <div className={styles.exampleBody}>
-                <div className={styles.previewFrame}>
-                    <div className={styles.viewportWindow}>
-                        {showCode ? (
-                            <div className={styles.codeFrame}>
-                                <FormCodeEditor value={code} onChange={setCode} />
-                            </div>
-                        ) : (
-                            <ReactComposeLivePreview
-                                code={code}
-                                codePreview={example.previewCode ?? example.code}
-                                formProps={formProps}
-                                onError={setCompileError}
-                            />
-                        )}
-                    </div>
-                </div>
-                {compileError ? <Text variant="small" styles={{ root: { color: theme.palette.redDark } }}>{compileError}</Text> : null}
-            </div>
-        </div>
+            )}
+            renderCode={() => <FormCodeEditor value={code} onChange={setCode} />}
+        />
     )
 }
 
@@ -784,15 +706,18 @@ const meta = {
                 sourceState: 'none',
                 additionalActions: [],
             },
-            controls: { disable: true },
             description: {
                 component: `
-Build custom presentation layers and field-specific UI on top of the React compose form runtime.
+Replace parts of the React compose rendering with your own components while the runtime keeps handling state, validation, and save flow.
 
-- Replace larger presentation shells such as tabs when navigation should follow a stepper, wizard, sidebar, or another domain-specific pattern.
-- Compose read/write custom field widgets that still participate in validation, notifications, and save flow.
-- Mix runtime-managed controls with summaries, helper panels, maps, and other embedded custom content.
-- Render fields through a custom section wrapper when one area needs distinct framing beyond the stock section chrome.
+Custom components don't opt you out of the runtime — they let you own presentation for one area while everything else (binding, validation, notifications, dirty tracking, save) stays managed.
+
+## What you can replace
+
+- **Presentation shells** — swap the tabs renderer for a stepper, wizard, sidebar, or other domain-specific navigation.
+- **Field widgets** — compose custom read/write UI with \`Form.Field\`, \`Form.Cell\`, and \`useField\` that still participates in validation and save flow.
+- **Embedded content** — mix runtime-managed controls with summaries, helper panels, maps, and other custom cells.
+- **Section framing** — render fields through a custom section wrapper when one area needs presentation the stock section chrome doesn't provide.
                 `.trim(),
             },
         },
@@ -827,7 +752,7 @@ Uses \`Form.Tabs components.onRenderTabs\` to swap the default tab header with a
             },
         },
     },
-    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-tabs']), 18),
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-tabs'])),
 }
 
 export const ComposeCustomFieldContent: Story = {
@@ -852,7 +777,7 @@ Shows how to build custom read/write field UI with \`Form.Field\`, \`Form.Cell\`
             },
         },
     },
-    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-field-content']), 18),
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-field-content'])),
 }
 
 export const MixRuntimeFieldsWithCustomContentCells: Story = {
@@ -877,7 +802,7 @@ Adds compact custom summary content alongside standard runtime-managed fields in
             },
         },
     },
-    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-rich-cells']), 18),
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-rich-cells'])),
 }
 
 export const RenderCellsThroughCustomSectionComponent: Story = {
@@ -902,5 +827,5 @@ Renders fields through a fully custom section wrapper when one area needs distin
             },
         },
     },
-    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-sections-and-labels']), 18),
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-sections-and-labels'])),
 }

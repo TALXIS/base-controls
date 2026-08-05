@@ -84,8 +84,9 @@ const preview: Preview = {
             'Get started',
             ['Overview', 'Form strategy'],
             'React compose',
+            ['Overview', 'Custom Components', 'Layout'],
+            'Xrm',
             [
-              'Xrm',
               'Overview',
               'FormXml Builder',
               'Custom Components',

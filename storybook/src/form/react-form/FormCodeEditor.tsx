@@ -1,6 +1,6 @@
 import Editor, { OnMount } from "@monaco-editor/react"
 import { Stack, mergeStyleSets } from "@fluentui/react"
-import type * as MonacoNamespace from "monaco-editor"
+import { baseEditorOptions, configureTypeScriptCompiler, registerExtraLibs } from "../shared/monacoEditor"
 
 interface IFormCodeEditorProps {
     value: string
@@ -185,38 +185,12 @@ declare const Form: {
 declare const useField: (name?: string | null) => ISandboxField | null;
 `
 
-const configureMonaco = (monaco: typeof MonacoNamespace) => {
-    const { typescript } = monaco.languages
-
-    typescript.typescriptDefaults.setCompilerOptions({
-        allowJs: true,
-        allowNonTsExtensions: true,
-        esModuleInterop: true,
-        jsx: typescript.JsxEmit.React,
-        module: typescript.ModuleKind.ESNext,
-        noEmit: true,
-        target: typescript.ScriptTarget.ES2020,
-        typeRoots: ["node_modules/@types"],
-    })
-
-    typescript.typescriptDefaults.setDiagnosticsOptions({
-        noSemanticValidation: false,
-        noSyntaxValidation: false,
-    })
-
-    typescript.typescriptDefaults.setExtraLibs([
-        {
-            content: sandboxDeclarations,
-            filePath: "file:///sandbox/form-runtime.d.ts",
-        },
-    ])
-}
-
 export const FormCodeEditor = (props: IFormCodeEditorProps) => {
     const { onChange, value } = props
 
     const handleMount: OnMount = (_, monaco) => {
-        configureMonaco(monaco)
+        configureTypeScriptCompiler(monaco)
+        registerExtraLibs(monaco, sandboxDeclarations, "file:///sandbox/form-runtime.d.ts")
     }
 
     return <Stack className={styles.root}>
@@ -230,27 +204,13 @@ export const FormCodeEditor = (props: IFormCodeEditorProps) => {
                 onMount={handleMount}
                 onChange={(nextValue) => onChange(nextValue ?? "")}
                 options={{
-                    automaticLayout: true,
-                    bracketPairColorization: { enabled: true },
-                    fontLigatures: true,
-                    fontSize: 13,
-                    lineNumbersMinChars: 3,
-                    minimap: { enabled: false },
+                    ...baseEditorOptions,
                     padding: { top: 12, bottom: 0 },
                     quickSuggestions: {
                         comments: false,
                         other: true,
                         strings: true,
                     },
-                    scrollbar: {
-                        alwaysConsumeMouseWheel: true,
-                        horizontal: "auto",
-                        vertical: "auto",
-                    },
-                    scrollBeyondLastLine: false,
-                    smoothScrolling: true,
-                    tabSize: 2,
-                    wordWrap: "on",
                 }}
                 theme="vs-light"
             />

@@ -1,64 +1,11 @@
 import React, { useMemo, useRef, useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import {
-    ComboBox,
-    Icon,
-    IconButton,
-    Stack,
-    Text,
-    TextField,
-    Toggle,
-    getTheme,
-    mergeStyleSets,
-} from '@fluentui/react'
-import { Form, useField } from '@talxis/base-controls/components/Form'
+import { Form } from '@talxis/base-controls/components/Form'
 import type { IFormApi } from '@talxis/base-controls/components/Form'
-import { renderStory } from './storyHelpers'
+import { ExampleRunner, renderStory } from './storyHelpers'
 import { FormCodeEditor } from '../../form/react-form/FormCodeEditor'
-import { OpenMap } from '../../form/react-form/OpenMap'
-import { getDemoRecord, getMemoryStrategy } from '../../form/shared/formModel'
+import { getMemoryStrategy } from '../../form/shared/formModel'
 import { ReactComposeLivePreview } from './ReactComposeLivePreview'
-
-const theme = getTheme()
-
-const styles = mergeStyleSets({
-    exampleHeader: {
-        borderBottom: `1px solid ${theme.palette.neutralLighter}`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 16,
-        flexWrap: 'wrap',
-    },
-    exampleCopy: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 6,
-        minWidth: 0,
-        flex: 1,
-    },
-    exampleBody: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-    },
-    previewFrame: {
-        minHeight: 420,
-        width: '100%',
-        overflow: 'hidden',
-    },
-    codeFrame: {
-        border: `1px solid ${theme.palette.neutralLight}`,
-        borderRadius: 8,
-        overflow: 'hidden',
-    },
-    viewportWindow: {
-        width: '100%',
-    },
-    note: {
-        color: theme.palette.neutralSecondary,
-    },
-})
 
 interface ILayoutExample {
     id: string
@@ -334,7 +281,6 @@ const FormExample = () => {
 
 const renderLayoutExample = (example: ILayoutExample) => {
     const [code, setCode] = useState(example.code)
-    const [showCode, setShowCode] = useState(false)
     const [compileError, setCompileError] = useState<string | null>(null)
     const strategy = useMemo(() => getMemoryStrategy(), [])
     const formApiRef = useRef<IFormApi | null>(null)
@@ -354,35 +300,13 @@ const renderLayoutExample = (example: ILayoutExample) => {
     )
 
     return (
-        <div>
-            <div className={styles.exampleHeader}>
-                <div className={styles.exampleCopy} />
-                <Toggle
-                    label="Code"
-                    inlineLabel
-                    checked={showCode}
-                    onChange={(_event, checked) => setShowCode(!!checked)}
-                />
-            </div>
-            <div className={styles.exampleBody}>
-                <div className={styles.previewFrame}>
-                    <div className={styles.viewportWindow}>
-                        {showCode ? (
-                            <div className={styles.codeFrame}>
-                                <FormCodeEditor value={code} onChange={setCode} />
-                            </div>
-                        ) : (
-                            <ReactComposeLivePreview
-                                code={code}
-                                formProps={formProps}
-                                onError={setCompileError}
-                            />
-                        )}
-                    </div>
-                </div>
-                {compileError ? <Text variant="small" styles={{ root: { color: theme.palette.redDark } }}>{compileError}</Text> : null}
-            </div>
-        </div>
+        <ExampleRunner
+            error={compileError}
+            renderPreview={() => (
+                <ReactComposeLivePreview code={code} formProps={formProps} onError={setCompileError} />
+            )}
+            renderCode={() => <FormCodeEditor value={code} onChange={setCode} />}
+        />
     )
 }
 
@@ -399,15 +323,18 @@ const meta = {
                 sourceState: 'none',
                 additionalActions: [],
             },
-            controls: { disable: true },
             description: {
                 component: `
-Build responsive React compose layouts by combining tab-level columns, section-level grids, label behavior, and grid spanning.
+Control form density and responsiveness with layout props on \`Form.Tab\`, \`Form.Section\`, and \`Form.Cell\`.
 
-- Use \`Form.Tab layout\` to shape the broad column structure of the page.
-- Use \`Form.Section layout\` to control the cell grid density inside each section.
-- Tune labels with \`labelWidth\`, \`cellLabelPosition\`, and \`cellLabelCollapseBreakpoint\`.
-- Use \`colspan\` and \`rowspan\` when fields or custom content should span across multiple grid tracks.
+Layout is breakpoint-driven at two levels: tabs decide the broad column structure, sections decide the field grid inside each column. Both accept the same breakpoint map (\`xs\`, \`sm\`, \`md\`, \`lg\`) independently, so coarse and fine-grained responsiveness compose freely.
+
+## What you can control
+
+- **Column structure** — \`Form.Tab layout\` sets how many top-level columns render at each breakpoint.
+- **Field grids** — \`Form.Section layout\` sets how many cells render per row inside a section.
+- **Label behavior** — \`labelWidth\`, \`cellLabelPosition\`, and \`cellLabelCollapseBreakpoint\` tune how labels sit relative to controls as space tightens.
+- **Grid spanning** — \`Form.Cell colspan\` and \`rowspan\` let a field or custom content span multiple grid tracks.
                 `.trim(),
             },
         },
@@ -439,7 +366,7 @@ Uses \`Form.Tab layout\` to control how many top-level columns render at each br
             },
         },
     },
-    render: () => renderStory(renderLayoutExample(samplesById['tab-breakpoints']), 18),
+    render: () => renderStory(renderLayoutExample(samplesById['tab-breakpoints'])),
 }
 
 export const SectionLayoutGrids: Story = {
@@ -461,7 +388,7 @@ Uses \`Form.Section layout\` to control how many cells render per row inside a s
             },
         },
     },
-    render: () => renderStory(renderLayoutExample(samplesById['section-grid']), 18),
+    render: () => renderStory(renderLayoutExample(samplesById['section-grid'])),
 }
 
 export const CombineTabAndSectionResponsiveness: Story = {
@@ -483,7 +410,7 @@ Combines tab and section breakpoint maps to create coarse and fine-grained respo
             },
         },
     },
-    render: () => renderStory(renderLayoutExample(samplesById['mixed-columns-and-sections']), 18),
+    render: () => renderStory(renderLayoutExample(samplesById['mixed-columns-and-sections'])),
 }
 
 export const SectionLabelBehavior: Story = {
@@ -505,7 +432,7 @@ Uses \`labelWidth\`, \`cellLabelPosition\`, and \`cellLabelCollapseBreakpoint\` 
             },
         },
     },
-    render: () => renderStory(renderLayoutExample(samplesById['section-label-behavior']), 18),
+    render: () => renderStory(renderLayoutExample(samplesById['section-label-behavior'])),
 }
 
 export const CellRowspanAndColspan: Story = {
@@ -527,5 +454,5 @@ Uses \`Form.Cell colspan\` and \`rowspan\` when fields or custom content should 
             },
         },
     },
-    render: () => renderStory(renderLayoutExample(samplesById['cell-span']), 18),
+    render: () => renderStory(renderLayoutExample(samplesById['cell-span'])),
 }
