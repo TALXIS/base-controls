@@ -77,6 +77,7 @@ const preview: Preview = {
       },
     },
     options: {
+      showPanel: false,
       storySort: {
         order: [
           'Form',

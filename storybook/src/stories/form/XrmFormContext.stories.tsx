@@ -64,13 +64,13 @@ It is **compatible in shape and intent**, but it is not a claim of full one-to-o
 
 Microsoft Learn references:
 
-- [formContext](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/clientapi-form-context)
-- [formContext.data](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-data)
-- [formContext.ui](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-ui)
-- [attribute methods](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/attributes)
-- [control methods](https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/controls)
+- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/clientapi-form-context" target="_blank" rel="noreferrer">formContext</a>
+- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-data" target="_blank" rel="noreferrer">formContext.data</a>
+- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/formcontext-ui" target="_blank" rel="noreferrer">formContext.ui</a>
+- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/attributes" target="_blank" rel="noreferrer">attribute methods</a>
+- <a href="https://learn.microsoft.com/en-us/power-apps/developer/model-driven-apps/clientapi/reference/controls" target="_blank" rel="noreferrer">control methods</a>
 
-For ready-made patterns built on the same runtime, go to [**Samples**](?path=/docs/form-xrm-form-context-samples--docs).
+For ready-made patterns built on the same runtime, go to [**Samples**](?path=/story/form-xrm-form-context-samples--qualification-review).
                 `.trim(),
             },
         },

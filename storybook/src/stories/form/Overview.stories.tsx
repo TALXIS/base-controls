@@ -142,7 +142,7 @@ This is the best fit when:
 - you want to script against \`formContext\` in a model-driven-app style
 - you want to combine Base Controls React events with Xrm-style runtime access
 
-Go to [**Xrm FormXml Builder**](?path=/story/form-xrm--formxml-builder), [**Xrm Form Context Overview**](?path=/story/form-xrm-form-context-overview--overview), or [**Xrm Form Context Samples**](?path=/docs/form-xrm-form-context-samples--docs).
+Go to [**Xrm FormXml Builder**](?path=/story/form-xrm--overview), [**Xrm Form Context Overview**](?path=/story/form-xrm-form-context-overview--overview), or [**Xrm Form Context Samples**](?path=/story/form-xrm-form-context-samples--qualification-review).
                 `.trim(),
             },
         },
