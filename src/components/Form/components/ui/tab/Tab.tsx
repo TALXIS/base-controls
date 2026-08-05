@@ -27,6 +27,7 @@ export const Tab = (props: ITabProps) => {
     });
 
     useEffect(() => {
+        alert('dsad')
         props.onColumnsPerRowChanged?.(columnsPerRow);
     }, [columnsPerRow]);
 
