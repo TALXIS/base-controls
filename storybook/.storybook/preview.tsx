@@ -68,7 +68,9 @@ const preview: Preview = {
           type: 'mobile',
         },
       },
-      defaultViewport: 'responsive',
+    },
+    initialGlobals: {
+      viewport: { value: 'responsive', isRotated: false },
     },
     controls: {
       matchers: {
