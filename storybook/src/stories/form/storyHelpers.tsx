@@ -19,7 +19,6 @@ export const codeBlockStyles = mergeStyleSets({
     block: {
         border: '1px solid #edebe9',
         borderRadius: 8,
-        overflow: 'hidden',
         background: '#fff',
     },
     header: {
@@ -45,7 +44,6 @@ export const codeBlockStyles = mergeStyleSets({
         border: '1px solid #edebe9',
         borderRadius: 8,
         height: 640,
-        overflow: 'hidden',
     },
 })
 
@@ -108,12 +106,10 @@ const exampleRunnerStyles = mergeStyleSets({
     previewFrame: {
         minHeight: 420,
         width: '100%',
-        overflow: 'hidden',
     },
     codeFrame: {
         border: `1px solid ${theme.palette.neutralLight}`,
         borderRadius: 8,
-        overflow: 'hidden',
     },
     viewportWindow: {
         width: '100%',

@@ -33,7 +33,6 @@ const styles = mergeStyleSets({
     frame: {
         flex: 1,
         minHeight: defaultEditorHeight,
-        overflow: "hidden",
     },
 })
 

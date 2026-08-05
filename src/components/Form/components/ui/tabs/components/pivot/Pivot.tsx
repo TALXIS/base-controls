@@ -21,6 +21,7 @@ export const Pivot = (props: ITabsComponentProps) => {
         {childrenArray.map(child => {
             if (!child.props.id) throw new Error("Tab child is missing required 'id' prop");
             return <PivotItem
+                key={child.props.id}
                 className={styles.pivotItem}
                 itemKey={child.props.id}
                 headerText={child.props.label || child.props.id}

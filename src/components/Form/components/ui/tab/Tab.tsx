@@ -28,7 +28,7 @@ export const Tab = (props: ITabProps) => {
 
     useEffect(() => {
         props.onColumnsPerRowChanged?.(columnsPerRow);
-    }, [columnsPerRow, props.onColumnsPerRowChanged]);
+    }, [columnsPerRow]);
 
     return <div className={styles.tab} data-id={id} ref={containerRef} style={{ ...containerStyles, ...props.style }}>
         <TabContext.Provider value={{ ...props, columnsPerRow }}>

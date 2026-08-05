@@ -19,7 +19,6 @@ const styles = mergeStyleSets({
     },
     frame: {
         height: 640,
-        overflow: "hidden",
     },
 })
 
