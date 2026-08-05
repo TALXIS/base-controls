@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { IOnLoadResult } from "@components/Form/strategies/interfaces";
-import { useEventEmitter } from "@hooks";
+import { useEventEmitter, useIsMounted } from "@hooks";
 import { initializeIcons } from "@fluentui/react";
 import { FormModel, IFormEvents } from '@components/Form/internal/FormModel';
 import { FormContext, FormLocalizationServiceContext } from "./context";
@@ -17,16 +17,24 @@ initializeIcons();
 export const Root = (props: IFormProps) => {
     const { strategy } = props;
     const [formDeps, setFormDeps] = React.useState<IOnLoadResult | null>(null);
+    const isMounted = useIsMounted();
 
     const onLoad = async () => {
         setFormDeps(null);
         const result = await strategy.onLoad();
+        if(!isMounted()) return;
         setFormDeps(result);
     };
 
     const onRefreshRequested = async () => {
         await onLoad();
     };
+
+    React.useEffect(() => {
+        return () => {
+
+        }
+    }, []);
 
     React.useEffect(() => {
         onLoad();

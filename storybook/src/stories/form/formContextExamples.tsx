@@ -1,17 +1,6 @@
 import React from 'react'
-import { getTheme, mergeStyleSets } from '@fluentui/react'
-import { XrmMode } from '../../form/xrm-form/XrmMode'
+import { XrmFormContextSamplePreview } from './XrmFormContextSamplePreview'
 import { xrmBusinessFlowScenarios } from '../../form/xrm-form/xrmBusinessFlows'
-
-const theme = getTheme()
-
-const styles = mergeStyleSets({
-    previewFrame: {
-        minHeight: 520,
-        width: '100%',
-        overflow: 'hidden',
-    },
-})
 
 export interface IFormContextDocsExample {
     title: string
@@ -63,16 +52,5 @@ interface IFormContextSamplePreviewProps {
 export const FormContextSamplePreview = (props: IFormContextSamplePreviewProps) => {
     const { sample } = props
 
-    return (
-        <div className={styles.previewFrame}>
-            <XrmMode
-                initialView="form-context"
-                hideWorkspaceViewPivot
-                useStorybookViewport
-                hideFormContextScenarioPanel
-                hideFormContextConsole
-                formContextDocsExample={sample.docsExample}
-            />
-        </div>
-    )
+    return <XrmFormContextSamplePreview docsExample={sample.docsExample} />
 }

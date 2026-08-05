@@ -103,6 +103,7 @@ export const XrmFormXmlBuilderStory = () => {
                         parsedFormXml={parsedFormXml.value}
                         builderError={parsedFormXml.error}
                         onFormXmlTextChange={setFormXmlText}
+                        strategy={builderStrategy}
                     />
                 )}
 

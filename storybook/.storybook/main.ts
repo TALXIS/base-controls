@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const storybookDir = path.dirname(fileURLToPath(import.meta.url));
+const githubPagesBasePath = '/base-controls/';
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)', '../src/**/*.mdx'],
@@ -19,6 +20,7 @@ const config: StorybookConfig = {
     reactDocgen: false,
   },
   async viteFinal(config) {
+    config.base = process.env.STORYBOOK_BASE_PATH ?? githubPagesBasePath;
     config.resolve ??= {};
     config.resolve.alias = [
       ...(Array.isArray(config.resolve.alias) ? config.resolve.alias : []),

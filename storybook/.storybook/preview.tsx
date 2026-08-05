@@ -68,7 +68,9 @@ const preview: Preview = {
           type: 'mobile',
         },
       },
-      defaultViewport: 'responsive',
+    },
+    initialGlobals: {
+      viewport: { value: 'responsive', isRotated: false },
     },
     controls: {
       matchers: {
@@ -77,10 +79,23 @@ const preview: Preview = {
       },
     },
     options: {
+      showPanel: false,
       storySort: {
         order: [
           'Form',
-          ['Get started', ['Overview', 'Form strategy']],
+          [
+            'Get started',
+            ['Overview', 'Form strategy'],
+            'React compose',
+            ['Overview', 'Custom Components', 'Layout'],
+            'Xrm',
+            [
+              'Overview',
+              'FormXml Builder',
+              'Custom Components',
+              ['Form Context', 'Overview', 'Samples'],
+            ],
+          ],
           'Providers',
         ],
       },

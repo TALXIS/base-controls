@@ -126,7 +126,7 @@ If the form does not bind correctly, the first thing to verify is usually the st
 
 Once those three inputs are correct, the same record model can drive either authoring path.
 
-Go to [**Get started**](?path=/docs/form-get-started--docs), [**React compose Playground**](?path=/docs/form-react-compose-playground--docs), or [**Xrm Playground**](?path=/docs/form-xrm-playground--docs).
+Go to [**Get started**](?path=/story/form-get-started--overview), [**React compose Overview**](?path=/story/form-react-compose--overview), or [**Xrm FormXml Builder**](?path=/story/form-xrm--overview).
                 `.trim(),
             },
         },

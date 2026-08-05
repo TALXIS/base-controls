@@ -94,6 +94,10 @@ const meta = {
             story: {
                 inline: true,
             },
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
             description: {
                 component: `
 Form is a record-driven form runtime.
@@ -113,7 +117,7 @@ The same runtime can be authored directly in React or driven from an Xrm/FormXml
 
 Form supports two authoring models over the same runtime. Choose the one that matches where your form definition lives and how you want to work.
 
-Before choosing the layout authoring path, see [**Form strategy**](?path=/docs/form-get-started-form-strategy--docs) for the shared \`IFormStrategy\` contract and the \`columns\` / \`metadata\` / \`data\` shape both paths expect.
+Before choosing the layout authoring path, see [**Form strategy**](?path=/story/form-get-started-form-strategy--overview) for the shared \`IFormStrategy\` contract and the \`columns\` / \`metadata\` / \`data\` shape both paths expect.
 
 ### React compose
 Choose this path when you want to author the layout directly in JSX with \`Form.Root\`, tabs, sections, fields, and optional React-level UI overrides.
@@ -124,7 +128,7 @@ This is the best fit when:
 - you want component-level composition and custom rendering directly in JSX
 - you do not need an Xrm-style \`formContext\` API surface
 
-Go to [**React compose Playground**](?path=/docs/form-react-compose-playground--docs).
+Go to [**React compose Overview**](?path=/story/form-react-compose--overview).
 
 ### Xrm
 Choose this path when the form should be driven by FormXml and expose Xrm form context APIs.
@@ -138,7 +142,7 @@ This is the best fit when:
 - you want to script against \`formContext\` in a model-driven-app style
 - you want to combine Base Controls React events with Xrm-style runtime access
 
-Go to [**Xrm Playground**](?path=/docs/form-xrm-playground--docs), [**Xrm Form Context Overview**](?path=/docs/form-xrm-form-context-overview--docs), or [**Xrm Form Context Samples**](?path=/docs/form-xrm-form-context-samples--docs).
+Go to [**Xrm FormXml Builder**](?path=/story/form-xrm--overview), [**Xrm Form Context Overview**](?path=/story/form-xrm-form-context-overview--overview), or [**Xrm Form Context Samples**](?path=/story/form-xrm-form-context-samples--qualification-review).
                 `.trim(),
             },
         },

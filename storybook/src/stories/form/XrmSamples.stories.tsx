@@ -8,7 +8,6 @@ const samplesById = Object.fromEntries(formContextSampleDefinitions.map((sample)
 const meta = {
     title: 'Form/Xrm/Form Context/Samples',
     tags: ['autodocs'],
-    name: 'Overview',
     parameters: {
         controls: { disable: true },
         docs: {
@@ -21,16 +20,16 @@ const meta = {
             },
             description: {
                 component: `
-These samples show common business flows implemented against the Xrm \`formContext\` runtime.
+Ready-made business flows built on the Xrm \`formContext\` runtime, each runnable and editable in place.
 
-Each sample below keeps its own isolated form instance, so **Run code** and **Clear** work against that example only while preserving the same live preview and Monaco workflow as the overview page.
+## What's here
 
-- qualification review
-- digital routing
-- financial approval
-- scheduling handoff
+- **Qualification review** — focuses the Overview tab, requires Text and Phone, validates the phone prefix.
+- **Digital engagement route** — hides Phone, promotes the URL field, requires \`https://\`.
+- **Financial approval checkpoint** — focuses the Metrics tab, requires Budget, locks review-only fields.
+- **Scheduling handoff** — focuses the Scheduling tab, hides secondary details, requires final scheduling fields.
 
-If you want to start from a blank editable snippet instead, go to [**Overview**](?path=/docs/form-xrm-form-context-overview--docs).
+Each sample keeps its own isolated form instance, so **Run code** and **Clear** act on that example only. Start from a blank snippet instead on [**Overview**](?path=/story/form-xrm-form-context-overview--overview).
                 `.trim(),
             },
         },
@@ -61,7 +60,7 @@ Mimics a lead qualification step where identity and contact data become required
             },
         },
     },
-    render: () => renderStory(<FormContextSamplePreview sample={samplesById['qualification-review']} />, 18),
+    render: () => renderStory(<FormContextSamplePreview sample={samplesById['qualification-review']} />),
 }
 
 export const DigitalEngagement: Story = {
@@ -84,7 +83,7 @@ Shows a digital-only path where phone is hidden, web contact becomes primary, an
             },
         },
     },
-    render: () => renderStory(<FormContextSamplePreview sample={samplesById['digital-engagement']} />, 18),
+    render: () => renderStory(<FormContextSamplePreview sample={samplesById['digital-engagement']} />),
 }
 
 export const FinancialApproval: Story = {
@@ -107,7 +106,7 @@ Simulates a review stage where metrics become partially read-only and duration i
             },
         },
     },
-    render: () => renderStory(<FormContextSamplePreview sample={samplesById['financial-approval']} />, 18),
+    render: () => renderStory(<FormContextSamplePreview sample={samplesById['financial-approval']} />),
 }
 
 export const SchedulingHandoff: Story = {
@@ -130,5 +129,5 @@ Demonstrates a late-stage handoff where scheduling fields are promoted and secon
             },
         },
     },
-    render: () => renderStory(<FormContextSamplePreview sample={samplesById['scheduling-handoff']} />, 18),
+    render: () => renderStory(<FormContextSamplePreview sample={samplesById['scheduling-handoff']} />),
 }

@@ -1,10 +1,12 @@
 import Editor from "@monaco-editor/react"
 import { Stack, Text, mergeStyleSets } from "@fluentui/react"
 import { useMemo } from "react"
+import { baseEditorOptions } from "../shared/monacoEditor"
 
 interface IFormXmlEditorProps {
     value: string
     onChange: (value: string) => void
+    hideLabel?: boolean
 }
 
 const styles = mergeStyleSets({
@@ -27,13 +29,15 @@ const styles = mergeStyleSets({
 })
 
 export const FormXmlEditor = (props: IFormXmlEditorProps) => {
-    const { onChange, value } = props
+    const { hideLabel, onChange, value } = props
     const formattedValue = useMemo(() => formatXml(value), [value])
 
     return <Stack className={styles.root}>
-        <Text variant="medium" className={styles.label}>
-            FormXml
-        </Text>
+        {!hideLabel && (
+            <Text variant="medium" className={styles.label}>
+                FormXml
+            </Text>
+        )}
         <div className={styles.frame}>
             <Editor
                 height="520px"
@@ -42,24 +46,10 @@ export const FormXmlEditor = (props: IFormXmlEditorProps) => {
                 value={formattedValue}
                 onChange={(nextValue) => onChange(formatXml(nextValue ?? ""))}
                 options={{
-                    automaticLayout: true,
-                    bracketPairColorization: { enabled: true },
-                    fontLigatures: true,
-                    fontSize: 13,
+                    ...baseEditorOptions,
                     formatOnPaste: true,
                     formatOnType: true,
-                    lineNumbersMinChars: 3,
-                    minimap: { enabled: false },
                     padding: { top: 12, bottom: 12 },
-                    scrollbar: {
-                        alwaysConsumeMouseWheel: true,
-                        horizontal: "auto",
-                        vertical: "auto",
-                    },
-                    scrollBeyondLastLine: false,
-                    smoothScrolling: true,
-                    tabSize: 2,
-                    wordWrap: "on",
                 }}
                 theme="vs-light"
             />
