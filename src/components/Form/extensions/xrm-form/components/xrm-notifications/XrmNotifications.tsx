@@ -1,6 +1,7 @@
 import { Form } from "@components/Form/components/Form";
 import { INotification } from "@components/Form/extensions/xrm-form/internal/form-xml-form";
 import { useNotifications } from "./useNotifications";
+import { useXrmFormComponents } from "../xrm-form/context";
 
 const getNotifications = (notifications: INotification[]) => {
     return notifications.map(notification => ({
@@ -10,7 +11,8 @@ const getNotifications = (notifications: INotification[]) => {
 }
 
 export const XrmNotifications = () => {
-    const notifications = getNotifications(useNotifications());
+    const messages = getNotifications(useNotifications());
+    const components = useXrmFormComponents();
 
-    return <Form.Notifications messages={notifications} />
+    return <Form.Notifications messages={messages} components={components.notifications} />
 }
