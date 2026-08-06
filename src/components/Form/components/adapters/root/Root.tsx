@@ -11,6 +11,7 @@ import { FormApi } from "@components/Form/internal/FormApi";
 import { IFormAfterSaveParams, IFormProps, IValidation } from "@components/Form/interfaces";
 import { FORM_LABELS } from "@components/Form/labels";
 import { LocalizationService } from "@utils";
+import { applyFieldConfigs } from "./fieldConfigs";
 
 initializeIcons();
 
@@ -29,12 +30,6 @@ export const Root = (props: IFormProps) => {
     const onRefreshRequested = async () => {
         await onLoad();
     };
-
-    React.useEffect(() => {
-        return () => {
-
-        }
-    }, []);
 
     React.useEffect(() => {
         onLoad();
@@ -81,6 +76,7 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     useEventEmitter<IFormEvents>(form.events, 'onValidationSummaryChanged', (validationSummary: IValidation[]) => props.onValidationSummaryChanged?.(validationSummary));
 
     React.useEffect(() => {
+        applyFieldConfigs(form, children);
         onFormReady?.(formApi);
         return () => {
             form.destroy();

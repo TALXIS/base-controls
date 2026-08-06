@@ -1,6 +1,8 @@
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { FieldContext } from "./context";
 import { IFieldValidationResult } from "@talxis/client-libraries";
+import React from "react";
+import { useForm } from "../root/context";
 
 export interface IFieldProps {
     name?: string;
@@ -10,7 +12,22 @@ export interface IFieldProps {
 }
 
 export const Field = (props: IFieldProps) => {
-    const { name, children } = props;
+    const form = useForm();
+    const { name, requiredLevel, validation, children } = props;
+
+    React.useEffect(() => {
+        if (!name) {
+            return;
+        }
+
+        if (requiredLevel != null) {
+            form.setFieldRequiredLevel(name, requiredLevel);
+        }
+
+        if (validation != null) {
+            form.setFieldValid(name, validation);
+        }
+    }, [name, requiredLevel, validation]);
 
     return <FieldContext.Provider value={name ?? null}>
         {children}
