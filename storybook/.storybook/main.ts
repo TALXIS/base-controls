@@ -9,7 +9,7 @@ const isLocalDevelopment = process.env.NODE_ENV !== 'production';
 const stories: NonNullable<StorybookConfig['stories']> = ['../src/**/*.stories.@(ts|tsx)', '../src/**/*.mdx'];
 
 if (!isLocalDevelopment) {
-  stories.splice(0, stories.length, '../src/**/!(*Scratch).stories.@(ts|tsx)', '../src/**/*.mdx');
+  stories.splice(0, stories.length, '../src/**/!(*Scratch|*Dev*).stories.@(ts|tsx)', '../src/**/*.mdx');
 }
 
 const config: StorybookConfig = {
