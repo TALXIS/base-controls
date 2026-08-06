@@ -29,6 +29,10 @@ export class XrmAttribute implements IXrmAttributeContext {
         return this._getField().getValue();
     }
 
+    public isValid(): boolean {
+        return !this._getField().isValid().error
+    }
+
     public setValue(value: any): void {
         // Real Xrm.Page doesn't fire onChange handlers for a scripted setValue() call unless
         // the script explicitly calls fireOnChange() afterwards.

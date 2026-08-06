@@ -112,7 +112,7 @@ export class FormModel implements IForm {
     }
 
     public isValid(): boolean {
-        return this._dataProvider.isValid();
+        return this._record.isValid();
     }
 
     public getData(): { [key: string]: any } {

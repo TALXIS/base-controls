@@ -72,6 +72,8 @@ export interface IXrmAttributeContext {
     setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void;
     /** Indicates whether the attribute is dirty. */
     getIsDirty(): boolean;
+    /** Returns whether the attribute currently passes validation. */
+    isValid: () => boolean;
     /** Returns the submit mode. */
     getSubmitMode(): Xrm.SubmitMode;
     /** Fires the change handlers for the attribute. */
