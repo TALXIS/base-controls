@@ -655,6 +655,277 @@ const FormExample = () => {
   );
 };`,
     },
+    {
+        id: 'custom-ribbon',
+        title: 'Replace the ribbon renderer',
+        summary: 'Use `Form.Ribbon components.onRenderCommandBar` to render a fully native Material UI toolbar, wiring Save directly through `useForm()`.',
+        notes: [
+            'Use this when the host application renders the rest of its UI in Material UI and wants a real MUI Button, not the runtime-supplied Fluent Save button.',
+            '`useForm()` gives direct access to `save()` from inside the custom renderer; the runtime-supplied "save" item is ignored entirely.',
+            'The "unsaved-changes" far item is still read from the runtime to drive the dirty-state chip, since that stays reactive for free.',
+        ],
+        previewCode: `${sharedStrategyCode}
+function MaterialRibbon(props) {
+  const { farItems = [] } = props;
+  const form = useForm();
+  const unsavedItem = farItems.find((item) => item.key === "unsaved-changes");
+
+  return (
+    <AppBar position="static" color="default" elevation={0} sx={{ borderRadius: 2, mb: 2 }}>
+      <Toolbar variant="dense" sx={{ justifyContent: "space-between", gap: 1 }}>
+        <MuiButton variant="contained" size="small" onClick={() => form.save()}>
+          Save
+        </MuiButton>
+        {unsavedItem && <Chip label={unsavedItem.text} color="warning" size="small" variant="outlined" />}
+      </Toolbar>
+    </AppBar>
+  );
+}
+
+const FormExample = () => {
+  const [activeTab, setActiveTab] = React.useState("general");
+
+  return (
+    <Form.Root strategy={strategy}>
+      <Form.Notifications />
+      <Form.Ribbon
+        components={{
+          onRenderCommandBar: (commandBarProps) => <MaterialRibbon {...commandBarProps} />,
+        }}
+      />
+      <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
+        <Form.Tab id="general" label="General">
+          <Form.Column>
+            <Form.Section label="Identity" layout={{ lg: 2 }}>
+              <Form.Field name="text"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+              <Form.Field name="phone"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+              <Form.Field name="url"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+            </Form.Section>
+          </Form.Column>
+        </Form.Tab>
+      </Form.Tabs>
+    </Form.Root>
+  );
+};`,
+        code: `${sharedStrategyCode}
+function MaterialRibbon(props) {
+  const { farItems = [] } = props;
+  const form = useForm();
+  const unsavedItem = farItems.find((item) => item.key === "unsaved-changes");
+
+  return (
+    <AppBar position="static" color="default" elevation={0} sx={{ borderRadius: 2, mb: 2 }}>
+      <Toolbar variant="dense" sx={{ justifyContent: "space-between", gap: 1 }}>
+        <MuiButton variant="contained" size="small" onClick={() => form.save()}>
+          Save
+        </MuiButton>
+        {unsavedItem && <Chip label={unsavedItem.text} color="warning" size="small" variant="outlined" />}
+      </Toolbar>
+    </AppBar>
+  );
+}
+
+const FormExample = () => {
+  const [activeTab, setActiveTab] = React.useState("general");
+
+  return (
+    <Form.Root strategy={strategy}>
+      <Form.Notifications />
+      <Form.Ribbon
+        components={{
+          onRenderCommandBar: (commandBarProps) => <MaterialRibbon {...commandBarProps} />,
+        }}
+      />
+      <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
+        <Form.Tab id="general" label="General">
+          <Form.Column>
+            <Form.Section label="Identity" layout={{ lg: 2 }}>
+              <Form.Field name="text"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+              <Form.Field name="phone"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+              <Form.Field name="url"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+            </Form.Section>
+          </Form.Column>
+        </Form.Tab>
+      </Form.Tabs>
+    </Form.Root>
+  );
+};`,
+    },
+    {
+        id: 'custom-notifications',
+        title: 'Replace the notifications renderer',
+        summary: 'Use `Form.Notifications components.onRenderNotifications` to render dismissable, self-clearing Material UI Snackbars instead of the stock notifications list.',
+        notes: [
+            'In React compose, notifications are just a controlled `messages` prop; there is no separate runtime API to call into.',
+            'Each toast auto-hides after 6 seconds and can also be dismissed early via its close button.',
+        ],
+        previewCode: `${sharedStrategyCode}
+function MaterialNotifications(props) {
+  const { messages = [] } = props;
+  const [dismissed, setDismissed] = React.useState({});
+
+  const severityByLevel = {
+    ERROR: "error",
+    WARNING: "warning",
+    INFO: "info",
+  };
+
+  const dismiss = (key) => {
+    setDismissed((prev) => ({ ...prev, [key]: true }));
+  };
+
+  return (
+    <>
+      {messages.map((message, index) => {
+        const key = \`\${index}-\${message.text}\`;
+
+        if (dismissed[key]) {
+          return null;
+        }
+
+        return (
+          <Snackbar
+            key={key}
+            open
+            autoHideDuration={6000}
+            onClose={(_event, reason) => reason !== "clickaway" && dismiss(key)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            sx={{ bottom: \`\${16 + index * 64}px !important\` }}
+          >
+            <Alert
+              severity={severityByLevel[message.level] ?? "info"}
+              variant="filled"
+              onClose={() => dismiss(key)}
+              sx={{ width: "100%" }}
+            >
+              {message.text}
+            </Alert>
+          </Snackbar>
+        );
+      })}
+    </>
+  );
+}
+
+const FormExample = () => {
+  const [activeTab, setActiveTab] = React.useState("general");
+  const [messages, setMessages] = React.useState([]);
+
+  const addNotification = (level) => {
+    setMessages((prev) => [...prev, { text: \`Custom \${level.toLowerCase()} notification\`, level }]);
+  };
+
+  return (
+    <Form.Root strategy={strategy}>
+      <Stack horizontal tokens={{ childrenGap: 8 }} styles={{ root: { marginBottom: 12 } }}>
+        <MuiButton variant="contained" onClick={() => addNotification("INFO")}>Add info</MuiButton>
+        <MuiButton variant="outlined" color="warning" onClick={() => addNotification("WARNING")}>Add warning</MuiButton>
+        <MuiButton variant="outlined" color="error" onClick={() => addNotification("ERROR")}>Add error</MuiButton>
+      </Stack>
+      <Form.Notifications
+        messages={messages}
+        components={{
+          onRenderNotifications: (notificationsProps) => <MaterialNotifications {...notificationsProps} />,
+        }}
+      />
+      <Form.Ribbon />
+      <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
+        <Form.Tab id="general" label="General">
+          <Form.Column>
+            <Form.Section label="Identity" layout={{ lg: 2 }}>
+              <Form.Field name="text"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+              <Form.Field name="phone"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+            </Form.Section>
+          </Form.Column>
+        </Form.Tab>
+      </Form.Tabs>
+    </Form.Root>
+  );
+};`,
+        code: `${sharedStrategyCode}
+function MaterialNotifications(props) {
+  const { messages = [] } = props;
+  const [dismissed, setDismissed] = React.useState({});
+
+  const severityByLevel = {
+    ERROR: "error",
+    WARNING: "warning",
+    INFO: "info",
+  };
+
+  const dismiss = (key) => {
+    setDismissed((prev) => ({ ...prev, [key]: true }));
+  };
+
+  return (
+    <>
+      {messages.map((message, index) => {
+        const key = \`\${index}-\${message.text}\`;
+
+        if (dismissed[key]) {
+          return null;
+        }
+
+        return (
+          <Snackbar
+            key={key}
+            open
+            autoHideDuration={6000}
+            onClose={(_event, reason) => reason !== "clickaway" && dismiss(key)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            sx={{ bottom: \`\${16 + index * 64}px !important\` }}
+          >
+            <Alert
+              severity={severityByLevel[message.level] ?? "info"}
+              variant="filled"
+              onClose={() => dismiss(key)}
+              sx={{ width: "100%" }}
+            >
+              {message.text}
+            </Alert>
+          </Snackbar>
+        );
+      })}
+    </>
+  );
+}
+
+const FormExample = () => {
+  const [activeTab, setActiveTab] = React.useState("general");
+  const [messages, setMessages] = React.useState([]);
+
+  const addNotification = (level) => {
+    setMessages((prev) => [...prev, { text: \`Custom \${level.toLowerCase()} notification\`, level }]);
+  };
+
+  return (
+    <Form.Root strategy={strategy}>
+      <Stack horizontal tokens={{ childrenGap: 8 }} styles={{ root: { marginBottom: 12 } }}>
+        <MuiButton variant="contained" onClick={() => addNotification("INFO")}>Add info</MuiButton>
+        <MuiButton variant="outlined" color="warning" onClick={() => addNotification("WARNING")}>Add warning</MuiButton>
+        <MuiButton variant="outlined" color="error" onClick={() => addNotification("ERROR")}>Add error</MuiButton>
+      </Stack>
+      <Form.Notifications
+        messages={messages}
+        components={{
+          onRenderNotifications: (notificationsProps) => <MaterialNotifications {...notificationsProps} />,
+        }}
+      />
+      <Form.Ribbon />
+      <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
+        <Form.Tab id="general" label="General">
+          <Form.Column>
+            <Form.Section label="Identity" layout={{ lg: 2 }}>
+              <Form.Field name="text"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+              <Form.Field name="phone"><Form.Cell><Form.Control /></Form.Cell></Form.Field>
+            </Form.Section>
+          </Form.Column>
+        </Form.Tab>
+      </Form.Tabs>
+    </Form.Root>
+  );
+};`,
+    },
 ]
 
 const renderCustomComponentsExample = (example: ICustomComponentsExample) => {
@@ -712,12 +983,16 @@ Replace parts of the React compose rendering with your own components while the 
 
 Custom components don't opt you out of the runtime — they let you own presentation for one area while everything else (binding, validation, notifications, dirty tracking, save) stays managed.
 
+> Some stories below use Material UI purely to demonstrate that presentation is fully swappable, not because it's the recommended choice. To keep a form visually coherent, prefer sticking to Fluent UI where possible — that's what the rest of the runtime renders with.
+
 ## What you can replace
 
 - **Presentation shells** — swap the tabs renderer for a stepper, wizard, sidebar, or other domain-specific navigation.
 - **Field widgets** — compose custom read/write UI with \`Form.Field\`, \`Form.Cell\`, and \`useField\` that still participates in validation and save flow.
 - **Embedded content** — mix runtime-managed controls with summaries, helper panels, maps, and other custom cells.
 - **Section framing** — render fields through a custom section wrapper when one area needs presentation the stock section chrome doesn't provide.
+- **Ribbon** — replace the command bar with a native toolbar while \`useForm()\` still drives save and dirty state.
+- **Notifications** — replace the notifications list with a custom renderer over the same controlled \`messages\` prop.
                 `.trim(),
             },
         },
@@ -828,4 +1103,54 @@ Renders fields through a fully custom section wrapper when one area needs distin
         },
     },
     render: () => renderStory(renderCustomComponentsExample(samplesById['custom-sections-and-labels'])),
+}
+
+export const ReplaceRibbonRenderer: Story = {
+    name: 'Replace the ribbon renderer',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            source: {
+                code: samplesById['custom-ribbon'].previewCode ?? samplesById['custom-ribbon'].code,
+            },
+            description: {
+                story: `
+Renders a native Material UI toolbar through \`Form.Ribbon components.onRenderCommandBar\`, wiring Save directly through \`useForm()\`.
+
+- swaps the ribbon presentation layer for real MUI components (AppBar, Toolbar, Button, Chip)
+- ignores the runtime's \`commandBarButtonAs\` renderer entirely; Save is a plain MUI \`Button\` calling \`useForm().save()\`
+- still reads the "unsaved-changes" far item to drive a dirty-state \`Chip\`
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-ribbon'])),
+}
+
+export const ReplaceNotificationsRenderer: Story = {
+    name: 'Replace the notifications renderer',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            source: {
+                code: samplesById['custom-notifications'].previewCode ?? samplesById['custom-notifications'].code,
+            },
+            description: {
+                story: `
+Renders dismissable, self-clearing Material UI \`Snackbar\`/\`Alert\` toasts through \`Form.Notifications components.onRenderNotifications\`.
+
+- swaps the notifications presentation layer for real MUI components (\`Snackbar\`, \`Alert\`)
+- notifications are a plain controlled \`messages\` prop; there is no separate runtime API to call
+- each toast auto-hides after 6 seconds or can be dismissed early via its close button
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderCustomComponentsExample(samplesById['custom-notifications'])),
 }

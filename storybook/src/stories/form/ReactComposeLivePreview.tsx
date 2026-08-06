@@ -1,9 +1,10 @@
 import * as Babel from "@babel/standalone"
 import React from "react"
 import { ComboBox, Icon, IconButton, Slider, Stack, Text, TextField } from "@fluentui/react"
-import { Form, MemoryStrategy, useField } from "@talxis/base-controls/components/Form"
+import { Form, MemoryStrategy, useField, useForm } from "@talxis/base-controls/components/Form"
 import { OpenMap } from "../../form/react-form/OpenMap"
 import { Step, StepButton, StepContent, Stepper } from "@mui/material"
+import { Alert, AppBar, Button as MuiButton, Chip, Snackbar, Stack as MuiStack, Toolbar } from "@mui/material"
 import { getDemoRecord, getFormColumns } from "../../form/shared/formModel"
 
 interface IReactComposeLivePreviewProps {
@@ -31,6 +32,13 @@ export const ReactComposeLivePreview = (props: IReactComposeLivePreviewProps) =>
             MuiStep: Step,
             MuiStepButton: StepButton,
             MuiStepContent: StepContent,
+            Alert,
+            AppBar,
+            MuiButton,
+            Chip,
+            MuiStack,
+            Toolbar,
+            Snackbar,
         }),
         [],
     )
@@ -49,6 +57,7 @@ export const ReactComposeLivePreview = (props: IReactComposeLivePreviewProps) =>
                 "React",
                 "Form",
                 "useField",
+                "useForm",
                 "Stack",
                 "FluentText",
                 "TextField",
@@ -61,6 +70,13 @@ export const ReactComposeLivePreview = (props: IReactComposeLivePreviewProps) =>
                 "MuiStep",
                 "MuiStepButton",
                 "MuiStepContent",
+                "Alert",
+                "AppBar",
+                "MuiButton",
+                "Chip",
+                "MuiStack",
+                "Toolbar",
+                "Snackbar",
                 "MemoryStrategy",
                 "recordData",
                 "modelColumns",
@@ -81,6 +97,7 @@ export const ReactComposeLivePreview = (props: IReactComposeLivePreviewProps) =>
                 React,
                 Form,
                 useField,
+                useForm,
                 fluent.Stack,
                 fluent.FluentText,
                 fluent.TextField,
@@ -93,6 +110,13 @@ export const ReactComposeLivePreview = (props: IReactComposeLivePreviewProps) =>
                 fluent.MuiStep,
                 fluent.MuiStepButton,
                 fluent.MuiStepContent,
+                fluent.Alert,
+                fluent.AppBar,
+                fluent.MuiButton,
+                fluent.Chip,
+                fluent.MuiStack,
+                fluent.Toolbar,
+                fluent.Snackbar,
                 MemoryStrategy,
                 recordData,
                 modelColumns,

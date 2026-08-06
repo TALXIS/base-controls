@@ -247,6 +247,147 @@ const XrmCustomComponentsExample = () => {
   );
 };`,
     },
+    {
+        id: 'ribbon',
+        title: 'Replace the ribbon renderer',
+        summary: 'Swap the default command bar shell with a fully native Material UI toolbar, wiring Save directly to formContext.data.save().',
+        notes: [
+            'Use this when the host application renders the rest of its UI in Material UI and wants a real MUI Button, not the runtime-supplied Fluent Save button.',
+            'The runtime-supplied "save" item (and its commandBarButtonAs renderer) is ignored entirely; only the "unsaved-changes" far item is read, to drive the dirty-state chip.',
+        ],
+        code: `const strategy = new XrmMemoryStrategy({
+  onGetData: () => getCustomComponentsRecord(),
+  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
+  onGetMetadata: () => formMetadata,
+  onGetFormXml: () => getCustomComponentsFormXml(),
+});
+
+function MaterialRibbon(props) {
+  const { farItems = [], onSave } = props;
+  const unsavedItem = farItems.find((item) => item.key === "unsaved-changes");
+
+  return (
+    <AppBar position="static" color="default" elevation={0} sx={{ borderRadius: 2, mb: 2 }}>
+      <Toolbar variant="dense" sx={{ justifyContent: "space-between", gap: 1 }}>
+        <MuiButton variant="contained" size="small" onClick={onSave}>
+          Save
+        </MuiButton>
+        {unsavedItem && <Chip label={unsavedItem.text} color="warning" size="small" variant="outlined" />}
+      </Toolbar>
+    </AppBar>
+  );
+}
+
+const XrmCustomComponentsExample = () => {
+  const [formContext, setFormContext] = React.useState(null);
+
+  return (
+    <XrmForm
+      strategy={strategy}
+      onFormReady={({ formContext: nextFormContext }) => setFormContext(nextFormContext)}
+      components={{
+        ribbon: {
+          onRenderCommandBar: (commandBarProps) => (
+            <MaterialRibbon {...commandBarProps} onSave={() => formContext?.data.save()} />
+          ),
+        },
+      }}
+    />
+  );
+};`,
+    },
+    {
+        id: 'notifications',
+        title: 'Replace the notifications renderer',
+        summary: 'Swap the default notifications list with dismissable, self-clearing Material UI Snackbars while notifications are still raised through the standard formContext.ui API.',
+        notes: [
+            'Use this when the host application renders the rest of its UI in Material UI and wants form notifications to match, stacked as toasts instead of an inline list.',
+            'Each toast auto-hides after 6 seconds and can also be dismissed early via its close button; dismissal is local to this renderer, not a call back into the runtime.',
+            'The buttons in this example call formContext.ui.setFormNotification to raise notifications, exactly like a form script would.',
+        ],
+        code: `const strategy = new XrmMemoryStrategy({
+  onGetData: () => getCustomComponentsRecord(),
+  onGetColumns: () => xrmCustomComponentsModelStore.getRuntimeColumns(),
+  onGetMetadata: () => formMetadata,
+  onGetFormXml: () => getCustomComponentsFormXml(),
+});
+
+function MaterialNotifications(props) {
+  const { messages = [] } = props;
+  const [dismissed, setDismissed] = React.useState({});
+
+  const severityByLevel = {
+    ERROR: "error",
+    WARNING: "warning",
+    INFO: "info",
+  };
+
+  const dismiss = (key) => {
+    setDismissed((prev) => ({ ...prev, [key]: true }));
+  };
+
+  return (
+    <>
+      {messages.map((message, index) => {
+        const key = \`\${index}-\${message.text}\`;
+
+        if (dismissed[key]) {
+          return null;
+        }
+
+        return (
+          <Snackbar
+            key={key}
+            open
+            autoHideDuration={6000}
+            onClose={(_event, reason) => reason !== "clickaway" && dismiss(key)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            sx={{ bottom: \`\${16 + index * 64}px !important\` }}
+          >
+            <Alert
+              severity={severityByLevel[message.level] ?? "info"}
+              variant="filled"
+              onClose={() => dismiss(key)}
+              sx={{ width: "100%" }}
+            >
+              {message.text}
+            </Alert>
+          </Snackbar>
+        );
+      })}
+    </>
+  );
+}
+
+const XrmCustomComponentsExample = () => {
+  const [formContext, setFormContext] = React.useState(null);
+
+  const addNotification = (level) => {
+    const uniqueId = \`custom-\${level}-\${Date.now()}\`;
+    formContext?.ui.setFormNotification(\`Custom \${level.toLowerCase()} notification\`, level, uniqueId);
+  };
+
+  return (
+    <MuiStack spacing={2}>
+      <MuiStack direction="row" spacing={1}>
+        <MuiButton variant="contained" onClick={() => addNotification("INFO")}>Add info</MuiButton>
+        <MuiButton variant="outlined" color="warning" onClick={() => addNotification("WARNING")}>Add warning</MuiButton>
+        <MuiButton variant="outlined" color="error" onClick={() => addNotification("ERROR")}>Add error</MuiButton>
+      </MuiStack>
+
+      <XrmForm
+        strategy={strategy}
+        onFormReady={({ formContext: nextFormContext }) => setFormContext(nextFormContext)}
+        components={{
+          notifications: {
+            onRenderNotifications: (notificationsProps) => <MaterialNotifications {...notificationsProps} />,
+          },
+        }}
+      />
+    </MuiStack>
+  );
+};`,
+    },
 ]
 
 const renderCustomComponentsExample = (example: IXrmCustomComponentsExample) => {
@@ -290,10 +431,14 @@ Replace parts of the Xrm rendering with your own components while the layout sta
 
 These stories keep the same FormXml-driven structure and \`formContext\` surface; only the rendering of selected pieces changes.
 
+> Some stories below use Material UI purely to demonstrate that presentation is fully swappable, not because it's the recommended choice. To keep a form visually coherent, prefer sticking to Fluent UI where possible — that's what the rest of the runtime renders with.
+
 ## What you can replace
 
 - **Control presentation** — swap the rendered UI for selected Xrm controls without touching the rest of the form.
 - **Tabs shell** — replace the tabs renderer with a custom stepper, wizard, or other navigation shell while tab state and content stay runtime-driven.
+- **Ribbon** — replace the command bar shell with a custom toolbar while the Save button and dirty-state behavior stay runtime-driven.
+- **Notifications** — replace the notifications list with a custom renderer while notifications are still raised through \`formContext.ui.setFormNotification\`.
 
 Each story runs its own isolated form instance and opens directly in the live preview for that scenario.
                 `.trim(),
@@ -350,4 +495,48 @@ Replaces the default tabs shell with a custom stepper-based renderer while prese
         },
     },
     render: () => renderStory(renderCustomComponentsExample(samplesById.tabs)),
+}
+
+export const ReplaceRibbonRenderer: Story = {
+    name: 'Replace the ribbon renderer',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Replaces the default command bar shell with a native Material UI toolbar, wiring Save directly to \`formContext.data.save()\` instead of the runtime-supplied Fluent button.
+
+- swaps the ribbon presentation layer for real MUI components (AppBar, Toolbar, Button, Chip)
+- ignores the runtime's \`commandBarButtonAs\` renderer entirely; Save is a plain MUI \`Button\`
+- still reads the "unsaved-changes" far item to drive a dirty-state \`Chip\`
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderCustomComponentsExample(samplesById.ribbon)),
+}
+
+export const ReplaceNotificationsRenderer: Story = {
+    name: 'Replace the notifications renderer',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Replaces the default notifications list with dismissable, self-clearing Material UI \`Snackbar\`/\`Alert\` toasts, driven by \`formContext.ui.setFormNotification\`.
+
+- swaps the notifications presentation layer for real MUI components (\`Snackbar\`, \`Alert\`)
+- each toast auto-hides after 6 seconds or can be dismissed early via its close button
+- includes buttons to add info/warning/error notifications so you can see the custom renderer react live
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(renderCustomComponentsExample(samplesById.notifications)),
 }
