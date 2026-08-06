@@ -125,7 +125,7 @@ export class FormXmlForm implements IFormXmlModel {
 
     private _createAttributes(): void {
         this.getForm().getFields().map(field => {
-            this._attributes.set(field.getColumn().name, new FormXmlAttribute(field));
+            this._attributes.set(field.getColumn().name, new FormXmlAttribute(field, this));
         });
     }
 }

@@ -41,10 +41,6 @@ export class XrmAttribute implements IXrmAttributeContext {
             error: !isValid,
             errorMessage: message ?? ''
         };
-        // Write through to the live form immediately - the FormXmlAttribute cache alone only
-        // reaches the record via a mounted Form.Field's render effect, which doesn't happen
-        // for attributes whose cell is currently hidden.
-        this._formContext.getFormXmlModel().getForm().setFieldValid(this.getName(), validation);
         this._attribute.setValidation(validation);
     }
 
@@ -91,10 +87,6 @@ export class XrmAttribute implements IXrmAttributeContext {
 
     public setRequiredLevel(level: Xrm.Attributes.RequirementLevel): void {
         const requiredLevel = FormModel.getRequiredLevelEnumFromXrm(level);
-        // Write through to the live form immediately - see setIsValid() for why the
-        // FormXmlAttribute cache alone isn't enough.
-        //along with validation - this is a struturual issue where its only propagated via rendered fields => we need to keep these settings on the form itself
-        this._formContext.getFormXmlModel().getForm().setFieldRequiredLevel(this.getName(), requiredLevel);
         this._attribute.setRequiredLevel(requiredLevel);
     }
 
