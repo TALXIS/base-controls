@@ -2,6 +2,8 @@ import type { IFormApi, IFormEventHandlers } from "@components/Form/interfaces";
 import type { IFormLabels } from "@components/Form/labels";
 import type { IFormStrategy } from "@components/Form/strategies";
 import type { IControlComponents } from "@components/Form/components/adapters/control/components";
+import type { IRibbonComponents } from "@components/Form/components/adapters/ribbon/components";
+import type { IFormNotificationsComponents } from "@components/Form/components/adapters/notifications/components";
 import { ITabsComponents } from "@components/Form/components/ui";
 
 /**
@@ -239,5 +241,7 @@ export interface IXrmFormProps extends Partial<IFormEventHandlers> {
 export interface IXrmFormComponents {
     control: Partial<IControlComponents>;
     tabs: Partial<ITabsComponents>;
+    ribbon: Partial<IRibbonComponents>;
+    notifications: Partial<IFormNotificationsComponents>;
 }
 

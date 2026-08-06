@@ -5,6 +5,7 @@ import { ControlComponents } from "@talxis/base-controls/components/Form/compone
 import { ComboBox, Stack, Text } from "@fluentui/react"
 import { FormControl, InputLabel, MenuItem, Select, Slider as MuiSlider, TextField as MuiTextField } from "@mui/material"
 import { Step, StepButton, StepContent, Stepper } from "@mui/material"
+import { Alert, AppBar, Button as MuiButton, Chip, Snackbar, Stack as MuiStack, Toolbar } from "@mui/material"
 import { formMetadata } from "../../form/shared/formModel"
 import { getCustomComponentsFormXml, getCustomComponentsRecord, xrmCustomComponentsModelStore } from "../../form/xrm-form/xrmCustomComponentsModel"
 
@@ -47,6 +48,13 @@ export const XrmCustomComponentsLivePreview = (props: IXrmCustomComponentsLivePr
                 "Step",
                 "StepButton",
                 "StepContent",
+                "Alert",
+                "AppBar",
+                "MuiButton",
+                "Chip",
+                "MuiStack",
+                "Toolbar",
+                "Snackbar",
                 `${transformed}
                  return typeof XrmCustomComponentsExample !== "undefined" ? XrmCustomComponentsExample : null;`,
             )
@@ -74,6 +82,13 @@ export const XrmCustomComponentsLivePreview = (props: IXrmCustomComponentsLivePr
                 Step,
                 StepButton,
                 StepContent,
+                Alert,
+                AppBar,
+                MuiButton,
+                Chip,
+                MuiStack,
+                Toolbar,
+                Snackbar,
             ) as React.ComponentType | null
 
             return { Component, error: null as string | null }
