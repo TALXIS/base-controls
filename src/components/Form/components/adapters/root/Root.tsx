@@ -23,7 +23,7 @@ export const Root = (props: IFormProps) => {
     const onLoad = async () => {
         setFormDeps(null);
         const result = await strategy.onLoad();
-        if(!isMounted()) return;
+        if (!isMounted()) return;
         setFormDeps(result);
     };
 
@@ -76,12 +76,15 @@ export const RootInternal = (props: IFormProps & { deps: IOnLoadResult, onRefres
     useEventEmitter<IFormEvents>(form.events, 'onValidationSummaryChanged', (validationSummary: IValidation[]) => props.onValidationSummaryChanged?.(validationSummary));
 
     React.useEffect(() => {
-        applyFieldConfigs(form, children);
         onFormReady?.(formApi);
         return () => {
             form.destroy();
         };
     }, []);
+
+    React.useEffect(() => {
+        applyFieldConfigs(form, children);
+    }, [children]);
 
     return (
         <FormLocalizationServiceContext.Provider value={localizationService}>
