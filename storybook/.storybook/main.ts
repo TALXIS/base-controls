@@ -4,9 +4,16 @@ import { fileURLToPath } from 'url';
 
 const storybookDir = path.dirname(fileURLToPath(import.meta.url));
 const githubPagesBasePath = '/base-controls/';
+const isLocalDevelopment = process.env.NODE_ENV !== 'production';
+
+const stories: NonNullable<StorybookConfig['stories']> = ['../src/**/*.stories.@(ts|tsx)', '../src/**/*.mdx'];
+
+if (!isLocalDevelopment) {
+  stories.splice(0, stories.length, '../src/**/!(*Scratch|*Dev*).stories.@(ts|tsx)', '../src/**/*.mdx');
+}
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(ts|tsx)', '../src/**/*.mdx'],
+  stories,
   addons: ['@storybook/addon-a11y', '@storybook/addon-docs'],
   framework: {
     name: '@storybook/react-vite',
