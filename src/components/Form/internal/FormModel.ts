@@ -241,7 +241,7 @@ export class FormModel implements IForm {
     }
 
     private _getChangedData(dirtyFields: IField[]): { [key: string]: any } {
-        const rawData = this._record.getRawData();
+        const rawData = this._record.toRawData();
 
         return Object.fromEntries(
             dirtyFields.map(field => [field.getColumn().name, rawData[field.getColumn().name]])

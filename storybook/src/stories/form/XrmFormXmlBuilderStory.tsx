@@ -7,13 +7,14 @@ import { MemoryStrategy } from '@talxis/base-controls/components/Form'
 import { CommandBar, ICommandBarItemProps } from '@legacy'
 import { PcfContextProvider } from '@talxis/base-controls/utils/adapters/pcf-context/PcfContextProvider'
 import { FormXmlBuilderPanel, FormXmlTranslationsPanel } from '../../form/xrm-form/form-xml-builder-panel'
+import { getFieldEntries, getTabs } from '../../form/xrm-form/formXmlHelpers'
 import { formTranslationLanguageOptions } from '../../form/xrm-form/constants'
 import { FormXmlEditor } from '../../form/xrm-form/FormXmlEditor'
 import { defaultFormXml } from '../../form/xrm-form/defaultFormXml'
-import { createModelStore } from '../../form/shared/modelStore'
+import { createModelStore, serializeModelColumns } from '../../form/shared/modelStore'
 import { useModelColumns } from '../../form/shared/useModelColumns'
 import { ModelBuilderPanel, TEditorMode } from '../../form/shared/ModelBuilderPanel'
-import { formMetadata, getDemoRecord } from '../../form/shared/formModel'
+import { builderMetadata, getBuilderRecord } from '../../form/xrm-form/builderData'
 import { PcfContextFactory } from '@talxis/base-controls/utils/adapters/pcf-context/factory/PcfContextFactory'
 
 const builderModelStore = createModelStore()
@@ -28,11 +29,11 @@ class StorybookFormXmlBuilderStrategy extends MemoryStrategy implements IXrmForm
     }
 }
 
-const builderRecord = structuredClone(getDemoRecord())
+const builderRecord = structuredClone(getBuilderRecord())
 const builderStrategy = new StorybookFormXmlBuilderStrategy({
     onGetData: () => builderRecord,
     onGetColumns: () => builderModelStore.getRuntimeColumns(),
-    onGetMetadata: () => formMetadata,
+    onGetMetadata: () => builderMetadata,
 })
 
 const styles = mergeStyleSets({
@@ -90,6 +91,7 @@ export const XrmFormXmlBuilderStory = () => {
     const [undoCount, setUndoCount] = React.useState(0)
     const [undoAction, setUndoAction] = React.useState<(() => void) | null>(null)
     const [copyState, setCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle')
+    const [modelCopyState, setModelCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle')
     const [selectedLanguageCode, setSelectedLanguageCode] = React.useState<number>(1033)
     const [showXmlEditor, setShowXmlEditor] = React.useState(false)
     const [modelEditorMode, setModelEditorMode] = React.useState<TEditorMode>('ui')
@@ -118,6 +120,24 @@ export const XrmFormXmlBuilderStory = () => {
         setPreviewKey((value) => value + 1)
     }, [formXmlText, parsedFormXml.value])
 
+    const fieldNamesInFormXml = React.useMemo(() => {
+        const names = new Set<string>()
+        if (!parsedFormXml.value) {
+            return names
+        }
+
+        getTabs(parsedFormXml.value).forEach((tab) => {
+            getFieldEntries(tab).forEach((entry) => {
+                const name = entry.cell.control?.datafieldname
+                if (name) {
+                    names.add(name)
+                }
+            })
+        })
+
+        return names
+    }, [parsedFormXml.value])
+
     React.useEffect(() => {
         setPreviewKey((value) => value + 1)
     }, [modelColumns])
@@ -131,6 +151,15 @@ export const XrmFormXmlBuilderStory = () => {
         return () => window.clearTimeout(timeoutId)
     }, [copyState])
 
+    React.useEffect(() => {
+        if (modelCopyState === 'idle') {
+            return
+        }
+
+        const timeoutId = window.setTimeout(() => setModelCopyState('idle'), 1500)
+        return () => window.clearTimeout(timeoutId)
+    }, [modelCopyState])
+
     const copyFormXml = React.useCallback(async () => {
         try {
             await navigator.clipboard.writeText(formXmlText)
@@ -139,6 +168,15 @@ export const XrmFormXmlBuilderStory = () => {
             setCopyState('failed')
         }
     }, [formXmlText])
+
+    const copyModelJson = React.useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(serializeModelColumns(modelColumns))
+            setModelCopyState('copied')
+        } catch {
+            setModelCopyState('failed')
+        }
+    }, [modelColumns])
 
     const commandBarItems = React.useMemo<ICommandBarItemProps[]>(() => [
         {
@@ -202,6 +240,40 @@ export const XrmFormXmlBuilderStory = () => {
         [languageOptions, selectedLanguageCode, showXmlEditor]
     )
 
+    const translationsCommandBarFarItems = React.useMemo<ICommandBarItemProps[]>(
+        () => [
+            {
+                key: 'language-selector',
+                onRender: () => (
+                    <div className={styles.commandBarAside}>
+                        <ComboBox
+                            className={styles.languageComboBox}
+                            selectedKey={selectedLanguageCode}
+                            options={languageOptions}
+                            onChange={(_event, option) => {
+                                if (typeof option?.key === 'number') {
+                                    setSelectedLanguageCode(option.key)
+                                }
+                            }}
+                        />
+                    </div>
+                ),
+            },
+        ],
+        [languageOptions, selectedLanguageCode]
+    )
+
+    const modelCommandBarItems = React.useMemo<ICommandBarItemProps[]>(() => [
+        {
+            key: 'copy-model',
+            text: modelCopyState === 'copied' ? 'Copied to clipboard' : 'Copy model',
+            iconProps: { iconName: modelCopyState === 'copied' ? 'SkypeCheck' : 'Copy', styles: modelCopyState === 'copied' ? { root: { color: '#107c10' } } : undefined },
+            onClick: () => {
+                void copyModelJson()
+            },
+        },
+    ], [copyModelJson, modelCopyState])
+
     const modelCommandBarFarItems = React.useMemo<ICommandBarItemProps[]>(
         () => [
             {
@@ -218,7 +290,7 @@ export const XrmFormXmlBuilderStory = () => {
                             }}
                             onChange={(_event, checked) => setModelEditorMode(checked ? 'json' : 'ui')}
                             onText="JSON"
-                            offText="UI"
+                            offText="Builder"
                         />
                     </div>
                 ),
@@ -246,7 +318,8 @@ export const XrmFormXmlBuilderStory = () => {
             </Pivot>
 
             {activeView === 'workspace' && <CommandBar items={commandBarItems} farItems={commandBarFarItems} />}
-            {activeView === 'model' && <CommandBar items={[]} farItems={modelCommandBarFarItems} />}
+            {activeView === 'model' && <CommandBar items={modelCommandBarItems} farItems={modelCommandBarFarItems} />}
+            {activeView === 'translations' && <CommandBar items={[]} farItems={translationsCommandBarFarItems} />}
 
             <div className={styles.content}>
                 <PcfContextProvider key={viewInstanceKey} userSettings={{ lcid: selectedLanguageCode }}>
@@ -262,6 +335,7 @@ export const XrmFormXmlBuilderStory = () => {
                                     onFormXmlTextChange={setFormXmlText}
                                     selectedLanguageCode={selectedLanguageCode}
                                     strategy={builderStrategy}
+                                    columns={modelColumns}
                                     onUndoStackChange={(count, undo) => {
                                         setUndoCount(count)
                                         setUndoAction(() => undo)
@@ -277,6 +351,7 @@ export const XrmFormXmlBuilderStory = () => {
                             onChange={setModelColumns}
                             editorMode={modelEditorMode}
                             onEditorModeChange={setModelEditorMode}
+                            lockedFieldNames={fieldNamesInFormXml}
                         />
                     )}
 

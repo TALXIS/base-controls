@@ -7,7 +7,6 @@ import { serializeFormXml } from "@talxis/client-metadata"
 import type { FormXml, FormXmlCell, FormXmlSection } from "@talxis/client-metadata"
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { TabComponents } from '@talxis/base-controls/components/Form/components/ui';
-import { getFormColumns } from "../../shared/formModel"
 import { DEFAULT_LANGUAGE_CODE, getClassIdForColumn } from "../constants"
 import {
     addColumnToFormXml,
@@ -134,6 +133,7 @@ export const FormXmlBuilderPanel = ({
     onFormXmlTextChange,
     selectedLanguageCode,
     strategy,
+    columns: modelColumns,
     onUndoStackChange,
 }: IFormXmlBuilderPanelProps) => {
     const [undoStack, setUndoStack] = useState<string[]>([])
@@ -174,7 +174,10 @@ export const FormXmlBuilderPanel = ({
         },
     })
 
-    const formColumns = useMemo(() => getFormColumns(), [formXmlText])
+    const formColumns = useMemo(
+        () => modelColumns.filter((column) => !column.isHidden && !!column.displayName),
+        [modelColumns]
+    )
     const tabs = useMemo(() => getTabs(parsedFormXml), [parsedFormXml])
     const expandedTabIndex = Math.max(0, tabs.findIndex((tab) => tab.expanded))
     const activeTabIndex = tabs[selection.tabIndex] ? selection.tabIndex : expandedTabIndex

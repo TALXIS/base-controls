@@ -32,26 +32,41 @@ const getSection = (formContext: IXrmFormContext, tabName: string, sectionName: 
 
 const validatePhonePrefix = (formContext: IXrmFormContext) => {
     const phone = formContext.getAttribute("phone")
-    const phoneValue = String(phone?.getValue() ?? "").trim()
-    const hasPrefix = phoneValue.startsWith("+") || phoneValue.startsWith("00")
+    const validate = () => {
+        const phoneValue = String(phone?.getValue() ?? "").trim()
+        const hasPrefix = phoneValue.startsWith("+") || phoneValue.startsWith("00")
 
-    phone?.setIsValid(hasPrefix, hasPrefix ? "" : "Use an international dialing prefix such as +420 for qualified contacts.")
+        phone?.setIsValid(hasPrefix, hasPrefix ? "" : "Use an international dialing prefix such as +420 for qualified contacts.")
+    }
+
+    validate()
+    phone?.addOnChange(validate)
 }
 
 const validateSecureUrl = (formContext: IXrmFormContext) => {
     const url = formContext.getAttribute("url")
-    const urlValue = String(url?.getValue() ?? "").trim()
-    const isSecure = urlValue.length === 0 || urlValue.startsWith("https://")
+    const validate = () => {
+        const urlValue = String(url?.getValue() ?? "").trim()
+        const isSecure = urlValue.length === 0 || urlValue.startsWith("https://")
 
-    url?.setIsValid(isSecure, isSecure ? "" : "Use an https:// URL before switching the form to a digital-only engagement flow.")
+        url?.setIsValid(isSecure, isSecure ? "" : "Use an https:// URL before switching the form to a digital-only engagement flow.")
+    }
+
+    validate()
+    url?.addOnChange(validate)
 }
 
 const validateDurationThreshold = (formContext: IXrmFormContext) => {
     const duration = formContext.getAttribute("duration")
-    const value = Number(duration?.getValue() ?? 0)
-    const isValid = Number.isFinite(value) && value <= 7200
+    const validate = () => {
+        const value = Number(duration?.getValue() ?? 0)
+        const isValid = Number.isFinite(value) && value <= 7200
 
-    duration?.setIsValid(isValid, isValid ? "" : "Duration must be 7,200 minutes or less before financial review can proceed.")
+        duration?.setIsValid(isValid, isValid ? "" : "Duration must be 7,200 minutes or less before financial review can proceed.")
+    }
+
+    validate()
+    duration?.addOnChange(validate)
 }
 
 export const resetXrmBusinessFlows = (formContext: IXrmFormContext) => {
@@ -103,9 +118,13 @@ export const xrmBusinessFlowScenarios: IXrmBusinessFlowScenario[] = [
             'formContext.getAttribute("phone")?.setRequiredLevel("required")',
             'formContext.ui.setFormNotification("Qualification review is active. Complete the contact details before saving.", "INFO", "qualification-review")',
             'const phone = formContext.getAttribute("phone")',
-            'const phoneValue = String(phone?.getValue() ?? "").trim()',
-            'const hasPrefix = phoneValue.startsWith("+") || phoneValue.startsWith("00")',
-            'phone?.setIsValid(hasPrefix, hasPrefix ? "" : "Use an international dialing prefix such as +420 for qualified contacts.")',
+            'const validatePhone = () => {',
+            '  const phoneValue = String(phone?.getValue() ?? "").trim()',
+            '  const hasPrefix = phoneValue.startsWith("+") || phoneValue.startsWith("00")',
+            '  phone?.setIsValid(hasPrefix, hasPrefix ? "" : "Use an international dialing prefix such as +420 for qualified contacts.")',
+            '}',
+            'validatePhone()',
+            'phone?.addOnChange(validatePhone)',
         ],
         validations: [
             {
@@ -142,9 +161,13 @@ export const xrmBusinessFlowScenarios: IXrmBusinessFlowScenario[] = [
             'formContext.getControl("url")?.setLabel("Primary web endpoint")',
             'formContext.ui.setFormNotification("Digital engagement is active. Collect a secure web contact before continuing.", "INFO", "digital-engagement")',
             'const url = formContext.getAttribute("url")',
-            'const urlValue = String(url?.getValue() ?? "").trim()',
-            'const isSecure = urlValue.length === 0 || urlValue.startsWith("https://")',
-            'url?.setIsValid(isSecure, isSecure ? "" : "Use an https:// URL before switching the form to a digital-only engagement flow.")',
+            'const validateUrl = () => {',
+            '  const urlValue = String(url?.getValue() ?? "").trim()',
+            '  const isSecure = urlValue.length === 0 || urlValue.startsWith("https://")',
+            '  url?.setIsValid(isSecure, isSecure ? "" : "Use an https:// URL before switching the form to a digital-only engagement flow.")',
+            '}',
+            'validateUrl()',
+            'url?.addOnChange(validateUrl)',
         ],
         validations: [
             {
@@ -183,9 +206,13 @@ export const xrmBusinessFlowScenarios: IXrmBusinessFlowScenario[] = [
             'formContext.getControl("currency")?.setLabel("Approved budget")',
             'formContext.ui.setFormNotification("Financial approval is in progress. Review-only metric fields are now locked.", "INFO", "financial-approval")',
             'const duration = formContext.getAttribute("duration")',
-            'const value = Number(duration?.getValue() ?? 0)',
-            'const isValid = Number.isFinite(value) && value <= 7200',
-            'duration?.setIsValid(isValid, isValid ? "" : "Duration must be 7,200 minutes or less before financial review can proceed.")',
+            'const validateDuration = () => {',
+            '  const value = Number(duration?.getValue() ?? 0)',
+            '  const isValid = Number.isFinite(value) && value <= 7200',
+            '  duration?.setIsValid(isValid, isValid ? "" : "Duration must be 7,200 minutes or less before financial review can proceed.")',
+            '}',
+            'validateDuration()',
+            'duration?.addOnChange(validateDuration)',
         ],
         validations: [
             {

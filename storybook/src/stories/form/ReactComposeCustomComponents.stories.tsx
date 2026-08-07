@@ -252,10 +252,27 @@ function RatingButtons() {
           key={value}
           iconProps={{ iconName: value <= currentValue ? "FavoriteStarFill" : "FavoriteStar" }}
           title={\`Rate \${value}\`}
-          onClick={() => field?.setValue(value)}
+          onClick={() => field?.setValue(value === currentValue ? 0 : value)}
         />
       ))}
     </Stack>
+  );
+}
+
+function RatingField() {
+  const field = useField("number");
+  const currentValue = Number(field?.getValue() ?? 0);
+  const validation = {
+    error: currentValue <= 0,
+    errorMessage: "Select a priority rating before saving.",
+  };
+
+  return (
+    <Form.Field name="number" validation={validation}>
+      <Form.Cell label="Priority rating">
+        <Form.Control components={{ onRenderControl: () => <RatingButtons /> }} />
+      </Form.Cell>
+    </Form.Field>
   );
 }
 
@@ -263,7 +280,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("custom");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root strategy={strategy} onFormReady={(api) => api.getField("number").setValue(0)}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -276,11 +293,7 @@ const FormExample = () => {
           </Form.Column>
           <Form.Column>
             <Form.Section label="Custom projection" layout={{ lg: 1 }} cellLabelPosition="Top">
-              <Form.Field name="number">
-                <Form.Cell label="Priority rating">
-                  <RatingButtons />
-                </Form.Cell>
-              </Form.Field>
+              <RatingField />
               <Form.Field name="currency">
                 <Form.Cell label="Budget">
                   <Form.Control />
@@ -305,10 +318,27 @@ function RatingButtons() {
           key={value}
           iconProps={{ iconName: value <= currentValue ? "FavoriteStarFill" : "FavoriteStar" }}
           title={\`Rate \${value}\`}
-          onClick={() => field?.setValue(value)}
+          onClick={() => field?.setValue(value === currentValue ? 0 : value)}
         />
       ))}
     </Stack>
+  );
+}
+
+function RatingField() {
+  const field = useField("number");
+  const currentValue = Number(field?.getValue() ?? 0);
+  const validation = {
+    error: currentValue <= 0,
+    errorMessage: "Select a priority rating before saving.",
+  };
+
+  return (
+    <Form.Field name="number" validation={validation}>
+      <Form.Cell label="Priority rating">
+        <Form.Control components={{ onRenderControl: () => <RatingButtons /> }} />
+      </Form.Cell>
+    </Form.Field>
   );
 }
 
@@ -316,7 +346,7 @@ const FormExample = () => {
   const [activeTab, setActiveTab] = React.useState("custom");
 
   return (
-    <Form.Root strategy={strategy}>
+    <Form.Root strategy={strategy} onFormReady={(api) => api.getField("number").setValue(0)}>
       <Form.Notifications />
       <Form.Ribbon />
       <Form.Tabs expandedTab={activeTab} onTabChange={setActiveTab}>
@@ -329,11 +359,7 @@ const FormExample = () => {
           </Form.Column>
           <Form.Column>
             <Form.Section label="Custom projection" layout={{ lg: 1 }} cellLabelPosition="Top">
-              <Form.Field name="number">
-                <Form.Cell label="Priority rating">
-                  <RatingButtons />
-                </Form.Cell>
-              </Form.Field>
+              <RatingField />
               <Form.Field name="currency">
                 <Form.Cell label="Budget">
                   <Form.Control />

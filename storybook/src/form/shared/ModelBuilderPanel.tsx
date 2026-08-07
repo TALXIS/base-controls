@@ -38,6 +38,7 @@ interface IModelBuilderPanelProps {
     onChange: (columns: IColumn[]) => void
     editorMode: TEditorMode
     onEditorModeChange: (mode: TEditorMode) => void
+    lockedFieldNames?: Set<string>
 }
 
 export type TEditorMode = "ui" | "json"
@@ -384,12 +385,13 @@ const DuplicateNameWarning = (props: { columns: IColumn[]; selectedIndex: number
 }
 
 export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
-    const { columns, editorMode, onChange } = props
+    const { columns, editorMode, onChange, lockedFieldNames = new Set<string>() } = props
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const [draftColumn, setDraftColumn] = useState<IColumn | null>(null)
     const [selectedRecordNames, setSelectedRecordNames] = useState<string[]>([])
     const [jsonValue, setJsonValue] = useState(() => serializeModelColumns(columns))
     const [jsonError, setJsonError] = useState<string | null>(null)
+    const [lockedFieldWarning, setLockedFieldWarning] = useState<string | null>(null)
 
     const pcfContext = usePcfContext()
     const pcfContextRef = useRef(pcfContext)
@@ -403,8 +405,8 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                 PrimaryNameAttribute: "name",
                 LogicalName: "field",
                 EntitySetName: "fields",
-                DisplayName: { UserLocalizedLabel: { Label: "Field", LanguageCode: 1033 }, LocalizedLabels: [] },
-                DisplayCollectionName: { UserLocalizedLabel: { Label: "Fields", LanguageCode: 1033 }, LocalizedLabels: [] },
+                DisplayName: "Field",
+                DisplayCollectionName: "Fields",
             },
         })
         const ds = new Dataset(provider)
@@ -434,6 +436,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
             EnableAutoSave: { raw: false },
             EnableZebra: { raw: true },
             EnableGroupedColumnsPinning: { raw: false },
+            DestroyDatasetOnUnmount: { raw: false },
         }),
     }), [dataset])
 
@@ -445,10 +448,17 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
     useEffect(() => {
         dataset.setInterceptor("onOpenDatasetItem", (entityReference) => {
             const name = entityReference.id.guid
+
+            if (lockedFieldNames.has(name)) {
+                setLockedFieldWarning(`"${name}" is used on the form and can't be edited until it's removed from the FormXml.`)
+                return
+            }
+
+            setLockedFieldWarning(null)
             const realIndex = columns.findIndex((column) => column.name === name)
             setSelectedIndex(realIndex >= 0 ? realIndex : null)
         })
-    }, [dataset, columns])
+    }, [dataset, columns, lockedFieldNames])
 
     useEffect(() => {
         const handleSelectionChanged = (ids: string[]) => setSelectedRecordNames(ids)
@@ -674,6 +684,12 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                     </MessageBar>
                 )}
             </Stack>
+        )}
+
+        {editorMode === "ui" && lockedFieldWarning && (
+            <MessageBar messageBarType={MessageBarType.warning} onDismiss={() => setLockedFieldWarning(null)}>
+                {lockedFieldWarning}
+            </MessageBar>
         )}
 
         {editorMode === "ui" && (

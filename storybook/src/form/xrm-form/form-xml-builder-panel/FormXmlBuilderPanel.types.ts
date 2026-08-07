@@ -1,5 +1,6 @@
 import type { IXrmFormStrategy } from "@talxis/base-controls/components/Form"
 import type { FormXml, FormXmlCell, FormXmlSection, FormXmlTab } from "@talxis/client-metadata"
+import type { IColumn } from "@talxis/client-libraries"
 
 export interface IFormXmlBuilderPanelProps {
     formXmlText: string
@@ -8,6 +9,7 @@ export interface IFormXmlBuilderPanelProps {
     onFormXmlTextChange: (value: string) => void
     selectedLanguageCode: number
     strategy: IXrmFormStrategy
+    columns: IColumn[]
     onUndoStackChange?: (count: number, undo: (() => void) | null) => void
 }
 
