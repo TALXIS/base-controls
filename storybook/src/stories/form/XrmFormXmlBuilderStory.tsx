@@ -88,7 +88,6 @@ export const XrmFormXmlBuilderStory = () => {
     const [undoAction, setUndoAction] = React.useState<(() => void) | null>(null)
     const [copyState, setCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle')
     const [selectedLanguageCode, setSelectedLanguageCode] = React.useState<number>(1033);
-    const pcfContext = useMemo(() => PcfContextFactory.createContext({ userSettings: { lcid: selectedLanguageCode } }), [selectedLanguageCode])
 
     const parsedFormXml = React.useMemo(() => {
         try {

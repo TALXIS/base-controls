@@ -4,7 +4,7 @@ import { Device } from "./Device";
 import { FactoryApi, IFactoryApiParams } from "./FactoryApi";
 import { IModeParams, Mode } from "./Mode";
 import { Resources } from "./Resources";
-import { ControlTheme } from "@utils/theme";
+import { UserSettings } from "@utils/adapters/xrm/UserSettings";
 
 interface IPcfContextUserSettingsParams {
     lcid?: number;
@@ -50,9 +50,9 @@ export class PcfContextFactory {
 
         const context: ComponentFramework.Context<any, any> = {
             ...baseContext,
-            formatting: Formatting.Get(),
+            formatting: Formatting.Get(userSettings?.formatInfoCultureName),
             client: new Client(),
-            userSettings: baseContext?.userSettings ?? xrm.Utility.getGlobalContext().userSettings as any,
+            userSettings: baseContext?.userSettings ?? new UserSettings(userSettings),
             events: baseContext?.events ?? {},
             mode: baseContext?.mode ?? new Mode(mode),
             webAPI: baseContext?.webAPI ?? xrm.WebApi as any,

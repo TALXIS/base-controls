@@ -63,6 +63,7 @@ export const FormXmlTranslationsPanel = (props: IFormXmlTranslationsPanelProps) 
     const { builderError, onFormXmlTextChange, parsedFormXml } = props
     const [selectedLanguageCode, setSelectedLanguageCode] = useState<number>(DEFAULT_LANGUAGE_CODE)
     const [searchTerm, setSearchTerm] = useState("")
+    const [draftValues, setDraftValues] = useState<Record<string, string>>({})
 
     const entries = useMemo<TTranslationEntry[]>(() => {
         return getTabs(parsedFormXml).flatMap((tab, tabIndex) => {
@@ -163,6 +164,19 @@ export const FormXmlTranslationsPanel = (props: IFormXmlTranslationsPanelProps) 
         onFormXmlTextChange(nextXml)
     }
 
+    const getEntryValue = (entry: TTranslationEntry) => {
+        const draftKey = `${selectedLanguageCode}:${entry.key}`
+        if (draftKey in draftValues) {
+            return draftValues[draftKey]
+        }
+
+        return entry.kind === "tab"
+            ? getLabel(entry.tab.labels, selectedLanguageCode)
+            : entry.kind === "section"
+                ? getLabel(entry.section.labels, selectedLanguageCode)
+                : getLabel(entry.cell.labels, selectedLanguageCode) || getLabel(entry.cell.control?.labels, selectedLanguageCode)
+    }
+
     return (
         <Stack className={styles.root}>
             <div className={styles.controls}>
@@ -200,12 +214,8 @@ export const FormXmlTranslationsPanel = (props: IFormXmlTranslationsPanelProps) 
             {!builderError && filteredEntries.length > 0 && (
                 <div className={styles.list}>
                     {filteredEntries.map((entry) => {
-                        const translatedValue =
-                            entry.kind === "tab"
-                                ? getLabel(entry.tab.labels, selectedLanguageCode)
-                                : entry.kind === "section"
-                                    ? getLabel(entry.section.labels, selectedLanguageCode)
-                                    : getLabel(entry.cell.labels, selectedLanguageCode) || getLabel(entry.cell.control?.labels, selectedLanguageCode)
+                        const translatedValue = getEntryValue(entry)
+                        const draftKey = `${selectedLanguageCode}:${entry.key}`
 
                         return (
                             <div key={entry.key} className={styles.card}>
@@ -214,7 +224,20 @@ export const FormXmlTranslationsPanel = (props: IFormXmlTranslationsPanelProps) 
                                 <TextField
                                     label={`Translation (${selectedLanguageCode})`}
                                     value={translatedValue}
-                                    onChange={(_event, nextValue) => applyUpdate(entry, nextValue ?? "")}
+                                    onChange={(_event, nextValue) => {
+                                        setDraftValues((current) => ({
+                                            ...current,
+                                            [draftKey]: nextValue ?? "",
+                                        }))
+                                    }}
+                                    onBlur={() => {
+                                        applyUpdate(entry, translatedValue)
+                                        setDraftValues((current) => {
+                                            const nextDrafts = { ...current }
+                                            delete nextDrafts[draftKey]
+                                            return nextDrafts
+                                        })
+                                    }}
                                 />
                             </div>
                         )
