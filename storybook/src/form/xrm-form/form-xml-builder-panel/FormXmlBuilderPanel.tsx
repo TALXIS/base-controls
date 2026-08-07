@@ -1,8 +1,8 @@
-import { Checkbox, ContextualMenu, Dialog, DialogFooter, DialogType, IContextualMenuItem, PrimaryButton, SearchBox, Stack, Text, TextField, DefaultButton, IconButton } from "@fluentui/react"
+import { Checkbox, ContextualMenu, Dialog, DialogFooter, DialogType, IContextualMenuItem, PrimaryButton, SearchBox, Stack, Text, TextField, DefaultButton, IconButton, Pivot as FluentPivot } from "@fluentui/react"
 import { DndContext, DragEndEvent, DragMoveEvent, DragOverlay, DragOverEvent, DragStartEvent, PointerSensor, useSensor } from "@dnd-kit/core"
 import { horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable"
-import { XrmForm } from "@talxis/base-controls/components/Form"
-import type { IXrmFormContext } from "@talxis/base-controls/components/Form"
+import { XrmForm, Pivot } from "@talxis/base-controls/components/Form"
+import type { IXrmFormContext, ITabsComponentProps } from "@talxis/base-controls/components/Form"
 import { serializeFormXml } from "@talxis/client-metadata"
 import type { FormXml, FormXmlCell, FormXmlSection } from "@talxis/client-metadata"
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -1718,11 +1718,28 @@ export const FormXmlBuilderPanel = ({
                             <XrmForm
                                 key={formXmlText}
                                 strategy={strategy}
+                                components={{
+                                    tabs: {
+                                        // The builder measures every tab header's real DOM position to draw its
+                                        // drag/edit overlay; Fluent's overflow menu would collapse overflowing tabs
+                                        // out of the layout entirely, so disable it here (builder-only override).
+                                        onRenderTabs: (tabsProps: ITabsComponentProps) => (
+                                            <Pivot
+                                                {...tabsProps}
+                                                components={{
+                                                    onRenderPivot: (pivotProps) => <FluentPivot {...pivotProps} overflowBehavior="none" />,
+                                                }}
+                                            />
+                                        ),
+                                    },
+                                }}
                                 onFormReady={({ formContext }) => {
                                     formContextRef.current = formContext
                                     const expandedIdx = Math.max(0, tabs.findIndex((tab) => tab.expanded))
+                                    console.log("DEBUG onFormReady", { activeTabIndex, expandedIdx, selectionTabIndex: selection.tabIndex, tabsLen: tabs.length })
                                     if (activeTabIndex !== expandedIdx) {
                                         const tabCtx = formContext.ui.tabs.get(activeTabIndex)
+                                        console.log("DEBUG tabCtx found?", !!tabCtx)
                                         if (tabCtx) {
                                             tabCtx.setFocus()
                                         }
