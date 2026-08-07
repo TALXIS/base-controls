@@ -645,6 +645,11 @@ export const FormXmlBuilderPanel = ({
         labelEl.style.padding = "0 4px"
         labelEl.style.minWidth = "40px"
         labelEl.style.display = "inline-block"
+        // Some labels (e.g. Fluent Pivot tab text) inherit a line-height matching their
+        // full clickable area, which would otherwise make the outline box oversized;
+        // re-center within that area since inline-block no longer sits on the baseline.
+        labelEl.style.lineHeight = "normal"
+        labelEl.style.verticalAlign = "middle"
         labelEl.focus()
 
         // Select all text
