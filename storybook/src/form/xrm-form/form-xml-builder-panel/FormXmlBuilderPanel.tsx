@@ -1,15 +1,13 @@
-import { Checkbox, ContextualMenu, Dialog, DialogFooter, DialogType, IContextualMenuItem, PrimaryButton, SearchBox, Stack, Text, TextField, DefaultButton, IconButton, getTheme, mergeStyleSets } from "@fluentui/react"
-import { DndContext, DragEndEvent, DragMoveEvent, DragOverlay, DragOverEvent, DragStartEvent, PointerSensor, useDraggable, useDroppable, useSensor } from "@dnd-kit/core"
-import { horizontalListSortingStrategy, SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { CSS as DndCss } from "@dnd-kit/utilities"
+import { Checkbox, ContextualMenu, Dialog, DialogFooter, DialogType, IContextualMenuItem, PrimaryButton, SearchBox, Stack, Text, TextField, DefaultButton, IconButton } from "@fluentui/react"
+import { DndContext, DragEndEvent, DragMoveEvent, DragOverlay, DragOverEvent, DragStartEvent, PointerSensor, useSensor } from "@dnd-kit/core"
+import { horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable"
 import { XrmForm } from "@talxis/base-controls/components/Form"
-import type { IXrmFormStrategy } from "@talxis/base-controls/components/Form"
 import type { IXrmFormContext } from "@talxis/base-controls/components/Form"
 import { serializeFormXml } from "@talxis/client-metadata"
 import type { FormXml, FormXmlCell, FormXmlSection } from "@talxis/client-metadata"
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { getFormColumns } from "../shared/formModel"
-import { DEFAULT_LANGUAGE_CODE, getClassIdForColumn } from "./constants"
+import { getFormColumns } from "../../shared/formModel"
+import { DEFAULT_LANGUAGE_CODE, getClassIdForColumn } from "../constants"
 import {
     addColumnToFormXml,
     addFieldRowToFormXml,
@@ -39,474 +37,23 @@ import {
     updateFieldInFormXml,
     updateSectionInFormXml,
     updateTabInFormXml,
-} from "./formXmlHelpers"
-
-interface IFormXmlBuilderPanelProps {
-    formXmlText: string
-    parsedFormXml: FormXml | null
-    builderError: string | null
-    onFormXmlTextChange: (value: string) => void
-    strategy: IXrmFormStrategy
-    onUndoStackChange?: (count: number, undo: (() => void) | null) => void
-}
-
-type TSelection =
-    | { type: "tab"; tabIndex: number }
-    | { type: "column"; tabIndex: number; columnIndex: number }
-    | { type: "section"; tabIndex: number; columnIndex: number; sectionIndex: number }
-    | { type: "field"; tabIndex: number; columnIndex: number; sectionIndex: number; rowIndex: number; cellIndex: number }
-
-type TInlineEditTarget =
-    | { type: "tab"; tabIndex: number }
-    | { type: "section"; tabIndex: number; columnIndex: number; sectionIndex: number }
-    | { type: "field"; tabIndex: number; columnIndex: number; sectionIndex: number; rowIndex: number; cellIndex: number }
-
-type TInlineEdit = (TInlineEditTarget & { element: HTMLElement }) | null
-
-interface ISectionLabelWidthDialogState {
-    tabIndex: number
-    columnIndex: number
-    sectionIndex: number
-    value: string
-    error: string | null
-}
-
-interface IFieldSpanDialogState {
-    tabIndex: number
-    columnIndex: number
-    sectionIndex: number
-    rowIndex: number
-    cellIndex: number
-    property: "rowspan" | "colspan"
-    value: string
-    error: string | null
-}
-
-interface ISectionColumnsDialogState {
-    tabIndex: number
-    columnIndex: number
-    sectionIndex: number
-    value: string
-    error: string | null
-}
-
-interface IContextMenuState {
-    target: { x: number; y: number }
-    selection: TSelection
-}
-
-interface IFieldPickerMenuState {
-    target: { x: number; y: number }
-    selection: Extract<TSelection, { type: "section" }>
-}
-
-interface IContextMenuAnchorState {
-    target: { x: number; y: number }
-    selection: TSelection
-}
-
-interface ICanvasRect {
-    top: number
-    left: number
-    width: number
-    height: number
-}
-
-interface ICanvasAnchors {
-    tabs: Record<string, ICanvasRect>
-    columns: Record<string, ICanvasRect>
-    sections: Record<string, ICanvasRect>
-    fields: Record<string, ICanvasRect>
-}
-
-interface ISectionDragState {
-    sourceTabIndex: number
-    sourceColumnIndex: number
-    sourceSectionIndex: number
-    startX: number
-    startY: number
-    offsetX: number
-    offsetY: number
-    pointerX: number
-    pointerY: number
-    active: boolean
-    targetColumnIndex: number | null
-    targetSectionIndex: number | null
-    targetTabIndex: number | null
-    side: "before" | "after" | "append"
-}
-
-interface IColumnDragState {
-    sourceTabIndex: number
-    sourceIndex: number
-    startX: number
-    startY: number
-    offsetX: number
-    offsetY: number
-    pointerX: number
-    pointerY: number
-    active: boolean
-    targetIndex: number | null
-    targetTabIndex: number | null
-    side: "before" | "after"
-}
-
-const theme = getTheme()
-const columnWidthPresets = [25, 33, 50, 66, 75, 100]
-const sectionLabelWidthPresets = [80, 100, 115, 130, 150, 180, 220]
-const sectionColumnsPresets = [1, 2, 3, 4]
-const fieldColSpanPresets = [1, 2, 3, 4]
-const fieldRowSpanPresets = [1, 2, 3, 4, 5, 6, 8, 10]
-
-const styles = mergeStyleSets({
-    root: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 16,
-    },
-    helperText: {
-        color: theme.palette.neutralSecondary,
-    },
-    toolbar: {
-        display: "flex",
-        justifyContent: "flex-end",
-    },
-    addTabButton: {
-        position: "absolute",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 28,
-        height: 28,
-        borderRadius: 8,
-        border: `1px dashed ${theme.palette.neutralTertiaryAlt}`,
-        background: "transparent",
-        cursor: "pointer",
-        fontSize: 16,
-        color: theme.palette.neutralSecondary,
-        pointerEvents: "auto",
-        selectors: {
-            "&:hover": {
-                borderColor: theme.palette.themePrimary,
-                color: theme.palette.themePrimary,
-                background: "rgba(222, 236, 255, 0.18)",
-            },
-        },
-    },
-    tabButton: {
-        position: "absolute",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 10px",
-        borderRadius: 8,
-        border: "1px solid transparent",
-        background: "transparent",
-        cursor: "grab",
-        pointerEvents: "auto",
-        selectors: {
-            "&:hover": {
-                    borderColor: "transparent",
-                    outline: "1px dashed rgba(96, 94, 92, 0.28)",
-                    outlineOffset: 4,
-                background: "rgba(96, 94, 92, 0.035)",
-            },
-        },
-    },
-    selectedTabButton: {
-        borderColor: "transparent",
-        outline: "1px dashed rgba(0, 90, 158, 0.72)",
-        outlineOffset: 4,
-        background: "rgba(222, 236, 255, 0.16)",
-        selectors: {
-            "&:hover": {
-                borderColor: "transparent !important",
-                outline: "1px dashed rgba(0, 90, 158, 0.72) !important",
-                outlineOffset: "4px !important",
-                background: "rgba(222, 236, 255, 0.16)",
-            },
-        },
-    },
-    tabTransferTarget: {
-        outline: "2px dashed rgba(0, 90, 158, 0.82)",
-        outlineOffset: 4,
-        background: "rgba(222, 236, 255, 0.16)",
-    },
-    tabDropIndicator: {
-        position: "absolute",
-        zIndex: 6,
-        width: 2,
-        borderRadius: 2,
-        background: theme.palette.themePrimary,
-        boxShadow: `0 0 0 1px ${theme.palette.white}, 0 0 8px rgba(0, 120, 212, 0.35)`,
-        pointerEvents: "none",
-    },
-    tabDragPlaceholder: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: 44,
-        padding: "0 10px",
-        borderRadius: 8,
-        border: "1px dashed rgba(0, 120, 212, 0.58)",
-        background: "rgba(222, 236, 255, 0.12)",
-        color: theme.palette.neutralSecondary,
-        opacity: 0.72,
-        cursor: "grabbing",
-        pointerEvents: "none",
-        whiteSpace: "nowrap",
-    },
-    canvasDragPlaceholder: {
-        boxSizing: "border-box",
-        border: "1px dashed rgba(0, 90, 158, 0.62)",
-        borderRadius: 8,
-        background: "rgba(222, 236, 255, 0.16)",
-        opacity: 0.72,
-        cursor: "grabbing",
-        pointerEvents: "none",
-    },
-    canvasDropIndicator: {
-        position: "absolute",
-        zIndex: 30,
-        height: 3,
-        borderRadius: 2,
-        background: "rgba(0, 90, 158, 0.82)",
-        boxShadow: `0 0 0 1px ${theme.palette.white}, 0 1px 5px rgba(0, 90, 158, 0.45)`,
-        pointerEvents: "none",
-    },
-    columnDropIndicator: {
-        position: "absolute",
-        zIndex: 30,
-        width: 3,
-        borderRadius: 2,
-        background: "rgba(0, 90, 158, 0.82)",
-        boxShadow: `0 0 0 1px ${theme.palette.white}, 1px 0 5px rgba(0, 90, 158, 0.45)`,
-        pointerEvents: "none",
-    },
-    surface: {
-        position: "relative",
-        minHeight: 0,
-        height: "100%",
-        overflow: "auto",
-        padding: 0,
-        boxSizing: "border-box",
-    },
-    formWindow: {
-        position: "relative",
-        minHeight: 520,
-        padding: 0,
-        overflow: "hidden",
-    },
-    previewBase: {
-        position: "relative",
-        zIndex: 0,
-        selectors: {
-            ".ms-CommandBar": {
-                display: "none",
-            },
-            "& *": {
-                transition: "none !important",
-            },
-        },
-    },
-    overlayLayer: {
-        position: "absolute",
-        inset: 0,
-        zIndex: 20,
-        pointerEvents: "auto",
-    },
-    draggingOverlay: {
-        selectors: {
-            "& *": {
-                cursor: "grabbing !important",
-            },
-        },
-    },
-    dragIntentOverlay: {
-        selectors: {
-            "body.form-builder-grabbing & *": {
-                cursor: "grabbing !important",
-            },
-        },
-    },
-    overlayBadge: {
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "4px 8px",
-        borderRadius: 999,
-        background: "rgba(255, 255, 255, 0.92)",
-        border: `1px solid ${theme.palette.neutralLight}`,
-        boxShadow: theme.effects.elevation4,
-        color: theme.palette.neutralPrimary,
-        fontSize: theme.fonts.small.fontSize,
-        lineHeight: 1.2,
-        maxWidth: "100%",
-        opacity: 0,
-        transform: "translateY(-2px)",
-        transition: "opacity 120ms ease-out, transform 120ms ease-out",
-    },
-    visibleOverlayBadge: {
-        opacity: 1,
-        transform: "translateY(0)",
-    },
-    columnOverlay: {
-        position: "absolute",
-        display: "flex",
-        flexDirection: "column",
-        borderRadius: 8,
-        border: "1px dashed transparent",
-        background: "transparent",
-        pointerEvents: "auto",
-        zIndex: 1,
-        cursor: "grab",
-        selectors: {
-            "&:hover": {
-                    borderColor: "transparent",
-                    outline: "1px dashed rgba(96, 94, 92, 0.20)",
-                    outlineOffset: 4,
-            },
-        },
-    },
-    columnFooter: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        padding: "6px 8px",
-        marginTop: "auto",
-        borderRadius: "0 0 7px 7px",
-        background: "rgba(0, 120, 212, 0.04)",
-        border: `1px dashed ${theme.palette.neutralTertiaryAlt}`,
-        borderTop: "none",
-        color: theme.palette.neutralTertiary,
-        fontSize: theme.fonts.small.fontSize,
-        cursor: "default",
-        pointerEvents: "auto",
-        minHeight: 32,
-        selectors: {
-            "&:hover": {
-                background: "rgba(0, 120, 212, 0.08)",
-                color: theme.palette.neutralSecondary,
-            },
-        },
-    },
-    emptyColumnOverlay: {
-        border: "1px dashed rgba(96, 94, 92, 0.22)",
-        background: "rgba(96, 94, 92, 0.025)",
-    },
-    emptyColumnFooter: {
-        marginTop: 0,
-        minHeight: 48,
-        borderTop: `1px dashed ${theme.palette.neutralTertiaryAlt}`,
-        borderRadius: 7,
-        background: "rgba(96, 94, 92, 0.035)",
-        color: theme.palette.neutralSecondary,
-    },
-    columnResizeHandle: {
-        position: "absolute",
-        top: 0,
-        right: -4,
-        width: 8,
-        height: "100%",
-        cursor: "col-resize",
-        pointerEvents: "auto",
-        zIndex: 4,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        selectors: {
-            "&::after": {
-                content: '""',
-                display: "block",
-                width: 3,
-                height: 24,
-                borderRadius: 2,
-                background: theme.palette.neutralTertiaryAlt,
-                transition: "background 120ms ease-out, height 120ms ease-out",
-            },
-            "&:hover::after": {
-                background: theme.palette.themePrimary,
-                height: 36,
-            },
-        },
-    },
-    selectedOverlay: {
-        outline: "1px dashed rgba(0, 90, 158, 0.72)",
-        outlineOffset: 4,
-        background: "rgba(222, 236, 255, 0.14)",
-        selectors: {
-            "&:hover": {
-                outline: "1px dashed rgba(0, 90, 158, 0.72) !important",
-                outlineOffset: "4px !important",
-                background: "rgba(222, 236, 255, 0.14)",
-            },
-        },
-    },
-    columnMeta: {
-        color: theme.palette.neutralSecondary,
-    },
-    sectionWrapper: {
-        position: "absolute",
-        borderRadius: 8,
-        pointerEvents: "auto",
-        zIndex: 2,
-        cursor: "grab",
-        selectors: {
-            "&:hover .form-builder-section-outline": {
-                borderColor: "transparent",
-                outline: "1px dashed rgba(96, 94, 92, 0.24)",
-                outlineOffset: 4,
-                background: "rgba(255, 255, 255, 0.06)",
-            },
-        },
-    },
-    sectionOverlay: {
-        position: "absolute",
-        inset: 0,
-        borderRadius: 8,
-        border: "1px solid transparent",
-        background: "transparent",
-        pointerEvents: "auto",
-    },
-    fieldOverlay: {
-        position: "absolute",
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "flex-start",
-        borderRadius: 6,
-        border: "1px solid transparent",
-        background: "transparent",
-        margin: -4,
-        padding: 4,
-        color: theme.palette.neutralSecondary,
-        cursor: "grab",
-        pointerEvents: "auto",
-        zIndex: 3,
-        selectors: {
-            "&:hover": {
-                borderColor: "transparent",
-                outline: "1px dashed rgba(96, 94, 92, 0.22)",
-                outlineOffset: 4,
-                background: "rgba(255, 255, 255, 0.06)",
-            },
-        },
-    },
-    fieldMeta: {
-        color: theme.palette.neutralTertiary,
-    },
-    emptyState: {
-        padding: 16,
-        borderRadius: 8,
-        border: `1px dashed ${theme.palette.neutralQuaternaryAlt}`,
-        color: theme.palette.neutralSecondary,
-        textAlign: "center",
-    },
-    activeDropTarget: {
-        boxShadow: `inset 0 0 0 1px ${theme.palette.themePrimary}`,
-        background: "rgba(222, 236, 255, 0.28)",
-    },
-})
+} from "../formXmlHelpers"
+import { columnWidthPresets, fieldColSpanPresets, fieldRowSpanPresets, sectionColumnsPresets, sectionLabelWidthPresets, styles, theme } from "./FormXmlBuilderPanel.styles"
+import type {
+    ICanvasAnchors,
+    ICanvasRect,
+    IContextMenuAnchorState,
+    IContextMenuState,
+    IFieldPickerMenuState,
+    IFieldSpanDialogState,
+    IFormXmlBuilderPanelProps,
+    ISectionColumnsDialogState,
+    ISectionLabelWidthDialogState,
+    TInlineEdit,
+    TInlineEditTarget,
+    TSelection,
+} from "./FormXmlBuilderPanel.types"
+import { DraggableColumn, DraggableField, DraggableSection, SortableTab } from "./FormXmlBuilderPanel.overlays"
 
 const getUniqueName = (prefix: string, existingNames: string[]) => {
     let suffix = 1
@@ -524,7 +71,6 @@ const getSectionId = (columnIndex: number, sectionIndex: number) => `section:${c
 const getColumnDropId = (columnIndex: number) => `column-drop:${columnIndex}`
 const getFieldId = (columnIndex: number, sectionIndex: number, rowIndex: number, cellIndex: number) =>
     `field:${columnIndex}:${sectionIndex}:${rowIndex}:${cellIndex}`
-const getFieldDropId = (columnIndex: number, sectionIndex: number) => `field-drop:${columnIndex}:${sectionIndex}`
 const getTabHeaderAnchorId = (tabName: string) => `tab-header-${tabName}`
 const getColumnAnchorId = (tabName: string, columnIndex: number) => `column-${tabName}-${columnIndex}`
 const getSectionAnchorId = (section: FormXmlSection, sectionIndex: number) => `section-${section.id ?? section.name ?? `section-${sectionIndex}`}`
@@ -533,20 +79,6 @@ const parseDragId = (value: string | number | null | undefined) => String(value 
 
 const getDataIdSelector = (value: string) => `[data-id="${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"]`
 const getTabAnchorKey = (tab: { id?: string; name?: string }, tabIndex: number) => tab.id ?? tab.name ?? `tab-${tabIndex}`
-
-const getSectionCells = (section: FormXmlSection | undefined) =>
-    (section?.rows?.row ?? []).flatMap((row, rowIndex) =>
-        (row.cell ?? []).flatMap((cell, cellIndex) =>
-            cell.control?.datafieldname
-                ? [{ cell, rowIndex, cellIndex }]
-                : []
-        )
-    )
-
-const getCellLabel = (cell: FormXmlCell, fallback: string) =>
-    getLabel(cell.labels, DEFAULT_LANGUAGE_CODE) ||
-    getLabel(cell.control?.labels, DEFAULT_LANGUAGE_CODE) ||
-    fallback
 
 const getColumnWidthPercent = (width: string | undefined) => {
     const parsedWidth = Number(String(width ?? "").replace("%", "").trim())
@@ -594,32 +126,6 @@ const toCanvasRect = (element: HTMLElement, canvasRect: DOMRect): ICanvasRect =>
     }
 }
 
-const useLongPressDragCursor = () => {
-    const timeoutRef = useRef<number | null>(null)
-
-    const clear = () => {
-        if (timeoutRef.current !== null) {
-            window.clearTimeout(timeoutRef.current)
-            timeoutRef.current = null
-        }
-        document.body.style.cursor = ""
-        document.body.classList.remove("form-builder-grabbing")
-    }
-
-    const start = (event: React.PointerEvent) => {
-        if (event.button !== 0) return
-        clear()
-        timeoutRef.current = window.setTimeout(() => {
-            document.body.style.cursor = "grabbing"
-            document.body.classList.add("form-builder-grabbing")
-        }, 180)
-    }
-
-    useEffect(() => clear, [])
-
-    return { start, clear }
-}
-
 export const FormXmlBuilderPanel = ({
     formXmlText,
     parsedFormXml,
@@ -646,13 +152,10 @@ export const FormXmlBuilderPanel = ({
     const [activeDragId, setActiveDragId] = useState<string | null>(null)
     const [dragOverId, setDragOverId] = useState<string | null>(null)
     const [dragOverSide, setDragOverSide] = useState<"before" | "after">("before")
+    const [dragOverTabIndex, setDragOverTabIndex] = useState<number | null>(null)
     const [fieldDragSide, setFieldDragSide] = useState<"before" | "after" | "left" | "right">("before")
     const dragStartPointerYRef = useRef<number | null>(null)
     const dragStartPointerXRef = useRef<number | null>(null)
-    const [sectionDrag, setSectionDrag] = useState<ISectionDragState | null>(null)
-    const sectionDragRef = useRef<ISectionDragState | null>(null)
-    const [columnDrag, setColumnDrag] = useState<IColumnDragState | null>(null)
-    const columnDragRef = useRef<IColumnDragState | null>(null)
     const pendingInlineEditRef = useRef<TInlineEditTarget | null>(null)
     const columnResizeRef = useRef<{
         columnIndex: number
@@ -663,7 +166,6 @@ export const FormXmlBuilderPanel = ({
     } | null>(null)
     const formWindowRef = useRef<HTMLDivElement | null>(null)
     const formContextRef = useRef<IXrmFormContext | null>(null)
-    const longPressCursor = useLongPressDragCursor()
     const sensor = useSensor(PointerSensor, {
         activationConstraint: {
             distance: 8,
@@ -676,7 +178,7 @@ export const FormXmlBuilderPanel = ({
     const activeTabIndex = tabs[selection.tabIndex] ? selection.tabIndex : expandedTabIndex
     const activeTab = tabs[activeTabIndex]
     const columns = useMemo(() => getColumns(activeTab), [activeTab])
-    const isAnyDragActive = activeDragId !== null || sectionDrag?.active === true || columnDrag?.active === true
+    const isAnyDragActive = activeDragId !== null
     const activeFieldEntry =
         selection.type === "field"
             ? getFieldEntries(activeTab).find(
@@ -1805,27 +1307,48 @@ export const FormXmlBuilderPanel = ({
         ] satisfies IContextualMenuItem[]
     }, [activeFieldEntry, columns, contextMenu, tabs.length])
 
-    const updateSectionDragTarget = (drag: ISectionDragState, pointerX: number, pointerY: number) => {
+    // Cross-tab transfer only ever targets a tab header, whose DOM is always mounted (unlike a
+    // non-active tab's columns/sections, which aren't rendered) - so this must stay a live
+    // getBoundingClientRect() lookup rather than a cached anchor.
+    const resolveTargetTabIndex = (pointerX: number, pointerY: number, sourceTabIndex: number) => {
         const canvas = formWindowRef.current
-        if (!canvas) return drag
+        if (!canvas) return null
+
+        for (let tabIndex = 0; tabIndex < tabs.length; tabIndex += 1) {
+            if (tabIndex === sourceTabIndex) continue
+            const tabHeader = canvas.querySelector<HTMLElement>(getDataIdSelector(getTabHeaderAnchorId(getTabAnchorKey(tabs[tabIndex], tabIndex))))
+            const rect = tabHeader?.getBoundingClientRect()
+            if (rect && pointerX >= rect.left && pointerX <= rect.right && pointerY >= rect.top && pointerY <= rect.bottom) {
+                return tabIndex
+            }
+        }
+        return null
+    }
+
+    const resolveSectionDragTarget = (
+        pointerX: number,
+        pointerY: number,
+        sourceColumnIndex: number,
+        sourceSectionIndex: number
+    ): { targetTabIndex: number; targetColumnIndex: number | null; targetSectionIndex: number | null; side: "before" | "after" | "append" } => {
+        const foreignTabIndex = resolveTargetTabIndex(pointerX, pointerY, activeTabIndex)
+        if (foreignTabIndex !== null) {
+            return { targetTabIndex: foreignTabIndex, targetColumnIndex: null, targetSectionIndex: null, side: "append" }
+        }
+
+        const canvas = formWindowRef.current
+        if (!canvas) {
+            return { targetTabIndex: activeTabIndex, targetColumnIndex: null, targetSectionIndex: null, side: "append" }
+        }
 
         const canvasRect = canvas.getBoundingClientRect()
         const localX = pointerX - canvasRect.left
         const localY = pointerY - canvasRect.top
 
-        for (let tabIndex = 0; tabIndex < tabs.length; tabIndex += 1) {
-            if (tabIndex === drag.sourceTabIndex) continue
-            const tabHeader = canvas.querySelector<HTMLElement>(getDataIdSelector(getTabHeaderAnchorId(getTabAnchorKey(tabs[tabIndex], tabIndex))))
-            const rect = tabHeader?.getBoundingClientRect()
-            if (rect && pointerX >= rect.left && pointerX <= rect.right && pointerY >= rect.top && pointerY <= rect.bottom) {
-                return { ...drag, pointerX, pointerY, targetTabIndex: tabIndex, targetColumnIndex: null, targetSectionIndex: null }
-            }
-        }
-
         for (let columnIndex = 0; columnIndex < columns.length; columnIndex += 1) {
             const sections = columns[columnIndex]?.sections?.section ?? []
             for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex += 1) {
-                if (columnIndex === drag.sourceColumnIndex && sectionIndex === drag.sourceSectionIndex) continue
+                if (columnIndex === sourceColumnIndex && sectionIndex === sourceSectionIndex) continue
 
                 const rect = anchors.sections[getSectionId(columnIndex, sectionIndex)]
                 if (!rect || localX < rect.left || localX > rect.left + rect.width || localY < rect.top || localY > rect.top + rect.height) {
@@ -1833,12 +1356,9 @@ export const FormXmlBuilderPanel = ({
                 }
 
                 return {
-                    ...drag,
-                    pointerX,
-                    pointerY,
+                    targetTabIndex: activeTabIndex,
                     targetColumnIndex: columnIndex,
                     targetSectionIndex: sectionIndex,
-                    targetTabIndex: activeTabIndex,
                     side: localY < rect.top + rect.height / 2 ? "before" : "after",
                 }
             }
@@ -1850,145 +1370,35 @@ export const FormXmlBuilderPanel = ({
                 continue
             }
 
-            return {
-                ...drag,
-                pointerX,
-                pointerY,
-                targetColumnIndex: columnIndex,
-                targetSectionIndex: null,
-                targetTabIndex: activeTabIndex,
-                side: "append",
-            }
+            return { targetTabIndex: activeTabIndex, targetColumnIndex: columnIndex, targetSectionIndex: null, side: "append" }
         }
 
-        return { ...drag, pointerX, pointerY, targetTabIndex: activeTabIndex, targetColumnIndex: null, targetSectionIndex: null }
+        return { targetTabIndex: activeTabIndex, targetColumnIndex: null, targetSectionIndex: null, side: "append" }
     }
 
-    const finishSectionDrag = () => {
-        const drag = sectionDragRef.current
-        document.removeEventListener("pointermove", onSectionPointerMove)
-        document.removeEventListener("pointerup", finishSectionDrag)
-        document.body.style.userSelect = ""
-        longPressCursor.clear()
-
-        const distance = drag ? Math.hypot(drag.pointerX - drag.startX, drag.pointerY - drag.startY) : 0
-        if (drag?.active && distance >= 8 && drag.targetTabIndex !== null && (drag.targetColumnIndex !== null || drag.targetTabIndex !== drag.sourceTabIndex)) {
-            if (drag.targetTabIndex !== drag.sourceTabIndex) {
-                const targetTabIndex = drag.targetTabIndex
-                if (targetTabIndex !== null) {
-                    applyFormXmlUpdate((formXml) =>
-                        moveSectionToTabInFormXml(
-                            formXml,
-                            drag.sourceTabIndex,
-                            drag.sourceColumnIndex,
-                            drag.sourceSectionIndex,
-                            targetTabIndex
-                        )
-                    )
-                    setSelection({ type: "section", tabIndex: targetTabIndex, columnIndex: 0, sectionIndex: 0 })
-                }
-                sectionDragRef.current = null
-                setSectionDrag(null)
-                return
-            }
-
-            const targetColumnIndex = drag.targetColumnIndex
-            const targetSectionIndex = drag.targetSectionIndex === null
-                ? (columns[targetColumnIndex]?.sections?.section?.length ?? 0)
-                : drag.targetSectionIndex + (drag.side === "after" ? 1 : 0)
-
-            if (targetColumnIndex !== drag.sourceColumnIndex || targetSectionIndex !== drag.sourceSectionIndex) {
-                applyFormXmlUpdate((formXml) =>
-                    moveSectionInFormXml(
-                        formXml,
-                        activeTabIndex,
-                        drag.sourceColumnIndex,
-                        drag.sourceSectionIndex,
-                        targetColumnIndex,
-                        targetSectionIndex
-                    )
-                )
-                setSelection({ type: "section", tabIndex: activeTabIndex, columnIndex: targetColumnIndex, sectionIndex: targetSectionIndex })
-            }
+    const resolveColumnDragTarget = (
+        pointerX: number,
+        pointerY: number,
+        sourceIndex: number
+    ): { targetTabIndex: number; targetIndex: number | null; side: "before" | "after" } => {
+        const foreignTabIndex = resolveTargetTabIndex(pointerX, pointerY, activeTabIndex)
+        if (foreignTabIndex !== null) {
+            return { targetTabIndex: foreignTabIndex, targetIndex: null, side: "before" }
         }
 
-        sectionDragRef.current = null
-        setSectionDrag(null)
-    }
-
-    const onSectionPointerMove = (event: PointerEvent) => {
-        const drag = sectionDragRef.current
-        if (!drag) return
-
-        const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY)
-        const active = drag.active || distance >= 8
-        if (active) {
-            event.preventDefault()
-            document.body.style.userSelect = "none"
-            document.body.style.cursor = "grabbing"
-        }
-
-        const nextDrag = updateSectionDragTarget({ ...drag, active }, event.clientX, event.clientY)
-        sectionDragRef.current = nextDrag
-        setSectionDrag(nextDrag)
-    }
-
-    const startSectionDrag = (columnIndex: number, sectionIndex: number, event: React.PointerEvent) => {
-        if (event.button !== 0) return
-        event.preventDefault()
-        longPressCursor.start(event)
-        setSelection({ type: "section", tabIndex: activeTabIndex, columnIndex, sectionIndex })
-
-        const rect = anchors.sections[getSectionId(columnIndex, sectionIndex)]
         const canvas = formWindowRef.current
-        if (!rect || !canvas) return
-
-        const canvasRect = canvas.getBoundingClientRect()
-        const pointerX = event.clientX
-        const pointerY = event.clientY
-        const nextDrag: ISectionDragState = {
-            sourceTabIndex: activeTabIndex,
-            sourceColumnIndex: columnIndex,
-            sourceSectionIndex: sectionIndex,
-            startX: pointerX,
-            startY: pointerY,
-            offsetX: pointerX - canvasRect.left - rect.left,
-            offsetY: pointerY - canvasRect.top - rect.top,
-            pointerX,
-            pointerY,
-            active: false,
-            targetColumnIndex: null,
-            targetSectionIndex: null,
-            targetTabIndex: activeTabIndex,
-            side: "append",
+        if (!canvas) {
+            return { targetTabIndex: activeTabIndex, targetIndex: null, side: "before" }
         }
 
-        sectionDragRef.current = nextDrag
-        setSectionDrag(nextDrag)
-        document.addEventListener("pointermove", onSectionPointerMove)
-        document.addEventListener("pointerup", finishSectionDrag)
-    }
-
-    const updateColumnDragTarget = (drag: IColumnDragState, pointerX: number, pointerY: number) => {
-        const canvas = formWindowRef.current
-        if (!canvas) return drag
         const canvasRect = canvas.getBoundingClientRect()
         const localX = pointerX - canvasRect.left
         const localY = pointerY - canvasRect.top
 
-        for (let tabIndex = 0; tabIndex < tabs.length; tabIndex += 1) {
-            if (tabIndex === drag.sourceTabIndex) continue
-            const tabHeader = canvas.querySelector<HTMLElement>(getDataIdSelector(getTabHeaderAnchorId(getTabAnchorKey(tabs[tabIndex], tabIndex))))
-            const rect = tabHeader?.getBoundingClientRect()
-            if (rect && pointerX >= rect.left && pointerX <= rect.right && pointerY >= rect.top && pointerY <= rect.bottom) {
-                return { ...drag, pointerX, pointerY, targetTabIndex: tabIndex, targetIndex: null }
-            }
-        }
-
         const candidates = columns
             .map((_, columnIndex) => ({ columnIndex, rect: anchors.columns[getColumnDropId(columnIndex)] }))
             .filter(({ columnIndex, rect }) =>
-                columnIndex !== drag.sourceIndex
+                columnIndex !== sourceIndex
                 && !!rect
                 && localY >= rect.top
                 && localY <= rect.top + rect.height + 40
@@ -2002,102 +1412,13 @@ export const FormXmlBuilderPanel = ({
         const nearestColumn = candidates[0]
         if (nearestColumn?.rect) {
             return {
-                ...drag,
-                pointerX,
-                pointerY,
-                targetIndex: nearestColumn.columnIndex,
                 targetTabIndex: activeTabIndex,
+                targetIndex: nearestColumn.columnIndex,
                 side: localX < nearestColumn.rect.left + nearestColumn.rect.width / 2 ? "before" : "after",
             }
         }
 
-        return { ...drag, pointerX, pointerY, targetTabIndex: activeTabIndex, targetIndex: null }
-    }
-
-    const finishColumnDrag = () => {
-        const drag = columnDragRef.current
-        document.removeEventListener("pointermove", onColumnPointerMove)
-        document.removeEventListener("pointerup", finishColumnDrag)
-        document.body.style.userSelect = ""
-        longPressCursor.clear()
-
-        const distance = drag ? Math.hypot(drag.pointerX - drag.startX, drag.pointerY - drag.startY) : 0
-        if (drag?.active && distance >= 8 && drag.targetTabIndex !== null && (drag.targetIndex !== null || drag.targetTabIndex !== drag.sourceTabIndex)) {
-            if (drag.targetTabIndex !== drag.sourceTabIndex) {
-                const targetTabIndex = drag.targetTabIndex
-                if (targetTabIndex !== null) {
-                    applyFormXmlUpdate((formXml) =>
-                        moveColumnToTabInFormXml(formXml, drag.sourceTabIndex, drag.sourceIndex, targetTabIndex)
-                    )
-                    setSelection({ type: "column", tabIndex: targetTabIndex, columnIndex: 0 })
-                }
-                columnDragRef.current = null
-                setColumnDrag(null)
-                return
-            }
-
-            const rawTargetIndex = drag.targetIndex + (drag.side === "after" ? 1 : 0)
-            const targetIndex = drag.sourceIndex < rawTargetIndex ? rawTargetIndex - 1 : rawTargetIndex
-            applyFormXmlUpdate((formXml) => moveColumnInFormXml(formXml, activeTabIndex, drag.sourceIndex, targetIndex))
-            setSelection({ type: "column", tabIndex: activeTabIndex, columnIndex: targetIndex })
-        }
-
-        columnDragRef.current = null
-        setColumnDrag(null)
-    }
-
-    const onColumnPointerMove = (event: PointerEvent) => {
-        const drag = columnDragRef.current
-        if (!drag) return
-
-        const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY)
-        const nextDrag = updateColumnDragTarget(
-            { ...drag, active: drag.active || distance >= 8 },
-            event.clientX,
-            event.clientY
-        )
-        if (nextDrag.active) {
-            event.preventDefault()
-            document.body.style.userSelect = "none"
-            document.body.style.cursor = "grabbing"
-        }
-        columnDragRef.current = nextDrag
-        setColumnDrag(nextDrag)
-    }
-
-    const startColumnDrag = (columnIndex: number, event: React.PointerEvent) => {
-        if (event.button !== 0) return
-        const target = event.target as HTMLElement | null
-        if (target?.closest(`.${styles.columnResizeHandle}`)) {
-            return
-        }
-        event.preventDefault()
-        longPressCursor.start(event)
-        setSelection({ type: "column", tabIndex: activeTabIndex, columnIndex })
-
-        const rect = anchors.columns[getColumnDropId(columnIndex)]
-        const canvas = formWindowRef.current
-        if (!rect || !canvas) return
-        const canvasRect = canvas.getBoundingClientRect()
-        const nextDrag: IColumnDragState = {
-            sourceTabIndex: activeTabIndex,
-            sourceIndex: columnIndex,
-            startX: event.clientX,
-            startY: event.clientY,
-            offsetX: event.clientX - canvasRect.left - rect.left,
-            offsetY: event.clientY - canvasRect.top - rect.top,
-            pointerX: event.clientX,
-            pointerY: event.clientY,
-            active: false,
-            targetIndex: null,
-            targetTabIndex: activeTabIndex,
-            side: "before",
-        }
-
-        columnDragRef.current = nextDrag
-        setColumnDrag(nextDrag)
-        document.addEventListener("pointermove", onColumnPointerMove)
-        document.addEventListener("pointerup", finishColumnDrag)
+        return { targetTabIndex: activeTabIndex, targetIndex: null, side: "before" }
     }
 
     const clearTabDrag = () => {
@@ -2106,6 +1427,7 @@ export const FormXmlBuilderPanel = ({
         setActiveDragId(null)
         setDragOverId(null)
         setDragOverSide("before")
+        setDragOverTabIndex(null)
         setFieldDragSide("before")
         dragStartPointerYRef.current = null
         dragStartPointerXRef.current = null
@@ -2149,6 +1471,46 @@ export const FormXmlBuilderPanel = ({
         if (activeParts[0] === "tab") return
 
         setActiveDragId(String(event.active.id))
+
+        if (activeParts[0] === "section" || activeParts[0] === "column-drop") {
+            const startX = dragStartPointerXRef.current
+            const startY = dragStartPointerYRef.current
+            if (startX === null || startY === null) {
+                setDragOverId(null)
+                setDragOverTabIndex(null)
+                return
+            }
+
+            const pointerX = startX + event.delta.x
+            const pointerY = startY + event.delta.y
+
+            if (activeParts[0] === "section") {
+                const target = resolveSectionDragTarget(pointerX, pointerY, Number(activeParts[1]), Number(activeParts[2]))
+                setDragOverTabIndex(target.targetTabIndex !== activeTabIndex ? target.targetTabIndex : null)
+                if (target.targetTabIndex !== activeTabIndex) {
+                    setDragOverId(null)
+                } else if (target.targetColumnIndex === null) {
+                    setDragOverId(null)
+                } else if (target.targetSectionIndex !== null) {
+                    setDragOverId(getSectionId(target.targetColumnIndex, target.targetSectionIndex))
+                    setDragOverSide(target.side === "before" ? "before" : "after")
+                } else {
+                    setDragOverId(getColumnDropId(target.targetColumnIndex))
+                    setDragOverSide("after")
+                }
+            } else {
+                const target = resolveColumnDragTarget(pointerX, pointerY, Number(activeParts[1]))
+                setDragOverTabIndex(target.targetTabIndex !== activeTabIndex ? target.targetTabIndex : null)
+                if (target.targetTabIndex !== activeTabIndex || target.targetIndex === null) {
+                    setDragOverId(null)
+                } else {
+                    setDragOverId(getColumnDropId(target.targetIndex))
+                    setDragOverSide(target.side)
+                }
+            }
+            return
+        }
+
         setDragOverId(event.over ? String(event.over.id) : null)
 
         if (activeParts[0] === "field") {
@@ -2216,33 +1578,42 @@ export const FormXmlBuilderPanel = ({
 
     const onDragEnd = (event: DragEndEvent) => {
         const activeParts = parseDragId(event.active.id)
-        const resolvedOverId = activeParts[0] === "field" ? dragOverId ?? event.over?.id : event.over?.id
+        const usesOwnHitTest = activeParts[0] === "field" || activeParts[0] === "section" || activeParts[0] === "column-drop"
+        const resolvedOverId = usesOwnHitTest ? dragOverId ?? event.over?.id : event.over?.id
         const overParts = parseDragId(resolvedOverId)
+        const targetTabIndex = dragOverTabIndex
         clearTabDrag()
 
-        if (!event.over) {
-            return
-        }
-
-        if (activeParts[0] === "tab" && overParts[0] === "tab") {
+        if (activeParts[0] === "tab") {
+            if (!event.over || overParts[0] !== "tab") return
             const fromIndex = Number(activeParts[1])
             const toIndex = Number(overParts[1])
-            if (fromIndex === toIndex) {
-                return
-            }
+            if (fromIndex === toIndex) return
             applyFormXmlUpdate((formXml) => reorderTabsInFormXml(formXml, fromIndex, toIndex))
             setSelection({ type: "tab", tabIndex: toIndex })
             return
         }
 
-        if (activeParts[0] === "section" && (overParts[0] === "section" || overParts[0] === "column-drop")) {
+        if (activeParts[0] === "section") {
             const fromColumnIndex = Number(activeParts[1])
             const fromSectionIndex = Number(activeParts[2])
+
+            if (targetTabIndex !== null) {
+                applyFormXmlUpdate((formXml) =>
+                    moveSectionToTabInFormXml(formXml, activeTabIndex, fromColumnIndex, fromSectionIndex, targetTabIndex)
+                )
+                setSelection({ type: "section", tabIndex: targetTabIndex, columnIndex: 0, sectionIndex: 0 })
+                return
+            }
+
+            if (overParts[0] !== "section" && overParts[0] !== "column-drop") return
             const toColumnIndex = Number(overParts[1])
             const toSectionIndex =
                 overParts[0] === "section"
                     ? Number(overParts[2]) + (dragOverSide === "after" ? 1 : 0)
                     : (columns[toColumnIndex]?.sections?.section?.length ?? 0)
+
+            if (toColumnIndex === fromColumnIndex && toSectionIndex === fromSectionIndex) return
 
             applyFormXmlUpdate((formXml) =>
                 moveSectionInFormXml(formXml, activeTabIndex, fromColumnIndex, fromSectionIndex, toColumnIndex, toSectionIndex)
@@ -2250,6 +1621,27 @@ export const FormXmlBuilderPanel = ({
             setSelection({ type: "section", tabIndex: activeTabIndex, columnIndex: toColumnIndex, sectionIndex: toSectionIndex })
             return
         }
+
+        if (activeParts[0] === "column-drop") {
+            const sourceIndex = Number(activeParts[1])
+
+            if (targetTabIndex !== null) {
+                applyFormXmlUpdate((formXml) => moveColumnToTabInFormXml(formXml, activeTabIndex, sourceIndex, targetTabIndex))
+                setSelection({ type: "column", tabIndex: targetTabIndex, columnIndex: 0 })
+                return
+            }
+
+            if (overParts[0] !== "column-drop") return
+            const rawTargetIndex = Number(overParts[1]) + (dragOverSide === "after" ? 1 : 0)
+            const targetIndex = sourceIndex < rawTargetIndex ? rawTargetIndex - 1 : rawTargetIndex
+            if (targetIndex === sourceIndex) return
+
+            applyFormXmlUpdate((formXml) => moveColumnInFormXml(formXml, activeTabIndex, sourceIndex, targetIndex))
+            setSelection({ type: "column", tabIndex: activeTabIndex, columnIndex: targetIndex })
+            return
+        }
+
+        if (!event.over) return
 
         if (activeParts[0] === "field" && (overParts[0] === "field-drop" || overParts[0] === "field" || overParts[0] === "section")) {
             const fromColumnIndex = Number(activeParts[1])
@@ -2349,10 +1741,7 @@ export const FormXmlBuilderPanel = ({
                                             label={getLabel(tab.labels, DEFAULT_LANGUAGE_CODE) || tab.name || `Tab ${tabIndex + 1}`}
                                             selected={isSelection(selection, { type: "tab", tabIndex })}
                                             isDragging={activeTabDragIndex === tabIndex}
-                                            transferTarget={
-                                                (sectionDrag?.active && sectionDrag.targetTabIndex === tabIndex && sectionDrag.sourceTabIndex !== tabIndex)
-                                                || (columnDrag?.active && columnDrag.targetTabIndex === tabIndex && columnDrag.sourceTabIndex !== tabIndex)
-                                            }
+                                            transferTarget={dragOverTabIndex === tabIndex}
                                             onClick={() => selectTab(tabIndex)}
                                             onDoubleClick={() => startInlineEdit({
                                                 type: "tab",
@@ -2370,9 +1759,15 @@ export const FormXmlBuilderPanel = ({
                                 if (!firstRect || !lastRect) return null
 
                                 const targetRect = anchors.tabs[getTabId(tabDropIndex)]
-                                const left = tabDropIndex >= tabs.length
+                                const rawLeft = tabDropIndex >= tabs.length
                                     ? lastRect.left + lastRect.width + 6
                                     : (targetRect?.left ?? firstRect.left) - 6
+                                // Clamp so the indicator never lands outside formWindow's overflow:hidden bounds
+                                // (its +/-6px offset would otherwise clip it entirely at the leftmost/rightmost tab).
+                                const canvasWidth = formWindowRef.current?.clientWidth
+                                const left = canvasWidth !== undefined
+                                    ? Math.max(0, Math.min(rawLeft, canvasWidth - 2))
+                                    : Math.max(0, rawLeft)
 
                                 return (
                                     <div
@@ -2399,6 +1794,16 @@ export const FormXmlBuilderPanel = ({
                                     return (
                                         <div className={styles.canvasDragPlaceholder} style={{ width: rect.width, height: rect.height }}>
                                             {getLabel(section.labels, DEFAULT_LANGUAGE_CODE) || section.name || "Section"}
+                                        </div>
+                                    )
+                                })() : activeDragId?.startsWith("column-drop:") ? (() => {
+                                    const parts = parseDragId(activeDragId)
+                                    const columnIndex = Number(parts[1])
+                                    const rect = anchors.columns[activeDragId]
+                                    if (!rect) return null
+                                    return (
+                                        <div className={styles.canvasDragPlaceholder} style={{ width: rect.width, height: Math.max(rect.height, 60) + 32 }}>
+                                            Column {columnIndex + 1}
                                         </div>
                                     )
                                 })() : activeDragId?.startsWith("field:") ? (() => {
@@ -2450,7 +1855,7 @@ export const FormXmlBuilderPanel = ({
                                         : column.width
 
                                     return (
-                                        <DroppableColumn
+                                        <DraggableColumn
                                             key={getColumnDropId(columnIndex)}
                                             id={getColumnDropId(columnIndex)}
                                             rect={columnRect}
@@ -2458,40 +1863,21 @@ export const FormXmlBuilderPanel = ({
                                             empty={sectionCount === 0}
                                             width={displayWidth}
                                             selected={isSelection(selection, { type: "column", tabIndex: activeTabIndex, columnIndex })}
-                                            isDragging={columnDrag?.active === true && columnDrag.sourceIndex === columnIndex}
+                                            isDragging={activeDragId === getColumnDropId(columnIndex)}
                                             isLast={columnIndex === columns.length - 1}
                                             onClick={() => setSelection({ type: "column", tabIndex: activeTabIndex, columnIndex })}
                                             onContextMenu={(event) => openContextMenu(event, { type: "column", tabIndex: activeTabIndex, columnIndex })}
-                                            onPointerDown={(event) => startColumnDrag(columnIndex, event)}
                                             onResizeStart={(event) => onColumnResizeStart(columnIndex, event)}
                                         />
                                     )
                                 })}
 
-                            {columnDrag?.active && (() => {
-                                const canvas = formWindowRef.current
-                                const sourceRect = anchors.columns[getColumnDropId(columnDrag.sourceIndex)]
-                                if (!canvas || !sourceRect) return null
-                                const canvasRect = canvas.getBoundingClientRect()
-                                return (
-                                    <div
-                                        className={styles.canvasDragPlaceholder}
-                                        style={{
-                                            position: "absolute",
-                                            left: columnDrag.pointerX - canvasRect.left - columnDrag.offsetX,
-                                            top: columnDrag.pointerY - canvasRect.top - columnDrag.offsetY,
-                                            width: sourceRect.width,
-                                            height: Math.max(sourceRect.height, 60) + 32,
-                                            zIndex: 8,
-                                        }}
-                                    />
-                                )
-                            })()}
-
-                            {columnDrag?.active && columnDrag.targetIndex !== null && (() => {
-                                const targetRect = anchors.columns[getColumnDropId(columnDrag.targetIndex)]
+                            {activeDragId?.startsWith("column-drop:") && dragOverId && dragOverId !== activeDragId && (() => {
+                                const overParts = parseDragId(dragOverId)
+                                if (overParts[0] !== "column-drop") return null
+                                const targetRect = anchors.columns[dragOverId]
                                 if (!targetRect) return null
-                                const left = columnDrag.side === "before"
+                                const left = dragOverSide === "before"
                                     ? targetRect.left - 8
                                     : targetRect.left + targetRect.width + 5
                                 return (
@@ -2503,42 +1889,32 @@ export const FormXmlBuilderPanel = ({
                             })()}
 
                             {activeTab &&
-                                columns.map((column, columnIndex) => (
-                                    <SortableContext
-                                        key={`sections-${columnIndex}`}
-                                        items={(column.sections?.section ?? []).map((_, sectionIndex) => getSectionId(columnIndex, sectionIndex))}
-                                        strategy={verticalListSortingStrategy}
-                                    >
-                                        {(column.sections?.section ?? []).map((_section, sectionIndex) => {
-                                            const sectionRect = anchors.sections[getSectionId(columnIndex, sectionIndex)]
-                                            if (!sectionRect) {
-                                                return null
-                                            }
+                                columns.map((column, columnIndex) =>
+                                    (column.sections?.section ?? []).map((_section, sectionIndex) => {
+                                        const sectionRect = anchors.sections[getSectionId(columnIndex, sectionIndex)]
+                                        if (!sectionRect) {
+                                            return null
+                                        }
 
-                                            return (
-                                                <SortableSection
-                                                    key={getSectionId(columnIndex, sectionIndex)}
-                                                    id={getSectionId(columnIndex, sectionIndex)}
-                                                    rect={sectionRect}
-                                                    selected={isSelection(selection, { type: "section", tabIndex: activeTabIndex, columnIndex, sectionIndex })}
-                                                    isDragging={sectionDrag?.active && sectionDrag.sourceColumnIndex === columnIndex && sectionDrag.sourceSectionIndex === sectionIndex}
-                                                    onPointerDown={(event) => startSectionDrag(columnIndex, sectionIndex, event)}
-                                                    onDoubleClick={() => {
-                                                        const section = columns[columnIndex]?.sections?.section?.[sectionIndex]
-                                                        if (!section) return
-                                                        startInlineEdit({
-                                                            type: "section",
-                                                            tabIndex: activeTabIndex,
-                                                            columnIndex,
-                                                            sectionIndex,
-                                                        })
-                                                    }}
-                                                    onContextMenu={(event) => openContextMenu(event, { type: "section", tabIndex: activeTabIndex, columnIndex, sectionIndex })}
-                                                />
-                                            )
-                                        })}
-                                    </SortableContext>
-                                ))}
+                                        return (
+                                            <DraggableSection
+                                                key={getSectionId(columnIndex, sectionIndex)}
+                                                id={getSectionId(columnIndex, sectionIndex)}
+                                                rect={sectionRect}
+                                                selected={isSelection(selection, { type: "section", tabIndex: activeTabIndex, columnIndex, sectionIndex })}
+                                                isDragging={activeDragId === getSectionId(columnIndex, sectionIndex)}
+                                                onClick={() => setSelection({ type: "section", tabIndex: activeTabIndex, columnIndex, sectionIndex })}
+                                                onDoubleClick={() => startInlineEdit({
+                                                    type: "section",
+                                                    tabIndex: activeTabIndex,
+                                                    columnIndex,
+                                                    sectionIndex,
+                                                })}
+                                                onContextMenu={(event) => openContextMenu(event, { type: "section", tabIndex: activeTabIndex, columnIndex, sectionIndex })}
+                                            />
+                                        )
+                                    })
+                                )}
 
                             {activeTab &&
                                 getFieldEntries(activeTab).map((entry) => {
@@ -2579,52 +1955,6 @@ export const FormXmlBuilderPanel = ({
                                         />
                                     )
                                 })}
-
-                            {sectionDrag?.active && (() => {
-                                const canvas = formWindowRef.current
-                                const sourceRect = anchors.sections[getSectionId(sectionDrag.sourceColumnIndex, sectionDrag.sourceSectionIndex)]
-                                if (!canvas || !sourceRect) return null
-                                const canvasRect = canvas.getBoundingClientRect()
-                                const section = columns[sectionDrag.sourceColumnIndex]?.sections?.section?.[sectionDrag.sourceSectionIndex]
-                                if (!section) return null
-
-                                return (
-                                    <div
-                                        className={styles.canvasDragPlaceholder}
-                                        style={{
-                                            position: "absolute",
-                                            left: sectionDrag.pointerX - canvasRect.left - sectionDrag.offsetX,
-                                            top: sectionDrag.pointerY - canvasRect.top - sectionDrag.offsetY,
-                                            width: sourceRect.width,
-                                            height: sourceRect.height,
-                                            zIndex: 8,
-                                        }}
-                                    >
-                                        {getLabel(section.labels, DEFAULT_LANGUAGE_CODE) || section.name || "Section"}
-                                    </div>
-                                )
-                            })()}
-
-                            {sectionDrag?.active && sectionDrag.targetColumnIndex !== null && (() => {
-                                const targetRect = sectionDrag.targetSectionIndex === null
-                                    ? anchors.columns[getColumnDropId(sectionDrag.targetColumnIndex)]
-                                    : anchors.sections[getSectionId(sectionDrag.targetColumnIndex, sectionDrag.targetSectionIndex)]
-                                if (!targetRect) return null
-                                const top = sectionDrag.side === "before"
-                                    ? targetRect.top - 8
-                                    : targetRect.top + targetRect.height + 2
-                                return (
-                                    <div
-                                        className={styles.canvasDropIndicator}
-                                        style={{
-                                            top,
-                                            left: targetRect.left,
-                                            width: targetRect.width,
-                                            zIndex: 9,
-                                        }}
-                                    />
-                                )
-                            })()}
 
                             {activeDragId?.startsWith("section:") && dragOverId && dragOverId !== activeDragId && (() => {
                                 const overParts = parseDragId(dragOverId)
@@ -2813,175 +2143,5 @@ export const FormXmlBuilderPanel = ({
             </Dialog>
 
         </div>
-    )
-}
-
-const SortableTab = (props: {
-    id: string
-    rect: ICanvasRect
-    label: string
-    selected: boolean
-    isDragging: boolean
-    transferTarget: boolean
-    onClick: () => void
-    onDoubleClick: () => void
-    onContextMenu: (event: React.MouseEvent) => void
-}) => {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })
-    const longPressCursor = useLongPressDragCursor()
-
-    return (
-        <div
-            ref={setNodeRef}
-            style={{
-                top: props.rect.top,
-                left: props.rect.left,
-                width: props.rect.width,
-                height: props.rect.height,
-                transform: props.isDragging ? undefined : DndCss.Transform.toString(transform),
-                transition,
-                opacity: props.isDragging ? 0.35 : 1,
-            }}
-            {...attributes}
-            {...listeners}
-            className={`${styles.tabButton} ${props.selected ? styles.selectedTabButton : ""} ${props.transferTarget ? styles.tabTransferTarget : ""}`.trim()}
-            onClick={props.onClick}
-            onPointerDown={(event) => {
-                if (event.button === 0) props.onClick()
-                longPressCursor.start(event)
-                listeners?.onPointerDown?.(event)
-            }}
-            onPointerUp={longPressCursor.clear}
-            onPointerCancel={longPressCursor.clear}
-            onDoubleClick={props.onDoubleClick}
-            onContextMenu={props.onContextMenu}
-        />
-    )
-}
-
-const SortableSection = (props: {
-    id: string
-    rect: ICanvasRect
-    selected: boolean
-    isDragging: boolean
-    onPointerDown: (event: React.PointerEvent) => void
-    onDoubleClick: () => void
-    onContextMenu: (event: React.MouseEvent) => void
-}) => {
-    const { isOver, setNodeRef } = useDroppable({ id: props.id })
-
-    return (
-        <div
-            ref={setNodeRef}
-            style={{
-                top: props.rect.top,
-                left: props.rect.left,
-                width: props.rect.width,
-                height: props.rect.height,
-                opacity: props.isDragging ? 0.35 : 1,
-                cursor: props.isDragging ? "grabbing" : undefined,
-            }}
-            className={`${styles.sectionWrapper} ${isOver ? styles.activeDropTarget : ""}`.trim()}
-            onPointerDown={props.onPointerDown}
-            onDoubleClick={props.onDoubleClick}
-            onContextMenu={props.onContextMenu}
-        >
-            <div className={`${styles.sectionOverlay} form-builder-section-outline ${props.selected ? styles.selectedOverlay : ""}`.trim()} />
-        </div>
-    )
-}
-
-const DroppableColumn = (props: {
-    id: string
-    rect: ICanvasRect
-    columnIndex: number
-    empty: boolean
-    width: string | undefined
-    selected: boolean
-    isDragging: boolean
-    isLast: boolean
-    onClick: () => void
-    onPointerDown: (event: React.PointerEvent) => void
-    onContextMenu: (event: React.MouseEvent) => void
-    onResizeStart?: (event: React.PointerEvent) => void
-}) => {
-    const { isOver, setNodeRef } = useDroppable({ id: props.id })
-    const footerHeight = 32
-
-    return (
-        <div
-            ref={setNodeRef}
-            style={{
-                top: props.rect.top,
-                left: props.rect.left,
-                width: props.rect.width,
-                height: Math.max(props.rect.height, 60) + footerHeight,
-                opacity: props.isDragging ? 0.35 : 1,
-                cursor: props.isDragging ? "grabbing" : undefined,
-            }}
-            className={`${styles.columnOverlay} ${props.empty ? styles.emptyColumnOverlay : ""} ${props.selected || isOver ? styles.selectedOverlay : ""}`.trim()}
-            onPointerDown={props.onPointerDown}
-        >
-            {!props.isLast && props.onResizeStart && (
-                <div
-                    className={styles.columnResizeHandle}
-                    onPointerDown={(event) => {
-                        event.stopPropagation()
-                        props.onResizeStart?.(event)
-                    }}
-                />
-            )}
-            <div
-                className={`${styles.columnFooter} ${props.empty ? styles.emptyColumnFooter : ""}`.trim()}
-                onClick={props.onClick}
-                onPointerDown={(event) => {
-                    if (event.button === 0) props.onClick()
-                }}
-                onContextMenu={props.onContextMenu}
-            >
-                <span>Column {props.columnIndex + 1}{props.width ? ` (${props.width})` : ""}</span>
-            </div>
-        </div>
-    )
-}
-
-const DraggableField = (props: {
-    id: string
-    rect: ICanvasRect
-    cell: FormXmlCell
-    selected: boolean
-    isDragging: boolean
-    onClick: () => void
-    onDoubleClick: () => void
-    onContextMenu: (event: React.MouseEvent) => void
-}) => {
-    const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: props.id })
-    const longPressCursor = useLongPressDragCursor()
-
-    return (
-        <div
-            ref={setNodeRef}
-            style={{
-                top: props.rect.top,
-                left: props.rect.left,
-                width: props.rect.width,
-                height: props.rect.height,
-                transform: props.isDragging ? undefined : DndCss.Translate.toString(transform),
-                opacity: props.isDragging ? 0.35 : 1,
-            }}
-            {...attributes}
-            {...listeners}
-            className={`${styles.fieldOverlay} ${props.selected ? styles.selectedOverlay : ""}`.trim()}
-            onClick={props.onClick}
-            onPointerDown={(event) => {
-                if (event.button === 0) props.onClick()
-                longPressCursor.start(event)
-                listeners?.onPointerDown?.(event)
-            }}
-            onPointerUp={longPressCursor.clear}
-            onPointerCancel={longPressCursor.clear}
-            onDoubleClick={props.onDoubleClick}
-            onContextMenu={props.onContextMenu}
-        />
     )
 }
