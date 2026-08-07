@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { ComboBox, IComboBoxOption, Pivot, PivotItem, mergeStyleSets } from '@fluentui/react'
 import { parseFormXml } from '@talxis/client-metadata'
 import { XrmForm } from '@talxis/base-controls/components/Form'
@@ -12,6 +12,7 @@ import { FormXmlEditor } from '../../form/xrm-form/FormXmlEditor'
 import { defaultFormXml } from '../../form/xrm-form/defaultFormXml'
 import { createModelStore } from '../../form/shared/modelStore'
 import { formMetadata, getDemoRecord } from '../../form/shared/formModel'
+import { PcfContextFactory } from '@talxis/base-controls/utils/adapters/pcf-context/factory/PcfContextFactory'
 
 const builderModelStore = createModelStore()
 
@@ -86,7 +87,8 @@ export const XrmFormXmlBuilderStory = () => {
     const [undoCount, setUndoCount] = React.useState(0)
     const [undoAction, setUndoAction] = React.useState<(() => void) | null>(null)
     const [copyState, setCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle')
-    const [selectedLanguageCode, setSelectedLanguageCode] = React.useState<number>(1033)
+    const [selectedLanguageCode, setSelectedLanguageCode] = React.useState<number>(1033);
+    const pcfContext = useMemo(() => PcfContextFactory.createContext({ userSettings: { lcid: selectedLanguageCode } }), [selectedLanguageCode])
 
     const parsedFormXml = React.useMemo(() => {
         try {
@@ -154,6 +156,7 @@ export const XrmFormXmlBuilderStory = () => {
         })),
         []
     )
+    const viewInstanceKey = `${activeView}:${selectedLanguageCode}`
 
     const commandBarFarItems = React.useMemo<ICommandBarItemProps[]>(
         () => [
@@ -199,9 +202,10 @@ export const XrmFormXmlBuilderStory = () => {
             <CommandBar items={commandBarItems} farItems={commandBarFarItems} />
 
             <div className={styles.content}>
-                <PcfContextProvider userSettings={{ lcid: selectedLanguageCode }}>
+                <PcfContextProvider key={viewInstanceKey} userSettings={{ lcid: selectedLanguageCode }}>
                     {activeView === 'builder' && (
                         <FormXmlBuilderPanel
+                            key={viewInstanceKey}
                             formXmlText={formXmlText}
                             parsedFormXml={parsedFormXml.value}
                             builderError={parsedFormXml.error}
@@ -214,10 +218,11 @@ export const XrmFormXmlBuilderStory = () => {
                         />
                     )}
 
-                    {activeView === 'formxml' && <FormXmlEditor value={formXmlText} onChange={setFormXmlText} />}
+                    {activeView === 'formxml' && <FormXmlEditor key={viewInstanceKey} value={formXmlText} onChange={setFormXmlText} />}
 
                     {activeView === 'translations' && (
                         <FormXmlTranslationsPanel
+                            key={viewInstanceKey}
                             formXmlText={formXmlText}
                             parsedFormXml={parsedFormXml.value}
                             builderError={parsedFormXml.error}
@@ -227,7 +232,7 @@ export const XrmFormXmlBuilderStory = () => {
 
                     {activeView === 'preview' && (
                         <XrmForm
-                            key={previewKey}
+                            key={`${previewKey}:${selectedLanguageCode}`}
                             strategy={builderStrategy}
                         />
                     )}

@@ -14,17 +14,19 @@ import { IFormApi } from '@components/Form/interfaces';
 import { IFormApiInternal } from '@components/Form/internal/FormApi';
 import { XrmFormComponentsContext } from './context';
 import { XrmFormComponents } from './components';
+import { usePcfContext } from '@utils';
 
 
 export const XrmForm = (props: IXrmFormProps) => {
     const { strategy } = props;
     const components = {...XrmFormComponents, ...props.components};
     const [form, setForm] = React.useState<{ xmlModel: FormXmlForm, xrmFormContext: IXrmFormContextInternal } | null>(null);
+    const pcfContext = usePcfContext();
 
     const onFormReady = (api: IFormApi) => {
         const form = (api as IFormApiInternal)._getForm();
         const formXml = strategy.onGetFormXml();
-        const nextFormXmlModel = new FormXmlForm({ formXml, lcid: 1029, form });
+        const nextFormXmlModel = new FormXmlForm({ formXml, lcid: pcfContext.userSettings.languageId, form });
         const formContext = createXrmFormContext(nextFormXmlModel);
         setForm({ xmlModel: nextFormXmlModel, xrmFormContext: formContext });
         props.onFormReady?.({ formContext, api });

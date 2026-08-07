@@ -211,6 +211,40 @@ export const FormXmlBuilderPanel = ({
             return matchesUsage && matchesSearch
         })
     }, [fieldOptions, fieldSearchTerm, showOnlyUnusedFields, usedFieldNames])
+    const memoizedForm = useMemo(
+        () => (
+            <XrmForm
+                key={formXmlText}
+                strategy={strategy}
+                components={{
+                    tabs: {
+                        // The builder measures every tab header's real DOM position to draw its
+                        // drag/edit overlay; Fluent's overflow menu would collapse overflowing tabs
+                        // out of the layout entirely, so disable it here (builder-only override).
+                        onRenderTabs: (tabsProps: ITabsComponentProps) => (
+                            <Pivot
+                                {...tabsProps}
+                                components={{
+                                    onRenderPivot: (pivotProps) => <FluentPivot {...pivotProps} overflowBehavior="none" />,
+                                }}
+                            />
+                        ),
+                    },
+                }}
+                onFormReady={({ formContext }) => {
+                    formContextRef.current = formContext
+                    const expandedIdx = Math.max(0, tabs.findIndex((tab) => tab.expanded))
+                    if (activeTabIndex !== expandedIdx) {
+                        const tabCtx = formContext.ui.tabs.get(activeTabIndex)
+                        if (tabCtx) {
+                            tabCtx.setFocus()
+                        }
+                    }
+                }}
+            />
+        ),
+        [activeTabIndex, formXmlText, strategy, tabs]
+    )
 
     const applyFormXmlUpdate = (updater: (formXml: FormXml) => FormXml) => {
         if (!parsedFormXml) {
@@ -1714,35 +1748,7 @@ export const FormXmlBuilderPanel = ({
                 <div className={styles.surface}>
                     <div ref={formWindowRef} className={styles.formWindow}>
                         <div className={styles.previewBase}>
-                            <XrmForm
-                                key={formXmlText}
-                                strategy={strategy}
-                                components={{
-                                    tabs: {
-                                        // The builder measures every tab header's real DOM position to draw its
-                                        // drag/edit overlay; Fluent's overflow menu would collapse overflowing tabs
-                                        // out of the layout entirely, so disable it here (builder-only override).
-                                        onRenderTabs: (tabsProps: ITabsComponentProps) => (
-                                            <Pivot
-                                                {...tabsProps}
-                                                components={{
-                                                    onRenderPivot: (pivotProps) => <FluentPivot {...pivotProps} overflowBehavior="none" />,
-                                                }}
-                                            />
-                                        ),
-                                    },
-                                }}
-                                onFormReady={({ formContext }) => {
-                                    formContextRef.current = formContext
-                                    const expandedIdx = Math.max(0, tabs.findIndex((tab) => tab.expanded))
-                                    if (activeTabIndex !== expandedIdx) {
-                                        const tabCtx = formContext.ui.tabs.get(activeTabIndex)
-                                        if (tabCtx) {
-                                            tabCtx.setFocus()
-                                        }
-                                    }
-                                }}
-                            />
+                            {memoizedForm}
                         </div>
 
                         <div

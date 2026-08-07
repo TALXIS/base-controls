@@ -63,7 +63,7 @@ export class FormXmlForm implements IFormXmlModel {
     private _attributes: Map<string, IFormXmlAttribute> = new Map();
 
     constructor(params: IFormXmlFormProps) {
-        this._lcid = XrmFactory.createXrm().Utility.getGlobalContext().userSettings.languageId;
+        this._lcid = params.lcid;
         this._form = params.form;
         const formXml = parseFormXml(params.formXml) as MetadataFormXml;
         Object.assign(this, formXml);
