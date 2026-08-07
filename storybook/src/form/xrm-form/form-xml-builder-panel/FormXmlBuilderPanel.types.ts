@@ -6,6 +6,7 @@ export interface IFormXmlBuilderPanelProps {
     parsedFormXml: FormXml | null
     builderError: string | null
     onFormXmlTextChange: (value: string) => void
+    selectedLanguageCode: number
     strategy: IXrmFormStrategy
     onUndoStackChange?: (count: number, undo: (() => void) | null) => void
 }
@@ -84,6 +85,7 @@ export interface IFormXmlTranslationsPanelProps {
     parsedFormXml: FormXml | null
     builderError: string | null
     onFormXmlTextChange: (value: string) => void
+    selectedLanguageCode: number
 }
 
 export interface ITranslationEntryBase {

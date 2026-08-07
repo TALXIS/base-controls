@@ -43,6 +43,16 @@ export const DEFAULT_LANGUAGE_CODE = 1033
 
 export const formTranslationLanguageOptions: IDropdownOption[] = [
     { key: 1033, text: "English (1033)" },
+    { key: 3082, text: "Spanish (3082)" },
+    { key: 2052, text: "Chinese (Simplified) (2052)" },
+    { key: 1028, text: "Chinese (Traditional) (1028)" },
+    { key: 1046, text: "Portuguese (Brazil) (1046)" },
+    { key: 1040, text: "Italian (1040)" },
+    { key: 1041, text: "Japanese (1041)" },
+    { key: 1042, text: "Korean (1042)" },
+    { key: 1025, text: "Arabic (1025)" },
+    { key: 1049, text: "Russian (1049)" },
+    { key: 1081, text: "Hindi (1081)" },
     { key: 1029, text: "Czech (1029)" },
     { key: 1051, text: "Slovak (1051)" },
     { key: 1031, text: "German (1031)" },

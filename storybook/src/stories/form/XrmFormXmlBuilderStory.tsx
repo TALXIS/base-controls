@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { ComboBox, IComboBoxOption, Pivot, PivotItem, mergeStyleSets } from '@fluentui/react'
+import { ComboBox, IComboBoxOption, Pivot, PivotItem, Toggle, mergeStyleSets } from '@fluentui/react'
 import { parseFormXml } from '@talxis/client-metadata'
 import { XrmForm } from '@talxis/base-controls/components/Form'
 import type { IXrmFormStrategy } from '@talxis/base-controls/components/Form'
@@ -18,7 +18,7 @@ const builderModelStore = createModelStore()
 
 let currentFormXml = defaultFormXml
 
-type TBuilderView = 'preview' | 'builder' | 'formxml' | 'translations'
+type TBuilderView = 'preview' | 'workspace' | 'translations'
 
 class StorybookFormXmlBuilderStrategy extends MemoryStrategy implements IXrmFormStrategy {
     public onGetFormXml(): string {
@@ -70,6 +70,7 @@ const styles = mergeStyleSets({
     commandBarAside: {
         display: 'flex',
         alignItems: 'center',
+        gap: 12,
         paddingRight: 12,
     },
     languageComboBox: {
@@ -81,13 +82,14 @@ const styles = mergeStyleSets({
 })
 
 export const XrmFormXmlBuilderStory = () => {
-    const [activeView, setActiveView] = React.useState<TBuilderView>('builder')
+    const [activeView, setActiveView] = React.useState<TBuilderView>('workspace')
     const [formXmlText, setFormXmlText] = React.useState(defaultFormXml)
     const [previewKey, setPreviewKey] = React.useState(0)
     const [undoCount, setUndoCount] = React.useState(0)
     const [undoAction, setUndoAction] = React.useState<(() => void) | null>(null)
     const [copyState, setCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle')
-    const [selectedLanguageCode, setSelectedLanguageCode] = React.useState<number>(1033);
+    const [selectedLanguageCode, setSelectedLanguageCode] = React.useState<number>(1033)
+    const [showXmlEditor, setShowXmlEditor] = React.useState(false)
 
     const parsedFormXml = React.useMemo(() => {
         try {
@@ -140,13 +142,13 @@ export const XrmFormXmlBuilderStory = () => {
         },
         {
             key: 'copy-formxml',
-            text: 'Copy FormXml',
-            iconProps: { iconName: 'Copy' },
+            text: copyState === 'copied' ? 'Copied to clipboard' : 'Copy FormXml',
+            iconProps: { iconName: copyState === 'copied' ? 'SkypeCheck' : 'Copy', styles: copyState === 'copied' ? { root: { color: '#107c10' } } : undefined },
             onClick: () => {
                 void copyFormXml()
             },
         },
-    ], [copyFormXml, undoAction, undoCount])
+    ], [copyFormXml, copyState, undoAction, undoCount])
 
     const languageOptions = React.useMemo<IComboBoxOption[]>(
         () => formTranslationLanguageOptions.map((option) => ({
@@ -173,11 +175,19 @@ export const XrmFormXmlBuilderStory = () => {
                                 }
                             }}
                         />
+                        <Toggle
+                            label={showXmlEditor ? 'XML' : 'Builder'}
+                            inlineLabel
+                            checked={showXmlEditor}
+                            onChange={(_event, checked) => setShowXmlEditor(!!checked)}
+                            onText="XML"
+                            offText="Builder"
+                        />
                     </div>
                 ),
             },
         ],
-        [languageOptions, selectedLanguageCode]
+        [languageOptions, selectedLanguageCode, showXmlEditor]
     )
 
     return (
@@ -193,8 +203,7 @@ export const XrmFormXmlBuilderStory = () => {
                 }}
             >
                 <PivotItem itemKey="preview" headerText="Preview" />
-                <PivotItem itemKey="builder" headerText="Builder" />
-                <PivotItem itemKey="formxml" headerText="FormXml" />
+                <PivotItem itemKey="workspace" headerText="FormXml" />
                 <PivotItem itemKey="translations" headerText="Translations" />
             </Pivot>
 
@@ -202,22 +211,25 @@ export const XrmFormXmlBuilderStory = () => {
 
             <div className={styles.content}>
                 <PcfContextProvider key={viewInstanceKey} userSettings={{ lcid: selectedLanguageCode }}>
-                    {activeView === 'builder' && (
-                        <FormXmlBuilderPanel
-                            key={viewInstanceKey}
-                            formXmlText={formXmlText}
-                            parsedFormXml={parsedFormXml.value}
-                            builderError={parsedFormXml.error}
-                            onFormXmlTextChange={setFormXmlText}
-                            strategy={builderStrategy}
-                            onUndoStackChange={(count, undo) => {
-                                setUndoCount(count)
-                                setUndoAction(() => undo)
-                            }}
-                        />
+                    {activeView === 'workspace' && (
+                        showXmlEditor
+                            ? <FormXmlEditor key={`${viewInstanceKey}:xml`} value={formXmlText} onChange={setFormXmlText} hideLabel />
+                            : (
+                                <FormXmlBuilderPanel
+                                    key={`${viewInstanceKey}:builder`}
+                                    formXmlText={formXmlText}
+                                    parsedFormXml={parsedFormXml.value}
+                                    builderError={parsedFormXml.error}
+                                    onFormXmlTextChange={setFormXmlText}
+                                    selectedLanguageCode={selectedLanguageCode}
+                                    strategy={builderStrategy}
+                                    onUndoStackChange={(count, undo) => {
+                                        setUndoCount(count)
+                                        setUndoAction(() => undo)
+                                    }}
+                                />
+                            )
                     )}
-
-                    {activeView === 'formxml' && <FormXmlEditor key={viewInstanceKey} value={formXmlText} onChange={setFormXmlText} />}
 
                     {activeView === 'translations' && (
                         <FormXmlTranslationsPanel
@@ -226,6 +238,7 @@ export const XrmFormXmlBuilderStory = () => {
                             parsedFormXml={parsedFormXml.value}
                             builderError={parsedFormXml.error}
                             onFormXmlTextChange={setFormXmlText}
+                            selectedLanguageCode={selectedLanguageCode}
                         />
                     )}
 

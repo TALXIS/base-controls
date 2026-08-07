@@ -22,7 +22,6 @@ import {
     getFieldEntries,
     getLabel,
     getTabs,
-    makeLabel,
     moveFieldToSectionInFormXml,
     moveFieldInFormXml,
     moveColumnInFormXml,
@@ -34,6 +33,7 @@ import {
     removeSectionFromFormXml,
     removeTabFromFormXml,
     reorderTabsInFormXml,
+    setLabelForLanguage,
     updateColumnInFormXml,
     updateFieldInFormXml,
     updateSectionInFormXml,
@@ -132,6 +132,7 @@ export const FormXmlBuilderPanel = ({
     parsedFormXml,
     builderError,
     onFormXmlTextChange,
+    selectedLanguageCode,
     strategy,
     onUndoStackChange,
 }: IFormXmlBuilderPanelProps) => {
@@ -718,14 +719,14 @@ export const FormXmlBuilderPanel = ({
                 applyFormXmlUpdate((formXml) =>
                     updateTabInFormXml(formXml, edit.tabIndex, (tab) => ({
                         ...tab,
-                        labels: makeLabel(value, DEFAULT_LANGUAGE_CODE),
+                        labels: setLabelForLanguage(tab.labels, value, selectedLanguageCode),
                     }))
                 )
             } else if (edit.type === "section") {
                 applyFormXmlUpdate((formXml) =>
                     updateSectionInFormXml(formXml, edit.tabIndex, edit.columnIndex, edit.sectionIndex, (section) => ({
                         ...section,
-                        labels: makeLabel(value, DEFAULT_LANGUAGE_CODE),
+                        labels: setLabelForLanguage(section.labels, value, selectedLanguageCode),
                     }))
                 )
             } else if (edit.type === "field") {
@@ -739,7 +740,7 @@ export const FormXmlBuilderPanel = ({
                         edit.cellIndex,
                         (cell) => ({
                             ...cell,
-                            labels: makeLabel(value, DEFAULT_LANGUAGE_CODE),
+                            labels: setLabelForLanguage(cell.labels, value, selectedLanguageCode),
                         })
                     )
                 )

@@ -1,7 +1,7 @@
-import { Dropdown, MessageBar, MessageBarType, SearchBox, Stack, Text, TextField, mergeStyleSets } from "@fluentui/react"
+import { MessageBar, MessageBarType, SearchBox, Stack, Text, TextField, mergeStyleSets } from "@fluentui/react"
 import { serializeFormXml } from "@talxis/client-metadata"
 import { useMemo, useState } from "react"
-import { DEFAULT_LANGUAGE_CODE, formTranslationLanguageOptions } from "../constants"
+import { DEFAULT_LANGUAGE_CODE } from "../constants"
 import {
     getColumns,
     getFieldEntries,
@@ -23,10 +23,9 @@ const styles = mergeStyleSets({
         minHeight: 520,
     },
     controls: {
-        display: "grid",
-        gridTemplateColumns: "minmax(220px, 280px) minmax(220px, 1fr)",
+        display: "flex",
+        flexDirection: "column",
         gap: 12,
-        alignItems: "end",
     },
     helperText: {
         color: "#605e5c",
@@ -60,8 +59,7 @@ const styles = mergeStyleSets({
 })
 
 export const FormXmlTranslationsPanel = (props: IFormXmlTranslationsPanelProps) => {
-    const { builderError, onFormXmlTextChange, parsedFormXml } = props
-    const [selectedLanguageCode, setSelectedLanguageCode] = useState<number>(DEFAULT_LANGUAGE_CODE)
+    const { builderError, onFormXmlTextChange, parsedFormXml, selectedLanguageCode } = props
     const [searchTerm, setSearchTerm] = useState("")
     const [draftValues, setDraftValues] = useState<Record<string, string>>({})
 
@@ -180,17 +178,8 @@ export const FormXmlTranslationsPanel = (props: IFormXmlTranslationsPanelProps) 
     return (
         <Stack className={styles.root}>
             <div className={styles.controls}>
-                <Dropdown
-                    label="Translation language"
-                    selectedKey={selectedLanguageCode}
-                    options={formTranslationLanguageOptions}
-                    onChange={(_event, option) => {
-                        if (typeof option?.key === "number") {
-                            setSelectedLanguageCode(option.key)
-                        }
-                    }}
-                />
                 <SearchBox
+                    label={`Search labels for language ${selectedLanguageCode}`}
                     placeholder="Search labels"
                     value={searchTerm}
                     onChange={(_event, nextValue) => setSearchTerm(nextValue ?? "")}
@@ -219,10 +208,9 @@ export const FormXmlTranslationsPanel = (props: IFormXmlTranslationsPanelProps) 
 
                         return (
                             <div key={entry.key} className={styles.card}>
-                                <Text variant="smallPlus" className={styles.location}>{entry.location}</Text>
-                                <Text variant="small" className={styles.defaultLabel}>Default (1033): {entry.defaultLabel || "-"}</Text>
+                                <Text variant="smallPlus" className={styles.location}>{entry.location} </Text>
+                                <Text variant="small" className={styles.defaultLabel}>{`(${entry.defaultLabel || "---"})`}</Text>
                                 <TextField
-                                    label={`Translation (${selectedLanguageCode})`}
                                     value={translatedValue}
                                     onChange={(_event, nextValue) => {
                                         setDraftValues((current) => ({
