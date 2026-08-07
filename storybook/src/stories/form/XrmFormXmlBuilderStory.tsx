@@ -11,6 +11,8 @@ import { formTranslationLanguageOptions } from '../../form/xrm-form/constants'
 import { FormXmlEditor } from '../../form/xrm-form/FormXmlEditor'
 import { defaultFormXml } from '../../form/xrm-form/defaultFormXml'
 import { createModelStore } from '../../form/shared/modelStore'
+import { useModelColumns } from '../../form/shared/useModelColumns'
+import { ModelBuilderPanel, TEditorMode } from '../../form/shared/ModelBuilderPanel'
 import { formMetadata, getDemoRecord } from '../../form/shared/formModel'
 import { PcfContextFactory } from '@talxis/base-controls/utils/adapters/pcf-context/factory/PcfContextFactory'
 
@@ -18,7 +20,7 @@ const builderModelStore = createModelStore()
 
 let currentFormXml = defaultFormXml
 
-type TBuilderView = 'preview' | 'workspace' | 'translations'
+type TBuilderView = 'preview' | 'workspace' | 'model' | 'translations'
 
 class StorybookFormXmlBuilderStrategy extends MemoryStrategy implements IXrmFormStrategy {
     public onGetFormXml(): string {
@@ -90,6 +92,8 @@ export const XrmFormXmlBuilderStory = () => {
     const [copyState, setCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle')
     const [selectedLanguageCode, setSelectedLanguageCode] = React.useState<number>(1033)
     const [showXmlEditor, setShowXmlEditor] = React.useState(false)
+    const [modelEditorMode, setModelEditorMode] = React.useState<TEditorMode>('ui')
+    const [modelColumns, setModelColumns] = useModelColumns(builderModelStore)
 
     const parsedFormXml = React.useMemo(() => {
         try {
@@ -113,6 +117,10 @@ export const XrmFormXmlBuilderStory = () => {
         currentFormXml = formXmlText
         setPreviewKey((value) => value + 1)
     }, [formXmlText, parsedFormXml.value])
+
+    React.useEffect(() => {
+        setPreviewKey((value) => value + 1)
+    }, [modelColumns])
 
     React.useEffect(() => {
         if (copyState === 'idle') {
@@ -194,6 +202,31 @@ export const XrmFormXmlBuilderStory = () => {
         [languageOptions, selectedLanguageCode, showXmlEditor]
     )
 
+    const modelCommandBarFarItems = React.useMemo<ICommandBarItemProps[]>(
+        () => [
+            {
+                key: 'model-editor-mode',
+                onRender: () => (
+                    <div className={styles.commandBarAside}>
+                        <Toggle
+                            inlineLabel
+                            checked={modelEditorMode === 'json'}
+                            styles={{
+                                root: {
+                                    marginBottom: 0
+                                }
+                            }}
+                            onChange={(_event, checked) => setModelEditorMode(checked ? 'json' : 'ui')}
+                            onText="JSON"
+                            offText="UI"
+                        />
+                    </div>
+                ),
+            },
+        ],
+        [modelEditorMode]
+    )
+
     return (
         <div className={styles.root}>
             <Pivot
@@ -208,10 +241,12 @@ export const XrmFormXmlBuilderStory = () => {
             >
                 <PivotItem itemKey="preview" headerText="Preview" />
                 <PivotItem itemKey="workspace" headerText="FormXml" />
+                <PivotItem itemKey="model" headerText="Model" />
                 <PivotItem itemKey="translations" headerText="Translations" />
             </Pivot>
 
-            <CommandBar items={commandBarItems} farItems={commandBarFarItems} />
+            {activeView === 'workspace' && <CommandBar items={commandBarItems} farItems={commandBarFarItems} />}
+            {activeView === 'model' && <CommandBar items={[]} farItems={modelCommandBarFarItems} />}
 
             <div className={styles.content}>
                 <PcfContextProvider key={viewInstanceKey} userSettings={{ lcid: selectedLanguageCode }}>
@@ -233,6 +268,16 @@ export const XrmFormXmlBuilderStory = () => {
                                     }}
                                 />
                             )
+                    )}
+
+                    {activeView === 'model' && (
+                        <ModelBuilderPanel
+                            key={viewInstanceKey}
+                            columns={modelColumns}
+                            onChange={setModelColumns}
+                            editorMode={modelEditorMode}
+                            onEditorModeChange={setModelEditorMode}
+                        />
                     )}
 
                     {activeView === 'translations' && (
