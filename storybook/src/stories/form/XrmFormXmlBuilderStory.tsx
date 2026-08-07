@@ -165,6 +165,18 @@ export const XrmFormXmlBuilderStory = () => {
                 key: 'language-selector',
                 onRender: () => (
                     <div className={styles.commandBarAside}>
+                        <Toggle
+                            inlineLabel
+                            checked={showXmlEditor}
+                            styles={{
+                                root: {
+                                    marginBottom: 0
+                                }
+                            }}
+                            onChange={(_event, checked) => setShowXmlEditor(!!checked)}
+                            onText="XML"
+                            offText="Builder"
+                        />
                         <ComboBox
                             className={styles.languageComboBox}
                             selectedKey={selectedLanguageCode}
@@ -174,14 +186,6 @@ export const XrmFormXmlBuilderStory = () => {
                                     setSelectedLanguageCode(option.key)
                                 }
                             }}
-                        />
-                        <Toggle
-                            label={showXmlEditor ? 'XML' : 'Builder'}
-                            inlineLabel
-                            checked={showXmlEditor}
-                            onChange={(_event, checked) => setShowXmlEditor(!!checked)}
-                            onText="XML"
-                            offText="Builder"
                         />
                     </div>
                 ),
