@@ -1403,16 +1403,15 @@ export const FormXmlBuilderPanel = ({
 
         const canvasRect = canvas.getBoundingClientRect()
         const localX = pointerX - canvasRect.left
-        const localY = pointerY - canvasRect.top
 
+        // Columns sit side by side and are ordered horizontally, so the target is purely a
+        // function of X - do not gate on the target's own height. Columns can have very
+        // different heights (e.g. one full of sections next to a near-empty one), and requiring
+        // the pointer's Y to fall inside the *target's* own short band made short columns nearly
+        // impossible to drop onto.
         const candidates = columns
             .map((_, columnIndex) => ({ columnIndex, rect: anchors.columns[getColumnDropId(columnIndex)] }))
-            .filter(({ columnIndex, rect }) =>
-                columnIndex !== sourceIndex
-                && !!rect
-                && localY >= rect.top
-                && localY <= rect.top + rect.height + 40
-            )
+            .filter(({ columnIndex, rect }) => columnIndex !== sourceIndex && !!rect)
             .sort((left, right) => {
                 const leftCenter = left.rect!.left + left.rect!.width / 2
                 const rightCenter = right.rect!.left + right.rect!.width / 2
@@ -1905,10 +1904,17 @@ export const FormXmlBuilderPanel = ({
                                 const left = dragOverSide === "before"
                                     ? targetRect.left - 8
                                     : targetRect.left + targetRect.width + 5
+                                // Span the full column row (not just the target's own height) so the
+                                // indicator reads consistently even when columns have very different heights.
+                                const columnRects = columns
+                                    .map((_, columnIndex) => anchors.columns[getColumnDropId(columnIndex)])
+                                    .filter((rect): rect is ICanvasRect => !!rect)
+                                const rowTop = Math.min(...columnRects.map((rect) => rect.top))
+                                const rowBottom = Math.max(...columnRects.map((rect) => rect.top + rect.height + 32))
                                 return (
                                     <div
                                         className={styles.columnDropIndicator}
-                                        style={{ top: targetRect.top, left, height: targetRect.height + 32 }}
+                                        style={{ top: rowTop, left, height: rowBottom - rowTop }}
                                     />
                                 )
                             })()}

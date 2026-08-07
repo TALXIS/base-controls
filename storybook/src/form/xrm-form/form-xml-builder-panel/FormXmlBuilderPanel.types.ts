@@ -1,5 +1,5 @@
 import type { IXrmFormStrategy } from "@talxis/base-controls/components/Form"
-import type { FormXml } from "@talxis/client-metadata"
+import type { FormXml, FormXmlCell, FormXmlSection, FormXmlTab } from "@talxis/client-metadata"
 
 export interface IFormXmlBuilderPanelProps {
     formXmlText: string
@@ -78,3 +78,43 @@ export interface ICanvasAnchors {
     sections: Record<string, ICanvasRect>
     fields: Record<string, ICanvasRect>
 }
+
+export interface IFormXmlTranslationsPanelProps {
+    formXmlText: string
+    parsedFormXml: FormXml | null
+    builderError: string | null
+    onFormXmlTextChange: (value: string) => void
+}
+
+export interface ITranslationEntryBase {
+    key: string
+    kind: "tab" | "section" | "field"
+    location: string
+    defaultLabel: string
+}
+
+export interface ITranslationTabEntry extends ITranslationEntryBase {
+    kind: "tab"
+    tabIndex: number
+    tab: FormXmlTab
+}
+
+export interface ITranslationSectionEntry extends ITranslationEntryBase {
+    kind: "section"
+    tabIndex: number
+    columnIndex: number
+    sectionIndex: number
+    section: FormXmlSection
+}
+
+export interface ITranslationFieldEntry extends ITranslationEntryBase {
+    kind: "field"
+    tabIndex: number
+    columnIndex: number
+    sectionIndex: number
+    rowIndex: number
+    cellIndex: number
+    cell: FormXmlCell
+}
+
+export type TTranslationEntry = ITranslationTabEntry | ITranslationSectionEntry | ITranslationFieldEntry

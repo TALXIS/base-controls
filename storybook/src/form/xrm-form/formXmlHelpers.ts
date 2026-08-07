@@ -7,6 +7,7 @@ import type {
     FormXml,
     FormXmlCell,
     FormXmlColumn,
+    FormXmlLabel,
     FormXmlLabels,
     FormXmlRow,
     FormXmlSection,
@@ -49,6 +50,30 @@ export const makeLabel = (value: string, languageCode: number): FormXmlLabels | 
                 languagecode: languageCode,
             },
         ],
+    }
+}
+
+export const setLabelForLanguage = (
+    labels: FormXmlLabels | undefined,
+    value: string,
+    languageCode: number
+): FormXmlLabels | undefined => {
+    const trimmedValue = value.trim()
+    const nextLabels = (labels?.label ?? []).filter((label) => label.languagecode !== languageCode)
+
+    if (trimmedValue) {
+        nextLabels.push({
+            description: trimmedValue,
+            languagecode: languageCode,
+        } as FormXmlLabel)
+    }
+
+    if (nextLabels.length === 0) {
+        return undefined
+    }
+
+    return {
+        label: nextLabels.sort((left, right) => left.languagecode - right.languagecode),
     }
 }
 
