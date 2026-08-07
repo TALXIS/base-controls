@@ -18,6 +18,7 @@ export const Pivot = (props: IPivotProps) => {
 
     return components.onRenderPivot({
         overflowBehavior: 'menu',
+        selectedKey: props.expandedTab,
         className: styles.pivotContainer,
         styles: {
             root: styles.pivot,
