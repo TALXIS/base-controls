@@ -1736,10 +1736,8 @@ export const FormXmlBuilderPanel = ({
                                 onFormReady={({ formContext }) => {
                                     formContextRef.current = formContext
                                     const expandedIdx = Math.max(0, tabs.findIndex((tab) => tab.expanded))
-                                    console.log("DEBUG onFormReady", { activeTabIndex, expandedIdx, selectionTabIndex: selection.tabIndex, tabsLen: tabs.length })
                                     if (activeTabIndex !== expandedIdx) {
                                         const tabCtx = formContext.ui.tabs.get(activeTabIndex)
-                                        console.log("DEBUG tabCtx found?", !!tabCtx)
                                         if (tabCtx) {
                                             tabCtx.setFocus()
                                         }
