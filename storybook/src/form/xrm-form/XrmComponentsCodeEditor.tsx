@@ -147,8 +147,10 @@ interface IXrmControlComponents {
 interface IXrmTabsComponents {
   onRenderTabs?: (props: {
     children?: React.ReactNode;
-    expandedTab: string;
-    onTabChange: (tabId: string) => void;
+    selectedKey?: string;
+    className?: string;
+    styles?: any;
+    onLinkClick?: (item?: { props: { itemKey?: string } }, ev?: any) => void;
   }) => React.ReactNode;
 }
 interface IXrmFormProps {

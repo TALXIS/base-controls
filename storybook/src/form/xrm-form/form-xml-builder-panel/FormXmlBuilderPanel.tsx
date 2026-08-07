@@ -671,6 +671,8 @@ export const FormXmlBuilderPanel = ({
             labelEl!.style.borderRadius = ""
             labelEl!.style.padding = ""
             labelEl!.style.minWidth = ""
+            labelEl!.style.lineHeight = ""
+            labelEl!.style.verticalAlign = ""
 
             if (!value) {
                 setInlineEdit(null)
@@ -724,6 +726,8 @@ export const FormXmlBuilderPanel = ({
                 labelEl!.style.borderRadius = ""
                 labelEl!.style.padding = ""
                 labelEl!.style.minWidth = ""
+                labelEl!.style.lineHeight = ""
+                labelEl!.style.verticalAlign = ""
                 setInlineEdit(null)
             }
         }

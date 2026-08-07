@@ -1,4 +1,4 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { mergeStyleSets } from "@fluentui/react";
 
 const FLEX_STYLES = {
     display: 'flex',
@@ -6,19 +6,8 @@ const FLEX_STYLES = {
     flexGrow: 1,
 };
 
-export const getPivotStyles = (theme: ITheme) => {
+export const getPivotItemStyles = () => {
     return mergeStyleSets({
-        pivot: {
-            //boxShadow: theme.effects.elevation4,
-            height: 48,
-            //zIndex: 1
-        },
-        pivotContainer: {
-            ...FLEX_STYLES,
-        },
-        itemContainer: {
-            ...FLEX_STYLES
-        },
         pivotItem: {
             ...FLEX_STYLES
         }
