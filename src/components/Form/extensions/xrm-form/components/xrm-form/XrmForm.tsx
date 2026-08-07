@@ -14,6 +14,8 @@ import { IFormApi } from '@components/Form/interfaces';
 import { IFormApiInternal } from '@components/Form/internal/FormApi';
 import { XrmFormComponentsContext } from './context';
 import { XrmFormComponents } from './components';
+import { TabComponents } from '@components/Form/components/ui';
+import { Pivot } from '@components/Form/components/ui/tabs/components/pivot/Pivot';
 
 
 export const XrmForm = (props: IXrmFormProps) => {
@@ -72,3 +74,11 @@ const XrmFormInternal = ({
         </XrmFormContext.Provider>
     </FormXmlContext.Provider>
 }
+
+<XrmForm components={{
+    tabs: {
+        onRenderTabs: (props) => <Pivot {...props} components={{
+            
+        }} />
+    }
+}} />
