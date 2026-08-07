@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { Form, MemoryStrategy } from '@talxis/base-controls/components/Form'
+import { Form, MemoryStrategy, XrmForm } from '@talxis/base-controls/components/Form'
 import { renderStory } from './storyHelpers'
 import { getDemoRecord, getFormColumns, formMetadata } from '../../form/shared/formModel'
 
@@ -14,6 +14,7 @@ const ScratchForm = () => {
     const [activeTab, setActiveTab] = React.useState('main')
 
     return (
+        <>
         <Form.Root strategy={strategy}>
             <Form.Notifications />
             <Form.Ribbon />
@@ -26,6 +27,7 @@ const ScratchForm = () => {
                 </Form.Tab>
             </Form.Tabs>
         </Form.Root>
+        </>
     )
 }
 

@@ -1,7 +1,9 @@
-import { IPivotProps } from "@fluentui/react";
 import { Pivot } from "./pivot";
 
-export interface ITabsComponentProps extends IPivotProps {
+export interface ITabsComponentProps {
+    children: React.ReactNode;
+    expandedTab: string;
+    onTabChange: (tabId: string) => void;
 }
 
 export interface ITabsComponents {

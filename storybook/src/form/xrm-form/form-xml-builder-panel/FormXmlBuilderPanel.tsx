@@ -5,7 +5,8 @@ import { XrmForm } from "@talxis/base-controls/components/Form"
 import type { IXrmFormContext } from "@talxis/base-controls/components/Form"
 import { serializeFormXml } from "@talxis/client-metadata"
 import type { FormXml, FormXmlCell, FormXmlSection } from "@talxis/client-metadata"
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { TabComponents } from '@talxis/base-controls/components/Form/components/ui';
 import { getFormColumns } from "../../shared/formModel"
 import { DEFAULT_LANGUAGE_CODE, getClassIdForColumn } from "../constants"
 import {
