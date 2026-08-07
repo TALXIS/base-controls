@@ -45,20 +45,20 @@ const stepperTabs = [
 const getStepIndex = (tabId) => Math.max(stepperTabs.findIndex((tab) => tab.id === tabId), 0);
 
 function StepperTabs(props) {
-  const { children, selectedKey, onLinkClick, orientation } = props;
+  const { children, expandedTab, onTabChange, orientation } = props;
   const tabs = React.Children.toArray(children).filter(React.isValidElement);
-  const activeStepIndex = getStepIndex(selectedKey);
-  const activeTab = tabs.find((tab) => tab.props.id === selectedKey) ?? tabs[0] ?? null;
+  const activeStepIndex = getStepIndex(expandedTab);
+  const activeTab = tabs.find((tab) => tab.props.id === expandedTab) ?? tabs[0] ?? null;
 
   return (
     <Stack tokens={{ childrenGap: 12 }}>
       <MuiStepper nonLinear orientation={orientation} activeStep={activeStepIndex}>
         {tabs.map((tab) => {
-          const isActive = tab.props.id === selectedKey;
+          const isActive = tab.props.id === expandedTab;
 
           return (
             <MuiStep key={tab.props.id} expanded={orientation === "vertical" ? isActive : undefined}>
-              <MuiStepButton color="inherit" onClick={() => onLinkClick({ props: { itemKey: tab.props.id } })}>
+              <MuiStepButton color="inherit" onClick={() => onTabChange(tab.props.id)}>
                 {tab.props.label || tab.props.id}
               </MuiStepButton>
               {orientation === "vertical" ? <MuiStepContent>{tab}</MuiStepContent> : null}
@@ -143,20 +143,20 @@ const stepperTabs = [
 const getStepIndex = (tabId) => Math.max(stepperTabs.findIndex((tab) => tab.id === tabId), 0);
 
 function StepperTabs(props) {
-  const { children, selectedKey, onLinkClick, orientation } = props;
+  const { children, expandedTab, onTabChange, orientation } = props;
   const tabs = React.Children.toArray(children).filter(React.isValidElement);
-  const activeStepIndex = getStepIndex(selectedKey);
-  const activeTab = tabs.find((tab) => tab.props.id === selectedKey) ?? tabs[0] ?? null;
+  const activeStepIndex = getStepIndex(expandedTab);
+  const activeTab = tabs.find((tab) => tab.props.id === expandedTab) ?? tabs[0] ?? null;
 
   return (
     <Stack tokens={{ childrenGap: 12 }}>
       <MuiStepper nonLinear orientation={orientation} activeStep={activeStepIndex}>
         {tabs.map((tab) => {
-          const isActive = tab.props.id === selectedKey;
+          const isActive = tab.props.id === expandedTab;
 
           return (
             <MuiStep key={tab.props.id} expanded={orientation === "vertical" ? isActive : undefined}>
-              <MuiStepButton color="inherit" onClick={() => onLinkClick({ props: { itemKey: tab.props.id } })}>
+              <MuiStepButton color="inherit" onClick={() => onTabChange(tab.props.id)}>
                 {tab.props.label || tab.props.id}
               </MuiStepButton>
               {orientation === "vertical" ? <MuiStepContent>{tab}</MuiStepContent> : null}

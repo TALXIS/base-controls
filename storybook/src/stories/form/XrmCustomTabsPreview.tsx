@@ -6,25 +6,25 @@ import { getCustomComponentsStrategy } from "../../form/xrm-form/xrmCustomCompon
 
 interface IXrmCustomTabsProps {
     children?: React.ReactNode
-    selectedKey?: string
-    onLinkClick?: (item?: { props: { itemKey?: string } }) => void
+    expandedTab: string
+    onTabChange: (tabId: string) => void
     orientation: "horizontal" | "vertical"
 }
 
 const StepperTabs = (props: IXrmCustomTabsProps) => {
     const tabs = React.Children.toArray(props.children).filter(React.isValidElement)
-    const activeTab = tabs.find((tab) => tab.props.id === props.selectedKey) ?? tabs[0] ?? null
-    const activeStepIndex = Math.max(tabs.findIndex((tab) => tab.props.id === props.selectedKey), 0)
+    const activeTab = tabs.find((tab) => tab.props.id === props.expandedTab) ?? tabs[0] ?? null
+    const activeStepIndex = Math.max(tabs.findIndex((tab) => tab.props.id === props.expandedTab), 0)
 
     return (
         <Stack tokens={{ childrenGap: 12 }}>
             <Stepper nonLinear orientation={props.orientation} activeStep={activeStepIndex}>
                 {tabs.map((tab) => {
-                    const isActive = tab.props.id === props.selectedKey
+                    const isActive = tab.props.id === props.expandedTab
 
                     return (
                         <Step key={tab.props.id} expanded={props.orientation === "vertical" ? isActive : undefined}>
-                            <StepButton color="inherit" onClick={() => props.onLinkClick?.({ props: { itemKey: tab.props.id } })}>
+                            <StepButton color="inherit" onClick={() => props.onTabChange(tab.props.id)}>
                                 {tab.props.label || tab.props.id}
                             </StepButton>
                             {props.orientation === "vertical" ? <StepContent>{tab}</StepContent> : null}

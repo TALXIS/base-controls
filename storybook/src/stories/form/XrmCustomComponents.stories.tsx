@@ -187,20 +187,20 @@ const XrmCustomComponentsExample = () => {
 });
 
 function XrmStepperTabs(props) {
-  const { children, selectedKey, onLinkClick, orientation } = props;
+  const { children, expandedTab, onTabChange, orientation } = props;
   const tabs = React.Children.toArray(children).filter(React.isValidElement);
-  const activeTab = tabs.find((tab) => tab.props.id === selectedKey) ?? tabs[0] ?? null;
-  const activeStepIndex = Math.max(tabs.findIndex((tab) => tab.props.id === selectedKey), 0);
+  const activeTab = tabs.find((tab) => tab.props.id === expandedTab) ?? tabs[0] ?? null;
+  const activeStepIndex = Math.max(tabs.findIndex((tab) => tab.props.id === expandedTab), 0);
 
   return (
     <Stack tokens={{ childrenGap: 12 }}>
       <Stepper nonLinear orientation={orientation} activeStep={activeStepIndex}>
         {tabs.map((tab) => {
-          const isActive = tab.props.id === selectedKey;
+          const isActive = tab.props.id === expandedTab;
 
           return (
             <Step key={tab.props.id} expanded={orientation === "vertical" ? isActive : undefined}>
-              <StepButton color="inherit" onClick={() => onLinkClick({ props: { itemKey: tab.props.id } })}>
+              <StepButton color="inherit" onClick={() => onTabChange(tab.props.id)}>
                 {tab.props.label || tab.props.id}
               </StepButton>
               {orientation === "vertical" ? <StepContent>{tab}</StepContent> : null}
