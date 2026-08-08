@@ -433,8 +433,8 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                 PrimaryNameAttribute: "name",
                 LogicalName: "field",
                 EntitySetName: "fields",
-                DisplayName: { UserLocalizedLabel: { Label: "Field", LanguageCode: 1033 }, LocalizedLabels: [] },
-                DisplayCollectionName: { UserLocalizedLabel: { Label: "Fields", LanguageCode: 1033 }, LocalizedLabels: [] },
+                DisplayName: "Field",
+                DisplayCollectionName: "Fields"
             },
         })
         const ds = new Dataset(provider)
