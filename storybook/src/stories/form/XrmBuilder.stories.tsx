@@ -25,6 +25,6 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
-    name: 'FormXml Builder',
+    name: 'Builder',
     render: () => <XrmFormXmlBuilderStory />,
 }

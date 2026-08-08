@@ -127,9 +127,26 @@ const NotesControl = () => {
 };
 
 const XrmCustomComponentsExample = () => {
+  const [formContext, setFormContext] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!formContext) return;
+
+    const attribute = formContext.getAttribute("number");
+    const validate = () => {
+      const score = Number(attribute.getValue() ?? 0);
+      attribute.setIsValid(score >= 50, "Momentum score must be at least 50 to reflect active engagement.");
+    };
+
+    validate();
+    attribute.addOnChange(validate);
+    return () => attribute.removeOnChange(validate);
+  }, [formContext]);
+
   return (
     <XrmForm
       strategy={strategy}
+      onFormReady={({ formContext: nextFormContext }) => setFormContext(nextFormContext)}
       components={{
         control: {
           onRenderControl: (props) => {

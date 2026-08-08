@@ -10,6 +10,7 @@ export interface IFormTabsProps {
     components?: Partial<ITabsComponents>;
 }
 
+
 export const Tabs = (props: IFormTabsProps) => {
     const { expandedTab, children, onTabChange } = props;
     const components = { ...TabComponents, ...props.components };
@@ -18,5 +19,5 @@ export const Tabs = (props: IFormTabsProps) => {
         expandedTab,
         children,
         onTabChange,
-    });
+    })
 };

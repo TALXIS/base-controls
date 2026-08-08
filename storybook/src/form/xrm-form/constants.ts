@@ -1,5 +1,6 @@
 import { BaseControls } from "@talxis/base-controls"
 import { DataTypes, IColumn } from "@talxis/client-libraries"
+import type { IDropdownOption } from "@fluentui/react"
 
 export const CONTROL_CLASSIDS = {
     text: "{4273EDBD-AC1D-40D3-9FB2-095C621B552D}",
@@ -39,6 +40,24 @@ const CONTROL_CLASSIDS_BY_DATA_TYPE: Record<string, string> = {
 
 export const DEFAULT_CLASSID = CONTROL_CLASSIDS.text
 export const DEFAULT_LANGUAGE_CODE = 1033
+
+export const formTranslationLanguageOptions: IDropdownOption[] = [
+    { key: 1033, text: "English (1033)" },
+    { key: 3082, text: "Spanish (3082)" },
+    { key: 2052, text: "Chinese (Simplified) (2052)" },
+    { key: 1028, text: "Chinese (Traditional) (1028)" },
+    { key: 1046, text: "Portuguese (Brazil) (1046)" },
+    { key: 1040, text: "Italian (1040)" },
+    { key: 1041, text: "Japanese (1041)" },
+    { key: 1042, text: "Korean (1042)" },
+    { key: 1025, text: "Arabic (1025)" },
+    { key: 1049, text: "Russian (1049)" },
+    { key: 1081, text: "Hindi (1081)" },
+    { key: 1029, text: "Czech (1029)" },
+    { key: 1051, text: "Slovak (1051)" },
+    { key: 1031, text: "German (1031)" },
+    { key: 1036, text: "French (1036)" },
+] as IDropdownOption[]
 
 export const getClassIdForColumn = (column: IColumn | undefined) => {
     if (!column) {

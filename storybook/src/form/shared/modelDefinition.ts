@@ -244,11 +244,6 @@ export const initialModelColumns: IColumn[] = [
         alias: "url",
         displayName: "Url",
     }),
-    createModelColumn(DataTypes.LookupSimple, {
-        name: "lookup",
-        alias: "lookup",
-        displayName: "Lookup",
-    }),
     createModelColumn(DataTypes.TwoOptions, {
         name: "twooptions",
         alias: "twooptions",

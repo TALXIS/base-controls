@@ -38,7 +38,7 @@ export const getDemoData = () => {
             "id": "alice.jones@company.com",
             "phone": "720453674",
             "url": "https://www.example.com",
-            "number": 12345678,
+            "number": 0,
             "decimal": 54321.123,
             "dateonly": "2024-10-05",
             "datetime": "2023-01-15T08:45:30",
