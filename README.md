@@ -43,8 +43,6 @@ Base Controls handle the many small details that are easy to overlook—number f
 | `DatasetControl` | Dataset-based control |
 | `Form` | React-composed form runtime for building record-driven forms out of the field controls above, plus a FormXml-driven variant for model-driven app forms |
 
-`Form` is documented separately — see [`src/components/Form/README.md`](./src/components/Form/README.md) for the composed React form runtime, and [`src/components/Form/extensions/xrm-form/README.md`](./src/components/Form/extensions/xrm-form/README.md) for the FormXml/model-driven-app extension.
-
 ## Quick Start
 
 Install the package:
