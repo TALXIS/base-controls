@@ -41,6 +41,9 @@ Base Controls handle the many small details that are easy to overlook—number f
 | `Duration` | Duration field |
 | `Grid` | Data grid |
 | `DatasetControl` | Dataset-based control |
+| `Form` | React-composed form runtime for building record-driven forms out of the field controls above, plus a FormXml-driven variant for model-driven app forms |
+
+`Form` is documented separately — see [`src/components/Form/README.md`](./src/components/Form/README.md) for the composed React form runtime, and [`src/components/Form/extensions/xrm-form/README.md`](./src/components/Form/extensions/xrm-form/README.md) for the FormXml/model-driven-app extension.
 
 ## Quick Start
 
@@ -75,6 +78,16 @@ See the [Usage Guide](./docs/usage.md) for detailed examples covering precision,
 - [**Usage Guide**](./docs/usage.md) — How to use Base Controls in your PCF, including extensibility and advanced examples
 - [**Developing**](./docs/developing.md) — Running a local build in PCF or Portal, and troubleshooting
 - [**Releasing**](./docs/releasing.md) — How to create a new release and publish to NPM
+
+## Storybook
+
+Every control, including `Form` and its FormXml/Xrm builder, has live, editable examples in Storybook under `./storybook`.
+
+```bash
+npm run storybook
+```
+
+This starts a local Storybook instance where you can browse each control's stories, including the interactive Form/Xrm Form XML Builder.
 
 ## License
 
