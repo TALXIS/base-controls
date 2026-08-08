@@ -47,12 +47,14 @@ export class PcfContextFactory {
     public static createContext(params: IPcfContextFactoryParams = {}): ComponentFramework.Context<any, any> {
         const { baseContext, userSettings, mode, factory, fluentDesignLanguage } = params;
         const xrm = XrmFactory.createXrm({ userSettings });
+        const resolvedUserSettings = baseContext?.userSettings ?? new UserSettings(userSettings);
+        const formatting = Formatting.Get((resolvedUserSettings as { formatInfoCultureName?: string }).formatInfoCultureName);
 
         const context: ComponentFramework.Context<any, any> = {
             ...baseContext,
-            formatting: Formatting.Get(userSettings?.formatInfoCultureName),
+            formatting,
             client: new Client(),
-            userSettings: baseContext?.userSettings ?? new UserSettings(userSettings),
+            userSettings: resolvedUserSettings,
             events: baseContext?.events ?? {},
             mode: baseContext?.mode ?? new Mode(mode),
             webAPI: baseContext?.webAPI ?? xrm.WebApi as any,
@@ -65,7 +67,7 @@ export class PcfContextFactory {
             factory: baseContext?.factory ?? this._createFactoryApi(factory),
             fluentDesignLanguage: fluentDesignLanguage ?? baseContext?.fluentDesignLanguage
         };
-        context.userSettings.numberFormattingInfo = Formatting.Get().numberFormattingInfo;
+        context.userSettings.numberFormattingInfo = formatting.numberFormattingInfo;
         return context;
     }
 
