@@ -39,6 +39,7 @@ interface IModelBuilderPanelProps {
     editorMode: TEditorMode
     onEditorModeChange: (mode: TEditorMode) => void
     lockedFieldNames?: Set<string>
+    primaryIdAttribute?: string
 }
 
 export type TEditorMode = "ui" | "json"
@@ -67,6 +68,7 @@ const styles = mergeStyleSets({
         display: "flex",
         flexDirection: "column",
         gap: 16,
+        paddingTop: 16,
     },
     metadataList: {
         display: "flex",
@@ -245,9 +247,10 @@ const LookupTargetsField = () => {
     )
 }
 
-const OptionSetField = () => {
+const OptionSetField = (props: { maxOptions?: number; restrictValueTo01?: boolean }) => {
     const field = useField()
     const optionSet = normalizeOptions(field?.getValue())
+    const atMaxOptions = props.maxOptions !== undefined && optionSet.length >= props.maxOptions
 
     return (
         <div className={styles.metadataList}>
@@ -280,8 +283,15 @@ const OptionSetField = () => {
                     <SpinButton
                         value={String(option.Value)}
                         min={0}
+                        max={props.restrictValueTo01 ? 1 : undefined}
                         step={1}
-                        onChange={(_event, nextValue) => field?.setValue(optionSet.map((item, itemIndex) => itemIndex === index ? { ...item, Value: Number(nextValue ?? 0) } : item))}
+                        onChange={(_event, nextValue) => {
+                            let value = Number(nextValue ?? 0)
+                            if (props.restrictValueTo01) {
+                                value = value <= 0 ? 0 : 1
+                            }
+                            field?.setValue(optionSet.map((item, itemIndex) => itemIndex === index ? { ...item, Value: value } : item))
+                        }}
                     />
                     <input
                         type="color"
@@ -295,7 +305,18 @@ const OptionSetField = () => {
             ))}
 
             <div className={styles.metadataFooter}>
-                <ActionButton iconProps={{ iconName: "Add" }} onClick={() => field?.setValue([...optionSet, { Label: `Option ${optionSet.length + 1}`, Value: optionSet.length + 1, Color: "" }])}>Add option</ActionButton>
+                <ActionButton
+                    iconProps={{ iconName: "Add" }}
+                    disabled={atMaxOptions}
+                    onClick={() => {
+                        const nextValue = props.restrictValueTo01
+                            ? (optionSet.some((option) => option.Value === 0) ? 1 : 0)
+                            : optionSet.length + 1
+                        field?.setValue([...optionSet, { Label: `Option ${optionSet.length + 1}`, Value: nextValue, Color: "" }])
+                    }}
+                >
+                    Add option
+                </ActionButton>
             </div>
         </div>
     )
@@ -350,14 +371,21 @@ const FieldMetadataSection = (props: { dataType: string }) => {
 
     if (definition?.supportsOptionSet) {
         const optionSet = normalizeOptions(optionSetField?.getValue())
-        const validation = { error: optionSet.length === 0, errorMessage: "Add at least one option." }
+        const isTwoOptions = props.dataType === DataTypes.TwoOptions
+        const hasDuplicateValues = new Set(optionSet.map((option) => option.Value)).size !== optionSet.length
+
+        const validation = optionSet.length === 0
+            ? { error: true, errorMessage: "Add at least one option." }
+            : isTwoOptions && hasDuplicateValues
+                ? { error: true, errorMessage: "Two Options fields must have one option set to 0 and one set to 1." }
+                : { error: false, errorMessage: "" }
 
         return (
             <Form.Column>
                 <Form.Section label="Options" cellLabelPosition="Top">
                     <Form.Field name="optionSet" validation={validation}>
                         <Form.Cell label={null}>
-                            <Form.Control components={{ onRenderControl: () => <OptionSetField /> }} />
+                            <Form.Control components={{ onRenderControl: () => <OptionSetField maxOptions={props.dataType === DataTypes.TwoOptions ? 2 : undefined} restrictValueTo01={props.dataType === DataTypes.TwoOptions} /> }} />
                         </Form.Cell>
                     </Form.Field>
                 </Form.Section>
@@ -385,13 +413,13 @@ const DuplicateNameWarning = (props: { columns: IColumn[]; selectedIndex: number
 }
 
 export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
-    const { columns, editorMode, onChange, lockedFieldNames = new Set<string>() } = props
+    const { columns, editorMode, onChange, lockedFieldNames = new Set<string>(), primaryIdAttribute } = props
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const [draftColumn, setDraftColumn] = useState<IColumn | null>(null)
     const [selectedRecordNames, setSelectedRecordNames] = useState<string[]>([])
     const [jsonValue, setJsonValue] = useState(() => serializeModelColumns(columns))
     const [jsonError, setJsonError] = useState<string | null>(null)
-    const [lockedFieldWarning, setLockedFieldWarning] = useState<string | null>(null)
+    const [panelNotification, setPanelNotification] = useState<string | null>(null)
 
     const pcfContext = usePcfContext()
     const pcfContextRef = useRef(pcfContext)
@@ -405,8 +433,8 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                 PrimaryNameAttribute: "name",
                 LogicalName: "field",
                 EntitySetName: "fields",
-                DisplayName: "Field",
-                DisplayCollectionName: "Fields",
+                DisplayName: { UserLocalizedLabel: { Label: "Field", LanguageCode: 1033 }, LocalizedLabels: [] },
+                DisplayCollectionName: { UserLocalizedLabel: { Label: "Fields", LanguageCode: 1033 }, LocalizedLabels: [] },
             },
         })
         const ds = new Dataset(provider)
@@ -448,17 +476,11 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
     useEffect(() => {
         dataset.setInterceptor("onOpenDatasetItem", (entityReference) => {
             const name = entityReference.id.guid
-
-            if (lockedFieldNames.has(name)) {
-                setLockedFieldWarning(`"${name}" is used on the form and can't be edited until it's removed from the FormXml.`)
-                return
-            }
-
-            setLockedFieldWarning(null)
             const realIndex = columns.findIndex((column) => column.name === name)
             setSelectedIndex(realIndex >= 0 ? realIndex : null)
+            setPanelNotification(null)
         })
-    }, [dataset, columns, lockedFieldNames])
+    }, [dataset, columns])
 
     useEffect(() => {
         const handleSelectionChanged = (ids: string[]) => setSelectedRecordNames(ids)
@@ -477,6 +499,41 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
     }, [columns.length, selectedIndex])
 
     const selectedColumn = draftColumn ?? (selectedIndex !== null ? columns[selectedIndex] ?? null : null)
+    const selectedColumnDefinition = selectedColumn ? getModelTypeDefinition(selectedColumn.dataType) : undefined
+
+    const panelNotificationMessages = [
+        ...(panelNotification ? [{ text: panelNotification, level: 'ERROR' as const }] : []),
+        ...(selectedColumnDefinition?.supportsLookupTargets
+            ? [{ text: 'Lookups are currently only supported in environments with Xrm (model-driven apps).', level: 'INFO' as const }]
+            : []),
+    ]
+
+    const getDeleteLockReason = (name: string): string | null => {
+        if (name === primaryIdAttribute) {
+            return `"${name}" is the primary ID attribute and can't be deleted.`
+        }
+
+        if (lockedFieldNames.has(name)) {
+            return `"${name}" is used on the form and can't be deleted until it's removed from the FormXml.`
+        }
+
+        return null
+    }
+
+    const getBulkDeleteLockMessage = (names: string[]): string | null => {
+        const primaryLocked = names.filter((name) => name === primaryIdAttribute)
+        const formXmlLocked = names.filter((name) => name !== primaryIdAttribute && lockedFieldNames.has(name))
+
+        const parts: string[] = []
+        if (primaryLocked.length > 0) {
+            parts.push(`${primaryLocked.map((name) => `"${name}"`).join(", ")} ${primaryLocked.length === 1 ? "is" : "are"} the primary ID attribute and can't be deleted.`)
+        }
+        if (formXmlLocked.length > 0) {
+            parts.push(`${formXmlLocked.map((name) => `"${name}"`).join(", ")} ${formXmlLocked.length === 1 ? "is" : "are"} used on the form and can't be deleted until removed from the FormXml.`)
+        }
+
+        return parts.length > 0 ? parts.join(" ") : null
+    }
 
     const updateColumns = (updater: (current: IColumn[]) => IColumn[]) => {
         onChange(updater(columns))
@@ -485,6 +542,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
     const closePanel = () => {
         setDraftColumn(null)
         setSelectedIndex(null)
+        setPanelNotification(null)
     }
 
     const applyMetadataChanges = (column: IColumn, updatedData: { [key: string]: any }) => {
@@ -551,6 +609,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
         const definition = getModelTypeDefinition(dataType)
 
         setSelectedIndex(null)
+        setPanelNotification(null)
         setDraftColumn({
             ...created,
             name: nextName,
@@ -579,6 +638,12 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
         }
 
         const column = columns[selectedIndex]
+        const lockReason = column ? getDeleteLockReason(column.name) : null
+        if (lockReason) {
+            setPanelNotification(lockReason)
+            return
+        }
+
         const result = await pcfContextRef.current.navigation.openConfirmDialog({
             title: "Delete field",
             text: `Are you sure you want to delete the field "${column?.name}"?`,
@@ -614,6 +679,12 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
 
     const deleteSelectedFields = async () => {
         if (selectedRecordNames.length === 0) {
+            return
+        }
+
+        const lockMessage = getBulkDeleteLockMessage(selectedRecordNames)
+        if (lockMessage) {
+            dataset.getDataProvider().setError(true, lockMessage)
             return
         }
 
@@ -686,12 +757,6 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
             </Stack>
         )}
 
-        {editorMode === "ui" && lockedFieldWarning && (
-            <MessageBar messageBarType={MessageBarType.warning} onDismiss={() => setLockedFieldWarning(null)}>
-                {lockedFieldWarning}
-            </MessageBar>
-        )}
-
         {editorMode === "ui" && (
             <div className={styles.tableWrap}>
                 <DatasetControl
@@ -740,7 +805,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
                             }
                         }}
                     >
-                        <Form.Notifications />
+                        <Form.Notifications messages={panelNotificationMessages} />
                         <Form.Ribbon
                             components={{
                                 onRenderCommandBar: (commandBarProps) => (

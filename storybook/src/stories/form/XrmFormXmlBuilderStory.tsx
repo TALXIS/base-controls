@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
-import { ComboBox, IComboBoxOption, Pivot, PivotItem, Toggle, mergeStyleSets } from '@fluentui/react'
+import Editor from '@monaco-editor/react'
+import { ComboBox, IComboBoxOption, MessageBar, MessageBarType, Pivot, PivotItem, Toggle, mergeStyleSets } from '@fluentui/react'
 import { parseFormXml } from '@talxis/client-metadata'
 import { XrmForm } from '@talxis/base-controls/components/Form'
 import type { IXrmFormStrategy } from '@talxis/base-controls/components/Form'
@@ -12,6 +13,7 @@ import { formTranslationLanguageOptions } from '../../form/xrm-form/constants'
 import { FormXmlEditor } from '../../form/xrm-form/FormXmlEditor'
 import { defaultFormXml } from '../../form/xrm-form/defaultFormXml'
 import { createModelStore, serializeModelColumns } from '../../form/shared/modelStore'
+import { baseEditorOptions } from '../../form/shared/monacoEditor'
 import { useModelColumns } from '../../form/shared/useModelColumns'
 import { ModelBuilderPanel, TEditorMode } from '../../form/shared/ModelBuilderPanel'
 import { builderMetadata, getBuilderRecord } from '../../form/xrm-form/builderData'
@@ -21,7 +23,7 @@ const builderModelStore = createModelStore()
 
 let currentFormXml = defaultFormXml
 
-type TBuilderView = 'preview' | 'workspace' | 'model' | 'translations'
+type TBuilderView = 'preview' | 'workspace' | 'model' | 'translations' | 'data'
 
 class StorybookFormXmlBuilderStrategy extends MemoryStrategy implements IXrmFormStrategy {
     public onGetFormXml(): string {
@@ -82,6 +84,18 @@ const styles = mergeStyleSets({
     ribbonHint: {
         color: '#605e5c',
     },
+    dataEditorWrap: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        height: '100%',
+        minHeight: 0,
+    },
+    dataEditorFrame: {
+        flex: 1,
+        minHeight: 0,
+        overflow: 'hidden',
+    },
 })
 
 export const XrmFormXmlBuilderStory = () => {
@@ -92,6 +106,9 @@ export const XrmFormXmlBuilderStory = () => {
     const [undoAction, setUndoAction] = React.useState<(() => void) | null>(null)
     const [copyState, setCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle')
     const [modelCopyState, setModelCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle')
+    const [dataCopyState, setDataCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle')
+    const [dataJsonText, setDataJsonText] = React.useState(() => JSON.stringify(builderRecord, null, 2))
+    const [dataJsonError, setDataJsonError] = React.useState<string | null>(null)
     const [selectedLanguageCode, setSelectedLanguageCode] = React.useState<number>(1033)
     const [showXmlEditor, setShowXmlEditor] = React.useState(false)
     const [modelEditorMode, setModelEditorMode] = React.useState<TEditorMode>('ui')
@@ -160,6 +177,15 @@ export const XrmFormXmlBuilderStory = () => {
         return () => window.clearTimeout(timeoutId)
     }, [modelCopyState])
 
+    React.useEffect(() => {
+        if (dataCopyState === 'idle') {
+            return
+        }
+
+        const timeoutId = window.setTimeout(() => setDataCopyState('idle'), 1500)
+        return () => window.clearTimeout(timeoutId)
+    }, [dataCopyState])
+
     const copyFormXml = React.useCallback(async () => {
         try {
             await navigator.clipboard.writeText(formXmlText)
@@ -177,6 +203,44 @@ export const XrmFormXmlBuilderStory = () => {
             setModelCopyState('failed')
         }
     }, [modelColumns])
+
+    React.useEffect(() => {
+        if (activeView !== 'data') {
+            return
+        }
+
+        setDataJsonText(JSON.stringify(builderRecord, null, 2))
+        setDataJsonError(null)
+    }, [activeView])
+
+    React.useEffect(() => {
+        if (activeView !== 'data') {
+            return
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            try {
+                const parsed = JSON.parse(dataJsonText)
+                Object.keys(builderRecord).forEach((key) => delete (builderRecord as { [key: string]: any })[key])
+                Object.assign(builderRecord, parsed)
+                setDataJsonError(null)
+                setPreviewKey((value) => value + 1)
+            } catch (error) {
+                setDataJsonError((error as Error).message)
+            }
+        }, 150)
+
+        return () => window.clearTimeout(timeoutId)
+    }, [activeView, dataJsonText])
+
+    const copyDataJson = React.useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(dataJsonText)
+            setDataCopyState('copied')
+        } catch {
+            setDataCopyState('failed')
+        }
+    }, [dataJsonText])
 
     const commandBarItems = React.useMemo<ICommandBarItemProps[]>(() => [
         {
@@ -274,6 +338,17 @@ export const XrmFormXmlBuilderStory = () => {
         },
     ], [copyModelJson, modelCopyState])
 
+    const dataCommandBarItems = React.useMemo<ICommandBarItemProps[]>(() => [
+        {
+            key: 'copy-data',
+            text: dataCopyState === 'copied' ? 'Copied to clipboard' : 'Copy data',
+            iconProps: { iconName: dataCopyState === 'copied' ? 'SkypeCheck' : 'Copy', styles: dataCopyState === 'copied' ? { root: { color: '#107c10' } } : undefined },
+            onClick: () => {
+                void copyDataJson()
+            },
+        },
+    ], [copyDataJson, dataCopyState])
+
     const modelCommandBarFarItems = React.useMemo<ICommandBarItemProps[]>(
         () => [
             {
@@ -314,12 +389,14 @@ export const XrmFormXmlBuilderStory = () => {
                 <PivotItem itemKey="preview" headerText="Preview" />
                 <PivotItem itemKey="workspace" headerText="FormXml" />
                 <PivotItem itemKey="model" headerText="Model" />
+                <PivotItem itemKey="data" headerText="Data" />
                 <PivotItem itemKey="translations" headerText="Translations" />
             </Pivot>
 
             {activeView === 'workspace' && <CommandBar items={commandBarItems} farItems={commandBarFarItems} />}
             {activeView === 'model' && <CommandBar items={modelCommandBarItems} farItems={modelCommandBarFarItems} />}
             {activeView === 'translations' && <CommandBar items={[]} farItems={translationsCommandBarFarItems} />}
+            {activeView === 'data' && <CommandBar items={dataCommandBarItems} farItems={[]} />}
 
             <div className={styles.content}>
                 <PcfContextProvider key={viewInstanceKey} userSettings={{ lcid: selectedLanguageCode }}>
@@ -352,6 +429,7 @@ export const XrmFormXmlBuilderStory = () => {
                             editorMode={modelEditorMode}
                             onEditorModeChange={setModelEditorMode}
                             lockedFieldNames={fieldNamesInFormXml}
+                            primaryIdAttribute={builderMetadata.PrimaryIdAttribute}
                         />
                     )}
 
@@ -364,6 +442,32 @@ export const XrmFormXmlBuilderStory = () => {
                             onFormXmlTextChange={setFormXmlText}
                             selectedLanguageCode={selectedLanguageCode}
                         />
+                    )}
+
+                    {activeView === 'data' && (
+                        <div className={styles.dataEditorWrap}>
+                            {dataJsonError && (
+                                <MessageBar messageBarType={MessageBarType.error} isMultiline>
+                                    {dataJsonError}
+                                </MessageBar>
+                            )}
+                            <div className={styles.dataEditorFrame}>
+                                <Editor
+                                    height="100%"
+                                    defaultLanguage="json"
+                                    language="json"
+                                    value={dataJsonText}
+                                    onChange={(nextValue) => setDataJsonText(nextValue ?? '')}
+                                    options={{
+                                        ...baseEditorOptions,
+                                        formatOnPaste: true,
+                                        formatOnType: true,
+                                        padding: { top: 12, bottom: 12 },
+                                    }}
+                                    theme="vs-light"
+                                />
+                            </div>
+                        </div>
                     )}
 
                     {activeView === 'preview' && (
