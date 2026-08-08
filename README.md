@@ -79,13 +79,7 @@ See the [Usage Guide](./docs/usage.md) for detailed examples covering precision,
 
 ## Storybook
 
-Every control, including `Form` and its FormXml/Xrm builder, has live, editable examples in Storybook under `./storybook`.
-
-```bash
-npm run storybook
-```
-
-This starts a local Storybook instance where you can browse each control's stories, including the interactive Form/Xrm Form XML Builder.
+Live, editable examples are available at [talxis.github.io/base-controls](https://talxis.github.io/base-controls).
 
 ## License
 
