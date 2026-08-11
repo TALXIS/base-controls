@@ -5,8 +5,8 @@ import { IDataset } from "@talxis/client-libraries";
 import { IMapProvider } from "./providers";
 
 
-export interface IMap extends IControl<IMapParameters, IMapOutputs, Partial<ITranslations<typeof mapTranslations>>, any> {
-    
+export interface IMap extends IControl<IMapParameters, IMapOutputs, Partial<ITranslations<typeof mapTranslations>>, unknown> {
+
 }
 
 interface IMapEntityProps {
