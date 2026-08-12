@@ -1,6 +1,6 @@
 import { IButtonProps, IMessageBar, IShimmerProps, ISpinnerProps } from "@fluentui/react";
-import { IParameters } from "../../interfaces";
-import { IControl, IOutputs } from "../../interfaces/context";
+import { IParameters } from "@interfaces";
+import { IControl, IOutputs } from "@interfaces/context";
 import { NestedControl } from "./NestedControl";
 import { DataType } from "@talxis/client-libraries";
 import { getDefaultNestedControlRendererTranslations } from "./translations";

@@ -2,13 +2,13 @@ import { useTheme, ITextFieldStyles, IComboBoxStyles, IDatePickerStyles, IToggle
 import { Client, DataProvider, ICommand, IRecord } from "@talxis/client-libraries";
 import React from "react";
 import { useDebouncedCallback } from "use-debounce";
-import { IFluentDesignState, ControlTheme } from "../../../../../utils";
-import { NestedControlRenderer } from "../../../../NestedControlRenderer";
-import { getJustifyContent } from "../../../grid/styles";
-import { useGridInstance } from "../../../grid/useGridInstance";
+import { IFluentDesignState, ControlTheme } from "@utils";
+import { NestedControlRenderer } from "@components/NestedControlRenderer";
+import { getJustifyContent } from "@components/Grid/grid/styles";
+import { useGridInstance } from "@components/Grid/grid/useGridInstance";
 import { ICellProps } from "../Cell";
 import { getCellContentStyles } from "./styles";
-import { useAgGridInstance } from "../../../grid/ag-grid/useAgGridInstance";
+import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
 
 const client = new Client();
 

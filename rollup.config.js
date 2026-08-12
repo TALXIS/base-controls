@@ -1,13 +1,17 @@
+import alias from '@rollup/plugin-alias';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
-import { visualizer } from "rollup-plugin-visualizer";
+import { visualizer } from 'rollup-plugin-visualizer';
 import postcss from 'rollup-plugin-postcss';
 import dts from 'rollup-plugin-dts';
 import resolve from '@rollup/plugin-node-resolve';
 import del from 'rollup-plugin-delete';
 import { glob } from 'glob';
+import path from 'path';
 
 const inputs = glob.sync("src/**/index.ts");
+const srcRoot = path.resolve('src');
+const internalAliases = ['@components', '@hooks', '@interfaces', '@legacy', '@utils'];
 
 const externalDeps = [
     '@talxis/react-components',
@@ -34,11 +38,11 @@ const externalDeps = [
     'lodash',
     'tslib',
     '@ag-grid-community/client-side-row-model',
-    "@ag-grid-enterprise/core",
-    "@ag-grid-enterprise/row-grouping",
-    "@ag-grid-enterprise/server-side-row-model",
-    "@ag-grid-enterprise/menu",
-    "@ag-grid-enterprise/clipboard",
+    '@ag-grid-enterprise/core',
+    '@ag-grid-enterprise/row-grouping',
+    '@ag-grid-enterprise/server-side-row-model',
+    '@ag-grid-enterprise/menu',
+    '@ag-grid-enterprise/clipboard',
     '@ag-grid-community/react',
     '@ag-grid-community/core',
     '@ag-grid-community/styles',
@@ -52,7 +56,31 @@ const externalDeps = [
     'react-select/async',
     'hotkeys-js',
     '@vis.gl/react-google-maps',
-]
+];
+
+const isBareImport = (id) => {
+    if (id.startsWith('\0') || id.startsWith('.') || id.startsWith('/') || path.isAbsolute(id)) {
+        return false;
+    }
+
+    if (id.startsWith('@/') || internalAliases.some((aliasName) => id === aliasName || id.startsWith(`${aliasName}/`))) {
+        return false;
+    }
+
+    return !id.startsWith('src/');
+};
+
+const isExternal = (id) => {
+    if (externalDeps.includes(id)) {
+        return true;
+    }
+
+    if (id.startsWith('@talxis') || id.startsWith('@fluentui')) {
+        return true;
+    }
+
+    return isBareImport(id);
+};
 
 export default [
     {
@@ -66,18 +94,20 @@ export default [
             }
         ],
         external(id) {
-            if (externalDeps.includes(id)) {
-                return true;
-            }
-            if(id.startsWith('@talxis')) {
-                return true;
-            }
-            if (id.startsWith('@fluentui')) {
-                return true;
-            }
-            return false;
+            return isExternal(id);
         },
         plugins: [
+            del({ hook: "buildStart", targets: ['dist/*'] }),
+            alias({
+                entries: [
+                    { find: '@components', replacement: `${srcRoot}/components` },
+                    { find: '@hooks', replacement: `${srcRoot}/hooks` },
+                    { find: '@interfaces', replacement: `${srcRoot}/interfaces` },
+                    { find: '@legacy', replacement: `${srcRoot}/legacy/react-components` },
+                    { find: '@utils', replacement: `${srcRoot}/utils` },
+                    { find: /^@\//, replacement: `${srcRoot}/` },
+                ],
+            }),
             commonjs(),
             resolve(),
             typescript({
@@ -91,7 +121,7 @@ export default [
     },
     {
         input: ['dist/index.d.ts'],
-        output: [{ file: 'dist/index.d.ts', format: "esm" }],
+        output: [{ file: 'dist/index.d.ts', format: 'esm' }],
         external: [/\.css$/],
         plugins: [
             dts(),

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { IDateTimeProperty } from "../../../interfaces";
+import { IDateTimeProperty } from "@interfaces";
 import { Property } from "./Property";
 
 export class DateProperty extends Property {

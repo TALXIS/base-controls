@@ -3,7 +3,7 @@ import { IControl, IOutputs, IParameters } from "../interfaces";
 import { useControlTheme } from "../utils/theme/hooks/useControlTheme";
 import { useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
-import { ITheme } from "@talxis/react-components";
+import { ITheme } from "../legacy/react-components";
 import dayjs from "dayjs";
 import { IDefaultTranslations, ITranslation, useControlLabels } from "./useControlLabels";
 

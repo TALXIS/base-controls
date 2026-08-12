@@ -56,6 +56,8 @@ export class Property {
         if(dataset.getSelectedRecordIds().length <= 1) {
             dataset.setSelectedRecordIds([record.getRecordId()]);
         }
-        dataset.openDatasetItem(entityReference)
+        dataset.openDatasetItem(entityReference, {
+            columnName: this._model.getColumn().name
+        });
     }
 }

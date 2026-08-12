@@ -1,5 +1,5 @@
 import { Property } from "./Property";
-import { IFileProperty } from "../../../interfaces";
+import { IFileProperty } from "@interfaces";
 
 export class FileProperty extends Property {
     public getParameter(): IFileProperty {

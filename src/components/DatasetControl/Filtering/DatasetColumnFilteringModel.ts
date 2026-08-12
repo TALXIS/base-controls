@@ -1,7 +1,7 @@
 import { EventEmitter, Filtering, Operators, Type } from "@talxis/client-libraries";
-import { ITranslation } from "../../../hooks";
+import { ITranslation } from "@hooks";
 import { datasetColumnFilteringTranslations } from "./translations";
-import { BaseControls } from "../../../utils";
+import { BaseControls } from "@utils";
 import { Condition } from '@talxis/client-libraries';
 
 type Labels = Required<ITranslation<typeof datasetColumnFilteringTranslations>>;

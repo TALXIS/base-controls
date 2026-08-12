@@ -1,5 +1,5 @@
 import { CommandBarButton, ThemeProvider, Text, Icon } from "@fluentui/react";
-import { useControl } from "../../hooks";
+import { useControl } from "@hooks";
 import { IGridColumnHeader } from "./interfaces";
 import { useMemo, useRef } from "react";
 import { GridColumnHeaderModel } from "./GridColumnHeaderModel";

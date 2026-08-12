@@ -1,6 +1,6 @@
 import { Client, DataProvider, EventEmitter, ICommand, IDataset, IEventEmitter, IInterceptor, IInternalDataProvider, Interceptors } from "@talxis/client-libraries";
 import debounce from "debounce";
-import { IDatasetControlParameters } from "../../components/DatasetControl/interfaces";
+import { IDatasetControlParameters } from "@components/DatasetControl/interfaces";
 import { EditColumns, IEditColumns } from "./EditColumns";
 
 
@@ -135,7 +135,10 @@ export class DatasetControl extends EventEmitter<IDatasetControlEvents> implemen
     }
     public destroy() {
         this.saveState();
-        this.getDataset().destroy();
+        //this might be needed when we share dataset between multiple dataset controls, we don't want one control to destroy the dataset when another control is still using it
+        if (this.getParameters().DestroyDatasetOnUnmount?.raw !== false) {
+            this.getDataset().destroy();
+        }
         this.clearEventListeners();
         this._interceptors.clearInterceptors();
     }

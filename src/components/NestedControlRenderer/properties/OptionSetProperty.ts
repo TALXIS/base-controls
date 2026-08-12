@@ -1,5 +1,5 @@
 import { Property } from "./Property";
-import { IOptionSetProperty } from "../../../interfaces";
+import { IOptionSetProperty } from "@interfaces";
 
 export class OptionSetProperty extends Property {
 

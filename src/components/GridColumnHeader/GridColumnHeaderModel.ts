@@ -1,5 +1,5 @@
 import { Attribute } from "@talxis/client-libraries";
-import { ITranslation } from "../../hooks";
+import { ITranslation } from "@hooks";
 import { IGridColumnHeader } from "./interfaces";
 import { gridColumnHeaderTranslations } from "./translations";
 

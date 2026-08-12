@@ -1,5 +1,5 @@
 import { AggregationFunction, IColumn, IDataset, IRecord } from "@talxis/client-libraries";
-import { IControl, IDecimalNumberProperty, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "../../interfaces";
+import { IControl, IDecimalNumberProperty, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@interfaces";
 import { IIconProps, IImageProps, ILabelProps, ILinkProps, ISpinnerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 import { gridGroupCellRendererTranslations } from "./translations";
 

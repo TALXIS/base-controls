@@ -1,7 +1,7 @@
-import { IComboBoxProps } from "@talxis/react-components";
-import { IMultiSelectOptionSetProperty, ITwoOptionsProperty } from "../../interfaces";
-import { IControl, IOutputs } from "../../interfaces/context";
-import { IInputParameters } from "../../interfaces/parameters";
+import { IComboBoxProps } from "@legacy";
+import { IMultiSelectOptionSetProperty, ITwoOptionsProperty } from "@interfaces";
+import { IControl, IOutputs } from "@interfaces/context";
+import { IInputParameters } from "@interfaces/parameters";
 
 export interface IMultiSelectOptionSet extends IControl<IMultiSelectOptionSetParameters, IMultiSelectOptionSetOutputs, any, IComboBoxProps> {
 }
