@@ -103,6 +103,13 @@ const config: StorybookConfig = {
       ...(config.server.fs.allow ?? []),
       path.resolve(storybookDir, '../..'),
     ];
+    // storybook/node_modules/@talxis/base-controls is a symlink back to the repo root
+    // (npm's `file:..` dependency), which forms a symlink cycle through this folder.
+    // Every import already resolves straight to ../../src via the aliases above, so the
+    // watcher never needs to follow it — doing so makes chokidar recurse forever and
+    // exhausts the OS inotify watch limit.
+    config.server.watch ??= {};
+    config.server.watch.followSymlinks = false;
     return config;
   },
 };
