@@ -30,20 +30,17 @@ import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
 
 ## Minimal setup
 
-Three things are required: the records, the field mapping, and at least one view.
+Four things are required: the records, the entity metadata, the field mapping, and at least one view.
 
 \`\`\`ts
 const descriptor = new MemoryTaskGridDescriptor({
     height: '600px',
     onInitialize: async () => ({
-        tasks: {
-            records: [
-                { taskid: '1', subject: 'Website redesign', _parentid_value: null, stackrank: '0|100000:', statecode: 0 },
-                { taskid: '2', subject: 'Wireframes', _parentid_value: '1', stackrank: '0|100000:', statecode: 0 },
-            ],
-            columns: COLUMNS,
-            metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'demo_task' },
-        },
+        records: [
+            { taskid: '1', subject: 'Website redesign', parentid: null, stackrank: '0|100000:', statecode: 0 },
+            { taskid: '2', subject: 'Wireframes', parentid: [{ id: { guid: '1' }, etn: 'demo_task' }], stackrank: '0|100000:', statecode: 0 },
+        ],
+        metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'demo_task' },
         fieldMapping: { subject: 'subject', parentId: 'parentid', stackRank: 'stackrank', stateCode: 'statecode' },
         systemQueries: [{ id: '00000000-0000-0000-0000-000000000000', name: 'All tasks', columns: COLUMNS }],
         gridParameters: { enableTaskEditing: true, enableRowDragging: true },
@@ -51,7 +48,9 @@ const descriptor = new MemoryTaskGridDescriptor({
 })
 \`\`\`
 
-Note that \`_parentid_value\` — not \`parentid\` — holds the parent. Raw records follow the Dataverse convention of exposing lookup values under \`_<lookup>_value\`, and the strategy derives that key from your \`parentId\` mapping.
+Note the shape of the parent: an **entity-reference array** under the mapped \`parentId\` column, like any other lookup value in a memory record. A bare guid string will not do — the lookup reader would try to map over it. Top-level tasks hold \`null\`.
+
+There is no \`columns\` parameter. Column definitions live on the views (\`systemQueries\` / \`userQueries\`), which is what lets switching a view change what the grid shows.
 
 ## Dependencies resolve asynchronously
 
@@ -61,8 +60,8 @@ These docs use a dynamic \`import()\` so the ~1300-line fixture stays out of the
 
 \`\`\`ts
 onInitialize: async () => {
-    const { TASK_SOURCE, TEMPLATE_SOURCE } = await import('./memoryTaskData')
-    return { tasks: TASK_SOURCE, /* … */ }
+    const { TASKS, ENTITY_METADATA, TEMPLATE_SOURCE } = await import('./memoryTaskData')
+    return { records: TASKS, metadata: ENTITY_METADATA, /* … */ }
 }
 \`\`\`
 
@@ -74,9 +73,10 @@ Required:
 
 | Parameter | Description |
 |---|---|
-| \`tasks\` | The task entity as an \`IMemoryEntitySource\` — \`{ records, columns, metadata }\`. |
+| \`records\` | The task records, as \`IRawRecord[]\`. |
+| \`metadata\` | Task entity metadata. \`PrimaryIdAttribute\` is required; \`LogicalName\` is recommended. |
 | \`fieldMapping\` | Column roles. See [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview). |
-| \`systemQueries\` | Built-in, non-deletable views. At least one is required. |
+| \`systemQueries\` | Built-in, non-deletable views — and the source of every column definition. At least one is required. |
 
 Optional:
 
@@ -91,9 +91,11 @@ Optional:
 | \`onOpenDatasetItems\` | Called when the user opens a task. Defaults to a no-op. |
 | \`onCreateGridCustomizerStrategy\` | Supplies your own AG Grid customizer. |
 
+> **The \`records\` array is the store.** It is written into rather than copied — creating, deleting, editing and moving mutate it in place, the way those operations would hit a server. Pass a \`structuredClone\` of a shared fixture when two grids need to stay independent.
+
 ### \`IMemoryEntitySource\`
 
-The same shape describes every in-memory entity — tasks, templates, and lookup candidates:
+Templates and lookup-many candidates bring their own columns, so both are described by one shape:
 
 \`\`\`ts
 interface IMemoryEntitySource {
@@ -103,13 +105,24 @@ interface IMemoryEntitySource {
 }
 \`\`\`
 
-> **The \`records\` array is the store.** It is written into rather than copied — creating, deleting, editing and moving mutate it in place, the way those operations would hit a server. Pass a \`structuredClone\` of a shared fixture when two grids need to stay independent.
+### Where task columns come from
 
-Include your hidden structural columns (primary id, parent lookup, stack rank, state code) in \`columns\` — the grid needs their definitions even though it never displays them. Non-hidden columns are what the user can see, edit, and capture into a template.
+The task entity is the exception: it has no \`columns\` of its own, because the grid takes its columns from the **active view** and the strategy reads them back off the provider. Two rules follow:
+
+- **Every view must carry your hidden structural columns** (primary id, parent lookup, stack rank, state code). The grid needs their definitions even though it never displays them.
+- **A column is only addable if some view mentions it.** The strategy answers *Edit columns* with the union of every system and user view's columns — first definition wins, so system views take precedence. A column no view knows about cannot be turned on. The fixture therefore puts the full list in every view and hides what that view does not show, the same shape a Dataverse saved-query layout produces:
+
+\`\`\`ts
+const getQueryColumns = (...visibleColumnNames: string[]): IColumn[] =>
+    COLUMNS.map(column => ({
+        ...column,
+        isHidden: column.isHidden || !visibleColumnNames.includes(column.name),
+    }))
+\`\`\`
 
 ## New task defaults
 
-A created task starts with every known column \`null\`. Supply business defaults so a new row looks like a task rather than a row of empty cells:
+A created task starts with every column of the active view set to \`null\`. Supply business defaults so a new row looks like a task rather than a row of empty cells:
 
 \`\`\`ts
 onGetNewTaskDefaults: () => ({
@@ -123,7 +136,7 @@ The primary id, parent lookup and stack rank are always computed by the strategy
 
 ## Templates
 
-\`templates\` enables template-based creation. It is an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into:
+\`templates\` enables template-based creation. It is an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into. The descriptor hands it to \`MemoryTemplateDataProvider\`, which owns it from then on — the task strategy reads templates through that provider rather than from its own dependencies:
 
 \`\`\`ts
 templates: {

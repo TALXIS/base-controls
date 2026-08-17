@@ -65,16 +65,22 @@ public async onInitialize(provider: ITaskDataProvider) {
 
 Two things worth copying from the memory strategy:
 
-- **Resolve derived values once.** Physical field names, editable column lists and similar all come from the mapping and metadata. Compute them here into one object rather than re-deriving them on every hook call.
-- **Fail loudly if a hook runs first.** A private accessor that throws a clear "not initialized" message beats optional-chaining through half-built state.
+- **Keep only what you were handed.** Store the provider and whatever your own loader resolved, and derive the rest on access — field names from \`provider.getNativeColumns()\`, columns from \`provider.getColumns()\`, the hierarchy from \`provider.getRecordTree()\`. A snapshot of derived values goes stale as soon as the user switches a view.
+- **Do not duplicate what another provider owns.** \`deps\` hands you the saved-query, template and custom-columns providers; read through them instead of keeping a second copy of their data.
 
 ### Raw records and the parent key
 
-\`rawData\` is \`IRawRecord[]\` — plain objects keyed by column name. The one non-obvious convention is the parent lookup: the grid reads it from \`_<parentId>_value\`, following Dataverse. With \`parentId: 'parentid'\` mapped, a top-level task looks like:
+\`rawData\` is \`IRawRecord[]\` — plain objects keyed by column name. The one non-obvious part is the parent lookup, because the grid resolves it through \`record.getValue(parentId)\` and the underlying reader accepts more than one raw shape. With \`parentId: 'parentid'\` mapped, either of these works:
 
 \`\`\`ts
-{ id: '1', subject: 'Website redesign', _parentid_value: null, stackrank: '0|100000:', statecode: 0 }
+//entity-reference array under the plain column name - what the memory strategy writes
+{ id: '2', subject: 'Wireframes', parentid: [{ id: { guid: '1' }, etn: 'demo_task' }], stackrank: '0|100000:', statecode: 0 }
+
+//Dataverse Web API shape - what a FetchXML response gives you for free
+{ id: '2', subject: 'Wireframes', _parentid_value: '1', stackrank: '0|100000:', statecode: 0 }
 \`\`\`
+
+Top-level tasks hold \`null\`. What does *not* work is a bare guid under the plain column name (\`parentid: '1'\`) — with no lookup annotation alongside it, the reader treats the value as an array and throws.
 
 ### Ordering
 
@@ -131,7 +137,7 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
 }
 \`\`\`
 
-\`deps\` carries what the grid built for you — \`templateDataProvider\`, \`customColumnsDataProvider\`, and the \`enableTaskEditing\` / \`enableInlineCreation\` flags — so the strategy does not have to be told twice.
+\`deps\` carries what the grid built for you — \`savedQueryDataProvider\`, \`templateDataProvider\`, \`customColumnsDataProvider\`, and the \`enableTaskEditing\` / \`enableInlineCreation\` flags — so the strategy does not have to be told twice. The memory strategy leans on all three: it answers \`onGetAvailableColumns\` from the views, expands templates through the template provider, and never keeps a copy of either.
 
 ## A shortcut worth knowing
 
@@ -141,7 +147,8 @@ If your data is already in memory, you do not need a new strategy at all. \`Memo
 public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
     return new MemoryTaskStrategy({
         onInitialize: async () => ({
-            tasks: { records: await fetchMyTasks(), columns: COLUMNS, metadata: METADATA },
+            records: await fetchMyTasks(),
+            metadata: METADATA,
         }),
     }, deps)
 }

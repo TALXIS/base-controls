@@ -144,6 +144,10 @@ The column name itself is arbitrary — the relationship is identified by the na
 
 \`enableCustomColumnCreation\` and friends let users define columns at runtime, stored as \`talxis_attributedefinition\` and \`talxis_attributevalue\` rows. This part of the strategy is a work in progress.
 
+## Templates
+
+Not implemented yet. \`DataverseTemplateDataProvider\` exists but its capture throws, and the descriptor does not implement \`onCreateTemplateDataProvider\` — so the template commands stay out of the ribbon. See [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-descriptors-strategies-memory--overview) for a working example.
+
 ## Extending it
 
 \`DataverseTaskStrategy\` is exported and implements the full \`ITaskDataProviderStrategy\` against the Web API. Subclass it to override a single behaviour and return your subclass from \`onCreateTaskStrategy\`:

@@ -44,6 +44,32 @@ A descriptor answers four questions the grid cannot answer on its own: which col
 
 The optional hooks are feature switches, not just configuration: omit \`onCreateTemplateDataProvider\` and template creation disappears from the UI; omit \`onCreateCustomColumnsStrategy\` and custom columns are off.
 
+### The template data provider
+
+\`onCreateTemplateDataProvider\` returns an \`ITemplateDataProvider\` — an \`IDataProvider\`, because the picker lists its records, plus template creation:
+
+\`\`\`ts
+interface ITemplateDataProvider extends IDataProvider {
+    templateEvents: IEventEmitter<ITemplateDataProviderEvents>
+    createTemplateFromTask(task: IRecord): Promise<IRawRecord | null>
+}
+\`\`\`
+
+Do not write the lifecycle plumbing yourself. Extend the \`TemplateDataProviderBase\` mixin over whatever provider your platform needs and implement a single hook:
+
+\`\`\`ts
+export class MyTemplateDataProvider extends TemplateDataProviderBase(MemoryDataProvider) {
+    //return null when the user cancels; throw to report a failure
+    protected async onCreateTemplateFromTask(task: IRecord) {
+        return captureTemplate(task)
+    }
+}
+\`\`\`
+
+The mixin owns \`templateEvents\` and the error handling, which is what drives the grid's loading state and error dialog. \`MemoryTemplateDataProvider\` is the reference implementation; \`DataverseTemplateDataProvider\` is a stub whose capture is not implemented yet, which is why the Dataverse descriptor leaves templating off.
+
+Note the split: capturing a template *from* a task belongs to this provider, while expanding one *into* tasks is the task strategy's \`onCreateTasksFromTemplate\`.
+
 ## \`onGetFieldMapping\`
 
 The grid needs to know which of your columns carry structural meaning. Everything else it treats as ordinary data.
@@ -93,7 +119,7 @@ Your strategy owns the rank arithmetic. Both shipped strategies use the \`lexora
 
 If the grid renders but the shape is wrong, check these in order:
 
-1. **Everything is flat** — \`parentId\` is not mapped to the attribute that actually holds the parent value. For Dataverse-shaped raw records that value lives under \`_<lookup>_value\`, not the lookup name.
+1. **Everything is flat** — \`parentId\` is not mapped to the attribute that actually holds the parent value, or the raw value is in a shape the lookup reader does not recognise. Dataverse records carry it under \`_<lookup>_value\`; a hand-built record can instead put an entity-reference array under the plain column name. A bare guid under the plain name is the one combination that does not work.
 2. **Rows are in an unexpected order** — \`stackRank\` is unmapped, or the ranks are not comparable strings.
 3. **Nothing renders and no error appears** — \`onLoadDependencies\` never resolved. It is awaited before the first provider is created, so a hanging promise there shows as an indefinite skeleton.
 4. **A feature is missing from the ribbon** — its flag in \`onGetGridParameters\` defaults to \`false\`, or the optional hook that enables it is not implemented.
