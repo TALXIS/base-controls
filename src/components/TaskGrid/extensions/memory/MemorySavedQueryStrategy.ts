@@ -20,26 +20,30 @@ const COLUMNS: IColumn[] = [
 export interface IMemorySavedQueryStrategyParams {
     /** Returns the built-in, non-deletable views. At least one is required by the grid. */
     onGetSystemQueries: () => Promise<ISavedQuery[]>;
-    /** Initial user views. Cloned on construction; edits are kept in memory for the session. */
-    userQueries?: ISavedQuery[];
+    /**
+     * The personal views. **This array is written into** — creating, renaming and deleting a view
+     * mutates it — so pass the one the descriptor persists rather than a copy.
+     */
+    userQueries: ISavedQuery[];
 }
 
 /**
  * In-memory {@link ISavedQueryStrategy} — the counterpart to `DataverseSavedQueryStrategy`.
  *
- * The user-query list held here is the single source of truth; the data provider handed to the
- * create/rename dialog is a projection of it, rebuilt on each request and synced back on rename.
+ * Keeps no views of its own: it reads and writes the array it was given, so a view created just
+ * before the grid remounts is still there when the strategy is rebuilt. The data provider handed to
+ * the create/rename dialog is a projection of that array.
  */
 export class MemorySavedQueryStrategy implements ISavedQueryStrategy {
     private _onGetSystemQueries: () => Promise<ISavedQuery[]>;
     private _userQueries: ISavedQuery[];
+    //a handle on the live dialog projection, so an open dialog stays in step with a delete
     private _dataProvider?: MemoryDataProvider;
 
     /** @param params — see {@link IMemorySavedQueryStrategyParams}. */
     constructor(params: IMemorySavedQueryStrategyParams) {
         this._onGetSystemQueries = params.onGetSystemQueries;
-        //copied so the caller's array is not mutated as the user edits views
-        this._userQueries = (params.userQueries ?? []).map(query => ({ ...query }));
+        this._userQueries = params.userQueries;
     }
 
     // ── ISavedQueryStrategy ──────────────────────────────────────────────────
@@ -90,6 +94,7 @@ export class MemorySavedQueryStrategy implements ISavedQueryStrategy {
     /** Creates the `IDataProvider` that backs the user-query create/rename dialog. */
     public createDataProvider(): IDataProvider {
         const provider = new MemoryDataProvider({
+            //a projection of the live array, built fresh so it always opens on current data
             dataSource: this._userQueries.map(query => ({
                 [ID_ATTRIBUTE]: query.id,
                 [NAME_ATTRIBUTE]: query.name,

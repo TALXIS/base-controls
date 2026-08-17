@@ -21,13 +21,19 @@ import { IMemoryEntitySource, IMemoryTaskTemplateNode, IMemoryTemplateSource } f
 /** Where a new record should sit among its siblings. */
 type Placement = 'first' | 'last';
 
-/** Seed data and behaviour resolved by {@link IMemoryTaskStrategyParams.onInitialize}. */
+/** Data and behaviour resolved by {@link IMemoryTaskStrategyParams.onInitialize}. */
 export interface IMemoryTaskStrategyDependencies {
-    /** The task entity: seed records, column definitions and metadata. */
+    /**
+     * The task entity: records, column definitions and metadata.
+     *
+     * **`records` is written into.** Creating, deleting, editing and moving tasks mutates that array,
+     * which is how the data outlives this strategy — the grid rebuilds the strategy on every remount
+     * and resolves the callback again to get the same array back.
+     */
     tasks: IMemoryEntitySource;
     /**
      * Task templates: the template entity plus the child hierarchy each template expands into.
-     * Omit to leave template-based task creation disabled.
+     * Written into the same way when a template is created from a task. Omit to disable templates.
      */
     templates?: IMemoryTemplateSource;
     /**
@@ -61,13 +67,11 @@ export interface IMemoryTaskStrategyParams {
     onInitialize: () => Promise<IMemoryTaskStrategyDependencies>;
 }
 
-/**
- * Everything derived once from the resolved dependencies and the provider's field mapping. Computed
- * in `onInitialize` so the physical field names are resolved in a single place rather than on every
- * read, and so a hook running before initialization fails with one clear message.
- */
-interface IResolvedState {
+/** The dependencies plus the physical field names, resolved in `onInitialize` and kept for the hooks. */
+interface IResolvedDependencies {
     dependencies: IMemoryTaskStrategyDependencies;
+    /** The caller's task array — every read and write goes straight to it. */
+    records: IRawRecord[];
     columns: IColumn[];
     /** Primary key attribute of the task entity. */
     primaryId: string;
@@ -76,9 +80,9 @@ interface IResolvedState {
     stackRank: string;
     stateCode: string;
     subject: string;
-    /** Non-hidden column names — the fields a user can see, edit, and capture into a template. */
+    /** Non-hidden column names — what a user can see, edit, and capture into a template. */
     visibleColumns: string[];
-    /** Columns `onRecordSave` may write — every visible column, plus state code so the active toggle works. */
+    /** Columns `onRecordSave` may write. */
     editableColumns: string[];
 }
 
@@ -89,8 +93,9 @@ interface IResolvedState {
  * reordering via LexoRank, templates, and inline editing — without any server or Dataverse
  * dependency. Intended for local development, tests, Storybook and demos.
  *
- * All state is scoped to the instance: the seed records are deep-cloned on initialization, so the
- * fixture you pass in is never mutated and two grids never share data.
+ * The strategy keeps no data of its own. It reads and writes the arrays its `onInitialize` callback
+ * returns, the way a Dataverse strategy reads and writes the server — which is what lets the grid
+ * recreate it on every remount without losing anything the user did.
  *
  * Normally created by {@link MemoryTaskGridDescriptor}; construct it directly when you supply your
  * own descriptor, or subclass it to override a single hook.
@@ -99,10 +104,13 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     private _onInitialize: () => Promise<IMemoryTaskStrategyDependencies>;
     private _isTaskEditingEnabled: boolean;
     private _templateDataProvider?: IDataProvider;
-    private _state?: IResolvedState;
-    private _tasks: Map<string, IRawRecord> = new Map();
-    private _templateChildren: Record<string, IMemoryTaskTemplateNode[]> = {};
     private _taskTree!: IRecordTree;
+    /**
+     * The resolved dependencies and the physical field names taken from the provider's mapping, kept
+     * from `onInitialize`. References only — the arrays inside belong to the caller, and the strategy
+     * writes straight into them rather than keeping data of its own.
+     */
+    private _dependencies!: IResolvedDependencies;
 
     /** @param params — see {@link IMemoryTaskStrategyParams}. */
     constructor(params: IMemoryTaskStrategyParams, deps: ITaskStrategyDeps) {
@@ -118,40 +126,39 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         const dependencies = await this._onInitialize();
         const { tasks } = dependencies;
         const fieldMapping = provider.getNativeColumns();
-        const columns = tasks.columns;
-        const visibleColumns = columns.filter(column => !column.isHidden).map(column => column.name);
-        this._state = {
+        const visibleColumns = tasks.columns.filter(column => !column.isHidden).map(column => column.name);
+        this._dependencies = {
             dependencies: dependencies,
-            columns: columns,
+            records: tasks.records,
+            columns: tasks.columns,
             primaryId: tasks.metadata.PrimaryIdAttribute!,
+            //dataverse exposes lookup values under this key, and the memory data mirrors that shape
             parentIdValue: `_${fieldMapping.parentId}_value`,
             stackRank: fieldMapping.stackRank,
             stateCode: fieldMapping.stateCode,
             subject: fieldMapping.subject,
             visibleColumns: visibleColumns,
+            //plus state code, so toggling a task active/inactive keeps working
             editableColumns: [...visibleColumns, fieldMapping.stateCode],
         };
-        //cloned so the caller's fixture is never mutated - it may be a shared module-level array
-        this._tasks = new Map(
-            structuredClone(tasks.records).map(record => [record[this._state!.primaryId] as string, record]),
-        );
-        this._templateChildren = structuredClone(dependencies.templates?.children ?? {});
         return {
             columns: provider.getColumns(),
-            rawData: [...this._tasks.values()],
+            //a copy of the array holding the same records: the provider replaces its own array on
+            //delete, so it must not be handed the one we write to
+            rawData: [...tasks.records],
             metadata: tasks.metadata,
         };
     }
 
     public async onGetRawRecords(ids: string[]): Promise<IRawRecord[]> {
         return ids.flatMap(id => {
-            const record = this._tasks.get(id);
+            const record = this._getTask(id);
             return record ? [record] : [];
         });
     }
 
     public async onGetAvailableColumns(_options?: IAvailableColumnOptions): Promise<IColumn[]> {
-        return this._getState().columns.filter(column => !column.isHidden);
+        return this._dependencies.columns.filter(column => !column.isHidden);
     }
 
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
@@ -167,9 +174,12 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         for (const id of taskIds) {
             this._collectSubtree(id, toDelete);
         }
+        const { records, primaryId } = this._dependencies;
         const deletedTaskIds: string[] = [];
         for (const id of toDelete) {
-            if (this._tasks.delete(id)) {
+            const index = records.findIndex(record => record[primaryId] === id);
+            if (index >= 0) {
+                records.splice(index, 1);
                 deletedTaskIds.push(id);
             }
         }
@@ -177,10 +187,10 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     public async onCreateTemplateFromTask(taskId: string): Promise<IRawRecord | null> {
-        const { templates } = this._getState().dependencies;
-        const task = this._tasks.get(taskId);
-        const templateProvider = this._templateDataProvider;
-        if (!task || !templates || !templateProvider) {
+        const { dependencies, subject } = this._dependencies;
+        const templates = dependencies.templates;
+        const task = this._getTask(taskId);
+        if (!task || !templates) {
             return null;
         }
         const { PrimaryIdAttribute, PrimaryNameAttribute } = templates.metadata;
@@ -193,20 +203,26 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             }
         }
         if (PrimaryNameAttribute) {
-            template[PrimaryNameAttribute] = task[this._getState().subject] ?? null;
+            template[PrimaryNameAttribute] = task[subject] ?? null;
         }
 
+        templates.records.push(template);
         const children = this._buildTemplateNodes(taskId);
         if (children.length > 0) {
-            this._templateChildren[templateId] = children;
+            templates.children ??= {};
+            templates.children[templateId] = children;
         }
-        //the provider owns the live template list, so append there rather than to the seed fixture
-        templateProvider.setDataSource([...templateProvider.getRawData(), template]);
+        //already written - this only re-points an open picker at the updated list
+        this._templateDataProvider?.setDataSource([...templates.records]);
         return template;
     }
 
     public async onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
-        const template = this._templateDataProvider?.getRecordsMap()[templateId]?.getRawData();
+        const templates = this._dependencies.dependencies.templates;
+        if (!templates) {
+            return null;
+        }
+        const template = templates.records.find(record => record[templates.metadata.PrimaryIdAttribute!] === templateId);
         if (!template) {
             return null;
         }
@@ -219,11 +235,11 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
                 const child = this._addTask(this._buildTask(parentId, node.values, 'last'));
                 created.push(child);
                 if (node.children?.length) {
-                    createChildren(node.children, child[this._getState().primaryId] as string);
+                    createChildren(node.children, child[this._dependencies.primaryId] as string);
                 }
             }
         };
-        createChildren(this._templateChildren[templateId] ?? [], rootTask[this._getState().primaryId] as string);
+        createChildren(templates.children?.[templateId] ?? [], rootTask[this._dependencies.primaryId] as string);
 
         return created;
     }
@@ -232,7 +248,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         entityReferences: ComponentFramework.EntityReference[],
         isTaskEntity: boolean,
     ): Promise<IOpenDatasetItemsResult | null> {
-        return await this._getState().dependencies.onOpenDatasetItems?.(entityReferences, isTaskEntity, {
+        return await this._dependencies.dependencies.onOpenDatasetItems?.(entityReferences, isTaskEntity, {
             isTaskEditingEnabled: this._isTaskEditingEnabled,
         }) ?? null;
     }
@@ -242,9 +258,9 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         targetTaskId: string,
         position: 'above' | 'below' | 'child',
     ): Promise<IRawRecord[] | null> {
-        const { parentIdValue, stackRank } = this._getState();
-        const moving = this._tasks.get(movingTaskId);
-        const target = this._tasks.get(targetTaskId);
+        const { parentIdValue, stackRank } = this._dependencies;
+        const moving = this._getTask(movingTaskId);
+        const target = this._getTask(targetTaskId);
         if (!moving || !target) {
             return null;
         }
@@ -260,7 +276,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         const targetParentId = (target[parentIdValue] as string) ?? null;
         //siblings come from the tree so that "above"/"below" follow the order the user can see
         const siblings = this._getVisibleChildren(targetParentId)
-            .filter(record => record[this._getState().primaryId] !== movingTaskId);
+            .filter(record => record[this._dependencies.primaryId] !== movingTaskId);
         const targetIndex = siblings.indexOf(target);
         //a target the tree cannot place (hidden by the active view) simply has no neighbour, which
         //ranks the moving task just beyond it rather than next to an unrelated sibling
@@ -279,12 +295,12 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
 
     public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
         const recordId = record.getRecordId();
-        const existing = this._tasks.get(recordId);
+        const existing = this._getTask(recordId);
         if (!existing) {
             return { recordId, success: false, fields: [], errors: [{ message: `Task "${recordId}" no longer exists.` }] };
         }
         const fields: string[] = [];
-        for (const columnName of this._getState().editableColumns) {
+        for (const columnName of this._dependencies.editableColumns) {
             const value = record.getValue(columnName);
             if (value !== undefined) {
                 existing[columnName] = value;
@@ -295,8 +311,8 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     public onIsRecordActive(recordId: string): boolean {
-        const { dependencies, stateCode } = this._getState();
-        const record = this._tasks.get(recordId);
+        const { dependencies, stateCode } = this._dependencies;
+        const record = this._getTask(recordId);
         if (!record) {
             return true;
         }
@@ -311,7 +327,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
      * never be overridden.
      */
     private _buildTask(parentTaskId?: string, overrides?: Partial<IRawRecord>, placement: Placement = 'first'): IRawRecord {
-        const { columns, dependencies, primaryId, parentIdValue, stackRank, stateCode } = this._getState();
+        const { columns, dependencies, primaryId, parentIdValue, stackRank, stateCode } = this._dependencies;
         const task: IRawRecord = {};
         for (const column of columns) {
             task[column.name] = null;
@@ -324,14 +340,15 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         return task;
     }
 
+    /** Appends a task to the caller's array — the write that makes it outlive this strategy. */
     private _addTask(task: IRawRecord): IRawRecord {
-        this._tasks.set(task[this._getState().primaryId] as string, task);
+        this._dependencies.records.push(task);
         return task;
     }
 
     /** Maps a template record onto the task fields the two entities share. */
     private _getTaskFieldsFromTemplate(template: IRawRecord): Partial<IRawRecord> {
-        const { columns, dependencies, subject } = this._getState();
+        const { columns, dependencies, subject } = this._dependencies;
         const metadata = dependencies.templates?.metadata;
         const fields: Partial<IRawRecord> = {};
         for (const column of columns) {
@@ -350,7 +367,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
      * over, so whatever the user can see on a task is what the template reproduces.
      */
     private _buildTemplateNodes(taskId: string): IMemoryTaskTemplateNode[] {
-        const { primaryId, visibleColumns } = this._getState();
+        const { primaryId, visibleColumns } = this._dependencies;
         return this._getVisibleChildren(taskId).map(record => ({
             values: Object.fromEntries(visibleColumns.map(columnName => [columnName, record[columnName] ?? null])),
             children: this._buildTemplateNodes(record[primaryId] as string),
@@ -367,8 +384,13 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     /** Returns the stored records for a parent's children, in the order the grid displays them. */
     private _getVisibleChildren(parentTaskId: string | null): IRawRecord[] {
         return (this._taskTree.getNode(parentTaskId)?.directChildren ?? [])
-            .map(child => this._tasks.get(child.getRecordId()))
+            .map(child => this._getTask(child.getRecordId()))
             .filter((record): record is IRawRecord => !!record);
+    }
+
+    private _getTask(taskId: string): IRawRecord | undefined {
+        const { records, primaryId } = this._dependencies;
+        return records.find(record => record[primaryId] === taskId);
     }
 
     // ── Stack rank ───────────────────────────────────────────────────────────
@@ -376,14 +398,14 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     /**
      * Returns a rank placing a record at the start or end of a parent's children.
      *
-     * Siblings are read from the store rather than the tree so that records hidden by the active view
-     * still participate — otherwise a new task could collide with a filtered-out one.
+     * Siblings are read from the full record array rather than the tree so that records hidden by the
+     * active view still participate — otherwise a new task could collide with a filtered-out one.
      *
      * @param excludeTaskId — a task to ignore, so a record being moved is not ranked against itself.
      */
     private _getRankAmongSiblings(parentTaskId: string | null, placement: Placement, excludeTaskId?: string): string {
-        const { parentIdValue, primaryId, stackRank } = this._getState();
-        const ranks = [...this._tasks.values()]
+        const { records, parentIdValue, primaryId, stackRank } = this._dependencies;
+        const ranks = records
             .filter(record => ((record[parentIdValue] as string) ?? null) === parentTaskId
                 && record[primaryId] !== excludeTaskId)
             .map(record => record[stackRank] as string)
@@ -413,12 +435,4 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         return LexoRank.middle().format();
     }
 
-    // ── Accessors ────────────────────────────────────────────────────────────
-
-    private _getState(): IResolvedState {
-        if (!this._state) {
-            throw new Error('MemoryTaskStrategy has not been initialized yet. The TaskGrid calls onInitialize before any other hook.');
-        }
-        return this._state;
-    }
 }

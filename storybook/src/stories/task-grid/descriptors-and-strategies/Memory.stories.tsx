@@ -103,7 +103,7 @@ interface IMemoryEntitySource {
 }
 \`\`\`
 
-> Your \`records\` array is never mutated. It is deep-cloned when the strategy initializes, so the same fixture can safely back several grids, survive remounts, and be returned from a cached \`import()\`.
+> **The \`records\` array is the store.** It is written into rather than copied — creating, deleting, editing and moving mutate it in place, the way those operations would hit a server. Pass a \`structuredClone\` of a shared fixture when two grids need to stay independent.
 
 Include your hidden structural columns (primary id, parent lookup, stack rank, state code) in \`columns\` — the grid needs their definitions even though it never displays them. Non-hidden columns are what the user can see, edit, and capture into a template.
 
@@ -157,15 +157,20 @@ lookupMany: {
 
 The keys supply data only — whether a column *renders* as a picker comes from \`metadata.LookupMany\` on the column, and which picker variant from its custom control name. A column flagged lookup-many with no entry here throws, so the two are configured together. Try the **Assigned To** and **Tags** columns in the grid below.
 
-## State is per instance
+## The descriptor is the persistence layer
 
-Each descriptor owns its own copy of the data. Two grids never share state, and a remount with a fresh descriptor starts from the seed again — which keeps tests order-independent.
+The grid rebuilds its whole control instance on every remount — switching a view does it, and so does saving one — which recreates the providers and both strategies. The strategies therefore keep **no** data: they read and write the arrays they were handed, and the descriptor is what holds those arrays for the session.
 
-Consequently, edits do **not** survive a remount. If you want a session to persist, hold one descriptor instance for its lifetime, as the docs pages do:
+Two consequences worth knowing:
+
+- **Resolve once.** \`onInitialize\` is awaited a single time; later remounts reuse the resolved result. Returning fresh arrays on each call would be equivalent to wiping the database between renders.
+- **Keep one descriptor** for as long as the session should last, and build it in \`useMemo\` (or outside the component) rather than inline in JSX:
 
 \`\`\`tsx
 const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor(), [])
 \`\`\`
+
+A new descriptor starts from the seed again, which is what keeps tests order-independent.
 
 ## Limits
 

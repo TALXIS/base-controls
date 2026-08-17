@@ -52,16 +52,17 @@ export interface IMemoryTaskGridDescriptorParams extends IMemoryTaskStrategyDepe
  * });
  * ```
  */
-/** Resolved once by `onLoadDependencies`, before any strategy or data provider is created. */
-interface IResolvedState {
-    params: IMemoryTaskGridDescriptorParams;
-    savedQueryStrategy: MemorySavedQueryStrategy;
-}
-
 export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     private _onInitialize: () => Promise<IMemoryTaskGridDescriptorParams>;
     private _height?: string;
-    private _state?: IResolvedState;
+    /**
+     * Resolved once and then kept — this is the extension's persistence layer. The collections inside
+     * it (`tasks.records`, `userQueries`, `templates`) are mutated in place by the strategies, so
+     * everything the user does survives the remounts the grid performs.
+     */
+    private _params?: IMemoryTaskGridDescriptorParams;
+    //per control instance, so the dialog provider and the delete handler are the same strategy
+    private _savedQueryStrategy?: MemorySavedQueryStrategy;
 
     /**
      * @param params.onInitialize — resolves the descriptor configuration. Awaited once, before any
@@ -76,18 +77,24 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
 
     // ── ITaskGridDescriptor ──────────────────────────────────────────────────
 
+    /**
+     * The grid calls this again on every remount. Resolving only once is what makes the descriptor a
+     * persistence layer: re-running `onInitialize` would hand back fresh arrays and discard the session.
+     */
     public async onLoadDependencies(): Promise<void> {
+        if (this._params) {
+            return;
+        }
         const params = await this._onInitialize();
         if (params.systemQueries.length === 0) {
             throw new Error('MemoryTaskGridDescriptor requires at least one system query.');
         }
-        this._state = {
-            params: params,
-            savedQueryStrategy: new MemorySavedQueryStrategy({
-                onGetSystemQueries: async () => params.systemQueries,
-                userQueries: params.userQueries,
-            }),
-        };
+        //normalised once so the strategies always have something to write into
+        params.userQueries ??= [];
+        if (params.templates) {
+            params.templates.children ??= {};
+        }
+        this._params = params;
     }
 
     //kept separate from onGetGridParameters because the skeleton needs it before the instance exists
@@ -96,36 +103,45 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     public onGetFieldMapping(): IFieldMapping {
-        return this._getState().params.fieldMapping;
+        return this._getParams().fieldMapping;
     }
 
     public onGetGridParameters(): ITaskGridParameters {
-        return this._getState().params.gridParameters ?? {};
+        return this._getParams().gridParameters ?? {};
     }
 
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
-        return this._getState().savedQueryStrategy;
+        const params = this._getParams();
+        //rebuilt per control instance; the views it reads and writes live in the params
+        this._savedQueryStrategy = new MemorySavedQueryStrategy({
+            onGetSystemQueries: async () => params.systemQueries,
+            userQueries: params.userQueries!,
+        });
+        return this._savedQueryStrategy;
     }
 
     public onCreateUserQueryDataProvider(): IDataProvider {
-        return this._getState().savedQueryStrategy.createDataProvider();
+        if (!this._savedQueryStrategy) {
+            throw new Error('MemoryTaskGridDescriptor cannot create the user-query data provider before onCreateSavedQueryStrategy.');
+        }
+        return this._savedQueryStrategy.createDataProvider();
     }
 
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
-        const { params } = this._getState();
-        //the params are a superset of the strategy's dependencies, so they pass straight through -
-        //nothing to keep in sync as either interface grows
+        const params = this._getParams();
+        //the callback hands over references into the resolved params, so a rebuilt strategy sees
+        //everything the previous one wrote. The params are a superset of the strategy's dependencies.
         return new MemoryTaskStrategy({ onInitialize: async () => params }, deps);
     }
 
     public onCreateTemplateDataProvider(): IDataProvider | undefined {
-        const { templates } = this._getState().params;
+        const { templates } = this._getParams();
         return templates && this._createDataProvider(templates);
     }
 
     /** Builds the picker's candidate provider from the {@link IMemoryTaskGridDescriptorParams.lookupMany} entry for the column. */
     public onCreateLookupManyDataProvider({ column }: ILookupManyDataProviderParameters): IDataProvider {
-        const source = this._getState().params.lookupMany?.[column.name];
+        const source = this._getParams().lookupMany?.[column.name];
         if (!source) {
             throw new Error(`No lookup-many source is configured for column "${column.name}". Add an entry for it to the "lookupMany" parameter.`);
         }
@@ -133,24 +149,26 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy | undefined {
-        return this._getState().params.onCreateGridCustomizerStrategy?.();
+        return this._getParams().onCreateGridCustomizerStrategy?.();
     }
 
     // ── Internals ────────────────────────────────────────────────────────────
 
     private _createDataProvider(source: IMemoryEntitySource): IDataProvider {
         const provider = new MemoryDataProvider({
-            dataSource: source.records,
+            //a copy of the array holding the same records: MemoryDataProvider swaps its internal
+            //array on delete, so it must not be handed the one we persist
+            dataSource: [...source.records],
             metadata: source.metadata,
         });
         provider.setColumns(source.columns);
         return provider;
     }
 
-    private _getState(): IResolvedState {
-        if (!this._state) {
+    private _getParams(): IMemoryTaskGridDescriptorParams {
+        if (!this._params) {
             throw new Error('MemoryTaskGridDescriptor has not been initialized yet. The TaskGrid calls onLoadDependencies before any other hook.');
         }
-        return this._state;
+        return this._params;
     }
 }
