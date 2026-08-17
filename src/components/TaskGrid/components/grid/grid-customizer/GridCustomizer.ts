@@ -8,6 +8,7 @@ import { AddTaskButton } from "../cell-renderers/add-task-button";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
+import { LookupManyCellRenderer } from "../cell-renderers/lookup-many";
 import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
 
 export const ADD_TASK_COLUMN_NAME = 'addTask';
@@ -149,7 +150,8 @@ export class GridCustomizer implements IGridCustomizer {
     private _getColumnDefinitions(columnDefs: ColDef[]) {
         this._injectAddTaskColumn(columnDefs);
         for (const colDef of columnDefs) {
-            const columnName = colDef.colId as string;
+            //ag-grid derives colId from field, but fall back for defs that only carry one of the two
+            const columnName = (colDef.colId ?? colDef.field) as string;
             const column = this._taskDataProvider.getColumnsMap()[columnName];
             const customCellRenderer = this._getCustomControlForColumn('renderer', column);
             const customCellEditor = this._getCustomControlForColumn('editor', column);
@@ -175,6 +177,15 @@ export class GridCustomizer implements IGridCustomizer {
                     colDef.cellEditor = PercentComplete;
                     break;
                 }
+            }
+            //lookup-many columns always use the shared renderer; the descriptor supplies the candidate
+            //records through onCreateLookupManyDataProvider, so this works for any data source
+            if (column?.metadata?.LookupMany) {
+                colDef.cellRenderer = LookupManyCellRenderer;
+                colDef.autoHeight = true;
+                //editing happens inside the picker, not through an ag-grid cell editor
+                colDef.editable = false;
+                colDef.suppressKeyboardEvent = () => true;
             }
         }
 

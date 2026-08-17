@@ -3,7 +3,7 @@ import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IOpen
 import { IRecordTree } from "@components/TaskGrid/providers/task/record-tree";
 import { LexoRank } from "lexorank";
 import { Liquid } from "liquidjs";
-import { IFieldMapping } from "./DataverseTaskGridDescriptor";
+import { IDataverseFieldMapping } from "./DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "./lookup-many/LookupManyHandler";
 import { ITaskStrategyDeps } from "../..";
 import { IDataverseCustomColumnsStrategy } from "./DataverseCustomColumnsStrategy";
@@ -60,25 +60,18 @@ interface ILookupManyColumnMetadata {
     }
 }
 
-/** Extends {@link ITaskDataProviderStrategy} with a Dataverse-specific accessor for the project reference. */
-export interface IDataverseTaskStrategy extends ITaskDataProviderStrategy {
-    /** Returns the resolved project entity reference, or `null` if no project was provided at construction time. */
-    getProjectRecord(): ISingleRecord | null;
-    getSourceRecord(): ISingleRecord | null;
-}
-
 const LIQUID = new Liquid();
 
 /**
  * Ready-to-use {@link ITaskDataProviderStrategy} implementation for the Dataverse / Talxis platform.
  *
- * Handles all task CRUD operations, drag-and-drop reordering (via LexoRank), template-based creation,
- * and lookup-many column rendering — all backed by the Xrm WebApi and FetchXML.
+ * Handles all task CRUD operations, drag-and-drop reordering (via LexoRank), and lookup-many
+ * expand/associate handling — all backed by the Xrm WebApi and FetchXML.
  *
  * Normally instantiated automatically by {@link DataverseTaskGridDescriptor}. Construct directly only
  * when you need to pass a custom `formStrategy` or override specific behaviour.
  */
-export class DataverseTaskStrategy implements IDataverseTaskStrategy {
+export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     private _fetchXml: string;
     private _entitySetName!: string;
     private _entityName!: string;
@@ -157,13 +150,6 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
             }
         }
         return records;
-    }
-
-    public getProjectRecord(): ISingleRecord | null {
-        return this._projectRecord ?? null;
-    }
-    public getSourceRecord(): ISingleRecord | null {
-        return this._sourceRecord ?? null;
     }
 
     private async _harmonizenizeCustomColumnsData(record: IRawRecord): Promise<void> {
@@ -313,8 +299,8 @@ export class DataverseTaskStrategy implements IDataverseTaskStrategy {
         })
     }
 
-    private _getFieldMapping(): IFieldMapping {
-        return this._provider.getNativeColumns() as IFieldMapping;
+    private _getFieldMapping(): IDataverseFieldMapping {
+        return this._provider.getNativeColumns() as IDataverseFieldMapping;
     }
 
     private _getFetchXml(): string {

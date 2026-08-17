@@ -1,16 +1,15 @@
 import { FetchXmlBuilder, IDataProvider, IRawRecord, IRecord, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
 import { ICustomColumnsStrategy, IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy } from "@components/TaskGrid/providers";
-import { IFieldMapping as IFieldMappingBase, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
-import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
+import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { DataverseSavedQueryStrategy } from "./DataverseSavedQueryStrategy";
 import { DataverseTaskStrategy } from "./DataverseTaskStrategy";
-import { DataverseGridCustomizerStrategy } from "./DataverseGridCustomizerStrategy";
+import { FetchXmlDataProviderFactory } from "./lookup-many/FetchXmlDataProviderFactory";
 import { EntityDefinition } from "@talxis/client-metadata";
 import { DataverseCustomColumnsStrategy } from "./DataverseCustomColumnsStrategy";
 
 
 /** Dataverse-specific field mapping. Extends the base with an optional project lookup column. */
-export interface IFieldMapping extends Omit<IFieldMappingBase, 'stateCode'> {
+export interface IDataverseFieldMapping extends Omit<IFieldMapping, 'stateCode'> {
     /** Logical name of the lookup attribute that points to the parent project record. Required when `projectRecord` is set on the descriptor. */
     projectId?: string;
 }
@@ -33,7 +32,7 @@ export interface IDataverseTaskGridDescriptorParams {
     /** FetchXML that drives the initial data load. May use Liquid template variables (e.g. `{{ projectId }}`). */
     baseFetchXml: string;
     /** Maps logical entity attribute names to the roles expected by TaskGrid (e.g. `statecode` → `stateCode`). */
-    fieldMapping: IFieldMapping;
+    fieldMapping: IDataverseFieldMapping;
     /** System (non-deletable) views exposed in the view switcher. At least one is required. */
     systemQueries: ISavedQuery[];
     /** Optional source record. If provided, it's data will be propagated into liquid fetch XML templates. */
@@ -78,7 +77,7 @@ export interface IDataverseTaskGridDescriptorParams {
  */
 export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     private _fetchXml!: string;
-    private _fieldMapping!: IFieldMapping;
+    private _fieldMapping!: IDataverseFieldMapping;
     private _systemQueries: ISavedQuery[] = [];
     private _taskEntityName!: string;
     private _editFormId?: string;
@@ -118,7 +117,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /** Returns the field mapping with `stateCode` hard-coded to `"statecode"` (standard Dataverse attribute name). */
-    public onGetFieldMapping(): IFieldMappingBase {
+    public onGetFieldMapping(): IFieldMapping {
         return {
             ...this._fieldMapping,
             //dataverse uses this for all entities
@@ -202,9 +201,31 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         return this._gridParameters ?? {};
     }
 
-    /** Returns a {@link DataverseGridCustomizerStrategy} that adds lookup-many cell renderers for columns whose name ends with the lookup-many suffix. */
-    public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy {
-        return new DataverseGridCustomizerStrategy();
+    /**
+     * Builds the picker's candidate provider from the column's `FetchXml` custom-control binding.
+     *
+     * The FetchXML is a Liquid template resolved per row, so `{{ task.* }}` refers to the current task
+     * and `{{ project.* }}` to the descriptor's project record.
+     */
+    public onCreateLookupManyDataProvider({ record, column }: ILookupManyDataProviderParameters): IDataProvider {
+        const customControl = record.getColumnInfo(column.name).ui.getCustomControls([])?.[0];
+        const fetchXml = customControl?.bindings?.FetchXml?.value;
+        if (!fetchXml) {
+            throw new Error(`FetchXml for the lookup-many column "${column.name}" is not defined. Define it through the "FetchXml" binding on the column's custom control.`);
+        }
+        return FetchXmlDataProviderFactory.create({
+            fetchXml: fetchXml,
+            variables: {
+                task: {
+                    id: record.getRecordId(),
+                    ...record.getRawData()
+                },
+                project: {
+                    id: this._projectRecord?.getRecordId(),
+                    ...this._projectRecord?.getRawData()
+                }
+            }
+        });
     }
 
     private async _getProjectRecord(): Promise<ISingleRecord | undefined> {

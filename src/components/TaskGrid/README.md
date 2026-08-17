@@ -51,6 +51,7 @@ The descriptor wires your data and configuration into the grid. Create a class t
 | `onGetHeight?()` | — | Returns the container height as a CSS string. Falls back to filling the parent when omitted. |
 | `onCreateCustomColumnsStrategy?()` | — | Enables user-defined columns. Return a `ICustomColumnsStrategy` implementation. |
 | `onCreateTemplateDataProvider?()` | — | Enables template-based task creation. Return an `IDataProvider` whose records represent templates. |
+| `onCreateLookupManyDataProvider?(params)` | — | Supplies the candidate records for a lookup-many column's picker. Required when any column sets `metadata.LookupMany`. Called once per lookup-many cell. See [Lookup-many columns](#lookup-many-columns). |
 | `onCreateGridCustomizerStrategy?()` | — | Deep-customizes AG Grid column definitions, cell renderers, editors and row class rules. |
 | `onGetControlId?()` | — | Returns a stable DOM identifier. Auto-generated as a UUID when omitted. |
 | `onLoadDependencies?()` | — | Async hook called once before any provider is created. Use for pre-loading or authentication. |
@@ -282,7 +283,7 @@ The grid automatically applies built-in renderers when a column's control metada
 | Control name | Applied as | Notes |
 |---|---|---|
 | `PercentComplete` | renderer + editor | Renders a progress bar and inline percentage editor. Set this control name on any numeric percentage column. |
-| `LookupMany` / `ColorfulLookupMany` / `PeopleLookupMany` | renderer | See [Lookup-many columns](#lookup-many-columns). Applied automatically to columns whose `metadata.LookupMany` is set. |
+| `LookupMany` / `ColorfulLookupMany` / `PeopleLookupMany` | renderer | See [Lookup-many columns](#lookup-many-columns). Applied automatically to columns whose `metadata.LookupMany` is set; the control name only selects which variant is used. |
 
 ### Custom cell renderer
 
@@ -372,7 +373,6 @@ Enables user-defined (dynamic) column definitions. Return an instance from `onCr
 | `DataverseTaskGridDescriptor` | Drop-in `ITaskGridDescriptor` for Dataverse. Accepts a params object — no subclassing needed for the common case. |
 | `DataverseTaskStrategy` | `ITaskDataProviderStrategy` that talks to the Xrm Web API. Used internally by `DataverseTaskGridDescriptor` but can be extended independently. |
 | `DataverseSavedQueryStrategy` | `ISavedQueryStrategy` that persists user views as `talxis_userquery` Dataverse records. |
-| `DataverseGridCustomizerStrategy` | `IGridCustomizerStrategy` that wires lookup-many cell renderers. Returned by the descriptor automatically. |
 | `DataverseCustomColumnsStrategy` | `ICustomColumnsStrategy` backed by `talxis_attributedefinition` / `talxis_attributevalue`. |
 
 ### Using `DataverseTaskGridDescriptor` as-is
@@ -445,7 +445,7 @@ The descriptor takes two parameters:
 | Property | Required | Description |
 |----------|:--------:|-------------|
 | `baseFetchXml` | ✅ | FetchXML string, optionally with Liquid template variables. |
-| `fieldMapping` | ✅ | `IFieldMapping` (+ optional `projectId`) mapping roles to Dataverse attribute names. |
+| `fieldMapping` | ✅ | `IDataverseFieldMapping` (+ optional `projectId`) mapping roles to Dataverse attribute names. |
 | `systemQueries` | ✅ | `ISavedQuery[]`. At least one required. |
 | `projectRecord?` | — | The project associated with these tasks — either `{ entityName, id }` or a fully hydrated `ISingleRecord`. When provided, its id is injected into Liquid fetch templates as `{{ projectId }}`. |
 | `sourceRecord?` | — | An additional record whose id is available in Liquid templates (e.g. a sprint or board). |
@@ -459,7 +459,7 @@ The descriptor takes two parameters:
 | `enableCascadeDelete?` | — | When `true`, deleting a task also deletes its child tasks. Defaults to `false`. |
 | `enableDeletingTasksWithChildren?` | — | When `true`, tasks that have children can be deleted. When `false`, such tasks are excluded from deletion and an error is returned. Defaults to `false`. |
 
-### `IFieldMapping` (Dataverse)
+### `IDataverseFieldMapping`
 
 Extends `IFieldMapping` with one additional field used by the Dataverse strategy:
 
@@ -559,7 +559,30 @@ export class MyDescriptor extends DataverseTaskGridDescriptor {
 
 ### Lookup-many columns
 
-A lookup-many column surfaces a multi-value relationship (1:N or N:N) directly as a grid cell. `DataverseTaskStrategy` detects lookup-many columns by the presence of `metadata.LookupMany` on the column definition, resolves the OData expand clause via the `ReferencedEntityNavigationPropertyName`, and handles associate/disassociate on save.
+A lookup-many column surfaces a multi-value relationship (1:N or N:N) directly as a grid cell.
+
+Any column whose definition carries `metadata.LookupMany` is rendered with the built-in lookup-many
+cell renderer automatically — this is native behaviour and needs no grid-customizer strategy. What each
+data source must supply is the **candidate records** for the picker, through
+`onCreateLookupManyDataProvider` on the descriptor:
+
+```ts
+public onCreateLookupManyDataProvider({ record, column }: ILookupManyDataProviderParameters): IDataProvider {
+    // return the IDataProvider whose records populate the picker for this cell
+}
+```
+
+It is called once per lookup-many cell, so the candidate query can depend on the row. A column marked
+`metadata.LookupMany` whose descriptor does not implement this throws — the two must be configured
+together.
+
+| Descriptor | Where candidates come from |
+|---|---|
+| `DataverseTaskGridDescriptor` | The column's `controls[0].bindings.FetchXml` binding (see below). |
+| `MemoryTaskGridDescriptor` | The `lookupMany` parameter, keyed by column name — `{ records, columns, metadata }`. |
+
+Beyond rendering, `DataverseTaskStrategy` also uses `metadata.LookupMany` to resolve the OData expand
+clause via `ReferencedEntityNavigationPropertyName` and to handle associate/disassociate on save.
 
 #### Column name
 
@@ -567,7 +590,9 @@ The column name can be any unique string. The relationship is identified not by 
 
 #### Defining the column in a system query
 
-Pass the column descriptor inside the `columns` array of an `ISavedQuery`. The `controls[0].bindings.FetchXml` binding is **required** — it defines how candidate records are loaded into the picker.
+Pass the column descriptor inside the `columns` array of an `ISavedQuery`. When using
+`DataverseTaskGridDescriptor`, the `controls[0].bindings.FetchXml` binding is **required** — it is what
+its `onCreateLookupManyDataProvider` reads to load candidate records into the picker.
 
 ```ts
 const COLUMNS: IColumn[] = [

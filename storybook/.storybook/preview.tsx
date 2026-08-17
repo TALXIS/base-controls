@@ -96,6 +96,7 @@ const preview: Preview = {
               ['Form Context', 'Overview', 'Samples'],
             ],
           ],
+          'Task Grid',
           'Providers',
         ],
       },

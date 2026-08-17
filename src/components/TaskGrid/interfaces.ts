@@ -1,4 +1,4 @@
-import { IDataset, IDataProvider } from "@talxis/client-libraries";
+import { IColumn, IDataset, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IDatasetControl } from "@utils/dataset-control";
 import { IGridCustomizerStrategy } from "./components/grid/grid-customizer";
 import { ICustomColumnsDataProvider, ICustomColumnsStrategy } from "./providers/custom-columns/CustomColumnsDataProvider";
@@ -94,6 +94,14 @@ export interface ITaskStrategyDeps {
     templateDataProvider?: IDataProvider;
 }
 
+/** Identifies the lookup-many cell whose candidate records are being requested. */
+export interface ILookupManyDataProviderParameters {
+    /** The task record the cell belongs to. Use it to scope the candidate query to the row. */
+    record: IRecord;
+    /** The lookup-many column definition, including its `metadata` and `controls` bindings. */
+    column: IColumn;
+}
+
 /**
  * Primary configuration entry point for `TaskGridDatasetControlFactory`.
  * Implement this interface to wire the TaskGrid to your business logic.
@@ -113,6 +121,16 @@ export interface ITaskGridDescriptor {
     onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy | undefined;
     /** (Optional) Returns an `IDataProvider` for task templates. When provided, the template-based task creation feature is enabled. */
     onCreateTemplateDataProvider?: () => IDataProvider | undefined;
+    /**
+     * (Optional) Returns the `IDataProvider` supplying candidate records for a lookup-many column —
+     * the picker's options. Required only when columns carry `metadata.LookupMany`; the grid throws
+     * for such a column when this is not implemented.
+     *
+     * Unlike the other factories here, this is called **once per lookup-many cell** rather than once
+     * per control, because the candidate query may depend on the row (e.g. a FetchXML template
+     * referencing the current task). Keep it cheap and side-effect free.
+     */
+    onCreateLookupManyDataProvider?: (parameters: ILookupManyDataProviderParameters) => IDataProvider;
     /** (Optional) Returns a strategy for deep customization of AG Grid column definitions, renderers, editors, and row class rules. */
     onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
     /** (Optional) Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
