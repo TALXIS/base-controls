@@ -88,6 +88,7 @@
     "@fluentui/style-utilities": "^8.11.4",
     "@talxis/client-libraries": "^1.2606.5",
     "@talxis/client-metadata": "^0.0.7",
+    "@vis.gl/react-google-maps": "^1.7.1",
     "color": "^4.2.3",
     "dayjs": "^1.11.10",
     "debounce": "^2.2.0",

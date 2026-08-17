@@ -103,6 +103,9 @@ const config: StorybookConfig = {
       ...(config.server.fs.allow ?? []),
       path.resolve(storybookDir, '../..'),
     ];
+    // prevents infinite or excessive watch recursion without breaking local source resolution.
+    config.server.watch ??= {};
+    config.server.watch.followSymlinks = false;
     return config;
   },
 };
