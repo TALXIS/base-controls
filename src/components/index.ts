@@ -6,6 +6,7 @@ export * from './Form';
 export * from './Grid';
 export * from './GridCellRenderer';
 export * from './Lookup';
+export * from './Map';
 export * from './MultiSelectOptionSet';
 export * from './NestedControlRenderer';
 export * from './Notifications';
