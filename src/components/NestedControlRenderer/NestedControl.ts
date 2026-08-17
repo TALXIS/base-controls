@@ -1,12 +1,12 @@
-import { DataType, DataTypes, PromiseCache } from "@talxis/client-libraries";
+import { DataType, DataTypes, Formatting, PromiseCache } from "@talxis/client-libraries";
 import { Property } from "./properties/Property";
 import { TextProperty } from "./properties/TextProperty";
 import { OptionSetProperty } from "./properties/OptionSetProperty";
 import { NumberProperty } from "./properties/NumberProperty";
 import { DateProperty } from "./properties/DateProperty";
 import { LookupProperty } from "./properties/LookupProperty";
-import { IControl, IParameters, IProperty } from "../../interfaces";
-import { ControlTheme, IFluentDesignState } from "../../utils";
+import { IControl, IParameters, IProperty } from "@interfaces";
+import { ControlTheme, IFluentDesignState } from "@utils";
 import { Manifest } from "./manifest";
 import { FileProperty } from "./properties/FileProperty";
 import { NestedControlError } from "./NestedControlError";
@@ -101,6 +101,7 @@ export class NestedControl {
                     ...this.getOptions().parentPcfContext.factory,
                     requestRender: () => this.render(),
                 },
+                formatting: Formatting.Get(),
                 fluentDesignLanguage: this._getFluentDesignLanguage(this.getOptions().parentPcfContext.fluentDesignLanguage)
             },
             parameters: parameters,

@@ -3,6 +3,42 @@
     "target": "ES2020",
     "module": "ES6",
     "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@components": [
+        "src/components/index.ts"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+      "@hooks": [
+        "src/hooks/index.ts"
+      ],
+      "@hooks/*": [
+        "src/hooks/*"
+      ],
+      "@interfaces": [
+        "src/interfaces/index.ts"
+      ],
+      "@interfaces/*": [
+        "src/interfaces/*"
+      ],
+      "@legacy": [
+        "src/legacy/react-components/index.ts"
+      ],
+      "@legacy/*": [
+        "src/legacy/react-components/*"
+      ],
+      "@utils": [
+        "src/utils/index.ts"
+      ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
+      "@/*": [
+        "src/*"
+      ]
+    },
     "outDir": "dist",
     "strict": true,
     "moduleResolution": "node",
@@ -20,7 +56,7 @@
     "allowJs": true,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "isolatedModules": true
   },
   "include": [
     "src"

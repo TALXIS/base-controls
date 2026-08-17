@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { getColorfulOptionsStyles } from "./styles";
-import { IContext, IMultiSelectOptionSetProperty } from "../../../interfaces";
+import { IContext, IMultiSelectOptionSetProperty } from "@interfaces";
 import { ThemeProvider, Text, merge, PartialTheme } from "@fluentui/react";
-import { Theming, useThemeGenerator } from "@talxis/react-components";
-import { useControlTheme } from "../../../utils";
+import { Theming, useThemeGenerator } from "@legacy";
+import { useControlTheme } from "@utils";
 
 interface IColorfulOptionsProps {
     value: IMultiSelectOptionSetProperty;

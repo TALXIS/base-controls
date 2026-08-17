@@ -1,7 +1,7 @@
 import { AgGridReactProps } from "@ag-grid-community/react";
-import { ITranslation } from "../../hooks";
-import { IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "../../interfaces";
-import { IControl, IOutputs } from "../../interfaces/context";
+import { ITranslation } from "@hooks";
+import { IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@interfaces";
+import { IControl, IOutputs } from "@interfaces/context";
 import { gridTranslations } from "./translations";
 import { IDataset } from "@talxis/client-libraries";
 
@@ -31,7 +31,7 @@ export interface IGridParameters extends IParameters {
     EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableAutoSave?: Omit<ITwoOptionsProperty, 'attributes'>;
     DefaultExpandedGroupLevel?: Omit<IWholeNumberProperty, 'attributes'>;
-
+    
     Height?: IStringProperty;
     InlineRibbonButtonIds?: IStringProperty;
     GroupingType?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">, 'type'>;

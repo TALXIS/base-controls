@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
-import { useInputBasedControl } from "../../../hooks/useInputBasedControl";
-import { IDateTime, IDateTimeOutputs, IDateTimeParameters} from "../interfaces";
+import { useInputBasedControl } from "@hooks/useInputBasedControl";
+import { IDateTime, IDateTimeOutputs, IDateTimeParameters } from "../interfaces";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { getDefaultDateTimeTranslations } from "../translations";
-import {ITranslation } from "../../../hooks";
-import { ITheme } from "@talxis/react-components";
+import { ITranslation } from "@hooks";
+import { ITheme } from "@legacy";
+import { IFormatting } from "@talxis/client-libraries/dist/utils/formatting";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -34,9 +35,10 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const context = props.context;
     const behavior = boundValue.attributes.Behavior;
     const format = boundValue.attributes.Format ?? boundValue.type;
-    const dateFormattingInfo = context.userSettings.dateFormattingInfo;
+    //client libraries formatting contains dateFormattingInfo, fallback to user settings if it was not found (uses Power Apps formatting implementation)
+    const dateFormattingInfo = (<IFormatting>context.formatting).dateFormattingInfo ?? context.userSettings.dateFormattingInfo;
     const lastValidDateRef = useRef<Date | undefined>(undefined);
-    
+
     const isDateTime = (() => {
         switch (format) {
             case 'DateAndTime':
@@ -94,14 +96,14 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         return undefined;
     };
 
-    const dateExtractor = (value: string | Date): Date | string => {
+    const parseDateString = (value: string | Date): Date | string => {
         if (value instanceof Date) {
             return value;
         }
         const dayjsDate = dayjs(value, formatting, true);
         if (!dayjsDate.isValid()) {
             const dayJsDateNoWhiteSpace = dayjs(value?.replaceAll(' ', ''), formatting.replaceAll(' ', ''));
-            if(!dayJsDateNoWhiteSpace.isValid()) {
+            if (!dayJsDateNoWhiteSpace.isValid()) {
                 return value;
             }
             else {
@@ -110,6 +112,15 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         }
         return dayjsDate.toDate();
     };
+
+    const dateExtractor = (value: string | Date): Date | string => {
+        let parsedDate = parseDateString(value);
+        if (parsedDate instanceof Date && behavior === 3) {
+            //convert from "UTC" back to local time by setting the offset
+            parsedDate = new Date(parsedDate.getTime() - parsedDate.getTimezoneOffset() * 60000);
+        }
+        return parsedDate;
+    }
 
     const clearDate = () => {
         onNotifyOutputChanged({
@@ -120,7 +131,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
     const selectDate = (date?: Date, time?: string) => {
         //onSelectDate can trigger on initial click with empty date, do not continue in this case
         //for clearing dates, date.clear should be used
-        if(!date && !time) {
+        if (!date && !time) {
             return;
         }
         let dayjsDate = dayjs(date ?? getDate());
@@ -130,7 +141,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
         }
         const dayjsTime = dayjs(time, shortTimePattern, true);
         let invalidDateString;
-        if(!dayjsTime.isValid()) {
+        if (!dayjsTime.isValid()) {
             invalidDateString = `${dayjsDate.format(shortDatePattern)} ${time}`
         }
         dayjsDate = dayjsDate.hour(dayjsTime.hour());
@@ -139,10 +150,10 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             value: dateExtractor(invalidDateString ?? dayjsDate.toDate()) as any
         });
     };
-    const {value, labels, theme, setValue, onNotifyOutputChanged} = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
+    const { value, labels, theme, setValue, onNotifyOutputChanged: onNotifyOutputChanged } = useInputBasedControl<string | undefined, IDateTimeParameters, IDateTimeOutputs, Required<IDateTime>['translations']>('DateTime', props, {
         formatter: formatDate,
         valueExtractor: dateExtractor,
-        defaultTranslations: getDefaultDateTimeTranslations(props.context.userSettings.dateFormattingInfo)
+        defaultTranslations: getDefaultDateTimeTranslations(dateFormattingInfo)
     });
 
 
@@ -169,7 +180,7 @@ export const useDateTime = (props: IDateTime, ref: React.RefObject<HTMLDivElemen
             getFormatted: () => value,
             set: selectDate,
             setDateString: setValue,
-            parseDateString: (dateString: string) => dateExtractor(dateString)
+            parseDateString: (dateString: string) => parseDateString(dateString)
         },
         {
             shortDatePattern: shortDatePattern,

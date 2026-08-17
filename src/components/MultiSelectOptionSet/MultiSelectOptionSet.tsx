@@ -1,7 +1,7 @@
 
 import { IMultiSelectOptionSet } from './interfaces';
-import { useControl } from '../../hooks';
-import { ComboBox } from "@talxis/react-components";
+import { useControl } from '@hooks';
+import { ComboBox } from "@legacy";
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom';

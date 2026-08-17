@@ -1,13 +1,13 @@
 import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
-import { ITranslation } from "../../hooks";
-import { IControl, IStringProperty, ITwoOptionsProperty } from "../../interfaces";
+import { ITranslation } from "@hooks";
+import { IControl, IStringProperty, ITwoOptionsProperty } from "@interfaces";
 import { IGridOutputs, IGridParameters } from "../Grid";
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
-import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "@talxis/react-components";
+import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "@legacy";
 import React from "react";
 import { IRibbonComponentProps } from "../Ribbon/interfaces";
-import { IDatasetControl } from "../../utils/dataset-control";
+import { IDatasetControl } from "@utils/dataset-control";
 import { IColumn } from "@talxis/client-libraries";
 
 
@@ -26,6 +26,7 @@ export interface IDatasetControlParameters extends IGridParameters {
     EnableEditColumns?: Omit<ITwoOptionsProperty, 'attributes'>;
     ClientApiWebresourceName?: IStringProperty;
     ClientApiFunctionName?: IStringProperty;
+    DestroyDatasetOnUnmount?: Omit<ITwoOptionsProperty, 'attributes'>;
 }
 
 export interface IDatasetControlComponentProps {

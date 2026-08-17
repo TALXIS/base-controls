@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { IRibbonQuickFindWrapperProps } from "../interfaces";
 import { useModel } from "../useModel";
-import { TextField } from "@talxis/react-components";
+import { TextField } from "@legacy";
 import { getQuickFindStyles } from "./styles";
 import { IInternalDataProvider } from "@talxis/client-libraries";
 import { Callout, FontIcon } from "@fluentui/react";

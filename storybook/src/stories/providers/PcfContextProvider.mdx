@@ -1,0 +1,55 @@
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+
+<Meta title="Providers/PcfContextProvider" />
+
+# PcfContextProvider
+
+`PcfContextProvider` is the context entry point for components that depend on the PCF runtime contract.
+
+Use it to provide PCF context to any React subtree, whether the context should be generated locally for standalone usage or forwarded from an existing hosted PCF runtime.
+
+Child components can then read the active context anywhere below the provider with `usePcfContext`.
+
+> **Note**
+>
+> All Base Controls currently require PCF context. Use `PcfContextProvider` to supply that context when rendering them inside a React tree.
+
+## Generate a context
+
+<Source
+  language="tsx"
+  dark={false}
+  code={`import { PcfContextProvider, usePcfContext } from '@talxis/base-controls/utils';
+
+const Child = () => {
+  const context = usePcfContext();
+
+  return <div>{context.userSettings.formatInfoCultureName}</div>;
+};
+
+const Parent = () => (
+  <PcfContextProvider userSettings={{ lcid: 1029, formatInfoCultureName: 'cs-CZ' }}>
+    <Child />
+  </PcfContextProvider>
+);`}
+/>
+
+## Reuse a provided context
+
+<Source
+  language="tsx"
+  dark={false}
+  code={`import { PcfContextProvider, usePcfContext } from '@talxis/base-controls/utils';
+
+const Child = () => {
+  const context = usePcfContext();
+
+  return <div>{context.userSettings.languageId}</div>;
+};
+
+export const View = (props: { context: ComponentFramework.Context<any, any> }) => (
+  <PcfContextProvider context={props.context}>
+    <Child />
+  </PcfContextProvider>
+);`}
+/>

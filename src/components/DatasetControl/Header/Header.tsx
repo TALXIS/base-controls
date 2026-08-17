@@ -3,12 +3,12 @@ import { IComponentProps } from "../interfaces";
 import { useModel } from "../useModel";
 import { useMemo, useState } from "react";
 import { getHeaderStyles } from "./styles";
-import { ICommandBarItemProps, useRerender } from "@talxis/react-components";
+import { ICommandBarItemProps, useRerender } from "@legacy";
 import { QuickFind } from "../QuickFind/QuickFind";
-import { Ribbon } from "../../Ribbon/Ribbon";
-import { useEventEmitter } from "../../../hooks/useEventEmitter";
+import { Ribbon } from "@components/Ribbon/Ribbon";
+import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
-import { IDatasetControlEvents } from "../../../utils/dataset-control";
+import { IDatasetControlEvents } from "@utils/dataset-control";
 import { EditColumns } from "../EditColumns/EditColumns";
 
 export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'] }) => {
@@ -22,6 +22,7 @@ export const Header = (props: { onRenderHeader: IComponentProps['onRenderHeader'
     useEventEmitter<IDataProviderEventListeners>(dataset, 'onLoading', rerender);
     useEventEmitter<IDatasetControlEvents>(datasetControl, 'onRecordCommandsLoaded', rerender);
     useEventEmitter<IDatasetControlEvents>(datasetControl, 'onEditColumnsRequested', () => setIsEditColumnsPanelVisible(true));
+    useEventEmitter<IDataProviderEventListeners>(dataset, 'onError', rerender);
 
     const isHeaderVisible = () => {
         switch (true) {

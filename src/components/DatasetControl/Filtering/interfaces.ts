@@ -1,8 +1,8 @@
 import { ThemeProviderProps } from "@fluentui/react";
-import { IControl, IParameters, IStringProperty, ITranslations } from "../../../interfaces";
-import { IOptionSet } from "../../OptionSet";
+import { IControl, IParameters, IStringProperty, ITranslations } from "@interfaces";
+import { IOptionSet } from "@components/OptionSet";
 import { datasetColumnFilteringTranslations } from "./translations";
-import { INestedControlRenderer } from "../../NestedControlRenderer/interfaces";
+import { INestedControlRenderer } from "@components/NestedControlRenderer/interfaces";
 import { IButtonProps as IFluentButtonProps } from "@fluentui/react";
 import React from "react";
 import { Filtering } from "@talxis/client-libraries";

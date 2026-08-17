@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { IColorfulOptionSetValueRendererProps as IColorfulOptionSetValueRendererPropsBase, IColorfulOptionValueRendererProps as IColorfulOptionValueRendererPropsBase } from "../../interfaces"
+import { IColorfulOptionSetValueRendererProps as IColorfulOptionSetValueRendererPropsBase, IColorfulOptionValueRendererProps as IColorfulOptionValueRendererPropsBase } from "@components/GridCellRenderer/interfaces"
 import { getColorfulOptionSetValuesRendererStyles, getColorfulOptionValueRendererStyles } from "./styles";
 import { PartialTheme, Text, ThemeProvider, useTheme, merge } from "@fluentui/react";
-import { Theming, useThemeGenerator } from "@talxis/react-components";
-import { useModel } from "../../useModel";
+import { Theming, useThemeGenerator } from "@legacy";
+import { useModel } from "@components/GridCellRenderer/useModel";
 
 interface IColorfulOptionSetValueRendererProps {
     optionSet: ComponentFramework.PropertyHelper.OptionMetadata[];

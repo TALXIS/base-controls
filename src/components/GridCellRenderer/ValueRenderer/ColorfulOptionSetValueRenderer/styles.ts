@@ -1,5 +1,5 @@
 import { mergeStyleSets } from "@fluentui/react"
-import { getJustifyContent } from "../../styles"
+import { getJustifyContent } from "@components/GridCellRenderer/styles"
 import { IColumn } from "@talxis/client-libraries"
 
 export const getColorfulOptionSetValuesRendererStyles = (columnAlignment: IColumn['alignment']) => {

@@ -2,9 +2,9 @@ import { Shimmer } from "@fluentui/react"
 import { useMemo } from "react"
 import { getFullRowLoadingStyles } from "./styles"
 import { ILoadingCellRendererParams } from "@ag-grid-community/core"
-import { useGridInstance } from "../../grid/useGridInstance"
+import { useGridInstance } from "@components/Grid/grid/useGridInstance"
 import { IRecord } from "@talxis/client-libraries"
-import { FullWidthCellRendererError } from "../../errors/FullWidthCellRendererError/FullWidthCellRendererError"
+import { FullWidthCellRendererError } from "@components/Grid/errors/FullWidthCellRendererError/FullWidthCellRendererError"
 
 export const FullRowLoading = (props: ILoadingCellRendererParams) => {
     const styles = useMemo(() => getFullRowLoadingStyles(), []);

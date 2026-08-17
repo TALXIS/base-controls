@@ -2,20 +2,20 @@ import { CellClickedEvent, CellDoubleClickedEvent, ColDef, ColumnMovedEvent, Col
 import debounce from 'debounce';
 import { GridModel, IGridColumn } from "../GridModel";
 import { Client, DataProvider, EventEmitter, IAddControlNotificationOptions, IColumn, IColumnInfo, IControlParameters, ICustomColumnComponent, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IRecord, Operators } from "@talxis/client-libraries";
-import { NestedControl } from "../../../NestedControlRenderer/NestedControl";
-import { Cell } from "../../cells/cell/Cell";
-import { ColumnHeader } from "../../column-headers/column-header/ColumnHeader";
-import { CHECKBOX_COLUMN_KEY } from "../../constants";
+import { NestedControl } from "@components/NestedControlRenderer/NestedControl";
+import { Cell } from "@components/Grid/cells/cell/Cell";
+import { ColumnHeader } from "@components/Grid/column-headers/column-header/ColumnHeader";
+import { CHECKBOX_COLUMN_KEY } from "@components/Grid/constants";
 import { Comparator } from "../ValueComparator";
 import { ServerSideDatasource } from "./ServerSideDatasource";
-import { RecordSelectionCheckBox } from "../../column-headers/record-selection-checkbox/RecordSelectionCheckbox";
+import { RecordSelectionCheckBox } from "@components/Grid/column-headers/record-selection-checkbox/RecordSelectionCheckbox";
 import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
 import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
-import { FullRowLoading } from "../../loading/full-row/FullRowLoading";
-import { FullWidthCellRendererError } from "../../errors/FullWidthCellRendererError/FullWidthCellRendererError";
+import { FullRowLoading } from "@components/Grid/loading/full-row/FullRowLoading";
+import { FullWidthCellRendererError } from "@components/Grid/errors/FullWidthCellRendererError/FullWidthCellRendererError";
 import { LicenseManager } from "@ag-grid-enterprise/core";
-import { SelectionCell } from "../../cells/selection-cell/SelectionCell";
+import { SelectionCell } from "@components/Grid/cells/selection-cell/SelectionCell";
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule,]);
 
 interface IAgGridTestDependencies {
@@ -209,6 +209,9 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     public onNotifyOutputChanged(record: IRecord, columnName: string, value: any, parameters: any) {
         record.setValue(columnName, value);
+        if(this.getGrid().isAutoSaveEnabled()) {
+            record.save();
+        }
         const { ShouldUnmountWhenOutputChanges } = parameters;
         if (ShouldUnmountWhenOutputChanges?.raw) {
             this.executeWithGridApi(gridApi => gridApi.stopEditing());
@@ -288,6 +291,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             case this._grid.isColumnEditable(column.name, e.data):
             //do not navigate on aggregated/grouped rows
             case e.data?.getSummarizationType() !== 'none':
+            //do not allow double click navigation for editable grids (it creates confusion between double clicking read only columns to navigate and double clicking editable columns to edit)
+            case this._grid.isEditingEnabled():
             //do not navigate on checkbox column
             case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY: {
                 break;
@@ -464,16 +469,9 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             return true
         }
         else if (this._canExpandRowGroupsByDefault()) {
-            if (params.rowNode.level <= this._grid.getDefaultExpandedGroupLevel()) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return params.rowNode.level <= this._grid.getDefaultExpandedGroupLevel();
         }
-        else {
-            return false;
-        }
+        else return false;
     }
 
     private _onColumnMoved(e: ColumnMovedEvent<IRecord>) {
@@ -669,7 +667,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         const parameters = columnInfo.ui.getControlParameters({
             ...this._grid.getFieldBindingParameters(record, column, editing),
             ...control.getParameters(),
-        })
+        });
         if (column.oneClickEdit && record.getSummarizationType() === 'none') {
             editing = true;
         }
@@ -683,7 +681,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             aggregatedValue: value.aggregatedValue,
             loading: columnInfo.ui.isLoading(),
             errorMessage: columnInfo.errorMessage,
-            editable: columnInfo.security.editable,
+            editable: column.isEditable && columnInfo.security.editable,
             editing: editing,
             parameters: parameters,
             saving: record.isSaving(),

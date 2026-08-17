@@ -1,5 +1,5 @@
 import { IRecord } from "@talxis/client-libraries";
-import { AgGridModel } from "../../grid/ag-grid/AgGridModel";
+import { AgGridModel } from "@components/Grid/grid/ag-grid/AgGridModel";
 
 interface ISelectionCellModelOptions {
     record: IRecord;

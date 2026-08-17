@@ -41,6 +41,7 @@ Base Controls handle the many small details that are easy to overlook—number f
 | `Duration` | Duration field |
 | `Grid` | Data grid |
 | `DatasetControl` | Dataset-based control |
+| `Form` | React-composed form runtime for building record-driven forms out of the field controls above, plus a FormXml-driven variant for model-driven app forms |
 
 ## Quick Start
 
@@ -75,6 +76,10 @@ See the [Usage Guide](./docs/usage.md) for detailed examples covering precision,
 - [**Usage Guide**](./docs/usage.md) — How to use Base Controls in your PCF, including extensibility and advanced examples
 - [**Developing**](./docs/developing.md) — Running a local build in PCF or Portal, and troubleshooting
 - [**Releasing**](./docs/releasing.md) — How to create a new release and publish to NPM
+
+## Storybook
+
+Live, editable examples are available at [talxis.github.io/base-controls](https://talxis.github.io/base-controls).
 
 ## License
 

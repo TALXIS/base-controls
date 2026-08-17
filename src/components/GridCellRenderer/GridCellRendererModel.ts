@@ -3,7 +3,7 @@ import { Property } from "./properties/Property";
 import { Email } from "./properties/Email";
 import { Phone } from "./properties/Phone";
 import { IGridCellRenderer } from "./interfaces";
-import { ITranslation } from "../../hooks";
+import { ITranslation } from "@hooks";
 import { gridGroupCellRendererTranslations } from "./translations";
 import { Url } from "./properties/Url";
 import { Lookup } from './properties/Lookup';
