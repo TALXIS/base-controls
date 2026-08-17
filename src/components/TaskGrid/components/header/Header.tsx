@@ -59,7 +59,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
                     iconProps: { iconName: 'PageList' },
                     text: localizationService.getLocalizedString('templateFromTask'),
                     disabled: isLoading,
-                    onClick: () => { provider.createTemplateFromTask(selectedIds[0]); }
+                    onClick: () => { datasetControl.getTemplateDataProvider().createTemplateFromTask(provider.getRecordsMap()[selectedIds[0]]); }
                 }] : []),
                 ...(isTaskAddingEnabled ? [{
                     key: 'taskFromTemplate',

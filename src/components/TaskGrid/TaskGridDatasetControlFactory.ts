@@ -42,6 +42,7 @@ export class TaskGridDatasetControlFactory {
         await savedQueryDataProvider.refresh();
 
         const taskStrategy = parameters.taskGridDescriptor.onCreateTaskStrategy({
+            savedQueryDataProvider: savedQueryDataProvider,
             templateDataProvider: templateDataProvider,
             customColumnsDataProvider: customColumnsDataProvider,
             enableTaskEditing: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableTaskEditing ?? false,

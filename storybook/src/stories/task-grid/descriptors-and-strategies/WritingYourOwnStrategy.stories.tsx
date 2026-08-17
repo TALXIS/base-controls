@@ -38,12 +38,11 @@ This is where the work is. The grid calls these hooks; you decide what they mean
 | \`onMoveTask(movingId, targetId, position)\` | ✅ | Reparent and/or reorder. \`position\` is \`'above'\`, \`'below'\` or \`'child'\`. |
 | \`onRecordSave(record)\` | ✅ | Persist an edited record. Return which fields you wrote. |
 | \`onIsRecordActive(recordId)\` | ✅ | Whether a task is active. Synchronous. |
-| \`onCreateTemplateFromTask(taskId)\` | ✅ | Capture a task subtree as a template, or return \`null\`. |
 | \`onCreateTasksFromTemplate(templateId, parentTaskId?)\` | ✅ | Expand a template into tasks, or return \`null\`. |
 | \`onOpenDatasetItems(refs, isTaskEntity)\` | ✅ | The user opened records — navigate, open a dialog, or no-op. |
 | \`onGetRootTaskId?()\` | — | Root the tree at one task. |
 
-Templates are required by the interface but may return \`null\` if you do not support them — the Dataverse strategy throws instead, which is equally valid when the feature is off.
+\`onCreateTasksFromTemplate\` is required by the interface but may return \`null\` if you do not support templates — the Dataverse strategy throws instead, which is equally valid when the feature is off. Capturing a template *from* a task is not part of the strategy: it belongs to the \`ITemplateDataProvider\` you return from \`onCreateTemplateDataProvider\`.
 
 ### \`onInitialize\` is your setup hook
 

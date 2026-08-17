@@ -30,13 +30,13 @@ A descriptor answers four questions the grid cannot answer on its own: which col
 | Method | Required | Description |
 |--------|:--------:|-------------|
 | \`onGetFieldMapping()\` | ✅ | Maps column roles to physical attribute names in your schema. |
-| \`onCreateTaskStrategy(deps)\` | ✅ | Returns the strategy handling task CRUD, move, and template operations. |
+| \`onCreateTaskStrategy(deps)\` | ✅ | Returns the strategy handling task CRUD, move, and template expansion. |
 | \`onCreateSavedQueryStrategy()\` | ✅ | Returns the strategy that loads and persists saved views. |
 | \`onCreateUserQueryDataProvider()\` | ✅ | Returns the \`IDataProvider\` backing the save-view dialog. |
 | \`onLoadDependencies?()\` | — | Async hook called once **before** anything else. Resolve configuration and fetch here. |
 | \`onGetHeight?()\` | — | Container height as a CSS string. Fills the parent when omitted. |
 | \`onGetGridParameters?()\` | — | \`ITaskGridParameters\` feature flags. All flags default to \`false\`. |
-| \`onCreateTemplateDataProvider?()\` | — | Enables template-based creation. Return a provider whose records are templates. |
+| \`onCreateTemplateDataProvider?()\` | — | Enables template-based creation. Return an \`ITemplateDataProvider\` whose records are templates and which can capture a new one from a task. |
 | \`onCreateLookupManyDataProvider?(params)\` | — | Supplies picker candidates for a lookup-many column. Called once per lookup-many cell. |
 | \`onCreateCustomColumnsStrategy?()\` | — | Enables user-defined columns. |
 | \`onCreateGridCustomizerStrategy?()\` | — | Deep-customizes AG Grid column definitions, renderers and row class rules. |
@@ -72,7 +72,7 @@ The sequence matters, because the strategies are created *after* configuration r
 
 1. \`onLoadDependencies()\` — awaited first. Anything async belongs here.
 2. \`onCreateCustomColumnsStrategy()\`, then \`onCreateSavedQueryStrategy()\` and \`onGetFieldMapping()\`.
-3. \`onCreateTemplateDataProvider()\`, then \`onCreateTaskStrategy(deps)\` — the template provider is handed to the task strategy through \`deps\`.
+3. \`onCreateTemplateDataProvider()\`, then \`onCreateTaskStrategy(deps)\` — the template provider is handed to the task strategy through \`deps\`. Creating a template is the template provider's own operation: call \`createTemplateFromTask\` on it, not on the task provider.
 4. The task strategy's own \`onInitialize(provider)\` runs, which is where it loads its records.
 
 That ordering is why both shipped descriptors resolve everything in \`onLoadDependencies\` and cache it: by the time a \`onCreate*\` hook runs, its inputs must already be available. It is also why they throw a clear error rather than returning \`undefined\` when a hook is called before initialization.

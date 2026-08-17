@@ -6,6 +6,7 @@ import { IDeleteTasksResult, ITaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
+import { ITemplateDataProvider } from "./providers/template";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ICustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
@@ -18,7 +19,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     private _dataset: IDataset;
     private _descriptor: ITaskGridDescriptor;
     private _dataProvider: ITaskDataProvider;
-    private _templateDataProvider?: IDataProvider;
+    private _templateDataProvider?: ITemplateDataProvider;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _savedQueryDataProvider: ISavedQueryDataProvider;
     private _customColumnsDataProvider?: ICustomColumnsDataProvider;
@@ -138,7 +139,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._savedQueryDataProvider;
     }
 
-    public getTemplateDataProvider(): IDataProvider {
+    public getTemplateDataProvider(): ITemplateDataProvider {
         if (!this._templateDataProvider) {
             throw new Error('This TaskGridDatasetControl does not have a template data provider');
         }
@@ -390,8 +391,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksDeleted', (result) => this._onAfterTasksDeleted(result));
         this._dataProvider.taskEvents.addEventListener('onBeforeTaskMoved', () => this._dataProvider.setLoading(true));
-        this._dataProvider.taskEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
-        this._dataProvider.taskEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
+        this._templateDataProvider?.templateEvents.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._templateDataProvider?.templateEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
+        this._templateDataProvider?.templateEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksCreated', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onAfterTaskMoved', () => this._dataProvider.setLoading(false));

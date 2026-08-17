@@ -9,8 +9,6 @@ export const ENTITY_NAME = 'mem_task';
 export const PRIMARY_ID = 'mem_taskid';
 export const SUBJECT_COL = 'subject';
 export const PARENT_ID_COL = 'parentid';
-/** Raw OData key used in IRawRecord for the parentid lookup field. */
-export const PARENT_ID_VALUE_KEY = `_${PARENT_ID_COL}_value`;
 export const STACK_RANK_COL = 'stackrank';
 export const STATE_CODE_COL = 'statecode';
 export const PERCENT_COMPLETE_COL = 'percentcomplete';
@@ -149,8 +147,16 @@ export const COLUMNS: IColumn[] = [
  * Returns the hidden (native) columns plus the named visible ones, in the order they appear in
  * {@link COLUMNS}. Used to build each saved view's column set.
  */
+/**
+ * Builds a view's column list: every entity column is included, and the ones the view does not name
+ * arrive hidden — the same shape a Dataverse saved-query layout produces, which is what keeps them
+ * available in the *Edit columns* panel.
+ */
 export const getQueryColumns = (...visibleColumnNames: string[]): IColumn[] =>
-    COLUMNS.filter(column => column.isHidden || visibleColumnNames.includes(column.name));
+    COLUMNS.map(column => ({
+        ...column,
+        isHidden: column.isHidden || !visibleColumnNames.includes(column.name),
+    }));
 
 // ─── LexoRank seed values ─────────────────────────────────────────────────────
 
@@ -234,6 +240,11 @@ export const TEMPLATE_CHILDREN: Record<string, IMemoryTaskTemplateNode[]> = {
 
 // ─── Task data helpers ────────────────────────────────────────────────────────
 
+/** The parent lookup value: an entity-reference array stored under the plain column name. */
+function parentRef(taskId: string) {
+    return [{ id: { guid: taskId }, etn: ENTITY_NAME }];
+}
+
 /** Generates a deterministic UUID from a compact numeric key. */
 function tid(epic: number, l1 = 0, l2 = 0): string {
     return [
@@ -254,7 +265,7 @@ export const TASKS: IRawRecord[] = [
     // EPIC 1 — Website Redesign
     // ═════════════════════════════════════════════════════════════════════════
     {
-        [PRIMARY_ID]: tid(1), subject: 'Website Redesign', [PARENT_ID_VALUE_KEY]: null,
+        [PRIMARY_ID]: tid(1), subject: 'Website Redesign', [PARENT_ID_COL]: null,
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 60,
         scheduledstart: '2025-10-01', scheduledend: '2026-01-31',
@@ -264,7 +275,7 @@ export const TASKS: IRawRecord[] = [
     },
     // L1 tasks
     {
-        [PRIMARY_ID]: tid(1, 1), subject: 'Discovery & Planning', [PARENT_ID_VALUE_KEY]: tid(1),
+        [PRIMARY_ID]: tid(1, 1), subject: 'Discovery & Planning', [PARENT_ID_COL]: parentRef(tid(1)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-10-01', scheduledend: '2025-10-31',
@@ -273,7 +284,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Gather requirements, conduct stakeholder interviews and perform competitive analysis.',
     },
     {
-        [PRIMARY_ID]: tid(1, 2), subject: 'UX/UI Design', [PARENT_ID_VALUE_KEY]: tid(1),
+        [PRIMARY_ID]: tid(1, 2), subject: 'UX/UI Design', [PARENT_ID_COL]: parentRef(tid(1)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-11-01', scheduledend: '2025-11-28',
@@ -282,7 +293,7 @@ export const TASKS: IRawRecord[] = [
         description: 'User journey mapping, wireframing, and high-fidelity mockup creation.',
     },
     {
-        [PRIMARY_ID]: tid(1, 3), subject: 'Frontend Development', [PARENT_ID_VALUE_KEY]: tid(1),
+        [PRIMARY_ID]: tid(1, 3), subject: 'Frontend Development', [PARENT_ID_COL]: parentRef(tid(1)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 55,
         scheduledstart: '2025-12-01', scheduledend: '2026-01-15',
@@ -291,7 +302,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Build the new component library and implement all page templates.',
     },
     {
-        [PRIMARY_ID]: tid(1, 4), subject: 'Content Migration', [PARENT_ID_VALUE_KEY]: tid(1),
+        [PRIMARY_ID]: tid(1, 4), subject: 'Content Migration', [PARENT_ID_COL]: parentRef(tid(1)),
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 1,
         statuscode: 3, priority: 1, percentcomplete: 30,
         scheduledstart: '2026-01-01', scheduledend: '2026-01-20',
@@ -300,7 +311,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Migrate all existing content to the new CMS, set up URL redirects.',
     },
     {
-        [PRIMARY_ID]: tid(1, 5), subject: 'Launch & QA', [PARENT_ID_VALUE_KEY]: tid(1),
+        [PRIMARY_ID]: tid(1, 5), subject: 'Launch & QA', [PARENT_ID_COL]: parentRef(tid(1)),
         [STACK_RANK_COL]: SEED_RANKS[4], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-01-16', scheduledend: '2026-01-31',
@@ -310,7 +321,7 @@ export const TASKS: IRawRecord[] = [
     },
     // L2 subtasks under Discovery & Planning
     {
-        [PRIMARY_ID]: tid(1, 1, 1), subject: 'Stakeholder interviews', [PARENT_ID_VALUE_KEY]: tid(1, 1),
+        [PRIMARY_ID]: tid(1, 1, 1), subject: 'Stakeholder interviews', [PARENT_ID_COL]: parentRef(tid(1, 1)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-10-01', scheduledend: '2025-10-10',
@@ -319,7 +330,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Interview key stakeholders to capture business goals and pain points.',
     },
     {
-        [PRIMARY_ID]: tid(1, 1, 2), subject: 'Market & competitor research', [PARENT_ID_VALUE_KEY]: tid(1, 1),
+        [PRIMARY_ID]: tid(1, 1, 2), subject: 'Market & competitor research', [PARENT_ID_COL]: parentRef(tid(1, 1)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 1, percentcomplete: 100,
         scheduledstart: '2025-10-11', scheduledend: '2025-10-31',
@@ -329,7 +340,7 @@ export const TASKS: IRawRecord[] = [
     },
     // L2 subtasks under UX/UI Design
     {
-        [PRIMARY_ID]: tid(1, 2, 1), subject: 'User journey mapping', [PARENT_ID_VALUE_KEY]: tid(1, 2),
+        [PRIMARY_ID]: tid(1, 2, 1), subject: 'User journey mapping', [PARENT_ID_COL]: parentRef(tid(1, 2)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-11-01', scheduledend: '2025-11-07',
@@ -338,7 +349,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Map out all primary user flows to identify friction points.',
     },
     {
-        [PRIMARY_ID]: tid(1, 2, 2), subject: 'Wireframing', [PARENT_ID_VALUE_KEY]: tid(1, 2),
+        [PRIMARY_ID]: tid(1, 2, 2), subject: 'Wireframing', [PARENT_ID_COL]: parentRef(tid(1, 2)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-11-08', scheduledend: '2025-11-18',
@@ -347,7 +358,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Create low-fidelity wireframes for all key pages.',
     },
     {
-        [PRIMARY_ID]: tid(1, 2, 3), subject: 'High-fidelity mockups', [PARENT_ID_VALUE_KEY]: tid(1, 2),
+        [PRIMARY_ID]: tid(1, 2, 3), subject: 'High-fidelity mockups', [PARENT_ID_COL]: parentRef(tid(1, 2)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-11-19', scheduledend: '2025-11-28',
@@ -357,7 +368,7 @@ export const TASKS: IRawRecord[] = [
     },
     // L2 subtasks under Frontend Development
     {
-        [PRIMARY_ID]: tid(1, 3, 1), subject: 'Design system setup', [PARENT_ID_VALUE_KEY]: tid(1, 3),
+        [PRIMARY_ID]: tid(1, 3, 1), subject: 'Design system setup', [PARENT_ID_COL]: parentRef(tid(1, 3)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-12-01', scheduledend: '2025-12-10',
@@ -366,7 +377,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Establish a shared component library with tokens, typography, and colours.',
     },
     {
-        [PRIMARY_ID]: tid(1, 3, 2), subject: 'Homepage & hero section', [PARENT_ID_VALUE_KEY]: tid(1, 3),
+        [PRIMARY_ID]: tid(1, 3, 2), subject: 'Homepage & hero section', [PARENT_ID_COL]: parentRef(tid(1, 3)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-12-11', scheduledend: '2025-12-20',
@@ -375,7 +386,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Implement the homepage with animated hero, feature highlights, and CTA sections.',
     },
     {
-        [PRIMARY_ID]: tid(1, 3, 3), subject: 'Product catalog pages', [PARENT_ID_VALUE_KEY]: tid(1, 3),
+        [PRIMARY_ID]: tid(1, 3, 3), subject: 'Product catalog pages', [PARENT_ID_COL]: parentRef(tid(1, 3)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 60,
         scheduledstart: '2025-12-21', scheduledend: '2026-01-07',
@@ -384,7 +395,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Build filterable product listing with lazy-load, quick-view, and sorting.',
     },
     {
-        [PRIMARY_ID]: tid(1, 3, 4), subject: 'Checkout flow', [PARENT_ID_VALUE_KEY]: tid(1, 3),
+        [PRIMARY_ID]: tid(1, 3, 4), subject: 'Checkout flow', [PARENT_ID_COL]: parentRef(tid(1, 3)),
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 3, percentcomplete: 0,
         scheduledstart: '2026-01-08', scheduledend: '2026-01-15',
@@ -394,7 +405,7 @@ export const TASKS: IRawRecord[] = [
     },
     // L2 subtasks under Content Migration
     {
-        [PRIMARY_ID]: tid(1, 4, 1), subject: 'Content inventory', [PARENT_ID_VALUE_KEY]: tid(1, 4),
+        [PRIMARY_ID]: tid(1, 4, 1), subject: 'Content inventory', [PARENT_ID_COL]: parentRef(tid(1, 4)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 1, percentcomplete: 100,
         scheduledstart: '2026-01-01', scheduledend: '2026-01-08',
@@ -403,7 +414,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Audit all existing pages and assets; classify for keep / update / retire.',
     },
     {
-        [PRIMARY_ID]: tid(1, 4, 2), subject: 'SEO redirect mapping', [PARENT_ID_VALUE_KEY]: tid(1, 4),
+        [PRIMARY_ID]: tid(1, 4, 2), subject: 'SEO redirect mapping', [PARENT_ID_COL]: parentRef(tid(1, 4)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 3, priority: 1, percentcomplete: 20,
         scheduledstart: '2026-01-09', scheduledend: '2026-01-20',
@@ -413,7 +424,7 @@ export const TASKS: IRawRecord[] = [
     },
     // L2 subtasks under Launch & QA
     {
-        [PRIMARY_ID]: tid(1, 5, 1), subject: 'Cross-browser testing', [PARENT_ID_VALUE_KEY]: tid(1, 5),
+        [PRIMARY_ID]: tid(1, 5, 1), subject: 'Cross-browser testing', [PARENT_ID_COL]: parentRef(tid(1, 5)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-01-16', scheduledend: '2026-01-22',
@@ -422,7 +433,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Verify layout and functionality on Chrome, Firefox, Safari, Edge, and iOS/Android.',
     },
     {
-        [PRIMARY_ID]: tid(1, 5, 2), subject: 'Performance optimisation', [PARENT_ID_VALUE_KEY]: tid(1, 5),
+        [PRIMARY_ID]: tid(1, 5, 2), subject: 'Performance optimisation', [PARENT_ID_COL]: parentRef(tid(1, 5)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-01-23', scheduledend: '2026-01-27',
@@ -431,7 +442,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Achieve Core Web Vitals score ≥ 90 on mobile and desktop.',
     },
     {
-        [PRIMARY_ID]: tid(1, 5, 3), subject: 'Accessibility audit', [PARENT_ID_VALUE_KEY]: tid(1, 5),
+        [PRIMARY_ID]: tid(1, 5, 3), subject: 'Accessibility audit', [PARENT_ID_COL]: parentRef(tid(1, 5)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-01-28', scheduledend: '2026-01-31',
@@ -444,7 +455,7 @@ export const TASKS: IRawRecord[] = [
     // EPIC 2 — API Platform v2
     // ═════════════════════════════════════════════════════════════════════════
     {
-        [PRIMARY_ID]: tid(2), subject: 'API Platform v2', [PARENT_ID_VALUE_KEY]: null,
+        [PRIMARY_ID]: tid(2), subject: 'API Platform v2', [PARENT_ID_COL]: null,
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 3, percentcomplete: 45,
         scheduledstart: '2025-09-01', scheduledend: '2026-03-31',
@@ -453,7 +464,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Ground-up rewrite of the REST API with versioning, improved auth, and a public developer portal.',
     },
     {
-        [PRIMARY_ID]: tid(2, 1), subject: 'Architecture Planning', [PARENT_ID_VALUE_KEY]: tid(2),
+        [PRIMARY_ID]: tid(2, 1), subject: 'Architecture Planning', [PARENT_ID_COL]: parentRef(tid(2)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-09-01', scheduledend: '2025-09-30',
@@ -462,7 +473,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Define API versioning strategy, contract-first design and technology stack.',
     },
     {
-        [PRIMARY_ID]: tid(2, 1, 1), subject: 'API design review board', [PARENT_ID_VALUE_KEY]: tid(2, 1),
+        [PRIMARY_ID]: tid(2, 1, 1), subject: 'API design review board', [PARENT_ID_COL]: parentRef(tid(2, 1)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-09-15', scheduledend: '2025-09-30',
@@ -471,7 +482,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Establish a cross-team review board and sign off on the final spec.',
     },
     {
-        [PRIMARY_ID]: tid(2, 2), subject: 'Authentication & Authorisation', [PARENT_ID_VALUE_KEY]: tid(2),
+        [PRIMARY_ID]: tid(2, 2), subject: 'Authentication & Authorisation', [PARENT_ID_COL]: parentRef(tid(2)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-10-01', scheduledend: '2025-11-15',
@@ -480,7 +491,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Implement OAuth 2.0 with PKCE, JWT short-lived tokens, and API key management.',
     },
     {
-        [PRIMARY_ID]: tid(2, 2, 1), subject: 'OAuth 2.0 implementation', [PARENT_ID_VALUE_KEY]: tid(2, 2),
+        [PRIMARY_ID]: tid(2, 2, 1), subject: 'OAuth 2.0 implementation', [PARENT_ID_COL]: parentRef(tid(2, 2)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-10-01', scheduledend: '2025-10-31',
@@ -489,7 +500,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Integrate an OAuth 2.0 provider with PKCE flow and token refresh logic.',
     },
     {
-        [PRIMARY_ID]: tid(2, 2, 2), subject: 'API key management', [PARENT_ID_VALUE_KEY]: tid(2, 2),
+        [PRIMARY_ID]: tid(2, 2, 2), subject: 'API key management', [PARENT_ID_COL]: parentRef(tid(2, 2)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-11-01', scheduledend: '2025-11-15',
@@ -498,7 +509,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Self-service portal for generating, rotating and revoking API keys.',
     },
     {
-        [PRIMARY_ID]: tid(2, 3), subject: 'Core API Endpoints', [PARENT_ID_VALUE_KEY]: tid(2),
+        [PRIMARY_ID]: tid(2, 3), subject: 'Core API Endpoints', [PARENT_ID_COL]: parentRef(tid(2)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 3, percentcomplete: 60,
         scheduledstart: '2025-11-16', scheduledend: '2026-01-31',
@@ -507,7 +518,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Build and document all v2 CRUD endpoints for core resources.',
     },
     {
-        [PRIMARY_ID]: tid(2, 3, 1), subject: 'Users & accounts endpoints', [PARENT_ID_VALUE_KEY]: tid(2, 3),
+        [PRIMARY_ID]: tid(2, 3, 1), subject: 'Users & accounts endpoints', [PARENT_ID_COL]: parentRef(tid(2, 3)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-11-16', scheduledend: '2025-12-15',
@@ -516,7 +527,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Full CRUD for user profiles, organisation membership, and preferences.',
     },
     {
-        [PRIMARY_ID]: tid(2, 3, 2), subject: 'Products & catalog endpoints', [PARENT_ID_VALUE_KEY]: tid(2, 3),
+        [PRIMARY_ID]: tid(2, 3, 2), subject: 'Products & catalog endpoints', [PARENT_ID_COL]: parentRef(tid(2, 3)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 70,
         scheduledstart: '2025-12-16', scheduledend: '2026-01-15',
@@ -525,7 +536,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Endpoints for product listings, variants, pricing, and inventory.',
     },
     {
-        [PRIMARY_ID]: tid(2, 3, 3), subject: 'Orders & billing endpoints', [PARENT_ID_VALUE_KEY]: tid(2, 3),
+        [PRIMARY_ID]: tid(2, 3, 3), subject: 'Orders & billing endpoints', [PARENT_ID_COL]: parentRef(tid(2, 3)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 3, percentcomplete: 0,
         scheduledstart: '2026-01-16', scheduledend: '2026-01-31',
@@ -534,7 +545,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Order lifecycle management including placement, fulfilment, and refunds.',
     },
     {
-        [PRIMARY_ID]: tid(2, 4), subject: 'Rate Limiting & Caching', [PARENT_ID_VALUE_KEY]: tid(2),
+        [PRIMARY_ID]: tid(2, 4), subject: 'Rate Limiting & Caching', [PARENT_ID_COL]: parentRef(tid(2)),
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 1,
         statuscode: 3, priority: 2, percentcomplete: 15,
         scheduledstart: '2026-02-01', scheduledend: '2026-02-28',
@@ -543,7 +554,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Implement per-tier rate limiting with Redis-backed sliding-window counters and response caching.',
     },
     {
-        [PRIMARY_ID]: tid(2, 5), subject: 'Developer Documentation', [PARENT_ID_VALUE_KEY]: tid(2),
+        [PRIMARY_ID]: tid(2, 5), subject: 'Developer Documentation', [PARENT_ID_COL]: parentRef(tid(2)),
         [STACK_RANK_COL]: SEED_RANKS[4], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-03-01', scheduledend: '2026-03-31',
@@ -552,7 +563,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Interactive developer portal with guides, changelogs, and a request playground.',
     },
     {
-        [PRIMARY_ID]: tid(2, 5, 1), subject: 'OpenAPI spec', [PARENT_ID_VALUE_KEY]: tid(2, 5),
+        [PRIMARY_ID]: tid(2, 5, 1), subject: 'OpenAPI spec', [PARENT_ID_COL]: parentRef(tid(2, 5)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-03-01', scheduledend: '2026-03-15',
@@ -561,7 +572,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Maintain a single source-of-truth OpenAPI 3.1 specification for all endpoints.',
     },
     {
-        [PRIMARY_ID]: tid(2, 5, 2), subject: 'SDK code samples', [PARENT_ID_VALUE_KEY]: tid(2, 5),
+        [PRIMARY_ID]: tid(2, 5, 2), subject: 'SDK code samples', [PARENT_ID_COL]: parentRef(tid(2, 5)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-03-16', scheduledend: '2026-03-31',
@@ -574,7 +585,7 @@ export const TASKS: IRawRecord[] = [
     // EPIC 3 — Mobile App (iOS + Android)
     // ═════════════════════════════════════════════════════════════════════════
     {
-        [PRIMARY_ID]: tid(3), subject: 'Mobile App (iOS + Android)', [PARENT_ID_VALUE_KEY]: null,
+        [PRIMARY_ID]: tid(3), subject: 'Mobile App (iOS + Android)', [PARENT_ID_COL]: null,
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 3, percentcomplete: 40,
         scheduledstart: '2025-11-01', scheduledend: '2026-04-30',
@@ -583,7 +594,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Cross-platform mobile app using React Native targeting iOS 16+ and Android 12+.',
     },
     {
-        [PRIMARY_ID]: tid(3, 1), subject: 'Project Setup', [PARENT_ID_VALUE_KEY]: tid(3),
+        [PRIMARY_ID]: tid(3, 1), subject: 'Project Setup', [PARENT_ID_COL]: parentRef(tid(3)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-11-01', scheduledend: '2025-11-15',
@@ -592,7 +603,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Repository, monorepo tooling, CI/CD, code signing, and store accounts.',
     },
     {
-        [PRIMARY_ID]: tid(3, 1, 1), subject: 'Architecture & tech stack decisions', [PARENT_ID_VALUE_KEY]: tid(3, 1),
+        [PRIMARY_ID]: tid(3, 1, 1), subject: 'Architecture & tech stack decisions', [PARENT_ID_COL]: parentRef(tid(3, 1)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-11-01', scheduledend: '2025-11-05',
@@ -601,7 +612,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Decide navigation library, state management, and offline-first strategy.',
     },
     {
-        [PRIMARY_ID]: tid(3, 1, 2), subject: 'CI/CD pipeline for mobile', [PARENT_ID_VALUE_KEY]: tid(3, 1),
+        [PRIMARY_ID]: tid(3, 1, 2), subject: 'CI/CD pipeline for mobile', [PARENT_ID_COL]: parentRef(tid(3, 1)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-11-06', scheduledend: '2025-11-15',
@@ -610,7 +621,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Automated test runs, code signing, and OTA deployment via Expo EAS.',
     },
     {
-        [PRIMARY_ID]: tid(3, 2), subject: 'Core Screens', [PARENT_ID_VALUE_KEY]: tid(3),
+        [PRIMARY_ID]: tid(3, 2), subject: 'Core Screens', [PARENT_ID_COL]: parentRef(tid(3)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 3, percentcomplete: 50,
         scheduledstart: '2025-11-16', scheduledend: '2026-02-28',
@@ -619,7 +630,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Build all primary screens following the approved design system.',
     },
     {
-        [PRIMARY_ID]: tid(3, 2, 1), subject: 'Onboarding flow', [PARENT_ID_VALUE_KEY]: tid(3, 2),
+        [PRIMARY_ID]: tid(3, 2, 1), subject: 'Onboarding flow', [PARENT_ID_COL]: parentRef(tid(3, 2)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-11-16', scheduledend: '2025-12-05',
@@ -628,7 +639,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Welcome screens, permissions, account creation, and biometric set-up.',
     },
     {
-        [PRIMARY_ID]: tid(3, 2, 2), subject: 'Home dashboard', [PARENT_ID_VALUE_KEY]: tid(3, 2),
+        [PRIMARY_ID]: tid(3, 2, 2), subject: 'Home dashboard', [PARENT_ID_COL]: parentRef(tid(3, 2)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-12-06', scheduledend: '2025-12-31',
@@ -637,7 +648,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Personalised dashboard with activity feed, quick actions, and KPI tiles.',
     },
     {
-        [PRIMARY_ID]: tid(3, 2, 3), subject: 'Product listing screen', [PARENT_ID_VALUE_KEY]: tid(3, 2),
+        [PRIMARY_ID]: tid(3, 2, 3), subject: 'Product listing screen', [PARENT_ID_COL]: parentRef(tid(3, 2)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 40,
         scheduledstart: '2026-01-01', scheduledend: '2026-01-31',
@@ -646,7 +657,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Infinite scroll product grid with search filters and swipe gestures.',
     },
     {
-        [PRIMARY_ID]: tid(3, 2, 4), subject: 'User profile screen', [PARENT_ID_VALUE_KEY]: tid(3, 2),
+        [PRIMARY_ID]: tid(3, 2, 4), subject: 'User profile screen', [PARENT_ID_COL]: parentRef(tid(3, 2)),
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-02-01', scheduledend: '2026-02-28',
@@ -655,7 +666,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Settings, notification preferences, order history, and account deletion.',
     },
     {
-        [PRIMARY_ID]: tid(3, 3), subject: 'API Integration', [PARENT_ID_VALUE_KEY]: tid(3),
+        [PRIMARY_ID]: tid(3, 3), subject: 'API Integration', [PARENT_ID_COL]: parentRef(tid(3)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 3, percentcomplete: 40,
         scheduledstart: '2025-12-01', scheduledend: '2026-03-31',
@@ -664,7 +675,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Integrate mobile client with Platform v2 APIs including auth, catalog, and orders.',
     },
     {
-        [PRIMARY_ID]: tid(3, 3, 1), subject: 'Authentication flows', [PARENT_ID_VALUE_KEY]: tid(3, 3),
+        [PRIMARY_ID]: tid(3, 3, 1), subject: 'Authentication flows', [PARENT_ID_COL]: parentRef(tid(3, 3)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-12-01', scheduledend: '2025-12-31',
@@ -673,7 +684,7 @@ export const TASKS: IRawRecord[] = [
         description: 'OAuth PKCE flow, biometric token storage, and session refresh logic.',
     },
     {
-        [PRIMARY_ID]: tid(3, 3, 2), subject: 'Data synchronisation', [PARENT_ID_VALUE_KEY]: tid(3, 3),
+        [PRIMARY_ID]: tid(3, 3, 2), subject: 'Data synchronisation', [PARENT_ID_COL]: parentRef(tid(3, 3)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 25,
         scheduledstart: '2026-01-01', scheduledend: '2026-03-31',
@@ -682,7 +693,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Background sync of catalog and order data with conflict resolution.',
     },
     {
-        [PRIMARY_ID]: tid(3, 4), subject: 'Offline Support', [PARENT_ID_VALUE_KEY]: tid(3),
+        [PRIMARY_ID]: tid(3, 4), subject: 'Offline Support', [PARENT_ID_COL]: parentRef(tid(3)),
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-03-01', scheduledend: '2026-04-15',
@@ -691,7 +702,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Allow browsing and adding to cart while offline; queue mutations for replay.',
     },
     {
-        [PRIMARY_ID]: tid(3, 4, 1), subject: 'Local SQLite database setup', [PARENT_ID_VALUE_KEY]: tid(3, 4),
+        [PRIMARY_ID]: tid(3, 4, 1), subject: 'Local SQLite database setup', [PARENT_ID_COL]: parentRef(tid(3, 4)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-03-01', scheduledend: '2026-03-20',
@@ -700,7 +711,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Schema design and migration tooling for the on-device SQLite store.',
     },
     {
-        [PRIMARY_ID]: tid(3, 5), subject: 'App Store Submission', [PARENT_ID_VALUE_KEY]: tid(3),
+        [PRIMARY_ID]: tid(3, 5), subject: 'App Store Submission', [PARENT_ID_COL]: parentRef(tid(3)),
         [STACK_RANK_COL]: SEED_RANKS[4], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 3, percentcomplete: 0,
         scheduledstart: '2026-04-16', scheduledend: '2026-04-30',
@@ -709,7 +720,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Prepare store listings, screenshots, privacy disclosures, and binary submission.',
     },
     {
-        [PRIMARY_ID]: tid(3, 5, 1), subject: 'Apple App Store submission', [PARENT_ID_VALUE_KEY]: tid(3, 5),
+        [PRIMARY_ID]: tid(3, 5, 1), subject: 'Apple App Store submission', [PARENT_ID_COL]: parentRef(tid(3, 5)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 3, percentcomplete: 0,
         scheduledstart: '2026-04-16', scheduledend: '2026-04-23',
@@ -718,7 +729,7 @@ export const TASKS: IRawRecord[] = [
         description: 'App Store Connect setup, TestFlight beta, and production release.',
     },
     {
-        [PRIMARY_ID]: tid(3, 5, 2), subject: 'Google Play Store submission', [PARENT_ID_VALUE_KEY]: tid(3, 5),
+        [PRIMARY_ID]: tid(3, 5, 2), subject: 'Google Play Store submission', [PARENT_ID_COL]: parentRef(tid(3, 5)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 3, percentcomplete: 0,
         scheduledstart: '2026-04-24', scheduledend: '2026-04-30',
@@ -731,7 +742,7 @@ export const TASKS: IRawRecord[] = [
     // EPIC 4 — Infrastructure & DevOps
     // ═════════════════════════════════════════════════════════════════════════
     {
-        [PRIMARY_ID]: tid(4), subject: 'Infrastructure & DevOps', [PARENT_ID_VALUE_KEY]: null,
+        [PRIMARY_ID]: tid(4), subject: 'Infrastructure & DevOps', [PARENT_ID_COL]: null,
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 55,
         scheduledstart: '2025-08-01', scheduledend: '2026-02-28',
@@ -740,7 +751,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Modernise the delivery pipeline and cloud infrastructure for the next growth phase.',
     },
     {
-        [PRIMARY_ID]: tid(4, 1), subject: 'CI/CD Pipeline', [PARENT_ID_VALUE_KEY]: tid(4),
+        [PRIMARY_ID]: tid(4, 1), subject: 'CI/CD Pipeline', [PARENT_ID_COL]: parentRef(tid(4)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-08-01', scheduledend: '2025-09-30',
@@ -749,7 +760,7 @@ export const TASKS: IRawRecord[] = [
         description: 'End-to-end automated pipeline from commit to production deployment.',
     },
     {
-        [PRIMARY_ID]: tid(4, 1, 1), subject: 'GitHub Actions workflow setup', [PARENT_ID_VALUE_KEY]: tid(4, 1),
+        [PRIMARY_ID]: tid(4, 1, 1), subject: 'GitHub Actions workflow setup', [PARENT_ID_COL]: parentRef(tid(4, 1)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-08-01', scheduledend: '2025-08-20',
@@ -758,7 +769,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Define reusable workflow templates for lint, test, build, and deploy stages.',
     },
     {
-        [PRIMARY_ID]: tid(4, 1, 2), subject: 'Automated testing pipeline', [PARENT_ID_VALUE_KEY]: tid(4, 1),
+        [PRIMARY_ID]: tid(4, 1, 2), subject: 'Automated testing pipeline', [PARENT_ID_COL]: parentRef(tid(4, 1)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-08-21', scheduledend: '2025-09-10',
@@ -767,7 +778,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Unit, integration, and smoke test stages with coverage gates.',
     },
     {
-        [PRIMARY_ID]: tid(4, 1, 3), subject: 'Docker containerisation', [PARENT_ID_VALUE_KEY]: tid(4, 1),
+        [PRIMARY_ID]: tid(4, 1, 3), subject: 'Docker containerisation', [PARENT_ID_COL]: parentRef(tid(4, 1)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-09-11', scheduledend: '2025-09-30',
@@ -776,7 +787,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Multi-stage Dockerfiles, image tagging strategy, and registry configuration.',
     },
     {
-        [PRIMARY_ID]: tid(4, 2), subject: 'Cloud Infrastructure', [PARENT_ID_VALUE_KEY]: tid(4),
+        [PRIMARY_ID]: tid(4, 2), subject: 'Cloud Infrastructure', [PARENT_ID_COL]: parentRef(tid(4)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 3, percentcomplete: 60,
         scheduledstart: '2025-10-01', scheduledend: '2025-12-31',
@@ -785,7 +796,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Migrate workloads to managed Kubernetes with autoscaling and blue/green deployments.',
     },
     {
-        [PRIMARY_ID]: tid(4, 2, 1), subject: 'Kubernetes cluster setup', [PARENT_ID_VALUE_KEY]: tid(4, 2),
+        [PRIMARY_ID]: tid(4, 2, 1), subject: 'Kubernetes cluster setup', [PARENT_ID_COL]: parentRef(tid(4, 2)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-10-01', scheduledend: '2025-11-15',
@@ -794,7 +805,7 @@ export const TASKS: IRawRecord[] = [
         description: 'EKS clusters (staging + prod), node groups, namespaces, and RBAC.',
     },
     {
-        [PRIMARY_ID]: tid(4, 2, 2), subject: 'Load balancer configuration', [PARENT_ID_VALUE_KEY]: tid(4, 2),
+        [PRIMARY_ID]: tid(4, 2, 2), subject: 'Load balancer configuration', [PARENT_ID_COL]: parentRef(tid(4, 2)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 30,
         scheduledstart: '2025-11-16', scheduledend: '2025-12-31',
@@ -803,7 +814,7 @@ export const TASKS: IRawRecord[] = [
         description: 'ALB Ingress controller with SSL termination, WAF rules, and health checks.',
     },
     {
-        [PRIMARY_ID]: tid(4, 3), subject: 'Monitoring & Alerting', [PARENT_ID_VALUE_KEY]: tid(4),
+        [PRIMARY_ID]: tid(4, 3), subject: 'Monitoring & Alerting', [PARENT_ID_COL]: parentRef(tid(4)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 50,
         scheduledstart: '2026-01-01', scheduledend: '2026-01-31',
@@ -812,7 +823,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Full observability stack: metrics, logs, traces, and on-call alerting.',
     },
     {
-        [PRIMARY_ID]: tid(4, 3, 1), subject: 'Prometheus + Grafana dashboards', [PARENT_ID_VALUE_KEY]: tid(4, 3),
+        [PRIMARY_ID]: tid(4, 3, 1), subject: 'Prometheus + Grafana dashboards', [PARENT_ID_COL]: parentRef(tid(4, 3)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 70,
         scheduledstart: '2026-01-01', scheduledend: '2026-01-20',
@@ -821,7 +832,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Dashboards for API latency, error rate, pod resource usage, and business metrics.',
     },
     {
-        [PRIMARY_ID]: tid(4, 3, 2), subject: 'PagerDuty integration', [PARENT_ID_VALUE_KEY]: tid(4, 3),
+        [PRIMARY_ID]: tid(4, 3, 2), subject: 'PagerDuty integration', [PARENT_ID_COL]: parentRef(tid(4, 3)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-01-21', scheduledend: '2026-01-31',
@@ -830,7 +841,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Tie Grafana alerting rules to PagerDuty with escalation policies.',
     },
     {
-        [PRIMARY_ID]: tid(4, 4), subject: 'Disaster Recovery', [PARENT_ID_VALUE_KEY]: tid(4),
+        [PRIMARY_ID]: tid(4, 4), subject: 'Disaster Recovery', [PARENT_ID_COL]: parentRef(tid(4)),
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-02-01', scheduledend: '2026-02-28',
@@ -839,7 +850,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Documented recovery playbooks, automated backups, and quarterly failover drills.',
     },
     {
-        [PRIMARY_ID]: tid(4, 4, 1), subject: 'Backup strategy & automation', [PARENT_ID_VALUE_KEY]: tid(4, 4),
+        [PRIMARY_ID]: tid(4, 4, 1), subject: 'Backup strategy & automation', [PARENT_ID_COL]: parentRef(tid(4, 4)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-02-01', scheduledend: '2026-02-15',
@@ -848,7 +859,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Automated nightly snapshots for databases and object storage with 30-day retention.',
     },
     {
-        [PRIMARY_ID]: tid(4, 4, 2), subject: 'Failover testing drill', [PARENT_ID_VALUE_KEY]: tid(4, 4),
+        [PRIMARY_ID]: tid(4, 4, 2), subject: 'Failover testing drill', [PARENT_ID_COL]: parentRef(tid(4, 4)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-02-16', scheduledend: '2026-02-28',
@@ -861,7 +872,7 @@ export const TASKS: IRawRecord[] = [
     // EPIC 5 — Security & Compliance
     // ═════════════════════════════════════════════════════════════════════════
     {
-        [PRIMARY_ID]: tid(5), subject: 'Security & Compliance', [PARENT_ID_VALUE_KEY]: null,
+        [PRIMARY_ID]: tid(5), subject: 'Security & Compliance', [PARENT_ID_COL]: null,
         [STACK_RANK_COL]: SEED_RANKS[4], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 3, percentcomplete: 35,
         scheduledstart: '2025-09-01', scheduledend: '2026-06-30',
@@ -870,7 +881,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Harden the product and organisation against internal and external threats; achieve SOC 2 Type II.',
     },
     {
-        [PRIMARY_ID]: tid(5, 1), subject: 'Security Audit', [PARENT_ID_VALUE_KEY]: tid(5),
+        [PRIMARY_ID]: tid(5, 1), subject: 'Security Audit', [PARENT_ID_COL]: parentRef(tid(5)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-09-01', scheduledend: '2025-10-31',
@@ -879,7 +890,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Third-party security audit covering infrastructure, application, and supply chain.',
     },
     {
-        [PRIMARY_ID]: tid(5, 1, 1), subject: 'OWASP vulnerability scan', [PARENT_ID_VALUE_KEY]: tid(5, 1),
+        [PRIMARY_ID]: tid(5, 1, 1), subject: 'OWASP vulnerability scan', [PARENT_ID_COL]: parentRef(tid(5, 1)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-09-01', scheduledend: '2025-09-20',
@@ -888,7 +899,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Automated DAST scan with OWASP ZAP; triage and log all findings.',
     },
     {
-        [PRIMARY_ID]: tid(5, 1, 2), subject: 'Penetration testing', [PARENT_ID_VALUE_KEY]: tid(5, 1),
+        [PRIMARY_ID]: tid(5, 1, 2), subject: 'Penetration testing', [PARENT_ID_COL]: parentRef(tid(5, 1)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-09-21', scheduledend: '2025-10-31',
@@ -897,7 +908,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Manual pen test by an external firm; remediate all critical and high findings.',
     },
     {
-        [PRIMARY_ID]: tid(5, 2), subject: 'GDPR Compliance', [PARENT_ID_VALUE_KEY]: tid(5),
+        [PRIMARY_ID]: tid(5, 2), subject: 'GDPR Compliance', [PARENT_ID_COL]: parentRef(tid(5)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 3, percentcomplete: 50,
         scheduledstart: '2025-11-01', scheduledend: '2026-02-28',
@@ -906,7 +917,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Full GDPR compliance programme including data mapping, DPA, and user rights flows.',
     },
     {
-        [PRIMARY_ID]: tid(5, 2, 1), subject: 'Data inventory & mapping', [PARENT_ID_VALUE_KEY]: tid(5, 2),
+        [PRIMARY_ID]: tid(5, 2, 1), subject: 'Data inventory & mapping', [PARENT_ID_COL]: parentRef(tid(5, 2)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2025-11-01', scheduledend: '2025-11-30',
@@ -915,7 +926,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Record of Processing Activities (RoPA) documenting all personal data flows.',
     },
     {
-        [PRIMARY_ID]: tid(5, 2, 2), subject: 'Privacy policy update', [PARENT_ID_VALUE_KEY]: tid(5, 2),
+        [PRIMARY_ID]: tid(5, 2, 2), subject: 'Privacy policy update', [PARENT_ID_COL]: parentRef(tid(5, 2)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-12-01', scheduledend: '2025-12-20',
@@ -924,7 +935,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Plain-language privacy policy co-authored with legal counsel.',
     },
     {
-        [PRIMARY_ID]: tid(5, 2, 3), subject: 'Cookie consent implementation', [PARENT_ID_VALUE_KEY]: tid(5, 2),
+        [PRIMARY_ID]: tid(5, 2, 3), subject: 'Cookie consent implementation', [PARENT_ID_COL]: parentRef(tid(5, 2)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 25,
         scheduledstart: '2026-01-01', scheduledend: '2026-01-31',
@@ -933,7 +944,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Granular consent banner, preference centre, and server-side consent signal.',
     },
     {
-        [PRIMARY_ID]: tid(5, 3), subject: 'SOC 2 Type II Certification', [PARENT_ID_VALUE_KEY]: tid(5),
+        [PRIMARY_ID]: tid(5, 3), subject: 'SOC 2 Type II Certification', [PARENT_ID_COL]: parentRef(tid(5)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 3, percentcomplete: 0,
         scheduledstart: '2026-03-01', scheduledend: '2026-06-30',
@@ -942,7 +953,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Engage auditor, implement controls, and collect evidence for a 12-month observation period.',
     },
     {
-        [PRIMARY_ID]: tid(5, 3, 1), subject: 'Controls documentation', [PARENT_ID_VALUE_KEY]: tid(5, 3),
+        [PRIMARY_ID]: tid(5, 3, 1), subject: 'Controls documentation', [PARENT_ID_COL]: parentRef(tid(5, 3)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 3, percentcomplete: 0,
         scheduledstart: '2026-03-01', scheduledend: '2026-04-30',
@@ -951,7 +962,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Write control narratives, policies, and evidence collection procedures.',
     },
     {
-        [PRIMARY_ID]: tid(5, 4), subject: 'Access Control Review', [PARENT_ID_VALUE_KEY]: tid(5),
+        [PRIMARY_ID]: tid(5, 4), subject: 'Access Control Review', [PARENT_ID_COL]: parentRef(tid(5)),
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 40,
         scheduledstart: '2025-12-01', scheduledend: '2025-12-31',
@@ -960,7 +971,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Quarterly access review: least-privilege audit, MFA enforcement, and offboarding check.',
     },
     {
-        [PRIMARY_ID]: tid(5, 4, 1), subject: 'Role-based access audit', [PARENT_ID_VALUE_KEY]: tid(5, 4),
+        [PRIMARY_ID]: tid(5, 4, 1), subject: 'Role-based access audit', [PARENT_ID_COL]: parentRef(tid(5, 4)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-12-01', scheduledend: '2025-12-15',
@@ -969,7 +980,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Review all IAM roles and service accounts; remove stale permissions.',
     },
     {
-        [PRIMARY_ID]: tid(5, 4, 2), subject: 'MFA enforcement', [PARENT_ID_VALUE_KEY]: tid(5, 4),
+        [PRIMARY_ID]: tid(5, 4, 2), subject: 'MFA enforcement', [PARENT_ID_COL]: parentRef(tid(5, 4)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 50,
         scheduledstart: '2025-12-16', scheduledend: '2025-12-31',
@@ -982,7 +993,7 @@ export const TASKS: IRawRecord[] = [
     // EPIC 6 — Documentation & Training
     // ═════════════════════════════════════════════════════════════════════════
     {
-        [PRIMARY_ID]: tid(6), subject: 'Documentation & Training', [PARENT_ID_VALUE_KEY]: null,
+        [PRIMARY_ID]: tid(6), subject: 'Documentation & Training', [PARENT_ID_COL]: null,
         [STACK_RANK_COL]: SEED_RANKS[5], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 1, percentcomplete: 30,
         scheduledstart: '2025-10-01', scheduledend: '2026-05-31',
@@ -991,7 +1002,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Comprehensive technical documentation and end-user training programme.',
     },
     {
-        [PRIMARY_ID]: tid(6, 1), subject: 'Technical Documentation', [PARENT_ID_VALUE_KEY]: tid(6),
+        [PRIMARY_ID]: tid(6, 1), subject: 'Technical Documentation', [PARENT_ID_COL]: parentRef(tid(6)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 50,
         scheduledstart: '2025-10-01', scheduledend: '2026-01-31',
@@ -1000,7 +1011,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Architecture guides, API references, and contributo guides for internal and external developers.',
     },
     {
-        [PRIMARY_ID]: tid(6, 1, 1), subject: 'Architecture guide', [PARENT_ID_VALUE_KEY]: tid(6, 1),
+        [PRIMARY_ID]: tid(6, 1, 1), subject: 'Architecture guide', [PARENT_ID_COL]: parentRef(tid(6, 1)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-10-01', scheduledend: '2025-11-15',
@@ -1009,7 +1020,7 @@ export const TASKS: IRawRecord[] = [
         description: 'System architecture, component interactions, data flow diagrams, and ADRs.',
     },
     {
-        [PRIMARY_ID]: tid(6, 1, 2), subject: 'API reference docs', [PARENT_ID_VALUE_KEY]: tid(6, 1),
+        [PRIMARY_ID]: tid(6, 1, 2), subject: 'API reference docs', [PARENT_ID_COL]: parentRef(tid(6, 1)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 40,
         scheduledstart: '2025-11-16', scheduledend: '2026-01-15',
@@ -1018,7 +1029,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Auto-generated and hand-written reference for every endpoint, event, and webhook.',
     },
     {
-        [PRIMARY_ID]: tid(6, 1, 3), subject: 'Code style & contribution guide', [PARENT_ID_VALUE_KEY]: tid(6, 1),
+        [PRIMARY_ID]: tid(6, 1, 3), subject: 'Code style & contribution guide', [PARENT_ID_COL]: parentRef(tid(6, 1)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-01-16', scheduledend: '2026-01-31',
@@ -1027,7 +1038,7 @@ export const TASKS: IRawRecord[] = [
         description: 'ESLint config rationale, branch naming, PR template, and commit conventions.',
     },
     {
-        [PRIMARY_ID]: tid(6, 2), subject: 'End-user Guides', [PARENT_ID_VALUE_KEY]: tid(6),
+        [PRIMARY_ID]: tid(6, 2), subject: 'End-user Guides', [PARENT_ID_COL]: parentRef(tid(6)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 35,
         scheduledstart: '2025-12-01', scheduledend: '2026-03-31',
@@ -1036,7 +1047,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Step-by-step guides for all major user journeys targeting non-technical audiences.',
     },
     {
-        [PRIMARY_ID]: tid(6, 2, 1), subject: 'Getting started tutorial', [PARENT_ID_VALUE_KEY]: tid(6, 2),
+        [PRIMARY_ID]: tid(6, 2, 1), subject: 'Getting started tutorial', [PARENT_ID_COL]: parentRef(tid(6, 2)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 2, percentcomplete: 100,
         scheduledstart: '2025-12-01', scheduledend: '2025-12-20',
@@ -1045,7 +1056,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Five-minute quickstart guiding a new user to their first successful action.',
     },
     {
-        [PRIMARY_ID]: tid(6, 2, 2), subject: 'FAQ & troubleshooting guide', [PARENT_ID_VALUE_KEY]: tid(6, 2),
+        [PRIMARY_ID]: tid(6, 2, 2), subject: 'FAQ & troubleshooting guide', [PARENT_ID_COL]: parentRef(tid(6, 2)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 1,
         statuscode: 3, priority: 1, percentcomplete: 20,
         scheduledstart: '2026-01-01', scheduledend: '2026-02-15',
@@ -1054,7 +1065,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Curated FAQ derived from support tickets; updated monthly.',
     },
     {
-        [PRIMARY_ID]: tid(6, 2, 3), subject: 'Advanced features guide', [PARENT_ID_VALUE_KEY]: tid(6, 2),
+        [PRIMARY_ID]: tid(6, 2, 3), subject: 'Advanced features guide', [PARENT_ID_COL]: parentRef(tid(6, 2)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-02-16', scheduledend: '2026-03-31',
@@ -1063,7 +1074,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Deep-dive guides for power users covering workflows, integrations, and automation.',
     },
     {
-        [PRIMARY_ID]: tid(6, 3), subject: 'Training Programme', [PARENT_ID_VALUE_KEY]: tid(6),
+        [PRIMARY_ID]: tid(6, 3), subject: 'Training Programme', [PARENT_ID_COL]: parentRef(tid(6)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-03-01', scheduledend: '2026-05-31',
@@ -1072,7 +1083,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Blended learning programme with videos, live workshops, and assessment quizzes.',
     },
     {
-        [PRIMARY_ID]: tid(6, 3, 1), subject: 'Video tutorials', [PARENT_ID_VALUE_KEY]: tid(6, 3),
+        [PRIMARY_ID]: tid(6, 3, 1), subject: 'Video tutorials', [PARENT_ID_COL]: parentRef(tid(6, 3)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-03-01', scheduledend: '2026-04-15',
@@ -1081,7 +1092,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Ten short-form screencasts covering the most common tasks.',
     },
     {
-        [PRIMARY_ID]: tid(6, 3, 2), subject: 'Interactive workshops', [PARENT_ID_VALUE_KEY]: tid(6, 3),
+        [PRIMARY_ID]: tid(6, 3, 2), subject: 'Interactive workshops', [PARENT_ID_COL]: parentRef(tid(6, 3)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-04-16', scheduledend: '2026-05-15',
@@ -1090,7 +1101,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Two-hour hands-on sessions for customer success and partner teams.',
     },
     {
-        [PRIMARY_ID]: tid(6, 3, 3), subject: 'Assessment quizzes', [PARENT_ID_VALUE_KEY]: tid(6, 3),
+        [PRIMARY_ID]: tid(6, 3, 3), subject: 'Assessment quizzes', [PARENT_ID_COL]: parentRef(tid(6, 3)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 0, percentcomplete: 0,
         scheduledstart: '2026-05-16', scheduledend: '2026-05-31',
@@ -1099,7 +1110,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Online quizzes with certificates of completion for each learning module.',
     },
     {
-        [PRIMARY_ID]: tid(6, 4), subject: 'Localisation', [PARENT_ID_VALUE_KEY]: tid(6),
+        [PRIMARY_ID]: tid(6, 4), subject: 'Localisation', [PARENT_ID_COL]: parentRef(tid(6)),
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 0, percentcomplete: 0,
         scheduledstart: '2026-04-01', scheduledend: '2026-05-31',
@@ -1108,7 +1119,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Translate key user guides and in-app strings into Spanish and French.',
     },
     {
-        [PRIMARY_ID]: tid(6, 4, 1), subject: 'Spanish translation', [PARENT_ID_VALUE_KEY]: tid(6, 4),
+        [PRIMARY_ID]: tid(6, 4, 1), subject: 'Spanish translation', [PARENT_ID_COL]: parentRef(tid(6, 4)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 0, percentcomplete: 0,
         scheduledstart: '2026-04-01', scheduledend: '2026-04-30',
@@ -1117,7 +1128,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Professional translation of getting-started guide and UI strings.',
     },
     {
-        [PRIMARY_ID]: tid(6, 4, 2), subject: 'French translation', [PARENT_ID_VALUE_KEY]: tid(6, 4),
+        [PRIMARY_ID]: tid(6, 4, 2), subject: 'French translation', [PARENT_ID_COL]: parentRef(tid(6, 4)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 0, percentcomplete: 0,
         scheduledstart: '2026-05-01', scheduledend: '2026-05-31',
@@ -1130,7 +1141,7 @@ export const TASKS: IRawRecord[] = [
     // EPIC 7 — Analytics & Reporting
     // ═════════════════════════════════════════════════════════════════════════
     {
-        [PRIMARY_ID]: tid(7), subject: 'Analytics & Reporting', [PARENT_ID_VALUE_KEY]: null,
+        [PRIMARY_ID]: tid(7), subject: 'Analytics & Reporting', [PARENT_ID_COL]: null,
         [STACK_RANK_COL]: SEED_RANKS[6], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 25,
         scheduledstart: '2026-01-01', scheduledend: '2026-06-30',
@@ -1139,7 +1150,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Build a centralised analytics platform powering executive dashboards, operational reports, and ML forecasting.',
     },
     {
-        [PRIMARY_ID]: tid(7, 1), subject: 'Data Pipeline', [PARENT_ID_VALUE_KEY]: tid(7),
+        [PRIMARY_ID]: tid(7, 1), subject: 'Data Pipeline', [PARENT_ID_COL]: parentRef(tid(7)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 3, percentcomplete: 50,
         scheduledstart: '2026-01-01', scheduledend: '2026-03-31',
@@ -1148,7 +1159,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Ingestion layer from all product databases and third-party tools into a centralised data warehouse.',
     },
     {
-        [PRIMARY_ID]: tid(7, 1, 1), subject: 'ETL pipeline setup', [PARENT_ID_VALUE_KEY]: tid(7, 1),
+        [PRIMARY_ID]: tid(7, 1, 1), subject: 'ETL pipeline setup', [PARENT_ID_COL]: parentRef(tid(7, 1)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 1,
         statuscode: 5, priority: 3, percentcomplete: 100,
         scheduledstart: '2026-01-01', scheduledend: '2026-02-15',
@@ -1157,7 +1168,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Apache Airflow DAGs for daily extraction from Postgres, Stripe, and Mixpanel.',
     },
     {
-        [PRIMARY_ID]: tid(7, 1, 2), subject: 'Data warehouse schema design', [PARENT_ID_VALUE_KEY]: tid(7, 1),
+        [PRIMARY_ID]: tid(7, 1, 2), subject: 'Data warehouse schema design', [PARENT_ID_COL]: parentRef(tid(7, 1)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 30,
         scheduledstart: '2026-02-16', scheduledend: '2026-03-31',
@@ -1166,7 +1177,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Star schema design in Snowflake covering orders, users, events, and financials.',
     },
     {
-        [PRIMARY_ID]: tid(7, 2), subject: 'Dashboards', [PARENT_ID_VALUE_KEY]: tid(7),
+        [PRIMARY_ID]: tid(7, 2), subject: 'Dashboards', [PARENT_ID_COL]: parentRef(tid(7)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 20,
         scheduledstart: '2026-03-01', scheduledend: '2026-05-31',
@@ -1175,7 +1186,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Self-service dashboards in Metabase for exec, sales, and ops purposes.',
     },
     {
-        [PRIMARY_ID]: tid(7, 2, 1), subject: 'Executive overview dashboard', [PARENT_ID_VALUE_KEY]: tid(7, 2),
+        [PRIMARY_ID]: tid(7, 2, 1), subject: 'Executive overview dashboard', [PARENT_ID_COL]: parentRef(tid(7, 2)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 2, priority: 2, percentcomplete: 30,
         scheduledstart: '2026-03-01', scheduledend: '2026-04-15',
@@ -1184,7 +1195,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Revenue, MRR, churn, NPS, and headcount at a glance.',
     },
     {
-        [PRIMARY_ID]: tid(7, 2, 2), subject: 'Sales metrics dashboard', [PARENT_ID_VALUE_KEY]: tid(7, 2),
+        [PRIMARY_ID]: tid(7, 2, 2), subject: 'Sales metrics dashboard', [PARENT_ID_COL]: parentRef(tid(7, 2)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-04-16', scheduledend: '2026-05-15',
@@ -1193,7 +1204,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Pipeline value, conversion rates, rep leaderboard, and quota attainment.',
     },
     {
-        [PRIMARY_ID]: tid(7, 2, 3), subject: 'Operational KPIs dashboard', [PARENT_ID_VALUE_KEY]: tid(7, 2),
+        [PRIMARY_ID]: tid(7, 2, 3), subject: 'Operational KPIs dashboard', [PARENT_ID_COL]: parentRef(tid(7, 2)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-05-16', scheduledend: '2026-05-31',
@@ -1202,7 +1213,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Support ticket volume, resolution time, and incident MTTR.',
     },
     {
-        [PRIMARY_ID]: tid(7, 3), subject: 'Custom Reports', [PARENT_ID_VALUE_KEY]: tid(7),
+        [PRIMARY_ID]: tid(7, 3), subject: 'Custom Reports', [PARENT_ID_COL]: parentRef(tid(7)),
         [STACK_RANK_COL]: SEED_RANKS[2], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-05-01', scheduledend: '2026-06-15',
@@ -1211,7 +1222,7 @@ export const TASKS: IRawRecord[] = [
         description: 'No-code report builder and scheduled PDF/CSV exports for non-analyst users.',
     },
     {
-        [PRIMARY_ID]: tid(7, 3, 1), subject: 'Report builder UI', [PARENT_ID_VALUE_KEY]: tid(7, 3),
+        [PRIMARY_ID]: tid(7, 3, 1), subject: 'Report builder UI', [PARENT_ID_COL]: parentRef(tid(7, 3)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-05-01', scheduledend: '2026-05-31',
@@ -1220,7 +1231,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Drag-and-drop query builder with chart types, filters, and calculated fields.',
     },
     {
-        [PRIMARY_ID]: tid(7, 3, 2), subject: 'Scheduled exports', [PARENT_ID_VALUE_KEY]: tid(7, 3),
+        [PRIMARY_ID]: tid(7, 3, 2), subject: 'Scheduled exports', [PARENT_ID_COL]: parentRef(tid(7, 3)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 1, percentcomplete: 0,
         scheduledstart: '2026-06-01', scheduledend: '2026-06-15',
@@ -1229,7 +1240,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Cron-driven email delivery of report snapshots in PDF and CSV formats.',
     },
     {
-        [PRIMARY_ID]: tid(7, 4), subject: 'ML & Forecasting', [PARENT_ID_VALUE_KEY]: tid(7),
+        [PRIMARY_ID]: tid(7, 4), subject: 'ML & Forecasting', [PARENT_ID_COL]: parentRef(tid(7)),
         [STACK_RANK_COL]: SEED_RANKS[3], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-06-01', scheduledend: '2026-06-30',
@@ -1238,7 +1249,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Predictive models for demand forecasting and customer churn embedded in dashboards.',
     },
     {
-        [PRIMARY_ID]: tid(7, 4, 1), subject: 'Demand forecasting model', [PARENT_ID_VALUE_KEY]: tid(7, 4),
+        [PRIMARY_ID]: tid(7, 4, 1), subject: 'Demand forecasting model', [PARENT_ID_COL]: parentRef(tid(7, 4)),
         [STACK_RANK_COL]: SEED_RANKS[0], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-06-01', scheduledend: '2026-06-20',
@@ -1247,7 +1258,7 @@ export const TASKS: IRawRecord[] = [
         description: 'Time-series model (Prophet or LSTM) predicting monthly order volumes by category.',
     },
     {
-        [PRIMARY_ID]: tid(7, 4, 2), subject: 'Churn prediction model', [PARENT_ID_VALUE_KEY]: tid(7, 4),
+        [PRIMARY_ID]: tid(7, 4, 2), subject: 'Churn prediction model', [PARENT_ID_COL]: parentRef(tid(7, 4)),
         [STACK_RANK_COL]: SEED_RANKS[1], [STATE_CODE_COL]: 0,
         statuscode: 1, priority: 2, percentcomplete: 0,
         scheduledstart: '2026-06-21', scheduledend: '2026-06-30',

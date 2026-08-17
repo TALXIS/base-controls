@@ -414,9 +414,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             })]
         }
     }
-    public onCreateTemplateFromTask(taskId: string): Promise<IRawRecord | null> {
-        throw new Error("Method not implemented.");
-    }
     public onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
         throw new Error("Method not implemented.");
     }

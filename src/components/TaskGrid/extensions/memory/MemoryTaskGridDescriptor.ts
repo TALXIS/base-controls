@@ -1,10 +1,11 @@
 import { IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
-import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy } from "@components/TaskGrid/providers";
+import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider } from "@components/TaskGrid/providers";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
-import { IMemoryEntitySource } from "./interfaces";
+import { IMemoryEntitySource, IMemoryTemplateSource } from "./interfaces";
 import { IMemoryTaskStrategyDependencies, MemoryTaskStrategy } from "./MemoryTaskStrategy";
 import { MemorySavedQueryStrategy } from "./MemorySavedQueryStrategy";
+import { MemoryTemplateDataProvider } from "./MemoryTemplateDataProvider";
 
 /** Dependencies resolved by {@link IMemoryTaskGridDescriptorParams} — see the interface for details. */
 export interface IMemoryTaskGridDescriptorParams extends IMemoryTaskStrategyDependencies {
@@ -12,6 +13,12 @@ export interface IMemoryTaskGridDescriptorParams extends IMemoryTaskStrategyDepe
     fieldMapping: IFieldMapping;
     /** Built-in, non-deletable views shown in the view switcher. At least one is required. */
     systemQueries: ISavedQuery[];
+    /**
+     * Task templates: the template entity plus the child hierarchy each template expands into. Owned by
+     * {@link MemoryTemplateDataProvider}, which reads it to expand a template and writes to it when one
+     * is captured from a task. Omit to disable templates.
+     */
+    templates?: IMemoryTemplateSource;
     /** Initial personal views. Editable and deletable at runtime; defaults to none. */
     userQueries?: ISavedQuery[];
     /**
@@ -42,9 +49,9 @@ export interface IMemoryTaskGridDescriptorParams extends IMemoryTaskStrategyDepe
  * const descriptor = new MemoryTaskGridDescriptor({
  *   height: '600px',
  *   onInitialize: async () => {
- *     const { TASKS, TASK_COLUMNS, TASK_METADATA } = await import('./fixtures');
+ *     const { TASKS, TASK_METADATA } = await import('./fixtures');
  *     return {
- *       tasks: { records: TASKS, columns: TASK_COLUMNS, metadata: TASK_METADATA },
+ *       records: TASKS, metadata: TASK_METADATA,
  *       fieldMapping: { subject: 'subject', parentId: 'parentid', stackRank: 'stackrank', stateCode: 'statecode' },
  *       systemQueries: [allTasksView],
  *     };
@@ -134,9 +141,9 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
         return new MemoryTaskStrategy({ onInitialize: async () => params }, deps);
     }
 
-    public onCreateTemplateDataProvider(): IDataProvider | undefined {
+    public onCreateTemplateDataProvider(): ITemplateDataProvider | undefined {
         const { templates } = this._getParams();
-        return templates && this._createDataProvider(templates);
+        return templates && new MemoryTemplateDataProvider({ templates: templates });
     }
 
     /** Builds the picker's candidate provider from the {@link IMemoryTaskGridDescriptorParams.lookupMany} entry for the column. */

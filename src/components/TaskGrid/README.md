@@ -29,7 +29,7 @@ import { TaskGrid, MemoryTaskGridDescriptor } from '@talxis/base-controls';
 const descriptor = new MemoryTaskGridDescriptor({
     height: '600px',
     onInitialize: async () => ({
-        tasks: { records: TASKS, columns: COLUMNS, metadata: { PrimaryIdAttribute: 'taskid' } },
+        records: TASKS, metadata: { PrimaryIdAttribute: 'taskid' },
         fieldMapping: { subject: 'subject', parentId: 'parentid', stackRank: 'stackrank', stateCode: 'statecode' },
         systemQueries: [ALL_TASKS_VIEW],
         gridParameters: { enableTaskEditing: true, enableRowDragging: true },
@@ -50,7 +50,7 @@ export const MyTaskGridPage = ({ pcfContext }) => (
 |------|----------|
 | `TaskGrid.tsx` | The component. Takes `pcfContext` and `taskGridDescriptor`. |
 | `interfaces.ts` | `ITaskGridDescriptor`, `IFieldMapping`, `ITaskGridParameters`, `ITaskStrategyDeps`. |
-| `providers/` | `TaskDataProvider`, `SavedQueryDataProvider`, `CustomColumnsDataProvider` and their strategy interfaces. |
+| `providers/` | `TaskDataProvider`, `SavedQueryDataProvider`, `CustomColumnsDataProvider`, `ITemplateDataProvider` and their strategy interfaces. |
 | `components/grid/` | AG Grid integration: the grid customizer, cell renderers, cell headers, lookup-many controls. |
 | `extensions/memory/` | `MemoryTaskGridDescriptor` — in-memory strategy. |
 | `extensions/dataverse/` | `DataverseTaskGridDescriptor` — Dataverse / Xrm Web API strategy. |

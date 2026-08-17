@@ -83,9 +83,10 @@ export const createMemoryTaskGridDescriptor = () => new MemoryTaskGridDescriptor
         };
 
         return {
-            //cloned per descriptor: the strategy writes into these arrays, so sharing the module-level
+            //cloned per descriptor: the strategy writes into this array, so sharing the module-level
             //fixtures would let the grids on different doc pages fight over one dataset
-            tasks: structuredClone(TASK_SOURCE),
+            records: structuredClone(TASK_SOURCE.records),
+            metadata: TASK_SOURCE.metadata,
             fieldMapping: {
                 subject: SUBJECT_COL,
                 parentId: PARENT_ID_COL,

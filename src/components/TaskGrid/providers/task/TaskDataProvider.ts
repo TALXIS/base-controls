@@ -50,8 +50,6 @@ export interface ITaskDataProviderStrategy {
      * Throws on unexpected failure.
      */
     onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
-    /** @returns The created template raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    onCreateTemplateFromTask(taskId: string): Promise<IRawRecord | null>;
     /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null>;
     /**
@@ -70,8 +68,6 @@ export interface ITaskDataProviderStrategy {
 }
 
 export interface ITaskDataProviderEventListener {
-    onBeforeTemplateCreated: (taskId: string) => void;
-    onAfterTemplateCreated: (record: IRawRecord | null) => void;
     onBeforeTasksDeleted: (taskIds: string[]) => void;
     onAfterTasksDeleted: (result: IDeleteTasksResult | null) => void;
     onBeforeTasksCreated: (parentId?: string) => void;
@@ -87,7 +83,7 @@ export interface ITaskDataProviderEventListener {
 
 /** Extended data provider interface for task records. Adds task-specific operations on top of `IDataProvider`. */
 export interface ITaskDataProvider extends IDataProvider {
-    /** EventEmitter for task lifecycle events (create, delete, edit, move, template, error). */
+    /** EventEmitter for task lifecycle events (create, delete, edit, move, error). */
     taskEvents: IEventEmitter<ITaskDataProviderEventListener>;
     /** Returns the native column name mapping. */
     getNativeColumns(): INativeColumns;
@@ -114,8 +110,6 @@ export interface ITaskDataProvider extends IDataProvider {
      * Throws on unexpected failure before any deletes could be attempted.
      */
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
-    /** @returns The created template raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    createTemplateFromTask(taskId: string): Promise<IRawRecord | null>;
     /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
     createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRawRecord[] | null>;
     /** Returns `true` when the grid is displaying a flat list instead of a tree hierarchy. */
@@ -288,18 +282,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })
-    }
-
-    public async createTemplateFromTask(taskId: string): Promise<IRawRecord | null> {
-        this.taskEvents.dispatchEvent('onBeforeTemplateCreated', taskId);
-        return ErrorHelper.executeWithErrorHandling({
-            operation: async () => {
-                const rawRecord = await this._strategy.onCreateTemplateFromTask(taskId);
-                this.taskEvents.dispatchEvent('onAfterTemplateCreated', rawRecord);
-                return rawRecord;
-            },
-            onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
-        });
     }
 
     public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {
