@@ -27,7 +27,8 @@ const preview: Preview = {
                   line-height: 1.65;
                 }
 
-                .form-strategy-hidden-preview.sbdocs-preview {
+                .form-strategy-hidden-preview.sbdocs-preview,
+                .docs-hidden-preview.sbdocs-preview {
                   display: none;
                 }
               `}
@@ -97,6 +98,14 @@ const preview: Preview = {
             ],
           ],
           'Task Grid',
+          [
+            'Get started',
+            ['Overview', 'Descriptor', 'Writing your own strategy'],
+            'Memory',
+            'Dataverse',
+            'Customizations',
+            'Demo',
+          ],
           'Providers',
         ],
       },
