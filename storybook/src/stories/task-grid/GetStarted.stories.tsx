@@ -45,7 +45,7 @@ export const MyTaskGridPage = ({ pcfContext }) => (
 )
 \`\`\`
 
-The descriptor returns the strategies the grid asks for, and the grid calls them at the right moments. See [**Descriptor**](?path=/story/task-grid-get-started-descriptor--overview) for the contract itself.
+The descriptor returns the strategies the grid asks for, and the grid calls them at the right moments. See [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview) for the contract itself.
 
 ### \`<TaskGrid />\` props
 
@@ -70,7 +70,7 @@ This is the best fit when:
 - you have records in hand already and just want them rendered
 - you want a working reference implementation to read before writing your own
 
-Go to [**Memory**](?path=/story/task-grid-memory--overview).
+Go to [**Memory**](?path=/story/task-grid-descriptors-strategies-memory--overview).
 
 ### Dataverse
 
@@ -82,15 +82,14 @@ This is the best fit when:
 - you want saved views persisted per user, and forms opened for create/edit
 - you need relationship columns handled with associate/disassociate on save
 
-Go to [**Dataverse**](?path=/story/task-grid-dataverse--overview).
+Go to [**Dataverse**](?path=/story/task-grid-descriptors-strategies-dataverse--overview).
 
-> Neither is a subclassing exercise. Both are configured entirely through a parameter object — you only write a strategy when you have a data source neither covers, which is what [**Writing your own strategy**](?path=/story/task-grid-get-started-writing-your-own-strategy--overview) walks through.
+> Neither is a subclassing exercise. Both are configured entirely through a parameter object — you only write a strategy when you have a data source neither covers, which is what [**Writing your own strategy**](?path=/story/task-grid-descriptors-strategies-writing-your-own-strategy--overview) walks through.
 
 ## Where to go next
 
-- [**Descriptor**](?path=/story/task-grid-get-started-descriptor--overview) — the contract every strategy plugs into.
+- [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview) — the contract every strategy plugs into.
 - [**Customizations**](?path=/story/task-grid-customizations--overview) — feature flags, cell renderers, labels, and replaceable UI.
-- [**Demo**](?path=/story/task-grid-demo--overview) — the same grid, full screen and free of documentation chrome.
                 `.trim(),
             },
         },

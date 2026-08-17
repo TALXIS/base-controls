@@ -1,11 +1,11 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../form/storyHelpers'
+import { renderStory } from '../../form/storyHelpers'
 
 const DocsPlaceholder = () => <div style={{ display: 'none' }} />
 
 const meta = {
-    title: 'Task Grid/Dataverse',
+    title: 'Task Grid/Descriptors & Strategies/Dataverse',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -27,7 +27,7 @@ It handles the wiring a model-driven subgrid would give you: saved views persist
 import { DataverseTaskGridDescriptor } from '@talxis/base-controls'
 \`\`\`
 
-> There is no live grid on this page. Storybook mocks only \`Xrm.Utility.getGlobalContext()\` — \`Xrm.WebApi\` and \`getEntityMetadata\` are rejecting stubs, so this strategy cannot run outside a Dataverse host. That gap is exactly why the [**Memory**](?path=/story/task-grid-memory--overview) strategy exists.
+> There is no live grid on this page. Storybook mocks only \`Xrm.Utility.getGlobalContext()\` — \`Xrm.WebApi\` and \`getEntityMetadata\` are rejecting stubs, so this strategy cannot run outside a Dataverse host. That gap is exactly why the [**Memory**](?path=/story/task-grid-descriptors-strategies-memory--overview) strategy exists.
 
 ## Setup
 
@@ -158,7 +158,7 @@ class MyTaskStrategy extends DataverseTaskStrategy {
 }
 \`\`\`
 
-If you are targeting something other than Dataverse, see [**Writing your own strategy**](?path=/story/task-grid-get-started-writing-your-own-strategy--overview) instead.
+If you are targeting something other than Dataverse, see [**Writing your own strategy**](?path=/story/task-grid-descriptors-strategies-writing-your-own-strategy--overview) instead.
                 `.trim(),
             },
         },

@@ -1,11 +1,11 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../form/storyHelpers'
+import { renderStory } from '../../form/storyHelpers'
 
 const DocsPlaceholder = () => <div style={{ display: 'none' }} />
 
 const meta = {
-    title: 'Task Grid/Get started/Writing your own strategy',
+    title: 'Task Grid/Descriptors & Strategies/Writing your own strategy',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -150,7 +150,7 @@ public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
 
 That gets you working create, delete, move, templates and editing against your own records — all client-side, with nothing written back. It is a good way to prototype the UI before committing to the persistence layer.
 
-Go back to [**Descriptor**](?path=/story/task-grid-get-started-descriptor--overview) for the contract, or read [**Memory**](?path=/story/task-grid-memory--overview) for the reference implementation's parameters.
+Go back to [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview) for the contract, or read [**Memory**](?path=/story/task-grid-descriptors-strategies-memory--overview) for the reference implementation's parameters.
                 `.trim(),
             },
         },

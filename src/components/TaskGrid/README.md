@@ -9,10 +9,10 @@ The control is headless by design: all data access and business logic is supplie
 The full documentation lives in Storybook, where every page is backed by a live grid:
 
 - [**Get started**](https://talxis.github.io/base-controls/?path=/docs/task-grid-get-started--overview) — what the control is, `<TaskGrid />` props, and choosing a strategy
-- [**Descriptor**](https://talxis.github.io/base-controls/?path=/docs/task-grid-get-started-descriptor--overview) — the `ITaskGridDescriptor` contract and field mapping
-- [**Writing your own strategy**](https://talxis.github.io/base-controls/?path=/docs/task-grid-get-started-writing-your-own-strategy--overview) — implementing against your own data source
-- [**Memory**](https://talxis.github.io/base-controls/?path=/docs/task-grid-memory--overview) — the in-memory strategy, for local development, tests and demos
-- [**Dataverse**](https://talxis.github.io/base-controls/?path=/docs/task-grid-dataverse--overview) — the Dataverse / Xrm Web API strategy
+- [**Descriptor**](https://talxis.github.io/base-controls/?path=/docs/task-grid-descriptors-strategies-descriptor--overview) — the `ITaskGridDescriptor` contract and field mapping
+- [**Writing your own strategy**](https://talxis.github.io/base-controls/?path=/docs/task-grid-descriptors-strategies-writing-your-own-strategy--overview) — implementing against your own data source
+- [**Memory**](https://talxis.github.io/base-controls/?path=/docs/task-grid-descriptors-strategies-memory--overview) — the in-memory strategy, for local development, tests and demos
+- [**Dataverse**](https://talxis.github.io/base-controls/?path=/docs/task-grid-descriptors-strategies-dataverse--overview) — the Dataverse / Xrm Web API strategy
 - [**Customizations**](https://talxis.github.io/base-controls/?path=/docs/task-grid-customizations--overview) — feature flags, cell renderers, labels and replaceable UI
 
 To read them locally:

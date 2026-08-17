@@ -1,10 +1,10 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../form/storyHelpers'
-import { MemoryTaskGrid } from '../../task-grid/MemoryTaskGrid'
+import { renderStory } from '../../form/storyHelpers'
+import { MemoryTaskGrid } from '../../../task-grid/MemoryTaskGrid'
 
 const meta = {
-    title: 'Task Grid/Memory',
+    title: 'Task Grid/Descriptors & Strategies/Memory',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -75,7 +75,7 @@ Required:
 | Parameter | Description |
 |---|---|
 | \`tasks\` | The task entity as an \`IMemoryEntitySource\` — \`{ records, columns, metadata }\`. |
-| \`fieldMapping\` | Column roles. See [**Descriptor**](?path=/story/task-grid-get-started-descriptor--overview). |
+| \`fieldMapping\` | Column roles. See [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview). |
 | \`systemQueries\` | Built-in, non-deletable views. At least one is required. |
 
 Optional:

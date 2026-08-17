@@ -100,11 +100,9 @@ const preview: Preview = {
           'Task Grid',
           [
             'Get started',
-            ['Overview', 'Descriptor', 'Writing your own strategy'],
-            'Memory',
-            'Dataverse',
+            'Descriptors & Strategies',
+            ['Descriptor', 'Memory', 'Dataverse', 'Writing your own strategy'],
             'Customizations',
-            'Demo',
           ],
           'Providers',
         ],

@@ -1,11 +1,11 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../form/storyHelpers'
+import { renderStory } from '../../form/storyHelpers'
 
 const DocsPlaceholder = () => <div style={{ display: 'none' }} />
 
 const meta = {
-    title: 'Task Grid/Get started/Descriptor',
+    title: 'Task Grid/Descriptors & Strategies/Descriptor',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -98,7 +98,7 @@ If the grid renders but the shape is wrong, check these in order:
 3. **Nothing renders and no error appears** — \`onLoadDependencies\` never resolved. It is awaited before the first provider is created, so a hanging promise there shows as an indefinite skeleton.
 4. **A feature is missing from the ribbon** — its flag in \`onGetGridParameters\` defaults to \`false\`, or the optional hook that enables it is not implemented.
 
-Once the mapping and the load order are right, the same descriptor shape works against any backend — go to [**Memory**](?path=/story/task-grid-memory--overview), [**Dataverse**](?path=/story/task-grid-dataverse--overview), or [**Writing your own strategy**](?path=/story/task-grid-get-started-writing-your-own-strategy--overview).
+Once the mapping and the load order are right, the same descriptor shape works against any backend — go to [**Memory**](?path=/story/task-grid-descriptors-strategies-memory--overview), [**Dataverse**](?path=/story/task-grid-descriptors-strategies-dataverse--overview), or [**Writing your own strategy**](?path=/story/task-grid-descriptors-strategies-writing-your-own-strategy--overview).
                 `.trim(),
             },
         },
