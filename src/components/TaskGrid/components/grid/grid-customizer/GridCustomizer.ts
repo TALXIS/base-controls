@@ -1,3 +1,4 @@
+import * as React from "react";
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import { DatasetConstants, IColumn, IRawRecord, IRecord } from "@talxis/client-libraries";
@@ -10,6 +11,8 @@ import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
 import { LookupManyCellRenderer } from "../cell-renderers/lookup-many";
 import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
+//type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
+import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
 
 export const ADD_TASK_COLUMN_NAME = 'addTask';
 
@@ -47,6 +50,12 @@ export interface IGridCustomizerParameters {
     gridApi: GridApi;
     datasetControl: ITaskGridDatasetControl;
     strategy?: IGridCustomizerStrategy;
+    onGetComponents: () => ITaskGridComponents;
+}
+
+interface IDefaultCellComponents {
+    renderer?: any;
+    editor?: any;
 }
 
 export class GridCustomizer implements IGridCustomizer {
@@ -58,6 +67,8 @@ export class GridCustomizer implements IGridCustomizer {
     private _pcfContext: ComponentFramework.Context<any>;
     private _datasetControl: ITaskGridDatasetControl;
     private _strategy?: IGridCustomizerStrategy;
+    private _onGetComponents: () => ITaskGridComponents;
+    private _defaultCellComponents: Map<string, IDefaultCellComponents> = new Map();
 
     constructor(parameters: IGridCustomizerParameters) {
         this._datasetControl = parameters.datasetControl;
@@ -66,6 +77,7 @@ export class GridCustomizer implements IGridCustomizer {
         this._localizationService = this._datasetControl.getLocalizationService();
         this._nativeColumns = this._datasetControl.getNativeColumns();
         this._strategy = parameters.strategy;
+        this._onGetComponents = parameters.onGetComponents;
         this._pcfContext = this._datasetControl.getPcfContext();
 
         this._gridDragHandler = new GridDragHandler({
@@ -191,8 +203,35 @@ export class GridCustomizer implements IGridCustomizer {
 
         columnDefs.sort((a, b) => this._getColumnPriority(a) - this._getColumnPriority(b));
         columnDefs = this._strategy?.onGetColumnDefinitions?.(columnDefs) ?? columnDefs;
+        columnDefs.map(colDef => this._applyCellComponentOverrides(colDef));
         return columnDefs;
 
+    }
+
+    private _applyCellComponentOverrides(colDef: ColDef) {
+        const columnName = (colDef.colId ?? colDef.field) as string;
+        if (colDef.cellRenderer !== this._cellRenderer) {
+            this._defaultCellComponents.set(columnName, { renderer: colDef.cellRenderer, editor: colDef.cellEditor });
+        }
+        colDef.cellRenderer = this._cellRenderer;
+        colDef.cellEditor = this._cellEditor;
+    }
+
+    private _cellRenderer = (props: ITaskGridCellProps): React.ReactElement => {
+        return this._renderCell('renderer', props);
+    }
+
+    private _cellEditor = (props: ITaskGridCellProps): React.ReactElement => {
+        return this._renderCell('editor', props);
+    }
+
+    private _renderCell(role: 'renderer' | 'editor', props: ITaskGridCellProps): React.ReactElement {
+        const columnName = (props.colDef?.colId ?? props.colDef?.field) as string;
+        const defaults = this._defaultCellComponents.get(columnName) ?? {};
+        const component = role === 'renderer' ? defaults.renderer : defaults.editor;
+        const components = this._onGetComponents();
+        const onRender = role === 'renderer' ? components.onRenderCellRenderer : components.onRenderCellEditor;
+        return onRender(props, (props) => React.createElement(component, props));
     }
 
     private _getCustomControlForColumn(role: 'editor' | 'renderer', column?: IColumn): string | null {

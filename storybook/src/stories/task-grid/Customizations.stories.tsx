@@ -100,7 +100,7 @@ class MyCustomizer implements IGridCustomizerStrategy {
 }
 \`\`\`
 
-The customizer runs **after** the grid's own column setup, so you can override native decisions — including the lookup-many renderer, if you want a different one.
+The customizer runs **after** the grid's own column setup, so you can override native decisions — including the lookup-many renderer, if you want a different one. The \`components\` prop runs after *that*, so a renderer you assign here is what its \`defaultRender\` renders.
 
 \`IGridCustomizer\` gives you:
 
@@ -113,14 +113,18 @@ The customizer runs **after** the grid's own column setup, so you can override n
 
 ### Custom cell renderers
 
-A renderer is a React component assigned to \`colDef.cellRenderer\`, typed with \`ICellProps\`. Read the record from \`props.record\` and the value through the column id:
+A renderer is a React component assigned to \`colDef.cellRenderer\`, typed with \`ITaskGridCellProps\` — AG Grid's \`ICellRendererParams\` plus the \`record\`, \`baseColumn\`, \`value\` and \`isCellEditor\` the grid injects. Read the record from \`props.record\` and the value through the column id:
 
 \`\`\`tsx
-const PriorityCellRenderer = (props: ICellProps) => {
+import { ITaskGridCellProps } from '@talxis/base-controls'
+
+const PriorityCellRenderer = (props: ITaskGridCellProps) => {
     const value = props.record.getValue(props.colDef!.colId!)
     return <span>{String(value)}</span>
 }
 \`\`\`
+
+The same type is what the \`components\` cell hooks below receive, so a renderer written once works in either place.
 
 ### Conditional formatting
 
@@ -160,7 +164,7 @@ Any key you omit keeps its English default. The full set — around 150 keys —
 
 ## Replaceable UI
 
-Two pieces of chrome can be swapped through the \`components\` prop:
+Four pieces of the grid can be swapped through the \`components\` prop — two of chrome, two of cells:
 
 \`\`\`tsx
 <TaskGrid
@@ -169,9 +173,20 @@ Two pieces of chrome can be swapped through the \`components\` prop:
     components={{
         onRenderSkeleton: (props) => <MySpinner height={props.height} />,
         onRenderCommandBar: (props) => <MyCommandBar {...props} />,
+        onRenderCellRenderer: (props, defaultRender) => props.baseColumn.name === 'priority'
+            ? <PriorityCellRenderer {...props} />
+            : defaultRender(props),
+        onRenderCellEditor: (props, defaultRender) => defaultRender(props),
     }}
 />
 \`\`\`
+
+The cell hooks wrap **every** data column, so \`defaultRender\` is what makes them usable: it renders whatever the grid would otherwise have used for that column — the base cell, the group cell on \`subject\`, \`PercentComplete\`, the lookup-many renderer, or a renderer your grid customizer assigned. Switch on \`props.baseColumn.name\` and delegate the rest.
+
+Three things to know:
+
+- **They are the outermost layer.** \`components\` wraps the grid customizer, not the other way round — the customizer belongs to the descriptor (your app's wiring), the \`components\` prop to whoever renders \`<TaskGrid />\`.
+- **Not every column reaches them.** The checkbox and add-task columns are skipped, because their props carry no record. Lookup-many columns are not editable — editing happens inside the picker — so \`onRenderCellEditor\` never fires for them, and they render with \`autoHeight\`, so a fixed-height wrapper will fight row sizing.
 
 > Prefer Fluent UI in replacements. The rest of the grid renders with Fluent, so mixing in another design system tends to read as inconsistent rather than intentional.
                 `.trim(),

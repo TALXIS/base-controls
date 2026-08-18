@@ -54,7 +54,7 @@ The descriptor returns the strategies the grid asks for, and the grid calls them
 | \`pcfContext\` | ✅ | A \`ComponentFramework.Context\`. Used for navigation, formatting, error dialogs and environment utilities. |
 | \`taskGridDescriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration. |
 | \`labels?\` | — | Partial \`ITaskGridLabels\`. Any key you supply replaces the English default. |
-| \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton loader or the command bar. |
+| \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton loader, the command bar, or the renderer/editor of any cell. |
 
 ## Choose a strategy
 
