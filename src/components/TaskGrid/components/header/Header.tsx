@@ -1,7 +1,7 @@
 import { IHeaderProps } from "@components/DatasetControl/interfaces"
 import { ICommandBarItemProps } from "@legacy";
 import * as React from "react"
-import { CommandBarButton, ContextualMenuItemType, useTheme } from "@fluentui/react";
+import { ContextualMenuItemType, useTheme } from "@fluentui/react";
 import { getHeaderStyles } from "./styles";
 import { SettingsCallout } from "./settings-callout";
 import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
@@ -135,7 +135,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
                 disabled: isLoading,
                 text: localizationService.getLocalizedString('editColumns'),
                 iconProps: { iconName: 'ColumnOptions' },
-                onRender: (item) => <CommandBarButton {...item} onClick={() => setEditColumnsOpen(true)} />
+                onClick: () => setEditColumnsOpen(true)
             } as ICommandBarItemProps,
             ] : []),
             ...(isShowHierarchyToggleVisible || isHideInactiveTasksToggleVisible ? [{

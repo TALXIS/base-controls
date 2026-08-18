@@ -1,8 +1,15 @@
 import * as Babel from '@babel/standalone'
 import React from 'react'
-import { TaskGrid } from '@talxis/base-controls/components/TaskGrid'
+import { TaskGrid, useTaskDataProvider } from '@talxis/base-controls/components/TaskGrid'
 import type { ITaskGridDescriptor } from '@talxis/base-controls/components/TaskGrid'
-import { Avatar, Chip, LinearProgress, Rating, Slider, Stack, TextField, Tooltip, Typography } from '@mui/material'
+import { Alert, Autocomplete, Avatar, AvatarGroup, Button, Chip, LinearProgress, Menu, MenuItem, Popover, Rating, Slider, Snackbar, Stack, TextField, Tooltip, Typography } from '@mui/material'
+import AddIcon from '@mui/icons-material/Add'
+import DoneAllIcon from '@mui/icons-material/DoneAll'
+import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
+import SettingsIcon from '@mui/icons-material/Settings'
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'
 
 interface ITaskGridLivePreviewProps {
     code: string
@@ -32,9 +39,25 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 'TaskGrid',
                 'descriptor',
                 'pcfContext',
+                'useTaskDataProvider',
                 'Chip',
                 'Stack',
+                'Alert',
+                'Autocomplete',
                 'Avatar',
+                'AvatarGroup',
+                'Button',
+                'Snackbar',
+                'AddIcon',
+                'DoneAllIcon',
+                'DeleteIcon',
+                'EditIcon',
+                'PlaylistAddIcon',
+                'SettingsIcon',
+                'ViewColumnIcon',
+                'Menu',
+                'MenuItem',
+                'Popover',
                 'LinearProgress',
                 'Rating',
                 'Slider',
@@ -50,9 +73,25 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 TaskGrid,
                 props.descriptor,
                 props.pcfContext,
+                useTaskDataProvider,
                 Chip,
                 Stack,
+                Alert,
+                Autocomplete,
                 Avatar,
+                AvatarGroup,
+                Button,
+                Snackbar,
+                AddIcon,
+                DoneAllIcon,
+                DeleteIcon,
+                EditIcon,
+                PlaylistAddIcon,
+                SettingsIcon,
+                ViewColumnIcon,
+                Menu,
+                MenuItem,
+                Popover,
                 LinearProgress,
                 Rating,
                 Slider,

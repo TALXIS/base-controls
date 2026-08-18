@@ -13,16 +13,17 @@ export const CUSTOM_CELL_EDITOR_CODE = `const PercentCompleteEditor = (props: IT
         props.api?.stopEditing()
     }
 
-    return <Stack height="100%" px={2} justifyContent="center">
+    //the value sits beside the slider rather than above it - a label over the thumb is clipped by the row
+    return <Stack direction="row" spacing={2} height="100%" px={2} alignItems="center">
         <Slider
             size="small"
             min={0}
             max={100}
             step={5}
             value={value}
-            valueLabelDisplay="on"
             onChange={(event, next) => setValue(next as number)}
             onChangeCommitted={commit} />
+        <Typography variant="caption" width={34} textAlign="right">{value}%</Typography>
     </Stack>
 }
 

@@ -1,8 +1,10 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
-import { CUSTOM_CELL_RENDERER_CODE, CustomCellRendererExample } from '../../../task-grid/CustomCellRendererExample'
-import { CUSTOM_CELL_EDITOR_CODE, CustomCellEditorExample } from '../../../task-grid/CustomCellEditorExample'
+import { CustomCellRendererExample } from '../../../task-grid/CustomCellRendererExample'
+import { CustomCellEditorExample } from '../../../task-grid/CustomCellEditorExample'
+import { CustomLookupCellExample } from '../../../task-grid/CustomLookupCellExample'
+import { CustomCommandBarExample } from '../../../task-grid/CustomCommandBarExample'
 
 const meta = {
     title: 'Task Grid/Customizations/Custom Components',
@@ -19,51 +21,24 @@ const meta = {
             },
             description: {
                 component: `
-Replace parts of what the grid renders with your own components, while the grid keeps owning the data, the tree, editing and saving.
+Replace parts of what the grid renders with your own components while it keeps owning the data, the tree, editing and saving.
 
-Everything here goes through one prop — \`components\` — whose keys the grid merges over its own defaults:
+Everything goes through one prop — \`components\` — whose keys the grid merges over its own defaults. Flip the **Code** toggle on any story to read its snippet, and edit it: the grid recompiles as you type.
 
-\`\`\`tsx
-<TaskGrid
-    pcfContext={pcfContext}
-    taskGridDescriptor={descriptor}
-    components={{
-        onRenderCellRenderer: (props, defaultRender) => …,
-        onRenderCellEditor: (props, defaultRender) => …,
-        onRenderSkeleton: (props) => <MySpinner height={props.height} />,
-        onRenderCommandBar: (props) => <MyCommandBar {...props} />,
-    }}
-/>
-\`\`\`
+> The stories below use Material UI purely to show that presentation is fully swappable, not because it is the recommended choice. To keep a grid visually coherent, prefer Fluent UI — that is what the rest of the control renders with.
 
-| Key | Replaces |
-|---|---|
-| \`onRenderCellRenderer\` | The renderer of any data cell. |
-| \`onRenderCellEditor\` | The editor of any editable data cell. |
-| \`onRenderSkeleton\` | The loading skeleton shown before the grid mounts. |
-| \`onRenderCommandBar\` | The ribbon's command bar. |
+## What you can replace
 
-Any key you omit keeps its default. For other kinds of customization — feature flags, column metadata, the AG Grid customizer, labels — see [**Customizations**](?path=/story/task-grid-customizations--overview).
+- **Cell renderers** — \`onRenderCellRenderer\` wraps every data cell, and \`defaultRender(props)\` gives you back whatever that column would otherwise have rendered.
+- **Cell editors** — \`onRenderCellEditor\`, the same contract for the cells the grid lets you edit.
+- **The command bar** — \`onRenderCommandBar\` replaces the ribbon's bar outright and hands you the command model.
+- **The loading skeleton** — \`onRenderSkeleton\`, shown while the grid boots.
 
-## The cell hooks and \`defaultRender\`
+Both cell hooks receive \`ITaskGridCellProps\`: the AG Grid params plus the \`record\`, \`baseColumn\`, \`value\` and \`isCellEditor\` the grid injects, so a component written for one role works in the other.
 
-The two cell hooks are called for **every** data column, which is why they get a second argument. \`defaultRender\` renders whatever that column would otherwise have used — the base cell, the group cell on \`subject\`, \`PercentComplete\`, the lookup-many renderer, or a component your grid customizer assigned. Switch on \`props.baseColumn?.name\` and delegate the rest:
+Treat \`baseColumn\` as optional. Some cells have no column behind them — the selection checkbox and the expand/collapse column are rendered by the grid itself — so a renderer that might be used outside these hooks should read \`props.baseColumn?.name\` rather than assume it is there.
 
-\`\`\`tsx
-onRenderCellRenderer: (props, defaultRender) => props.baseColumn?.name === 'priority'
-    ? <PriorityCell {...props} />
-    : defaultRender(props)
-\`\`\`
-
-Both hooks receive \`ITaskGridCellProps\` — AG Grid's \`ICellRendererParams\` plus the \`record\`, \`baseColumn\`, \`value\` and \`isCellEditor\` the grid injects. It is the same type the built-in renderers use, so a component written for one place works in the other.
-
-Three things to know:
-
-- **They are the outermost layer.** \`components\` wraps the grid customizer, not the other way round — the customizer belongs to the descriptor (your app's wiring), this prop to whoever renders \`<TaskGrid />\`.
-- **Not every column reaches them.** The checkbox and add-task columns are skipped, because their props carry no record. Lookup-many columns are not editable — editing happens inside the picker — so \`onRenderCellEditor\` never fires for them, and they render with \`autoHeight\`, so a fixed-height wrapper will fight row sizing.
-- **Keep the map and the components stable.** The grid merges \`components\` on every render and AG Grid keys cell components by identity, so declare the object and your renderers at module scope (or memoize them) rather than inline in JSX.
-
-> The hooks do not care which design system you use — the example below deliberately drops a Material UI \`Chip\` into a Fluent grid to show that. In a real app, matching the surrounding Fluent styling usually reads better than mixing the two.
+Each story runs its own grid with its own in-memory data, so edits in one do not leak into the next.
                 `.trim(),
             },
         },
@@ -82,23 +57,41 @@ export const ReplaceCellRenderer: Story = {
                 sourceState: 'none',
                 additionalActions: [],
             },
-            source: {
-                code: CUSTOM_CELL_RENDERER_CODE,
-            },
             description: {
                 story: `
-The **Priority** column below renders as a coloured pill instead of the default option-set cell. Everything else is untouched: **Subject** keeps its tree chevrons, **% Complete** keeps its progress bar, and **Assigned To** / **Tags** keep their pickers — all of them arrive through \`defaultRender\`.
+Renders the **Priority** column as a MUI \`Chip\`, while every other column keeps the cell the grid would have used.
 
-The renderer is a MUI \`Chip\` — the label comes off the column definition the grid already passed in, the colour off MUI's palette, and nothing needs styling of its own. Flip the **Code** toggle to read it, and edit it: the grid below recompiles as you type.
-
-Note the \`props.value.loading\` branch: a cell whose value is still resolving is handed back to the grid, which already knows how to show that state. Sorting, filtering and inline editing on the column keep working — the hook only changes what the cell looks like.
-
-The sandbox hands the snippet its \`descriptor\` and \`pcfContext\`, so the in-memory data survives your edits, and it exposes a handful of MUI components (\`Chip\`, \`Stack\`, \`Avatar\`, \`LinearProgress\`, \`Rating\`, \`Tooltip\`, \`Typography\`) to build with. Define a component called \`TaskGridExample\` and it gets rendered.
+- takes the label and the colour from the column definition the grid passes in, so the renderer needs no data of its own
+- hands every other column — and this one while its value is still loading — to \`defaultRender\`
+- never sees the checkbox and add-task columns: their props carry no record
                 `.trim(),
             },
         },
     },
     render: () => renderStory(<CustomCellRendererExample />),
+}
+
+export const RenderLookupColumn: Story = {
+    name: 'Render a lookup column',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Renders **Assigned To** as a MUI \`AvatarGroup\`, and clicking it reassigns the task through a MUI \`Autocomplete\`.
+
+- reads the column's value as one entry per referenced record, and pulls each avatar out of the \`rawData\` the strategy attached to that reference
+- gets its candidates from \`descriptor.onCreateLookupManyDataProvider({ record, column })\` — the same hook the built-in picker uses, so the options come from wherever your strategy says they live
+- owns editing too: a lookup-many column is not editable through AG Grid, it is edited *inside* the renderer, so the replacement writes references back with \`record.setValue\` and saves
+- these columns render with \`autoHeight\`, so keep the replacement's height predictable or the row grows with it
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(<CustomLookupCellExample />),
 }
 
 export const ReplaceCellEditor: Story = {
@@ -109,32 +102,38 @@ export const ReplaceCellEditor: Story = {
                 sourceState: 'none',
                 additionalActions: [],
             },
-            source: {
-                code: CUSTOM_CELL_EDITOR_CODE,
-            },
             description: {
                 story: `
-Double-click a **% Complete** cell below: instead of the built-in cell it opens a MUI \`Slider\`. Every other column still opens the editor the grid would have used, because they go straight to \`defaultRender\`.
+Opens a MUI \`Slider\` when a **% Complete** cell starts editing, instead of the built-in cell. Double-click one to try it.
 
-An editor owns its own commit. There is no AG Grid editor value contract here — write the value onto the record, save it, and close the editor:
-
-\`\`\`tsx
-const commit = () => {
-    props.record.setValue(columnName, value)
-    props.record.save()
-    props.api?.stopEditing()
-}
-\`\`\`
-
-The grid auto-saves, so \`record.save()\` routes straight to your strategy's \`onRecordSave\` — the same path an inline edit of any other column takes. This is exactly what the built-in \`LookupManyCellRenderer\` does when its picker closes.
-
-Two things this story shows about the editor hook:
-
-- **\`defaultRender\` is not always a text box.** \`% Complete\` carries a \`PercentComplete\` custom control for both roles, so delegating here hands you the progress bar, not the base cell.
-- **Some columns never reach it.** \`Assigned To\` and \`Tags\` are lookup-many, which the grid marks non-editable because editing happens inside their picker — try double-clicking one and the hook stays silent.
+- commits by itself — \`record.setValue\`, \`record.save()\`, then \`api.stopEditing()\`; there is no AG Grid editor value contract in play
+- \`defaultRender\` hands back the column's own component, which here is the progress bar rather than a text box
+- never fires for **Assigned To** or **Tags**: lookup-many columns are not editable, they edit inside their picker
                 `.trim(),
             },
         },
     },
     render: () => renderStory(<CustomCellEditorExample />),
+}
+
+export const ReplaceCommandBar: Story = {
+    name: 'Replace the command bar',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Swaps the Fluent command bar for a row of MUI buttons, carrying both the grid's commands and one of its own.
+
+- has no \`defaultRender\`: you get the command model — \`text\`, \`iconProps\`, \`onClick\`, \`subMenuProps\` — and render it however you like
+- keeps the grid's panels: a submenu that brings its own content exposes it as \`onRenderMenuList()\`, so the settings callout and the template picker open inside the MUI \`Menu\`
+- adds **Mark done**, a command of its own, which reaches the grid's data through \`useTaskDataProvider()\` and saves the whole selection in one pass
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(<CustomCommandBarExample />),
 }
