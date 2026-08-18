@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../form/storyHelpers'
-import { MemoryTaskGrid } from '../../task-grid/MemoryTaskGrid'
+import { renderStory } from '../../form/storyHelpers'
+import { MemoryTaskGrid } from '../../../task-grid/MemoryTaskGrid'
 
 const meta = {
     title: 'Task Grid/Customizations',
@@ -164,31 +164,7 @@ Any key you omit keeps its English default. The full set — around 150 keys —
 
 ## Replaceable UI
 
-Four pieces of the grid can be swapped through the \`components\` prop — two of chrome, two of cells:
-
-\`\`\`tsx
-<TaskGrid
-    pcfContext={pcfContext}
-    taskGridDescriptor={descriptor}
-    components={{
-        onRenderSkeleton: (props) => <MySpinner height={props.height} />,
-        onRenderCommandBar: (props) => <MyCommandBar {...props} />,
-        onRenderCellRenderer: (props, defaultRender) => props.baseColumn.name === 'priority'
-            ? <PriorityCellRenderer {...props} />
-            : defaultRender(props),
-        onRenderCellEditor: (props, defaultRender) => defaultRender(props),
-    }}
-/>
-\`\`\`
-
-The cell hooks wrap **every** data column, so \`defaultRender\` is what makes them usable: it renders whatever the grid would otherwise have used for that column — the base cell, the group cell on \`subject\`, \`PercentComplete\`, the lookup-many renderer, or a renderer your grid customizer assigned. Switch on \`props.baseColumn.name\` and delegate the rest.
-
-Three things to know:
-
-- **They are the outermost layer.** \`components\` wraps the grid customizer, not the other way round — the customizer belongs to the descriptor (your app's wiring), the \`components\` prop to whoever renders \`<TaskGrid />\`.
-- **Not every column reaches them.** The checkbox and add-task columns are skipped, because their props carry no record. Lookup-many columns are not editable — editing happens inside the picker — so \`onRenderCellEditor\` never fires for them, and they render with \`autoHeight\`, so a fixed-height wrapper will fight row sizing.
-
-> Prefer Fluent UI in replacements. The rest of the grid renders with Fluent, so mixing in another design system tends to read as inconsistent rather than intentional.
+The grid's cells, its loading skeleton and its command bar can all be swapped for your own components through the \`components\` prop. That has its own page, with a live example: [**Custom Components**](?path=/story/task-grid-customizations-custom-components--replace-cell-renderer).
                 `.trim(),
             },
         },

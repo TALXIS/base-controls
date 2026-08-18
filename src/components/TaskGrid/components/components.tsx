@@ -23,7 +23,7 @@ export interface ITaskGridComponents {
      * otherwise have used for that column — the base cell, the group cell, `PercentComplete`, the
      * lookup-many renderer, or a component assigned by `IGridCustomizerStrategy`.
      *
-     * Switch on `props.baseColumn.name` and delegate the rest to `defaultRender`. Not called for the
+     * Switch on `props.baseColumn?.name` and delegate the rest to `defaultRender`. Not called for the
      * checkbox and add-task columns, whose props do not carry a record.
      */
     onRenderCellRenderer: (props: ITaskGridCellProps, defaultRender: (props: ITaskGridCellProps) => React.ReactElement) => React.ReactElement;

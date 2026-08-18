@@ -34,6 +34,8 @@ export class GridDragHandler extends EventEmitter<IGridDragHandlerEvents> {
         this._gridApi.setGridOption('rowDragEntireRow', true);
         this._gridApi.setGridOption('onRowDragMove', (e) => this._onRowDragMove(e));
         this._gridApi.setGridOption('onRowDragEnd', (e) => this._onRowDragEnd(e));
+        this._gridApi.setGridOption('onCellEditingStarted', () => this._gridApi.setGridOption('rowDragEntireRow', false));
+        this._gridApi.setGridOption('onCellEditingStopped', () => this._toggleRowDragging());
         this._dataProvider.addEventListener('onBeforeNewDataLoaded', () => this._toggleRowDragging())
     }
 
