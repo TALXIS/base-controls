@@ -20,9 +20,11 @@ const meta = {
             },
             description: {
                 component: `
-Reach past the grid's own decisions and into the records and the AG Grid instance behind it, without replacing any UI.
+The lowest level of customization the grid offers. Return an \`IGridCustomizerStrategy\` from your descriptor's \`onCreateGridCustomizerStrategy\` and you hold the AG Grid instance itself, plus the records behind it — so everything the grid does is reachable from here, cell renderers included, since a renderer is only \`colDef.cellRenderer\` on a column definition.
 
-Return an \`IGridCustomizerStrategy\` from your descriptor's \`onCreateGridCustomizerStrategy\` and the grid hands it three hooks:
+[**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview) is a convenience over exactly this: it swaps a renderer or an editor without a strategy, without you finding the right column definition, and while handing you the grid's own component to fall back on. Reach for the customizer when that is not enough — when you want a record's *behaviour* rather than its looks, or an ag-grid option TaskGrid never surfaces.
+
+The strategy gets three hooks:
 
 | Hook | When | What you get |
 |---|---|---|
@@ -34,10 +36,9 @@ Return an \`IGridCustomizerStrategy\` from your descriptor's \`onCreateGridCusto
 
 ## What it is for
 
-- **Per-record behaviour through expressions** — validation, formatting, disabled state, notifications, all set per record as it loads and re-evaluated on every read.
-- **AG Grid itself** — options, column definitions and row classes the grid does not surface as parameters.
-
-The strategy never touches rendering. Swapping components is the other page: [**Custom Components**](?path=/story/task-grid-customizations-custom-components--replace-cell-renderer).
+- **Per-record behaviour through expressions** — validation, formatting, disabled state, notifications, all set per record as it loads and re-evaluated on every read. Nothing else in the grid can express these.
+- **AG Grid itself** — options, column definitions and row classes TaskGrid does not surface as parameters.
+- **Rendering, if you want it here** — assigning \`colDef.cellRenderer\` in \`onGetColumnDefinitions\` is what the \`components\` hooks ultimately do for you.
 
 > Flip the **Code** toggle on any story to read its snippet, and edit it: the grid recompiles as you type. A snippet here defines a \`gridCustomizerStrategy\` and the example feeds it to the descriptor.
                 `.trim(),
@@ -60,10 +61,10 @@ export const CustomValidation: Story = {
             },
             description: {
                 story: `
-Rejects an **Est. Effort (h)** over 40 with a message of its own. Double-click a cell in that column, type \`60\`, and the cell reports the error instead of saving it.
+Flags an **Est. Effort (h)** over 500 with a message of its own — the rows above 500 carry it, the rest do not. Double-click one and change the number to watch the message come and go.
 
-- \`setValidationExpression\` is per record and per column, and runs on every read — so it validates what the user just typed, not what was loaded
-- registered through \`registerExpressionDecorator\`, which skips views that do not show the column
+- \`setValidationExpression\` is per record and per column, and runs on every read — so it validates what the user just typed, not only what was loaded
+- registered through \`registerExpressionDecorator\`, which skips views that do not show the column: point the same snippet at a column your view has hidden and it simply does nothing
 - the grid keeps its own validation as well; this one is additional
                 `.trim(),
             },
@@ -82,11 +83,13 @@ export const ConditionalFormatting: Story = {
             },
             description: {
                 story: `
-Colours cells from the record's own data: an overdue **Due Date** turns red while the task is still open, and a **% Complete** of 100 turns green.
+Colours from the record's own data: an overdue **Due Date** turns red while the task is still open, and a finished task tints its whole row green. It also keeps the two status columns honest — set a **Status** to *Completed* and the percentage jumps to 100, which tints the row.
 
 - \`ui.setCustomFormattingExpression\` receives the cell's theme, so the colours come from the palette rather than hardcoded hexes
 - returning \`undefined\` leaves the cell exactly as the grid drew it — that is how "only overdue rows" is expressed
 - re-evaluated on every read, so editing a due date recolours the cell immediately
+- the record is also where behaviour goes: \`record.addEventListener('onFieldValueChanged', …)\` reacts to the option set changing and writes the percentage, so a business rule lives next to the record rather than in a cell renderer
+- a state that belongs to the whole task goes on the row, not a cell: \`onGetRowClassRules\` is ag-grid's own mechanism, and spreading the incoming rules keeps the grid's drag-and-drop and inactive-row styling
                 `.trim(),
             },
         },

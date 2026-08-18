@@ -60,7 +60,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             id: 'uq-default-01-0000-0000-000000000000',
             name: 'My Open Tasks',
             isFlatListEnabled: false,
-            columns: getQueryColumns('subject', 'statuscode', 'priority', 'scheduledend', 'percentcomplete', 'assignedto', 'tags'),
+            columns: getQueryColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
             filtering: {
                 filterOperator: FILTER_OPERATOR_AND,
                 conditions: [{

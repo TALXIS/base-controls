@@ -6,7 +6,22 @@ export const CUSTOMIZER_FORMATTING_CODE = `const gridCustomizerStrategy: IGridCu
     onInitialize: (customizer) => {
         const provider = customizer.getTaskDataProvider()
 
+        const COMPLETED_STATUS = 5
+
         provider.addEventListener('onRecordLoaded', (record) => {
+            //a rule of the record's own: completing a task means it is 100% done, so the two columns
+            //cannot disagree. The formatting below then turns that cell green on its own
+            record.addEventListener('onFieldValueChanged', (columnName) => {
+                if (columnName !== 'statuscode' || Number(record.getValue('statuscode')) !== COMPLETED_STATUS) {
+                    return
+                }
+                if (Number(record.getValue('percentcomplete')) === 100) {
+                    return
+                }
+                //no save needed - the grid is already saving the change that triggered this
+                record.setValue('percentcomplete', 100)
+            })
+
             //a due date in the past turns the cell red, unless the task is already closed
             customizer.registerExpressionDecorator('scheduledend', () => {
                 record.expressions.ui.setCustomFormattingExpression('scheduledend', (theme) => {
@@ -19,22 +34,43 @@ export const CUSTOMIZER_FORMATTING_CODE = `const gridCustomizerStrategy: IGridCu
                         : undefined
                 })
             })
-
-            //and a task that is done gets a green percentage, whatever the view shows
-            customizer.registerExpressionDecorator('percentcomplete', () => {
-                record.expressions.ui.setCustomFormattingExpression('percentcomplete', (theme) => {
-                    return record.getValue('percentcomplete') === 100
-                        ? { backgroundColor: theme.semanticColors.successBackground }
-                        : undefined
-                })
-            })
         })
     },
+
+    //"this task is done" belongs to the whole row, not one cell - and a row class is how ag-grid says it
+    onGetRowClassRules: (rules) => ({
+        ...rules,
+        'demo-row--done': (params) => Number(params.data?.getValue('percentcomplete')) === 100,
+    }),
 }
 
-const TaskGridExample = () => <TaskGrid
-    pcfContext={pcfContext}
-    taskGridDescriptor={descriptor} />
+//the grid tints a row with an overlay rather than a cell background, so it also covers cells that draw
+//their own content - the % Complete progress bar among them. It goes on ::after, the way the grid's own
+//drag-over and inactive states do, because ::before is ag-grid's hover and selection overlay; the
+//z-index puts it above that one and pointer-events keeps the row clickable
+//The drag-over states are excluded the same way the grid excludes them from its inactive overlay: they
+//share this one ::after, so a tint that did not stand aside would hide the drop indicator.
+const ROW_TINT_CSS = \`
+    .demo-row--done:not(.talxis_task-grid_row--drag-over-top):not(.talxis_task-grid_row--drag-over-bottom):not(.talxis_task-grid_row--drag-over-middle)::after {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        pointer-events: none;
+        background-color: #107c10;
+        opacity: 0.12;
+    }
+\`
+
+const TaskGridExample = () => <>
+    <style>{ROW_TINT_CSS}</style>
+    <TaskGrid
+        pcfContext={pcfContext}
+        taskGridDescriptor={descriptor} />
+</>
 `
 
 export const CustomizerFormattingExample = () => <TaskGridExampleRunner seedCode={CUSTOMIZER_FORMATTING_CODE} />

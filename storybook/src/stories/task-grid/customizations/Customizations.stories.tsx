@@ -75,74 +75,9 @@ Lookup-many columns are registered automatically whenever \`metadata.LookupMany\
 
 ## The grid customizer
 
-For anything the metadata cannot express, return an \`IGridCustomizerStrategy\` from \`onCreateGridCustomizerStrategy()\`. This is direct access to the AG Grid column definitions.
+The lowest level the grid offers: return an \`IGridCustomizerStrategy\` from \`onCreateGridCustomizerStrategy()\` and you hold the AG Grid instance and the records behind it. Anything the grid does is reachable from there — cell renderers included, since a renderer is just \`colDef.cellRenderer\`.
 
-| Method | Description |
-|---|---|
-| \`onInitialize(customizer)\` | Called once when the grid is ready. Keep the reference; subscribe to provider events here. |
-| \`onGetColumnDefinitions?(colDefs)\` | Receives the computed \`ColDef[]\`. Return a modified array. |
-| \`onGetRowClassRules?(rules)\` | Receives the default row class rules. Extend and return. |
-
-\`\`\`ts
-class MyCustomizer implements IGridCustomizerStrategy {
-    public onInitialize(customizer: IGridCustomizer) {
-        this._customizer = customizer
-    }
-
-    public onGetColumnDefinitions(colDefs: ColDef[]): ColDef[] {
-        for (const colDef of colDefs) {
-            if (colDef.colId === 'priority') {
-                colDef.cellRenderer = PriorityCellRenderer
-            }
-        }
-        return colDefs
-    }
-}
-\`\`\`
-
-The customizer runs **after** the grid's own column setup, so you can override native decisions — including the lookup-many renderer, if you want a different one. The \`components\` prop runs after *that*, so a renderer you assign here is what its \`defaultRender\` renders.
-
-\`IGridCustomizer\` gives you:
-
-| Method | Description |
-|---|---|
-| \`getGridApi()\` | The raw AG Grid \`GridApi\`. |
-| \`getTaskDataProvider()\` | The \`ITaskDataProvider\` — record tree, raw record fetches, provider events. |
-| \`getDatasetControl()\` | The runtime control interface. |
-| \`registerExpressionDecorator(columnName, fn)\` | Runs \`fn\` only if that column is in the current view. Safe to call unconditionally. |
-
-### Custom cell renderers
-
-A renderer is a React component assigned to \`colDef.cellRenderer\`, typed with \`ITaskGridCellProps\` — AG Grid's \`ICellRendererParams\` plus the \`record\`, \`baseColumn\`, \`value\` and \`isCellEditor\` the grid injects. Read the record from \`props.record\` and the value through the column id:
-
-\`\`\`tsx
-import { ITaskGridCellProps } from '@talxis/base-controls'
-
-const PriorityCellRenderer = (props: ITaskGridCellProps) => {
-    const value = props.record.getValue(props.colDef!.colId!)
-    return <span>{String(value)}</span>
-}
-\`\`\`
-
-The same type is what the \`components\` cell hooks below receive, so a renderer written once works in either place.
-
-### Conditional formatting
-
-\`registerExpressionDecorator\` is the safe way to style cells, because a saved view may not contain the column you are targeting:
-
-\`\`\`ts
-provider.addEventListener('onRecordLoaded', record => {
-    customizer.registerExpressionDecorator('scheduledend', () => {
-        record.expressions.ui.setCustomFormattingExpression('scheduledend', theme => {
-            const value = record.getValue('scheduledend')
-            if (!record.isActive() || !value) return undefined
-            return new Date(value as string) < new Date()
-                ? { backgroundColor: theme.semanticColors.errorBackground }
-                : undefined
-        })
-    })
-})
-\`\`\`
+It has its own page, with live examples of validation, conditional formatting and reaching the ag-grid api directly: [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
 
 ## Labels and localization
 
@@ -164,7 +99,7 @@ Any key you omit keeps its English default. The full set — around 150 keys —
 
 ## Replaceable UI
 
-The grid's cells, its loading skeleton and its command bar can all be swapped for your own components through the \`components\` prop. That has its own page, with a live example: [**Custom Components**](?path=/story/task-grid-customizations-custom-components--replace-cell-renderer).
+The grid's cells, its loading skeleton and its command bar can all be swapped for your own components through the \`components\` prop. That has its own page, with a live example: [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview).
                 `.trim(),
             },
         },

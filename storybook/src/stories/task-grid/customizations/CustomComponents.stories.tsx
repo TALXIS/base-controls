@@ -25,6 +25,8 @@ Replace parts of what the grid renders with your own components while it keeps o
 
 Everything goes through one prop — \`components\` — whose keys the grid merges over its own defaults. Flip the **Code** toggle on any story to read its snippet, and edit it: the grid recompiles as you type.
 
+These hooks are a convenience layer over the [**Customizer**](?path=/story/task-grid-customizations-customizer--overview), which is the lowest level and can do all of this and more: a cell renderer is ultimately \`colDef.cellRenderer\`, which a customizer strategy can set directly. What you get here instead is no strategy to wire, no column definition to find, and the grid's own component handed back as \`defaultRender\` — which is what makes overriding one column cheap.
+
 > The stories below use Material UI purely to show that presentation is fully swappable, not because it is the recommended choice. To keep a grid visually coherent, prefer Fluent UI — that is what the rest of the control renders with.
 
 ## What you can replace
