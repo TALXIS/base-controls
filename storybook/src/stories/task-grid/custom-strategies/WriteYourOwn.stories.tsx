@@ -1,11 +1,8 @@
-import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../../form/storyHelpers'
-
-const DocsPlaceholder = () => <div style={{ display: 'none' }} />
+import { docsOnlyStory } from '../docsOnlyStory'
 
 const meta = {
-    title: 'Task Grid/Descriptors & Strategies/Writing your own strategy',
+    title: 'Task Grid/Custom strategies/Write your own',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -19,9 +16,11 @@ const meta = {
             },
             description: {
                 component: `
-When neither shipped strategy fits — a REST API, GraphQL, SQL through a gateway — you write your own. The grid does not care where records come from.
+When neither shipped strategy fits — a REST API, GraphQL, SQL through a gateway — you can write your own. The grid does not care where records come from. Reach for this when you want the mutations to go through your own code from the start, or when the shipped strategies' shapes fight you; if you only need remote *loading*, the memory strategy already does that.
 
-You need two pieces: a **descriptor** implementing \`ITaskGridDescriptor\`, and a **task strategy** implementing \`ITaskDataProviderStrategy\`. \`MemoryTaskStrategy\` in \`src/components/TaskGrid/extensions/memory/\` is the shortest complete implementation to read alongside this page.
+You need two pieces: a **descriptor** implementing \`ITaskGridDescriptor\`, and a **task strategy** implementing \`ITaskDataProviderStrategy\`. \`MemoryTaskStrategy\` in \`src/components/TaskGrid/extensions/memory/\` is the shortest complete implementation to read alongside this page, and [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) is worth reading first — if your records fit in memory, pointing \`MemoryTaskStrategy\` at your own loader gets you working CRUD without any of this.
+
+Where the interfaces on this page are imported from is listed under [**Imports**](?path=/story/task-grid-custom-strategies--overview).
 
 ## The task strategy
 
@@ -84,7 +83,7 @@ Top-level tasks hold \`null\`. What does *not* work is a bare guid under the pla
 
 ### Ordering
 
-\`onMoveTask\` owns the rank arithmetic. The \`lexorank\` package is already a dependency, and the pattern is:
+\`onMoveTask\` owns the rank arithmetic — lexicographic rank strings, so one move rewrites one record. The [**Memory**](?path=/story/task-grid-strategies-memory--overview) page has the worked example. The \`lexorank\` package is already a dependency, and the pattern is:
 
 - \`'child'\` — reparent, then rank before the target's existing children.
 - \`'above'\` / \`'below'\` — rank between the target and its neighbour on that side.
@@ -139,24 +138,9 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
 
 \`deps\` carries what the grid built for you — \`savedQueryDataProvider\`, \`templateDataProvider\`, \`customColumnsDataProvider\`, and the \`enableTaskEditing\` / \`enableInlineCreation\` flags — so the strategy does not have to be told twice. The memory strategy leans on all three: it answers \`onGetAvailableColumns\` from the views, expands templates through the template provider, and never keeps a copy of either.
 
-## A shortcut worth knowing
+## Where the rest lives
 
-If your data is already in memory, you do not need a new strategy at all. \`MemoryTaskStrategy\` takes an async callback, so you can point it at your own loader and keep the rest:
-
-\`\`\`ts
-public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
-    return new MemoryTaskStrategy({
-        onInitialize: async () => ({
-            records: await fetchMyTasks(),
-            metadata: METADATA,
-        }),
-    }, deps)
-}
-\`\`\`
-
-That gets you working create, delete, move, templates and editing against your own records — all client-side, with nothing written back. It is a good way to prototype the UI before committing to the persistence layer.
-
-Go back to [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview) for the contract, or read [**Memory**](?path=/story/task-grid-descriptors-strategies-memory--overview) for the reference implementation's parameters.
+The descriptor contract, the startup ordering and the template provider are on [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview). Shipped pieces you can drop into the descriptor above are on [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview), and [**Memory**](?path=/story/task-grid-strategies-memory--overview) is the reference implementation to read alongside your own.
                 `.trim(),
             },
         },
@@ -167,14 +151,4 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Overview: Story = {
-    name: 'Overview',
-    render: () => renderStory(<DocsPlaceholder />),
-    parameters: {
-        docs: {
-            canvas: {
-                className: 'docs-hidden-preview',
-            },
-        },
-    },
-}
+export const Overview: Story = docsOnlyStory

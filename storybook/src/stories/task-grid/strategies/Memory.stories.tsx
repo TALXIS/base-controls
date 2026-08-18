@@ -4,7 +4,7 @@ import { renderStory } from '../../form/storyHelpers'
 import { MemoryTaskGrid } from '../../../task-grid/MemoryTaskGrid'
 
 const meta = {
-    title: 'Task Grid/Descriptors & Strategies/Memory',
+    title: 'Task Grid/Strategies/Memory',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -18,11 +18,21 @@ const meta = {
             },
             description: {
                 component: `
-\`MemoryTaskGridDescriptor\` runs the grid entirely from records you hand it — no server, no \`Xrm.WebApi\`, no network.
+\`MemoryTaskGridDescriptor\` runs the grid entirely from records you hand it. It has no data access of its own — no \`Xrm.WebApi\`, no fetch — so where the records came from is your business.
 
-It is the strategy powering every grid in these docs, including the one below. Reorder a row, edit a cell, create a task from a template: it all works, and none of it leaves the browser.
+It is the strategy powering every grid in these docs, including the one below. Reorder a row, edit a cell, create a task from a template: it all works against the array you supplied.
 
-Use it for local development, tests, demos, and as the reference implementation to read before writing your own strategy.
+It covers every feature the grid has a hook for, most of them through a dedicated strategy or provider:
+
+| Feature | Handled by |
+|---|---|
+| Task CRUD, move, reparent | \`MemoryTaskStrategy\` |
+| System and personal views, incl. create, rename and delete | \`MemorySavedQueryStrategy\` |
+| Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\` |
+| Lookup-many pickers | one provider per lookup-many column, from \`lookupMany\` |
+| AG Grid customizer | forwarded from your \`onCreateGridCustomizerStrategy\` param |
+
+That is more of the surface than the Dataverse descriptor covers — templates and the customizer hook are missing there. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
 
 \`\`\`ts
 import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
@@ -52,11 +62,33 @@ Note the shape of the parent: an **entity-reference array** under the mapped \`p
 
 There is no \`columns\` parameter. Column definitions live on the views (\`systemQueries\` / \`userQueries\`), which is what lets switching a view change what the grid shows.
 
+## Field mapping
+
+\`fieldMapping\` tells the grid which of your columns carry structural meaning. Everything else it treats as ordinary data.
+
+\`\`\`ts
+fieldMapping: {
+    subject: 'subject',       // display name; pinned left, never hidden
+    parentId: 'parentid',     // parent lookup; drives the tree
+    stackRank: 'stackrank',   // ordering; drives drag-and-drop
+    stateCode: 'statecode',   // active/inactive; drives "hide inactive"
+}
+\`\`\`
+
+- **\`subject\`** — the title column. Always pinned left and never hidden by the control.
+- **\`parentId\`** — the lookup pointing at the parent task. This alone produces the hierarchy; a row with no parent is top level.
+- **\`stackRank\`** — the ordering attribute. Sorted by default, and rewritten when rows are dragged.
+- **\`stateCode\`** — the active/inactive attribute, used by the *Hide inactive tasks* toggle.
+
+At runtime the mapping is available to strategies as \`provider.getNativeColumns()\`, so a strategy never needs its own copy of these names.
+
+> **Troubleshooting.** Everything renders flat → \`parentId\` is unmapped, or its raw value is a bare guid rather than the entity-reference array shown above. Rows come back in an unexpected order → \`stackRank\` is unmapped, or the ranks are not comparable strings.
+
 ## Dependencies resolve asynchronously
 
 \`onInitialize\` is a promise, awaited once before anything is created. That is deliberate: seed data can be fetched, generated, or lazily imported, and the grid shows its own loading state while you do it.
 
-These docs use a dynamic \`import()\` so the ~1300-line fixture stays out of the initial chunk:
+That is also how you point it at a server: fetch in the callback and hand back the result. These docs use a dynamic \`import()\` instead, so the ~1300-line fixture stays out of the initial chunk:
 
 \`\`\`ts
 onInitialize: async () => {
@@ -67,6 +99,8 @@ onInitialize: async () => {
 
 Only \`height\` sits outside the callback, on the constructor argument, because the grid reads it to size the loading skeleton before your dependencies have resolved.
 
+Because it is awaited before the first provider is created, a promise that never resolves here shows up as an indefinite skeleton with no error.
+
 ## Parameters
 
 Required:
@@ -75,7 +109,7 @@ Required:
 |---|---|
 | \`records\` | The task records, as \`IRawRecord[]\`. |
 | \`metadata\` | Task entity metadata. \`PrimaryIdAttribute\` is required; \`LogicalName\` is recommended. |
-| \`fieldMapping\` | Column roles. See [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview). |
+| \`fieldMapping\` | Column roles. See [**Field mapping**](#field-mapping). |
 | \`systemQueries\` | Built-in, non-deletable views — and the source of every column definition. At least one is required. |
 
 Optional:
@@ -155,7 +189,7 @@ templates: {
 }
 \`\`\`
 
-Each node's \`values\` may set **any** task column, and \`children\` nests to any depth. Creating a template *from* an existing task works in reverse: the task's visible column values are captured into \`values\`, and its subtree becomes \`children\`. That capture lives in \`MemoryTemplateDataProvider\` — the \`ITemplateDataProvider\` the descriptor builds from \`templates\` — and it pushes into the same \`records\` array, so a template made at runtime survives the grid's remounts like everything else.
+Note the split: expanding a template *into* tasks is the task strategy's job, while capturing one *from* a task belongs to the \`ITemplateDataProvider\`. Each node's \`values\` may set **any** task column, and \`children\` nests to any depth. Creating a template *from* an existing task works in reverse: the task's visible column values are captured into \`values\`, and its subtree becomes \`children\`. That capture lives in \`MemoryTemplateDataProvider\` — the \`ITemplateDataProvider\` the descriptor builds from \`templates\` — and it pushes into the same \`records\` array, so a template made at runtime survives the grid's remounts like everything else.
 
 ## Lookup-many columns
 
@@ -170,6 +204,18 @@ lookupMany: {
 
 The keys supply data only — whether a column *renders* as a picker comes from \`metadata.LookupMany\` on the column, and which picker variant from its custom control name. A column flagged lookup-many with no entry here throws, so the two are configured together. Try the **Assigned To** and **Tags** columns in the grid below.
 
+## Ordering: stack ranks
+
+Ordering uses <a href="https://en.wikipedia.org/wiki/Lexicographical_order" target="_blank" rel="noreferrer">lexicographic</a> rank strings rather than integer positions, so moving one row rewrites one record instead of renumbering its siblings. Drag a row in the grid below and only that row's \`stackrank\` changes:
+
+\`\`\`
+task A   0|100000:
+task B   0|100002:      ← drop C between A and B
+task C   0|100001:      ← only this row is written
+\`\`\`
+
+The strategy owns the rank arithmetic. Both shipped strategies use the \`lexorank\` package, which is already a dependency.
+
 ## The descriptor is the persistence layer
 
 The grid rebuilds its whole control instance on every remount — switching a view does it, and so does saving one — which recreates the providers and both strategies. The strategies therefore keep **no** data: they read and write the arrays they were handed, and the descriptor is what holds those arrays for the session.
@@ -183,11 +229,49 @@ Two consequences worth knowing:
 const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor(), [])
 \`\`\`
 
-A new descriptor starts from the seed again, which is what keeps tests order-independent.
+A new descriptor starts from the seed again.
+
+## Using it in production
+
+**\`onInitialize\` is async, so the records can come from anywhere.** Fetch them, map them into \`IRawRecord[]\`, and return them:
+
+\`\`\`ts
+onInitialize: async () => {
+    const response = await fetch('/api/projects/42/tasks')
+    return {
+        records: (await response.json()).map(toRawRecord),
+        metadata: { PrimaryIdAttribute: 'id', LogicalName: 'my_task' },
+        fieldMapping: FIELD_MAPPING,
+        systemQueries: SYSTEM_QUERIES,
+        gridParameters: { enableTaskEditing: true, enableRowDragging: true },
+    }
+},
+\`\`\`
+
+**Holding everything client-side is not a memory-strategy compromise — the grid requires it.** The hierarchy, the *hide inactive* toggle and the rank arithmetic all need the complete task set, so there is no server-side paging to opt into: \`TaskDataProvider\` reports its page size as the total record count, and the Dataverse strategy loads its FetchXML with \`loadAllRecords: true\`. Any strategy you write ends up doing the same thing. The memory descriptor just makes that explicit.
+
+**What it does not do is write back.** Every mutation lands in the arrays you passed and stops there — which is also the mechanism that makes persistence straightforward, because those arrays are yours. \`records\`, \`userQueries\` and \`templates.records\` are all written into rather than copied: a view the user creates is pushed onto your \`userQueries\` array, a template captured from a task onto your \`templates.records\`. Persist them from where you own them, whenever suits you.
+
+For task mutations the finer-grained option is the strategy itself. To persist, subclass \`MemoryTaskStrategy\` and wrap the mutating hooks — they are prototype methods, so \`super\` works and the in-memory store stays in step with the server:
+
+\`\`\`ts
+class MyTaskStrategy extends MemoryTaskStrategy {
+    public async onRecordSave(record: IRecord) {
+        const changedFields = await super.onRecordSave(record)
+        await persist(record, changedFields)
+        return changedFields
+    }
+}
+\`\`\`
+
+\`onCreateTask\`, \`onDeleteTasks\` and \`onMoveTask\` take the same shape. Return the subclass from your own descriptor's \`onCreateTaskStrategy\` — see [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) and [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
 
 ## Limits
 
-This is a development and demo strategy. It holds every record in memory and scans its task map for sibling ranks on insert, so it is built for fixture-sized data — hundreds of rows, not hundreds of thousands. There is no server, so nothing is persisted anywhere.
+- **Insert cost is linear in the sibling count.** Creating or moving a task scans the task map for sibling ranks. Fine for the hundreds-to-low-thousands of rows the grid is built for; not a plan for six-figure task sets.
+- **No related-entity columns.** \`onGetAvailableRelatedColumns\` returns \`[]\`, so nothing reachable only through a relationship can be added to a view.
+- **No custom columns.** This descriptor does not implement \`onCreateCustomColumnsStrategy\`.
+- **Nothing is persisted unless you persist it**, as above.
                 `.trim(),
             },
         },

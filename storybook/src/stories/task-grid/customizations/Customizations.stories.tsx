@@ -51,6 +51,8 @@ Grouped by what they control:
 
 A few interact with each other: \`enableRowDragging\` is suppressed automatically in flat-list mode or when sorting by a non-rank column, and the user-query flags only matter once \`enableViewSwitcher\` is on.
 
+Every flag defaults to \`false\`, so a feature missing from the ribbon is usually one of two things: its flag was left out of \`onGetGridParameters\`, or the optional descriptor hook that enables it is not implemented — templates and custom columns both work that way.
+
 ## Column metadata
 
 Most per-column behaviour comes from the column definitions your strategy returns, not from code. A column's \`controls\` entry selects a built-in renderer by name:

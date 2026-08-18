@@ -17,22 +17,20 @@ const meta = {
             },
             description: {
                 component: `
-Task Grid is a hierarchical task-management grid built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>.
-
-It renders tasks as a parent–child tree and brings the surrounding behaviour with it: drag-and-drop reordering, inline editing, saved views, quick find, custom columns, and template-based task creation working as one system.
+Task Grid is a hierarchical task-management grid built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. It renders tasks as a parent–child tree and brings the surrounding behaviour with it: drag-and-drop reordering, inline editing, saved views, quick find, custom columns and template-based task creation, working as one system.
 
 The grid below is real. It runs on the in-memory strategy, so everything you do to it — reorder, edit, create, delete, switch views — is the same code path a production grid uses.
 
-## What you get from the control
+## What you get
 
 - Render a task hierarchy with expand/collapse, without managing tree state yourself.
 - Reorder rows by dragging, persisted through fractional ranks rather than reindexing every sibling.
 - Keep saved views, quick find, column selection and inline editing coordinated across the grid.
 - Swap the data source without touching the UI — the grid never talks to a server directly.
 
-## Headless by design
+## Render it
 
-The control ships no data access at all. Everything — loading, saving, reordering, saved views — is supplied by you through a **descriptor**, which is the single object you hand to the grid:
+The control ships no data access at all. Loading, saving, reordering and saved views are supplied by a **descriptor**, which is the single object you hand to the grid:
 
 \`\`\`tsx
 import { TaskGrid } from '@talxis/base-controls'
@@ -45,51 +43,71 @@ export const MyTaskGridPage = ({ pcfContext }) => (
 )
 \`\`\`
 
-The descriptor returns the strategies the grid asks for, and the grid calls them at the right moments. See [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview) for the contract itself.
-
 ### \`<TaskGrid />\` props
 
 | Prop | Required | Description |
 |------|:--------:|-------------|
 | \`pcfContext\` | ✅ | A \`ComponentFramework.Context\`. Used for navigation, formatting, error dialogs and environment utilities. |
-| \`taskGridDescriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration. |
+| \`taskGridDescriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract. |
 | \`labels?\` | — | Partial \`ITaskGridLabels\`. Any key you supply replaces the English default. |
 | \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton loader, the command bar, or the renderer/editor of any cell. |
 
-## Choose a strategy
+## Pick a strategy
 
-Two descriptor implementations ship with the package. Both satisfy the same contract, so the grid behaves identically — they differ only in where the records come from.
+Two descriptors ship with the package. Both satisfy the same contract, so the grid behaves identically — they differ only in where the records come from. Configure one and you are done; neither requires you to write a strategy.
 
 ### Memory
 
-Choose this when the data lives in your own process and you want the grid running with no backend at all.
+Records live in your own process: task CRUD, views, templates and lookup-many pickers all run against the arrays you hand it. \`onInitialize\` is async, so those arrays can be fetched from a remote first — and since the grid holds the whole task set client-side whichever strategy you pick, serving it from memory costs you nothing.
 
-This is the best fit when:
+\`\`\`ts
+import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
 
-- you are developing locally, writing tests, or building a demo
-- you have records in hand already and just want them rendered
-- you want a working reference implementation to read before writing your own
+const descriptor = new MemoryTaskGridDescriptor({
+    height: '600px',
+    onInitialize: async () => ({
+        records: [
+            { taskid: '1', subject: 'Website redesign', parentid: null, stackrank: '0|100000:', statecode: 0 },
+            { taskid: '2', subject: 'Wireframes', parentid: [{ id: { guid: '1' }, etn: 'demo_task' }], stackrank: '0|100000:', statecode: 0 },
+        ],
+        metadata: { PrimaryIdAttribute: 'taskid', LogicalName: 'demo_task' },
+        fieldMapping: { subject: 'subject', parentId: 'parentid', stackRank: 'stackrank', stateCode: 'statecode' },
+        systemQueries: [{ id: '00000000-0000-0000-0000-000000000000', name: 'All tasks', columns: COLUMNS }],
+        gridParameters: { enableTaskEditing: true, enableRowDragging: true },
+    }),
+})
+\`\`\`
 
-Go to [**Memory**](?path=/story/task-grid-descriptors-strategies-memory--overview).
+All parameters, templates and lookup-many data: [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview).
 
 ### Dataverse
 
-Choose this when tasks are Dataverse rows and the grid should behave like a model-driven subgrid.
+Tasks are Dataverse rows and the grid should behave like a model-driven subgrid: FetchXML queries, saved views persisted per user, forms opened for create and edit, relationship columns associated on save.
 
-This is the best fit when:
+\`\`\`ts
+import { DataverseTaskGridDescriptor } from '@talxis/base-controls'
 
-- the task entity lives in Dataverse and is queried with FetchXML
-- you want saved views persisted per user, and forms opened for create/edit
-- you need relationship columns handled with associate/disassociate on save
+const descriptor = new DataverseTaskGridDescriptor({
+    height: '600px',
+    onInitialize: async () => ({
+        baseFetchXml: '<fetch><entity name="talxis_projecttask">…</entity></fetch>',
+        fieldMapping: {
+            subject: 'talxis_name',
+            parentId: 'talxis_parentprojecttaskid',
+            stackRank: 'talxis_stackrankstring',
+        },
+        systemQueries: [allTasksView],
+        gridParameters: { enableTaskEditing: true, enableUserQueries: true },
+    }),
+})
+\`\`\`
 
-Go to [**Dataverse**](?path=/story/task-grid-descriptors-strategies-dataverse--overview).
-
-> Neither is a subclassing exercise. Both are configured entirely through a parameter object — you only write a strategy when you have a data source neither covers, which is what [**Writing your own strategy**](?path=/story/task-grid-descriptors-strategies-writing-your-own-strategy--overview) walks through.
+> Two features come from TALXIS models rather than your task entity — personal saved views (\`talxis_userquery\`) and custom columns (\`talxis_attributedefinition\`). If those are not in your environment, override the descriptor hook that serves the feature and the dependency goes away. Both are covered on [**Strategies → Dataverse**](?path=/story/task-grid-strategies-dataverse--overview).
 
 ## Where to go next
 
-- [**Descriptor**](?path=/story/task-grid-descriptors-strategies-descriptor--overview) — the contract every strategy plugs into.
-- [**Customizations**](?path=/story/task-grid-customizations--overview) — feature flags, cell renderers, labels, and replaceable UI.
+- [**Customizations**](?path=/story/task-grid-customizations--overview) — feature flags, column metadata, labels, replaceable components, and the AG Grid customizer.
+- [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) — the descriptor contract, reusing individual shipped strategies, extending them, or writing your own.
                 `.trim(),
             },
         },
