@@ -4,6 +4,7 @@ import { renderStory } from '../../form/storyHelpers'
 import { CustomizerValidationExample } from '../../../task-grid/CustomizerValidationExample'
 import { CustomizerFormattingExample } from '../../../task-grid/CustomizerFormattingExample'
 import { CustomizerAgGridExample } from '../../../task-grid/CustomizerAgGridExample'
+import { CustomizerRemoteSyncExample } from '../../../task-grid/CustomizerRemoteSyncExample'
 
 const meta = {
     title: 'Task Grid/Customizations/Customizer',
@@ -39,6 +40,7 @@ The strategy gets three hooks:
 - **Per-record behaviour through expressions** — validation, formatting, disabled state, notifications, all set per record as it loads and re-evaluated on every read. Nothing else in the grid can express these.
 - **AG Grid itself** — options, column definitions and row classes TaskGrid does not surface as parameters.
 - **Rendering, if you want it here** — assigning \`colDef.cellRenderer\` in \`onGetColumnDefinitions\` is what the \`components\` hooks ultimately do for you.
+- **Staying in step with the server** — provider events give you the save lifecycle, so a change that makes the backend recalculate can be fetched back and merged in.
 
 > Flip the **Code** toggle on any story to read its snippet, and edit it: the grid recompiles as you type. A snippet here defines a \`gridCustomizerStrategy\` and the example feeds it to the descriptor.
                 `.trim(),
@@ -117,4 +119,34 @@ Changes the grid itself: row animation on, **% Complete** pinned right, **Descri
         },
     },
     render: () => renderStory(<CustomizerAgGridExample />),
+}
+
+export const SyncWithRemote: Story = {
+    name: 'Sync with remote',
+    parameters: {
+        docs: {
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
+            },
+            description: {
+                story: `
+Writing a value is often not the end of it. The server has rules of its own — rolling efforts up a hierarchy, shifting dependent dates, cascading a status to subtasks — so the moment a save lands, the grid may be showing stale numbers for records nobody touched. The job is to bring just those back, without reloading the grid and throwing away the user's scroll, expansion and selection.
+
+Any action can be the trigger; a save is simply the most common one. Expand a task, change a leaf's **Est. Effort (h)**, and after a short round trip every parent above it arrives with a new estimate — summed remotely, not in the browser.
+
+- \`onBeforeRecordSaved\` takes the watermark and \`onAfterRecordSaved\` does the fetch, so nothing modified *during* the save is missed
+- the fetch is gated on the columns that matter: a save that touched nothing relevant costs no round trip
+- only the affected rows are re-read — \`getRecordTree().getNode(recordId).pathIds\` gives the ancestors the server would have touched
+- \`updateTaskData\` **replaces** a record's raw data, so merge the returned columns over \`getRawData()\` first — a server that answers with three columns would otherwise blank the rest
+- the wait is shown per cell, not per grid: \`ui.setLoadingExpression\` reads a map of the cells being refreshed, so the rest of the grid stays usable while the ancestors resolve — \`setLoading\` would have blocked everything
+- \`requestRender\` after marking the cells and again once the data is in
+- a value the server owns should not be typeable: \`setDisabledExpression\` locks **Est. Effort (h)** on any task that has children, so only leaves are edited and the rollup always comes from the remote
+
+In a real strategy the stub is \`Xrm.WebApi.retrieveMultipleRecords\` with fetchxml filtered on \`modifiedon ge <savedAt>\`, selecting only the recalculated columns — the shape of the customizer around it does not change.
+                `.trim(),
+            },
+        },
+    },
+    render: () => renderStory(<CustomizerRemoteSyncExample />),
 }

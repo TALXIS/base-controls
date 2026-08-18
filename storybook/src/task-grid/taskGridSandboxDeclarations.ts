@@ -136,8 +136,26 @@ interface IGridCustomizer {
     /** The provider backing the grid: records, the tree, provider events. */
     getTaskDataProvider(): {
         addEventListener(event: 'onRecordLoaded', listener: (record: ITaskGridRecord) => void): void;
+        addEventListener(event: 'onBeforeRecordSaved', listener: () => void): void;
+        /** Fires per record once a save settles. \`fields\` are the columns that were written. */
+        addEventListener(event: 'onAfterRecordSaved', listener: (result: { success: boolean; recordId: string; fields: string[] }) => void): void;
+        /** The rows the tree currently shows. */
         getRecords(): ITaskGridRecord[];
+        /** Every loaded record, tree filtering and paging aside. */
+        getAllRecords(): ITaskGridRecord[];
         getRecordsMap(): Record<string, ITaskGridRecord>;
+        getMetadata(): { PrimaryIdAttribute: string; LogicalName?: string; [key: string]: any };
+        getEntityName(): string;
+        /** Applies fresh raw records in place. Each one replaces that record's raw data, so merge first. */
+        updateTaskData(records: Record<string, any>[]): void;
+        setLoading(loading: boolean): void;
+        requestRender(): void;
+        /** The task hierarchy the grid built from the loaded data. */
+        getRecordTree(): {
+            hasChildren(recordId: string): boolean;
+            getNode(recordId: string | null): { directChildren: ITaskGridRecord[]; allChildren: ITaskGridRecord[]; pathIds: string[]; [key: string]: any };
+            [key: string]: any;
+        };
         [key: string]: any;
     };
     /** The runtime control. */

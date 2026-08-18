@@ -1268,6 +1268,44 @@ export const TASKS: IRawRecord[] = [
     },
 ];
 
+/**
+ * Rolls every parent's effort up from its children, bottom up, so the seed is consistent with the rule
+ * the docs demonstrate: a task with children does not own an estimate, it owns the sum of its subtree.
+ * Leaves keep the values written above.
+ */
+const rollUpEfforts = (columnNames: string[]) => {
+    const childrenByParent = new Map<string, IRawRecord[]>();
+    for (const task of TASKS) {
+        const parentId = (task[PARENT_ID_COL] as { id: { guid: string } }[] | null)?.[0]?.id?.guid;
+        if (!parentId) {
+            continue;
+        }
+        childrenByParent.set(parentId, [...(childrenByParent.get(parentId) ?? []), task]);
+    }
+
+    const sumSubtree = (task: IRawRecord, columnName: string): number => {
+        const children = childrenByParent.get(task[PRIMARY_ID] as string) ?? [];
+        if (children.length === 0) {
+            return Number(task[columnName] ?? 0);
+        }
+        const total = children.reduce((sum, child) => sum + sumSubtree(child, columnName), 0);
+        task[columnName] = total;
+        return total;
+    };
+
+    for (const task of TASKS) {
+        //start from the roots so every level is written on the way back up
+        if (task[PARENT_ID_COL]) {
+            continue;
+        }
+        for (const columnName of columnNames) {
+            sumSubtree(task, columnName);
+        }
+    }
+};
+
+rollUpEfforts(['estimatedeffort', 'actualeffort']);
+
 // ─── Sources consumed by the memory descriptor ────────────────────────────────
 // The strategy deep-clones these on init, so the fixtures below are never mutated.
 
