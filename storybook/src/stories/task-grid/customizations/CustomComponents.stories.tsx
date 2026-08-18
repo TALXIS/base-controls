@@ -84,7 +84,7 @@ export const RenderLookupColumn: Story = {
 Renders **Assigned To** as a MUI \`AvatarGroup\`, and clicking it reassigns the task through a MUI \`Autocomplete\`.
 
 - reads the column's value as one entry per referenced record, and pulls each avatar out of the \`rawData\` the strategy attached to that reference
-- gets its candidates from \`descriptor.onCreateLookupManyDataProvider({ record, column })\` — the same hook the built-in picker uses, so the options come from wherever your strategy says they live
+- gets its candidates from \`useTaskGridDatasetControl().createLookupManyDataProvider({ record, column })\` — the same call the built-in picker makes, so the options come from wherever your descriptor says they live
 - owns editing too: a lookup-many column is not editable through AG Grid, it is edited *inside* the renderer, so the replacement writes references back with \`record.setValue\` and saves
 - these columns render with \`autoHeight\`, so keep the replacement's height predictable or the row grows with it
                 `.trim(),

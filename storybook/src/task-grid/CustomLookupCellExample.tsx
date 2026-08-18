@@ -18,14 +18,15 @@ const AssignedToCell = (props: ITaskGridCellProps) => {
     //what the picker shows while it is open. The record is written on every change, but the cell is not
     //refreshed until the picker closes - refreshing mid-edit would take the focus and shut the list
     const [pending, setPending] = React.useState<IPerson[] | null>(null)
+    const datasetControl = useTaskGridDatasetControl()
 
-    //the descriptor knows what a lookup column may point at, so the candidates come from there
+    //the control builds the candidate provider for a lookup column, so the options come from there
     React.useEffect(() => {
         if (!anchor || people.length > 0 || !props.baseColumn) {
             return
         }
-        const provider = descriptor.onCreateLookupManyDataProvider?.({ record: props.record, column: props.baseColumn })
-        provider?.refresh().then(() => setPeople(provider.getRecords().map(candidate => ({
+        const provider = datasetControl.createLookupManyDataProvider({ record: props.record, column: props.baseColumn })
+        provider.refresh().then(() => setPeople(provider.getRecords().map(candidate => ({
             id: candidate.getRecordId(),
             name: candidate.getNamedReference().name ?? '',
             imageurl: candidate.getValue('imageurl'),

@@ -1,4 +1,4 @@
-import { useTaskDataProvider, useTaskGridDescriptor } from "@components/TaskGrid/context";
+import { useDatasetControl, useTaskDataProvider } from "@components/TaskGrid/context";
 import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
 import { ICellProps } from "@components/Grid/cells/cell/Cell";
@@ -16,16 +16,17 @@ enum ControlName {
 /**
  * Renders a lookup-many column. Registered automatically for any column carrying
  * `metadata.LookupMany`; the candidate records come from the descriptor's
- * `onCreateLookupManyDataProvider`, and the visual variant from the column's custom control.
+ * `createLookupManyDataProvider` on the dataset control, and the visual variant from the column's
+ * custom control.
  */
 export const LookupManyCellRenderer = (props: ICellProps) => {
     const { api, baseColumn, record } = props;
-    const descriptor = useTaskGridDescriptor();
+    const datasetControl = useDatasetControl();
     const [isDisabled, setIsDisabled] = React.useState(true);
     //one provider per cell: the picker drives it statefully via setSearchQuery/refresh, so a shared
     //instance would let one open cell clobber another's search
     const dataProvider = React.useMemo(
-        () => descriptor.onCreateLookupManyDataProvider?.({ record, column: baseColumn }),
+        () => datasetControl.createLookupManyDataProvider({ record, column: baseColumn }),
         [baseColumn.name, record.getRecordId()],
     );
     const customControl = record.getColumnInfo(baseColumn.name).ui.getCustomControls([])?.[0];
@@ -57,7 +58,7 @@ export const LookupManyCellRenderer = (props: ICellProps) => {
 
     const getComponentProps = (): ILookupManyProps => {
         return {
-            dataProvider: dataProvider!,
+            dataProvider: dataProvider,
             selectedRecords: value,
             isDisabled,
             onRecordSelect: onSelectionChange,
@@ -125,12 +126,6 @@ export const LookupManyCellRenderer = (props: ICellProps) => {
             props.eGridCell.removeEventListener('dblclick', onSwitchToEditMode);
         }
     }, [onSwitchToEditMode]);
-
-    //guarded after every hook so the hook order stays stable; getComponent() runs below this point,
-    //which is what makes the non-null assertion in getComponentProps safe
-    if (!dataProvider) {
-        throw new Error(`Column "${baseColumn.name}" is marked as lookup-many, but the descriptor returned no data provider for it. Implement "onCreateLookupManyDataProvider" on your ITaskGridDescriptor.`);
-    }
 
     return <ThemeProvider>
         {getComponent()}

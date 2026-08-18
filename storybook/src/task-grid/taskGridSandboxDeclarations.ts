@@ -27,6 +27,10 @@ interface ITaskGridRecord {
     setValue(columnName: string, value: any): void;
     /** The reference other records use to point at this one. */
     getNamedReference(): ITaskGridEntityReference;
+    /** Whether the record is active - a closed task is not. */
+    isActive(): boolean;
+    /** Expressions that override how this record's columns behave. */
+    expressions: ITaskGridRecordExpressions;
     /** Persists the record through the descriptor's strategy. The grid auto-saves, so call it after setValue. */
     save(): Promise<any>;
 }
@@ -97,9 +101,55 @@ declare const TaskGrid: (props: {
 }) => JSX.Element;
 
 /** The in-memory descriptor backing this example. Kept outside the snippet so edits do not reload the data. */
-declare const descriptor: {
-    /** Builds the candidate provider for a lookup-many column - the records its picker offers. */
-    onCreateLookupManyDataProvider?: (params: { record: ITaskGridRecord; column: ITaskGridColumn }) => {
+declare const descriptor: any;
+
+/** What a record lets an expression read and override. */
+interface ITaskGridRecordExpressions {
+    /** Custom validator for a column. Return \`{ error: true, errorMessage }\` to mark the value invalid. */
+    setValidationExpression(columnName: string, validator: () => { error: boolean; errorMessage: string }): void;
+    setValueExpression(columnName: string, expression: () => any): void;
+    setFormattedValueExpression(columnName: string, expression: (defaultFormattedValue: string | null) => string | null): void;
+    setDisabledExpression(columnName: string, expression: () => boolean): void;
+    ui: {
+        /** Cell colours. Return undefined to leave the cell alone. */
+        setCustomFormattingExpression(columnName: string, expression: (cellTheme: any) => { backgroundColor?: string; textColor?: string; className?: string } | undefined): void;
+        setNotificationsExpression(columnName: string, expression: () => any[]): void;
+        setLoadingExpression(columnName: string, expression: () => boolean): void;
+        [key: string]: any;
+    };
+    [key: string]: any;
+}
+
+/** Deep customization of the AG Grid instance, returned from the descriptor. */
+interface IGridCustomizerStrategy {
+    /** Called once when the grid is ready. Register expression decorators and set grid options here. */
+    onInitialize: (customizer: IGridCustomizer) => void;
+    /** The computed ag-grid column definitions. Return them changed. */
+    onGetColumnDefinitions?: (columnDefs: any[]) => any[];
+    /** The grid's own row class rules. Return them extended or overridden. */
+    onGetRowClassRules?: (rules: Record<string, (params: any) => boolean>) => Record<string, (params: any) => boolean>;
+}
+
+interface IGridCustomizer {
+    /** The raw ag-grid \`GridApi\`. */
+    getGridApi(): { setGridOption(key: string, value: any): void; refreshCells(params?: any): void; [key: string]: any };
+    /** The provider backing the grid: records, the tree, provider events. */
+    getTaskDataProvider(): {
+        addEventListener(event: 'onRecordLoaded', listener: (record: ITaskGridRecord) => void): void;
+        getRecords(): ITaskGridRecord[];
+        getRecordsMap(): Record<string, ITaskGridRecord>;
+        [key: string]: any;
+    };
+    /** The runtime control. */
+    getDatasetControl(): { [key: string]: any };
+    /** Runs the registrator only when the column is part of the active view. Safe to call unconditionally. */
+    registerExpressionDecorator(columnName: string, registrator: () => void): void;
+}
+
+/** Reaches the control that owns the grid this component renders in. */
+declare const useTaskGridDatasetControl: () => {
+    /** The candidate records a lookup-many cell's picker offers. Called once per cell. */
+    createLookupManyDataProvider(params: { record: ITaskGridRecord; column: ITaskGridColumn }): {
         refresh(): Promise<any>;
         getRecords(): ITaskGridRecord[];
         [key: string]: any;

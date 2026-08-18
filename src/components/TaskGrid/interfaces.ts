@@ -160,6 +160,12 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     getCustomColumnsDataProvider: () => ICustomColumnsDataProvider;
     /** Creates a fresh `IDataProvider` for the user-query creation/update dialog. */
     createUserQueryDataProvider: () => IDataProvider;
+    /**
+     * Creates the `IDataProvider` supplying the candidate records of a lookup-many cell — its picker's
+     * options. Called once per cell, because the candidates may depend on the row.
+     * @throws If the descriptor does not implement `onCreateLookupManyDataProvider`.
+     */
+    createLookupManyDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider;
     /** Returns the native column name mapping supplied by the descriptor. */
     getNativeColumns: () => INativeColumns;
     /** Returns the underlying `ITaskDataProvider` that backs the AG Grid data layer. */

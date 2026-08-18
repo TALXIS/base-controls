@@ -10,7 +10,7 @@ import { ITemplateDataProvider } from "./providers/template";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ICustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
-import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
+import { ILookupManyDataProviderParameters, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
 import { ErrorHelper } from "@utils/error-handling";
 
 const STATE_CODE_ACTIVE = 0;
@@ -149,6 +149,14 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     public createUserQueryDataProvider(): IDataProvider {
         return this._descriptor.onCreateUserQueryDataProvider();
+    }
+
+    public createLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider {
+        const dataProvider = this._descriptor.onCreateLookupManyDataProvider?.(parameters);
+        if (!dataProvider) {
+            throw new Error(`Column "${parameters.column.name}" is marked as lookup-many, but no data provider was returned for it. Implement "onCreateLookupManyDataProvider" on your ITaskGridDescriptor.`);
+        }
+        return dataProvider;
     }
 
     public getCustomColumnsDataProvider() {

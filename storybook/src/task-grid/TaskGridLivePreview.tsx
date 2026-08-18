@@ -1,6 +1,6 @@
 import * as Babel from '@babel/standalone'
 import React from 'react'
-import { TaskGrid, useTaskDataProvider } from '@talxis/base-controls/components/TaskGrid'
+import { TaskGrid, useTaskDataProvider, useTaskGridDatasetControl } from '@talxis/base-controls/components/TaskGrid'
 import type { ITaskGridDescriptor } from '@talxis/base-controls/components/TaskGrid'
 import { Alert, Autocomplete, Avatar, AvatarGroup, Button, Chip, LinearProgress, Menu, MenuItem, Popover, Rating, Slider, Snackbar, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
@@ -19,6 +19,8 @@ interface ITaskGridLivePreviewProps {
      */
     descriptor: ITaskGridDescriptor
     pcfContext: ComponentFramework.Context<any>
+    /** Receives the `gridCustomizerStrategy` the snippet defined, if it defined one. */
+    onGridCustomizerStrategy?: (strategy: any) => void
     onError?: (error: string | null) => void
 }
 
@@ -40,6 +42,7 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 'descriptor',
                 'pcfContext',
                 'useTaskDataProvider',
+                'useTaskGridDatasetControl',
                 'Chip',
                 'Stack',
                 'Alert',
@@ -65,15 +68,19 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 'Tooltip',
                 'Typography',
                 `${transformed}
-                 return typeof TaskGridExample !== "undefined" ? TaskGridExample : null;`,
+                 return {
+                   Component: typeof TaskGridExample !== "undefined" ? TaskGridExample : null,
+                   strategy: typeof gridCustomizerStrategy !== "undefined" ? gridCustomizerStrategy : undefined,
+                 };`,
             )
 
-            const Component = factory(
+            const result = factory(
                 React,
                 TaskGrid,
                 props.descriptor,
                 props.pcfContext,
                 useTaskDataProvider,
+                useTaskGridDatasetControl,
                 Chip,
                 Stack,
                 Alert,
@@ -98,11 +105,11 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 TextField,
                 Tooltip,
                 Typography,
-            ) as React.ComponentType | null
+            ) as { Component: React.ComponentType | null; strategy?: any }
 
-            return { Component, error: null as string | null }
+            return { Component: result.Component, strategy: result.strategy, error: null as string | null }
         } catch (error) {
-            return { Component: null, error: (error as Error).message }
+            return { Component: null, strategy: undefined, error: (error as Error).message }
         }
         //the descriptor and context are stable for the life of the story, so the code is the only trigger
     }, [props.code])
@@ -110,6 +117,9 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
     React.useEffect(() => {
         props.onError?.(compiled.error)
     }, [compiled.error])
+
+    //handed over before the grid mounts, because the customizer strategy is resolved on mount
+    props.onGridCustomizerStrategy?.(compiled.strategy)
 
     if (compiled.error) {
         return <pre>{compiled.error}</pre>

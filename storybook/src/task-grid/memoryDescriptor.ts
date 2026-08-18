@@ -1,6 +1,7 @@
 import { Operators } from '@talxis/client-libraries';
 import { MemoryTaskGridDescriptor } from '@talxis/base-controls/components/TaskGrid';
 import type { IMemoryTaskGridDescriptorParams } from '@talxis/base-controls/components/TaskGrid';
+import type { IGridCustomizerStrategy } from '@talxis/base-controls/components/TaskGrid/components/grid';
 import type { ISavedQuery } from '@talxis/base-controls/components/TaskGrid/providers';
 
 /**
@@ -23,7 +24,12 @@ const ACTIVE_STATE_CODE = '0';
  * contract a real consumer uses: dependencies resolve asynchronously while the grid shows its own
  * loading state, and the ~1300 lines of sample records stay out of the story's initial chunk.
  */
-export const createMemoryTaskGridDescriptor = () => new MemoryTaskGridDescriptor({
+interface ICreateMemoryTaskGridDescriptorOptions {
+    /** Resolved when the grid builds its customizer, i.e. on every mount. */
+    onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
+}
+
+export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDescriptorOptions) => new MemoryTaskGridDescriptor({
     height: '600px',
     onInitialize: async (): Promise<IMemoryTaskGridDescriptorParams> => {
         const [
@@ -139,6 +145,7 @@ export const createMemoryTaskGridDescriptor = () => new MemoryTaskGridDescriptor
                 enableSorting: true,
                 enableFiltering: true,
             },
+            onCreateGridCustomizerStrategy: options?.onCreateGridCustomizerStrategy,
         };
     },
 });

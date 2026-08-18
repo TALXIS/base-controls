@@ -30,9 +30,14 @@ export const TaskGridExampleRunner = (props: ITaskGridExampleRunnerProps) => {
     const [code, setCode] = React.useState(props.seedCode)
     const [compileError, setCompileError] = React.useState<string | null>(null)
     const debouncedCode = useDebouncedCode(code)
+    //a snippet may define a `gridCustomizerStrategy`; the grid resolves it on every mount, and the
+    //preview remounts whenever the code settles, so an edited strategy takes effect
+    const gridCustomizerStrategyRef = React.useRef<any>(undefined)
     //one descriptor for the whole example - it owns the in-memory task state, and the snippet only
     //receives it, so editing the code never reloads the data
-    const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor(), [])
+    const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor({
+        onCreateGridCustomizerStrategy: () => gridCustomizerStrategyRef.current,
+    }), [])
 
     return <ExampleRunner
         error={compileError}
@@ -40,6 +45,7 @@ export const TaskGridExampleRunner = (props: ITaskGridExampleRunnerProps) => {
             code={debouncedCode}
             descriptor={descriptor}
             pcfContext={pcfContext}
+            onGridCustomizerStrategy={(strategy) => { gridCustomizerStrategyRef.current = strategy }}
             onError={setCompileError} />}
         renderCode={() => <TaskGridCodeEditor value={code} onChange={setCode} />} />
 }

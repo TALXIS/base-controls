@@ -103,7 +103,7 @@ const preview: Preview = {
             'Descriptors & Strategies',
             ['Descriptor', 'Memory', 'Dataverse', 'Writing your own strategy'],
             'Customizations',
-            ['Overview', 'Custom Components'],
+            ['Overview', 'Custom Components', 'Customizer'],
           ],
           'Providers',
         ],
