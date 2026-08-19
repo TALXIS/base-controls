@@ -3,6 +3,7 @@ import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, 
 import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
 import { MemoryTaskStrategy } from "./MemoryTaskStrategy";
+import { DataverseTaskGridDescriptor } from "../dataverse";
 
 /**
  * What the descriptor has resolved by the time it asks for an optional strategy — the counterpart to
@@ -18,11 +19,11 @@ export interface IMemoryStrategyContext {
 }
 
 /**
- * What the descriptor hands the lookup-many callback: the cell the picker belongs to, plus everything
- * the descriptor resolved.
+ * What the descriptor hands the lookup-many callback: the cell the picker belongs to, and nothing else —
+ * the candidates come from records you hold, so pick the source by `column.name`. Aliased rather than
+ * extended so the counterpart to `IDataverseLookupManyParameters` still has a name of its own.
  */
-export interface IMemoryLookupManyParameters extends ILookupManyDataProviderParameters, IMemoryStrategyContext {
-}
+export type IMemoryLookupManyParameters = ILookupManyDataProviderParameters;
 
 /** What the descriptor hands a consumer-supplied task strategy. */
 export interface IMemoryTaskStrategyContext extends IMemoryStrategyContext {
@@ -211,7 +212,7 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
 
     /** Delegates to the `onCreateLookupManyDataProvider` parameter. */
     public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider | undefined {
-        return this._getParams().onCreateLookupManyDataProvider?.({ ...parameters, ...this._getStrategyContext() });
+        return this._getParams().onCreateLookupManyDataProvider?.(parameters);
     }
 
     public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy | undefined {

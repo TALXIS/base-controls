@@ -38,17 +38,18 @@ export interface IDataverseStrategyContext {
     userId?: string;
     /** The system views supplied through `systemQueries`. */
     systemQueries: ISavedQuery[];
-    /** The hydrated project record, when `projectRecord` was supplied. */
-    projectRecord?: ISingleRecord;
-    /** The hydrated source record, when `sourceRecord` was supplied. */
-    sourceRecord?: ISingleRecord;
 }
 
 /**
- * What the descriptor hands the lookup-many callback: the cell the picker belongs to, plus everything
- * the descriptor resolved. Pass the whole thing to {@link DataverseLookupManyDataProviderFactory}.
+ * What the descriptor hands the lookup-many callback: the cell the picker belongs to, plus the two
+ * records its query can be scoped by. Pass the whole thing to
+ * {@link DataverseLookupManyDataProviderFactory}.
  */
-export interface IDataverseLookupManyParameters extends ILookupManyDataProviderParameters, IDataverseStrategyContext {
+export interface IDataverseLookupManyParameters extends ILookupManyDataProviderParameters {
+    /** The hydrated project record, when `projectRecord` was supplied. Reaches the query as `{{ project.* }}`. */
+    projectRecord?: ISingleRecord;
+    /** The hydrated source record, when `sourceRecord` was supplied. Reaches the query as `{{ currentRecord.* }}`. */
+    sourceRecord?: ISingleRecord;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -57,6 +58,10 @@ export interface IDataverseTaskStrategyContext extends IDataverseStrategyContext
     deps: ITaskStrategyDeps;
     /** The `baseFetchXml` from `onInitialize`. The strategy renders its Liquid variables itself. */
     fetchXml: string;
+    /** The hydrated project record, when `projectRecord` was supplied. */
+    projectRecord?: ISingleRecord;
+    /** The hydrated source record, when `sourceRecord` was supplied. */
+    sourceRecord?: ISingleRecord;
 }
 
 /** Everything `onInitialize` resolves — the data and the options both. */
@@ -234,6 +239,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             ...this._getStrategyContext(),
             deps: deps,
             fetchXml: this._fetchXml,
+            projectRecord: this._projectRecord,
+            sourceRecord: this._sourceRecord,
         };
         return this._params.onCreateTaskStrategy?.(context) ?? new DataverseTaskStrategy({
             onInitialize: async () => ({
@@ -260,7 +267,11 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
 
     /** Delegates to the `onCreateLookupManyDataProvider` parameter. */
     public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider | undefined {
-        return this._params.onCreateLookupManyDataProvider?.({ ...parameters, ...this._getStrategyContext() });
+        return this._params.onCreateLookupManyDataProvider?.({
+            ...parameters,
+            projectRecord: this._projectRecord,
+            sourceRecord: this._sourceRecord,
+        });
     }
 
     private async _getProjectRecord(): Promise<ISingleRecord | undefined> {
@@ -319,8 +330,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             recordId: this._projectRecord?.getRecordId(),
             userId: this._params.userId,
             systemQueries: this._systemQueries,
-            projectRecord: this._projectRecord,
-            sourceRecord: this._sourceRecord,
         };
     }
 
