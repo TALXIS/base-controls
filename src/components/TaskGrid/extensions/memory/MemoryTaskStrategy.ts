@@ -154,17 +154,33 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult> {
+        //descendants come from the store, not the tree: the tree's children are filtered by the active
+        //view, so a hidden child would survive its deleted parent as an orphan
+        const childrenByParent = this._getChildrenByParent();
         const toDelete = new Set<string>();
+        const missingTaskIds: string[] = [];
         for (const id of taskIds) {
-            this._collectSubtree(id, toDelete);
-        }
-        const deletedTaskIds: string[] = [];
-        for (const id of toDelete) {
-            const index = this._records.findIndex(record => record[this._primaryId] === id);
-            if (index >= 0) {
-                this._records.splice(index, 1);
-                deletedTaskIds.push(id);
+            if (!this._getTask(id)) {
+                missingTaskIds.push(id);
+                continue;
             }
+            this._collectSubtree(id, childrenByParent, toDelete);
+        }
+        //rewritten in one pass, in place: the array identity is what the consumer holds on to
+        const remaining = this._records.filter(record => !toDelete.has(record[this._primaryId] as string));
+        const deletedTaskIds = [...toDelete];
+        if (remaining.length !== this._records.length) {
+            this._records.length = 0;
+            for (const record of remaining) {
+                this._records.push(record);
+            }
+        }
+        if (missingTaskIds.length > 0) {
+            return {
+                success: false,
+                deletedTaskIds,
+                errors: missingTaskIds.map(id => ({ id, error: `Task "${id}" no longer exists.` })),
+            };
         }
         return { success: true, deletedTaskIds };
     }
@@ -178,13 +194,16 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         if (!template) {
             return null;
         }
-        const rootTask = this._addTask(this._buildTask(parentTaskId, this._getTaskFieldsFromTemplate(template)));
+        //built once for the whole expansion, and kept up to date as tasks are added: ranking each new
+        //task by scanning the store would be a full pass per node
+        const childrenByParent = this._getChildrenByParent();
+        const rootTask = this._addTask(this._buildTask(parentTaskId, this._getTaskFieldsFromTemplate(template), 'first', childrenByParent), childrenByParent);
         const created: IRawRecord[] = [rootTask];
 
         const createChildren = (nodes: IMemoryTaskTemplateNode[], parentId: string) => {
             for (const node of nodes) {
                 //appended so each child ranks after the sibling created before it, preserving template order
-                const child = this._addTask(this._buildTask(parentId, node.values, 'last'));
+                const child = this._addTask(this._buildTask(parentId, node.values, 'last', childrenByParent), childrenByParent);
                 created.push(child);
                 if (node.children?.length) {
                     createChildren(node.children, child[this._primaryId] as string);
@@ -214,6 +233,12 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         const moving = this._getTask(movingTaskId);
         const target = this._getTask(targetTaskId);
         if (!moving || !target) {
+            return null;
+        }
+        //a task cannot become its own descendant: the hierarchy would cycle, and the record tree drops
+        //every record in a cycle - the rows would simply vanish from the grid. `pathIds` runs from the
+        //root down to the target itself, so this covers dropping a task onto itself as well
+        if (this._taskTree.getNode(targetTaskId)?.pathIds.includes(movingTaskId)) {
             return null;
         }
 
@@ -301,7 +326,9 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         }
         return [{
             id: { guid: parentTaskId },
-            etn: this._dependencies.metadata.LogicalName,
+            //the tree only reads the guid, but this value ends up in the consumer's raw records - an
+            //empty string beats `undefined` when `LogicalName` was not supplied
+            etn: this._dependencies.metadata.LogicalName ?? '',
         } as ComponentFramework.EntityReference];
     }
 
@@ -317,7 +344,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
      * applied on top, and the primary id, parent lookup and stack rank are computed last so they can
      * never be overridden.
      */
-    private _buildTask(parentTaskId?: string, overrides?: Partial<IRawRecord>, placement: Placement = 'first'): IRawRecord {
+    private _buildTask(parentTaskId?: string, overrides?: Partial<IRawRecord>, placement: Placement = 'first', childrenByParent?: Map<string | null, IRawRecord[]>): IRawRecord {
         const { parentId, stackRank, stateCode } = this._nativeColumns;
         const task: IRawRecord = {};
         for (const column of this._provider.getColumns()) {
@@ -326,14 +353,24 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         Object.assign(task, this._dependencies.onGetNewTaskDefaults?.(parentTaskId), overrides);
         task[this._primaryId] = crypto.randomUUID();
         task[parentId] = this._getParentReference(parentTaskId);
-        task[stackRank] = this._getRankAmongSiblings(parentTaskId ?? null, placement);
+        task[stackRank] = this._getRankAmongSiblings(parentTaskId ?? null, placement, undefined, childrenByParent);
         task[stateCode] ??= 0;
         return task;
     }
 
     /** Appends a task to the caller's array — the write that makes it outlive this strategy. */
-    private _addTask(task: IRawRecord): IRawRecord {
+    private _addTask(task: IRawRecord, childrenByParent?: Map<string | null, IRawRecord[]>): IRawRecord {
         this._records.push(task);
+        if (childrenByParent) {
+            const parentTaskId = this._getParentTaskId(task);
+            const siblings = childrenByParent.get(parentTaskId);
+            if (siblings) {
+                siblings.push(task);
+            }
+            else {
+                childrenByParent.set(parentTaskId, [task]);
+            }
+        }
         return task;
     }
 
@@ -353,10 +390,35 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         return fields;
     }
 
-    private _collectSubtree(taskId: string, result: Set<string>): void {
+    /**
+     * Parent id (or `null` for top level) to the stored children, built in one pass over the store.
+     *
+     * The record tree cannot serve this: its `directChildren` and `allChildren` are pruned to branches
+     * that match the active filter and quick find, so a hidden child would survive its deleted parent.
+     * `pathIds` is safe by contrast — it is walked over the unfiltered record map.
+     */
+    private _getChildrenByParent(): Map<string | null, IRawRecord[]> {
+        const childrenByParent = new Map<string | null, IRawRecord[]>();
+        for (const record of this._records) {
+            const parentTaskId = this._getParentTaskId(record);
+            const siblings = childrenByParent.get(parentTaskId);
+            if (siblings) {
+                siblings.push(record);
+            }
+            else {
+                childrenByParent.set(parentTaskId, [record]);
+            }
+        }
+        return childrenByParent;
+    }
+
+    private _collectSubtree(taskId: string, childrenByParent: Map<string | null, IRawRecord[]>, result: Set<string>): void {
+        if (result.has(taskId)) {
+            return;
+        }
         result.add(taskId);
-        for (const child of this._taskTree.getNode(taskId)?.directChildren ?? []) {
-            this._collectSubtree(child.getRecordId(), result);
+        for (const child of childrenByParent.get(taskId) ?? []) {
+            this._collectSubtree(child[this._primaryId] as string, childrenByParent, result);
         }
     }
 
@@ -367,8 +429,14 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             .filter((record): record is IRawRecord => !!record);
     }
 
+    /**
+     * The stored record for a task. Reads the provider's own raw-data map, which holds the very objects
+     * this strategy was handed — the provider does not copy them — so a hit is O(1) and still writable.
+     * Falls back to a scan for the window before the provider has loaded its data.
+     */
     private _getTask(taskId: string): IRawRecord | undefined {
-        return this._records.find(record => record[this._primaryId] === taskId);
+        return this._provider.getRawDataMap()[taskId]
+            ?? this._records.find(record => record[this._primaryId] === taskId);
     }
 
     // ── Stack rank ───────────────────────────────────────────────────────────
@@ -381,22 +449,36 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
      *
      * @param excludeTaskId — a task to ignore, so a record being moved is not ranked against itself.
      */
-    private _getRankAmongSiblings(parentTaskId: string | null, placement: Placement, excludeTaskId?: string): string {
+    private _getRankAmongSiblings(parentTaskId: string | null, placement: Placement, excludeTaskId?: string, childrenByParent?: Map<string | null, IRawRecord[]>): string {
         const stackRank = this._nativeColumns.stackRank;
-        const ranks = this._records
-            .filter(record => this._getParentTaskId(record) === parentTaskId
-                && record[this._primaryId] !== excludeTaskId)
-            .map(record => record[stackRank] as string)
-            .filter(Boolean);
-        if (ranks.length === 0) {
+        const siblings = childrenByParent
+            ? childrenByParent.get(parentTaskId) ?? []
+            //no index handed in: one pass, rather than a filter that re-reads every parent lookup twice
+            : this._records.filter(record => this._getParentTaskId(record) === parentTaskId);
+        //a single parse per sibling, and the boundary is kept parsed instead of being re-parsed each time
+        let boundary: LexoRank | undefined;
+        for (const sibling of siblings) {
+            if (sibling[this._primaryId] === excludeTaskId) {
+                continue;
+            }
+            const rank = sibling[stackRank] as string;
+            if (!rank) {
+                continue;
+            }
+            const parsed = LexoRank.parse(rank);
+            if (!boundary) {
+                boundary = parsed;
+                continue;
+            }
+            const isBefore = parsed.compareTo(boundary) < 0;
+            if (isBefore === (placement === 'first')) {
+                boundary = parsed;
+            }
+        }
+        if (!boundary) {
             return LexoRank.middle().format();
         }
-        const boundary = ranks.reduce((result, rank) => {
-            const isBefore = LexoRank.parse(rank).compareTo(LexoRank.parse(result)) < 0;
-            return isBefore === (placement === 'first') ? rank : result;
-        });
-        const parsed = LexoRank.parse(boundary);
-        return (placement === 'first' ? parsed.genPrev() : parsed.genNext()).format();
+        return (placement === 'first' ? boundary.genPrev() : boundary.genNext()).format();
     }
 
     /** Returns a rank strictly between two neighbours, extending past the end when one is missing. */

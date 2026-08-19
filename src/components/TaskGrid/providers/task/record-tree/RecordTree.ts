@@ -197,6 +197,10 @@ export class RecordTree implements IRecordTree {
         }
 
         allRecordsWithMatching.sort(sortByIndex);
+
+        //one cache for the whole build: it used to be created per record, so every path walked the full
+        //ancestor chain again - O(records x depth) on every refresh
+        const pathCache = new Map<string, { pathIds: string[], pathStrings: string[] }>();
         
         for (const record of records) {
             const recordId = record.getRecordId();
@@ -223,7 +227,6 @@ export class RecordTree implements IRecordTree {
 
             let pathIds: string[] = [];
             let pathStrings: string[] = [];
-            const pathCache = new Map<string, { pathIds: string[], pathStrings: string[] }>();
             if (pathCache.has(recordId)) {
                 const cached = pathCache.get(recordId)!;
                 pathIds = cached.pathIds;
@@ -234,11 +237,20 @@ export class RecordTree implements IRecordTree {
                 const pathStringParts: string[] = [];
                 let currentRecord: IRecord | null = record;
                 const visited = new Set<string>();
+                let ancestorPath: { pathIds: string[], pathStrings: string[] } | undefined;
 
                 while (currentRecord) {
                     const currentId = currentRecord.getRecordId();
                     if (visited.has(currentId)) break;
                     visited.add(currentId);
+
+                    //an ancestor resolved earlier in this build already knows its own path
+                    if (currentId !== recordId) {
+                        ancestorPath = pathCache.get(currentId);
+                        if (ancestorPath) {
+                            break;
+                        }
+                    }
 
                     pathIdParts.unshift(currentRecord.getRecordId());
                     pathStringParts.unshift(currentRecord.getNamedReference().name);
@@ -247,8 +259,8 @@ export class RecordTree implements IRecordTree {
                     currentRecord = parentId ? recordsMap[parentId] : null;
                 }
 
-                pathIds = pathIdParts;
-                pathStrings = pathStringParts;
+                pathIds = ancestorPath ? [...ancestorPath.pathIds, ...pathIdParts] : pathIdParts;
+                pathStrings = ancestorPath ? [...ancestorPath.pathStrings, ...pathStringParts] : pathStringParts;
                 pathCache.set(recordId, { pathIds, pathStrings });
             }
 

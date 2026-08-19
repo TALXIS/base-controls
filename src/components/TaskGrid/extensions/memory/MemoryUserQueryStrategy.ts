@@ -31,16 +31,31 @@ export class MemoryUserQueryStrategy implements IUserQueryStrategy {
 
     public async onCreateUserQuery(newQuery: { name: string; description?: string }, currentQuery: ISavedQuery): Promise<string | null> {
         const id = crypto.randomUUID();
-        this._userQueries.push({ ...currentQuery, id, name: newQuery.name, description: newQuery.description });
+        this._userQueries.push({ ...this._cloneQuery(currentQuery), id, name: newQuery.name, description: newQuery.description });
         return id;
     }
 
     public async onUpdateUserQuery(currentQuery: ISavedQuery): Promise<string | null> {
         const index = this._userQueries.findIndex(query => query.id === currentQuery.id);
         if (index >= 0) {
-            this._userQueries[index] = { ...currentQuery };
+            this._userQueries[index] = this._cloneQuery(currentQuery);
         }
         return currentQuery.id;
+    }
+
+    /**
+     * A stored view must not share structure with the one it came from: a spread alone would leave both
+     * pointing at the same `columns` array, and the grid writes into that array when it resolves a view's
+     * required columns — editing one view would silently edit the other.
+     */
+    private _cloneQuery(query: ISavedQuery): ISavedQuery {
+        return {
+            ...query,
+            columns: query.columns.map(column => ({ ...column })),
+            sorting: query.sorting ? [...query.sorting] : undefined,
+            quickFindColumns: query.quickFindColumns ? [...query.quickFindColumns] : undefined,
+            filtering: query.filtering ? structuredClone(query.filtering) : undefined,
+        };
     }
 
     public async onDeleteUserQueries(queryIds: string[]): Promise<IDeletedUserQueriesResult> {
