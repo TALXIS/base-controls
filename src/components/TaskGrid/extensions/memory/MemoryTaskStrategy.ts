@@ -265,7 +265,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         if (!record) {
             return true;
         }
-        return this._dependencies.onIsRecordActive?.(record) ?? record[this._nativeColumns.stateCode] === 0;
+        return this._dependencies.onIsRecordActive?.(record) ?? record[this._nativeColumns.stateCode] == 0;
     }
 
     // ── Derived state ────────────────────────────────────────────────────────

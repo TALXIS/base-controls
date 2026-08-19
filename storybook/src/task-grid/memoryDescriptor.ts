@@ -127,9 +127,12 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                      * The fixtures keep `statecode` and `statuscode` in sync, but only `statuscode`
                      * is editable in the grid — so derive activity from it to keep styling correct
                      * after an edit.
+                     *
+                     * Loose comparison on purpose: the dataset layer normalises option-set values to
+                     * strings, so an edited status arrives as `'5'` where the seeded one was `5`.
                      */
-                    onIsRecordActive: record => record.statuscode !== COMPLETED_STATUS_CODE
-                        && record.statuscode !== CANCELLED_STATUS_CODE,
+                    onIsRecordActive: record => record.statuscode != COMPLETED_STATUS_CODE
+                        && record.statuscode != CANCELLED_STATUS_CODE,
                     onOpenDatasetItems: async (entityReferences, isTaskEntity, { isTaskEditingEnabled }) => {
                         const target = isTaskEntity ? 'task(s)' : 'related record(s)';
                         const mode = isTaskEditingEnabled ? 'edit' : 'read-only';
