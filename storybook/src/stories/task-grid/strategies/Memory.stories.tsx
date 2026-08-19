@@ -36,7 +36,7 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 
 Note the pattern in that last column: **a feature is on when you supply its implementation.** There are no flags for these — passing \`MemoryUserQueryStrategy\` is what enables personal views, and a consumer who never mentions it does not pay for the code in their bundle.
 
-That is more of the surface than the Dataverse descriptor covers — templates and the customizer hook are missing there. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
+Both descriptors expose the same hooks, so the difference is which implementations ship: memory brings a user-query strategy and a template provider but no custom columns, Dataverse brings a user-query strategy and custom columns but no template provider. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
 
 \`\`\`ts
 import { MemoryTaskGridDescriptor } from '@talxis/base-controls'

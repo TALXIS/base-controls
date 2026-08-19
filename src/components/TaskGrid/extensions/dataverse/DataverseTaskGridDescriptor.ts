@@ -1,4 +1,4 @@
-import { FetchXmlBuilder, IDataProvider, IRawRecord, IRecord, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
+import { FetchXmlBuilder, IDataProvider, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
 import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
