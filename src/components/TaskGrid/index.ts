@@ -10,4 +10,11 @@ export * from './extensions/memory';
 export * from './extensions/dataverse';
 //the hooks a component supplied through `components` needs to reach the grid it renders in. Not a
 //blanket re-export of ./context: its `usePcfContext` would collide with the one from @utils.
-export { useTaskDataProvider, useTaskGridComponents, useDatasetControl as useTaskGridDatasetControl } from './context';
+export {
+    useTaskDataProvider,
+    useTaskGridComponents,
+    useDatasetControl as useTaskGridDatasetControl,
+    useTaskGridDescriptor,
+    useLocalizationService as useTaskGridLabels,
+    useRootElementId as useTaskGridRootElementId,
+} from './context';

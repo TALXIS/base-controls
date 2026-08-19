@@ -51,6 +51,47 @@ export const MyTaskGridPage = ({ pcfContext }) => (
 | \`taskGridDescriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract. |
 | \`labels?\` | — | Partial \`ITaskGridLabels\`. Any key you supply replaces the English default. |
 | \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton loader, the command bar, or the renderer/editor of any cell. |
+| \`onReady?\` | — | \`(control, taskDataProvider)\` — the grid's handle. See [**Reacting to the grid**](#reacting-to-the-grid). |
+| \`onError?\` | — | \`(error, message)\` for every error the grid reports — tasks, views and templates alike. It still shows its own dialog. |
+| event props | — | One per grid event, listed below. |
+
+## Reacting to the grid
+
+Every event the grid raises is a prop, so nothing needs a strategy or the imperative handle. They come in before/after pairs, and the "after" ones drop the prefix:
+
+| Area | Props |
+|---|---|
+| Tasks | \`onBeforeTasksCreated\`, \`onTasksCreated\`, \`onBeforeTasksDeleted\`, \`onTasksDeleted\`, \`onBeforeTaskMoved\`, \`onTaskMoved\` |
+| Data | \`onTaskDataUpdated\`, \`onRecordTreeUpdated\`, \`onBeforeRecordSaved\`, \`onRecordSaved\` |
+| Opening records | \`onBeforeDatasetItemsOpened\`, \`onDatasetItemsOpened\` |
+| Personal views | \`onBeforeUserQueryCreated\`, \`onUserQueryCreated\`, \`onBeforeUserQueryUpdated\`, \`onUserQueryUpdated\`, \`onBeforeUserQueriesDeleted\`, \`onUserQueriesDeleted\` |
+| Templates | \`onBeforeTemplateCreated\`, \`onTemplateCreated\` |
+| Errors | \`onError\`, which fans in the task, view and template errors |
+
+A "created" or "updated" view prop receives \`null\` when the user cancelled the dialog, and the template props only fire when templates are enabled.
+
+\`\`\`tsx
+<TaskGrid
+    pcfContext={pcfContext}
+    taskGridDescriptor={descriptor}
+    onRecordSaved={result => console.info('saved', result.recordId, result.fields)}
+    onTasksDeleted={result => refreshMyKpis()}
+    onError={(error, message) => logger.error(message, error)}
+/>
+\`\`\`
+
+For anything the events cannot express — reloading, reading the selection, switching a view — take the handle. \`onReady\` hands you the control **and** its task data provider:
+
+\`\`\`tsx
+onReady={(control, taskDataProvider) => {
+    //everything imperative: reload, read the selection, switch the view
+    taskDataProvider.refresh()
+    control.getSelectedRecordIds()
+    control.changeSavedQuery(queryId)
+}}
+\`\`\`
+
+Two things to keep in mind: the grid **rebuilds both objects** whenever it remounts — switching a view or saving a record does it — so \`onReady\` fires again each time and any handle you stored goes stale; and at that moment the dataset refresh has been started but not awaited, so the records are not loaded yet. Use the provider's own \`onLoading\` / \`onBeforeFirstDataLoaded\` if you need the loaded moment.
 
 ## Pick a strategy
 
