@@ -27,9 +27,9 @@ That is the cheapest way out of most awkward situations: Dataverse tasks in an e
 | \`MemoryUserQueryStrategy\` | \`{ userQueries }\` — the array it reads and writes | none | Hand it the array you keep for the session, not a fresh literal: it is rebuilt per control instance, so a new array each time would wipe the views the user saved. |
 | \`DataverseUserQueryStrategy\` | \`{ entityName, recordId?, ownerId? }\` | \`talxis_userquery\` | State is server-side, so a second instance is fine. \`entityName\` is only the \`talxis_returnedtypecode\` filter value; omit \`ownerId\` and the views are shared environment-wide. |
 | \`DataverseCustomColumnsStrategy\` | \`{ entityName, recordId? }\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` and a relationship between \`entityName\` and the value table | The relationship is read from metadata, so any schema works; \`navigationPropertyName\` only disambiguates when there is more than one. Only \`DataverseTaskStrategy\` knows how to read the values back, and there is **no in-memory custom-columns implementation**. |
-| \`MemoryTaskStrategy\` | \`({ onInitialize }, deps)\` | none | Casts \`deps.templateDataProvider\` to \`MemoryTemplateDataProvider\`, so pair templates with the memory provider or not at all. \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. |
+| \`MemoryTaskStrategy\` | \`({ onInitialize, …hooks }, deps)\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | Casts \`deps.templateDataProvider\` to \`MemoryTemplateDataProvider\`, so pair templates with the memory provider or not at all. \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. |
 | \`MemoryTemplateDataProvider\` | \`{ templates }\` — records, columns, metadata and a \`children\` map | none | Only \`MemoryTaskStrategy\` reads its children. |
-| \`DataverseTaskStrategy\` | \`(params, deps)\` — \`fetchXml\` plus the optional form ids and delete flags | Dataverse host, valid FetchXML | Needs a Dataverse custom-columns strategy in \`deps\` **if** any column name carries the custom-column suffix; it asserts the provider is there. Throws on template expansion. |
+| \`DataverseTaskStrategy\` | \`({ onInitialize, …hooks }, deps)\` — \`onInitialize\` resolves the \`fetchXml\`, form ids and delete flags; the hooks sit beside it | Dataverse host, valid FetchXML | Needs a Dataverse custom-columns strategy in \`deps\` **if** any column name carries the custom-column suffix; it asserts the provider is there. Throws on template expansion. |
 | \`MemoryLookupManyDataProviderFactory\` / \`DataverseLookupManyDataProviderFactory\` | \`.create(source)\` / \`.create(parameters)\` | records you hold / the column's \`FetchXml\` binding | What you return from \`onCreateLookupManyDataProvider\`, one provider per lookup-many cell. The Dataverse one takes the parameters it was handed as-is; both return \`undefined\` when they have nothing for the column. |
 
 Both shipped descriptors are themselves reusable this way: nothing stops you from holding a \`MemoryTaskGridDescriptor\` and delegating most hooks to it.
@@ -88,7 +88,21 @@ onCreateTaskStrategy: ({ deps }) => new MemoryTaskStrategy({
 
 That gets you working create, delete, move, templates and editing against your own records. The grid holds the complete task set client-side no matter which strategy serves it, so loading everything up front costs you nothing here.
 
-The one thing it does not do is write back: mutations land in the array and stop there. Subclass it and wrap the mutating hooks (\`onRecordSave\`, \`onCreateTask\`, \`onDeleteTasks\`, \`onMoveTask\` — all prototype methods, so \`super\` keeps the in-memory store in step) and you have a server-backed grid without implementing the interface yourself. [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview) has the snippet. Write the interface from scratch only when the data cannot be held in memory at all — which, given the above, means almost never. [**Write your own**](?path=/story/task-grid-custom-strategies-write-your-own--overview) covers that case.
+The one thing it does not do is write back: mutations land in the array and stop there. That is what the mutating hooks are for — each one receives the parameters of the matching \`MemoryTaskActions\` method, so you persist and then forward, and the in-memory store stays in step without a subclass:
+
+\`\`\`ts
+onRecordSave: async params => {
+    const result = MemoryTaskActions.saveRecord(params)   //writes the dirty fields into the store
+    await api.patch(result.recordId, result.fields)
+    return result
+},
+onDeleteTasks: async params => {
+    await api.delete(params.taskIds)
+    return MemoryTaskActions.deleteTasks(params)
+},
+\`\`\`
+
+\`onCreateTask\` and \`onMoveTask\` work the same way. That is a server-backed grid without implementing the interface — or a subclass — yourself. [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview) has the snippet. Write the interface from scratch only when the data cannot be held in memory at all — which, given the above, means almost never. [**Write your own**](?path=/story/task-grid-custom-strategies-write-your-own--overview) covers that case.
 
 ## Pairings that do not work
 

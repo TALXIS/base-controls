@@ -55,7 +55,7 @@ Nothing stops you from answering a feature differently — return a strategy of 
 
 ## Setup
 
-Everything is resolved by \`onInitialize\` — \`height\` is the one parameter outside it, because the skeleton needs it first. Task-level options go to the task strategy:
+\`onInitialize\` resolves the **data**; the feature hooks and \`height\` sit next to it on the constructor argument. Task-level options go to the task strategy:
 
 \`\`\`ts
 const descriptor = new DataverseTaskGridDescriptor({
@@ -84,28 +84,39 @@ const descriptor = new DataverseTaskGridDescriptor({
         projectRecord: { entityName: 'talxis_project', id: projectId },
         userId: userId,
         gridParameters: { enableTaskEditing: true, enableQueryManager: true },
-        //personal views are on because this returns a strategy - there is no flag for it
-        onCreateUserQueryStrategy: (context) => new DataverseUserQueryStrategy({
-            entityName: context.entityName,
-            recordId: context.recordId,
-            ownerId: context.userId,
-        }),
-        //the form ids, the delete behaviour and the root task are the strategy's options
-        onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new DataverseTaskStrategy({
-            onInitialize: async () => ({
-                fetchXml,
-                projectRecord,
-                sourceRecord,
-                editFormId,
-                createFormId,
-                isCascadeDeleteEnabled: true,
-            }),
-        }, deps),
     }),
+    //personal views are on because this returns a strategy - there is no flag for it
+    onCreateUserQueryStrategy: (context) => new DataverseUserQueryStrategy({
+        entityName: context.entityName,
+        recordId: context.recordId,
+        ownerId: context.userId,
+    }),
+    //the form ids, the delete behaviour and the root task are the strategy's options
+    onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new DataverseTaskStrategy({
+        onInitialize: async () => ({
+            fetchXml,
+            projectRecord,
+            sourceRecord,
+            editFormId,
+            createFormId,
+            isCascadeDeleteEnabled: true,
+        }),
+        //every other hook takes the parameters of the matching DataverseTaskActions method
+        onGetFormParameters: (operation, parameters) => parameters,
+    }, deps),
 })
 \`\`\`
 
-Both shipped strategies take their options through an \`onInitialize\` callback of their own, awaited while the grid shows its skeleton — so anything the strategy needs can be fetched there too. The task entity name is derived from the FetchXML, so you never pass it separately — and it is handed back to you on the \`context\` of every \`onCreate*\` callback. Omit \`onCreateTaskStrategy\` and the descriptor builds a plain \`DataverseTaskStrategy\` over the resolved FetchXML.
+Both shipped strategies are shaped the same way: a required \`onInitialize\` that resolves what the strategy runs on — awaited while the grid shows its skeleton, so anything it needs can be fetched there — plus one optional hook per operation next to it. Every hook receives the parameters of the matching \`DataverseTaskActions\` method, so an override can wrap the shipped behaviour instead of replacing it:
+
+\`\`\`ts
+onDeleteTasks: async params => {
+    await audit(params.taskIds)
+    return DataverseTaskActions.deleteTasks(params)
+},
+\`\`\`
+
+The full set: \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onCreateTask\`, \`onDeleteTasks\`, \`onCreateTasksFromTemplate\` (no Dataverse default — the shipped one throws), \`onOpenDatasetItems\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\` and \`onGetFormParameters\`. The task entity name is derived from the FetchXML, so you never pass it separately — and it is handed back to you on the \`context\` of every \`onCreate*\` callback, which is why those hooks can live outside \`onInitialize\`. Omit \`onCreateTaskStrategy\` and the descriptor builds a plain \`DataverseTaskStrategy\` over the resolved FetchXML.
 
 ## Field mapping
 
@@ -135,6 +146,8 @@ Both \`projectRecord\` and \`sourceRecord\` accept either a hydrated \`ISingleRe
 
 ## Parameters
 
+Resolved by \`onInitialize\`:
+
 | Parameter | Required | Description |
 |---|:--------:|---|
 | \`baseFetchXml\` | ✅ | FetchXML driving the initial load. May use the Liquid variables above. |
@@ -143,13 +156,19 @@ Both \`projectRecord\` and \`sourceRecord\` accept either a hydrated \`ISingleRe
 | \`projectRecord?\` | — | The project these tasks belong to. Injected into Liquid templates and pre-filled on create. |
 | \`sourceRecord?\` | — | An additional record exposed to Liquid templates (a sprint or board, say). |
 | \`userId?\` | — | Current user GUID. Pass it to the user-query strategy to scope personal views per user. |
-| \`onCreateTaskStrategy?\` | — | Returns the task strategy. Where the form ids, \`rootTaskId\`, the cascade-delete flags and the strategy's \`form\` hook now live. |
+| \`gridParameters?\` | — | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
+
+Passed next to \`onInitialize\` on the constructor argument, because they run again on every remount:
+
+| Parameter | Required | Description |
+|---|:--------:|---|
+| \`height?\` | — | Container height. Read before the data resolves, to size the loading skeleton. |
+| \`onCreateTaskStrategy?\` | — | Returns the task strategy. Where the form ids, \`rootTaskId\`, the cascade-delete flags and the per-operation hooks live. |
 | \`onCreateUserQueryStrategy?\` | — | Returns the personal-views implementation. Omitted ⇒ system views only. |
 | \`onCreateCustomColumnsStrategy?\` | — | Returns the custom-columns strategy. Omitted ⇒ custom columns off. |
 | \`onCreateTemplateDataProvider?\` | — | Returns a template provider. Nothing Dataverse-side ships, so this has to be yours. |
 | \`onCreateLookupManyDataProvider?\` | — | Feeds a lookup-many picker. Required once a column carries \`metadata.LookupMany\`. |
 | \`onCreateGridCustomizerStrategy?\` | — | Supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview). |
-| \`gridParameters?\` | — | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
 ## Saved views
 

@@ -44,7 +44,7 @@ import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
 
 ## Minimal setup
 
-Four things are required: the records, the entity metadata, the field mapping, and at least one view. Everything is resolved by \`onInitialize\` — \`height\` is the one parameter outside it:
+Four things are required: the records, the entity metadata, the field mapping, and at least one view. \`onInitialize\` resolves the **data**; the feature hooks and \`height\` sit next to it on the constructor argument:
 
 \`\`\`ts
 const descriptor = new MemoryTaskGridDescriptor({
@@ -101,13 +101,13 @@ onInitialize: async () => {
 }
 \`\`\`
 
-Only \`height\` sits outside the callback, on the constructor argument, because the grid reads it to size the loading skeleton before your dependencies have resolved.
+\`height\` sits outside the callback because the grid reads it to size the loading skeleton before your data has resolved — and so do the \`onCreate*\` hooks, which run again on every remount rather than once.
 
 Because it is awaited before the first provider is created, a promise that never resolves here shows up as an indefinite skeleton with no error.
 
 ## Parameters
 
-Required:
+Resolved by \`onInitialize\`, and required:
 
 | Parameter | Description |
 |---|---|
@@ -117,6 +117,8 @@ Required:
 | \`systemQueries\` | Built-in, non-deletable views — and the source of every column definition. At least one is required. |
 
 Optional:
+
+All of these are passed next to \`onInitialize\` on the constructor argument, not returned from it — \`gridParameters\` is the exception, since it is data:
 
 | Parameter | Description |
 |---|---|
@@ -128,7 +130,19 @@ Optional:
 | \`onCreateGridCustomizerStrategy\` | Supplies your own AG Grid customizer. |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
-> **The \`onCreate*\` callbacks run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created.
+> **The \`onCreate*\` callbacks run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created. Since the hooks now live outside \`onInitialize\`, hold that data in the enclosing scope and assign it there:
+>
+> \`\`\`ts
+> let userQueries: ISavedQuery[] = []
+>
+> return new MemoryTaskGridDescriptor({
+>     onInitialize: async () => {
+>         userQueries = await loadMyViews()
+>         return { records, metadata, fieldMapping, systemQueries }
+>     },
+>     onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
+> })
+> \`\`\`
 
 > **The \`records\` array is the store.** It is written into rather than copied — creating, deleting, editing and moving mutate it in place, the way those operations would hit a server. Pass a \`structuredClone\` of a shared fixture when two grids need to stay independent.
 
@@ -161,7 +175,7 @@ const getQueryColumns = (...visibleColumnNames: string[]): IColumn[] =>
 
 ## Task options
 
-Anything that changes how *tasks* behave belongs to the task strategy, so it is passed where the strategy is built. The descriptor hands you the resolved \`records\` and \`metadata\` plus the grid's \`deps\`:
+Anything that changes how *tasks* behave belongs to the task strategy, so it is passed where the strategy is built. \`MemoryTaskStrategy\` takes one required hook — \`onInitialize\`, resolving the store, the metadata and the columns — and an optional hook per operation beside it. The descriptor hands the callback the resolved \`records\` and \`metadata\` plus the grid's \`deps\`:
 
 \`\`\`ts
 onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
@@ -177,6 +191,36 @@ onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
 \`\`\`
 
 Hand back the \`records\` and \`metadata\` you were given rather than fresh ones — that array is the store, and a rebuilt strategy has to see what its predecessor wrote. The primary id, parent lookup and stack rank are always computed by the strategy and cannot be overridden. Omit the callback entirely and the descriptor builds a plain \`MemoryTaskStrategy\` over the same data.
+
+### The hooks, and the defaults behind them
+
+The strategy itself is thin: every hook below is "call yours if you supplied one, otherwise call the matching \`MemoryTaskActions\` method". Since your hook receives *exactly* that action's parameters, overriding one is a wrapper rather than a rewrite:
+
+| Hook | Default | 
+|---|---|
+| \`onInitialize\` **(required)** | — resolves \`{ rawData, metadata, columns }\`. Called directly; there is no default. |
+| \`onGetNewTaskDefaults\` | no defaults — a new task is every view column set to \`null\` |
+| \`onIsRecordActive\` | \`MemoryTaskActions.isRecordActive\` — \`record[stateCode] == 0\` |
+| \`onGetAvailableColumns\` | \`MemoryTaskActions.getAvailableColumns\` — the union of every view's columns |
+| \`onGetAvailableRelatedColumns\` | \`MemoryTaskActions.getAvailableRelatedColumns\` — none; in-memory data has no relationship metadata |
+| \`onCreateTask\` | \`MemoryTaskActions.createTask\` — appends a ranked, parented record to the store |
+| \`onDeleteTasks\` | \`MemoryTaskActions.deleteTasks\` — deletes the subtree, rewriting the array in place |
+| \`onCreateTasksFromTemplate\` | \`MemoryTaskActions.createTasksFromTemplate\` — expands the template in order |
+| \`onMoveTask\` | \`MemoryTaskActions.moveTask\` — rewrites the parent lookup and the LexoRank |
+| \`onRecordSave\` | \`MemoryTaskActions.saveRecord\` — writes the dirty fields onto the stored record |
+| \`onOpenDatasetItems\` | \`MemoryTaskActions.openDatasetItems\` — a no-op; there is no form to navigate to |
+
+So persisting to a server is a hook away, with the local store kept in step by the action:
+
+\`\`\`ts
+onRecordSave: async params => {
+    const result = MemoryTaskActions.saveRecord(params)
+    await api.patch(result.recordId, result.fields)
+    return result
+},
+\`\`\`
+
+The parameters of each action are exported too (\`IMemoryTaskCreateParams\`, \`IMemoryTaskDeleteParams\`, …), so an override can name what it is given.
 
 The same shape is the way in to a *different* task strategy — your own, or a subclass that persists writes. See [**Custom strategies → Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview).
 

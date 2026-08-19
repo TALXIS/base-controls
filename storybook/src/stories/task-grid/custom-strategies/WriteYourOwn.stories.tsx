@@ -18,7 +18,7 @@ const meta = {
                 component: `
 When neither shipped strategy fits — a REST API, GraphQL, SQL through a gateway — you can write your own. The grid does not care where records come from. Reach for this when you want the mutations to go through your own code from the start, or when the shipped strategies' shapes fight you; if you only need remote *loading*, the memory strategy already does that.
 
-You need two pieces: a **descriptor** implementing \`ITaskGridDescriptor\`, and a **task strategy** implementing \`ITaskDataProviderStrategy\`. \`MemoryTaskStrategy\` in \`src/components/TaskGrid/extensions/memory/\` is the shortest complete implementation to read alongside this page, and [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) is worth reading first — if your records fit in memory, pointing \`MemoryTaskStrategy\` at your own loader gets you working CRUD without any of this.
+You need two pieces: a **descriptor** implementing \`ITaskGridDescriptor\`, and a **task strategy** implementing \`ITaskDataProviderStrategy\`. \`MemoryTaskStrategy\` in \`src/components/TaskGrid/extensions/memory/memory-task-strategy/\` is the shortest complete implementation to read alongside this page — and \`MemoryTaskActions\` beside it holds the behaviour on its own, so you can call the parts that fit your data instead of rewriting them, and [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) is worth reading first — if your records fit in memory, pointing \`MemoryTaskStrategy\` at your own loader gets you working CRUD without any of this.
 
 Where the interfaces on this page are imported from is listed under [**Imports**](?path=/story/task-grid-custom-strategies--overview).
 
@@ -61,6 +61,26 @@ public async onInitialize(provider: ITaskDataProvider) {
     }
 }
 \`\`\`
+
+### You do not have to write all of it
+
+\`MemoryTaskActions\` and \`DataverseTaskActions\` are static classes with no state of their own: everything they need is a parameter. So the fiddly parts — LexoRank ranking between siblings, the parent-lookup shape, the cascade-delete walk over the unfiltered store, the *Edit columns* catalogue — are available to a strategy of your own:
+
+\`\`\`ts
+public async onDeleteTasks(taskIds: string[]) {
+    await api.delete(taskIds)
+    //keeps the local store and its hierarchy consistent, cascade included
+    return MemoryTaskActions.deleteTasks({
+        taskIds,
+        records: this._records,
+        metadata: this._metadata,
+        nativeColumns: this._provider.getNativeColumns(),
+        onGetTask: id => this._provider.getRawDataMap()[id],
+    })
+}
+\`\`\`
+
+Worth checking each action's parameters before you implement its operation from scratch — several are pure functions over data you already hold.
 
 Two things worth copying from the memory strategy:
 

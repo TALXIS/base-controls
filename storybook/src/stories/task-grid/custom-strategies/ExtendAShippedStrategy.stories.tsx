@@ -18,13 +18,28 @@ const meta = {
                 component: `
 Every shipped strategy and descriptor is exported, so \`class Mine extends Theirs\` compiles. Be clear about what that buys you: their state is \`private\`, so a subclass can wrap a hook — do something before, after, or instead of \`super\` — but it cannot reimplement one. Anything that needs their FetchXML, their record array or their resolved parameters has to keep its own copy.
 
+Read this page second. Both task strategies take **a hook per operation** on their constructor argument, and each hook receives the parameters of the matching \`MemoryTaskActions\` / \`DataverseTaskActions\` method — so wrapping one behaviour no longer needs a class at all:
+
+\`\`\`ts
+new DataverseTaskStrategy({
+    onInitialize: async () => ({ fetchXml, projectRecord, sourceRecord, editFormId }),
+    onCreateTask: async params => {
+        const task = await DataverseTaskActions.createTask(params)
+        //…post-process
+        return task
+    },
+}, deps)
+\`\`\`
+
+Subclass when you want to change several operations at once, hold state of your own between them, or override a hook that has no parameter — otherwise prefer the hook.
+
 ## Start with the params
 
 Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open, the grid customizer — and every optional feature: personal views, templates, custom columns and lookup-many candidates are all \`onCreate*\` parameters on **both** shipped descriptors. Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-custom-strategies--overview).
 
 ## Subclassing a task strategy
 
-The common case, and the one that works cleanly, is post-processing an operation:
+The same post-processing as a class, when you would rather hold state on \`this\`:
 
 \`\`\`ts
 class MyTaskStrategy extends DataverseTaskStrategy {
@@ -50,9 +65,9 @@ Every optional feature — the strategies included — is already a parameter, s
 
 \`\`\`ts
 class MyDataverseDescriptor extends DataverseTaskGridDescriptor {
-    //the base descriptor keeps its params private, so hold your own copy of anything you need
-    constructor(private _params: IDataverseTaskGridDescriptorParams) {
-        super({ onInitialize: async () => _params, height: '600px' })
+    //the base descriptor keeps the resolved data private, so hold your own copy of anything you need
+    constructor(private _data: IDataverseTaskGridDescriptorInitializeResult) {
+        super({ onInitialize: async () => _data, height: '600px' })
     }
 
     public onGetFieldMapping() {
@@ -67,8 +82,8 @@ Overriding a hook the base class does not read is safe. Overriding one it does i
 
 - **All strategy state is private.** Across \`extensions/\`, the only \`protected\` members are \`onCreateTemplateFromTask\` on the two template providers — the one member designed to be overridden. Everything else is either the public hook surface or private fields you cannot reach.
 - **The user-query and template strategies are the ones you replace by parameter, not by subclass.** \`MemoryUserQueryStrategy\`, \`DataverseUserQueryStrategy\` and \`MemoryTemplateDataProvider\` all use prototype methods, so subclassing them works normally — but returning your own implementation from the descriptor's \`onCreate*\` callback is usually less work than inheriting one.
-- **Neither descriptor exposes its resolved params.** \`_params\` is private in both, so a subclass that needs \`fetchXml\`, \`records\` or \`fieldMapping\` must keep the object it passed to \`onInitialize\`, as in the snippet above.
-- **\`DataverseTaskStrategy\` has one built-in extension point that is not a subclass**: the \`form\` param's \`onGetFormParameters\`, which lets you rewrite the page input and navigation options for the create, edit, bulk-edit and open dialogs.
+- **Neither descriptor exposes its resolved data.** What \`onInitialize\` returns is private in both, so a subclass that needs \`fetchXml\`, \`records\` or \`fieldMapping\` must keep the object it handed back, as in the snippet above.
+- **\`DataverseTaskStrategy\` takes a hook per operation, so most extensions are not a subclass at all**: \`onGetFormParameters\` rewrites the page input and navigation options for the create, edit, bulk-edit and open dialogs, and every other hook receives the parameters of the matching \`DataverseTaskActions\` method — forward them to keep the shipped behaviour.
 
 ## When to stop
 

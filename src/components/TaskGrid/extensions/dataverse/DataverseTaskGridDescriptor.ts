@@ -2,7 +2,7 @@ import { FetchXmlBuilder, IDataProvider, ISingleRecord, RecordBuilder } from "@t
 import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
-import { DataverseTaskStrategy } from "./DataverseTaskStrategy";
+import { DataverseTaskStrategy } from "./dataverse-task-strategy/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
 
 
@@ -64,8 +64,8 @@ export interface IDataverseTaskStrategyContext extends IDataverseStrategyContext
     sourceRecord?: ISingleRecord;
 }
 
-/** Everything `onInitialize` resolves — the data and the options both. */
-export interface IDataverseTaskGridDescriptorParams {
+/** What {@link IDataverseTaskGridDescriptorParams.onInitialize} resolves: the data the grid loads with. */
+export interface IDataverseTaskGridDescriptorInitializeResult {
     /** FetchXML that drives the initial data load. May use the Liquid template variables. */
     baseFetchXml: string;
     /** Maps logical entity attribute names to the roles expected by TaskGrid (e.g. `statecode` → `stateCode`). */
@@ -80,6 +80,29 @@ export interface IDataverseTaskGridDescriptorParams {
     userId?: string;
     /** Feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
     gridParameters?: ITaskGridParameters;
+}
+
+/**
+ * Constructor parameters for {@link DataverseTaskGridDescriptor}: the required `onInitialize` hook, the
+ * container height, and an optional hook per feature.
+ *
+ * Data comes from `onInitialize`; behaviour is passed here. What a feature hook returns decides whether
+ * the feature exists at all — omit it and the feature is off, which is also what keeps the tables it
+ * would read (and its code) out of your deployment. The same shape
+ * {@link MemoryTaskGridDescriptor} uses.
+ */
+export interface IDataverseTaskGridDescriptorParams {
+    /**
+     * Resolves the FetchXML, the field mapping, the system views and the records the query is scoped by.
+     * Awaited once, before any strategy or data provider is created, so the work is covered by the
+     * grid's loading state.
+     */
+    onInitialize: () => Promise<IDataverseTaskGridDescriptorInitializeResult>;
+    /**
+     * Container height. Kept outside `onInitialize` because the skeleton needs it before the data
+     * resolves.
+     */
+    height?: string;
     /**
      * (Optional) Supplies the task strategy — this is where every task-level option goes: the form ids,
      * the delete behaviour, the root task, and the strategy's own `form` hook.
@@ -150,23 +173,28 @@ export interface IDataverseTaskGridDescriptorParams {
 /**
  * Ready-to-use {@link ITaskGridDescriptor} implementation for the Dataverse / Talxis platform.
  *
- * Wires together all required strategies — task CRUD, saved queries, grid customization — from
- * a single constructor parameter object. Pass an instance to `TaskGridDatasetControlFactory.createInstance`.
+ * Wires together all required strategies — task CRUD, saved queries, grid customization. The data is
+ * resolved by `onInitialize`, the behaviour passed alongside it. Pass an instance to
+ * `TaskGridDatasetControlFactory.createInstance`.
  *
  * @example
  * ```ts
  * const descriptor = new DataverseTaskGridDescriptor({
- *   baseFetchXml: myFetchXml,
- *   fieldMapping: { parentId: 'talxis_parenttaskid', subject: 'subject', stackRank: 'talxis_stackrank' },
- *   systemQueries: [myDefaultView],
+ *   height: '600px',
+ *   onInitialize: async () => ({
+ *     baseFetchXml: myFetchXml,
+ *     fieldMapping: { parentId: 'talxis_parenttaskid', subject: 'subject', stackRank: 'talxis_stackrank' },
+ *     systemQueries: [myDefaultView],
+ *   }),
+ *   //features are opt-in: supplying the implementation is what turns one on
+ *   onCreateUserQueryStrategy: context => new DataverseUserQueryStrategy({ entityName: context.entityName }),
  * });
  * const control = await TaskGridDatasetControlFactory.createInstance({ taskGridDescriptor: descriptor, ... });
  * ```
  */
 export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
-    private _params!: IDataverseTaskGridDescriptorParams;
-    private _height?: string;
-    private _onInitialize: () => Promise<IDataverseTaskGridDescriptorParams>;
+    private _params: IDataverseTaskGridDescriptorParams;
+    private _initialized!: IDataverseTaskGridDescriptorInitializeResult;
     private _fetchXml!: string;
     private _systemQueries: ISavedQuery[] = [];
     private _taskEntityName!: string;
@@ -174,33 +202,32 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     private _sourceRecord?: ISingleRecord;
 
     /** @param params — see {@link IDataverseTaskGridDescriptorParams} for full documentation of each option. */
-    constructor(params: { onInitialize: () => Promise<IDataverseTaskGridDescriptorParams>; height?: string }) {
-        this._onInitialize = params.onInitialize;
-        this._height = params.height;
+    constructor(params: IDataverseTaskGridDescriptorParams) {
+        this._params = params;
     }
 
     /** Resolves the project entity reference (fetches display name when not supplied). Called once by the factory before any strategy is created. */
     // ── ITaskGridDescriptor ──────────────────────────────────────────────────
 
     public async onLoadDependencies(): Promise<void> {
-        const params = await this._onInitialize();
-        this._params = params;
-        this._systemQueries = params.systemQueries;
-        this._fetchXml = params.baseFetchXml;
-        this._taskEntityName = this._getTaskEntityNameFromFetchXml(params.baseFetchXml);
+        const initialized = await this._params.onInitialize();
+        this._initialized = initialized;
+        this._systemQueries = initialized.systemQueries;
+        this._fetchXml = initialized.baseFetchXml;
+        this._taskEntityName = this._getTaskEntityNameFromFetchXml(initialized.baseFetchXml);
         this._projectRecord = await this._getProjectRecord();
         this._sourceRecord = await this._getSourceRecord();
     }
 
     //needs to be seperate from onGetGridParameters since it is also required for skeleton rendering before the instance is created
     public onGetHeight(): string | undefined {
-        return this._height;
+        return this._params.height;
     }
 
     /** Returns the field mapping with `stateCode` hard-coded to `"statecode"` (standard Dataverse attribute name). */
     public onGetFieldMapping(): IFieldMapping {
         return {
-            ...this._params.fieldMapping,
+            ...this._initialized.fieldMapping,
             //dataverse uses this for all entities
             stateCode: 'statecode',
         }
@@ -208,7 +235,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
 
     /** Returns the feature flags supplied at construction time, or an empty object — every flag then defaults to `false`. */
     public onGetGridParameters(): ITaskGridParameters {
-        return this._params.gridParameters ?? {};
+        return this._initialized.gridParameters ?? {};
     }
 
     /**
@@ -275,7 +302,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     private async _getProjectRecord(): Promise<ISingleRecord | undefined> {
-        const projectRecord = this._params.projectRecord;
+        const projectRecord = this._initialized.projectRecord;
         if (!projectRecord) return undefined;
         if (isSingleRecord(projectRecord)) {
             return projectRecord;
@@ -296,7 +323,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     private async _getSourceRecord(): Promise<ISingleRecord | undefined> {
-        const sourceRecord = this._params.sourceRecord;
+        const sourceRecord = this._initialized.sourceRecord;
         if (!sourceRecord) {
             return undefined;
         }
@@ -328,7 +355,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         return {
             entityName: this._taskEntityName,
             recordId: this._projectRecord?.getRecordId(),
-            userId: this._params.userId,
+            userId: this._initialized.userId,
             systemQueries: this._systemQueries,
         };
     }

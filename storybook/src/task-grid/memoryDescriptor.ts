@@ -1,6 +1,6 @@
 import { Operators } from '@talxis/client-libraries';
 import { MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
-import type { IGridCustomizerStrategy, IMemoryTaskGridDescriptorParams, ISavedQuery } from '@talxis/base-controls';
+import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryTaskGridDescriptorInitializeResult, IMemoryTemplateSource, ISavedQuery } from '@talxis/base-controls';
 
 /**
  * `filtering.filterOperator` has no named enum in the ComponentFramework typings — the grid reads
@@ -27,9 +27,15 @@ interface ICreateMemoryTaskGridDescriptorOptions {
     onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
 }
 
-export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDescriptorOptions) => new MemoryTaskGridDescriptor({
-    height: '600px',
-    onInitialize: async (): Promise<IMemoryTaskGridDescriptorParams> => {
+export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDescriptorOptions) => {
+    //resolved by onInitialize and read by the feature hooks below. The grid resolves the data before it
+    //builds any strategy, and holding these out here is what makes the views and templates the user
+    //creates survive a remount - the hooks run again on every one of them
+    let lookupSources: { [columnName: string]: IMemoryEntitySource } = {};
+    let templates: IMemoryTemplateSource;
+    let userQueries: ISavedQuery[] = [];
+
+    const onInitialize = async (): Promise<IMemoryTaskGridDescriptorInitializeResult> => {
         const [
             {
                 PARENT_ID_COL,
@@ -86,10 +92,9 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             quickFindColumns: [SUBJECT_COL],
         };
 
-        //resolved here rather than inside the callbacks below: those run on every remount, and the
-        //views and templates the user creates live in these two - rebuilding them would wipe the lot
-        const userQueries = [myOpenTasks, highPriority];
-        const templates = structuredClone(TEMPLATE_SOURCE);
+        userQueries = [myOpenTasks, highPriority];
+        templates = structuredClone(TEMPLATE_SOURCE);
+        lookupSources = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE };
 
         return {
             //cloned per descriptor: the strategy writes into this array, so sharing the module-level
@@ -103,46 +108,6 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 stateCode: STATE_CODE_COL,
             },
             systemQueries: [allTasks],
-            //features are opt-in by implementation: supplying the strategy is what turns each one on,
-            //which is also what lets a consumer who does not use them tree-shake the code away
-            onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
-            onCreateLookupManyDataProvider: ({ column }) => {
-                const source = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE }[column.name];
-                return source && MemoryLookupManyDataProviderFactory.create(source);
-            },
-            onCreateTemplateDataProvider: () => new MemoryTemplateDataProvider({ templates }),
-            //task-level options belong to the strategy, so they are passed where it is built
-            onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
-                onInitialize: async provider => ({
-                    rawData: records,
-                    metadata: metadata,
-                    columns: provider.getColumns(),
-                }),
-                //new rows should look like a real task rather than a row of empty cells
-                onGetNewTaskDefaults: () => ({
-                    statuscode: 1,
-                    priority: 1,
-                    percentcomplete: 0,
-                    actualeffort: 0,
-                }),
-                /**
-                 * The fixtures keep `statecode` and `statuscode` in sync, but only `statuscode`
-                 * is editable in the grid — so derive activity from it to keep styling correct
-                 * after an edit.
-                 *
-                 * Loose comparison on purpose: the dataset layer normalises option-set values to
-                 * strings, so an edited status arrives as `'5'` where the seeded one was `5`.
-                 */
-                onIsRecordActive: ({ record }) => record.statuscode != COMPLETED_STATUS_CODE
-                    && record.statuscode != CANCELLED_STATUS_CODE,
-                onOpenDatasetItems: async ({ entityReferences, isTaskEntity, isTaskEditingEnabled }) => {
-                    const target = isTaskEntity ? 'task(s)' : 'related record(s)';
-                    const mode = isTaskEditingEnabled ? 'edit' : 'read-only';
-                    //a demo has nowhere to navigate to, so surface the intent without blocking the UI
-                    console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
-                    return null;
-                },
-            }, deps),
             gridParameters: {
                 enableTaskCreation: true,
                 enableHideInactiveTasksToggle: true,
@@ -161,7 +126,52 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 enableSorting: true,
                 enableFiltering: true,
             },
-            onCreateGridCustomizerStrategy: options?.onCreateGridCustomizerStrategy,
         };
-    },
-});
+    };
+
+    return new MemoryTaskGridDescriptor({
+        height: '600px',
+        onInitialize,
+        //features are opt-in by implementation: supplying the strategy is what turns each one on, which
+        //is also what lets a consumer who does not use them tree-shake the code away
+        onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
+        onCreateLookupManyDataProvider: ({ column }) => {
+            const source = lookupSources[column.name];
+            return source && MemoryLookupManyDataProviderFactory.create(source);
+        },
+        onCreateTemplateDataProvider: () => new MemoryTemplateDataProvider({ templates }),
+        //task-level options belong to the strategy, so they are passed where it is built
+        onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
+            onInitialize: async provider => ({
+                rawData: records,
+                metadata: metadata,
+                columns: provider.getColumns(),
+            }),
+            //new rows should look like a real task rather than a row of empty cells
+            onGetNewTaskDefaults: () => ({
+                statuscode: 1,
+                priority: 1,
+                percentcomplete: 0,
+                actualeffort: 0,
+            }),
+            /**
+             * The fixtures keep `statecode` and `statuscode` in sync, but only `statuscode`
+             * is editable in the grid — so derive activity from it to keep styling correct
+             * after an edit.
+             *
+             * Loose comparison on purpose: the dataset layer normalises option-set values to
+             * strings, so an edited status arrives as `'5'` where the seeded one was `5`.
+             */
+            onIsRecordActive: ({ record }) => record.statuscode != COMPLETED_STATUS_CODE
+                && record.statuscode != CANCELLED_STATUS_CODE,
+            onOpenDatasetItems: async ({ entityReferences, isTaskEntity, isTaskEditingEnabled }) => {
+                const target = isTaskEntity ? 'task(s)' : 'related record(s)';
+                const mode = isTaskEditingEnabled ? 'edit' : 'read-only';
+                //a demo has nowhere to navigate to, so surface the intent without blocking the UI
+                console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
+                return null;
+            },
+        }, deps),
+        onCreateGridCustomizerStrategy: options?.onCreateGridCustomizerStrategy,
+    });
+};

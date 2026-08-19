@@ -31,8 +31,8 @@ export interface IMemoryTaskStrategyContext extends IMemoryStrategyContext {
     deps: ITaskStrategyDeps;
 }
 
-/** Everything `onInitialize` resolves — the data and the options both. */
-export interface IMemoryTaskGridDescriptorParams {
+/** What {@link IMemoryTaskGridDescriptorParams.onInitialize} resolves: the data the grid loads with. */
+export interface IMemoryTaskGridDescriptorInitializeResult {
     /**
      * The task records. **This array is written into** — creating, deleting, editing and moving tasks
      * mutates it, which is how the data outlives the grid's remounts.
@@ -46,6 +46,28 @@ export interface IMemoryTaskGridDescriptorParams {
     systemQueries: ISavedQuery[];
     /** Feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
     gridParameters?: ITaskGridParameters;
+}
+
+/**
+ * Constructor parameters for {@link MemoryTaskGridDescriptor}: the required `onInitialize` hook, the
+ * container height, and an optional hook per feature.
+ *
+ * Data comes from `onInitialize`; behaviour is passed here. What a feature hook returns decides whether
+ * the feature exists at all — omit it and the feature is off, which is also what lets its code be
+ * tree-shaken away.
+ */
+export interface IMemoryTaskGridDescriptorParams {
+    /**
+     * Resolves the records, the metadata, the field mapping, the system views and the grid parameters.
+     * Awaited once, before any strategy or data provider is created, so the work is covered by the
+     * grid's loading state.
+     */
+    onInitialize: () => Promise<IMemoryTaskGridDescriptorInitializeResult>;
+    /**
+     * Container height. Kept outside `onInitialize` because the skeleton needs it before the data
+     * resolves.
+     */
+    height?: string;
     /**
      * (Optional) Supplies the task strategy — this is where every task-level option goes:
      *
@@ -118,28 +140,23 @@ export interface IMemoryTaskGridDescriptorParams {
  *       systemQueries: [allTasksView],
  *     };
  *   },
+ *   //features are opt-in: supplying the implementation is what turns one on
+ *   onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
  * });
  * ```
  */
 export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
-    private _onInitialize: () => Promise<IMemoryTaskGridDescriptorParams>;
-    private _height?: string;
+    private _params: IMemoryTaskGridDescriptorParams;
     /**
      * Resolved once and then kept — this is the extension's persistence layer. The collections inside
      * it are mutated in place by the strategies, so everything the user does survives the remounts the
      * grid performs.
      */
-    private _params?: IMemoryTaskGridDescriptorParams;
+    private _initialized?: IMemoryTaskGridDescriptorInitializeResult;
 
-    /**
-     * @param params.onInitialize — resolves the descriptor configuration. Awaited once, before any
-     * strategy or data provider is created.
-     * @param params.height — container height. Kept outside `onInitialize` because it is needed for
-     * skeleton rendering before the configuration resolves.
-     */
-    constructor(params: { onInitialize: () => Promise<IMemoryTaskGridDescriptorParams>; height?: string }) {
-        this._onInitialize = params.onInitialize;
-        this._height = params.height;
+    /** @param params — see {@link IMemoryTaskGridDescriptorParams}. */
+    constructor(params: IMemoryTaskGridDescriptorParams) {
+        this._params = params;
     }
 
     // ── ITaskGridDescriptor ──────────────────────────────────────────────────
@@ -149,33 +166,33 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
      * persistence layer: re-running `onInitialize` would hand back fresh arrays and discard the session.
      */
     public async onLoadDependencies(): Promise<void> {
-        if (this._params) {
+        if (this._initialized) {
             return;
         }
-        const params = await this._onInitialize();
-        if (params.systemQueries.length === 0) {
+        const initialized = await this._params.onInitialize();
+        if (initialized.systemQueries.length === 0) {
             throw new Error('MemoryTaskGridDescriptor requires at least one system query.');
         }
-        this._params = params;
+        this._initialized = initialized;
     }
 
     //kept separate from onGetGridParameters because the skeleton needs it before the instance exists
     public onGetHeight(): string | undefined {
-        return this._height;
+        return this._params.height;
     }
 
     public onGetFieldMapping(): IFieldMapping {
-        return this._getParams().fieldMapping;
+        return this._getData().fieldMapping;
     }
 
     public onGetGridParameters(): ITaskGridParameters {
-        return this._getParams().gridParameters ?? {};
+        return this._getData().gridParameters ?? {};
     }
 
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
-        const params = this._getParams();
+        const data = this._getData();
         return {
-            onGetSystemQueries: async () => params.systemQueries,
+            onGetSystemQueries: async () => data.systemQueries,
         };
     }
 
@@ -184,7 +201,7 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
      * omitting the parameter does — leaves personal views off.
      */
     public onCreateUserQueryStrategy(): IUserQueryStrategy | undefined {
-        return this._getParams().onCreateUserQueryStrategy?.(this._getStrategyContext());
+        return this._params.onCreateUserQueryStrategy?.(this._getStrategyContext());
     }
 
     /**
@@ -193,8 +210,8 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
      * so it sees everything its predecessor wrote.
      */
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
-        const { records, metadata, onCreateTaskStrategy } = this._getParams();
-        return onCreateTaskStrategy?.({ ...this._getStrategyContext(), deps })
+        const { records, metadata } = this._getData();
+        return this._params.onCreateTaskStrategy?.({ ...this._getStrategyContext(), deps })
             ?? new MemoryTaskStrategy({
                 onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
             }, deps);
@@ -202,34 +219,34 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
 
     /** Delegates to the `onCreateTemplateDataProvider` parameter. Templates are off without it. */
     public onCreateTemplateDataProvider(): ITemplateDataProvider | undefined {
-        return this._getParams().onCreateTemplateDataProvider?.(this._getStrategyContext());
+        return this._params.onCreateTemplateDataProvider?.(this._getStrategyContext());
     }
 
     /** Delegates to the `onCreateCustomColumnsStrategy` parameter. Custom columns are off without it. */
     public onCreateCustomColumnsStrategy(): ICustomColumnsStrategy | undefined {
-        return this._getParams().onCreateCustomColumnsStrategy?.(this._getStrategyContext());
+        return this._params.onCreateCustomColumnsStrategy?.(this._getStrategyContext());
     }
 
     /** Delegates to the `onCreateLookupManyDataProvider` parameter. */
     public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider | undefined {
-        return this._getParams().onCreateLookupManyDataProvider?.(parameters);
+        return this._params.onCreateLookupManyDataProvider?.(parameters);
     }
 
     public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy | undefined {
-        return this._getParams().onCreateGridCustomizerStrategy?.();
+        return this._params.onCreateGridCustomizerStrategy?.();
     }
 
     // ── Internals ────────────────────────────────────────────────────────────
 
     private _getStrategyContext(): IMemoryStrategyContext {
-        const { records, metadata, systemQueries } = this._getParams();
+        const { records, metadata, systemQueries } = this._getData();
         return { records, metadata, systemQueries };
     }
 
-    private _getParams(): IMemoryTaskGridDescriptorParams {
-        if (!this._params) {
+    private _getData(): IMemoryTaskGridDescriptorInitializeResult {
+        if (!this._initialized) {
             throw new Error('MemoryTaskGridDescriptor has not been initialized yet. The TaskGrid calls onLoadDependencies before any other hook.');
         }
-        return this._params;
+        return this._initialized;
     }
 }

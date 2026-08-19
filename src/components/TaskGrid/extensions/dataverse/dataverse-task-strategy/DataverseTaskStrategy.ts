@@ -1,31 +1,108 @@
-import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, FetchXmlBuilder, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Sanitizer, Operators, DataTypes, ISingleRecord, DatasetConstants } from "@talxis/client-libraries";
+import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Operators, DataTypes, ISingleRecord } from "@talxis/client-libraries";
 import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IOpenDatasetItemsResult, ICustomColumnsDataProvider } from "@components/TaskGrid/providers";
-import { IRecordTree } from "@components/TaskGrid/providers/task/record-tree";
-import { LexoRank } from "lexorank";
 import { Liquid } from "liquidjs";
-import { IDataverseFieldMapping } from "./DataverseTaskGridDescriptor";
-import { LookupManyHandler } from "./lookup-many/LookupManyHandler";
-import { ITaskStrategyDeps } from "../..";
-import { IDataverseCustomColumnsStrategy } from "./DataverseCustomColumnsStrategy";
+import { IDataverseFieldMapping } from "../DataverseTaskGridDescriptor";
+import { LookupManyHandler } from "../lookup-many/LookupManyHandler";
+import { ITaskStrategyDeps } from "../../..";
+import { IDataverseCustomColumnsStrategy } from "../DataverseCustomColumnsStrategy";
+import {
+    DataverseFormOperation,
+    DataverseTaskActions,
+    IDataverseTaskActivityParams,
+    IDataverseTaskAvailableColumnsParams,
+    IDataverseTaskAvailableRelatedColumnsParams,
+    IDataverseTaskCreateParams,
+    IDataverseTaskDeleteParams,
+    IDataverseTaskMoveParams,
+    IDataverseTaskOpenParams,
+    IDataverseTaskSaveParams,
+    IDataverseTaskTemplateExpansionParams,
+    IFormParameters,
+} from "./DataverseTaskActions";
 
-
-interface IFormParameters {
-    pageInput: Xrm.Navigation.PageInputEntityRecord;
-    navigationOptions: Xrm.Navigation.NavigationOptions;
-}
-
-/** Constructor parameters for {@link DataverseTaskStrategy}. */
+/**
+ * Constructor parameters for {@link DataverseTaskStrategy}: the required `onInitialize` hook, and an
+ * optional hook per operation.
+ *
+ * Every optional hook overrides one of the strategy's own, and receives exactly the parameters the
+ * matching {@link DataverseTaskActions} action takes — so an override that only needs to do something
+ * *around* the shipped behaviour can forward them straight back to it:
+ *
+ * ```ts
+ * onDeleteTasks: async params => {
+ *     await audit(params.taskIds);
+ *     return DataverseTaskActions.deleteTasks(params);
+ * },
+ * ```
+ *
+ * The same shape `MemoryTaskStrategy` uses, so switching between the two is a matter of the data source
+ * rather than the wiring.
+ */
 export interface IDataverseTaskStrategyParams {
     /**
-     * Resolves the strategy's dependencies. Awaited inside the strategy's own `onInitialize`, so the
-     * FetchXML and the records it needs can be fetched or computed while the grid shows its skeleton —
-     * the same contract `MemoryTaskStrategy` uses.
+     * Resolves the FetchXML and the options the strategy runs on. Awaited inside the strategy's own
+     * `onInitialize`, so anything it needs can be fetched or computed while the grid shows its skeleton.
      */
-    onInitialize: () => Promise<IDataverseTaskStrategyDependencies>;
+    onInitialize: () => Promise<IDataverseTaskInitializeResult>;
+    /**
+     * Supplies the column catalogue the Edit columns panel offers. Defaults to
+     * {@link DataverseTaskActions.getAvailableColumns} — the task entity's attributes.
+     */
+    onGetAvailableColumns?: (params: IDataverseTaskAvailableColumnsParams) => Promise<IColumn[]>;
+    /**
+     * Supplies the related columns the Edit columns panel offers. Defaults to
+     * {@link DataverseTaskActions.getAvailableRelatedColumns} — the task entity's relationships.
+     */
+    onGetAvailableRelatedColumns?: (params: IDataverseTaskAvailableRelatedColumnsParams) => Promise<IAvailableRelatedColumn[]>;
+    /**
+     * Creates one task. Defaults to {@link DataverseTaskActions.createTask}, which either creates
+     * through the Web API or opens the create form, depending on `enableInlineCreation`.
+     */
+    onCreateTask?: (params: IDataverseTaskCreateParams) => Promise<IRawRecord | null>;
+    /**
+     * Deletes tasks. Defaults to {@link DataverseTaskActions.deleteTasks}, which honours
+     * {@link IDataverseTaskInitializeResult.isCascadeDeleteEnabled} and refuses tasks with children.
+     */
+    onDeleteTasks?: (params: IDataverseTaskDeleteParams) => Promise<IDeleteTasksResult | null>;
+    /**
+     * Expands a template into a task subtree. There is no Dataverse implementation — the default
+     * {@link DataverseTaskActions.createTasksFromTemplate} throws — so supply this to support templates
+     * against your own model.
+     */
+    onCreateTasksFromTemplate?: (params: IDataverseTaskTemplateExpansionParams) => Promise<IRawRecord[] | null>;
+    /**
+     * Opens task(s) or a related record. Defaults to {@link DataverseTaskActions.openDatasetItems},
+     * which navigates to the matching form. For per-form tweaks prefer `onGetFormParameters` below,
+     * which the default already routes through.
+     */
+    onOpenDatasetItems?: (params: IDataverseTaskOpenParams) => Promise<IOpenDatasetItemsResult | null>;
+    /**
+     * Reorders or reparents a task. Defaults to {@link DataverseTaskActions.moveTask}, which rewrites
+     * the parent lookup and the LexoRank stack rank.
+     */
+    onMoveTask?: (params: IDataverseTaskMoveParams) => Promise<IRawRecord[] | null>;
+    /**
+     * Persists an inline edit. Defaults to {@link DataverseTaskActions.saveRecord}, which routes
+     * lookup-many and custom columns to their own providers.
+     */
+    onRecordSave?: (params: IDataverseTaskSaveParams) => Promise<IRecordSaveOperationResult>;
+    /**
+     * Determines whether a task counts as active. Defaults to
+     * {@link DataverseTaskActions.isRecordActive} — `record[stateCode] == 0`.
+     */
+    onIsRecordActive?: (params: IDataverseTaskActivityParams) => boolean;
+    /**
+     * Rewrites the `Xrm.Navigation.navigateTo` arguments of any form the grid opens (`create`, `edit`,
+     * `bulkEdit`, `open`). Return the given parameters to keep the defaults.
+     *
+     * The narrow way in: every action that opens a form routes through this, so a change to the dialog
+     * size or the form id does not mean overriding the operation itself.
+     */
+    onGetFormParameters?: (operation: DataverseFormOperation, defaultParameters: IFormParameters) => IFormParameters;
 }
 
 /** What {@link IDataverseTaskStrategyParams.onInitialize} resolves. */
-export interface IDataverseTaskStrategyDependencies {
+export interface IDataverseTaskInitializeResult {
     /** FetchXML used to load tasks. May contain Liquid template variables (e.g. `{{ projectId }}`). */
     fetchXml: string;
     /** When `true`, deleting a task will also delete its child tasks. Defaults to `false`. */
@@ -44,14 +121,6 @@ export interface IDataverseTaskStrategyDependencies {
     sourceRecord?: ISingleRecord;
     /** When set, the task hierarchy is rooted at this task ID. */
     rootTaskId?: string;
-    /**
-     * Optional hook to intercept and override the `Xrm.Navigation.navigateTo` parameters for
-     * any form operation (`create`, `edit`, `bulkEdit`, `open`).
-     * Return the modified `pageInput` and `navigationOptions` to customize the dialog.
-     */
-    form?: {
-        onGetFormParameters?: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
-    }
 }
 
 interface ILookupManyColumn extends IColumn {
@@ -80,7 +149,7 @@ const LIQUID = new Liquid();
  * when you need to pass a custom `formStrategy` or override specific behaviour.
  */
 export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
-    private _onInitialize: () => Promise<IDataverseTaskStrategyDependencies>;
+    private _params: IDataverseTaskStrategyParams;
     private _fetchXml!: string;
     private _entitySetName!: string;
     private _entityName!: string;
@@ -88,7 +157,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     private _projectRecord?: ISingleRecord;
     private _projectMetadata?: Xrm.Metadata.EntityMetadata;
     private _rootTaskId?: string;
-    private _taskTree!: IRecordTree;
     private _provider!: ITaskDataProvider;
     private _editFormId?: string;
     private _createFormId?: string;
@@ -103,20 +171,19 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     private _sourceRecord?: ISingleRecord;
     private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _lookupManyHandlers: { [colName: string]: LookupManyHandler } = {};
-    private _getFormParameters: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters
-        = (operation, defaultParameters) => defaultParameters;
 
 
     /** @param params — see {@link IDataverseTaskStrategyParams} for full documentation of each option. */
     constructor(params: IDataverseTaskStrategyParams, deps: ITaskStrategyDeps) {
-        this._onInitialize = params.onInitialize;
+        this._params = params;
         this._customColumnsDataProvider = deps.customColumnsDataProvider;
         this._isInlineCreateEnabled = deps.enableInlineCreation;
         this._isEditingEnabled = deps.enableTaskEditing;
     }
 
     public async onInitialize(provider: ITaskDataProvider): Promise<{ columns: IColumn[]; rawData: IRawRecord[]; metadata: any; }> {
-        const dependencies = await this._onInitialize();
+        //called directly - there is no default to fall back to, so nothing here belongs in the actions
+        const dependencies = await this._params.onInitialize();
         this._fetchXml = dependencies.fetchXml;
         this._projectRecord = dependencies.projectRecord;
         this._projectReference = this._projectRecord?.getNamedReference();
@@ -127,9 +194,7 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
         this._bulkEditFormId = dependencies.bulkEditFormId;
         this._isDeletingTasksWithChildrenEnabled = dependencies.isDeletingTasksWithChildrenEnabled ?? false;
         this._isCascadeDeleteEnabled = dependencies.isCascadeDeleteEnabled ?? false;
-        this._getFormParameters = dependencies.form?.onGetFormParameters ?? ((operation, defaultParameters) => defaultParameters);
         this._provider = provider;
-        this._taskTree = provider.getRecordTree();
         this._fetchXml = this._getFetchXml();
         const virtualColumns = structuredClone(provider.getColumns().filter(col => col.isVirtual));
         this._fetchXmlDataProvider = new FetchXmlDataProvider({ fetchXml: this._fetchXml, loadAllRecords: true });
@@ -312,6 +377,20 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
         })
     }
 
+    /** Routes a form's parameters through the `onGetFormParameters` hook, defaulting to no change. */
+    private _getFormParameters = (operation: DataverseFormOperation, defaultParameters: IFormParameters): IFormParameters =>
+        this._params.onGetFormParameters?.(operation, defaultParameters) ?? defaultParameters;
+
+    /** What every write needs to address a task: the entity, its set, the mapping and the provider. */
+    private get _entity(): { entityName: string; entitySetName: string; fieldMapping: IDataverseFieldMapping; provider: ITaskDataProvider } {
+        return {
+            entityName: this._entityName,
+            entitySetName: this._entitySetName,
+            fieldMapping: this._getFieldMapping(),
+            provider: this._provider,
+        };
+    }
+
     private _getFieldMapping(): IDataverseFieldMapping {
         return this._provider.getNativeColumns() as IDataverseFieldMapping;
     }
@@ -330,217 +409,99 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     public async onGetAvailableColumns(options?: IAvailableColumnOptions): Promise<IColumn[]> {
-        return this._fetchXmlDataProvider.getAvailableColumns(options);
+        const params: IDataverseTaskAvailableColumnsParams = { fetchXmlDataProvider: this._fetchXmlDataProvider, options };
+        return await this._params.onGetAvailableColumns?.(params)
+            ?? DataverseTaskActions.getAvailableColumns(params);
     }
+
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
-        return this._fetchXmlDataProvider.getAvailableRelatedColumns();
+        const params: IDataverseTaskAvailableRelatedColumnsParams = { fetchXmlDataProvider: this._fetchXmlDataProvider };
+        return await this._params.onGetAvailableRelatedColumns?.(params)
+            ?? DataverseTaskActions.getAvailableRelatedColumns(params);
     }
 
     public async onCreateTask(parentTaskId?: string): Promise<IRawRecord | null> {
-        const data: { [key: string]: any } = {};
-        let pageInput: Xrm.Navigation.PageInputEntityRecord = {
-            pageType: 'entityrecord',
-            entityName: this._entityName,
-            data: data,
-            formId: this._createFormId
+        const params: IDataverseTaskCreateParams = {
+            ...this._entity,
+            parentTaskId,
+            isInlineCreateEnabled: this._isInlineCreateEnabled,
+            createFormId: this._createFormId,
+            projectReference: this._projectReference,
+            projectMetadata: this._projectMetadata,
+            onGetFormParameters: this._getFormParameters,
+            onGetRawRecords: ids => this.onGetRawRecords(ids),
         };
-        //prefill project
-        if (this._projectReference) {
-            const projectIdColumnName = this._getFieldMapping().projectId;
-            data[`${projectIdColumnName}`] = this._projectReference.id.guid;
-            data[`${projectIdColumnName}name`] = this._projectReference.name;
-            data[`${projectIdColumnName}type`] = this._projectReference.etn;
-        }
-        //prefill parent task
-        if (parentTaskId) {
-            const parentIdColumnName = this._getFieldMapping().parentId;
-            data[`${parentIdColumnName}`] = parentTaskId;
-            data[`${parentIdColumnName}name`] = this._provider.getRecordsMap()[parentTaskId].getNamedReference().name;
-            data[`${parentIdColumnName}type`] = this._entityName;
-        }
-        const node = this._taskTree.getNode(parentTaskId ?? null);
-        let payload: { [key: string]: any } = {};
-        payload[`${this._getFieldMapping().stackRank}`] = await this._updateStackRank({ previousTaskId: undefined, nextTaskId: node.directChildren[0]?.getRecordId(), skipSave: true });
-
-        if (this._projectReference) {
-            payload[`${await this._getNavigationalPropertyName(this._projectReference.etn!, this._getFieldMapping().projectId!)}@odata.bind`] = `/${this._projectMetadata?.EntitySetName}(${this._projectReference.id.guid})`;
-        }
-        if (parentTaskId) {
-            payload[`${await this._getNavigationalPropertyName(this._entityName, this._getFieldMapping().parentId)}@odata.bind`] = `/${this._entitySetName}(${parentTaskId})`;
-        }
-        if (this._isInlineCreateEnabled) {
-            const result = await window.Xrm.WebApi.createRecord(this._entityName, payload);
-            const rawRecord = (await this.onGetRawRecords([result.id]))[0];
-            return rawRecord;
-        }
-
-        const { pageInput: resolvedPageInput, navigationOptions: resolvedNavigationOptions } = this._getFormParameters('create', {
-            pageInput,
-            navigationOptions: this._getFormNavigationOptions()
-        });
-        const navigateToResult = await Xrm.Navigation.navigateTo(resolvedPageInput, resolvedNavigationOptions);
-        if (navigateToResult.savedEntityReference) {
-            const entityReference = Sanitizer.Lookup.getEntityReference(navigateToResult.savedEntityReference[0]);
-            await window.Xrm.WebApi.updateRecord(this._entityName, entityReference.id.guid, payload);
-            const rawRecord = (await this.onGetRawRecords([entityReference.id.guid]))[0];
-            return rawRecord;
-        }
-        else {
-            return null;
-        }
+        return await this._params.onCreateTask?.(params)
+            ?? DataverseTaskActions.createTask(params);
     }
 
     public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
-        const allTaskIds: Set<string> = new Set(taskIds);
-        let success = true;
-        const notDeletableTaskIds: string[] = [];
-        if (this._isCascadeDeleteEnabled) {
-            for (const taskId of taskIds) {
-                const children = this._taskTree.getNode(taskId)?.allChildren.map(c => c.getRecordId()) ?? [];
-                children.map(id => allTaskIds.add(id));
-            }
-        }
-        if (!this._isDeletingTasksWithChildrenEnabled) {
-            for (const taskId of allTaskIds) {
-                if (this._taskTree.hasChildren(taskId)) {
-                    success = false;
-                    allTaskIds.delete(taskId);
-                    notDeletableTaskIds.push(taskId);
-                }
-            }
-        }
-        const result = await this._fetchXmlDataProvider.deleteRecords([...allTaskIds]);
-        return {
-            success: result.success && success,
-            deletedTaskIds: [...allTaskIds],
-            errors: [...result.results.filter(result => !result.success).map(result => {
-                return {
-                    id: result.recordId,
-                    error: result.errorMessage
-                }
-            }), ...notDeletableTaskIds.map(id => {
-                return {
-                    id,
-                    //TODO: localize
-                    error: 'Cannot delete task with children.'
-                }
-            })]
-        }
+        const params: IDataverseTaskDeleteParams = {
+            taskIds,
+            provider: this._provider,
+            fetchXmlDataProvider: this._fetchXmlDataProvider,
+            isCascadeDeleteEnabled: this._isCascadeDeleteEnabled,
+            isDeletingTasksWithChildrenEnabled: this._isDeletingTasksWithChildrenEnabled,
+        };
+        return await this._params.onDeleteTasks?.(params)
+            ?? DataverseTaskActions.deleteTasks(params);
     }
+
     public onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
-        throw new Error("Method not implemented.");
+        const params: IDataverseTaskTemplateExpansionParams = { templateId, parentTaskId };
+        return this._params.onCreateTasksFromTemplate?.(params)
+            ?? DataverseTaskActions.createTasksFromTemplate(params);
     }
     public async onOpenDatasetItems(entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean): Promise<IOpenDatasetItemsResult | null> {
-        if (!isTaskEntity) {
-            // Navigate to related entity (lookup target)
-            const { pageInput, navigationOptions } = this._getFormParameters('open', {
-                pageInput: {
-                    pageType: 'entityrecord',
-                    entityName: entityReferences[0].etn!,
-                    entityId: entityReferences[0].id.guid,
-                },
-                navigationOptions: this._getFormNavigationOptions()
-            });
-            await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
-            return null;
-        }
-        if (entityReferences.length === 1) {
-            const rawRecord = await this._editSingleTask(entityReferences[0].id.guid);
-            if (!rawRecord) return null;
-            return { success: true, updatedRecords: [rawRecord] };
-        }
-        const result = await this._editMultipleTasks(entityReferences.map(ref => ref.id.guid));
-        return result;
+        const params: IDataverseTaskOpenParams = {
+            entityReferences,
+            isTaskEntity,
+            entityName: this._entityName,
+            isTaskEditingEnabled: this._isEditingEnabled,
+            editFormId: this._editFormId,
+            bulkEditFormId: this._bulkEditFormId,
+            onGetFormParameters: this._getFormParameters,
+            onGetRawRecords: ids => this.onGetRawRecords(ids),
+        };
+        return await this._params.onOpenDatasetItems?.(params)
+            ?? DataverseTaskActions.openDatasetItems(params);
     }
+
     public async onMoveTask(movingTaskId: string, movingToTaskId: string, position: "above" | "below" | "child"): Promise<IRawRecord[] | null> {
-        const movingToRecord = this._provider.getRecordsMap()[movingToTaskId];
-        let payload: { [key: string]: any } = {};
-        if (position === 'child') {
-            //change parent
-            payload[`${await this._getNavigationalPropertyName(this._entityName, this._getFieldMapping().parentId)}@odata.bind`] = `/${this._entitySetName}(${movingToTaskId})`;
-            const firstChild = this._taskTree.getNode(movingToTaskId).directChildren
-                .find(c => c.getRecordId() !== movingTaskId);
-            if (firstChild) {
-                //change stack rank to be before first child
-                payload[`${this._getFieldMapping().stackRank}`] = await this._updateStackRank({ recordId: movingTaskId, previousTaskId: undefined, nextTaskId: firstChild.getRecordId(), skipSave: true });
-            }
-            await window.Xrm.WebApi.updateRecord(this._entityName, movingTaskId, payload);
-            const rawRecord = (await this.onGetRawRecords([movingTaskId]))[0];
-            return [rawRecord];
-        }
-        else {
-            const movingToRecordParent = this._taskTree.getNodeMap().get(movingToRecord.getRecordId())?.parent;
-            payload[`${await this._getNavigationalPropertyName(this._entityName, this._getFieldMapping().parentId)}@odata.bind`] = movingToRecordParent ? `/${this._entitySetName}(${movingToRecordParent.getRecordId()})` : null;
-
-            const movingToRecordNode = this._taskTree.getNodeMap().get(movingToRecord.getRecordId())!;
-            const siblings = this._taskTree.getNodeMap().get(movingToRecordParent?.getRecordId() ?? null as any)?.directChildren ?? [];
-
-            let prevSiblingId: string | undefined;
-            let nextSiblingId: string | undefined;
-            if (position === 'above') {
-                prevSiblingId = siblings[movingToRecordNode.index - 1]?.getRecordId();
-                nextSiblingId = movingToRecord.getRecordId();
-            } else {
-                prevSiblingId = movingToRecord.getRecordId();
-                nextSiblingId = siblings[movingToRecordNode.index + 1]?.getRecordId();
-            }
-            payload[`${this._getFieldMapping().stackRank}`] = await this._updateStackRank({ recordId: movingTaskId, previousTaskId: prevSiblingId, nextTaskId: nextSiblingId, skipSave: true });
-            await window.Xrm.WebApi.updateRecord(this._entityName, movingTaskId, payload);
-            const rawRecord = (await this.onGetRawRecords([movingTaskId]))[0];
-            return [rawRecord];
-        }
+        const params: IDataverseTaskMoveParams = {
+            ...this._entity,
+            movingTaskId,
+            movingToTaskId,
+            position,
+            onGetRawRecords: ids => this.onGetRawRecords(ids),
+        };
+        return await this._params.onMoveTask?.(params)
+            ?? DataverseTaskActions.moveTask(params);
     }
 
-    /**
-     * Saves a single dirty field on a task record.
-     * Lookup-many fields are persisted through their dedicated {@link LookupManyHandler}; all other fields use the standard FetchXML provider save path.
-     * TaskGrid uses auto-save, so exactly one dirty field is expected per call.
-     */
     public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
-        const dirtyField = record.getFields().find(field => field.isDirty());
-        const column = dirtyField?.getColumn();
-        if (column?.metadata?.LookupMany) {
-            const handler = this._getLookupManyHandlerForColumn(column.name);
-            return handler.saveRecord(record, column.name);
-        }
-        else if (column?.name.endsWith(DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX)) {
-            return this._customColumnsDataProvider!.saveValue(record.getRecordId(), column, dirtyField?.getValue());
-        }
-        else {
-            return (<FetchXmlDataProvider>this._fetchXmlDataProvider).onRecordSave(record);
-        }
+        const params: IDataverseTaskSaveParams = {
+            record,
+            fetchXmlDataProvider: this._fetchXmlDataProvider,
+            customColumnsDataProvider: this._customColumnsDataProvider,
+            onGetLookupManyHandler: columnName => this._getLookupManyHandlerForColumn(columnName),
+        };
+        return await this._params.onRecordSave?.(params)
+            ?? DataverseTaskActions.saveRecord(params);
     }
 
-    /** Returns `true` when the task's `stateCode` attribute equals `0` (active). */
     public onIsRecordActive(recordId: string): boolean {
-        const record = this._provider.getRecordsMap()[recordId];
-        return record.getValue(this._provider.getNativeColumns().stateCode) == 0;
+        const params: IDataverseTaskActivityParams = {
+            //the grid only asks about rows it holds, so the record is always there
+            record: this._provider.getRecordsMap()[recordId],
+            nativeColumns: this._provider.getNativeColumns(),
+        };
+        return this._params.onIsRecordActive?.(params) ?? DataverseTaskActions.isRecordActive(params);
     }
-
 
     /** Returns the root task ID used to scope the displayed hierarchy. */
     public onGetRootTaskId?(): string | undefined {
         return this._rootTaskId;
-    }
-
-    private async _getNavigationalPropertyName(referencedEntityName: string, referencingAttribute: string): Promise<string> {
-        const metadata: any = await window.Xrm.Utility.getEntityMetadata(this._entityName);
-        const relationship = metadata.ManyToOneRelationships.getAll().find((rel: any) =>
-            rel.ReferencedEntity === referencedEntityName &&
-            rel.ReferencingAttribute === referencingAttribute
-        );
-        if (!relationship) {
-            throw new Error(`Could not find many-to-one relationship targeting ${referencedEntityName} on ${metadata.LogicalName}`);
-        }
-        return relationship.ReferencingEntityNavigationPropertyName;
-    }
-
-    private _getFormNavigationOptions(): Xrm.Navigation.NavigationOptions {
-        return {
-            target: 2,
-            width: { value: 80, unit: '%' },
-            position: 1,
-        };
     }
 
     private _getLookupManyHandlerForColumn(colName: string): LookupManyHandler {
@@ -549,70 +510,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             throw new Error(`No LookupManyHandler found for column ${colName}`);
         }
         return handler;
-    }
-
-    private async _editSingleTask(recordId: string): Promise<IRawRecord | null> {
-        const { pageInput, navigationOptions } = this._getFormParameters('edit', {
-            pageInput: {
-                pageType: 'entityrecord',
-                entityName: this._entityName,
-                entityId: recordId,
-                formId: this._editFormId,
-                data: {
-                    isEditingEnabled: this._isEditingEnabled
-                }
-            },
-            navigationOptions: this._getFormNavigationOptions()
-        })
-
-        await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
-        const result = await this.onGetRawRecords([recordId]);
-        return result[0];
-    }
-
-    private async _editMultipleTasks(recordIds: string[]): Promise<IOpenDatasetItemsResult | null> {
-        const { pageInput, navigationOptions } = this._getFormParameters('bulkEdit', {
-            //@ts-ignore - not documented, passing of record id array is possible in Power Apps - https://butenko.pro/2021/10/14/howto-open-bulk-editing-of-records-using-xrm-navigation-navigateto/
-            pageInput: {
-                //@ts-ignore - typings
-                pageType: 'bulkedit',
-                entityName: this._entityName,
-                entityIds: recordIds,
-                formId: this._bulkEditFormId
-            },
-            navigationOptions: {
-                target: 2,
-                position: 2,
-            }
-        });
-        await window.Xrm.Navigation.navigateTo(pageInput, navigationOptions);
-        const rawRecords = await this.onGetRawRecords(recordIds);
-        return { success: true, updatedRecords: rawRecords };
-    }
-
-    private async _updateStackRank(params: { recordId?: string, previousTaskId?: string, nextTaskId?: string; skipSave?: boolean }): Promise<string> {
-        const stackRankCol = this._getFieldMapping().stackRank;
-        const rawDataMap = this._provider.getRawDataMap();
-
-        const prevRankStr = params.previousTaskId ? (rawDataMap[params.previousTaskId]?.[stackRankCol] as string) : undefined;
-        const nextRankStr = params.nextTaskId ? (rawDataMap[params.nextTaskId]?.[stackRankCol] as string) : undefined;
-
-        let newRank: string;
-        if (prevRankStr && nextRankStr) {
-            newRank = LexoRank.parse(prevRankStr).between(LexoRank.parse(nextRankStr)).format();
-        } else if (nextRankStr) {
-            newRank = LexoRank.parse(nextRankStr).genPrev().format();
-        } else if (prevRankStr) {
-            newRank = LexoRank.parse(prevRankStr).genNext().format();
-        } else {
-            newRank = LexoRank.middle().format();
-        }
-        if (!params.skipSave && params.recordId) {
-            await window.Xrm.WebApi.updateRecord(this._entityName, params.recordId, {
-                [stackRankCol]: newRank
-            });
-        }
-        return newRank;
     }
 
 }
