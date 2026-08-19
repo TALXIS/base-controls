@@ -3,7 +3,6 @@ import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProv
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
 import { DataverseTaskStrategy } from "./DataverseTaskStrategy";
-import { FetchXmlDataProviderFactory } from "./lookup-many/FetchXmlDataProviderFactory";
 import { EntityDefinition } from "@talxis/client-metadata";
 
 
@@ -39,6 +38,17 @@ export interface IDataverseStrategyContext {
     userId?: string;
     /** The system views supplied through `systemQueries`. */
     systemQueries: ISavedQuery[];
+    /** The hydrated project record, when `projectRecord` was supplied. */
+    projectRecord?: ISingleRecord;
+    /** The hydrated source record, when `sourceRecord` was supplied. */
+    sourceRecord?: ISingleRecord;
+}
+
+/**
+ * What the descriptor hands the lookup-many callback: the cell the picker belongs to, plus everything
+ * the descriptor resolved. Pass the whole thing to {@link DataverseLookupManyDataProviderFactory}.
+ */
+export interface IDataverseLookupManyParameters extends ILookupManyDataProviderParameters, IDataverseStrategyContext {
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -47,10 +57,6 @@ export interface IDataverseTaskStrategyContext extends IDataverseStrategyContext
     deps: ITaskStrategyDeps;
     /** The `baseFetchXml` from `onInitialize`. The strategy renders its Liquid variables itself. */
     fetchXml: string;
-    /** The hydrated project record, when `projectRecord` was supplied. */
-    projectRecord?: ISingleRecord;
-    /** The hydrated source record, when `sourceRecord` was supplied. */
-    sourceRecord?: ISingleRecord;
 }
 
 /** Everything `onInitialize` resolves — the data and the options both. */
@@ -118,8 +124,19 @@ export interface IDataverseTaskGridDescriptorParams {
      */
     onCreateCustomColumnsStrategy?: (context: IDataverseStrategyContext) => ICustomColumnsStrategy | undefined;
     /**
+     * (Optional) Supplies the candidates of a lookup-many picker. Which columns *render* as lookup-many
+     * is driven by `metadata.LookupMany` on the column itself; this is what feeds them, and
+     * {@link DataverseLookupManyDataProviderFactory} builds the provider from the column's own
+     * `FetchXml` binding:
+     *
+     * ```ts
+     * onCreateLookupManyDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create(parameters),
+     * ```
+     */
+    onCreateLookupManyDataProvider?: (parameters: IDataverseLookupManyParameters) => IDataProvider | undefined;
+    /**
      * (Optional) Supplies a strategy for deep customization of AG Grid column definitions, cell
-     * renderers, editors and row class rules. Lookup-many columns are already handled natively, so this
+     * renderers, editors and row class rules. Lookup-many columns are fed by the callback above, so this
      * is only needed for customizations of your own.
      */
     onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
@@ -217,8 +234,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             ...this._getStrategyContext(),
             deps: deps,
             fetchXml: this._fetchXml,
-            projectRecord: this._projectRecord,
-            sourceRecord: this._sourceRecord,
         };
         return this._params.onCreateTaskStrategy?.(context) ?? new DataverseTaskStrategy({
             onInitialize: async () => ({
@@ -243,31 +258,9 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         return this._params.onCreateGridCustomizerStrategy?.();
     }
 
-    /**
-     * Builds the picker's candidate provider from the column's `FetchXml` custom-control binding.
-     *
-     * The FetchXML is a Liquid template resolved per row, so `{{ task.* }}` refers to the current task
-     * and `{{ project.* }}` to the descriptor's project record.
-     */
-    public onCreateLookupManyDataProvider({ record, column }: ILookupManyDataProviderParameters): IDataProvider {
-        const customControl = record.getColumnInfo(column.name).ui.getCustomControls([])?.[0];
-        const fetchXml = customControl?.bindings?.FetchXml?.value;
-        if (!fetchXml) {
-            throw new Error(`FetchXml for the lookup-many column "${column.name}" is not defined. Define it through the "FetchXml" binding on the column's custom control.`);
-        }
-        return FetchXmlDataProviderFactory.create({
-            fetchXml: fetchXml,
-            variables: {
-                task: {
-                    id: record.getRecordId(),
-                    ...record.getRawData()
-                },
-                project: {
-                    id: this._projectRecord?.getRecordId(),
-                    ...this._projectRecord?.getRawData()
-                }
-            }
-        });
+    /** Delegates to the `onCreateLookupManyDataProvider` parameter. */
+    public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider | undefined {
+        return this._params.onCreateLookupManyDataProvider?.({ ...parameters, ...this._getStrategyContext() });
     }
 
     private async _getProjectRecord(): Promise<ISingleRecord | undefined> {
@@ -326,6 +319,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             recordId: this._projectRecord?.getRecordId(),
             userId: this._params.userId,
             systemQueries: this._systemQueries,
+            projectRecord: this._projectRecord,
+            sourceRecord: this._sourceRecord,
         };
     }
 

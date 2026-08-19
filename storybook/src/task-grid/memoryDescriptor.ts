@@ -1,5 +1,5 @@
 import { Operators } from '@talxis/client-libraries';
-import { MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
+import { MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
 import type { IGridCustomizerStrategy, IMemoryTaskGridDescriptorParams, ISavedQuery } from '@talxis/base-controls';
 
 /**
@@ -103,13 +103,13 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 stateCode: STATE_CODE_COL,
             },
             systemQueries: [allTasks],
-            lookupMany: {
-                assignedto: PEOPLE_SOURCE,
-                tags: TAGS_SOURCE,
-            },
             //features are opt-in by implementation: supplying the strategy is what turns each one on,
             //which is also what lets a consumer who does not use them tree-shake the code away
             onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
+            onCreateLookupManyDataProvider: ({ column }) => {
+                const source = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE }[column.name];
+                return source && MemoryLookupManyDataProviderFactory.create(source);
+            },
             onCreateTemplateDataProvider: () => new MemoryTemplateDataProvider({ templates }),
             //task-level options belong to the strategy, so they are passed where it is built
             onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({

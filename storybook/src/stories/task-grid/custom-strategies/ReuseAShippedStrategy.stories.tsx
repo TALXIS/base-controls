@@ -30,7 +30,7 @@ That is the cheapest way out of most awkward situations: Dataverse tasks in an e
 | \`MemoryTaskStrategy\` | \`({ onInitialize }, deps)\` | none | Casts \`deps.templateDataProvider\` to \`MemoryTemplateDataProvider\`, so pair templates with the memory provider or not at all. \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. |
 | \`MemoryTemplateDataProvider\` | \`{ templates }\` — records, columns, metadata and a \`children\` map | none | Only \`MemoryTaskStrategy\` reads its children. |
 | \`DataverseTaskStrategy\` | \`(params, deps)\` — \`fetchXml\` plus the optional form ids and delete flags | Dataverse host, valid FetchXML | Needs a Dataverse custom-columns strategy in \`deps\` **if** any column name carries the custom-column suffix; it asserts the provider is there. Throws on template expansion. |
-| \`FetchXmlDataProviderFactory\` | \`.create({ fetchXml, variables })\` | the table being queried | Handy inside \`onCreateLookupManyDataProvider\`. |
+| \`MemoryLookupManyDataProviderFactory\` / \`DataverseLookupManyDataProviderFactory\` | \`.create(source)\` / \`.create(parameters)\` | records you hold / the column's \`FetchXml\` binding | What you return from \`onCreateLookupManyDataProvider\`, one provider per lookup-many cell. The Dataverse one takes the parameters it was handed as-is; both return \`undefined\` when they have nothing for the column. |
 
 Both shipped descriptors are themselves reusable this way: nothing stops you from holding a \`MemoryTaskGridDescriptor\` and delegating most hooks to it.
 

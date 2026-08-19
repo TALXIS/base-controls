@@ -133,14 +133,14 @@ export interface ITaskGridDescriptor {
     onCreateTemplateDataProvider?: () => ITemplateDataProvider | undefined;
     /**
      * (Optional) Returns the `IDataProvider` supplying candidate records for a lookup-many column —
-     * the picker's options. Required only when columns carry `metadata.LookupMany`; the grid throws
-     * for such a column when this is not implemented.
+     * the picker's options. Needed only when columns carry `metadata.LookupMany`. Omit it, or return
+     * `undefined` for a column you do not serve, and the grid throws when that column is rendered.
      *
      * Unlike the other factories here, this is called **once per lookup-many cell** rather than once
      * per control, because the candidate query may depend on the row (e.g. a FetchXML template
      * referencing the current task). Keep it cheap and side-effect free.
      */
-    onCreateLookupManyDataProvider?: (parameters: ILookupManyDataProviderParameters) => IDataProvider;
+    onCreateLookupManyDataProvider?: (parameters: ILookupManyDataProviderParameters) => IDataProvider | undefined;
     /** (Optional) Returns a strategy for deep customization of AG Grid column definitions, renderers, editors, and row class rules. */
     onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
     /** (Optional) Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
@@ -168,7 +168,7 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     /**
      * Creates the `IDataProvider` supplying the candidate records of a lookup-many cell — its picker's
      * options. Called once per cell, because the candidates may depend on the row.
-     * @throws If the descriptor does not implement `onCreateLookupManyDataProvider`.
+     * @throws If the descriptor does not implement `onCreateLookupManyDataProvider`, or returned nothing for this column.
      */
     createLookupManyDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider;
     /** Returns the native column name mapping supplied by the descriptor. */

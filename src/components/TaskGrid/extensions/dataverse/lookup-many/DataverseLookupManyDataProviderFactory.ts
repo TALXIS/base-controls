@@ -1,20 +1,49 @@
 import { FetchXmlDataProvider, IDataProvider } from "@talxis/client-libraries";
+import { IDataverseLookupManyParameters } from "../DataverseTaskGridDescriptor";
 import { Liquid } from "liquidjs";
 
-export interface ILookupManyStrategy {
-    fetchXml: string;
-    variables?: { [key: string]: any };
-}
-
-
-export class FetchXmlDataProviderFactory {
+/**
+ * Builds the picker provider behind one lookup-many column from the column's own `FetchXml` binding —
+ * the Dataverse counterpart to `MemoryLookupManyDataProviderFactory`.
+ *
+ * The query is a Liquid template resolved per row: `{{ task.* }}` is the record the cell sits on,
+ * `{{ project.* }}` and `{{ currentRecord.* }}` the descriptor's project and source records. All of it
+ * comes from the parameters the descriptor hands you, so the callback is a one-liner:
+ *
+ * ```ts
+ * onCreateLookupManyDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create(parameters),
+ * ```
+ */
+export class DataverseLookupManyDataProviderFactory {
     private static _liquid: Liquid = new Liquid();
 
-    public static create(strategy: ILookupManyStrategy): IDataProvider {
-        const variables = strategy.variables ?? {};
-        let fetchXml = this._liquid.parseAndRenderSync(strategy.fetchXml, variables);
+    /**
+     * @param parameters Exactly what `onCreateLookupManyDataProvider` received.
+     * @returns A provider over the column's candidate query, or `undefined` when the column carries no
+     * `FetchXml` binding — the grid then reports that the column has no candidates.
+     */
+    public static create(parameters: IDataverseLookupManyParameters): IDataProvider | undefined {
+        const { record, column, projectRecord, sourceRecord } = parameters;
+        const customControl = record.getColumnInfo(column.name).ui.getCustomControls([])?.[0];
+        const fetchXml = customControl?.bindings?.FetchXml?.value;
+        if (!fetchXml) {
+            return undefined;
+        }
         return new FetchXmlDataProvider({
-            fetchXml: fetchXml
+            fetchXml: this._liquid.parseAndRenderSync(fetchXml, {
+                task: {
+                    id: record.getRecordId(),
+                    ...record.getRawData()
+                },
+                project: {
+                    id: projectRecord?.getRecordId(),
+                    ...projectRecord?.getRawData()
+                },
+                currentRecord: {
+                    id: sourceRecord?.getRecordId(),
+                    ...sourceRecord?.getRawData()
+                }
+            })
         });
     }
 }

@@ -84,7 +84,7 @@ Every flag in \`ITaskGridParameters\` defaults to \`false\` when \`onGetGridPara
 | \`onLoadDependencies\` | ✅ resolves once, cached | ✅ re-runs on every remount |
 | \`onGetHeight\` | ✅ | ✅ |
 | \`onGetGridParameters\` | ✅ | ✅ |
-| \`onCreateLookupManyDataProvider\` | ✅ from \`lookupMany\` | ✅ from column metadata |
+| \`onCreateLookupManyDataProvider\` | ✅ your param → \`MemoryLookupManyDataProviderFactory\` | ✅ from column metadata |
 | \`onCreateTemplateDataProvider\` | ✅ your param → \`MemoryTemplateDataProvider\` | ✅ your param; nothing Dataverse-side ships |
 | \`onCreateGridCustomizerStrategy\` | ✅ forwards your param | ✅ forwards your param |
 | \`onCreateCustomColumnsStrategy\` | ✅ your param; nothing in-memory ships | ✅ your param → \`DataverseCustomColumnsStrategy\` |
@@ -138,7 +138,7 @@ import {
     //classes
     MemoryTaskStrategy, MemoryUserQueryStrategy, MemoryTemplateDataProvider,
     DataverseTaskStrategy, DataverseUserQueryStrategy, DataverseCustomColumnsStrategy,
-    TemplateDataProviderBase, FetchXmlDataProviderFactory,
+    TemplateDataProviderBase, MemoryLookupManyDataProviderFactory, DataverseLookupManyDataProviderFactory,
 } from '@talxis/base-controls'
 
 import type {

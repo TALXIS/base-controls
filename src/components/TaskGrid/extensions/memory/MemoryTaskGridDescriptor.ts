@@ -1,8 +1,7 @@
-import { IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { IDataProvider, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
-import { IMemoryEntitySource } from "./interfaces";
 import { MemoryTaskStrategy } from "./MemoryTaskStrategy";
 
 /**
@@ -16,6 +15,13 @@ export interface IMemoryStrategyContext {
     metadata: IMemoryProviderEntityMetadata;
     /** The system views resolved by `onInitialize`. */
     systemQueries: ISavedQuery[];
+}
+
+/**
+ * What the descriptor hands the lookup-many callback: the cell the picker belongs to, plus everything
+ * the descriptor resolved.
+ */
+export interface IMemoryLookupManyParameters extends ILookupManyDataProviderParameters, IMemoryStrategyContext {
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -37,11 +43,6 @@ export interface IMemoryTaskGridDescriptorParams {
     fieldMapping: IFieldMapping;
     /** Built-in, non-deletable views shown in the view switcher — and the source of every column definition. At least one is required. */
     systemQueries: ISavedQuery[];
-    /**
-     * Candidate entities for lookup-many columns, keyed by task column name. Which columns *render*
-     * as lookup-many is driven by `metadata.LookupMany` on the column itself, not by these keys.
-     */
-    lookupMany?: Record<string, IMemoryEntitySource>;
     /** Feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
     gridParameters?: ITaskGridParameters;
     /**
@@ -80,8 +81,16 @@ export interface IMemoryTaskGridDescriptorParams {
      * the only way to switch user-defined columns on with this descriptor.
      */
     onCreateCustomColumnsStrategy?: (context: IMemoryStrategyContext) => ICustomColumnsStrategy | undefined;
-    /** (Optional) Supplies a lookup-many picker's candidates, replacing the `lookupMany` lookup. */
-    onCreateLookupManyDataProvider?: (parameters: ILookupManyDataProviderParameters) => IDataProvider | undefined;
+    /**
+     * (Optional) Supplies the candidates of a lookup-many picker. Which columns *render* as lookup-many
+     * is driven by `metadata.LookupMany` on the column itself; this is what feeds them, and
+     * {@link MemoryLookupManyDataProviderFactory} turns records you hold into the provider:
+     *
+     * ```ts
+     * onCreateLookupManyDataProvider: ({ column }) => MemoryLookupManyDataProviderFactory.create(SOURCES[column.name]),
+     * ```
+     */
+    onCreateLookupManyDataProvider?: (parameters: IMemoryLookupManyParameters) => IDataProvider | undefined;
     /**
      * (Optional) Supplies a strategy for deep customization of AG Grid column definitions, cell
      * renderers, editors and row class rules. Lookup-many columns are already handled natively, so this
@@ -200,21 +209,9 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
         return this._getParams().onCreateCustomColumnsStrategy?.(this._getStrategyContext());
     }
 
-    /**
-     * Delegates to the `onCreateLookupManyDataProvider` parameter, falling back to the
-     * {@link IMemoryTaskGridDescriptorParams.lookupMany} entry for the column.
-     */
-    public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider {
-        const params = this._getParams();
-        const dataProvider = params.onCreateLookupManyDataProvider?.(parameters);
-        if (dataProvider) {
-            return dataProvider;
-        }
-        const source = params.lookupMany?.[parameters.column.name];
-        if (!source) {
-            throw new Error(`No lookup-many source is configured for column "${parameters.column.name}". Add an entry for it to the "lookupMany" parameter, or return a provider from "onCreateLookupManyDataProvider".`);
-        }
-        return this._createDataProvider(source);
+    /** Delegates to the `onCreateLookupManyDataProvider` parameter. */
+    public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider | undefined {
+        return this._getParams().onCreateLookupManyDataProvider?.({ ...parameters, ...this._getStrategyContext() });
     }
 
     public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy | undefined {
@@ -222,17 +219,6 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     // ── Internals ────────────────────────────────────────────────────────────
-
-    private _createDataProvider(source: IMemoryEntitySource): IDataProvider {
-        const provider = new MemoryDataProvider({
-            //a copy of the array holding the same records: MemoryDataProvider swaps its internal
-            //array on delete, so it must not be handed the one we persist
-            dataSource: [...source.records],
-            metadata: source.metadata,
-        });
-        provider.setColumns(source.columns);
-        return provider;
-    }
 
     private _getStrategyContext(): IMemoryStrategyContext {
         const { records, metadata, systemQueries } = this._getParams();

@@ -145,6 +145,7 @@ Both \`projectRecord\` and \`sourceRecord\` accept either a hydrated \`ISingleRe
 | \`onCreateUserQueryStrategy?\` | — | Returns the personal-views implementation. Omitted ⇒ system views only. |
 | \`onCreateCustomColumnsStrategy?\` | — | Returns the custom-columns strategy. Omitted ⇒ custom columns off. |
 | \`onCreateTemplateDataProvider?\` | — | Returns a template provider. Nothing Dataverse-side ships, so this has to be yours. |
+| \`onCreateLookupManyDataProvider?\` | — | Feeds a lookup-many picker. Required once a column carries \`metadata.LookupMany\`. |
 | \`onCreateGridCustomizerStrategy?\` | — | Supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview). |
 | \`gridParameters?\` | — | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
@@ -183,10 +184,18 @@ A lookup-many column surfaces a 1:N or N:N relationship as a single cell. Two di
 \`\`\`
 
 - **\`metadata.LookupMany\`** identifies the relationship. The strategy resolves the OData expand clause from it and handles associate/disassociate on save. Its presence is also what makes the column render as a picker.
-- **\`controls[0].bindings.FetchXml\`** is the candidate query, and is **required**. It supports the same Liquid variables plus \`{{ task.id }}\` and \`{{ task.<attribute> }}\`, so a picker can be scoped to the row it sits on.
+- **\`controls[0].bindings.FetchXml\`** is the candidate query. \`DataverseLookupManyDataProviderFactory\` reads it and renders its Liquid per row, so \`{{ task.id }}\` and \`{{ task.<attribute> }}\` scope the picker to the cell it sits on, while \`{{ project.* }}\` and \`{{ currentRecord.* }}\` come from the descriptor's records.
 - **\`controls[0].name\`** picks the variant: \`LookupMany\`, \`PeopleLookupMany\`, or \`ColorfulLookupMany\`.
 
 The column name itself is arbitrary — the relationship is identified by the navigation property, not the name.
+
+Feeding the picker is a parameter, the same as on the memory descriptor — the factory does the work:
+
+\`\`\`ts
+onCreateLookupManyDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create(parameters),
+\`\`\`
+
+The parameters carry everything the factory needs — the cell's record and column, plus the project and source records the descriptor resolved — so there is nothing to wire. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
 
 ## Custom columns
 
