@@ -64,7 +64,7 @@ const descriptor = new MemoryTaskGridDescriptor({
 
 Note the shape of the parent: an **entity-reference array** under the mapped \`parentId\` column, like any other lookup value in a memory record. A bare guid string will not do — the lookup reader would try to map over it. Top-level tasks hold \`null\`.
 
-There is no \`columns\` parameter. Column definitions live on the views (\`systemQueries\` / \`userQueries\`), which is what lets switching a view change what the grid shows.
+There is no \`columns\` parameter. Column definitions live on the views — the \`systemQueries\` above, plus any personal views your user-query strategy holds — which is what lets switching a view change what the grid shows.
 
 ## Field mapping
 
@@ -240,7 +240,7 @@ The strategy owns the rank arithmetic. Both shipped strategies use the \`lexoran
 
 ## The descriptor is the persistence layer
 
-The grid rebuilds its whole control instance on every remount — switching a view does it, and so does saving one — which recreates the providers and both strategies. The strategies therefore keep **no** data: they read and write the arrays they were handed, and the descriptor is what holds those arrays for the session.
+The grid rebuilds its whole control instance on every remount — switching a view does it, and so does saving one — which recreates every provider and strategy. None of them keeps data: they read and write the arrays they were handed, and what holds those arrays for the session is the descriptor's resolved \`onInitialize\` result plus whatever your \`onCreate*\` callbacks close over.
 
 Two consequences worth knowing:
 
@@ -272,7 +272,7 @@ onInitialize: async () => {
 
 **Holding everything client-side is not a memory-strategy compromise — the grid requires it.** The hierarchy, the *hide inactive* toggle and the rank arithmetic all need the complete task set, so there is no server-side paging to opt into: \`TaskDataProvider\` reports its page size as the total record count, and the Dataverse strategy loads its FetchXML with \`loadAllRecords: true\`. Any strategy you write ends up doing the same thing. The memory descriptor just makes that explicit.
 
-**What it does not do is write back.** Every mutation lands in the arrays you passed and stops there — which is also the mechanism that makes persistence straightforward, because those arrays are yours. \`records\`, \`userQueries\` and \`templates.records\` are all written into rather than copied: a view the user creates is pushed onto your \`userQueries\` array, a template captured from a task onto your \`templates.records\`. Persist them from where you own them, whenever suits you.
+**What it does not do is write back.** Every mutation lands in the arrays you passed and stops there — which is also the mechanism that makes persistence straightforward, because those arrays are yours. All three are written into rather than copied: tasks into the \`records\` you returned from \`onInitialize\`, a new view into the \`userQueries\` you gave \`MemoryUserQueryStrategy\`, a captured template into the \`templates.records\` you gave \`MemoryTemplateDataProvider\`. Persist them from where you own them, whenever suits you.
 
 For task mutations the finer-grained option is the strategy itself. To persist, subclass \`MemoryTaskStrategy\` and wrap the mutating hooks — they are prototype methods, so \`super\` works and the in-memory store stays in step with the server:
 
@@ -286,7 +286,7 @@ class MyTaskStrategy extends MemoryTaskStrategy {
 }
 \`\`\`
 
-\`onCreateTask\`, \`onDeleteTasks\` and \`onMoveTask\` take the same shape. Return the subclass from your own descriptor's \`onCreateTaskStrategy\` — see [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) and [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
+\`onCreateTask\`, \`onDeleteTasks\` and \`onMoveTask\` take the same shape. Return the subclass from the \`onCreateTaskStrategy\` parameter, exactly where the plain strategy would go — see [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) and [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
 
 ## Limits
 

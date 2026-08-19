@@ -75,7 +75,7 @@ Most per-column behaviour comes from the column definitions your strategy return
 }
 \`\`\`
 
-Lookup-many columns are registered automatically whenever \`metadata.LookupMany\` is set — no customizer needed. The candidates come from the descriptor's \`onCreateLookupManyDataProvider\`, which each strategy implements its own way. Both are visible in the grid below on the **Assigned To** and **Tags** columns.
+A column renders as a picker whenever \`metadata.LookupMany\` is set — no customizer needed. Its candidates come from the descriptor's \`onCreateLookupManyDataProvider\`, and each extension ships a factory that builds the provider for you: \`MemoryLookupManyDataProviderFactory\` from records you hold, \`DataverseLookupManyDataProviderFactory\` from the column's own \`FetchXml\` binding. Both are visible in the grid below on the **Assigned To** and **Tags** columns.
 
 ## The grid customizer
 

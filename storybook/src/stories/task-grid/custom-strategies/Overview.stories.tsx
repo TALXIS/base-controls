@@ -84,7 +84,7 @@ Every flag in \`ITaskGridParameters\` defaults to \`false\` when \`onGetGridPara
 | \`onLoadDependencies\` | ✅ resolves once, cached | ✅ re-runs on every remount |
 | \`onGetHeight\` | ✅ | ✅ |
 | \`onGetGridParameters\` | ✅ | ✅ |
-| \`onCreateLookupManyDataProvider\` | ✅ your param → \`MemoryLookupManyDataProviderFactory\` | ✅ from column metadata |
+| \`onCreateLookupManyDataProvider\` | ✅ your param → \`MemoryLookupManyDataProviderFactory\` | ✅ your param → \`DataverseLookupManyDataProviderFactory\` |
 | \`onCreateTemplateDataProvider\` | ✅ your param → \`MemoryTemplateDataProvider\` | ✅ your param; nothing Dataverse-side ships |
 | \`onCreateGridCustomizerStrategy\` | ✅ forwards your param | ✅ forwards your param |
 | \`onCreateCustomColumnsStrategy\` | ✅ your param; nothing in-memory ships | ✅ your param → \`DataverseCustomColumnsStrategy\` |
@@ -99,9 +99,9 @@ The sequence matters, because the strategies are created *after* configuration r
 1. \`onLoadDependencies()\` — awaited first. Anything async belongs here.
 2. \`onCreateCustomColumnsStrategy()\`, then \`onCreateSavedQueryStrategy()\` with \`onCreateUserQueryStrategy()\` beside it, and \`onGetFieldMapping()\`.
 3. \`onCreateTemplateDataProvider()\`, then \`onCreateTaskStrategy(deps)\` — the template provider is handed to the task strategy through \`deps\`. Creating a template is the template provider's own operation: call \`createTemplateFromTask\` on it, not on the task provider.
-4. The task strategy's own \`onInitialize(provider)\` runs, which is where it loads its records.
+4. The task strategy's own \`onInitialize(provider)\` runs, which is where it loads its records. Both shipped strategies await *their* \`onInitialize\` callback there too, so their options can be resolved asynchronously as well.
 
-That is why a \`onCreate*\` hook must be able to assume its inputs already exist, and why both shipped descriptors throw a clear error rather than returning \`undefined\` when one is called too early. It is also the reason the two differ on caching: the memory descriptor resolves \`onInitialize\` once and reuses it, so its records survive remounts, while the Dataverse one re-resolves each time and re-fetches from the server.
+That is why a \`onCreate*\` hook must be able to assume its inputs already exist. The memory descriptor throws a clear error when one runs before \`onLoadDependencies\` resolved, rather than quietly handing back \`undefined\`. It is also the reason the two differ on caching: the memory descriptor resolves \`onInitialize\` once and reuses it, so its records survive remounts, while the Dataverse one re-resolves each time and re-fetches from the server.
 
 ## The template data provider
 

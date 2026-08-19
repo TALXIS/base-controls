@@ -92,18 +92,20 @@ const descriptor = new DataverseTaskGridDescriptor({
         }),
         //the form ids, the delete behaviour and the root task are the strategy's options
         onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new DataverseTaskStrategy({
-            fetchXml,
-            projectRecord,
-            sourceRecord,
-            editFormId,
-            createFormId,
-            isCascadeDeleteEnabled: true,
+            onInitialize: async () => ({
+                fetchXml,
+                projectRecord,
+                sourceRecord,
+                editFormId,
+                createFormId,
+                isCascadeDeleteEnabled: true,
+            }),
         }, deps),
     }),
 })
 \`\`\`
 
-The task entity name is derived from the FetchXML, so you never pass it separately — and it is handed back to you on the \`context\` of every \`onCreate*\` callback. Omit \`onCreateTaskStrategy\` and the descriptor builds a plain \`DataverseTaskStrategy\` over the resolved FetchXML.
+Both shipped strategies take their options through an \`onInitialize\` callback of their own, awaited while the grid shows its skeleton — so anything the strategy needs can be fetched there too. The task entity name is derived from the FetchXML, so you never pass it separately — and it is handed back to you on the \`context\` of every \`onCreate*\` callback. Omit \`onCreateTaskStrategy\` and the descriptor builds a plain \`DataverseTaskStrategy\` over the resolved FetchXML.
 
 ## Field mapping
 

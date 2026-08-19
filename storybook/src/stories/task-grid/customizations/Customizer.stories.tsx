@@ -25,7 +25,7 @@ The lowest level of customization the grid offers. Return an \`IGridCustomizerSt
 
 [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview) is a convenience over exactly this: it swaps a renderer or an editor without a strategy, without you finding the right column definition, and while handing you the grid's own component to fall back on. Reach for the customizer when that is not enough — when you want a record's *behaviour* rather than its looks, or an ag-grid option TaskGrid never surfaces.
 
-How the strategy reaches the grid depends on the descriptor: \`MemoryTaskGridDescriptor\` takes an \`onCreateGridCustomizerStrategy\` parameter and forwards it, while the shipped \`DataverseTaskGridDescriptor\` does not implement the hook at all — there, you need [**your own descriptor or a subclass**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
+Both shipped descriptors take an \`onCreateGridCustomizerStrategy\` parameter and forward whatever it returns, so no subclass is involved — the strategy below is the same on memory and on Dataverse.
 
 The strategy gets three hooks:
 

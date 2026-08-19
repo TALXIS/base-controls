@@ -36,11 +36,17 @@ class MyTaskStrategy extends DataverseTaskStrategy {
 }
 \`\`\`
 
-The subclass still needs both constructor arguments, so return it from your descriptor's \`onCreateTaskStrategy(deps)\` with the params you would have passed to the original. That means you also need a descriptor — either your own, or a subclass of the shipped one.
+The subclass takes the same two arguments as the original — \`{ onInitialize }\` and \`deps\` — and you return it from the descriptor's \`onCreateTaskStrategy\` parameter, no descriptor subclass required:
+
+\`\`\`ts
+onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new MyTaskStrategy({
+    onInitialize: async () => ({ fetchXml, projectRecord, sourceRecord, editFormId }),
+}, deps),
+\`\`\`
 
 ## Subclassing a descriptor
 
-Since every optional feature is already a parameter, the reason to subclass a descriptor is narrower than it used to be: you want to change something the parameters cannot express — the FetchXML the task strategy gets, the field mapping, or a hook's answer computed from state only the subclass has.
+Every optional feature — the strategies included — is already a parameter, so the reason to subclass a descriptor is narrow: you want to change a hook the parameters do not cover, or answer one from state only the subclass has. \`onGetFieldMapping\` and \`onLoadDependencies\` are the realistic candidates.
 
 \`\`\`ts
 class MyDataverseDescriptor extends DataverseTaskGridDescriptor {
@@ -49,8 +55,8 @@ class MyDataverseDescriptor extends DataverseTaskGridDescriptor {
         super({ onInitialize: async () => _params, height: '600px' })
     }
 
-    public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
-        return new MyTaskStrategy({ fetchXml: this._rewriteFetchXml(this._params.baseFetchXml) }, deps)
+    public onGetFieldMapping() {
+        return { ...super.onGetFieldMapping(), stackRank: this._resolveRankColumn() }
     }
 }
 \`\`\`
