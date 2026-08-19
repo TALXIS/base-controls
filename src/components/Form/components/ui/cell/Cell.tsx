@@ -5,6 +5,7 @@ import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { DisabledContext } from "./context";
 import { useSectionContext } from "../section";
 import { Layout } from "@components/Form/layout";
+import { Form } from "@components";
 
 export interface ICellProps {
     id?: string;
@@ -70,5 +71,6 @@ export const Cell = (props: ICellProps) => {
                 {props.children}
             </div>
         </DisabledContext.Provider>
+        <Form.Root ></Form.Root>
     </div>
 }

@@ -23,10 +23,14 @@ export type MemoryTaskChildrenByParent = Map<string | null, IRawRecord[]>;
 /** What every action that resolves a task by id needs. */
 interface IMemoryTaskLookup {
     /**
-     * Resolves a stored task record by id. The strategy passes its own lookup, which reads the
-     * provider's raw-data map, so a hit is O(1) and the record it returns is the writable original.
+     * Resolves the grid's record instance for a task — `provider.getRecordsMap()[taskId]`, which is
+     * keyed over every loaded record rather than the filtered view.
+     *
+     * The instance is what the actions want: `getNamedReference()` is the lookup value a child stores
+     * for it, `getValue()` returns the sanitized field value, and `getRawData()` hands back the very
+     * object in the consumer's array — so a write needs no second lookup.
      */
-    onGetTask: (taskId: string) => IRawRecord | undefined;
+    onGetRecord: (taskId: string) => IRecord | undefined;
 }
 
 /** The store an action writes into, and the names it needs to read a task apart. */
@@ -42,7 +46,7 @@ interface IMemoryTaskStore {
 /** What {@link MemoryTaskActions.isRecordActive} reads. */
 export interface IMemoryTaskActivityParams {
     /** The task record to judge. */
-    record: IRawRecord;
+    record: IRecord;
     /** The physical field names the descriptor mapped. Only `stateCode` is read. */
     nativeColumns: INativeColumns;
 }
@@ -62,7 +66,7 @@ export interface IMemoryTaskAvailableRelatedColumnsParams {
 }
 
 /** What {@link MemoryTaskActions.createTask} reads and writes. */
-export interface IMemoryTaskCreateParams extends IMemoryTaskStore {
+export interface IMemoryTaskCreateParams extends IMemoryTaskStore, IMemoryTaskLookup {
     /** The parent to create under, or `undefined` for a top-level task. */
     parentTaskId?: string;
     /** The active view's columns — every one of them starts out `null` on the new record. */
@@ -78,7 +82,7 @@ export interface IMemoryTaskDeleteParams extends IMemoryTaskStore, IMemoryTaskLo
 }
 
 /** What {@link MemoryTaskActions.createTasksFromTemplate} reads and writes. */
-export interface IMemoryTaskTemplateExpansionParams extends IMemoryTaskStore {
+export interface IMemoryTaskTemplateExpansionParams extends IMemoryTaskStore, IMemoryTaskLookup {
     /** The template to expand. */
     templateId: string;
     /** The parent to create the template's root task under, or `undefined` for top level. */
@@ -147,8 +151,8 @@ export class MemoryTaskActions {
      */
     public static isRecordActive(params: IMemoryTaskActivityParams): boolean {
         //loose comparison on purpose: Field._sanitizeValue stringifies option-set values, so a
-        //statecode the user just edited arrives here as "0" rather than 0
-        return params.record[params.nativeColumns.stateCode] == 0;
+        //statecode reads back as "0" rather than 0
+        return params.record.getValue(params.nativeColumns.stateCode) == 0;
     }
 
     /**
@@ -185,7 +189,12 @@ export class MemoryTaskActions {
 
     /** Creates one task and appends it to the store. */
     public static createTask(params: IMemoryTaskCreateParams): IRawRecord {
-        return this._addTask(params.records, this._buildTask({ ...params, placement: 'first' }));
+        const parent = params.parentTaskId ? params.onGetRecord(params.parentTaskId) : undefined;
+        return this._addTask(params.records, this._buildTask({
+            ...params,
+            placement: 'first',
+            parentReference: this._getParentReference(parent),
+        }));
     }
 
     /**
@@ -194,7 +203,7 @@ export class MemoryTaskActions {
      * Ids that no longer exist are reported as errors, and whatever did resolve is still deleted.
      */
     public static deleteTasks(params: IMemoryTaskDeleteParams): IDeleteTasksResult {
-        const { taskIds, records, metadata, nativeColumns, onGetTask } = params;
+        const { taskIds, records, metadata, nativeColumns, onGetRecord } = params;
         const primaryId = metadata.PrimaryIdAttribute!;
         //descendants come from the store, not the tree: the tree's children are filtered by the active
         //view, so a hidden child would survive its deleted parent as an orphan
@@ -202,7 +211,7 @@ export class MemoryTaskActions {
         const toDelete = new Set<string>();
         const missingTaskIds: string[] = [];
         for (const id of taskIds) {
-            if (!onGetTask(id)) {
+            if (!onGetRecord(id)) {
                 missingTaskIds.push(id);
                 continue;
             }
@@ -233,7 +242,7 @@ export class MemoryTaskActions {
      * @returns The created tasks, root first, or `null` when the template no longer exists.
      */
     public static createTasksFromTemplate(params: IMemoryTaskTemplateExpansionParams): IRawRecord[] | null {
-        const { templateId, parentTaskId, templateDataProvider, records, metadata, nativeColumns, columns, onGetNewTaskDefaults } = params;
+        const { templateId, parentTaskId, templateDataProvider, records, metadata, nativeColumns, columns, onGetRecord, onGetNewTaskDefaults } = params;
         const primaryId = metadata.PrimaryIdAttribute!;
         const template = templateDataProvider.getRecordsMap()[templateId];
         if (!template) {
@@ -246,27 +255,31 @@ export class MemoryTaskActions {
         const rootTask = this._addTask(records, this._buildTask({
             ...buildParams,
             parentTaskId,
+            parentReference: this._getParentReference(parentTaskId ? onGetRecord(parentTaskId) : undefined),
             overrides: this._getTaskFieldsFromTemplate(template, templateDataProvider, columns, nativeColumns),
             placement: 'first',
         }), { nativeColumns, childrenByParent });
         const created: IRawRecord[] = [rootTask];
 
-        const createChildren = (nodes: IMemoryTaskTemplateNode[], parentId: string) => {
+        const createChildren = (nodes: IMemoryTaskTemplateNode[], parent: IRawRecord) => {
             for (const node of nodes) {
                 //appended so each child ranks after the sibling created before it, preserving template order
                 const child = this._addTask(records, this._buildTask({
                     ...buildParams,
-                    parentTaskId: parentId,
+                    parentTaskId: parent[primaryId] as string,
+                    //the parent was created by this very expansion, so the grid has no record instance
+                    //for it yet - its reference is built from what we just wrote
+                    parentReference: this._getNewTaskReference(parent, metadata, nativeColumns),
                     overrides: node.values,
                     placement: 'last',
                 }), { nativeColumns, childrenByParent });
                 created.push(child);
                 if (node.children?.length) {
-                    createChildren(node.children, child[primaryId] as string);
+                    createChildren(node.children, child);
                 }
             }
         };
-        createChildren(templateDataProvider.getTemplateChildren(templateId), rootTask[primaryId] as string);
+        createChildren(templateDataProvider.getTemplateChildren(templateId), rootTask);
 
         return created;
     }
@@ -286,14 +299,15 @@ export class MemoryTaskActions {
      * one that would end up inside its own subtree.
      */
     public static moveTask(params: IMemoryTaskMoveParams): IRawRecord[] | null {
-        const { movingTaskId, targetTaskId, position, records, metadata, nativeColumns, recordTree, onGetTask } = params;
+        const { movingTaskId, targetTaskId, position, records, metadata, nativeColumns, recordTree, onGetRecord } = params;
         const { parentId, stackRank } = nativeColumns;
-        const primaryId = metadata.PrimaryIdAttribute!;
-        const moving = onGetTask(movingTaskId);
-        const target = onGetTask(targetTaskId);
+        const moving = onGetRecord(movingTaskId);
+        const target = onGetRecord(targetTaskId);
         if (!moving || !target) {
             return null;
         }
+        //the object in the consumer's array, not a copy: this is what the move rewrites
+        const movingTask = moving.getRawData();
         //a task cannot become its own descendant: the hierarchy would cycle, and the record tree drops
         //every record in a cycle - the rows would simply vanish from the grid. `pathIds` runs from the
         //root down to the target itself, so this covers dropping a task onto itself as well
@@ -304,43 +318,45 @@ export class MemoryTaskActions {
         if (position === 'child') {
             //ranked before reparenting so the moving task is not weighed against itself
             const rank = this._getRankAmongSiblings({ parentTaskId: targetTaskId, placement: 'first', excludeTaskId: movingTaskId, records, metadata, nativeColumns });
-            moving[parentId] = this._getParentReference(targetTaskId, metadata);
-            moving[stackRank] = rank;
-            return [moving];
+            movingTask[parentId] = this._getParentReference(target);
+            movingTask[stackRank] = rank;
+            return [movingTask];
         }
 
-        const targetParentId = this._getParentTaskId(target, nativeColumns);
+        const targetParentId = this._getParentRecordId(target, nativeColumns);
         //siblings come from the tree so that "above"/"below" follow the order the user can see
-        const siblings = this._getVisibleChildren(targetParentId, recordTree, onGetTask)
-            .filter(record => record[primaryId] !== movingTaskId);
-        const targetIndex = siblings.indexOf(target);
+        const siblings = (recordTree.getNode(targetParentId)?.directChildren ?? [])
+            .filter(record => record.getRecordId() !== movingTaskId);
+        const targetIndex = siblings.findIndex(record => record.getRecordId() === targetTaskId);
         //a target the tree cannot place (hidden by the active view) simply has no neighbour, which
         //ranks the moving task just beyond it rather than next to an unrelated sibling
         const neighbour = targetIndex < 0
             ? undefined
             : siblings[position === 'above' ? targetIndex - 1 : targetIndex + 1];
-        const targetRank = target[stackRank] as string;
-        const neighbourRank = neighbour?.[stackRank] as string | undefined;
+        const targetRank = target.getValue(stackRank) as string;
+        const neighbourRank = neighbour?.getValue(stackRank) as string | undefined;
 
-        moving[parentId] = this._getParentReference(targetParentId ?? undefined, metadata);
-        moving[stackRank] = position === 'above'
+        movingTask[parentId] = this._getParentReference(targetParentId ? onGetRecord(targetParentId) : undefined);
+        movingTask[stackRank] = position === 'above'
             ? this._getRankBetween(neighbourRank, targetRank)
             : this._getRankBetween(targetRank, neighbourRank);
-        return [moving];
+        return [movingTask];
     }
 
     /** Writes an edited record's dirty fields onto the stored task. */
     public static saveRecord(params: IMemoryTaskSaveParams): IRecordSaveOperationResult {
-        const { record, onGetTask } = params;
+        const { record, onGetRecord } = params;
         const recordId = record.getRecordId();
-        const existing = onGetTask(recordId);
-        if (!existing) {
+        const stored = onGetRecord(recordId);
+        if (!stored) {
             return { recordId, success: false, fields: [], errors: [{ message: `Task "${recordId}" no longer exists.` }] };
         }
+        //getRawData() is the object in the consumer's array, so writing through it is the persistence
+        const rawRecord = stored.getRawData();
         const fields: string[] = [];
         for (const field of record.getFields().filter(field => field.isDirty())) {
             const columnName = field.getColumn().name;
-            existing[columnName] = field.getValue();
+            rawRecord[columnName] = field.getValue();
             fields.push(columnName);
         }
         return { recordId, success: true, fields };
@@ -350,21 +366,37 @@ export class MemoryTaskActions {
 
     /**
      * The lookup value a task record stores for its parent: an entity-reference array under the plain
-     * column name. A name is not needed — the tree builds its path strings from the ancestor records
-     * themselves.
+     * column name.
+     *
+     * It is the parent's own {@link IRecord.getNamedReference}, so the id, the entity name and the
+     * display name all come from the grid rather than being assembled here. The name matters once the
+     * parent column is shown — without one the cell reads "(No Name)" — and it is a snapshot: renaming
+     * a parent does not rewrite the references its children hold.
      */
-    private static _getParentReference(parentTaskId: string | undefined, metadata: IMemoryProviderEntityMetadata): ComponentFramework.EntityReference[] | null {
-        if (!parentTaskId) {
-            return null;
-        }
-        return [{
-            id: { guid: parentTaskId },
-            //the tree only reads the guid, but this value ends up in the consumer's raw records - an
-            //empty string beats `undefined` when `LogicalName` was not supplied
-            etn: metadata.LogicalName ?? '',
-        } as ComponentFramework.EntityReference];
+    private static _getParentReference(parent: IRecord | undefined): ComponentFramework.EntityReference[] | null {
+        return parent ? [parent.getNamedReference()] : null;
     }
 
+    /**
+     * The same reference for a task this operation has only just created: the grid has no record
+     * instance for it yet, so it is read off what we wrote.
+     */
+    private static _getNewTaskReference(task: IRawRecord, metadata: IMemoryProviderEntityMetadata, nativeColumns: INativeColumns): ComponentFramework.EntityReference[] {
+        return [{
+            id: { guid: task[metadata.PrimaryIdAttribute!] as string },
+            name: task[nativeColumns.subject] as string,
+            //an empty string beats `undefined` when `LogicalName` was not supplied
+            etn: metadata.LogicalName ?? '',
+        }];
+    }
+
+    /** The parent id held by a record the grid knows about. */
+    private static _getParentRecordId(record: IRecord, nativeColumns: INativeColumns): string | null {
+        const parentReference = record.getValue(nativeColumns.parentId) as ComponentFramework.EntityReference[] | null;
+        return parentReference?.[0]?.id?.guid ?? null;
+    }
+
+    /** The parent id held by a raw record — used when walking the store, which has no instances. */
     private static _getParentTaskId(task: IRawRecord, nativeColumns: INativeColumns): string | null {
         const parentReference = task[nativeColumns.parentId] as ComponentFramework.EntityReference[] | null;
         return parentReference?.[0]?.id?.guid ?? null;
@@ -383,12 +415,13 @@ export class MemoryTaskActions {
         nativeColumns: INativeColumns;
         columns: IColumn[];
         parentTaskId?: string;
+        parentReference: ComponentFramework.EntityReference[] | null;
         overrides?: Partial<IRawRecord>;
         placement: MemoryTaskPlacement;
         onGetNewTaskDefaults?: (parentTaskId?: string) => Partial<IRawRecord>;
         childrenByParent?: MemoryTaskChildrenByParent;
     }): IRawRecord {
-        const { records, metadata, nativeColumns, columns, parentTaskId, overrides, placement, onGetNewTaskDefaults, childrenByParent } = params;
+        const { records, metadata, nativeColumns, columns, parentTaskId, parentReference, overrides, placement, onGetNewTaskDefaults, childrenByParent } = params;
         const { parentId, stackRank, stateCode } = nativeColumns;
         const task: IRawRecord = {};
         for (const column of columns) {
@@ -396,7 +429,7 @@ export class MemoryTaskActions {
         }
         Object.assign(task, onGetNewTaskDefaults?.(parentTaskId), overrides);
         task[metadata.PrimaryIdAttribute!] = crypto.randomUUID();
-        task[parentId] = this._getParentReference(parentTaskId, metadata);
+        task[parentId] = parentReference;
         task[stackRank] = this._getRankAmongSiblings({ parentTaskId: parentTaskId ?? null, placement, records, metadata, nativeColumns, childrenByParent });
         task[stateCode] ??= 0;
         return task;
@@ -469,13 +502,6 @@ export class MemoryTaskActions {
         for (const child of childrenByParent.get(taskId) ?? []) {
             this._collectSubtree(child[primaryId] as string, primaryId, childrenByParent, result);
         }
-    }
-
-    /** Returns the stored records for a parent's children, in the order the grid displays them. */
-    private static _getVisibleChildren(parentTaskId: string | null, recordTree: IRecordTree, onGetTask: (taskId: string) => IRawRecord | undefined): IRawRecord[] {
-        return (recordTree.getNode(parentTaskId)?.directChildren ?? [])
-            .map(child => onGetTask(child.getRecordId()))
-            .filter((record): record is IRawRecord => !!record);
     }
 
     // ── Stack rank ───────────────────────────────────────────────────────────

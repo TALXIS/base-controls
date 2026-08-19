@@ -115,7 +115,7 @@ Both shipped task strategies are thin. The behaviour lives in a static class nex
 //the shipped default for one operation, from a strategy of your own
 public onIsRecordActive(recordId: string): boolean {
     return MemoryTaskActions.isRecordActive({
-        record: this._records[recordId],
+        record: this._provider.getRecordsMap()[recordId],
         nativeColumns: this._provider.getNativeColumns(),
     })
 }

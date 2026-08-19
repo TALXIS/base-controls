@@ -183,8 +183,9 @@ onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
     //a created task starts with every column of the active view null - make it look like a task
     onGetNewTaskDefaults: () => ({ statuscode: 1, priority: 1, percentcomplete: 0 }),
-    //every hook takes the matching MemoryTaskActions parameters - forward them to fall back to it
-    onIsRecordActive: ({ record }) => record.statuscode !== 5,
+    //record is the grid's IRecord, so read through it - and loosely, since option-set values
+    //normalise to strings
+    onIsRecordActive: ({ record }) => record.getValue('statuscode') != 5,
     //defaults to a no-op; this is where a real app would navigate
     onOpenDatasetItems: async ({ entityReferences, isTaskEditingEnabled }) => null,
 }, deps),

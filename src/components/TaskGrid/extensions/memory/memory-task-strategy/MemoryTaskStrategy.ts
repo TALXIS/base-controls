@@ -222,6 +222,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             ...this._store,
             parentTaskId,
             columns: this._provider.getColumns(),
+            onGetRecord: taskId => this._getRecord(taskId),
             onGetNewTaskDefaults: this._params.onGetNewTaskDefaults,
         };
         return await this._params.onCreateTask?.(params)
@@ -232,7 +233,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         const params: IMemoryTaskDeleteParams = {
             ...this._store,
             taskIds,
-            onGetTask: taskId => this._getTask(taskId),
+            onGetRecord: taskId => this._getRecord(taskId),
         };
         return await this._params.onDeleteTasks?.(params)
             ?? MemoryTaskActions.deleteTasks(params);
@@ -249,6 +250,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             parentTaskId,
             templateDataProvider,
             columns: this._provider.getColumns(),
+            onGetRecord: taskId => this._getRecord(taskId),
             onGetNewTaskDefaults: this._params.onGetNewTaskDefaults,
         };
         return await this._params.onCreateTasksFromTemplate?.(params)
@@ -279,7 +281,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             targetTaskId,
             position,
             recordTree: this._provider.getRecordTree(),
-            onGetTask: taskId => this._getTask(taskId),
+            onGetRecord: taskId => this._getRecord(taskId),
         };
         return await this._params.onMoveTask?.(params)
             ?? MemoryTaskActions.moveTask(params);
@@ -288,7 +290,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
         const params: IMemoryTaskSaveParams = {
             record,
-            onGetTask: taskId => this._getTask(taskId),
+            onGetRecord: taskId => this._getRecord(taskId),
         };
         return await this._params.onRecordSave?.(params)
             ?? MemoryTaskActions.saveRecord(params);
@@ -297,7 +299,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     public onIsRecordActive(recordId: string): boolean {
         const params: IMemoryTaskActivityParams = {
             //the grid only asks about rows it holds, so the record is always there
-            record: this._getTask(recordId)!,
+            record: this._getRecord(recordId)!,
             nativeColumns: this._nativeColumns,
         };
         return this._params.onIsRecordActive?.(params) ?? MemoryTaskActions.isRecordActive(params);
@@ -329,9 +331,19 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     /**
-     * The stored record for a task. Reads the provider's own raw-data map, which holds the very objects
-     * this strategy was handed — the provider does not copy them — so a hit is O(1) and still writable.
-     * Falls back to a scan for the window before the provider has loaded its data.
+     * The grid's record instance for a task — what the actions work with. It carries the reads
+     * (`getValue`, `getNamedReference`) and, through `getRawData()`, the very object in the caller's
+     * array, so nothing needs a raw lookup of its own.
+     */
+    private _getRecord(taskId: string): IRecord | undefined {
+        return this._provider.getRecordsMap()[taskId];
+    }
+
+    /**
+     * The stored raw record for a task, for `onGetRawRecords` alone — it answers about rows the grid may
+     * have only just created, which have no record instance until the provider reloads. Reads the
+     * provider's raw-data map, which holds the very objects this strategy was handed, and falls back to a
+     * scan of the store for those new rows.
      */
     private _getTask(taskId: string): IRawRecord | undefined {
         return this._provider.getRawDataMap()[taskId]

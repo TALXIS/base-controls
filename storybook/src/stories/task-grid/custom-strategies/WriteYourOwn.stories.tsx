@@ -75,12 +75,12 @@ public async onDeleteTasks(taskIds: string[]) {
         records: this._records,
         metadata: this._metadata,
         nativeColumns: this._provider.getNativeColumns(),
-        onGetTask: id => this._provider.getRawDataMap()[id],
+        onGetRecord: id => this._provider.getRecordsMap()[id],
     })
 }
 \`\`\`
 
-Worth checking each action's parameters before you implement its operation from scratch — several are pure functions over data you already hold.
+Worth checking each action's parameters before you implement its operation from scratch — several are pure functions over data you already hold. Note what they ask for: \`onGetRecord\` is the provider's record map, because an \`IRecord\` carries the reads (\`getValue\`, \`getNamedReference\`) *and* the writable store object through \`getRawData()\`.
 
 Two things worth copying from the memory strategy:
 
