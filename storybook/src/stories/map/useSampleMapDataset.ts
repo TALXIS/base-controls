@@ -2,9 +2,10 @@ import { useMemo } from 'react'
 import { Dataset, DataTypes, IColumn, IRawRecord, MemoryDataProvider } from '@talxis/client-libraries'
 
 const sampleLocations: IRawRecord[] = [
-    { name: 'Prague HQ', lat: 50.0755, lng: 14.4378 },
-    { name: 'Brno office', lat: 49.1951, lng: 16.6068 },
-    { name: 'Ostrava office', lat: 49.8209, lng: 18.2625 },
+    { name: 'Prague', lat: 50.1038678, lng: 14.4806513 },
+    { name: 'Brno', lat: 49.2127963, lng: 16.5661209 },
+    { name: 'Warsaw', lat: 50.0571376, lng: 22.4924221 },
+    { name: 'Sarajevo', lat: 43.8563589, lng: 18.4067263 },
 ]
 
 const columns: IColumn[] = [
@@ -15,10 +16,10 @@ const columns: IColumn[] = [
 
 export const mapPinMetadata = { LatitudeAttributeName: 'lat', LongitudeAttributeName: 'lng' }
 
-export const useSampleMapDataset = () => {
+export const useSampleMapDataset = (showPins: boolean) => {
     return useMemo(() => {
         const provider = new MemoryDataProvider({
-            dataSource: sampleLocations,
+            dataSource: showPins ? sampleLocations : [],
             metadata: {
                 PrimaryIdAttribute: 'name',
                 PrimaryNameAttribute: 'name',
@@ -32,5 +33,5 @@ export const useSampleMapDataset = () => {
         ds.setColumns(columns)
         void ds.refresh()
         return ds
-    }, [])
+    }, [showPins])
 }

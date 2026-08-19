@@ -7,11 +7,12 @@ import { mapPinMetadata, useSampleMapDataset } from './useSampleMapDataset'
 
 interface IMapDemoProps {
     apiKey: string
+    showPins: boolean
 }
 
-const MapDemo = ({ apiKey }: IMapDemoProps) => {
+const MapDemo = ({ apiKey, showPins }: IMapDemoProps) => {
     const context = usePcfContext()
-    const dataset = useSampleMapDataset()
+    const dataset = useSampleMapDataset(showPins)
     const mapProvider = useMemo(
         () => (apiKey ? createGoogleMapsProvider({ apiKey }) : createLeafletMapProvider()),
         [apiKey],
@@ -40,9 +41,14 @@ const meta = {
             control: 'text',
             description: 'Optional Google Maps JavaScript API key. Leave empty to use the built-in Leaflet/OpenStreetMap provider (no key needed); paste your own key to switch to the real GoogleMapsProvider. Not stored or committed, but Storybook reflects control values in the page URL, so the key will appear there — use a referrer-restricted test key, not a production one.',
         },
+        showPins: {
+            control: 'boolean',
+            description: 'Toggle the sample dataset\'s pins on or off.',
+        },
     },
     args: {
         apiKey: '',
+        showPins: false,
     },
     parameters: {
         docs: {
