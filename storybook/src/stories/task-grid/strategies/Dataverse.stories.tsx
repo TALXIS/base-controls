@@ -28,50 +28,34 @@ import { DataverseTaskGridDescriptor } from '@talxis/base-controls'
 
 ## Environment prerequisites
 
-Two features are backed by TALXIS models rather than by your task entity. Neither is needed for the grid itself — they are needed by the *strategy* this descriptor returns for that feature, which is why replacing the strategy removes the requirement (see [**Swapping a default strategy**](#swapping-a-default-strategy)).
+Two features are backed by TALXIS models rather than by your task entity, and **both are opt-in**: you get them by handing the descriptor the strategy that implements them. Say nothing and the model is never read — and the strategy's code is never pulled into your bundle.
 
-| Feature | Model | Needed when |
+| Feature | Strategy to supply | Model it needs |
 |---|---|---|
-| Personal saved views | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` | \`enableUserQueries\` is on. With the flag off the descriptor returns a stub instead and the table is never touched. |
-| Custom columns | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` | Always, as the descriptor ships — see the note below. |
-
-Both reads happen before the first provider is created and are not wrapped in the grid's error handling, so a missing model shows up the same way: the grid sits on its loading skeleton and never renders.
-
-> **The custom-columns read is not gated by the \`enableCustomColumn*\` flags.** Those flags only control the ribbon commands. \`onCreateCustomColumnsStrategy\` returns a \`DataverseCustomColumnsStrategy\` unconditionally, and the grid refreshes it during startup, which queries \`talxis_attributedefinition\`. If that model is not in your environment, override the hook as below and the dependency is gone.
-
-## Swapping a default strategy
-
-The descriptor decides which strategy serves each feature, so anything you do not have a model for can be answered differently. Subclass it and override the hook:
+| Personal saved views | \`onCreateUserQueryStrategy\` → \`DataverseUserQueryStrategy\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
+| Custom columns | \`onCreateCustomColumnsStrategy\` → \`DataverseCustomColumnsStrategy\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` |
 
 \`\`\`ts
-class MyDataverseDescriptor extends DataverseTaskGridDescriptor {
-    //no talxis_attributedefinition in this environment - drop the feature entirely
-    public onCreateCustomColumnsStrategy() {
-        return undefined
-    }
-
-    //no talxis_userquery either - keep personal views for the session instead
-    private _savedQueryStrategy = new MemorySavedQueryStrategy({
-        onGetSystemQueries: async () => SYSTEM_QUERIES,
-        userQueries: [],
-    })
-
-    public onCreateSavedQueryStrategy() {
-        return this._savedQueryStrategy
-    }
-
-    //override this too, or the dialog still goes to talxis_userquery
-    public onCreateUserQueryDataProvider() {
-        return this._savedQueryStrategy.createDataProvider()
-    }
-}
+onCreateUserQueryStrategy: (context) => new DataverseUserQueryStrategy({
+    entityName: context.entityName,
+    recordId: context.recordId,
+    ownerId: context.userId,
+}),
+onCreateCustomColumnsStrategy: (context) => new DataverseCustomColumnsStrategy({
+    entityName: context.entityName,
+    recordId: context.recordId,
+}),
 \`\`\`
 
-Returning \`undefined\` from \`onCreateCustomColumnsStrategy\` makes the grid skip the provider entirely — the hook is optional, so nothing downstream expects it. The same applies in the other direction: implement \`onCreateCustomColumnsStrategy\` with a strategy of your own and custom columns can be stored wherever you like. Task loading, saving, views and everything else keep using the shipped \`DataverseTaskStrategy\`.
+The \`context\` carries what the descriptor resolved for you — the entity name comes from your FetchXML, \`recordId\` from \`projectRecord\`, \`userId\` from the parameter of the same name.
 
-More on this in [**Custom strategies → Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview), and [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) if you would rather write the descriptor from scratch.
+> Wire a strategy whose model is **not** deployed and the grid sits on its loading skeleton and never renders: both reads happen before the first provider is created, and neither is wrapped in the grid's error handling. If a table is missing, leave its callback out.
+
+Nothing stops you from answering a feature differently — return a strategy of your own, or one from another extension, and custom columns or views can live wherever you like. Task loading and saving keep using the shipped \`DataverseTaskStrategy\`. See [**Custom strategies → Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview).
 
 ## Setup
+
+Everything is resolved by \`onInitialize\` — \`height\` is the one parameter outside it, because the skeleton needs it first. Task-level options go to the task strategy:
 
 \`\`\`ts
 const descriptor = new DataverseTaskGridDescriptor({
@@ -98,12 +82,28 @@ const descriptor = new DataverseTaskGridDescriptor({
         },
         systemQueries: [allTasksView],
         projectRecord: { entityName: 'talxis_project', id: projectId },
-        gridParameters: { enableTaskEditing: true, enableUserQueries: true },
+        userId: userId,
+        gridParameters: { enableTaskEditing: true, enableQueryManager: true },
+        //personal views are on because this returns a strategy - there is no flag for it
+        onCreateUserQueryStrategy: (context) => new DataverseUserQueryStrategy({
+            entityName: context.entityName,
+            recordId: context.recordId,
+            ownerId: context.userId,
+        }),
+        //the form ids, the delete behaviour and the root task are the strategy's options
+        onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new DataverseTaskStrategy({
+            fetchXml,
+            projectRecord,
+            sourceRecord,
+            editFormId,
+            createFormId,
+            isCascadeDeleteEnabled: true,
+        }, deps),
     }),
 })
 \`\`\`
 
-As with the memory strategy, everything resolves inside \`onInitialize\` — only \`height\` sits on the constructor argument, because the skeleton needs it first. The task entity name is derived from the FetchXML, so you never pass it separately.
+The task entity name is derived from the FetchXML, so you never pass it separately — and it is handed back to you on the \`context\` of every \`onCreate*\` callback. Omit \`onCreateTaskStrategy\` and the descriptor builds a plain \`DataverseTaskStrategy\` over the resolved FetchXML.
 
 ## Field mapping
 
@@ -137,21 +137,22 @@ Both \`projectRecord\` and \`sourceRecord\` accept either a hydrated \`ISingleRe
 |---|:--------:|---|
 | \`baseFetchXml\` | ✅ | FetchXML driving the initial load. May use the Liquid variables above. |
 | \`fieldMapping\` | ✅ | Column roles, plus the optional \`projectId\` lookup. |
-| \`systemQueries\` | ✅ | Non-deletable views in the view switcher. At least one. |
+| \`systemQueries\` | ✅ | Non-deletable views in the view switcher. At least one, and their columns are the grid's catalogue. |
 | \`projectRecord?\` | — | The project these tasks belong to. Injected into Liquid templates and pre-filled on create. |
 | \`sourceRecord?\` | — | An additional record exposed to Liquid templates (a sprint or board, say). |
-| \`userId?\` | — | Current user GUID. Required for personal saved views. |
-| \`rootTaskId?\` | — | Roots the hierarchy at one task instead of showing all top-level rows. |
-| \`editFormId?\` / \`createFormId?\` / \`bulkEditFormId?\` | — | Form GUIDs for the edit, create and bulk-edit dialogs. |
-| \`enableCascadeDelete?\` | — | Deleting a task also deletes its children. Defaults to \`false\`. |
-| \`enableDeletingTasksWithChildren?\` | — | Allows deleting tasks that have children. When \`false\`, they are excluded and an error is returned. |
+| \`userId?\` | — | Current user GUID. Pass it to the user-query strategy to scope personal views per user. |
+| \`onCreateTaskStrategy?\` | — | Returns the task strategy. Where the form ids, \`rootTaskId\`, the cascade-delete flags and the strategy's \`form\` hook now live. |
+| \`onCreateUserQueryStrategy?\` | — | Returns the personal-views implementation. Omitted ⇒ system views only. |
+| \`onCreateCustomColumnsStrategy?\` | — | Returns the custom-columns strategy. Omitted ⇒ custom columns off. |
+| \`onCreateTemplateDataProvider?\` | — | Returns a template provider. Nothing Dataverse-side ships, so this has to be yours. |
+| \`onCreateGridCustomizerStrategy?\` | — | Supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview). |
 | \`gridParameters?\` | — | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
 ## Saved views
 
-Set \`enableUserQueries\` and supply \`userId\`, and personal views are persisted as \`talxis_userquery\` rows, with the view's columns, filters and sorting serialized into \`talxis_layoutjson\`. System views come from \`systemQueries\` and are never written.
+Return a \`DataverseUserQueryStrategy\` from \`onCreateUserQueryStrategy\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
 
-With \`enableUserQueries\` off, the descriptor returns a stub saved-query strategy: \`onGetUserQueries\` yields an empty list and creating, updating or deleting a view **throws**. Keep the view-manager flags consistent with it — \`enableQueryManager\`, \`enableSaveAsNewQuery\` and \`enableSaveQueryChanges\` should stay off too, or the ribbon offers commands that cannot complete.
+Without that callback the feature is simply off — \`enableQueryManager\`, \`enableSaveAsNewQuery\` and \`enableSaveQueryChanges\` then have nothing to switch on, because each getter ANDs the flag with the capability. That combination used to be reachable and threw *"Function not implemented"*; it no longer exists.
 
 ## Lookup-many columns
 
@@ -191,33 +192,23 @@ The column name itself is arbitrary — the relationship is identified by the na
 
 \`enableCustomColumnCreation\` and friends let users define columns at runtime, stored as \`talxis_attributedefinition\` and \`talxis_attributevalue\` rows.
 
-\`DataverseCustomColumnsStrategy\` is explicitly a work in progress and says so in its own source. What that means in practice:
+One thing about \`DataverseCustomColumnsStrategy\` is worth knowing before you wire it: nothing is assembled from the entity name. \`onRefresh\` reads the relationship between your task entity and \`talxis_attributevalue\` off the metadata and takes all three names it needs from it — the collection to expand through, the lookup to bind against, and that lookup's entity set — so a non-standard schema works as-is. Pass \`navigationPropertyName\` only if your entity somehow has more than one relationship to \`talxis_attributevalue\`; it then says which one holds the values.
 
-- Values persist only when the task entity **is** the Dataverse \`task\` table. \`onSaveValue\` hard-codes the \`/tasks(<id>)\` bind and the \`talxis_task_talxis_attributevalue_regardingobjectid\` navigation property, regardless of the entity your FetchXML targets.
-- \`onGetRawRecord\` throws and \`onGetRawRecords\` returns an empty list, so anything that reads custom-column values outside the grid's own path gets nothing.
-- The strategy is wired unconditionally, independently of the \`enableCustomColumn*\` flags. Turning the feature off in the UI does not remove the startup dependency on \`talxis_attributedefinition\` — [**overriding the hook**](#swapping-a-default-strategy) does.
-
-Treat the flags as off for production until this settles.
+The \`enableCustomColumn*\` flags only trim the ribbon commands within the feature. What decides whether it exists — and whether \`talxis_attributedefinition\` is read at all — is \`onCreateCustomColumnsStrategy\`.
 
 ## Templates
 
-Not implemented. \`DataverseTemplateDataProvider\` exists but its capture throws, \`DataverseTaskStrategy.onCreateTasksFromTemplate\` throws, and the descriptor does not implement \`onCreateTemplateDataProvider\` — so the template commands stay out of the ribbon. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
+No Dataverse implementation ships: \`DataverseTemplateDataProvider\`'s capture throws and so does \`DataverseTaskStrategy.onCreateTasksFromTemplate\`. The \`onCreateTemplateDataProvider\` parameter is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
 
 ## Ordering: stack ranks
 
 Same scheme as the memory strategy: lexicographic rank strings through the \`lexorank\` package, so a drag rewrites one row rather than renumbering its siblings. The attribute you map to \`stackRank\` must be a text column. The [**Memory**](?path=/story/task-grid-strategies-memory--overview) page has the worked example.
 
-## What this descriptor does not implement
+## One difference from the memory descriptor
 
-Three optional hooks are absent, and each one is a feature you cannot switch on through parameters:
+\`onLoadDependencies\` re-runs your \`onInitialize\` on **every remount** — and the grid remounts when a view changes or a record is saved — re-fetching the project and source records each time. Keep that callback idempotent and cheap; do not treat it as session state the way the memory descriptor's cached one can be treated. The same applies to the \`onCreate*\` callbacks: they run per control instance, so anything stateful behind them has to live outside.
 
-- **\`onCreateGridCustomizerStrategy\`** — there is no way to pass an \`IGridCustomizerStrategy\` to this descriptor, so the [**Customizer**](?path=/story/task-grid-customizations-customizer--overview) needs a descriptor of your own (or a subclass of this one).
-- **\`onCreateTemplateDataProvider\`** — templates, as above.
-- **\`onGetControlId\`** — the grid generates a UUID instead.
-
-One behavioural difference from the memory descriptor is worth knowing: \`onLoadDependencies\` re-runs your \`onInitialize\` on **every remount** — and the grid remounts when a view changes or a record is saved — re-fetching the project and source records each time. Keep that callback idempotent and cheap; do not treat it as session state the way the memory descriptor's cached one can be treated.
-
-Both gaps are closed the same way: [**Custom strategies → Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
+The only hook this descriptor has no parameter for is \`onGetControlId\` — the grid generates a UUID instead. Everything else is either wired natively or opt-in above; if you need to change what one of the native pieces does, see [**Custom strategies → Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
                 `.trim(),
             },
         },

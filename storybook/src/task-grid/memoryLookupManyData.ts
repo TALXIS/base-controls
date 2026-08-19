@@ -1,5 +1,5 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
-import type { IMemoryEntitySource } from "@talxis/base-controls/components/TaskGrid";
+import type { IMemoryEntitySource } from "@talxis/base-controls";
 
 // ─── People entity ────────────────────────────────────────────────────────────
 

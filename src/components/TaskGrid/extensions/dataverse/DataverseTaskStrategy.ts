@@ -16,10 +16,18 @@ interface IFormParameters {
 
 /** Constructor parameters for {@link DataverseTaskStrategy}. */
 export interface IDataverseTaskStrategyParams {
+    /**
+     * Resolves the strategy's dependencies. Awaited inside the strategy's own `onInitialize`, so the
+     * FetchXML and the records it needs can be fetched or computed while the grid shows its skeleton —
+     * the same contract `MemoryTaskStrategy` uses.
+     */
+    onInitialize: () => Promise<IDataverseTaskStrategyDependencies>;
+}
+
+/** What {@link IDataverseTaskStrategyParams.onInitialize} resolves. */
+export interface IDataverseTaskStrategyDependencies {
     /** FetchXML used to load tasks. May contain Liquid template variables (e.g. `{{ projectId }}`). */
     fetchXml: string;
-    /** When `false`, the edit form is opened in read-only mode. Defaults to `true`. */
-    isEditingEnabled?: boolean;
     /** When `true`, deleting a task will also delete its child tasks. Defaults to `false`. */
     isCascadeDeleteEnabled?: boolean;
     /** When `true`, deleting tasks with children is enabled. Defaults to `false`. */
@@ -72,7 +80,8 @@ const LIQUID = new Liquid();
  * when you need to pass a custom `formStrategy` or override specific behaviour.
  */
 export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
-    private _fetchXml: string;
+    private _onInitialize: () => Promise<IDataverseTaskStrategyDependencies>;
+    private _fetchXml!: string;
     private _entitySetName!: string;
     private _entityName!: string;
     private _projectReference?: ComponentFramework.EntityReference;
@@ -87,32 +96,76 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     private _fetchXmlDataProvider!: IFetchXmlDataProvider;
     private _isInlineCreateEnabled: boolean;
     private _isEditingEnabled: boolean;
-    private _isDeletingTasksWithChildrenEnabled: boolean;
-    private _isCascadeDeleteEnabled: boolean;
+    private _isDeletingTasksWithChildrenEnabled = false;
+    private _isCascadeDeleteEnabled = false;
     private _lookupManyColumns: ILookupManyColumn[] = [];
     private _customColumns: IColumn[] = [];
     private _sourceRecord?: ISingleRecord;
     private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _lookupManyHandlers: { [colName: string]: LookupManyHandler } = {};
-    private _getFormParameters: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters;
+    private _getFormParameters: (operation: 'create' | 'edit' | 'bulkEdit' | 'open', defaultParameters: IFormParameters) => IFormParameters
+        = (operation, defaultParameters) => defaultParameters;
 
 
     /** @param params — see {@link IDataverseTaskStrategyParams} for full documentation of each option. */
     constructor(params: IDataverseTaskStrategyParams, deps: ITaskStrategyDeps) {
-        this._fetchXml = params.fetchXml;
+        this._onInitialize = params.onInitialize;
         this._customColumnsDataProvider = deps.customColumnsDataProvider;
-        this._projectRecord = params.projectRecord;
-        this._projectReference = this._projectRecord?.getNamedReference();
-        this._editFormId = params.editFormId;
-        this._rootTaskId = params.rootTaskId;
-        this._createFormId = params.createFormId;
-        this._bulkEditFormId = params.bulkEditFormId;
         this._isInlineCreateEnabled = deps.enableInlineCreation;
         this._isEditingEnabled = deps.enableTaskEditing;
-        this._isDeletingTasksWithChildrenEnabled = params.isDeletingTasksWithChildrenEnabled ?? false;
-        this._isCascadeDeleteEnabled = params.isCascadeDeleteEnabled ?? false;
-        this._getFormParameters = params.form?.onGetFormParameters ?? ((operation, defaultParameters) => defaultParameters);
-        this._sourceRecord = params.sourceRecord;
+    }
+
+    public async onInitialize(provider: ITaskDataProvider): Promise<{ columns: IColumn[]; rawData: IRawRecord[]; metadata: any; }> {
+        const dependencies = await this._onInitialize();
+        this._fetchXml = dependencies.fetchXml;
+        this._projectRecord = dependencies.projectRecord;
+        this._projectReference = this._projectRecord?.getNamedReference();
+        this._sourceRecord = dependencies.sourceRecord;
+        this._editFormId = dependencies.editFormId;
+        this._rootTaskId = dependencies.rootTaskId;
+        this._createFormId = dependencies.createFormId;
+        this._bulkEditFormId = dependencies.bulkEditFormId;
+        this._isDeletingTasksWithChildrenEnabled = dependencies.isDeletingTasksWithChildrenEnabled ?? false;
+        this._isCascadeDeleteEnabled = dependencies.isCascadeDeleteEnabled ?? false;
+        this._getFormParameters = dependencies.form?.onGetFormParameters ?? ((operation, defaultParameters) => defaultParameters);
+        this._provider = provider;
+        this._taskTree = provider.getRecordTree();
+        this._fetchXml = this._getFetchXml();
+        const virtualColumns = structuredClone(provider.getColumns().filter(col => col.isVirtual));
+        this._fetchXmlDataProvider = new FetchXmlDataProvider({ fetchXml: this._fetchXml, loadAllRecords: true });
+        this._fetchXmlDataProvider.setColumns(provider.getColumns());
+        this._fetchXmlDataProvider.setLinking(provider.getLinking());
+        await this._fetchXmlDataProvider.refresh();
+        this._entityName = this._fetchXmlDataProvider.getEntityName();
+        this._entitySetName = this._fetchXmlDataProvider.getMetadata().EntitySetName;
+        const columns = this._fetchXmlDataProvider.getColumns();
+        this._customColumns = this._getCustomColumns(columns);
+        this._lookupManyColumns = this._getLookupManyColumns(columns);
+        this._restoreVirtualColumnMetadata(virtualColumns, columns);
+        this._injectLookupManyFilterOperators(columns);
+        const metadata = this._fetchXmlDataProvider.getMetadata();
+        const fetchXmlProviderData = this._fetchXmlDataProvider.getRawData();
+        const primaryIdAttribute = this._fetchXmlDataProvider.getMetadata().PrimaryIdAttribute;
+        const enrichedData = await this.onGetRawRecords(this._fetchXmlDataProvider.getSortedRecordIds(), primaryIdAttribute);
+        const enrichedDataMap = new Map<string, IRawRecord>(
+            enrichedData.map(record => [record[primaryIdAttribute] as string, record])
+        );
+        const finalRawData = fetchXmlProviderData.map((record) => {
+            const id = record[primaryIdAttribute] as string;
+            return {
+                ...enrichedDataMap.get(id),
+                ...record,
+            }
+        });
+
+        if (this._projectReference) {
+            this._projectMetadata = await window.Xrm.Utility.getEntityMetadata(this._projectReference.etn!);
+        }
+        return {
+            rawData: finalRawData,
+            columns,
+            metadata
+        }
     }
 
     public async onGetRawRecords(ids: string[], select?: string): Promise<IRawRecord[]> {
@@ -229,46 +282,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
         return batchedTasks.flat();
     }
 
-    public async onInitialize(provider: ITaskDataProvider): Promise<{ columns: IColumn[]; rawData: IRawRecord[]; metadata: any; }> {
-        this._provider = provider;
-        this._taskTree = provider.getRecordTree();
-        this._fetchXml = this._getFetchXml();
-        const virtualColumns = structuredClone(provider.getColumns().filter(col => col.isVirtual));
-        this._fetchXmlDataProvider = new FetchXmlDataProvider({ fetchXml: this._fetchXml, loadAllRecords: true });
-        this._fetchXmlDataProvider.setColumns(provider.getColumns());
-        this._fetchXmlDataProvider.setLinking(provider.getLinking());
-        await this._fetchXmlDataProvider.refresh();
-        this._entityName = this._fetchXmlDataProvider.getEntityName();
-        this._entitySetName = this._fetchXmlDataProvider.getMetadata().EntitySetName;
-        const columns = this._fetchXmlDataProvider.getColumns();
-        this._customColumns = this._getCustomColumns(columns);
-        this._lookupManyColumns = this._getLookupManyColumns(columns);
-        this._restoreVirtualColumnMetadata(virtualColumns, columns);
-        this._injectLookupManyFilterOperators(columns);
-        const metadata = this._fetchXmlDataProvider.getMetadata();
-        const fetchXmlProviderData = this._fetchXmlDataProvider.getRawData();
-        const primaryIdAttribute = this._fetchXmlDataProvider.getMetadata().PrimaryIdAttribute;
-        const enrichedData = await this.onGetRawRecords(this._fetchXmlDataProvider.getSortedRecordIds(), primaryIdAttribute);
-        const enrichedDataMap = new Map<string, IRawRecord>(
-            enrichedData.map(record => [record[primaryIdAttribute] as string, record])
-        );
-        const finalRawData = fetchXmlProviderData.map((record) => {
-            const id = record[primaryIdAttribute] as string;
-            return {
-                ...enrichedDataMap.get(id),
-                ...record,
-            }
-        });
-
-        if (this._projectReference) {
-            this._projectMetadata = await window.Xrm.Utility.getEntityMetadata(this._projectReference.etn!);
-        }
-        return {
-            rawData: finalRawData,
-            columns,
-            metadata
-        }
-    }
 
     private _getLookupManyColumns(columns: IColumn[]): ILookupManyColumn[] {
         return columns.filter(col => col.metadata?.LookupMany) as any;

@@ -45,13 +45,15 @@ Grouped by what they control:
 |---|---|
 | Editing | \`enableTaskEditing\`, \`enableTaskCreation\`, \`enableInlineCreation\`, \`enableTaskDeletion\` |
 | Ordering | \`enableRowDragging\`, \`enableSorting\`, \`enableFiltering\` |
-| Views | \`enableViewSwitcher\`, \`enableUserQueries\`, \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` |
+| Views | \`enableViewSwitcher\`, \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` |
 | Columns | \`enableEditColumns\`, \`enableEditColumnsScopeSelector\`, \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\` |
 | Display | \`enableShowHierarchyToggle\`, \`enableHideInactiveTasksToggle\`, \`enableNavigation\`, \`rowHeight\`, \`agGridLicenseKey\` |
 
 A few interact with each other: \`enableRowDragging\` is suppressed automatically in flat-list mode or when sorting by a non-rank column, and the user-query flags only matter once \`enableViewSwitcher\` is on.
 
-Every flag defaults to \`false\`, so a feature missing from the ribbon is usually one of two things: its flag was left out of \`onGetGridParameters\`, or the optional descriptor hook that enables it is not implemented — templates and custom columns both work that way.
+Every flag defaults to \`false\`, so a feature missing from the ribbon is usually one of two things: its flag was left out of \`onGetGridParameters\`, or the optional descriptor hook that enables it returned nothing.
+
+The two are not independent. A flag can only trim commands **within** a feature that exists, because the getters AND the two together — \`isSaveQueryAsNewEnabled()\` is \`isUserQueriesEnabled() && enableSaveAsNewQuery\`, and the custom-column flags work the same way against \`isCustomColumnsEnabled()\`. Whether the feature exists at all is decided by the descriptor: personal views by \`onCreateUserQueryStrategy\`, templates by \`onCreateTemplateDataProvider\`, custom columns by \`onCreateCustomColumnsStrategy\`. Supplying the implementation is the switch — which is also what keeps unused strategies out of your bundle.
 
 ## Column metadata
 

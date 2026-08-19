@@ -90,19 +90,29 @@ Top-level tasks hold \`null\`. What does *not* work is a bare guid under the pla
 
 Read siblings from your own store rather than the visible tree when computing ranks, or a row hidden by the active view can collide with a new rank. Use the tree for *display order* — that is what "above" and "below" mean to the user — and exclude the moving record so it is never ranked against itself.
 
-## The saved-query strategy
+## Views: two interfaces, split by feature
 
-\`ISavedQueryStrategy\` handles views. If you do not persist views, return the system views and let the mutators throw or no-op:
+\`ISavedQueryStrategy\` is a single method — the system views, which are mandatory:
+
+\`\`\`ts
+public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
+    return { onGetSystemQueries: async () => SYSTEM_QUERIES }
+}
+\`\`\`
+
+Personal views are optional and live behind \`onCreateUserQueryStrategy\`. Implement \`IUserQueryStrategy\` only if you have somewhere to persist them; return nothing and the feature is off, with no stubs to write:
 
 | Method | Description |
 |---|---|
-| \`onGetSystemQueries()\` | Built-in views. At least one required. |
 | \`onGetUserQueries()\` | The user's personal views. |
+| \`onIsUserQuery(queryId)\` | Whether an id is one of them, as opposed to a system view. Synchronous. |
 | \`onCreateUserQuery(newQuery, currentQuery)\` | Persist a new view. Return its id, or \`null\` if cancelled. |
-| \`onUpdateUserQuery(currentQuery)\` | Persist changes to an existing view. |
+| \`onUpdateUserQuery(currentQuery)\` | Persist changes to an existing view, including a rename from the view manager. |
 | \`onDeleteUserQueries(queryIds)\` | Delete views. Return which ids went. |
 
-An \`ISavedQuery\` is \`{ id, name, columns }\` plus optional \`filtering\`, \`sorting\`, \`quickFindColumns\` and \`isFlatListEnabled\`. The columns array is what the view actually displays — include your hidden structural columns in every view.
+An \`ISavedQuery\` is \`{ id, name, columns }\` plus optional \`description\`, \`filtering\`, \`sorting\`, \`quickFindColumns\` and \`isFlatListEnabled\`. The columns array is what the view actually displays — include your hidden structural columns in every view.
+
+\`MemoryUserQueryStrategy\` is 40 lines against a plain array, and \`DataverseUserQueryStrategy\` is the same shape against a table; either is worth reading before writing your own.
 
 ## Wiring it up
 
@@ -123,11 +133,12 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
-        return new MySavedQueryStrategy()
+        return { onGetSystemQueries: async () => this._config.systemQueries }
     }
 
-    public onCreateUserQueryDataProvider(): IDataProvider {
-        return new MemoryDataProvider({ /* backs the save-view dialog */ })
+    //optional: omit it and the grid shows system views only
+    public onCreateUserQueryStrategy(): IUserQueryStrategy {
+        return new MyUserQueryStrategy()
     }
 
     public onGetGridParameters(): ITaskGridParameters {

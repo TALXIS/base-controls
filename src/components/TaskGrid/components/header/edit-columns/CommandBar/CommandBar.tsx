@@ -2,17 +2,18 @@ import { components } from "@components/DatasetControl/EditColumns/components";
 import { ICommandBarItemProps, ICommandBarProps } from "@legacy";
 import * as React from 'react';
 import { useTaskGridEditColumns } from "../useTaskGridEditColumns";
-import { useLocalizationService } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService } from "@components/TaskGrid/context";
 
 
 export const CommandBar = (props: ICommandBarProps) => {
     const localizationService = useLocalizationService();
+    const datasetControl = useDatasetControl();
     const { ...rest } = props;
     const { onCreateColumn } = useTaskGridEditColumns();
 
     const items = [
         ...props.items,
-        ...(true ? [{
+        ...(datasetControl.isCustomColumnCreationEnabled() ? [{
             key: 'add_custom_column',
             text: localizationService.getLocalizedString('addCustomColumn'),
             iconProps: { iconName: 'Add' },

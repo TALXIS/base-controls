@@ -1,4 +1,4 @@
-import { DatasetConstants, IColumn, IEventEmitter, EventEmitter, IRawRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { DatasetConstants, IColumn, IEventEmitter, EventEmitter, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils";
 
 
@@ -14,10 +14,6 @@ export interface ICustomColumnsStrategy {
     onRefresh: () => Promise<IColumn[]>;
     /** Returns the currently loaded custom columns synchronously without a network fetch. */
     onGetColumns: () => IColumn[];
-    /** Fetches the raw records for custom columns. */
-    onGetRawRecords: () => Promise<IRawRecord[]>;
-    /** Fetches a single raw record by its ID. */
-    onGetRawRecord: (recordId: string) => Promise<IRawRecord>;
 
     /** Persists a cell value for a custom column on the given record. */
     onSaveValue: (regardingRecordId: string, column: IColumn, value: any) => Promise<IRecordSaveOperationResult>;

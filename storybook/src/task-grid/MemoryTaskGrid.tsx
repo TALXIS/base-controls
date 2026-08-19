@@ -1,7 +1,7 @@
 import React from 'react'
 import { initializeIcons } from '@fluentui/react'
-import { TaskGrid } from '@talxis/base-controls/components/TaskGrid'
-import type { ITaskGridComponents } from '@talxis/base-controls/components/TaskGrid'
+import { TaskGrid } from '@talxis/base-controls'
+import type { ITaskGridComponents } from '@talxis/base-controls'
 import { usePcfContext } from '@talxis/base-controls/utils'
 import { createMemoryTaskGridDescriptor } from './memoryDescriptor'
 

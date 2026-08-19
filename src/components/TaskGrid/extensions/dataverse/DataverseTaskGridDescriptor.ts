@@ -1,11 +1,10 @@
 import { FetchXmlBuilder, IDataProvider, IRawRecord, IRecord, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
-import { ICustomColumnsStrategy, IDeletedUserQueriesResult, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy } from "@components/TaskGrid/providers";
+import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
-import { DataverseSavedQueryStrategy } from "./DataverseSavedQueryStrategy";
+import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
 import { DataverseTaskStrategy } from "./DataverseTaskStrategy";
 import { FetchXmlDataProviderFactory } from "./lookup-many/FetchXmlDataProviderFactory";
 import { EntityDefinition } from "@talxis/client-metadata";
-import { DataverseCustomColumnsStrategy } from "./DataverseCustomColumnsStrategy";
 
 
 /** Dataverse-specific field mapping. Extends the base with an optional project lookup column. */
@@ -27,36 +26,103 @@ const isSingleRecord = (record: RecordInput | undefined): record is ISingleRecor
     return !!record && typeof (record as ISingleRecord).getRecordId === "function";
 };
 
-/** Constructor parameters for {@link DataverseTaskGridDescriptor}. */
+/**
+ * What the descriptor has resolved by the time it asks for an optional strategy: the entity name comes
+ * from the FetchXML, the record id from `projectRecord`, and the rest straight from the parameters.
+ */
+export interface IDataverseStrategyContext {
+    /** Logical name of the task entity, derived from `baseFetchXml`. */
+    entityName: string;
+    /** Id of the project record, when one was supplied. */
+    recordId?: string;
+    /** Id of the current user, from `userId`. */
+    userId?: string;
+    /** The system views supplied through `systemQueries`. */
+    systemQueries: ISavedQuery[];
+}
+
+/** What the descriptor hands a consumer-supplied task strategy. */
+export interface IDataverseTaskStrategyContext extends IDataverseStrategyContext {
+    /** The providers and flags the grid built. Forward them to the strategy's second argument. */
+    deps: ITaskStrategyDeps;
+    /** The `baseFetchXml` from `onInitialize`. The strategy renders its Liquid variables itself. */
+    fetchXml: string;
+    /** The hydrated project record, when `projectRecord` was supplied. */
+    projectRecord?: ISingleRecord;
+    /** The hydrated source record, when `sourceRecord` was supplied. */
+    sourceRecord?: ISingleRecord;
+}
+
+/** Everything `onInitialize` resolves — the data and the options both. */
 export interface IDataverseTaskGridDescriptorParams {
-    /** FetchXML that drives the initial data load. May use Liquid template variables (e.g. `{{ projectId }}`). */
+    /** FetchXML that drives the initial data load. May use the Liquid template variables. */
     baseFetchXml: string;
     /** Maps logical entity attribute names to the roles expected by TaskGrid (e.g. `statecode` → `stateCode`). */
     fieldMapping: IDataverseFieldMapping;
-    /** System (non-deletable) views exposed in the view switcher. At least one is required. */
+    /** System (non-deletable) views exposed in the view switcher. At least one is required, and their columns are the grid's column catalogue. */
     systemQueries: ISavedQuery[];
-    /** Optional source record. If provided, it's data will be propagated into liquid fetch XML templates. */
-    sourceRecord?: RecordInput;
-
+    /** The project these tasks belong to. Injected into Liquid templates and pre-filled on create. */
     projectRecord?: RecordInput;
-
-    height?: string;
-    /** Fine-grained feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
-    gridParameters?: ITaskGridParameters;
-    /** When set, the hierarchy is rooted at this task ID instead of showing all top-level tasks. */
-    rootTaskId?: string;
-    /** ID of the currently logged-in user. Used to scope user queries to the current owner. */
+    /** An additional record exposed to Liquid templates. Its data is propagated into the FetchXML. */
+    sourceRecord?: RecordInput;
+    /** ID of the currently logged-in user. Pass it on to the user-query strategy to scope personal views. */
     userId?: string;
-    /** Form ID to open when editing a single existing task. */
-    editFormId?: string;
-    /** Form ID to open when creating a new task via the dialog flow (non-inline). */
-    createFormId?: string;
-    /** Form ID to open for bulk-editing multiple selected tasks. */
-    bulkEditFormId?: string;
-    /** Set to `true` to enable cascade delete when deleting tasks with children. Defaults to `false`. */
-    enableCascadeDelete?: boolean;
-    /** Set to `true` to allow deletion of tasks that have child tasks. When `false`, such tasks are excluded from deletion and an error is returned. Defaults to `false`. */
-    enableDeletingTasksWithChildren?: boolean;
+    /** Feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
+    gridParameters?: ITaskGridParameters;
+    /**
+     * (Optional) Supplies the task strategy — this is where every task-level option goes: the form ids,
+     * the delete behaviour, the root task, and the strategy's own `form` hook.
+     *
+     * ```ts
+     * onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new DataverseTaskStrategy({
+     *     onInitialize: async () => ({
+     *         fetchXml, projectRecord, sourceRecord,
+     *         editFormId, createFormId, bulkEditFormId,
+     *         rootTaskId,
+     *         isCascadeDeleteEnabled: true,
+     *     }),
+     * }, deps)
+     * ```
+     *
+     * Omit it and the descriptor builds a plain `DataverseTaskStrategy` over the resolved FetchXML.
+     */
+    onCreateTaskStrategy?: (context: IDataverseTaskStrategyContext) => ITaskDataProviderStrategy;
+    /**
+     * (Optional) Supplies the personal-views implementation. System views always come from
+     * `systemQueries`; this is what adds *My views*, the save commands and the view manager:
+     *
+     * ```ts
+     * onCreateUserQueryStrategy: (context) => new DataverseUserQueryStrategy({
+     *     entityName: context.entityName,
+     *     recordId: context.recordId,
+     *     ownerId: context.userId,
+     * })
+     * ```
+     *
+     * `DataverseUserQueryStrategy` needs the `talxis_userquery` table, so wiring it is also the
+     * statement that the environment has it. Nothing here references it otherwise, which keeps it out
+     * of bundles that do not use personal views.
+     *
+     * The feature callbacks all work that way, and all of them receive what the descriptor resolved.
+     */
+    onCreateUserQueryStrategy?: (context: IDataverseStrategyContext) => IUserQueryStrategy | undefined;
+    /**
+     * (Optional) Supplies the template data provider. There is no Dataverse implementation yet, so this
+     * is the way to bring your own; omit it and template creation stays out of the ribbon.
+     */
+    onCreateTemplateDataProvider?: (context: IDataverseStrategyContext) => ITemplateDataProvider | undefined;
+    /**
+     * (Optional) Supplies the custom-columns strategy — `DataverseCustomColumnsStrategy` needs the
+     * `talxis_attributedefinition` and `talxis_attributevalue` tables. Omit it and custom columns are
+     * off, and neither table is read.
+     */
+    onCreateCustomColumnsStrategy?: (context: IDataverseStrategyContext) => ICustomColumnsStrategy | undefined;
+    /**
+     * (Optional) Supplies a strategy for deep customization of AG Grid column definitions, cell
+     * renderers, editors and row class rules. Lookup-many columns are already handled natively, so this
+     * is only needed for customizations of your own.
+     */
+    onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
 }
 
 /**
@@ -76,21 +142,14 @@ export interface IDataverseTaskGridDescriptorParams {
  * ```
  */
 export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
-    private _fetchXml!: string;
-    private _fieldMapping!: IDataverseFieldMapping;
-    private _systemQueries: ISavedQuery[] = [];
-    private _taskEntityName!: string;
-    private _editFormId?: string;
-    private _createFormId?: string;
-    private _bulkEditFormId?: string;
-    private _userId?: string;
-    private _rootTaskId?: string;
-    private _projectRecord?: ISingleRecord;
-    private _sourceRecord?: ISingleRecord;
     private _params!: IDataverseTaskGridDescriptorParams;
-    private _gridParameters?: ITaskGridParameters;
     private _height?: string;
     private _onInitialize: () => Promise<IDataverseTaskGridDescriptorParams>;
+    private _fetchXml!: string;
+    private _systemQueries: ISavedQuery[] = [];
+    private _taskEntityName!: string;
+    private _projectRecord?: ISingleRecord;
+    private _sourceRecord?: ISingleRecord;
 
     /** @param params — see {@link IDataverseTaskGridDescriptorParams} for full documentation of each option. */
     constructor(params: { onInitialize: () => Promise<IDataverseTaskGridDescriptorParams>; height?: string }) {
@@ -99,30 +158,16 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /** Resolves the project entity reference (fetches display name when not supplied). Called once by the factory before any strategy is created. */
+    // ── ITaskGridDescriptor ──────────────────────────────────────────────────
+
     public async onLoadDependencies(): Promise<void> {
         const params = await this._onInitialize();
         this._params = params;
         this._systemQueries = params.systemQueries;
-        this._fieldMapping = params.fieldMapping;
-        this._userId = params.userId;
         this._fetchXml = params.baseFetchXml;
-        this._rootTaskId = params.rootTaskId;
-        this._editFormId = params.editFormId;
-        this._createFormId = params.createFormId;
-        this._bulkEditFormId = params.bulkEditFormId;
-        this._gridParameters = params.gridParameters;
         this._taskEntityName = this._getTaskEntityNameFromFetchXml(params.baseFetchXml);
         this._projectRecord = await this._getProjectRecord();
         this._sourceRecord = await this._getSourceRecord();
-    }
-
-    /** Returns the field mapping with `stateCode` hard-coded to `"statecode"` (standard Dataverse attribute name). */
-    public onGetFieldMapping(): IFieldMapping {
-        return {
-            ...this._fieldMapping,
-            //dataverse uses this for all entities
-            stateCode: 'statecode',
-        }
     }
 
     //needs to be seperate from onGetGridParameters since it is also required for skeleton rendering before the instance is created
@@ -130,75 +175,72 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         return this._height;
     }
 
-    /** Returns a {@link DataverseSavedQueryStrategy} when `enableUserQueries` is `true`, otherwise a read-only stub that exposes only the system queries. */
-    public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
-        if (this._gridParameters?.enableUserQueries) {
-            return new DataverseSavedQueryStrategy({
-                onGetSystemQueries: async () => this._systemQueries,
-                ownerId: this._userId,
-                entityName: this._taskEntityName,
-                recordId: this._projectRecord?.getRecordId()
-            });
+    /** Returns the field mapping with `stateCode` hard-coded to `"statecode"` (standard Dataverse attribute name). */
+    public onGetFieldMapping(): IFieldMapping {
+        return {
+            ...this._params.fieldMapping,
+            //dataverse uses this for all entities
+            stateCode: 'statecode',
         }
+    }
+
+    /** Returns the feature flags supplied at construction time, or an empty object — every flag then defaults to `false`. */
+    public onGetGridParameters(): ITaskGridParameters {
+        return this._params.gridParameters ?? {};
+    }
+
+    /**
+     * Serves the `systemQueries` supplied at construction time. Personal views come from the
+     * `onCreateUserQueryStrategy` parameter — without it they are off and `talxis_userquery` is never
+     * read.
+     */
+    public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
         return {
             onGetSystemQueries: async () => this._systemQueries,
-            onGetUserQueries: async () => [],
-            onDeleteUserQueries: function (queryIds: string[]): Promise<IDeletedUserQueriesResult> {
-                throw new Error("Function not implemented.");
-            },
-            onUpdateUserQuery: function (currentQuery: ISavedQuery): Promise<string | null> {
-                throw new Error("Function not implemented.");
-            },
-            onCreateUserQuery: function (newQuery: { name: string; description?: string; }, currentQuery: ISavedQuery): Promise<string | null> {
-                throw new Error("Function not implemented.");
-            }
-        }
+        };
     }
 
-    public onCreateCustomColumnsStrategy(): ICustomColumnsStrategy | undefined {
-        return new DataverseCustomColumnsStrategy({
-            entityName: this._taskEntityName,
-            recordId: this._projectRecord?.getRecordId(),
-        })
+    /**
+     * Delegates to the `onCreateUserQueryStrategy` parameter. Returning `undefined` — which is what
+     * omitting the parameter does — leaves personal views off.
+     */
+    public onCreateUserQueryStrategy(): IUserQueryStrategy | undefined {
+        return this._params.onCreateUserQueryStrategy?.(this._getStrategyContext());
     }
 
-    /** Returns a {@link DataverseTaskStrategy} configured with the descriptor's FetchXML, form IDs, and project reference. */
+    /**
+     * Delegates to the `onCreateTaskStrategy` parameter, falling back to a plain `DataverseTaskStrategy`
+     * over the resolved FetchXML. The form ids, delete flags and root task live on that callback.
+     */
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
-        return new DataverseTaskStrategy({
+        const context: IDataverseTaskStrategyContext = {
+            ...this._getStrategyContext(),
+            deps: deps,
             fetchXml: this._fetchXml,
             projectRecord: this._projectRecord,
             sourceRecord: this._sourceRecord,
-            rootTaskId: this._rootTaskId,
-            bulkEditFormId: this._bulkEditFormId,
-            createFormId: this._createFormId,
-            editFormId: this._editFormId,
-            isCascadeDeleteEnabled: this._params.enableCascadeDelete ?? false,
-            isDeletingTasksWithChildrenEnabled: this._params.enableDeletingTasksWithChildren ?? false,
+        };
+        return this._params.onCreateTaskStrategy?.(context) ?? new DataverseTaskStrategy({
+            onInitialize: async () => ({
+                fetchXml: this._fetchXml,
+                projectRecord: this._projectRecord,
+                sourceRecord: this._sourceRecord,
+            }),
         }, deps);
     }
-    /** Returns a {@link DataverseSavedQueryStrategy} pre-configured as a data provider for the user-query creation/update dialog, with `talxis_name` and `talxis_description` columns. */
-    public onCreateUserQueryDataProvider(): IDataProvider {
-        const provider = new DataverseSavedQueryStrategy({
-            recordId: this._projectRecord?.getRecordId(),
-            entityName: this._taskEntityName,
-            ownerId: this._userId,
-            onGetSystemQueries: async () => {
-                return []
-            }
-        })
-        provider.setColumns([{
-            name: 'talxis_name',
-            visualSizeFactor: 200
-        }, {
-            name: 'talxis_description',
-            visualSizeFactor: 300
-        }]);
-        return provider;
+    /** Delegates to the `onCreateTemplateDataProvider` parameter. Templates are off without it. */
+    public onCreateTemplateDataProvider(): ITemplateDataProvider | undefined {
+        return this._params.onCreateTemplateDataProvider?.(this._getStrategyContext());
     }
 
-    /** Returns the feature flags supplied at construction time, or an empty object (all features enabled) when omitted. */
-    public onGetGridParameters(): ITaskGridParameters {
-        return this._gridParameters ?? {};
+    /** Delegates to the `onCreateCustomColumnsStrategy` parameter. Custom columns are off without it. */
+    public onCreateCustomColumnsStrategy(): ICustomColumnsStrategy | undefined {
+        return this._params.onCreateCustomColumnsStrategy?.(this._getStrategyContext());
+    }
+
+    /** Delegates to the `onCreateGridCustomizerStrategy` parameter. */
+    public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy | undefined {
+        return this._params.onCreateGridCustomizerStrategy?.();
     }
 
     /**
@@ -274,6 +316,17 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
         });
 
         return builder.getRecord();
+    }
+
+    // ── Internals ────────────────────────────────────────────────────────────
+
+    private _getStrategyContext(): IDataverseStrategyContext {
+        return {
+            entityName: this._taskEntityName,
+            recordId: this._projectRecord?.getRecordId(),
+            userId: this._params.userId,
+            systemQueries: this._systemQueries,
+        };
     }
 
     private _getTaskEntityNameFromFetchXml(fetchXml: string): string {

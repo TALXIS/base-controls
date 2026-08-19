@@ -5,14 +5,20 @@ import { ICustomColumnsStrategy } from "@components/TaskGrid/providers/custom-co
 
 export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
-const CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME = 'talxis_task_talxis_attributevalue_regardingobjectid';
 
 /** Constructor parameters for {@link DataverseCustomColumnsStrategy}. */
-interface IDataverseCustomColumnsStrategyParameters {
+export interface IDataverseCustomColumnsStrategyParameters {
     /** Logical name of the entity for which dynamic attribute definitions are managed (e.g. `"task"`). */
     entityName: string;
     /** Optional record ID used to scope attribute definitions to a specific parent record. */
     recordId?: string;
+    /**
+     * (Optional) A navigation property of the relationship between the entity and
+     * `talxis_attributevalue`, either side of it. Only needed to disambiguate: the relationship is
+     * normally the single one Dataverse reports between the two, and
+     * {@link DataverseCustomColumnsStrategy.onRefresh} finds it without being told.
+     */
+    navigationPropertyName?: string;
 }
 
 /**
@@ -29,12 +35,10 @@ export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy 
 }
 
 /**
- * Work-in-progress {@link ICustomColumnsStrategy} implementation for the Dataverse / Talxis platform.
+ * {@link ICustomColumnsStrategy} implementation for the Dataverse / Talxis platform.
  *
  * Dynamic (user-defined) columns are modelled as `talxis_attributedefinition` records.
- * Column values are stored as `talxis_attributevalue` records linked to the task record.
- *
- * WARNING: This strategy is still WIP and should not yet be used in production.
+ * Column values are stored as `talxis_attributevalue` records linked to the record they belong to.
  *
  * Pass an instance to the `onCreateCustomColumnsStrategy` hook of your descriptor to enable the
  * custom-columns feature in the TaskGrid.
@@ -42,29 +46,28 @@ export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy 
 export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsStrategy {
     private _entityName: string;
     private _recordId?: string;
+    private _navigationPropertyNameHint?: string;
     private _attributes: IAttribute[] = [];
     private _attributeIdsMap: Map<string, string> = new Map();
+    //read off the relationship in onRefresh: the collection the values are expanded through, the lookup
+    //they bind against, and the entity set that lookup points at
+    private _navigationPropertyName?: string;
+    private _referencingEntityNavigationPropertyName?: string;
+    private _entitySetName?: string;
 
     /** @param parameters — see {@link IDataverseCustomColumnsStrategyParameters}. */
     constructor(parameters: IDataverseCustomColumnsStrategyParameters) {
         this._entityName = parameters.entityName;
         this._recordId = parameters.recordId;
+        this._navigationPropertyNameHint = parameters.navigationPropertyName;
     }
 
     /** Fetches the latest `talxis_attributedefinition` records for the entity/record scope and returns them as `IColumn[]`. */
     public async onRefresh(): Promise<IColumn[]> {
+        await this._resolveRelationship();
         const entityDefinition = await DynamicEntityDefinition.fetchForRecord(this._entityName, this._recordId);
         this._attributes = entityDefinition.Attributes;
         return this.onGetColumns();
-    }
-
-    //get all attribute values based given the 
-    public async onGetRawRecords(): Promise<IRawRecord[]> {
-        return [];
-    }
-
-    public async onGetRawRecord(recordId: string): Promise<IRawRecord> {
-        throw new Error('Method not implemented.');
     }
 
     public getAttributeDefinitionIdFromColumnName(columnName: string): string {
@@ -72,7 +75,10 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
     }
 
     public getNavigationPropertyName(): string {
-        return CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME;
+        if (!this._navigationPropertyName) {
+            throw new Error(`${DataverseCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before anything reads a custom column.`);
+        }
+        return this._navigationPropertyName;
     }
 
     /** Returns the currently cached attribute definitions as `IColumn[]` without a network fetch. */
@@ -120,7 +126,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
     }
 
     public getExpand(): string {
-        return `${CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME}(
+        return `${this.getNavigationPropertyName()}(
                 $select=talxis_serialized_value,talxis_text_value,talxis_int_value,talxis_decimal_value,_talxis_choice_value_value,talxis_bit_value,talxis_date_value,talxis_datetime_userlocal_value,talxis_datetime_tzi_value,_talxis_attributedefinitionid_value
         )`
     }
@@ -158,7 +164,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
                 const result = await window.Xrm.WebApi.createRecord(ATTRIBUTE_VALUE_ENTITY_NAME, {
                     ...payload,
                     'talxis_attributedefinitionid@odata.bind': `/talxis_attributedefinitions(${attributeDefinitionId})`,
-                    'talxis_regardingobjectid_task@odata.bind': `/tasks(${regardingRecordId})`,
+                    [`${this._getReferencingEntityNavigationPropertyName()}@odata.bind`]: `/${this._getEntitySetName()}(${regardingRecordId})`,
                 });
                 this._attributeIdsMap.set(`${regardingRecordId}_${attributeDefinitionId}`, result.id);
                 return {
@@ -214,7 +220,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
     }
 
     private _getAttributeFromRawRecord(recordId: string, rawRecord: IRawRecord, column: IColumn) {
-        const attributes: any[] = rawRecord[CUSTOM_COLUMNS_REFERENED_ENTITY_NAVIGATION_NAME] ?? [];
+        const attributes: any[] = rawRecord[this.getNavigationPropertyName()] ?? [];
         if (attributes.length === 0) {
             return null;
         }
@@ -224,6 +230,49 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
             this._attributeIdsMap.set(`${recordId}_${attributeDefinitionId}`, attribute['talxis_attributevalueid']);
         }
         return attribute;
+    }
+
+    /**
+     * Reads the relationship to `talxis_attributevalue` off the entity's metadata and keeps the three
+     * names the grid needs from it: the collection to expand through, the lookup to bind against, and
+     * the entity set that lookup points at. A schema has one such relationship, so nothing has to be
+     * configured — `navigationPropertyName` is only consulted when there is more than one.
+     */
+    private async _resolveRelationship(): Promise<void> {
+        if (this._navigationPropertyName && this._referencingEntityNavigationPropertyName && this._entitySetName) {
+            return;
+        }
+        const metadata: any = await window.Xrm.Utility.getEntityMetadata(this._entityName);
+        const relationships: any[] = metadata.OneToManyRelationships.getAll()
+            .filter((relationship: any) => relationship.ReferencingEntity === ATTRIBUTE_VALUE_ENTITY_NAME);
+        const relationship = this._navigationPropertyNameHint
+            ? relationships.find(candidate =>
+                candidate.ReferencedEntityNavigationPropertyName === this._navigationPropertyNameHint ||
+                candidate.ReferencingEntityNavigationPropertyName === this._navigationPropertyNameHint)
+            : relationships[0];
+        if (!relationship) {
+            throw new Error(`Could not find a relationship between "${this._entityName}" and "${ATTRIBUTE_VALUE_ENTITY_NAME}"${this._navigationPropertyNameHint ? ` for navigation property "${this._navigationPropertyNameHint}"` : ''}. Custom columns need one to store their values against.`);
+        }
+        if (relationships.length > 1 && !this._navigationPropertyNameHint) {
+            throw new Error(`"${this._entityName}" has ${relationships.length} relationships to "${ATTRIBUTE_VALUE_ENTITY_NAME}". Pass "navigationPropertyName" to say which one holds the custom column values.`);
+        }
+        this._entitySetName = metadata.EntitySetName;
+        this._navigationPropertyName = relationship.ReferencedEntityNavigationPropertyName;
+        this._referencingEntityNavigationPropertyName = relationship.ReferencingEntityNavigationPropertyName;
+    }
+
+    private _getReferencingEntityNavigationPropertyName(): string {
+        if (!this._referencingEntityNavigationPropertyName) {
+            throw new Error(`${DataverseCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before a value can be saved.`);
+        }
+        return this._referencingEntityNavigationPropertyName;
+    }
+
+    private _getEntitySetName(): string {
+        if (!this._entitySetName) {
+            throw new Error(`${DataverseCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before a value can be saved.`);
+        }
+        return this._entitySetName;
     }
 
     private _getFieldNameForColumn(column: IColumn): string {

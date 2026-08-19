@@ -1,8 +1,6 @@
 import { Operators } from '@talxis/client-libraries';
-import { MemoryTaskGridDescriptor } from '@talxis/base-controls/components/TaskGrid';
-import type { IMemoryTaskGridDescriptorParams } from '@talxis/base-controls/components/TaskGrid';
-import type { IGridCustomizerStrategy } from '@talxis/base-controls/components/TaskGrid/components/grid';
-import type { ISavedQuery } from '@talxis/base-controls/components/TaskGrid/providers';
+import { MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
+import type { IGridCustomizerStrategy, IMemoryTaskGridDescriptorParams, ISavedQuery } from '@talxis/base-controls';
 
 /**
  * `filtering.filterOperator` has no named enum in the ComponentFramework typings — the grid reads
@@ -88,6 +86,11 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             quickFindColumns: [SUBJECT_COL],
         };
 
+        //resolved here rather than inside the callbacks below: those run on every remount, and the
+        //views and templates the user creates live in these two - rebuilding them would wipe the lot
+        const userQueries = [myOpenTasks, highPriority];
+        const templates = structuredClone(TEMPLATE_SOURCE);
+
         return {
             //cloned per descriptor: the strategy writes into this array, so sharing the module-level
             //fixtures would let the grids on different doc pages fight over one dataset
@@ -100,32 +103,42 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 stateCode: STATE_CODE_COL,
             },
             systemQueries: [allTasks],
-            userQueries: [myOpenTasks, highPriority],
-            templates: structuredClone(TEMPLATE_SOURCE),
             lookupMany: {
                 assignedto: PEOPLE_SOURCE,
                 tags: TAGS_SOURCE,
             },
-            //new rows should look like a real task rather than a row of empty cells
-            onGetNewTaskDefaults: () => ({
-                statuscode: 1,
-                priority: 1,
-                percentcomplete: 0,
-                actualeffort: 0,
-            }),
-            /**
-             * The fixtures keep `statecode` and `statuscode` in sync, but only `statuscode` is
-             * editable in the grid — so derive activity from it to keep styling correct after an edit.
-             */
-            onIsRecordActive: record => record.statuscode !== COMPLETED_STATUS_CODE
-                && record.statuscode !== CANCELLED_STATUS_CODE,
-            onOpenDatasetItems: async (entityReferences, isTaskEntity, { isTaskEditingEnabled }) => {
-                const target = isTaskEntity ? 'task(s)' : 'related record(s)';
-                const mode = isTaskEditingEnabled ? 'edit' : 'read-only';
-                //a demo has nowhere to navigate to, so surface the intent without blocking the UI
-                console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
-                return null;
-            },
+            //features are opt-in by implementation: supplying the strategy is what turns each one on,
+            //which is also what lets a consumer who does not use them tree-shake the code away
+            onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
+            onCreateTemplateDataProvider: () => new MemoryTemplateDataProvider({ templates }),
+            //task-level options belong to the strategy, so they are passed where it is built
+            onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
+                onInitialize: async () => ({
+                    records: records,
+                    metadata: metadata,
+                    //new rows should look like a real task rather than a row of empty cells
+                    onGetNewTaskDefaults: () => ({
+                        statuscode: 1,
+                        priority: 1,
+                        percentcomplete: 0,
+                        actualeffort: 0,
+                    }),
+                    /**
+                     * The fixtures keep `statecode` and `statuscode` in sync, but only `statuscode`
+                     * is editable in the grid — so derive activity from it to keep styling correct
+                     * after an edit.
+                     */
+                    onIsRecordActive: record => record.statuscode !== COMPLETED_STATUS_CODE
+                        && record.statuscode !== CANCELLED_STATUS_CODE,
+                    onOpenDatasetItems: async (entityReferences, isTaskEntity, { isTaskEditingEnabled }) => {
+                        const target = isTaskEntity ? 'task(s)' : 'related record(s)';
+                        const mode = isTaskEditingEnabled ? 'edit' : 'read-only';
+                        //a demo has nowhere to navigate to, so surface the intent without blocking the UI
+                        console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
+                        return null;
+                    },
+                }),
+            }, deps),
             gridParameters: {
                 enableTaskCreation: true,
                 enableHideInactiveTasksToggle: true,
@@ -140,7 +153,6 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 enableSaveAsNewQuery: true,
                 enableSaveQueryChanges: true,
                 enableTaskDeletion: true,
-                enableUserQueries: true,
                 enableViewSwitcher: true,
                 enableSorting: true,
                 enableFiltering: true,

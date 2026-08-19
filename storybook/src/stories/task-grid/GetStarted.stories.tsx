@@ -97,12 +97,12 @@ const descriptor = new DataverseTaskGridDescriptor({
             stackRank: 'talxis_stackrankstring',
         },
         systemQueries: [allTasksView],
-        gridParameters: { enableTaskEditing: true, enableUserQueries: true },
+        gridParameters: { enableTaskEditing: true, enableQueryManager: true },
     }),
 })
 \`\`\`
 
-> Two features come from TALXIS models rather than your task entity — personal saved views (\`talxis_userquery\`) and custom columns (\`talxis_attributedefinition\`). If those are not in your environment, override the descriptor hook that serves the feature and the dependency goes away. Both are covered on [**Strategies → Dataverse**](?path=/story/task-grid-strategies-dataverse--overview).
+> Two features come from TALXIS models rather than your task entity — personal saved views (\`talxis_userquery\`) and custom columns (\`talxis_attributedefinition\`). Both are opt-in: you switch one on by handing the descriptor the strategy that implements it, so an environment without the model simply leaves the callback out. Covered on [**Strategies → Dataverse**](?path=/story/task-grid-strategies-dataverse--overview).
 
 ## Where to go next
 

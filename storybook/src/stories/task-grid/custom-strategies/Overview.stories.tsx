@@ -30,25 +30,24 @@ This section is for when it stops working: you need one shipped piece somewhere 
 
 ## Before you subclass anything
 
-Several behaviours that look like they need a subclass are constructor parameters on \`MemoryTaskGridDescriptor\`:
+Several behaviours that look like they need a subclass are parameters on both shipped descriptors:
 
-- \`onGetNewTaskDefaults\` — field values for newly created tasks.
-- \`onIsRecordActive\` — what counts as active.
-- \`onOpenDatasetItems\` — what happens when the user opens a task.
+- \`onCreateTaskStrategy\` — every task-level option, because they belong to the task strategy: new-task defaults, what counts as active, what happens on open, and on Dataverse the form ids, \`rootTaskId\` and the delete flags. The descriptor hands the callback what it resolved, so you build the shipped strategy with your own options.
+- \`onCreateUserQueryStrategy\`, \`onCreateTemplateDataProvider\`, \`onCreateCustomColumnsStrategy\` — whether those features exist at all.
 - \`onCreateGridCustomizerStrategy\` — your AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
 
-\`IDataverseTaskGridDescriptorParams\` has none of these, which is why extending the Dataverse descriptor is a more common need than extending the memory one.
+Both parameter objects also carry the \`onCreate*\` callbacks that decide which optional features exist at all — personal views, templates, custom columns, the customizer. Supplying an implementation is the switch, and a feature you never mention costs nothing in your bundle.
 
 ## The descriptor contract
 
-A descriptor answers four questions the grid cannot answer on its own: which columns play which role, how to load and mutate tasks, how to load and persist saved views, and what to show in the save-view dialog.
+A descriptor answers three questions the grid cannot answer on its own: which columns play which role, how to load and mutate tasks, and where the saved views come from. Everything else is an optional hook, and each one is a feature switch — return an implementation and the feature exists.
 
 | Method | Required | Description |
 |--------|:--------:|-------------|
 | \`onGetFieldMapping()\` | ✅ | Maps column roles to physical attribute names in your schema. |
 | \`onCreateTaskStrategy(deps)\` | ✅ | Returns the strategy handling task CRUD, move, and template expansion. |
-| \`onCreateSavedQueryStrategy()\` | ✅ | Returns the strategy that loads and persists saved views. |
-| \`onCreateUserQueryDataProvider()\` | ✅ | Returns the \`IDataProvider\` backing the save-view dialog. |
+| \`onCreateSavedQueryStrategy()\` | ✅ | Returns the strategy that loads the system views. |
+| \`onCreateUserQueryStrategy?()\` | — | Returns the \`IUserQueryStrategy\` that reads and persists **personal** views. Called when the grid builds its saved-query provider; omit it and personal views are off. |
 | \`onLoadDependencies?()\` | — | Async hook called once **before** anything else. Resolve configuration and fetch here. |
 | \`onGetHeight?()\` | — | Container height as a CSS string. Fills the parent when omitted. |
 | \`onGetGridParameters?()\` | — | \`ITaskGridParameters\` feature flags. |
@@ -58,7 +57,19 @@ A descriptor answers four questions the grid cannot answer on its own: which col
 | \`onCreateGridCustomizerStrategy?()\` | — | Deep-customizes AG Grid column definitions, renderers and row class rules. |
 | \`onGetControlId?()\` | — | A stable DOM identifier. Auto-generated as a UUID when omitted. |
 
-The optional hooks are feature switches, not just configuration: omit \`onCreateTemplateDataProvider\` and template creation disappears from the UI; omit \`onCreateCustomColumnsStrategy\` and custom columns are off.
+The optional hooks are feature switches, not just configuration: omit \`onCreateTemplateDataProvider\` and template creation disappears from the UI; omit \`onCreateCustomColumnsStrategy\` and custom columns are off; omit \`onCreateUserQueryStrategy\` and the view switcher lists system views only.
+
+Note how the saved-query contract splits along the same line — \`ISavedQueryStrategy\` is only \`onGetSystemQueries\`, and the four personal-view operations live on \`IUserQueryStrategy\`:
+
+\`\`\`ts
+interface IUserQueryStrategy {
+    onGetUserQueries: () => Promise<ISavedQuery[]>
+    onIsUserQuery: (queryId: string) => boolean
+    onCreateUserQuery: (newQuery: { name: string; description?: string }, currentQuery: ISavedQuery) => Promise<string | null>
+    onUpdateUserQuery: (currentQuery: ISavedQuery) => Promise<string | null>
+    onDeleteUserQueries: (queryIds: string[]) => Promise<IDeletedUserQueriesResult>
+}
+\`\`\`
 
 Every flag in \`ITaskGridParameters\` defaults to \`false\` when \`onGetGridParameters\` is omitted or leaves it out. (The interface's own JSDoc claims \`true\` — it is wrong; the factory reads \`?? false\`.)
 
@@ -68,25 +79,25 @@ Every flag in \`ITaskGridParameters\` defaults to \`false\` when \`onGetGridPara
 |---|:---:|:---:|
 | \`onGetFieldMapping\` | ✅ | ✅ |
 | \`onCreateTaskStrategy\` | ✅ | ✅ |
-| \`onCreateSavedQueryStrategy\` | ✅ | ✅ |
-| \`onCreateUserQueryDataProvider\` | ✅ | ✅ |
+| \`onCreateSavedQueryStrategy\` | ✅ from \`systemQueries\` | ✅ from \`systemQueries\` |
+| \`onCreateUserQueryStrategy\` | ✅ your param → \`MemoryUserQueryStrategy\` | ✅ your param → \`DataverseUserQueryStrategy\` |
 | \`onLoadDependencies\` | ✅ resolves once, cached | ✅ re-runs on every remount |
 | \`onGetHeight\` | ✅ | ✅ |
 | \`onGetGridParameters\` | ✅ | ✅ |
 | \`onCreateLookupManyDataProvider\` | ✅ from \`lookupMany\` | ✅ from column metadata |
-| \`onCreateTemplateDataProvider\` | ✅ | — capture is not implemented |
-| \`onCreateGridCustomizerStrategy\` | ✅ forwards your param | — |
-| \`onCreateCustomColumnsStrategy\` | — | ✅ unconditionally, WIP |
+| \`onCreateTemplateDataProvider\` | ✅ your param → \`MemoryTemplateDataProvider\` | ✅ your param; nothing Dataverse-side ships |
+| \`onCreateGridCustomizerStrategy\` | ✅ forwards your param | ✅ forwards your param |
+| \`onCreateCustomColumnsStrategy\` | ✅ your param; nothing in-memory ships | ✅ your param → \`DataverseCustomColumnsStrategy\` |
 | \`onGetControlId\` | — | — |
 
-The two dashes that matter: no customizer on Dataverse, and no custom columns on memory. Both need a descriptor of your own or a subclass.
+Both descriptors forward every optional hook to a parameter of the same name, so you rarely need a subclass to switch a feature on — only to change what an already-wired piece *does*. The two gaps left are the implementations that do not exist: no Dataverse template provider, and no in-memory custom-columns strategy.
 
 ## Ordering: what runs when
 
 The sequence matters, because the strategies are created *after* configuration resolves:
 
 1. \`onLoadDependencies()\` — awaited first. Anything async belongs here.
-2. \`onCreateCustomColumnsStrategy()\`, then \`onCreateSavedQueryStrategy()\` and \`onGetFieldMapping()\`.
+2. \`onCreateCustomColumnsStrategy()\`, then \`onCreateSavedQueryStrategy()\` with \`onCreateUserQueryStrategy()\` beside it, and \`onGetFieldMapping()\`.
 3. \`onCreateTemplateDataProvider()\`, then \`onCreateTaskStrategy(deps)\` — the template provider is handed to the task strategy through \`deps\`. Creating a template is the template provider's own operation: call \`createTemplateFromTask\` on it, not on the task provider.
 4. The task strategy's own \`onInitialize(provider)\` runs, which is where it loads its records.
 
@@ -120,30 +131,39 @@ Note the split: capturing a template *from* a task belongs to this provider, whi
 
 ## Imports
 
-The extension classes are on the package root, but most of the *interfaces* you implement are not — they come from subpaths:
+Everything is on the package root — the classes, the contracts you implement, and the types they mention. There are no subpath imports to learn:
 
 \`\`\`ts
-//root barrel: every shipped class and its params interface
-import { MemoryTaskStrategy, DataverseTaskStrategy, MemorySavedQueryStrategy } from '@talxis/base-controls'
+import {
+    //classes
+    MemoryTaskStrategy, MemoryUserQueryStrategy, MemoryTemplateDataProvider,
+    DataverseTaskStrategy, DataverseUserQueryStrategy, DataverseCustomColumnsStrategy,
+    TemplateDataProviderBase, FetchXmlDataProviderFactory,
+} from '@talxis/base-controls'
 
-//the contracts you implement
-import type { ITaskGridDescriptor, ITaskStrategyDeps, IFieldMapping, ITaskGridParameters }
-    from '@talxis/base-controls/components/TaskGrid'
-import type { ITaskDataProviderStrategy, ITaskDataProvider, ISavedQuery, ISavedQueryStrategy, ITemplateDataProvider }
-    from '@talxis/base-controls/components/TaskGrid/providers'
-import type { IGridCustomizerStrategy, IGridCustomizer }
-    from '@talxis/base-controls/components/TaskGrid/components/grid'
+import type {
+    //the descriptor contract and what it hands you
+    ITaskGridDescriptor, ITaskStrategyDeps, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
+    //the strategies and providers
+    ITaskDataProviderStrategy, ITaskDataProvider, IRecordTree,
+    ISavedQuery, ISavedQueryStrategy, IUserQueryStrategy, ISavedQueryDataProvider,
+    ICustomColumnsStrategy, ITemplateDataProvider,
+    IGridCustomizerStrategy, IGridCustomizer,
+    //per-extension params and contexts
+    IMemoryTaskGridDescriptorParams, IMemoryStrategyContext, IMemoryTaskStrategyDependencies,
+    IDataverseTaskGridDescriptorParams, IDataverseStrategyContext, IDataverseTaskStrategyDependencies,
+} from '@talxis/base-controls'
 \`\`\`
 
-A few things are not exported at all and have to be written as object literals or reached by file path: \`IDataverseSavedQueryStrategyParameters\`, \`IDataverseCustomColumnsStrategyParameters\`, the \`IFormParameters\` used by \`DataverseTaskStrategy\`'s \`form\` hook, and \`FetchXmlDataProviderFactory\`.
+One exception: the \`IFormParameters\` shape used by \`DataverseTaskStrategy\`'s \`form\` hook is not exported, so let that callback's parameters be inferred rather than naming the type.
 
 ## Troubleshooting
 
 1. **Everything is flat** — \`parentId\` is not mapped to the attribute that actually holds the parent value, or the raw value is in a shape the lookup reader does not recognise. Dataverse records carry it under \`_<lookup>_value\`; a hand-built record can instead put an entity-reference array under the plain column name. A bare guid under the plain name is the one combination that does not work.
 2. **Rows are in an unexpected order** — \`stackRank\` is unmapped, or the ranks are not comparable strings.
 3. **Nothing renders and no error appears** — \`onLoadDependencies\` never resolved. It is awaited before the first provider is created, so a hanging promise there shows as an indefinite skeleton.
-4. **A feature is missing from the ribbon** — its flag in \`onGetGridParameters\` defaults to \`false\`, or the optional hook that enables it is not implemented.
-5. **A Dataverse grid never leaves the skeleton at all** — a startup read failed against a TALXIS model that is not in the environment: \`talxis_attributedefinition\` as the descriptor ships, or \`talxis_userquery\` with \`enableUserQueries\` on. Neither read is error-wrapped. Override the hook that serves the feature and the read is gone.
+4. **A feature is missing from the ribbon** — its flag in \`onGetGridParameters\` defaults to \`false\`, or the optional hook that enables it returned nothing. The getters AND the two, so both have to be in place.
+5. **A Dataverse grid never leaves the skeleton at all** — a startup read failed against a TALXIS model that is not in the environment: \`talxis_attributedefinition\` when a custom-columns strategy is wired, \`talxis_userquery\` when a user-query strategy is. Neither read is error-wrapped. Drop the callback for the feature you have no model for.
 
 Then pick a route: [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview), [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview), or [**Write your own**](?path=/story/task-grid-custom-strategies-write-your-own--overview).
                 `.trim(),

@@ -1,6 +1,6 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { LexoRank } from "lexorank";
-import type { IMemoryEntitySource, IMemoryTaskTemplateNode, IMemoryTemplateSource } from "@talxis/base-controls/components/TaskGrid";
+import type { IMemoryEntitySource, IMemoryTaskTemplateNode, IMemoryTemplateSource } from "@talxis/base-controls";
 import { personRef, tagRef } from "./memoryLookupManyData";
 
 // ─── Column names ─────────────────────────────────────────────────────────────

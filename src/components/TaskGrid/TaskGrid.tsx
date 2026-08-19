@@ -16,7 +16,7 @@ import { ITaskGridComponents, TaskGridComponents } from "./components/components
 import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
 import { LocalizationService } from "@utils";
 
-interface ITaskGridProps {
+export interface ITaskGridProps {
     //should be replaced by Context API in future
     pcfContext: ComponentFramework.Context<any, any>;
     taskGridDescriptor: ITaskGridDescriptor;

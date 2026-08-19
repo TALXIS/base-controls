@@ -1,26 +1,42 @@
-import { IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
+import { IDataProvider, IMemoryProviderEntityMetadata, IRawRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
-import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider } from "@components/TaskGrid/providers";
+import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
-import { IMemoryEntitySource, IMemoryTemplateSource } from "./interfaces";
-import { IMemoryTaskStrategyDependencies, MemoryTaskStrategy } from "./MemoryTaskStrategy";
-import { MemorySavedQueryStrategy } from "./MemorySavedQueryStrategy";
-import { MemoryTemplateDataProvider } from "./MemoryTemplateDataProvider";
+import { IMemoryEntitySource } from "./interfaces";
+import { MemoryTaskStrategy } from "./MemoryTaskStrategy";
 
-/** Dependencies resolved by {@link IMemoryTaskGridDescriptorParams} — see the interface for details. */
-export interface IMemoryTaskGridDescriptorParams extends IMemoryTaskStrategyDependencies {
+/**
+ * What the descriptor has resolved by the time it asks for an optional strategy — the counterpart to
+ * `IDataverseStrategyContext`.
+ */
+export interface IMemoryStrategyContext {
+    /** The task records resolved by `onInitialize` — the array the strategies write into. */
+    records: IRawRecord[];
+    /** The task entity metadata resolved by `onInitialize`. */
+    metadata: IMemoryProviderEntityMetadata;
+    /** The system views resolved by `onInitialize`. */
+    systemQueries: ISavedQuery[];
+}
+
+/** What the descriptor hands a consumer-supplied task strategy. */
+export interface IMemoryTaskStrategyContext extends IMemoryStrategyContext {
+    /** The providers and flags the grid built. Forward them to the strategy's second argument. */
+    deps: ITaskStrategyDeps;
+}
+
+/** Everything `onInitialize` resolves — the data and the options both. */
+export interface IMemoryTaskGridDescriptorParams {
+    /**
+     * The task records. **This array is written into** — creating, deleting, editing and moving tasks
+     * mutates it, which is how the data outlives the grid's remounts.
+     */
+    records: IRawRecord[];
+    /** Task entity metadata. `PrimaryIdAttribute` is required; `LogicalName` is recommended. */
+    metadata: IMemoryProviderEntityMetadata;
     /** Maps the column roles the grid needs (subject, parent, stack rank, state code) onto your column names. */
     fieldMapping: IFieldMapping;
-    /** Built-in, non-deletable views shown in the view switcher. At least one is required. */
+    /** Built-in, non-deletable views shown in the view switcher — and the source of every column definition. At least one is required. */
     systemQueries: ISavedQuery[];
-    /**
-     * Task templates: the template entity plus the child hierarchy each template expands into. Owned by
-     * {@link MemoryTemplateDataProvider}, which reads it to expand a template and writes to it when one
-     * is captured from a task. Omit to disable templates.
-     */
-    templates?: IMemoryTemplateSource;
-    /** Initial personal views. Editable and deletable at runtime; defaults to none. */
-    userQueries?: ISavedQuery[];
     /**
      * Candidate entities for lookup-many columns, keyed by task column name. Which columns *render*
      * as lookup-many is driven by `metadata.LookupMany` on the column itself, not by these keys.
@@ -29,9 +45,47 @@ export interface IMemoryTaskGridDescriptorParams extends IMemoryTaskStrategyDepe
     /** Feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
     gridParameters?: ITaskGridParameters;
     /**
-     * Supplies a strategy for deep customization of AG Grid column definitions, cell renderers,
-     * editors and row class rules. Lookup-many columns are already handled natively, so this is only
-     * needed for customizations of your own.
+     * (Optional) Supplies the task strategy — this is where every task-level option goes:
+     *
+     * ```ts
+     * onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
+     *     onInitialize: async () => ({
+     *         records, metadata,
+     *         onGetNewTaskDefaults: () => ({ statuscode: 1, priority: 1 }),
+     *         onIsRecordActive: record => record.statuscode !== 5,
+     *         onOpenDatasetItems: async references => { … },
+     *     }),
+     * }, deps)
+     * ```
+     *
+     * Omit it and the descriptor builds a plain `MemoryTaskStrategy` over the resolved records.
+     */
+    onCreateTaskStrategy?: (context: IMemoryTaskStrategyContext) => ITaskDataProviderStrategy;
+    /**
+     * (Optional) Supplies the personal-views implementation — typically
+     * `new MemoryUserQueryStrategy({ userQueries })`, or your own if the views are persisted somewhere.
+     * What you return decides whether the feature exists; omit it and personal views are off.
+     *
+     * The feature callbacks all work that way, and all of them receive what the descriptor resolved.
+     */
+    onCreateUserQueryStrategy?: (context: IMemoryStrategyContext) => IUserQueryStrategy | undefined;
+    /**
+     * (Optional) Supplies the template data provider — typically
+     * `new MemoryTemplateDataProvider({ templates })`. Omit it and template creation stays out of the
+     * ribbon.
+     */
+    onCreateTemplateDataProvider?: (context: IMemoryStrategyContext) => ITemplateDataProvider | undefined;
+    /**
+     * (Optional) Supplies a custom-columns strategy. There is no in-memory implementation, so this is
+     * the only way to switch user-defined columns on with this descriptor.
+     */
+    onCreateCustomColumnsStrategy?: (context: IMemoryStrategyContext) => ICustomColumnsStrategy | undefined;
+    /** (Optional) Supplies a lookup-many picker's candidates, replacing the `lookupMany` lookup. */
+    onCreateLookupManyDataProvider?: (parameters: ILookupManyDataProviderParameters) => IDataProvider | undefined;
+    /**
+     * (Optional) Supplies a strategy for deep customization of AG Grid column definitions, cell
+     * renderers, editors and row class rules. Lookup-many columns are already handled natively, so this
+     * is only needed for customizations of your own.
      */
     onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
 }
@@ -64,18 +118,16 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     private _height?: string;
     /**
      * Resolved once and then kept — this is the extension's persistence layer. The collections inside
-     * it (`tasks.records`, `userQueries`, `templates`) are mutated in place by the strategies, so
-     * everything the user does survives the remounts the grid performs.
+     * it are mutated in place by the strategies, so everything the user does survives the remounts the
+     * grid performs.
      */
     private _params?: IMemoryTaskGridDescriptorParams;
-    //per control instance, so the dialog provider and the delete handler are the same strategy
-    private _savedQueryStrategy?: MemorySavedQueryStrategy;
 
     /**
      * @param params.onInitialize — resolves the descriptor configuration. Awaited once, before any
      * strategy or data provider is created.
      * @param params.height — container height. Kept outside `onInitialize` because it is needed for
-     * skeleton rendering before the dependencies resolve.
+     * skeleton rendering before the configuration resolves.
      */
     constructor(params: { onInitialize: () => Promise<IMemoryTaskGridDescriptorParams>; height?: string }) {
         this._onInitialize = params.onInitialize;
@@ -96,11 +148,6 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
         if (params.systemQueries.length === 0) {
             throw new Error('MemoryTaskGridDescriptor requires at least one system query.');
         }
-        //normalised once so the strategies always have something to write into
-        params.userQueries ??= [];
-        if (params.templates) {
-            params.templates.children ??= {};
-        }
         this._params = params;
     }
 
@@ -119,38 +166,53 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
 
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
         const params = this._getParams();
-        //rebuilt per control instance; the views it reads and writes live in the params
-        this._savedQueryStrategy = new MemorySavedQueryStrategy({
+        return {
             onGetSystemQueries: async () => params.systemQueries,
-            userQueries: params.userQueries!,
-        });
-        return this._savedQueryStrategy;
+        };
     }
 
-    public onCreateUserQueryDataProvider(): IDataProvider {
-        if (!this._savedQueryStrategy) {
-            throw new Error('MemoryTaskGridDescriptor cannot create the user-query data provider before onCreateSavedQueryStrategy.');
-        }
-        return this._savedQueryStrategy.createDataProvider();
+    /**
+     * Delegates to the `onCreateUserQueryStrategy` parameter. Returning `undefined` — which is what
+     * omitting the parameter does — leaves personal views off.
+     */
+    public onCreateUserQueryStrategy(): IUserQueryStrategy | undefined {
+        return this._getParams().onCreateUserQueryStrategy?.(this._getStrategyContext());
     }
 
+    /**
+     * Delegates to the `onCreateTaskStrategy` parameter, falling back to a plain `MemoryTaskStrategy`
+     * over the resolved records. Either way the strategy is handed the *same* arrays a rebuilt one gets,
+     * so it sees everything its predecessor wrote.
+     */
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
-        const params = this._getParams();
-        //the callback hands over references into the resolved params, so a rebuilt strategy sees
-        //everything the previous one wrote. The params are a superset of the strategy's dependencies.
-        return new MemoryTaskStrategy({ onInitialize: async () => params }, deps);
+        const { records, metadata, onCreateTaskStrategy } = this._getParams();
+        return onCreateTaskStrategy?.({ ...this._getStrategyContext(), deps })
+            ?? new MemoryTaskStrategy({ onInitialize: async () => ({ records, metadata }) }, deps);
     }
 
+    /** Delegates to the `onCreateTemplateDataProvider` parameter. Templates are off without it. */
     public onCreateTemplateDataProvider(): ITemplateDataProvider | undefined {
-        const { templates } = this._getParams();
-        return templates && new MemoryTemplateDataProvider({ templates: templates });
+        return this._getParams().onCreateTemplateDataProvider?.(this._getStrategyContext());
     }
 
-    /** Builds the picker's candidate provider from the {@link IMemoryTaskGridDescriptorParams.lookupMany} entry for the column. */
-    public onCreateLookupManyDataProvider({ column }: ILookupManyDataProviderParameters): IDataProvider {
-        const source = this._getParams().lookupMany?.[column.name];
+    /** Delegates to the `onCreateCustomColumnsStrategy` parameter. Custom columns are off without it. */
+    public onCreateCustomColumnsStrategy(): ICustomColumnsStrategy | undefined {
+        return this._getParams().onCreateCustomColumnsStrategy?.(this._getStrategyContext());
+    }
+
+    /**
+     * Delegates to the `onCreateLookupManyDataProvider` parameter, falling back to the
+     * {@link IMemoryTaskGridDescriptorParams.lookupMany} entry for the column.
+     */
+    public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider {
+        const params = this._getParams();
+        const dataProvider = params.onCreateLookupManyDataProvider?.(parameters);
+        if (dataProvider) {
+            return dataProvider;
+        }
+        const source = params.lookupMany?.[parameters.column.name];
         if (!source) {
-            throw new Error(`No lookup-many source is configured for column "${column.name}". Add an entry for it to the "lookupMany" parameter.`);
+            throw new Error(`No lookup-many source is configured for column "${parameters.column.name}". Add an entry for it to the "lookupMany" parameter, or return a provider from "onCreateLookupManyDataProvider".`);
         }
         return this._createDataProvider(source);
     }
@@ -170,6 +232,11 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
         });
         provider.setColumns(source.columns);
         return provider;
+    }
+
+    private _getStrategyContext(): IMemoryStrategyContext {
+        const { records, metadata, systemQueries } = this._getParams();
+        return { records, metadata, systemQueries };
     }
 
     private _getParams(): IMemoryTaskGridDescriptorParams {

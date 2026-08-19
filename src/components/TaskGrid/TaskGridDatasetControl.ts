@@ -83,19 +83,20 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return !!this._customColumnsDataProvider;
     }
 
-    public isHideInactiveTasksToggleVisible(): boolean {
-        return this._gridParameters.enableHideInactiveTasksToggle ?? false;
+    public isCustomColumnCreationEnabled(): boolean {
+        return this.isCustomColumnsEnabled() && (this._gridParameters.enableCustomColumnCreation ?? false);
     }
 
-    public isCustomColumnCreationEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnCreation ?? false;
-    }
-    
     public isCustomColumnEditingEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnEditing ?? false;
+        return this.isCustomColumnsEnabled() && (this._gridParameters.enableCustomColumnEditing ?? false);
     }
+
     public isCustomColumnDeletionEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnDeletion ?? false;
+        return this.isCustomColumnsEnabled() && (this._gridParameters.enableCustomColumnDeletion ?? false);
+    }
+
+    public isHideInactiveTasksToggleVisible(): boolean {
+        return this._gridParameters.enableHideInactiveTasksToggle ?? false;
     }
 
     public isInlineCreateEnabled(): boolean {
@@ -120,19 +121,19 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
     
     public isViewManagerEnabled(): boolean {
-        return this._gridParameters.enableQueryManager ?? false;
+        return this.isUserQueriesEnabled() && (this._gridParameters.enableQueryManager ?? false);
     }
 
     public isSaveQueryAsNewEnabled(): boolean {
-        return this._gridParameters.enableSaveAsNewQuery ?? false;
+        return this.isUserQueriesEnabled() && (this._gridParameters.enableSaveAsNewQuery ?? false);
     }
 
     public isSaveQueryChangesEnabled(): boolean {
-        return this._gridParameters.enableSaveQueryChanges ?? false;
+        return this.isUserQueriesEnabled() && (this._gridParameters.enableSaveQueryChanges ?? false);
     }
 
-    public isUserQueriesFeatureEnabled(): boolean {
-        return this._gridParameters.enableUserQueries ?? false;
+    public isUserQueriesEnabled(): boolean {
+        return this._savedQueryDataProvider.isUserQueriesEnabled();
     }
 
     public getSavedQueryDataProvider() {
@@ -146,10 +147,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._templateDataProvider;
     }
 
-
-    public createUserQueryDataProvider(): IDataProvider {
-        return this._descriptor.onCreateUserQueryDataProvider();
-    }
 
     public createLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider {
         const dataProvider = this._descriptor.onCreateLookupManyDataProvider?.(parameters);

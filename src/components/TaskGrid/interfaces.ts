@@ -2,7 +2,7 @@ import { IColumn, IDataset, IDataProvider, IRecord } from "@talxis/client-librar
 import { IDatasetControl } from "@utils/dataset-control";
 import { IGridCustomizerStrategy } from "./components/grid/grid-customizer";
 import { ICustomColumnsDataProvider, ICustomColumnsStrategy } from "./providers/custom-columns/CustomColumnsDataProvider";
-import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
+import { ISavedQueryDataProvider, ISavedQueryStrategy, IUserQueryStrategy } from "./providers/saved-query";
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
 import { ITemplateDataProvider } from "./providers/template";
 import { ITaskGridLabels } from "./labels";
@@ -59,19 +59,17 @@ export interface ITaskGridParameters {
     enableHideInactiveTasksToggle?: boolean;
     /** Show the personal/system scope selector inside the Edit Columns panel. Defaults to `false`. */
     enableEditColumnsScopeSelector?: boolean;
-    /** Enable user queries. Defaults to `false`. */
-    enableUserQueries?: boolean;
-    /** Show the query manager. Defaults to `false`. */
+    /** Show the query manager. Defaults to `false`. Only effective when the user-queries feature is on — the getter ANDs the two. */
     enableQueryManager?: boolean;
-    /** Show the "Save as new" button in the query manager. Defaults to `false`. */
+    /** Show the "Save as new" button in the query manager. Defaults to `false`. Only effective when the user-queries feature is on. */
     enableSaveAsNewQuery?: boolean;
-    /** Show the "Save changes" button in the query manager. Defaults to `false`. */
+    /** Show the "Save changes" button in the query manager. Defaults to `false`. Only effective when the user-queries feature is on. */
     enableSaveQueryChanges?: boolean;
-    /** Enable creation of custom columns. Defaults to `false`. */
+    /** Enable creation of custom columns. Defaults to `false`. Only effective when a custom-columns strategy was supplied. */
     enableCustomColumnCreation?: boolean;
-    /** Enable editing of custom columns. Defaults to `false`. */
+    /** Enable editing of custom columns. Defaults to `false`. Only effective when a custom-columns strategy was supplied. */
     enableCustomColumnEditing?: boolean;
-    /** Enable deletion of custom columns. Defaults to `false`. */
+    /** Enable deletion of custom columns. Defaults to `false`. Only effective when a custom-columns strategy was supplied. */
     enableCustomColumnDeletion?: boolean;
     /** Enable inline creation of tasks. Defaults to `false`. */
     enableInlineCreation?: boolean;
@@ -112,14 +110,23 @@ export interface ILookupManyDataProviderParameters {
 export interface ITaskGridDescriptor {
     /** Returns the mapping of logical column roles to physical schema attribute names. */
     onGetFieldMapping: () => IFieldMapping;
-    /** Returns the strategy responsible for loading system/user views and persisting view changes. */
+    /**
+     * Returns the strategy responsible for loading system views. Personal views are optional and come
+     * from its `onCreateUserQueryStrategy`, which also supplies the dialog's data provider — omit that
+     * and the user-queries feature is off.
+     */
     onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
     /** Returns the strategy that handles all task CRUD, move, template and record-save operations. */
     onCreateTaskStrategy: (deps: ITaskStrategyDeps) => ITaskDataProviderStrategy;
-    /** Returns an `IDataProvider` that drives the user-query creation/update dialog. */
-    onCreateUserQueryDataProvider: () => IDataProvider;
     /** (Optional) Returns the container height as a CSS string. Falls back to a default stretch when omitted. */
     onGetHeight?: () => string | undefined;
+    /**
+     * (Optional) Returns the personal-views implementation. When it returns a strategy, the
+     * user-queries feature is enabled: *My views*, the save commands and the view manager appear.
+     *
+     * Called alongside `onCreateSavedQueryStrategy`, when the grid builds its saved-query provider.
+     */
+    onCreateUserQueryStrategy?: () => IUserQueryStrategy | undefined;
     /** (Optional) Returns the strategy for managing dynamic (user-defined) columns. When provided, the custom-columns feature is enabled. */
     onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy | undefined;
     /** (Optional) Returns an `ITemplateDataProvider` for task templates. When provided, the template-based task creation feature is enabled. */
@@ -140,7 +147,7 @@ export interface ITaskGridDescriptor {
     onGetControlId?: () => string;
     /** (Optional) Async hook called before any data provider is created. Use for lazy loading or authentication. */
     onLoadDependencies?: () => Promise<void>;
-    /** (Optional) Returns UI feature flags. All flags default to `true` when omitted. */
+    /** (Optional) Returns UI feature flags. Every flag defaults to `false` when omitted. */
     onGetGridParameters?: () => ITaskGridParameters;
 }
 
@@ -158,8 +165,6 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
      * @throws If custom columns were not enabled (no `onCreateCustomColumnsStrategy` in the descriptor).
      */
     getCustomColumnsDataProvider: () => ICustomColumnsDataProvider;
-    /** Creates a fresh `IDataProvider` for the user-query creation/update dialog. */
-    createUserQueryDataProvider: () => IDataProvider;
     /**
      * Creates the `IDataProvider` supplying the candidate records of a lookup-many cell — its picker's
      * options. Called once per cell, because the candidates may depend on the row.
@@ -207,20 +212,20 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isNavigationEnabled: () => boolean;
     /** Returns `true` when a custom columns strategy was supplied through the descriptor. */
     isCustomColumnsEnabled: () => boolean;
-    /** Whether the view manager is enabled (from `ITaskGridParameters.enableQueryManager`). */
+    /** Whether the view manager is enabled: user queries are on **and** `ITaskGridParameters.enableQueryManager`. */
     isViewManagerEnabled: () => boolean;
-    /** Whether the "Save as new" button is enabled (from `ITaskGridParameters.enableSaveAsNewQuery`). */
+    /** Whether the "Save as new" button is enabled: user queries are on **and** `ITaskGridParameters.enableSaveAsNewQuery`. */
     isSaveQueryAsNewEnabled: () => boolean;
-    /** Whether the "Save changes" button is enabled (from `ITaskGridParameters.enableSaveQueryChanges`). */
+    /** Whether the "Save changes" button is enabled: user queries are on **and** `ITaskGridParameters.enableSaveQueryChanges`. */
     isSaveQueryChangesEnabled: () => boolean;
-    /** Whether custom column creation is enabled (from `ITaskGridParameters.enableCustomColumnCreation`). */
+    /** Whether custom column creation is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnCreation`. */
     isCustomColumnCreationEnabled: () => boolean;
-    /** Whether custom column editing is enabled (from `ITaskGridParameters.enableCustomColumnEditing`). */
+    /** Whether custom column editing is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnEditing`. */
     isCustomColumnEditingEnabled: () => boolean;
-    /** Whether custom column deletion is enabled (from `ITaskGridParameters.enableCustomColumnDeletion`). */   
+    /** Whether custom column deletion is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnDeletion`. */
     isCustomColumnDeletionEnabled: () => boolean;
-    /** Whether user queries are enabled (from `ITaskGridParameters.enableUserQueries`). */
-    isUserQueriesFeatureEnabled: () => boolean;
+    /** Returns `true` when the saved-query strategy supplied a user-query strategy through `onCreateUserQueryStrategy`. */
+    isUserQueriesEnabled: () => boolean;
     /** Whether inline task creation is enabled (from `ITaskGridParameters.enableInlineCreation`). */
     isInlineCreateEnabled: () => boolean;
 }

@@ -2,30 +2,42 @@ import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { IManyToManyRelationship, IRelationship } from "@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition";
 
 
-/** Supported Dataverse relationship kinds used by the handler. */
+/** The `RelationshipType` values Dataverse metadata reports, which the handler branches on. */
 enum RelationshipType {
     OneToMany = 0,
     ManyToMany = 1
 }
 
-/** Constructor parameters required to resolve relationship metadata. */
-interface IManyToManyTestParams {
-    /** Parent entity navigation property name that identifies the relationship. */
-    navigationPropertyName: string;
-    /** Logical name of the source entity for association operations. */
+/** Constructor parameters for {@link LookupManyHandler}. */
+export interface ILookupManyHandlerParameters {
+    /**
+     * Logical name of the entity the column sits on — the task entity. Its metadata is where the
+     * relationship is looked up, and it is the target of the associate/disassociate requests.
+     */
     entityName: string;
-
-    /** Optional custom intersection configuration for non-standard many-to-many persistence. */
+    /**
+     * The navigation property that identifies the relationship, as it appears on `entityName`. Any of
+     * the four names Dataverse reports will match: for a 1:N relationship the referenced or referencing
+     * navigation property, for an N:N either side's. This is the only thing you have to know — the
+     * schema name, the related entity and the relationship kind are all read from metadata in
+     * {@link LookupManyHandler.init}.
+     */
+    navigationPropertyName: string;
+    /**
+     * Set this when the relationship is modelled through an intersection **entity** of your own rather
+     * than a native N:N. Association then becomes a create/delete of intersection records instead of an
+     * `Associate`/`Disassociate` request.
+     */
     customIntersection?: ICustomIntersection;
 }
 
-/** Custom intersection mapping used for manual association/disassociation. */
-interface ICustomIntersection {
-    /** Navigation property name from intersection entity to related entity. */
+/** Describes a hand-modelled intersection entity, for relationships Dataverse cannot associate natively. */
+export interface ICustomIntersection {
+    /** Navigation property on the intersection entity that points at the *related* record. */
     referencingEntityNavigationPropertyName: string;
 }
 
-/** Extended entity reference used to carry raw lookup payload and custom intersection ids. */
+/** An entity reference carrying the raw lookup payload, including the intersection id when there is one. */
 interface IRelatedEntityReference extends ComponentFramework.EntityReference {
     rawData?: {
         [key: string]: any;
@@ -35,22 +47,32 @@ interface IRelatedEntityReference extends ComponentFramework.EntityReference {
 
 /** Contract for a lookup-many relationship handler. */
 export interface ILookupManyHandler {
-    /** Loads relationship metadata and prepares the handler for usage. */
+    /** Resolves the relationship from metadata. Must be awaited before anything else on the handler. */
     init(): Promise<void>;
-    /** Returns OData expand segment for the configured relationship. */
+    /** Returns the `$expand` clause that loads the related records, with an optional `$select`. */
     getExpand(select?: string): string;
-    //*/ Indicates whether this handler uses a custom intersection entity for association management. */
+    /** Whether association goes through an intersection entity of your own instead of Dataverse's own request. */
     isCustomIntersection(): boolean;
-    /** Returns cached metadata for the custom intersection entity. Throws if custom intersection is not configured or metadata is unavailable. */
+    /**
+     * Returns the cached metadata of the intersection entity.
+     * @throws When no `customIntersection` was configured, or its metadata could not be read.
+     */
     getCustomIntersectionEntityMetadata: () => Xrm.Metadata.EntityMetadata;
-    /** Saves lookup-many association changes for a record. */
+    /** Persists the column's added and removed references for one record. */
     saveRecord(record: IRecord, lookupManyColName: string): Promise<IRecordSaveOperationResult>;
 }
 
 
 /**
- * Handles metadata resolution and associate/disassociate operations
- * for lookup-many fields in task grid records.
+ * Turns one lookup-many column into Dataverse relationship operations.
+ *
+ * Given the entity and the navigation property that names the relationship, it reads the rest from
+ * metadata — the relationship kind, its schema name and the entity on the other side — then loads the
+ * related records through `$expand` and persists the user's edits by associating and disassociating.
+ * A `customIntersection` swaps that last part for create/delete on an intersection entity you model
+ * yourself.
+ *
+ * One handler per lookup-many column; `DataverseTaskStrategy` builds and caches them.
  */
 export class LookupManyHandler implements ILookupManyHandler {
     private _relationship?: IRelationship | IManyToManyRelationship;
@@ -60,13 +82,18 @@ export class LookupManyHandler implements ILookupManyHandler {
     private _entityName: string;
     private _navigationPropertyName: string;
 
-    constructor(params: IManyToManyTestParams) {
+    /** @param params — see {@link ILookupManyHandlerParameters}. */
+    constructor(params: ILookupManyHandlerParameters) {
         this._navigationPropertyName = params.navigationPropertyName;
         this._entityName = params.entityName;
         this._customIntersection = params.customIntersection;
     }
 
-    /** Initializes the handler and caches relationship metadata. */
+    /**
+     * Resolves the relationship behind `navigationPropertyName` and caches it, along with the
+     * intersection entity's metadata when one is configured. Cheap to call again — it returns early
+     * once resolved.
+     */
     public async init() {
         if (this._initialized) return;
         this._relationship = await this._fetchRelationship();
@@ -77,8 +104,8 @@ export class LookupManyHandler implements ILookupManyHandler {
     }
 
     /**
-     * Builds an OData expand clause for the configured relationship.
-     * @param select Optional comma-separated projection for expanded records.
+     * Builds the `$expand` clause that brings the related records back with the task.
+     * @param select Optional comma-separated column list, so only what the cell renders is fetched.
      */
     public getExpand(select?: string): string {
         if (this.isCustomIntersection()) {
@@ -114,9 +141,10 @@ export class LookupManyHandler implements ILookupManyHandler {
     }
 
     /**
-     * Persists association changes by comparing current values with original values.
-     * @param record Record being saved.
-     * @param lookupManyColName Logical column name for the lookup-many field.
+     * Diffs the column's current references against the ones the record was loaded with, then
+     * associates what was added and disassociates what was removed.
+     * @param record The record being saved.
+     * @param lookupManyColName Name of the lookup-many column on that record.
      */
     public async saveRecord(record: IRecord, lookupManyColName: string): Promise<IRecordSaveOperationResult> {
         const recordId = record.getRecordId();

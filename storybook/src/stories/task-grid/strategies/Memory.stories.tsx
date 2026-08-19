@@ -24,13 +24,17 @@ It is the strategy powering every grid in these docs, including the one below. R
 
 It covers every feature the grid has a hook for, most of them through a dedicated strategy or provider:
 
-| Feature | Handled by |
-|---|---|
-| Task CRUD, move, reparent | \`MemoryTaskStrategy\` |
-| System and personal views, incl. create, rename and delete | \`MemorySavedQueryStrategy\` |
-| Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\` |
-| Lookup-many pickers | one provider per lookup-many column, from \`lookupMany\` |
-| AG Grid customizer | forwarded from your \`onCreateGridCustomizerStrategy\` param |
+| Feature | Handled by | On when |
+|---|---|---|
+| Task CRUD, move, reparent | \`MemoryTaskStrategy\` | always |
+| System views | the descriptor, from \`systemQueries\` | always |
+| Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\` | \`onCreateUserQueryStrategy\` returns one |
+| Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\` | \`onCreateTemplateDataProvider\` returns one |
+| Lookup-many pickers | one provider per lookup-many column, from \`lookupMany\` | a column is flagged \`metadata.LookupMany\` |
+| AG Grid customizer | yours | \`onCreateGridCustomizerStrategy\` returns one |
+| Custom columns | **nothing in-memory implements them** | only if \`onCreateCustomColumnsStrategy\` returns your own |
+
+Note the pattern in that last column: **a feature is on when you supply its implementation.** There are no flags for these — passing \`MemoryUserQueryStrategy\` is what enables personal views, and a consumer who never mentions it does not pay for the code in their bundle.
 
 That is more of the surface than the Dataverse descriptor covers — templates and the customizer hook are missing there. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
 
@@ -40,7 +44,7 @@ import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
 
 ## Minimal setup
 
-Four things are required: the records, the entity metadata, the field mapping, and at least one view.
+Four things are required: the records, the entity metadata, the field mapping, and at least one view. Everything is resolved by \`onInitialize\` — \`height\` is the one parameter outside it:
 
 \`\`\`ts
 const descriptor = new MemoryTaskGridDescriptor({
@@ -116,14 +120,16 @@ Optional:
 
 | Parameter | Description |
 |---|---|
-| \`userQueries\` | Initial personal views. Editable and deletable at runtime. |
-| \`templates\` | Task templates plus the hierarchy each expands into. Omit to disable the feature. |
+| \`onCreateTaskStrategy\` | Returns the task strategy, and with it every task-level option. See [**Task options**](#task-options). |
+| \`onCreateUserQueryStrategy\` | Returns the personal-views implementation — usually \`new MemoryUserQueryStrategy({ userQueries })\`. Omit for system views only. |
+| \`onCreateTemplateDataProvider\` | Returns the template provider — usually \`new MemoryTemplateDataProvider({ templates })\`. Omit to disable templates. |
+| \`onCreateCustomColumnsStrategy\` | Returns a custom-columns strategy. Nothing in-memory ships, so this is the only way to switch the feature on here. |
+| \`onCreateLookupManyDataProvider\` | Returns a picker's candidates, overriding the \`lookupMany\` lookup. |
+| \`onCreateGridCustomizerStrategy\` | Supplies your own AG Grid customizer. |
 | \`lookupMany\` | Candidate records for lookup-many columns, keyed by column name. |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
-| \`onGetNewTaskDefaults\` | Field values for newly created tasks. |
-| \`onIsRecordActive\` | Whether a task counts as active. Defaults to \`record[stateCode] === 0\`. |
-| \`onOpenDatasetItems\` | Called when the user opens a task. Defaults to a no-op. |
-| \`onCreateGridCustomizerStrategy\` | Supplies your own AG Grid customizer. |
+
+> **The \`onCreate*\` callbacks run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created.
 
 > **The \`records\` array is the store.** It is written into rather than copied — creating, deleting, editing and moving mutate it in place, the way those operations would hit a server. Pass a \`structuredClone\` of a shared fixture when two grids need to stay independent.
 
@@ -154,26 +160,35 @@ const getQueryColumns = (...visibleColumnNames: string[]): IColumn[] =>
     }))
 \`\`\`
 
-## New task defaults
+## Task options
 
-A created task starts with every column of the active view set to \`null\`. Supply business defaults so a new row looks like a task rather than a row of empty cells:
+Anything that changes how *tasks* behave belongs to the task strategy, so it is passed where the strategy is built. The descriptor hands you the resolved \`records\` and \`metadata\` plus the grid's \`deps\`:
 
 \`\`\`ts
-onGetNewTaskDefaults: () => ({
-    statuscode: 1,
-    priority: 1,
-    percentcomplete: 0,
-}),
+onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
+    onInitialize: async () => ({
+        records,
+        metadata,
+        //a created task starts with every column of the active view null - make it look like a task
+        onGetNewTaskDefaults: () => ({ statuscode: 1, priority: 1, percentcomplete: 0 }),
+        //defaults to record[stateCode] === 0
+        onIsRecordActive: record => record.statuscode !== 5,
+        //defaults to a no-op; this is where a real app would navigate
+        onOpenDatasetItems: async (references, isTaskEntity, { isTaskEditingEnabled }) => null,
+    }),
+}, deps),
 \`\`\`
 
-The primary id, parent lookup and stack rank are always computed by the strategy and cannot be overridden here.
+Hand back the \`records\` and \`metadata\` you were given rather than fresh ones — that array is the store, and a rebuilt strategy has to see what its predecessor wrote. The primary id, parent lookup and stack rank are always computed by the strategy and cannot be overridden. Omit the callback entirely and the descriptor builds a plain \`MemoryTaskStrategy\` over the same data.
+
+The same shape is the way in to a *different* task strategy — your own, or a subclass that persists writes. See [**Custom strategies → Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview).
 
 ## Templates
 
-\`templates\` enables template-based creation. It is an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into. The descriptor hands it to \`MemoryTemplateDataProvider\`, which owns it from then on — the task strategy reads templates through that provider rather than from its own dependencies:
+Return a \`MemoryTemplateDataProvider\` from \`onCreateTemplateDataProvider\` and template-based creation appears in the ribbon. Its \`templates\` source is an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into; the provider owns it from then on, and the task strategy reads templates through the provider rather than from its own dependencies:
 
 \`\`\`ts
-templates: {
+const templates = {
     records: [{ templateid: 'tpl-1', subject: 'Bug fix' }],
     columns: TEMPLATE_COLUMNS,
     metadata: { PrimaryIdAttribute: 'templateid', PrimaryNameAttribute: 'subject' },
@@ -187,6 +202,9 @@ templates: {
         ],
     },
 }
+
+//in onInitialize, so the captured templates survive the grid's remounts
+onCreateTemplateDataProvider: () => new MemoryTemplateDataProvider({ templates }),
 \`\`\`
 
 Note the split: expanding a template *into* tasks is the task strategy's job, while capturing one *from* a task belongs to the \`ITemplateDataProvider\`. Each node's \`values\` may set **any** task column, and \`children\` nests to any depth. Creating a template *from* an existing task works in reverse: the task's visible column values are captured into \`values\`, and its subtree becomes \`children\`. That capture lives in \`MemoryTemplateDataProvider\` — the \`ITemplateDataProvider\` the descriptor builds from \`templates\` — and it pushes into the same \`records\` array, so a template made at runtime survives the grid's remounts like everything else.
@@ -270,7 +288,7 @@ class MyTaskStrategy extends MemoryTaskStrategy {
 
 - **Insert cost is linear in the sibling count.** Creating or moving a task scans the task map for sibling ranks. Fine for the hundreds-to-low-thousands of rows the grid is built for; not a plan for six-figure task sets.
 - **No related-entity columns.** \`onGetAvailableRelatedColumns\` returns \`[]\`, so nothing reachable only through a relationship can be added to a view.
-- **No custom columns.** This descriptor does not implement \`onCreateCustomColumnsStrategy\`.
+- **No custom columns out of the box.** Nothing in-memory implements them, so \`onCreateCustomColumnsStrategy\` has to be yours.
 - **Nothing is persisted unless you persist it**, as above.
                 `.trim(),
             },

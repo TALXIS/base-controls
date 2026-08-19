@@ -35,7 +35,7 @@ export const ViewSwitcher = () => {
     }
 
     const getViewSwitcherItems = (): IContextualMenuItem[] => {
-        const userQueriesEnabled = datasetControl.isUserQueriesFeatureEnabled();
+        const userQueriesEnabled = datasetControl.isUserQueriesEnabled();
         const isViewManagerEnabled = datasetControl.isViewManagerEnabled();
         const isSaveAsNewEnabled = datasetControl.isSaveQueryAsNewEnabled();
         const isSaveEnabled = datasetControl.isSaveQueryChangesEnabled();
@@ -79,7 +79,7 @@ export const ViewSwitcher = () => {
                     text: localizationService.getLocalizedString('saveExisting'),
                     iconProps: { iconName: 'Save' },
                     onClick: async () => {
-                        savedQueryDataProvider.updateUserQuery(taskDataProvider);
+                        savedQueryDataProvider.updateCurrentUserQueryFromGridState(taskDataProvider);
                     }
                 }] : []),
                 ...(isViewManagerEnabled ? [

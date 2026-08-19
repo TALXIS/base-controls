@@ -20,7 +20,7 @@ Every shipped strategy and descriptor is exported, so \`class Mine extends Their
 
 ## Start with the params
 
-Most of what looks like a subclass is a constructor callback — new-task defaults, what counts as active, what happens on open, and the grid customizer are all parameters on \`MemoryTaskGridDescriptor\`. See [**Before you subclass anything**](?path=/story/task-grid-custom-strategies--overview).
+Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open, the grid customizer — and every optional feature: personal views, templates, custom columns and lookup-many candidates are all \`onCreate*\` parameters on **both** shipped descriptors. Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-custom-strategies--overview).
 
 ## Subclassing a task strategy
 
@@ -40,9 +40,7 @@ The subclass still needs both constructor arguments, so return it from your desc
 
 ## Subclassing a descriptor
 
-This is the most useful of the three, because a descriptor hook is what decides *which strategy serves which feature*. Overriding one swaps a feature's implementation without touching anything else — return \`undefined\` to switch the feature off, a shipped strategy from the other extension, or one of your own. The Dataverse page uses exactly this to drop the \`talxis_attributedefinition\` and \`talxis_userquery\` dependencies: [**Swapping a default strategy**](?path=/story/task-grid-strategies-dataverse--overview).
-
-Adding an optional hook the shipped descriptor does not implement is the same move. Giving the Dataverse descriptor a [**Customizer**](?path=/story/task-grid-customizations-customizer--overview):
+Since every optional feature is already a parameter, the reason to subclass a descriptor is narrower than it used to be: you want to change something the parameters cannot express — the FetchXML the task strategy gets, the field mapping, or a hook's answer computed from state only the subclass has.
 
 \`\`\`ts
 class MyDataverseDescriptor extends DataverseTaskGridDescriptor {
@@ -51,19 +49,18 @@ class MyDataverseDescriptor extends DataverseTaskGridDescriptor {
         super({ onInitialize: async () => _params, height: '600px' })
     }
 
-    public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy {
-        return new MyCustomizerStrategy()
+    public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
+        return new MyTaskStrategy({ fetchXml: this._rewriteFetchXml(this._params.baseFetchXml) }, deps)
     }
 }
 \`\`\`
 
-Adding a hook is safe because nothing in the base class reads it. Overriding one that already exists is where the traps are.
+Overriding a hook the base class does not read is safe. Overriding one it does is where the traps are.
 
 ## What is actually overridable
 
 - **All strategy state is private.** Across \`extensions/\`, the only \`protected\` members are \`onCreateTemplateFromTask\` on the two template providers — the one member designed to be overridden. Everything else is either the public hook surface or private fields you cannot reach.
-- **\`MemorySavedQueryStrategy\` cannot be subclassed at all in the usual way.** Its five interface members are arrow-function class *fields*, not prototype methods. A subclass that declares \`onGetUserQueries()\` as a method is silently shadowed by the base's instance field, and \`super.onGetUserQueries\` is \`undefined\` — a \`TypeError\` at call time, not a compile error. To change one, re-declare it as a field, and accept that you cannot delegate to the original.
-- **\`MemoryTaskGridDescriptor.onCreateUserQueryDataProvider\` depends on \`onCreateSavedQueryStrategy\` having run**, through a private field. Override the latter without calling \`super\` and the former throws *"cannot create the user-query data provider before onCreateSavedQueryStrategy"*.
+- **The user-query and template strategies are the ones you replace by parameter, not by subclass.** \`MemoryUserQueryStrategy\`, \`DataverseUserQueryStrategy\` and \`MemoryTemplateDataProvider\` all use prototype methods, so subclassing them works normally — but returning your own implementation from the descriptor's \`onCreate*\` callback is usually less work than inheriting one.
 - **Neither descriptor exposes its resolved params.** \`_params\` is private in both, so a subclass that needs \`fetchXml\`, \`records\` or \`fieldMapping\` must keep the object it passed to \`onInitialize\`, as in the snippet above.
 - **\`DataverseTaskStrategy\` has one built-in extension point that is not a subclass**: the \`form\` param's \`onGetFormParameters\`, which lets you rewrite the page input and navigation options for the create, edit, bulk-edit and open dialogs.
 
