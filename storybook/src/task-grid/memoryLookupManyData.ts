@@ -14,8 +14,8 @@ export const PEOPLE_METADATA: IMemoryProviderEntityMetadata = {
 };
 
 export const PEOPLE_COLUMNS: IColumn[] = [
-    { name: 'name',     dataType: 'SingleLine.Text', displayName: 'Name',      isPrimary: true },
-    { name: 'imageurl', dataType: 'SingleLine.Text', displayName: 'Image URL', isHidden: true },
+    { name: 'name',     dataType: 'SingleLine.Text', displayName: 'Name',      visualSizeFactor: 200, isPrimary: true },
+    { name: 'imageurl', dataType: 'SingleLine.Text', displayName: 'Image URL', visualSizeFactor: 200, isHidden: true },
 ];
 
 export const PEOPLE: IRawRecord[] = [
@@ -42,8 +42,8 @@ export const TAGS_METADATA: IMemoryProviderEntityMetadata = {
 };
 
 export const TAGS_COLUMNS: IColumn[] = [
-    { name: 'name',  dataType: 'SingleLine.Text', displayName: 'Name',  isPrimary: true },
-    { name: 'color', dataType: 'SingleLine.Text', displayName: 'Color', isHidden: true },
+    { name: 'name',  dataType: 'SingleLine.Text', displayName: 'Name',  visualSizeFactor: 200, isPrimary: true },
+    { name: 'color', dataType: 'SingleLine.Text', displayName: 'Color', visualSizeFactor: 120, isHidden: true },
 ];
 
 const C = {

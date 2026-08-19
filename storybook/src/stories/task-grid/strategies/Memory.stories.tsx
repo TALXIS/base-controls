@@ -252,6 +252,19 @@ Note the split: expanding a template *into* tasks is the task strategy's job, wh
 
 ## Lookup-many columns
 
+> **Filtering a lookup column is something you declare, not something the strategy decides.** A column is filterable when its \`metadata.SupportedFilterConditionOperators\` is non-empty; leave it out and the grid hides the filter menu for that column. Sorting and quick find are unaffected either way.
+>
+> Whether you should declare it depends on what the lookup values point at, which is why the strategy stays out of it — a memory grid can perfectly well hold lookups bound to real Dataverse records (loaded through the Web API into your array), and filtering those works. Declare the operators there:
+>
+> \`\`\`ts
+> metadata: {
+>     LookupMany: true,
+>     SupportedFilterConditionOperators: Operators.GetOperatorsForDataType(DataTypes.MultiSelectOptionSet).map(op => op.Value),
+> }
+> \`\`\`
+>
+> For lookups that are *not* bound to a Dataverse entity — the invented records in these docs, for instance — declare nothing, so the grid does not offer a filter that matches nothing. \`DataverseTaskStrategy\` can inject the operators for every \`LookupMany\` column itself, because there the binding is a given.
+
 A column flagged \`metadata.LookupMany\` renders as a multi-record picker, and \`onCreateLookupManyDataProvider\` feeds it. The candidates are records like any other, so \`MemoryLookupManyDataProviderFactory\` turns an \`IMemoryEntitySource\` into the provider the picker wants — one per column, chosen by column name:
 
 \`\`\`ts
