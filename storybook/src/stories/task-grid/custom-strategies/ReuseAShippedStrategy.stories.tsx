@@ -74,13 +74,14 @@ Note what is *not* here: no \`onCreateCustomColumnsStrategy\`, so nothing reads 
 
 ## Your own loader on MemoryTaskStrategy
 
-If your data can be held in memory, you do not need a new task strategy at all. \`MemoryTaskStrategy\` takes an async callback, so point it at your own loader and keep everything else — from a descriptor of your own, or through \`MemoryTaskGridDescriptor\`'s \`onCreateTaskStrategy\` parameter:
+If your data can be held in memory, you do not need a new task strategy at all. \`MemoryTaskStrategy\`'s one required hook is an async loader, so point it at your own data and keep everything else — from a descriptor of your own, or through \`MemoryTaskGridDescriptor\`'s \`onCreateTaskStrategy\` parameter:
 
 \`\`\`ts
 onCreateTaskStrategy: ({ deps }) => new MemoryTaskStrategy({
-    onInitialize: async () => ({
-        records: await fetchMyTasks(),
+    onInitialize: async provider => ({
+        rawData: await fetchMyTasks(),
         metadata: METADATA,
+        columns: provider.getColumns(),
     }),
 }, deps),
 \`\`\`

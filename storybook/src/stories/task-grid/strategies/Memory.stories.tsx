@@ -165,16 +165,14 @@ Anything that changes how *tasks* behave belongs to the task strategy, so it is 
 
 \`\`\`ts
 onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
-    onInitialize: async () => ({
-        records,
-        metadata,
-        //a created task starts with every column of the active view null - make it look like a task
-        onGetNewTaskDefaults: () => ({ statuscode: 1, priority: 1, percentcomplete: 0 }),
-        //defaults to record[stateCode] === 0
-        onIsRecordActive: record => record.statuscode !== 5,
-        //defaults to a no-op; this is where a real app would navigate
-        onOpenDatasetItems: async (references, isTaskEntity, { isTaskEditingEnabled }) => null,
-    }),
+    //the one required hook: the store, the metadata and the columns to load with
+    onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
+    //a created task starts with every column of the active view null - make it look like a task
+    onGetNewTaskDefaults: () => ({ statuscode: 1, priority: 1, percentcomplete: 0 }),
+    //every hook takes the matching MemoryTaskActions parameters - forward them to fall back to it
+    onIsRecordActive: ({ record }) => record.statuscode !== 5,
+    //defaults to a no-op; this is where a real app would navigate
+    onOpenDatasetItems: async ({ entityReferences, isTaskEditingEnabled }) => null,
 }, deps),
 \`\`\`
 

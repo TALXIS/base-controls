@@ -113,34 +113,35 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             onCreateTemplateDataProvider: () => new MemoryTemplateDataProvider({ templates }),
             //task-level options belong to the strategy, so they are passed where it is built
             onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
-                onInitialize: async () => ({
-                    records: records,
+                onInitialize: async provider => ({
+                    rawData: records,
                     metadata: metadata,
-                    //new rows should look like a real task rather than a row of empty cells
-                    onGetNewTaskDefaults: () => ({
-                        statuscode: 1,
-                        priority: 1,
-                        percentcomplete: 0,
-                        actualeffort: 0,
-                    }),
-                    /**
-                     * The fixtures keep `statecode` and `statuscode` in sync, but only `statuscode`
-                     * is editable in the grid — so derive activity from it to keep styling correct
-                     * after an edit.
-                     *
-                     * Loose comparison on purpose: the dataset layer normalises option-set values to
-                     * strings, so an edited status arrives as `'5'` where the seeded one was `5`.
-                     */
-                    onIsRecordActive: record => record.statuscode != COMPLETED_STATUS_CODE
-                        && record.statuscode != CANCELLED_STATUS_CODE,
-                    onOpenDatasetItems: async (entityReferences, isTaskEntity, { isTaskEditingEnabled }) => {
-                        const target = isTaskEntity ? 'task(s)' : 'related record(s)';
-                        const mode = isTaskEditingEnabled ? 'edit' : 'read-only';
-                        //a demo has nowhere to navigate to, so surface the intent without blocking the UI
-                        console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
-                        return null;
-                    },
+                    columns: provider.getColumns(),
                 }),
+                //new rows should look like a real task rather than a row of empty cells
+                onGetNewTaskDefaults: () => ({
+                    statuscode: 1,
+                    priority: 1,
+                    percentcomplete: 0,
+                    actualeffort: 0,
+                }),
+                /**
+                 * The fixtures keep `statecode` and `statuscode` in sync, but only `statuscode`
+                 * is editable in the grid — so derive activity from it to keep styling correct
+                 * after an edit.
+                 *
+                 * Loose comparison on purpose: the dataset layer normalises option-set values to
+                 * strings, so an edited status arrives as `'5'` where the seeded one was `5`.
+                 */
+                onIsRecordActive: ({ record }) => record.statuscode != COMPLETED_STATUS_CODE
+                    && record.statuscode != CANCELLED_STATUS_CODE,
+                onOpenDatasetItems: async ({ entityReferences, isTaskEntity, isTaskEditingEnabled }) => {
+                    const target = isTaskEntity ? 'task(s)' : 'related record(s)';
+                    const mode = isTaskEditingEnabled ? 'edit' : 'read-only';
+                    //a demo has nowhere to navigate to, so surface the intent without blocking the UI
+                    console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
+                    return null;
+                },
             }, deps),
             gridParameters: {
                 enableTaskCreation: true,

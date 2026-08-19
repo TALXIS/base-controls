@@ -2,7 +2,7 @@ import { IDataProvider, IMemoryProviderEntityMetadata, IRawRecord } from "@talxi
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
-import { MemoryTaskStrategy } from "./MemoryTaskStrategy";
+import { MemoryTaskStrategy } from "./memory-task-strategy/MemoryTaskStrategy";
 import { DataverseTaskGridDescriptor } from "../dataverse";
 
 /**
@@ -51,12 +51,10 @@ export interface IMemoryTaskGridDescriptorParams {
      *
      * ```ts
      * onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
-     *     onInitialize: async () => ({
-     *         records, metadata,
-     *         onGetNewTaskDefaults: () => ({ statuscode: 1, priority: 1 }),
-     *         onIsRecordActive: record => record.statuscode !== 5,
-     *         onOpenDatasetItems: async references => { … },
-     *     }),
+     *     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
+     *     onGetNewTaskDefaults: () => ({ statuscode: 1, priority: 1 }),
+     *     onIsRecordActive: ({ record }) => record.statuscode !== 5,
+     *     onOpenDatasetItems: async ({ entityReferences }) => { … },
      * }, deps)
      * ```
      *
@@ -197,7 +195,9 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
         const { records, metadata, onCreateTaskStrategy } = this._getParams();
         return onCreateTaskStrategy?.({ ...this._getStrategyContext(), deps })
-            ?? new MemoryTaskStrategy({ onInitialize: async () => ({ records, metadata }) }, deps);
+            ?? new MemoryTaskStrategy({
+                onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
+            }, deps);
     }
 
     /** Delegates to the `onCreateTemplateDataProvider` parameter. Templates are off without it. */

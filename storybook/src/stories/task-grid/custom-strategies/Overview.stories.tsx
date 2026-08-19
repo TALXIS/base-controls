@@ -150,7 +150,7 @@ import type {
     ICustomColumnsStrategy, ITemplateDataProvider,
     IGridCustomizerStrategy, IGridCustomizer,
     //per-extension params and contexts
-    IMemoryTaskGridDescriptorParams, IMemoryStrategyContext, IMemoryTaskStrategyDependencies,
+    IMemoryTaskGridDescriptorParams, IMemoryStrategyContext, IMemoryTaskStrategyParams,
     IDataverseTaskGridDescriptorParams, IDataverseStrategyContext, IDataverseTaskStrategyDependencies,
 } from '@talxis/base-controls'
 \`\`\`
