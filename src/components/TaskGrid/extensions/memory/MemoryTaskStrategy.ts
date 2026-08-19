@@ -139,7 +139,10 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
                 columns.set(column.name, column);
             }
         }
-        return [...columns.values()];
+        //offered visible, whatever the views say: `isHidden` on a saved query column means "not in that
+        //view", and the Edit columns panel drops a column it is handed hidden - so passing the query
+        //definitions through unchanged is what made adding one appear to do nothing
+        return [...columns.values()].map(column => ({ ...column, isHidden: false }));
     }
 
     public async onGetAvailableRelatedColumns(): Promise<IAvailableRelatedColumn[]> {
