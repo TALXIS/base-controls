@@ -32,11 +32,12 @@ import {
 /** What {@link IMemoryTaskStrategyParams.onInitialize} resolves — everything the grid loads with. */
 export interface IMemoryTaskInitializeResult {
     /**
-     * The task records. **This array is written into.** Creating, deleting, editing and moving tasks
-     * mutates it, which is how the data outlives this strategy — the grid rebuilds the strategy on
-     * every remount and the hook hands back the same array.
+     * The task records the grid loads with — a seed, not a store. The provider takes a copy and owns the
+     * data from then on: creating, deleting, editing and moving all happen on *its* records, and this
+     * array is never written to.
      *
-     * The grid is given a copy of it, because the data provider swaps its own array on delete.
+     * Nothing carries over a remount by itself. Use {@link IMemoryTaskStrategyParams.onDestroy} to take
+     * the records before the provider goes away, and hand them back here next time.
      */
     rawData: IRawRecord[];
     /** Entity metadata. `PrimaryIdAttribute` is required; `LogicalName` is recommended. */
@@ -78,6 +79,23 @@ export interface IMemoryTaskStrategyParams {
      * is `null`; the primary id, parent lookup and stack rank are always computed by the strategy.
      */
     onGetNewTaskDefaults?: (parentTaskId?: string) => Partial<IRawRecord>;
+    /**
+     * Called just before the provider is torn down — on unmount, and on every remount the grid performs
+     * (applying *Edit columns*, switching a view, closing the view manager). Receives the records as they
+     * are at that moment, copied, so it is the seam for keeping what the user did:
+     *
+     * ```ts
+     * let records = SEED
+     *
+     * new MemoryTaskStrategy({
+     *     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
+     *     onDestroy: params => records = params.rawData,
+     * }, deps)
+     * ```
+     *
+     * Omit it and every remount starts from the seed again.
+     */
+    onDestroy?: (params: IMemoryTaskDestroyParams) => void;
     /**
      * Determines whether a task counts as active. Defaults to {@link MemoryTaskActions.isRecordActive} —
      * `record[stateCode] == 0`, using the state-code column from the descriptor's field mapping.
@@ -134,6 +152,17 @@ export interface IMemoryTaskStrategyParams {
     onRecordSave?: (params: IMemoryTaskSaveParams) => Promise<IRecordSaveOperationResult>;
 }
 
+/** What {@link IMemoryTaskStrategyParams.onDestroy} is handed. */
+export interface IMemoryTaskDestroyParams {
+    /**
+     * The provider's records at teardown, as a copy — keeping it is safe, and the provider is about to
+     * drop its own array.
+     */
+    rawData: IRawRecord[];
+    /** The entity metadata, so the records can be handed straight back next time. */
+    metadata: IMemoryProviderEntityMetadata;
+}
+
 /**
  * {@link ITaskDataProviderStrategy} implementation backed entirely by in-memory records.
  *
@@ -141,9 +170,10 @@ export interface IMemoryTaskStrategyParams {
  * reordering via LexoRank, templates, and inline editing — without any server or Dataverse
  * dependency.
  *
- * The strategy keeps no data of its own. It reads and writes the array its `onInitialize` hook
- * resolves, the way a Dataverse strategy reads and writes the server — which is what lets the grid
- * recreate it on every remount without losing anything the user did.
+ * The strategy keeps no data of its own, and does not hold on to the array it was seeded with: the
+ * provider owns the records, and every operation reads and writes through it — the way a Dataverse
+ * strategy reads and writes the server. So nothing survives a remount unless the consumer keeps it,
+ * which is what `onDestroy` is for.
  *
  * The behaviour itself lives in {@link MemoryTaskActions}: every hook below resolves the parameters that
  * action needs and calls it, unless `onInitialize` supplied an override for it.
@@ -162,14 +192,6 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
      */
     private _templateDataProvider?: MemoryTemplateDataProvider;
     private _provider!: ITaskDataProvider;
-    /**
-     * The array `onInitialize` resolved — the store every hook and action works over.
-     *
-     * The one thing kept from the initialize result: the metadata and the columns are read back off the
-     * provider, but the store cannot be. The provider is handed a *copy* and rebuilds its own array on
-     * delete, so writing through it would leave the consumer's array behind.
-     */
-    private _records!: IRawRecord[];
 
     /** @param params — see {@link IMemoryTaskStrategyParams}. */
     constructor(params: IMemoryTaskStrategyParams, deps: ITaskStrategyDeps) {
@@ -185,11 +207,9 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     public async onInitialize(provider: ITaskDataProvider) {
         this._provider = provider;
         const { rawData, metadata, columns } = await this._params.onInitialize(provider);
-        this._records = rawData;
         return {
             columns,
-            //a copy of the array holding the same records: the provider replaces its own array on
-            //delete, so it must not be handed the one we write to
+            //a copy: the seed stays the consumer's array, the provider owns what it is handed
             rawData: [...rawData],
             metadata,
         };
@@ -296,6 +316,11 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             ?? MemoryTaskActions.saveRecord(params);
     }
 
+    /** The consumer's last look at the data, called by the provider before it drops it. */
+    public onDestroy(): void {
+        this._params.onDestroy?.({ rawData: [...this._records], metadata: this._metadata });
+    }
+
     public onIsRecordActive(recordId: string): boolean {
         const params: IMemoryTaskActivityParams = {
             //the grid only asks about rows it holds, so the record is always there
@@ -307,7 +332,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
 
     // ── Derived state ────────────────────────────────────────────────────────
 
-    /** The store every action reads and writes: the caller's array and the names on it. */
+    /** What every action reads: the provider's records and the names on them. */
     private get _store(): { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; nativeColumns: INativeColumns } {
         return {
             records: this._records,
@@ -316,13 +341,14 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         };
     }
 
+    /** The provider's records — the store. Read at call time, because the provider maintains it. */
+    private get _records(): IRawRecord[] {
+        return this._provider.getRawData();
+    }
+
     /** The entity metadata, owned by the provider — it was handed it by `onInitialize`. */
     private get _metadata(): IMemoryProviderEntityMetadata {
         return this._provider.getMetadata();
-    }
-
-    private get _primaryId(): string {
-        return this._metadata.PrimaryIdAttribute!;
     }
 
     /** The physical field names the descriptor mapped, owned by the provider. */
@@ -340,13 +366,10 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     /**
-     * The stored raw record for a task, for `onGetRawRecords` alone — it answers about rows the grid may
-     * have only just created, which have no record instance until the provider reloads. Reads the
-     * provider's raw-data map, which holds the very objects this strategy was handed, and falls back to a
-     * scan of the store for those new rows.
+     * The raw record for a task, for `onGetRawRecords` alone — the one hook that has to answer in raw
+     * data. Reads the provider's own map, which holds the very objects it was handed.
      */
     private _getTask(taskId: string): IRawRecord | undefined {
-        return this._provider.getRawDataMap()[taskId]
-            ?? this._records.find(record => record[this._primaryId] === taskId);
+        return this._provider.getRawDataMap()[taskId];
     }
 }

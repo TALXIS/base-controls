@@ -63,6 +63,12 @@ export interface ITaskDataProviderStrategy {
     onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult>;
     /** Returns whether the given task record is currently active (non-completed). */
     onIsRecordActive(recordId: string): boolean;
+    /**
+     * (Optional) Called just before the provider is torn down — on unmount, and on every remount the
+     * grid performs. The provider's data is still readable at that point, which makes this the strategy's
+     * last chance to hand the current records to whoever wants to keep them.
+     */
+    onDestroy?: () => void;
     /** When provided, the task tree is scoped to the subtree of the returned task id. */
     onGetRootTaskId?: () => string | undefined
 }
@@ -359,6 +365,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async destroy(): Promise<void> {
+        //before super, which drops the data: this is the strategy's last look at it
+        this._strategy.onDestroy?.();
         super.destroy();
         this.taskEvents.clearEventListeners();
     }

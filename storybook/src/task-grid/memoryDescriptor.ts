@@ -1,4 +1,5 @@
 import { Operators } from '@talxis/client-libraries';
+import type { IRawRecord } from '@talxis/client-libraries';
 import { MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
 import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryTaskGridDescriptorInitializeResult, IMemoryTemplateSource, ISavedQuery } from '@talxis/base-controls';
 
@@ -34,6 +35,10 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     let lookupSources: { [columnName: string]: IMemoryEntitySource } = {};
     let templates: IMemoryTemplateSource;
     let userQueries: ISavedQuery[] = [];
+    //the task records live here between mounts: the provider owns them while a grid is up, and hands
+    //them back through the strategy's onDestroy when it is torn down - which is what makes a task the
+    //user created survive switching a view or applying Edit columns
+    let records: IRawRecord[] = [];
 
     const onInitialize = async (): Promise<IMemoryTaskGridDescriptorInitializeResult> => {
         const [
@@ -97,9 +102,9 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
         lookupSources = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE };
 
         return {
-            //cloned per descriptor: the strategy writes into this array, so sharing the module-level
-            //fixtures would let the grids on different doc pages fight over one dataset
-            records: structuredClone(TASK_SOURCE.records),
+            //cloned per descriptor: sharing the module-level fixtures would let the grids on different
+            //doc pages fight over one dataset
+            records: records = structuredClone(TASK_SOURCE.records),
             metadata: TASK_SOURCE.metadata,
             fieldMapping: {
                 subject: SUBJECT_COL,
@@ -141,12 +146,14 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
         },
         onCreateTemplateDataProvider: () => new MemoryTemplateDataProvider({ templates }),
         //task-level options belong to the strategy, so they are passed where it is built
-        onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
+        onCreateTaskStrategy: ({ deps, metadata }) => new MemoryTaskStrategy({
+            //seeded from what the last mount ended with, not from the fixtures
             onInitialize: async provider => ({
                 rawData: records,
                 metadata: metadata,
                 columns: provider.getColumns(),
             }),
+            onDestroy: params => records = params.rawData,
             //new rows should look like a real task rather than a row of empty cells
             onGetNewTaskDefaults: () => ({
                 statuscode: 1,

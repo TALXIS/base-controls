@@ -33,9 +33,13 @@ interface IMemoryTaskLookup {
     onGetRecord: (taskId: string) => IRecord | undefined;
 }
 
-/** The store an action writes into, and the names it needs to read a task apart. */
+/** The records an action reads, and the names it needs to read a task apart. */
 interface IMemoryTaskStore {
-    /** The task records. **Written into** by the actions that create, delete or move. */
+    /**
+     * The provider's current records, read at call time. The actions never add to or remove from this
+     * array — membership is the provider's job, it applies whatever an operation returns. They do write
+     * *into* the record objects, which are the same objects the provider holds.
+     */
     records: IRawRecord[];
     /** Entity metadata. `PrimaryIdAttribute` is required; `LogicalName` is used for parent lookups. */
     metadata: IMemoryProviderEntityMetadata;
@@ -187,19 +191,24 @@ export class MemoryTaskActions {
         return [];
     }
 
-    /** Creates one task and appends it to the store. */
+    /**
+     * Builds one task, ranked first among its siblings.
+     *
+     * Returning it is what creates it: the provider adds whatever this hands back to its dataset.
+     */
     public static createTask(params: IMemoryTaskCreateParams): IRawRecord {
         const parent = params.parentTaskId ? params.onGetRecord(params.parentTaskId) : undefined;
-        return this._addTask(params.records, this._buildTask({
+        return this._buildTask({
             ...params,
             placement: 'first',
             parentReference: this._getParentReference(parent),
-        }));
+        });
     }
 
     /**
-     * Deletes tasks and everything beneath them, rewriting the store in place.
+     * Resolves which tasks a delete should take: the ones asked for, plus everything beneath them.
      *
+     * The provider performs the delete over the returned `deletedTaskIds`, so this only decides the set.
      * Ids that no longer exist are reported as errors, and whatever did resolve is still deleted.
      */
     public static deleteTasks(params: IMemoryTaskDeleteParams): IDeleteTasksResult {
@@ -217,15 +226,7 @@ export class MemoryTaskActions {
             }
             this._collectSubtree(id, primaryId, childrenByParent, toDelete);
         }
-        //rewritten in one pass, in place: the array identity is what the consumer holds on to
-        const remaining = records.filter(record => !toDelete.has(record[primaryId] as string));
         const deletedTaskIds = [...toDelete];
-        if (remaining.length !== records.length) {
-            records.length = 0;
-            for (const record of remaining) {
-                records.push(record);
-            }
-        }
         if (missingTaskIds.length > 0) {
             return {
                 success: false,
@@ -248,31 +249,31 @@ export class MemoryTaskActions {
         if (!template) {
             return null;
         }
-        //built once for the whole expansion, and kept up to date as tasks are added: ranking each new
-        //task by scanning the store would be a full pass per node
+        //built once for the whole expansion, and extended as tasks are built: ranking each new task by
+        //scanning the records would be a full pass per node, and the new siblings are not in them yet
         const childrenByParent = this._getChildrenByParent(records, nativeColumns);
         const buildParams = { records, metadata, nativeColumns, columns, onGetNewTaskDefaults, childrenByParent };
-        const rootTask = this._addTask(records, this._buildTask({
+        const rootTask = this._indexTask(this._buildTask({
             ...buildParams,
             parentTaskId,
             parentReference: this._getParentReference(parentTaskId ? onGetRecord(parentTaskId) : undefined),
             overrides: this._getTaskFieldsFromTemplate(template, templateDataProvider, columns, nativeColumns),
             placement: 'first',
-        }), { nativeColumns, childrenByParent });
+        }), nativeColumns, childrenByParent);
         const created: IRawRecord[] = [rootTask];
 
         const createChildren = (nodes: IMemoryTaskTemplateNode[], parent: IRawRecord) => {
             for (const node of nodes) {
                 //appended so each child ranks after the sibling created before it, preserving template order
-                const child = this._addTask(records, this._buildTask({
+                const child = this._indexTask(this._buildTask({
                     ...buildParams,
                     parentTaskId: parent[primaryId] as string,
-                    //the parent was created by this very expansion, so the grid has no record instance
-                    //for it yet - its reference is built from what we just wrote
+                    //the parent was built by this very expansion, so the grid has no record instance for
+                    //it yet - its reference comes from what we just built
                     parentReference: this._getNewTaskReference(parent, metadata, nativeColumns),
                     overrides: node.values,
                     placement: 'last',
-                }), { nativeColumns, childrenByParent });
+                }), nativeColumns, childrenByParent);
                 created.push(child);
                 if (node.children?.length) {
                     createChildren(node.children, child);
@@ -281,6 +282,7 @@ export class MemoryTaskActions {
         };
         createChildren(templateDataProvider.getTemplateChildren(templateId), rootTask);
 
+        //returned, not stored: the provider adds the whole subtree to its dataset
         return created;
     }
 
@@ -436,22 +438,18 @@ export class MemoryTaskActions {
     }
 
     /**
-     * Appends a task to the caller's array — the write that makes it outlive the strategy.
+     * Adds a task the caller has just built to the sibling index, so the next one ranks against it.
      *
-     * @param index — kept up to date alongside the store when one was built for the operation, so the
-     * next task ranks against the siblings this one just joined.
+     * Nothing is stored here — the provider owns membership, and it adds whatever the operation returns.
      */
-    private static _addTask(records: IRawRecord[], task: IRawRecord, index?: { nativeColumns: INativeColumns; childrenByParent: MemoryTaskChildrenByParent }): IRawRecord {
-        records.push(task);
-        if (index) {
-            const parentTaskId = this._getParentTaskId(task, index.nativeColumns);
-            const siblings = index.childrenByParent.get(parentTaskId);
-            if (siblings) {
-                siblings.push(task);
-            }
-            else {
-                index.childrenByParent.set(parentTaskId, [task]);
-            }
+    private static _indexTask(task: IRawRecord, nativeColumns: INativeColumns, childrenByParent: MemoryTaskChildrenByParent): IRawRecord {
+        const parentTaskId = this._getParentTaskId(task, nativeColumns);
+        const siblings = childrenByParent.get(parentTaskId);
+        if (siblings) {
+            siblings.push(task);
+        }
+        else {
+            childrenByParent.set(parentTaskId, [task]);
         }
         return task;
     }

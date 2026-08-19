@@ -144,7 +144,20 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 > })
 > \`\`\`
 
-> **The \`records\` array is the store.** It is written into rather than copied — creating, deleting, editing and moving mutate it in place, the way those operations would hit a server. Pass a \`structuredClone\` of a shared fixture when two grids need to stay independent.
+> **The \`records\` array is a seed, not a store.** The provider copies it and owns the data from then on: creating, deleting, editing and moving all happen on *its* records, and your array is never written to. Two grids can therefore share a fixture — though a \`structuredClone\` still keeps their record *objects* independent, since edits write through to them.
+>
+> **Nothing survives a remount by itself**, and the grid remounts when *Edit columns* is applied, a view is switched, or the view manager closes. The task strategy's \`onDestroy\` hook is the seam: it hands you the records as they are just before the provider drops them, so you can give them back on the next \`onInitialize\`.
+>
+> \`\`\`ts
+> let records = SEED
+>
+> onCreateTaskStrategy: ({ deps, metadata }) => new MemoryTaskStrategy({
+>     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
+>     onDestroy: params => records = params.rawData,
+> }, deps),
+> \`\`\`
+>
+> Leave \`onDestroy\` out and every remount starts from the seed again — which is occasionally what you want, and otherwise a puzzling data loss.
 
 ### \`IMemoryEntitySource\`
 
@@ -191,7 +204,7 @@ onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
 }, deps),
 \`\`\`
 
-Hand back the \`records\` and \`metadata\` you were given rather than fresh ones — that array is the store, and a rebuilt strategy has to see what its predecessor wrote. The primary id, parent lookup and stack rank are always computed by the strategy and cannot be overridden. Omit the callback entirely and the descriptor builds a plain \`MemoryTaskStrategy\` over the same data.
+Hand back the \`metadata\` you were given, and for the records hand back what the previous mount ended with — see \`onDestroy\` below. The primary id, parent lookup and stack rank are always computed by the strategy and cannot be overridden. Omit the callback entirely and the descriptor builds a plain \`MemoryTaskStrategy\` over the same data.
 
 ### The hooks, and the defaults behind them
 
@@ -200,12 +213,13 @@ The strategy itself is thin: every hook below is "call yours if you supplied one
 | Hook | Default | 
 |---|---|
 | \`onInitialize\` **(required)** | — resolves \`{ rawData, metadata, columns }\`. Called directly; there is no default. |
+| \`onDestroy\` | — called before the provider is dropped, with the current records. No default; this is your only chance to keep them. |
 | \`onGetNewTaskDefaults\` | no defaults — a new task is every view column set to \`null\` |
 | \`onIsRecordActive\` | \`MemoryTaskActions.isRecordActive\` — \`record[stateCode] == 0\` |
 | \`onGetAvailableColumns\` | \`MemoryTaskActions.getAvailableColumns\` — the union of every view's columns |
 | \`onGetAvailableRelatedColumns\` | \`MemoryTaskActions.getAvailableRelatedColumns\` — none; in-memory data has no relationship metadata |
-| \`onCreateTask\` | \`MemoryTaskActions.createTask\` — appends a ranked, parented record to the store |
-| \`onDeleteTasks\` | \`MemoryTaskActions.deleteTasks\` — deletes the subtree, rewriting the array in place |
+| \`onCreateTask\` | \`MemoryTaskActions.createTask\` — builds a ranked, parented record; the provider adds it |
+| \`onDeleteTasks\` | \`MemoryTaskActions.deleteTasks\` — resolves the subtree to delete; the provider removes it |
 | \`onCreateTasksFromTemplate\` | \`MemoryTaskActions.createTasksFromTemplate\` — expands the template in order |
 | \`onMoveTask\` | \`MemoryTaskActions.moveTask\` — rewrites the parent lookup and the LexoRank |
 | \`onRecordSave\` | \`MemoryTaskActions.saveRecord\` — writes the dirty fields onto the stored record |
