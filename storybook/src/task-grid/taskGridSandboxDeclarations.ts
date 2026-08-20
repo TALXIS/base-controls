@@ -150,11 +150,29 @@ interface IGridCustomizer {
         updateTaskData(records: Record<string, any>[]): void;
         setLoading(loading: boolean): void;
         requestRender(): void;
-        /** The task hierarchy the grid built from the loaded data. */
+/** The task hierarchy the grid built from the loaded data. */
         getRecordTree(): {
-            hasChildren(recordId: string): boolean;
-            getNode(recordId: string | null): { directChildren: ITaskGridRecord[]; allChildren: ITaskGridRecord[]; pathIds: string[]; [key: string]: any };
-            [key: string]: any;
+            /** What the grid renders: filter, quick find and flat-list mode applied. */
+            view: {
+                getChildren(parentRecordId?: string | null): ITaskGridRecord[];
+                hasChildren(recordId: string): boolean;
+                getPosition(recordId: string): number;
+                isMatching(recordId: string): boolean;
+                getCount(): number;
+                getOrderedIds(): string[];
+                isFlat(): boolean;
+            };
+            /** What is actually there: every loaded record, no filtering, no scoping. */
+            structure: {
+                getChildren(parentRecordId?: string | null): ITaskGridRecord[];
+                getParent(recordId: string): ITaskGridRecord | null;
+                getAncestorIds(recordId: string): string[];
+                getAncestors(recordId: string): ITaskGridRecord[];
+                getDescendants(recordId: string): ITaskGridRecord[];
+                hasChildren(recordId: string): boolean;
+                getSiblings(recordId: string, options?: { exclude?: string }): ITaskGridRecord[];
+                getNeighbours(recordId: string, options?: { exclude?: string }): { previous?: ITaskGridRecord; next?: ITaskGridRecord };
+            };
         };
         [key: string]: any;
     };

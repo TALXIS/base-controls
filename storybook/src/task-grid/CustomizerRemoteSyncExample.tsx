@@ -10,7 +10,8 @@ const SYNCED_COLUMNS = ['estimatedeffort']
 const loadingCells = new Map<string, Set<string>>()
 
 const sumSubtree = (provider, recordId: string): number => {
-    const children = provider.getRecordTree().getNode(recordId).directChildren
+    //the complete hierarchy: a subtree total should not change because a filter hid a row
+    const children = provider.getRecordTree().structure.getChildren(recordId)
     if (children.length === 0) {
         return Number(provider.getRecordsMap()[recordId]?.getValue('estimatedeffort') ?? 0)
     }
@@ -40,7 +41,7 @@ const gridCustomizerStrategy: IGridCustomizerStrategy = {
             customizer.registerExpressionDecorator('estimatedeffort', () => {
                 //a parent's estimate is the rollup the server computes, so it is not something to type into
                 record.expressions.setDisabledExpression('estimatedeffort', () => {
-                    return provider.getRecordTree().hasChildren(record.getRecordId())
+                    return provider.getRecordTree().view.hasChildren(record.getRecordId())
                 })
                 //and while the server is recalculating it, that one cell says so
                 record.expressions.ui.setLoadingExpression('estimatedeffort', () => {
@@ -54,7 +55,7 @@ const gridCustomizerStrategy: IGridCustomizerStrategy = {
                 return
             }
             //the server rolls the change up the hierarchy, so every ancestor is now stale
-            const ancestorIds = provider.getRecordTree().getNode(result.recordId).pathIds.slice(0, -1)
+            const ancestorIds = provider.getRecordTree().structure.getAncestorIds(result.recordId).slice(0, -1)
             if (ancestorIds.length === 0) {
                 return
             }

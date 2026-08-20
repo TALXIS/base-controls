@@ -133,8 +133,7 @@ export class GridCustomizer implements IGridCustomizer {
         if (!params.data || this._taskDataProvider.isFlatListEnabled()) {
             return false
         }
-        const matchingRecords = this._taskDataProvider.getRecordTree().getMatchingRecords();
-        const result = !matchingRecords[params.data.getRecordId()];
+        const result = !this._taskDataProvider.getRecordTree().view.isMatching(params.data.getRecordId());
         if(result) {
             return result;
         }
@@ -262,8 +261,7 @@ export class GridCustomizer implements IGridCustomizer {
             },
             'talxis_task-grid_row--unmatched-parent': (params) => {
                 if (params.data) {
-                    const matchingRecordsMap = this._taskDataProvider.getRecordTree().getMatchingRecords();
-                    return !matchingRecordsMap[params.data!.getRecordId()]
+                    return !this._taskDataProvider.getRecordTree().view.isMatching(params.data!.getRecordId())
                 }
                 else {
                     return false;
@@ -373,12 +371,12 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
     private _moveInto(movingFromRecordId: string, movingToRecordId: string, position: 'child' | 'above' | 'below') {
-        const draggedRecordNode = this._taskDataProvider.getRecordTree().getNode(movingFromRecordId);
         const draggedRecord = this._taskDataProvider.getRecordsMap()[movingFromRecordId];
         const draggedNode = this._gridApi.getRowNode(movingFromRecordId)!;
         const overNode = this._gridApi.getRowNode(movingToRecordId)!;
 
-        let addIndex: number | null = draggedRecordNode.index;
+        //a rendered position, which is what the AG Grid store counts
+        let addIndex: number | null = this._taskDataProvider.getRecordTree().view.getPosition(movingFromRecordId);
 
         //first remove from old location
         this._gridApi.applyServerSideTransaction({

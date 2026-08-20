@@ -15,13 +15,11 @@ import {
     ITaskMoveParams,
     ITaskTemplateExpansionParams,
 } from "@components/TaskGrid/providers";
+import { IRecordStructure } from "@components/TaskGrid/providers/task/record-tree";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { StackRank } from "@components/TaskGrid/stack-rank";
 import { IMemoryTaskTemplateNode } from "../interfaces";
 import { MemoryTemplateDataProvider } from "../MemoryTemplateDataProvider";
-
-/** Parent id (or `null` for top level) to the stored children under it. */
-export type MemoryTaskChildrenByParent = Map<string | null, IRawRecord[]>;
 
 /** What every action that resolves a task by id needs. */
 interface IMemoryTaskLookup {
@@ -80,10 +78,12 @@ export interface IMemoryTaskCreateParams extends ITaskCreateParams, IMemoryTaskS
     onGetNewTaskDefaults?: (parentTaskId?: string) => Partial<IRawRecord>;
 }
 
-/** What {@link MemoryTaskActions.deleteTasks} reads and writes. */
-export interface IMemoryTaskDeleteParams extends IMemoryTaskStore, IMemoryTaskLookup {
-    /** The tasks the grid asked to delete. Descendants are resolved from the store. */
+/** What {@link MemoryTaskActions.deleteTasks} reads. */
+export interface IMemoryTaskDeleteParams extends IMemoryTaskLookup {
+    /** The tasks the grid asked to delete. */
     taskIds: string[];
+    /** The complete hierarchy, which is where the descendants to delete with them come from. */
+    structure: IRecordStructure;
 }
 
 /** What {@link MemoryTaskActions.createTasksFromTemplate} reads. */
@@ -202,11 +202,7 @@ export class MemoryTaskActions {
      * Ids that no longer exist are reported as errors, and whatever did resolve is still deleted.
      */
     public static deleteTasks(params: IMemoryTaskDeleteParams): IDeleteTasksResult {
-        const { taskIds, records, metadata, nativeColumns, onGetRecord } = params;
-        const primaryId = metadata.PrimaryIdAttribute!;
-        //descendants come from the store, not the tree: the tree's children are filtered by the active
-        //view, so a hidden child would survive its deleted parent as an orphan
-        const childrenByParent = this._getChildrenByParent(records, nativeColumns);
+        const { taskIds, structure, onGetRecord } = params;
         const toDelete = new Set<string>();
         const missingTaskIds: string[] = [];
         for (const id of taskIds) {
@@ -214,7 +210,11 @@ export class MemoryTaskActions {
                 missingTaskIds.push(id);
                 continue;
             }
-            this._collectSubtree(id, primaryId, childrenByParent, toDelete);
+            //the complete hierarchy: a child the active view hides is still a child
+            toDelete.add(id);
+            for (const descendant of structure.getDescendants(id)) {
+                toDelete.add(descendant.getRecordId());
+            }
         }
         const deletedTaskIds = [...toDelete];
         if (missingTaskIds.length > 0) {
@@ -355,12 +355,6 @@ export class MemoryTaskActions {
         return sibling?.getValue(nativeColumns.stackRank) as string | undefined;
     }
 
-    /** The parent id held by a raw record — used when walking the store, which has no instances. */
-    private static _getParentTaskId(task: IRawRecord, nativeColumns: INativeColumns): string | null {
-        const parentReference = task[nativeColumns.parentId] as ComponentFramework.EntityReference[] | null;
-        return parentReference?.[0]?.id?.guid ?? null;
-    }
-
     // ── Task construction ────────────────────────────────────────────────────
 
     /**
@@ -407,38 +401,6 @@ export class MemoryTaskActions {
             fields[nativeColumns.subject] = template.getNamedReference().name ?? null;
         }
         return fields;
-    }
-
-    /**
-     * Parent id (or `null` for top level) to the stored children, built in one pass over the store.
-     *
-     * The record tree cannot serve this: its `directChildren` and `allChildren` are pruned to branches
-     * that match the active filter and quick find, so a hidden child would survive its deleted parent.
-     * `pathIds` is safe by contrast — it is walked over the unfiltered record map.
-     */
-    private static _getChildrenByParent(records: IRawRecord[], nativeColumns: INativeColumns): MemoryTaskChildrenByParent {
-        const childrenByParent: MemoryTaskChildrenByParent = new Map();
-        for (const record of records) {
-            const parentTaskId = this._getParentTaskId(record, nativeColumns);
-            const siblings = childrenByParent.get(parentTaskId);
-            if (siblings) {
-                siblings.push(record);
-            }
-            else {
-                childrenByParent.set(parentTaskId, [record]);
-            }
-        }
-        return childrenByParent;
-    }
-
-    private static _collectSubtree(taskId: string, primaryId: string, childrenByParent: MemoryTaskChildrenByParent, result: Set<string>): void {
-        if (result.has(taskId)) {
-            return;
-        }
-        result.add(taskId);
-        for (const child of childrenByParent.get(taskId) ?? []) {
-            this._collectSubtree(child[primaryId] as string, primaryId, childrenByParent, result);
-        }
     }
 
 }

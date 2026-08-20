@@ -38,7 +38,7 @@ export const Grid = (props: IGrid) => {
                 treeData: true,
                 suppressGroupRowsSticky: true,
                 processUnpinnedColumns: () => [],
-                isServerSideGroup: (record: IRecord) => taskDataProvider.getRecordTree().hasChildren(record.getRecordId()),
+                isServerSideGroup: (record: IRecord) => taskDataProvider.getRecordTree().view.hasChildren(record.getRecordId()),
                 getServerSideGroupKey: (record: IRecord) => record.getRecordId(),
                 onGridReady: (event) => {
                     onGridReady(event);

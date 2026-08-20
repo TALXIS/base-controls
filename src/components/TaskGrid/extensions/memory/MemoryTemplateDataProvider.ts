@@ -82,12 +82,14 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
     }
 
     /**
-     * Captures a task's descendants as template nodes, depth-first, in the order the grid displays
-     * them. Every visible column is carried over, so whatever the user can see on a task is what the
-     * template reproduces.
+     * Captures a task's subtree as template nodes, depth-first, in display order. Every visible column
+     * is carried over, so whatever the user can see on a task is what the template reproduces.
+     *
+     * The children come from the complete hierarchy rather than the rendered one: a template is data, and
+     * capturing one while a quick find is active should not quietly drop the subtasks it hides.
      */
     private _buildTemplateNodes(task: IRecord, context: ITemplateCaptureContext): IMemoryTaskTemplateNode[] {
-        const children = context.recordTree.getNode(task.getRecordId())?.directChildren ?? [];
+        const children = context.recordTree.structure.getChildren(task.getRecordId());
         return children.map(child => {
             const rawChild = child.getRawData();
             return {

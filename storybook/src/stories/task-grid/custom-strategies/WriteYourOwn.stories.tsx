@@ -116,6 +116,23 @@ interface ITaskSiblingContext {
 
 Those neighbours are resolved over the **entire** dataset, not the rows the active view shows — which is the whole point. Ranking against a *visible* neighbour is how a reorder ends up colliding with a record the filter hid, and the collision is real: the rank steps by a fixed amount, so it can land exactly on the hidden row's value.
 
+The same distinction is on the record tree, and it is worth knowing which side you are asking:
+
+\`\`\`ts
+const tree = provider.getRecordTree()
+
+tree.view.getChildren(parentId)        // what the grid renders: filter, quick find, flat-list applied
+tree.view.hasChildren(id)              // drives the expander
+tree.view.getPosition(id)              // a rendered row position, for AG Grid transactions
+
+tree.structure.getChildren(parentId)   // every child in the data, ordered
+tree.structure.getDescendants(id)      // the whole subtree - what a cascading delete needs
+tree.structure.getAncestorIds(id)      // root-to-self, the cycle guard for a move
+tree.structure.getNeighbours(id, { exclude: movingId })
+\`\`\`
+
+Rule of thumb: \`view\` for anything the user looks at, \`structure\` for anything you write.
+
 The ranks are not handed to you separately — read whatever you order by off the neighbours themselves. For the shipped lexicographic scheme:
 
 \`\`\`ts

@@ -166,7 +166,7 @@ import type {
     //the descriptor contract and what it hands you
     ITaskGridDescriptor, ITaskStrategyDeps, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
     //the strategies and providers
-    ITaskDataProviderStrategy, ITaskDataProvider, IRecordTree,
+    ITaskDataProviderStrategy, ITaskDataProvider, IRecordTree, IRecordTreeView, IRecordStructure,
     ITaskSiblingContext, ITaskMoveParams, ITaskCreateParams, ITaskTemplateExpansionParams,
     ISavedQuery, ISavedQueryStrategy, IUserQueryStrategy, ISavedQueryDataProvider,
     ICustomColumnsStrategy, ITemplateDataProvider,

@@ -139,7 +139,7 @@ Any action can be the trigger; a save is simply the most common one. Expand a ta
 
 - \`onBeforeRecordSaved\` takes the watermark and \`onAfterRecordSaved\` does the fetch, so nothing modified *during* the save is missed
 - the fetch is gated on the columns that matter: a save that touched nothing relevant costs no round trip
-- only the affected rows are re-read — \`getRecordTree().getNode(recordId).pathIds\` gives the ancestors the server would have touched
+- only the affected rows are re-read — \`getRecordTree().structure.getAncestorIds(recordId)\` gives the ancestors the server would have touched
 - \`updateTaskData\` **replaces** a record's raw data, so merge the returned columns over \`getRawData()\` first — a server that answers with three columns would otherwise blank the rest
 - the wait is shown per cell, not per grid: \`ui.setLoadingExpression\` reads a map of the cells being refreshed, so the rest of the grid stays usable while the ancestors resolve — \`setLoading\` would have blocked everything
 - \`requestRender\` after marking the cells and again once the data is in

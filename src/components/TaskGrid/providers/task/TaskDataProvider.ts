@@ -196,7 +196,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     private _nativeColumns: INativeColumns;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _hasDataBeenLoaded: boolean = false;
-    private _taskTree: IRecordTree;
+    private _taskTree: RecordTree;
     private _strategy: ITaskDataProviderStrategy;
     private _savedQueryDataProvider: ISavedQueryDataProvider;
     private _customColumnsDataProvider?: ICustomColumnsDataProvider;
@@ -354,16 +354,24 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         //a task cannot become its own descendant: the hierarchy would cycle, and the record tree drops
         //every record in a cycle - the rows would simply vanish. `pathIds` runs from the root down to the
         //target itself, over the unfiltered records, so this covers dropping a task onto itself as well
-        if (this._taskTree.getNode(targetTaskId)?.pathIds.includes(movingTaskId)) {
+        if (this._taskTree.structure.getAncestorIds(targetTaskId).includes(movingTaskId)) {
             return null;
         }
 
-        const parentTaskId = position === 'child' ? targetTaskId : this._getParentTaskId(targetRecord);
-        const siblings = this._getSiblings(parentTaskId, movingTaskId);
+        const structure = this._taskTree.structure;
+        const parentTaskId = position === 'child'
+            ? targetTaskId
+            : structure.getParent(targetTaskId)?.getRecordId() ?? null;
+        const siblings = structure.getChildren(parentTaskId)
+            .filter(record => record.getRecordId() !== movingTaskId);
+        //the moving task is excluded, so it is never weighed against the position it is leaving
+        const neighbours = structure.getNeighbours(targetTaskId, { exclude: movingTaskId });
         const [previousSibling, nextSibling] = position === 'child'
             //first among its new children, so there is nothing before it
             ? [undefined, siblings[0]]
-            : this._getNeighbours(siblings, targetTaskId, position);
+            : position === 'above'
+                ? [neighbours.previous, targetRecord]
+                : [targetRecord, neighbours.next];
 
         return {
             movingTaskId,
@@ -378,36 +386,9 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         };
     }
 
-    /**
-     * The records under one parent, in the order the tree computed — which already covers every record,
-     * filtered out of the view or not, so nothing here needs to know what the grid orders by.
-     */
-    private _getSiblings(parentTaskId: string | null, excludeTaskId?: string): IRecord[] {
-        return this._taskTree.getAllDirectChildren(parentTaskId)
-            .filter(record => record.getRecordId() !== excludeTaskId);
-    }
-
-    /** The siblings a task ends up between when it is dropped above or below one of them. */
-    private _getNeighbours(siblings: IRecord[], targetTaskId: string, position: 'above' | 'below'): [IRecord | undefined, IRecord | undefined] {
-        const targetIndex = siblings.findIndex(record => record.getRecordId() === targetTaskId);
-        if (targetIndex < 0) {
-            //the target is not among the siblings we resolved, which should not happen - rank it last
-            return [siblings[siblings.length - 1], undefined];
-        }
-        return position === 'above'
-            ? [siblings[targetIndex - 1], siblings[targetIndex]]
-            : [siblings[targetIndex], siblings[targetIndex + 1]];
-    }
-
-    /** The parent a record points at, or `null` when it sits at the top level. */
-    private _getParentTaskId(record: IRecord): string | null {
-        const parentReference = record.getValue(this._nativeColumns.parentId) as ComponentFramework.EntityReference[] | null;
-        return parentReference?.[0]?.id?.guid ?? null;
-    }
-
     /** Where a newly created task lands: first among every existing child of its parent. */
     private _resolveCreate(parentTaskId?: string): ITaskCreateParams {
-        const siblings = this._getSiblings(parentTaskId ?? null);
+        const siblings = this._taskTree.structure.getChildren(parentTaskId ?? null);
         return {
             parentRecord: parentTaskId ? this.getRecordsMap()[parentTaskId] : undefined,
             siblings,
@@ -469,7 +450,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public getSortedRecordIds(): string[] {
-        return this._taskTree.getSortedIds();
+        return this._taskTree.view.getOrderedIds();
     }
 
     public async deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
@@ -530,7 +511,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public createGroupedRecordDataProvider(group: IRecord): IDataProvider {
-        const children = this._taskTree.getNodeMap().get(group.getRecordId())?.directChildren ?? [];
+        const children = this._taskTree.view.getChildren(group.getRecordId());
         return {
             ...this,
             getRecords: () => children,
@@ -541,17 +522,17 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public getPaging() {
         const paging = super.getPaging();
-        paging.totalResultCount = this._taskTree.getTotalCount()
-        paging.pageSize = this._taskTree.getTotalCount();
+        paging.totalResultCount = this._taskTree.view.getCount()
+        paging.pageSize = this._taskTree.view.getCount();
         return paging;
     }
 
     public getRecords(): IRecord[] {
         const records = super.getRecords();
-        if (records.length === 0 || this._taskTree.getNodeMap().size === 0) {
+        if (records.length === 0 || !this._taskTree.isBuilt()) {
             return [];
         }
-        return this._taskTree.getNodeMap().get(null as any)?.directChildren ?? [];
+        return this._taskTree.view.getChildren();
     }
 
     public getAllRecords(): IRecord[] {

@@ -69,7 +69,7 @@ export class GridDragHandler extends EventEmitter<IGridDragHandlerEvents> {
         const dragOverSection = this._determineDragOverSection(y, overNode);
         setTimeout(() => {
             const currentOverNode = this._dragOperation?.overNode;
-            if (currentOverNode === overNode && dragOverSection === 'middle' && !overNode?.expanded && this._dataProvider.getRecordTree().hasChildren(overNode!.data!.getRecordId())) {
+            if (currentOverNode === overNode && dragOverSection === 'middle' && !overNode?.expanded && this._dataProvider.getRecordTree().view.hasChildren(overNode!.data!.getRecordId())) {
                 overNode?.setExpanded(true);
             }
         }, 1000);

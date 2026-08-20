@@ -253,8 +253,8 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
 
     public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult> {
         const params: IMemoryTaskDeleteParams = {
-            ...this._store,
             taskIds,
+            structure: this._provider.getRecordTree().structure,
             onGetRecord: taskId => this._getRecord(taskId),
         };
         return await this._params.onDeleteTasks?.(params)

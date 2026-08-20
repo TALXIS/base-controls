@@ -254,23 +254,27 @@ export class DataverseTaskActions {
      * Deletes tasks through the Web API, optionally cascading to descendants.
      *
      * Without `isDeletingTasksWithChildrenEnabled`, a task that still has children is left alone and
-     * reported as an error rather than orphaning its subtree.
+     * reported as an error rather than orphaning its subtree. Both the cascade and that check read the
+     * complete hierarchy, so the active filter cannot hide a child from either.
      */
     public static async deleteTasks(params: IDataverseTaskDeleteParams): Promise<IDeleteTasksResult | null> {
         const { taskIds, provider, fetchXmlDataProvider, isCascadeDeleteEnabled, isDeletingTasksWithChildrenEnabled } = params;
-        const taskTree = provider.getRecordTree();
+        //the complete hierarchy, not the rendered one: a child the active view hides is still a child,
+        //and cascading over the filtered tree used to orphan it
+        const structure = provider.getRecordTree().structure;
         const allTaskIds: Set<string> = new Set(taskIds);
         let success = true;
         const notDeletableTaskIds: string[] = [];
         if (isCascadeDeleteEnabled) {
             for (const taskId of taskIds) {
-                const children = taskTree.getNode(taskId)?.allChildren.map(c => c.getRecordId()) ?? [];
-                children.map(id => allTaskIds.add(id));
+                for (const descendant of structure.getDescendants(taskId)) {
+                    allTaskIds.add(descendant.getRecordId());
+                }
             }
         }
         if (!isDeletingTasksWithChildrenEnabled) {
             for (const taskId of allTaskIds) {
-                if (taskTree.hasChildren(taskId)) {
+                if (structure.hasChildren(taskId)) {
                     success = false;
                     allTaskIds.delete(taskId);
                     notDeletableTaskIds.push(taskId);
