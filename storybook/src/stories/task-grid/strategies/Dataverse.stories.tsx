@@ -232,7 +232,9 @@ No Dataverse implementation ships: \`DataverseTemplateDataProvider\`'s capture t
 
 ## Ordering: stack ranks
 
-Same scheme as the memory strategy: lexicographic rank strings through the \`lexorank\` package, so a drag rewrites one row rather than renumbering its siblings. The attribute you map to \`stackRank\` must be a text column. The [**Memory**](?path=/story/task-grid-strategies-memory--overview) page has the worked example.
+Same scheme as the memory strategy: the data provider resolves the neighbours a row lands between — over the whole dataset, so rows the active view filters out still count — and the strategy turns them into a rank with \`StackRank.between\`. One drag rewrites one row rather than renumbering its siblings. The attribute you map to \`stackRank\` must be a text column. The [**Memory**](?path=/story/task-grid-strategies-memory--overview) page has the worked example.
+
+Note what this does *not* cover: rows excluded by the view's own FetchXML are never loaded, so they cannot be considered. Keep the query broad enough to hold the siblings you reorder.
 
 ## One difference from the memory descriptor
 

@@ -157,6 +157,7 @@ Everything is on the package root — the classes, the contracts you implement, 
 import {
     //classes
     MemoryTaskStrategy, MemoryTaskActions, MemoryUserQueryStrategy, MemoryTemplateDataProvider,
+    StackRank,
     DataverseTaskStrategy, DataverseTaskActions, DataverseUserQueryStrategy, DataverseCustomColumnsStrategy,
     TemplateDataProviderBase, MemoryLookupManyDataProviderFactory, DataverseLookupManyDataProviderFactory,
 } from '@talxis/base-controls'
@@ -166,6 +167,7 @@ import type {
     ITaskGridDescriptor, ITaskStrategyDeps, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
     //the strategies and providers
     ITaskDataProviderStrategy, ITaskDataProvider, IRecordTree,
+    ITaskSiblingContext, ITaskMoveParams, ITaskCreateParams, ITaskTemplateExpansionParams,
     ISavedQuery, ISavedQueryStrategy, IUserQueryStrategy, ISavedQueryDataProvider,
     ICustomColumnsStrategy, ITemplateDataProvider,
     IGridCustomizerStrategy, IGridCustomizer,

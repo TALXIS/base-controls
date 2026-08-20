@@ -11,8 +11,11 @@ import {
     IDeleteTasksResult,
     IOpenDatasetItemsResult,
     ISavedQueryDataProvider,
+    ITaskCreateParams,
     ITaskDataProvider,
     ITaskDataProviderStrategy,
+    ITaskMoveParams,
+    ITaskTemplateExpansionParams,
 } from "@components/TaskGrid/providers";
 import { INativeColumns, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { MemoryTemplateDataProvider } from "../MemoryTemplateDataProvider";
@@ -237,12 +240,11 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             ?? MemoryTaskActions.getAvailableRelatedColumns(params);
     }
 
-    public async onCreateTask(parentTaskId?: string): Promise<IRawRecord | null> {
+    public async onCreateTask(createParams: ITaskCreateParams): Promise<IRawRecord | null> {
         const params: IMemoryTaskCreateParams = {
+            ...createParams,
             ...this._store,
-            parentTaskId,
             columns: this._provider.getColumns(),
-            onGetRecord: taskId => this._getRecord(taskId),
             onGetNewTaskDefaults: this._params.onGetNewTaskDefaults,
         };
         return await this._params.onCreateTask?.(params)
@@ -259,18 +261,16 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             ?? MemoryTaskActions.deleteTasks(params);
     }
 
-    public async onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
+    public async onCreateTasksFromTemplate(expansionParams: ITaskTemplateExpansionParams): Promise<IRawRecord[] | null> {
         const templateDataProvider = this._templateDataProvider;
         if (!templateDataProvider) {
             return null;
         }
         const params: IMemoryTaskTemplateExpansionParams = {
+            ...expansionParams,
             ...this._store,
-            templateId,
-            parentTaskId,
             templateDataProvider,
             columns: this._provider.getColumns(),
-            onGetRecord: taskId => this._getRecord(taskId),
             onGetNewTaskDefaults: this._params.onGetNewTaskDefaults,
         };
         return await this._params.onCreateTasksFromTemplate?.(params)
@@ -290,19 +290,8 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         return (await this._params.onOpenDatasetItems?.(params)) ?? null
     }
 
-    public async onMoveTask(
-        movingTaskId: string,
-        targetTaskId: string,
-        position: 'above' | 'below' | 'child',
-    ): Promise<IRawRecord[] | null> {
-        const params: IMemoryTaskMoveParams = {
-            ...this._store,
-            movingTaskId,
-            targetTaskId,
-            position,
-            recordTree: this._provider.getRecordTree(),
-            onGetRecord: taskId => this._getRecord(taskId),
-        };
+    public async onMoveTask(moveParams: ITaskMoveParams): Promise<IRawRecord[] | null> {
+        const params: IMemoryTaskMoveParams = { ...moveParams, ...this._store };
         return await this._params.onMoveTask?.(params)
             ?? MemoryTaskActions.moveTask(params);
     }

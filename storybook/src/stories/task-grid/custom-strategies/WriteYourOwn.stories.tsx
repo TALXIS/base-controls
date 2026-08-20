@@ -32,12 +32,12 @@ This is where the work is. The grid calls these hooks; you decide what they mean
 | \`onGetRawRecords(ids)\` | ✅ | Re-read specific records, to refresh rows after a change. |
 | \`onGetAvailableColumns(options?)\` | ✅ | Columns offered in the *Edit columns* panel. |
 | \`onGetAvailableRelatedColumns()\` | ✅ | Columns reachable through relationships. Return \`[]\` if you have none. |
-| \`onCreateTask(parentTaskId?)\` | ✅ | Create one task, optionally under a parent. Return the new raw record. |
+| \`onCreateTask(params)\` | ✅ | Create one task where the sibling context says. Return the new raw record. |
 | \`onDeleteTasks(taskIds)\` | ✅ | Delete tasks. Return which ids actually went. |
-| \`onMoveTask(movingId, targetId, position)\` | ✅ | Reparent and/or reorder. \`position\` is \`'above'\`, \`'below'\` or \`'child'\`. |
+| \`onMoveTask(params)\` | ✅ | Reparent and/or reorder, between the siblings the provider resolved. |
 | \`onRecordSave(record)\` | ✅ | Persist an edited record. Return which fields you wrote. |
 | \`onIsRecordActive(recordId)\` | ✅ | Whether a task is active. Synchronous. |
-| \`onCreateTasksFromTemplate(templateId, parentTaskId?)\` | ✅ | Expand a template into tasks, or return \`null\`. |
+| \`onCreateTasksFromTemplate(params)\` | ✅ | Expand a template into tasks, or return \`null\`. The context places the root task; its descendants are yours to order. |
 | \`onOpenDatasetItems(refs, isTaskEntity)\` | ✅ | The user opened records — navigate, open a dialog, or no-op. |
 | \`onGetRootTaskId?()\` | — | Root the tree at one task. |
 
@@ -103,12 +103,38 @@ Top-level tasks hold \`null\`. What does *not* work is a bare guid under the pla
 
 ### Ordering
 
-\`onMoveTask\` owns the rank arithmetic — lexicographic rank strings, so one move rewrites one record. The [**Memory**](?path=/story/task-grid-strategies-memory--overview) page has the worked example. The \`lexorank\` package is already a dependency, and the pattern is:
+**The provider works out where the task lands; you decide how order is expressed.** \`onMoveTask\`, \`onCreateTask\` and \`onCreateTasksFromTemplate\` all receive the same sibling context:
 
-- \`'child'\` — reparent, then rank before the target's existing children.
-- \`'above'\` / \`'below'\` — rank between the target and its neighbour on that side.
+\`\`\`ts
+interface ITaskSiblingContext {
+    parentRecord?: IRecord           // undefined = top level
+    siblings: IRecord[]              // every record under that parent, in order
+    previousSibling?: IRecord        // the one it ends up after
+    nextSibling?: IRecord            // and before
+}
+\`\`\`
 
-Read siblings from your own store rather than the visible tree when computing ranks, or a row hidden by the active view can collide with a new rank. Use the tree for *display order* — that is what "above" and "below" mean to the user — and exclude the moving record so it is never ranked against itself.
+Those neighbours are resolved over the **entire** dataset, not the rows the active view shows — which is the whole point. Ranking against a *visible* neighbour is how a reorder ends up colliding with a record the filter hid, and the collision is real: the rank steps by a fixed amount, so it can land exactly on the hidden row's value.
+
+The ranks are not handed to you separately — read whatever you order by off the neighbours themselves. For the shipped lexicographic scheme:
+
+\`\`\`ts
+public async onMoveTask(params: ITaskMoveParams) {
+    const { stackRank } = this._provider.getNativeColumns()
+    await api.patch(params.movingTaskId, {
+        parentid: params.parentRecord?.getRecordId() ?? null,
+        stackrank: StackRank.between(
+            params.previousSibling?.getValue(stackRank),
+            params.nextSibling?.getValue(stackRank),
+        ),
+    })
+    return this.onGetRawRecords([params.movingTaskId])
+}
+\`\`\`
+
+If your records order by a server sequence or a numeric column, ignore both ranks, use \`previousSibling\` / \`nextSibling\` instead, and never import \`StackRank\` — \`lexorank\` then stays out of your bundle.
+
+Two things you no longer have to handle: the moving record is already excluded from \`siblings\`, and a drop into the task's own subtree never reaches you — the provider refuses it and returns \`null\` itself.
 
 ## Views: two interfaces, split by feature
 

@@ -218,10 +218,10 @@ The strategy itself is thin: every hook below is "call yours if you supplied one
 | \`onIsRecordActive\` | \`MemoryTaskActions.isRecordActive\` — \`record[stateCode] == 0\` |
 | \`onGetAvailableColumns\` | \`MemoryTaskActions.getAvailableColumns\` — the union of every view's columns |
 | \`onGetAvailableRelatedColumns\` | \`MemoryTaskActions.getAvailableRelatedColumns\` — none; in-memory data has no relationship metadata |
-| \`onCreateTask\` | \`MemoryTaskActions.createTask\` — builds a ranked, parented record; the provider adds it |
+| \`onCreateTask\` | \`MemoryTaskActions.createTask\` — builds a record ranked before every sibling, filtered out or not; the provider adds it |
 | \`onDeleteTasks\` | \`MemoryTaskActions.deleteTasks\` — resolves the subtree to delete; the provider removes it |
 | \`onCreateTasksFromTemplate\` | \`MemoryTaskActions.createTasksFromTemplate\` — expands the template in order |
-| \`onMoveTask\` | \`MemoryTaskActions.moveTask\` — rewrites the parent lookup and the LexoRank |
+| \`onMoveTask\` | \`MemoryTaskActions.moveTask\` — rewrites the parent lookup and takes \`StackRank.between\` of the siblings the provider resolved |
 | \`onRecordSave\` | \`MemoryTaskActions.saveRecord\` — writes the dirty fields onto the stored record |
 | \`onOpenDatasetItems\` | \`MemoryTaskActions.openDatasetItems\` — a no-op; there is no form to navigate to |
 
@@ -306,7 +306,16 @@ task B   0|100002:      ← drop C between A and B
 task C   0|100001:      ← only this row is written
 \`\`\`
 
-The strategy owns the rank arithmetic. Both shipped strategies use the \`lexorank\` package, which is already a dependency.
+The data provider decides *where* a row lands — it resolves the parent and the siblings on either side over the whole dataset, so a filtered-out row cannot be ranked over — and hands those records to the operation. Reading the rank off them and turning it into a new one is one call, and both shipped strategies make it:
+
+\`\`\`ts
+StackRank.between(
+    params.previousSibling?.getValue(nativeColumns.stackRank),
+    params.nextSibling?.getValue(nativeColumns.stackRank),
+)
+\`\`\`
+
+\`StackRank\` is exported, and it is the only thing that imports \`lexorank\` — a strategy that orders some other way never pulls it in.
 
 ## The descriptor is the persistence layer
 

@@ -10,9 +10,17 @@ import {
     IRecordSaveOperationResult,
     Sanitizer,
 } from "@talxis/client-libraries";
-import { ICustomColumnsDataProvider, IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProvider } from "@components/TaskGrid/providers";
+import {
+    ICustomColumnsDataProvider,
+    IDeleteTasksResult,
+    IOpenDatasetItemsResult,
+    ITaskCreateParams,
+    ITaskDataProvider,
+    ITaskMoveParams,
+    ITaskTemplateExpansionParams,
+} from "@components/TaskGrid/providers";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
-import { LexoRank } from "lexorank";
+import { StackRank } from "@components/TaskGrid/stack-rank";
 import { IDataverseFieldMapping } from "../DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "../lookup-many/LookupManyHandler";
 
@@ -81,9 +89,7 @@ export interface IDataverseTaskAvailableRelatedColumnsParams {
 }
 
 /** What {@link DataverseTaskActions.createTask} needs. */
-export interface IDataverseTaskCreateParams extends IDataverseTaskEntity, IDataverseTaskForms, IDataverseTaskRecords {
-    /** The parent to create under, or `undefined` for a top-level task. */
-    parentTaskId?: string;
+export interface IDataverseTaskCreateParams extends ITaskCreateParams, IDataverseTaskEntity, IDataverseTaskForms, IDataverseTaskRecords {
     /** When `true` the record is created straight through the Web API; otherwise a form is opened. */
     isInlineCreateEnabled: boolean;
     /** The form to open when creating through a dialog. */
@@ -109,11 +115,7 @@ export interface IDataverseTaskDeleteParams {
 }
 
 /** What {@link DataverseTaskActions.createTasksFromTemplate} would need. */
-export interface IDataverseTaskTemplateExpansionParams {
-    /** The template to expand. */
-    templateId: string;
-    /** The parent to create the template's root task under. */
-    parentTaskId?: string;
+export interface IDataverseTaskTemplateExpansionParams extends ITaskTemplateExpansionParams {
 }
 
 /** What {@link DataverseTaskActions.openDatasetItems} needs. */
@@ -133,13 +135,7 @@ export interface IDataverseTaskOpenParams extends IDataverseTaskForms, IDatavers
 }
 
 /** What {@link DataverseTaskActions.moveTask} needs. */
-export interface IDataverseTaskMoveParams extends IDataverseTaskEntity, IDataverseTaskRecords {
-    /** The task being dragged. */
-    movingTaskId: string;
-    /** The task it was dropped on. */
-    movingToTaskId: string;
-    /** Where it landed relative to the target. */
-    position: 'above' | 'below' | 'child';
+export interface IDataverseTaskMoveParams extends ITaskMoveParams, IDataverseTaskEntity, IDataverseTaskRecords {
 }
 
 /** What {@link DataverseTaskActions.saveRecord} needs. */
@@ -197,9 +193,10 @@ export class DataverseTaskActions {
      */
     public static async createTask(params: IDataverseTaskCreateParams): Promise<IRawRecord | null> {
         const {
-            parentTaskId, entityName, entitySetName, fieldMapping, provider, isInlineCreateEnabled,
+            parentRecord, nextSibling, entityName, entitySetName, fieldMapping, provider, isInlineCreateEnabled,
             createFormId, projectReference, projectMetadata, onGetFormParameters, onGetRawRecords,
         } = params;
+        const parentTaskId = parentRecord?.getRecordId();
         const data: { [key: string]: any } = {};
         let pageInput: Xrm.Navigation.PageInputEntityRecord = {
             pageType: 'entityrecord',
@@ -221,9 +218,9 @@ export class DataverseTaskActions {
             data[`${parentIdColumnName}name`] = provider.getRecordsMap()[parentTaskId].getNamedReference().name;
             data[`${parentIdColumnName}type`] = entityName;
         }
-        const node = provider.getRecordTree().getNode(parentTaskId ?? null);
         let payload: { [key: string]: any } = {};
-        payload[`${fieldMapping.stackRank}`] = await this._updateStackRank({ entityName, fieldMapping, provider, previousTaskId: undefined, nextTaskId: node.directChildren[0]?.getRecordId(), skipSave: true });
+        //before every existing sibling the provider resolved, filtered out of the view or not
+        payload[`${fieldMapping.stackRank}`] = StackRank.between(undefined, this._getStackRank(nextSibling, fieldMapping));
 
         if (projectReference) {
             payload[`${await this._getNavigationalPropertyName(entityName, projectReference.etn!, fieldMapping.projectId!)}@odata.bind`] = `/${projectMetadata?.EntitySetName}(${projectReference.id.guid})`;
@@ -341,44 +338,21 @@ export class DataverseTaskActions {
      * neighbours, then re-reads the record.
      */
     public static async moveTask(params: IDataverseTaskMoveParams): Promise<IRawRecord[] | null> {
-        const { movingTaskId, movingToTaskId, position, entityName, entitySetName, fieldMapping, provider, onGetRawRecords } = params;
-        const taskTree = provider.getRecordTree();
-        const movingToRecord = provider.getRecordsMap()[movingToTaskId];
-        let payload: { [key: string]: any } = {};
-        if (position === 'child') {
-            //change parent
-            payload[`${await this._getNavigationalPropertyName(entityName, entityName, fieldMapping.parentId)}@odata.bind`] = `/${entitySetName}(${movingToTaskId})`;
-            const firstChild = taskTree.getNode(movingToTaskId).directChildren
-                .find(c => c.getRecordId() !== movingTaskId);
-            if (firstChild) {
-                //change stack rank to be before first child
-                payload[`${fieldMapping.stackRank}`] = await this._updateStackRank({ entityName, fieldMapping, provider, recordId: movingTaskId, previousTaskId: undefined, nextTaskId: firstChild.getRecordId(), skipSave: true });
-            }
-            await window.Xrm.WebApi.updateRecord(entityName, movingTaskId, payload);
-            const rawRecord = (await onGetRawRecords([movingTaskId]))[0];
-            return [rawRecord];
-        }
-        else {
-            const movingToRecordParent = taskTree.getNodeMap().get(movingToRecord.getRecordId())?.parent;
-            payload[`${await this._getNavigationalPropertyName(entityName, entityName, fieldMapping.parentId)}@odata.bind`] = movingToRecordParent ? `/${entitySetName}(${movingToRecordParent.getRecordId()})` : null;
-
-            const movingToRecordNode = taskTree.getNodeMap().get(movingToRecord.getRecordId())!;
-            const siblings = taskTree.getNodeMap().get(movingToRecordParent?.getRecordId() ?? null as any)?.directChildren ?? [];
-
-            let prevSiblingId: string | undefined;
-            let nextSiblingId: string | undefined;
-            if (position === 'above') {
-                prevSiblingId = siblings[movingToRecordNode.index - 1]?.getRecordId();
-                nextSiblingId = movingToRecord.getRecordId();
-            } else {
-                prevSiblingId = movingToRecord.getRecordId();
-                nextSiblingId = siblings[movingToRecordNode.index + 1]?.getRecordId();
-            }
-            payload[`${fieldMapping.stackRank}`] = await this._updateStackRank({ entityName, fieldMapping, provider, recordId: movingTaskId, previousTaskId: prevSiblingId, nextTaskId: nextSiblingId, skipSave: true });
-            await window.Xrm.WebApi.updateRecord(entityName, movingTaskId, payload);
-            const rawRecord = (await onGetRawRecords([movingTaskId]))[0];
-            return [rawRecord];
-        }
+        const { movingTaskId, parentRecord, previousSibling, nextSibling, entityName, entitySetName, fieldMapping, onGetRawRecords } = params;
+        const parentTaskId = parentRecord?.getRecordId();
+        const parentNavigationProperty = await this._getNavigationalPropertyName(entityName, entityName, fieldMapping.parentId);
+        const payload: { [key: string]: any } = {
+            [`${parentNavigationProperty}@odata.bind`]: parentTaskId ? `/${entitySetName}(${parentTaskId})` : null,
+            //the provider resolved the neighbours over the whole dataset, so this cannot collide with a
+            //sibling the active view happens to hide
+            [fieldMapping.stackRank]: StackRank.between(
+                this._getStackRank(previousSibling, fieldMapping),
+                this._getStackRank(nextSibling, fieldMapping),
+            ),
+        };
+        await window.Xrm.WebApi.updateRecord(entityName, movingTaskId, payload);
+        const rawRecord = (await onGetRawRecords([movingTaskId]))[0];
+        return [rawRecord];
     }
 
     /**
@@ -458,6 +432,11 @@ export class DataverseTaskActions {
 
     // ── Relationships and ranking ────────────────────────────────────────────
 
+    /** A sibling's rank, read off the record the provider resolved. */
+    private static _getStackRank(sibling: IRecord | undefined, fieldMapping: IDataverseFieldMapping): string | undefined {
+        return sibling?.getValue(fieldMapping.stackRank) as string | undefined;
+    }
+
     /** The navigation property behind a lookup column, resolved from the entity's relationships. */
     private static async _getNavigationalPropertyName(entityName: string, referencedEntityName: string, referencingAttribute: string): Promise<string> {
         const metadata: any = await window.Xrm.Utility.getEntityMetadata(entityName);
@@ -469,39 +448,5 @@ export class DataverseTaskActions {
             throw new Error(`Could not find many-to-one relationship targeting ${referencedEntityName} on ${metadata.LogicalName}`);
         }
         return relationship.ReferencingEntityNavigationPropertyName;
-    }
-
-    /** Returns a rank between two neighbours, and writes it unless the caller batches the save itself. */
-    private static async _updateStackRank(params: {
-        entityName: string;
-        fieldMapping: IDataverseFieldMapping;
-        provider: ITaskDataProvider;
-        recordId?: string;
-        previousTaskId?: string;
-        nextTaskId?: string;
-        skipSave?: boolean;
-    }): Promise<string> {
-        const stackRankCol = params.fieldMapping.stackRank;
-        const rawDataMap = params.provider.getRawDataMap();
-
-        const prevRankStr = params.previousTaskId ? (rawDataMap[params.previousTaskId]?.[stackRankCol] as string) : undefined;
-        const nextRankStr = params.nextTaskId ? (rawDataMap[params.nextTaskId]?.[stackRankCol] as string) : undefined;
-
-        let newRank: string;
-        if (prevRankStr && nextRankStr) {
-            newRank = LexoRank.parse(prevRankStr).between(LexoRank.parse(nextRankStr)).format();
-        } else if (nextRankStr) {
-            newRank = LexoRank.parse(nextRankStr).genPrev().format();
-        } else if (prevRankStr) {
-            newRank = LexoRank.parse(prevRankStr).genNext().format();
-        } else {
-            newRank = LexoRank.middle().format();
-        }
-        if (!params.skipSave && params.recordId) {
-            await window.Xrm.WebApi.updateRecord(params.entityName, params.recordId, {
-                [stackRankCol]: newRank
-            });
-        }
-        return newRank;
     }
 }

@@ -28,6 +28,15 @@ export interface IRecordTree {
     isFlat(): boolean;
     /** Returns `true` when the record with the given id has at least one direct child. */
     hasChildren(recordId: string): boolean;
+    /**
+     * Returns every direct child of a record — or of the virtual root, for `null` — in display order,
+     * **ignoring the current filter and quick find**.
+     *
+     * `ITreeNode.directChildren` is pruned to branches that match, which is right for rendering and wrong
+     * for anything that reorders records: a hidden sibling still occupies a position. This is the complete
+     * set, ordered the same way.
+     */
+    getAllDirectChildren(parentRecordId: string | null): IRecord[];
     /** Returns a map of records that match the current search/filter, keyed by record id. */
     getMatchingRecords(): { [recordId: string]: IRecord };
     /** Returns record ids in their computed display order (depth-first, stack-rank sorted). */
@@ -37,6 +46,8 @@ export interface IRecordTree {
 export class RecordTree implements IRecordTree {
     private _nodeMap: Map<string, ITreeNode> = new Map();
     private _sortingMap: { [recordId: string]: number } = {};
+    /** Parent id — `null` for top level — to its children, ordered and *not* pruned to the filter. */
+    private _parentToAllDirectChildren: Map<string | null, IRecord[]> = new Map();
     private _matchingRecordsMap: { [recordId: string]: IRecord } = {};
     private _isFlat: boolean = false;
     private _totalUniqueRecords: number = 0;
@@ -54,6 +65,9 @@ export class RecordTree implements IRecordTree {
     }
     public getTotalCount(): number {
         return this._totalUniqueRecords;
+    }
+    public getAllDirectChildren(parentRecordId: string | null): IRecord[] {
+        return this._parentToAllDirectChildren.get(parentRecordId) ?? [];
     }
     public isFlat(): boolean {
         return this._isFlat;
@@ -118,6 +132,12 @@ export class RecordTree implements IRecordTree {
         for (const [, children] of parentToDirectChildren) {
             children.sort(sortByIndex);
         }
+        //kept before the filter is applied below: this is the only ordered, complete view of who sits
+        //under whom, and reordering an record needs it
+        this._parentToAllDirectChildren = new Map<string | null, IRecord[]>([
+            [null, topLevelRecords],
+            ...parentToDirectChildren,
+        ]);
 
         const hasMatchingDescendantCache = new Map<string, boolean>();
         const calculateHasMatchingDescendant = (recordId: string): boolean => {

@@ -1,5 +1,14 @@
 import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Operators, DataTypes, ISingleRecord } from "@talxis/client-libraries";
-import { ITaskDataProviderStrategy, ITaskDataProvider, IDeleteTasksResult, IOpenDatasetItemsResult, ICustomColumnsDataProvider } from "@components/TaskGrid/providers";
+import {
+    ICustomColumnsDataProvider,
+    IDeleteTasksResult,
+    IOpenDatasetItemsResult,
+    ITaskCreateParams,
+    ITaskDataProvider,
+    ITaskDataProviderStrategy,
+    ITaskMoveParams,
+    ITaskTemplateExpansionParams,
+} from "@components/TaskGrid/providers";
 import { Liquid } from "liquidjs";
 import { IDataverseFieldMapping } from "../DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "../lookup-many/LookupManyHandler";
@@ -420,10 +429,10 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             ?? DataverseTaskActions.getAvailableRelatedColumns(params);
     }
 
-    public async onCreateTask(parentTaskId?: string): Promise<IRawRecord | null> {
+    public async onCreateTask(createParams: ITaskCreateParams): Promise<IRawRecord | null> {
         const params: IDataverseTaskCreateParams = {
+            ...createParams,
             ...this._entity,
-            parentTaskId,
             isInlineCreateEnabled: this._isInlineCreateEnabled,
             createFormId: this._createFormId,
             projectReference: this._projectReference,
@@ -447,8 +456,8 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             ?? DataverseTaskActions.deleteTasks(params);
     }
 
-    public onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
-        const params: IDataverseTaskTemplateExpansionParams = { templateId, parentTaskId };
+    public onCreateTasksFromTemplate(expansionParams: ITaskTemplateExpansionParams): Promise<IRawRecord[] | null> {
+        const params: IDataverseTaskTemplateExpansionParams = { ...expansionParams };
         return this._params.onCreateTasksFromTemplate?.(params)
             ?? DataverseTaskActions.createTasksFromTemplate(params);
     }
@@ -467,12 +476,10 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             ?? DataverseTaskActions.openDatasetItems(params);
     }
 
-    public async onMoveTask(movingTaskId: string, movingToTaskId: string, position: "above" | "below" | "child"): Promise<IRawRecord[] | null> {
+    public async onMoveTask(moveParams: ITaskMoveParams): Promise<IRawRecord[] | null> {
         const params: IDataverseTaskMoveParams = {
+            ...moveParams,
             ...this._entity,
-            movingTaskId,
-            movingToTaskId,
-            position,
             onGetRawRecords: ids => this.onGetRawRecords(ids),
         };
         return await this._params.onMoveTask?.(params)

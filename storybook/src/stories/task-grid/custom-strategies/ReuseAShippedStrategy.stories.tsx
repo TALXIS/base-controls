@@ -102,7 +102,7 @@ onDeleteTasks: async params => {
 },
 \`\`\`
 
-\`onCreateTask\` and \`onMoveTask\` work the same way. That is a server-backed grid without implementing the interface — or a subclass — yourself. [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview) has the snippet. Write the interface from scratch only when the data cannot be held in memory at all — which, given the above, means almost never. [**Write your own**](?path=/story/task-grid-custom-strategies-write-your-own--overview) covers that case.
+\`onCreateTask\` and \`onMoveTask\` work the same way — and both are handed the siblings they land between, resolved over the whole dataset, so you never compute that yourself. That is a server-backed grid without implementing the interface — or a subclass — yourself. [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview) has the snippet. Write the interface from scratch only when the data cannot be held in memory at all — which, given the above, means almost never. [**Write your own**](?path=/story/task-grid-custom-strategies-write-your-own--overview) covers that case.
 
 ## Pairings that do not work
 

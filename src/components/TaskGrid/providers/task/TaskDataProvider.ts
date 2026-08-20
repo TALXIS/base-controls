@@ -21,6 +21,53 @@ export type IOpenDatasetItemsResult =
     | { success: false; updatedRecords: IRawRecord[]; errors: IFailedRecord[] };
 
 
+/**
+ * Where an operation lands: the parent it ends up under, and the siblings around it — all resolved over
+ * the **entire** dataset, so filtering and quick find cannot narrow them.
+ *
+ * The provider stops there deliberately: it says which records the task lands between, and how order is
+ * expressed is the strategy's decision. Read whatever you order by off the neighbours —
+ * `previousSibling?.getValue(nativeColumns.stackRank)` for the shipped lexicographic scheme, your own
+ * column for anything else.
+ */
+export interface ITaskSiblingContext {
+    /**
+     * The parent the task ends up under, or `undefined` for top level. `getRecordId()` is the id,
+     * `getNamedReference()` the lookup value to store.
+     */
+    parentRecord?: IRecord;
+    /** Every record under that parent, in order, excluding the task itself. */
+    siblings: IRecord[];
+    /** The sibling the task ends up immediately after, if any. */
+    previousSibling?: IRecord;
+    /** The sibling it ends up immediately before, if any. */
+    nextSibling?: IRecord;
+}
+
+/** What the provider hands `onMoveTask`. */
+export interface ITaskMoveParams extends ITaskSiblingContext {
+    /** The task being moved. */
+    movingTaskId: string;
+    /** The task it was dropped on. */
+    targetTaskId: string;
+    /** Where it landed relative to the target. */
+    position: 'above' | 'below' | 'child';
+    /** The record being moved. */
+    movingRecord: IRecord;
+    /** The record it was dropped on. */
+    targetRecord: IRecord;
+}
+
+/** What the provider hands `onCreateTask`. The sibling context is where the new task lands. */
+export interface ITaskCreateParams extends ITaskSiblingContext {
+}
+
+/** What the provider hands `onCreateTasksFromTemplate`. The sibling context is the root task's. */
+export interface ITaskTemplateExpansionParams extends ITaskCreateParams {
+    /** The template to expand. */
+    templateId: string;
+}
+
 export interface ITaskDataProviderParameters {
     nativeColumns: INativeColumns;
     localizationService: ILocalizationService<ITaskGridLabels>;
@@ -42,23 +89,41 @@ export interface ITaskDataProviderStrategy {
     onGetAvailableColumns: (options?: IAvailableColumnOptions) => Promise<IColumn[]>;
     /** Returns linked-entity columns that can be used for filtering and sorting. */
     onGetAvailableRelatedColumns: () => Promise<IAvailableRelatedColumn[]>;
-    /** @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    onCreateTask(parentTaskId?: string): Promise<IRawRecord | null>;
+    /**
+     * Creates one task where {@link ITaskCreateParams} says — before every existing sibling, whether the
+     * active view shows them or not.
+     *
+     * @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws
+     * on unexpected failure.
+     */
+    onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null>;
     /**
      * @returns Result indicating which tasks were deleted and which failed.
      * `success: true` means all tasks were deleted. `success: false` means some or all failed.
      * Throws on unexpected failure.
      */
     onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
-    /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null>;
+    /**
+     * Expands a template into tasks. The sibling context describes where the template's *root* task
+     * lands; ranking its descendants is the strategy's own business.
+     *
+     * @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws
+     * on unexpected failure.
+     */
+    onCreateTasksFromTemplate(params: ITaskTemplateExpansionParams): Promise<IRawRecord[] | null>;
     /**
      * Opens one or more dataset items. When `isTaskEntity` is `true` the references point to task records;
      * when `false` they point to a related entity (e.g. a lookup target).
      */
     onOpenDatasetItems(entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean): Promise<IOpenDatasetItemsResult | null>;
-    /** Moves a task to a new position relative to another task. Returns the updated raw records, or `null` on cancellation. */
-    onMoveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null>;
+    /**
+     * Moves a task to a new position relative to another. {@link ITaskMoveParams} carries the neighbours
+     * it lands between, resolved over the whole dataset — a move into the task's own subtree never
+     * reaches here, the provider refuses it first.
+     *
+     * @returns The updated raw records, or `null` on cancellation.
+     */
+    onMoveTask(params: ITaskMoveParams): Promise<IRawRecord[] | null>;
     /** Persists inline cell edits for the given record. */
     onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult>;
     /** Returns whether the given task record is currently active (non-completed). */
@@ -255,7 +320,14 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 this.taskEvents.dispatchEvent('onBeforeTaskMoved');
-                const result = await this._strategy.onMoveTask(movingFromTaskId, movingToTaskId, position);
+                const params = this._resolveMove(movingFromTaskId, movingToTaskId, position);
+                if (!params) {
+                    //an impossible move - into the task's own subtree, or onto a record we do not hold.
+                    //Refused here so no strategy has to guard against it
+                    this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position);
+                    return null;
+                }
+                const result = await this._strategy.onMoveTask(params);
                 if (result !== null) this.updateTaskData(result);
                 this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position);
                 return result;
@@ -264,11 +336,91 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         })
     }
 
+    /**
+     * Resolves where a drop lands: the parent, and the siblings on either side of it.
+     *
+     * Siblings come from the full record set rather than the tree, whose children are pruned to the
+     * active filter and quick find. Ranking against the visible neighbour is what let a reorder collide
+     * with a hidden record's rank.
+     *
+     * @returns `null` when the move cannot be made.
+     */
+    private _resolveMove(movingTaskId: string, targetTaskId: string, position: 'above' | 'below' | 'child'): ITaskMoveParams | null {
+        const movingRecord = this.getRecordsMap()[movingTaskId];
+        const targetRecord = this.getRecordsMap()[targetTaskId];
+        if (!movingRecord || !targetRecord) {
+            return null;
+        }
+        //a task cannot become its own descendant: the hierarchy would cycle, and the record tree drops
+        //every record in a cycle - the rows would simply vanish. `pathIds` runs from the root down to the
+        //target itself, over the unfiltered records, so this covers dropping a task onto itself as well
+        if (this._taskTree.getNode(targetTaskId)?.pathIds.includes(movingTaskId)) {
+            return null;
+        }
+
+        const parentTaskId = position === 'child' ? targetTaskId : this._getParentTaskId(targetRecord);
+        const siblings = this._getSiblings(parentTaskId, movingTaskId);
+        const [previousSibling, nextSibling] = position === 'child'
+            //first among its new children, so there is nothing before it
+            ? [undefined, siblings[0]]
+            : this._getNeighbours(siblings, targetTaskId, position);
+
+        return {
+            movingTaskId,
+            targetTaskId,
+            position,
+            movingRecord,
+            targetRecord,
+            parentRecord: parentTaskId ? this.getRecordsMap()[parentTaskId] : undefined,
+            siblings,
+            previousSibling,
+            nextSibling,
+        };
+    }
+
+    /**
+     * The records under one parent, in the order the tree computed — which already covers every record,
+     * filtered out of the view or not, so nothing here needs to know what the grid orders by.
+     */
+    private _getSiblings(parentTaskId: string | null, excludeTaskId?: string): IRecord[] {
+        return this._taskTree.getAllDirectChildren(parentTaskId)
+            .filter(record => record.getRecordId() !== excludeTaskId);
+    }
+
+    /** The siblings a task ends up between when it is dropped above or below one of them. */
+    private _getNeighbours(siblings: IRecord[], targetTaskId: string, position: 'above' | 'below'): [IRecord | undefined, IRecord | undefined] {
+        const targetIndex = siblings.findIndex(record => record.getRecordId() === targetTaskId);
+        if (targetIndex < 0) {
+            //the target is not among the siblings we resolved, which should not happen - rank it last
+            return [siblings[siblings.length - 1], undefined];
+        }
+        return position === 'above'
+            ? [siblings[targetIndex - 1], siblings[targetIndex]]
+            : [siblings[targetIndex], siblings[targetIndex + 1]];
+    }
+
+    /** The parent a record points at, or `null` when it sits at the top level. */
+    private _getParentTaskId(record: IRecord): string | null {
+        const parentReference = record.getValue(this._nativeColumns.parentId) as ComponentFramework.EntityReference[] | null;
+        return parentReference?.[0]?.id?.guid ?? null;
+    }
+
+    /** Where a newly created task lands: first among every existing child of its parent. */
+    private _resolveCreate(parentTaskId?: string): ITaskCreateParams {
+        const siblings = this._getSiblings(parentTaskId ?? null);
+        return {
+            parentRecord: parentTaskId ? this.getRecordsMap()[parentTaskId] : undefined,
+            siblings,
+            previousSibling: undefined,
+            nextSibling: siblings[0],
+        };
+    }
+
     public async createTask(parentId?: string): Promise<IRawRecord | null> {
         this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentId);
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
-                const rawRecord = await this._strategy.onCreateTask(parentId);
+                const rawRecord = await this._strategy.onCreateTask(this._resolveCreate(parentId));
                 if (rawRecord) this._createTasks([rawRecord], parentId);
                 this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecord ? [rawRecord] : null, parentId);
                 return rawRecord;
@@ -281,7 +433,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentId);
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
-                const rawRecords = await this._strategy.onCreateTasksFromTemplate(templateId, parentId);
+                const rawRecords = await this._strategy.onCreateTasksFromTemplate({ ...this._resolveCreate(parentId), templateId });
                 if (rawRecords) this._createTasks(rawRecords, parentId);
                 this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecords, parentId);
                 return rawRecords;
