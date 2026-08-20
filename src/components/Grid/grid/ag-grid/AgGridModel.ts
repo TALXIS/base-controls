@@ -212,6 +212,17 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     public onNotifyOutputChanged(record: IRecord, columnName: string, value: any, parameters: any) {
         record.setValue(columnName, value);
+        //AG Grid asks a cell for its values *before* the control reports a new one, so everything it
+        //cached - the value and the validation result derived from it - describes the value that has just
+        //been replaced. Recompute the row now that the record holds the new one, otherwise the cell keeps
+        //showing state for the old value: a validation error stayed invisible until the next edit.
+        this.executeWithGridApi(gridApi => {
+            const node = gridApi.getRowNode(record.getRecordId());
+            //no node means the row is not rendered, and it reads current values whenever it is
+            if (node) {
+                gridApi.refreshCells({ rowNodes: [node] });
+            }
+        });
         if(this.getGrid().isAutoSaveEnabled()) {
             record.save();
         }
