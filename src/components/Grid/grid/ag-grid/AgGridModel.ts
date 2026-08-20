@@ -18,6 +18,9 @@ import { LicenseManager } from "@ag-grid-enterprise/core";
 import { SelectionCell } from "@components/Grid/cells/selection-cell/SelectionCell";
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule,]);
 
+//stateless, and `equals` runs per cell per value read
+const COMPARATOR = new Comparator();
+
 interface IAgGridTestDependencies {
     grid: GridModel;
     getContainer: () => HTMLDivElement;
@@ -114,7 +117,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                     }
                 },
                 editable: (p) => this._isCellEditorEnabled(column.name, p.data),
-                equals: (valueA: ICellValues, valueB: ICellValues) => new Comparator().isEqual(valueA, valueB),
+                equals: (valueA: ICellValues, valueB: ICellValues) => COMPARATOR.isEqual(valueA, valueB),
                 headerComponent: ColumnHeader,
                 cellRenderer: Cell,
                 cellEditor: Cell,
@@ -660,8 +663,11 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         }
         const customControl = this._grid.getControl(column, record, editing || !!column.oneClickEdit);
 
+        //resolved once: the control asks for its bindings while constructing its properties and again in
+        //getParameters(), and each call rebuilt the whole binding graph for the same record and column
+        const bindings = this._grid.getBindings(record, column, customControl);
         const control = new NestedControl({
-            onGetBindings: () => this._grid.getBindings(record, column, customControl),
+            onGetBindings: () => bindings,
             parentPcfContext: this._grid.getPcfContext(),
         });
         const parameters = columnInfo.ui.getControlParameters({

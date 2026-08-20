@@ -3,7 +3,12 @@ import Color from 'color';
 import { DeepPartial } from "@legacy/interfaces/components";
 import { MemoryCache } from '@talxis/client-libraries/dist/helpers/cache/MemoryCache';
 
-const ThemeCache = new MemoryCache<ITheme>();
+//cloning disabled on purpose: MemoryCache deep-clones on every *hit*, and a generated v8 theme is a large
+//object (palette, ~130 semantic colors, fonts, effects, the components tree). A grid cell asks for one
+//about six times while it mounts, so the clone was the single most expensive thing on that path. Nothing
+//mutates a theme it was handed - the normalisation below runs on a fresh object inside the getter, and an
+//override produces a new object through `mergeThemes`
+const ThemeCache = new MemoryCache<ITheme>(true);
 const IsLightColorCache = new MemoryCache<boolean>();
 const IsDarkColorCache = new MemoryCache<boolean>();
 const ContrastColorCache = new MemoryCache<string>();
@@ -48,10 +53,19 @@ export class Theming {
             v8Theme.id = key;
             return Theming._NormalizeTheme(v8Theme);
         })!;
-        if (themeOverride) {
-            theme = mergeThemes(theme, themeOverride) as ITheme;
+        //an empty override still costs a full Fluent deep merge, and the grid hands one down for every
+        //cell (`GridModel.getFieldFormatting` returns `themeOverride: {}`)
+        if (!themeOverride || Object.keys(themeOverride).length === 0) {
+            return theme;
         }
-        return theme;
+        //an override that names itself can be cached: the id is the caller's promise that the same id means
+        //the same override, which is the convention `useControlTheme` already memoises on. Without one we
+        //merge every time, because two anonymous overrides cannot be told apart
+        const overrideId = (themeOverride as ITheme).id;
+        if (!overrideId) {
+            return mergeThemes(theme, themeOverride) as ITheme;
+        }
+        return ThemeCache.get(`${key}_${overrideId}`, () => mergeThemes(theme, themeOverride) as ITheme);
     }
 
     public static IsLightColor(color: string) {

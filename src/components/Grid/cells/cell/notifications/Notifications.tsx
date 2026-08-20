@@ -19,7 +19,7 @@ export const Notifications = (props: INotifications) => {
     const { notifications, formatting, farItems, isActionColumn, columnAlignment } = { ...props };
     const grid = useGridInstance();
     const theme = useTheme();
-    const styles = getNotificationStyles(isActionColumn, columnAlignment);
+    const styles = useMemo(() => getNotificationStyles(isActionColumn, columnAlignment), [isActionColumn, columnAlignment]);
     const iconId = useMemo(() => `icon${crypto.randomUUID()}`, []);
     const [selectedNotification, setSelectedNotification] = useState<IAddControlNotificationOptions | null>(null);
     const commandBarRef = useRef<ICommandBar>(null);

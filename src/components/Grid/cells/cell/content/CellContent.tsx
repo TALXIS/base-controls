@@ -1,8 +1,9 @@
 import { useTheme, ITextFieldStyles, IComboBoxStyles, IDatePickerStyles, IToggleStyles, mergeThemes, merge } from "@fluentui/react";
-import { Client, DataProvider, ICommand, IRecord } from "@talxis/client-libraries";
+import { Client, DataProvider, DeepPartial, ICommand, IColumn, ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
 import React from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { IFluentDesignState, ControlTheme } from "@utils";
+import { ITheme } from "@legacy";
 import { NestedControlRenderer } from "@components/NestedControlRenderer";
 import { getJustifyContent } from "@components/Grid/grid/styles";
 import { useGridInstance } from "@components/Grid/grid/useGridInstance";
@@ -12,6 +13,74 @@ import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstan
 
 const client = new Client();
 
+
+//the component overrides depend only on the column alignment, so there are three of them in the whole
+//application - they used to be rebuilt, and deep-merged, per cell per render
+const componentOverridesByAlignment = new Map<IColumn['alignment'] | undefined, DeepPartial<ITheme>['components']>();
+
+const getComponentOverrides = (columnAlignment: IColumn['alignment'] | undefined) => {
+    const cached = componentOverridesByAlignment.get(columnAlignment);
+    if (cached) {
+        return cached;
+    }
+    const overrides = {
+        'TextField': {
+            styles: {
+                field: {
+                    textAlign: columnAlignment
+                }
+            } as ITextFieldStyles
+        },
+        'ComboBox': {
+            styles: {
+                input: {
+                    textAlign: columnAlignment === 'right' ? 'right' : undefined,
+                    paddingRight: columnAlignment === 'right' ? 8 : undefined,
+                }
+            } as IComboBoxStyles
+        },
+        'DatePicker': {
+            styles: {
+                root: {
+                    '.ms-TextField-field': {
+                        paddingRight: columnAlignment === 'right' ? 8 : undefined,
+                        textAlign: columnAlignment === 'right' ? 'right' : 'left'
+                    }
+                } as any
+            } as IDatePickerStyles
+        },
+        'Toggle': {
+            styles: {
+                root: {
+                    justifyContent: getJustifyContent(columnAlignment)
+                }
+            } as IToggleStyles
+        }
+    };
+    componentOverridesByAlignment.set(columnAlignment, overrides as any);
+    return overrides as any;
+};
+
+/**
+ * A stable name for a consumer-supplied theme override.
+ *
+ * Interned by identity rather than serialised: an override's `components` can hold style *functions*,
+ * which JSON would drop - two different overrides would then look identical and get the same theme.
+ */
+const overrideNames = new WeakMap<object, string>();
+let overrideCounter = 0;
+
+const getOverrideName = (override?: object): string => {
+    if (!override || Object.keys(override).length === 0) {
+        return '';
+    }
+    let name = overrideNames.get(override);
+    if (!name) {
+        name = `o${++overrideCounter}`;
+        overrideNames.set(override, name);
+    }
+    return name;
+};
 
 export const CellContent = (props: ICellProps) => {
     const columnRef = React.useRef(props.baseColumn);
@@ -33,11 +102,20 @@ export const CellContent = (props: ICellProps) => {
         return columnRef.current;
     }
 
-    const getThemeId = () => {
-        if (valueRef.current.aggregatedValue != null) {
-            return `${valueRef.current.aggregatedValue}`
-        }
-        return null;
+    /**
+     * Names the override this cell builds below. Everything the override varies by has to appear here:
+     * the theme caches key on this id, so anything left out would serve another cell's theme.
+     */
+    const getThemeId = (formatting: ICustomColumnFormatting, parentOverrides?: object) => {
+        const aggregated = valueRef.current.aggregatedValue != null ? `agg:${valueRef.current.aggregatedValue}` : 'val';
+        return [
+            'cell',
+            valueRef.current.columnAlignment ?? '',
+            aggregated,
+            formatting.backgroundColor,
+            getOverrideName(formatting.themeOverride),
+            getOverrideName(parentOverrides),
+        ].join('|');
     }
 
     const getFonts = () => {
@@ -56,12 +134,11 @@ export const CellContent = (props: ICellProps) => {
 
     const getFluentDesignLanguage = (fluentDesignLanguage?: IFluentDesignState) => {
         const formatting = grid.getFieldFormatting(record, getColumn().name);
-        const mergedOverrides: any = merge({}, fluentDesignLanguage?.v8FluentOverrides ?? {}, formatting.themeOverride);
+        const parentOverrides = fluentDesignLanguage?.v8FluentOverrides;
+        const hasOverrides = !!formatting.themeOverride && Object.keys(formatting.themeOverride).length > 0;
         const columnAlignment = valueRef.current.columnAlignment;
-        const result = ControlTheme.GenerateFluentDesignLanguage(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, {
-            v8FluentOverrides: merge({},
-                {
-                    id: getThemeId(),
+        const ownOverrides = {
+                    id: getThemeId(formatting, parentOverrides),
                     semanticColors: {
                         inputBorder: 'transparent',
                         inputBorderHovered: 'transparent',
@@ -76,47 +153,17 @@ export const CellContent = (props: ICellProps) => {
                     effects: {
                         underlined: false
                     },
-                    components: {
-                        'TextField': {
-                            styles: {
-                                field: {
-                                    textAlign: columnAlignment
-                                }
-
-                            } as ITextFieldStyles
-                        },
-                        'ComboBox': {
-                            styles: {
-                                input: {
-                                    textAlign: columnAlignment === 'right' ? 'right' : undefined,
-                                    paddingRight: columnAlignment === 'right' ? 8 : undefined,
-                                }
-                            } as IComboBoxStyles
-                        },
-                        'DatePicker': {
-                            styles: {
-                                root: {
-                                    '.ms-TextField-field': {
-                                        paddingRight: columnAlignment === 'right' ? 8 : undefined,
-                                        textAlign: columnAlignment === 'right' ? 'right' : 'left'
-                                    }
-                                } as any
-                            } as IDatePickerStyles
-                        },
-                        'Toggle': {
-                            styles: {
-                                root: {
-                                    justifyContent: getJustifyContent(columnAlignment)
-                                }
-                            } as IToggleStyles
-                        }
-                    }
-                },
-                mergedOverrides
-            ) as any,
+                    components: getComponentOverrides(columnAlignment)
+        };
+        //merged only when there is something to merge: the common cell has no conditional formatting and
+        //no parent override, and this used to run two deep merges regardless
+        const v8FluentOverrides: any = hasOverrides || parentOverrides
+            ? merge({}, ownOverrides, merge({}, parentOverrides ?? {}, formatting.themeOverride))
+            : ownOverrides;
+        return ControlTheme.GenerateFluentDesignLanguage(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, {
+            v8FluentOverrides,
             applicationTheme: fluentDesignLanguage?.applicationTheme
-        })
-        return result;
+        });
     }
 
     const isControlDisabled = () => {

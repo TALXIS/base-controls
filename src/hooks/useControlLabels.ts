@@ -2,6 +2,10 @@ import { Liquid } from "liquidjs";
 import { merge } from "merge-anything";
 import { useMemo } from "react";
 
+//one engine for the process: constructing one costs ~13us, and a grid cell used to build two of them
+//while it mounted
+const liquid = new Liquid();
+
 export type ITranslation<T> = {
     [Property in keyof Required<T>]: (variables?: any) => string
 };
@@ -18,7 +22,6 @@ interface ILabelsOptions<TTranslations> {
 }
 export const useControlLabels = <TTranslations>(options: ILabelsOptions<TTranslations>): Required<ITranslation<TTranslations>>  => {
     const { languageId, translations, defaultTranslations } = options;
-    const liquid = useMemo(() => new Liquid(), []);
     const labels = useMemo(() => {
         const mergedTranslations = merge(defaultTranslations ?? {}, translations ?? {}) as TTranslations;
         return new Proxy(mergedTranslations as any, {

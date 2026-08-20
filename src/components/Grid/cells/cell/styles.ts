@@ -1,17 +1,20 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
 
-export const getCellStyles = (theme: ITheme) => {
-    return mergeStyleSets({
-        cellRoot: {
-            height: '100% !important',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-        }
-    })
-}
+//resolved once: these rules are constant, and this used to be re-merged per cell on every theme identity
+//change even though the theme was never read
+export const cellStyles = mergeStyleSets({
+    cellRoot: {
+        height: '100% !important',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    }
+});
+
+/** @deprecated Use {@link cellStyles} — the styles are constant, the argument was never read. */
+export const getCellStyles = (_theme?: ITheme) => cellStyles;
 
 export const getInnerCellStyles = (isEditing: boolean, theme: ITheme, columnAlignment: IColumn['alignment'], isExpanded: boolean) => {
     return mergeStyleSets({

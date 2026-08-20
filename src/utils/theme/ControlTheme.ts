@@ -2,6 +2,14 @@ import { getTheme } from "@fluentui/react";
 import { DeepPartial } from "@talxis/client-libraries";
 import { createBrandVariants, createV9Theme } from "@fluentui/react-migration-v8-v9";
 import { ITheme, Theming } from "@legacy";
+import { MemoryCache } from '@talxis/client-libraries/dist/helpers/cache/MemoryCache';
+
+/**
+ * `createV9Theme` builds a ~400-key token object and `createBrandVariants` mixes 16 colours, and a single
+ * grid cell asks for both twice while it mounts. Cloning is off on purpose: the entries are treated as
+ * immutable, and cloning one would cost more than rebuilding it.
+ */
+const derivedThemeCache = new MemoryCache<{ brand: ComponentFramework.FluentDesignState['brand']; tokenTheme: ComponentFramework.FluentDesignState['tokenTheme']; isDarkTheme: boolean }>(true);
 
 export interface IFluentDesignState extends ComponentFramework.FluentDesignState {
     /**
@@ -39,16 +47,28 @@ export class ControlTheme {
         v8FluentOverrides?: DeepPartial<ITheme>;
         applicationTheme?: ITheme
     }): IFluentDesignState {
-        const theme = Theming.GenerateThemeV8(primaryColor, backgroundColor, textColor, options?.v8FluentOverrides)
-        const v9 = createV9Theme(theme);
-        const brand = createBrandVariants(theme.palette);
+        //only an override that names itself can be keyed - see Theming.GenerateThemeV8
+        const overrideId = (options?.v8FluentOverrides as ITheme | undefined)?.id;
+        const derive = () => {
+            const theme = Theming.GenerateThemeV8(primaryColor, backgroundColor, textColor, options?.v8FluentOverrides);
+            return {
+                brand: createBrandVariants(theme.palette),
+                tokenTheme: createV9Theme(theme),
+                isDarkTheme: Theming.IsDarkColor(theme.semanticColors.bodyBackground),
+            };
+        };
+        const derived = overrideId
+            ? derivedThemeCache.get(`${primaryColor}_${backgroundColor}_${textColor}_${overrideId}`, derive)
+            : derive();
 
+        //the wrapper is rebuilt every call so the caller's own applicationTheme and overrides can never be
+        //served from a previous caller
         return {
-            brand: brand,
+            brand: derived.brand,
             applicationTheme: options?.applicationTheme,
-            isDarkTheme: Theming.IsDarkColor(theme.semanticColors.bodyBackground),
+            isDarkTheme: derived.isDarkTheme,
             v8FluentOverrides: options?.v8FluentOverrides,
-            tokenTheme: v9
-        };;
+            tokenTheme: derived.tokenTheme
+        };
     }
 }

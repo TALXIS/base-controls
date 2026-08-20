@@ -12,10 +12,8 @@ import { CellContent } from "./content/CellContent";
 import { Notifications } from "./notifications/Notifications";
 import { getCellStyles, getInnerCellStyles } from "./styles";
 import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
-import ReactDOM from "react-dom";
-import { GridContext } from "@components/Grid/grid/GridContext";
-import { AgGridContext } from "@components/Grid/grid/ag-grid/AgGridContext";
 import { useEventEmitter } from "@hooks/useEventEmitter";
+import { CellErrorBoundary } from "@components/error-boundary";
 
 export interface ICellProps extends ICellRendererParams {
     baseColumn: IGridColumn;
@@ -26,11 +24,9 @@ export interface ICellProps extends ICellRendererParams {
 
 export const Cell = (props: ICellProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const memoizedContainerRef = useRef<HTMLDivElement | null>();
     const { record, node, baseColumn } = props;
     const column = baseColumn;
     const grid = useGridInstance();
-    const agGrid = useAgGridInstance();
     const lastLoadingRefValue = useRef<boolean>(props.value.loading);
     const rerender = useRerender();
 
@@ -92,47 +88,31 @@ export const Cell = (props: ICellProps) => {
     }, []);
 
 
-    const getTopLevelCellWrapperStyles = () => {
-        return mergeStyleSets({
-            cellRoot: {
-                width: '100%',
-                height: (() => {
-                    if (skipCellRendering && column.autoHeight) {
-                        return `${grid.getDefaultRowHeight()}px !important`;
-                    }
-                    return '100% !important';
-                })()
-            }
-        })
-    }
+    //two variants in practice, and this runs per cell: the group/aggregation row in an auto-height column
+    //needs a fixed height, everything else fills the row
+    const topLevelCellWrapperStyles = useMemo(() => mergeStyleSets({
+        cellRoot: {
+            width: '100%',
+            height: skipCellRendering && column.autoHeight
+                ? `${grid.getDefaultRowHeight()}px !important`
+                : '100% !important'
+        }
+    }), [skipCellRendering, column.autoHeight]);
     useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', onFieldValueChanged);
 
     useEffect(() => {
-        memoizedContainerRef.current = containerRef.current;
-        containerRef.current?.addEventListener('click', onCellClick);
-        return () => {
-            containerRef.current?.removeEventListener('click', onCellClick);
-            ReactDOM.unmountComponentAtNode(memoizedContainerRef.current!);
-        }
+        const container = containerRef.current;
+        container?.addEventListener('click', onCellClick);
+        return () => container?.removeEventListener('click', onCellClick);
     }, []);
 
-
-    useEffect(() => {
-        if (skipCellRendering) {
-            ReactDOM.render(<></>, containerRef.current)
+    return <div className={topLevelCellWrapperStyles.cellRoot} ref={containerRef}>
+        {!skipCellRendering &&
+            <CellErrorBoundary>
+                <CellContentWrapper {...props} />
+            </CellErrorBoundary>
         }
-        else {
-            ReactDOM.render(
-                <GridContext.Provider value={grid}>
-                    <AgGridContext.Provider value={agGrid}>
-                        <CellContentWrapper {...props} />
-                    </AgGridContext.Provider>
-                </GridContext.Provider>,
-                containerRef.current
-            );
-        }
-    });
-    return <div className={getTopLevelCellWrapperStyles().cellRoot} ref={containerRef} />
+    </div>
 }
 
 const CellContentWrapper = (props: ICellProps) => {

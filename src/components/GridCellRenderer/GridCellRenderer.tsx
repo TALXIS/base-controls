@@ -20,7 +20,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             labels: labels,
         });
     }, []);
-    const styles = getGridCellRendererStyles(model, sizing.height);
+    const styles = useMemo(() => getGridCellRendererStyles(model, sizing.height), [model, sizing.height]);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const componentProps = onOverrideComponentProps({
