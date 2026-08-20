@@ -22,6 +22,7 @@
     "react-leaflet": "^3.2.5"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@storybook/addon-a11y": "^10.5.5",
     "@storybook/addon-docs": "^10.5.5",
     "@storybook/react-vite": "^10.5.5",

@@ -26,6 +26,11 @@ const ACTIVE_STATE_CODE = '0';
 interface ICreateMemoryTaskGridDescriptorOptions {
     /** Resolved when the grid builds its customizer, i.e. on every mount. */
     onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
+    /**
+     * Replaces the hand-written fixture records, keeping the views, columns, templates and lookup
+     * sources. The dev stories use it to mount a generated dataset.
+     */
+    onGetRecords?: () => Promise<IRawRecord[]>;
 }
 
 export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDescriptorOptions) => {
@@ -103,8 +108,8 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
 
         return {
             //cloned per descriptor: sharing the module-level fixtures would let the grids on different
-            //doc pages fight over one dataset
-            records: records = structuredClone(TASK_SOURCE.records),
+            //doc pages fight over one dataset. A generated dataset is already private to this call.
+            records: records = await options?.onGetRecords?.() ?? structuredClone(TASK_SOURCE.records),
             metadata: TASK_SOURCE.metadata,
             fieldMapping: {
                 subject: SUBJECT_COL,
@@ -135,7 +140,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     };
 
     return new MemoryTaskGridDescriptor({
-        height: '600px',
+        height: '800px',
         onInitialize,
         //features are opt-in by implementation: supplying the strategy is what turns each one on, which
         //is also what lets a consumer who does not use them tree-shake the code away
