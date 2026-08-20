@@ -37,6 +37,20 @@ const guessLocationFromIp = async (signal: AbortSignal) => {
     return isNaN(lat) || isNaN(lng) ? null : { lat, lng };
 };
 
+const getBoundsLiteral = (locations: IMapProviderProps['locations']): google.maps.LatLngBoundsLiteral => {
+    let north = locations[0].latitude;
+    let south = locations[0].latitude;
+    let east = locations[0].longitude;
+    let west = locations[0].longitude;
+    for (const location of locations) {
+        north = Math.max(north, location.latitude);
+        south = Math.min(south, location.latitude);
+        east = Math.max(east, location.longitude);
+        west = Math.min(west, location.longitude);
+    }
+    return { north, south, east, west };
+};
+
 const FitBoundsOnLocationsChange = (props: { locations: IMapProviderProps['locations'] }) => {
     const map = useMap();
 
@@ -62,17 +76,16 @@ const FitBoundsOnLocationsChange = (props: { locations: IMapProviderProps['locat
                 clearTimeout(debounce);
                 controller.abort();
             };
+        } try {
+            if (props.locations.length === 1) {
+                map.setCenter({ lat: props.locations[0].latitude, lng: props.locations[0].longitude });
+                map.setZoom(SINGLE_LOCATION_ZOOM);
+                return;
+            }
+            map.fitBounds(getBoundsLiteral(props.locations), 48);
+        } catch (error) {
+            console.warn('Map: failed to fit the viewport to the current pins:', error);
         }
-        if (props.locations.length === 1) {
-            map.setCenter({ lat: props.locations[0].latitude, lng: props.locations[0].longitude });
-            map.setZoom(SINGLE_LOCATION_ZOOM);
-            return;
-        }
-        const bounds = new google.maps.LatLngBounds();
-        for (const location of props.locations) {
-            bounds.extend({ lat: location.latitude, lng: location.longitude });
-        }
-        map.fitBounds(bounds, 48);
     }, [map, props.locations]);
 
     return null;
