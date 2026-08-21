@@ -144,26 +144,26 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
         //
         //personal views go one step further: importing createUserQueryModule is what brings the view
         //manager and the save dialogs, so a grid that never registers the module does not ship them
-        onGetModules: () => {
-            const gridCustomizerStrategy = options?.onCreateGridCustomizerStrategy?.();
-            return {
-                userQueries: createUserQueryModule({
-                    strategy: new MemoryUserQueryStrategy({ userQueries }),
-                    enableQueryManager: true,
-                    enableSaveAsNewQuery: true,
-                    enableSaveQueryChanges: true,
-                }),
-                templates: createTemplateModule({
-                    provider: new MemoryTemplateDataProvider({ templates }),
-                }),
-                ...(gridCustomizerStrategy && { gridCustomizer: createGridCustomizerModule({ strategy: gridCustomizerStrategy }) }),
-                lookupMany: createLookupManyModule({
-                    createDataProvider: ({ column }) => {
-                        const source = lookupSources[column.name];
-                        return source && MemoryLookupManyDataProviderFactory.create(source);
-                    },
-                }),
-            };
+        modules: {
+            onGetUserQueriesModule: () => createUserQueryModule({
+                strategy: new MemoryUserQueryStrategy({ userQueries }),
+                enableQueryManager: true,
+                enableSaveAsNewQuery: true,
+                enableSaveQueryChanges: true,
+            }),
+            onGetTemplatesModule: () => createTemplateModule({
+                provider: new MemoryTemplateDataProvider({ templates }),
+            }),
+            onGetGridCustomizerModule: () => {
+                const strategy = options?.onCreateGridCustomizerStrategy?.();
+                return strategy ? createGridCustomizerModule({ strategy }) : undefined;
+            },
+            onGetLookupManyModule: () => createLookupManyModule({
+                createDataProvider: ({ column }) => {
+                    const source = lookupSources[column.name];
+                    return source && MemoryLookupManyDataProviderFactory.create(source);
+                },
+            }),
         },
         //task-level options belong to the strategy, so they are passed where it is built
         onCreateTaskStrategy: ({ deps, metadata }) => new MemoryTaskStrategy({

@@ -28,11 +28,11 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 |---|---|---|
 | Task CRUD, move, reparent | \`MemoryTaskStrategy\` | always |
 | System views | the descriptor, from \`systemQueries\` | always |
-| Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\`, wrapped by \`createUserQueryModule\` | \`onGetModules\` returns a \`userQueries\` module |
-| Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`onGetModules\` returns a \`templates\` module |
-| Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`onGetModules\` returns a \`lookupMany\` module |
-| AG Grid customizer | yours | \`onGetModules\` returns a \`gridCustomizer\` module |
-| Custom columns | **nothing in-memory implements them** | only if \`onGetModules\` returns a \`customColumns\` module wrapping your own |
+| Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\`, wrapped by \`createUserQueryModule\` | \`modules.onGetUserQueriesModule\` returns one |
+| Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`modules.onGetTemplatesModule\` returns one |
+| Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`modules.onGetLookupManyModule\` returns one |
+| AG Grid customizer | yours | \`modules.onGetGridCustomizerModule\` returns one |
+| Custom columns | **nothing in-memory implements them** | only if \`modules.onGetCustomColumnsModule\` returns one wrapping your own |
 
 Note the pattern in that last column: **a feature is on when you supply its implementation.** There are no flags for these — passing \`MemoryUserQueryStrategy\` is what enables personal views, and a consumer who never mentions it does not pay for the code in their bundle.
 
@@ -123,14 +123,14 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 | Parameter | Description |
 |---|---|
 | \`onCreateTaskStrategy\` | Returns the task strategy, and with it every task-level option. See [**Task options**](#task-options). |
-| \`onGetModules\` | Returns the feature modules. \`{ userQueries: createUserQueryModule({ strategy }) }\` turns personal views on; omit it for system views only. |
-| \`onGetModules\` | Returns the feature modules. \`{ templates: createTemplateModule({ provider }) }\` turns template-based creation on; omit the key to disable it. |
-| \`onGetModules\` | Returns the feature modules. A \`customColumns\` module is the only way to switch that feature on here — nothing in-memory ships. |
-| \`onGetModules\` | Returns the feature modules. \`{ gridCustomizer: createGridCustomizerModule({ strategy }) }\` supplies your own AG Grid customizer. |
-| \`onGetModules\` | Returns the feature modules. \`{ lookupMany: createLookupManyModule({ createDataProvider }) }\` returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
+| \`modules.onGetUserQueriesModule\` | \`() => createUserQueryModule({ strategy })\` turns personal views on; omit it for system views only. |
+| \`modules.onGetTemplatesModule\` | \`() => createTemplateModule({ provider })\` turns template-based creation on; omit it to disable it. |
+| \`modules.onGetCustomColumnsModule\` | The only way to switch that feature on here — nothing in-memory ships. |
+| \`modules.onGetGridCustomizerModule\` | \`() => createGridCustomizerModule({ strategy })\` supplies your own AG Grid customizer. |
+| \`modules.onGetLookupManyModule\` | \`() => createLookupManyModule({ createDataProvider })\` returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
-> **The \`onCreate*\` and \`onGetModules\` callbacks run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created. Since the hooks now live outside \`onInitialize\`, hold that data in the enclosing scope and assign it there:
+> **The \`onCreate*\` callbacks and every \`modules\` builder run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created. Since the hooks now live outside \`onInitialize\`, hold that data in the enclosing scope and assign it there:
 >
 > \`\`\`ts
 > let userQueries: ISavedQuery[] = []
@@ -140,9 +140,9 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 >         userQueries = await loadMyViews()
 >         return { records, metadata, fieldMapping, systemQueries }
 >     },
->     onGetModules: () => ({
->         userQueries: createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) }),
->     }),
+>     modules: {
+>         onGetUserQueriesModule: () => createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) }),
+>     },
 > })
 > \`\`\`
 
@@ -243,7 +243,7 @@ The same shape is the way in to a *different* task strategy — your own, or a s
 
 ## Templates
 
-Register \`createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) })\` from \`onGetModules\` and template-based creation appears in the ribbon. Its \`templates\` source is an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into; the provider owns it from then on, and the task strategy reads templates through the provider rather than from its own dependencies:
+Register \`createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) })\` from \`modules.onGetTemplatesModule\` and template-based creation appears in the ribbon. Its \`templates\` source is an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into; the provider owns it from then on, and the task strategy reads templates through the provider rather than from its own dependencies:
 
 \`\`\`ts
 const templates = {
@@ -262,9 +262,9 @@ const templates = {
 }
 
 //in onInitialize, so the captured templates survive the grid's remounts
-onGetModules: () => ({
-    templates: createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) }),
-}),
+modules: {
+    onGetTemplatesModule: () => createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) }),
+},
 \`\`\`
 
 Note the split: expanding a template *into* tasks is the task strategy's job, while capturing one *from* a task belongs to the \`ITemplateDataProvider\`. Each node's \`values\` may set **any** task column, and \`children\` nests to any depth. Creating a template *from* an existing task works in reverse: the task's visible column values are captured into \`values\`, and its subtree becomes \`children\`. That capture lives in \`MemoryTemplateDataProvider\` — the \`ITemplateDataProvider\` the descriptor builds from \`templates\` — and it pushes into the same \`records\` array, so a template made at runtime survives the grid's remounts like everything else.
@@ -292,12 +292,14 @@ const SOURCES: Record<string, IMemoryEntitySource> = {
     tags: { records: TAGS, columns: TAGS_COLUMNS, metadata: TAGS_METADATA },
 }
 
-lookupMany: createLookupManyModule({
-    createDataProvider: ({ column }) => {
-        const source = SOURCES[column.name]
-        return source && MemoryLookupManyDataProviderFactory.create(source)
-    },
-}),
+modules: {
+    onGetLookupManyModule: () => createLookupManyModule({
+        createDataProvider: ({ column }) => {
+            const source = SOURCES[column.name]
+            return source && MemoryLookupManyDataProviderFactory.create(source)
+        },
+    }),
+},
 \`\`\`
 
 The factory copies the records array before handing it over, so deleting inside a picker cannot mutate the one you keep. Whether a column *renders* as a picker comes from \`metadata.LookupMany\` on the column plus the \`lookupMany\` module being registered at all — omit the module and the column falls back to its default renderer; register it but return nothing for a given column and the grid throws when that column renders. Which picker variant renders comes from the column's custom control name. Try the **Assigned To** and **Tags** columns in the grid below.

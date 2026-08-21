@@ -47,8 +47,8 @@ export interface IDataverseUserQueryStrategyParameters {
  *
  * Persists personal views as `talxis_userquery` records, optionally scoped to a specific parent record
  * (`talxis_recordid`) and/or owner (`ownerid`) — so the environment needs that table. Return it from
- * it to `createUserQueryModule()` and return that from the descriptor's `onGetModules` to switch
- * personal views on.
+ * it to `createUserQueryModule()` and return that from the descriptor's `modules.onGetUserQueriesModule`
+ * to switch personal views on.
  */
 export class DataverseUserQueryStrategy extends FetchXmlDataProvider implements IUserQueryStrategy {
     private _recordId?: string;

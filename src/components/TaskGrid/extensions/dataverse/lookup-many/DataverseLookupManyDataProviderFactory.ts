@@ -8,10 +8,10 @@ import { Liquid } from "liquidjs";
  *
  * The query is a Liquid template resolved per row: `{{ task.* }}` is the record the cell sits on,
  * `{{ project.* }}` and `{{ currentRecord.* }}` the descriptor's project and source records, reached
- * through the `onGetModules` context:
+ * through the `modules.onGetLookupManyModule` context:
  *
  * ```ts
- * lookupMany: createLookupManyModule({
+ * onGetLookupManyModule: (context) => createLookupManyModule({
  *     createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
  *         ...parameters,
  *         projectRecord: context.projectRecord,

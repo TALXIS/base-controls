@@ -41,7 +41,7 @@ export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy 
  * Column values are stored as `talxis_attributevalue` records linked to the record they belong to.
  *
  * Wrap an instance in `createCustomColumnsModule({ strategy })` and return it from the descriptor's
- * `onGetModules` to enable the custom-columns feature in the TaskGrid.
+ * `modules.onGetCustomColumnsModule` to enable the custom-columns feature in the TaskGrid.
  */
 export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsStrategy {
     private _entityName: string;

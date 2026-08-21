@@ -67,16 +67,16 @@ const descriptor = new DataverseTaskGridDescriptor({
     }),
     //personal views in memory, tasks in Dataverse. Importing createUserQueryModule is what brings the
     //view manager and the save dialogs along with the strategy
-    onGetModules: () => ({
-        userQueries: createUserQueryModule({
+    modules: {
+        onGetUserQueriesModule: () => createUserQueryModule({
             strategy: new MemoryUserQueryStrategy({ userQueries }),
             enableQueryManager: true,
         }),
-    }),
+    },
 })
 \`\`\`
 
-Note what is *not* here: no \`customColumns\` module, so nothing reads \`talxis_attributedefinition\` and custom columns are off. Every optional feature works this way — the callback you leave out is the code you do not ship.
+Note what is *not* here: no \`onGetCustomColumnsModule\`, so nothing reads \`talxis_attributedefinition\` and custom columns are off. Every optional feature works this way — the builder you leave out is the code you do not ship.
 
 ## Your own loader on MemoryTaskStrategy
 

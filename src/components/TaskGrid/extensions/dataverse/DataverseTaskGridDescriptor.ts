@@ -1,7 +1,7 @@
 import { FetchXmlBuilder, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
-import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
+import { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { DataverseTaskStrategy } from "./dataverse-task-strategy/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
 
@@ -54,6 +54,92 @@ export interface IDataverseLookupManyParameters extends ILookupManyDataProviderP
     projectRecord?: ISingleRecord;
     /** The hydrated source record, when `sourceRecord` was supplied. Reaches the query as `{{ currentRecord.* }}`. */
     sourceRecord?: ISingleRecord;
+}
+
+/** What {@link IDataverseModules.onGetUserQueriesModule} needs — nothing more. */
+export type IDataverseUserQueriesContext = Pick<IDataverseStrategyContext, 'entityName' | 'recordId' | 'userId'>;
+
+/** What {@link IDataverseModules.onGetCustomColumnsModule} needs — nothing more. */
+export type IDataverseCustomColumnsContext = Pick<IDataverseStrategyContext, 'entityName' | 'recordId'>;
+
+/** What {@link IDataverseModules.onGetLookupManyModule} needs — nothing more. */
+export type IDataverseLookupManyContext = Pick<IDataverseStrategyContext, 'projectRecord' | 'sourceRecord'>;
+
+/**
+ * The feature modules a Dataverse grid can run with, one builder per feature. Each takes only the slice
+ * of context its own strategy actually reads — never the full {@link IDataverseStrategyContext} — so a
+ * module that needs more than another doesn't grow a type every other builder is forced to share. A
+ * builder that needs nothing (the customizer and templates, below) takes no parameter at all.
+ */
+export interface IDataverseModules {
+    /**
+     * Registering this is what adds *My views*, the save commands and the view manager. Needs the
+     * `talxis_userquery` table — and nothing here references it otherwise, keeping it out of bundles that
+     * do not use personal views.
+     *
+     * ```ts
+     * onGetUserQueriesModule: (context) => createUserQueryModule({
+     *     strategy: new DataverseUserQueryStrategy({
+     *         entityName: context.entityName,
+     *         recordId: context.recordId,
+     *         ownerId: context.userId,
+     *     }),
+     *     enableQueryManager: true,
+     * })
+     * ```
+     */
+    onGetUserQueriesModule?: (context: IDataverseUserQueriesContext) => IUserQueryModule | undefined;
+    /**
+     * There is no Dataverse template provider yet, so this is the way to bring your own; omit it and
+     * template creation stays out of the ribbon. Nothing on the descriptor is relevant to building it.
+     *
+     * ```ts
+     * onGetTemplatesModule: () => createTemplateModule({ provider: new MyTemplateDataProvider() })
+     * ```
+     */
+    onGetTemplatesModule?: () => ITemplateModule | undefined;
+    /**
+     * Needs the `talxis_attributedefinition` and `talxis_attributevalue` tables. Omit it and custom
+     * columns are off, and neither table is read.
+     *
+     * ```ts
+     * onGetCustomColumnsModule: (context) => createCustomColumnsModule({
+     *     strategy: new DataverseCustomColumnsStrategy({
+     *         entityName: context.entityName,
+     *         recordId: context.recordId,
+     *     }),
+     * })
+     * ```
+     */
+    onGetCustomColumnsModule?: (context: IDataverseCustomColumnsContext) => ICustomColumnsModule | undefined;
+    /**
+     * Deep-customizes the grid's own AG Grid instance — column definitions, row class rules, one-time
+     * init. See [**Customizer**](?path=/story/task-grid-customizations-customizer--overview). Nothing on
+     * the descriptor is relevant to building it — your strategy is entirely your own.
+     *
+     * ```ts
+     * onGetGridCustomizerModule: () => createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy() })
+     * ```
+     */
+    onGetGridCustomizerModule?: () => IGridCustomizerModule | undefined;
+    /**
+     * Feeds the candidates of a lookup-many picker. Which columns *render* as lookup-many is driven by
+     * `metadata.LookupMany` on the column itself; this only supplies what feeds them.
+     * {@link DataverseLookupManyDataProviderFactory} builds the provider from the column's own `FetchXml`
+     * binding — `context.projectRecord` and `context.sourceRecord` are what it needs beyond the cell's
+     * own `record`/`column`:
+     *
+     * ```ts
+     * onGetLookupManyModule: (context) => createLookupManyModule({
+     *     createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
+     *         ...parameters,
+     *         projectRecord: context.projectRecord,
+     *         sourceRecord: context.sourceRecord,
+     *     }),
+     * })
+     * ```
+     */
+    onGetLookupManyModule?: (context: IDataverseLookupManyContext) => ILookupManyModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -126,52 +212,15 @@ export interface IDataverseTaskGridDescriptorParams {
      */
     onCreateTaskStrategy?: (context: IDataverseTaskStrategyContext) => ITaskDataProviderStrategy;
     /**
-     * (Optional) Supplies the feature modules, keyed by feature. System views always come from
-     * `systemQueries`; registering the user-queries module is what adds *My views*, the save commands and
-     * the view manager:
+     * (Optional) Supplies the feature modules, one builder function per feature — see
+     * {@link IDataverseModules} for what each one does and needs. Omit a key and that feature is off,
+     * which also keeps its code (and whatever table it reads) out of your bundle.
      *
-     * ```ts
-     * onGetModules: (context) => ({
-     *     userQueries: createUserQueryModule({
-     *         strategy: new DataverseUserQueryStrategy({
-     *             entityName: context.entityName,
-     *             recordId: context.recordId,
-     *             ownerId: context.userId,
-     *         }),
-     *         enableQueryManager: true,
-     *     }),
-     * })
-     * ```
-     *
-     * It is a callback because `context.entityName` is derived from `baseFetchXml`, so it does not exist
-     * until `onInitialize` has run. `DataverseUserQueryStrategy` needs the `talxis_userquery` table, so
-     * registering it is also the statement that the environment has it — and nothing here references it
-     * otherwise, which keeps it out of bundles that do not use personal views.
-     *
-     * There is no Dataverse template provider yet, so `templates: createTemplateModule({ provider })` is
-     * the way to bring your own; omit the key and template creation stays out of the ribbon.
-     *
-     * `customColumns: createCustomColumnsModule({ strategy: new DataverseCustomColumnsStrategy({...}) })`
-     * needs the `talxis_attributedefinition` and `talxis_attributevalue` tables. Omit the key and custom
-     * columns are off, and neither table is read.
-     *
-     * `lookupMany: createLookupManyModule({ createDataProvider })` feeds the candidates of a lookup-many
-     * picker. Which columns *render* as lookup-many is driven by `metadata.LookupMany` on the column
-     * itself; this only supplies what feeds them, and {@link DataverseLookupManyDataProviderFactory}
-     * builds the provider from the column's own `FetchXml` binding — `context.projectRecord` and
-     * `context.sourceRecord` are what it needs beyond the cell's own `record`/`column`:
-     *
-     * ```ts
-     * lookupMany: createLookupManyModule({
-     *     createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
-     *         ...parameters,
-     *         projectRecord: context.projectRecord,
-     *         sourceRecord: context.sourceRecord,
-     *     }),
-     * })
-     * ```
+     * Every builder is called after `onInitialize` has resolved, so a builder that does take context
+     * (`entityName`, for instance) always sees a value derived from the loaded `baseFetchXml`, never a
+     * stale or empty one.
      */
-    onGetModules?: (context: IDataverseStrategyContext) => ITaskGridModules;
+    modules?: IDataverseModules;
 }
 
 /**
@@ -191,7 +240,9 @@ export interface IDataverseTaskGridDescriptorParams {
  *     systemQueries: [myDefaultView],
  *   }),
  *   //features are opt-in: registering the module is what turns one on
- *   onGetModules: context => ({ userQueries: createUserQueryModule({ strategy: new DataverseUserQueryStrategy({ entityName: context.entityName }) }) }),
+ *   modules: {
+ *     onGetUserQueriesModule: context => createUserQueryModule({ strategy: new DataverseUserQueryStrategy({ entityName: context.entityName }) }),
+ *   },
  * });
  * const control = await TaskGridDatasetControlFactory.createInstance({ taskGridDescriptor: descriptor, ... });
  * ```
@@ -244,8 +295,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
 
     /**
      * Serves the `systemQueries` supplied at construction time. Personal views come from the
-     * user-queries module registered through `onGetModules` — without it they are off and
-     * `talxis_userquery` is never read.
+     * user-queries module registered through `modules.onGetUserQueriesModule` — without it they are off
+     * and `talxis_userquery` is never read.
      */
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
         return {
@@ -254,11 +305,20 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /**
-     * Delegates to the `onGetModules` parameter. An absent key — which is what omitting the parameter
-     * does — leaves that feature off.
+     * Calls each builder on the `modules` parameter, per {@link IDataverseModules} — each with only the
+     * slice of context it declares, or with none at all. An absent builder — which is what omitting the
+     * key does — leaves that feature off.
      */
     public onGetModules(): ITaskGridModules {
-        return this._params.onGetModules?.(this._getStrategyContext()) ?? {};
+        const context = this._getStrategyContext();
+        const modules = this._params.modules;
+        return {
+            userQueries: modules?.onGetUserQueriesModule?.(context),
+            templates: modules?.onGetTemplatesModule?.(),
+            customColumns: modules?.onGetCustomColumnsModule?.(context),
+            gridCustomizer: modules?.onGetGridCustomizerModule?.(),
+            lookupMany: modules?.onGetLookupManyModule?.(context),
+        };
     }
 
     /**

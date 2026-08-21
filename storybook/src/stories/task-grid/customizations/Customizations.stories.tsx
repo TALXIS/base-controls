@@ -53,7 +53,7 @@ A few interact with each other: \`enableRowDragging\` is suppressed automaticall
 
 Every flag defaults to \`false\`, so a feature missing from the ribbon is usually one of two things: its flag was left out of \`onGetGridParameters\`, or the optional descriptor hook that enables it returned nothing.
 
-Whether a feature exists at all is decided by the module returned from \`onGetModules\` — \`templates\`, \`userQueries\`, \`customColumns\`. Supplying the module is the switch, which is also what keeps its code and its UI out of your bundle.\n\nPersonal views take that one step further: because \`createUserQueryModule\` carries the view manager and the save dialogs, its three commands are **options on the module**, not grid parameters — so a grid that never registers it does not ship that UI at all.\n\n\`\`\`ts\nonGetModules: () => ({\n    userQueries: createUserQueryModule({\n        strategy: new MemoryUserQueryStrategy({ userQueries }),\n        enableQueryManager: true,\n        enableSaveAsNewQuery: true,\n        enableSaveQueryChanges: true,\n    }),\n}),\n\`\`\`
+Whether a feature exists at all is decided by the module returned from a builder on \`modules\` — \`onGetTemplatesModule\`, \`onGetUserQueriesModule\`, \`onGetCustomColumnsModule\`. Supplying the module is the switch, which is also what keeps its code and its UI out of your bundle.\n\nPersonal views take that one step further: because \`createUserQueryModule\` carries the view manager and the save dialogs, its three commands are **options on the module**, not grid parameters — so a grid that never registers it does not ship that UI at all.\n\n\`\`\`ts\nmodules: {\n    onGetUserQueriesModule: () => createUserQueryModule({\n        strategy: new MemoryUserQueryStrategy({ userQueries }),\n        enableQueryManager: true,\n        enableSaveAsNewQuery: true,\n        enableSaveQueryChanges: true,\n    }),\n},\n\`\`\`
 
 ## Column metadata
 
@@ -75,11 +75,11 @@ Most per-column behaviour comes from the column definitions your strategy return
 }
 \`\`\`
 
-A column renders as a picker whenever \`metadata.LookupMany\` is set **and** a \`lookupMany\` module is registered — no customizer needed. Its candidates come from that module's \`createDataProvider\` (\`lookupMany: createLookupManyModule({ createDataProvider })\` in \`onGetModules\`), and each extension ships a factory that builds the provider for you: \`MemoryLookupManyDataProviderFactory\` from records you hold, \`DataverseLookupManyDataProviderFactory\` from the column's own \`FetchXml\` binding. Both are visible in the grid below on the **Assigned To** and **Tags** columns.
+A column renders as a picker whenever \`metadata.LookupMany\` is set **and** a \`lookupMany\` module is registered — no customizer needed. Its candidates come from that module's \`createDataProvider\` (\`createLookupManyModule({ createDataProvider })\` returned from \`modules.onGetLookupManyModule\`), and each extension ships a factory that builds the provider for you: \`MemoryLookupManyDataProviderFactory\` from records you hold, \`DataverseLookupManyDataProviderFactory\` from the column's own \`FetchXml\` binding. Both are visible in the grid below on the **Assigned To** and **Tags** columns.
 
 ## The grid customizer
 
-The lowest level the grid offers: register an \`IGridCustomizerStrategy\` through \`gridCustomizer: createGridCustomizerModule({ strategy })\` in \`onGetModules\`, and you hold the AG Grid instance and the records behind it. Anything the grid does is reachable from there — cell renderers included, since a renderer is just \`colDef.cellRenderer\`.
+The lowest level the grid offers: register an \`IGridCustomizerStrategy\` through \`createGridCustomizerModule({ strategy })\` returned from \`modules.onGetGridCustomizerModule\`, and you hold the AG Grid instance and the records behind it. Anything the grid does is reachable from there — cell renderers included, since a renderer is just \`colDef.cellRenderer\`.
 
 It has its own page, with live examples of validation, conditional formatting and reaching the ag-grid api directly: [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
 

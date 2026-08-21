@@ -32,12 +32,12 @@ Two features are backed by TALXIS models rather than by your task entity, and **
 
 | Feature | Strategy to supply | Model it needs |
 |---|---|---|
-| Personal saved views | \`onGetModules\` → \`createUserQueryModule({ strategy: new DataverseUserQueryStrategy(...) })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
-| Custom columns | \`onGetModules\` → \`customColumns\` → \`DataverseCustomColumnsStrategy\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` |
+| Personal saved views | \`modules.onGetUserQueriesModule\` → \`createUserQueryModule({ strategy: new DataverseUserQueryStrategy(...) })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
+| Custom columns | \`modules.onGetCustomColumnsModule\` → \`DataverseCustomColumnsStrategy\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` |
 
 \`\`\`ts
-onGetModules: (context) => ({
-    userQueries: createUserQueryModule({
+modules: {
+    onGetUserQueriesModule: (context) => createUserQueryModule({
         strategy: new DataverseUserQueryStrategy({
             entityName: context.entityName,
             recordId: context.recordId,
@@ -45,16 +45,16 @@ onGetModules: (context) => ({
         }),
         enableQueryManager: true,
     }),
-    customColumns: createCustomColumnsModule({
+    onGetCustomColumnsModule: (context) => createCustomColumnsModule({
         strategy: new DataverseCustomColumnsStrategy({
             entityName: context.entityName,
             recordId: context.recordId,
         }),
     }),
-}),
+},
 \`\`\`
 
-The \`context\` carries what the descriptor resolved for you — the entity name comes from your FetchXML, \`recordId\` from \`projectRecord\`, \`userId\` from the parameter of the same name.
+Each builder gets only the slice of context its own strategy needs — the entity name comes from your FetchXML, \`recordId\` from \`projectRecord\`, \`userId\` from the parameter of the same name — not one shared object every builder has to pick through.
 
 > Wire a strategy whose model is **not** deployed and the grid sits on its loading skeleton and never renders: both reads happen before the first provider is created, and neither is wrapped in the grid's error handling. If a table is missing, leave its callback out.
 
@@ -93,8 +93,8 @@ const descriptor = new DataverseTaskGridDescriptor({
         gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
     }),
     //personal views are on because this registers the module - there is no flag for it
-    onGetModules: (context) => ({
-        userQueries: createUserQueryModule({
+    modules: {
+        onGetUserQueriesModule: (context) => createUserQueryModule({
             strategy: new DataverseUserQueryStrategy({
                 entityName: context.entityName,
                 recordId: context.recordId,
@@ -102,7 +102,7 @@ const descriptor = new DataverseTaskGridDescriptor({
             }),
             enableQueryManager: true,
         }),
-    }),
+    },
     //the form ids, the delete behaviour and the root task are the strategy's options
     onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new DataverseTaskStrategy({
         onInitialize: async () => ({
@@ -176,11 +176,11 @@ Passed next to \`onInitialize\` on the constructor argument, because they run ag
 |---|:--------:|---|
 | \`height?\` | — | Container height. Read before the data resolves, to size the loading skeleton. |
 | \`onCreateTaskStrategy?\` | — | Returns the task strategy. Where the form ids, \`rootTaskId\`, the cascade-delete flags and the per-operation hooks live. |
-| \`onGetModules?\` | — | Returns the feature modules, keyed by feature. \`userQueries\` turns personal views on; \`templates\` supplies your own \`ITemplateDataProvider\` — nothing Dataverse-side ships; \`customColumns\` wraps the custom-columns strategy; \`gridCustomizer\` supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview); \`lookupMany\` feeds a lookup-many picker, required once a column carries \`metadata.LookupMany\`. Omit a key and that feature — and its UI — is off, and out of your bundle. |
+| \`modules?\` | — | One builder function per feature — see the [**Custom strategies overview**](?path=/story/task-grid-custom-strategies--overview) for the full parameter table. \`onGetUserQueriesModule\` turns personal views on; \`onGetTemplatesModule\` supplies your own \`ITemplateDataProvider\` — nothing Dataverse-side ships; \`onGetCustomColumnsModule\` wraps the custom-columns strategy; \`onGetGridCustomizerModule\` supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview); \`onGetLookupManyModule\` feeds a lookup-many picker, required once a column carries \`metadata.LookupMany\`. Omit a key and that feature — and its UI — is off, and out of your bundle. |
 
 ## Saved views
 
-Register \`createUserQueryModule({ strategy: new DataverseUserQueryStrategy(...) })\` from \`onGetModules\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
+Register \`createUserQueryModule({ strategy: new DataverseUserQueryStrategy(...) })\` from \`modules.onGetUserQueriesModule\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
 
 Without that module the feature is simply off, and its options — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` — have nowhere to be set, because they belong to the module rather than to \`gridParameters\`. Not registering it also keeps the view manager and both dialogs out of your bundle.
 
@@ -221,18 +221,18 @@ The column name itself is arbitrary — the relationship is identified by the na
 Feeding the picker is a module, the same as on the memory descriptor — the factory does the work:
 
 \`\`\`ts
-onGetModules: (context) => ({
-    lookupMany: createLookupManyModule({
+modules: {
+    onGetLookupManyModule: (context) => createLookupManyModule({
         createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
             ...parameters,
             projectRecord: context.projectRecord,
             sourceRecord: context.sourceRecord,
         }),
     }),
-})
+},
 \`\`\`
 
-The parameters carry everything the factory needs — the cell's record and column from the call, the project and source records from \`context\` — so there is nothing else to wire. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
+The parameters carry everything the factory needs — the cell's record and column from the call, the project and source records from \`context\` (just \`projectRecord\`/\`sourceRecord\` — nothing this builder doesn't use) — so there is nothing else to wire. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
 
 ## Custom columns
 
@@ -240,7 +240,7 @@ The parameters carry everything the factory needs — the cell's record and colu
 
 One thing about \`DataverseCustomColumnsStrategy\` is worth knowing before you wire it: nothing is assembled from the entity name. \`onRefresh\` reads the relationship between your task entity and \`talxis_attributevalue\` off the metadata and takes all three names it needs from it — the collection to expand through, the lookup to bind against, and that lookup's entity set — so a non-standard schema works as-is. Pass \`navigationPropertyName\` only if your entity somehow has more than one relationship to \`talxis_attributevalue\`; it then says which one holds the values.
 
-The \`enableCustomColumn*\` options — now on \`createCustomColumnsModule\`, not \`gridParameters\` — only trim the ribbon commands within the feature. What decides whether it exists — and whether \`talxis_attributedefinition\` is read at all — is registering the \`customColumns\` module through \`onGetModules\`.
+The \`enableCustomColumn*\` options — now on \`createCustomColumnsModule\`, not \`gridParameters\` — only trim the ribbon commands within the feature. What decides whether it exists — and whether \`talxis_attributedefinition\` is read at all — is registering the module through \`modules.onGetCustomColumnsModule\`.
 
 ## Templates
 
