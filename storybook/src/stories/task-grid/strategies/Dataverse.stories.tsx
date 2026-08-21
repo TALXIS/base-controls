@@ -176,9 +176,8 @@ Passed next to \`onInitialize\` on the constructor argument, because they run ag
 |---|:--------:|---|
 | \`height?\` | — | Container height. Read before the data resolves, to size the loading skeleton. |
 | \`onCreateTaskStrategy?\` | — | Returns the task strategy. Where the form ids, \`rootTaskId\`, the cascade-delete flags and the per-operation hooks live. |
-| \`onGetModules?\` | — | Returns the feature modules, keyed by feature. \`userQueries\` turns personal views on; \`templates\` supplies your own \`ITemplateDataProvider\` — nothing Dataverse-side ships; \`customColumns\` wraps the custom-columns strategy. Omit a key and that feature — and its UI — is off, and out of your bundle. |
+| \`onGetModules?\` | — | Returns the feature modules, keyed by feature. \`userQueries\` turns personal views on; \`templates\` supplies your own \`ITemplateDataProvider\` — nothing Dataverse-side ships; \`customColumns\` wraps the custom-columns strategy; \`gridCustomizer\` supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview). Omit a key and that feature — and its UI — is off, and out of your bundle. |
 | \`onCreateLookupManyDataProvider?\` | — | Feeds a lookup-many picker. Required once a column carries \`metadata.LookupMany\`. |
-| \`onCreateGridCustomizerStrategy?\` | — | Supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview). |
 
 ## Saved views
 

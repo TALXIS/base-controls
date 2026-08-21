@@ -21,11 +21,11 @@ const meta = {
             },
             description: {
                 component: `
-The lowest level of customization the grid offers. Return an \`IGridCustomizerStrategy\` from your descriptor's \`onCreateGridCustomizerStrategy\` and you hold the AG Grid instance itself, plus the records behind it — so everything the grid does is reachable from here, cell renderers included, since a renderer is only \`colDef.cellRenderer\` on a column definition.
+The lowest level of customization the grid offers. Register an \`IGridCustomizerStrategy\` through the \`gridCustomizer\` module and you hold the AG Grid instance itself, plus the records behind it — so everything the grid does is reachable from here, cell renderers included, since a renderer is only \`colDef.cellRenderer\` on a column definition.
 
 [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview) is a convenience over exactly this: it swaps a renderer or an editor without a strategy, without you finding the right column definition, and while handing you the grid's own component to fall back on. Reach for the customizer when that is not enough — when you want a record's *behaviour* rather than its looks, or an ag-grid option TaskGrid never surfaces.
 
-Both shipped descriptors take an \`onCreateGridCustomizerStrategy\` parameter and forward whatever it returns, so no subclass is involved — the strategy below is the same on memory and on Dataverse.
+Return \`gridCustomizer: createGridCustomizerModule({ strategy })\` from your descriptor's \`onGetModules\`, so no subclass is involved — the strategy below is the same on memory and on Dataverse.
 
 The strategy gets three hooks:
 

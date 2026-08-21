@@ -34,8 +34,7 @@ Several behaviours that look like they need a subclass are parameters on both sh
 
 - \`onCreateTaskStrategy\` — every task-level option, because they belong to the task strategy: new-task defaults, what counts as active, what happens on open, and on Dataverse the form ids, \`rootTaskId\` and the delete flags. The descriptor hands the callback what it resolved, so you build the shipped strategy with your own options.
 - **A hook per operation on the task strategy itself.** \`onCreateTask\`, \`onDeleteTasks\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\`, \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onCreateTasksFromTemplate\`, \`onOpenDatasetItems\` — plus \`onGetFormParameters\` on Dataverse. Each receives the parameters of the matching action, so wrapping one is a forward rather than a rewrite. See [**the actions classes**](#the-actions-classes).
-- \`onGetModules\` — whether personal views, templates and custom columns exist at all. Each one carries its UI in the module, so not registering it also keeps that UI out of your bundle.
-- \`onCreateGridCustomizerStrategy\` — your AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
+- \`onGetModules\` — whether personal views, templates, custom columns and the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview) exist at all. Each one carries its UI (where it has any) in the module, so not registering it also keeps that UI out of your bundle.
 
 Both parameter objects also carry the \`onCreate*\` callbacks that decide which optional features exist at all — personal views, templates, custom columns, the customizer. Supplying an implementation is the switch, and a feature you never mention costs nothing in your bundle.
 
@@ -55,7 +54,7 @@ A descriptor answers three questions the grid cannot answer on its own: which co
 | \`onGetModules?()\` → \`templates\` | — | Enables template-based creation. \`createTemplateModule({ provider })\` wraps an \`ITemplateDataProvider\` whose records are templates and which can capture a new one from a task. |
 | \`onCreateLookupManyDataProvider?(params)\` | — | Supplies picker candidates for a lookup-many column. Called once per lookup-many cell. |
 | \`onGetModules?()\` → \`customColumns\` | — | Enables user-defined columns. \`createCustomColumnsModule({ strategy })\` wraps an \`ICustomColumnsStrategy\`. |
-| \`onCreateGridCustomizerStrategy?()\` | — | Deep-customizes AG Grid column definitions, renderers and row class rules. |
+| \`onGetModules?()\` → \`gridCustomizer\` | — | Deep-customizes AG Grid column definitions, renderers and row class rules. \`createGridCustomizerModule({ strategy })\` wraps an \`IGridCustomizerStrategy\`. |
 | \`onGetControlId?()\` | — | A stable DOM identifier. Auto-generated as a UUID when omitted. |
 
 The optional hooks are feature switches, not just configuration: omit the \`templates\` module and template creation disappears from the UI; omit the \`customColumns\` module and custom columns are off; omit the \`userQueries\` module and the view switcher lists system views only.
@@ -87,8 +86,8 @@ Every flag in \`ITaskGridParameters\` defaults to \`false\` when \`onGetGridPara
 | \`onGetGridParameters\` | ✅ | ✅ |
 | \`onCreateLookupManyDataProvider\` | ✅ your param → \`MemoryLookupManyDataProviderFactory\` | ✅ your param → \`DataverseLookupManyDataProviderFactory\` |
 | \`onGetModules\` → \`templates\` | ✅ your param → \`MemoryTemplateDataProvider\` | ✅ your param; nothing Dataverse-side ships |
-| \`onCreateGridCustomizerStrategy\` | ✅ forwards your param | ✅ forwards your param |
 | \`onGetModules\` → \`customColumns\` | ✅ your param; nothing in-memory ships | ✅ your param → \`DataverseCustomColumnsStrategy\` |
+| \`onGetModules\` → \`gridCustomizer\` | ✅ your param | ✅ your param |
 | \`onGetControlId\` | — | — |
 
 Both descriptors forward every optional hook to a parameter of the same name, so you rarely need a subclass to switch a feature on — only to change what an already-wired piece *does*. The two gaps left are the implementations that do not exist: no Dataverse template provider, and no in-memory custom-columns strategy.

@@ -2,7 +2,6 @@ import { FetchXmlBuilder, IDataProvider, ISingleRecord, RecordBuilder } from "@t
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
-import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
 import { DataverseTaskStrategy } from "./dataverse-task-strategy/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
 
@@ -164,19 +163,13 @@ export interface IDataverseTaskGridDescriptorParams {
      * ```
      */
     onCreateLookupManyDataProvider?: (parameters: IDataverseLookupManyParameters) => IDataProvider | undefined;
-    /**
-     * (Optional) Supplies a strategy for deep customization of AG Grid column definitions, cell
-     * renderers, editors and row class rules. Lookup-many columns are fed by the callback above, so this
-     * is only needed for customizations of your own.
-     */
-    onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
 }
 
 /**
  * Ready-to-use {@link ITaskGridDescriptor} implementation for the Dataverse / Talxis platform.
  *
- * Wires together all required strategies — task CRUD, saved queries, grid customization. The data is
- * resolved by `onInitialize`, the behaviour passed alongside it. Pass an instance to
+ * Wires together the required strategies — task CRUD, saved queries. The data is resolved by
+ * `onInitialize`, the behaviour passed alongside it. Pass an instance to
  * `TaskGridDatasetControlFactory.createInstance`.
  *
  * @example
@@ -279,11 +272,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             }),
         }, deps);
     }
-    /** Delegates to the `onCreateGridCustomizerStrategy` parameter. */
-    public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy | undefined {
-        return this._params.onCreateGridCustomizerStrategy?.();
-    }
-
     /** Delegates to the `onCreateLookupManyDataProvider` parameter. */
     public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider | undefined {
         return this._params.onCreateLookupManyDataProvider?.({

@@ -1,6 +1,5 @@
 import { IColumn, IDataset, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IDatasetControl } from "@utils/dataset-control";
-import { IGridCustomizerStrategy } from "./components/grid/grid-customizer";
 //the types-only reference to the module - core depends on the type only, never the module's value exports
 import { ICustomColumnsDataProvider } from "./modules/custom-columns/CustomColumnsDataProvider";
 import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
@@ -134,8 +133,6 @@ export interface ITaskGridDescriptor {
      * referencing the current task). Keep it cheap and side-effect free.
      */
     onCreateLookupManyDataProvider?: (parameters: ILookupManyDataProviderParameters) => IDataProvider | undefined;
-    /** (Optional) Returns a strategy for deep customization of AG Grid column definitions, renderers, editors, and row class rules. */
-    onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
     /** (Optional) Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
     onGetControlId?: () => string;
     /** (Optional) Async hook called before any data provider is created. Use for lazy loading or authentication. */

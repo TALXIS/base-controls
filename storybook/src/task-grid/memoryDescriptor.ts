@@ -1,6 +1,6 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
-import { createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
+import { createGridCustomizerModule, createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
 import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryTaskGridDescriptorInitializeResult, IMemoryTemplateSource, ISavedQuery } from '@talxis/base-controls';
 
 /**
@@ -24,7 +24,7 @@ const ACTIVE_STATE_CODE = '0';
  * loading state, and the ~1300 lines of sample records stay out of the story's initial chunk.
  */
 interface ICreateMemoryTaskGridDescriptorOptions {
-    /** Resolved when the grid builds its customizer, i.e. on every mount. */
+    /** Registered as the `gridCustomizer` module. Resolved once, on mount. */
     onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
     /**
      * Replaces the hand-written fixture records, keeping the views, columns, templates and lookup
@@ -144,17 +144,21 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
         //
         //personal views go one step further: importing createUserQueryModule is what brings the view
         //manager and the save dialogs, so a grid that never registers the module does not ship them
-        onGetModules: () => ({
-            userQueries: createUserQueryModule({
-                strategy: new MemoryUserQueryStrategy({ userQueries }),
-                enableQueryManager: true,
-                enableSaveAsNewQuery: true,
-                enableSaveQueryChanges: true,
-            }),
-            templates: createTemplateModule({
-                provider: new MemoryTemplateDataProvider({ templates }),
-            }),
-        }),
+        onGetModules: () => {
+            const gridCustomizerStrategy = options?.onCreateGridCustomizerStrategy?.();
+            return {
+                userQueries: createUserQueryModule({
+                    strategy: new MemoryUserQueryStrategy({ userQueries }),
+                    enableQueryManager: true,
+                    enableSaveAsNewQuery: true,
+                    enableSaveQueryChanges: true,
+                }),
+                templates: createTemplateModule({
+                    provider: new MemoryTemplateDataProvider({ templates }),
+                }),
+                ...(gridCustomizerStrategy && { gridCustomizer: createGridCustomizerModule({ strategy: gridCustomizerStrategy }) }),
+            };
+        },
         onCreateLookupManyDataProvider: ({ column }) => {
             const source = lookupSources[column.name];
             return source && MemoryLookupManyDataProviderFactory.create(source);
@@ -193,6 +197,5 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 return null;
             },
         }, deps),
-        onCreateGridCustomizerStrategy: options?.onCreateGridCustomizerStrategy,
     });
 };

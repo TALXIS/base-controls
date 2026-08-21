@@ -31,7 +31,7 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 | Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\`, wrapped by \`createUserQueryModule\` | \`onGetModules\` returns a \`userQueries\` module |
 | Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`onGetModules\` returns a \`templates\` module |
 | Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`onCreateLookupManyDataProvider\` returns one |
-| AG Grid customizer | yours | \`onCreateGridCustomizerStrategy\` returns one |
+| AG Grid customizer | yours | \`onGetModules\` returns a \`gridCustomizer\` module |
 | Custom columns | **nothing in-memory implements them** | only if \`onGetModules\` returns a \`customColumns\` module wrapping your own |
 
 Note the pattern in that last column: **a feature is on when you supply its implementation.** There are no flags for these — passing \`MemoryUserQueryStrategy\` is what enables personal views, and a consumer who never mentions it does not pay for the code in their bundle.
@@ -127,7 +127,7 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 | \`onGetModules\` | Returns the feature modules. \`{ templates: createTemplateModule({ provider }) }\` turns template-based creation on; omit the key to disable it. |
 | \`onGetModules\` | Returns the feature modules. A \`customColumns\` module is the only way to switch that feature on here — nothing in-memory ships. |
 | \`onCreateLookupManyDataProvider\` | Returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
-| \`onCreateGridCustomizerStrategy\` | Supplies your own AG Grid customizer. |
+| \`onGetModules\` | Returns the feature modules. \`{ gridCustomizer: createGridCustomizerModule({ strategy }) }\` supplies your own AG Grid customizer. |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
 > **The \`onCreate*\` and \`onGetModules\` callbacks run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created. Since the hooks now live outside \`onInitialize\`, hold that data in the enclosing scope and assign it there:

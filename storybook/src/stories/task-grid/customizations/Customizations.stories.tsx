@@ -79,7 +79,7 @@ A column renders as a picker whenever \`metadata.LookupMany\` is set — no cust
 
 ## The grid customizer
 
-The lowest level the grid offers: return an \`IGridCustomizerStrategy\` from \`onCreateGridCustomizerStrategy()\` and you hold the AG Grid instance and the records behind it. Anything the grid does is reachable from there — cell renderers included, since a renderer is just \`colDef.cellRenderer\`.
+The lowest level the grid offers: register an \`IGridCustomizerStrategy\` through \`gridCustomizer: createGridCustomizerModule({ strategy })\` in \`onGetModules\`, and you hold the AG Grid instance and the records behind it. Anything the grid does is reachable from there — cell renderers included, since a renderer is just \`colDef.cellRenderer\`.
 
 It has its own page, with live examples of validation, conditional formatting and reaching the ag-grid api directly: [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
 

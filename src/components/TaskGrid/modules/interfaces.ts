@@ -10,6 +10,9 @@ import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-
 //`import type`, not a plain import: this file (unlike EditColumns.tsx) must never carry a runtime
 //edge to the base panel component, only to its prop type
 import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
+//`import type`: GridCustomizer.ts is core and stays core - this file must only ever depend on its
+//strategy type, never the class itself
+import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
 
 /**
  * The contract between the grid and its optional feature modules.
@@ -143,6 +146,12 @@ export interface ICustomColumnsModule {
     enableCustomColumnDeletion?: boolean;
 }
 
+/** What the grid-customizer module contributes. Built by `createGridCustomizerModule()` — never written by hand. */
+export interface IGridCustomizerModule {
+    /** Hooks into the grid's core behaviour: column definitions, row class rules, one-time init. */
+    strategy: IGridCustomizerStrategy;
+}
+
 /**
  * The modules a grid runs with, one optional key per available feature.
  *
@@ -156,4 +165,6 @@ export interface ITaskGridModules {
     templates?: ITemplateModule;
     /** User-defined (dynamic) columns: creating, editing, deleting, and their values. */
     customColumns?: ICustomColumnsModule;
+    /** Deep customization of the grid's own AG Grid instance: column definitions, row class rules, one-time init. */
+    gridCustomizer?: IGridCustomizerModule;
 }
