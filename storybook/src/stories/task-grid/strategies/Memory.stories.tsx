@@ -28,7 +28,7 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 |---|---|---|
 | Task CRUD, move, reparent | \`MemoryTaskStrategy\` | always |
 | System views | the descriptor, from \`systemQueries\` | always |
-| Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\` | \`onCreateUserQueryStrategy\` returns one |
+| Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\`, wrapped by \`createUserQueryModule\` | \`onGetModules\` returns a \`userQueries\` module |
 | Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\` | \`onCreateTemplateDataProvider\` returns one |
 | Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`onCreateLookupManyDataProvider\` returns one |
 | AG Grid customizer | yours | \`onCreateGridCustomizerStrategy\` returns one |
@@ -123,14 +123,14 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 | Parameter | Description |
 |---|---|
 | \`onCreateTaskStrategy\` | Returns the task strategy, and with it every task-level option. See [**Task options**](#task-options). |
-| \`onCreateUserQueryStrategy\` | Returns the personal-views implementation — usually \`new MemoryUserQueryStrategy({ userQueries })\`. Omit for system views only. |
+| \`onGetModules\` | Returns the feature modules. \`{ userQueries: createUserQueryModule({ strategy }) }\` turns personal views on; omit it for system views only. |
 | \`onCreateTemplateDataProvider\` | Returns the template provider — usually \`new MemoryTemplateDataProvider({ templates })\`. Omit to disable templates. |
 | \`onCreateCustomColumnsStrategy\` | Returns a custom-columns strategy. Nothing in-memory ships, so this is the only way to switch the feature on here. |
 | \`onCreateLookupManyDataProvider\` | Returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
 | \`onCreateGridCustomizerStrategy\` | Supplies your own AG Grid customizer. |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
-> **The \`onCreate*\` callbacks run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created. Since the hooks now live outside \`onInitialize\`, hold that data in the enclosing scope and assign it there:
+> **The \`onCreate*\` and \`onGetModules\` callbacks run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created. Since the hooks now live outside \`onInitialize\`, hold that data in the enclosing scope and assign it there:
 >
 > \`\`\`ts
 > let userQueries: ISavedQuery[] = []
@@ -140,7 +140,9 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 >         userQueries = await loadMyViews()
 >         return { records, metadata, fieldMapping, systemQueries }
 >     },
->     onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
+>     onGetModules: () => ({
+>         userQueries: createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) }),
+>     }),
 > })
 > \`\`\`
 

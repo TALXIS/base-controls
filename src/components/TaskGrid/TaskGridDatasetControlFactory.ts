@@ -23,6 +23,9 @@ export class TaskGridDatasetControlFactory {
     public static async createInstance(parameters: ITaskGridDatasetControlFactoryParameters): Promise<ITaskGridDatasetControl> {
         let taskDataProvider: ITaskDataProvider;
         await parameters.taskGridDescriptor.onLoadDependencies?.();
+        //resolved once and threaded from here: onGetModules is never called again for this instance, so a
+        //module is free to build a strategy per mount without anything being resolved twice
+        const modules = parameters.taskGridDescriptor.onGetModules?.() ?? {};
 
         const customColumnsStrategy = parameters.taskGridDescriptor.onCreateCustomColumnsStrategy?.();
         let customColumnsDataProvider: CustomColumnsDataProvider | undefined;
@@ -33,8 +36,8 @@ export class TaskGridDatasetControlFactory {
 
         const savedQueryStrategy = parameters.taskGridDescriptor.onCreateSavedQueryStrategy();
         const savedQueryDataProvider = new SavedQueryDataProvider(savedQueryStrategy, {
-            //no user-query strategy means personal views are off
-            userQueryStrategy: parameters.taskGridDescriptor.onCreateUserQueryStrategy?.(),
+            //no user-queries module means personal views are off
+            userQueryStrategy: modules.userQueries?.strategy,
             localizationService: parameters.localizationService,
             nativeColumns: { ...parameters.taskGridDescriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME },
             customColumnsDataProvider: customColumnsDataProvider,
@@ -70,6 +73,7 @@ export class TaskGridDatasetControlFactory {
             localizationService: parameters.localizationService,
             savedQueryDataProvider: savedQueryDataProvider,
             customColumnsDataProvider: customColumnsDataProvider,
+            modules: modules,
             onGetPcfContext: () => parameters.onGetPcfContext(),
         });
     }

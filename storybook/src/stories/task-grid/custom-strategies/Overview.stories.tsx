@@ -34,7 +34,7 @@ Several behaviours that look like they need a subclass are parameters on both sh
 
 - \`onCreateTaskStrategy\` — every task-level option, because they belong to the task strategy: new-task defaults, what counts as active, what happens on open, and on Dataverse the form ids, \`rootTaskId\` and the delete flags. The descriptor hands the callback what it resolved, so you build the shipped strategy with your own options.
 - **A hook per operation on the task strategy itself.** \`onCreateTask\`, \`onDeleteTasks\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\`, \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onCreateTasksFromTemplate\`, \`onOpenDatasetItems\` — plus \`onGetFormParameters\` on Dataverse. Each receives the parameters of the matching action, so wrapping one is a forward rather than a rewrite. See [**the actions classes**](#the-actions-classes).
-- \`onCreateUserQueryStrategy\`, \`onCreateTemplateDataProvider\`, \`onCreateCustomColumnsStrategy\` — whether those features exist at all.
+- \`onGetModules\`, \`onCreateTemplateDataProvider\`, \`onCreateCustomColumnsStrategy\` — whether those features exist at all. For personal views the module carries the UI too, so not registering it also keeps the view manager out of your bundle.
 - \`onCreateGridCustomizerStrategy\` — your AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
 
 Both parameter objects also carry the \`onCreate*\` callbacks that decide which optional features exist at all — personal views, templates, custom columns, the customizer. Supplying an implementation is the switch, and a feature you never mention costs nothing in your bundle.
@@ -48,7 +48,7 @@ A descriptor answers three questions the grid cannot answer on its own: which co
 | \`onGetFieldMapping()\` | ✅ | Maps column roles to physical attribute names in your schema. |
 | \`onCreateTaskStrategy(deps)\` | ✅ | Returns the strategy handling task CRUD, move, and template expansion. |
 | \`onCreateSavedQueryStrategy()\` | ✅ | Returns the strategy that loads the system views. |
-| \`onCreateUserQueryStrategy?()\` | — | Returns the \`IUserQueryStrategy\` that reads and persists **personal** views. Called when the grid builds its saved-query provider; omit it and personal views are off. |
+| \`onGetModules?()\` | — | Returns the feature modules, keyed by feature. \`{ userQueries: createUserQueryModule({ strategy }) }\` supplies the \`IUserQueryStrategy\` that reads and persists **personal** views, and the dialogs that drive it; omit the key and personal views are off. |
 | \`onLoadDependencies?()\` | — | Async hook called once **before** anything else. Resolve configuration and fetch here. |
 | \`onGetHeight?()\` | — | Container height as a CSS string. Fills the parent when omitted. |
 | \`onGetGridParameters?()\` | — | \`ITaskGridParameters\` feature flags. |
@@ -58,7 +58,7 @@ A descriptor answers three questions the grid cannot answer on its own: which co
 | \`onCreateGridCustomizerStrategy?()\` | — | Deep-customizes AG Grid column definitions, renderers and row class rules. |
 | \`onGetControlId?()\` | — | A stable DOM identifier. Auto-generated as a UUID when omitted. |
 
-The optional hooks are feature switches, not just configuration: omit \`onCreateTemplateDataProvider\` and template creation disappears from the UI; omit \`onCreateCustomColumnsStrategy\` and custom columns are off; omit \`onCreateUserQueryStrategy\` and the view switcher lists system views only.
+The optional hooks are feature switches, not just configuration: omit \`onCreateTemplateDataProvider\` and template creation disappears from the UI; omit \`onCreateCustomColumnsStrategy\` and custom columns are off; omit the \`userQueries\` module and the view switcher lists system views only.
 
 Note how the saved-query contract splits along the same line — \`ISavedQueryStrategy\` is only \`onGetSystemQueries\`, and the four personal-view operations live on \`IUserQueryStrategy\`:
 
@@ -81,7 +81,7 @@ Every flag in \`ITaskGridParameters\` defaults to \`false\` when \`onGetGridPara
 | \`onGetFieldMapping\` | ✅ | ✅ |
 | \`onCreateTaskStrategy\` | ✅ | ✅ |
 | \`onCreateSavedQueryStrategy\` | ✅ from \`systemQueries\` | ✅ from \`systemQueries\` |
-| \`onCreateUserQueryStrategy\` | ✅ your param → \`MemoryUserQueryStrategy\` | ✅ your param → \`DataverseUserQueryStrategy\` |
+| \`onGetModules\` → \`userQueries\` | ✅ your param → \`MemoryUserQueryStrategy\` | ✅ your param → \`DataverseUserQueryStrategy\` |
 | \`onLoadDependencies\` | ✅ resolves once, cached | ✅ re-runs on every remount |
 | \`onGetHeight\` | ✅ | ✅ |
 | \`onGetGridParameters\` | ✅ | ✅ |
@@ -98,7 +98,7 @@ Both descriptors forward every optional hook to a parameter of the same name, so
 The sequence matters, because the strategies are created *after* configuration resolves:
 
 1. \`onLoadDependencies()\` — awaited first. Anything async belongs here.
-2. \`onCreateCustomColumnsStrategy()\`, then \`onCreateSavedQueryStrategy()\` with \`onCreateUserQueryStrategy()\` beside it, and \`onGetFieldMapping()\`.
+2. \`onCreateCustomColumnsStrategy()\`, then \`onGetModules()\` — once, and the result is threaded from there — then \`onCreateSavedQueryStrategy()\` and \`onGetFieldMapping()\`.
 3. \`onCreateTemplateDataProvider()\`, then \`onCreateTaskStrategy(deps)\` — the template provider is handed to the task strategy through \`deps\`. Creating a template is the template provider's own operation: call \`createTemplateFromTask\` on it, not on the task provider.
 4. The task strategy's own \`onInitialize(provider)\` runs, which is where it loads its records. Both shipped strategies await *their* required \`onInitialize\` hook there, so what they run on can be fetched asynchronously too — their behaviour hooks are plain functions on the constructor argument and are called later, per operation.
 

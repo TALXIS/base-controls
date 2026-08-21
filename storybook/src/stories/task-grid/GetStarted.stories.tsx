@@ -138,7 +138,7 @@ const descriptor = new DataverseTaskGridDescriptor({
             stackRank: 'talxis_stackrankstring',
         },
         systemQueries: [allTasksView],
-        gridParameters: { enableTaskEditing: true, enableQueryManager: true },
+        gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
     }),
 })
 \`\`\`

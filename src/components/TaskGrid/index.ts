@@ -19,3 +19,4 @@ export {
     useLocalizationService as useTaskGridLabels,
     useRootElementId as useTaskGridRootElementId,
 } from './context';
+export * from './modules';

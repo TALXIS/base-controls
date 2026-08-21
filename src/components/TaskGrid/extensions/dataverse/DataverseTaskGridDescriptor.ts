@@ -1,6 +1,7 @@
 import { FetchXmlBuilder, IDataProvider, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
 import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
+import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
 import { DataverseTaskStrategy } from "./dataverse-task-strategy/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
@@ -122,24 +123,29 @@ export interface IDataverseTaskGridDescriptorParams {
      */
     onCreateTaskStrategy?: (context: IDataverseTaskStrategyContext) => ITaskDataProviderStrategy;
     /**
-     * (Optional) Supplies the personal-views implementation. System views always come from
-     * `systemQueries`; this is what adds *My views*, the save commands and the view manager:
+     * (Optional) Supplies the feature modules, keyed by feature. System views always come from
+     * `systemQueries`; registering the user-queries module is what adds *My views*, the save commands and
+     * the view manager:
      *
      * ```ts
-     * onCreateUserQueryStrategy: (context) => new DataverseUserQueryStrategy({
-     *     entityName: context.entityName,
-     *     recordId: context.recordId,
-     *     ownerId: context.userId,
+     * onGetModules: (context) => ({
+     *     userQueries: createUserQueryModule({
+     *         strategy: new DataverseUserQueryStrategy({
+     *             entityName: context.entityName,
+     *             recordId: context.recordId,
+     *             ownerId: context.userId,
+     *         }),
+     *         enableQueryManager: true,
+     *     }),
      * })
      * ```
      *
-     * `DataverseUserQueryStrategy` needs the `talxis_userquery` table, so wiring it is also the
-     * statement that the environment has it. Nothing here references it otherwise, which keeps it out
-     * of bundles that do not use personal views.
-     *
-     * The feature callbacks all work that way, and all of them receive what the descriptor resolved.
+     * It is a callback because `context.entityName` is derived from `baseFetchXml`, so it does not exist
+     * until `onInitialize` has run. `DataverseUserQueryStrategy` needs the `talxis_userquery` table, so
+     * registering it is also the statement that the environment has it — and nothing here references it
+     * otherwise, which keeps it out of bundles that do not use personal views.
      */
-    onCreateUserQueryStrategy?: (context: IDataverseStrategyContext) => IUserQueryStrategy | undefined;
+    onGetModules?: (context: IDataverseStrategyContext) => ITaskGridModules;
     /**
      * (Optional) Supplies the template data provider. There is no Dataverse implementation yet, so this
      * is the way to bring your own; omit it and template creation stays out of the ribbon.
@@ -186,8 +192,8 @@ export interface IDataverseTaskGridDescriptorParams {
  *     fieldMapping: { parentId: 'talxis_parenttaskid', subject: 'subject', stackRank: 'talxis_stackrank' },
  *     systemQueries: [myDefaultView],
  *   }),
- *   //features are opt-in: supplying the implementation is what turns one on
- *   onCreateUserQueryStrategy: context => new DataverseUserQueryStrategy({ entityName: context.entityName }),
+ *   //features are opt-in: registering the module is what turns one on
+ *   onGetModules: context => ({ userQueries: createUserQueryModule({ strategy: new DataverseUserQueryStrategy({ entityName: context.entityName }) }) }),
  * });
  * const control = await TaskGridDatasetControlFactory.createInstance({ taskGridDescriptor: descriptor, ... });
  * ```
@@ -240,8 +246,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
 
     /**
      * Serves the `systemQueries` supplied at construction time. Personal views come from the
-     * `onCreateUserQueryStrategy` parameter — without it they are off and `talxis_userquery` is never
-     * read.
+     * user-queries module registered through `onGetModules` — without it they are off and
+     * `talxis_userquery` is never read.
      */
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
         return {
@@ -250,11 +256,11 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /**
-     * Delegates to the `onCreateUserQueryStrategy` parameter. Returning `undefined` — which is what
-     * omitting the parameter does — leaves personal views off.
+     * Delegates to the `onGetModules` parameter. An absent key — which is what omitting the parameter
+     * does — leaves that feature off.
      */
-    public onCreateUserQueryStrategy(): IUserQueryStrategy | undefined {
-        return this._params.onCreateUserQueryStrategy?.(this._getStrategyContext());
+    public onGetModules(): ITaskGridModules {
+        return this._params.onGetModules?.(this._getStrategyContext()) ?? {};
     }
 
     /**

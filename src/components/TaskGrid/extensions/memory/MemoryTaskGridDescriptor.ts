@@ -1,9 +1,9 @@
 import { IDataProvider, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
+import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
 import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
 import { MemoryTaskStrategy } from "./memory-task-strategy/MemoryTaskStrategy";
-import { DataverseTaskGridDescriptor } from "../dataverse";
 
 /**
  * What the descriptor has resolved by the time it asks for an optional strategy — the counterpart to
@@ -84,13 +84,23 @@ export interface IMemoryTaskGridDescriptorParams {
      */
     onCreateTaskStrategy?: (context: IMemoryTaskStrategyContext) => ITaskDataProviderStrategy;
     /**
-     * (Optional) Supplies the personal-views implementation — typically
-     * `new MemoryUserQueryStrategy({ userQueries })`, or your own if the views are persisted somewhere.
-     * What you return decides whether the feature exists; omit it and personal views are off.
+     * (Optional) Supplies the feature modules, keyed by feature. Importing a module's create method is
+     * what brings both its behaviour and its UI:
      *
-     * The feature callbacks all work that way, and all of them receive what the descriptor resolved.
+     * ```ts
+     * onGetModules: () => ({
+     *     userQueries: createUserQueryModule({
+     *         strategy: new MemoryUserQueryStrategy({ userQueries }),
+     *         enableQueryManager: true,
+     *     }),
+     * })
+     * ```
+     *
+     * Omit a key and that feature is off. This is a callback, called once per mount, so a strategy built
+     * here sees whatever `onInitialize` resolved — which is also why anything that must survive a remount
+     * (the `userQueries` array above) belongs to you, not to the strategy.
      */
-    onCreateUserQueryStrategy?: (context: IMemoryStrategyContext) => IUserQueryStrategy | undefined;
+    onGetModules?: (context: IMemoryStrategyContext) => ITaskGridModules;
     /**
      * (Optional) Supplies the template data provider — typically
      * `new MemoryTemplateDataProvider({ templates })`. Omit it and template creation stays out of the
@@ -140,8 +150,8 @@ export interface IMemoryTaskGridDescriptorParams {
  *       systemQueries: [allTasksView],
  *     };
  *   },
- *   //features are opt-in: supplying the implementation is what turns one on
- *   onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
+ *   //features are opt-in: registering the module is what turns one on
+ *   onGetModules: () => ({ userQueries: createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) }) }),
  * });
  * ```
  */
@@ -197,11 +207,11 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /**
-     * Delegates to the `onCreateUserQueryStrategy` parameter. Returning `undefined` — which is what
-     * omitting the parameter does — leaves personal views off.
+     * Delegates to the `onGetModules` parameter. An absent key — which is what omitting the parameter
+     * does — leaves that feature off.
      */
-    public onCreateUserQueryStrategy(): IUserQueryStrategy | undefined {
-        return this._params.onCreateUserQueryStrategy?.(this._getStrategyContext());
+    public onGetModules(): ITaskGridModules {
+        return this._params.onGetModules?.(this._getStrategyContext()) ?? {};
     }
 
     /**

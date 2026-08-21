@@ -163,7 +163,7 @@ public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
 }
 \`\`\`
 
-Personal views are optional and live behind \`onCreateUserQueryStrategy\`. Implement \`IUserQueryStrategy\` only if you have somewhere to persist them; return nothing and the feature is off, with no stubs to write:
+Personal views are optional and live behind \`onGetModules\`. Implement \`IUserQueryStrategy\` only if you have somewhere to persist them, then hand it to \`createUserQueryModule\`, which brings the view manager and the save dialogs with it. Omit the key and the feature is off, with no stubs to write — and none of that UI in your bundle:
 
 | Method | Description |
 |---|---|
@@ -200,8 +200,13 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     //optional: omit it and the grid shows system views only
-    public onCreateUserQueryStrategy(): IUserQueryStrategy {
-        return new MyUserQueryStrategy()
+    public onGetModules(): ITaskGridModules {
+        return {
+            userQueries: createUserQueryModule({
+                strategy: new MyUserQueryStrategy(),
+                enableSaveAsNewQuery: true,
+            }),
+        }
     }
 
     public onGetGridParameters(): ITaskGridParameters {

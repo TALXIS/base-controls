@@ -2,9 +2,11 @@ import { IColumn, IDataset, IDataProvider, IRecord } from "@talxis/client-librar
 import { IDatasetControl } from "@utils/dataset-control";
 import { IGridCustomizerStrategy } from "./components/grid/grid-customizer";
 import { ICustomColumnsDataProvider, ICustomColumnsStrategy } from "./providers/custom-columns/CustomColumnsDataProvider";
-import { ISavedQueryDataProvider, ISavedQueryStrategy, IUserQueryStrategy } from "./providers/saved-query";
+import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
 import { ITemplateDataProvider } from "./providers/template";
+//the contract only, never the modules barrel: that one reaches their UI
+import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { ILocalizationService } from "@utils";
@@ -17,6 +19,8 @@ export interface ITaskGridDatasetControlParameters {
     localizationService: ILocalizationService<ITaskGridLabels>;
     templateDataProvider?: ITemplateDataProvider;
     customColumnsDataProvider?: ICustomColumnsDataProvider;
+    /** The feature modules, already resolved by the factory. */
+    modules: ITaskGridModules;
     onGetPcfContext: () => ComponentFramework.Context<any>;
 }
 
@@ -59,12 +63,6 @@ export interface ITaskGridParameters {
     enableHideInactiveTasksToggle?: boolean;
     /** Show the personal/system scope selector inside the Edit Columns panel. Defaults to `false`. */
     enableEditColumnsScopeSelector?: boolean;
-    /** Show the query manager. Defaults to `false`. Only effective when the user-queries feature is on — the getter ANDs the two. */
-    enableQueryManager?: boolean;
-    /** Show the "Save as new" button in the query manager. Defaults to `false`. Only effective when the user-queries feature is on. */
-    enableSaveAsNewQuery?: boolean;
-    /** Show the "Save changes" button in the query manager. Defaults to `false`. Only effective when the user-queries feature is on. */
-    enableSaveQueryChanges?: boolean;
     /** Enable creation of custom columns. Defaults to `false`. Only effective when a custom-columns strategy was supplied. */
     enableCustomColumnCreation?: boolean;
     /** Enable editing of custom columns. Defaults to `false`. Only effective when a custom-columns strategy was supplied. */
@@ -112,8 +110,7 @@ export interface ITaskGridDescriptor {
     onGetFieldMapping: () => IFieldMapping;
     /**
      * Returns the strategy responsible for loading system views. Personal views are optional and come
-     * from its `onCreateUserQueryStrategy`, which also supplies the dialog's data provider — omit that
-     * and the user-queries feature is off.
+     * from the user-queries module returned by `onGetModules` — omit it and the feature is off.
      */
     onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
     /** Returns the strategy that handles all task CRUD, move, template and record-save operations. */
@@ -121,12 +118,17 @@ export interface ITaskGridDescriptor {
     /** (Optional) Returns the container height as a CSS string. Falls back to a default stretch when omitted. */
     onGetHeight?: () => string | undefined;
     /**
-     * (Optional) Returns the personal-views implementation. When it returns a strategy, the
-     * user-queries feature is enabled: *My views*, the save commands and the view manager appear.
+     * (Optional) Returns the feature modules this grid runs with, keyed by feature.
      *
-     * Called alongside `onCreateSavedQueryStrategy`, when the grid builds its saved-query provider.
+     * Called **exactly once per mount**, after `onLoadDependencies`, so what `onInitialize` resolved is
+     * available to whatever builds them. A module is enabled by being present:
+     * `{ userQueries: createUserQueryModule({ strategy }) }` turns personal views on, and omitting the key
+     * leaves both the feature and its UI out — including out of your bundle.
+     *
+     * Anything that must outlive a remount belongs in state *you* own, never in a module or a strategy:
+     * both are rebuilt on every mount.
      */
-    onCreateUserQueryStrategy?: () => IUserQueryStrategy | undefined;
+    onGetModules?: () => ITaskGridModules;
     /** (Optional) Returns the strategy for managing dynamic (user-defined) columns. When provided, the custom-columns feature is enabled. */
     onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy | undefined;
     /** (Optional) Returns an `ITemplateDataProvider` for task templates. When provided, the template-based task creation feature is enabled. */
@@ -212,19 +214,18 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isNavigationEnabled: () => boolean;
     /** Returns `true` when a custom columns strategy was supplied through the descriptor. */
     isCustomColumnsEnabled: () => boolean;
-    /** Whether the view manager is enabled: user queries are on **and** `ITaskGridParameters.enableQueryManager`. */
-    isViewManagerEnabled: () => boolean;
-    /** Whether the "Save as new" button is enabled: user queries are on **and** `ITaskGridParameters.enableSaveAsNewQuery`. */
-    isSaveQueryAsNewEnabled: () => boolean;
-    /** Whether the "Save changes" button is enabled: user queries are on **and** `ITaskGridParameters.enableSaveQueryChanges`. */
-    isSaveQueryChangesEnabled: () => boolean;
+    /**
+     * The feature modules the descriptor contributed, resolved once when this control was built. A missing
+     * key means that feature is off — there is no separate flag.
+     */
+    getModules: () => ITaskGridModules;
     /** Whether custom column creation is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnCreation`. */
     isCustomColumnCreationEnabled: () => boolean;
     /** Whether custom column editing is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnEditing`. */
     isCustomColumnEditingEnabled: () => boolean;
     /** Whether custom column deletion is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnDeletion`. */
     isCustomColumnDeletionEnabled: () => boolean;
-    /** Returns `true` when the saved-query strategy supplied a user-query strategy through `onCreateUserQueryStrategy`. */
+    /** Returns `true` when a user-queries module supplied a strategy. */
     isUserQueriesEnabled: () => boolean;
     /** Whether inline task creation is enabled (from `ITaskGridParameters.enableInlineCreation`). */
     isInlineCreateEnabled: () => boolean;

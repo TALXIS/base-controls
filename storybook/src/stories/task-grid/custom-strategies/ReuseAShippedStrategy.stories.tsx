@@ -63,9 +63,15 @@ const descriptor = new DataverseTaskGridDescriptor({
         baseFetchXml: BASE_FETCH_XML,
         fieldMapping: FIELD_MAPPING,
         systemQueries: SYSTEM_QUERIES,
-        //personal views in memory, tasks in Dataverse
-        onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
-        gridParameters: { enableTaskEditing: true, enableQueryManager: true },
+        gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
+    }),
+    //personal views in memory, tasks in Dataverse. Importing createUserQueryModule is what brings the
+    //view manager and the save dialogs along with the strategy
+    onGetModules: () => ({
+        userQueries: createUserQueryModule({
+            strategy: new MemoryUserQueryStrategy({ userQueries }),
+            enableQueryManager: true,
+        }),
     }),
 })
 \`\`\`

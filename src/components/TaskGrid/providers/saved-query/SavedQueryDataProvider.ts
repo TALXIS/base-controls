@@ -107,7 +107,7 @@ export interface ISavedQueryDataProvider {
 
 interface ISavedQueryDataProviderParameters {
     /**
-     * The personal-views implementation, from the descriptor's `onCreateUserQueryStrategy`. Absent
+     * The personal-views implementation, from the descriptor's user-queries module. Absent
      * means the user-queries feature is off: no *My views*, no save commands and no view manager.
      */
     userQueryStrategy?: IUserQueryStrategy;

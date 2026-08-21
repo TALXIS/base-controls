@@ -4,6 +4,7 @@ import { EditColumns, IEditColumns } from "@utils/dataset-control/EditColumns";
 import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering } from "@talxis/client-libraries";
 import { IDeleteTasksResult, ITaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "@utils";
+import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
 import { ITemplateDataProvider } from "./providers/template";
@@ -26,6 +27,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     private _controlId: string;
     private _state: ITaskGridState;
     private _gridParameters: ITaskGridParameters;
+    private _modules: ITaskGridModules;
     private _commands: ICommand[] = [];
     private _getPcfContext: () => ComponentFramework.Context<any, any>;
     private _changeToQueryId!: string;
@@ -42,6 +44,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._templateDataProvider = parameters.templateDataProvider;
         this._state = parameters.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
+        //resolved by the factory, which calls onGetModules exactly once - never re-invoked from here
+        this._modules = parameters.modules;
         this._getPcfContext = parameters.onGetPcfContext;
         this._loadState(parameters.state);
         this.loadCommands([]);
@@ -120,16 +124,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         }
     }
     
-    public isViewManagerEnabled(): boolean {
-        return this.isUserQueriesEnabled() && (this._gridParameters.enableQueryManager ?? false);
-    }
-
-    public isSaveQueryAsNewEnabled(): boolean {
-        return this.isUserQueriesEnabled() && (this._gridParameters.enableSaveAsNewQuery ?? false);
-    }
-
-    public isSaveQueryChangesEnabled(): boolean {
-        return this.isUserQueriesEnabled() && (this._gridParameters.enableSaveQueryChanges ?? false);
+    public getModules(): ITaskGridModules {
+        return this._modules;
     }
 
     public isUserQueriesEnabled(): boolean {

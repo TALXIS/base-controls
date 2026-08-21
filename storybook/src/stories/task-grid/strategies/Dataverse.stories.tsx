@@ -32,14 +32,19 @@ Two features are backed by TALXIS models rather than by your task entity, and **
 
 | Feature | Strategy to supply | Model it needs |
 |---|---|---|
-| Personal saved views | \`onCreateUserQueryStrategy\` → \`DataverseUserQueryStrategy\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
+| Personal saved views | \`onGetModules\` → \`createUserQueryModule({ strategy: new DataverseUserQueryStrategy(...) })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
 | Custom columns | \`onCreateCustomColumnsStrategy\` → \`DataverseCustomColumnsStrategy\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` |
 
 \`\`\`ts
-onCreateUserQueryStrategy: (context) => new DataverseUserQueryStrategy({
-    entityName: context.entityName,
-    recordId: context.recordId,
-    ownerId: context.userId,
+onGetModules: (context) => ({
+    userQueries: createUserQueryModule({
+        strategy: new DataverseUserQueryStrategy({
+            entityName: context.entityName,
+            recordId: context.recordId,
+            ownerId: context.userId,
+        }),
+        enableQueryManager: true,
+    }),
 }),
 onCreateCustomColumnsStrategy: (context) => new DataverseCustomColumnsStrategy({
     entityName: context.entityName,
@@ -83,13 +88,18 @@ const descriptor = new DataverseTaskGridDescriptor({
         systemQueries: [allTasksView],
         projectRecord: { entityName: 'talxis_project', id: projectId },
         userId: userId,
-        gridParameters: { enableTaskEditing: true, enableQueryManager: true },
+        gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
     }),
-    //personal views are on because this returns a strategy - there is no flag for it
-    onCreateUserQueryStrategy: (context) => new DataverseUserQueryStrategy({
-        entityName: context.entityName,
-        recordId: context.recordId,
-        ownerId: context.userId,
+    //personal views are on because this registers the module - there is no flag for it
+    onGetModules: (context) => ({
+        userQueries: createUserQueryModule({
+            strategy: new DataverseUserQueryStrategy({
+                entityName: context.entityName,
+                recordId: context.recordId,
+                ownerId: context.userId,
+            }),
+            enableQueryManager: true,
+        }),
     }),
     //the form ids, the delete behaviour and the root task are the strategy's options
     onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new DataverseTaskStrategy({
@@ -164,7 +174,7 @@ Passed next to \`onInitialize\` on the constructor argument, because they run ag
 |---|:--------:|---|
 | \`height?\` | — | Container height. Read before the data resolves, to size the loading skeleton. |
 | \`onCreateTaskStrategy?\` | — | Returns the task strategy. Where the form ids, \`rootTaskId\`, the cascade-delete flags and the per-operation hooks live. |
-| \`onCreateUserQueryStrategy?\` | — | Returns the personal-views implementation. Omitted ⇒ system views only. |
+| \`onGetModules?\` | — | Returns the feature modules. A \`userQueries\` module turns personal views on; omitted ⇒ system views only, and its UI is not in your bundle. |
 | \`onCreateCustomColumnsStrategy?\` | — | Returns the custom-columns strategy. Omitted ⇒ custom columns off. |
 | \`onCreateTemplateDataProvider?\` | — | Returns a template provider. Nothing Dataverse-side ships, so this has to be yours. |
 | \`onCreateLookupManyDataProvider?\` | — | Feeds a lookup-many picker. Required once a column carries \`metadata.LookupMany\`. |
@@ -172,9 +182,9 @@ Passed next to \`onInitialize\` on the constructor argument, because they run ag
 
 ## Saved views
 
-Return a \`DataverseUserQueryStrategy\` from \`onCreateUserQueryStrategy\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
+Register \`createUserQueryModule({ strategy: new DataverseUserQueryStrategy(...) })\` from \`onGetModules\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
 
-Without that callback the feature is simply off — \`enableQueryManager\`, \`enableSaveAsNewQuery\` and \`enableSaveQueryChanges\` then have nothing to switch on, because each getter ANDs the flag with the capability. That combination used to be reachable and threw *"Function not implemented"*; it no longer exists.
+Without that module the feature is simply off, and its options — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` — have nowhere to be set, because they belong to the module rather than to \`gridParameters\`. Not registering it also keeps the view manager and both dialogs out of your bundle.
 
 ## Lookup-many columns
 

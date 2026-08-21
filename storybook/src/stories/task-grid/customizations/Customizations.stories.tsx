@@ -45,15 +45,15 @@ Grouped by what they control:
 |---|---|
 | Editing | \`enableTaskEditing\`, \`enableTaskCreation\`, \`enableInlineCreation\`, \`enableTaskDeletion\` |
 | Ordering | \`enableRowDragging\`, \`enableSorting\`, \`enableFiltering\` |
-| Views | \`enableViewSwitcher\`, \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` |
+| Views | \`enableViewSwitcher\` — the personal-view commands are options on the user-queries module instead, see below |
 | Columns | \`enableEditColumns\`, \`enableEditColumnsScopeSelector\`, \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\` |
 | Display | \`enableShowHierarchyToggle\`, \`enableHideInactiveTasksToggle\`, \`enableNavigation\`, \`rowHeight\`, \`agGridLicenseKey\` |
 
-A few interact with each other: \`enableRowDragging\` is suppressed automatically in flat-list mode or when sorting by a non-rank column, and the user-query flags only matter once \`enableViewSwitcher\` is on.
+A few interact with each other: \`enableRowDragging\` is suppressed automatically in flat-list mode or when sorting by a non-rank column, and the personal-view commands only appear once \`enableViewSwitcher\` is on.
 
 Every flag defaults to \`false\`, so a feature missing from the ribbon is usually one of two things: its flag was left out of \`onGetGridParameters\`, or the optional descriptor hook that enables it returned nothing.
 
-The two are not independent. A flag can only trim commands **within** a feature that exists, because the getters AND the two together — \`isSaveQueryAsNewEnabled()\` is \`isUserQueriesEnabled() && enableSaveAsNewQuery\`, and the custom-column flags work the same way against \`isCustomColumnsEnabled()\`. Whether the feature exists at all is decided by the descriptor: personal views by \`onCreateUserQueryStrategy\`, templates by \`onCreateTemplateDataProvider\`, custom columns by \`onCreateCustomColumnsStrategy\`. Supplying the implementation is the switch — which is also what keeps unused strategies out of your bundle.
+The two are not independent. A flag can only trim commands **within** a feature that exists — the custom-column flags, for instance, are ANDed with \`isCustomColumnsEnabled()\`. Whether the feature exists at all is decided by the descriptor: templates by \`onCreateTemplateDataProvider\`, custom columns by \`onCreateCustomColumnsStrategy\`, personal views by the \`userQueries\` module returned from \`onGetModules\`. Supplying the implementation is the switch — which is also what keeps unused strategies out of your bundle.\n\nPersonal views take that one step further: because \`createUserQueryModule\` carries the view manager and the save dialogs, its three commands are **options on the module**, not grid parameters — so a grid that never registers it does not ship that UI at all.\n\n\`\`\`ts\nonGetModules: () => ({\n    userQueries: createUserQueryModule({\n        strategy: new MemoryUserQueryStrategy({ userQueries }),\n        enableQueryManager: true,\n        enableSaveAsNewQuery: true,\n        enableSaveQueryChanges: true,\n    }),\n}),\n\`\`\`
 
 ## Column metadata
 

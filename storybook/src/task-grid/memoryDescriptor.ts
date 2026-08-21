@@ -1,6 +1,6 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
-import { MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
+import { createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
 import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryTaskGridDescriptorInitializeResult, IMemoryTemplateSource, ISavedQuery } from '@talxis/base-controls';
 
 /**
@@ -126,11 +126,8 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 enableTaskEditing: true,
                 enableEditColumns: true,
                 enableInlineCreation: true,
-                enableQueryManager: true,
                 enableRowDragging: true,
                 enableQuickFind: true,
-                enableSaveAsNewQuery: true,
-                enableSaveQueryChanges: true,
                 enableTaskDeletion: true,
                 enableViewSwitcher: true,
                 enableSorting: true,
@@ -144,7 +141,17 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
         onInitialize,
         //features are opt-in by implementation: supplying the strategy is what turns each one on, which
         //is also what lets a consumer who does not use them tree-shake the code away
-        onCreateUserQueryStrategy: () => new MemoryUserQueryStrategy({ userQueries }),
+        //
+        //personal views go one step further: importing createUserQueryModule is what brings the view
+        //manager and the save dialogs, so a grid that never registers the module does not ship them
+        onGetModules: () => ({
+            userQueries: createUserQueryModule({
+                strategy: new MemoryUserQueryStrategy({ userQueries }),
+                enableQueryManager: true,
+                enableSaveAsNewQuery: true,
+                enableSaveQueryChanges: true,
+            }),
+        }),
         onCreateLookupManyDataProvider: ({ column }) => {
             const source = lookupSources[column.name];
             return source && MemoryLookupManyDataProviderFactory.create(source);

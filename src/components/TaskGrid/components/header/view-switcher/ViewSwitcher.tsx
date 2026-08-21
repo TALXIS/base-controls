@@ -2,8 +2,6 @@ import { CommandBarButton as CommandBarButtonBase, ContextualMenuItemType, ICont
 import * as React from "react"
 import { getViewSwitcherStyles } from "./styles";
 import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider } from "@components/TaskGrid/context";
-import { CreateViewDialog } from "./create-view-dialog";
-import { ViewManagerDialog } from "./view-manager";
 import { useEventEmitter } from "@hooks";
 import { withButtonLoading } from "@legacy";
 
@@ -13,6 +11,9 @@ export const ViewSwitcher = () => {
     const localizationService = useLocalizationService();
     const datasetControl = useDatasetControl();
     const savedQueryDataProvider = datasetControl.getSavedQueryDataProvider();
+    //personal views exist only when the user-queries module was registered; its components come with it,
+    //so this file never imports a dialog
+    const userQueriesModule = datasetControl.getModules().userQueries;
     const taskDataProvider = useTaskDataProvider();
     const systemQueries = savedQueryDataProvider.getSystemQueries();
     const userQueries = savedQueryDataProvider.getUserQueries();
@@ -35,10 +36,10 @@ export const ViewSwitcher = () => {
     }
 
     const getViewSwitcherItems = (): IContextualMenuItem[] => {
-        const userQueriesEnabled = datasetControl.isUserQueriesEnabled();
-        const isViewManagerEnabled = datasetControl.isViewManagerEnabled();
-        const isSaveAsNewEnabled = datasetControl.isSaveQueryAsNewEnabled();
-        const isSaveEnabled = datasetControl.isSaveQueryChangesEnabled();
+        const userQueriesEnabled = !!userQueriesModule;
+        const isViewManagerEnabled = userQueriesModule?.enableQueryManager ?? false;
+        const isSaveAsNewEnabled = userQueriesModule?.enableSaveAsNewQuery ?? false;
+        const isSaveEnabled = userQueriesModule?.enableSaveQueryChanges ?? false;
 
         const mapQuery = (query: { id: string; name: string }): IContextualMenuItem => ({
             key: query.id,
@@ -105,11 +106,11 @@ export const ViewSwitcher = () => {
             menuProps={{
                 items: getViewSwitcherItems()
             }} text={currentQuery.name} />
-        {showCreateViewDialog &&
-            <CreateViewDialog onDismiss={() => setShowCreateViewDialog(false)} />
+        {showCreateViewDialog && userQueriesModule &&
+            <userQueriesModule.components.CreateView onDismiss={() => setShowCreateViewDialog(false)} />
         }
-        {showViewManagerDialog &&
-            <ViewManagerDialog onDismiss={() => setShowViewManagerDialog(false)} />
+        {showViewManagerDialog && userQueriesModule &&
+            <userQueriesModule.components.ViewManager onDismiss={() => setShowViewManagerDialog(false)} />
         }
     </>
 }
