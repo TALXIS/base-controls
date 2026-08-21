@@ -1,6 +1,5 @@
 import { IRecord, IFetchXmlDataProvider, IRawRecord, FetchXmlDataProvider, IAvailableColumnOptions, IAvailableRelatedColumn, IRecordSaveOperationResult, IColumn, Operators, DataTypes, ISingleRecord } from "@talxis/client-libraries";
 import {
-    ICustomColumnsDataProvider,
     IDeleteTasksResult,
     IOpenDatasetItemsResult,
     ITaskCreateParams,
@@ -9,6 +8,7 @@ import {
     ITaskMoveParams,
     ITaskTemplateExpansionParams,
 } from "@components/TaskGrid/providers";
+import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { Liquid } from "liquidjs";
 import { IDataverseFieldMapping } from "../DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "../lookup-many/LookupManyHandler";

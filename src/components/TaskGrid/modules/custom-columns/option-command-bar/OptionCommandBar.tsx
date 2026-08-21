@@ -1,7 +1,7 @@
 import * as React from "react";
 import {  ICommandBarItemProps } from "@legacy";
 import { getCustomColumnSuffixStyles } from "./styles";
-import { useTaskGridEditColumns } from "../useTaskGridEditColumns";
+import { useTaskGridEditColumns } from "@components/TaskGrid/components/header/edit-columns/useTaskGridEditColumns";
 import { IOptionCommandBarProps, components } from "@components/DatasetControl/EditColumns/components";
 import { useDatasetControl } from "@components/TaskGrid/context";
 
@@ -10,7 +10,8 @@ export const OptionCommandBar = (props: IOptionCommandBarProps) => {
     const { column, context } = props;
     const { onEditColumn, onDeleteColumn } = useTaskGridEditColumns();
     const datasetControl = useDatasetControl();
-    const columnsDataProvider = datasetControl.getCustomColumnsDataProvider();
+    const customColumns = datasetControl.getModule('customColumns');
+    const columnsDataProvider = customColumns.provider;
     const styles = React.useMemo(() => getCustomColumnSuffixStyles(), []);
     const isCustomColumn = React.useMemo(() => columnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === column.name), []);
 
@@ -22,7 +23,7 @@ export const OptionCommandBar = (props: IOptionCommandBarProps) => {
             }
         }
         return [
-            ...datasetControl.isCustomColumnEditingEnabled() ? [{
+            ...customColumns.enableCustomColumnEditing ? [{
                 key: 'edit',
                 className: styles.button,
                 iconProps: { iconName: 'Edit' },
@@ -32,7 +33,7 @@ export const OptionCommandBar = (props: IOptionCommandBarProps) => {
                     queueMicrotask(() => onEditColumn(column.name));
                 }
             }] : [],
-            ...datasetControl.isCustomColumnDeletionEnabled() ? [{
+            ...customColumns.enableCustomColumnDeletion ? [{
                 key: 'delete',
                 className: styles.button,
                 iconProps: { iconName: 'Delete' },

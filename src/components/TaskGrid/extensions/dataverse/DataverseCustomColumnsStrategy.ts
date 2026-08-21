@@ -1,7 +1,7 @@
 import { Attribute, DatasetConstants, DataType, DataTypes, FieldValue, IColumn, IEventEmitter, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
 import { DynamicEntityDefinition } from "@talxis/client-metadata";
 import { Attribute as IAttribute } from '@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition';
-import { ICustomColumnsStrategy } from "@components/TaskGrid/providers/custom-columns/CustomColumnsDataProvider";
+import { ICustomColumnsStrategy } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 
 export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
@@ -40,8 +40,8 @@ export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy 
  * Dynamic (user-defined) columns are modelled as `talxis_attributedefinition` records.
  * Column values are stored as `talxis_attributevalue` records linked to the record they belong to.
  *
- * Pass an instance to the `onCreateCustomColumnsStrategy` hook of your descriptor to enable the
- * custom-columns feature in the TaskGrid.
+ * Wrap an instance in `createCustomColumnsModule({ strategy })` and return it from the descriptor's
+ * `onGetModules` to enable the custom-columns feature in the TaskGrid.
  */
 export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsStrategy {
     private _entityName: string;

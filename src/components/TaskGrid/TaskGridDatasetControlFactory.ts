@@ -3,7 +3,6 @@ import { ITaskDataProvider, TaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
-import { CustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { TaskGridDatasetControl } from "./TaskGridDatasetControl";
 
@@ -27,11 +26,8 @@ export class TaskGridDatasetControlFactory {
         //module is free to build a strategy per mount without anything being resolved twice
         const modules = parameters.taskGridDescriptor.onGetModules?.() ?? {};
 
-        const customColumnsStrategy = parameters.taskGridDescriptor.onCreateCustomColumnsStrategy?.();
-        let customColumnsDataProvider: CustomColumnsDataProvider | undefined;
-        if (customColumnsStrategy) {
-            customColumnsDataProvider = new CustomColumnsDataProvider(customColumnsStrategy);
-        }
+        //no custom-columns module means the feature is off - nothing here even imports the wrapper class
+        const customColumnsDataProvider = modules.customColumns?.provider;
         await customColumnsDataProvider?.refresh();
 
         const savedQueryStrategy = parameters.taskGridDescriptor.onCreateSavedQueryStrategy();
@@ -71,7 +67,6 @@ export class TaskGridDatasetControlFactory {
             taskGridDescriptor: parameters.taskGridDescriptor,
             localizationService: parameters.localizationService,
             savedQueryDataProvider: savedQueryDataProvider,
-            customColumnsDataProvider: customColumnsDataProvider,
             modules: modules,
             onGetPcfContext: () => parameters.onGetPcfContext(),
         });

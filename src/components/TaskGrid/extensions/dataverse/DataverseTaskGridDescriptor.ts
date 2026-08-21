@@ -1,5 +1,5 @@
 import { FetchXmlBuilder, IDataProvider, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
-import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
+import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
@@ -147,14 +147,12 @@ export interface IDataverseTaskGridDescriptorParams {
      *
      * There is no Dataverse template provider yet, so `templates: createTemplateModule({ provider })` is
      * the way to bring your own; omit the key and template creation stays out of the ribbon.
+     *
+     * `customColumns: createCustomColumnsModule({ strategy: new DataverseCustomColumnsStrategy({...}) })`
+     * needs the `talxis_attributedefinition` and `talxis_attributevalue` tables. Omit the key and custom
+     * columns are off, and neither table is read.
      */
     onGetModules?: (context: IDataverseStrategyContext) => ITaskGridModules;
-    /**
-     * (Optional) Supplies the custom-columns strategy — `DataverseCustomColumnsStrategy` needs the
-     * `talxis_attributedefinition` and `talxis_attributevalue` tables. Omit it and custom columns are
-     * off, and neither table is read.
-     */
-    onCreateCustomColumnsStrategy?: (context: IDataverseStrategyContext) => ICustomColumnsStrategy | undefined;
     /**
      * (Optional) Supplies the candidates of a lookup-many picker. Which columns *render* as lookup-many
      * is driven by `metadata.LookupMany` on the column itself; this is what feeds them, and
@@ -281,11 +279,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             }),
         }, deps);
     }
-    /** Delegates to the `onCreateCustomColumnsStrategy` parameter. Custom columns are off without it. */
-    public onCreateCustomColumnsStrategy(): ICustomColumnsStrategy | undefined {
-        return this._params.onCreateCustomColumnsStrategy?.(this._getStrategyContext());
-    }
-
     /** Delegates to the `onCreateGridCustomizerStrategy` parameter. */
     public onCreateGridCustomizerStrategy(): IGridCustomizerStrategy | undefined {
         return this._params.onCreateGridCustomizerStrategy?.();

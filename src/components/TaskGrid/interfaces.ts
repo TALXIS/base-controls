@@ -1,7 +1,8 @@
 import { IColumn, IDataset, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IDatasetControl } from "@utils/dataset-control";
 import { IGridCustomizerStrategy } from "./components/grid/grid-customizer";
-import { ICustomColumnsDataProvider, ICustomColumnsStrategy } from "./providers/custom-columns/CustomColumnsDataProvider";
+//the types-only reference to the module - core depends on the type only, never the module's value exports
+import { ICustomColumnsDataProvider } from "./modules/custom-columns/CustomColumnsDataProvider";
 import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
 //the types-only file, never the providers/template barrel - that one also exports the
@@ -19,7 +20,6 @@ export interface ITaskGridDatasetControlParameters {
     savedQueryDataProvider: ISavedQueryDataProvider;
     taskGridDescriptor: ITaskGridDescriptor;
     localizationService: ILocalizationService<ITaskGridLabels>;
-    customColumnsDataProvider?: ICustomColumnsDataProvider;
     /** The feature modules, already resolved by the factory. */
     modules: ITaskGridModules;
     onGetPcfContext: () => ComponentFramework.Context<any>;
@@ -64,12 +64,6 @@ export interface ITaskGridParameters {
     enableHideInactiveTasksToggle?: boolean;
     /** Show the personal/system scope selector inside the Edit Columns panel. Defaults to `false`. */
     enableEditColumnsScopeSelector?: boolean;
-    /** Enable creation of custom columns. Defaults to `false`. Only effective when a custom-columns strategy was supplied. */
-    enableCustomColumnCreation?: boolean;
-    /** Enable editing of custom columns. Defaults to `false`. Only effective when a custom-columns strategy was supplied. */
-    enableCustomColumnEditing?: boolean;
-    /** Enable deletion of custom columns. Defaults to `false`. Only effective when a custom-columns strategy was supplied. */
-    enableCustomColumnDeletion?: boolean;
     /** Enable inline creation of tasks. Defaults to `false`. */
     enableInlineCreation?: boolean;
     /** Enable navigation within the grid. Defaults to `false`. */
@@ -88,7 +82,7 @@ export interface ITaskStrategyDeps {
     enableTaskEditing: boolean;
     /** The system and user views the grid loaded — their columns are the strategy's column catalogue. */
     savedQueryDataProvider: ISavedQueryDataProvider;
-    /** Present when the consumer provided `onCreateCustomColumnsStrategy`. */
+    /** Present when the custom-columns module was returned from `onGetModules`. */
     customColumnsDataProvider?: ICustomColumnsDataProvider;
     /** Present when the templates module was returned from `onGetModules`. */
     templateDataProvider?: ITemplateDataProvider;
@@ -130,8 +124,6 @@ export interface ITaskGridDescriptor {
      * both are rebuilt on every mount.
      */
     onGetModules?: () => ITaskGridModules;
-    /** (Optional) Returns the strategy for managing dynamic (user-defined) columns. When provided, the custom-columns feature is enabled. */
-    onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy | undefined;
     /**
      * (Optional) Returns the `IDataProvider` supplying candidate records for a lookup-many column —
      * the picker's options. Needed only when columns carry `metadata.LookupMany`. Omit it, or return
@@ -156,11 +148,6 @@ export interface ITaskGridDescriptor {
 export interface ITaskGridDatasetControl extends IDatasetControl {
     /** Returns the saved-query data provider managing system and user views. */
     getSavedQueryDataProvider: () => ISavedQueryDataProvider;
-    /**
-     * Returns the custom-columns data provider.
-     * @throws If custom columns were not enabled (no `onCreateCustomColumnsStrategy` in the descriptor).
-     */
-    getCustomColumnsDataProvider: () => ICustomColumnsDataProvider;
     /**
      * Creates the `IDataProvider` supplying the candidate records of a lookup-many cell — its picker's
      * options. Called once per cell, because the candidates may depend on the row.
@@ -204,8 +191,6 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isViewSwitcherEnabled: () => boolean;
     /** Whether grid navigation is enabled (from `ITaskGridParameters.enableNavigation`). */
     isNavigationEnabled: () => boolean;
-    /** Returns `true` when a custom columns strategy was supplied through the descriptor. */
-    isCustomColumnsEnabled: () => boolean;
     /**
      * The feature modules the descriptor contributed, resolved once when this control was built. A missing
      * key means that feature is off — there is no separate flag.
@@ -222,12 +207,6 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
      * @throws If that module was not registered.
      */
     getModule: <TKey extends keyof ITaskGridModules>(key: TKey) => NonNullable<ITaskGridModules[TKey]>;
-    /** Whether custom column creation is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnCreation`. */
-    isCustomColumnCreationEnabled: () => boolean;
-    /** Whether custom column editing is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnEditing`. */
-    isCustomColumnEditingEnabled: () => boolean;
-    /** Whether custom column deletion is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnDeletion`. */
-    isCustomColumnDeletionEnabled: () => boolean;
     /** Returns `true` when a user-queries module supplied a strategy. */
     isUserQueriesEnabled: () => boolean;
     /** Whether inline task creation is enabled (from `ITaskGridParameters.enableInlineCreation`). */

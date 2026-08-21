@@ -4,10 +4,6 @@ import { getEditColumnsStyles } from './styles';
 import { useIsLoading } from '@hooks';
 import { TaskGridEditColumnsContext } from './useTaskGridEditColumns';
 import { useDatasetControl, useLocalizationService, usePcfContext, useRootElementId } from '@components/TaskGrid/context';
-import { OptionCommandBar } from './OptionCommandBar/OptionCommandBar';
-import { SortableItemCommandBar } from './SortableItemCommandBar/SortableItemCommandBar';
-import { CommandBar } from './CommandBar/CommandBar';
-import { ICustomColumnsDataProvider } from '@components/TaskGrid/providers';
 
 
 interface IEditColumnsProps {
@@ -18,7 +14,8 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const localizationService = useLocalizationService();
     const saveOnDismiss = React.useRef(false);
     const datasetControl = useDatasetControl();
-    const customColumnsDataProvider: ICustomColumnsDataProvider | undefined = datasetControl.isCustomColumnsEnabled() ? datasetControl.getCustomColumnsDataProvider() : undefined;
+    const customColumns = datasetControl.getModules().customColumns;
+    const customColumnsDataProvider = customColumns?.provider;
     const editColumnsRef = React.useRef<IEditColumnsRef>();
     const pcfContext = usePcfContext();
     const rootElementId = useRootElementId();
@@ -106,10 +103,10 @@ export const EditColumns = (props: IEditColumnsProps) => {
                 }
             }}
             onGetRef={(ref) => editColumnsRef.current = ref}
-            components={datasetControl.isCustomColumnsEnabled() ? {
-                CommandBar: CommandBar as () => JSX.Element,
-                SortableItemCommandBar: SortableItemCommandBar,
-                OptionCommandBar: OptionCommandBar
+            components={customColumns ? {
+                CommandBar: customColumns.components.CommandBar as () => JSX.Element,
+                SortableItemCommandBar: customColumns.components.SortableItemCommandBar,
+                OptionCommandBar: customColumns.components.OptionCommandBar
             } : undefined}
             onDismiss={onDismiss} />
     </TaskGridEditColumnsContext.Provider>

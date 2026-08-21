@@ -1,7 +1,7 @@
 import { IDataProvider, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
-import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
+import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
 import { MemoryTaskStrategy } from "./memory-task-strategy/MemoryTaskStrategy";
 
@@ -96,6 +96,8 @@ export interface IMemoryTaskGridDescriptorParams {
      *     templates: createTemplateModule({
      *         provider: new MemoryTemplateDataProvider({ templates }),
      *     }),
+     *     //there is no in-memory custom-columns implementation, so this is your own strategy
+     *     customColumns: createCustomColumnsModule({ strategy: new MyCustomColumnsStrategy() }),
      * })
      * ```
      *
@@ -104,11 +106,6 @@ export interface IMemoryTaskGridDescriptorParams {
      * (the `userQueries` array above) belongs to you, not to the strategy.
      */
     onGetModules?: (context: IMemoryStrategyContext) => ITaskGridModules;
-    /**
-     * (Optional) Supplies a custom-columns strategy. There is no in-memory implementation, so this is
-     * the only way to switch user-defined columns on with this descriptor.
-     */
-    onCreateCustomColumnsStrategy?: (context: IMemoryStrategyContext) => ICustomColumnsStrategy | undefined;
     /**
      * (Optional) Supplies the candidates of a lookup-many picker. Which columns *render* as lookup-many
      * is driven by `metadata.LookupMany` on the column itself; this is what feeds them, and
@@ -222,11 +219,6 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
             ?? new MemoryTaskStrategy({
                 onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
             }, deps);
-    }
-
-    /** Delegates to the `onCreateCustomColumnsStrategy` parameter. Custom columns are off without it. */
-    public onCreateCustomColumnsStrategy(): ICustomColumnsStrategy | undefined {
-        return this._params.onCreateCustomColumnsStrategy?.(this._getStrategyContext());
     }
 
     /** Delegates to the `onCreateLookupManyDataProvider` parameter. */

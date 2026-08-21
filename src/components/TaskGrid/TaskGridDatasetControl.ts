@@ -9,7 +9,6 @@ import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
-import { ICustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
 import { ILookupManyDataProviderParameters, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
 import { ErrorHelper } from "@utils/error-handling";
 
@@ -21,7 +20,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     private _dataProvider: ITaskDataProvider;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _savedQueryDataProvider: ISavedQueryDataProvider;
-    private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _controlId: string;
     private _state: ITaskGridState;
     private _gridParameters: ITaskGridParameters;
@@ -38,7 +36,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._controlId = this._descriptor.onGetControlId?.() ?? `task-grid-dataset-control-${crypto.randomUUID()}`;
         this._localizationService = parameters.localizationService;
         this._savedQueryDataProvider = parameters.savedQueryDataProvider;
-        this._customColumnsDataProvider = parameters.customColumnsDataProvider;
         this._state = parameters.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
         //resolved by the factory, which calls onGetModules exactly once - never re-invoked from here
@@ -74,22 +71,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     public isEditColumnsScopeSelectorEnabled(): boolean {
         return this._gridParameters.enableEditColumnsScopeSelector ?? false;
-    }
-
-    public isCustomColumnsEnabled(): boolean {
-        return !!this._customColumnsDataProvider;
-    }
-
-    public isCustomColumnCreationEnabled(): boolean {
-        return this.isCustomColumnsEnabled() && (this._gridParameters.enableCustomColumnCreation ?? false);
-    }
-
-    public isCustomColumnEditingEnabled(): boolean {
-        return this.isCustomColumnsEnabled() && (this._gridParameters.enableCustomColumnEditing ?? false);
-    }
-
-    public isCustomColumnDeletionEnabled(): boolean {
-        return this.isCustomColumnsEnabled() && (this._gridParameters.enableCustomColumnDeletion ?? false);
     }
 
     public isHideInactiveTasksToggleVisible(): boolean {
@@ -144,13 +125,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
             throw new Error(`Column "${parameters.column.name}" is marked as lookup-many, but no data provider was returned for it. Implement "onCreateLookupManyDataProvider" on your ITaskGridDescriptor.`);
         }
         return dataProvider;
-    }
-
-    public getCustomColumnsDataProvider() {
-        if (!this._customColumnsDataProvider) {
-            throw new Error('This TaskGridDatasetControl does not have a custom columns data provider!');
-        }
-        return this._customColumnsDataProvider;
     }
 
     public toggleFlatList(enabled: boolean) {
@@ -307,7 +281,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._dataProvider.destroy();
         this._savedQueryDataProvider.destroy();
         this._modules.userQueries?.provider.destroy();
-        this._customColumnsDataProvider?.destroy();
+        this._modules.customColumns?.provider.destroy();
         this._modules.templates?.provider.destroy();
     }
     public requestRemount(): void {
@@ -381,7 +355,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     private _registerEventListeners() {
         this._dataProvider.taskEvents.addEventListener('onError', (error, message) => this._onError(error, message));
-        this._customColumnsDataProvider?.events.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._modules.customColumns?.provider.events.addEventListener('onError', (error, message) => this._onError(error, message));
         this._modules.userQueries?.provider.events.addEventListener('onError', (error, message) => this._onError(error, message));
         this._dataProvider.addEventListener('onRecordsSelected', (ids) => this._onSelectedRecordsChanged(ids));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._dataProvider.setLoading(true));

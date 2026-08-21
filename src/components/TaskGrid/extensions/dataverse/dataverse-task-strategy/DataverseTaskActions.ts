@@ -11,7 +11,6 @@ import {
     Sanitizer,
 } from "@talxis/client-libraries";
 import {
-    ICustomColumnsDataProvider,
     IDeleteTasksResult,
     IOpenDatasetItemsResult,
     ITaskCreateParams,
@@ -19,6 +18,7 @@ import {
     ITaskMoveParams,
     ITaskTemplateExpansionParams,
 } from "@components/TaskGrid/providers";
+import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { StackRank } from "@components/TaskGrid/stack-rank";
 import { IDataverseFieldMapping } from "../DataverseTaskGridDescriptor";

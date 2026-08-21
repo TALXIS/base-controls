@@ -1,5 +1,6 @@
 import { DataTypes, IColumn } from "@talxis/client-libraries";
-import { ICustomColumnsDataProvider } from "../custom-columns/CustomColumnsDataProvider";
+//the types-only reference to the module - core depends on the type only, never the module's value exports
+import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";

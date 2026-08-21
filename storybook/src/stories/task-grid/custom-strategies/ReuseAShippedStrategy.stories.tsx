@@ -76,7 +76,7 @@ const descriptor = new DataverseTaskGridDescriptor({
 })
 \`\`\`
 
-Note what is *not* here: no \`onCreateCustomColumnsStrategy\`, so nothing reads \`talxis_attributedefinition\` and custom columns are off. Every optional feature works this way — the callback you leave out is the code you do not ship.
+Note what is *not* here: no \`customColumns\` module, so nothing reads \`talxis_attributedefinition\` and custom columns are off. Every optional feature works this way — the callback you leave out is the code you do not ship.
 
 ## Your own loader on MemoryTaskStrategy
 

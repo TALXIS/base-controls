@@ -5,7 +5,8 @@ import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { ISavedQueryDataProvider} from "../saved-query";
-import { ICustomColumnsDataProvider } from "../custom-columns";
+//the types-only reference to the module - core depends on the type only, never the module's value exports
+import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 
 export interface IFailedRecord {
     id: string;

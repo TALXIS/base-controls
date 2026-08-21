@@ -32,7 +32,7 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 | Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`onGetModules\` returns a \`templates\` module |
 | Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`onCreateLookupManyDataProvider\` returns one |
 | AG Grid customizer | yours | \`onCreateGridCustomizerStrategy\` returns one |
-| Custom columns | **nothing in-memory implements them** | only if \`onCreateCustomColumnsStrategy\` returns your own |
+| Custom columns | **nothing in-memory implements them** | only if \`onGetModules\` returns a \`customColumns\` module wrapping your own |
 
 Note the pattern in that last column: **a feature is on when you supply its implementation.** There are no flags for these — passing \`MemoryUserQueryStrategy\` is what enables personal views, and a consumer who never mentions it does not pay for the code in their bundle.
 
@@ -125,7 +125,7 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 | \`onCreateTaskStrategy\` | Returns the task strategy, and with it every task-level option. See [**Task options**](#task-options). |
 | \`onGetModules\` | Returns the feature modules. \`{ userQueries: createUserQueryModule({ strategy }) }\` turns personal views on; omit it for system views only. |
 | \`onGetModules\` | Returns the feature modules. \`{ templates: createTemplateModule({ provider }) }\` turns template-based creation on; omit the key to disable it. |
-| \`onCreateCustomColumnsStrategy\` | Returns a custom-columns strategy. Nothing in-memory ships, so this is the only way to switch the feature on here. |
+| \`onGetModules\` | Returns the feature modules. A \`customColumns\` module is the only way to switch that feature on here — nothing in-memory ships. |
 | \`onCreateLookupManyDataProvider\` | Returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
 | \`onCreateGridCustomizerStrategy\` | Supplies your own AG Grid customizer. |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
@@ -375,7 +375,7 @@ class MyTaskStrategy extends MemoryTaskStrategy {
 
 - **Insert cost is linear in the sibling count.** Creating or moving a task scans the task map for sibling ranks. Fine for the hundreds-to-low-thousands of rows the grid is built for; not a plan for six-figure task sets.
 - **No related-entity columns.** \`onGetAvailableRelatedColumns\` returns \`[]\`, so nothing reachable only through a relationship can be added to a view.
-- **No custom columns out of the box.** Nothing in-memory implements them, so \`onCreateCustomColumnsStrategy\` has to be yours.
+- **No custom columns out of the box.** Nothing in-memory implements them, so the \`customColumns\` module's strategy has to be yours.
 - **Nothing is persisted unless you persist it**, as above.
                 `.trim(),
             },
