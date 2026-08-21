@@ -109,8 +109,15 @@ export interface IMemoryTaskGridDescriptorInitializeResult {
 export interface IMemoryTaskGridDescriptorParams {
     /**
      * Resolves the records, the metadata, the field mapping, the system views and the grid parameters.
-     * Awaited once, before any strategy or data provider is created, so the work is covered by the
-     * grid's loading state.
+     * Awaited before any strategy or data provider is created, so the work is covered by the grid's
+     * loading state.
+     *
+     * Called again on every remount — same as `IDataverseTaskGridDescriptorParams.onInitialize` — so
+     * this is not a one-shot seed. Anything that must survive a remount (a personal-views array, the
+     * task records) is your own store: do the expensive/stateful part once behind a flag of your own,
+     * and return its current value on every call, keeping it current through explicit write-backs (a
+     * task strategy's `onDestroy`, a module provider's own events) rather than assuming this callback
+     * only ever runs once.
      */
     onInitialize: () => Promise<IMemoryTaskGridDescriptorInitializeResult>;
     /**
@@ -175,11 +182,11 @@ export interface IMemoryTaskGridDescriptorParams {
 export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     private _params: IMemoryTaskGridDescriptorParams;
     /**
-     * Resolved once and then kept — this is the extension's persistence layer. The collections inside
-     * it are mutated in place by the strategies, so everything the user does survives the remounts the
-     * grid performs.
+     * Whatever the last `onLoadDependencies()` call resolved — refreshed on every remount, not a
+     * persistence layer on its own. Anything that must survive a remount is the consumer's own store,
+     * kept current through explicit write-backs rather than by this descriptor skipping re-execution.
      */
-    private _initialized?: IMemoryTaskGridDescriptorInitializeResult;
+    private _initialized!: IMemoryTaskGridDescriptorInitializeResult;
 
     /** @param params — see {@link IMemoryTaskGridDescriptorParams}. */
     constructor(params: IMemoryTaskGridDescriptorParams) {
@@ -189,13 +196,11 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     // ── ITaskGridDescriptor ──────────────────────────────────────────────────
 
     /**
-     * The grid calls this again on every remount. Resolving only once is what makes the descriptor a
-     * persistence layer: re-running `onInitialize` would hand back fresh arrays and discard the session.
+     * The grid calls this again on every remount, and so does this method's own call to
+     * `onInitialize()` — same as `DataverseTaskGridDescriptor`. Persistence across those calls is
+     * `onInitialize`'s own job now, not something this method does for it.
      */
     public async onLoadDependencies(): Promise<void> {
-        if (this._initialized) {
-            return;
-        }
         const initialized = await this._params.onInitialize();
         if (initialized.systemQueries.length === 0) {
             throw new Error('MemoryTaskGridDescriptor requires at least one system query.');
@@ -259,9 +264,6 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     private _getData(): IMemoryTaskGridDescriptorInitializeResult {
-        if (!this._initialized) {
-            throw new Error('MemoryTaskGridDescriptor has not been initialized yet. The TaskGrid calls onLoadDependencies before any other hook.');
-        }
         return this._initialized;
     }
 }

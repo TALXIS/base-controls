@@ -130,18 +130,32 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 | \`modules.onGetLookupManyModule\` | \`() => createLookupManyModule({ createDataProvider })\` returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
-> **The \`onCreate*\` callbacks and every \`modules\` builder run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created. Since the hooks now live outside \`onInitialize\`, hold that data in the enclosing scope and assign it there:
+> **\`onInitialize\`, the \`onCreate*\` callbacks and every \`modules\` builder all run on every remount** — none of them is a one-shot. Guard the expensive/stateful part of \`onInitialize\` behind a flag of your own, so a remount reads the current store instead of re-fetching and discarding every view the user created since:
 >
 > \`\`\`ts
+> let isSeeded = false
 > let userQueries: ISavedQuery[] = []
 >
 > return new MemoryTaskGridDescriptor({
 >     onInitialize: async () => {
->         userQueries = await loadMyViews()
+>         if (!isSeeded) {
+>             userQueries = await loadMyViews()
+>             isSeeded = true
+>         }
 >         return { records, metadata, fieldMapping, systemQueries }
 >     },
 >     modules: {
->         onGetUserQueriesModule: () => createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) }),
+>         onGetUserQueriesModule: () => {
+>             const strategy = new MemoryUserQueryStrategy({ userQueries })
+>             const module = createUserQueryModule({ strategy })
+>             //write the strategy's current state back into the store on every mutation, rather
+>             //than relying on it mutating the array it was constructed with
+>             const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
+>             module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
+>             module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)
+>             module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore)
+>             return module
+>         },
 >     },
 > })
 > \`\`\`
@@ -325,13 +339,28 @@ StackRank.between(
 
 \`StackRank\` is exported, and it is the only thing that imports \`lexorank\` — a strategy that orders some other way never pulls it in.
 
-## The descriptor is the persistence layer
+## Persistence is your own store, not the descriptor's
 
-The grid rebuilds its whole control instance on every remount — switching a view does it, and so does saving one — which recreates every provider and strategy. None of them keeps data: they read and write the arrays they were handed, and what holds those arrays for the session is the descriptor's resolved \`onInitialize\` result plus whatever your \`onCreate*\` callbacks close over.
+The grid rebuilds its whole control instance on every remount — switching a view does it, and so does saving one — which recreates every provider and strategy, **and calls \`onInitialize\` again**. None of the providers or strategies keep data themselves: they read and write the arrays they were handed, and what holds those arrays for the session is a store *you* keep — closures outside the callback, kept current through explicit write-backs — not something the descriptor does for you by skipping re-execution.
 
 Two consequences worth knowing:
 
-- **Resolve once.** \`onInitialize\` is awaited a single time; later remounts reuse the resolved result. Returning fresh arrays on each call would be equivalent to wiping the database between renders.
+- **Seed once, behind a flag of your own.** \`onInitialize\` runs on every remount, so guard the expensive/stateful part (generating or fetching the seed) with your own flag, and return the *current* value of your store on every call — not a freshly generated one:
+
+\`\`\`ts
+let isSeeded = false
+let records: IRawRecord[] = []
+
+onInitialize: async () => {
+    if (!isSeeded) {
+        records = await fetchSeedRecords()
+        isSeeded = true
+    }
+    return { records, /* … */ }
+}
+\`\`\`
+
+  Returning fresh arrays on every call, with no such guard, is equivalent to wiping the database on every remount.
 - **Keep one descriptor** for as long as the session should last, and build it in \`useMemo\` (or outside the component) rather than inline in JSX:
 
 \`\`\`tsx
@@ -359,7 +388,18 @@ onInitialize: async () => {
 
 **Holding everything client-side is not a memory-strategy compromise — the grid requires it.** The hierarchy, the *hide inactive* toggle and the rank arithmetic all need the complete task set, so there is no server-side paging to opt into: \`TaskDataProvider\` reports its page size as the total record count, and the Dataverse strategy loads its FetchXML with \`loadAllRecords: true\`. Any strategy you write ends up doing the same thing. The memory descriptor just makes that explicit.
 
-**What it does not do is write back.** Every mutation lands in the arrays you passed and stops there — which is also the mechanism that makes persistence straightforward, because those arrays are yours. All three are written into rather than copied: tasks into the \`records\` you returned from \`onInitialize\`, a new view into the \`userQueries\` you gave \`MemoryUserQueryStrategy\`, a captured template into the \`templates.records\` you gave \`MemoryTemplateDataProvider\`. Persist them from where you own them, whenever suits you.
+**Getting a mutation back into your store is your job, and the mechanism differs per feature — pick the one that fits.** For task records, the seam is \`MemoryTaskStrategy\`'s \`onDestroy\` hook: it hands you the current raw data right before the provider is torn down, so \`onDestroy: params => records = params.rawData\` writes the store back on every remount. For a captured template, \`MemoryTemplateDataProvider\` mutates the exact \`templates\` object you constructed it with (\`templates.records.push(...)\`) — as long as \`onInitialize\` doesn't hand it a *new* object after the first seed, that direct write is enough. For personal views, prefer an explicit write-back over relying on \`MemoryUserQueryStrategy\` mutating the array you gave it: subscribe to the module provider's own events and pull the strategy's current state after each mutation —
+
+\`\`\`ts
+const strategy = new MemoryUserQueryStrategy({ userQueries })
+const module = createUserQueryModule({ strategy, enableQueryManager: true })
+const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
+module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
+module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)
+module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore)
+\`\`\`
+
+so the store is refreshed through an explicit contract rather than by assuming the strategy will always mutate the exact reference it was constructed with.
 
 For task mutations the finer-grained option is the strategy itself. To persist, subclass \`MemoryTaskStrategy\` and wrap the mutating hooks — they are prototype methods, so \`super\` works and the in-memory store stays in step with the server:
 

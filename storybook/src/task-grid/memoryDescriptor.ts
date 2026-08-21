@@ -34,9 +34,11 @@ interface ICreateMemoryTaskGridDescriptorOptions {
 }
 
 export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDescriptorOptions) => {
-    //resolved by onInitialize and read by the feature hooks below. The grid resolves the data before it
-    //builds any strategy, and holding these out here is what makes the views and templates the user
-    //creates survive a remount - the hooks run again on every one of them
+    //the store. onInitialize is called again on every remount, but the seed below only ever runs once -
+    //every later call just hands back whatever is currently in these variables, kept current by the
+    //write-backs next to the modules and the task strategy further down (onDestroy for records, events
+    //for user queries) rather than by this function never running again
+    let isSeeded = false;
     let lookupSources: { [columnName: string]: IMemoryEntitySource } = {};
     let templates: IMemoryTemplateSource;
     let userQueries: ISavedQuery[] = [];
@@ -44,81 +46,84 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     //them back through the strategy's onDestroy when it is torn down - which is what makes a task the
     //user created survive switching a view or applying Edit columns
     let records: IRawRecord[] = [];
+    let metadata: IMemoryTaskGridDescriptorInitializeResult['metadata'];
+    let fieldMapping: IMemoryTaskGridDescriptorInitializeResult['fieldMapping'];
+    let systemQueries: ISavedQuery[] = [];
+    let gridParameters: IMemoryTaskGridDescriptorInitializeResult['gridParameters'];
 
     const onInitialize = async (): Promise<IMemoryTaskGridDescriptorInitializeResult> => {
-        const [
-            {
-                PARENT_ID_COL,
-                STACK_RANK_COL,
-                STATE_CODE_COL,
-                SUBJECT_COL,
-                TASK_SOURCE,
-                TEMPLATE_SOURCE,
-                getQueryColumns,
-            },
-            { PEOPLE_SOURCE, TAGS_SOURCE },
-        ] = await Promise.all([
-            import('./memoryTaskData'),
-            import('./memoryLookupManyData'),
-        ]);
+        if (!isSeeded) {
+            const [
+                {
+                    PARENT_ID_COL,
+                    STACK_RANK_COL,
+                    STATE_CODE_COL,
+                    SUBJECT_COL,
+                    TASK_SOURCE,
+                    TEMPLATE_SOURCE,
+                    getQueryColumns,
+                },
+                { PEOPLE_SOURCE, TAGS_SOURCE },
+            ] = await Promise.all([
+                import('./memoryTaskData'),
+                import('./memoryLookupManyData'),
+            ]);
 
-        const allTasks: ISavedQuery = {
-            id: '00000000-0000-0000-0000-000000000000',
-            name: 'All Tasks',
-            isFlatListEnabled: false,
-            columns: getQueryColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
-            quickFindColumns: [SUBJECT_COL],
-        };
+            const allTasks: ISavedQuery = {
+                id: '00000000-0000-0000-0000-000000000000',
+                name: 'All Tasks',
+                isFlatListEnabled: false,
+                columns: getQueryColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
+                quickFindColumns: [SUBJECT_COL],
+            };
 
-        const myOpenTasks: ISavedQuery = {
-            id: 'uq-default-01-0000-0000-000000000000',
-            name: 'My Open Tasks',
-            isFlatListEnabled: false,
-            columns: getQueryColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
-            filtering: {
-                filterOperator: FILTER_OPERATOR_AND,
-                conditions: [{
-                    attributeName: STATE_CODE_COL,
-                    conditionOperator: Operators.GetValueFromName('eq'),
-                    value: ACTIVE_STATE_CODE,
-                }],
-            },
-            quickFindColumns: [SUBJECT_COL],
-        };
+            const myOpenTasks: ISavedQuery = {
+                id: 'uq-default-01-0000-0000-000000000000',
+                name: 'My Open Tasks',
+                isFlatListEnabled: false,
+                columns: getQueryColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
+                filtering: {
+                    filterOperator: FILTER_OPERATOR_AND,
+                    conditions: [{
+                        attributeName: STATE_CODE_COL,
+                        conditionOperator: Operators.GetValueFromName('eq'),
+                        value: ACTIVE_STATE_CODE,
+                    }],
+                },
+                quickFindColumns: [SUBJECT_COL],
+            };
 
-        const highPriority: ISavedQuery = {
-            id: 'uq-default-02-0000-0000-000000000000',
-            name: 'High Priority',
-            isFlatListEnabled: false,
-            columns: getQueryColumns('subject', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
-            filtering: {
-                filterOperator: FILTER_OPERATOR_AND,
-                conditions: [{
-                    attributeName: 'priority',
-                    conditionOperator: Operators.GetValueFromName('eq'),
-                    value: HIGH_PRIORITY,
-                }],
-            },
-            quickFindColumns: [SUBJECT_COL],
-        };
+            const highPriority: ISavedQuery = {
+                id: 'uq-default-02-0000-0000-000000000000',
+                name: 'High Priority',
+                isFlatListEnabled: false,
+                columns: getQueryColumns('subject', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
+                filtering: {
+                    filterOperator: FILTER_OPERATOR_AND,
+                    conditions: [{
+                        attributeName: 'priority',
+                        conditionOperator: Operators.GetValueFromName('eq'),
+                        value: HIGH_PRIORITY,
+                    }],
+                },
+                quickFindColumns: [SUBJECT_COL],
+            };
 
-        userQueries = [myOpenTasks, highPriority];
-        templates = structuredClone(TEMPLATE_SOURCE);
-        lookupSources = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE };
-
-        return {
+            userQueries = [myOpenTasks, highPriority];
+            templates = structuredClone(TEMPLATE_SOURCE);
+            lookupSources = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE };
             //cloned per descriptor: sharing the module-level fixtures would let the grids on different
             //doc pages fight over one dataset. A generated dataset is already private to this call.
-            records: records = await options?.onGetRecords?.() ?? structuredClone(TASK_SOURCE.records),
-            metadata: TASK_SOURCE.metadata,
-            fieldMapping: {
+            records = await options?.onGetRecords?.() ?? structuredClone(TASK_SOURCE.records);
+            metadata = TASK_SOURCE.metadata;
+            fieldMapping = {
                 subject: SUBJECT_COL,
                 parentId: PARENT_ID_COL,
                 stackRank: STACK_RANK_COL,
                 stateCode: STATE_CODE_COL,
-            },
-            systemQueries: [allTasks],
-            gridParameters: {
+            };
+            systemQueries = [allTasks];
+            gridParameters = {
                 enableTaskCreation: true,
                 enableHideInactiveTasksToggle: true,
                 enableShowHierarchyToggle: true,
@@ -132,8 +137,12 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 enableViewSwitcher: true,
                 enableSorting: true,
                 enableFiltering: true,
-            },
-        };
+            };
+            isSeeded = true;
+        }
+        //every later call reads the current store - kept in sync by the write-backs below, not by this
+        //function never running again
+        return { records, metadata, fieldMapping, systemQueries, gridParameters };
     };
 
     return new MemoryTaskGridDescriptor({
@@ -145,12 +154,23 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
         //personal views go one step further: importing createUserQueryModule is what brings the view
         //manager and the save dialogs, so a grid that never registers the module does not ship them
         modules: {
-            onGetUserQueriesModule: () => createUserQueryModule({
-                strategy: new MemoryUserQueryStrategy({ userQueries }),
-                enableQueryManager: true,
-                enableSaveAsNewQuery: true,
-                enableSaveQueryChanges: true,
-            }),
+            onGetUserQueriesModule: () => {
+                const strategy = new MemoryUserQueryStrategy({ userQueries });
+                const module = createUserQueryModule({
+                    strategy,
+                    enableQueryManager: true,
+                    enableSaveAsNewQuery: true,
+                    enableSaveQueryChanges: true,
+                });
+                //write the strategy's current state back into the store on every mutation, instead of
+                //relying on it mutating the array we handed it - an explicit contract survives the
+                //strategy changing how it stores things internally; a shared reference would not
+                const syncStore = async () => { userQueries = await strategy.onGetUserQueries(); };
+                module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore);
+                module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore);
+                module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore);
+                return module;
+            },
             onGetTemplatesModule: () => createTemplateModule({
                 provider: new MemoryTemplateDataProvider({ templates }),
             }),

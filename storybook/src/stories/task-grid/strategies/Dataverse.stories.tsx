@@ -254,7 +254,7 @@ Note what this does *not* cover: rows excluded by the view's own FetchXML are ne
 
 ## One difference from the memory descriptor
 
-\`onLoadDependencies\` re-runs your \`onInitialize\` on **every remount** — and the grid remounts when a view changes or a record is saved — re-fetching the project and source records each time. Keep that callback idempotent and cheap; do not treat it as session state the way the memory descriptor's cached one can be treated. The same applies to the \`onCreate*\` callbacks: they run per control instance, so anything stateful behind them has to live outside.
+\`onLoadDependencies\` re-runs your \`onInitialize\` on **every remount** — and the grid remounts when a view changes or a record is saved — re-fetching the project and source records each time. Keep that callback idempotent and cheap; do not treat it as session state. The memory descriptor's \`onInitialize\` re-runs on every remount too — anything that must survive one is your own store, kept current through explicit write-backs, not through the descriptor skipping re-execution for you. The same applies to the \`onCreate*\` callbacks: they run per control instance, so anything stateful behind them has to live outside.
 
 The only hook this descriptor has no parameter for is \`onGetControlId\` — the grid generates a UUID instead. Everything else is either wired natively or opt-in above; if you need to change what one of the native pieces does, see [**Custom strategies → Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
                 `.trim(),

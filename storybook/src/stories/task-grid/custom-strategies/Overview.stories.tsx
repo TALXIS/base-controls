@@ -81,7 +81,7 @@ Every flag in \`ITaskGridParameters\` defaults to \`false\` when \`onGetGridPara
 | \`onCreateTaskStrategy\` | ✅ | ✅ |
 | \`onCreateSavedQueryStrategy\` | ✅ from \`systemQueries\` | ✅ from \`systemQueries\` |
 | \`modules.onGetUserQueriesModule\` | ✅ your param → \`MemoryUserQueryStrategy\` | ✅ your param → \`DataverseUserQueryStrategy\` |
-| \`onLoadDependencies\` | ✅ resolves once, cached | ✅ re-runs on every remount |
+| \`onLoadDependencies\` | ✅ re-runs on every remount | ✅ re-runs on every remount |
 | \`onGetHeight\` | ✅ | ✅ |
 | \`onGetGridParameters\` | ✅ | ✅ |
 | \`modules.onGetTemplatesModule\` | ✅ your param → \`MemoryTemplateDataProvider\` | ✅ your param; nothing Dataverse-side ships |
