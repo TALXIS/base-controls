@@ -217,8 +217,19 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     /**
      * The feature modules the descriptor contributed, resolved once when this control was built. A missing
      * key means that feature is off — there is no separate flag.
+     *
+     * Use this where the feature is genuinely optional, such as deciding whether to offer its commands.
+     * Where the caller only exists *because* the module does, prefer {@link getModule}.
      */
     getModules: () => ITaskGridModules;
+    /**
+     * Returns a registered module by key, non-optional.
+     *
+     * For code that only runs when the module is present — its own UI, for instance — where narrowing an
+     * optional on every line says nothing a reader does not already know.
+     * @throws If that module was not registered.
+     */
+    getModule: <TKey extends keyof ITaskGridModules>(key: TKey) => NonNullable<ITaskGridModules[TKey]>;
     /** Whether custom column creation is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnCreation`. */
     isCustomColumnCreationEnabled: () => boolean;
     /** Whether custom column editing is enabled: a custom-columns strategy was supplied **and** `ITaskGridParameters.enableCustomColumnEditing`. */

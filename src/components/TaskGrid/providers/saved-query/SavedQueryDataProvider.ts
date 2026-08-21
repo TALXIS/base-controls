@@ -1,31 +1,11 @@
-import { DataTypes, EventEmitter, IColumn, IEventEmitter, IFetchXmlDataProviderColumn } from "@talxis/client-libraries";
-import { ITaskDataProvider } from "../task";
+import { DataTypes, IColumn } from "@talxis/client-libraries";
 import { ICustomColumnsDataProvider } from "../custom-columns/CustomColumnsDataProvider";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
-import { ErrorHelper, ILocalizationService } from "@utils";
+import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
+//the contract only - the implementation lives in the user-queries module
+import { IUserQueryDataProvider } from "@components/TaskGrid/modules/interfaces";
 
-
-export interface ICreateUserQueryParams {
-    name: string;
-    provider: ITaskDataProvider;
-    description?: string;
-}
-
-export interface IUpdateUserQueryParams {
-    queryId: string;
-    queryMetadata: ISavedQueryMetadata;
-}
-
-export interface ISavedQueryDataProviderEvents {
-    onBeforeUserQueriesDeleted: (queryIds: string[]) => void;
-    onAfterUserQueriesDeleted: (result: IDeletedUserQueriesResult) => void;
-    onBeforeUserQueryUpdated: (queryId: string) => void;
-    onAfterUserQueryUpdated: (result: string | null) => void;
-    onBeforeUserQueryCreated: (queryName: string) => void;
-    onAfterUserQueryCreated: (result: string | null) => void;
-    onError: (error: any, message: string) => void;
-}
 
 export type IDeletedUserQueriesResult = { success: true; deletedQueryIds: string[] } | { success: false; deletedQueryIds: string[]; errors: { queryId: string; error: any }[] };
 
@@ -72,45 +52,32 @@ export interface ISavedQueryStrategy {
     onGetSystemQueries: () => Promise<ISavedQuery[]>;
 }
 
-/** Manages system and user-defined saved views and exposes view lifecycle operations. */
+/** Serves the system views, tracks which view is active, and normalises every view's columns. */
 export interface ISavedQueryDataProvider {
-    /** EventEmitter for saved-query lifecycle events (create, update, delete, errors). */
-    queryEvents: IEventEmitter<ISavedQueryDataProviderEvents>;
     /** Returns the full list of non-deletable system views. */
     getSystemQueries: () => ISavedQuery[];
-    /** Returns the full list of user-created views. */
+    /**
+     * Returns the user's personal views, or `[]` when no user-queries module is registered. Read from the
+     * module's provider, so it never holds a second copy of the list.
+     */
     getUserQueries: () => ISavedQuery[];
     /** Returns the currently active saved query. Throws if `refresh` has not been called yet. */
     getCurrentQuery: () => ISavedQuery;
     /** Looks up a query by id across system and user queries. Throws if not found. */
     getSavedQuery(id: string): ISavedQuery;
-    /** @returns The created query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    createUserQuery: (params: ICreateUserQueryParams) => Promise<string | null>;
-    /** Returns `true` when the given query id belongs to a user view (as opposed to a system view). */
-    isUserQuery: (queryId: string) => boolean;
-    /** Captures the grid's current columns, filters and sorting into the active user view and persists it. */
-    updateCurrentUserQueryFromGridState: (provider: ITaskDataProvider) => Promise<string | null>;
-    /** Deletes the specified user views. Returns a per-query success/failure result. */
-    deleteUserQueries: (queryIds: string[]) => Promise<IDeletedUserQueriesResult>;
-    /** The personal-views implementation behind the saved-query strategy, if there is one. */
-    readonly userQuery: IUserQueryStrategy | undefined;
-    /** Returns `true` when the saved-query strategy supplied an {@link IUserQueryStrategy}. */
-    isUserQueriesEnabled: () => boolean;
-    /** @returns The updated query id, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    updateUserQuery: (query: ISavedQuery) => Promise<string | null>;
-    /** Fetches system and user queries from the strategy and sets the initial active query. */
+    /** Fetches system and user queries and sets the initial active query. */
     refresh: () => Promise<void>;
-
-    /** Disposes event listeners and releases all resources held by the provider. */
+    /** Releases the resources held by the provider. */
     destroy: () => void;
 }
 
 interface ISavedQueryDataProviderParameters {
     /**
-     * The personal-views implementation, from the descriptor's user-queries module. Absent
-     * means the user-queries feature is off: no *My views*, no save commands and no view manager.
+     * The personal-views provider, from the descriptor's user-queries module. Absent means the feature is
+     * off: no *My views*, no save commands and no view manager. Only the list is read from it here — every
+     * operation on those views belongs to the module.
      */
-    userQueryStrategy?: IUserQueryStrategy;
+    userQueryProvider?: IUserQueryDataProvider;
     nativeColumns: INativeColumns;
     localizationService: ILocalizationService<ITaskGridLabels>;
     customColumnsDataProvider?: ICustomColumnsDataProvider;
@@ -119,20 +86,18 @@ interface ISavedQueryDataProviderParameters {
 
 export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _strategy: ISavedQueryStrategy
-    private _userQuery?: IUserQueryStrategy;
+    private _userQueryProvider?: IUserQueryDataProvider;
     private _systemQueries: ISavedQuery[] = [];
     private _currentQuery?: ISavedQuery;
-    private _userQueries: ISavedQuery[] = [];
     private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _nativeColumns: INativeColumns;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _systemQueriesColumnsMap: Map<string, IColumn> = new Map();
     private _preferredQuery?: Partial<ISavedQuery> & { id: string };
-    public queryEvents = new EventEmitter<ISavedQueryDataProviderEvents>();
 
     constructor(strategy: ISavedQueryStrategy, parameters: ISavedQueryDataProviderParameters) {
         this._strategy = strategy;
-        this._userQuery = parameters.userQueryStrategy;
+        this._userQueryProvider = parameters.userQueryProvider;
         this._preferredQuery = parameters.preferredQuery;
         this._nativeColumns = parameters.nativeColumns;
         this._customColumnsDataProvider = parameters.customColumnsDataProvider;
@@ -144,7 +109,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     }
 
     public getUserQueries(): ISavedQuery[] {
-        return this._userQueries;
+        return this._userQueryProvider?.getQueries() ?? [];
     }
 
     public getCurrentQuery(): ISavedQuery {
@@ -154,102 +119,27 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         return this._currentQuery;
     }
 
-    public get userQuery(): IUserQueryStrategy | undefined {
-        return this._userQuery;
-    }
-
-    public isUserQueriesEnabled(): boolean {
-        return !!this.userQuery;
-    }
-
-    public isUserQuery(queryId: string): boolean {
-        return this.userQuery?.onIsUserQuery(queryId) ?? false;
-    }
-
     public getSavedQuery(id: string): ISavedQuery {
-        const query = [...this._systemQueries, ...this._userQueries].find(q => q.id === id);
+        const query = [...this._systemQueries, ...this.getUserQueries()].find(q => q.id === id);
         if (!query) {
             throw new Error(`Query with id ${id} not found. Make sure to call refresh() and wait for it to complete before accessing the saved query.`);
         }
         return query;
     }
 
-    public async updateUserQuery(query: ISavedQuery): Promise<string | null> {
-        this.queryEvents.dispatchEvent('onBeforeUserQueryUpdated', query.id);
-        return ErrorHelper.executeWithErrorHandling({
-            operation: async () => {
-                const result = await this._requireUserQuery().onUpdateUserQuery(query);
-                this.queryEvents.dispatchEvent('onAfterUserQueryUpdated', result);
-                return result;
-            },
-            onError: (error, message) => this.queryEvents.dispatchEvent('onError', error, message)
-        })
-    }
-
-    public async updateCurrentUserQueryFromGridState(provider: ITaskDataProvider): Promise<string | null> {
-        return this.updateUserQuery({
-            ...this.getCurrentQuery(),
-            ...this._getMetadataForSavedQuery(provider)
-        });
-    }
-
-    public async createUserQuery(params: ICreateUserQueryParams): Promise<string | null> {
-        const { name, description, provider } = params;
-        this.queryEvents.dispatchEvent('onBeforeUserQueryCreated', name);
-        return ErrorHelper.executeWithErrorHandling({
-            operation: async () => {
-                const result = await this._requireUserQuery().onCreateUserQuery({
-                    name: name,
-                    description: description,
-                }, {
-                    ...this.getCurrentQuery(),
-                    ...this._getMetadataForSavedQuery(provider)
-                })
-                this.queryEvents.dispatchEvent('onAfterUserQueryCreated', result);
-                return result;
-            },
-            onError: (error, message) => this.queryEvents.dispatchEvent('onError', error, message)
-        })
-    }
-
-    public async deleteUserQueries(queryIds: string[]): Promise<IDeletedUserQueriesResult> {
-        this.queryEvents.dispatchEvent('onBeforeUserQueriesDeleted', queryIds);
-        return ErrorHelper.executeWithErrorHandling({
-            operation: async () => {
-                const result = await this._requireUserQuery().onDeleteUserQueries(queryIds);
-                //drop them here too, so getUserQueries() does not keep serving deleted views until a refresh
-                this._userQueries = this._userQueries.filter(query => !result.deletedQueryIds.includes(query.id));
-                this.queryEvents.dispatchEvent('onAfterUserQueriesDeleted', result);
-                return result;
-            },
-            onError: (error, message) => this.queryEvents.dispatchEvent('onError', error, message)
-        })
-    }
-
     public async destroy() {
-        this.queryEvents.clearEventListeners();
-    }
-
-    //called from inside the ErrorHelper operations, so an exotic strategy surfaces the grid's own
-    //error dialog instead of an unhandled rejection
-    private _requireUserQuery(): IUserQueryStrategy {
-        const userQueryStrategy = this.userQuery;
-        if (!userQueryStrategy) {
-            throw new Error('The user queries feature is off: the saved query strategy has no user query strategy behind it.');
-        }
-        return userQueryStrategy;
+        //the module's provider owns its own listeners and is destroyed with it
     }
 
     public async refresh() {
         const systemQueries = await this._strategy.onGetSystemQueries();
-        const userQueries = await this.userQuery?.onGetUserQueries() ?? [];
+        const userQueries = await this._userQueryProvider?.refresh() ?? [];
         if (systemQueries.length === 0) {
             throw new Error('At least one system query is required');
         }
         this._includePathColumn(systemQueries[0].columns);
         const allQueries = [...systemQueries, ...userQueries];
-        this._systemQueries = systemQueries
-        this._userQueries = userQueries;
+        this._systemQueries = systemQueries;
 
         const systemQueryColumnEntries = systemQueries.flatMap(
             query => query.columns.map(col => [col.name, col] as [string, IColumn])
@@ -333,39 +223,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         }
         return columns;
     }
-
-    private _getMetadataForSavedQuery(provider: ITaskDataProvider): ISavedQueryMetadata {
-        return {
-            sorting: provider.getSorting(),
-            filtering: provider.getFiltering() ?? undefined,
-            linking: provider.getLinking(),
-            searchQuery: provider.getSearchQuery(),
-            isFlatListEnabled: provider.isFlatListEnabled(),
-            quickFindColumns: provider.getQuickFindColumns().map(col => col.name),
-            columns: [
-                ...provider.getColumns().map((col: any) => {
-                    const newCol = {
-                        name: col.name,
-                        isHidden: col.isHidden,
-                        dataType: col.dataType,
-                        order: col.order,
-                        visualSizeFactor: col.visualSizeFactor,
-                        metadata: {}
-                    }
-                    this._addPropToMetadataQueryCol(newCol, 'isVirtual', col.isVirtual);
-                    this._addPropToMetadataQueryCol(newCol, 'autoHeight', col.autoHeight);
-                    return newCol;
-                })
-            ]
-        }
-    }
-
-    private _addPropToMetadataQueryCol(col: IFetchXmlDataProviderColumn, propName: keyof IColumn, propValue: any) {
-        if (propValue != undefined) {
-            (col as any)[propName] = propValue;
-        }
-    }
-
 
     private _parseSavedQueryMetadata(metadata: ISavedQueryMetadata): ISavedQueryMetadata {
         const parsed = metadata;

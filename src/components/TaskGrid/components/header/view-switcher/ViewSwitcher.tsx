@@ -24,10 +24,10 @@ export const ViewSwitcher = () => {
     const [showCreateViewDialog, setShowCreateViewDialog] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
 
-    useEventEmitter(savedQueryDataProvider.queryEvents, 'onBeforeUserQueryUpdated', () => {
+    useEventEmitter(userQueriesModule?.provider.events, 'onBeforeUserQueryUpdated', () => {
         setIsLoading(true);
     });
-    useEventEmitter(savedQueryDataProvider.queryEvents, 'onAfterUserQueryUpdated', () => {
+    useEventEmitter(userQueriesModule?.provider.events, 'onAfterUserQueryUpdated', () => {
         setIsLoading(false);
     });
 
@@ -75,12 +75,12 @@ export const ViewSwitcher = () => {
                     iconProps: { iconName: 'SaveAs' },
                     onClick: () => setShowCreateViewDialog(true)
                 }] : []),
-                ...(savedQueryDataProvider.isUserQuery(currentQuery.id) && isSaveEnabled ? [{
+                ...(userQueriesModule?.provider.isUserQuery(currentQuery.id) && isSaveEnabled ? [{
                     key: 'saveExistingView',
                     text: localizationService.getLocalizedString('saveExisting'),
                     iconProps: { iconName: 'Save' },
                     onClick: async () => {
-                        savedQueryDataProvider.updateCurrentUserQueryFromGridState(taskDataProvider);
+                        userQueriesModule?.provider.updateFromGridState(currentQuery, taskDataProvider);
                     }
                 }] : []),
                 ...(isViewManagerEnabled ? [

@@ -37,7 +37,7 @@ export class TaskGridDatasetControlFactory {
         const savedQueryStrategy = parameters.taskGridDescriptor.onCreateSavedQueryStrategy();
         const savedQueryDataProvider = new SavedQueryDataProvider(savedQueryStrategy, {
             //no user-queries module means personal views are off
-            userQueryStrategy: modules.userQueries?.strategy,
+            userQueryProvider: modules.userQueries?.provider,
             localizationService: parameters.localizationService,
             nativeColumns: { ...parameters.taskGridDescriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME },
             customColumnsDataProvider: customColumnsDataProvider,

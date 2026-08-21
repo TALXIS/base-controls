@@ -1,0 +1,124 @@
+import { EventEmitter, IColumn, IFetchXmlDataProviderColumn } from "@talxis/client-libraries";
+import { ErrorHelper } from "@utils";
+import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryMetadata, IUserQueryStrategy } from "@components/TaskGrid/providers/saved-query";
+import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
+import { ICreateUserQueryParams, IUserQueryDataProvider, IUserQueryDataProviderEvents } from "../interfaces";
+
+/**
+ * Wraps an {@link IUserQueryStrategy} with everything the grid needs around it: the lifecycle events, the
+ * error handling that turns a failing strategy into the grid's own error dialog rather than an unhandled
+ * rejection, the cached list of views, and the capture of the grid's current state into a view.
+ *
+ * The strategy is required, which is what removes a whole class of "the feature is off" guards: there is no
+ * instance of this class unless personal views exist.
+ */
+export class UserQueryDataProvider implements IUserQueryDataProvider {
+    private _strategy: IUserQueryStrategy;
+    private _queries: ISavedQuery[] = [];
+    public events = new EventEmitter<IUserQueryDataProviderEvents>();
+
+    constructor(strategy: IUserQueryStrategy) {
+        this._strategy = strategy;
+    }
+
+    public getQueries(): ISavedQuery[] {
+        return this._queries;
+    }
+
+    public isUserQuery(queryId: string): boolean {
+        return this._strategy.onIsUserQuery(queryId);
+    }
+
+    public async refresh(): Promise<ISavedQuery[]> {
+        this._queries = await this._strategy.onGetUserQueries();
+        return this._queries;
+    }
+
+    public async create(params: ICreateUserQueryParams): Promise<string | null> {
+        const { name, description, currentQuery, provider } = params;
+        this.events.dispatchEvent('onBeforeUserQueryCreated', name);
+        return ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                const result = await this._strategy.onCreateUserQuery({
+                    name: name,
+                    description: description,
+                }, {
+                    ...currentQuery,
+                    ...this._getMetadataForSavedQuery(provider)
+                });
+                this.events.dispatchEvent('onAfterUserQueryCreated', result);
+                return result;
+            },
+            onError: (error, message) => this.events.dispatchEvent('onError', error, message)
+        })
+    }
+
+    public async update(query: ISavedQuery): Promise<string | null> {
+        this.events.dispatchEvent('onBeforeUserQueryUpdated', query.id);
+        return ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                const result = await this._strategy.onUpdateUserQuery(query);
+                this.events.dispatchEvent('onAfterUserQueryUpdated', result);
+                return result;
+            },
+            onError: (error, message) => this.events.dispatchEvent('onError', error, message)
+        })
+    }
+
+    public async updateFromGridState(currentQuery: ISavedQuery, provider: ITaskDataProvider): Promise<string | null> {
+        return this.update({
+            ...currentQuery,
+            ...this._getMetadataForSavedQuery(provider)
+        });
+    }
+
+    public async delete(queryIds: string[]): Promise<IDeletedUserQueriesResult> {
+        this.events.dispatchEvent('onBeforeUserQueriesDeleted', queryIds);
+        return ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                const result = await this._strategy.onDeleteUserQueries(queryIds);
+                //drop them here too, so getQueries() does not keep serving deleted views until a refresh
+                this._queries = this._queries.filter(query => !result.deletedQueryIds.includes(query.id));
+                this.events.dispatchEvent('onAfterUserQueriesDeleted', result);
+                return result;
+            },
+            onError: (error, message) => this.events.dispatchEvent('onError', error, message)
+        })
+    }
+
+    public destroy() {
+        this.events.clearEventListeners();
+    }
+
+    private _getMetadataForSavedQuery(provider: ITaskDataProvider): ISavedQueryMetadata {
+        return {
+            sorting: provider.getSorting(),
+            filtering: provider.getFiltering() ?? undefined,
+            linking: provider.getLinking(),
+            searchQuery: provider.getSearchQuery(),
+            isFlatListEnabled: provider.isFlatListEnabled(),
+            quickFindColumns: provider.getQuickFindColumns().map(col => col.name),
+            columns: [
+                ...provider.getColumns().map((col: any) => {
+                    const newCol = {
+                        name: col.name,
+                        isHidden: col.isHidden,
+                        dataType: col.dataType,
+                        order: col.order,
+                        visualSizeFactor: col.visualSizeFactor,
+                        metadata: {}
+                    }
+                    this._addPropToMetadataQueryCol(newCol, 'isVirtual', col.isVirtual);
+                    this._addPropToMetadataQueryCol(newCol, 'autoHeight', col.autoHeight);
+                    return newCol;
+                })
+            ]
+        }
+    }
+
+    private _addPropToMetadataQueryCol(col: IFetchXmlDataProviderColumn, propName: keyof IColumn, propValue: any) {
+        if (propValue != undefined) {
+            (col as any)[propName] = propValue;
+        }
+    }
+}

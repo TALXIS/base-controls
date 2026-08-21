@@ -128,8 +128,16 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._modules;
     }
 
+    public getModule<TKey extends keyof ITaskGridModules>(key: TKey): NonNullable<ITaskGridModules[TKey]> {
+        const module = this._modules[key];
+        if (!module) {
+            throw new Error(`This TaskGridDatasetControl does not have the ${key} module. Return it from the descriptor's onGetModules to enable the feature.`);
+        }
+        return module as NonNullable<ITaskGridModules[TKey]>;
+    }
+
     public isUserQueriesEnabled(): boolean {
-        return this._savedQueryDataProvider.isUserQueriesEnabled();
+        return !!this._modules.userQueries;
     }
 
     public getSavedQueryDataProvider() {
@@ -312,6 +320,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this.saveState();
         this._dataProvider.destroy();
         this._savedQueryDataProvider.destroy();
+        this._modules.userQueries?.provider.destroy();
         this._customColumnsDataProvider?.destroy();
         this._templateDataProvider?.destroy();
     }
@@ -387,7 +396,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     private _registerEventListeners() {
         this._dataProvider.taskEvents.addEventListener('onError', (error, message) => this._onError(error, message));
         this._customColumnsDataProvider?.events.addEventListener('onError', (error, message) => this._onError(error, message));
-        this._savedQueryDataProvider.queryEvents.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._modules.userQueries?.provider.events.addEventListener('onError', (error, message) => this._onError(error, message));
         this._dataProvider.addEventListener('onRecordsSelected', (ids) => this._onSelectedRecordsChanged(ids));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksDeleted', (result) => this._onAfterTasksDeleted(result));
@@ -400,8 +409,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._dataProvider.taskEvents.addEventListener('onAfterTaskMoved', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeDatasetItemsOpened', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterDatasetItemsOpened', () => this._dataProvider.setLoading(false));
-        this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
-        this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryUpdated', (result) => this._dataProvider.setLoading(false));
+        this._modules.userQueries?.provider.events.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
+        this._modules.userQueries?.provider.events.addEventListener('onAfterUserQueryUpdated', (result) => this._dataProvider.setLoading(false));
     }
 
     private _onError = (error: any, message: string) => {

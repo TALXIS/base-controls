@@ -8,7 +8,7 @@ import { useTheme } from "@fluentui/react";
 import { getDatasetControlStyles } from "./styles";
 import { Grid } from "./components/grid";
 import { IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProvider, ITaskDataProviderEventListener } from "./providers/task";
-import { IDeletedUserQueriesResult, ISavedQueryDataProviderEvents } from "./providers/saved-query";
+import { IDeletedUserQueriesResult } from "./providers/saved-query";
 import { ITemplateDataProviderEvents } from "./providers/template";
 import { ITaskGridLabels } from "./labels";
 import { TASK_GRID_LABELS } from "./labels";

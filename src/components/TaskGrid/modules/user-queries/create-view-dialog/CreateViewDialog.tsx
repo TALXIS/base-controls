@@ -4,7 +4,7 @@ import * as React from "react";
 import { withButtonLoading } from '@legacy';
 import { useDatasetControl, useLocalizationService, usePcfContext } from "@components/TaskGrid/context";
 import { useEventEmitter } from "@hooks";
-import { ISavedQueryDataProvider, ISavedQueryDataProviderEvents } from "@components/TaskGrid/providers";
+import { IUserQueryDataProvider, IUserQueryDataProviderEvents } from "../../interfaces";
 
 interface ICreateViewDialog {
     onDismiss: () => void;
@@ -18,24 +18,28 @@ export const CreateViewDialog = (props: ICreateViewDialog) => {
     const datasetControl = useDatasetControl();
     const savedQueryDataProvider = datasetControl.getSavedQueryDataProvider();
     const currentQuery = savedQueryDataProvider.getCurrentQuery();
+    //this dialog is only ever rendered by the module that owns this provider, so require it rather than
+    //narrowing an optional the caller cannot actually be without
+    const userQueryProvider = datasetControl.getModule('userQueries').provider;
     const [name, setName] = React.useState<string>(currentQuery.name);
     const [description, setDescription] = React.useState<string>("");
     const [isSaving, setIsSaving] = React.useState<boolean>(false);
     const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
-    useEventEmitter<ISavedQueryDataProviderEvents>(savedQueryDataProvider.queryEvents, 'onBeforeUserQueryCreated', () => {
+    useEventEmitter<IUserQueryDataProviderEvents>(userQueryProvider.events, 'onBeforeUserQueryCreated', () => {
         setIsSaving(true);
         setErrorMessage(null);
     })
-    useEventEmitter<ISavedQueryDataProviderEvents>(savedQueryDataProvider.queryEvents, 'onError', (error, errorMessage) => {
+    useEventEmitter<IUserQueryDataProviderEvents>(userQueryProvider.events, 'onError', (error, errorMessage) => {
         setIsSaving(false);
         setErrorMessage(errorMessage ?? '');
     });
 
     const onSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        savedQueryDataProvider.createUserQuery({
+        userQueryProvider.create({
             name: name,
             description: description,
+            currentQuery: currentQuery,
             provider: datasetControl.getDataProvider()
         });
     }

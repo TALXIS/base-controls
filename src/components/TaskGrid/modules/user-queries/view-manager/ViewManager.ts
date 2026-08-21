@@ -4,6 +4,7 @@ import { ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { IDeletedUserQueriesResult, ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
+import { IUserQueryDataProvider } from "../../interfaces";
 import { ErrorHelper } from "@utils";
 
 //the manager's grid runs on a synthetic entity projected from the views the grid already loaded
@@ -15,7 +16,10 @@ export class ViewManager {
     private _taskGridDatasetControl: ITaskGridDatasetControl;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _savedQueryDataProvider: ISavedQueryDataProvider;
-    private _userQueryDataProvider: MemoryDataProvider;
+    private _userQueryProvider: IUserQueryDataProvider;
+    //the synthetic entity this dialog's own grid runs on, projected from the views - not to be confused
+    //with _userQueryProvider, which is the real thing
+    private _viewsDataProvider: MemoryDataProvider;
     private _datasetControl: IDatasetControl;
     private _shouldRemountOnDismiss: boolean = false;
 
@@ -24,9 +28,11 @@ export class ViewManager {
         this._taskGridDatasetControl = taskGridDatasetControl
         this._localizationService = taskGridDatasetControl.getLocalizationService();
         this._savedQueryDataProvider = taskGridDatasetControl.getSavedQueryDataProvider();
-        this._userQueryDataProvider = this._createUserQueryDataProvider();
-        this._userQueryDataProvider.setInterceptor('onRetrieveRecordCommand', (parameters, defaultAction) => this._onRetrieveRecordCommand(parameters, defaultAction));
-        const dataset = new Dataset(this._userQueryDataProvider);
+        //the manager is only reachable from the module that owns this provider
+        this._userQueryProvider = taskGridDatasetControl.getModule('userQueries').provider;
+        this._viewsDataProvider = this._createViewsDataProvider();
+        this._viewsDataProvider.setInterceptor('onRetrieveRecordCommand', (parameters, defaultAction) => this._onRetrieveRecordCommand(parameters, defaultAction));
+        const dataset = new Dataset(this._viewsDataProvider);
         this._datasetControl = this._createDatasetControl(dataset);
         this._registerEventListeners();
     }
@@ -40,9 +46,9 @@ export class ViewManager {
     }
 
     //edits are persisted through the saved query provider, so nothing here knows about the backend
-    private _createUserQueryDataProvider(): MemoryDataProvider {
+    private _createViewsDataProvider(): MemoryDataProvider {
         const provider = new MemoryDataProvider({
-            dataSource: this._savedQueryDataProvider.getUserQueries().map(query => ({
+            dataSource: this._userQueryProvider.getQueries().map(query => ({
                 [ID_ATTRIBUTE]: query.id,
                 [NAME_ATTRIBUTE]: query.name,
                 [DESCRIPTION_ATTRIBUTE]: query.description ?? null,
@@ -103,7 +109,7 @@ export class ViewManager {
                         text: this._localizationService.getLocalizedString('confirmDialog.deleteSelectedRows.text')
                     })
                     if (result.confirmed) {
-                        this._savedQueryDataProvider.deleteUserQueries(recordIds);
+                        this._userQueryProvider.delete(recordIds);
                     }
                 }
             }
@@ -112,12 +118,12 @@ export class ViewManager {
     }
 
     private async _onAfterRecordSaved(recordId: string) {
-        const record = this._userQueryDataProvider.getRecordsMap()[recordId];
+        const record = this._viewsDataProvider.getRecordsMap()[recordId];
         if (!record) {
             return;
         }
         //the stored query carries the columns, filters and sorting - only the details are edited here
-        await this._savedQueryDataProvider.updateUserQuery({
+        await this._userQueryProvider.update({
             ...this._savedQueryDataProvider.getSavedQuery(recordId),
             name: record.getValue(NAME_ATTRIBUTE) as string,
             description: record.getValue(DESCRIPTION_ATTRIBUTE) as string ?? undefined,
@@ -125,32 +131,32 @@ export class ViewManager {
     }
 
     private _onAfterUserQueriesDeleted(result: IDeletedUserQueriesResult) {
-        this._userQueryDataProvider.setLoading(false);
+        this._viewsDataProvider.setLoading(false);
         if (!result.success) {
             this._datasetControl.getPcfContext().navigation.openConfirmDialog({
                 subtitle: this._localizationService.getLocalizedString('deletingUserQueriesError'),
                 text: result.errors.map(e => {
-                    return `${this._userQueryDataProvider.getRecordsMap()[e.queryId].getNamedReference().name}: ${ErrorHelper.getMessageFromError(e.error)}`
+                    return `${this._viewsDataProvider.getRecordsMap()[e.queryId].getNamedReference().name}: ${ErrorHelper.getMessageFromError(e.error)}`
                 }).join('\n'),
             })
         }
         else {
             //the projection is local: drop the rows from it, then refresh so the grid re-renders
-            this._userQueryDataProvider.deleteRecords(result.deletedQueryIds);
-            this._userQueryDataProvider.refresh();
+            this._viewsDataProvider.deleteRecords(result.deletedQueryIds);
+            this._viewsDataProvider.refresh();
         }
     }
 
     private _onBeforeUserQueriesDeleted(queryIds: string[]) {
         this._shouldRemountOnDismiss = true;
-        this._userQueryDataProvider.setLoading(true);
+        this._viewsDataProvider.setLoading(true);
     }
 
     private _registerEventListeners() {
-        this._savedQueryDataProvider.queryEvents.addEventListener('onBeforeUserQueriesDeleted', (queryIds) => this._onBeforeUserQueriesDeleted(queryIds));
-        this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueriesDeleted', (result) => this._onAfterUserQueriesDeleted(result));
-        this._userQueryDataProvider.addEventListener('onBeforeRecordSaved', () => this._shouldRemountOnDismiss = true);
-        this._userQueryDataProvider.addEventListener('onAfterRecordSaved', (result) => {
+        this._userQueryProvider.events.addEventListener('onBeforeUserQueriesDeleted', (queryIds) => this._onBeforeUserQueriesDeleted(queryIds));
+        this._userQueryProvider.events.addEventListener('onAfterUserQueriesDeleted', (result) => this._onAfterUserQueriesDeleted(result));
+        this._viewsDataProvider.addEventListener('onBeforeRecordSaved', () => this._shouldRemountOnDismiss = true);
+        this._viewsDataProvider.addEventListener('onAfterRecordSaved', (result) => {
             if (result.success) {
                 this._onAfterRecordSaved(result.recordId);
             }

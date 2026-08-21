@@ -1,5 +1,6 @@
 import { IUserQueryStrategy } from "@components/TaskGrid/providers/saved-query";
 import { IUserQueryModule } from "../interfaces";
+import { UserQueryDataProvider } from "./UserQueryDataProvider";
 import { CreateViewDialog } from "./create-view-dialog";
 import { ViewManagerDialog } from "./view-manager";
 
@@ -35,7 +36,9 @@ export interface IUserQueryModuleOptions {
  * ```
  */
 export const createUserQueryModule = (options: IUserQueryModuleOptions): IUserQueryModule => ({
-    strategy: options.strategy,
+    //the strategy is wrapped here rather than in core, so the events, the error handling and the
+    //grid-state capture around it stay out of a bundle that never registers this module
+    provider: new UserQueryDataProvider(options.strategy),
     //the only place the dialogs are named: a consumer never imports or knows about them
     components: {
         ViewManager: ViewManagerDialog,
