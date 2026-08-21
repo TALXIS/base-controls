@@ -5,7 +5,6 @@ import { ContextualMenuItemType, useTheme } from "@fluentui/react";
 import { getHeaderStyles } from "./styles";
 import { SettingsCallout } from "./settings-callout";
 import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
-import { RecordSelector } from "../grid/record-selector";
 import { ViewSwitcher } from "./view-switcher";
 import { EditColumns } from "./edit-columns/EditColumns";
 
@@ -26,7 +25,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
     const hasContent = () => {
         return datasetControl.isViewSwitcherEnabled() ||
             datasetControl.isTaskCreatingEnabled() ||
-            datasetControl.isTemplatingEnabled() ||
+            !!datasetControl.getModules().templates ||
             datasetControl.isTaskEditingEnabled() ||
             datasetControl.isTaskDeletingEnabled() ||
             datasetControl.isEditColumnsVisible() ||
@@ -39,11 +38,11 @@ export const Header = (props: ITaskGridHeaderProps) => {
     }
 
     const getNewSubMenuItems = (
-        isTemplatingEnabled: boolean,
         isTaskAddingEnabled: boolean,
         selectedIds: string[],
         isLoading: boolean,
     ): ICommandBarItemProps[] => {
+        const templates = datasetControl.getModules().templates;
         return [
             ...(isTaskAddingEnabled ? [{
                 key: 'addTopLevelTask',
@@ -52,14 +51,14 @@ export const Header = (props: ITaskGridHeaderProps) => {
                 text: localizationService.getLocalizedString('topLevel'),
                 onClick: () => { provider.createTask(); }
             }] : []),
-            ...(isTemplatingEnabled ? [
+            ...(templates ? [
                 ...(isTaskAddingEnabled ? [{ key: 'divider', itemType: ContextualMenuItemType.Divider }] : []),
                 ...(selectedIds.length === 1 ? [{
                     key: 'templateFromTask',
                     iconProps: { iconName: 'PageList' },
                     text: localizationService.getLocalizedString('templateFromTask'),
                     disabled: isLoading,
-                    onClick: () => { datasetControl.getTemplateDataProvider().createTemplateFromTask(provider.getRecordsMap()[selectedIds[0]]); }
+                    onClick: () => { templates.provider.createTemplateFromTask(provider.getRecordsMap()[selectedIds[0]]); }
                 }] : []),
                 ...(isTaskAddingEnabled ? [{
                     key: 'taskFromTemplate',
@@ -72,13 +71,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
                             shouldInputLoseFocusOnArrowKey: () => true
                         },
                         onRenderMenuList: () => isLoading ? <></> : (
-                            <RecordSelector
-                                provider={datasetControl.getTemplateDataProvider()}
-                                onRenderRecord={(props, defaultRender) => defaultRender({
-                                    ...props,
-                                    iconProps: { iconName: 'AddToShoppingList' }
-                                })}
-                                onRecordSelected={createTaskFromTemplate} />
+                            <templates.components.TemplateSelector onTemplateSelected={createTaskFromTemplate} />
                         )
                     }
                 }] : [])
@@ -87,7 +80,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
     }
 
     const getCommandBarItems = (items: ICommandBarItemProps[]): ICommandBarItemProps[] => {
-        const isTemplatingEnabled = datasetControl.isTemplatingEnabled();
+        const isTemplatingEnabled = !!datasetControl.getModules().templates;
         const isEditColumnsEnabled = datasetControl.isEditColumnsVisible();
         const isTaskAddingEnabled = datasetControl.isTaskCreatingEnabled();
         const isTaskEditingEnabled = datasetControl.isTaskEditingEnabled();
@@ -98,13 +91,13 @@ export const Header = (props: ITaskGridHeaderProps) => {
         const isLoading = provider.isLoading();
 
         return [
-            ...((getNewSubMenuItems(isTemplatingEnabled, isTaskAddingEnabled, selectedIds, isLoading).length > 0) ? [{
+            ...((getNewSubMenuItems(isTaskAddingEnabled, selectedIds, isLoading).length > 0) ? [{
                 key: 'new',
                 text: localizationService.getLocalizedString('new'),
                 disabled: isLoading,
                 iconProps: { iconName: 'Add' },
                 onClick: (isTaskAddingEnabled && !isTemplatingEnabled) ? () => { provider.createTask(); } : undefined,
-                subMenuProps: (isTaskAddingEnabled && !isTemplatingEnabled) ? undefined : { items: getNewSubMenuItems(isTemplatingEnabled, isTaskAddingEnabled, selectedIds, isLoading) }
+                subMenuProps: (isTaskAddingEnabled && !isTemplatingEnabled) ? undefined : { items: getNewSubMenuItems(isTaskAddingEnabled, selectedIds, isLoading) }
             }] : []),
             ...(selectedIds.length !== 0 ? [
                 ...(isTaskEditingEnabled ? [{

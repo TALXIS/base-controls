@@ -176,7 +176,7 @@ Passed next to \`onInitialize\` on the constructor argument, because they run ag
 | \`onCreateTaskStrategy?\` | — | Returns the task strategy. Where the form ids, \`rootTaskId\`, the cascade-delete flags and the per-operation hooks live. |
 | \`onGetModules?\` | — | Returns the feature modules. A \`userQueries\` module turns personal views on; omitted ⇒ system views only, and its UI is not in your bundle. |
 | \`onCreateCustomColumnsStrategy?\` | — | Returns the custom-columns strategy. Omitted ⇒ custom columns off. |
-| \`onCreateTemplateDataProvider?\` | — | Returns a template provider. Nothing Dataverse-side ships, so this has to be yours. |
+| \`onGetModules?\` | — | Returns the feature modules. A \`templates\` module supplies your own \`ITemplateDataProvider\` — nothing Dataverse-side ships. |
 | \`onCreateLookupManyDataProvider?\` | — | Feeds a lookup-many picker. Required once a column carries \`metadata.LookupMany\`. |
 | \`onCreateGridCustomizerStrategy?\` | — | Supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview). |
 
@@ -238,7 +238,7 @@ The \`enableCustomColumn*\` flags only trim the ribbon commands within the featu
 
 ## Templates
 
-No Dataverse implementation ships: \`DataverseTemplateDataProvider\`'s capture throws and so does \`DataverseTaskStrategy.onCreateTasksFromTemplate\`. The \`onCreateTemplateDataProvider\` parameter is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
+No Dataverse implementation ships: \`DataverseTemplateDataProvider\`'s capture throws and so does \`DataverseTaskStrategy.onCreateTasksFromTemplate\`. The \`templates\` module key is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
 
 ## Ordering: stack ranks
 

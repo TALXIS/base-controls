@@ -5,6 +5,7 @@ export * from './labels';
 export * from './providers';
 export * from './stack-rank';
 export * from './components/grid/grid-customizer';
+export * from './components/grid/record-selector';
 export * from './TaskGridDatasetControl';
 export * from './TaskGridDatasetControlFactory';
 export * from './extensions/memory';

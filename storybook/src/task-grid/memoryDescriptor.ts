@@ -1,6 +1,6 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
-import { createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
+import { createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
 import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryTaskGridDescriptorInitializeResult, IMemoryTemplateSource, ISavedQuery } from '@talxis/base-controls';
 
 /**
@@ -151,12 +151,14 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 enableSaveAsNewQuery: true,
                 enableSaveQueryChanges: true,
             }),
+            templates: createTemplateModule({
+                provider: new MemoryTemplateDataProvider({ templates }),
+            }),
         }),
         onCreateLookupManyDataProvider: ({ column }) => {
             const source = lookupSources[column.name];
             return source && MemoryLookupManyDataProviderFactory.create(source);
         },
-        onCreateTemplateDataProvider: () => new MemoryTemplateDataProvider({ templates }),
         //task-level options belong to the strategy, so they are passed where it is built
         onCreateTaskStrategy: ({ deps, metadata }) => new MemoryTaskStrategy({
             //seeded from what the last mount ended with, not from the fixtures

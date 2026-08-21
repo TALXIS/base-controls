@@ -4,7 +4,9 @@ import { IGridCustomizerStrategy } from "./components/grid/grid-customizer";
 import { ICustomColumnsDataProvider, ICustomColumnsStrategy } from "./providers/custom-columns/CustomColumnsDataProvider";
 import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
-import { ITemplateDataProvider } from "./providers/template";
+//the types-only file, never the providers/template barrel - that one also exports the
+//TemplateDataProviderBase mixin, a value
+import { ITemplateDataProvider } from "./providers/template/TemplateDataProvider";
 //the contract only, never the modules barrel: that one reaches their UI
 import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
@@ -17,7 +19,6 @@ export interface ITaskGridDatasetControlParameters {
     savedQueryDataProvider: ISavedQueryDataProvider;
     taskGridDescriptor: ITaskGridDescriptor;
     localizationService: ILocalizationService<ITaskGridLabels>;
-    templateDataProvider?: ITemplateDataProvider;
     customColumnsDataProvider?: ICustomColumnsDataProvider;
     /** The feature modules, already resolved by the factory. */
     modules: ITaskGridModules;
@@ -89,7 +90,7 @@ export interface ITaskStrategyDeps {
     savedQueryDataProvider: ISavedQueryDataProvider;
     /** Present when the consumer provided `onCreateCustomColumnsStrategy`. */
     customColumnsDataProvider?: ICustomColumnsDataProvider;
-    /** Present when the consumer provided `onCreateTemplateDataProvider`. */
+    /** Present when the templates module was returned from `onGetModules`. */
     templateDataProvider?: ITemplateDataProvider;
 }
 
@@ -131,8 +132,6 @@ export interface ITaskGridDescriptor {
     onGetModules?: () => ITaskGridModules;
     /** (Optional) Returns the strategy for managing dynamic (user-defined) columns. When provided, the custom-columns feature is enabled. */
     onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy | undefined;
-    /** (Optional) Returns an `ITemplateDataProvider` for task templates. When provided, the template-based task creation feature is enabled. */
-    onCreateTemplateDataProvider?: () => ITemplateDataProvider | undefined;
     /**
      * (Optional) Returns the `IDataProvider` supplying candidate records for a lookup-many column —
      * the picker's options. Needed only when columns carry `metadata.LookupMany`. Omit it, or return
@@ -155,11 +154,6 @@ export interface ITaskGridDescriptor {
 
 /** Runtime interface for the TaskGrid control returned by `TaskGridDatasetControlFactory.createInstance`. */
 export interface ITaskGridDatasetControl extends IDatasetControl {
-    /**
-     * Returns the template `ITemplateDataProvider`.
-     * @throws If templating was not enabled (no `onCreateTemplateDataProvider` in the descriptor).
-     */
-    getTemplateDataProvider: () => ITemplateDataProvider;
     /** Returns the saved-query data provider managing system and user views. */
     getSavedQueryDataProvider: () => ISavedQueryDataProvider;
     /**
@@ -200,8 +194,6 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isHideInactiveTasksToggleVisible: () => boolean;
     /** Whether the scope selector is shown inside the Edit Columns panel (from `ITaskGridParameters.enableEditColumnsScopeSelector`). */
     isEditColumnsScopeSelectorEnabled: () => boolean;
-    /** Returns `true` when a template data provider was supplied through the descriptor. */
-    isTemplatingEnabled: () => boolean;
     /** Returns `true` when inline creation of tasks is enabled. */
     isTaskCreatingEnabled: () => boolean;
     /** Returns `true` when inline editing of tasks is enabled. */

@@ -3,7 +3,9 @@ import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDeletedUserQueriesResult } from "./providers/saved-query";
 import { IUserQueryDataProviderEvents } from "./modules/interfaces";
 import { IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProvider, ITaskDataProviderEventListener } from "./providers/task";
-import { ITemplateDataProviderEvents } from "./providers/template";
+//the types-only file, never the providers/template barrel - that one also exports the
+//TemplateDataProviderBase mixin, a value
+import { ITemplateDataProviderEvents } from "./providers/template/TemplateDataProvider";
 import { ITaskGridDatasetControl } from "./interfaces";
 import { ITaskGridProps } from "./TaskGrid";
 
@@ -18,7 +20,8 @@ export const useTaskGridEvents = (props: ITaskGridProps, datasetControl: ITaskGr
     //undefined when no user-queries module is registered; useEventEmitter tolerates that, so these
     //props simply never fire
     const queryEvents = datasetControl.getModules().userQueries?.provider.events;
-    const templateEvents = datasetControl.isTemplatingEnabled() ? datasetControl.getTemplateDataProvider().templateEvents : undefined;
+    //undefined when no templates module is registered; useEventEmitter tolerates that too
+    const templateEvents = datasetControl.getModules().templates?.provider.templateEvents;
 
     useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onBeforeTasksCreated', (parentTaskId?: string) => props.onBeforeTasksCreated?.(parentTaskId));
     useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onAfterTasksCreated', (records: IRawRecord[] | null, parentTaskId?: string) => props.onTasksCreated?.(records, parentTaskId));

@@ -7,7 +7,6 @@ import { ILocalizationService } from "@utils";
 import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
-import { ITemplateDataProvider } from "./providers/template";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ICustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
@@ -20,7 +19,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     private _dataset: IDataset;
     private _descriptor: ITaskGridDescriptor;
     private _dataProvider: ITaskDataProvider;
-    private _templateDataProvider?: ITemplateDataProvider;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _savedQueryDataProvider: ISavedQueryDataProvider;
     private _customColumnsDataProvider?: ICustomColumnsDataProvider;
@@ -41,7 +39,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._localizationService = parameters.localizationService;
         this._savedQueryDataProvider = parameters.savedQueryDataProvider;
         this._customColumnsDataProvider = parameters.customColumnsDataProvider;
-        this._templateDataProvider = parameters.templateDataProvider;
         this._state = parameters.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
         //resolved by the factory, which calls onGetModules exactly once - never re-invoked from here
@@ -77,10 +74,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     public isEditColumnsScopeSelectorEnabled(): boolean {
         return this._gridParameters.enableEditColumnsScopeSelector ?? false;
-    }
-
-    public isTemplatingEnabled(): boolean {
-        return !!this._templateDataProvider;
     }
 
     public isCustomColumnsEnabled(): boolean {
@@ -142,13 +135,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     public getSavedQueryDataProvider() {
         return this._savedQueryDataProvider;
-    }
-
-    public getTemplateDataProvider(): ITemplateDataProvider {
-        if (!this._templateDataProvider) {
-            throw new Error('This TaskGridDatasetControl does not have a template data provider');
-        }
-        return this._templateDataProvider;
     }
 
 
@@ -322,7 +308,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._savedQueryDataProvider.destroy();
         this._modules.userQueries?.provider.destroy();
         this._customColumnsDataProvider?.destroy();
-        this._templateDataProvider?.destroy();
+        this._modules.templates?.provider.destroy();
     }
     public requestRemount(): void {
         this.dispatchEvent('onRemountRequested');
@@ -401,9 +387,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksDeleted', (result) => this._onAfterTasksDeleted(result));
         this._dataProvider.taskEvents.addEventListener('onBeforeTaskMoved', () => this._dataProvider.setLoading(true));
-        this._templateDataProvider?.templateEvents.addEventListener('onError', (error, message) => this._onError(error, message));
-        this._templateDataProvider?.templateEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
-        this._templateDataProvider?.templateEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
+        this._modules.templates?.provider.templateEvents.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._modules.templates?.provider.templateEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
+        this._modules.templates?.provider.templateEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksCreated', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onAfterTaskMoved', () => this._dataProvider.setLoading(false));

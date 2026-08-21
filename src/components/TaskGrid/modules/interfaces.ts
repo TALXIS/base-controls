@@ -1,6 +1,9 @@
 import { IEventEmitter } from "@talxis/client-libraries";
 import { IDeletedUserQueriesResult, ISavedQuery } from "@components/TaskGrid/providers/saved-query";
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
+//the types-only file, never the providers/template barrel - that one also exports the
+//TemplateDataProviderBase mixin, a value
+import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/TemplateDataProvider";
 
 /**
  * The contract between the grid and its optional feature modules.
@@ -97,7 +100,29 @@ export interface IUserQueryModule {
  * A key is filled by importing that module's create method and calling it, which is also what puts its code
  * in your bundle — omit the key and neither the feature nor its UI exists.
  */
+/** Props the template picker receives. */
+export interface ITemplateSelectorProps {
+    /** Called with the chosen template's id. */
+    onTemplateSelected: (templateId: string) => void;
+}
+
+/** Every component the templating UI needs. */
+export interface ITemplateComponents {
+    /** The template picker, rendered inside the *New* and per-row add-task submenus. */
+    TemplateSelector: React.ComponentType<ITemplateSelectorProps>;
+}
+
+/** What the templates module contributes. Built by `createTemplateModule()` — never written by hand. */
+export interface ITemplateModule {
+    /** Where templates are read from and captured to. Also the picker's data source. */
+    provider: ITemplateDataProvider;
+    /** The module's UI. */
+    components: ITemplateComponents;
+}
+
 export interface ITaskGridModules {
     /** Personal views: *My views*, the save commands and the view manager. */
     userQueries?: IUserQueryModule;
+    /** Task templates: capturing one from a task, and expanding one into tasks. */
+    templates?: ITemplateModule;
 }

@@ -1,7 +1,7 @@
 import { IDataProvider, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
-import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
+import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
 import { MemoryTaskStrategy } from "./memory-task-strategy/MemoryTaskStrategy";
 
@@ -93,6 +93,9 @@ export interface IMemoryTaskGridDescriptorParams {
      *         strategy: new MemoryUserQueryStrategy({ userQueries }),
      *         enableQueryManager: true,
      *     }),
+     *     templates: createTemplateModule({
+     *         provider: new MemoryTemplateDataProvider({ templates }),
+     *     }),
      * })
      * ```
      *
@@ -101,12 +104,6 @@ export interface IMemoryTaskGridDescriptorParams {
      * (the `userQueries` array above) belongs to you, not to the strategy.
      */
     onGetModules?: (context: IMemoryStrategyContext) => ITaskGridModules;
-    /**
-     * (Optional) Supplies the template data provider — typically
-     * `new MemoryTemplateDataProvider({ templates })`. Omit it and template creation stays out of the
-     * ribbon.
-     */
-    onCreateTemplateDataProvider?: (context: IMemoryStrategyContext) => ITemplateDataProvider | undefined;
     /**
      * (Optional) Supplies a custom-columns strategy. There is no in-memory implementation, so this is
      * the only way to switch user-defined columns on with this descriptor.
@@ -225,11 +222,6 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
             ?? new MemoryTaskStrategy({
                 onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
             }, deps);
-    }
-
-    /** Delegates to the `onCreateTemplateDataProvider` parameter. Templates are off without it. */
-    public onCreateTemplateDataProvider(): ITemplateDataProvider | undefined {
-        return this._params.onCreateTemplateDataProvider?.(this._getStrategyContext());
     }
 
     /** Delegates to the `onCreateCustomColumnsStrategy` parameter. Custom columns are off without it. */

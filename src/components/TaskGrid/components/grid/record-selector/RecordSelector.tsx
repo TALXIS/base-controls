@@ -9,7 +9,7 @@ import { getRecordSelectorStyles } from "./styles";
 import { FixedSizeList } from 'react-window';
 import { useLocalizationService, usePcfContext } from "@components/TaskGrid/context";
 
-interface IRecordSelectorProps {
+export interface IRecordSelectorProps {
     provider: IDataProvider;
     onRecordSelected: (recordId: string) => void;
     onRenderRecord?: (props: IButtonProps, defaultRender: (props: IButtonProps) => React.ReactNode) => React.ReactNode;

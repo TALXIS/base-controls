@@ -41,7 +41,7 @@ This is where the work is. The grid calls these hooks; you decide what they mean
 | \`onOpenDatasetItems(refs, isTaskEntity)\` | ✅ | The user opened records — navigate, open a dialog, or no-op. |
 | \`onGetRootTaskId?()\` | — | Root the tree at one task. |
 
-\`onCreateTasksFromTemplate\` is required by the interface but may return \`null\` if you do not support templates — the Dataverse strategy throws instead, which is equally valid when the feature is off. Capturing a template *from* a task is not part of the strategy: it belongs to the \`ITemplateDataProvider\` you return from \`onCreateTemplateDataProvider\`.
+\`onCreateTasksFromTemplate\` is required by the interface but may return \`null\` if you do not support templates — the Dataverse strategy throws instead, which is equally valid when the feature is off. Capturing a template *from* a task is not part of the strategy: it belongs to the \`ITemplateDataProvider\` you wrap in \`createTemplateModule\` and return from \`onGetModules\`.
 
 ### \`onInitialize\` is your setup hook
 

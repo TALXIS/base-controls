@@ -29,7 +29,7 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 | Task CRUD, move, reparent | \`MemoryTaskStrategy\` | always |
 | System views | the descriptor, from \`systemQueries\` | always |
 | Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\`, wrapped by \`createUserQueryModule\` | \`onGetModules\` returns a \`userQueries\` module |
-| Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\` | \`onCreateTemplateDataProvider\` returns one |
+| Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`onGetModules\` returns a \`templates\` module |
 | Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`onCreateLookupManyDataProvider\` returns one |
 | AG Grid customizer | yours | \`onCreateGridCustomizerStrategy\` returns one |
 | Custom columns | **nothing in-memory implements them** | only if \`onCreateCustomColumnsStrategy\` returns your own |
@@ -124,7 +124,7 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 |---|---|
 | \`onCreateTaskStrategy\` | Returns the task strategy, and with it every task-level option. See [**Task options**](#task-options). |
 | \`onGetModules\` | Returns the feature modules. \`{ userQueries: createUserQueryModule({ strategy }) }\` turns personal views on; omit it for system views only. |
-| \`onCreateTemplateDataProvider\` | Returns the template provider — usually \`new MemoryTemplateDataProvider({ templates })\`. Omit to disable templates. |
+| \`onGetModules\` | Returns the feature modules. \`{ templates: createTemplateModule({ provider }) }\` turns template-based creation on; omit the key to disable it. |
 | \`onCreateCustomColumnsStrategy\` | Returns a custom-columns strategy. Nothing in-memory ships, so this is the only way to switch the feature on here. |
 | \`onCreateLookupManyDataProvider\` | Returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
 | \`onCreateGridCustomizerStrategy\` | Supplies your own AG Grid customizer. |
@@ -243,7 +243,7 @@ The same shape is the way in to a *different* task strategy — your own, or a s
 
 ## Templates
 
-Return a \`MemoryTemplateDataProvider\` from \`onCreateTemplateDataProvider\` and template-based creation appears in the ribbon. Its \`templates\` source is an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into; the provider owns it from then on, and the task strategy reads templates through the provider rather than from its own dependencies:
+Register \`createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) })\` from \`onGetModules\` and template-based creation appears in the ribbon. Its \`templates\` source is an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into; the provider owns it from then on, and the task strategy reads templates through the provider rather than from its own dependencies:
 
 \`\`\`ts
 const templates = {
@@ -262,7 +262,9 @@ const templates = {
 }
 
 //in onInitialize, so the captured templates survive the grid's remounts
-onCreateTemplateDataProvider: () => new MemoryTemplateDataProvider({ templates }),
+onGetModules: () => ({
+    templates: createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) }),
+}),
 \`\`\`
 
 Note the split: expanding a template *into* tasks is the task strategy's job, while capturing one *from* a task belongs to the \`ITemplateDataProvider\`. Each node's \`values\` may set **any** task column, and \`children\` nests to any depth. Creating a template *from* an existing task works in reverse: the task's visible column values are captured into \`values\`, and its subtree becomes \`children\`. That capture lives in \`MemoryTemplateDataProvider\` — the \`ITemplateDataProvider\` the descriptor builds from \`templates\` — and it pushes into the same \`records\` array, so a template made at runtime survives the grid's remounts like everything else.

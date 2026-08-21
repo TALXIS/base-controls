@@ -43,12 +43,12 @@ export class TaskGridDatasetControlFactory {
             customColumnsDataProvider: customColumnsDataProvider,
             preferredQuery: parameters.state.savedQuery,
         })
-        const templateDataProvider = parameters.taskGridDescriptor.onCreateTemplateDataProvider?.();
         await savedQueryDataProvider.refresh();
 
         const taskStrategy = parameters.taskGridDescriptor.onCreateTaskStrategy({
             savedQueryDataProvider: savedQueryDataProvider,
-            templateDataProvider: templateDataProvider,
+            //no templates module means the strategy sees no template provider either
+            templateDataProvider: modules.templates?.provider,
             customColumnsDataProvider: customColumnsDataProvider,
             enableTaskEditing: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableTaskEditing ?? false,
             enableInlineCreation: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableInlineCreation ?? false,
@@ -69,7 +69,6 @@ export class TaskGridDatasetControlFactory {
             dataset,
             state: parameters.state,
             taskGridDescriptor: parameters.taskGridDescriptor,
-            templateDataProvider: templateDataProvider,
             localizationService: parameters.localizationService,
             savedQueryDataProvider: savedQueryDataProvider,
             customColumnsDataProvider: customColumnsDataProvider,

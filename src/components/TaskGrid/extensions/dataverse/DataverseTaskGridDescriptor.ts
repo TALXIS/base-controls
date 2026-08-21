@@ -1,5 +1,5 @@
 import { FetchXmlBuilder, IDataProvider, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
-import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, ITemplateDataProvider, IUserQueryStrategy } from "@components/TaskGrid/providers";
+import { ICustomColumnsStrategy, ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid";
@@ -144,13 +144,11 @@ export interface IDataverseTaskGridDescriptorParams {
      * until `onInitialize` has run. `DataverseUserQueryStrategy` needs the `talxis_userquery` table, so
      * registering it is also the statement that the environment has it — and nothing here references it
      * otherwise, which keeps it out of bundles that do not use personal views.
+     *
+     * There is no Dataverse template provider yet, so `templates: createTemplateModule({ provider })` is
+     * the way to bring your own; omit the key and template creation stays out of the ribbon.
      */
     onGetModules?: (context: IDataverseStrategyContext) => ITaskGridModules;
-    /**
-     * (Optional) Supplies the template data provider. There is no Dataverse implementation yet, so this
-     * is the way to bring your own; omit it and template creation stays out of the ribbon.
-     */
-    onCreateTemplateDataProvider?: (context: IDataverseStrategyContext) => ITemplateDataProvider | undefined;
     /**
      * (Optional) Supplies the custom-columns strategy — `DataverseCustomColumnsStrategy` needs the
      * `talxis_attributedefinition` and `talxis_attributevalue` tables. Omit it and custom columns are
@@ -283,11 +281,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             }),
         }, deps);
     }
-    /** Delegates to the `onCreateTemplateDataProvider` parameter. Templates are off without it. */
-    public onCreateTemplateDataProvider(): ITemplateDataProvider | undefined {
-        return this._params.onCreateTemplateDataProvider?.(this._getStrategyContext());
-    }
-
     /** Delegates to the `onCreateCustomColumnsStrategy` parameter. Custom columns are off without it. */
     public onCreateCustomColumnsStrategy(): ICustomColumnsStrategy | undefined {
         return this._params.onCreateCustomColumnsStrategy?.(this._getStrategyContext());

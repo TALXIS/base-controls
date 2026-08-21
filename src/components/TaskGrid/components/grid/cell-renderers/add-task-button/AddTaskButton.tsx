@@ -3,7 +3,6 @@ import { ICellProps } from "@components/Grid/cells/cell/Cell"
 import * as React from "react"
 import { getAddTaskButtonStyles } from "./styles";
 import { IRecord } from "@talxis/client-libraries";
-import { RecordSelector } from "@components/TaskGrid/components/grid/record-selector/RecordSelector";
 import { useDatasetControl, useLocalizationService, useTaskDataProvider, useTaskGridDescriptor } from "@components/TaskGrid/context";
 
 export const AddTaskButton = (props: ICellProps) => {
@@ -14,7 +13,7 @@ export const AddTaskButton = (props: ICellProps) => {
     const localizationService = useLocalizationService();
     const [isButtonMounted, setIsButtonMounted] = React.useState(true);
     const isTaskAddingEnabled = datasetControl.isTaskCreatingEnabled();
-    const isTemplatingEnabled = datasetControl.isTemplatingEnabled();
+    const isTemplatingEnabled = !!datasetControl.getModules().templates;
 
     const addTaskFromTemplate = async (templateId: string) => {
         //this needs to be done so the button menu does not overlay the dialog
@@ -31,7 +30,7 @@ export const AddTaskButton = (props: ICellProps) => {
     }
 
     const getMenuItems = (): IContextualMenuItem[] => {
-        const isTemplatingEnabled = datasetControl.isTemplatingEnabled();
+        const templates = datasetControl.getModules().templates;
         return [{
             key: 'addChild',
             text: localizationService.getLocalizedString('addChild'),
@@ -40,11 +39,13 @@ export const AddTaskButton = (props: ICellProps) => {
             },
             onClick: () => { taskDataProvider.createTask(record.getRecordId()) }
         },
-        {
+        //the divider only makes sense with something templating below it - without the module this
+        //menu would otherwise end on a dangling separator
+        ...(!templates ? [] : [{
             key: 'divider',
             itemType: ContextualMenuItemType.Divider
         },
-        ...(!isTemplatingEnabled ? [] : [{
+        {
             key: 'taskFromTemplate',
             text: localizationService.getLocalizedString('taskFromTemplate'),
             iconProps: {
@@ -54,17 +55,7 @@ export const AddTaskButton = (props: ICellProps) => {
                 items: [{
                     key: 'dummy'
                 }],
-                onRenderMenuList: () => <RecordSelector
-                    provider={datasetControl.getTemplateDataProvider()}
-                    onRenderRecord={(props, defautRender) => {
-                        return defautRender({
-                            ...props,
-                            iconProps: {
-                                iconName: 'AddToShoppingList'
-                            }
-                        })
-                    }}
-                    onRecordSelected={addTaskFromTemplate} />
+                onRenderMenuList: () => <templates.components.TemplateSelector onTemplateSelected={addTaskFromTemplate} />
             }
         }])];
     }
