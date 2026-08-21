@@ -1,6 +1,6 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
-import { createGridCustomizerModule, createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
+import { createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
 import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryTaskGridDescriptorInitializeResult, IMemoryTemplateSource, ISavedQuery } from '@talxis/base-controls';
 
 /**
@@ -157,11 +157,13 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                     provider: new MemoryTemplateDataProvider({ templates }),
                 }),
                 ...(gridCustomizerStrategy && { gridCustomizer: createGridCustomizerModule({ strategy: gridCustomizerStrategy }) }),
+                lookupMany: createLookupManyModule({
+                    createDataProvider: ({ column }) => {
+                        const source = lookupSources[column.name];
+                        return source && MemoryLookupManyDataProviderFactory.create(source);
+                    },
+                }),
             };
-        },
-        onCreateLookupManyDataProvider: ({ column }) => {
-            const source = lookupSources[column.name];
-            return source && MemoryLookupManyDataProviderFactory.create(source);
         },
         //task-level options belong to the strategy, so they are passed where it is built
         onCreateTaskStrategy: ({ deps, metadata }) => new MemoryTaskStrategy({

@@ -30,7 +30,7 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 | System views | the descriptor, from \`systemQueries\` | always |
 | Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\`, wrapped by \`createUserQueryModule\` | \`onGetModules\` returns a \`userQueries\` module |
 | Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`onGetModules\` returns a \`templates\` module |
-| Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`onCreateLookupManyDataProvider\` returns one |
+| Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`onGetModules\` returns a \`lookupMany\` module |
 | AG Grid customizer | yours | \`onGetModules\` returns a \`gridCustomizer\` module |
 | Custom columns | **nothing in-memory implements them** | only if \`onGetModules\` returns a \`customColumns\` module wrapping your own |
 
@@ -126,8 +126,8 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 | \`onGetModules\` | Returns the feature modules. \`{ userQueries: createUserQueryModule({ strategy }) }\` turns personal views on; omit it for system views only. |
 | \`onGetModules\` | Returns the feature modules. \`{ templates: createTemplateModule({ provider }) }\` turns template-based creation on; omit the key to disable it. |
 | \`onGetModules\` | Returns the feature modules. A \`customColumns\` module is the only way to switch that feature on here — nothing in-memory ships. |
-| \`onCreateLookupManyDataProvider\` | Returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
 | \`onGetModules\` | Returns the feature modules. \`{ gridCustomizer: createGridCustomizerModule({ strategy }) }\` supplies your own AG Grid customizer. |
+| \`onGetModules\` | Returns the feature modules. \`{ lookupMany: createLookupManyModule({ createDataProvider }) }\` returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
 > **The \`onCreate*\` and \`onGetModules\` callbacks run on every remount**, so resolve the data they wrap in \`onInitialize\` and close over it — a fresh strategy over the same arrays each time. Building the data inside the callback would wipe every view and template the user created. Since the hooks now live outside \`onInitialize\`, hold that data in the enclosing scope and assign it there:
@@ -284,7 +284,7 @@ Note the split: expanding a template *into* tasks is the task strategy's job, wh
 >
 > For lookups that are *not* bound to a Dataverse entity — the invented records in these docs, for instance — declare nothing, so the grid does not offer a filter that matches nothing. \`DataverseTaskStrategy\` can inject the operators for every \`LookupMany\` column itself, because there the binding is a given.
 
-A column flagged \`metadata.LookupMany\` renders as a multi-record picker, and \`onCreateLookupManyDataProvider\` feeds it. The candidates are records like any other, so \`MemoryLookupManyDataProviderFactory\` turns an \`IMemoryEntitySource\` into the provider the picker wants — one per column, chosen by column name:
+A column flagged \`metadata.LookupMany\` renders as a multi-record picker once the \`lookupMany\` module is registered, and its \`createDataProvider\` feeds it. The candidates are records like any other, so \`MemoryLookupManyDataProviderFactory\` turns an \`IMemoryEntitySource\` into the provider the picker wants — one per column, chosen by column name:
 
 \`\`\`ts
 const SOURCES: Record<string, IMemoryEntitySource> = {
@@ -292,13 +292,15 @@ const SOURCES: Record<string, IMemoryEntitySource> = {
     tags: { records: TAGS, columns: TAGS_COLUMNS, metadata: TAGS_METADATA },
 }
 
-onCreateLookupManyDataProvider: ({ column }) => {
-    const source = SOURCES[column.name]
-    return source && MemoryLookupManyDataProviderFactory.create(source)
-},
+lookupMany: createLookupManyModule({
+    createDataProvider: ({ column }) => {
+        const source = SOURCES[column.name]
+        return source && MemoryLookupManyDataProviderFactory.create(source)
+    },
+}),
 \`\`\`
 
-The factory copies the records array before handing it over, so deleting inside a picker cannot mutate the one you keep. Whether a column *renders* as a picker comes from \`metadata.LookupMany\` on the column, and which picker variant from its custom control name; a column flagged lookup-many that this callback returns nothing for throws when it renders. Try the **Assigned To** and **Tags** columns in the grid below.
+The factory copies the records array before handing it over, so deleting inside a picker cannot mutate the one you keep. Whether a column *renders* as a picker comes from \`metadata.LookupMany\` on the column plus the \`lookupMany\` module being registered at all — omit the module and the column falls back to its default renderer; register it but return nothing for a given column and the grid throws when that column renders. Which picker variant renders comes from the column's custom control name. Try the **Assigned To** and **Tags** columns in the grid below.
 
 ## Ordering: stack ranks
 

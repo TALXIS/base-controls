@@ -2,7 +2,7 @@ import { useDatasetControl, useTaskDataProvider } from "@components/TaskGrid/con
 import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
 import { ICellProps } from "@components/Grid/cells/cell/Cell";
-import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/components/grid/lookup-many";
+import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/modules/lookup-many/components";
 import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
 import { useGridInstance } from "@components/Grid/grid/useGridInstance";
 import { ThemeProvider } from "@fluentui/react";
@@ -14,10 +14,10 @@ enum ControlName {
 }
 
 /**
- * Renders a lookup-many column. Registered automatically for any column carrying
- * `metadata.LookupMany`; the candidate records come from the descriptor's
- * `createLookupManyDataProvider` on the dataset control, and the visual variant from the column's
- * custom control.
+ * Renders a lookup-many column. `GridCustomizer` wires this in for any column carrying
+ * `metadata.LookupMany`, but only once the `lookupMany` module is registered — this component is what
+ * that module contributes as its `components.CellRenderer`. The candidate records come from
+ * `datasetControl.createLookupManyDataProvider`, and the visual variant from the column's custom control.
  */
 export const LookupManyCellRenderer = (props: ICellProps) => {
     const { api, baseColumn, record } = props;

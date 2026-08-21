@@ -5,12 +5,14 @@ import { IMemoryEntitySource } from "./interfaces";
  * Builds the picker provider behind one lookup-many column, from records you already hold — the
  * in-memory counterpart to `FetchXmlDataProviderFactory`.
  *
- * Return one from a descriptor's `onCreateLookupManyDataProvider`, picking the source by column:
+ * Return one from a `lookupMany` module's `createDataProvider`, picking the source by column:
  *
  * ```ts
  * const SOURCES = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE }
  *
- * onCreateLookupManyDataProvider: ({ column }) => MemoryLookupManyDataProviderFactory.create(SOURCES[column.name]),
+ * lookupMany: createLookupManyModule({
+ *     createDataProvider: ({ column }) => MemoryLookupManyDataProviderFactory.create(SOURCES[column.name]),
+ * })
  * ```
  */
 export class MemoryLookupManyDataProviderFactory {

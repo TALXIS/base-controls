@@ -52,9 +52,9 @@ A descriptor answers three questions the grid cannot answer on its own: which co
 | \`onGetHeight?()\` | — | Container height as a CSS string. Fills the parent when omitted. |
 | \`onGetGridParameters?()\` | — | \`ITaskGridParameters\` feature flags. |
 | \`onGetModules?()\` → \`templates\` | — | Enables template-based creation. \`createTemplateModule({ provider })\` wraps an \`ITemplateDataProvider\` whose records are templates and which can capture a new one from a task. |
-| \`onCreateLookupManyDataProvider?(params)\` | — | Supplies picker candidates for a lookup-many column. Called once per lookup-many cell. |
 | \`onGetModules?()\` → \`customColumns\` | — | Enables user-defined columns. \`createCustomColumnsModule({ strategy })\` wraps an \`ICustomColumnsStrategy\`. |
 | \`onGetModules?()\` → \`gridCustomizer\` | — | Deep-customizes AG Grid column definitions, renderers and row class rules. \`createGridCustomizerModule({ strategy })\` wraps an \`IGridCustomizerStrategy\`. |
+| \`onGetModules?()\` → \`lookupMany\` | — | Supplies picker candidates for lookup-many columns. \`createLookupManyModule({ createDataProvider })\` wraps a callback called once per lookup-many cell. |
 | \`onGetControlId?()\` | — | A stable DOM identifier. Auto-generated as a UUID when omitted. |
 
 The optional hooks are feature switches, not just configuration: omit the \`templates\` module and template creation disappears from the UI; omit the \`customColumns\` module and custom columns are off; omit the \`userQueries\` module and the view switcher lists system views only.
@@ -84,10 +84,10 @@ Every flag in \`ITaskGridParameters\` defaults to \`false\` when \`onGetGridPara
 | \`onLoadDependencies\` | ✅ resolves once, cached | ✅ re-runs on every remount |
 | \`onGetHeight\` | ✅ | ✅ |
 | \`onGetGridParameters\` | ✅ | ✅ |
-| \`onCreateLookupManyDataProvider\` | ✅ your param → \`MemoryLookupManyDataProviderFactory\` | ✅ your param → \`DataverseLookupManyDataProviderFactory\` |
 | \`onGetModules\` → \`templates\` | ✅ your param → \`MemoryTemplateDataProvider\` | ✅ your param; nothing Dataverse-side ships |
 | \`onGetModules\` → \`customColumns\` | ✅ your param; nothing in-memory ships | ✅ your param → \`DataverseCustomColumnsStrategy\` |
 | \`onGetModules\` → \`gridCustomizer\` | ✅ your param | ✅ your param |
+| \`onGetModules\` → \`lookupMany\` | ✅ your param → \`MemoryLookupManyDataProviderFactory\` | ✅ your param → \`DataverseLookupManyDataProviderFactory\` |
 | \`onGetControlId\` | — | — |
 
 Both descriptors forward every optional hook to a parameter of the same name, so you rarely need a subclass to switch a feature on — only to change what an already-wired piece *does*. The two gaps left are the implementations that do not exist: no Dataverse template provider, and no in-memory custom-columns strategy.

@@ -9,7 +9,6 @@ import { AddTaskButton } from "../cell-renderers/add-task-button";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
-import { LookupManyCellRenderer } from "../cell-renderers/lookup-many";
 import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
 import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
@@ -189,10 +188,11 @@ export class GridCustomizer implements IGridCustomizer {
                     break;
                 }
             }
-            //lookup-many columns always use the shared renderer; the descriptor supplies the candidate
-            //records through onCreateLookupManyDataProvider, so this works for any data source
-            if (column?.metadata?.LookupMany) {
-                colDef.cellRenderer = LookupManyCellRenderer;
+            //lookup-many columns only get the picker renderer when the module is registered - without it
+            //the column simply falls back to whatever renderer it would otherwise get
+            const lookupManyCellRenderer = this._datasetControl.getModules().lookupMany?.components.CellRenderer;
+            if (column?.metadata?.LookupMany && lookupManyCellRenderer) {
+                colDef.cellRenderer = lookupManyCellRenderer;
                 colDef.autoHeight = true;
                 //editing happens inside the picker, not through an ag-grid cell editor
                 colDef.editable = false;

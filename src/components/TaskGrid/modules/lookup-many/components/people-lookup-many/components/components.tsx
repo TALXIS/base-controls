@@ -1,4 +1,4 @@
-import { ILookupManyComponents, LookupManyComponents } from "@components/TaskGrid/components/grid/lookup-many/components/components";
+import { ILookupManyComponents, LookupManyComponents } from "@components/TaskGrid/modules/lookup-many/components/components/components";
 import { MultiValueContainer } from "./multi-value-container";
 import { MultiValueLabel } from "./multi-value-label";
 import { Option } from "./option";

@@ -176,8 +176,7 @@ Passed next to \`onInitialize\` on the constructor argument, because they run ag
 |---|:--------:|---|
 | \`height?\` | — | Container height. Read before the data resolves, to size the loading skeleton. |
 | \`onCreateTaskStrategy?\` | — | Returns the task strategy. Where the form ids, \`rootTaskId\`, the cascade-delete flags and the per-operation hooks live. |
-| \`onGetModules?\` | — | Returns the feature modules, keyed by feature. \`userQueries\` turns personal views on; \`templates\` supplies your own \`ITemplateDataProvider\` — nothing Dataverse-side ships; \`customColumns\` wraps the custom-columns strategy; \`gridCustomizer\` supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview). Omit a key and that feature — and its UI — is off, and out of your bundle. |
-| \`onCreateLookupManyDataProvider?\` | — | Feeds a lookup-many picker. Required once a column carries \`metadata.LookupMany\`. |
+| \`onGetModules?\` | — | Returns the feature modules, keyed by feature. \`userQueries\` turns personal views on; \`templates\` supplies your own \`ITemplateDataProvider\` — nothing Dataverse-side ships; \`customColumns\` wraps the custom-columns strategy; \`gridCustomizer\` supplies the AG Grid [**Customizer**](?path=/story/task-grid-customizations-customizer--overview); \`lookupMany\` feeds a lookup-many picker, required once a column carries \`metadata.LookupMany\`. Omit a key and that feature — and its UI — is off, and out of your bundle. |
 
 ## Saved views
 
@@ -213,19 +212,27 @@ A lookup-many column surfaces a 1:N or N:N relationship as a single cell. Two di
 }
 \`\`\`
 
-- **\`metadata.LookupMany\`** identifies the relationship. The strategy resolves the OData expand clause from it and handles associate/disassociate on save. Its presence is also what makes the column render as a picker.
+- **\`metadata.LookupMany\`** identifies the relationship. The strategy resolves the OData expand clause from it and handles associate/disassociate on save. Its presence, together with a registered \`lookupMany\` module, is what makes the column render as a picker.
 - **\`controls[0].bindings.FetchXml\`** is the candidate query. \`DataverseLookupManyDataProviderFactory\` reads it and renders its Liquid per row, so \`{{ task.id }}\` and \`{{ task.<attribute> }}\` scope the picker to the cell it sits on, while \`{{ project.* }}\` and \`{{ currentRecord.* }}\` come from the descriptor's records.
 - **\`controls[0].name\`** picks the variant: \`LookupMany\`, \`PeopleLookupMany\`, or \`ColorfulLookupMany\`.
 
 The column name itself is arbitrary — the relationship is identified by the navigation property, not the name.
 
-Feeding the picker is a parameter, the same as on the memory descriptor — the factory does the work:
+Feeding the picker is a module, the same as on the memory descriptor — the factory does the work:
 
 \`\`\`ts
-onCreateLookupManyDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create(parameters),
+onGetModules: (context) => ({
+    lookupMany: createLookupManyModule({
+        createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
+            ...parameters,
+            projectRecord: context.projectRecord,
+            sourceRecord: context.sourceRecord,
+        }),
+    }),
+})
 \`\`\`
 
-The parameters carry everything the factory needs — the cell's record and column, plus the project and source records the descriptor resolved — so there is nothing to wire. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
+The parameters carry everything the factory needs — the cell's record and column from the call, the project and source records from \`context\` — so there is nothing else to wire. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
 
 ## Custom columns
 

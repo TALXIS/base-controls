@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Icon, useTheme } from '@fluentui/react';
 import { MultiValueRemoveProps } from 'react-select';
 import { getMultiValueRemoveStyles } from './styles';
-import { useLookupManyProps } from '@components/TaskGrid/components/grid/lookup-many/context';
+import { useLookupManyProps } from '@components/TaskGrid/modules/lookup-many/components/context';
 
 export const MultiValueRemove = ({ innerProps, selectProps }: MultiValueRemoveProps<ComponentFramework.EntityReference, boolean, any>) => {
     const theme = useTheme();

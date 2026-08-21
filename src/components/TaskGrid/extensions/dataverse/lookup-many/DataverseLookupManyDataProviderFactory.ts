@@ -7,18 +7,24 @@ import { Liquid } from "liquidjs";
  * the Dataverse counterpart to `MemoryLookupManyDataProviderFactory`.
  *
  * The query is a Liquid template resolved per row: `{{ task.* }}` is the record the cell sits on,
- * `{{ project.* }}` and `{{ currentRecord.* }}` the descriptor's project and source records. All of it
- * comes from the parameters the descriptor hands you, so the callback is a one-liner:
+ * `{{ project.* }}` and `{{ currentRecord.* }}` the descriptor's project and source records, reached
+ * through the `onGetModules` context:
  *
  * ```ts
- * onCreateLookupManyDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create(parameters),
+ * lookupMany: createLookupManyModule({
+ *     createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
+ *         ...parameters,
+ *         projectRecord: context.projectRecord,
+ *         sourceRecord: context.sourceRecord,
+ *     }),
+ * })
  * ```
  */
 export class DataverseLookupManyDataProviderFactory {
     private static _liquid: Liquid = new Liquid();
 
     /**
-     * @param parameters Exactly what `onCreateLookupManyDataProvider` received.
+     * @param parameters What the `lookupMany` module's `createDataProvider` received, plus the descriptor's project/source records.
      * @returns A provider over the column's candidate query, or `undefined` when the column carries no
      * `FetchXml` binding — the grid then reports that the column has no candidates.
      */

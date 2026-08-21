@@ -1,4 +1,7 @@
 import { IEventEmitter } from "@talxis/client-libraries";
+//`import type`: the descriptor contract is core, and reused rather than redeclared here
+import type { IDataProvider } from "@talxis/client-libraries";
+import type { ILookupManyDataProviderParameters } from "@components/TaskGrid/interfaces";
 import { IDeletedUserQueriesResult, ISavedQuery } from "@components/TaskGrid/providers/saved-query";
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 //the types-only file, never the providers/template barrel - that one also exports the
@@ -13,6 +16,8 @@ import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/E
 //`import type`: GridCustomizer.ts is core and stays core - this file must only ever depend on its
 //strategy type, never the class itself
 import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
+//`import type`: the cell renderer contract is core, reused rather than redeclared here
+import type { ICellProps } from "@components/Grid/cells/cell/Cell";
 
 /**
  * The contract between the grid and its optional feature modules.
@@ -152,6 +157,24 @@ export interface IGridCustomizerModule {
     strategy: IGridCustomizerStrategy;
 }
 
+/** Every component the lookup-many module needs. Whatever renders it retrieves what it needs from here. */
+export interface ILookupManyComponents {
+    /** The cell renderer `GridCustomizer` assigns to any column carrying `metadata.LookupMany`. */
+    CellRenderer: React.ComponentType<ICellProps>;
+}
+
+/** What the lookup-many module contributes. Built by `createLookupManyModule()` — never written by hand. */
+export interface ILookupManyModule {
+    /**
+     * Returns the candidate records for a lookup-many cell. Called once per lookup-many cell rendered —
+     * `record` and `column` vary on every call, unlike every other module's contents. Return `undefined`
+     * for a column you do not serve and the grid throws when that column renders.
+     */
+    createDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider | undefined;
+    /** The module's UI: the cell renderer and the picker variants it chooses between. */
+    components: ILookupManyComponents;
+}
+
 /**
  * The modules a grid runs with, one optional key per available feature.
  *
@@ -167,4 +190,6 @@ export interface ITaskGridModules {
     customColumns?: ICustomColumnsModule;
     /** Deep customization of the grid's own AG Grid instance: column definitions, row class rules, one-time init. */
     gridCustomizer?: IGridCustomizerModule;
+    /** Candidate records for lookup-many (multi-value picker) columns. */
+    lookupMany?: ILookupManyModule;
 }

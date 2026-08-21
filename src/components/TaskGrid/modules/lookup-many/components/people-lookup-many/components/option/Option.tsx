@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { components, OptionProps } from 'react-select';
 import { Persona, PersonaSize } from '@fluentui/react';
-import { usePeopleLookupManyProps } from '@components/TaskGrid/components/grid/lookup-many/people-lookup-many/context';
+import { usePeopleLookupManyProps } from '@components/TaskGrid/modules/lookup-many/components/people-lookup-many/context';
 import { getOptionStyles } from './styles';
 
 export const Option = (props: OptionProps<ComponentFramework.EntityReference, boolean, any>) => {

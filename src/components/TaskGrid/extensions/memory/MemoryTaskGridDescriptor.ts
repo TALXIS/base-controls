@@ -1,4 +1,4 @@
-import { IDataProvider, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
+import { IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
@@ -97,6 +97,11 @@ export interface IMemoryTaskGridDescriptorParams {
      *     }),
      *     //there is no in-memory custom-columns implementation, so this is your own strategy
      *     customColumns: createCustomColumnsModule({ strategy: new MyCustomColumnsStrategy() }),
+     *     //which columns render as lookup-many is driven by metadata.LookupMany on the column itself;
+     *     //this is what feeds them - MemoryLookupManyDataProviderFactory turns records you hold into the provider
+     *     lookupMany: createLookupManyModule({
+     *         createDataProvider: ({ column }) => MemoryLookupManyDataProviderFactory.create(SOURCES[column.name]),
+     *     }),
      * })
      * ```
      *
@@ -105,16 +110,6 @@ export interface IMemoryTaskGridDescriptorParams {
      * (the `userQueries` array above) belongs to you, not to the strategy.
      */
     onGetModules?: (context: IMemoryStrategyContext) => ITaskGridModules;
-    /**
-     * (Optional) Supplies the candidates of a lookup-many picker. Which columns *render* as lookup-many
-     * is driven by `metadata.LookupMany` on the column itself; this is what feeds them, and
-     * {@link MemoryLookupManyDataProviderFactory} turns records you hold into the provider:
-     *
-     * ```ts
-     * onCreateLookupManyDataProvider: ({ column }) => MemoryLookupManyDataProviderFactory.create(SOURCES[column.name]),
-     * ```
-     */
-    onCreateLookupManyDataProvider?: (parameters: IMemoryLookupManyParameters) => IDataProvider | undefined;
 }
 
 /**
@@ -212,11 +207,6 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
             ?? new MemoryTaskStrategy({
                 onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
             }, deps);
-    }
-
-    /** Delegates to the `onCreateLookupManyDataProvider` parameter. */
-    public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider | undefined {
-        return this._params.onCreateLookupManyDataProvider?.(parameters);
     }
 
     // ── Internals ────────────────────────────────────────────────────────────

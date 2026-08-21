@@ -1,4 +1,4 @@
-import { FetchXmlBuilder, IDataProvider, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
+import { FetchXmlBuilder, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ITaskGridModules } from "@components/TaskGrid/modules/interfaces";
@@ -38,6 +38,10 @@ export interface IDataverseStrategyContext {
     userId?: string;
     /** The system views supplied through `systemQueries`. */
     systemQueries: ISavedQuery[];
+    /** The hydrated project record, when `projectRecord` was supplied. */
+    projectRecord?: ISingleRecord;
+    /** The hydrated source record, when `sourceRecord` was supplied. */
+    sourceRecord?: ISingleRecord;
 }
 
 /**
@@ -150,19 +154,24 @@ export interface IDataverseTaskGridDescriptorParams {
      * `customColumns: createCustomColumnsModule({ strategy: new DataverseCustomColumnsStrategy({...}) })`
      * needs the `talxis_attributedefinition` and `talxis_attributevalue` tables. Omit the key and custom
      * columns are off, and neither table is read.
-     */
-    onGetModules?: (context: IDataverseStrategyContext) => ITaskGridModules;
-    /**
-     * (Optional) Supplies the candidates of a lookup-many picker. Which columns *render* as lookup-many
-     * is driven by `metadata.LookupMany` on the column itself; this is what feeds them, and
-     * {@link DataverseLookupManyDataProviderFactory} builds the provider from the column's own
-     * `FetchXml` binding:
+     *
+     * `lookupMany: createLookupManyModule({ createDataProvider })` feeds the candidates of a lookup-many
+     * picker. Which columns *render* as lookup-many is driven by `metadata.LookupMany` on the column
+     * itself; this only supplies what feeds them, and {@link DataverseLookupManyDataProviderFactory}
+     * builds the provider from the column's own `FetchXml` binding — `context.projectRecord` and
+     * `context.sourceRecord` are what it needs beyond the cell's own `record`/`column`:
      *
      * ```ts
-     * onCreateLookupManyDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create(parameters),
+     * lookupMany: createLookupManyModule({
+     *     createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
+     *         ...parameters,
+     *         projectRecord: context.projectRecord,
+     *         sourceRecord: context.sourceRecord,
+     *     }),
+     * })
      * ```
      */
-    onCreateLookupManyDataProvider?: (parameters: IDataverseLookupManyParameters) => IDataProvider | undefined;
+    onGetModules?: (context: IDataverseStrategyContext) => ITaskGridModules;
 }
 
 /**
@@ -272,14 +281,6 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             }),
         }, deps);
     }
-    /** Delegates to the `onCreateLookupManyDataProvider` parameter. */
-    public onCreateLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider | undefined {
-        return this._params.onCreateLookupManyDataProvider?.({
-            ...parameters,
-            projectRecord: this._projectRecord,
-            sourceRecord: this._sourceRecord,
-        });
-    }
 
     private async _getProjectRecord(): Promise<ISingleRecord | undefined> {
         const projectRecord = this._initialized.projectRecord;
@@ -337,6 +338,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             recordId: this._projectRecord?.getRecordId(),
             userId: this._initialized.userId,
             systemQueries: this._systemQueries,
+            projectRecord: this._projectRecord,
+            sourceRecord: this._sourceRecord,
         };
     }
 
