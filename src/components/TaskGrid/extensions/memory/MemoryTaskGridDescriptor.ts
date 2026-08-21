@@ -81,7 +81,12 @@ export interface IMemoryTaskStrategyContext extends IMemoryStrategyContext {
     deps: ITaskStrategyDeps;
 }
 
-/** What {@link IMemoryTaskGridDescriptorParams.onInitialize} resolves: the data the grid loads with. */
+/**
+ * What {@link IMemoryTaskGridDescriptorParams.onInitialize} resolves: the data the grid loads with, plus
+ * the behaviour that depends on it. `onInitialize` is the single point of configuration entry — the only
+ * other constructor parameter is `height`, needed synchronously for the loading skeleton before any of
+ * this exists.
+ */
 export interface IMemoryTaskGridDescriptorInitializeResult {
     /**
      * The task records. **This array is written into** — creating, deleting, editing and moving tasks
@@ -96,35 +101,6 @@ export interface IMemoryTaskGridDescriptorInitializeResult {
     systemQueries: ISavedQuery[];
     /** Feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
     gridParameters?: ITaskGridParameters;
-}
-
-/**
- * Constructor parameters for {@link MemoryTaskGridDescriptor}: the required `onInitialize` hook, the
- * container height, and an optional hook per feature.
- *
- * Data comes from `onInitialize`; behaviour is passed here. What a feature hook returns decides whether
- * the feature exists at all — omit it and the feature is off, which is also what lets its code be
- * tree-shaken away.
- */
-export interface IMemoryTaskGridDescriptorParams {
-    /**
-     * Resolves the records, the metadata, the field mapping, the system views and the grid parameters.
-     * Awaited before any strategy or data provider is created, so the work is covered by the grid's
-     * loading state.
-     *
-     * Called again on every remount — same as `IDataverseTaskGridDescriptorParams.onInitialize` — so
-     * this is not a one-shot seed. Anything that must survive a remount (a personal-views array, the
-     * task records) is your own store: do the expensive/stateful part once behind a flag of your own,
-     * and return its current value on every call, keeping it current through explicit write-backs (a
-     * task strategy's `onDestroy`, a module provider's own events) rather than assuming this callback
-     * only ever runs once.
-     */
-    onInitialize: () => Promise<IMemoryTaskGridDescriptorInitializeResult>;
-    /**
-     * Container height. Kept outside `onInitialize` because the skeleton needs it before the data
-     * resolves.
-     */
-    height?: string;
     /**
      * (Optional) Supplies the task strategy — this is where every task-level option goes:
      *
@@ -144,12 +120,35 @@ export interface IMemoryTaskGridDescriptorParams {
      * (Optional) Supplies the feature modules, one builder function per feature — see
      * {@link IMemoryModules} for what each one does. Omit a key and that feature is off, which also lets
      * its code be tree-shaken away.
-     *
-     * Each builder is a callback, called once per mount, so a strategy built inside one sees whatever
-     * `onInitialize` resolved — which is also why anything that must survive a remount (a personal-views
-     * array, say) belongs to you, not to the strategy.
      */
     modules?: IMemoryModules;
+}
+
+/**
+ * Constructor parameters for {@link MemoryTaskGridDescriptor}: the required `onInitialize` hook and the
+ * container height. `onInitialize` is the single point of configuration entry — data and behaviour both
+ * come from what it resolves, since it is called again on every remount and both need to see the same
+ * thing at the same time.
+ */
+export interface IMemoryTaskGridDescriptorParams {
+    /**
+     * Resolves everything: the records, the metadata, the field mapping, the system views, the grid
+     * parameters, the task strategy and the feature modules. Awaited before any strategy or data
+     * provider is created, so the work is covered by the grid's loading state.
+     *
+     * Called again on every remount — same as `IDataverseTaskGridDescriptorParams.onInitialize` — so
+     * this is not a one-shot seed. Anything that must survive a remount (a personal-views array, the
+     * task records) is your own store: do the expensive/stateful part once behind a flag of your own,
+     * and return its current value on every call, keeping it current through explicit write-backs (a
+     * task strategy's `onDestroy`, a module provider's own events) rather than assuming this callback
+     * only ever runs once.
+     */
+    onInitialize: () => Promise<IMemoryTaskGridDescriptorInitializeResult>;
+    /**
+     * Container height. Kept outside `onInitialize` because the skeleton needs it before the data
+     * resolves.
+     */
+    height?: string;
 }
 
 /**
@@ -157,8 +156,10 @@ export interface IMemoryTaskGridDescriptorParams {
  * network, no `Xrm.WebApi`. Intended for local development, tests, Storybook and demos.
  *
  * Wires up the task and saved-query strategies from a single parameter object.
- * Dependencies — the seed data included — are resolved through `onInitialize`, so they can be
- * fetched, generated or lazily imported while the grid shows its loading state.
+ * `onInitialize` is the single point of configuration entry — the seed data, the task strategy and the
+ * feature modules are all part of what it resolves, so they can be fetched, generated or lazily imported
+ * while the grid shows its loading state, and so a strategy or module built from it always sees the
+ * exact same data `onInitialize` just resolved.
  *
  * @example
  * ```ts
@@ -170,11 +171,11 @@ export interface IMemoryTaskGridDescriptorParams {
  *       records: TASKS, metadata: TASK_METADATA,
  *       fieldMapping: { subject: 'subject', parentId: 'parentid', stackRank: 'stackrank', stateCode: 'statecode' },
  *       systemQueries: [allTasksView],
+ *       //features are opt-in: registering the module is what turns one on
+ *       modules: {
+ *         onGetUserQueriesModule: () => createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) }),
+ *       },
  *     };
- *   },
- *   //features are opt-in: registering the module is what turns one on
- *   modules: {
- *     onGetUserQueriesModule: () => createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) }),
  *   },
  * });
  * ```
@@ -229,11 +230,11 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /**
-     * Calls each builder on the `modules` parameter, per {@link IMemoryModules}. An absent builder —
-     * which is what omitting the key does — leaves that feature off.
+     * Calls each builder on the `modules` resolved by `onInitialize`, per {@link IMemoryModules}. An
+     * absent builder — which is what omitting the key does — leaves that feature off.
      */
     public onGetModules(): ITaskGridModules {
-        const modules = this._params.modules;
+        const modules = this._getData().modules;
         return {
             userQueries: modules?.onGetUserQueriesModule?.(),
             templates: modules?.onGetTemplatesModule?.(),
@@ -244,13 +245,13 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /**
-     * Delegates to the `onCreateTaskStrategy` parameter, falling back to a plain `MemoryTaskStrategy`
-     * over the resolved records. Either way the strategy is handed the *same* arrays a rebuilt one gets,
-     * so it sees everything its predecessor wrote.
+     * Delegates to the `onCreateTaskStrategy` resolved by `onInitialize`, falling back to a plain
+     * `MemoryTaskStrategy` over the resolved records. Either way the strategy is handed the *same*
+     * arrays a rebuilt one gets, so it sees everything its predecessor wrote.
      */
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
         const { records, metadata } = this._getData();
-        return this._params.onCreateTaskStrategy?.({ ...this._getStrategyContext(), deps })
+        return this._getData().onCreateTaskStrategy?.({ ...this._getStrategyContext(), deps })
             ?? new MemoryTaskStrategy({
                 onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
             }, deps);

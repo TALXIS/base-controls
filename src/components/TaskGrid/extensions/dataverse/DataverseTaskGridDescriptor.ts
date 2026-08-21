@@ -154,7 +154,12 @@ export interface IDataverseTaskStrategyContext extends IDataverseStrategyContext
     sourceRecord?: ISingleRecord;
 }
 
-/** What {@link IDataverseTaskGridDescriptorParams.onInitialize} resolves: the data the grid loads with. */
+/**
+ * What {@link IDataverseTaskGridDescriptorParams.onInitialize} resolves: the data the grid loads with,
+ * plus the behaviour that depends on it. `onInitialize` is the single point of configuration entry — the
+ * only other constructor parameter is `height`, needed synchronously for the loading skeleton before any
+ * of this exists.
+ */
 export interface IDataverseTaskGridDescriptorInitializeResult {
     /** FetchXML that drives the initial data load. May use the Liquid template variables. */
     baseFetchXml: string;
@@ -170,29 +175,6 @@ export interface IDataverseTaskGridDescriptorInitializeResult {
     userId?: string;
     /** Feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
     gridParameters?: ITaskGridParameters;
-}
-
-/**
- * Constructor parameters for {@link DataverseTaskGridDescriptor}: the required `onInitialize` hook, the
- * container height, and an optional hook per feature.
- *
- * Data comes from `onInitialize`; behaviour is passed here. What a feature hook returns decides whether
- * the feature exists at all — omit it and the feature is off, which is also what keeps the tables it
- * would read (and its code) out of your deployment. The same shape
- * {@link MemoryTaskGridDescriptor} uses.
- */
-export interface IDataverseTaskGridDescriptorParams {
-    /**
-     * Resolves the FetchXML, the field mapping, the system views and the records the query is scoped by.
-     * Awaited once, before any strategy or data provider is created, so the work is covered by the
-     * grid's loading state.
-     */
-    onInitialize: () => Promise<IDataverseTaskGridDescriptorInitializeResult>;
-    /**
-     * Container height. Kept outside `onInitialize` because the skeleton needs it before the data
-     * resolves.
-     */
-    height?: string;
     /**
      * (Optional) Supplies the task strategy — this is where every task-level option goes: the form ids,
      * the delete behaviour, the root task, and the strategy's own `form` hook.
@@ -215,20 +197,41 @@ export interface IDataverseTaskGridDescriptorParams {
      * (Optional) Supplies the feature modules, one builder function per feature — see
      * {@link IDataverseModules} for what each one does and needs. Omit a key and that feature is off,
      * which also keeps its code (and whatever table it reads) out of your bundle.
-     *
-     * Every builder is called after `onInitialize` has resolved, so a builder that does take context
-     * (`entityName`, for instance) always sees a value derived from the loaded `baseFetchXml`, never a
-     * stale or empty one.
      */
     modules?: IDataverseModules;
 }
 
 /**
+ * Constructor parameters for {@link DataverseTaskGridDescriptor}: the required `onInitialize` hook and
+ * the container height. `onInitialize` is the single point of configuration entry — data and behaviour
+ * both come from what it resolves, since it is called again on every remount and both need to see the
+ * same thing at the same time. The same shape {@link MemoryTaskGridDescriptor} uses.
+ */
+export interface IDataverseTaskGridDescriptorParams {
+    /**
+     * Resolves everything: the FetchXML, the field mapping, the system views, the records the query is
+     * scoped by, the task strategy and the feature modules. Awaited before any strategy or data provider
+     * is created, so the work is covered by the grid's loading state.
+     *
+     * Called again on every remount — and the grid remounts when a view changes or a record is saved —
+     * so re-fetching here should be idempotent and cheap. Nothing about this callback caches for you;
+     * anything that must survive a remount is your own store, kept current through explicit write-backs.
+     */
+    onInitialize: () => Promise<IDataverseTaskGridDescriptorInitializeResult>;
+    /**
+     * Container height. Kept outside `onInitialize` because the skeleton needs it before the data
+     * resolves.
+     */
+    height?: string;
+}
+
+/**
  * Ready-to-use {@link ITaskGridDescriptor} implementation for the Dataverse / Talxis platform.
  *
- * Wires together the required strategies — task CRUD, saved queries. The data is resolved by
- * `onInitialize`, the behaviour passed alongside it. Pass an instance to
- * `TaskGridDatasetControlFactory.createInstance`.
+ * Wires together the required strategies — task CRUD, saved queries. `onInitialize` is the single point
+ * of configuration entry — the data and the behaviour that depends on it are both part of what it
+ * resolves, so a strategy or module built from it always sees the exact same data `onInitialize` just
+ * resolved. Pass an instance to `TaskGridDatasetControlFactory.createInstance`.
  *
  * @example
  * ```ts
@@ -238,11 +241,11 @@ export interface IDataverseTaskGridDescriptorParams {
  *     baseFetchXml: myFetchXml,
  *     fieldMapping: { parentId: 'talxis_parenttaskid', subject: 'subject', stackRank: 'talxis_stackrank' },
  *     systemQueries: [myDefaultView],
+ *     //features are opt-in: registering the module is what turns one on
+ *     modules: {
+ *       onGetUserQueriesModule: context => createUserQueryModule({ strategy: new DataverseUserQueryStrategy({ entityName: context.entityName }) }),
+ *     },
  *   }),
- *   //features are opt-in: registering the module is what turns one on
- *   modules: {
- *     onGetUserQueriesModule: context => createUserQueryModule({ strategy: new DataverseUserQueryStrategy({ entityName: context.entityName }) }),
- *   },
  * });
  * const control = await TaskGridDatasetControlFactory.createInstance({ taskGridDescriptor: descriptor, ... });
  * ```
@@ -305,13 +308,13 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /**
-     * Calls each builder on the `modules` parameter, per {@link IDataverseModules} — each with only the
-     * slice of context it declares, or with none at all. An absent builder — which is what omitting the
-     * key does — leaves that feature off.
+     * Calls each builder on the `modules` resolved by `onInitialize`, per {@link IDataverseModules} —
+     * each with only the slice of context it declares, or with none at all. An absent builder — which is
+     * what omitting the key does — leaves that feature off.
      */
     public onGetModules(): ITaskGridModules {
         const context = this._getStrategyContext();
-        const modules = this._params.modules;
+        const modules = this._initialized.modules;
         return {
             userQueries: modules?.onGetUserQueriesModule?.(context),
             templates: modules?.onGetTemplatesModule?.(),
@@ -322,8 +325,9 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /**
-     * Delegates to the `onCreateTaskStrategy` parameter, falling back to a plain `DataverseTaskStrategy`
-     * over the resolved FetchXML. The form ids, delete flags and root task live on that callback.
+     * Delegates to the `onCreateTaskStrategy` resolved by `onInitialize`, falling back to a plain
+     * `DataverseTaskStrategy` over the resolved FetchXML. The form ids, delete flags and root task live
+     * on that callback.
      */
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
         const context: IDataverseTaskStrategyContext = {
@@ -333,7 +337,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             projectRecord: this._projectRecord,
             sourceRecord: this._sourceRecord,
         };
-        return this._params.onCreateTaskStrategy?.(context) ?? new DataverseTaskStrategy({
+        return this._initialized.onCreateTaskStrategy?.(context) ?? new DataverseTaskStrategy({
             onInitialize: async () => ({
                 fetchXml: this._fetchXml,
                 projectRecord: this._projectRecord,
