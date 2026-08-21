@@ -1,33 +1,31 @@
-import { EditColumns as EditColumnsBase, IEditColumnsRef } from '@components/DatasetControl/EditColumns/EditColumns';
+import { EditColumns as EditColumnsBase, IEditColumnsProps, IEditColumnsRef } from '@components/DatasetControl/EditColumns/EditColumns';
 import * as React from 'react';
-import { getEditColumnsStyles } from './styles';
 import { useIsLoading } from '@hooks';
 import { TaskGridEditColumnsContext } from './useTaskGridEditColumns';
-import { useDatasetControl, useLocalizationService, usePcfContext, useRootElementId } from '@components/TaskGrid/context';
+import { useDatasetControl, useLocalizationService, usePcfContext } from '@components/TaskGrid/context';
+import { CommandBar } from '../command-bar/CommandBar';
+import { OptionCommandBar } from '../option-command-bar/OptionCommandBar';
+import { SortableItemCommandBar } from '../sortable-item-command-bar/SortableItemCommandBar';
 
-
-interface IEditColumnsProps {
-    onDismiss: () => void;
-}
-
+/**
+ * Only ever rendered by `Header.tsx` when the custom-columns module is registered, so unlike every other
+ * reader of `getModules()` this one does not need the `?.` — the module is what put this component here.
+ */
 export const EditColumns = (props: IEditColumnsProps) => {
     const localizationService = useLocalizationService();
     const saveOnDismiss = React.useRef(false);
     const datasetControl = useDatasetControl();
-    const customColumns = datasetControl.getModules().customColumns;
-    const customColumnsDataProvider = customColumns?.provider;
+    const customColumnsDataProvider = datasetControl.getModule('customColumns').provider;
     const editColumnsRef = React.useRef<IEditColumnsRef>();
     const pcfContext = usePcfContext();
-    const rootElementId = useRootElementId();
-    const styles = React.useMemo(() => getEditColumnsStyles(), []);
-    
+
     const _onDeleteColumn = async (columnName: string) => {
         editColumnsRef.current?.remountColumnSelector();
         const response = await pcfContext.navigation.openConfirmDialog({
             text: localizationService.getLocalizedString('confirmColumnDelete'),
         })
         if (response.confirmed) {
-            const result = await customColumnsDataProvider?.deleteColumn(columnName);
+            const result = await customColumnsDataProvider.deleteColumn(columnName);
             if (result) {
                 saveOnDismiss.current = true;
                 editColumnsRef.current?.remountColumnSelector();
@@ -37,10 +35,10 @@ export const EditColumns = (props: IEditColumnsProps) => {
 
     const _onCreateColumn = async () => {
         editColumnsRef.current?.remountColumnSelector();
-        const result = await customColumnsDataProvider?.createColumn();
+        const result = await customColumnsDataProvider.createColumn();
         if (result) {
             editColumnsRef.current?.remountColumnSelector();
-            const column = customColumnsDataProvider?.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === result)!
+            const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === result)!
             editColumnsRef.current?.editColumnsModel.addColumn(column);
         }
     }
@@ -48,7 +46,7 @@ export const EditColumns = (props: IEditColumnsProps) => {
     const _onEditColumn = async (columnName: string, requireRemount?: boolean) => {
         if (!requireRemount) {
             editColumnsRef.current?.remountColumnSelector();
-            const result = await customColumnsDataProvider?.updateColumn(columnName);
+            const result = await customColumnsDataProvider.updateColumn(columnName);
             if (result) {
                 editColumnsRef.current?.remountColumnSelector();
             }
@@ -58,9 +56,9 @@ export const EditColumns = (props: IEditColumnsProps) => {
                 text: localizationService.getLocalizedString('confirmColumnEdit'),
             });
             if (response.confirmed) {
-                const result = await customColumnsDataProvider?.updateColumn(columnName);
+                const result = await customColumnsDataProvider.updateColumn(columnName);
                 if (result) {
-                    const column = customColumnsDataProvider?.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === columnName)!;
+                    const column = customColumnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === columnName)!;
                     //re-add the column to make sure the metadata are updated
                     editColumnsRef.current?.editColumnsModel.deleteColumn(columnName);
                     editColumnsRef.current?.editColumnsModel.addColumn(column);
@@ -87,27 +85,14 @@ export const EditColumns = (props: IEditColumnsProps) => {
 
     return <TaskGridEditColumnsContext.Provider value={{ onCreateColumn, onEditColumn, onDeleteColumn }}>
         <EditColumnsBase
+            {...props}
             isLoading={isLoading}
-            showScopeSelector={datasetControl.isEditColumnsScopeSelectorEnabled()}
-            panelProps={{
-                isBlocking: true,
-                onOuterClick: () => { },
-                focusTrapZoneProps: {
-                    forceFocusInsideTrap: false
-                },
-                layerProps: {
-                    hostId: rootElementId,
-                    styles: {
-                        root: styles.layerHost
-                    }
-                }
-            }}
             onGetRef={(ref) => editColumnsRef.current = ref}
-            components={customColumns ? {
-                CommandBar: customColumns.components.CommandBar as () => JSX.Element,
-                SortableItemCommandBar: customColumns.components.SortableItemCommandBar,
-                OptionCommandBar: customColumns.components.OptionCommandBar
-            } : undefined}
+            components={{
+                CommandBar: CommandBar as () => JSX.Element,
+                SortableItemCommandBar: SortableItemCommandBar,
+                OptionCommandBar: OptionCommandBar
+            }}
             onDismiss={onDismiss} />
     </TaskGridEditColumnsContext.Provider>
 }

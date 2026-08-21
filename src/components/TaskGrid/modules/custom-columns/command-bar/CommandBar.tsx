@@ -1,7 +1,7 @@
 import { components } from "@components/DatasetControl/EditColumns/components";
 import { ICommandBarItemProps, ICommandBarProps } from "@legacy";
 import * as React from 'react';
-import { useTaskGridEditColumns } from "@components/TaskGrid/components/header/edit-columns/useTaskGridEditColumns";
+import { useTaskGridEditColumns } from "../edit-columns/useTaskGridEditColumns";
 import { useDatasetControl, useLocalizationService } from "@components/TaskGrid/context";
 
 

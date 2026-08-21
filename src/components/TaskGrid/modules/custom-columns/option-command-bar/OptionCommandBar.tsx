@@ -1,7 +1,7 @@
 import * as React from "react";
 import {  ICommandBarItemProps } from "@legacy";
 import { getCustomColumnSuffixStyles } from "./styles";
-import { useTaskGridEditColumns } from "@components/TaskGrid/components/header/edit-columns/useTaskGridEditColumns";
+import { useTaskGridEditColumns } from "../edit-columns/useTaskGridEditColumns";
 import { IOptionCommandBarProps, components } from "@components/DatasetControl/EditColumns/components";
 import { useDatasetControl } from "@components/TaskGrid/context";
 

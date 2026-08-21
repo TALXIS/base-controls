@@ -7,8 +7,9 @@ import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/T
 //the types-only file, never the providers/custom-columns barrel - that one also exports the
 //CustomColumnsDataProvider class, a value
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
-import { ICommandBarProps } from "@legacy";
-import { IOptionCommandBarProps, ISortableItemCommandBarProps } from "@components/DatasetControl/EditColumns/components";
+//`import type`, not a plain import: this file (unlike EditColumns.tsx) must never carry a runtime
+//edge to the base panel component, only to its prop type
+import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
 
 /**
  * The contract between the grid and its optional feature modules.
@@ -120,14 +121,12 @@ export interface ITemplateModule {
 }
 
 /**
- * The three extension points the generic Edit Columns panel accepts, overridden for custom columns.
- * Typed as plain function components — the same shape `IComponents` in the base panel requires — not
- * `React.ComponentType`, which also admits class components the panel does not accept.
+ * The Edit Columns panel, with the custom-column commands wired in. `IEditColumnsProps` is the base
+ * panel's own prop type — reused rather than redeclared, so this component is a drop-in replacement for
+ * the plain panel: `Header.tsx` calls whichever one it has with the same props.
  */
 export interface ICustomColumnsComponents {
-    CommandBar: (props: ICommandBarProps) => JSX.Element;
-    SortableItemCommandBar: (props: ISortableItemCommandBarProps) => JSX.Element;
-    OptionCommandBar: (props: IOptionCommandBarProps) => JSX.Element;
+    EditColumns: React.ComponentType<IEditColumnsProps>;
 }
 
 /** What the custom-columns module contributes. Built by `createCustomColumnsModule()` — never written by hand. */

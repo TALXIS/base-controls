@@ -4,9 +4,9 @@ import * as React from "react"
 import { ContextualMenuItemType, useTheme } from "@fluentui/react";
 import { getHeaderStyles } from "./styles";
 import { SettingsCallout } from "./settings-callout";
-import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, usePcfContext, useRootElementId, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
 import { ViewSwitcher } from "./view-switcher";
-import { EditColumns } from "./edit-columns/EditColumns";
+import { EditColumns as EditColumnsBase } from "@components/DatasetControl/EditColumns/EditColumns";
 
 interface ITaskGridHeaderProps {
     headerProps: IHeaderProps;
@@ -21,6 +21,9 @@ export const Header = (props: ITaskGridHeaderProps) => {
     const [editColumnsOpen, setEditColumnsOpen] = React.useState(false);
     const pcfContext = usePcfContext();
     const components = useTaskGridComponents();
+    const rootElementId = useRootElementId();
+    const customColumns = datasetControl.getModules().customColumns;
+    const EditColumnsComponent = customColumns?.components.EditColumns ?? EditColumnsBase;
 
     const hasContent = () => {
         return datasetControl.isViewSwitcherEnabled() ||
@@ -173,7 +176,22 @@ export const Header = (props: ITaskGridHeaderProps) => {
                     }
                 })}
                 {editColumnsOpen &&
-                    <EditColumns onDismiss={() => setEditColumnsOpen(false)} />
+                    <EditColumnsComponent
+                        onDismiss={() => setEditColumnsOpen(false)}
+                        showScopeSelector={datasetControl.isEditColumnsScopeSelectorEnabled()}
+                        panelProps={{
+                            isBlocking: true,
+                            onOuterClick: () => { },
+                            focusTrapZoneProps: {
+                                forceFocusInsideTrap: false
+                            },
+                            layerProps: {
+                                hostId: rootElementId,
+                                styles: {
+                                    root: styles.editColumnsLayerHost
+                                }
+                            }
+                        }} />
                 }
             </div>
         }
