@@ -21,6 +21,7 @@ import {
     IDataverseTaskAvailableRelatedColumnsParams,
     IDataverseTaskCreateParams,
     IDataverseTaskDeleteParams,
+    IDataverseNewTaskDefaultsParams,
     IDataverseTaskMoveParams,
     IDataverseTaskOpenParams,
     IDataverseTaskSaveParams,
@@ -55,6 +56,15 @@ export interface IDataverseTaskStrategyParams {
      * through the Web API or opens the create form, depending on `enableInlineCreation`.
      */
     onCreateTask?: (params: IDataverseTaskCreateParams) => Promise<IRawRecord | null>;
+    /**
+     * Extra values every new task starts with, keyed by column name. A lookup value — an entity
+     * reference — is written both into the create form's prefill and into the record itself; anything
+     * else is prefilled and saved as given.
+     *
+     * The project and parent links the grid resolves are applied after these, so they cannot be
+     * overwritten.
+     */
+    onGetNewTaskDefaults?: (params: IDataverseNewTaskDefaultsParams) => Promise<Partial<IRawRecord>>;
     /**
      * Deletes tasks. Defaults to {@link DataverseTaskActions.deleteTasks}, which honours
      * {@link IDataverseTaskInitializeResult.isCascadeDeleteEnabled} and refuses tasks with children.
@@ -145,7 +155,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     private _entityName!: string;
     private _projectReference?: ComponentFramework.EntityReference;
     private _projectRecord?: ISingleRecord;
-    private _projectMetadata?: Xrm.Metadata.EntityMetadata;
     private _rootTaskId?: string;
     private _provider!: ITaskDataProvider;
     private _editFormId?: string;
@@ -211,9 +220,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             }
         });
 
-        if (this._projectReference) {
-            this._projectMetadata = await window.Xrm.Utility.getEntityMetadata(this._projectReference.etn!);
-        }
         return {
             rawData: finalRawData,
             columns,
@@ -415,7 +421,8 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             isInlineCreateEnabled: this._isInlineCreateEnabled,
             createFormId: this._createFormId,
             projectReference: this._projectReference,
-            projectMetadata: this._projectMetadata,
+            sourceRecord: this._sourceRecord,
+            onGetNewTaskDefaults: this._params.onGetNewTaskDefaults,
             onGetFormParameters: this._getFormParameters,
             onGetRawRecords: ids => this.onGetRawRecords(ids),
         };

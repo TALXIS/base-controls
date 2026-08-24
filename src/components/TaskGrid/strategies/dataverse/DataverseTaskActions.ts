@@ -8,6 +8,7 @@ import {
     IRawRecord,
     IRecord,
     IRecordSaveOperationResult,
+    ISingleRecord,
     Sanitizer,
 } from "@talxis/client-libraries";
 import {
@@ -33,7 +34,7 @@ export interface IFormParameters {
 export type DataverseFormOperation = 'create' | 'edit' | 'bulkEdit' | 'open';
 
 /** The task entity and the grid's view of it — what every write needs to address a record. */
-interface IDataverseTaskEntity {
+export interface IDataverseTaskEntity {
     /** The task entity's logical name. */
     entityName: string;
     /** The task entity set, used to build `@odata.bind` payloads. */
@@ -87,16 +88,36 @@ export interface IDataverseTaskAvailableRelatedColumnsParams {
     fetchXmlDataProvider: IFetchXmlDataProvider;
 }
 
-/** What {@link DataverseTaskActions.createTask} needs. */
-export interface IDataverseTaskCreateParams extends ITaskCreateParams, IDataverseTaskEntity, IDataverseTaskForms, IDataverseTaskRecords {
-    /** When `true` the record is created straight through the Web API; otherwise a form is opened. */
-    isInlineCreateEnabled: boolean;
-    /** The form to open when creating through a dialog. */
-    createFormId?: string;
+/**
+ * What {@link IDataverseTaskStrategyParams.onGetNewTaskDefaults} is handed: everything needed to decide
+ * what a task starts with, and nothing that performs the create.
+ */
+export interface IDataverseNewTaskDefaultsParams extends ITaskCreateParams, IDataverseTaskEntity {
     /** The project new tasks are linked to, when the descriptor supplied one. */
     projectReference?: ComponentFramework.EntityReference;
-    /** The project entity's metadata — its entity set completes the `@odata.bind` value. */
-    projectMetadata?: Xrm.Metadata.EntityMetadata;
+    /** The record the grid is scoped by, when the descriptor supplied one. */
+    sourceRecord?: ISingleRecord;
+    /** When `true` the record is created straight through the Web API; otherwise a form is opened. */
+    isInlineCreateEnabled: boolean;
+}
+
+/** What {@link DataverseTaskActions.createTask} needs. */
+export interface IDataverseTaskCreateParams extends IDataverseNewTaskDefaultsParams, IDataverseTaskForms, IDataverseTaskRecords {
+    /** The form to open when creating through a dialog. */
+    createFormId?: string;
+    /**
+     * Extra values the new task starts with, keyed by column name — {@link IDataverseTaskStrategyParams.onGetNewTaskDefaults}.
+     * The links the grid resolves are written on top of them.
+     */
+    onGetNewTaskDefaults?: (params: IDataverseNewTaskDefaultsParams) => Promise<Partial<IRawRecord>>;
+}
+
+/** What a new task starts with, split by who owns it. */
+interface INewTaskValues {
+    /** What the caller asked every new task to start with. */
+    defaults: { [columnName: string]: any };
+    /** Where the grid puts the task: its project, its parent task, and its rank among the siblings. */
+    placement: { [columnName: string]: any };
 }
 
 /** What {@link DataverseTaskActions.deleteTasks} needs. */
@@ -178,69 +199,16 @@ export class DataverseTaskActions {
     }
 
     /**
-     * Creates one task, either straight through the Web API or by opening the create form.
-     *
-     * The new task is ranked before its first sibling, and pre-linked to the project and the parent.
+     * Creates one task: straight through the Web API when the grid creates inline, otherwise by opening
+     * the create form and writing the task's placement on top of what was saved.
      *
      * @returns The created record, or `null` when the user closed the form without saving.
      */
     public static async createTask(params: IDataverseTaskCreateParams): Promise<IRawRecord | null> {
-        const {
-            parentRecord, nextSibling, entityName, entitySetName, fieldMapping, provider, isInlineCreateEnabled,
-            createFormId, projectReference, projectMetadata, onGetFormParameters, onGetRawRecords,
-        } = params;
-        const parentTaskId = parentRecord?.getRecordId();
-        const data: { [key: string]: any } = {};
-        let pageInput: Xrm.Navigation.PageInputEntityRecord = {
-            pageType: 'entityrecord',
-            entityName: entityName,
-            data: data,
-            formId: createFormId
-        };
-        //prefill project
-        if (projectReference) {
-            const projectIdColumnName = fieldMapping.projectId;
-            data[`${projectIdColumnName}`] = projectReference.id.guid;
-            data[`${projectIdColumnName}name`] = projectReference.name;
-            data[`${projectIdColumnName}type`] = projectReference.etn;
-        }
-        //prefill parent task
-        if (parentTaskId) {
-            const parentIdColumnName = fieldMapping.parentId;
-            data[`${parentIdColumnName}`] = parentTaskId;
-            data[`${parentIdColumnName}name`] = provider.getRecordsMap()[parentTaskId].getNamedReference().name;
-            data[`${parentIdColumnName}type`] = entityName;
-        }
-        let payload: { [key: string]: any } = {};
-        //before every existing sibling the provider resolved, filtered out of the view or not
-        payload[`${fieldMapping.stackRank}`] = StackRank.between(undefined, this._getStackRank(nextSibling, fieldMapping));
-
-        if (projectReference) {
-            payload[`${await this._getNavigationalPropertyName(entityName, projectReference.etn!, fieldMapping.projectId!)}@odata.bind`] = `/${projectMetadata?.EntitySetName}(${projectReference.id.guid})`;
-        }
-        if (parentTaskId) {
-            payload[`${await this._getNavigationalPropertyName(entityName, entityName, fieldMapping.parentId)}@odata.bind`] = `/${entitySetName}(${parentTaskId})`;
-        }
-        if (isInlineCreateEnabled) {
-            const result = await window.Xrm.WebApi.createRecord(entityName, payload);
-            const rawRecord = (await onGetRawRecords([result.id]))[0];
-            return rawRecord;
-        }
-
-        const { pageInput: resolvedPageInput, navigationOptions: resolvedNavigationOptions } = onGetFormParameters('create', {
-            pageInput,
-            navigationOptions: this._getFormNavigationOptions()
-        });
-        const navigateToResult = await Xrm.Navigation.navigateTo(resolvedPageInput, resolvedNavigationOptions);
-        if (navigateToResult.savedEntityReference) {
-            const entityReference = Sanitizer.Lookup.getEntityReference(navigateToResult.savedEntityReference[0]);
-            await window.Xrm.WebApi.updateRecord(entityName, entityReference.id.guid, payload);
-            const rawRecord = (await onGetRawRecords([entityReference.id.guid]))[0];
-            return rawRecord;
-        }
-        else {
-            return null;
-        }
+        const values = await this._getNewTaskValues(params);
+        return params.isInlineCreateEnabled
+            ? await this._createTaskThroughWebApi(values, params)
+            : await this._createTaskThroughForm(values, params);
     }
 
     /**
@@ -364,6 +332,111 @@ export class DataverseTaskActions {
         else {
             return (<FetchXmlDataProvider>fetchXmlDataProvider).onRecordSave(record);
         }
+    }
+
+    // ── Creating a task ──────────────────────────────────────────────────────
+
+    /**
+     * Everything a new task starts with, keyed by column: the caller's defaults, and the placement the
+     * grid resolves — the project, the parent task, and the rank that puts it before its siblings.
+     *
+     * Lookups stay entity references here; what a Dataverse create makes of them is the converters' job.
+     */
+    private static async _getNewTaskValues(params: IDataverseTaskCreateParams): Promise<INewTaskValues> {
+        const { parentRecord, nextSibling, fieldMapping, provider, projectReference, onGetNewTaskDefaults } = params;
+        const placement: { [columnName: string]: any } = {};
+        if (projectReference && fieldMapping.projectId) {
+            placement[fieldMapping.projectId] = projectReference;
+        }
+        const parentTaskId = parentRecord?.getRecordId();
+        if (parentTaskId) {
+            placement[fieldMapping.parentId] = provider.getRecordsMap()[parentTaskId].getNamedReference();
+        }
+        //before every existing sibling the provider resolved, filtered out of the view or not
+        placement[fieldMapping.stackRank] = StackRank.between(undefined, this._getStackRank(nextSibling, fieldMapping));
+        return {
+            defaults: await onGetNewTaskDefaults?.(params) ?? {},
+            placement: placement,
+        };
+    }
+
+    /** Creates the task through the Web API, values and placement in one body. */
+    private static async _createTaskThroughWebApi(values: INewTaskValues, params: IDataverseTaskCreateParams): Promise<IRawRecord | null> {
+        const { entityName, onGetRawRecords } = params;
+        const payload = await this._toWebApiPayload({ ...values.defaults, ...values.placement }, entityName);
+        const result = await window.Xrm.WebApi.createRecord(entityName, payload);
+        return (await onGetRawRecords([result.id]))[0];
+    }
+
+    /**
+     * Opens the create form with the values prefilled, then writes the placement onto what was saved —
+     * the rank the form has no field for, and the links the grid resolved.
+     *
+     * The defaults are not written again: they reached the form as prefill, and what the user did with
+     * them there is what the task keeps.
+     */
+    private static async _createTaskThroughForm(values: INewTaskValues, params: IDataverseTaskCreateParams): Promise<IRawRecord | null> {
+        const { entityName, createFormId, onGetFormParameters, onGetRawRecords } = params;
+        const { pageInput, navigationOptions } = onGetFormParameters('create', {
+            pageInput: {
+                pageType: 'entityrecord',
+                entityName: entityName,
+                data: this._toFormPrefill({ ...values.defaults, ...values.placement }),
+                formId: createFormId,
+            },
+            navigationOptions: this._getFormNavigationOptions(),
+        });
+        const navigateToResult = await Xrm.Navigation.navigateTo(pageInput, navigationOptions);
+        if (!navigateToResult.savedEntityReference) {
+            return null;
+        }
+        const entityReference = Sanitizer.Lookup.getEntityReference(navigateToResult.savedEntityReference[0]);
+        await window.Xrm.WebApi.updateRecord(entityName, entityReference.id.guid, await this._toWebApiPayload(values.placement, entityName));
+        return (await onGetRawRecords([entityReference.id.guid]))[0];
+    }
+
+    /**
+     * The values as the `data` a create form reads: a lookup becomes the three keys the form binds to,
+     * everything else is written as it came.
+     */
+    private static _toFormPrefill(values: { [columnName: string]: any }): { [key: string]: any } {
+        const data: { [key: string]: any } = {};
+        for (const [columnName, value] of Object.entries(values)) {
+            const reference = this._getLookupReference(value);
+            if (!reference) {
+                data[columnName] = value;
+                continue;
+            }
+            data[columnName] = reference.id.guid;
+            data[`${columnName}name`] = reference.name;
+            data[`${columnName}type`] = reference.etn;
+        }
+        return data;
+    }
+
+    /**
+     * The same values as a Web API body: a lookup becomes the `@odata.bind` its navigation property and
+     * the target's entity set spell out, everything else is written as it came.
+     */
+    private static async _toWebApiPayload(values: { [columnName: string]: any }, entityName: string): Promise<{ [key: string]: any }> {
+        const payload: { [key: string]: any } = {};
+        for (const [columnName, value] of Object.entries(values)) {
+            const reference = this._getLookupReference(value);
+            if (!reference) {
+                payload[columnName] = value;
+                continue;
+            }
+            const referencedMetadata = await window.Xrm.Utility.getEntityMetadata(reference.etn!);
+            payload[`${await this._getNavigationalPropertyName(entityName, reference.etn!, columnName)}@odata.bind`] =
+                `/${referencedMetadata.EntitySetName}(${reference.id.guid})`;
+        }
+        return payload;
+    }
+
+    /** The entity reference behind a value, whether it arrived bare or as the array a lookup column holds. */
+    private static _getLookupReference(value: any): ComponentFramework.EntityReference | null {
+        const candidate = Array.isArray(value) ? value[0] : value;
+        return candidate?.id?.guid && candidate?.etn ? candidate as ComponentFramework.EntityReference : null;
     }
 
     // ── Forms ────────────────────────────────────────────────────────────────
