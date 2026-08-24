@@ -262,7 +262,7 @@ declare const createUserQueryModule: (options: {
 }) => any;
 /** Task templates. Bring the provider; the module brings the picker. */
 declare const createTemplateModule: (options: { provider: any }) => any;
-/** User-defined columns. Bring the strategy; the module brings the panel and its commands. */
+/** Direct access to AG Grid. Bring the customizer strategy. */
 declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
 /** Lookup-many pickers. Return the candidates for each column. */
 declare const createLookupManyModule: (options: {

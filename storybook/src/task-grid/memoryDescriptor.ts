@@ -1,7 +1,6 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
-import { createCustomColumnsModule, createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
-import { MemoryCustomColumnsStrategy } from './memoryCustomColumnsStrategy';
+import { createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
 import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery } from '@talxis/base-controls';
 
 /**
@@ -25,12 +24,9 @@ const ACTIVE_STATE_CODE = '0';
  * loading state, and the ~1300 lines of sample records stay out of the story's initial chunk.
  */
 /** The feature modules {@link createMemoryTaskGridDescriptor} knows how to register. */
-export type MemoryTaskGridModuleName = 'userQueries' | 'templates' | 'customColumns' | 'lookupMany';
+export type MemoryTaskGridModuleName = 'userQueries' | 'templates' | 'lookupMany';
 
-/**
- * What the docs grid registers when a story does not say otherwise. `customColumns` is absent because
- * nothing in-memory ships with the package.
- */
+/** What the docs grid registers when a story does not say otherwise. */
 const DEFAULT_MODULES: MemoryTaskGridModuleName[] = ['userQueries', 'templates', 'lookupMany'];
 
 /**
@@ -122,12 +118,6 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             provider.templateEvents.addEventListener('onAfterTemplateCreated', () => { templates = provider.getTemplateSource(); });
             return createTemplateModule({ provider });
         },
-        onGetCustomColumnsModule: () => !isEnabled('customColumns') ? undefined : createCustomColumnsModule({
-            strategy: new MemoryCustomColumnsStrategy(),
-            enableCustomColumnCreation: true,
-            enableCustomColumnEditing: true,
-            enableCustomColumnDeletion: true,
-        }),
         onGetGridCustomizerModule: () => {
             const strategy = options?.onGetGridCustomizerStrategy?.();
             return strategy ? createGridCustomizerModule({ strategy }) : undefined;
@@ -280,7 +270,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     };
 
     return new MemoryTaskGridDescriptor({
-        height: '800px',
+        height: '600px',
         onInitialize,
     });
 };
