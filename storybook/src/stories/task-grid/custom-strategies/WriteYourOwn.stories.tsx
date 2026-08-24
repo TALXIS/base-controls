@@ -215,7 +215,7 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
 }
 \`\`\`
 
-\`services\` reaches everything the grid built — \`savedQueryDataProvider\`, \`gridParameters\`, the providers a module registered — so the strategy does not have to be told twice. Store it in the constructor and resolve inside the methods; see [**Overview → Services**](?path=/story/task-grid-custom-strategies-overview--overview). The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
+\`services\` reaches everything the grid built — \`savedQueryDataProvider\`, \`gridParameters\`, the providers a module registered — so the strategy does not have to be told twice. Store it in the constructor and resolve inside the methods; see [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies--overview). The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
 
 ## Where the rest lives
 

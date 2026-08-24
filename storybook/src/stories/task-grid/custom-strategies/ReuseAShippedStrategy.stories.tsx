@@ -45,7 +45,7 @@ onCreateTaskStrategy: ({ services }) => new MemoryTaskStrategy({ onInitialize },
 new MemoryTemplateDataProvider({ templates, services })
 \`\`\`
 
-What a locator holds depends on which modules the grid runs with — see [**Overview → Services**](?path=/story/task-grid-custom-strategies-overview--overview).
+What a locator holds depends on which modules the grid runs with — see [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies--overview).
 
 ## Dataverse data, in-memory views
 

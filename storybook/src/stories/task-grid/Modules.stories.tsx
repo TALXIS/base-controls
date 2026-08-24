@@ -62,7 +62,7 @@ Each builder takes the one thing only you can provide, plus a few switches for i
 | \`createLookupManyModule\` | \`createDataProvider\` | — | \`lookupManyModule\` |
 | \`createGridCustomizerModule\` | \`strategy\` | — | \`gridCustomizerModule\` |
 
-Whatever a builder returns, the grid registers under that key, so a module — and everything it brings — is reachable from the rest of the grid: \`services.find('templatesModule')?.provider\`. That is also how a templates provider describes the tasks a template expands into, in the other direction: \`services.get('taskDataProvider')\`. See [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies-overview--overview).
+Whatever a builder returns, the grid registers under that key, so a module — and everything it brings — is reachable from the rest of the grid: \`services.find('templatesModule')?.provider\`. That is also how a templates provider describes the tasks a template expands into, in the other direction: \`services.get('taskDataProvider')\`. See [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies--overview).
 
 Every grid below runs **one** module, so you can see exactly what it adds. Flip **Code** to read the registration, and edit it — remove the module and the feature disappears from the grid.
                 `.trim(),
