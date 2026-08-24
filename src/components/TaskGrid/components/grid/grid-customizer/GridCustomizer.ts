@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
-import { DatasetConstants, IColumn, IRawRecord, IRecord } from "@talxis/client-libraries";
+import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
@@ -449,19 +449,38 @@ export class GridCustomizer implements IGridCustomizer {
 
 
     private _onAfterTaskDataUpdated = (newData: IRawRecord[]) => {
-        const recordIdsSet = new Set(newData.map(item => item[this._taskDataProvider.getMetadata().PrimaryIdAttribute]));
-        const nodes = this._gridApi.getRenderedNodes().filter(node => recordIdsSet.has(node.id!));
-        this._gridApi.refreshCells({
-            rowNodes: nodes,
-            force: true
-        })
+        const primaryIdAttribute = this._taskDataProvider.getMetadata().PrimaryIdAttribute;
+        this._redrawRows(newData.map(item => item[primaryIdAttribute] as string));
     }
+
+    private _onAfterRecordSaved = (result: IRecordSaveOperationResult) => {
+        this._redrawRows([result.recordId]);
+    }
+
+    /**
+     * Redraws whole rows rather than refreshing their cells: the row class rules — the inactive styling
+     * among them — are only evaluated while a row is drawn, so a record changed through the data layer
+     * would otherwise keep the classes it was drawn with.
+     *
+     * A row being edited is left alone: redrawing it would tear the editor out from under the user.
+     */
+    private _redrawRows(recordIds: string[]) {
+        const editedRowIndexes = new Set(this._gridApi.getEditingCells().map(cell => cell.rowIndex));
+        const rowNodes = recordIds
+            .map(recordId => this._gridApi.getRowNode(recordId))
+            .filter((node): node is IRowNode<IRecord> => !!node && !editedRowIndexes.has(node.rowIndex!));
+        if (rowNodes.length > 0) {
+            this._gridApi.redrawRows({ rowNodes });
+        }
+    }
+
 
     private _registerEventListeners() {
         this._taskDataProvider.taskEvents.addEventListener('onAfterTaskMoved', (movingFromTaskId, movingToTaskId, position) => this._moveInto(movingFromTaskId, movingToTaskId, position));
         this._taskDataProvider.taskEvents.addEventListener('onAfterTasksCreated', (records, parentId) => this._onAfterTasksCreated(records, parentId));
         this._taskDataProvider.taskEvents.addEventListener('onRecordTreeUpdated', (updatedParentIds) => this._onRecordTreeUpdated(updatedParentIds));
         this._taskDataProvider.taskEvents.addEventListener('onTaskDataUpdated', (newData) => this._onAfterTaskDataUpdated(newData));
+        this._taskDataProvider.addEventListener('onAfterRecordSaved', (result) => this._onAfterRecordSaved(result));
         this._gridDragHandler.addEventListener('onDragEnd', (dragOperation) => this._onDragEnd(dragOperation));
     }
 }
