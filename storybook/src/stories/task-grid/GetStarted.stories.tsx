@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
-import { MemoryTaskGrid } from '../../task-grid/MemoryTaskGrid'
+import { BasicTaskGridExample } from '../../task-grid/BasicTaskGridExample'
 
 const meta = {
     title: 'Task Grid/Get started',
@@ -20,7 +20,7 @@ const meta = {
                 component: `
 Task Grid is a hierarchical task-management grid built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. It renders tasks as a parent–child tree and brings the surrounding behaviour with it: drag-and-drop reordering, inline editing, saved views, quick find, custom columns and template-based task creation, working as one system.
 
-The grid below is real. It runs on the in-memory strategy, so everything you do to it — reorder, edit, create, delete, switch views — is the same code path a production grid uses.
+The grid below is real. It runs on the in-memory strategy, so everything you do to it — reorder, edit, create, delete, switch views — is the same code path a production grid uses. Flip **Code** to see what renders it, and edit it.
 
 ## What you get
 
@@ -164,5 +164,5 @@ type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
     name: 'Overview',
-    render: () => renderStory(<MemoryTaskGrid />),
+    render: () => renderStory(<BasicTaskGridExample />),
 }

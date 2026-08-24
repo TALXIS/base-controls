@@ -92,7 +92,7 @@ The sequence matters, because the strategies are created *after* configuration r
 4. \`onCreateTaskStrategy(deps)\` — \`deps\` carries the template and custom-columns providers off the modules resolved in step 2. Creating a template is the template provider's own operation: call \`createTemplateFromTask\` on it, not on the task provider.
 5. The task strategy's own \`onInitialize(provider)\` runs, which is where it loads its records. Both shipped strategies await *their* required \`onInitialize\` hook there, so what they run on can be fetched asynchronously too.
 
-That ordering is why everything a module or strategy builder reads can assume it already exists. Both descriptors re-run \`onInitialize\` on every remount, so neither caches for you — what differs is only the cost of doing it again.
+That ordering is why everything a module or strategy builder reads can assume it already exists. Neither descriptor caches across remounts — see [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Keeping data across remounts*.
 
 ## The actions classes
 
@@ -173,12 +173,10 @@ import type {
 } from '@talxis/base-controls'
 \`\`\`
 
-Both task strategies also export the parameters of every hook — \`IMemoryTaskCreateParams\`, \`IDataverseTaskMoveParams\`, \`IFormParameters\` and the rest — so an override can name what it receives and forward it to the matching \`MemoryTaskActions\` / \`DataverseTaskActions\` method.
-
 ## Troubleshooting
 
 1. **Everything is flat** — \`parentId\` is not mapped to the attribute that actually holds the parent value, or the raw value is in a shape the lookup reader does not recognise. Dataverse records carry it under \`_<lookup>_value\`; a hand-built record can instead put an entity-reference array under the plain column name. A bare guid under the plain name is the one combination that does not work.
-2. **Rows are in an unexpected order** — \`stackRank\` is unmapped, or the ranks are not comparable strings.
+2. **Rows are in an unexpected order** — \`stackRank\` is unmapped, or the ranks are not comparable strings. See [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Ordering*.
 3. **Nothing renders and no error appears** — \`onLoadDependencies\` never resolved. It is awaited before the first provider is created, so a hanging promise there shows as an indefinite skeleton.
 4. **A feature is missing from the ribbon** — either its flag in \`onGetGridParameters\` defaults to \`false\`, or the module that provides it was never registered. A flag and a module are separate switches: the flag controls the UI, the module controls whether the feature exists at all, so both have to be in place.
 5. **A Dataverse grid never leaves the skeleton at all** — a startup read failed against a TALXIS model that is not in the environment: \`talxis_attributedefinition\` when the custom-columns module is registered, \`talxis_userquery\` when the user-queries one is. Neither read is error-wrapped. Drop the builder for the feature you have no model for.

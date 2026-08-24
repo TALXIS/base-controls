@@ -1,0 +1,21 @@
+import React from 'react'
+import { TaskGridExampleRunner } from './TaskGridExampleRunner'
+
+/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+export const MODULE_USER_QUERIES_CODE = `/** The modules this grid runs with. Anything not listed here is off. */
+const getModules: GetModules = (data) => ({
+    onGetUserQueriesModule: () => createUserQueryModule({
+        //where the views are stored - swap this for your own backend
+        strategy: new MemoryUserQueryStrategy({ userQueries: data.userQueries }),
+        enableQueryManager: true,
+        enableSaveAsNewQuery: true,
+        enableSaveQueryChanges: true,
+    }),
+})
+
+const TaskGridExample = () => <TaskGrid
+    pcfContext={pcfContext}
+    taskGridDescriptor={descriptor} />
+`
+
+export const ModuleUserQueriesExample = () => <TaskGridExampleRunner seedCode={MODULE_USER_QUERIES_CODE} />

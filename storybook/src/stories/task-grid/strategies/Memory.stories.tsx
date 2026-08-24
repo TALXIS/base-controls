@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
-import { MemoryTaskGrid } from '../../../task-grid/MemoryTaskGrid'
+import { BasicTaskGridExample } from '../../../task-grid/BasicTaskGridExample'
 
 const meta = {
     title: 'Task Grid/Strategies/Memory',
@@ -224,7 +224,7 @@ Hand back the \`metadata\` you were given, and for the records hand back what th
 
 ### The hooks, and the defaults behind them
 
-The strategy itself is thin: every hook below is "call yours if you supplied one, otherwise call the matching \`MemoryTaskActions\` method". Since your hook receives *exactly* that action's parameters, overriding one is a wrapper rather than a rewrite:
+Each hook falls back to the matching \`MemoryTaskActions\` method and receives its exact parameters, so an override can wrap the default rather than replace it — see [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview), under *The actions classes*.
 
 | Hook | Default | 
 |---|---|
@@ -251,9 +251,7 @@ onRecordSave: async params => {
 },
 \`\`\`
 
-The parameters of each action are exported too (\`IMemoryTaskCreateParams\`, \`IMemoryTaskDeleteParams\`, …), so an override can name what it is given.
-
-The same shape is the way in to a *different* task strategy — your own, or a subclass that persists writes. See [**Custom strategies → Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview).
+So persisting to a server is a hook away, with the local store kept in step by the action.
 
 ## Templates
 
@@ -285,20 +283,7 @@ Note the split: expanding a template *into* tasks is the task strategy's job, wh
 
 ## Lookup-many columns
 
-> **Filtering a lookup column is something you declare, not something the strategy decides.** A column is filterable when its \`metadata.SupportedFilterConditionOperators\` is non-empty; leave it out and the grid hides the filter menu for that column. Sorting and quick find are unaffected either way.
->
-> Whether you should declare it depends on what the lookup values point at, which is why the strategy stays out of it — a memory grid can perfectly well hold lookups bound to real Dataverse records (loaded through the Web API into your array), and filtering those works. Declare the operators there:
->
-> \`\`\`ts
-> metadata: {
->     LookupMany: true,
->     SupportedFilterConditionOperators: Operators.GetOperatorsForDataType(DataTypes.MultiSelectOptionSet).map(op => op.Value),
-> }
-> \`\`\`
->
-> For lookups that are *not* bound to a Dataverse entity — the invented records in these docs, for instance — declare nothing, so the grid does not offer a filter that matches nothing. \`DataverseTaskStrategy\` can inject the operators for every \`LookupMany\` column itself, because there the binding is a given.
-
-A column flagged \`metadata.LookupMany\` renders as a multi-record picker once the \`lookupMany\` module is registered, and its \`createDataProvider\` feeds it. The candidates are records like any other, so \`MemoryLookupManyDataProviderFactory\` turns an \`IMemoryEntitySource\` into the provider the picker wants — one per column, chosen by column name:
+\`MemoryLookupManyDataProviderFactory\` turns an \`IMemoryEntitySource\` into the provider a picker wants — one per column, chosen by column name:
 
 \`\`\`ts
 const SOURCES: Record<string, IMemoryEntitySource> = {
@@ -317,7 +302,9 @@ modules: {
 },
 \`\`\`
 
-The factory copies the records array before handing it over, so deleting inside a picker cannot mutate the one you keep. Whether a column *renders* as a picker comes from \`metadata.LookupMany\` on the column plus the \`lookupMany\` module being registered at all — omit the module and the column falls back to its default renderer; register it but return nothing for a given column and the grid throws when that column renders. Which picker variant renders comes from the column's custom control name. Try the **Assigned To** and **Tags** columns in the grid below.
+The factory copies the records array before handing it over, so deleting inside a picker cannot mutate the one you keep.
+
+What makes a column render as a picker at all is its \`metadata.LookupMany\` — see [**Customizations**](?path=/story/task-grid-customizations--overview), under *Column metadata*. Try **Assigned To** and **Tags** in the grid below.
 
 ## Ordering: stack ranks
 
@@ -340,13 +327,11 @@ StackRank.between(
 
 \`StackRank\` is exported, and it is the only thing that imports \`lexorank\` — a strategy that orders some other way never pulls it in.
 
-## Persistence is your own store, not the descriptor's
+## Keeping data across remounts
 
-The grid rebuilds its whole control instance on every remount — switching a view does it, and so does saving one — which recreates every provider and strategy, **and calls \`onInitialize\` again**. None of the providers or strategies keep data themselves: they read and write the arrays they were handed, and what holds those arrays for the session is a store *you* keep — closures outside the callback, kept current through explicit write-backs — not something the descriptor does for you by skipping re-execution.
+The grid rebuilds its control instance whenever it remounts — switching a view does it, so does saving a record — and that calls \`onInitialize\` again. Nothing in the grid holds your data between those calls, so the store is yours to keep. Three things follow.
 
-Two consequences worth knowing:
-
-- **Seed once, behind a flag of your own.** \`onInitialize\` runs on every remount, so guard the expensive/stateful part (generating or fetching the seed) with your own flag, and return the *current* value of your store on every call — not a freshly generated one:
+**Seed once, behind a flag of your own.** Return the *current* value of your store on every call, not a freshly generated one:
 
 \`\`\`ts
 let isSeeded = false
@@ -361,14 +346,30 @@ onInitialize: async () => {
 }
 \`\`\`
 
-  Returning fresh arrays on every call, with no such guard, is equivalent to wiping the database on every remount.
-- **Keep one descriptor** for as long as the session should last, and build it in \`useMemo\` (or outside the component) rather than inline in JSX:
+Returning fresh arrays every time, with no guard, wipes the data on every remount.
+
+**Keep one descriptor** for as long as the session should last — build it in \`useMemo\`, or outside the component, never inline in JSX. A new descriptor starts from the seed again.
 
 \`\`\`tsx
 const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor(), [])
 \`\`\`
 
-A new descriptor starts from the seed again.
+**Write mutations back.** The seam differs per feature:
+
+| Data | How it gets back to you |
+|---|---|
+| Tasks | \`MemoryTaskStrategy\`'s \`onDestroy\` hands you the current records just before the provider is dropped: \`onDestroy: params => records = params.rawData\` |
+| Templates | \`MemoryTemplateDataProvider\` pushes into the \`templates\` object you constructed it with, so nothing extra is needed — as long as \`onInitialize\` keeps handing back the same object |
+| Personal views | Subscribe to the module provider's events and pull the strategy's current state |
+
+\`\`\`ts
+const strategy = new MemoryUserQueryStrategy({ userQueries })
+const module = createUserQueryModule({ strategy, enableQueryManager: true })
+const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
+module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
+module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)
+module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore)
+\`\`\`
 
 ## Using it in production
 
@@ -387,22 +388,9 @@ onInitialize: async () => {
 },
 \`\`\`
 
-**Holding everything client-side is not a memory-strategy compromise — the grid requires it.** The hierarchy, the *hide inactive* toggle and the rank arithmetic all need the complete task set, so there is no server-side paging to opt into: \`TaskDataProvider\` reports its page size as the total record count, and the Dataverse strategy loads its FetchXML with \`loadAllRecords: true\`. Any strategy you write ends up doing the same thing. The memory descriptor just makes that explicit.
+**Holding everything client-side is not a memory-strategy compromise — the grid requires it.** The hierarchy, the *hide inactive* toggle and the rank arithmetic all need the complete task set, so there is no server-side paging to opt into. The Dataverse strategy loads its FetchXML with \`loadAllRecords: true\` for the same reason.
 
-**Getting a mutation back into your store is your job, and the mechanism differs per feature — pick the one that fits.** For task records, the seam is \`MemoryTaskStrategy\`'s \`onDestroy\` hook: it hands you the current raw data right before the provider is torn down, so \`onDestroy: params => records = params.rawData\` writes the store back on every remount. For a captured template, \`MemoryTemplateDataProvider\` mutates the exact \`templates\` object you constructed it with (\`templates.records.push(...)\`) — as long as \`onInitialize\` doesn't hand it a *new* object after the first seed, that direct write is enough. For personal views, prefer an explicit write-back over relying on \`MemoryUserQueryStrategy\` mutating the array you gave it: subscribe to the module provider's own events and pull the strategy's current state after each mutation —
-
-\`\`\`ts
-const strategy = new MemoryUserQueryStrategy({ userQueries })
-const module = createUserQueryModule({ strategy, enableQueryManager: true })
-const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
-module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
-module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)
-module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore)
-\`\`\`
-
-so the store is refreshed through an explicit contract rather than by assuming the strategy will always mutate the exact reference it was constructed with.
-
-For task mutations the finer-grained option is the strategy itself. To persist, subclass \`MemoryTaskStrategy\` and wrap the mutating hooks — they are prototype methods, so \`super\` works and the in-memory store stays in step with the server:
+**To persist writes**, subclass \`MemoryTaskStrategy\` and wrap the mutating hooks — they are prototype methods, so \`super\` works:
 
 \`\`\`ts
 class MyTaskStrategy extends MemoryTaskStrategy {
@@ -414,14 +402,13 @@ class MyTaskStrategy extends MemoryTaskStrategy {
 }
 \`\`\`
 
-\`onCreateTask\`, \`onDeleteTasks\` and \`onMoveTask\` take the same shape. Return the subclass from the \`onCreateTaskStrategy\` that \`onInitialize\` resolves, exactly where the plain strategy would go — see [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) and [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
+\`onCreateTask\`, \`onDeleteTasks\` and \`onMoveTask\` take the same shape. Return the subclass from \`onCreateTaskStrategy\` — see [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
 
 ## Limits
 
 - **Insert cost is linear in the sibling count.** Creating or moving a task scans the task map for sibling ranks. Fine for the hundreds-to-low-thousands of rows the grid is built for; not a plan for six-figure task sets.
 - **No related-entity columns.** \`onGetAvailableRelatedColumns\` returns \`[]\`, so nothing reachable only through a relationship can be added to a view.
 - **No custom columns out of the box.** Nothing in-memory implements them, so the \`customColumns\` module's strategy has to be yours.
-- **Nothing is persisted unless you persist it**, as above.
                 `.trim(),
             },
         },
@@ -434,5 +421,5 @@ type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
     name: 'Overview',
-    render: () => renderStory(<MemoryTaskGrid />),
+    render: () => renderStory(<BasicTaskGridExample />),
 }

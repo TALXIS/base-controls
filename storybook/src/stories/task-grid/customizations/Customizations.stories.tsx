@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../../form/storyHelpers'
-import { MemoryTaskGrid } from '../../../task-grid/MemoryTaskGrid'
+import { LabelsExample } from '../../../task-grid/LabelsExample'
 
 const meta = {
     title: 'Task Grid/Customizations',
@@ -77,6 +77,19 @@ Most per-column behaviour comes from the column definitions your strategy return
 
 A column renders as a picker whenever \`metadata.LookupMany\` is set **and** the \`lookupMany\` module is registered — no customizer needed. Each extension ships a factory for the candidates: \`MemoryLookupManyDataProviderFactory\` from records you hold, \`DataverseLookupManyDataProviderFactory\` from the column's own \`FetchXml\` binding. Both columns are live in the grid below — **Assigned To** and **Tags**. Registering the module: [**Modules → lookupMany**](?path=/story/task-grid-modules--overview).
 
+### Making a column filterable
+
+A column offers a filter menu when its \`metadata.SupportedFilterConditionOperators\` is non-empty; leave it out and the menu is hidden for that column. Sorting and quick find are unaffected either way.
+
+\`\`\`ts
+metadata: {
+    LookupMany: true,
+    SupportedFilterConditionOperators: Operators.GetOperatorsForDataType(DataTypes.MultiSelectOptionSet).map(op => op.Value),
+}
+\`\`\`
+
+Declare it when the values point at something the grid can actually filter on. \`DataverseTaskStrategy\` injects the operators for every \`LookupMany\` column itself, because there the binding is a given; for lookups that are not bound to an entity, declare nothing rather than offering a filter that matches nothing.
+
 ## Going lower
 
 When metadata is not enough, the \`gridCustomizer\` module hands you the AG Grid instance itself — column definitions, row class rules, formatting expressions, the api. It has its own page, with live examples: [**Modules → Customizer**](?path=/story/task-grid-modules-customizer--overview).
@@ -114,5 +127,5 @@ type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
     name: 'Overview',
-    render: () => renderStory(<MemoryTaskGrid />),
+    render: () => renderStory(<LabelsExample />),
 }

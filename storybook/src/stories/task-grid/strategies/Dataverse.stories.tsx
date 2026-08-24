@@ -213,13 +213,13 @@ A lookup-many column surfaces a 1:N or N:N relationship as a single cell. Two di
 }
 \`\`\`
 
-- **\`metadata.LookupMany\`** identifies the relationship. The strategy resolves the OData expand clause from it and handles associate/disassociate on save. Its presence, together with a registered \`lookupMany\` module, is what makes the column render as a picker.
+- **\`metadata.LookupMany\`** identifies the relationship. The strategy resolves the OData expand clause from it and handles associate/disassociate on save. It is also what makes the column render as a picker — see [**Customizations**](?path=/story/task-grid-customizations--overview), under *Column metadata*.
 - **\`controls[0].bindings.FetchXml\`** is the candidate query. \`DataverseLookupManyDataProviderFactory\` reads it and renders its Liquid per row, so \`{{ task.id }}\` and \`{{ task.<attribute> }}\` scope the picker to the cell it sits on, while \`{{ project.* }}\` and \`{{ currentRecord.* }}\` come from the descriptor's records.
 - **\`controls[0].name\`** picks the variant: \`LookupMany\`, \`PeopleLookupMany\`, or \`ColorfulLookupMany\`.
 
 The column name itself is arbitrary — the relationship is identified by the navigation property, not the name.
 
-Feeding the picker is a module, the same as on the memory descriptor — the factory does the work:
+Feeding the picker is the \`lookupMany\` [**module**](?path=/story/task-grid-modules--overview); the factory does the work:
 
 \`\`\`ts
 modules: {
@@ -233,15 +233,13 @@ modules: {
 },
 \`\`\`
 
-The parameters carry everything the factory needs — the cell's record and column from the call, the project and source records from \`context\` (just \`projectRecord\`/\`sourceRecord\` — nothing this builder doesn't use) — so there is nothing else to wire. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
+The parameters carry everything the factory needs: the cell's record and column from the call, the project and source records from \`context\`. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
 
 ## Custom columns
 
-\`enableCustomColumnCreation\` and friends let users define columns at runtime, stored as \`talxis_attributedefinition\` and \`talxis_attributevalue\` rows.
+Users define columns at runtime; they are stored as \`talxis_attributedefinition\` and \`talxis_attributevalue\` rows. Registering the module is what switches the feature on — [**Modules**](?path=/story/task-grid-modules--overview).
 
-One thing about \`DataverseCustomColumnsStrategy\` is worth knowing before you wire it: nothing is assembled from the entity name. \`onRefresh\` reads the relationship between your task entity and \`talxis_attributevalue\` off the metadata and takes all three names it needs from it — the collection to expand through, the lookup to bind against, and that lookup's entity set — so a non-standard schema works as-is. Pass \`navigationPropertyName\` only if your entity somehow has more than one relationship to \`talxis_attributevalue\`; it then says which one holds the values.
-
-The \`enableCustomColumn*\` options — now on \`createCustomColumnsModule\`, not \`gridParameters\` — only trim the ribbon commands within the feature. What decides whether it exists — and whether \`talxis_attributedefinition\` is read at all — is registering the module through \`modules.onGetCustomColumnsModule\`.
+\`DataverseCustomColumnsStrategy\` assembles nothing from the entity name: \`onRefresh\` reads the relationship between your task entity and \`talxis_attributevalue\` off the metadata and takes all three names it needs from it, so a non-standard schema works as-is. Pass \`navigationPropertyName\` only if your entity has more than one relationship to \`talxis_attributevalue\`.
 
 ## Templates
 
@@ -249,15 +247,16 @@ No Dataverse implementation ships: \`DataverseTemplateDataProvider\`'s capture t
 
 ## Ordering: stack ranks
 
-Same scheme as the memory strategy: the data provider resolves the neighbours a row lands between — over the whole dataset, so rows the active view filters out still count — and the strategy turns them into a rank with \`StackRank.between\`. One drag rewrites one row rather than renumbering its siblings. The attribute you map to \`stackRank\` must be a text column. The [**Memory**](?path=/story/task-grid-strategies-memory--overview) page has the worked example.
+Ordering works the same way as everywhere else — [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Ordering* has the worked example. Two things are specific to Dataverse:
 
-Note what this does *not* cover: rows excluded by the view's own FetchXML are never loaded, so they cannot be considered. Keep the query broad enough to hold the siblings you reorder.
+- The attribute you map to \`stackRank\` must be a **text** column.
+- Rows the FetchXML excludes are never loaded, so they cannot be ranked against. Keep the query broad enough to hold the siblings you reorder.
 
-## One difference from the memory descriptor
+## Remounts cost a round trip
 
-Both descriptors re-run \`onInitialize\` on **every remount** — and the grid remounts when a view changes or a record is saved. What differs is the cost: here it re-fetches the project and source records over the network, where the memory descriptor only reads a local store. Keep the callback idempotent and cheap, and keep anything that must survive a remount in a store of your own.
+\`onInitialize\` re-runs on every remount, and here that re-fetches the project and source records over the network. Keep it idempotent and cheap. The lifecycle itself is the same for both descriptors — see [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Keeping data across remounts*.
 
-The only hook this descriptor has no parameter for is \`onGetControlId\` — the grid generates a UUID instead. Everything else is either wired natively or opt-in above; if you need to change what one of the native pieces does, see [**Custom strategies → Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
+The only hook this descriptor has no parameter for is \`onGetControlId\`; the grid generates a UUID instead. To change what one of the native pieces does, see [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
                 `.trim(),
             },
         },
