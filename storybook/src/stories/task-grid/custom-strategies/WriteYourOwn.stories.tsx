@@ -200,12 +200,12 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     //optional: omit it and the grid shows system views only
-    public onGetModules(services: ITaskGridServiceLocator): ITaskGridModules {
+    public onGetModules(): ITaskGridModules {
         return {
             userQueries: createUserQueryModule({
                 strategy: new MyUserQueryStrategy(),
                 enableSaveAsNewQuery: true,
-            }, services),
+            }),
         }
     }
 

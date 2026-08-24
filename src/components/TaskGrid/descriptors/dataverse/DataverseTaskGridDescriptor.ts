@@ -66,8 +66,8 @@ export type IDataverseLookupManyContext = Pick<IDataverseStrategyContext, 'proje
  * The feature modules a Dataverse grid can run with, one builder per feature. Omit a key and that feature
  * is off.
  *
- * Each builder receives only the slice of context its own strategy reads; one that needs nothing takes no
- * parameter.
+ * Each builder receives the slice of descriptor context its own strategy reads, followed by the grid's
+ * service locator — pass that on to a provider that needs it, and ignore it otherwise.
  */
 export interface IDataverseModules {
     /**
@@ -87,7 +87,8 @@ export interface IDataverseModules {
     onGetUserQueriesModule?: (context: IDataverseUserQueriesContext, services: ITaskGridServiceLocator) => IUserQueryModule | undefined;
     /**
      * Task templates. `createTemplateModule({ provider })` — no Dataverse template provider ships, so the
-     * provider is your own. `context.onGetTaskDataProvider` is the task side it reads from.
+     * provider is your own. Hand it the `services` this builder receives; that is how it reaches the task
+     * side it reads from.
      */
     onGetTemplatesModule?: (services: ITaskGridServiceLocator) => ITemplateModule | undefined;
     /**

@@ -108,12 +108,12 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
      * *My views*, no save commands and no view manager.
      */
     private get _userQueryProvider(): IUserQueryDataProvider | undefined {
-        return this._services.find('userQueryDataProvider');
+        return this._services.find('userQueriesModule')?.provider;
     }
 
     /** The user-defined columns, when the custom-columns module is registered. */
     private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
-        return this._services.find('customColumnsDataProvider');
+        return this._services.find('customColumnsModule')?.provider;
     }
 
     private get _nativeColumns(): INativeColumns {

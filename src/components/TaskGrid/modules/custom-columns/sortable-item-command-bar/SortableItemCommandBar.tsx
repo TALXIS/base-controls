@@ -2,13 +2,12 @@ import { ICommandBarItemProps } from '@legacy';
 import * as React from 'react';
 import { components, ISortableItemCommandBarProps } from '@components/DatasetControl/EditColumns/components';
 import { useTaskGridEditColumns } from '../edit-columns/useTaskGridEditColumns';
-import { useDatasetControl } from '@components/TaskGrid/context';
+import { useServices } from '@components/TaskGrid/context';
 
 
 /** Per-column commands on a selected column in the Edit Columns panel. */
 export const SortableItemCommandBar = (props: ISortableItemCommandBarProps) => {
-    const datasetControl = useDatasetControl();
-    const customColumns = datasetControl.getModule('customColumns');
+    const customColumns = useServices().get('customColumnsModule');
     const customColumnsDataProvider = customColumns.provider;
     const { column, ...rest } = props;
     const { onEditColumn } = useTaskGridEditColumns();

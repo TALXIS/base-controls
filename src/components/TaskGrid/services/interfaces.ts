@@ -5,17 +5,15 @@ import type { ITaskGridLabels } from "@components/TaskGrid/labels";
 import type { INativeColumns, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
 import type { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import type { ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
-import type { ITemplateDataProvider } from "@components/TaskGrid/providers/template";
-import type { IUserQueryDataProvider } from "@components/TaskGrid/modules/interfaces";
-import type { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
-import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
+import type { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 
 /**
  * Every dependency the grid can hand out, keyed by name and typed by its contract.
  *
- * The first group is registered by the control factory and is always there. The second is registered by
- * the module that brings it — leave that module out and the key is simply absent, which is what `find`
- * is for.
+ * The first group is always there. The second is the modules the descriptor resolved, each under its own
+ * key — leave a module out and its key is absent, which is what `find` is for. What a module brings is
+ * reached through the module itself (`find('templatesModule')?.provider`), so there is one entry per
+ * feature rather than two.
  */
 export interface ITaskGridServiceMap {
     /** The PCF context the grid renders in: navigation, formatting, dialogs. */
@@ -34,14 +32,16 @@ export interface ITaskGridServiceMap {
     taskDataProvider: ITaskDataProvider;
     /** The views the grid runs on. */
     savedQueryDataProvider: ISavedQueryDataProvider;
-    /** Personal views. Present when the user-queries module is registered. */
-    userQueryDataProvider: IUserQueryDataProvider;
-    /** Templates. Present when the templates module is registered. */
-    templateDataProvider: ITemplateDataProvider;
-    /** User-defined columns. Present when the custom-columns module is registered. */
-    customColumnsDataProvider: ICustomColumnsDataProvider;
-    /** Deep AG Grid customization. Present when the grid-customizer module is registered. */
-    gridCustomizerStrategy: IGridCustomizerStrategy;
+    /** The personal-views module, UI included. Present when it is registered. */
+    userQueriesModule: IUserQueryModule;
+    /** The templates module, UI included. Present when it is registered. */
+    templatesModule: ITemplateModule;
+    /** The custom-columns module, UI included. Present when it is registered. */
+    customColumnsModule: ICustomColumnsModule;
+    /** The grid-customizer module. Present when it is registered. */
+    gridCustomizerModule: IGridCustomizerModule;
+    /** The lookup-many module. Present when it is registered. */
+    lookupManyModule: ILookupManyModule;
 }
 
 /**

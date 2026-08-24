@@ -7,6 +7,7 @@ import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
 import { AddTaskButton } from "../cell-renderers/add-task-button";
 import { ILocalizationService } from "@utils";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
 import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
@@ -75,6 +76,7 @@ export class GridCustomizer implements IGridCustomizer {
     private _nativeColumns: INativeColumns;
     private _pcfContext: ComponentFramework.Context<any>;
     private _datasetControl: ITaskGridDatasetControl;
+    private _services: ITaskGridServiceLocator;
     private _strategy?: IGridCustomizerStrategy;
     private _onGetComponents: () => ITaskGridComponents;
     private _defaultCellComponents: Map<string, IDefaultCellComponents> = new Map();
@@ -82,6 +84,7 @@ export class GridCustomizer implements IGridCustomizer {
     constructor(parameters: IGridCustomizerParameters) {
         this._datasetControl = parameters.datasetControl;
         const services = this._datasetControl.getServices();
+        this._services = services;
         this._taskDataProvider = services.get('taskDataProvider');
         this._gridApi = parameters.gridApi;
         this._localizationService = services.get('localizationService');
@@ -199,7 +202,7 @@ export class GridCustomizer implements IGridCustomizer {
                 }
             }
             //without the module the column falls back to whatever renderer it would otherwise get
-            const lookupManyCellRenderer = this._datasetControl.getModules().lookupMany?.components.CellRenderer;
+            const lookupManyCellRenderer = this._services.find('lookupManyModule')?.components.CellRenderer;
             if (column?.metadata?.LookupMany && lookupManyCellRenderer) {
                 colDef.cellRenderer = lookupManyCellRenderer;
                 colDef.autoHeight = true;

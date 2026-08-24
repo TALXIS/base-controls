@@ -1,6 +1,5 @@
 import { CustomColumnsDataProvider, ICustomColumnsStrategy } from "./CustomColumnsDataProvider";
 import { ICustomColumnsModule } from "../interfaces";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { EditColumns } from "./edit-columns/EditColumns";
 
 /** Options for {@link createCustomColumnsModule}. */
@@ -21,21 +20,20 @@ export interface ICustomColumnsModuleOptions {
  * Builds the custom-columns module: you supply the strategy, this brings the UI.
  *
  * Assign it to a `modules` key — `modules.onGetCustomColumnsModule` on a shipped descriptor, or
- * `onGetModules` on a descriptor of your own.
+ * `onGetModules` on a descriptor of your own. The grid registers it as `customColumnsModule`.
  *
  * @example
  * ```ts
  * modules: {
- *     onGetCustomColumnsModule: (context, services) => createCustomColumnsModule({
+ *     onGetCustomColumnsModule: (context) => createCustomColumnsModule({
  *         strategy: new TalxisCustomColumnsStrategy({ entityName: context.entityName }),
  *         enableCustomColumnCreation: true,
- *     }, services),
+ *     }),
  * }
  * ```
  */
-export const createCustomColumnsModule = (options: ICustomColumnsModuleOptions, services: ITaskGridServiceLocator): ICustomColumnsModule => {
+export const createCustomColumnsModule = (options: ICustomColumnsModuleOptions): ICustomColumnsModule => {
     const provider = new CustomColumnsDataProvider(options.strategy);
-    services.register('customColumnsDataProvider', () => provider);
     return {
         provider: provider,
         components: { EditColumns },

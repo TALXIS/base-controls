@@ -67,14 +67,15 @@ A module is one optional feature packaged as one object: the implementation you 
 
 On the shipped descriptors you register them through a `modules` key of builders on what `onInitialize` resolves — one `onGetXModule` per feature. On a descriptor you wrote yourself, implement `ITaskGridDescriptor.onGetModules` and return the module objects under the plain keys.
 
-At runtime, read a module off the control: `getModules()` where the feature is optional to the caller, and `getModule('templates')` — which throws when the key is absent — where the caller only exists because the module does.
+At runtime, read a module off the service locator: `services.find('templatesModule')` where the feature is optional to the caller, and `services.get('templatesModule')` — which throws when nothing registered it — where the caller only exists because the module does. What a module brings hangs off the module itself: `find('customColumnsModule')?.provider`.
 
 ## Layout
 
 | Path | Contents |
 |------|----------|
 | `TaskGrid.tsx` | The component. `descriptor`, plus `labels`, `components` and the event props. Reads the PCF context off `PcfContextProvider`. |
-| `interfaces.ts` | `ITaskGridDescriptor`, `ITaskGridDatasetControl`, `IFieldMapping`, `ITaskGridParameters`, `ITaskStrategyDeps`. |
+| `interfaces.ts` | `ITaskGridDescriptor`, `ITaskGridDatasetControl`, `IFieldMapping`, `ITaskGridParameters`. |
+| `services/` | `ITaskGridServiceLocator`, `ITaskGridServiceMap`, `ServiceLocator` — where every strategy, provider and module reaches what it needs. |
 | `providers/` | `TaskDataProvider`, `SavedQueryDataProvider`, `ITemplateDataProvider` and their strategy interfaces. |
 | `modules/` | The optional features and their `create*Module` builders, each with the UI it needs. `CustomColumnsDataProvider` lives here, as do the shipped implementations of each module's contract under `memory/`, `talxis/` and `dataverse/`. |
 | `components/` | The grid's own UI: AG Grid integration, the customizer, cell renderers, cell headers, the header bar. |
@@ -93,7 +94,7 @@ import { MemoryTaskGridDescriptor, DataverseTaskGridDescriptor } from '@talxis/b
 
 The static dependency arrow points one way: **module → core, never core → module.** `modules/interfaces.ts` declares each module's shape and imports only types; nothing in `interfaces.ts`, `providers/` or `components/` ever imports a module's UI. That is what keeps an unregistered module out of your build — a value import in core would drag a module's components into the graph of every file that touches `ITaskGridDescriptor`.
 
-For the consumer, the consequence is that a module's components are named in exactly one place: its `create*Module` builder. Importing that builder is what puts them in your bundle. You never import them yourself, and the grid reaches them through `control.getModules()`.
+For the consumer, the consequence is that a module's components are named in exactly one place: its `create*Module` builder. Importing that builder is what puts them in your bundle. You never import them yourself, and the grid reaches them through the locator — `useTaskGridServices()` in a component, `control.getServices()` in imperative code.
 
 Because of that rule, several files in core use `import type` where a plain import would compile just as well. Do not "simplify" those.
 

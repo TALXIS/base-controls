@@ -57,7 +57,7 @@ export const useRootElementId = () => {
 
 /**
  * Returns the control instance backing the current mount. Exported publicly as
- * `useTaskGridDatasetControl` — the way into `getModules`, the saved queries and the selection.
+ * `useTaskGridDatasetControl` — the way into the commands, the selection and the grid's feature flags.
  * @throws Outside a `TaskGrid`.
  */
 export const useDatasetControl = () => {

@@ -142,7 +142,7 @@ The one constructor parameter that is *not* resolved by \`onInitialize\` is \`he
 >             modules: {
 >                 onGetUserQueriesModule: () => {
 >                     const strategy = new MemoryUserQueryStrategy({ userQueries })
->                     const module = createUserQueryModule({ strategy }, services)
+>                     const module = createUserQueryModule({ strategy })
 >                     //write the strategy's current state back into the store on every mutation,
 >                     //rather than relying on it mutating the array it was constructed with
 >                     const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
@@ -366,7 +366,7 @@ const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor(), [])
 
 \`\`\`ts
 const strategy = new MemoryUserQueryStrategy({ userQueries })
-const module = createUserQueryModule({ strategy, enableQueryManager: true }, services)
+const module = createUserQueryModule({ strategy, enableQueryManager: true })
 const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
 module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
 module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)

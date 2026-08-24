@@ -3,15 +3,14 @@ import {  ICommandBarItemProps } from "@legacy";
 import { getCustomColumnSuffixStyles } from "./styles";
 import { useTaskGridEditColumns } from "../edit-columns/useTaskGridEditColumns";
 import { IOptionCommandBarProps, components } from "@components/DatasetControl/EditColumns/components";
-import { useDatasetControl } from "@components/TaskGrid/context";
+import { useServices } from "@components/TaskGrid/context";
 
 
 /** Per-column commands in the Edit Columns catalogue: edit and delete a custom column. */
 export const OptionCommandBar = (props: IOptionCommandBarProps) => {
     const { column, context } = props;
     const { onEditColumn, onDeleteColumn } = useTaskGridEditColumns();
-    const datasetControl = useDatasetControl();
-    const customColumns = datasetControl.getModule('customColumns');
+    const customColumns = useServices().get('customColumnsModule');
     const columnsDataProvider = customColumns.provider;
     const styles = React.useMemo(() => getCustomColumnSuffixStyles(), []);
     const isCustomColumn = React.useMemo(() => columnsDataProvider.getColumns().find((col: import('@talxis/client-libraries').IColumn) => col.name === column.name), []);

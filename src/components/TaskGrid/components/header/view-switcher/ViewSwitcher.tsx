@@ -12,8 +12,9 @@ const CommandBarButton = withButtonLoading(CommandBarButtonBase);
 export const ViewSwitcher = () => {
     const localizationService = useLocalizationService();
     const datasetControl = useDatasetControl();
-    const savedQueryDataProvider = useServices().get('savedQueryDataProvider');
-    const userQueriesModule = datasetControl.getModules().userQueries;
+    const services = useServices();
+    const savedQueryDataProvider = services.get('savedQueryDataProvider');
+    const userQueriesModule = services.find('userQueriesModule');
     const taskDataProvider = useTaskDataProvider();
     const systemQueries = savedQueryDataProvider.getSystemQueries();
     const userQueries = savedQueryDataProvider.getUserQueries();

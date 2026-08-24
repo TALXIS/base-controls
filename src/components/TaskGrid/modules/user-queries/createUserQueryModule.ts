@@ -1,6 +1,5 @@
 import { IUserQueryStrategy } from "@components/TaskGrid/providers/saved-query";
 import { IUserQueryModule } from "../interfaces";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { UserQueryDataProvider } from "./UserQueryDataProvider";
 import { CreateViewDialog } from "./create-view-dialog";
 import { ViewManagerDialog } from "./view-manager";
@@ -26,22 +25,21 @@ export interface IUserQueryModuleOptions {
  * Assign it to a `modules` key — `modules.onGetUserQueriesModule` on a shipped descriptor, or
  * `onGetModules` on a descriptor of your own.
  *
- * The provider it builds is registered as the grid's `userQueryDataProvider`, so anything else can
- * reach it through the services it was handed.
+ * The grid registers it as `userQueriesModule`, so anything else reaches the module — and the provider
+ * it built — through the services it was handed.
  *
  * @example
  * ```ts
  * modules: {
- *     onGetUserQueriesModule: (services) => createUserQueryModule({
+ *     onGetUserQueriesModule: () => createUserQueryModule({
  *         strategy: new MemoryUserQueryStrategy({ userQueries }),
  *         enableQueryManager: true,
- *     }, services),
+ *     }),
  * }
  * ```
  */
-export const createUserQueryModule = (options: IUserQueryModuleOptions, services: ITaskGridServiceLocator): IUserQueryModule => {
+export const createUserQueryModule = (options: IUserQueryModuleOptions): IUserQueryModule => {
     const provider = new UserQueryDataProvider(options.strategy);
-    services.register('userQueryDataProvider', () => provider);
     return {
         provider: provider,
         components: {

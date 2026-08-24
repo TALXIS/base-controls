@@ -8,7 +8,7 @@ const getModules: GetModules = (data) => ({
         //where the templates come from, where a captured one is written, and the services it reads the
         //task columns, metadata and hierarchy through
         provider: new MemoryTemplateDataProvider({ templates: data.templates, services }),
-    }, services),
+    }),
 })
 
 const TaskGridExample = () => <TaskGrid

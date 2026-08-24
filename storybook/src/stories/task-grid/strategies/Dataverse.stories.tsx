@@ -32,19 +32,19 @@ Personal saved views are backed by a TALXIS model rather than by your task entit
 
 | Feature | Module to register | Model it needs |
 |---|---|---|
-| Personal saved views | \`modules.onGetUserQueriesModule\` → \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...) }, services)\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
+| Personal saved views | \`modules.onGetUserQueriesModule\` → \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...) })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
 
 \`\`\`ts
 //part of what onInitialize resolves - see Modules for the full picture
 modules: {
-    onGetUserQueriesModule: (context, services) => createUserQueryModule({
+    onGetUserQueriesModule: context => createUserQueryModule({
         strategy: new TalxisUserQueryStrategy({
             entityName: context.entityName,
             recordId: context.recordId,
             ownerId: context.userId,
         }),
         enableQueryManager: true,
-    }, services),
+    }),
 },
 \`\`\`
 
@@ -87,14 +87,14 @@ const descriptor = new DataverseTaskGridDescriptor({
         gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
         //personal views are on because this registers the module - there is no flag for it
         modules: {
-            onGetUserQueriesModule: (context, services) => createUserQueryModule({
+            onGetUserQueriesModule: context => createUserQueryModule({
                 strategy: new TalxisUserQueryStrategy({
                     entityName: context.entityName,
                     recordId: context.recordId,
                     ownerId: context.userId,
                 }),
                 enableQueryManager: true,
-            }, services),
+            }),
         },
         //the form ids, the delete behaviour and the root task are the strategy's options
         onCreateTaskStrategy: ({ services, fetchXml, projectRecord, sourceRecord }) => new DataverseTaskStrategy({
@@ -174,7 +174,7 @@ The one constructor parameter, next to \`onInitialize\`:
 
 ## Saved views
 
-Register \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...) }, services)\` from \`modules.onGetUserQueriesModule\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
+Register \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...) })\` from \`modules.onGetUserQueriesModule\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
 
 Without that module the feature is simply off, and its options — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` — have nowhere to be set, because they belong to the module rather than to \`gridParameters\`. Not registering it also keeps the view manager and both dialogs out of your bundle.
 

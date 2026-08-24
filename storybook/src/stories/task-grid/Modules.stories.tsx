@@ -55,14 +55,14 @@ That grid has personal views and nothing else. The same four keys work on \`Data
 
 Each builder takes the one thing only you can provide, plus a few switches for its commands:
 
-| Builder | Required | Optional, all off by default | Registers |
+| Builder | Required | Optional, all off by default | Registered as |
 |---|---|---|---|
-| \`createUserQueryModule\` | \`strategy\` | \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` | \`userQueryDataProvider\` |
-| \`createTemplateModule\` | \`provider\` | — | \`templateDataProvider\` |
-| \`createLookupManyModule\` | \`createDataProvider\` | — | — |
-| \`createGridCustomizerModule\` | \`strategy\` | — | \`gridCustomizerStrategy\` |
+| \`createUserQueryModule\` | \`strategy\` | \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` | \`userQueriesModule\` |
+| \`createTemplateModule\` | \`provider\` | — | \`templatesModule\` |
+| \`createLookupManyModule\` | \`createDataProvider\` | — | \`lookupManyModule\` |
+| \`createGridCustomizerModule\` | \`strategy\` | — | \`gridCustomizerModule\` |
 
-Every builder except \`createLookupManyModule\` takes the grid's service locator as a second argument and registers what its module brings, which is what makes that provider reachable from the rest of the grid — including from the provider you handed it. That is how a templates provider describes the tasks a template expands into: \`services.get('taskDataProvider')\`. See [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies-overview--overview).
+Whatever a builder returns, the grid registers under that key, so a module — and everything it brings — is reachable from the rest of the grid: \`services.find('templatesModule')?.provider\`. That is also how a templates provider describes the tasks a template expands into, in the other direction: \`services.get('taskDataProvider')\`. See [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies-overview--overview).
 
 Every grid below runs **one** module, so you can see exactly what it adds. Flip **Code** to read the registration, and edit it — remove the module and the feature disappears from the grid.
                 `.trim(),

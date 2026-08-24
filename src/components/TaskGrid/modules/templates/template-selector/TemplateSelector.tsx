@@ -1,6 +1,6 @@
 import * as React from "react";
 import { RecordSelector } from "@components/TaskGrid/components/grid/record-selector";
-import { useDatasetControl } from "@components/TaskGrid/context";
+import { useServices } from "@components/TaskGrid/context";
 import { ITemplateSelectorProps } from "../../interfaces";
 
 /**
@@ -8,8 +8,7 @@ import { ITemplateSelectorProps } from "../../interfaces";
  * `RecordSelector` over this grid's template provider.
  */
 export const TemplateSelector = (props: ITemplateSelectorProps) => {
-    const datasetControl = useDatasetControl();
-    const provider = datasetControl.getModule('templates').provider;
+    const provider = useServices().get('templatesModule').provider;
 
     return <RecordSelector
         provider={provider}

@@ -25,9 +25,9 @@ export type IMemoryLookupManyParameters = ILookupManyDataProviderParameters;
  * The feature modules a memory grid can run with, one builder per feature. Omit a key and that feature
  * is off.
  *
- * Most builders take no parameter: they close over whatever `onInitialize` already resolved. The
- * templates one receives the grid's module context, which is where its provider gets the task side it
- * reads from.
+ * Every builder receives the grid's service locator. Most ignore it and close over whatever
+ * `onInitialize` already resolved; the templates one passes it to its provider, which is how that
+ * provider reaches the task side it reads from.
  */
 export interface IMemoryModules {
     /** Personal views. `createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) })`. */
@@ -36,8 +36,8 @@ export interface IMemoryModules {
      * Task templates.
      *
      * ```ts
-     * onGetTemplatesModule: context => createTemplateModule({
-     *     provider: new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider: context.onGetTaskDataProvider }),
+     * onGetTemplatesModule: services => createTemplateModule({
+     *     provider: new MemoryTemplateDataProvider({ templates, services }),
      * })
      * ```
      */

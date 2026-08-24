@@ -89,7 +89,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     //puts its UI in the bundle - a grid that never registers one does not ship it. A builder that
     //returns undefined leaves its feature off, exactly like omitting the key
     const builtInModules: IMemoryModules = {
-        onGetUserQueriesModule: (services) => {
+        onGetUserQueriesModule: () => {
             if (!isEnabled('userQueries')) {
                 return undefined;
             }
@@ -99,7 +99,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 enableQueryManager: true,
                 enableSaveAsNewQuery: true,
                 enableSaveQueryChanges: true,
-            }, services);
+            });
             //write the strategy's current state back into the store on every mutation, instead of
             //relying on it mutating the array we handed it - an explicit contract survives the
             //strategy changing how it stores things internally; a shared reference would not
@@ -118,11 +118,11 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             //updated from out here whenever it reports a capture - the same contract the user queries
             //above live with
             provider.templateEvents.addEventListener('onAfterTemplateCreated', () => { templates = provider.getTemplateSource(); });
-            return createTemplateModule({ provider }, services);
+            return createTemplateModule({ provider });
         },
-        onGetGridCustomizerModule: (services) => {
+        onGetGridCustomizerModule: () => {
             const strategy = options?.onGetGridCustomizerStrategy?.();
-            return strategy ? createGridCustomizerModule({ strategy }, services) : undefined;
+            return strategy ? createGridCustomizerModule({ strategy }) : undefined;
         },
         onGetLookupManyModule: () => !isEnabled('lookupMany') ? undefined : createLookupManyModule({
             createDataProvider: ({ column }) => {

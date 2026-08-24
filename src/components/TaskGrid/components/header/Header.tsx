@@ -5,7 +5,7 @@ import * as React from "react"
 import { ContextualMenuItemType, useTheme } from "@fluentui/react";
 import { getHeaderStyles } from "./styles";
 import { SettingsCallout } from "./settings-callout";
-import { useDatasetControl, useLocalizationService, useRootElementId, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useRootElementId, useServices, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
 import { ViewSwitcher } from "./view-switcher";
 import { EditColumns as EditColumnsBase } from "@components/DatasetControl/EditColumns/EditColumns";
 
@@ -24,13 +24,14 @@ export const Header = (props: ITaskGridHeaderProps) => {
     const pcfContext = usePcfContext();
     const components = useTaskGridComponents();
     const rootElementId = useRootElementId();
-    const customColumns = datasetControl.getModules().customColumns;
+    const services = useServices();
+    const customColumns = services.find('customColumnsModule');
     const EditColumnsComponent = customColumns?.components.EditColumns ?? EditColumnsBase;
 
     const hasContent = () => {
         return datasetControl.isViewSwitcherEnabled() ||
             datasetControl.isTaskCreatingEnabled() ||
-            !!datasetControl.getModules().templates ||
+            !!services.find('templatesModule') ||
             datasetControl.isTaskEditingEnabled() ||
             datasetControl.isTaskDeletingEnabled() ||
             datasetControl.isEditColumnsVisible() ||
@@ -39,8 +40,8 @@ export const Header = (props: ITaskGridHeaderProps) => {
     }
 
     const createTaskFromTemplate = (templateId: string) => {
-        //the command only renders with the module registered, which is what makes getModule safe here
-        datasetControl.getModule('templates').provider.createTasksFromTemplate({ templateId });
+        //the command only renders with the module registered, which is what makes get safe here
+        services.get('templatesModule').provider.createTasksFromTemplate({ templateId });
     }
 
     const getNewSubMenuItems = (
@@ -48,7 +49,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
         selectedIds: string[],
         isLoading: boolean,
     ): ICommandBarItemProps[] => {
-        const templates = datasetControl.getModules().templates;
+        const templates = services.find('templatesModule');
         return [
             ...(isTaskAddingEnabled ? [{
                 key: 'addTopLevelTask',
@@ -86,7 +87,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
     }
 
     const getCommandBarItems = (items: ICommandBarItemProps[]): ICommandBarItemProps[] => {
-        const isTemplatingEnabled = !!datasetControl.getModules().templates;
+        const isTemplatingEnabled = !!services.find('templatesModule');
         const isEditColumnsEnabled = datasetControl.isEditColumnsVisible();
         const isTaskAddingEnabled = datasetControl.isTaskCreatingEnabled();
         const isTaskEditingEnabled = datasetControl.isTaskEditingEnabled();

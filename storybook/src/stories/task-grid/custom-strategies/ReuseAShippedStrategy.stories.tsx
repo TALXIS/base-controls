@@ -64,10 +64,10 @@ const descriptor = new DataverseTaskGridDescriptor({
         //personal views in memory, tasks in Dataverse. Importing createUserQueryModule is what brings
         //the view manager and the save dialogs along with the strategy
         modules: {
-            onGetUserQueriesModule: (context, services) => createUserQueryModule({
+            onGetUserQueriesModule: () => createUserQueryModule({
                 strategy: new MemoryUserQueryStrategy({ userQueries }),
                 enableQueryManager: true,
-            }, services),
+            }),
         },
     }),
 })

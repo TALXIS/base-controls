@@ -4,7 +4,6 @@ import { EditColumns, IEditColumns } from "@utils/dataset-control/EditColumns";
 import { IDataset, ICommand, EventEmitter, IDataProvider, Operators, Filtering } from "@talxis/client-libraries";
 import { IDeleteTasksResult, ITaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "@utils";
-import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
@@ -26,7 +25,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     private _controlId: string;
     private _state: ITaskGridState;
     private _gridParameters: ITaskGridParameters;
-    private _modules: ITaskGridModules;
     private _commands: ICommand[] = [];
     private _changeToQueryId!: string;
 
@@ -38,8 +36,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._controlId = this._descriptor.onGetControlId?.() ?? `task-grid-dataset-control-${crypto.randomUUID()}`;
         this._state = parameters.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
-        //resolved by the factory; onGetModules is never re-invoked from here
-        this._modules = parameters.modules;
         this._loadState(parameters.state);
         this.loadCommands([]);
         this._registerEventListeners();
@@ -107,26 +103,14 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         }
     }
     
-    public getModules(): ITaskGridModules {
-        return this._modules;
-    }
-
-    public getModule<TKey extends keyof ITaskGridModules>(key: TKey): NonNullable<ITaskGridModules[TKey]> {
-        const module = this._modules[key];
-        if (!module) {
-            throw new Error(`This TaskGridDatasetControl does not have the ${key} module. Register it through your descriptor's "modules" — or its "onGetModules" when the descriptor is your own.`);
-        }
-        return module as NonNullable<ITaskGridModules[TKey]>;
-    }
-
     public isUserQueriesEnabled(): boolean {
-        return !!this._modules.userQueries;
+        return !!this._services.find('userQueriesModule');
     }
 
 
 
     public createLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider {
-        const dataProvider = this._modules.lookupMany?.createDataProvider(parameters);
+        const dataProvider = this._services.find('lookupManyModule')?.createDataProvider(parameters);
         if (!dataProvider) {
             throw new Error(`Column "${parameters.column.name}" is marked as lookup-many, but no data provider was returned for it. Register a lookup-many module (createLookupManyModule) through your descriptor's "modules".`);
         }
@@ -283,9 +267,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this.saveState();
         this._dataProvider.destroy();
         this._savedQueryDataProvider.destroy();
-        this._modules.userQueries?.provider.destroy();
-        this._modules.customColumns?.provider.destroy();
-        this._modules.templates?.provider.destroy();
+        this._services.find('userQueriesModule')?.provider.destroy();
+        this._services.find('customColumnsModule')?.provider.destroy();
+        this._services.find('templatesModule')?.provider.destroy();
     }
     public requestRemount(): void {
         this.dispatchEvent('onRemountRequested');
@@ -358,24 +342,24 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     private _registerEventListeners() {
         this._dataProvider.taskEvents.addEventListener('onError', (error, message) => this._onError(error, message));
-        this._modules.customColumns?.provider.events.addEventListener('onError', (error, message) => this._onError(error, message));
-        this._modules.userQueries?.provider.events.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._services.find('customColumnsModule')?.provider.events.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._services.find('userQueriesModule')?.provider.events.addEventListener('onError', (error, message) => this._onError(error, message));
         this._dataProvider.addEventListener('onRecordsSelected', (ids) => this._onSelectedRecordsChanged(ids));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksDeleted', (result) => this._onAfterTasksDeleted(result));
         this._dataProvider.taskEvents.addEventListener('onBeforeTaskMoved', () => this._dataProvider.setLoading(true));
-        this._modules.templates?.provider.templateEvents.addEventListener('onError', (error, message) => this._onError(error, message));
-        this._modules.templates?.provider.templateEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
-        this._modules.templates?.provider.templateEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
-        this._modules.templates?.provider.templateEvents.addEventListener('onBeforeTasksFromTemplateCreated', () => this._dataProvider.setLoading(true));
-        this._modules.templates?.provider.templateEvents.addEventListener('onAfterTasksFromTemplateCreated', () => this._dataProvider.setLoading(false));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onBeforeTasksFromTemplateCreated', () => this._dataProvider.setLoading(true));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onAfterTasksFromTemplateCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksCreated', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onAfterTaskMoved', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeDatasetItemsOpened', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterDatasetItemsOpened', () => this._dataProvider.setLoading(false));
-        this._modules.userQueries?.provider.events.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
-        this._modules.userQueries?.provider.events.addEventListener('onAfterUserQueryUpdated', (result) => this._dataProvider.setLoading(false));
+        this._services.find('userQueriesModule')?.provider.events.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
+        this._services.find('userQueriesModule')?.provider.events.addEventListener('onAfterUserQueryUpdated', (result) => this._dataProvider.setLoading(false));
     }
 
     private _onError = (error: any, message: string) => {

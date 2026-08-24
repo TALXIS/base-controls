@@ -30,7 +30,7 @@ export class ViewManager {
         this._services = taskGridDatasetControl.getServices();
         this._localizationService = this._services.get('localizationService');
         this._savedQueryDataProvider = this._services.get('savedQueryDataProvider');
-        this._userQueryProvider = taskGridDatasetControl.getModule('userQueries').provider;
+        this._userQueryProvider = this._services.get('userQueriesModule').provider;
         this._viewsDataProvider = this._createViewsDataProvider();
         this._viewsDataProvider.setInterceptor('onRetrieveRecordCommand', (parameters, defaultAction) => this._onRetrieveRecordCommand(parameters, defaultAction));
         const dataset = new Dataset(this._viewsDataProvider);

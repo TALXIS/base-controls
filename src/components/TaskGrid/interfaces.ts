@@ -13,8 +13,6 @@ import { ITaskGridServiceLocator } from "./services";
 export interface ITaskGridDatasetControlParameters {
     dataset: IDataset;
     state: ITaskGridState;
-    /** The feature modules, already resolved by the factory. */
-    modules: ITaskGridModules;
     /** Where everything else is reached — the descriptor, the providers, the PCF context, the labels. */
     services: ITaskGridServiceLocator;
 }
@@ -158,20 +156,10 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     /** Whether grid navigation is enabled (from `ITaskGridParameters.enableNavigation`). */
     isNavigationEnabled: () => boolean;
     /**
-     * The feature modules the descriptor contributed, resolved once when this control was built. A missing
-     * key means that feature is off — there is no separate flag.
-     *
-     * Use this where the feature is optional to the caller. Where the caller only exists *because* the
-     * module does, prefer {@link getModule}.
+     * Everything the grid was built with: the modules the descriptor contributed, the providers they
+     * brought, the descriptor itself, the PCF context and the labels.
      */
-    getModules: () => ITaskGridModules;
-    /** Everything the grid was built with: the providers, the descriptor, the PCF context, the labels. */
     getServices: () => ITaskGridServiceLocator;
-    /**
-     * Returns a registered module by key, non-optional.
-     * @throws If that module is not registered.
-     */
-    getModule: <TKey extends keyof ITaskGridModules>(key: TKey) => NonNullable<ITaskGridModules[TKey]>;
     /** Returns `true` when the user-queries module is registered. */
     isUserQueriesEnabled: () => boolean;
     /** Whether inline task creation is enabled (from `ITaskGridParameters.enableInlineCreation`). */

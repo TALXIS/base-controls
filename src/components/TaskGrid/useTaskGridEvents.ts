@@ -14,8 +14,9 @@ import { ITaskGridProps } from "./TaskGrid";
 export const useTaskGridEvents = (props: ITaskGridProps, datasetControl: ITaskGridDatasetControl, taskDataProvider: ITaskDataProvider) => {
     const { taskEvents } = taskDataProvider;
     //undefined when the module is not registered; useEventEmitter tolerates that, so the props never fire
-    const queryEvents = datasetControl.getModules().userQueries?.provider.events;
-    const templateEvents = datasetControl.getModules().templates?.provider.templateEvents;
+    const services = datasetControl.getServices();
+    const queryEvents = services.find('userQueriesModule')?.provider.events;
+    const templateEvents = services.find('templatesModule')?.provider.templateEvents;
 
     useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onBeforeTasksCreated', (parentTaskId?: string) => props.onBeforeTasksCreated?.(parentTaskId));
     useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onAfterTasksCreated', (records: IRawRecord[] | null, parentTaskId?: string) => props.onTasksCreated?.(records, parentTaskId));

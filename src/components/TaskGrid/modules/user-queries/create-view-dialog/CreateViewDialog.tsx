@@ -3,7 +3,7 @@ import { TextField } from "@components/TextField";
 import { usePcfContext } from "@utils";
 import * as React from "react";
 import { withButtonLoading } from '@legacy';
-import { useDatasetControl, useLocalizationService, useServices } from "@components/TaskGrid/context";
+import { useLocalizationService, useServices } from "@components/TaskGrid/context";
 import { useEventEmitter } from "@hooks";
 import { IUserQueryDataProvider, IUserQueryDataProviderEvents } from "../../interfaces";
 
@@ -19,10 +19,9 @@ export const CreateViewDialog = (props: ICreateViewDialog) => {
     const localizationService = useLocalizationService();
     const context = usePcfContext();
     const services = useServices();
-    const datasetControl = useDatasetControl();
     const savedQueryDataProvider = services.get('savedQueryDataProvider');
     const currentQuery = savedQueryDataProvider.getCurrentQuery();
-    const userQueryProvider = datasetControl.getModule('userQueries').provider;
+    const userQueryProvider = services.get('userQueriesModule').provider;
     const [name, setName] = React.useState<string>(currentQuery.name);
     const [description, setDescription] = React.useState<string>("");
     const [isSaving, setIsSaving] = React.useState<boolean>(false);

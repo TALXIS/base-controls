@@ -219,7 +219,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     /** The user-defined columns, when the custom-columns module is registered. */
     private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
-        return this._services.find('customColumnsDataProvider');
+        return this._services.find('customColumnsModule')?.provider;
     }
 
     public getStrategy<T extends ITaskDataProviderStrategy>(): T {
@@ -578,7 +578,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         //expanding a template is what creates the tasks it describes: the provider is the first
         //listener, so everything listening after it sees tasks that already exist. Resolved here rather
         //than held: the templates module registered its provider before this one was built
-        this._services.find('templateDataProvider')?.templateEvents.addEventListener(
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener(
             'onAfterTasksFromTemplateCreated',
             (rawRecords, parentTaskId) => this._createTasksFromTemplate(rawRecords, parentTaskId),
         );

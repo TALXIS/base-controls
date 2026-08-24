@@ -3,7 +3,7 @@ import { usePcfContext } from "@utils";
 import * as React from 'react';
 import { useIsLoading } from '@hooks';
 import { TaskGridEditColumnsContext } from './useTaskGridEditColumns';
-import { useDatasetControl, useLocalizationService } from '@components/TaskGrid/context';
+import { useLocalizationService, useServices } from '@components/TaskGrid/context';
 import { CommandBar } from '../command-bar/CommandBar';
 import { OptionCommandBar } from '../option-command-bar/OptionCommandBar';
 import { SortableItemCommandBar } from '../sortable-item-command-bar/SortableItemCommandBar';
@@ -16,8 +16,7 @@ import { SortableItemCommandBar } from '../sortable-item-command-bar/SortableIte
 export const EditColumns = (props: IEditColumnsProps) => {
     const localizationService = useLocalizationService();
     const saveOnDismiss = React.useRef(false);
-    const datasetControl = useDatasetControl();
-    const customColumnsDataProvider = datasetControl.getModule('customColumns').provider;
+    const customColumnsDataProvider = useServices().get('customColumnsModule').provider;
     const editColumnsRef = React.useRef<IEditColumnsRef>();
     const pcfContext = usePcfContext();
 

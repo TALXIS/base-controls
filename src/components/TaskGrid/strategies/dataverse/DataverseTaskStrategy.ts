@@ -177,7 +177,7 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
 
     /** The user-defined columns, when the custom-columns module is registered. */
     private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
-        return this._services.find('customColumnsDataProvider');
+        return this._services.find('customColumnsModule')?.provider
     }
 
     private get _isInlineCreateEnabled(): boolean {

@@ -5,7 +5,8 @@ import { ITaskGridLabels } from "./labels";
 import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { TaskGridDatasetControl } from "./TaskGridDatasetControl";
-import { ServiceLocator } from "./services";
+import { ITaskGridServiceLocator, ServiceLocator } from "./services";
+import { ITaskGridModules } from "./modules/interfaces";
 
 /**
  * The slice of grid state that outlives a remount. The `TaskGrid` component owns it and hands the same
@@ -48,10 +49,11 @@ export class TaskGridDatasetControlFactory {
         services.register('datasetControl', () => datasetControl);
 
         await descriptor.onLoadDependencies?.();
-        //resolved once and threaded from here: onGetModules is never called again for this instance.
-        //Each builder registers what its module brings, so the services below can reach it
+        //resolved once: onGetModules is never called again for this instance. Registering from what it
+        //returned keeps the modules and the pieces they bring reachable from one place
         const modules = descriptor.onGetModules?.(services) ?? {};
-        await services.find('customColumnsDataProvider')?.refresh();
+        TaskGridDatasetControlFactory._registerModules(services, modules);
+        await services.find('customColumnsModule')?.provider.refresh();
 
         savedQueryDataProvider = new SavedQueryDataProvider(descriptor.onCreateSavedQueryStrategy(), {
             services: services,
@@ -68,10 +70,22 @@ export class TaskGridDatasetControlFactory {
         datasetControl = new TaskGridDatasetControl({
             dataset: new Dataset(taskDataProvider),
             state: parameters.state,
-            modules: modules,
             services: services,
         });
         return datasetControl;
+    }
+
+    /**
+     * Registers each resolved module under its own key. A module the descriptor left out registers
+     * nothing, so its key stays absent and `find` reports the feature as off.
+     */
+    private static _registerModules(services: ITaskGridServiceLocator, modules: ITaskGridModules): void {
+        const { userQueries, templates, customColumns, gridCustomizer, lookupMany } = modules;
+        userQueries && services.register('userQueriesModule', () => userQueries);
+        templates && services.register('templatesModule', () => templates);
+        customColumns && services.register('customColumnsModule', () => customColumns);
+        gridCustomizer && services.register('gridCustomizerModule', () => gridCustomizer);
+        lookupMany && services.register('lookupManyModule', () => lookupMany);
     }
 
     private static _getIsFlatlistEnabled(parameters: ITaskGridDatasetControlFactoryParameters, savedQueryDataProvider: ISavedQueryDataProvider): boolean {

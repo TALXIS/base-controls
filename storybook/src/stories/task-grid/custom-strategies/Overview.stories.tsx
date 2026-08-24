@@ -109,7 +109,16 @@ interface ITaskGridServiceLocator {
 }
 \`\`\`
 
-The grid always registers \`pcfContext\`, \`localizationService\`, \`descriptor\`, \`gridParameters\`, \`nativeColumns\`, \`datasetControl\`, \`taskDataProvider\` and \`savedQueryDataProvider\`. The rest arrive with a module — \`createTemplateModule\` registers \`templateDataProvider\`, \`createUserQueryModule\` registers \`userQueryDataProvider\`, \`createCustomColumnsModule\` registers \`customColumnsDataProvider\`, \`createGridCustomizerModule\` registers \`gridCustomizerStrategy\` — which is why those four builders take the locator as their second argument. Leave the module out and the key is simply absent, so reach for it with \`find\`.
+The grid always registers \`pcfContext\`, \`localizationService\`, \`descriptor\`, \`gridParameters\`, \`nativeColumns\`, \`datasetControl\`, \`taskDataProvider\` and \`savedQueryDataProvider\`. The rest are the modules \`onGetModules\` resolved, each under its own key — \`userQueriesModule\`, \`templatesModule\`, \`customColumnsModule\`, \`gridCustomizerModule\`, \`lookupManyModule\`. What a module brings hangs off the module, so there is one entry per feature rather than two:
+
+\`\`\`ts
+//off when the module is not registered
+const templates = services.find('templatesModule')?.provider
+//the caller only exists because the module does, so get is the honest call
+const customColumns = services.get('customColumnsModule').provider
+\`\`\`
+
+Leave a module out and its key is simply absent, which is what \`find\` is for.
 
 **Resolve in methods, not in constructors.** Resolvers are lazy, so \`taskDataProvider\` is registered before it exists; a \`get\` while it is still being built throws with a named error, while the same \`get\` from a method a moment later succeeds. That is what makes the mutual reachability safe.
 

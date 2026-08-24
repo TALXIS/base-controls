@@ -268,11 +268,11 @@ declare const createUserQueryModule: (options: {
     enableQueryManager?: boolean;
     enableSaveAsNewQuery?: boolean;
     enableSaveQueryChanges?: boolean;
-}, services: ITaskGridServices) => any;
+}) => any;
 /** Task templates. Bring the provider; the module brings the picker. */
-declare const createTemplateModule: (options: { provider: any }, services: ITaskGridServices) => any;
+declare const createTemplateModule: (options: { provider: any }) => any;
 /** Direct access to AG Grid. Bring the customizer strategy. */
-declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }, services: ITaskGridServices) => any;
+declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
 /** Lookup-many pickers. Return the candidates for each column. */
 declare const createLookupManyModule: (options: {
     createDataProvider: (parameters: { record: ITaskGridRecord; column: ITaskGridColumn }) => any;

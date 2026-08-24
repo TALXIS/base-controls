@@ -1,6 +1,5 @@
 import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/TemplateDataProvider";
 import { ITemplateModule } from "../interfaces";
-import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { TemplateSelector } from "./template-selector";
 
 /** Options for {@link createTemplateModule}. */
@@ -20,22 +19,18 @@ export interface ITemplateModuleOptions {
  * Assign it to a `modules` key — `modules.onGetTemplatesModule` on a shipped descriptor, or
  * `onGetModules` on a descriptor of your own.
  *
- * The provider is registered as the grid's `templateDataProvider`, which is how the task provider
- * hears about an expansion.
+ * The grid registers it as `templatesModule`, which is how the task provider hears about an expansion.
  *
  * @example
  * ```ts
  * modules: {
  *     onGetTemplatesModule: (services) => createTemplateModule({
  *         provider: new MemoryTemplateDataProvider({ templates, services }),
- *     }, services),
+ *     }),
  * }
  * ```
  */
-export const createTemplateModule = (options: ITemplateModuleOptions, services: ITaskGridServiceLocator): ITemplateModule => {
-    services.register('templateDataProvider', () => options.provider);
-    return {
-        provider: options.provider,
-        components: { TemplateSelector },
-    };
-};
+export const createTemplateModule = (options: ITemplateModuleOptions): ITemplateModule => ({
+    provider: options.provider,
+    components: { TemplateSelector },
+});
