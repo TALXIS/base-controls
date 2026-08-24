@@ -77,14 +77,14 @@ At runtime, read a module off the control: `getModules()` where the feature is o
 | `TaskGrid.tsx` | The component. `pcfContext` and `taskGridDescriptor`, plus `labels`, `components` and the event props. |
 | `interfaces.ts` | `ITaskGridDescriptor`, `ITaskGridDatasetControl`, `IFieldMapping`, `ITaskGridParameters`, `ITaskStrategyDeps`. |
 | `providers/` | `TaskDataProvider`, `SavedQueryDataProvider`, `ITemplateDataProvider` and their strategy interfaces. |
-| `modules/` | The optional features and their `create*Module` builders, each with the UI it needs. `CustomColumnsDataProvider` lives here. |
+| `modules/` | The optional features and their `create*Module` builders, each with the UI it needs. `CustomColumnsDataProvider` lives here, as do the shipped implementations of each module's contract under `memory/`, `talxis/` and `dataverse/`. |
 | `components/` | The grid's own UI: AG Grid integration, the customizer, cell renderers, cell headers, the header bar. |
-| `extensions/memory/` | `MemoryTaskGridDescriptor` and the in-memory strategies. |
-| `extensions/dataverse/` | `DataverseTaskGridDescriptor` and the Dataverse / Xrm Web API strategies. |
+| `descriptors/` | The shipped descriptors: `memory/MemoryTaskGridDescriptor`, `dataverse/DataverseTaskGridDescriptor`. |
+| `strategies/` | The shipped task strategies: `memory/MemoryTaskStrategy`, `dataverse/DataverseTaskStrategy` and their actions. |
 | `labels.ts` | `ITaskGridLabels`, `TASK_GRID_LABELS` — every localizable string. |
 | `stack-rank/` | `StackRank` — the lexicographic ordering both shipped strategies use. |
 
-Both extensions are exported from the package root:
+Both descriptors are exported from the package root:
 
 ```ts
 import { MemoryTaskGridDescriptor, DataverseTaskGridDescriptor } from '@talxis/base-controls';

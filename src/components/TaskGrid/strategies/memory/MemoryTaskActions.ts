@@ -18,7 +18,7 @@ import {
 import { IRecordStructure } from "@components/TaskGrid/providers/task/record-tree";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { StackRank } from "@components/TaskGrid/stack-rank";
-import { IMemoryTaskTemplateNode } from "../interfaces";
+import { IMemoryTaskTemplateNode } from "@components/TaskGrid/modules/templates/memory/interfaces";
 import { MemoryTemplateDataProvider } from "@components/TaskGrid/modules/templates/memory/MemoryTemplateDataProvider";
 
 /** What every action that resolves a task by id needs. */

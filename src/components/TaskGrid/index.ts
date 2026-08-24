@@ -8,8 +8,8 @@ export * from './components/grid/grid-customizer';
 export * from './components/grid/record-selector';
 export * from './TaskGridDatasetControl';
 export * from './TaskGridDatasetControlFactory';
-export * from './extensions/memory';
-export * from './extensions/dataverse';
+export * from './descriptors';
+export * from './strategies';
 //named re-export, not `export *`: ./context's usePcfContext would collide with the @utils hook of
 //the same name
 export {

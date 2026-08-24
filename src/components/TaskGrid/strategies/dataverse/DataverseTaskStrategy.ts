@@ -10,9 +10,9 @@ import {
 } from "@components/TaskGrid/providers";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { Liquid } from "liquidjs";
-import { IDataverseFieldMapping } from "../DataverseTaskGridDescriptor";
+import { IDataverseFieldMapping } from "@components/TaskGrid/descriptors/dataverse/DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "./LookupManyHandler";
-import { ITaskStrategyDeps } from "../../..";
+import { ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ITalxisCustomColumnsStrategy } from "@components/TaskGrid/modules/custom-columns/talxis";
 import {
     DataverseFormOperation,

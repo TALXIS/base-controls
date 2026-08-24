@@ -7,7 +7,7 @@ import { TemplateDataProviderBase } from "@components/TaskGrid/providers";
  *
  * Capturing a template from a task is **not implemented yet**; `createTemplateFromTask` throws.
  * {@link DataverseTaskGridDescriptor} therefore does not wire this provider up, which leaves
- * templating switched off for the Dataverse extension.
+ * templating switched off for the Dataverse descriptor.
  */
 export class DataverseTemplateDataProvider extends TemplateDataProviderBase(FetchXmlDataProvider) {
     protected onCreateTemplateFromTask(task: IRecord): Promise<IRawRecord | null> {

@@ -21,7 +21,7 @@ import {
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { StackRank } from "@components/TaskGrid/stack-rank";
-import { IDataverseFieldMapping } from "../DataverseTaskGridDescriptor";
+import { IDataverseFieldMapping } from "@components/TaskGrid/descriptors/dataverse/DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "./LookupManyHandler";
 
 /** The `Xrm.Navigation.navigateTo` arguments behind every form the grid opens. */

@@ -1,7 +1,7 @@
 import { IRawRecord, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { ITaskDataProvider, TemplateDataProviderBase } from "@components/TaskGrid/providers";
 import { IRecordTree } from "@components/TaskGrid/providers/task/record-tree";
-import { IMemoryTaskTemplateNode, IMemoryTemplateSource } from "@components/TaskGrid/extensions/memory/interfaces";
+import { IMemoryTaskTemplateNode, IMemoryTemplateSource } from "./interfaces";
 
 /** Constructor parameters for {@link MemoryTemplateDataProvider}. */
 export interface IMemoryTemplateDataProviderParams {

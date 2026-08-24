@@ -2,7 +2,7 @@ import { IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-librar
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
-import { MemoryTaskStrategy } from "./memory-task-strategy/MemoryTaskStrategy";
+import { MemoryTaskStrategy } from "@components/TaskGrid/strategies/memory/MemoryTaskStrategy";
 
 /** What the descriptor has resolved by the time it builds an optional strategy. */
 export interface IMemoryStrategyContext {

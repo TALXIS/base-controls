@@ -1,5 +1,5 @@
 import { IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
-import { IMemoryEntitySource } from "@components/TaskGrid/extensions/memory/interfaces";
+import { IMemoryEntitySource } from "@components/TaskGrid/descriptors/memory/interfaces";
 
 /**
  * Builds the picker provider behind one lookup-many column, from records you already hold.
