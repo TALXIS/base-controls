@@ -60,6 +60,8 @@ interface ICreateMemoryTaskGridDescriptorOptions {
      * sources. The dev stories use it to mount a generated dataset.
      */
     onGetRecords?: () => Promise<IRawRecord[]>;
+    /** Container height. Defaults to `600px`, the height every documentation grid runs at. */
+    height?: string;
 }
 
 export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDescriptorOptions) => {
@@ -270,7 +272,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     };
 
     return new MemoryTaskGridDescriptor({
-        height: '600px',
+        height: options?.height ?? '600px',
         onInitialize,
     });
 };

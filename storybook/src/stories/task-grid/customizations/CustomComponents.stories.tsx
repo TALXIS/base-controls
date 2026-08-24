@@ -131,7 +131,7 @@ export const ReplaceCommandBar: Story = {
 Swaps the Fluent command bar for a row of MUI buttons, carrying both the grid's commands and one of its own.
 
 - has no \`defaultRender\`: you get the command model — \`text\`, \`iconProps\`, \`onClick\`, \`subMenuProps\` — and render it however you like
-- keeps the grid's panels: a submenu that brings its own content exposes it as \`onRenderMenuList()\`, so the settings callout and the template picker open inside the MUI \`Menu\`
+- keeps the grid's panels: a submenu that brings its own content exposes it as \`onRenderMenuList()\`, so the settings callout opens inside the MUI \`Menu\`
 - adds **Mark done**, a command of its own, which reaches the grid's data through \`useTaskDataProvider()\` and saves the whole selection in one pass
                 `.trim(),
             },

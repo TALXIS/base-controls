@@ -105,4 +105,4 @@ const TaskGridExample = () => <TaskGrid
     components={components} />
 `
 
-export const CustomCommandBarExample = () => <TaskGridExampleRunner seedCode={CUSTOM_COMMAND_BAR_CODE} />
+export const CustomCommandBarExample = () => <TaskGridExampleRunner modules={['userQueries', 'lookupMany']} seedCode={CUSTOM_COMMAND_BAR_CODE} />

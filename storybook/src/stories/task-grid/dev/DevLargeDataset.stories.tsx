@@ -1,6 +1,5 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { renderStory } from '../../form/storyHelpers'
 import { LargeTaskGrid } from '../../../task-grid/dev/LargeTaskGrid'
 
 const meta = {
@@ -24,5 +23,10 @@ type Story = StoryObj<typeof meta>
  */
 export const TenThousandTasks: Story = {
     name: '10 000 tasks',
-    render: () => renderStory(<LargeTaskGrid count={10_000} seed={42} />),
+    //the whole viewport, no padding: profiling wants as many rows on screen as the grid will render
+    render: () => (
+        <div style={{ height: '100vh' }}>
+            <LargeTaskGrid count={10_000} seed={42} />
+        </div>
+    ),
 }
