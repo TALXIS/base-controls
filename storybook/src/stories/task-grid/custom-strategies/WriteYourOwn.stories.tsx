@@ -215,7 +215,7 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
 }
 \`\`\`
 
-\`deps\` carries what the grid built for you — \`savedQueryDataProvider\`, \`customColumnsDataProvider\`, and the \`enableTaskEditing\` / \`enableInlineCreation\` flags — so the strategy does not have to be told twice. The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
+\`deps\` carries what the grid built for you — \`savedQueryDataProvider\`, and the \`enableTaskEditing\` / \`enableInlineCreation\` flags — so the strategy does not have to be told twice. The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
 
 ## Where the rest lives
 

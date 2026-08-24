@@ -197,11 +197,16 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 import('./memoryLookupManyData'),
             ]);
 
+            //a demo without the lookupMany module has no picker for these columns, so they are not part
+            //of its views - nor of what Edit columns can add back
+            const getColumns = (...names: string[]) => getQueryColumns(...names)
+                .filter(column => isEnabled('lookupMany') || !column.metadata?.LookupMany);
+
             const allTasks: ISavedQuery = {
                 id: '00000000-0000-0000-0000-000000000000',
                 name: 'All Tasks',
                 isFlatListEnabled: false,
-                columns: getQueryColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
+                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
                 quickFindColumns: [SUBJECT_COL],
             };
 
@@ -209,7 +214,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 id: 'uq-default-01-0000-0000-000000000000',
                 name: 'My Open Tasks',
                 isFlatListEnabled: false,
-                columns: getQueryColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
+                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
                 filtering: {
                     filterOperator: FILTER_OPERATOR_AND,
                     conditions: [{
@@ -225,7 +230,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 id: 'uq-default-02-0000-0000-000000000000',
                 name: 'High Priority',
                 isFlatListEnabled: false,
-                columns: getQueryColumns('subject', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
+                columns: getColumns('subject', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
                 filtering: {
                     filterOperator: FILTER_OPERATOR_AND,
                     conditions: [{

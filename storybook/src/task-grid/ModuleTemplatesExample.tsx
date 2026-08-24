@@ -15,4 +15,4 @@ const TaskGridExample = () => <TaskGrid
     descriptor={descriptor} />
 `
 
-export const ModuleTemplatesExample = () => <TaskGridExampleRunner seedCode={MODULE_TEMPLATES_CODE} />
+export const ModuleTemplatesExample = () => <TaskGridExampleRunner modules={['templates']} seedCode={MODULE_TEMPLATES_CODE} />

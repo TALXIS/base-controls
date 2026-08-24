@@ -87,7 +87,7 @@ Both descriptors forward every optional hook to something you resolve, so you ra
 The sequence matters, because the strategies are created *after* configuration resolves:
 
 1. \`onLoadDependencies()\` — awaited first. Anything async belongs here; on both shipped descriptors this is where \`onInitialize\` runs.
-2. \`onGetModules()\` — once per control instance. The resolved modules are threaded from here, and \`customColumns.provider.refresh()\` is awaited.
+2. \`onGetModules()\` — once per control instance. The resolved modules are threaded from here.
 3. \`onCreateSavedQueryStrategy()\` and \`onGetFieldMapping()\`, then the saved-query provider refreshes.
 4. \`onCreateTaskStrategy(deps)\` — \`deps\` carries the template and custom-columns providers off the modules resolved in step 2. Creating a template is the template provider's own operation: call \`createTemplateFromTask\` on it, not on the task provider.
 5. The task strategy's own \`onInitialize(provider)\` runs, which is where it loads its records. Both shipped strategies await *their* required \`onInitialize\` hook there, so what they run on can be fetched asynchronously too.
@@ -156,10 +156,10 @@ import {
     //classes
     MemoryTaskStrategy, MemoryTaskActions, MemoryUserQueryStrategy, MemoryTemplateDataProvider,
     StackRank,
-    DataverseTaskStrategy, DataverseTaskActions, TalxisUserQueryStrategy, TalxisCustomColumnsStrategy,
+    DataverseTaskStrategy, DataverseTaskActions, TalxisUserQueryStrategy,
     TemplateDataProviderBase, MemoryLookupManyDataProviderFactory, DataverseLookupManyDataProviderFactory,
     //the module builders
-    createUserQueryModule, createTemplateModule, createCustomColumnsModule,
+    createUserQueryModule, createTemplateModule,
     createGridCustomizerModule, createLookupManyModule,
 } from '@talxis/base-controls'
 
@@ -171,10 +171,10 @@ import type {
     ITaskDataProviderStrategy, ITaskDataProvider, IRecordTree, IRecordTreeView, IRecordStructure,
     ITaskSiblingContext, ITaskMoveParams, ITaskCreateParams, ITaskTemplateExpansionParams,
     ISavedQuery, ISavedQueryStrategy, IUserQueryStrategy, ISavedQueryDataProvider,
-    ICustomColumnsStrategy, ITemplateDataProvider,
+    ITemplateDataProvider,
     IGridCustomizerStrategy, IGridCustomizer,
     //the module contracts
-    ITaskGridModules, IUserQueryModule, ITemplateModule, ICustomColumnsModule,
+    ITaskGridModules, IUserQueryModule, ITemplateModule,
     IGridCustomizerModule, ILookupManyModule,
     //per-extension params and contexts
     IMemoryTaskGridDescriptorParams, IMemoryTaskGridDescriptorInitializeResult, IMemoryStrategyContext, IMemoryTaskStrategyParams, IMemoryModules,

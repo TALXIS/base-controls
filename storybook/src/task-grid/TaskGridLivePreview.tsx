@@ -2,12 +2,11 @@ import * as Babel from '@babel/standalone'
 import React from 'react'
 import {
     TaskGrid, useTaskDataProvider, useTaskGridDatasetControl,
-    createUserQueryModule, createTemplateModule, createCustomColumnsModule,
+    createUserQueryModule, createTemplateModule,
     createGridCustomizerModule, createLookupManyModule,
     MemoryUserQueryStrategy, MemoryTemplateDataProvider, MemoryLookupManyDataProviderFactory,
 } from '@talxis/base-controls'
 import type { ITaskGridDescriptor } from '@talxis/base-controls'
-import { MemoryCustomColumnsStrategy } from './memoryCustomColumnsStrategy'
 import { Alert, Autocomplete, Avatar, AvatarGroup, Button, Chip, LinearProgress, Menu, MenuItem, Popover, Rating, Slider, Snackbar, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import DoneAllIcon from '@mui/icons-material/DoneAll'
@@ -75,13 +74,11 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 'Typography',
                 'createUserQueryModule',
                 'createTemplateModule',
-                'createCustomColumnsModule',
                 'createGridCustomizerModule',
                 'createLookupManyModule',
                 'MemoryUserQueryStrategy',
                 'MemoryTemplateDataProvider',
                 'MemoryLookupManyDataProviderFactory',
-                'MemoryCustomColumnsStrategy',
                 `${transformed}
                  return {
                    Component: typeof TaskGridExample !== "undefined" ? TaskGridExample : null,
@@ -122,13 +119,11 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 Typography,
                 createUserQueryModule,
                 createTemplateModule,
-                createCustomColumnsModule,
                 createGridCustomizerModule,
                 createLookupManyModule,
                 MemoryUserQueryStrategy,
                 MemoryTemplateDataProvider,
                 MemoryLookupManyDataProviderFactory,
-                MemoryCustomColumnsStrategy,
             ) as { Component: React.ComponentType | null; strategy?: any; getModules?: any }
 
             return { Component: result.Component, strategy: result.strategy, getModules: result.getModules, error: null as string | null }

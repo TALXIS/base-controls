@@ -32,11 +32,10 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 | Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`modules.onGetTemplatesModule\` returns one |
 | Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`modules.onGetLookupManyModule\` returns one |
 | AG Grid customizer | yours | \`modules.onGetGridCustomizerModule\` returns one |
-| Custom columns | **nothing in-memory implements them** | only if \`modules.onGetCustomColumnsModule\` returns one wrapping your own |
 
 Those last five are **modules**, and \`modules\` is part of what \`onInitialize\` resolves. [**Modules**](?path=/story/task-grid-modules--overview) covers what each one turns on, the builder options, and the bundle consequence.
 
-Both descriptors accept the same five, so the difference is which implementations ship: memory brings a user-query strategy and a template provider but no custom columns, Dataverse brings a user-query strategy and custom columns but no template provider. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
+Both descriptors accept the same modules, so the difference is which implementations ship: memory brings a user-query strategy and a template provider, Dataverse brings a user-query strategy but no template provider. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
 
 \`\`\`ts
 import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
@@ -414,7 +413,6 @@ class MyTaskStrategy extends MemoryTaskStrategy {
 
 - **Insert cost is linear in the sibling count.** Creating or moving a task scans the task map for sibling ranks. Fine for the hundreds-to-low-thousands of rows the grid is built for; not a plan for six-figure task sets.
 - **No related-entity columns.** \`onGetAvailableRelatedColumns\` returns \`[]\`, so nothing reachable only through a relationship can be added to a view.
-- **No custom columns out of the box.** Nothing in-memory implements them, so the \`customColumns\` module's strategy has to be yours.
                 `.trim(),
             },
         },

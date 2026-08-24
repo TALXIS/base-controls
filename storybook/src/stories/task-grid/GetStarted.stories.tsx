@@ -18,7 +18,7 @@ const meta = {
             },
             description: {
                 component: `
-Task Grid is a hierarchical task-management grid built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. It renders tasks as a parent–child tree and brings the surrounding behaviour with it: drag-and-drop reordering, inline editing, saved views, quick find, custom columns and template-based task creation, working as one system.
+Task Grid is a hierarchical task-management grid built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. It renders tasks as a parent–child tree and brings the surrounding behaviour with it: drag-and-drop reordering, inline editing, saved views, quick find and template-based task creation, working as one system.
 
 The grid below is real. It runs on the in-memory strategy, so everything you do to it — reorder, edit, create, delete, switch views — is the same code path a production grid uses. Flip **Code** to see what renders it, and edit it.
 
@@ -144,7 +144,7 @@ const descriptor = new DataverseTaskGridDescriptor({
 })
 \`\`\`
 
-> Two features come from TALXIS models rather than your task entity — personal saved views (\`talxis_userquery\`) and custom columns (\`talxis_attributedefinition\`). Both are opt-in: you switch one on by registering its module, so an environment without the model simply leaves that module out. Covered on [**Strategies → Dataverse**](?path=/story/task-grid-strategies-dataverse--overview).
+> Personal saved views come from a TALXIS model rather than your task entity (\`talxis_userquery\`). They are opt-in: you switch them on by registering the module, so an environment without the model simply leaves that module out. Covered on [**Strategies → Dataverse**](?path=/story/task-grid-strategies-dataverse--overview).
 
 ## Where to go next
 

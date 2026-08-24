@@ -35,7 +35,7 @@ Subclass when you want to change several operations at once, hold state of your 
 
 ## Start with the params
 
-Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open, the grid customizer — and every optional feature: personal views, templates, custom columns and lookup-many candidates are all **modules** on both shipped descriptors — see [**Modules**](?path=/story/task-grid-modules--overview). Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-custom-strategies--overview).
+Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open, the grid customizer — and every optional feature: personal views, templates and lookup-many candidates are all **modules** on both shipped descriptors — see [**Modules**](?path=/story/task-grid-modules--overview). Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-custom-strategies--overview).
 
 ## Subclassing a task strategy
 

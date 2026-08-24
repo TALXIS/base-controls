@@ -17,4 +17,4 @@ const TaskGridExample = () => <TaskGrid
     descriptor={descriptor} />
 `
 
-export const ModuleLookupManyExample = () => <TaskGridExampleRunner seedCode={MODULE_LOOKUP_MANY_CODE} />
+export const ModuleLookupManyExample = () => <TaskGridExampleRunner modules={['lookupMany']} seedCode={MODULE_LOOKUP_MANY_CODE} />

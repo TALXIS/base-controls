@@ -3,7 +3,6 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { ModuleUserQueriesExample } from '../../task-grid/ModuleUserQueriesExample'
 import { ModuleTemplatesExample } from '../../task-grid/ModuleTemplatesExample'
-import { ModuleCustomColumnsExample } from '../../task-grid/ModuleCustomColumnsExample'
 import { ModuleLookupManyExample } from '../../task-grid/ModuleLookupManyExample'
 
 const meta = {
@@ -27,7 +26,6 @@ The grid's optional features are **modules**. You list the ones you want on the 
 |---|---|---|
 | \`onGetUserQueriesModule\` | Personal views: *My views* in the view switcher, and the save and manage commands | where views are stored |
 | \`onGetTemplatesModule\` | Task templates: *New from template*, and *Create template from task* | where templates are stored, and what they expand into |
-| \`onGetCustomColumnsModule\` | User-defined columns, and the commands to create, edit and delete them | where columns are stored |
 | \`onGetLookupManyModule\` | Multi-record pickers on lookup-many columns | the candidate records |
 | \`onGetGridCustomizerModule\` | Direct access to AG Grid — see [**Customizer**](?path=/story/task-grid-modules-customizer--overview) | a customizer strategy |
 
@@ -61,7 +59,6 @@ Each builder takes the one thing only you can provide, plus a few switches for i
 |---|---|---|
 | \`createUserQueryModule\` | \`strategy\` | \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` |
 | \`createTemplateModule\` | \`provider\` | — |
-| \`createCustomColumnsModule\` | \`strategy\` | \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\` |
 | \`createLookupManyModule\` | \`createDataProvider\` | — |
 | \`createGridCustomizerModule\` | \`strategy\` | — |
 
@@ -104,22 +101,6 @@ export const Templates: Story = {
 **New** now offers *New from template*, and so does the **+** button on each row. Select a task and *Create template from task* saves its whole subtree as a new template, which then shows up in the picker — for the rest of the session, unless you keep it yourself: see [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Keeping data across remounts*.
 
 Note the view dropdown has no *My views* group here — that is the personal-views module, and this grid does not register it.
-                `.trim(),
-            },
-        },
-    },
-}
-
-export const CustomColumns: Story = {
-    name: 'Custom columns',
-    render: () => renderStory(<ModuleCustomColumnsExample />),
-    parameters: {
-        docs: {
-            description: {
-                story: `
-Open *Edit columns*. This is the module's own panel: it has a **Create Custom Column** command, and each custom column gets edit and delete commands. Create one, tick it on, and it behaves like any other column.
-
-Nothing in-memory ships with the package, so the strategy here is a small one written for these docs — which is the point: the panel and the commands come from the module, the storage is yours.
                 `.trim(),
             },
         },

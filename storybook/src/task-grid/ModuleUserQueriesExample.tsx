@@ -17,4 +17,4 @@ const TaskGridExample = () => <TaskGrid
     descriptor={descriptor} />
 `
 
-export const ModuleUserQueriesExample = () => <TaskGridExampleRunner seedCode={MODULE_USER_QUERIES_CODE} />
+export const ModuleUserQueriesExample = () => <TaskGridExampleRunner modules={['userQueries']} seedCode={MODULE_USER_QUERIES_CODE} />

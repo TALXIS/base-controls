@@ -18,7 +18,7 @@ const meta = {
                 component: `
 \`DataverseTaskGridDescriptor\` drives the grid from a Dataverse entity over the Xrm Web API, with FetchXML as the query language.
 
-It handles the wiring a model-driven subgrid would give you: saved views persisted per user, forms opened for create and edit, relationship columns associated and disassociated on save, and custom columns backed by attribute-definition rows.
+It handles the wiring a model-driven subgrid would give you: saved views persisted per user, forms opened for create and edit, and relationship columns associated and disassociated on save.
 
 \`\`\`ts
 import { DataverseTaskGridDescriptor } from '@talxis/base-controls'
@@ -28,12 +28,11 @@ import { DataverseTaskGridDescriptor } from '@talxis/base-controls'
 
 ## Environment prerequisites
 
-Two features are backed by TALXIS models rather than by your task entity, and **both are opt-in**: you get them by registering the module that carries them. Say nothing and the model is never read — and the module's code is never pulled into your bundle.
+Personal saved views are backed by a TALXIS model rather than by your task entity, and they are **opt-in**: you get them by registering the module that carries them. Say nothing and the model is never read — and the module's code is never pulled into your bundle.
 
 | Feature | Module to register | Model it needs |
 |---|---|---|
 | Personal saved views | \`modules.onGetUserQueriesModule\` → \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...) })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
-| Custom columns | \`modules.onGetCustomColumnsModule\` → \`createCustomColumnsModule({ strategy: new TalxisCustomColumnsStrategy(...) })\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` |
 
 \`\`\`ts
 //part of what onInitialize resolves - see Modules for the full picture
@@ -46,12 +45,6 @@ modules: {
         }),
         enableQueryManager: true,
     }),
-    onGetCustomColumnsModule: (context) => createCustomColumnsModule({
-        strategy: new TalxisCustomColumnsStrategy({
-            entityName: context.entityName,
-            recordId: context.recordId,
-        }),
-    }),
 },
 \`\`\`
 
@@ -59,7 +52,7 @@ Each builder gets only the slice of context its own strategy needs — the entit
 
 > Register a module whose model is **not** deployed and the grid sits on its loading skeleton and never renders: both reads happen before the first provider is created, and neither is wrapped in the grid's error handling. If a table is missing, leave its builder out.
 
-Nothing stops you from answering a feature differently — return a strategy of your own, or one from another extension, and custom columns or views can live wherever you like. Task loading and saving keep using the shipped \`DataverseTaskStrategy\`. See [**Custom strategies → Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview).
+Nothing stops you from answering a feature differently — return a strategy of your own, or one from another extension, and views can live wherever you like. Task loading and saving keep using the shipped \`DataverseTaskStrategy\`. See [**Custom strategies → Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview).
 
 ## Setup
 
@@ -234,12 +227,6 @@ modules: {
 \`\`\`
 
 The parameters carry everything the factory needs: the cell's record and column from the call, the project and source records from \`context\`. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
-
-## Custom columns
-
-Users define columns at runtime; they are stored as \`talxis_attributedefinition\` and \`talxis_attributevalue\` rows. Registering the module is what switches the feature on — [**Modules**](?path=/story/task-grid-modules--overview).
-
-\`TalxisCustomColumnsStrategy\` assembles nothing from the entity name: \`onRefresh\` reads the relationship between your task entity and \`talxis_attributevalue\` off the metadata and takes all three names it needs from it, so a non-standard schema works as-is. Pass \`navigationPropertyName\` only if your entity has more than one relationship to \`talxis_attributevalue\`.
 
 ## Templates
 

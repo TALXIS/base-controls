@@ -2,6 +2,7 @@ import React from 'react'
 import { initializeIcons } from '@fluentui/react'
 import { ExampleRunner } from '../stories/form/storyHelpers'
 import { createMemoryTaskGridDescriptor } from './memoryDescriptor'
+import type { MemoryTaskGridModuleName } from './memoryDescriptor'
 import { TaskGridCodeEditor } from './TaskGridCodeEditor'
 import { TaskGridLivePreview } from './TaskGridLivePreview'
 
@@ -21,6 +22,12 @@ const useDebouncedCode = (code: string, delay = 400) => {
 interface ITaskGridExampleRunnerProps {
     /** The snippet the example starts with. It must define a `TaskGridExample` component. */
     seedCode: string
+    /**
+     * Which modules the example is about. It decides what the grid's views contain — a demo without
+     * `lookupMany` shows no lookup-many columns — while the snippet's own `getModules` decides what is
+     * actually registered. Omit for the usual documentation set.
+     */
+    modules?: MemoryTaskGridModuleName[]
 }
 
 /** A live TaskGrid with a Code toggle: flip it to read the snippet, edit it, and watch the grid recompile. */
@@ -37,6 +44,7 @@ export const TaskGridExampleRunner = (props: ITaskGridExampleRunnerProps) => {
     //one descriptor for the whole example - it owns the in-memory task state, and the snippet only
     //receives it, so editing the code never reloads the data
     const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor({
+        modules: props.modules,
         onGetGridCustomizerStrategy: () => gridCustomizerStrategyRef.current,
         onGetModuleOverrides: (data) => getModulesRef.current?.(data),
     }), [])

@@ -249,7 +249,6 @@ interface IModuleData {
 declare type GetModules = (data: IModuleData) => {
     onGetUserQueriesModule?: () => any;
     onGetTemplatesModule?: (context: { onGetTaskDataProvider: () => any }) => any;
-    onGetCustomColumnsModule?: () => any;
     onGetGridCustomizerModule?: () => any;
     onGetLookupManyModule?: () => any;
 };
@@ -264,13 +263,6 @@ declare const createUserQueryModule: (options: {
 /** Task templates. Bring the provider; the module brings the picker. */
 declare const createTemplateModule: (options: { provider: any }) => any;
 /** User-defined columns. Bring the strategy; the module brings the panel and its commands. */
-declare const createCustomColumnsModule: (options: {
-    strategy: any;
-    enableCustomColumnCreation?: boolean;
-    enableCustomColumnEditing?: boolean;
-    enableCustomColumnDeletion?: boolean;
-}) => any;
-/** AG Grid customization. */
 declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
 /** Lookup-many pickers. Return the candidates for each column. */
 declare const createLookupManyModule: (options: {
@@ -283,6 +275,4 @@ declare const MemoryUserQueryStrategy: new (params: { userQueries: any[] }) => a
 declare const MemoryTemplateDataProvider: new (params: { templates: any, onGetTaskDataProvider: () => any }) => any;
 /** Turns records you hold into a lookup-many picker's candidate provider. */
 declare const MemoryLookupManyDataProviderFactory: { create(source: any): any };
-/** A small in-memory custom-columns strategy, written for these docs. */
-declare const MemoryCustomColumnsStrategy: new (columns?: ITaskGridColumn[]) => any;
 `.trim()

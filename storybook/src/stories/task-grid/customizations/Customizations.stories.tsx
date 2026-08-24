@@ -53,7 +53,7 @@ A few interact with each other: \`enableRowDragging\` is suppressed automaticall
 
 Every flag defaults to \`false\`, so a feature missing from the ribbon is one of two things: its flag was left out of \`onGetGridParameters\`, or the module that provides it was never registered.
 
-Six \`enable*\` options are deliberately **not** on this list — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\`, \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\`. They live on \`createUserQueryModule\` and \`createCustomColumnsModule\`, because the commands they gate arrive with those modules. See [**Modules**](?path=/story/task-grid-modules--overview).
+Three \`enable*\` options are deliberately **not** on this list — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\`. They live on \`createUserQueryModule\`, because the commands they gate arrive with that module. See [**Modules**](?path=/story/task-grid-modules--overview).
 
 ## Column metadata
 

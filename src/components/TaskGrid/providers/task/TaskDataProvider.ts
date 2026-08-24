@@ -607,6 +607,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 rawData: rawRecord,
                 recordId: rawRecord[this.getMetadata().PrimaryIdAttribute],
                 position: 'start',
+                
+
             },);
             const stackRankAttributeName = this.getNativeColumns().stackRank;
             if (record.getValue(stackRankAttributeName) == null) {
