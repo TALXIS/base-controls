@@ -13,13 +13,10 @@ import {
     ISavedQueryDataProvider,
     ITaskCreateParams,
     ITaskMoveParams,
-    ITaskTemplateExpansionParams,
 } from "@components/TaskGrid/providers";
 import { IRecordStructure } from "@components/TaskGrid/providers/task/record-tree";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { StackRank } from "@components/TaskGrid/stack-rank";
-import { IMemoryTaskTemplateNode } from "@components/TaskGrid/modules/templates/memory/interfaces";
-import { MemoryTemplateDataProvider } from "@components/TaskGrid/modules/templates/memory/MemoryTemplateDataProvider";
 
 /** What every action that resolves a task by id needs. */
 interface IMemoryTaskLookup {
@@ -80,16 +77,6 @@ export interface IMemoryTaskDeleteParams extends IMemoryTaskLookup {
     taskIds: string[];
     /** The complete hierarchy, which is where the descendants to delete with them come from. */
     structure: IRecordStructure;
-}
-
-/** What {@link MemoryTaskActions.createTasksFromTemplate} reads. */
-export interface IMemoryTaskTemplateExpansionParams extends ITaskTemplateExpansionParams, IMemoryTaskStore {
-    /** The provider holding the template and its child hierarchy. */
-    templateDataProvider: MemoryTemplateDataProvider;
-    /** The active view's columns — the fields a template can carry over. */
-    columns: IColumn[];
-    /** The consumer's field defaults, applied under the template's own values. */
-    onGetNewTaskDefaults?: (parentTaskId?: string) => Partial<IRawRecord>;
 }
 
 /** What {@link MemoryTaskActions.openDatasetItems} reads. */
@@ -221,54 +208,6 @@ export class MemoryTaskActions {
     }
 
     /**
-     * Expands a template into a task and its whole subtree, in template order.
-     *
-     * @returns The created tasks, root first, or `null` when the template no longer exists.
-     */
-    public static createTasksFromTemplate(params: IMemoryTaskTemplateExpansionParams): IRawRecord[] | null {
-        const { templateId, parentRecord, nextSibling, templateDataProvider, records, metadata, nativeColumns, columns, onGetNewTaskDefaults } = params;
-        const template = templateDataProvider.getRecordsMap()[templateId];
-        if (!template) {
-            return null;
-        }
-        const buildParams = { records, metadata, nativeColumns, columns, onGetNewTaskDefaults };
-        const rootTask = this._buildTask({
-            ...buildParams,
-            parentTaskId: parentRecord?.getRecordId() ?? null,
-            stackRank: StackRank.between(undefined, this._getStackRank(nextSibling, nativeColumns)),
-            parentReference: this._getParentReference(parentRecord),
-            overrides: this._getTaskFieldsFromTemplate(template, templateDataProvider, columns, nativeColumns),
-        });
-        const created: IRawRecord[] = [rootTask];
-
-        const createChildren = (nodes: IMemoryTaskTemplateNode[], parent: IRawRecord) => {
-            //the descendants are ours to rank: they have no siblings in the store yet, so each one ranks
-            //after the one built before it, which preserves the order the template describes
-            let previousStackRank: string | undefined;
-            for (const node of nodes) {
-                const child = this._buildTask({
-                    ...buildParams,
-                    parentTaskId: parent[metadata.PrimaryIdAttribute!] as string,
-                    stackRank: StackRank.between(previousStackRank, undefined),
-                    //the parent was built by this very expansion, so the grid has no record instance for
-                    //it yet - its reference comes from what we just built
-                    parentReference: this._getNewTaskReference(parent, metadata, nativeColumns),
-                    overrides: node.values,
-                });
-                previousStackRank = child[nativeColumns.stackRank] as string;
-                created.push(child);
-                if (node.children?.length) {
-                    createChildren(node.children, child);
-                }
-            }
-        };
-        createChildren(templateDataProvider.getTemplateChildren(templateId), rootTask);
-
-        //returned, not stored: the provider adds the whole subtree to its dataset
-        return created;
-    }
-
-    /**
      * What opening records does without a consumer implementation: nothing. In-memory data has no forms
      * to navigate to, so the grid is left untouched.
      */
@@ -327,19 +266,6 @@ export class MemoryTaskActions {
         return parent ? [parent.getNamedReference()] : null;
     }
 
-    /**
-     * The same reference for a task this operation has only just created: the grid has no record
-     * instance for it yet, so it is read off what we wrote.
-     */
-    private static _getNewTaskReference(task: IRawRecord, metadata: IMemoryProviderEntityMetadata, nativeColumns: INativeColumns): ComponentFramework.EntityReference[] {
-        return [{
-            id: { guid: task[metadata.PrimaryIdAttribute!] as string },
-            name: task[nativeColumns.subject] as string,
-            //an empty string beats `undefined` when `LogicalName` was not supplied
-            etn: metadata.LogicalName ?? '',
-        }];
-    }
-
     /** A sibling's rank, read off the record the provider resolved. */
     private static _getStackRank(sibling: IRecord | undefined, nativeColumns: INativeColumns): string | undefined {
         return sibling?.getValue(nativeColumns.stackRank) as string | undefined;
@@ -358,7 +284,7 @@ export class MemoryTaskActions {
         columns: IColumn[];
         parentTaskId: string | null;
         parentReference: ComponentFramework.EntityReference[] | null;
-        /** Where it sorts. Resolved by the provider for a created task, by the caller for a template's descendants. */
+        /** Where it sorts, resolved by the caller from the neighbours the task lands between. */
         stackRank: string;
         overrides?: Partial<IRawRecord>;
         onGetNewTaskDefaults?: (parentTaskId?: string) => Partial<IRawRecord>;
@@ -376,21 +302,4 @@ export class MemoryTaskActions {
         task[stateCode] ??= 0;
         return task;
     }
-
-    /** Maps a template record onto the task fields the two entities share. */
-    private static _getTaskFieldsFromTemplate(template: IRecord, templateDataProvider: MemoryTemplateDataProvider, columns: IColumn[], nativeColumns: INativeColumns): Partial<IRawRecord> {
-        const metadata = templateDataProvider.getMetadata();
-        const rawTemplate = template.getRawData();
-        const fields: Partial<IRawRecord> = {};
-        for (const column of columns) {
-            if (column.name !== metadata?.PrimaryIdAttribute && rawTemplate[column.name] !== undefined) {
-                fields[column.name] = rawTemplate[column.name];
-            }
-        }
-        if (metadata?.PrimaryNameAttribute) {
-            fields[nativeColumns.subject] = template.getNamedReference().name ?? null;
-        }
-        return fields;
-    }
-
 }

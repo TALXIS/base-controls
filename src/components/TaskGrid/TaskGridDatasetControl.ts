@@ -368,6 +368,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._modules.templates?.provider.templateEvents.addEventListener('onError', (error, message) => this._onError(error, message));
         this._modules.templates?.provider.templateEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
         this._modules.templates?.provider.templateEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
+        this._modules.templates?.provider.templateEvents.addEventListener('onBeforeTasksFromTemplateCreated', () => this._dataProvider.setLoading(true));
+        this._modules.templates?.provider.templateEvents.addEventListener('onAfterTasksFromTemplateCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksCreated', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onAfterTaskMoved', () => this._dataProvider.setLoading(false));

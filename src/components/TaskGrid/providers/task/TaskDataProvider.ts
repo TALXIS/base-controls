@@ -64,12 +64,6 @@ export interface ITaskMoveParams extends ITaskSiblingContext {
 export interface ITaskCreateParams extends ITaskSiblingContext {
 }
 
-/** What the provider hands `onCreateTasksFromTemplate`. The sibling context is the root task's. */
-export interface ITaskTemplateExpansionParams extends ITaskCreateParams {
-    /** The template to expand. */
-    templateId: string;
-}
-
 /** Constructor parameters for {@link TaskDataProvider}. */
 export interface ITaskDataProviderParameters {
     nativeColumns: INativeColumns;
@@ -105,14 +99,6 @@ export interface ITaskDataProviderStrategy {
      * Throws on unexpected failure.
      */
     onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
-    /**
-     * Expands a template into tasks. The sibling context describes where the template's *root* task
-     * lands; ranking its descendants is the strategy's own business.
-     *
-     * @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws
-     * on unexpected failure.
-     */
-    onCreateTasksFromTemplate(params: ITaskTemplateExpansionParams): Promise<IRawRecord[] | null>;
     /**
      * Opens one or more dataset items. When `isTaskEntity` is `true` the references point to task records;
      * when `false` they point to a related entity (e.g. a lookup target).
@@ -184,8 +170,6 @@ export interface ITaskDataProvider extends IDataProvider {
      * Throws on unexpected failure before any deletes could be attempted.
      */
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
-    /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRawRecord[] | null>;
     /** Returns `true` when the grid is displaying a flat list instead of a tree hierarchy. */
     isFlatListEnabled(): boolean;
     /** Returns `true` when task creation is allowed (from `ITaskDataProviderStrategy.onIsTaskAddingEnabled`). */
@@ -412,19 +396,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         });
-    }
-
-    public async createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRawRecord[] | null> {
-        this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentId);
-        return ErrorHelper.executeWithErrorHandling({
-            operation: async () => {
-                const rawRecords = await this._strategy.onCreateTasksFromTemplate({ ...this._resolveCreate(parentId), templateId });
-                if (rawRecords) this._createTasks(rawRecords, parentId);
-                this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecords, parentId);
-                return rawRecords;
-            },
-            onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
-        })
     }
 
     public async onOpenDatasetItem(entityReference: ComponentFramework.EntityReference, context?: { columnName?: string }): Promise<void> {

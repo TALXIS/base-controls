@@ -1,6 +1,6 @@
 import { FetchXmlBuilder, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
-import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
+import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridModulesContext, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { DataverseTaskStrategy } from "@components/TaskGrid/strategies/dataverse/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
@@ -86,9 +86,9 @@ export interface IDataverseModules {
     onGetUserQueriesModule?: (context: IDataverseUserQueriesContext) => IUserQueryModule | undefined;
     /**
      * Task templates. `createTemplateModule({ provider })` — no Dataverse template provider ships, so the
-     * provider is your own.
+     * provider is your own. `context.onGetTaskDataProvider` is the task side it expands into.
      */
-    onGetTemplatesModule?: () => ITemplateModule | undefined;
+    onGetTemplatesModule?: (context: ITaskGridModulesContext) => ITemplateModule | undefined;
     /**
      * User-defined columns. Needs the `talxis_attributedefinition` and `talxis_attributevalue` tables.
      *
@@ -263,12 +263,12 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
      * Calls each builder on the `modules` resolved by `onInitialize`, each with the slice of context it
      * declares. An absent builder leaves that feature off.
      */
-    public onGetModules(): ITaskGridModules {
+    public onGetModules(modulesContext: ITaskGridModulesContext): ITaskGridModules {
         const context = this._getStrategyContext();
         const modules = this._initialized.modules;
         return {
             userQueries: modules?.onGetUserQueriesModule?.(context),
-            templates: modules?.onGetTemplatesModule?.(),
+            templates: modules?.onGetTemplatesModule?.(modulesContext),
             customColumns: modules?.onGetCustomColumnsModule?.(context),
             gridCustomizer: modules?.onGetGridCustomizerModule?.(),
             lookupMany: modules?.onGetLookupManyModule?.(context),

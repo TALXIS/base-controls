@@ -6,7 +6,6 @@ import {
     ITaskDataProvider,
     ITaskDataProviderStrategy,
     ITaskMoveParams,
-    ITaskTemplateExpansionParams,
 } from "@components/TaskGrid/providers";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { Liquid } from "liquidjs";
@@ -25,7 +24,6 @@ import {
     IDataverseTaskMoveParams,
     IDataverseTaskOpenParams,
     IDataverseTaskSaveParams,
-    IDataverseTaskTemplateExpansionParams,
     IFormParameters,
 } from "./DataverseTaskActions";
 
@@ -62,12 +60,6 @@ export interface IDataverseTaskStrategyParams {
      * {@link IDataverseTaskInitializeResult.isCascadeDeleteEnabled} and refuses tasks with children.
      */
     onDeleteTasks?: (params: IDataverseTaskDeleteParams) => Promise<IDeleteTasksResult | null>;
-    /**
-     * Expands a template into a task subtree. There is no Dataverse implementation — the default
-     * {@link DataverseTaskActions.createTasksFromTemplate} throws — so supply this to support templates
-     * against your own model.
-     */
-    onCreateTasksFromTemplate?: (params: IDataverseTaskTemplateExpansionParams) => Promise<IRawRecord[] | null>;
     /**
      * Opens task(s) or a related record. Defaults to {@link DataverseTaskActions.openDatasetItems},
      * which navigates to the matching form. For per-form tweaks prefer `onGetFormParameters` below,
@@ -443,11 +435,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             ?? DataverseTaskActions.deleteTasks(params);
     }
 
-    public onCreateTasksFromTemplate(expansionParams: ITaskTemplateExpansionParams): Promise<IRawRecord[] | null> {
-        const params: IDataverseTaskTemplateExpansionParams = { ...expansionParams };
-        return this._params.onCreateTasksFromTemplate?.(params)
-            ?? DataverseTaskActions.createTasksFromTemplate(params);
-    }
     public async onOpenDatasetItems(entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean): Promise<IOpenDatasetItemsResult | null> {
         const params: IDataverseTaskOpenParams = {
             entityReferences,

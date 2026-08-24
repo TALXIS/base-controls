@@ -15,10 +15,8 @@ import {
     ITaskDataProvider,
     ITaskDataProviderStrategy,
     ITaskMoveParams,
-    ITaskTemplateExpansionParams,
 } from "@components/TaskGrid/providers";
 import { INativeColumns, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
-import { MemoryTemplateDataProvider } from "@components/TaskGrid/modules/templates/memory/MemoryTemplateDataProvider";
 import {
     IMemoryTaskActivityParams,
     IMemoryTaskAvailableColumnsParams,
@@ -28,7 +26,6 @@ import {
     IMemoryTaskMoveParams,
     IMemoryTaskOpenParams,
     IMemoryTaskSaveParams,
-    IMemoryTaskTemplateExpansionParams,
     MemoryTaskActions,
 } from "./MemoryTaskActions";
 
@@ -104,12 +101,6 @@ export interface IMemoryTaskStrategyParams {
      */
     onDeleteTasks?: (params: IMemoryTaskDeleteParams) => Promise<IDeleteTasksResult>;
     /**
-     * Expands a template into a task subtree. Defaults to
-     * {@link MemoryTaskActions.createTasksFromTemplate}. Only reached when a template data provider was
-     * supplied, so the grid offers the command in the first place.
-     */
-    onCreateTasksFromTemplate?: (params: IMemoryTaskTemplateExpansionParams) => Promise<IRawRecord[] | null>;
-    /**
      * Invoked when the user opens task(s) or a related record — the memory equivalent of navigating
      * to a form. Defaults to {@link MemoryTaskActions.openDatasetItems}, a no-op that leaves the grid
      * untouched.
@@ -140,8 +131,8 @@ export interface IMemoryTaskDestroyParams {
 
 /**
  * {@link ITaskDataProviderStrategy} implementation backed entirely by in-memory records. Supports the full
- * task surface — create, cascading delete, LexoRank reordering, templates and inline editing — with no
- * server dependency.
+ * task surface — create, cascading delete, LexoRank reordering and inline editing — with no server
+ * dependency.
  *
  * The behaviour lives in {@link MemoryTaskActions}; each hook here resolves that action's parameters and
  * calls it, unless an override was supplied. The strategy keeps no data of its own, so nothing survives a
@@ -153,18 +144,12 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     private _params: IMemoryTaskStrategyParams;
     private _isTaskEditingEnabled: boolean;
     private _savedQueryDataProvider: ISavedQueryDataProvider;
-    /**
-     * The provider that owns the template source, narrowed to the memory implementation: expanding a
-     * template needs the child hierarchy, which only that provider knows about.
-     */
-    private _templateDataProvider?: MemoryTemplateDataProvider;
     private _provider!: ITaskDataProvider;
 
     constructor(params: IMemoryTaskStrategyParams, deps: ITaskStrategyDeps) {
         this._params = params;
         this._isTaskEditingEnabled = deps.enableTaskEditing;
         this._savedQueryDataProvider = deps.savedQueryDataProvider;
-        this._templateDataProvider = deps.templateDataProvider as MemoryTemplateDataProvider | undefined;
     }
 
     // ── ITaskDataProviderStrategy ────────────────────────────────────────────
@@ -221,22 +206,6 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         };
         return await this._params.onDeleteTasks?.(params)
             ?? MemoryTaskActions.deleteTasks(params);
-    }
-
-    public async onCreateTasksFromTemplate(expansionParams: ITaskTemplateExpansionParams): Promise<IRawRecord[] | null> {
-        const templateDataProvider = this._templateDataProvider;
-        if (!templateDataProvider) {
-            return null;
-        }
-        const params: IMemoryTaskTemplateExpansionParams = {
-            ...expansionParams,
-            ...this._store,
-            templateDataProvider,
-            columns: this._provider.getColumns(),
-            onGetNewTaskDefaults: this._params.onGetNewTaskDefaults,
-        };
-        return await this._params.onCreateTasksFromTemplate?.(params)
-            ?? MemoryTaskActions.createTasksFromTemplate(params);
     }
 
     public async onOpenDatasetItems(

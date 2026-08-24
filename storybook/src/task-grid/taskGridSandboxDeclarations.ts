@@ -250,7 +250,7 @@ interface IModuleData {
 /** Define this to choose which modules the grid runs with. Called on every mount. */
 declare type GetModules = (data: IModuleData) => {
     onGetUserQueriesModule?: () => any;
-    onGetTemplatesModule?: () => any;
+    onGetTemplatesModule?: (context: { onGetTaskDataProvider: () => any }) => any;
     onGetCustomColumnsModule?: () => any;
     onGetGridCustomizerModule?: () => any;
     onGetLookupManyModule?: () => any;
@@ -282,7 +282,7 @@ declare const createLookupManyModule: (options: {
 /** Stores personal views in an array you hand it. */
 declare const MemoryUserQueryStrategy: new (params: { userQueries: any[] }) => any;
 /** Serves templates from an in-memory source, and captures new ones into it. */
-declare const MemoryTemplateDataProvider: new (params: { templates: any }) => any;
+declare const MemoryTemplateDataProvider: new (params: { templates: any, onGetTaskDataProvider: () => any }) => any;
 /** Turns records you hold into a lookup-many picker's candidate provider. */
 declare const MemoryLookupManyDataProviderFactory: { create(source: any): any };
 /** A small in-memory custom-columns strategy, written for these docs. */

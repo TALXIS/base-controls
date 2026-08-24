@@ -16,7 +16,6 @@ import {
     ITaskCreateParams,
     ITaskDataProvider,
     ITaskMoveParams,
-    ITaskTemplateExpansionParams,
 } from "@components/TaskGrid/providers";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
@@ -112,10 +111,6 @@ export interface IDataverseTaskDeleteParams {
     isCascadeDeleteEnabled: boolean;
     /** When `false`, a task that still has children is refused rather than deleted. */
     isDeletingTasksWithChildrenEnabled: boolean;
-}
-
-/** What {@link DataverseTaskActions.createTasksFromTemplate} would need. */
-export interface IDataverseTaskTemplateExpansionParams extends ITaskTemplateExpansionParams {
 }
 
 /** What {@link DataverseTaskActions.openDatasetItems} needs. */
@@ -295,14 +290,6 @@ export class DataverseTaskActions {
                 }
             })]
         }
-    }
-
-    /**
-     * Expanding a template has no Dataverse implementation — templates are a memory feature today, so
-     * this throws. Supply `onCreateTasksFromTemplate` to implement it against your own model.
-     */
-    public static createTasksFromTemplate(_params: IDataverseTaskTemplateExpansionParams): Promise<IRawRecord[] | null> {
-        throw new Error("Method not implemented.");
     }
 
     /**

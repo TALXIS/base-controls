@@ -38,7 +38,8 @@ export const Header = (props: ITaskGridHeaderProps) => {
     }
 
     const createTaskFromTemplate = (templateId: string) => {
-        provider.createTasksFromTemplate(templateId);
+        //the command only renders with the module registered, which is what makes getModule safe here
+        datasetControl.getModule('templates').provider.createTasksFromTemplate(templateId);
     }
 
     const getNewSubMenuItems = (

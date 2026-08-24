@@ -5,8 +5,10 @@ import { TemplateSelector } from "./template-selector";
 /** Options for {@link createTemplateModule}. */
 export interface ITemplateModuleOptions {
     /**
-     * Where templates are read from and captured to. Typically
-     * `new MemoryTemplateDataProvider({ templates })`, or your own `ITemplateDataProvider`.
+     * Where templates are read from, captured to, and expanded into tasks. Typically
+     * `new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider })`, or your own
+     * `ITemplateDataProvider`. It is handed the task side through its own constructor — see the
+     * `onGetTaskDataProvider` on the descriptor's module context.
      */
     provider: ITemplateDataProvider;
 }
@@ -20,8 +22,8 @@ export interface ITemplateModuleOptions {
  * @example
  * ```ts
  * modules: {
- *     onGetTemplatesModule: () => createTemplateModule({
- *         provider: new MemoryTemplateDataProvider({ templates }),
+ *     onGetTemplatesModule: context => createTemplateModule({
+ *         provider: new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider: context.onGetTaskDataProvider }),
  *     }),
  * }
  * ```

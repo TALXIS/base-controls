@@ -31,8 +31,12 @@ export class TaskGridDatasetControlFactory {
     public static async createInstance(parameters: ITaskGridDatasetControlFactoryParameters): Promise<ITaskGridDatasetControl> {
         let taskDataProvider: ITaskDataProvider;
         await parameters.taskGridDescriptor.onLoadDependencies?.();
-        //resolved once and threaded from here: onGetModules is never called again for this instance
-        const modules = parameters.taskGridDescriptor.onGetModules?.() ?? {};
+        //resolved once and threaded from here: onGetModules is never called again for this instance.
+        //the task provider is handed over as an accessor - it does not exist yet, and a module only ever
+        //calls it when it acts
+        const modules = parameters.taskGridDescriptor.onGetModules?.({
+            onGetTaskDataProvider: () => taskDataProvider,
+        }) ?? {};
 
         const customColumnsDataProvider = modules.customColumns?.provider;
         await customColumnsDataProvider?.refresh();
@@ -49,7 +53,6 @@ export class TaskGridDatasetControlFactory {
 
         const taskStrategy = parameters.taskGridDescriptor.onCreateTaskStrategy({
             savedQueryDataProvider: savedQueryDataProvider,
-            templateDataProvider: modules.templates?.provider,
             customColumnsDataProvider: customColumnsDataProvider,
             enableTaskEditing: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableTaskEditing ?? false,
             enableInlineCreation: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableInlineCreation ?? false,

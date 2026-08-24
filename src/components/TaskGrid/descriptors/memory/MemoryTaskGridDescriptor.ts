@@ -1,5 +1,5 @@
 import { IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
-import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
+import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridModulesContext, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
 import { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { MemoryTaskStrategy } from "@components/TaskGrid/strategies/memory/MemoryTaskStrategy";
@@ -24,13 +24,23 @@ export type IMemoryLookupManyParameters = ILookupManyDataProviderParameters;
  * The feature modules a memory grid can run with, one builder per feature. Omit a key and that feature
  * is off.
  *
- * None of these builders take a parameter: they close over whatever `onInitialize` already resolved.
+ * Most builders take no parameter: they close over whatever `onInitialize` already resolved. The
+ * templates one receives the grid's module context, which is where its provider gets the task side it
+ * expands into.
  */
 export interface IMemoryModules {
     /** Personal views. `createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) })`. */
     onGetUserQueriesModule?: () => IUserQueryModule | undefined;
-    /** Task templates. `createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) })`. */
-    onGetTemplatesModule?: () => ITemplateModule | undefined;
+    /**
+     * Task templates.
+     *
+     * ```ts
+     * onGetTemplatesModule: context => createTemplateModule({
+     *     provider: new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider: context.onGetTaskDataProvider }),
+     * })
+     * ```
+     */
+    onGetTemplatesModule?: (context: ITaskGridModulesContext) => ITemplateModule | undefined;
     /**
      * User-defined columns. `createCustomColumnsModule({ strategy })` — no in-memory strategy ships, so
      * the strategy is your own.
@@ -158,11 +168,11 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /** Calls each builder on the `modules` resolved by `onInitialize`. An absent builder leaves that feature off. */
-    public onGetModules(): ITaskGridModules {
+    public onGetModules(context: ITaskGridModulesContext): ITaskGridModules {
         const modules = this._getData().modules;
         return {
             userQueries: modules?.onGetUserQueriesModule?.(),
-            templates: modules?.onGetTemplatesModule?.(),
+            templates: modules?.onGetTemplatesModule?.(context),
             customColumns: modules?.onGetCustomColumnsModule?.(),
             gridCustomizer: modules?.onGetGridCustomizerModule?.(),
             lookupMany: modules?.onGetLookupManyModule?.(),

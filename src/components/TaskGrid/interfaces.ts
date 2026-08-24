@@ -3,7 +3,6 @@ import { IDatasetControl } from "@utils/dataset-control";
 import { ICustomColumnsDataProvider } from "./modules/custom-columns/CustomColumnsDataProvider";
 import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
-import { ITemplateDataProvider } from "./providers/template/TemplateDataProvider";
 import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
@@ -81,8 +80,18 @@ export interface ITaskStrategyDeps {
     savedQueryDataProvider: ISavedQueryDataProvider;
     /** Present when the custom-columns module is registered. */
     customColumnsDataProvider?: ICustomColumnsDataProvider;
-    /** Present when the templates module is registered. */
-    templateDataProvider?: ITemplateDataProvider;
+}
+
+/** What every module builder can reach, whatever the module. */
+export interface ITaskGridModulesContext {
+    /**
+     * The task provider the grid is building, for a module that operates on tasks — the templates
+     * module expands a template into them.
+     *
+     * An accessor, not the instance: modules are resolved before the task provider exists, so a
+     * module holds this and calls it when it acts, never during its own construction.
+     */
+    onGetTaskDataProvider: () => ITaskDataProvider;
 }
 
 /** Identifies the lookup-many cell whose candidate records are being requested. */
@@ -123,7 +132,7 @@ export interface ITaskGridDescriptor {
      * The shipped descriptors expose this as a `modules` key of builders — see {@link IMemoryModules}
      * and {@link IDataverseModules}.
      */
-    onGetModules?: () => ITaskGridModules;
+    onGetModules?: (context: ITaskGridModulesContext) => ITaskGridModules;
     /** Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
     onGetControlId?: () => string;
     /** Called before any data provider is created. Use for lazy loading or authentication. */

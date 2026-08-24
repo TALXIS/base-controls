@@ -111,8 +111,8 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore);
             return module;
         },
-        onGetTemplatesModule: () => !isEnabled('templates') ? undefined : createTemplateModule({
-            provider: new MemoryTemplateDataProvider({ templates }),
+        onGetTemplatesModule: context => !isEnabled('templates') ? undefined : createTemplateModule({
+            provider: new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider: context.onGetTaskDataProvider }),
         }),
         onGetCustomColumnsModule: () => !isEnabled('customColumns') ? undefined : createCustomColumnsModule({
             strategy: new MemoryCustomColumnsStrategy(),
