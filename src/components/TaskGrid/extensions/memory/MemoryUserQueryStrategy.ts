@@ -16,7 +16,6 @@ export interface IMemoryUserQueryStrategyParams {
 export class MemoryUserQueryStrategy implements IUserQueryStrategy {
     private _userQueries: ISavedQuery[];
 
-    /** @param params — see {@link IMemoryUserQueryStrategyParams}. */
     constructor(params: IMemoryUserQueryStrategyParams) {
         this._userQueries = params.userQueries;
     }
@@ -43,11 +42,7 @@ export class MemoryUserQueryStrategy implements IUserQueryStrategy {
         return currentQuery.id;
     }
 
-    /**
-     * A stored view must not share structure with the one it came from: a spread alone would leave both
-     * pointing at the same `columns` array, and the grid writes into that array when it resolves a view's
-     * required columns — editing one view would silently edit the other.
-     */
+    //a deep-enough copy: the grid writes into a view's `columns` array, so two views must not share one
     private _cloneQuery(query: ISavedQuery): ISavedQuery {
         return {
             ...query,

@@ -35,12 +35,11 @@ import {
 /** What {@link IMemoryTaskStrategyParams.onInitialize} resolves — everything the grid loads with. */
 export interface IMemoryTaskInitializeResult {
     /**
-     * The task records the grid loads with — a seed, not a store. The provider takes a copy and owns the
-     * data from then on: creating, deleting, editing and moving all happen on *its* records, and this
-     * array is never written to.
+     * The task records the grid loads with. The provider takes a copy of the array, so creations and
+     * deletions land on its own copy while edits and moves write through to these record objects.
      *
-     * Nothing carries over a remount by itself. Use {@link IMemoryTaskStrategyParams.onDestroy} to take
-     * the records before the provider goes away, and hand them back here next time.
+     * Use {@link IMemoryTaskStrategyParams.onDestroy} to take the records before the provider goes away,
+     * and hand them back here next time.
      */
     rawData: IRawRecord[];
     /** Entity metadata. `PrimaryIdAttribute` is required; `LogicalName` is recommended. */
@@ -50,31 +49,18 @@ export interface IMemoryTaskInitializeResult {
 }
 
 /**
- * Constructor parameters for {@link MemoryTaskStrategy}: the required `onInitialize` hook, and an
- * optional hook per operation.
+ * Constructor parameters for {@link MemoryTaskStrategy}: the required `onInitialize` hook, and an optional
+ * hook per operation.
  *
- * Every optional hook overrides one of the strategy's own, and receives exactly the parameters the
- * matching {@link MemoryTaskActions} action takes — so an override that only needs to do something
- * *around* the shipped behaviour can forward them straight back to it:
- *
- * ```ts
- * onDeleteTasks: async params => {
- *     await audit(params.taskIds);
- *     return MemoryTaskActions.deleteTasks(params);
- * },
- * ```
+ * Each optional hook replaces the matching {@link MemoryTaskActions} action and receives its exact
+ * parameters, so an override can forward them straight back to it.
  */
 export interface IMemoryTaskStrategyParams {
     /**
-     * Resolves the records, the metadata and the columns the grid loads with. Awaited from inside the
-     * strategy's own `onInitialize`, which the TaskGrid already treats as asynchronous — so the grid's
-     * loading state covers the work and nothing has to be available at construction time.
+     * Resolves the records, the metadata and the columns the grid loads with. Awaited inside the
+     * strategy's own `onInitialize`, so the grid's loading state covers the work.
      *
-     * Whatever it resolves is also the store every other hook and action then works over.
-     *
-     * ```ts
-     * onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
-     * ```
+     * Whatever it resolves is what every other hook and action then works over.
      */
     onInitialize: (provider: ITaskDataProvider) => Promise<IMemoryTaskInitializeResult>;
     /**
@@ -83,18 +69,10 @@ export interface IMemoryTaskStrategyParams {
      */
     onGetNewTaskDefaults?: (parentTaskId?: string) => Partial<IRawRecord>;
     /**
-     * Called just before the provider is torn down — on unmount, and on every remount the grid performs
-     * (applying *Edit columns*, switching a view, closing the view manager). Receives the records as they
-     * are at that moment, copied, so it is the seam for keeping what the user did:
-     *
-     * ```ts
-     * let records = SEED
-     *
-     * new MemoryTaskStrategy({
-     *     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
-     *     onDestroy: params => records = params.rawData,
-     * }, deps)
-     * ```
+     * Called just before the provider is torn down — on unmount, and on every remount (applying *Edit
+     * columns*, switching a view, closing the view manager). Receives a copy of the records as they are at
+     * that moment, so it is the seam for keeping what the user did: `onDestroy: params => records =
+     * params.rawData`.
      *
      * Omit it and every remount starts from the seed again.
      */
@@ -102,12 +80,6 @@ export interface IMemoryTaskStrategyParams {
     /**
      * Determines whether a task counts as active. Defaults to {@link MemoryTaskActions.isRecordActive} —
      * `record[stateCode] == 0`, using the state-code column from the descriptor's field mapping.
-     *
-     * ```ts
-     * onIsRecordActive: params => params.record.isarchived
-     *     ? false
-     *     : MemoryTaskActions.isRecordActive(params),
-     * ```
      */
     onIsRecordActive?: (params: IMemoryTaskActivityParams) => boolean;
     /**
@@ -128,7 +100,7 @@ export interface IMemoryTaskStrategyParams {
     onCreateTask?: (params: IMemoryTaskCreateParams) => Promise<IRawRecord | null>;
     /**
      * Deletes tasks and their descendants. Defaults to {@link MemoryTaskActions.deleteTasks}, which
-     * rewrites the record array in place.
+     * resolves the set to delete and lets the provider perform it.
      */
     onDeleteTasks?: (params: IMemoryTaskDeleteParams) => Promise<IDeleteTasksResult>;
     /**
@@ -167,36 +139,27 @@ export interface IMemoryTaskDestroyParams {
 }
 
 /**
- * {@link ITaskDataProviderStrategy} implementation backed entirely by in-memory records.
+ * {@link ITaskDataProviderStrategy} implementation backed entirely by in-memory records. Supports the full
+ * task surface — create, cascading delete, LexoRank reordering, templates and inline editing — with no
+ * server dependency.
  *
- * Supports the full task surface — create, delete (cascading to descendants), drag-and-drop
- * reordering via LexoRank, templates, and inline editing — without any server or Dataverse
- * dependency.
+ * The behaviour lives in {@link MemoryTaskActions}; each hook here resolves that action's parameters and
+ * calls it, unless an override was supplied. The strategy keeps no data of its own, so nothing survives a
+ * remount unless `onDestroy` hands it back.
  *
- * The strategy keeps no data of its own, and does not hold on to the array it was seeded with: the
- * provider owns the records, and every operation reads and writes through it — the way a Dataverse
- * strategy reads and writes the server. So nothing survives a remount unless the consumer keeps it,
- * which is what `onDestroy` is for.
- *
- * The behaviour itself lives in {@link MemoryTaskActions}: every hook below resolves the parameters that
- * action needs and calls it, unless `onInitialize` supplied an override for it.
- *
- * Normally created by {@link MemoryTaskGridDescriptor}; construct it directly when you supply your
- * own descriptor, or subclass it to override a single hook.
+ * Normally created by {@link MemoryTaskGridDescriptor}.
  */
 export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     private _params: IMemoryTaskStrategyParams;
     private _isTaskEditingEnabled: boolean;
     private _savedQueryDataProvider: ISavedQueryDataProvider;
     /**
-     * The provider that owns the template source. Narrowed to the memory implementation, the way the
-     * Dataverse strategy narrows its custom-columns strategy — expanding a template needs the child
-     * hierarchy, which only the memory provider knows about.
+     * The provider that owns the template source, narrowed to the memory implementation: expanding a
+     * template needs the child hierarchy, which only that provider knows about.
      */
     private _templateDataProvider?: MemoryTemplateDataProvider;
     private _provider!: ITaskDataProvider;
 
-    /** @param params — see {@link IMemoryTaskStrategyParams}. */
     constructor(params: IMemoryTaskStrategyParams, deps: ITaskStrategyDeps) {
         this._params = params;
         this._isTaskEditingEnabled = deps.enableTaskEditing;
@@ -206,7 +169,6 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
 
     // ── ITaskDataProviderStrategy ────────────────────────────────────────────
 
-    /** Called directly — there is no default to fall back to, so nothing here belongs in the actions. */
     public async onInitialize(provider: ITaskDataProvider) {
         this._provider = provider;
         const { rawData, metadata, columns } = await this._params.onInitialize(provider);
@@ -286,7 +248,6 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             isTaskEntity,
             isTaskEditingEnabled: this._isTaskEditingEnabled,
         };
-        //This will carry form dependency in the future, so the default is a no-op that leaves the grid untouched
         return (await this._params.onOpenDatasetItems?.(params)) ?? null
     }
 

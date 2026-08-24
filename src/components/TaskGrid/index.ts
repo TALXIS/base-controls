@@ -10,8 +10,8 @@ export * from './TaskGridDatasetControl';
 export * from './TaskGridDatasetControlFactory';
 export * from './extensions/memory';
 export * from './extensions/dataverse';
-//the hooks a component supplied through `components` needs to reach the grid it renders in. Not a
-//blanket re-export of ./context: its `usePcfContext` would collide with the one from @utils.
+//named re-export, not `export *`: ./context's usePcfContext would collide with the @utils hook of
+//the same name
 export {
     useTaskDataProvider,
     useTaskGridComponents,

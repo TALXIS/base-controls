@@ -3,24 +3,18 @@ import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDeletedUserQueriesResult } from "./providers/saved-query";
 import { IUserQueryDataProviderEvents } from "./modules/interfaces";
 import { IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProvider, ITaskDataProviderEventListener } from "./providers/task";
-//the types-only file, never the providers/template barrel - that one also exports the
-//TemplateDataProviderBase mixin, a value
 import { ITemplateDataProviderEvents } from "./providers/template/TemplateDataProvider";
 import { ITaskGridDatasetControl } from "./interfaces";
 import { ITaskGridProps } from "./TaskGrid";
 
 /**
- * Forwards every event the grid raises to the matching prop on {@link ITaskGridProps}.
- *
- * All of these already exist on the providers; a parent has no way of reaching those emitters, so this
- * is the bridge. The three `onError` sources are funnelled into the single `onError` prop.
+ * Forwards every event the grid raises to the matching prop on {@link ITaskGridProps}. The three
+ * `onError` sources are funnelled into the single `onError` prop.
  */
 export const useTaskGridEvents = (props: ITaskGridProps, datasetControl: ITaskGridDatasetControl, taskDataProvider: ITaskDataProvider) => {
     const { taskEvents } = taskDataProvider;
-    //undefined when no user-queries module is registered; useEventEmitter tolerates that, so these
-    //props simply never fire
+    //undefined when the module is not registered; useEventEmitter tolerates that, so the props never fire
     const queryEvents = datasetControl.getModules().userQueries?.provider.events;
-    //undefined when no templates module is registered; useEventEmitter tolerates that too
     const templateEvents = datasetControl.getModules().templates?.provider.templateEvents;
 
     useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onBeforeTasksCreated', (parentTaskId?: string) => props.onBeforeTasksCreated?.(parentTaskId));

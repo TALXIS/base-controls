@@ -6,17 +6,17 @@ import { CommandBar } from "./header/command-bar";
 import type { ICellProps } from "@components/Grid/cells/cell/Cell";
 
 /**
- * Props every TaskGrid cell renderer and cell editor receives: AG Grid's `ICellRendererParams` plus
- * the `record`, `baseColumn`, `value` and `isCellEditor` the grid injects through
- * `cellRendererParams` / `cellEditorParams`.
- *
- * Aliased because the grid does not export `ICellProps` publicly and the bare name collides with the
- * Form one on the package root barrel.
+ * Props every TaskGrid cell renderer and cell editor receives: AG Grid's `ICellRendererParams` plus the
+ * `record`, `baseColumn`, `value` and `isCellEditor` the grid injects through `cellRendererParams` /
+ * `cellEditorParams`.
  */
 export type ITaskGridCellProps = ICellProps;
 
+/** The replaceable parts of the grid's UI. Override any subset through `ITaskGridProps.components`. */
 export interface ITaskGridComponents {
+    /** The loading placeholder shown until the control instance resolves. */
     onRenderSkeleton: (props: ISkeletonProps) => JSX.Element;
+    /** The ribbon above the grid. */
     onRenderCommandBar: (props: ICommandBarProps) => JSX.Element;
     /**
      * Wraps the cell renderer of every data column. `defaultRender` renders whatever the grid would
@@ -35,6 +35,7 @@ export interface ITaskGridComponents {
     onRenderCellEditor: (props: ITaskGridCellProps, defaultRender: (props: ITaskGridCellProps) => React.ReactElement) => React.ReactElement;
 }
 
+/** The defaults for {@link ITaskGridComponents}. */
 export const TaskGridComponents: ITaskGridComponents = {
     onRenderSkeleton: (props) => <Skeleton {...props} />,
     onRenderCommandBar: (props) => <CommandBar {...props} />,

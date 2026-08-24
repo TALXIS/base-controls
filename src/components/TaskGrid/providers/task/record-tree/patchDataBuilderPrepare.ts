@@ -1,6 +1,7 @@
 import { IMemoryProvider, IRecord } from "@talxis/client-libraries";
 import { DataBuilder } from "@talxis/client-libraries/dist/utils/dataset/data-providers/memory-provider/DataBuilder";
 
+/** Makes a throwaway provider reuse the record instances it was handed instead of rebuilding them. */
 export const patchDataBuilderPrepare = (options: { provider: IMemoryProvider; records: IRecord[] }) => {
     const { provider, records } = options;
     //@ts-ignore - typings

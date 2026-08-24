@@ -234,4 +234,57 @@ declare const MenuItem: typeof import('@mui/material').MenuItem;
 declare const TextField: typeof import('@mui/material').TextField;
 declare const Tooltip: typeof import('@mui/material').Tooltip;
 declare const Typography: typeof import('@mui/material').Typography;
+
+//─── Modules ──────────────────────────────────────────────────────────────────
+
+/** The fixture data this example's modules are built from. */
+interface IModuleData {
+    /** The personal views, as the last mount left them. */
+    userQueries: any[];
+    /** The templates, and the subtree each one expands into. */
+    templates: any;
+    /** The lookup-many candidate records, keyed by column name. */
+    lookupSources: Record<string, any>;
+}
+
+/** Define this to choose which modules the grid runs with. Called on every mount. */
+declare type GetModules = (data: IModuleData) => {
+    onGetUserQueriesModule?: () => any;
+    onGetTemplatesModule?: () => any;
+    onGetCustomColumnsModule?: () => any;
+    onGetGridCustomizerModule?: () => any;
+    onGetLookupManyModule?: () => any;
+};
+
+/** Personal views. Bring the strategy; the module brings the commands and dialogs. */
+declare const createUserQueryModule: (options: {
+    strategy: any;
+    enableQueryManager?: boolean;
+    enableSaveAsNewQuery?: boolean;
+    enableSaveQueryChanges?: boolean;
+}) => any;
+/** Task templates. Bring the provider; the module brings the picker. */
+declare const createTemplateModule: (options: { provider: any }) => any;
+/** User-defined columns. Bring the strategy; the module brings the panel and its commands. */
+declare const createCustomColumnsModule: (options: {
+    strategy: any;
+    enableCustomColumnCreation?: boolean;
+    enableCustomColumnEditing?: boolean;
+    enableCustomColumnDeletion?: boolean;
+}) => any;
+/** AG Grid customization. */
+declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
+/** Lookup-many pickers. Return the candidates for each column. */
+declare const createLookupManyModule: (options: {
+    createDataProvider: (parameters: { record: ITaskGridRecord; column: ITaskGridColumn }) => any;
+}) => any;
+
+/** Stores personal views in an array you hand it. */
+declare const MemoryUserQueryStrategy: new (params: { userQueries: any[] }) => any;
+/** Serves templates from an in-memory source, and captures new ones into it. */
+declare const MemoryTemplateDataProvider: new (params: { templates: any }) => any;
+/** Turns records you hold into a lookup-many picker's candidate provider. */
+declare const MemoryLookupManyDataProviderFactory: { create(source: any): any };
+/** A small in-memory custom-columns strategy, written for these docs. */
+declare const MemoryCustomColumnsStrategy: new (columns?: ITaskGridColumn[]) => any;
 `.trim()

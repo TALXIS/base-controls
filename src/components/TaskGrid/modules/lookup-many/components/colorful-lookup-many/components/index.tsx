@@ -2,6 +2,7 @@ import { LookupManyComponents, ILookupManyComponents } from "@components/TaskGri
 import { MultiValueContainer } from "./multi-value-container";
 import { Option } from "./option";
 
+/** The coloured-tag slot overrides for {@link ColorfulLookupMany}. */
 export const DEFAULT_TAG_LOOKUP_MANY_COMPONENTS: ILookupManyComponents = {
     ...LookupManyComponents,
     onRenderMultiValueContainer: (props) => <MultiValueContainer {...props} />,

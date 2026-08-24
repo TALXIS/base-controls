@@ -6,23 +6,21 @@ import { ITemplateDataProvider, ITemplateDataProviderEvents } from "./TemplateDa
 //subclass cannot override with a method
 type DataProviderConstructor = new (...args: any[]) => DataProvider;
 
-/**
- * What {@link TemplateDataProviderBase} returns: the base provider, plus the template contract.
- *
- * Declared explicitly rather than inferred — a class expression that inherits `DataProvider`'s
- * private members cannot be written into a declaration file (TS4094).
- */
+/** What {@link TemplateDataProviderBase} returns: the base provider, plus the template contract. */
+//declared explicitly rather than inferred: a class expression inheriting DataProvider's private
+//members cannot be written into a declaration file (TS4094)
 export type TemplateDataProviderConstructor<TBase extends DataProviderConstructor> =
     abstract new (...args: any[]) => InstanceType<TBase> & ITemplateDataProvider;
 
 /**
- * Mixin that turns any data provider into an {@link ITemplateDataProvider}.
+ * Mixin that turns any data provider into an {@link ITemplateDataProvider}, adding the lifecycle events
+ * and the error handling around template creation.
  *
- * The lifecycle events and the error handling around template creation live here, so an
- * implementation only has to say how a template is captured. Extend the result of calling this with
- * the base your platform needs — `MemoryDataProvider`, `FetchXmlDataProvider`, anything else — and
- * implement {@link onCreateTemplateFromTask}:
+ * Extend the result with the base your platform needs and implement `onCreateTemplateFromTask`. The
+ * mixin's constructor is untyped (`...args: any[]`), so declare your own typed constructor and forward
+ * to `super`.
  *
+ * @example
  * ```ts
  * export class MyTemplateDataProvider extends TemplateDataProviderBase(MemoryDataProvider) {
  *     protected async onCreateTemplateFromTask(task: IRecord) {
@@ -30,9 +28,6 @@ export type TemplateDataProviderConstructor<TBase extends DataProviderConstructo
  *     }
  * }
  * ```
- *
- * The mixin's constructor is untyped (`...args: any[]`), so declare your own typed constructor and
- * forward to `super`.
  */
 export function TemplateDataProviderBase<TBase extends DataProviderConstructor>(Base: TBase): TemplateDataProviderConstructor<TBase> {
     //abstract because the constraint's instance type is the abstract DataProvider; the concrete base

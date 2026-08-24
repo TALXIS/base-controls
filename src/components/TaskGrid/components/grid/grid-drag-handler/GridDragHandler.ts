@@ -8,16 +8,19 @@ interface IGridDragHandlerParameters {
     gridApi: GridApi<IRecord>;
 }
 
+/** A drag in progress: the row being dragged, the row under it, and where in that row it hovers. */
 export interface IDragOperation {
     overNode: IRowNode<IRecord>;
     draggedNode: IRowNode<IRecord>;
     dragOverSection: 'top' | 'middle' | 'bottom';
 }
 
+/** Events raised by {@link GridDragHandler}. */
 interface IGridDragHandlerEvents {
     onDragEnd: (dragOperation: IDragOperation) => void;
 }
 
+/** Tracks row drag-and-drop over the grid and reports where a drop landed. */
 export class GridDragHandler extends EventEmitter<IGridDragHandlerEvents> {
     private _gridApi: GridApi<IRecord>;
     private _dataProvider: ITaskDataProvider;
@@ -74,7 +77,7 @@ export class GridDragHandler extends EventEmitter<IGridDragHandlerEvents> {
             }
         }, 1000);
         if (this._dragOperation && this._dragOperation.overNode !== overNode) {
-            // Refresh previous over node to remove drag classes
+            //remove the drag classes from the node we left
             this._refreshRowClasses(this._dragOperation.overNode);
         }
         this._dragOperation = {

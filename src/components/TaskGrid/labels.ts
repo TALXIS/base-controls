@@ -1,3 +1,4 @@
+/** Every localizable string the grid renders. Override any subset through `ITaskGridProps.labels`. */
 export interface ITaskGridLabels {
     name: string;
     no: string;
@@ -76,6 +77,7 @@ export interface ITaskGridLabels {
     deletingUserQueriesError: string;
 }
 
+/** The English defaults for {@link ITaskGridLabels}. */
 export const TASK_GRID_LABELS: ITaskGridLabels = {
     name: 'Name',
     no: 'No',

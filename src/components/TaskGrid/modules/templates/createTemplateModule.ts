@@ -2,6 +2,7 @@ import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/T
 import { ITemplateModule } from "../interfaces";
 import { TemplateSelector } from "./template-selector";
 
+/** Options for {@link createTemplateModule}. */
 export interface ITemplateModuleOptions {
     /**
      * Where templates are read from and captured to. Typically
@@ -11,22 +12,21 @@ export interface ITemplateModuleOptions {
 }
 
 /**
- * Everything the templating feature needs, in one call: you supply the provider, this brings the UI.
+ * Builds the templating module: you supply the provider, this brings the UI.
  *
- * Return it from the descriptor's `onGetModules` to switch templating on. Importing this function is
- * what puts the template picker in your bundle, so a grid that never registers the module does not
- * carry it.
+ * Assign it to a `modules` key — `modules.onGetTemplatesModule` on a shipped descriptor, or
+ * `onGetModules` on a descriptor of your own.
  *
+ * @example
  * ```ts
- * onGetModules: () => ({
- *     templates: createTemplateModule({
+ * modules: {
+ *     onGetTemplatesModule: () => createTemplateModule({
  *         provider: new MemoryTemplateDataProvider({ templates }),
  *     }),
- * })
+ * }
  * ```
  */
 export const createTemplateModule = (options: ITemplateModuleOptions): ITemplateModule => ({
     provider: options.provider,
-    //the only place the picker is named: the hosts retrieve it rather than importing it
     components: { TemplateSelector },
 });

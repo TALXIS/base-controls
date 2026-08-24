@@ -3,17 +3,19 @@ import { DynamicEntityDefinition } from "@talxis/client-metadata";
 import { Attribute as IAttribute } from '@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition';
 import { ICustomColumnsStrategy } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 
+/** The table holding custom column definitions. */
 export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
+/** The table holding custom column values. */
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 
 /** Constructor parameters for {@link DataverseCustomColumnsStrategy}. */
 export interface IDataverseCustomColumnsStrategyParameters {
     /** Logical name of the entity for which dynamic attribute definitions are managed (e.g. `"task"`). */
     entityName: string;
-    /** Optional record ID used to scope attribute definitions to a specific parent record. */
+    /** Scopes attribute definitions to a specific parent record. */
     recordId?: string;
     /**
-     * (Optional) A navigation property of the relationship between the entity and
+     * A navigation property of the relationship between the entity and
      * `talxis_attributevalue`, either side of it. Only needed to disambiguate: the relationship is
      * normally the single one Dataverse reports between the two, and
      * {@link DataverseCustomColumnsStrategy.onRefresh} finds it without being told.
@@ -55,7 +57,6 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
     private _referencingEntityNavigationPropertyName?: string;
     private _entitySetName?: string;
 
-    /** @param parameters — see {@link IDataverseCustomColumnsStrategyParameters}. */
     constructor(parameters: IDataverseCustomColumnsStrategyParameters) {
         this._entityName = parameters.entityName;
         this._recordId = parameters.recordId;
@@ -199,8 +200,8 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
     }
 
     /**
-     * Resolves the typed value for `column` from the embedded `talxis_attributevalue` collection inside `rawRecord`.
-     * Also caches the `talxis_attributevalueid` for subsequent upsert calls in {@link saveValueToCustomColumn}.
+     * Resolves the typed value for `column` from the embedded `talxis_attributevalue` collection inside
+     * `rawRecord`, caching the `talxis_attributevalueid` for {@link onSaveValue} to upsert against.
      * @returns The typed column value, or `null` when no matching attribute value record is found.
      */
     public getValueFromRawRecord(recordId: string, rawRecord: IRawRecord, column: IColumn) {
@@ -322,7 +323,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
         }
     }
 
-    //this is wrong, but it has been developed as part of dynamic attributes like this
+    //the wire format dynamic attributes are stored in
     private _getSerializedValue(value: any) {
         return JSON.stringify({
             raw: value,

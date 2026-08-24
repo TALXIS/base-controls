@@ -4,6 +4,7 @@ import * as React from "react"
 import { getTreeExpandCollapseHeaderStyles } from "./styles";
 import { useTaskDataProvider } from "@components/TaskGrid/context";
 
+/** Header of the subject column, carrying the expand-all / collapse-all toggle. */
 export const TreeExpandCollapseHeader = (props: ICellProps) => {
     const styles = React.useMemo(() => getTreeExpandCollapseHeaderStyles(), []);
     const taskDataProvider = useTaskDataProvider();

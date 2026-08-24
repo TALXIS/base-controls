@@ -151,22 +151,20 @@ export interface IDataverseTaskSaveParams {
 }
 
 /**
- * The behaviour behind `DataverseTaskStrategy`, as actions over the providers and names you pass in —
- * no state of its own, nothing resolved from a descriptor.
+ * The behaviour behind {@link DataverseTaskStrategy}, as static actions over the providers and names you
+ * pass in. Call these directly when you write a task strategy of your own and want the shipped semantics
+ * for part of it.
  *
- * The strategy is the thin part: it resolves the FetchXML, builds the providers and keeps the consumer's
- * overrides, and every one of its hooks is "call the override if there is one, otherwise call the action
- * here". So each override receives exactly the action's parameters and can forward them straight back:
+ * Each {@link IDataverseTaskStrategyParams} hook receives the matching action's exact parameters, so an
+ * override can forward them straight back.
  *
+ * @example
  * ```ts
  * onDeleteTasks: async params => {
  *     await audit(params.taskIds);
  *     return DataverseTaskActions.deleteTasks(params);
  * },
  * ```
- *
- * Call these directly when you write a task strategy of your own and want the shipped semantics for
- * part of it.
  */
 export class DataverseTaskActions {
     /** The default rule: a task is active while its state code is `0`. */
@@ -259,8 +257,7 @@ export class DataverseTaskActions {
      */
     public static async deleteTasks(params: IDataverseTaskDeleteParams): Promise<IDeleteTasksResult | null> {
         const { taskIds, provider, fetchXmlDataProvider, isCascadeDeleteEnabled, isDeletingTasksWithChildrenEnabled } = params;
-        //the complete hierarchy, not the rendered one: a child the active view hides is still a child,
-        //and cascading over the filtered tree used to orphan it
+        //the complete hierarchy, not the rendered one
         const structure = provider.getRecordTree().structure;
         const allTaskIds: Set<string> = new Set(taskIds);
         let success = true;

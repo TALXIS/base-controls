@@ -44,10 +44,12 @@ export interface ICustomColumnsDataProvider {
     destroy: () => void;
 }
 
+/** Errors raised by custom-column operations. */
 export interface ICustomColumnsDataProviderEvents {
     onError: (error: any, message: string) => void;
 }
 
+/** Wraps an {@link ICustomColumnsStrategy} with the grid's error handling and event dispatch. */
 export class CustomColumnsDataProvider implements ICustomColumnsDataProvider {
     private _strategy: ICustomColumnsStrategy;
     public events: IEventEmitter<ICustomColumnsDataProviderEvents> = new EventEmitter();

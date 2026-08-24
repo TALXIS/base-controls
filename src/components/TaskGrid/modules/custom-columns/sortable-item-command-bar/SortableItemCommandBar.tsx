@@ -5,6 +5,7 @@ import { useTaskGridEditColumns } from '../edit-columns/useTaskGridEditColumns';
 import { useDatasetControl } from '@components/TaskGrid/context';
 
 
+/** Per-column commands on a selected column in the Edit Columns panel. */
 export const SortableItemCommandBar = (props: ISortableItemCommandBarProps) => {
     const datasetControl = useDatasetControl();
     const customColumns = datasetControl.getModule('customColumns');

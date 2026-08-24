@@ -6,20 +6,20 @@ import { useDatasetControl, useLocalizationService, usePcfContext } from "@compo
 import { useEventEmitter } from "@hooks";
 import { IUserQueryDataProvider, IUserQueryDataProviderEvents } from "../../interfaces";
 
+/** Props for {@link CreateViewDialog}. */
 interface ICreateViewDialog {
     onDismiss: () => void;
 }
 
 const SaveButton = withButtonLoading(PrimaryButton);
 
+/** The *Save as new view* dialog: captures the grid's current columns, filters and sorting into a new view. */
 export const CreateViewDialog = (props: ICreateViewDialog) => {
     const localizationService = useLocalizationService();
     const context = usePcfContext();
     const datasetControl = useDatasetControl();
     const savedQueryDataProvider = datasetControl.getSavedQueryDataProvider();
     const currentQuery = savedQueryDataProvider.getCurrentQuery();
-    //this dialog is only ever rendered by the module that owns this provider, so require it rather than
-    //narrowing an optional the caller cannot actually be without
     const userQueryProvider = datasetControl.getModule('userQueries').provider;
     const [name, setName] = React.useState<string>(currentQuery.name);
     const [description, setDescription] = React.useState<string>("");

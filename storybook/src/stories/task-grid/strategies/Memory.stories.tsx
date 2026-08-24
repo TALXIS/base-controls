@@ -34,9 +34,9 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 | AG Grid customizer | yours | \`modules.onGetGridCustomizerModule\` returns one |
 | Custom columns | **nothing in-memory implements them** | only if \`modules.onGetCustomColumnsModule\` returns one wrapping your own |
 
-Note the pattern in that last column: **a feature is on when you supply its implementation.** There are no flags for these — passing \`MemoryUserQueryStrategy\` is what enables personal views, and a consumer who never mentions it does not pay for the code in their bundle.
+Those last five are **modules**, and \`modules\` is part of what \`onInitialize\` resolves. [**Modules**](?path=/story/task-grid-modules--overview) covers what each one turns on, the builder options, and the bundle consequence.
 
-Both descriptors expose the same hooks, so the difference is which implementations ship: memory brings a user-query strategy and a template provider but no custom columns, Dataverse brings a user-query strategy and custom columns but no template provider. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
+Both descriptors accept the same five, so the difference is which implementations ship: memory brings a user-query strategy and a template provider but no custom columns, Dataverse brings a user-query strategy and custom columns but no template provider. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
 
 \`\`\`ts
 import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
@@ -44,7 +44,7 @@ import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
 
 ## Minimal setup
 
-Four things are required: the records, the entity metadata, the field mapping, and at least one view. \`onInitialize\` resolves the **data**; the feature hooks and \`height\` sit next to it on the constructor argument:
+Four things are required: the records, the entity metadata, the field mapping, and at least one view. \`onInitialize\` resolves all of it — and the task strategy and the feature modules with it. \`height\` is the only other constructor parameter, because the loading skeleton needs it before your data exists:
 
 \`\`\`ts
 const descriptor = new MemoryTaskGridDescriptor({
@@ -101,7 +101,7 @@ onInitialize: async () => {
 }
 \`\`\`
 
-\`height\` sits outside the callback because the grid reads it to size the loading skeleton before your data has resolved — and so do the \`onCreate*\` hooks, which run again on every remount rather than once.
+\`height\` sits outside the callback because the grid reads it to size the loading skeleton before your data has resolved.
 
 Because it is awaited before the first provider is created, a promise that never resolves here shows up as an indefinite skeleton with no error.
 
@@ -116,21 +116,17 @@ Resolved by \`onInitialize\`, and required:
 | \`fieldMapping\` | Column roles. See [**Field mapping**](#field-mapping). |
 | \`systemQueries\` | Built-in, non-deletable views — and the source of every column definition. At least one is required. |
 
-Optional:
-
-All of these are passed next to \`onInitialize\` on the constructor argument, not returned from it — \`gridParameters\` is the exception, since it is data:
+Also resolved by \`onInitialize\`, all optional:
 
 | Parameter | Description |
 |---|---|
 | \`onCreateTaskStrategy\` | Returns the task strategy, and with it every task-level option. See [**Task options**](#task-options). |
-| \`modules.onGetUserQueriesModule\` | \`() => createUserQueryModule({ strategy })\` turns personal views on; omit it for system views only. |
-| \`modules.onGetTemplatesModule\` | \`() => createTemplateModule({ provider })\` turns template-based creation on; omit it to disable it. |
-| \`modules.onGetCustomColumnsModule\` | The only way to switch that feature on here — nothing in-memory ships. |
-| \`modules.onGetGridCustomizerModule\` | \`() => createGridCustomizerModule({ strategy })\` supplies your own AG Grid customizer. |
-| \`modules.onGetLookupManyModule\` | \`() => createLookupManyModule({ createDataProvider })\` returns a picker's candidates — see [**Lookup-many columns**](#lookup-many-columns). |
+| \`modules\` | The feature modules, one \`onGetXModule\` builder per feature. See [**Modules**](?path=/story/task-grid-modules--overview); the memory-specific shape is \`IMemoryModules\`. |
 | \`gridParameters\` | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |
 
-> **\`onInitialize\`, the \`onCreate*\` callbacks and every \`modules\` builder all run on every remount** — none of them is a one-shot. Guard the expensive/stateful part of \`onInitialize\` behind a flag of your own, so a remount reads the current store instead of re-fetching and discarding every view the user created since:
+The one constructor parameter that is *not* resolved by \`onInitialize\` is \`height\`.
+
+> **\`onInitialize\` runs on every remount**, and the \`onCreateTaskStrategy\` and \`modules\` it returns are rebuilt from whatever it just resolved. Guard the expensive or stateful part behind a flag of your own, so a remount reads the current store instead of re-fetching and discarding every view the user created since:
 >
 > \`\`\`ts
 > let isSeeded = false
@@ -142,20 +138,22 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 >             userQueries = await loadMyViews()
 >             isSeeded = true
 >         }
->         return { records, metadata, fieldMapping, systemQueries }
->     },
->     modules: {
->         onGetUserQueriesModule: () => {
->             const strategy = new MemoryUserQueryStrategy({ userQueries })
->             const module = createUserQueryModule({ strategy })
->             //write the strategy's current state back into the store on every mutation, rather
->             //than relying on it mutating the array it was constructed with
->             const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
->             module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
->             module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)
->             module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore)
->             return module
->         },
+>         return {
+>             records, metadata, fieldMapping, systemQueries,
+>             modules: {
+>                 onGetUserQueriesModule: () => {
+>                     const strategy = new MemoryUserQueryStrategy({ userQueries })
+>                     const module = createUserQueryModule({ strategy })
+>                     //write the strategy's current state back into the store on every mutation,
+>                     //rather than relying on it mutating the array it was constructed with
+>                     const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
+>                     module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
+>                     module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)
+>                     module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore)
+>                     return module
+>                 },
+>             },
+>         }
 >     },
 > })
 > \`\`\`
@@ -167,6 +165,7 @@ All of these are passed next to \`onInitialize\` on the constructor argument, no
 > \`\`\`ts
 > let records = SEED
 >
+> //returned from onInitialize, alongside the data
 > onCreateTaskStrategy: ({ deps, metadata }) => new MemoryTaskStrategy({
 >     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
 >     onDestroy: params => records = params.rawData,
@@ -204,9 +203,10 @@ const getQueryColumns = (...visibleColumnNames: string[]): IColumn[] =>
 
 ## Task options
 
-Anything that changes how *tasks* behave belongs to the task strategy, so it is passed where the strategy is built. \`MemoryTaskStrategy\` takes one required hook — \`onInitialize\`, resolving the store, the metadata and the columns — and an optional hook per operation beside it. The descriptor hands the callback the resolved \`records\` and \`metadata\` plus the grid's \`deps\`:
+Anything that changes how *tasks* behave belongs to the task strategy, so it is passed where the strategy is built — in the \`onCreateTaskStrategy\` that \`onInitialize\` returns. \`MemoryTaskStrategy\` takes one required hook — \`onInitialize\`, resolving the store, the metadata and the columns — and an optional hook per operation beside it. The descriptor hands the callback the resolved \`records\` and \`metadata\` plus the grid's \`deps\`:
 
 \`\`\`ts
+//returned from onInitialize, next to the data
 onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
     //the one required hook: the store, the metadata and the columns to load with
     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
@@ -306,6 +306,7 @@ const SOURCES: Record<string, IMemoryEntitySource> = {
     tags: { records: TAGS, columns: TAGS_COLUMNS, metadata: TAGS_METADATA },
 }
 
+//returned from onInitialize
 modules: {
     onGetLookupManyModule: () => createLookupManyModule({
         createDataProvider: ({ column }) => {
@@ -413,7 +414,7 @@ class MyTaskStrategy extends MemoryTaskStrategy {
 }
 \`\`\`
 
-\`onCreateTask\`, \`onDeleteTasks\` and \`onMoveTask\` take the same shape. Return the subclass from the \`onCreateTaskStrategy\` parameter, exactly where the plain strategy would go — see [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) and [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
+\`onCreateTask\`, \`onDeleteTasks\` and \`onMoveTask\` take the same shape. Return the subclass from the \`onCreateTaskStrategy\` that \`onInitialize\` resolves, exactly where the plain strategy would go — see [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) and [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
 
 ## Limits
 

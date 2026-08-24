@@ -7,6 +7,7 @@ const meta = {
     title: 'Task Grid/Get started',
     tags: ['autodocs'],
     parameters: {
+        controls: { disable: true },
         docs: {
             story: {
                 inline: true,
@@ -30,7 +31,7 @@ The grid below is real. It runs on the in-memory strategy, so everything you do 
 
 ## Render it
 
-The control ships no data access at all. Loading, saving, reordering and saved views are supplied by a **descriptor**, which is the single object you hand to the grid:
+The control ships no data access at all. Loading, saving, reordering and saved views are supplied by a **descriptor**, which is the single object you hand to the grid. The descriptor also decides which optional features exist, by listing the [**modules**](?path=/story/task-grid-modules--overview) it runs with:
 
 \`\`\`tsx
 import { TaskGrid } from '@talxis/base-controls'
@@ -48,7 +49,7 @@ export const MyTaskGridPage = ({ pcfContext }) => (
 | Prop | Required | Description |
 |------|:--------:|-------------|
 | \`pcfContext\` | ✅ | A \`ComponentFramework.Context\`. Used for navigation, formatting, error dialogs and environment utilities. |
-| \`taskGridDescriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract. |
+| \`taskGridDescriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration, and where the [**modules**](?path=/story/task-grid-modules--overview) are registered. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract. |
 | \`labels?\` | — | Partial \`ITaskGridLabels\`. Any key you supply replaces the English default. |
 | \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton loader, the command bar, or the renderer/editor of any cell. |
 | \`onReady?\` | — | \`(control, taskDataProvider)\` — the grid's handle. See [**Reacting to the grid**](#reacting-to-the-grid). |
@@ -143,11 +144,13 @@ const descriptor = new DataverseTaskGridDescriptor({
 })
 \`\`\`
 
-> Two features come from TALXIS models rather than your task entity — personal saved views (\`talxis_userquery\`) and custom columns (\`talxis_attributedefinition\`). Both are opt-in: you switch one on by handing the descriptor the strategy that implements it, so an environment without the model simply leaves the callback out. Covered on [**Strategies → Dataverse**](?path=/story/task-grid-strategies-dataverse--overview).
+> Two features come from TALXIS models rather than your task entity — personal saved views (\`talxis_userquery\`) and custom columns (\`talxis_attributedefinition\`). Both are opt-in: you switch one on by registering its module, so an environment without the model simply leaves that module out. Covered on [**Strategies → Dataverse**](?path=/story/task-grid-strategies-dataverse--overview).
 
 ## Where to go next
 
-- [**Customizations**](?path=/story/task-grid-customizations--overview) — feature flags, column metadata, labels, replaceable components, and the AG Grid customizer.
+- [**Modules**](?path=/story/task-grid-modules--overview) — what a module is, the five that ship, and how registering one turns a feature on. A live grid per module.
+- [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview) / [**Dataverse**](?path=/story/task-grid-strategies-dataverse--overview) — every parameter of the descriptor you picked.
+- [**Customizations**](?path=/story/task-grid-customizations--overview) — feature flags, column metadata, labels, and replaceable components.
 - [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) — the descriptor contract, reusing individual shipped strategies, extending them, or writing your own.
                 `.trim(),
             },

@@ -4,6 +4,7 @@ import { Theming, useThemeGenerator } from '@legacy';
 import { MultiValueContainer as NativeMultiValueContainer } from '@components/TaskGrid/modules/lookup-many/components/components/multi-value-container/MultiValueContainer';
 import { useColorfulLookupManyProps } from '@components/TaskGrid/modules/lookup-many/components/colorful-lookup-many/context';
 
+/** A selected record as a coloured tag. */
 export const MultiValueContainer = (props: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
     const theme = useTheme();
     const { colorPropertyName = 'color' } = useColorfulLookupManyProps();

@@ -5,6 +5,7 @@ import { useTaskGridEditColumns } from "../edit-columns/useTaskGridEditColumns";
 import { useDatasetControl, useLocalizationService } from "@components/TaskGrid/context";
 
 
+/** The ribbon inside the custom-columns Edit Columns panel, adding the create-column command. */
 export const CommandBar = (props: ICommandBarProps) => {
     const localizationService = useLocalizationService();
     const datasetControl = useDatasetControl();

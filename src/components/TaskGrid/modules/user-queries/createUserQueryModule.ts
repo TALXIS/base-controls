@@ -7,9 +7,8 @@ import { ViewManagerDialog } from "./view-manager";
 /** Options for {@link createUserQueryModule}. */
 export interface IUserQueryModuleOptions {
     /**
-     * The personal-views implementation — where the views are stored and how they are named, deleted and
-     * updated. This is the only thing that differs between backends: pass `MemoryUserQueryStrategy`,
-     * `DataverseUserQueryStrategy`, or your own.
+     * Where the views are stored and how they are named, deleted and updated. Pass
+     * `MemoryUserQueryStrategy`, `DataverseUserQueryStrategy`, or your own.
      */
     strategy: IUserQueryStrategy;
     /** Show *Manage views*. Defaults to `false`. */
@@ -21,25 +20,23 @@ export interface IUserQueryModuleOptions {
 }
 
 /**
- * Everything the personal-views feature needs, in one call: you supply the strategy, this brings the UI.
+ * Builds the personal-views module: you supply the strategy, this brings the UI.
  *
- * Return it from the descriptor's `onGetModules` to switch personal views on. Importing this function is
- * what puts the dialogs in your bundle, so a grid that never registers the module does not carry them.
+ * Assign it to a `modules` key — `modules.onGetUserQueriesModule` on a shipped descriptor, or
+ * `onGetModules` on a descriptor of your own.
  *
+ * @example
  * ```ts
- * onGetModules: () => ({
- *     userQueries: createUserQueryModule({
+ * modules: {
+ *     onGetUserQueriesModule: () => createUserQueryModule({
  *         strategy: new MemoryUserQueryStrategy({ userQueries }),
  *         enableQueryManager: true,
  *     }),
- * })
+ * }
  * ```
  */
 export const createUserQueryModule = (options: IUserQueryModuleOptions): IUserQueryModule => ({
-    //the strategy is wrapped here rather than in core, so the events, the error handling and the
-    //grid-state capture around it stay out of a bundle that never registers this module
     provider: new UserQueryDataProvider(options.strategy),
-    //the only place the dialogs are named: a consumer never imports or knows about them
     components: {
         ViewManager: ViewManagerDialog,
         CreateView: CreateViewDialog,

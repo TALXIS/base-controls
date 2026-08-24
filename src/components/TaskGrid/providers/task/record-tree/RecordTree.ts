@@ -6,8 +6,8 @@ import { patchDataBuilderPrepare } from "./patchDataBuilderPrepare";
  * The hierarchy as the grid shows it: the active filter and quick find applied, flat-list mode and root
  * scoping honoured.
  *
- * Everything here is a *display* answer. Ask {@link IRecordStructure} instead whenever something has to be
- * true of the data rather than of the view.
+ * Every answer here is about the view. Ask {@link IRecordStructure} when something has to be true of the
+ * data instead.
  */
 export interface IRecordTreeView {
     /** The children rendered under a record, in display order. Omit the argument for the top level. */
@@ -15,10 +15,8 @@ export interface IRecordTreeView {
     /** `true` when the record has at least one *visible* child — this is what draws the expander. */
     hasChildren(recordId: string): boolean;
     /**
-     * The record's position among its visible siblings, or `-1` when it is not rendered.
-     *
-     * A row-store index: it counts rendered rows, so it is what AG Grid transactions want and is never a
-     * data position. Anything that reorders records belongs on {@link IRecordStructure}.
+     * The record's position among its visible siblings, or `-1` when it is not rendered. A row-store index
+     * for AG Grid transactions, never a data position.
      */
     getPosition(recordId: string): number;
     /** `true` when the record itself matches the active filter and quick find. */
@@ -33,11 +31,10 @@ export interface IRecordTreeView {
 
 /**
  * The complete hierarchy: every loaded record, with the filter, the quick find, flat-list mode and root
- * scoping all ignored.
+ * scoping all ignored. A child the active view hides is still a child.
  *
- * Ask this whatever must be true of the *data* — reordering, cascading a delete, checking for a cycle. A
- * sibling the active view hides still occupies a position, and ranking a record against the neighbour it
- * can *see* is how a reorder ends up colliding with one it cannot.
+ * Ask this for anything that must be true of the data — reordering, cascading a delete, checking for a
+ * cycle.
  */
 export interface IRecordStructure {
     /** The children of a record, in order — or the true top level when the argument is omitted. */
@@ -48,17 +45,15 @@ export interface IRecordStructure {
     getAncestorIds(recordId: string): string[];
     /** The same chain as records, nearest ancestor last, the record itself excluded. */
     getAncestors(recordId: string): IRecord[];
-    /** Every descendant, depth-first in order. Resolved on first ask and cached for the build. */
+    /** Every descendant, depth-first in order. */
     getDescendants(recordId: string): IRecord[];
     /** `true` when the record has a child in the data, visible or not. */
     hasChildren(recordId: string): boolean;
     /** The records sharing this record's parent, in order, the record itself excluded. */
     getSiblings(recordId: string, options?: { exclude?: string }): IRecord[];
     /**
-     * The records either side of this one among its siblings.
-     *
-     * Pass `exclude` when a record is being moved: it must not be its own neighbour, or the operation ranks
-     * it against the position it is leaving.
+     * The records either side of this one among its siblings. Pass `exclude` when a record is being moved,
+     * so it is not ranked against the position it is leaving.
      */
     getNeighbours(recordId: string, options?: { exclude?: string }): { previous?: IRecord; next?: IRecord };
 }
@@ -71,32 +66,30 @@ export interface IRecordTree {
     readonly structure: IRecordStructure;
 }
 
+/** Constructor parameters for {@link RecordTree}. */
 interface IRecordTreeParameters {
     taskDataProvider: ITaskDataProvider;
 }
 
-/**
- * The filter-independent facts one build resolves. Both surfaces read from it, which is why the complete
- * hierarchy costs no allocation of its own.
- */
+/** The filter-independent facts one build resolves. Both surfaces read from it. */
 interface IHierarchyIndex {
     records: IRecord[];
     recordsMap: { [recordId: string]: IRecord };
-    /** Parent id — `null` for the top level — to its children, in display order. Complete. */
+    /** Parent id — `null` for the top level — to its children, in display order. */
     childrenByParent: Map<string | null, IRecord[]>;
     parentById: Map<string, string | null>;
-    /** Root-to-self ids per record, walked over the complete record map. */
+    /** Root-to-self ids per record. */
     ancestorIds: Map<string, string[]>;
-    /** The same chain as display names, for the path column. */
+    /** The same chains as display names, for the path column. */
     ancestorNames: Map<string, string[]>;
     /**
-     * Records no root can reach: a parent chain that loops, and anything hanging below one. They are
-     * treated as childless by both surfaces, which is what keeps a descendant walk terminating.
+     * Records no root can reach: a parent chain that loops, and anything hanging below one. Both surfaces
+     * treat them as childless, so a descendant walk terminates.
      */
     unreachable: Set<string>;
 }
 
-/** What the display pass produces. Plain maps — the view is a method surface, so nodes buy nothing. */
+/** What the display pass produces. */
 interface IViewProjection {
     childrenByParent: Map<string | null, IRecord[]>;
     positionById: Map<string, number>;
@@ -125,6 +118,7 @@ const EMPTY_PROJECTION: IViewProjection = {
     isFlat: false,
 };
 
+/** Builds and serves the task hierarchy, as both a display view and the complete data structure. */
 export class RecordTree implements IRecordTree {
     private _taskDataProvider: ITaskDataProvider;
     private _index: IHierarchyIndex = EMPTY_INDEX;
@@ -152,8 +146,8 @@ export class RecordTree implements IRecordTree {
         const index = this._buildIndex();
         this._index = index;
         this._descendants.clear();
-        //before the throwaway providers below: in flat-list mode the path column is visible, so it has to
-        //hold its value by the time anything sorts, filters or quick-finds on it
+        //before the throwaway providers below: the path column has to hold its value by the time
+        //anything sorts, filters or quick-finds on it
         this._patchRecordPaths(index);
         this._sortChildren(index, this._buildSortingMap(index));
         this._projection = this._project(index, this._buildMatchingIds(index));
@@ -206,7 +200,6 @@ export class RecordTree implements IRecordTree {
         };
     }
 
-    /** A record in a cycle has no children anyone can walk to — that is what stops a descendant walk. */
     private _getStructuralChildren(parentRecordId: string | null): IRecord[] {
         if (parentRecordId && this._index.unreachable.has(parentRecordId)) {
             return [];
@@ -271,12 +264,7 @@ export class RecordTree implements IRecordTree {
         };
     }
 
-    /**
-     * Root-to-self ids and names per record.
-     *
-     * One pass with one cache: an ancestor resolved earlier already knows its own chain, so this is O(N)
-     * rather than a full walk per record.
-     */
+    /** Root-to-self ids and names per record, in one pass reusing the chains already resolved. */
     private _buildAncestors(
         records: IRecord[],
         recordsMap: { [recordId: string]: IRecord },
@@ -322,12 +310,7 @@ export class RecordTree implements IRecordTree {
         return { ancestorIds, ancestorNames };
     }
 
-    /**
-     * The records no root reaches: a parent chain that loops, plus everything hanging below one.
-     *
-     * Resolved once here, so a cycle costs one warning per build instead of one per member, and both
-     * surfaces agree on which records are unwalkable however they are asked.
-     */
+    /** The records no root reaches: a parent chain that loops, plus everything hanging below one. */
     private _findUnreachable(records: IRecord[], childrenByParent: Map<string | null, IRecord[]>): Set<string> {
         const reachable = new Set<string>();
         const queue = [...(childrenByParent.get(null) ?? [])];
@@ -446,17 +429,11 @@ export class RecordTree implements IRecordTree {
 
     // ── The throwaway providers ─────────────────────────────────────────────
 
-    /**
-     * Which records match the active filter and quick find.
-     *
-     * Skipped entirely when nothing filters — the common case, and it saves a full pass over the dataset.
-     * The set is always populated, because `isMatching` is read per row on every repaint.
-     */
+    /** Which records match the active filter and quick find. Skipped entirely when nothing filters. */
     private _buildMatchingIds(index: IHierarchyIndex): Set<string> {
         const taskDataProvider = this._getTaskDataProvider();
         const filtering = taskDataProvider.getFiltering();
-        //mirrors DataBuilder's own no-op guards. `conditions.length` is load-bearing: turning "hide
-        //inactive" off leaves an expression behind with nothing in it
+        //`conditions.length` is load-bearing: turning "hide inactive" off leaves an empty expression behind
         const nothingFilters = (!filtering || filtering.conditions.length === 0) && !taskDataProvider.getSearchQuery();
         if (nothingFilters) {
             return new Set(index.records.map(record => record.getRecordId()));
@@ -496,12 +473,7 @@ export class RecordTree implements IRecordTree {
         return provider;
     }
 
-    /**
-     * Writes each record's ancestor names onto the virtual path column.
-     *
-     * Reuses the chains the index already resolved; it used to walk every ancestor again per record, a
-     * second O(records x depth) pass on every build.
-     */
+    /** Writes each record's ancestor names onto the virtual path column, reusing the resolved chains. */
     private _patchRecordPaths(index: IHierarchyIndex): void {
         const pathColumn = this._getNativeColumns().path;
         if (!this._getTaskDataProvider().getColumnsMap()[pathColumn]) {

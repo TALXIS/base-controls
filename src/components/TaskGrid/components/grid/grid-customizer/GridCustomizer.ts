@@ -13,16 +13,20 @@ import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/in
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
 import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
 
+/** Name of the synthetic trailing column holding each row's add-task button. */
 export const ADD_TASK_COLUMN_NAME = 'addTask';
 
+/** AG Grid's `ColDef`, bound to the grid's record type. */
 export type ColDef = ColDefBase<IRecord>;
+/** AG Grid's `GridApi`, bound to the grid's record type. */
 export type GridApi = GridApiBase<IRecord>;
+/** AG Grid's `RowClassRules`, bound to the grid's record type. */
 export type RowClassRules = RowClassRulesBase<IRecord>;
 
 
 /** Strategy interface for deep customization of the AG Grid instance inside TaskGrid. */
 export interface IGridCustomizerStrategy {
-    /** Called once after the grid is ready. Use to call `customizer.registerExpressionDecorator` or perform other one-time setup. */
+    /** Called once after the grid is ready. The place for `registerExpressionDecorator` and other one-time setup. */
     onInitialize: (customizer: IGridCustomizer) => void;
     /** Receives the computed column definitions and may return a modified array. */
     onGetColumnDefinitions?: (columnDefs: ColDef[]) => ColDef[];
@@ -45,6 +49,7 @@ export interface IGridCustomizer {
     registerExpressionDecorator(columnName: string, registrator: () => void): void;
 }
 
+/** Constructor parameters for {@link GridCustomizer}. */
 export interface IGridCustomizerParameters {
     gridApi: GridApi;
     datasetControl: ITaskGridDatasetControl;
@@ -52,11 +57,16 @@ export interface IGridCustomizerParameters {
     onGetComponents: () => ITaskGridComponents;
 }
 
+/** The renderer and editor a column would get before any override is applied. */
 interface IDefaultCellComponents {
     renderer?: any;
     editor?: any;
 }
 
+/**
+ * Builds the grid's AG Grid configuration — column definitions, row class rules, cell components — and
+ * hands the optional {@link IGridCustomizerStrategy} its chance to change each of them.
+ */
 export class GridCustomizer implements IGridCustomizer {
     private _taskDataProvider: ITaskDataProvider;
     private _gridApi: GridApi;
@@ -101,7 +111,6 @@ export class GridCustomizer implements IGridCustomizer {
         return this._taskDataProvider;
     }
 
-    //makes sure we do not try to register an expression for a column that does not exist
     public registerExpressionDecorator(columnName: string, registrator: () => void) {
         if (columnName && this._taskDataProvider.getColumnsMap()[columnName]) {
             registrator();
@@ -188,8 +197,7 @@ export class GridCustomizer implements IGridCustomizer {
                     break;
                 }
             }
-            //lookup-many columns only get the picker renderer when the module is registered - without it
-            //the column simply falls back to whatever renderer it would otherwise get
+            //without the module the column falls back to whatever renderer it would otherwise get
             const lookupManyCellRenderer = this._datasetControl.getModules().lookupMany?.components.CellRenderer;
             if (column?.metadata?.LookupMany && lookupManyCellRenderer) {
                 colDef.cellRenderer = lookupManyCellRenderer;
@@ -281,7 +289,7 @@ export class GridCustomizer implements IGridCustomizer {
         return path.filter(id => id).reverse();
     }
 
-    //undefined means we should target top level
+    //an undefined id means the top level
     private _onRecordTreeUpdated = (affectedIds: (string | undefined)[]) => {
         for (const id of affectedIds) {
             if (!id) {
@@ -329,7 +337,6 @@ export class GridCustomizer implements IGridCustomizer {
 
     private _isDragOperationAllowed(dragOperation: IDragOperation): boolean {
         const { draggedNode, overNode } = dragOperation;
-        // Check if either node is null/undefined
         if (!draggedNode || !overNode) {
             return false;
         }
@@ -378,7 +385,6 @@ export class GridCustomizer implements IGridCustomizer {
         //a rendered position, which is what the AG Grid store counts
         let addIndex: number | null = this._taskDataProvider.getRecordTree().view.getPosition(movingFromRecordId);
 
-        //first remove from old location
         this._gridApi.applyServerSideTransaction({
             route: this._getPathToParent(draggedNode),
             remove: [draggedRecord],
@@ -395,9 +401,7 @@ export class GridCustomizer implements IGridCustomizer {
             route: this._getPathToParent(overNode),
             update: [overNode.data],
         });
-        //then add to new location
         this._gridApi.applyServerSideTransaction({
-            // i need to set route to parent of over node
             route: [...this._getPathToParent(overNode), ...(position === 'child' ? [overNode.id!] : [])],
             add: [draggedRecord],
             addIndex: addIndex !== null ? addIndex : undefined,

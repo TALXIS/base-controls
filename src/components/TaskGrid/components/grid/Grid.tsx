@@ -6,6 +6,7 @@ import { GridCustomizer } from "./grid-customizer/GridCustomizer";
 import { IRecord } from "@talxis/client-libraries";
 
 
+/** The AG Grid instance itself, configured by {@link GridCustomizer}. */
 export const Grid = (props: IGrid) => {
     const licenseKey = useAgGridLicenseKey();
     const taskDataProvider = useTaskDataProvider();

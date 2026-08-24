@@ -39,6 +39,7 @@ This is where the work is. The grid calls these hooks; you decide what they mean
 | \`onIsRecordActive(recordId)\` | ✅ | Whether a task is active. Synchronous. |
 | \`onCreateTasksFromTemplate(params)\` | ✅ | Expand a template into tasks, or return \`null\`. The context places the root task; its descendants are yours to order. |
 | \`onOpenDatasetItems(refs, isTaskEntity)\` | ✅ | The user opened records — navigate, open a dialog, or no-op. |
+| \`onDestroy?()\` | — | Called just before the provider is torn down, on unmount and on every remount. Its data is still readable, so this is the last chance to hand the current records to whoever keeps them. |
 | \`onGetRootTaskId?()\` | — | Root the tree at one task. |
 
 \`onCreateTasksFromTemplate\` is required by the interface but may return \`null\` if you do not support templates — the Dataverse strategy throws instead, which is equally valid when the feature is off. Capturing a template *from* a task is not part of the strategy: it belongs to the \`ITemplateDataProvider\` you wrap in \`createTemplateModule\` and return from \`onGetModules\`.
@@ -163,7 +164,7 @@ public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
 }
 \`\`\`
 
-Personal views are optional and live behind \`onGetModules\`. Implement \`IUserQueryStrategy\` only if you have somewhere to persist them, then hand it to \`createUserQueryModule\`, which brings the view manager and the save dialogs with it. Omit the key and the feature is off, with no stubs to write — and none of that UI in your bundle:
+Personal views are optional and live behind \`onGetModules\` — see [**Modules**](?path=/story/task-grid-modules--overview). Implement \`IUserQueryStrategy\` only if you have somewhere to persist them, then hand it to \`createUserQueryModule\`, which brings the view manager and the save dialogs with it. Omit the key and the feature is off, with no stubs to write:
 
 | Method | Description |
 |---|---|

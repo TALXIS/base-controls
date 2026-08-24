@@ -5,12 +5,10 @@ import { ITemplateSelectorProps } from "../../interfaces";
 
 /**
  * The template picker, rendered inside the *New* and per-row add-task submenus. Wraps the generic
- * `RecordSelector` over this grid's template provider, so the hosts never import `RecordSelector`
- * themselves or know it exists.
+ * `RecordSelector` over this grid's template provider.
  */
 export const TemplateSelector = (props: ITemplateSelectorProps) => {
     const datasetControl = useDatasetControl();
-    //only ever rendered by the module that owns this provider
     const provider = datasetControl.getModule('templates').provider;
 
     return <RecordSelector

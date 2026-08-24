@@ -11,6 +11,7 @@ interface IProps extends ICellProps {
     data: IRecord;
 }
 
+/** The subject cell: the expander, the indentation and the drag handle around the task name. */
 export const GroupCell = (props: IProps) => {
     const provider = useTaskDataProvider();
     const record = props.data;

@@ -2,11 +2,11 @@ import { IDataProvider, MemoryDataProvider } from "@talxis/client-libraries";
 import { IMemoryEntitySource } from "./interfaces";
 
 /**
- * Builds the picker provider behind one lookup-many column, from records you already hold — the
- * in-memory counterpart to `FetchXmlDataProviderFactory`.
+ * Builds the picker provider behind one lookup-many column, from records you already hold.
  *
- * Return one from a `lookupMany` module's `createDataProvider`, picking the source by column:
+ * Return one from a `lookupMany` module's `createDataProvider`, picking the source by column.
  *
+ * @example
  * ```ts
  * const SOURCES = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE }
  *
@@ -23,8 +23,7 @@ export class MemoryLookupManyDataProviderFactory {
      */
     public static create(source: IMemoryEntitySource): IDataProvider {
         const provider = new MemoryDataProvider({
-            //a copy of the array holding the same records: MemoryDataProvider swaps its internal
-            //array on delete, so it must not be handed the one the consumer persists
+            //a copy: MemoryDataProvider swaps its internal array on delete
             dataSource: [...source.records],
             metadata: source.metadata,
         });

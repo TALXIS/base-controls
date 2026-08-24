@@ -6,7 +6,12 @@ import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataP
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { TaskGridDatasetControl } from "./TaskGridDatasetControl";
 
+/**
+ * The slice of grid state that outlives a remount. The `TaskGrid` component owns it and hands the same
+ * object to every control it builds.
+ */
 export interface ITaskGridState {
+    /** The view to load with — set when the user switches views, so the next control opens on it. */
     savedQuery?: Partial<ISavedQuery> & { id: string; linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[] };
 }
 
@@ -17,22 +22,23 @@ interface ITaskGridDatasetControlFactoryParameters {
     onGetPcfContext: () => ComponentFramework.Context<any>;
 }
 
+/** Builds a ready-to-use {@link ITaskGridDatasetControl} from a descriptor. */
 export class TaskGridDatasetControlFactory {
-    //makes sure the instance is created after the dependencies are loaded, and handles creation of data providers and dataset
+    /**
+     * Loads the descriptor's dependencies, resolves its modules, then builds the data providers, the
+     * dataset and the control over them.
+     */
     public static async createInstance(parameters: ITaskGridDatasetControlFactoryParameters): Promise<ITaskGridDatasetControl> {
         let taskDataProvider: ITaskDataProvider;
         await parameters.taskGridDescriptor.onLoadDependencies?.();
-        //resolved once and threaded from here: onGetModules is never called again for this instance, so a
-        //module is free to build a strategy per mount without anything being resolved twice
+        //resolved once and threaded from here: onGetModules is never called again for this instance
         const modules = parameters.taskGridDescriptor.onGetModules?.() ?? {};
 
-        //no custom-columns module means the feature is off - nothing here even imports the wrapper class
         const customColumnsDataProvider = modules.customColumns?.provider;
         await customColumnsDataProvider?.refresh();
 
         const savedQueryStrategy = parameters.taskGridDescriptor.onCreateSavedQueryStrategy();
         const savedQueryDataProvider = new SavedQueryDataProvider(savedQueryStrategy, {
-            //no user-queries module means personal views are off
             userQueryProvider: modules.userQueries?.provider,
             localizationService: parameters.localizationService,
             nativeColumns: { ...parameters.taskGridDescriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME },
@@ -43,7 +49,6 @@ export class TaskGridDatasetControlFactory {
 
         const taskStrategy = parameters.taskGridDescriptor.onCreateTaskStrategy({
             savedQueryDataProvider: savedQueryDataProvider,
-            //no templates module means the strategy sees no template provider either
             templateDataProvider: modules.templates?.provider,
             customColumnsDataProvider: customColumnsDataProvider,
             enableTaskEditing: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableTaskEditing ?? false,

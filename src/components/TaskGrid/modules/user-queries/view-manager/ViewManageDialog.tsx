@@ -11,6 +11,7 @@ interface IViewManagerDialogProps {
     onDismiss: () => void;
 }
 
+/** The *Manage views* dialog: rename and delete the user’s own views. */
 export const ViewManagerDialog = (props: IViewManagerDialogProps) => {
     const styles = React.useMemo(() => getViewManagerDialogStyles(), []);
     const localizationService = useLocalizationService();

@@ -6,11 +6,8 @@ import { ICreateUserQueryParams, IUserQueryDataProvider, IUserQueryDataProviderE
 
 /**
  * Wraps an {@link IUserQueryStrategy} with everything the grid needs around it: the lifecycle events, the
- * error handling that turns a failing strategy into the grid's own error dialog rather than an unhandled
- * rejection, the cached list of views, and the capture of the grid's current state into a view.
- *
- * The strategy is required, which is what removes a whole class of "the feature is off" guards: there is no
- * instance of this class unless personal views exist.
+ * error handling that surfaces a failing strategy in the grid's own error dialog, the cached list of
+ * views, and the capture of the grid's current state into a view.
  */
 export class UserQueryDataProvider implements IUserQueryDataProvider {
     private _strategy: IUserQueryStrategy;

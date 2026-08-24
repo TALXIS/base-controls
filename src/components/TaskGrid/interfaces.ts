@@ -1,18 +1,15 @@
 import { IColumn, IDataset, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IDatasetControl } from "@utils/dataset-control";
-//the types-only reference to the module - core depends on the type only, never the module's value exports
 import { ICustomColumnsDataProvider } from "./modules/custom-columns/CustomColumnsDataProvider";
 import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
-//the types-only file, never the providers/template barrel - that one also exports the
-//TemplateDataProviderBase mixin, a value
 import { ITemplateDataProvider } from "./providers/template/TemplateDataProvider";
-//the contract only, never the modules barrel: that one reaches their UI
 import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { ILocalizationService } from "@utils";
 
+/** What {@link TaskGridDatasetControlFactory} hands the control it builds. */
 export interface ITaskGridDatasetControlParameters {
     dataset: IDataset;
     state: ITaskGridState;
@@ -36,6 +33,7 @@ export interface IFieldMapping {
     stateCode: string;
 }
 
+/** The field mapping plus the synthetic hierarchy path column the grid adds. */
 export interface INativeColumns extends IFieldMapping {
     path: string;
 }
@@ -81,9 +79,9 @@ export interface ITaskStrategyDeps {
     enableTaskEditing: boolean;
     /** The system and user views the grid loaded — their columns are the strategy's column catalogue. */
     savedQueryDataProvider: ISavedQueryDataProvider;
-    /** Present when the custom-columns module was returned from `onGetModules`. */
+    /** Present when the custom-columns module is registered. */
     customColumnsDataProvider?: ICustomColumnsDataProvider;
-    /** Present when the templates module was returned from `onGetModules`. */
+    /** Present when the templates module is registered. */
     templateDataProvider?: ITemplateDataProvider;
 }
 
@@ -103,31 +101,34 @@ export interface ITaskGridDescriptor {
     /** Returns the mapping of logical column roles to physical schema attribute names. */
     onGetFieldMapping: () => IFieldMapping;
     /**
-     * Returns the strategy responsible for loading system views. Personal views are optional and come
-     * from the user-queries module returned by `onGetModules` — omit it and the feature is off.
+     * Returns the strategy responsible for loading system views. Personal views come from the
+     * user-queries module instead.
      */
     onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
     /** Returns the strategy that handles all task CRUD, move, template and record-save operations. */
     onCreateTaskStrategy: (deps: ITaskStrategyDeps) => ITaskDataProviderStrategy;
-    /** (Optional) Returns the container height as a CSS string. Falls back to a default stretch when omitted. */
+    /** Returns the container height as a CSS string. Falls back to a default stretch when omitted. */
     onGetHeight?: () => string | undefined;
     /**
-     * (Optional) Returns the feature modules this grid runs with, keyed by feature.
+     * Returns the feature modules this grid runs with. A module is on because it is present, so omitting
+     * a key leaves both the feature and its UI out.
      *
-     * Called **exactly once per mount**, after `onLoadDependencies`, so what `onInitialize` resolved is
-     * available to whatever builds them. A module is enabled by being present:
-     * `{ userQueries: createUserQueryModule({ strategy }) }` turns personal views on, and omitting the key
-     * leaves both the feature and its UI out — including out of your bundle.
+     * Called once per mount, after `onLoadDependencies`. Everything it returns is rebuilt on the next
+     * mount, so nothing that must outlive a remount belongs in a module.
      *
-     * Anything that must outlive a remount belongs in state *you* own, never in a module or a strategy:
-     * both are rebuilt on every mount.
+     * ```ts
+     * onGetModules: () => ({ userQueries: createUserQueryModule({ strategy }) })
+     * ```
+     *
+     * The shipped descriptors expose this as a `modules` key of builders — see {@link IMemoryModules}
+     * and {@link IDataverseModules}.
      */
     onGetModules?: () => ITaskGridModules;
-    /** (Optional) Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
+    /** Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
     onGetControlId?: () => string;
-    /** (Optional) Async hook called before any data provider is created. Use for lazy loading or authentication. */
+    /** Called before any data provider is created. Use for lazy loading or authentication. */
     onLoadDependencies?: () => Promise<void>;
-    /** (Optional) Returns UI feature flags. Every flag defaults to `false` when omitted. */
+    /** Returns UI feature flags. Every flag defaults to `false` when omitted. */
     onGetGridParameters?: () => ITaskGridParameters;
 }
 
@@ -138,7 +139,7 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     /**
      * Creates the `IDataProvider` supplying the candidate records of a lookup-many cell — its picker's
      * options. Called once per cell, because the candidates may depend on the row.
-     * @throws If no `lookupMany` module was returned from `onGetModules`, or it returned nothing for this column.
+     * @throws If no `lookupMany` module is registered, or it returned nothing for this column.
      */
     createLookupManyDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider;
     /** Returns the native column name mapping supplied by the descriptor. */
@@ -182,19 +183,16 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
      * The feature modules the descriptor contributed, resolved once when this control was built. A missing
      * key means that feature is off — there is no separate flag.
      *
-     * Use this where the feature is genuinely optional, such as deciding whether to offer its commands.
-     * Where the caller only exists *because* the module does, prefer {@link getModule}.
+     * Use this where the feature is optional to the caller. Where the caller only exists *because* the
+     * module does, prefer {@link getModule}.
      */
     getModules: () => ITaskGridModules;
     /**
      * Returns a registered module by key, non-optional.
-     *
-     * For code that only runs when the module is present — its own UI, for instance — where narrowing an
-     * optional on every line says nothing a reader does not already know.
-     * @throws If that module was not registered.
+     * @throws If that module is not registered.
      */
     getModule: <TKey extends keyof ITaskGridModules>(key: TKey) => NonNullable<ITaskGridModules[TKey]>;
-    /** Returns `true` when a user-queries module supplied a strategy. */
+    /** Returns `true` when the user-queries module is registered. */
     isUserQueriesEnabled: () => boolean;
     /** Whether inline task creation is enabled (from `ITaskGridParameters.enableInlineCreation`). */
     isInlineCreateEnabled: () => boolean;

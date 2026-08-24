@@ -1,5 +1,6 @@
 import { IDataProvider, IEventEmitter, IRawRecord, IRecord } from "@talxis/client-libraries";
 
+/** Lifecycle events raised around capturing a template from a task. */
 export interface ITemplateDataProviderEvents {
     onBeforeTemplateCreated: (taskId: string) => void;
     onAfterTemplateCreated: (record: IRawRecord | null) => void;

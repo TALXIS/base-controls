@@ -5,31 +5,32 @@ import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { ISavedQueryDataProvider} from "../saved-query";
-//the types-only reference to the module - core depends on the type only, never the module's value exports
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 
+/** One record an operation could not complete, and why. */
 export interface IFailedRecord {
     id: string;
     error: any;
 }
 
+/** Outcome of a delete: which tasks went, and which failed. */
 export type IDeleteTasksResult =
     | { success: true; deletedTaskIds: string[] }
     | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] };
 
+/** Outcome of opening records: any that came back changed, and which failed. */
 export type IOpenDatasetItemsResult =
     | { success: true; updatedRecords: IRawRecord[] }
     | { success: false; updatedRecords: IRawRecord[]; errors: IFailedRecord[] };
 
 
 /**
- * Where an operation lands: the parent it ends up under, and the siblings around it — all resolved over
- * the **entire** dataset, so filtering and quick find cannot narrow them.
+ * Where an operation lands: the parent it ends up under, and the siblings around it, resolved over the
+ * entire dataset so filtering and quick find cannot narrow them.
  *
- * The provider stops there deliberately: it says which records the task lands between, and how order is
- * expressed is the strategy's decision. Read whatever you order by off the neighbours —
- * `previousSibling?.getValue(nativeColumns.stackRank)` for the shipped lexicographic scheme, your own
- * column for anything else.
+ * The provider says which records the task lands between; how order is expressed is the strategy's. Read
+ * whatever you order by off the neighbours — `previousSibling?.getValue(nativeColumns.stackRank)` for the
+ * shipped lexicographic scheme, your own column for anything else.
  */
 export interface ITaskSiblingContext {
     /**
@@ -69,6 +70,7 @@ export interface ITaskTemplateExpansionParams extends ITaskCreateParams {
     templateId: string;
 }
 
+/** Constructor parameters for {@link TaskDataProvider}. */
 export interface ITaskDataProviderParameters {
     nativeColumns: INativeColumns;
     localizationService: ILocalizationService<ITaskGridLabels>;
@@ -94,8 +96,7 @@ export interface ITaskDataProviderStrategy {
      * Creates one task where {@link ITaskCreateParams} says — before every existing sibling, whether the
      * active view shows them or not.
      *
-     * @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws
-     * on unexpected failure.
+     * @returns The created raw record, or `null` when the user cancelled.
      */
     onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null>;
     /**
@@ -130,15 +131,16 @@ export interface ITaskDataProviderStrategy {
     /** Returns whether the given task record is currently active (non-completed). */
     onIsRecordActive(recordId: string): boolean;
     /**
-     * (Optional) Called just before the provider is torn down — on unmount, and on every remount the
-     * grid performs. The provider's data is still readable at that point, which makes this the strategy's
-     * last chance to hand the current records to whoever wants to keep them.
+     * Called just before the provider is torn down — on unmount, and on every remount. The provider's data
+     * is still readable, so this is the strategy's last chance to hand the current records to whoever
+     * keeps them.
      */
     onDestroy?: () => void;
     /** When provided, the task tree is scoped to the subtree of the returned task id. */
     onGetRootTaskId?: () => string | undefined
 }
 
+/** The task events, raised before and after each operation. Forwarded to the matching `ITaskGridProps` prop. */
 export interface ITaskDataProviderEventListener {
     onBeforeTasksDeleted: (taskIds: string[]) => void;
     onAfterTasksDeleted: (result: IDeleteTasksResult | null) => void;
@@ -193,6 +195,10 @@ export interface ITaskDataProvider extends IDataProvider {
     moveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null>;
 }
 
+/**
+ * The grid's data layer: holds the loaded tasks, maintains the hierarchy, and routes every operation
+ * through the descriptor's task strategy.
+ */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
     private _nativeColumns: INativeColumns;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
@@ -338,11 +344,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     /**
-     * Resolves where a drop lands: the parent, and the siblings on either side of it.
-     *
-     * Siblings come from the full record set rather than the tree, whose children are pruned to the
-     * active filter and quick find. Ranking against the visible neighbour is what let a reorder collide
-     * with a hidden record's rank.
+     * Resolves where a drop lands: the parent, and the siblings on either side of it, taken from the
+     * complete record set rather than the filtered view.
      *
      * @returns `null` when the move cannot be made.
      */

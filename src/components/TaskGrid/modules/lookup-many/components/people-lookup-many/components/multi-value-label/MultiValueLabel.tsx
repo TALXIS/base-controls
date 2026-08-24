@@ -5,6 +5,7 @@ import { getMultiValueLabelStyles } from './styles';
 import { usePeopleLookupManyProps } from '@components/TaskGrid/modules/lookup-many/components/people-lookup-many/context';
 import { MultiValueLabel as MultiValueLabelBase } from '@components/TaskGrid/modules/lookup-many/components/components/multi-value-label';
 
+/** A selected record’s name beside its avatar. */
 export const MultiValueLabel = (props: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
     const styles = React.useMemo(() => getMultiValueLabelStyles(), []);
     const {imageUrlPropertyName = 'imageurl'} = usePeopleLookupManyProps();

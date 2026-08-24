@@ -100,10 +100,12 @@ const preview: Preview = {
           'Task Grid',
           [
             'Get started',
+            'Modules',
+            ['Overview', 'Customizer'],
             'Strategies',
             ['Memory', 'Dataverse'],
             'Customizations',
-            ['Overview', 'Custom Components', 'Customizer'],
+            ['Overview', 'Custom Components'],
             'Custom strategies',
             [
               'Overview',

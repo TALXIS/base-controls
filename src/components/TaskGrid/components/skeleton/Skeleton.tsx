@@ -2,7 +2,9 @@ import * as React from 'react';
 import { useTheme } from '@fluentui/react';
 import { getSkeletonStyles } from './styles';
 
+/** Props for {@link Skeleton}. */
 export interface ISkeletonProps {
+    /** Container height, from the descriptor's `onGetHeight`. */
     height: string;
 }
 
@@ -21,6 +23,7 @@ const ROW_PATTERNS = [
 
 const ROW_COUNT = 20;
 
+/** The loading placeholder shown until the control instance resolves. */
 export const Skeleton = ({ height }: ISkeletonProps) => {
     const theme = useTheme();
     const styles = React.useMemo(() => getSkeletonStyles(theme), [theme]);

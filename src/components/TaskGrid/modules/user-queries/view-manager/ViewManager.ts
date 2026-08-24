@@ -12,13 +12,12 @@ const ID_ATTRIBUTE = 'queryid';
 const NAME_ATTRIBUTE = 'name';
 const DESCRIPTION_ATTRIBUTE = 'description';
 
+/** Drives the *Manage views* dialog: a grid over the user's own views, with inline rename and delete. */
 export class ViewManager {
     private _taskGridDatasetControl: ITaskGridDatasetControl;
     private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _savedQueryDataProvider: ISavedQueryDataProvider;
     private _userQueryProvider: IUserQueryDataProvider;
-    //the synthetic entity this dialog's own grid runs on, projected from the views - not to be confused
-    //with _userQueryProvider, which is the real thing
     private _viewsDataProvider: MemoryDataProvider;
     private _datasetControl: IDatasetControl;
     private _shouldRemountOnDismiss: boolean = false;
@@ -28,7 +27,6 @@ export class ViewManager {
         this._taskGridDatasetControl = taskGridDatasetControl
         this._localizationService = taskGridDatasetControl.getLocalizationService();
         this._savedQueryDataProvider = taskGridDatasetControl.getSavedQueryDataProvider();
-        //the manager is only reachable from the module that owns this provider
         this._userQueryProvider = taskGridDatasetControl.getModule('userQueries').provider;
         this._viewsDataProvider = this._createViewsDataProvider();
         this._viewsDataProvider.setInterceptor('onRetrieveRecordCommand', (parameters, defaultAction) => this._onRetrieveRecordCommand(parameters, defaultAction));

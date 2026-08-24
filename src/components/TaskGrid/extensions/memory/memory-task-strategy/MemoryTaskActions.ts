@@ -24,12 +24,8 @@ import { MemoryTemplateDataProvider } from "../MemoryTemplateDataProvider";
 /** What every action that resolves a task by id needs. */
 interface IMemoryTaskLookup {
     /**
-     * Resolves the grid's record instance for a task — `provider.getRecordsMap()[taskId]`, which is
-     * keyed over every loaded record rather than the filtered view.
-     *
-     * The instance is what the actions want: `getNamedReference()` is the lookup value a child stores
-     * for it, `getValue()` returns the sanitized field value, and `getRawData()` hands back the very
-     * object in the consumer's array — so a write needs no second lookup.
+     * Resolves the grid's record instance for a task — `provider.getRecordsMap()[taskId]`, keyed over every
+     * loaded record rather than the filtered view.
      */
     onGetRecord: (taskId: string) => IRecord | undefined;
 }
@@ -74,7 +70,7 @@ export interface IMemoryTaskAvailableRelatedColumnsParams {
 export interface IMemoryTaskCreateParams extends ITaskCreateParams, IMemoryTaskStore {
     /** The active view's columns — every one of them starts out `null` on the new record. */
     columns: IColumn[];
-    /** (Optional) The consumer's field defaults for a new task. */
+    /** The consumer's field defaults for a new task. */
     onGetNewTaskDefaults?: (parentTaskId?: string) => Partial<IRawRecord>;
 }
 
@@ -92,7 +88,7 @@ export interface IMemoryTaskTemplateExpansionParams extends ITaskTemplateExpansi
     templateDataProvider: MemoryTemplateDataProvider;
     /** The active view's columns — the fields a template can carry over. */
     columns: IColumn[];
-    /** (Optional) The consumer's field defaults, applied under the template's own values. */
+    /** The consumer's field defaults, applied under the template's own values. */
     onGetNewTaskDefaults?: (parentTaskId?: string) => Partial<IRawRecord>;
 }
 
@@ -117,22 +113,20 @@ export interface IMemoryTaskSaveParams extends IMemoryTaskLookup {
 }
 
 /**
- * The behaviour behind `MemoryTaskStrategy`, as actions over the records and column names you pass in —
- * no state of its own, nothing resolved from a descriptor.
+ * The behaviour behind {@link MemoryTaskStrategy}, as static actions over the records and column names you
+ * pass in. Call these directly when you write a task strategy of your own and want the shipped semantics
+ * for part of it.
  *
- * The strategy is the thin part: it holds the records, the provider and the consumer's overrides, and
- * every one of its hooks is "call the override if there is one, otherwise call the action here". So each
- * override receives exactly the action's parameters and can forward them straight back to it:
+ * Each {@link IMemoryTaskStrategyParams} hook receives the matching action's exact parameters, so an
+ * override can forward them straight back.
  *
+ * @example
  * ```ts
  * onDeleteTasks: async params => {
  *     await audit(params.taskIds);
  *     return MemoryTaskActions.deleteTasks(params);
  * },
  * ```
- *
- * Call these directly when you write a task strategy of your own and want the shipped semantics for
- * part of it.
  */
 export class MemoryTaskActions {
     /**
@@ -143,7 +137,7 @@ export class MemoryTaskActions {
      * @returns `true` when the task counts as active.
      */
     public static isRecordActive(params: IMemoryTaskActivityParams): boolean {
-        //loose comparison on purpose: Field._sanitizeValue stringifies option-set values, so a
+        //loose comparison: Field._sanitizeValue stringifies option-set values, so a
         //statecode reads back as "0" rather than 0
         return params.record.getValue(params.nativeColumns.stateCode) == 0;
     }
@@ -167,8 +161,7 @@ export class MemoryTaskActions {
             }
         }
         //offered visible, whatever the views say: `isHidden` on a saved query column means "not in that
-        //view", and the Edit columns panel drops a column it is handed hidden - so passing the query
-        //definitions through unchanged is what made adding one appear to do nothing
+        //view", and the Edit columns panel drops a column it is handed hidden
         return [...columns.values()].map(column => ({ ...column, isHidden: false }));
     }
 
@@ -326,12 +319,9 @@ export class MemoryTaskActions {
 
     /**
      * The lookup value a task record stores for its parent: an entity-reference array under the plain
-     * column name.
+     * column name, taken from the parent's own `getNamedReference()`.
      *
-     * It is the parent's own {@link IRecord.getNamedReference}, so the id, the entity name and the
-     * display name all come from the grid rather than being assembled here. The name matters once the
-     * parent column is shown — without one the cell reads "(No Name)" — and it is a snapshot: renaming
-     * a parent does not rewrite the references its children hold.
+     * The display name is a snapshot — renaming a parent does not rewrite the references its children hold.
      */
     private static _getParentReference(parent: IRecord | undefined): ComponentFramework.EntityReference[] | null {
         return parent ? [parent.getNamedReference()] : null;

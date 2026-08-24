@@ -3,13 +3,13 @@ import { IDataverseLookupManyParameters } from "../DataverseTaskGridDescriptor";
 import { Liquid } from "liquidjs";
 
 /**
- * Builds the picker provider behind one lookup-many column from the column's own `FetchXml` binding —
- * the Dataverse counterpart to `MemoryLookupManyDataProviderFactory`.
+ * Builds the picker provider behind one lookup-many column from the column's own `FetchXml` binding.
  *
- * The query is a Liquid template resolved per row: `{{ task.* }}` is the record the cell sits on,
- * `{{ project.* }}` and `{{ currentRecord.* }}` the descriptor's project and source records, reached
- * through the `modules.onGetLookupManyModule` context:
+ * The query is a Liquid template resolved per row: `{{ task.* }}` is the record the cell sits on, and
+ * `{{ project.* }}` and `{{ currentRecord.* }}` are the descriptor's project and source records, reached
+ * through the `modules.onGetLookupManyModule` context.
  *
+ * @example
  * ```ts
  * onGetLookupManyModule: (context) => createLookupManyModule({
  *     createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({

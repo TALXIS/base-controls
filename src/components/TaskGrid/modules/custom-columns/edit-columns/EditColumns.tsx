@@ -8,8 +8,9 @@ import { OptionCommandBar } from '../option-command-bar/OptionCommandBar';
 import { SortableItemCommandBar } from '../sortable-item-command-bar/SortableItemCommandBar';
 
 /**
- * Only ever rendered by `Header.tsx` when the custom-columns module is registered, so unlike every other
- * reader of `getModules()` this one does not need the `?.` — the module is what put this component here.
+ * The Edit Columns panel with the custom-column commands wired in. A drop-in for the plain panel.
+ *
+ * Only rendered when the custom-columns module is registered, so it reads the module non-optionally.
  */
 export const EditColumns = (props: IEditColumnsProps) => {
     const localizationService = useLocalizationService();

@@ -13,6 +13,7 @@ interface ITaskGridHeaderProps {
     defaultRender: (props: IHeaderProps) => React.ReactElement;
 }
 
+/** The bar above the grid: the ribbon, the view switcher, quick find and the settings callout. */
 export const Header = (props: ITaskGridHeaderProps) => {
     const localizationService = useLocalizationService();
     const datasetControl = useDatasetControl();

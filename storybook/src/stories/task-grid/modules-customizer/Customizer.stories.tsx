@@ -7,7 +7,7 @@ import { CustomizerAgGridExample } from '../../../task-grid/CustomizerAgGridExam
 import { CustomizerRemoteSyncExample } from '../../../task-grid/CustomizerRemoteSyncExample'
 
 const meta = {
-    title: 'Task Grid/Customizations/Customizer',
+    title: 'Task Grid/Modules/Customizer',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -21,11 +21,13 @@ const meta = {
             },
             description: {
                 component: `
-The lowest level of customization the grid offers. Register an \`IGridCustomizerStrategy\` through the \`gridCustomizer\` module and you hold the AG Grid instance itself, plus the records behind it — so everything the grid does is reachable from here, cell renderers included, since a renderer is only \`colDef.cellRenderer\` on a column definition.
+The reference for the \`gridCustomizer\` module — the one module with no UI of its own. Register an \`IGridCustomizerStrategy\` through it and you hold the AG Grid instance itself, plus the records behind it, so everything the grid does is reachable from here: cell renderers included, since a renderer is only \`colDef.cellRenderer\` on a column definition.
+
+The other four modules, and how registering one works: [**Modules**](?path=/story/task-grid-modules--overview).
 
 [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview) is a convenience over exactly this: it swaps a renderer or an editor without a strategy, without you finding the right column definition, and while handing you the grid's own component to fall back on. Reach for the customizer when that is not enough — when you want a record's *behaviour* rather than its looks, or an ag-grid option TaskGrid never surfaces.
 
-Return \`createGridCustomizerModule({ strategy })\` from your descriptor's \`modules.onGetGridCustomizerModule\`, so no subclass is involved — the strategy below is the same on memory and on Dataverse.
+Register it with \`createGridCustomizerModule({ strategy })\`, so no subclass is involved — the strategy below is the same on memory and on Dataverse.
 
 The strategy gets three hooks:
 

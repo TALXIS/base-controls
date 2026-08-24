@@ -14,6 +14,10 @@ import { ErrorHelper } from "@utils/error-handling";
 
 const STATE_CODE_ACTIVE = 0;
 
+/**
+ * The {@link ITaskGridDatasetControl} implementation. Built by {@link TaskGridDatasetControlFactory},
+ * never constructed directly.
+ */
 export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> implements ITaskGridDatasetControl {
     private _dataset: IDataset;
     private _descriptor: ITaskGridDescriptor;
@@ -38,7 +42,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._savedQueryDataProvider = parameters.savedQueryDataProvider;
         this._state = parameters.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
-        //resolved by the factory, which calls onGetModules exactly once - never re-invoked from here
+        //resolved by the factory; onGetModules is never re-invoked from here
         this._modules = parameters.modules;
         this._getPcfContext = parameters.onGetPcfContext;
         this._loadState(parameters.state);
@@ -105,7 +109,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public getModule<TKey extends keyof ITaskGridModules>(key: TKey): NonNullable<ITaskGridModules[TKey]> {
         const module = this._modules[key];
         if (!module) {
-            throw new Error(`This TaskGridDatasetControl does not have the ${key} module. Return it from the descriptor's onGetModules to enable the feature.`);
+            throw new Error(`This TaskGridDatasetControl does not have the ${key} module. Register it through your descriptor's "modules" — or its "onGetModules" when the descriptor is your own.`);
         }
         return module as NonNullable<ITaskGridModules[TKey]>;
     }
@@ -122,7 +126,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public createLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider {
         const dataProvider = this._modules.lookupMany?.createDataProvider(parameters);
         if (!dataProvider) {
-            throw new Error(`Column "${parameters.column.name}" is marked as lookup-many, but no data provider was returned for it. Register a "lookupMany" module (createLookupManyModule) from your descriptor's "onGetModules".`);
+            throw new Error(`Column "${parameters.column.name}" is marked as lookup-many, but no data provider was returned for it. Register a lookup-many module (createLookupManyModule) through your descriptor's "modules".`);
         }
         return dataProvider;
     }

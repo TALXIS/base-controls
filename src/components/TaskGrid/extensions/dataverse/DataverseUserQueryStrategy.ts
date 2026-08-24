@@ -36,19 +36,18 @@ const _getFetchXml = (entityName: string, recordId?: string, ownerId?: string) =
 export interface IDataverseUserQueryStrategyParameters {
     /** Logical name of the entity whose queries are managed (used as `talxis_returnedtypecode`). */
     entityName: string;
-    /** Optional record ID used to scope queries to a specific record (`talxis_recordid`). When omitted, only queries with a null `talxis_recordid` are returned. */
+    /** Scopes queries to a specific record (`talxis_recordid`). When omitted, only unscoped queries are returned. */
     recordId?: string;
-    /** Optional owner ID used to filter queries by owner (`ownerid`). */
+    /** Filters queries by owner (`ownerid`). */
     ownerId?: string;
 }
 
 /**
  * Ready-to-use {@link IUserQueryStrategy} implementation for the Dataverse / Talxis platform.
  *
- * Persists personal views as `talxis_userquery` records, optionally scoped to a specific parent record
- * (`talxis_recordid`) and/or owner (`ownerid`) — so the environment needs that table. Return it from
- * it to `createUserQueryModule()` and return that from the descriptor's `modules.onGetUserQueriesModule`
- * to switch personal views on.
+ * Persists personal views as `talxis_userquery` records, optionally scoped to a parent record
+ * (`talxis_recordid`) and owner (`ownerid`), so the environment needs that table. Pass it to
+ * `createUserQueryModule()` and register the result as the user-queries module.
  */
 export class DataverseUserQueryStrategy extends FetchXmlDataProvider implements IUserQueryStrategy {
     private _recordId?: string;

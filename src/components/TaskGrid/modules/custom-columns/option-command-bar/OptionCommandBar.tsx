@@ -6,6 +6,7 @@ import { IOptionCommandBarProps, components } from "@components/DatasetControl/E
 import { useDatasetControl } from "@components/TaskGrid/context";
 
 
+/** Per-column commands in the Edit Columns catalogue: edit and delete a custom column. */
 export const OptionCommandBar = (props: IOptionCommandBarProps) => {
     const { column, context } = props;
     const { onEditColumn, onDeleteColumn } = useTaskGridEditColumns();

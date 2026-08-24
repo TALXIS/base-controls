@@ -7,12 +7,11 @@ import { withButtonLoading } from "@legacy";
 
 const CommandBarButton = withButtonLoading(CommandBarButtonBase);
 
+/** The view dropdown. Lists the personal views and their commands when the user-queries module is registered. */
 export const ViewSwitcher = () => {
     const localizationService = useLocalizationService();
     const datasetControl = useDatasetControl();
     const savedQueryDataProvider = datasetControl.getSavedQueryDataProvider();
-    //personal views exist only when the user-queries module was registered; its components come with it,
-    //so this file never imports a dialog
     const userQueriesModule = datasetControl.getModules().userQueries;
     const taskDataProvider = useTaskDataProvider();
     const systemQueries = savedQueryDataProvider.getSystemQueries();

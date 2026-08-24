@@ -5,6 +5,7 @@ import { getAddTaskButtonStyles } from "./styles";
 import { IRecord } from "@talxis/client-libraries";
 import { useDatasetControl, useLocalizationService, useTaskDataProvider, useTaskGridDescriptor } from "@components/TaskGrid/context";
 
+/** Trailing per-row button that adds a subtask, or expands a template beneath the row. */
 export const AddTaskButton = (props: ICellProps) => {
     const styles = React.useMemo(() => getAddTaskButtonStyles(), []);
     const record: IRecord = props.data;
@@ -39,8 +40,7 @@ export const AddTaskButton = (props: ICellProps) => {
             },
             onClick: () => { taskDataProvider.createTask(record.getRecordId()) }
         },
-        //the divider only makes sense with something templating below it - without the module this
-        //menu would otherwise end on a dangling separator
+        //the divider only makes sense with the templating commands below it
         ...(!templates ? [] : [{
             key: 'divider',
             itemType: ContextualMenuItemType.Divider

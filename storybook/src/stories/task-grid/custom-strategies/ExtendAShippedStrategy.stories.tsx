@@ -35,7 +35,7 @@ Subclass when you want to change several operations at once, hold state of your 
 
 ## Start with the params
 
-Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open, the grid customizer — and every optional feature: personal views, templates, custom columns and lookup-many candidates are all \`onCreate*\` parameters on **both** shipped descriptors. Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-custom-strategies--overview).
+Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open, the grid customizer — and every optional feature: personal views, templates, custom columns and lookup-many candidates are all **modules** on both shipped descriptors — see [**Modules**](?path=/story/task-grid-modules--overview). Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-custom-strategies--overview).
 
 ## Subclassing a task strategy
 
@@ -51,7 +51,7 @@ class MyTaskStrategy extends DataverseTaskStrategy {
 }
 \`\`\`
 
-The subclass takes the same two arguments as the original — \`{ onInitialize }\` and \`deps\` — and you return it from the descriptor's \`onCreateTaskStrategy\` parameter, no descriptor subclass required:
+The subclass takes the same two arguments as the original — \`{ onInitialize }\` and \`deps\` — and you return it from the \`onCreateTaskStrategy\` your \`onInitialize\` resolves, no descriptor subclass required:
 
 \`\`\`ts
 onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new MyTaskStrategy({
@@ -61,7 +61,7 @@ onCreateTaskStrategy: ({ deps, fetchXml, projectRecord, sourceRecord }) => new M
 
 ## Subclassing a descriptor
 
-Every optional feature — the strategies included — is already a parameter, so the reason to subclass a descriptor is narrow: you want to change a hook the parameters do not cover, or answer one from state only the subclass has. \`onGetFieldMapping\` and \`onLoadDependencies\` are the realistic candidates.
+Every optional feature — the strategies included — is already part of what \`onInitialize\` resolves, so the reason to subclass a descriptor is narrow: you want to change a hook the parameters do not cover, or answer one from state only the subclass has. \`onGetFieldMapping\` and \`onLoadDependencies\` are the realistic candidates.
 
 \`\`\`ts
 class MyDataverseDescriptor extends DataverseTaskGridDescriptor {
@@ -81,7 +81,7 @@ Overriding a hook the base class does not read is safe. Overriding one it does i
 ## What is actually overridable
 
 - **All strategy state is private.** Across \`extensions/\`, the only \`protected\` members are \`onCreateTemplateFromTask\` on the two template providers — the one member designed to be overridden. Everything else is either the public hook surface or private fields you cannot reach.
-- **The user-query and template strategies are the ones you replace by parameter, not by subclass.** \`MemoryUserQueryStrategy\`, \`DataverseUserQueryStrategy\` and \`MemoryTemplateDataProvider\` all use prototype methods, so subclassing them works normally — but returning your own implementation from the descriptor's \`onCreate*\` callback is usually less work than inheriting one.
+- **The user-query and template strategies are the ones you replace by parameter, not by subclass.** \`MemoryUserQueryStrategy\`, \`DataverseUserQueryStrategy\` and \`MemoryTemplateDataProvider\` all use prototype methods, so subclassing them works normally — but registering your own implementation as a module is usually less work than inheriting one.
 - **Neither descriptor exposes its resolved data.** What \`onInitialize\` returns is private in both, so a subclass that needs \`fetchXml\`, \`records\` or \`fieldMapping\` must keep the object it handed back, as in the snippet above.
 - **\`DataverseTaskStrategy\` takes a hook per operation, so most extensions are not a subclass at all**: \`onGetFormParameters\` rewrites the page input and navigation options for the create, edit, bulk-edit and open dialogs, and every other hook receives the parameters of the matching \`DataverseTaskActions\` method — forward them to keep the shipped behaviour.
 

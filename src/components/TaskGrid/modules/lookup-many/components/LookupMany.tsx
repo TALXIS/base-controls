@@ -7,6 +7,7 @@ import { LookupManyPropsContext } from './context';
 
 
 
+/** Props for {@link LookupMany}. */
 export interface ILookupManyProps {
     dataProvider: IDataProvider;
     selectedRecordHeight?: number;
@@ -17,8 +18,7 @@ export interface ILookupManyProps {
     onRecordOpen?: (record: ComponentFramework.EntityReference) => void;
 }
 
-//can be used as base for new lookup (is task grid independent)
-
+/** A multi-record picker over any `IDataProvider`. Independent of the task grid. */
 export const LookupMany = (props: ILookupManyProps) => {
     const { dataProvider, selectedRecords = [], isDisabled = false, onRecordSelect, onRecordOpen } = props;
     const components = { ...LookupManyComponents, ...props.components };

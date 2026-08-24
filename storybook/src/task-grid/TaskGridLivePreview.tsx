@@ -1,7 +1,13 @@
 import * as Babel from '@babel/standalone'
 import React from 'react'
-import { TaskGrid, useTaskDataProvider, useTaskGridDatasetControl } from '@talxis/base-controls'
+import {
+    TaskGrid, useTaskDataProvider, useTaskGridDatasetControl,
+    createUserQueryModule, createTemplateModule, createCustomColumnsModule,
+    createGridCustomizerModule, createLookupManyModule,
+    MemoryUserQueryStrategy, MemoryTemplateDataProvider, MemoryLookupManyDataProviderFactory,
+} from '@talxis/base-controls'
 import type { ITaskGridDescriptor } from '@talxis/base-controls'
+import { MemoryCustomColumnsStrategy } from './memoryCustomColumnsStrategy'
 import { Alert, Autocomplete, Avatar, AvatarGroup, Button, Chip, LinearProgress, Menu, MenuItem, Popover, Rating, Slider, Snackbar, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import DoneAllIcon from '@mui/icons-material/DoneAll'
@@ -21,6 +27,8 @@ interface ITaskGridLivePreviewProps {
     pcfContext: ComponentFramework.Context<any>
     /** Receives the `gridCustomizerStrategy` the snippet defined, if it defined one. */
     onGridCustomizerStrategy?: (strategy: any) => void
+    /** Receives the `getModules` factory the snippet defined, if it defined one. */
+    onGetModules?: (getModules: any) => void
     onError?: (error: string | null) => void
 }
 
@@ -67,10 +75,20 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 'TextField',
                 'Tooltip',
                 'Typography',
+                'createUserQueryModule',
+                'createTemplateModule',
+                'createCustomColumnsModule',
+                'createGridCustomizerModule',
+                'createLookupManyModule',
+                'MemoryUserQueryStrategy',
+                'MemoryTemplateDataProvider',
+                'MemoryLookupManyDataProviderFactory',
+                'MemoryCustomColumnsStrategy',
                 `${transformed}
                  return {
                    Component: typeof TaskGridExample !== "undefined" ? TaskGridExample : null,
                    strategy: typeof gridCustomizerStrategy !== "undefined" ? gridCustomizerStrategy : undefined,
+                   getModules: typeof getModules !== "undefined" ? getModules : undefined,
                  };`,
             )
 
@@ -105,11 +123,20 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 TextField,
                 Tooltip,
                 Typography,
-            ) as { Component: React.ComponentType | null; strategy?: any }
+                createUserQueryModule,
+                createTemplateModule,
+                createCustomColumnsModule,
+                createGridCustomizerModule,
+                createLookupManyModule,
+                MemoryUserQueryStrategy,
+                MemoryTemplateDataProvider,
+                MemoryLookupManyDataProviderFactory,
+                MemoryCustomColumnsStrategy,
+            ) as { Component: React.ComponentType | null; strategy?: any; getModules?: any }
 
-            return { Component: result.Component, strategy: result.strategy, error: null as string | null }
+            return { Component: result.Component, strategy: result.strategy, getModules: result.getModules, error: null as string | null }
         } catch (error) {
-            return { Component: null, strategy: undefined, error: (error as Error).message }
+            return { Component: null, strategy: undefined, getModules: undefined, error: (error as Error).message }
         }
         //the descriptor and context are stable for the life of the story, so the code is the only trigger
     }, [props.code])
@@ -118,8 +145,9 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
         props.onError?.(compiled.error)
     }, [compiled.error])
 
-    //handed over before the grid mounts, because the customizer strategy is resolved on mount
+    //handed over before the grid mounts, because both are resolved on mount
     props.onGridCustomizerStrategy?.(compiled.strategy)
+    props.onGetModules?.(compiled.getModules)
 
     if (compiled.error) {
         return <pre>{compiled.error}</pre>

@@ -33,19 +33,8 @@ import {
  * Constructor parameters for {@link DataverseTaskStrategy}: the required `onInitialize` hook, and an
  * optional hook per operation.
  *
- * Every optional hook overrides one of the strategy's own, and receives exactly the parameters the
- * matching {@link DataverseTaskActions} action takes — so an override that only needs to do something
- * *around* the shipped behaviour can forward them straight back to it:
- *
- * ```ts
- * onDeleteTasks: async params => {
- *     await audit(params.taskIds);
- *     return DataverseTaskActions.deleteTasks(params);
- * },
- * ```
- *
- * The same shape `MemoryTaskStrategy` uses, so switching between the two is a matter of the data source
- * rather than the wiring.
+ * Each optional hook replaces the matching {@link DataverseTaskActions} action and receives its exact
+ * parameters, so an override can forward them straight back to it.
  */
 export interface IDataverseTaskStrategyParams {
     /**
@@ -182,7 +171,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     private _lookupManyHandlers: { [colName: string]: LookupManyHandler } = {};
 
 
-    /** @param params — see {@link IDataverseTaskStrategyParams} for full documentation of each option. */
     constructor(params: IDataverseTaskStrategyParams, deps: ITaskStrategyDeps) {
         this._params = params;
         this._customColumnsDataProvider = deps.customColumnsDataProvider;
@@ -191,7 +179,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     public async onInitialize(provider: ITaskDataProvider): Promise<{ columns: IColumn[]; rawData: IRawRecord[]; metadata: any; }> {
-        //called directly - there is no default to fall back to, so nothing here belongs in the actions
         const dependencies = await this._params.onInitialize();
         this._fetchXml = dependencies.fetchXml;
         this._projectRecord = dependencies.projectRecord;

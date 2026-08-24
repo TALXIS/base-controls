@@ -20,20 +20,23 @@ import { LocalizationService } from "@utils";
 import { useTaskGridEvents } from "./useTaskGridEvents";
 import { IDataProviderEventListeners, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 
+/** Props for {@link TaskGrid}. */
 export interface ITaskGridProps {
     //should be replaced by Context API in future
     pcfContext: ComponentFramework.Context<any, any>;
+    /** Supplies every strategy and module the grid runs on. See {@link ITaskGridDescriptor}. */
     taskGridDescriptor: ITaskGridDescriptor;
+    /** Overrides for any subset of the UI strings. See {@link ITaskGridLabels}. */
     labels?: Partial<ITaskGridLabels>;
+    /** Overrides for any subset of the replaceable components. See {@link ITaskGridComponents}. */
     components?: Partial<ITaskGridComponents>;
     /**
      * Called with the control and its task data provider once mounted, and again for every rebuilt pair —
-     * the grid recreates both when a view changes or a record is saved. This is the way in to everything
-     * imperative: the task operations and `taskEvents`, the saved queries, the selection. The provider is
-     * the same instance as `control.getDataset().getDataProvider()`, handed over already typed.
+     * the grid recreates both when a view changes or a record is saved. The way in to everything
+     * imperative: the task operations and `taskEvents`, the saved queries, the selection.
      *
-     * The dataset refresh is kicked off just before this, not awaited, so the records are not loaded yet.
-     * Subscribe to the data provider's own events (`onLoading`, `onBeforeFirstDataLoaded`) for that moment.
+     * The dataset refresh is kicked off just before this and not awaited, so the records are not loaded
+     * yet. Subscribe to the provider's `onLoading` or `onBeforeFirstDataLoaded` for that moment.
      */
     onReady?: (control: ITaskGridDatasetControl, taskDataProvider: ITaskDataProvider) => void;
     /**
@@ -88,7 +91,13 @@ interface IInternalTaskGridProps extends ITaskGridProps {
     onRemountRequested: () => void;
 }
 
-//serves for keeping track of lifecycle
+/**
+ * A hierarchical task grid. Everything it reads and writes comes from the descriptor, so this component
+ * takes no data of its own.
+ *
+ * Builds a control instance from the descriptor, showing the skeleton until it resolves, and rebuilds it
+ * whenever the grid asks for a remount — a view change or a record save.
+ */
 export const TaskGrid = (props: ITaskGridProps) => {
     const { taskGridDescriptor } = props;
     const stateRef = useRef<ITaskGridState>({});

@@ -1,30 +1,24 @@
 import { LexoRank } from "lexorank";
 
 /**
- * The lexicographic rank scheme both shipped task strategies order by — a string per task, chosen so a
- * reorder rewrites one record instead of renumbering the list.
+ * The lexicographic rank scheme both shipped task strategies order by — a string per task, so a reorder
+ * rewrites one record instead of renumbering the list.
  *
- * Nothing in the grid requires it. The data provider resolves *which records* an operation lands between
- * and hands them over as `previousStackRank` / `nextStackRank`; how order is expressed is the strategy's
- * decision. Call this when you want the shipped scheme:
+ * Nothing in the grid requires it: the provider resolves which records an operation lands between, and how
+ * order is expressed is the strategy's own decision.
  *
+ * @example
  * ```ts
  * onMoveTask: async params => {
  *     const stackRank = StackRank.between(params.previousStackRank, params.nextStackRank);
  *     …
  * }
  * ```
- *
- * A strategy that orders by a server sequence or a numeric column simply never imports it, and
- * `lexorank` stays out of its bundle.
  */
 export class StackRank {
     /**
-     * A rank that sorts strictly between two neighbours.
-     *
-     * Both given: bisected between them, so it can never equal either. One given: a step beyond it —
-     * safe, because there is no neighbour on the other side to collide with. Neither: the middle of the
-     * range, for the first record in a list.
+     * A rank that sorts strictly between two neighbours. With one neighbour, a step beyond it; with
+     * neither, the middle of the range.
      */
     public static between(previousRank?: string | null, nextRank?: string | null): string {
         if (previousRank && nextRank) {
@@ -40,11 +34,9 @@ export class StackRank {
     }
 
     /**
-     * Compares two ranks the way the grid sorts them, for ordering a sibling list yourself. Records with
-     * no rank sort last.
+     * Compares two ranks the way the grid sorts them. Records with no rank sort last.
      *
-     * @returns A negative number when `previousRank` sorts first, positive when it sorts later, `0` when
-     * they are equivalent.
+     * @returns Negative when `previousRank` sorts first, positive when it sorts later, `0` when equivalent.
      */
     public static compare(previousRank?: string | null, nextRank?: string | null): number {
         if (!previousRank || !nextRank) {

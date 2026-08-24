@@ -1,32 +1,38 @@
 import { DataTypes, IColumn } from "@talxis/client-libraries";
-//the types-only reference to the module - core depends on the type only, never the module's value exports
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
-//the contract only - the implementation lives in the user-queries module
 import { IUserQueryDataProvider } from "@components/TaskGrid/modules/interfaces";
 
 
+/** Per-view outcome of deleting personal views. */
 export type IDeletedUserQueriesResult = { success: true; deletedQueryIds: string[] } | { success: false; deletedQueryIds: string[]; errors: { queryId: string; error: any }[] };
 
 
+/** A view: its identity, plus the columns, sorting and filtering it applies. */
 export interface ISavedQuery extends ISavedQueryMetadata {
     id: string;
+    /** Shown in the view switcher. */
     name: string;
     description?: string;
 }
 
+/** What a view applies to the grid. */
 export interface ISavedQueryMetadata {
+    /** The columns to show, in order. Also the grid's column catalogue when the view is a system one. */
     columns: IColumn[]
     sorting?: ComponentFramework.PropertyHelper.DataSetApi.SortStatus[];
     filtering?: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression;
     linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[];
+    /** Opens the view as a flat list instead of a tree. */
     isFlatListEnabled?: boolean;
     searchQuery?: string | undefined;
+    /** The columns quick find searches. */
     quickFindColumns?: string[];
 }
 
+/** Name of the virtual column holding each task's root-to-self path. */
 export const PATH_COLUMN_NAME = 'path__virtual';
 const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'stateCode'];
 
@@ -85,6 +91,10 @@ interface ISavedQueryDataProviderParameters {
     preferredQuery?: Partial<ISavedQuery> & { id: string };
 }
 
+/**
+ * Serves the grid's views: the system ones from the descriptor's strategy, and the user's own from the
+ * user-queries module when it is registered.
+ */
 export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _strategy: ISavedQueryStrategy
     private _userQueryProvider?: IUserQueryDataProvider;
@@ -228,7 +238,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _parseSavedQueryMetadata(metadata: ISavedQueryMetadata): ISavedQueryMetadata {
         const parsed = metadata;
 
-        // Enrich partial column definitions with full definitions from system queries
         let columns = parsed.columns.map(col => {
             const systemCol = this._systemQueriesColumnsMap.get(col.name);
             return systemCol ? { ...systemCol, ...col, metadata: { ...systemCol.metadata, ...col.metadata } } : col;

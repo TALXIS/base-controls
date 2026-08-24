@@ -4,6 +4,7 @@ import { useTheme } from '@fluentui/react';
 import { useColorfulLookupManyProps } from '@components/TaskGrid/modules/lookup-many/components/colorful-lookup-many/context';
 import { getOptionStyles } from './styles';
 
+/** A candidate record as a coloured tag. */
 export const Option = (props: OptionProps<ComponentFramework.EntityReference, boolean, any>) => {
     const theme = useTheme();
     const { colorPropertyName = 'color' } = useColorfulLookupManyProps();

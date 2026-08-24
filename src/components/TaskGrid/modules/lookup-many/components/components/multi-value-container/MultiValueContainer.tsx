@@ -9,6 +9,7 @@ interface IMultiValueProps extends MultiValueGenericProps<ComponentFramework.Ent
     className?: string;
 }
 
+/** Wraps one selected record in a lookup-many cell. */
 export const MultiValueContainer = ({ children, innerProps, selectProps, className }: IMultiValueProps) => {
     const theme = useTheme();
     const props = useLookupManyProps();

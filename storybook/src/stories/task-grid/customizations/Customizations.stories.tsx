@@ -18,9 +18,9 @@ const meta = {
             },
             description: {
                 component: `
-The grid is customized at four levels, in rough order of how often you will reach for them: **feature flags**, **column metadata**, **the grid customizer**, and **replaceable UI**.
+This page is about tuning a grid whose features you have already chosen: **feature flags**, **column metadata**, **labels**, and **replaceable UI**. All four are independent of which strategy you use.
 
-Everything on this page is independent of which strategy you use.
+*Which* features exist at all is a separate axis, and it belongs to [**Modules**](?path=/story/task-grid-modules--overview). The short version: a flag decides whether a feature's UI is shown, a module decides whether the feature exists, and both have to be in place.
 
 ## Feature flags
 
@@ -46,14 +46,14 @@ Grouped by what they control:
 | Editing | \`enableTaskEditing\`, \`enableTaskCreation\`, \`enableInlineCreation\`, \`enableTaskDeletion\` |
 | Ordering | \`enableRowDragging\`, \`enableSorting\`, \`enableFiltering\` |
 | Views | \`enableViewSwitcher\` — the personal-view commands are options on the user-queries module instead, see below |
-| Columns | \`enableEditColumns\`, \`enableEditColumnsScopeSelector\`, \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\` |
+| Columns | \`enableEditColumns\`, \`enableEditColumnsScopeSelector\` |
 | Display | \`enableShowHierarchyToggle\`, \`enableHideInactiveTasksToggle\`, \`enableNavigation\`, \`rowHeight\`, \`agGridLicenseKey\` |
 
 A few interact with each other: \`enableRowDragging\` is suppressed automatically in flat-list mode or when sorting by a non-rank column, and the personal-view commands only appear once \`enableViewSwitcher\` is on.
 
-Every flag defaults to \`false\`, so a feature missing from the ribbon is usually one of two things: its flag was left out of \`onGetGridParameters\`, or the optional descriptor hook that enables it returned nothing.
+Every flag defaults to \`false\`, so a feature missing from the ribbon is one of two things: its flag was left out of \`onGetGridParameters\`, or the module that provides it was never registered.
 
-Whether a feature exists at all is decided by the module returned from a builder on \`modules\` — \`onGetTemplatesModule\`, \`onGetUserQueriesModule\`, \`onGetCustomColumnsModule\`. Supplying the module is the switch, which is also what keeps its code and its UI out of your bundle.\n\nPersonal views take that one step further: because \`createUserQueryModule\` carries the view manager and the save dialogs, its three commands are **options on the module**, not grid parameters — so a grid that never registers it does not ship that UI at all.\n\n\`\`\`ts\nmodules: {\n    onGetUserQueriesModule: () => createUserQueryModule({\n        strategy: new MemoryUserQueryStrategy({ userQueries }),\n        enableQueryManager: true,\n        enableSaveAsNewQuery: true,\n        enableSaveQueryChanges: true,\n    }),\n},\n\`\`\`
+Six \`enable*\` options are deliberately **not** on this list — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\`, \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\`. They live on \`createUserQueryModule\` and \`createCustomColumnsModule\`, because the commands they gate arrive with those modules. See [**Modules**](?path=/story/task-grid-modules--overview).
 
 ## Column metadata
 
@@ -75,13 +75,11 @@ Most per-column behaviour comes from the column definitions your strategy return
 }
 \`\`\`
 
-A column renders as a picker whenever \`metadata.LookupMany\` is set **and** a \`lookupMany\` module is registered — no customizer needed. Its candidates come from that module's \`createDataProvider\` (\`createLookupManyModule({ createDataProvider })\` returned from \`modules.onGetLookupManyModule\`), and each extension ships a factory that builds the provider for you: \`MemoryLookupManyDataProviderFactory\` from records you hold, \`DataverseLookupManyDataProviderFactory\` from the column's own \`FetchXml\` binding. Both are visible in the grid below on the **Assigned To** and **Tags** columns.
+A column renders as a picker whenever \`metadata.LookupMany\` is set **and** the \`lookupMany\` module is registered — no customizer needed. Each extension ships a factory for the candidates: \`MemoryLookupManyDataProviderFactory\` from records you hold, \`DataverseLookupManyDataProviderFactory\` from the column's own \`FetchXml\` binding. Both columns are live in the grid below — **Assigned To** and **Tags**. Registering the module: [**Modules → lookupMany**](?path=/story/task-grid-modules--overview).
 
-## The grid customizer
+## Going lower
 
-The lowest level the grid offers: register an \`IGridCustomizerStrategy\` through \`createGridCustomizerModule({ strategy })\` returned from \`modules.onGetGridCustomizerModule\`, and you hold the AG Grid instance and the records behind it. Anything the grid does is reachable from there — cell renderers included, since a renderer is just \`colDef.cellRenderer\`.
-
-It has its own page, with live examples of validation, conditional formatting and reaching the ag-grid api directly: [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
+When metadata is not enough, the \`gridCustomizer\` module hands you the AG Grid instance itself — column definitions, row class rules, formatting expressions, the api. It has its own page, with live examples: [**Modules → Customizer**](?path=/story/task-grid-modules-customizer--overview).
 
 ## Labels and localization
 
@@ -99,7 +97,7 @@ Pass a \`labels\` prop to override any subset of the UI strings. Some support Li
 />
 \`\`\`
 
-Any key you omit keeps its English default. The full set — around 150 keys — is \`ITaskGridLabels\`.
+Any key you omit keeps its English default. \`ITaskGridLabels\` is the full set.
 
 ## Replaceable UI
 

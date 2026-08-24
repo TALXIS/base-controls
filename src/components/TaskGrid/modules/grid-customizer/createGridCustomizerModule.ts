@@ -1,20 +1,23 @@
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
 import { IGridCustomizerModule } from "../interfaces";
 
+/** Options for {@link createGridCustomizerModule}. */
 export interface IGridCustomizerModuleOptions {
     /** Hooks into the grid's core behaviour: column definitions, row class rules, one-time init. */
     strategy: IGridCustomizerStrategy;
 }
 
 /**
- * Registers a strategy that hooks into the grid's own AG Grid instance.
+ * Builds the grid-customizer module from a strategy that hooks into the grid's own AG Grid instance.
  *
- * Return it from the descriptor's `onGetModules` to enable it.
+ * Assign it to a `modules` key — `modules.onGetGridCustomizerModule` on a shipped descriptor, or
+ * `onGetModules` on a descriptor of your own.
  *
+ * @example
  * ```ts
- * onGetModules: () => ({
- *     gridCustomizer: createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy() }),
- * })
+ * modules: {
+ *     onGetGridCustomizerModule: () => createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy() }),
+ * }
  * ```
  */
 export const createGridCustomizerModule = (options: IGridCustomizerModuleOptions): IGridCustomizerModule => ({

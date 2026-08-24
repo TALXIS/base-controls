@@ -3,6 +3,7 @@ import { Icon, useTheme } from '@fluentui/react';
 import { MultiValueRemoveProps } from 'react-select';
 import { getMultiValueRemoveStyles } from './styles';
 
+/** The remove button on a selected record. */
 export const MultiValueRemove = ({ innerProps, selectProps }: MultiValueRemoveProps<ComponentFramework.EntityReference, boolean, any>) => {
     const theme = useTheme();
     const styles = React.useMemo(() => getMultiValueRemoveStyles(theme), [theme]);

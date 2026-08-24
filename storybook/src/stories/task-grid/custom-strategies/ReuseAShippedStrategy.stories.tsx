@@ -52,7 +52,7 @@ The two optional members are present exactly when you implemented the matching d
 
 ## Dataverse data, in-memory views
 
-The most useful mix, and the escape hatch when \`talxis_userquery\` is not deployed: real tasks over the Web API, personal views that live for the session only. No custom descriptor needed — the shipped one takes the strategy as a parameter.
+The most useful mix, and the escape hatch when \`talxis_userquery\` is not deployed: real tasks over the Web API, personal views that live for the session only. No custom descriptor needed — the shipped one takes the module.
 
 \`\`\`ts
 //kept outside the callback: it runs per control instance, and this array is the store
@@ -64,23 +64,23 @@ const descriptor = new DataverseTaskGridDescriptor({
         fieldMapping: FIELD_MAPPING,
         systemQueries: SYSTEM_QUERIES,
         gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
+        //personal views in memory, tasks in Dataverse. Importing createUserQueryModule is what brings
+        //the view manager and the save dialogs along with the strategy
+        modules: {
+            onGetUserQueriesModule: () => createUserQueryModule({
+                strategy: new MemoryUserQueryStrategy({ userQueries }),
+                enableQueryManager: true,
+            }),
+        },
     }),
-    //personal views in memory, tasks in Dataverse. Importing createUserQueryModule is what brings the
-    //view manager and the save dialogs along with the strategy
-    modules: {
-        onGetUserQueriesModule: () => createUserQueryModule({
-            strategy: new MemoryUserQueryStrategy({ userQueries }),
-            enableQueryManager: true,
-        }),
-    },
 })
 \`\`\`
 
-Note what is *not* here: no \`onGetCustomColumnsModule\`, so nothing reads \`talxis_attributedefinition\` and custom columns are off. Every optional feature works this way — the builder you leave out is the code you do not ship.
+Note what is *not* here: no \`onGetCustomColumnsModule\`, so nothing reads \`talxis_attributedefinition\` and custom columns are off. Every optional feature works this way — the builder you leave out is the code you do not ship. See [**Modules**](?path=/story/task-grid-modules--overview).
 
 ## Your own loader on MemoryTaskStrategy
 
-If your data can be held in memory, you do not need a new task strategy at all. \`MemoryTaskStrategy\`'s one required hook is an async loader, so point it at your own data and keep everything else — from a descriptor of your own, or through \`MemoryTaskGridDescriptor\`'s \`onCreateTaskStrategy\` parameter:
+If your data can be held in memory, you do not need a new task strategy at all. \`MemoryTaskStrategy\`'s one required hook is an async loader, so point it at your own data and keep everything else — from a descriptor of your own, or through the \`onCreateTaskStrategy\` \`MemoryTaskGridDescriptor\`'s \`onInitialize\` resolves:
 
 \`\`\`ts
 onCreateTaskStrategy: ({ deps }) => new MemoryTaskStrategy({

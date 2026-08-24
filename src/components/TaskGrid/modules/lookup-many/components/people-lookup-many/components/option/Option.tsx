@@ -4,6 +4,7 @@ import { Persona, PersonaSize } from '@fluentui/react';
 import { usePeopleLookupManyProps } from '@components/TaskGrid/modules/lookup-many/components/people-lookup-many/context';
 import { getOptionStyles } from './styles';
 
+/** A candidate record as a persona. */
 export const Option = (props: OptionProps<ComponentFramework.EntityReference, boolean, any>) => {
     const { imageUrlPropertyName = 'imageurl' } = usePeopleLookupManyProps();
     const styles = React.useMemo(() => getOptionStyles(), []);

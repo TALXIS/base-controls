@@ -6,12 +6,12 @@ import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/clie
  */
 export interface IMemoryEntitySource {
     /**
-     * The records. **This array is the store** — it is written into, not copied: creating, deleting,
-     * editing and moving mutates it in place, the way those operations would hit a server.
+     * The records. How much of a write reaches this array depends on what consumes it: the template
+     * provider appends to it, a lookup-many provider only ever reads a copy of it, and the task provider
+     * writes edits and moves through to these record objects while keeping creations and deletions in a
+     * copy of its own.
      *
-     * That is what makes the data outlive the grid's remounts, so hold on to the array for as long as
-     * the session should last. Pass a `structuredClone` of a shared fixture if you need two grids to
-     * stay independent.
+     * Pass a `structuredClone` of a shared fixture if two grids need to stay independent.
      */
     records: IRawRecord[];
     /** Column definitions, including hidden ones (primary id, parent lookup, stack rank, state code). */

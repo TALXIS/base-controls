@@ -82,7 +82,6 @@ export class LookupManyHandler implements ILookupManyHandler {
     private _entityName: string;
     private _navigationPropertyName: string;
 
-    /** @param params — see {@link ILookupManyHandlerParameters}. */
     constructor(params: ILookupManyHandlerParameters) {
         this._navigationPropertyName = params.navigationPropertyName;
         this._entityName = params.entityName;

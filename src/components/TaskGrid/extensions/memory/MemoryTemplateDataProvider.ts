@@ -33,11 +33,9 @@ interface ITemplateCaptureContext {
 export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryDataProvider) {
     private _params: IMemoryTemplateDataProviderParams;
 
-    /** @param params — see {@link IMemoryTemplateDataProviderParams}. */
     constructor(params: IMemoryTemplateDataProviderParams) {
         super({
-            //a copy of the array holding the same records: MemoryDataProvider swaps its internal
-            //array on delete, so it must not be handed the one we persist
+            //a copy: MemoryDataProvider swaps its internal array on delete
             dataSource: [...params.templates.records],
             metadata: params.templates.metadata,
         });
@@ -82,11 +80,10 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
     }
 
     /**
-     * Captures a task's subtree as template nodes, depth-first, in display order. Every visible column
-     * is carried over, so whatever the user can see on a task is what the template reproduces.
+     * Captures a task's subtree as template nodes, depth-first, carrying over every visible column.
      *
-     * The children come from the complete hierarchy rather than the rendered one: a template is data, and
-     * capturing one while a quick find is active should not quietly drop the subtasks it hides.
+     * The children come from the complete hierarchy, so an active quick find does not drop the subtasks it
+     * hides.
      */
     private _buildTemplateNodes(task: IRecord, context: ITemplateCaptureContext): IMemoryTaskTemplateNode[] {
         const children = context.recordTree.structure.getChildren(task.getRecordId());
@@ -99,11 +96,7 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
         });
     }
 
-    /**
-     * Everything the capture needs, taken off the task itself: the hierarchy of the grid it belongs
-     * to, so the children keep the displayed order, and its non-hidden columns — what the user can see
-     * is what a template reproduces.
-     */
+    /** Everything the capture needs, taken off the task itself: its grid's hierarchy and its visible columns. */
     private _getCaptureContext(task: IRecord): ITemplateCaptureContext {
         return {
             recordTree: (task.getDataProvider() as ITaskDataProvider).getRecordTree(),

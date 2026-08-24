@@ -3,6 +3,7 @@ import { MultiValueContainer as NativeMultiValueContainer } from '@components/Ta
 import { getMultiValueContainerStyles } from './styles';
 import { useMemo } from 'react';
 
+/** A selected record as a persona. */
 export const MultiValueContainer = (props: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
     const styles = useMemo(() => getMultiValueContainerStyles(props.selectProps.isDisabled), [props.selectProps.isDisabled]);
     return (

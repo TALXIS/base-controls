@@ -1,32 +1,13 @@
 import { IEventEmitter } from "@talxis/client-libraries";
-//`import type`: the descriptor contract is core, and reused rather than redeclared here
 import type { IDataProvider } from "@talxis/client-libraries";
 import type { ILookupManyDataProviderParameters } from "@components/TaskGrid/interfaces";
 import { IDeletedUserQueriesResult, ISavedQuery } from "@components/TaskGrid/providers/saved-query";
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
-//the types-only file, never the providers/template barrel - that one also exports the
-//TemplateDataProviderBase mixin, a value
 import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/TemplateDataProvider";
-//the types-only file, never the providers/custom-columns barrel - that one also exports the
-//CustomColumnsDataProvider class, a value
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
-//`import type`, not a plain import: this file (unlike EditColumns.tsx) must never carry a runtime
-//edge to the base panel component, only to its prop type
 import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
-//`import type`: GridCustomizer.ts is core and stays core - this file must only ever depend on its
-//strategy type, never the class itself
 import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
-//`import type`: the cell renderer contract is core, reused rather than redeclared here
 import type { ICellProps } from "@components/Grid/cells/cell/Cell";
-
-/**
- * The contract between the grid and its optional feature modules.
- *
- * **This file must never import a component.** It is what lets the grid describe a feature it does not
- * ship: core declares the shape, the module implements it, and the static dependency arrow points one way
- * only — module to core. A value import here would put a module's UI into the graph of every file that
- * touches `ITaskGridDescriptor`, which is exactly what registering features this way is meant to avoid.
- */
 
 /** Lifecycle events for the personal-views operations. */
 export interface IUserQueryDataProviderEvents {
@@ -52,11 +33,9 @@ export interface ICreateUserQueryParams {
 /**
  * An `IUserQueryStrategy` wrapped with everything the grid needs around it: the lifecycle events, error
  * handling, the cached list, and the capture of the grid's state into a view.
- *
- * Deliberately **not** an `IDataProvider` — none of that surface applies to a handful of saved views.
  */
 export interface IUserQueryDataProvider {
-    /** Lifecycle events. Never fires when the module is not registered, because there is no provider. */
+    /** Lifecycle events. */
     events: IEventEmitter<IUserQueryDataProviderEvents>;
     /** The views loaded by the last `refresh`, minus any deleted since. */
     getQueries: () => ISavedQuery[];
@@ -81,7 +60,7 @@ export interface IUserQueryDialogProps {
     onDismiss: () => void;
 }
 
-/** Every component the personal-views UI needs. Whatever renders it retrieves what it needs from here. */
+/** Every component the personal-views UI needs. */
 export interface IUserQueryComponents {
     /** The *Manage views* dialog. */
     ViewManager: React.ComponentType<IUserQueryDialogProps>;
@@ -91,12 +70,10 @@ export interface IUserQueryComponents {
 
 /**
  * What the user-queries module contributes: the personal-views implementation, the UI that drives it, and
- * which of the view commands are offered.
- *
- * Built by `createUserQueryModule()` — never written by hand.
+ * which of the view commands are offered. Built by {@link createUserQueryModule}.
  */
 export interface IUserQueryModule {
-    /** The personal-views implementation, wrapped by `createUserQueryModule`. */
+    /** The personal-views implementation. */
     provider: IUserQueryDataProvider;
     /** The module's UI. */
     components: IUserQueryComponents;
@@ -120,7 +97,7 @@ export interface ITemplateComponents {
     TemplateSelector: React.ComponentType<ITemplateSelectorProps>;
 }
 
-/** What the templates module contributes. Built by `createTemplateModule()` — never written by hand. */
+/** What the templates module contributes. Built by {@link createTemplateModule}. */
 export interface ITemplateModule {
     /** Where templates are read from and captured to. Also the picker's data source. */
     provider: ITemplateDataProvider;
@@ -128,20 +105,16 @@ export interface ITemplateModule {
     components: ITemplateComponents;
 }
 
-/**
- * The Edit Columns panel, with the custom-column commands wired in. `IEditColumnsProps` is the base
- * panel's own prop type — reused rather than redeclared, so this component is a drop-in replacement for
- * the plain panel: `Header.tsx` calls whichever one it has with the same props.
- */
+/** The Edit Columns panel, with the custom-column commands wired in. A drop-in for the plain panel. */
 export interface ICustomColumnsComponents {
     EditColumns: React.ComponentType<IEditColumnsProps>;
 }
 
-/** What the custom-columns module contributes. Built by `createCustomColumnsModule()` — never written by hand. */
+/** What the custom-columns module contributes. Built by {@link createCustomColumnsModule}. */
 export interface ICustomColumnsModule {
-    /** The custom-columns implementation. This is the swap point. */
+    /** The custom-columns implementation — where column definitions and values are stored. */
     provider: ICustomColumnsDataProvider;
-    /** The module's UI: the three overrides the generic Edit Columns panel accepts. */
+    /** The module's UI. */
     components: ICustomColumnsComponents;
     /** Show the "Create Custom Column" command. Defaults to `false`. */
     enableCustomColumnCreation?: boolean;
@@ -151,35 +124,33 @@ export interface ICustomColumnsModule {
     enableCustomColumnDeletion?: boolean;
 }
 
-/** What the grid-customizer module contributes. Built by `createGridCustomizerModule()` — never written by hand. */
+/** What the grid-customizer module contributes. Built by {@link createGridCustomizerModule}. */
 export interface IGridCustomizerModule {
     /** Hooks into the grid's core behaviour: column definitions, row class rules, one-time init. */
     strategy: IGridCustomizerStrategy;
 }
 
-/** Every component the lookup-many module needs. Whatever renders it retrieves what it needs from here. */
+/** Every component the lookup-many module needs. */
 export interface ILookupManyComponents {
     /** The cell renderer `GridCustomizer` assigns to any column carrying `metadata.LookupMany`. */
     CellRenderer: React.ComponentType<ICellProps>;
 }
 
-/** What the lookup-many module contributes. Built by `createLookupManyModule()` — never written by hand. */
+/** What the lookup-many module contributes. Built by {@link createLookupManyModule}. */
 export interface ILookupManyModule {
     /**
-     * Returns the candidate records for a lookup-many cell. Called once per lookup-many cell rendered —
-     * `record` and `column` vary on every call, unlike every other module's contents. Return `undefined`
-     * for a column you do not serve and the grid throws when that column renders.
+     * Returns the candidate records for a lookup-many cell. Called once per cell rendered, since the
+     * candidates may depend on the row. Return `undefined` for a column you do not serve and the grid
+     * throws when that column renders.
      */
     createDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider | undefined;
-    /** The module's UI: the cell renderer and the picker variants it chooses between. */
+    /** The module's UI. */
     components: ILookupManyComponents;
 }
 
 /**
- * The modules a grid runs with, one optional key per available feature.
- *
- * A key is filled by importing that module's create method and calling it, which is also what puts its code
- * in your bundle — omit the key and neither the feature nor its UI exists.
+ * The modules a grid runs with, one optional key per available feature. A key is filled by calling that
+ * module's `create*Module` builder; omit it and neither the feature nor its UI exists.
  */
 export interface ITaskGridModules {
     /** Personal views: *My views*, the save commands and the view manager. */

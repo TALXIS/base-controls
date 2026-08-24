@@ -4,10 +4,7 @@ import { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITaskGr
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { MemoryTaskStrategy } from "./memory-task-strategy/MemoryTaskStrategy";
 
-/**
- * What the descriptor has resolved by the time it asks for an optional strategy — the counterpart to
- * `IDataverseStrategyContext`.
- */
+/** What the descriptor has resolved by the time it builds an optional strategy. */
 export interface IMemoryStrategyContext {
     /** The task records resolved by `onInitialize` — the array the strategies write into. */
     records: IRawRecord[];
@@ -18,59 +15,34 @@ export interface IMemoryStrategyContext {
 }
 
 /**
- * What the descriptor hands the lookup-many callback: the cell the picker belongs to, and nothing else —
- * the candidates come from records you hold, so pick the source by `column.name`. Aliased rather than
- * extended so the counterpart to `IDataverseLookupManyParameters` still has a name of its own.
+ * What the descriptor hands the lookup-many callback: the cell the picker belongs to. The candidates come
+ * from records you hold, so pick the source by `column.name`.
  */
 export type IMemoryLookupManyParameters = ILookupManyDataProviderParameters;
 
 /**
- * The feature modules a memory grid can run with, one builder per feature. None of the shipped
- * implementations (`MemoryUserQueryStrategy`, `MemoryTemplateDataProvider`,
- * `MemoryLookupManyDataProviderFactory`) read anything off {@link IMemoryStrategyContext} — they close
- * over whatever you already resolved in `onInitialize` instead — so none of these builders take a
- * parameter. A strategy of your own that does need something from it (a custom-columns strategy wanting
- * `metadata`, say) can still close over the same variables `onInitialize` populated.
+ * The feature modules a memory grid can run with, one builder per feature. Omit a key and that feature
+ * is off.
+ *
+ * None of these builders take a parameter: they close over whatever `onInitialize` already resolved.
  */
 export interface IMemoryModules {
-    /**
-     * ```ts
-     * onGetUserQueriesModule: () => createUserQueryModule({
-     *     strategy: new MemoryUserQueryStrategy({ userQueries }),
-     *     enableQueryManager: true,
-     * })
-     * ```
-     */
+    /** Personal views. `createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) })`. */
     onGetUserQueriesModule?: () => IUserQueryModule | undefined;
-    /**
-     * ```ts
-     * onGetTemplatesModule: () => createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) })
-     * ```
-     */
+    /** Task templates. `createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) })`. */
     onGetTemplatesModule?: () => ITemplateModule | undefined;
     /**
-     * There is no in-memory custom-columns implementation, so this is your own strategy.
-     *
-     * ```ts
-     * onGetCustomColumnsModule: () => createCustomColumnsModule({ strategy: new MyCustomColumnsStrategy() })
-     * ```
+     * User-defined columns. `createCustomColumnsModule({ strategy })` — no in-memory strategy ships, so
+     * the strategy is your own.
      */
     onGetCustomColumnsModule?: () => ICustomColumnsModule | undefined;
-    /**
-     * ```ts
-     * onGetGridCustomizerModule: () => createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy() })
-     * ```
-     */
+    /** AG Grid customization. `createGridCustomizerModule({ strategy })`. */
     onGetGridCustomizerModule?: () => IGridCustomizerModule | undefined;
     /**
-     * Which columns render as lookup-many is driven by `metadata.LookupMany` on the column itself; this
-     * is what feeds them — `MemoryLookupManyDataProviderFactory` turns records you hold into the provider.
+     * Candidate records for lookup-many columns. `createLookupManyModule({ createDataProvider })`, where
+     * `MemoryLookupManyDataProviderFactory.create` turns records you hold into the provider.
      *
-     * ```ts
-     * onGetLookupManyModule: () => createLookupManyModule({
-     *     createDataProvider: ({ column }) => MemoryLookupManyDataProviderFactory.create(SOURCES[column.name]),
-     * })
-     * ```
+     * Which columns render as lookup-many is driven by `metadata.LookupMany` on the column itself.
      */
     onGetLookupManyModule?: () => ILookupManyModule | undefined;
 }
@@ -81,16 +53,12 @@ export interface IMemoryTaskStrategyContext extends IMemoryStrategyContext {
     deps: ITaskStrategyDeps;
 }
 
-/**
- * What {@link IMemoryTaskGridDescriptorParams.onInitialize} resolves: the data the grid loads with, plus
- * the behaviour that depends on it. `onInitialize` is the single point of configuration entry — the only
- * other constructor parameter is `height`, needed synchronously for the loading skeleton before any of
- * this exists.
- */
+/** What {@link IMemoryTaskGridDescriptorParams.onInitialize} resolves. */
 export interface IMemoryTaskGridDescriptorInitializeResult {
     /**
-     * The task records. **This array is written into** — creating, deleting, editing and moving tasks
-     * mutates it, which is how the data outlives the grid's remounts.
+     * The task records. Edits and moves write through to these objects, so they survive a remount;
+     * creations and deletions land on the provider's own copy and do not — see
+     * {@link IMemoryEntitySource.records}.
      */
     records: IRawRecord[];
     /** Task entity metadata. `PrimaryIdAttribute` is required; `LogicalName` is recommended. */
@@ -102,52 +70,26 @@ export interface IMemoryTaskGridDescriptorInitializeResult {
     /** Feature flags forwarded to the grid. See {@link ITaskGridParameters}. */
     gridParameters?: ITaskGridParameters;
     /**
-     * (Optional) Supplies the task strategy — this is where every task-level option goes:
-     *
-     * ```ts
-     * onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
-     *     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
-     *     onGetNewTaskDefaults: () => ({ statuscode: 1, priority: 1 }),
-     *     onIsRecordActive: ({ record }) => record.statuscode !== 5,
-     *     onOpenDatasetItems: async ({ entityReferences }) => { … },
-     * }, deps)
-     * ```
-     *
-     * Omit it and the descriptor builds a plain `MemoryTaskStrategy` over the resolved records.
+     * Supplies the task strategy, and with it every task-level option. Omit it and the descriptor builds
+     * a plain `MemoryTaskStrategy` over the resolved records.
      */
     onCreateTaskStrategy?: (context: IMemoryTaskStrategyContext) => ITaskDataProviderStrategy;
-    /**
-     * (Optional) Supplies the feature modules, one builder function per feature — see
-     * {@link IMemoryModules} for what each one does. Omit a key and that feature is off, which also lets
-     * its code be tree-shaken away.
-     */
+    /** The feature modules this grid runs with, one builder per feature. See {@link IMemoryModules}. */
     modules?: IMemoryModules;
 }
 
-/**
- * Constructor parameters for {@link MemoryTaskGridDescriptor}: the required `onInitialize` hook and the
- * container height. `onInitialize` is the single point of configuration entry — data and behaviour both
- * come from what it resolves, since it is called again on every remount and both need to see the same
- * thing at the same time.
- */
+/** Constructor parameters for {@link MemoryTaskGridDescriptor}. */
 export interface IMemoryTaskGridDescriptorParams {
     /**
      * Resolves everything: the records, the metadata, the field mapping, the system views, the grid
      * parameters, the task strategy and the feature modules. Awaited before any strategy or data
      * provider is created, so the work is covered by the grid's loading state.
      *
-     * Called again on every remount — same as `IDataverseTaskGridDescriptorParams.onInitialize` — so
-     * this is not a one-shot seed. Anything that must survive a remount (a personal-views array, the
-     * task records) is your own store: do the expensive/stateful part once behind a flag of your own,
-     * and return its current value on every call, keeping it current through explicit write-backs (a
-     * task strategy's `onDestroy`, a module provider's own events) rather than assuming this callback
-     * only ever runs once.
+     * Called again on every remount, so it is not a seed — anything that must survive one lives in a
+     * store you own, and this returns its current value on every call.
      */
     onInitialize: () => Promise<IMemoryTaskGridDescriptorInitializeResult>;
-    /**
-     * Container height. Kept outside `onInitialize` because the skeleton needs it before the data
-     * resolves.
-     */
+    /** Container height. Read synchronously, before `onInitialize` resolves, for the loading skeleton. */
     height?: string;
 }
 
@@ -155,11 +97,8 @@ export interface IMemoryTaskGridDescriptorParams {
  * Ready-to-use {@link ITaskGridDescriptor} backed entirely by in-memory data — no Dataverse, no
  * network, no `Xrm.WebApi`. Intended for local development, tests, Storybook and demos.
  *
- * Wires up the task and saved-query strategies from a single parameter object.
- * `onInitialize` is the single point of configuration entry — the seed data, the task strategy and the
- * feature modules are all part of what it resolves, so they can be fetched, generated or lazily imported
- * while the grid shows its loading state, and so a strategy or module built from it always sees the
- * exact same data `onInitialize` just resolved.
+ * `onInitialize` is the single point of configuration entry: the data, the task strategy and the feature
+ * modules are all part of what it resolves. `height` is the only other constructor parameter.
  *
  * @example
  * ```ts
@@ -171,7 +110,6 @@ export interface IMemoryTaskGridDescriptorParams {
  *       records: TASKS, metadata: TASK_METADATA,
  *       fieldMapping: { subject: 'subject', parentId: 'parentid', stackRank: 'stackrank', stateCode: 'statecode' },
  *       systemQueries: [allTasksView],
- *       //features are opt-in: registering the module is what turns one on
  *       modules: {
  *         onGetUserQueriesModule: () => createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) }),
  *       },
@@ -182,25 +120,16 @@ export interface IMemoryTaskGridDescriptorParams {
  */
 export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     private _params: IMemoryTaskGridDescriptorParams;
-    /**
-     * Whatever the last `onLoadDependencies()` call resolved — refreshed on every remount, not a
-     * persistence layer on its own. Anything that must survive a remount is the consumer's own store,
-     * kept current through explicit write-backs rather than by this descriptor skipping re-execution.
-     */
+    /** Whatever the last `onLoadDependencies()` call resolved. */
     private _initialized!: IMemoryTaskGridDescriptorInitializeResult;
 
-    /** @param params — see {@link IMemoryTaskGridDescriptorParams}. */
     constructor(params: IMemoryTaskGridDescriptorParams) {
         this._params = params;
     }
 
     // ── ITaskGridDescriptor ──────────────────────────────────────────────────
 
-    /**
-     * The grid calls this again on every remount, and so does this method's own call to
-     * `onInitialize()` — same as `DataverseTaskGridDescriptor`. Persistence across those calls is
-     * `onInitialize`'s own job now, not something this method does for it.
-     */
+    /** Resolves `onInitialize` and checks that at least one system query came back. */
     public async onLoadDependencies(): Promise<void> {
         const initialized = await this._params.onInitialize();
         if (initialized.systemQueries.length === 0) {
@@ -209,7 +138,6 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
         this._initialized = initialized;
     }
 
-    //kept separate from onGetGridParameters because the skeleton needs it before the instance exists
     public onGetHeight(): string | undefined {
         return this._params.height;
     }
@@ -229,10 +157,7 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
         };
     }
 
-    /**
-     * Calls each builder on the `modules` resolved by `onInitialize`, per {@link IMemoryModules}. An
-     * absent builder — which is what omitting the key does — leaves that feature off.
-     */
+    /** Calls each builder on the `modules` resolved by `onInitialize`. An absent builder leaves that feature off. */
     public onGetModules(): ITaskGridModules {
         const modules = this._getData().modules;
         return {
@@ -246,8 +171,7 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
 
     /**
      * Delegates to the `onCreateTaskStrategy` resolved by `onInitialize`, falling back to a plain
-     * `MemoryTaskStrategy` over the resolved records. Either way the strategy is handed the *same*
-     * arrays a rebuilt one gets, so it sees everything its predecessor wrote.
+     * `MemoryTaskStrategy` over the resolved records.
      */
     public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
         const { records, metadata } = this._getData();
