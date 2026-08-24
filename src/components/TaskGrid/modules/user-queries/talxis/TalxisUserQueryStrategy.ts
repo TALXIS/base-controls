@@ -32,8 +32,8 @@ const _getFetchXml = (entityName: string, recordId?: string, ownerId?: string) =
     return LIQUID.parseAndRenderSync(FETCH_XML, { entityName, recordId, ownerId });
 }
 
-/** Constructor parameters for {@link DataverseUserQueryStrategy}. */
-export interface IDataverseUserQueryStrategyParameters {
+/** Constructor parameters for {@link TalxisUserQueryStrategy}. */
+export interface ITalxisUserQueryStrategyParameters {
     /** Logical name of the entity whose queries are managed (used as `talxis_returnedtypecode`). */
     entityName: string;
     /** Scopes queries to a specific record (`talxis_recordid`). When omitted, only unscoped queries are returned. */
@@ -43,17 +43,17 @@ export interface IDataverseUserQueryStrategyParameters {
 }
 
 /**
- * Ready-to-use {@link IUserQueryStrategy} implementation for the Dataverse / Talxis platform.
+ * Ready-to-use {@link IUserQueryStrategy} implementation for the Talxis platform on Dataverse.
  *
  * Persists personal views as `talxis_userquery` records, optionally scoped to a parent record
  * (`talxis_recordid`) and owner (`ownerid`), so the environment needs that table. Pass it to
  * `createUserQueryModule()` and register the result as the user-queries module.
  */
-export class DataverseUserQueryStrategy extends FetchXmlDataProvider implements IUserQueryStrategy {
+export class TalxisUserQueryStrategy extends FetchXmlDataProvider implements IUserQueryStrategy {
     private _recordId?: string;
     private _parentEntityName: string;
 
-    constructor(parameters: IDataverseUserQueryStrategyParameters) {
+    constructor(parameters: ITalxisUserQueryStrategyParameters) {
         const fetchXml = _getFetchXml(parameters.entityName, parameters.recordId, parameters.ownerId);
         super({ fetchXml });
         this._parentEntityName = parameters.entityName;

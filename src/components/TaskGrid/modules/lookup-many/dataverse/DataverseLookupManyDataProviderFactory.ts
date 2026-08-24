@@ -1,5 +1,5 @@
 import { FetchXmlDataProvider, IDataProvider } from "@talxis/client-libraries";
-import { IDataverseLookupManyParameters } from "../DataverseTaskGridDescriptor";
+import type { IDataverseLookupManyParameters } from "@components/TaskGrid/extensions/dataverse/DataverseTaskGridDescriptor";
 import { Liquid } from "liquidjs";
 
 /**

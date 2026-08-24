@@ -18,7 +18,7 @@ import {
     ITaskTemplateExpansionParams,
 } from "@components/TaskGrid/providers";
 import { INativeColumns, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
-import { MemoryTemplateDataProvider } from "../MemoryTemplateDataProvider";
+import { MemoryTemplateDataProvider } from "@components/TaskGrid/modules/templates/memory/MemoryTemplateDataProvider";
 import {
     IMemoryTaskActivityParams,
     IMemoryTaskAvailableColumnsParams,

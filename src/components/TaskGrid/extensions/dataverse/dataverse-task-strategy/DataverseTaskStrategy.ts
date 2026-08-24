@@ -11,9 +11,9 @@ import {
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { Liquid } from "liquidjs";
 import { IDataverseFieldMapping } from "../DataverseTaskGridDescriptor";
-import { LookupManyHandler } from "../lookup-many/LookupManyHandler";
+import { LookupManyHandler } from "./LookupManyHandler";
 import { ITaskStrategyDeps } from "../../..";
-import { IDataverseCustomColumnsStrategy } from "../DataverseCustomColumnsStrategy";
+import { ITalxisCustomColumnsStrategy } from "@components/TaskGrid/modules/custom-columns/talxis";
 import {
     DataverseFormOperation,
     DataverseTaskActions,
@@ -247,7 +247,7 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
         }));
 
         if (this._customColumns.length > 0) {
-            const strategy: IDataverseCustomColumnsStrategy = this._customColumnsDataProvider!.getStrategy();
+            const strategy: ITalxisCustomColumnsStrategy = this._customColumnsDataProvider!.getStrategy();
             expands.push(strategy.getExpand());
         }
         const suffixParts: string[] = [];
@@ -268,7 +268,7 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
 
     private async _harmonizenizeCustomColumnsData(record: IRawRecord): Promise<void> {
         for (const col of this._customColumns) {
-            const strategy: IDataverseCustomColumnsStrategy = this._customColumnsDataProvider!.getStrategy();
+            const strategy: ITalxisCustomColumnsStrategy = this._customColumnsDataProvider!.getStrategy();
             const value = strategy.getValueFromRawRecord(record[this._fetchXmlDataProvider.getMetadata().PrimaryIdAttribute], record, col);
             record[col.name] = value;
         }

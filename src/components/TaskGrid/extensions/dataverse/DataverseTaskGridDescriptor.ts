@@ -75,7 +75,7 @@ export interface IDataverseModules {
      *
      * ```ts
      * onGetUserQueriesModule: context => createUserQueryModule({
-     *     strategy: new DataverseUserQueryStrategy({
+     *     strategy: new TalxisUserQueryStrategy({
      *         entityName: context.entityName,
      *         recordId: context.recordId,
      *         ownerId: context.userId,
@@ -94,7 +94,7 @@ export interface IDataverseModules {
      *
      * ```ts
      * onGetCustomColumnsModule: context => createCustomColumnsModule({
-     *     strategy: new DataverseCustomColumnsStrategy({
+     *     strategy: new TalxisCustomColumnsStrategy({
      *         entityName: context.entityName,
      *         recordId: context.recordId,
      *     }),
@@ -198,7 +198,7 @@ export interface IDataverseTaskGridDescriptorParams {
  *     fieldMapping: { parentId: 'talxis_parenttaskid', subject: 'subject', stackRank: 'talxis_stackrank' },
  *     systemQueries: [myDefaultView],
  *     modules: {
- *       onGetUserQueriesModule: context => createUserQueryModule({ strategy: new DataverseUserQueryStrategy({ entityName: context.entityName }) }),
+ *       onGetUserQueriesModule: context => createUserQueryModule({ strategy: new TalxisUserQueryStrategy({ entityName: context.entityName }) }),
  *     },
  *   }),
  * });

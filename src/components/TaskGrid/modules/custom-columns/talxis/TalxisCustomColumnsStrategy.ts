@@ -8,8 +8,8 @@ export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 /** The table holding custom column values. */
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 
-/** Constructor parameters for {@link DataverseCustomColumnsStrategy}. */
-export interface IDataverseCustomColumnsStrategyParameters {
+/** Constructor parameters for {@link TalxisCustomColumnsStrategy}. */
+export interface ITalxisCustomColumnsStrategyParameters {
     /** Logical name of the entity for which dynamic attribute definitions are managed (e.g. `"task"`). */
     entityName: string;
     /** Scopes attribute definitions to a specific parent record. */
@@ -18,16 +18,16 @@ export interface IDataverseCustomColumnsStrategyParameters {
      * A navigation property of the relationship between the entity and
      * `talxis_attributevalue`, either side of it. Only needed to disambiguate: the relationship is
      * normally the single one Dataverse reports between the two, and
-     * {@link DataverseCustomColumnsStrategy.onRefresh} finds it without being told.
+     * {@link TalxisCustomColumnsStrategy.onRefresh} finds it without being told.
      */
     navigationPropertyName?: string;
 }
 
 /**
- * Extends {@link ICustomColumnsStrategy} with Dataverse-specific accessors needed to persist
+ * Extends {@link ICustomColumnsStrategy} with Talxis-specific accessors needed to persist
  * custom column values through the `talxis_attributevalue` entity.
  */
-export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy {
+export interface ITalxisCustomColumnsStrategy extends ICustomColumnsStrategy {
     getNavigationPropertyName: () => string;
     getAttributeDefinitionIdFromColumnName: (columnName: string) => string;
     /** Returns the `$expand` query parameter needed to fetch the related `talxis_attributevalue` records. */
@@ -37,7 +37,7 @@ export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy 
 }
 
 /**
- * {@link ICustomColumnsStrategy} implementation for the Dataverse / Talxis platform.
+ * {@link ICustomColumnsStrategy} implementation for the Talxis platform on Dataverse.
  *
  * Dynamic (user-defined) columns are modelled as `talxis_attributedefinition` records.
  * Column values are stored as `talxis_attributevalue` records linked to the record they belong to.
@@ -45,7 +45,7 @@ export interface IDataverseCustomColumnsStrategy extends ICustomColumnsStrategy 
  * Wrap an instance in `createCustomColumnsModule({ strategy })` and return it from the descriptor's
  * `modules.onGetCustomColumnsModule` to enable the custom-columns feature in the TaskGrid.
  */
-export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsStrategy {
+export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy {
     private _entityName: string;
     private _recordId?: string;
     private _navigationPropertyNameHint?: string;
@@ -57,7 +57,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
     private _referencingEntityNavigationPropertyName?: string;
     private _entitySetName?: string;
 
-    constructor(parameters: IDataverseCustomColumnsStrategyParameters) {
+    constructor(parameters: ITalxisCustomColumnsStrategyParameters) {
         this._entityName = parameters.entityName;
         this._recordId = parameters.recordId;
         this._navigationPropertyNameHint = parameters.navigationPropertyName;
@@ -77,7 +77,7 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
 
     public getNavigationPropertyName(): string {
         if (!this._navigationPropertyName) {
-            throw new Error(`${DataverseCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before anything reads a custom column.`);
+            throw new Error(`${TalxisCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before anything reads a custom column.`);
         }
         return this._navigationPropertyName;
     }
@@ -264,14 +264,14 @@ export class DataverseCustomColumnsStrategy implements IDataverseCustomColumnsSt
 
     private _getReferencingEntityNavigationPropertyName(): string {
         if (!this._referencingEntityNavigationPropertyName) {
-            throw new Error(`${DataverseCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before a value can be saved.`);
+            throw new Error(`${TalxisCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before a value can be saved.`);
         }
         return this._referencingEntityNavigationPropertyName;
     }
 
     private _getEntitySetName(): string {
         if (!this._entitySetName) {
-            throw new Error(`${DataverseCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before a value can be saved.`);
+            throw new Error(`${TalxisCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before a value can be saved.`);
         }
         return this._entitySetName;
     }

@@ -22,7 +22,7 @@ import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { StackRank } from "@components/TaskGrid/stack-rank";
 import { IDataverseFieldMapping } from "../DataverseTaskGridDescriptor";
-import { LookupManyHandler } from "../lookup-many/LookupManyHandler";
+import { LookupManyHandler } from "./LookupManyHandler";
 
 /** The `Xrm.Navigation.navigateTo` arguments behind every form the grid opens. */
 export interface IFormParameters {

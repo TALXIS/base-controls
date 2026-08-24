@@ -8,7 +8,7 @@ import { ViewManagerDialog } from "./view-manager";
 export interface IUserQueryModuleOptions {
     /**
      * Where the views are stored and how they are named, deleted and updated. Pass
-     * `MemoryUserQueryStrategy`, `DataverseUserQueryStrategy`, or your own.
+     * `MemoryUserQueryStrategy`, `TalxisUserQueryStrategy`, or your own.
      */
     strategy: IUserQueryStrategy;
     /** Show *Manage views*. Defaults to `false`. */

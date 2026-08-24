@@ -2,7 +2,7 @@ import { FetchXmlDataProvider, IRawRecord, IRecord } from "@talxis/client-librar
 import { TemplateDataProviderBase } from "@components/TaskGrid/providers";
 
 /**
- * {@link ITemplateDataProvider} implementation for the Dataverse / Talxis platform — templates are
+ * {@link ITemplateDataProvider} implementation for Dataverse — templates are
  * loaded through FetchXML like any other Dataverse entity.
  *
  * Capturing a template from a task is **not implemented yet**; `createTemplateFromTask` throws.

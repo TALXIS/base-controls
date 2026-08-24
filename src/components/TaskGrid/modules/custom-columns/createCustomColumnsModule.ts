@@ -5,7 +5,7 @@ import { EditColumns } from "./edit-columns/EditColumns";
 /** Options for {@link createCustomColumnsModule}. */
 export interface ICustomColumnsModuleOptions {
     /**
-     * Where column definitions and values are stored. Pass `DataverseCustomColumnsStrategy`, or your own.
+     * Where column definitions and values are stored. Pass `TalxisCustomColumnsStrategy`, or your own.
      */
     strategy: ICustomColumnsStrategy;
     /** Show the "Create Custom Column" command. Defaults to `false`. */
@@ -26,7 +26,7 @@ export interface ICustomColumnsModuleOptions {
  * ```ts
  * modules: {
  *     onGetCustomColumnsModule: context => createCustomColumnsModule({
- *         strategy: new DataverseCustomColumnsStrategy({ entityName: context.entityName }),
+ *         strategy: new TalxisCustomColumnsStrategy({ entityName: context.entityName }),
  *         enableCustomColumnCreation: true,
  *     }),
  * }
