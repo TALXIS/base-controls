@@ -1,7 +1,7 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+/** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const CUSTOM_COMMAND_BAR_CODE = `/** The command's Fluent icon name → the Material icon that means the same thing. */
 const COMMAND_ICONS: Record<string, React.ElementType> = {
     Add: AddIcon,
@@ -101,7 +101,6 @@ const components: Partial<ITaskGridComponents> = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    pcfContext={pcfContext}
     taskGridDescriptor={descriptor}
     components={components} />
 `

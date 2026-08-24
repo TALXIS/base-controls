@@ -10,13 +10,10 @@ export * from './TaskGridDatasetControl';
 export * from './TaskGridDatasetControlFactory';
 export * from './descriptors';
 export * from './strategies';
-//named re-export, not `export *`: ./context's usePcfContext would collide with the @utils hook of
-//the same name
+export * from './context';
+//the public names for the three hooks whose local names read as generic outside the grid
 export {
-    useTaskDataProvider,
-    useTaskGridComponents,
     useDatasetControl as useTaskGridDatasetControl,
-    useTaskGridDescriptor,
     useLocalizationService as useTaskGridLabels,
     useRootElementId as useTaskGridRootElementId,
 } from './context';

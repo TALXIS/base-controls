@@ -1,7 +1,8 @@
 import { CommandBarButton as CommandBarButtonBase, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react"
+import { usePcfContext } from "@utils";
 import * as React from "react"
 import { getViewSwitcherStyles } from "./styles";
-import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useTaskDataProvider } from "@components/TaskGrid/context";
 import { useEventEmitter } from "@hooks";
 import { withButtonLoading } from "@legacy";
 

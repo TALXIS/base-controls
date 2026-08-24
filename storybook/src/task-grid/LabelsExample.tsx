@@ -1,7 +1,7 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+/** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const LABELS_CODE = `/** Any key you leave out keeps its English default. */
 const labels = {
     new: 'Add task',
@@ -9,7 +9,6 @@ const labels = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    pcfContext={pcfContext}
     taskGridDescriptor={descriptor}
     labels={labels} />
 `

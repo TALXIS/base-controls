@@ -1,7 +1,6 @@
 import React from 'react'
 import { initializeIcons, Stack, Text } from '@fluentui/react'
 import { TaskGrid } from '@talxis/base-controls'
-import { usePcfContext } from '@talxis/base-controls/utils'
 import { createMemoryTaskGridDescriptor } from '../memoryDescriptor'
 import { generateTasks } from './generateTasks'
 
@@ -25,7 +24,6 @@ export interface ILargeTaskGridProps {
  */
 export const LargeTaskGrid = (props: ILargeTaskGridProps) => {
     const { count, seed } = props
-    const pcfContext = usePcfContext()
     const [generatedInMs, setGeneratedInMs] = React.useState<number>()
 
     const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor({
@@ -44,7 +42,7 @@ export const LargeTaskGrid = (props: ILargeTaskGridProps) => {
                 {generatedInMs !== undefined && ` · built in ${Math.round(generatedInMs)} ms`}
                 {seed !== undefined && ` · seed ${seed}`}
             </Text>
-            <TaskGrid pcfContext={pcfContext} taskGridDescriptor={descriptor} />
+            <TaskGrid taskGridDescriptor={descriptor} />
         </Stack>
     )
 }

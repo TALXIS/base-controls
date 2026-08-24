@@ -24,7 +24,6 @@ interface ITaskGridLivePreviewProps {
      * recreating it on every edit would reload the grid and throw the session away.
      */
     descriptor: ITaskGridDescriptor
-    pcfContext: ComponentFramework.Context<any>
     /** Receives the `gridCustomizerStrategy` the snippet defined, if it defined one. */
     onGridCustomizerStrategy?: (strategy: any) => void
     /** Receives the `getModules` factory the snippet defined, if it defined one. */
@@ -48,7 +47,6 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 'React',
                 'TaskGrid',
                 'descriptor',
-                'pcfContext',
                 'useTaskDataProvider',
                 'useTaskGridDatasetControl',
                 'Chip',
@@ -96,7 +94,6 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 React,
                 TaskGrid,
                 props.descriptor,
-                props.pcfContext,
                 useTaskDataProvider,
                 useTaskGridDatasetControl,
                 Chip,

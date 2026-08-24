@@ -1,7 +1,7 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+/** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const MODULE_LOOKUP_MANY_CODE = `/** The modules this grid runs with. Anything not listed here is off. */
 const getModules: GetModules = (data) => ({
     onGetLookupManyModule: () => createLookupManyModule({
@@ -14,7 +14,6 @@ const getModules: GetModules = (data) => ({
 })
 
 const TaskGridExample = () => <TaskGrid
-    pcfContext={pcfContext}
     taskGridDescriptor={descriptor} />
 `
 

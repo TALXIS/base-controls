@@ -1,7 +1,7 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+/** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const CUSTOMIZER_VALIDATION_CODE = `const MAX_ESTIMATE_HOURS = 500
 
 const gridCustomizerStrategy: IGridCustomizerStrategy = {
@@ -28,7 +28,6 @@ const gridCustomizerStrategy: IGridCustomizerStrategy = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    pcfContext={pcfContext}
     taskGridDescriptor={descriptor} />
 `
 

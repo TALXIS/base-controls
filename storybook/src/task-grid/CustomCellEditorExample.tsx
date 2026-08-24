@@ -1,7 +1,7 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+/** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const CUSTOM_CELL_EDITOR_CODE = `const PercentCompleteEditor = (props: ITaskGridCellProps) => {
     const columnName = props.baseColumn?.name ?? ''
     const [value, setValue] = React.useState(Number(props.value.value ?? 0))
@@ -38,7 +38,6 @@ const components: Partial<ITaskGridComponents> = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    pcfContext={pcfContext}
     taskGridDescriptor={descriptor}
     components={components} />
 `

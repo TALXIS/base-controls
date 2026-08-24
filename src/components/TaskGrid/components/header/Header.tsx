@@ -1,10 +1,11 @@
 import { IHeaderProps } from "@components/DatasetControl/interfaces"
 import { ICommandBarItemProps } from "@legacy";
+import { usePcfContext } from "@utils";
 import * as React from "react"
 import { ContextualMenuItemType, useTheme } from "@fluentui/react";
 import { getHeaderStyles } from "./styles";
 import { SettingsCallout } from "./settings-callout";
-import { useDatasetControl, useLocalizationService, usePcfContext, useRootElementId, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useRootElementId, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
 import { ViewSwitcher } from "./view-switcher";
 import { EditColumns as EditColumnsBase } from "@components/DatasetControl/EditColumns/EditColumns";
 

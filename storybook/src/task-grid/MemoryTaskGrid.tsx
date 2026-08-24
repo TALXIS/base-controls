@@ -2,7 +2,6 @@ import React from 'react'
 import { initializeIcons } from '@fluentui/react'
 import { TaskGrid } from '@talxis/base-controls'
 import type { ITaskGridProps } from '@talxis/base-controls'
-import { usePcfContext } from '@talxis/base-controls/utils'
 import { createMemoryTaskGridDescriptor } from './memoryDescriptor'
 import type { MemoryTaskGridModuleName } from './memoryDescriptor'
 
@@ -13,7 +12,7 @@ initializeIcons()
  * Everything `<TaskGrid />` takes except the two the harness supplies itself — so a story can pass
  * component overrides, labels, or any of the event props — plus which feature modules to register.
  */
-type IMemoryTaskGridProps = Omit<ITaskGridProps, 'pcfContext' | 'taskGridDescriptor'> & {
+type IMemoryTaskGridProps = Omit<ITaskGridProps, 'taskGridDescriptor'> & {
     /** Which modules the descriptor registers. Omit for the usual documentation set. */
     modules?: MemoryTaskGridModuleName[];
 }
@@ -23,8 +22,7 @@ type IMemoryTaskGridProps = Omit<ITaskGridProps, 'pcfContext' | 'taskGridDescrip
  * Every page embeds this same component so the docs always show a working grid.
  */
 export const MemoryTaskGrid = ({ modules, ...props }: IMemoryTaskGridProps) => {
-    const pcfContext = usePcfContext()
     //one descriptor per mount - it owns the in-memory task state for the session
     const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor({ modules }), [])
-    return <TaskGrid {...props} pcfContext={pcfContext} taskGridDescriptor={descriptor} />
+    return <TaskGrid {...props} taskGridDescriptor={descriptor} />
 }

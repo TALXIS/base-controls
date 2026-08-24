@@ -3,11 +3,11 @@ import { Dataset, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { DatasetControl as DatasetControlModel } from '@utils/dataset-control';
 import * as React from "react"
 import { Spinner } from "@legacy";
-import { getClassNames } from "@utils";
+import { getClassNames, usePcfContext } from "@utils";
 import { CommandBarButton, Icon, useTheme, Text, IButtonProps, DirectionalHint } from "@fluentui/react";
 import { getRecordSelectorStyles } from "./styles";
 import { FixedSizeList } from 'react-window';
-import { useLocalizationService, usePcfContext } from "@components/TaskGrid/context";
+import { useLocalizationService } from "@components/TaskGrid/context";
 
 /** Props for {@link RecordSelector}. */
 export interface IRecordSelectorProps {

@@ -92,9 +92,8 @@ interface ITaskGridComponents {
     onRenderCommandBar: (props: ITaskGridCommandBarProps) => JSX.Element;
 }
 
-/** The grid. \`pcfContext\` and \`taskGridDescriptor\` are supplied by the sandbox. */
+/** The grid. \`taskGridDescriptor\` is supplied by the sandbox. */
 declare const TaskGrid: (props: {
-    pcfContext: any;
     taskGridDescriptor: any;
     components?: Partial<ITaskGridComponents>;
     labels?: Record<string, string>;
@@ -193,7 +192,6 @@ declare const useTaskGridDatasetControl: () => {
     [key: string]: any;
 };
 /** The PCF context the docs provide. */
-declare const pcfContext: any;
 
 /** Reaches the provider backing the grid this component renders in. */
 declare const useTaskDataProvider: () => {

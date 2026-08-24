@@ -1,7 +1,7 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+/** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const MODULE_TEMPLATES_CODE = `/** The modules this grid runs with. Anything not listed here is off. */
 const getModules: GetModules = (data) => ({
     onGetTemplatesModule: (context) => createTemplateModule({
@@ -12,7 +12,6 @@ const getModules: GetModules = (data) => ({
 })
 
 const TaskGridExample = () => <TaskGrid
-    pcfContext={pcfContext}
     taskGridDescriptor={descriptor} />
 `
 

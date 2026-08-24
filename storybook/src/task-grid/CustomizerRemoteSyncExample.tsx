@@ -1,7 +1,7 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+/** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const CUSTOMIZER_REMOTE_SYNC_CODE = `//saving one of these is what makes the server recalculate something else
 const SYNCED_COLUMNS = ['estimatedeffort']
 
@@ -84,7 +84,6 @@ const gridCustomizerStrategy: IGridCustomizerStrategy = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    pcfContext={pcfContext}
     taskGridDescriptor={descriptor} />
 `
 

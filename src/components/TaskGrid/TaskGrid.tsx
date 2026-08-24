@@ -2,7 +2,7 @@ import { useEventEmitter } from "@hooks/useEventEmitter"
 import { IDatasetControlEvents } from "@utils/dataset-control";
 import { useRef } from "react";
 import * as React from "react";
-import { AgGridLicenseKeyContext, DatasetControlContext, LocalizationServiceContext, PcfContext, RootElementIdContext, TaskDataProviderContext, TaskGridComponentsContext, TaskGridDescriptorContext, usePcfContext } from "./context";
+import { AgGridLicenseKeyContext, DatasetControlContext, LocalizationServiceContext, RootElementIdContext, TaskDataProviderContext, TaskGridComponentsContext, TaskGridDescriptorContext } from "./context";
 import { DatasetControl as DatasetControlRenderer } from "../DatasetControl";
 import { useTheme } from "@fluentui/react";
 import { getDatasetControlStyles } from "./styles";
@@ -16,14 +16,12 @@ import { ITaskGridState, TaskGridDatasetControlFactory } from "./TaskGridDataset
 import { Header } from "./components/header/Header";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
 import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
-import { LocalizationService } from "@utils";
+import { LocalizationService, usePcfContext } from "@utils";
 import { useTaskGridEvents } from "./useTaskGridEvents";
 import { IDataProviderEventListeners, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 
 /** Props for {@link TaskGrid}. */
 export interface ITaskGridProps {
-    //should be replaced by Context API in future
-    pcfContext: ComponentFramework.Context<any, any>;
     /** Supplies every strategy and module the grid runs on. See {@link ITaskGridDescriptor}. */
     taskGridDescriptor: ITaskGridDescriptor;
     /** Overrides for any subset of the UI strings. See {@link ITaskGridLabels}. */
@@ -95,6 +93,8 @@ interface IInternalTaskGridProps extends ITaskGridProps {
  * A hierarchical task grid. Everything it reads and writes comes from the descriptor, so this component
  * takes no data of its own.
  *
+ * Reads the PCF context off `PcfContextProvider`, so render it inside one.
+ *
  * Builds a control instance from the descriptor, showing the skeleton until it resolves, and rebuilds it
  * whenever the grid asks for a remount — a view change or a record save.
  */
@@ -102,8 +102,9 @@ export const TaskGrid = (props: ITaskGridProps) => {
     const { taskGridDescriptor } = props;
     const stateRef = useRef<ITaskGridState>({});
     const components = { ...TaskGridComponents, ...props.components };
-    const pcfContextRef = useRef(props.pcfContext);
-    pcfContextRef.current = props.pcfContext;
+    const pcfContext = usePcfContext();
+    const pcfContextRef = useRef(pcfContext);
+    pcfContextRef.current = pcfContext;
     const localizationService = React.useMemo(() => new LocalizationService({ ...TASK_GRID_LABELS, ...props.labels }), []);
 
     const [instanceState, setInstanceState] = React.useState<{
@@ -133,20 +134,18 @@ export const TaskGrid = (props: ITaskGridProps) => {
     }
 
     return (
-        <PcfContext.Provider value={pcfContextRef.current}>
-            <LocalizationServiceContext.Provider value={localizationService}>
-                <AgGridLicenseKeyContext.Provider value={taskGridDescriptor.onGetGridParameters?.()?.agGridLicenseKey ?? null}>
-                    <TaskGridComponentsContext.Provider value={components}>
-                        <InternalTaskGridDatasetControl
-                            key={instanceState.remountKey}
-                            {...props}
-                            datasetControl={instanceState.instance}
-                            onRemountRequested={createDatasetControlInstance}
-                        />
-                    </TaskGridComponentsContext.Provider>
-                </AgGridLicenseKeyContext.Provider>
-            </LocalizationServiceContext.Provider>
-        </PcfContext.Provider>
+        <LocalizationServiceContext.Provider value={localizationService}>
+            <AgGridLicenseKeyContext.Provider value={taskGridDescriptor.onGetGridParameters?.()?.agGridLicenseKey ?? null}>
+                <TaskGridComponentsContext.Provider value={components}>
+                    <InternalTaskGridDatasetControl
+                        key={instanceState.remountKey}
+                        {...props}
+                        datasetControl={instanceState.instance}
+                        onRemountRequested={createDatasetControlInstance}
+                    />
+                </TaskGridComponentsContext.Provider>
+            </AgGridLicenseKeyContext.Provider>
+        </LocalizationServiceContext.Provider>
     );
 }
 const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {

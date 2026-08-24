@@ -1,7 +1,7 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+/** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const CUSTOM_CELL_RENDERER_CODE = `/** Priority option value → the MUI palette colour that carries the same meaning. */
 const PRIORITY_COLORS: Record<number, 'default' | 'info' | 'warning' | 'error'> = {
     0: 'default',
@@ -31,7 +31,6 @@ const components: Partial<ITaskGridComponents> = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    pcfContext={pcfContext}
     taskGridDescriptor={descriptor}
     components={components} />
 `

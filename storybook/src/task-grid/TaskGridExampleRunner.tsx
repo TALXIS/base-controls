@@ -1,6 +1,5 @@
 import React from 'react'
 import { initializeIcons } from '@fluentui/react'
-import { usePcfContext } from '@talxis/base-controls/utils'
 import { ExampleRunner } from '../stories/form/storyHelpers'
 import { createMemoryTaskGridDescriptor } from './memoryDescriptor'
 import { TaskGridCodeEditor } from './TaskGridCodeEditor'
@@ -26,7 +25,6 @@ interface ITaskGridExampleRunnerProps {
 
 /** A live TaskGrid with a Code toggle: flip it to read the snippet, edit it, and watch the grid recompile. */
 export const TaskGridExampleRunner = (props: ITaskGridExampleRunnerProps) => {
-    const pcfContext = usePcfContext()
     const [code, setCode] = React.useState(props.seedCode)
     const [compileError, setCompileError] = React.useState<string | null>(null)
     const debouncedCode = useDebouncedCode(code)
@@ -48,7 +46,6 @@ export const TaskGridExampleRunner = (props: ITaskGridExampleRunnerProps) => {
         renderPreview={() => <TaskGridLivePreview
             code={debouncedCode}
             descriptor={descriptor}
-            pcfContext={pcfContext}
             onGridCustomizerStrategy={(strategy) => { gridCustomizerStrategyRef.current = strategy }}
             onGetModules={(getModules) => { getModulesRef.current = getModules }}
             onError={setCompileError} />}

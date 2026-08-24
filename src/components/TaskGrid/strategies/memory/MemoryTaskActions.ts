@@ -124,8 +124,6 @@ export class MemoryTaskActions {
      * @returns `true` when the task counts as active.
      */
     public static isRecordActive(params: IMemoryTaskActivityParams): boolean {
-        //loose comparison: Field._sanitizeValue stringifies option-set values, so a
-        //statecode reads back as "0" rather than 0
         return params.record.getValue(params.nativeColumns.stateCode) == 0;
     }
 

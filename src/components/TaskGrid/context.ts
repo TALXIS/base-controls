@@ -5,10 +5,6 @@ import { ITaskGridLabels } from "./labels";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
 import { ILocalizationService, useContextWithNullCheck } from "@utils";
 
-/** The PCF context the grid was rendered with. */
-export const PcfContext = React.createContext<ComponentFramework.Context<any> | null>(null);
-PcfContext.displayName = 'PcfContext';
-
 /** The control instance backing the current mount. */
 export const DatasetControlContext = React.createContext<ITaskGridDatasetControl | null>(null);
 DatasetControlContext.displayName = 'DatasetControl';
@@ -81,15 +77,6 @@ export const useTaskGridComponents = () => {
  */
 export const useTaskDataProvider = () => {
     return useContextWithNullCheck(TaskDataProviderContext);
-}
-
-/**
- * Returns the PCF context the grid was rendered with. Not re-exported from the package root — the
- * `@utils` hook of the same name owns that name.
- * @throws Outside a `TaskGrid`.
- */
-export const usePcfContext = () => {
-    return useContextWithNullCheck(PcfContext);
 }
 
 /** Returns the AG Grid license key, or `null` when none was supplied. */

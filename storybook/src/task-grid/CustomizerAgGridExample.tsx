@@ -1,7 +1,7 @@
 import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
-/** Seed snippet of the example. `descriptor` and `pcfContext` come from the sandbox. */
+/** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const CUSTOMIZER_AG_GRID_CODE = `const gridCustomizerStrategy: IGridCustomizerStrategy = {
     onInitialize: (customizer) => {
         //the raw ag-grid api, so anything the grid does not surface is still yours to set
@@ -53,7 +53,6 @@ const ROW_TINT_CSS = \`
 const TaskGridExample = () => <>
     <style>{ROW_TINT_CSS}</style>
     <TaskGrid
-        pcfContext={pcfContext}
         taskGridDescriptor={descriptor} />
 </>
 `
