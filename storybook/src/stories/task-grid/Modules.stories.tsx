@@ -26,7 +26,7 @@ The grid's optional features are **modules**. You list the ones you want on the 
 | Module | What it adds | You supply |
 |---|---|---|
 | \`onGetUserQueriesModule\` | Personal views: *My views* in the view switcher, and the save and manage commands | where views are stored |
-| \`onGetTemplatesModule\` | Task templates: *New from template*, and *Create template from task* | where templates are stored |
+| \`onGetTemplatesModule\` | Task templates: *New from template*, and *Create template from task* | where templates are stored, and what they expand into |
 | \`onGetCustomColumnsModule\` | User-defined columns, and the commands to create, edit and delete them | where columns are stored |
 | \`onGetLookupManyModule\` | Multi-record pickers on lookup-many columns | the candidate records |
 | \`onGetGridCustomizerModule\` | Direct access to AG Grid — see [**Customizer**](?path=/story/task-grid-modules-customizer--overview) | a customizer strategy |
@@ -65,6 +65,8 @@ Each builder takes the one thing only you can provide, plus a few switches for i
 | \`createLookupManyModule\` | \`createDataProvider\` | — |
 | \`createGridCustomizerModule\` | \`strategy\` | — |
 
+Each builder is called with the grid's module context, which carries \`onGetTaskDataProvider\` — the templates provider needs it to describe the tasks a template expands into.
+
 Every grid below runs **one** module, so you can see exactly what it adds. Flip **Code** to read the registration, and edit it — remove the module and the feature disappears from the grid.
                 `.trim(),
             },
@@ -99,7 +101,7 @@ export const Templates: Story = {
         docs: {
             description: {
                 story: `
-**New** now offers *New from template*, and so does the **+** button on each row. Select a task and *Create template from task* saves its whole subtree as a new template, which then shows up in the picker.
+**New** now offers *New from template*, and so does the **+** button on each row. Select a task and *Create template from task* saves its whole subtree as a new template, which then shows up in the picker — for the rest of the session, unless you keep it yourself: see [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Keeping data across remounts*.
 
 Note the view dropdown has no *My views* group here — that is the personal-views module, and this grid does not register it.
                 `.trim(),

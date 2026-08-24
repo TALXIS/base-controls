@@ -236,7 +236,6 @@ Each hook falls back to the matching \`MemoryTaskActions\` method and receives i
 | \`onGetAvailableRelatedColumns\` | \`MemoryTaskActions.getAvailableRelatedColumns\` — none; in-memory data has no relationship metadata |
 | \`onCreateTask\` | \`MemoryTaskActions.createTask\` — builds a record ranked before every sibling, filtered out or not; the provider adds it |
 | \`onDeleteTasks\` | \`MemoryTaskActions.deleteTasks\` — resolves the subtree to delete; the provider removes it |
-| \`onCreateTasksFromTemplate\` | \`MemoryTaskActions.createTasksFromTemplate\` — expands the template in order |
 | \`onMoveTask\` | \`MemoryTaskActions.moveTask\` — rewrites the parent lookup and takes \`StackRank.between\` of the siblings the provider resolved |
 | \`onRecordSave\` | \`MemoryTaskActions.saveRecord\` — writes the dirty fields onto the stored record |
 | \`onOpenDatasetItems\` | \`MemoryTaskActions.openDatasetItems\` — a no-op; there is no form to navigate to |
@@ -255,7 +254,7 @@ So persisting to a server is a hook away, with the local store kept in step by t
 
 ## Templates
 
-Register \`createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) })\` from \`modules.onGetTemplatesModule\` and template-based creation appears in the ribbon. Its \`templates\` source is an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into; the provider owns it from then on, and the task strategy reads templates through the provider rather than from its own dependencies:
+Register \`createTemplateModule\` from \`modules.onGetTemplatesModule\` and template-based creation appears in the ribbon. \`MemoryTemplateDataProvider\` takes the template source — an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into — and the task side it reads columns, metadata and hierarchy from, which the builder is handed on its \`context\`:
 
 \`\`\`ts
 const templates = {
@@ -273,13 +272,17 @@ const templates = {
     },
 }
 
-//in onInitialize, so the captured templates survive the grid's remounts
+//returned from onInitialize
 modules: {
-    onGetTemplatesModule: () => createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates }) }),
+    onGetTemplatesModule: context => createTemplateModule({
+        provider: new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider: context.onGetTaskDataProvider }),
+    }),
 },
 \`\`\`
 
-Note the split: expanding a template *into* tasks is the task strategy's job, while capturing one *from* a task belongs to the \`ITemplateDataProvider\`. Each node's \`values\` may set **any** task column, and \`children\` nests to any depth. Creating a template *from* an existing task works in reverse: the task's visible column values are captured into \`values\`, and its subtree becomes \`children\`. That capture lives in \`MemoryTemplateDataProvider\` — the \`ITemplateDataProvider\` the descriptor builds from \`templates\` — and it pushes into the same \`records\` array, so a template made at runtime survives the grid's remounts like everything else.
+Each node's \`values\` may set **any** task column, and \`children\` nests to any depth. Capturing a template *from* a task works in reverse: the task's visible column values become \`values\`, and its subtree becomes \`children\`.
+
+The provider copies the source and writes into nothing you handed it, so a template captured at runtime lives in the provider until you store it — see *Keeping data across remounts* below. The contract behind both directions is on [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview), under *The template data provider*.
 
 ## Lookup-many columns
 
@@ -359,7 +362,7 @@ const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor(), [])
 | Data | How it gets back to you |
 |---|---|
 | Tasks | \`MemoryTaskStrategy\`'s \`onDestroy\` hands you the current records just before the provider is dropped: \`onDestroy: params => records = params.rawData\` |
-| Templates | \`MemoryTemplateDataProvider\` pushes into the \`templates\` object you constructed it with, so nothing extra is needed — as long as \`onInitialize\` keeps handing back the same object |
+| Templates | Subscribe to the provider's \`onAfterTemplateCreated\` and keep the snapshot \`getTemplateSource()\` returns |
 | Personal views | Subscribe to the module provider's events and pull the strategy's current state |
 
 \`\`\`ts
@@ -369,6 +372,9 @@ const syncStore = async () => { userQueries = await strategy.onGetUserQueries() 
 module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
 module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)
 module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore)
+
+const provider = new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider })
+provider.templateEvents.addEventListener('onAfterTemplateCreated', () => { templates = provider.getTemplateSource() })
 \`\`\`
 
 ## Using it in production

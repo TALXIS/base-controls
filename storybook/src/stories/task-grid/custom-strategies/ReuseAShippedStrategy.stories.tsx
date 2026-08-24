@@ -25,11 +25,11 @@ That is the cheapest way out of most awkward situations: Dataverse tasks in an e
 | Piece | Construct with | Environment needs | Pairing caveat |
 |---|---|---|---|
 | \`MemoryUserQueryStrategy\` | \`{ userQueries }\` — the array it reads and writes | none | Hand it the array you keep for the session, not a fresh literal: it is rebuilt per control instance, so a new array each time would wipe the views the user saved. |
-| \`DataverseUserQueryStrategy\` | \`{ entityName, recordId?, ownerId? }\` | \`talxis_userquery\` | State is server-side, so a second instance is fine. \`entityName\` is only the \`talxis_returnedtypecode\` filter value; omit \`ownerId\` and the views are shared environment-wide. |
-| \`DataverseCustomColumnsStrategy\` | \`{ entityName, recordId? }\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` and a relationship between \`entityName\` and the value table | The relationship is read from metadata, so any schema works; \`navigationPropertyName\` only disambiguates when there is more than one. Only \`DataverseTaskStrategy\` knows how to read the values back, and there is **no in-memory custom-columns implementation**. |
-| \`MemoryTaskStrategy\` | \`({ onInitialize, …hooks }, deps)\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | Casts \`deps.templateDataProvider\` to \`MemoryTemplateDataProvider\`, so pair templates with the memory provider or not at all. \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. Column metadata is passed through as the views declare it, so a lookup is filterable only if you said so — see [**Memory → Lookup-many columns**](?path=/story/task-grid-strategies-memory--overview). |
-| \`MemoryTemplateDataProvider\` | \`{ templates }\` — records, columns, metadata and a \`children\` map | none | Only \`MemoryTaskStrategy\` reads its children. |
-| \`DataverseTaskStrategy\` | \`({ onInitialize, …hooks }, deps)\` — \`onInitialize\` resolves the \`fetchXml\`, form ids and delete flags; the hooks sit beside it | Dataverse host, valid FetchXML | Needs a Dataverse custom-columns strategy in \`deps\` **if** any column name carries the custom-column suffix; it asserts the provider is there. Throws on template expansion. |
+| \`TalxisUserQueryStrategy\` | \`{ entityName, recordId?, ownerId? }\` | \`talxis_userquery\` | State is server-side, so a second instance is fine. \`entityName\` is only the \`talxis_returnedtypecode\` filter value; omit \`ownerId\` and the views are shared environment-wide. |
+| \`TalxisCustomColumnsStrategy\` | \`{ entityName, recordId? }\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` and a relationship between \`entityName\` and the value table | The relationship is read from metadata, so any schema works; \`navigationPropertyName\` only disambiguates when there is more than one. Only \`DataverseTaskStrategy\` knows how to read the values back, and there is **no in-memory custom-columns implementation**. |
+| \`MemoryTaskStrategy\` | \`({ onInitialize, …hooks }, deps)\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. Column metadata is passed through as the views declare it, so a lookup is filterable only if you said so — see [**Memory → Lookup-many columns**](?path=/story/task-grid-strategies-memory--overview). |
+| \`MemoryTemplateDataProvider\` | \`{ templates, onGetTaskDataProvider }\` — the template source, plus the task side it reads columns, metadata and hierarchy from | none | Pairs with any task strategy. It copies the source, so a template captured at runtime is kept only if you listen for \`onAfterTemplateCreated\` and store \`getTemplateSource()\`. |
+| \`DataverseTaskStrategy\` | \`({ onInitialize, …hooks }, deps)\` — \`onInitialize\` resolves the \`fetchXml\`, form ids and delete flags; the hooks sit beside it | Dataverse host, valid FetchXML | Needs a Talxis custom-columns strategy in \`deps\` **if** any column name carries the custom-column suffix; it asserts the provider is there. |
 | \`MemoryLookupManyDataProviderFactory\` / \`DataverseLookupManyDataProviderFactory\` | \`.create(source)\` / \`.create(parameters)\` | records you hold / the column's \`FetchXml\` binding | What you return from a \`lookupMany\` module's \`createDataProvider\`, one provider per lookup-many cell. The Dataverse one takes the parameters it was handed as-is; both return \`undefined\` when they have nothing for the column. |
 
 Both shipped descriptors are themselves reusable this way: nothing stops you from holding a \`MemoryTaskGridDescriptor\` and delegating most hooks to it.
@@ -44,7 +44,6 @@ interface ITaskStrategyDeps {
     enableTaskEditing: boolean
     savedQueryDataProvider: ISavedQueryDataProvider
     customColumnsDataProvider?: ICustomColumnsDataProvider
-    templateDataProvider?: ITemplateDataProvider
 }
 \`\`\`
 
@@ -112,10 +111,9 @@ onDeleteTasks: async params => {
 
 ## Pairings that do not work
 
-- **\`MemoryTaskStrategy\` + \`DataverseCustomColumnsStrategy\`** — the column definitions appear, but the memory strategy never consults the custom-columns provider, so no record ever gets a value.
-- **\`MemoryTaskStrategy\` + a non-memory template provider** — it casts to \`MemoryTemplateDataProvider\` and calls \`getTemplateChildren()\`, which throws on anything else.
+- **\`MemoryTaskStrategy\` + \`TalxisCustomColumnsStrategy\`** — the column definitions appear, but the memory strategy never consults the custom-columns provider, so no record ever gets a value.
 - **\`DataverseTaskStrategy\` + custom-column names with no custom-columns strategy** — the provider is non-null asserted the moment such a column is in the view.
-- **\`MemoryUserQueryStrategy\` built from a fresh array per call** — the callback runs on every remount, so the views the user saved are dropped each time. Resolve the array once and close over it.
+- **\`MemoryUserQueryStrategy\` or \`MemoryTemplateDataProvider\` built from a fresh literal per call** — the builder runs on every remount, so what the user saved is dropped each time. Resolve the source once and close over it.
 - **Any Dataverse strategy outside a Dataverse host** — they call \`window.Xrm\` directly. This is why the Dataverse page has no live grid.
                 `.trim(),
             },

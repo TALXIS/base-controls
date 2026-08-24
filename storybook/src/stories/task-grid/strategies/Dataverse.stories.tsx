@@ -32,14 +32,14 @@ Two features are backed by TALXIS models rather than by your task entity, and **
 
 | Feature | Module to register | Model it needs |
 |---|---|---|
-| Personal saved views | \`modules.onGetUserQueriesModule\` → \`createUserQueryModule({ strategy: new DataverseUserQueryStrategy(...) })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
-| Custom columns | \`modules.onGetCustomColumnsModule\` → \`createCustomColumnsModule({ strategy: new DataverseCustomColumnsStrategy(...) })\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` |
+| Personal saved views | \`modules.onGetUserQueriesModule\` → \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...) })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
+| Custom columns | \`modules.onGetCustomColumnsModule\` → \`createCustomColumnsModule({ strategy: new TalxisCustomColumnsStrategy(...) })\` | \`talxis_attributedefinition\`, \`talxis_attributevalue\`, \`talxis_attributeoption\` |
 
 \`\`\`ts
 //part of what onInitialize resolves - see Modules for the full picture
 modules: {
     onGetUserQueriesModule: (context) => createUserQueryModule({
-        strategy: new DataverseUserQueryStrategy({
+        strategy: new TalxisUserQueryStrategy({
             entityName: context.entityName,
             recordId: context.recordId,
             ownerId: context.userId,
@@ -47,7 +47,7 @@ modules: {
         enableQueryManager: true,
     }),
     onGetCustomColumnsModule: (context) => createCustomColumnsModule({
-        strategy: new DataverseCustomColumnsStrategy({
+        strategy: new TalxisCustomColumnsStrategy({
             entityName: context.entityName,
             recordId: context.recordId,
         }),
@@ -95,7 +95,7 @@ const descriptor = new DataverseTaskGridDescriptor({
         //personal views are on because this registers the module - there is no flag for it
         modules: {
             onGetUserQueriesModule: (context) => createUserQueryModule({
-                strategy: new DataverseUserQueryStrategy({
+                strategy: new TalxisUserQueryStrategy({
                     entityName: context.entityName,
                     recordId: context.recordId,
                     ownerId: context.userId,
@@ -129,7 +129,7 @@ onDeleteTasks: async params => {
 },
 \`\`\`
 
-The full set: \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onCreateTask\`, \`onDeleteTasks\`, \`onCreateTasksFromTemplate\` (no Dataverse default — the shipped one throws), \`onOpenDatasetItems\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\` and \`onGetFormParameters\`. The task entity name is derived from the FetchXML, so you never pass it separately — it reaches you on the \`context\` each module builder and \`onCreateTaskStrategy\` receives. Omit \`onCreateTaskStrategy\` and the descriptor builds a plain \`DataverseTaskStrategy\` over the resolved FetchXML.
+The full set: \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onCreateTask\`, \`onDeleteTasks\`, \`onOpenDatasetItems\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\` and \`onGetFormParameters\`. The task entity name is derived from the FetchXML, so you never pass it separately — it reaches you on the \`context\` each module builder and \`onCreateTaskStrategy\` receives. Omit \`onCreateTaskStrategy\` and the descriptor builds a plain \`DataverseTaskStrategy\` over the resolved FetchXML.
 
 ## Field mapping
 
@@ -181,7 +181,7 @@ The one constructor parameter, next to \`onInitialize\`:
 
 ## Saved views
 
-Register \`createUserQueryModule({ strategy: new DataverseUserQueryStrategy(...) })\` from \`modules.onGetUserQueriesModule\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
+Register \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...) })\` from \`modules.onGetUserQueriesModule\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
 
 Without that module the feature is simply off, and its options — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` — have nowhere to be set, because they belong to the module rather than to \`gridParameters\`. Not registering it also keeps the view manager and both dialogs out of your bundle.
 
@@ -239,11 +239,11 @@ The parameters carry everything the factory needs: the cell's record and column 
 
 Users define columns at runtime; they are stored as \`talxis_attributedefinition\` and \`talxis_attributevalue\` rows. Registering the module is what switches the feature on — [**Modules**](?path=/story/task-grid-modules--overview).
 
-\`DataverseCustomColumnsStrategy\` assembles nothing from the entity name: \`onRefresh\` reads the relationship between your task entity and \`talxis_attributevalue\` off the metadata and takes all three names it needs from it, so a non-standard schema works as-is. Pass \`navigationPropertyName\` only if your entity has more than one relationship to \`talxis_attributevalue\`.
+\`TalxisCustomColumnsStrategy\` assembles nothing from the entity name: \`onRefresh\` reads the relationship between your task entity and \`talxis_attributevalue\` off the metadata and takes all three names it needs from it, so a non-standard schema works as-is. Pass \`navigationPropertyName\` only if your entity has more than one relationship to \`talxis_attributevalue\`.
 
 ## Templates
 
-No Dataverse implementation ships: \`DataverseTemplateDataProvider\`'s capture throws and so does \`DataverseTaskStrategy.onCreateTasksFromTemplate\`. The \`templates\` module is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
+No Dataverse implementation ships: \`DataverseTemplateDataProvider\` lists templates through FetchXML but implements neither capturing one from a task nor expanding one into tasks. The \`templates\` module is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
 
 ## Ordering: stack ranks
 

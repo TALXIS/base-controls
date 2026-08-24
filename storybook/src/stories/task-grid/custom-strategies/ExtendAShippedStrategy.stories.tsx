@@ -80,8 +80,8 @@ Overriding a hook the base class does not read is safe. Overriding one it does i
 
 ## What is actually overridable
 
-- **All strategy state is private.** Across \`extensions/\`, the only \`protected\` members are \`onCreateTemplateFromTask\` on the two template providers — the one member designed to be overridden. Everything else is either the public hook surface or private fields you cannot reach.
-- **The user-query and template strategies are the ones you replace by parameter, not by subclass.** \`MemoryUserQueryStrategy\`, \`DataverseUserQueryStrategy\` and \`MemoryTemplateDataProvider\` all use prototype methods, so subclassing them works normally — but registering your own implementation as a module is usually less work than inheriting one.
+- **All strategy state is private.** Across the shipped strategies and providers, the only \`protected\` members are \`onCreateTemplateFromTask\` and \`onCreateTasksFromTemplate\` on the template providers — the two designed to be overridden. Everything else is either the public hook surface or private fields you cannot reach.
+- **The user-query and template strategies are the ones you replace by parameter, not by subclass.** \`MemoryUserQueryStrategy\`, \`TalxisUserQueryStrategy\` and \`MemoryTemplateDataProvider\` all use prototype methods, so subclassing them works normally — but registering your own implementation as a module is usually less work than inheriting one.
 - **Neither descriptor exposes its resolved data.** What \`onInitialize\` returns is private in both, so a subclass that needs \`fetchXml\`, \`records\` or \`fieldMapping\` must keep the object it handed back, as in the snippet above.
 - **\`DataverseTaskStrategy\` takes a hook per operation, so most extensions are not a subclass at all**: \`onGetFormParameters\` rewrites the page input and navigation options for the create, edit, bulk-edit and open dialogs, and every other hook receives the parameters of the matching \`DataverseTaskActions\` method — forward them to keep the shipped behaviour.
 

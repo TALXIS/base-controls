@@ -33,7 +33,7 @@ This section is for when it stops working: you need one shipped piece somewhere 
 Several behaviours that look like they need a subclass are parameters on both shipped descriptors:
 
 - \`onCreateTaskStrategy\` — every task-level option, because they belong to the task strategy: new-task defaults, what counts as active, what happens on open, and on Dataverse the form ids, \`rootTaskId\` and the delete flags. Returned from \`onInitialize\` on both shipped descriptors, which hand the callback what they just resolved.
-- **A hook per operation on the task strategy itself.** \`onCreateTask\`, \`onDeleteTasks\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\`, \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onCreateTasksFromTemplate\`, \`onOpenDatasetItems\` — plus \`onGetFormParameters\` on Dataverse. Each receives the parameters of the matching action, so wrapping one is a forward rather than a rewrite. See [**the actions classes**](#the-actions-classes).
+- **A hook per operation on the task strategy itself.** \`onCreateTask\`, \`onDeleteTasks\`, \`onMoveTask\`, \`onRecordSave\`, \`onIsRecordActive\`, \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onOpenDatasetItems\` — plus \`onGetFormParameters\` on Dataverse. Each receives the parameters of the matching action, so wrapping one is a forward rather than a rewrite. See [**the actions classes**](#the-actions-classes).
 - \`modules\` — whether an optional feature exists at all. [**Modules**](?path=/story/task-grid-modules--overview) is the reference; nothing there needs a subclass.
 
 ## The descriptor contract
@@ -115,16 +115,19 @@ Each action's parameters are exported alongside it (\`IMemoryTaskCreateParams\`,
 
 ## The template data provider
 
-The \`templates\` module wraps an \`ITemplateDataProvider\` — an \`IDataProvider\`, because the picker lists its records, plus template creation:
+The \`templates\` module wraps an \`ITemplateDataProvider\` — an \`IDataProvider\`, because the picker lists its records, plus the two template operations:
 
 \`\`\`ts
 interface ITemplateDataProvider extends IDataProvider {
     templateEvents: IEventEmitter<ITemplateDataProviderEvents>
+    //capture a template from a task
     createTemplateFromTask(task: IRecord): Promise<IRawRecord | null>
+    //expand one into tasks
+    createTasksFromTemplate(params: ICreateTasksFromTemplateParams): Promise<IRawRecord[] | null>
 }
 \`\`\`
 
-Do not write the lifecycle plumbing yourself. Extend the \`TemplateDataProviderBase\` mixin over whatever provider your platform needs and implement a single hook:
+Do not write the lifecycle plumbing yourself. Extend the \`TemplateDataProviderBase\` mixin over whatever provider your platform needs and implement one hook per direction:
 
 \`\`\`ts
 export class MyTemplateDataProvider extends TemplateDataProviderBase(MemoryDataProvider) {
@@ -132,12 +135,17 @@ export class MyTemplateDataProvider extends TemplateDataProviderBase(MemoryDataP
     protected async onCreateTemplateFromTask(task: IRecord) {
         return captureTemplate(task)
     }
+
+    //params carry the template id and the task it lands under, if any
+    protected async onCreateTasksFromTemplate(params: ICreateTasksFromTemplateParams) {
+        return buildTasks(params)
+    }
 }
 \`\`\`
 
-The mixin owns \`templateEvents\` and the error handling, which is what drives the grid's loading state and error dialog. \`MemoryTemplateDataProvider\` is the reference implementation; \`DataverseTemplateDataProvider\` is a stub whose capture throws.
+An expansion returns finished task raw records — ids, parent lookups and ordering included — and the grid adds them; the task strategy is not involved and never hears about templates. Everything you need to describe a task is on the \`ITaskDataProvider\` the provider is constructed with, through the \`onGetTaskDataProvider\` its module builder receives.
 
-Note the split: capturing a template *from* a task belongs to this provider, while expanding one *into* tasks is the task strategy's \`onCreateTasksFromTemplate\`.
+The mixin owns \`templateEvents\` and the error handling, which is what drives the grid's loading state and error dialog. \`MemoryTemplateDataProvider\` is the reference implementation — see [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Templates*; \`DataverseTemplateDataProvider\` implements neither direction.
 
 ## Imports
 
@@ -148,7 +156,7 @@ import {
     //classes
     MemoryTaskStrategy, MemoryTaskActions, MemoryUserQueryStrategy, MemoryTemplateDataProvider,
     StackRank,
-    DataverseTaskStrategy, DataverseTaskActions, DataverseUserQueryStrategy, DataverseCustomColumnsStrategy,
+    DataverseTaskStrategy, DataverseTaskActions, TalxisUserQueryStrategy, TalxisCustomColumnsStrategy,
     TemplateDataProviderBase, MemoryLookupManyDataProviderFactory, DataverseLookupManyDataProviderFactory,
     //the module builders
     createUserQueryModule, createTemplateModule, createCustomColumnsModule,
@@ -158,6 +166,7 @@ import {
 import type {
     //the descriptor contract and what it hands you
     ITaskGridDescriptor, ITaskStrategyDeps, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
+    ICreateTasksFromTemplateParams,
     //the strategies and providers
     ITaskDataProviderStrategy, ITaskDataProvider, IRecordTree, IRecordTreeView, IRecordStructure,
     ITaskSiblingContext, ITaskMoveParams, ITaskCreateParams, ITaskTemplateExpansionParams,

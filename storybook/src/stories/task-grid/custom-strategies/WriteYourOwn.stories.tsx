@@ -18,7 +18,7 @@ const meta = {
                 component: `
 When neither shipped strategy fits — a REST API, GraphQL, SQL through a gateway — you can write your own. The grid does not care where records come from. Reach for this when you want the mutations to go through your own code from the start, or when the shipped strategies' shapes fight you; if you only need remote *loading*, the memory strategy already does that.
 
-You need two pieces: a **descriptor** implementing \`ITaskGridDescriptor\`, and a **task strategy** implementing \`ITaskDataProviderStrategy\`. \`MemoryTaskStrategy\` in \`src/components/TaskGrid/extensions/memory/memory-task-strategy/\` is the shortest complete implementation to read alongside this page — and \`MemoryTaskActions\` beside it holds the behaviour on its own, so you can call the parts that fit your data instead of rewriting them, and [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) is worth reading first — if your records fit in memory, pointing \`MemoryTaskStrategy\` at your own loader gets you working CRUD without any of this.
+You need two pieces: a **descriptor** implementing \`ITaskGridDescriptor\`, and a **task strategy** implementing \`ITaskDataProviderStrategy\`. \`MemoryTaskStrategy\` in \`src/components/TaskGrid/strategies/memory/\` is the shortest complete implementation to read alongside this page — and \`MemoryTaskActions\` beside it holds the behaviour on its own, so you can call the parts that fit your data instead of rewriting them, and [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) is worth reading first — if your records fit in memory, pointing \`MemoryTaskStrategy\` at your own loader gets you working CRUD without any of this.
 
 Where the interfaces on this page are imported from is listed under [**Imports**](?path=/story/task-grid-custom-strategies--overview).
 
@@ -37,12 +37,11 @@ This is where the work is. The grid calls these hooks; you decide what they mean
 | \`onMoveTask(params)\` | ✅ | Reparent and/or reorder, between the siblings the provider resolved. |
 | \`onRecordSave(record)\` | ✅ | Persist an edited record. Return which fields you wrote. |
 | \`onIsRecordActive(recordId)\` | ✅ | Whether a task is active. Synchronous. |
-| \`onCreateTasksFromTemplate(params)\` | ✅ | Expand a template into tasks, or return \`null\`. The context places the root task; its descendants are yours to order. |
 | \`onOpenDatasetItems(refs, isTaskEntity)\` | ✅ | The user opened records — navigate, open a dialog, or no-op. |
 | \`onDestroy?()\` | — | Called just before the provider is torn down, on unmount and on every remount. Its data is still readable, so this is the last chance to hand the current records to whoever keeps them. |
 | \`onGetRootTaskId?()\` | — | Root the tree at one task. |
 
-\`onCreateTasksFromTemplate\` is required by the interface but may return \`null\` if you do not support templates — the Dataverse strategy throws instead, which is equally valid when the feature is off. Capturing a template *from* a task is not part of the strategy: it belongs to the \`ITemplateDataProvider\` you wrap in \`createTemplateModule\` and return from \`onGetModules\`.
+Templates are not part of the strategy in either direction: capturing one from a task and expanding one into tasks both belong to the \`ITemplateDataProvider\` you wrap in \`createTemplateModule\` and return from \`onGetModules\` — see [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview), under *The template data provider*.
 
 ### \`onInitialize\` is your setup hook
 
@@ -104,7 +103,7 @@ Top-level tasks hold \`null\`. What does *not* work is a bare guid under the pla
 
 ### Ordering
 
-**The provider works out where the task lands; you decide how order is expressed.** \`onMoveTask\`, \`onCreateTask\` and \`onCreateTasksFromTemplate\` all receive the same sibling context:
+**The provider works out where the task lands; you decide how order is expressed.** \`onMoveTask\` and \`onCreateTask\` both receive the same sibling context:
 
 \`\`\`ts
 interface ITaskSiblingContext {
@@ -176,7 +175,7 @@ Personal views are optional and live behind \`onGetModules\` — see [**Modules*
 
 An \`ISavedQuery\` is \`{ id, name, columns }\` plus optional \`description\`, \`filtering\`, \`sorting\`, \`quickFindColumns\` and \`isFlatListEnabled\`. The columns array is what the view actually displays — include your hidden structural columns in every view.
 
-\`MemoryUserQueryStrategy\` is 40 lines against a plain array, and \`DataverseUserQueryStrategy\` is the same shape against a table; either is worth reading before writing your own.
+\`MemoryUserQueryStrategy\` is 40 lines against a plain array, and \`TalxisUserQueryStrategy\` is the same shape against a table; either is worth reading before writing your own.
 
 ## Wiring it up
 
@@ -216,7 +215,7 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
 }
 \`\`\`
 
-\`deps\` carries what the grid built for you — \`savedQueryDataProvider\`, \`templateDataProvider\`, \`customColumnsDataProvider\`, and the \`enableTaskEditing\` / \`enableInlineCreation\` flags — so the strategy does not have to be told twice. The memory strategy leans on all three: it answers \`onGetAvailableColumns\` from the views, expands templates through the template provider, and never keeps a copy of either.
+\`deps\` carries what the grid built for you — \`savedQueryDataProvider\`, \`customColumnsDataProvider\`, and the \`enableTaskEditing\` / \`enableInlineCreation\` flags — so the strategy does not have to be told twice. The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
 
 ## Where the rest lives
 
