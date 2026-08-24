@@ -68,7 +68,7 @@ const ROW_TINT_CSS = \`
 const TaskGridExample = () => <>
     <style>{ROW_TINT_CSS}</style>
     <TaskGrid
-        taskGridDescriptor={descriptor} />
+        descriptor={descriptor} />
 </>
 `
 

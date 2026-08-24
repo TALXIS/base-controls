@@ -46,11 +46,10 @@ const descriptor = new MemoryTaskGridDescriptor({
     }),
 });
 
-export const MyTaskGridPage = ({ pcfContext }) => (
-    <TaskGrid
-        pcfContext={pcfContext}
-        taskGridDescriptor={descriptor}
-    />
+export const MyTaskGridPage = () => (
+    <PcfContextProvider>
+        <TaskGrid descriptor={descriptor} />
+    </PcfContextProvider>
 );
 ```
 
@@ -74,7 +73,7 @@ At runtime, read a module off the control: `getModules()` where the feature is o
 
 | Path | Contents |
 |------|----------|
-| `TaskGrid.tsx` | The component. `pcfContext` and `taskGridDescriptor`, plus `labels`, `components` and the event props. |
+| `TaskGrid.tsx` | The component. `descriptor`, plus `labels`, `components` and the event props. Reads the PCF context off `PcfContextProvider`. |
 | `interfaces.ts` | `ITaskGridDescriptor`, `ITaskGridDatasetControl`, `IFieldMapping`, `ITaskGridParameters`, `ITaskStrategyDeps`. |
 | `providers/` | `TaskDataProvider`, `SavedQueryDataProvider`, `ITemplateDataProvider` and their strategy interfaces. |
 | `modules/` | The optional features and their `create*Module` builders, each with the UI it needs. `CustomColumnsDataProvider` lives here, as do the shipped implementations of each module's contract under `memory/`, `talxis/` and `dataverse/`. |

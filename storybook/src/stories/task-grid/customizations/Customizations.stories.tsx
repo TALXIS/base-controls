@@ -100,8 +100,7 @@ Pass a \`labels\` prop to override any subset of the UI strings. Some support Li
 
 \`\`\`tsx
 <TaskGrid
-    pcfContext={pcfContext}
-    taskGridDescriptor={descriptor}
+    descriptor={descriptor}
     labels={{
         new: 'Add Task',
         deleteSelected: 'Remove',

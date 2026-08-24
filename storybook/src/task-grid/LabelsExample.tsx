@@ -9,7 +9,7 @@ const labels = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    taskGridDescriptor={descriptor}
+    descriptor={descriptor}
     labels={labels} />
 `
 

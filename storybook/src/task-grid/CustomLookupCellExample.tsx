@@ -114,7 +114,7 @@ const components: Partial<ITaskGridComponents> = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    taskGridDescriptor={descriptor}
+    descriptor={descriptor}
     components={components} />
 `
 

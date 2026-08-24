@@ -42,7 +42,7 @@ export const LargeTaskGrid = (props: ILargeTaskGridProps) => {
                 {generatedInMs !== undefined && ` · built in ${Math.round(generatedInMs)} ms`}
                 {seed !== undefined && ` · seed ${seed}`}
             </Text>
-            <TaskGrid taskGridDescriptor={descriptor} />
+            <TaskGrid descriptor={descriptor} />
         </Stack>
     )
 }

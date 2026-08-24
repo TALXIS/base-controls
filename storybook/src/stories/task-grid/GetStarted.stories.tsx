@@ -35,21 +35,22 @@ The control ships no data access at all. Loading, saving, reordering and saved v
 
 \`\`\`tsx
 import { TaskGrid } from '@talxis/base-controls'
+import { PcfContextProvider } from '@talxis/base-controls/utils'
 
-export const MyTaskGridPage = ({ pcfContext }) => (
-    <TaskGrid
-        pcfContext={pcfContext}
-        taskGridDescriptor={descriptor}
-    />
+export const MyTaskGridPage = () => (
+    <PcfContextProvider>
+        <TaskGrid descriptor={descriptor} />
+    </PcfContextProvider>
 )
 \`\`\`
+
+The grid reads the \`ComponentFramework.Context\` — navigation, formatting, error dialogs — off \`PcfContextProvider\`, so render it inside one. Pass your host's context to the provider; without one it builds a sample context.
 
 ### \`<TaskGrid />\` props
 
 | Prop | Required | Description |
 |------|:--------:|-------------|
-| \`pcfContext\` | ✅ | A \`ComponentFramework.Context\`. Used for navigation, formatting, error dialogs and environment utilities. |
-| \`taskGridDescriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration, and where the [**modules**](?path=/story/task-grid-modules--overview) are registered. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract. |
+| \`descriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration, and where the [**modules**](?path=/story/task-grid-modules--overview) are registered. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract. |
 | \`labels?\` | — | Partial \`ITaskGridLabels\`. Any key you supply replaces the English default. |
 | \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton loader, the command bar, or the renderer/editor of any cell. |
 | \`onReady?\` | — | \`(control, taskDataProvider)\` — the grid's handle. See [**Reacting to the grid**](#reacting-to-the-grid). |
@@ -73,8 +74,7 @@ A "created" or "updated" view prop receives \`null\` when the user cancelled the
 
 \`\`\`tsx
 <TaskGrid
-    pcfContext={pcfContext}
-    taskGridDescriptor={descriptor}
+    descriptor={descriptor}
     onRecordSaved={result => console.info('saved', result.recordId, result.fields)}
     onTasksDeleted={result => refreshMyKpis()}
     onError={(error, message) => logger.error(message, error)}

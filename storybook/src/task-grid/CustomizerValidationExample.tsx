@@ -28,7 +28,7 @@ const gridCustomizerStrategy: IGridCustomizerStrategy = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    taskGridDescriptor={descriptor} />
+    descriptor={descriptor} />
 `
 
 export const CustomizerValidationExample = () => <TaskGridExampleRunner seedCode={CUSTOMIZER_VALIDATION_CODE} />

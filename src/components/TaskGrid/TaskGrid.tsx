@@ -23,7 +23,7 @@ import { IDataProviderEventListeners, IRawRecord, IRecord, IRecordSaveOperationR
 /** Props for {@link TaskGrid}. */
 export interface ITaskGridProps {
     /** Supplies every strategy and module the grid runs on. See {@link ITaskGridDescriptor}. */
-    taskGridDescriptor: ITaskGridDescriptor;
+    descriptor: ITaskGridDescriptor;
     /** Overrides for any subset of the UI strings. See {@link ITaskGridLabels}. */
     labels?: Partial<ITaskGridLabels>;
     /** Overrides for any subset of the replaceable components. See {@link ITaskGridComponents}. */
@@ -99,7 +99,7 @@ interface IInternalTaskGridProps extends ITaskGridProps {
  * whenever the grid asks for a remount — a view change or a record save.
  */
 export const TaskGrid = (props: ITaskGridProps) => {
-    const { taskGridDescriptor } = props;
+    const { descriptor } = props;
     const stateRef = useRef<ITaskGridState>({});
     const components = { ...TaskGridComponents, ...props.components };
     const pcfContext = usePcfContext();
@@ -115,7 +115,7 @@ export const TaskGrid = (props: ITaskGridProps) => {
     const createDatasetControlInstance = async () => {
         setInstanceState(null);
         const instance = await TaskGridDatasetControlFactory.createInstance({
-            taskGridDescriptor,
+            taskGridDescriptor: descriptor,
             localizationService,
             state: stateRef.current,
             onGetPcfContext: () => pcfContextRef.current!,
@@ -129,13 +129,13 @@ export const TaskGrid = (props: ITaskGridProps) => {
 
     if (!instanceState) {
         return components.onRenderSkeleton({
-            height: taskGridDescriptor.onGetHeight?.() ?? '400px'
+            height: descriptor.onGetHeight?.() ?? '400px'
         })
     }
 
     return (
         <LocalizationServiceContext.Provider value={localizationService}>
-            <AgGridLicenseKeyContext.Provider value={taskGridDescriptor.onGetGridParameters?.()?.agGridLicenseKey ?? null}>
+            <AgGridLicenseKeyContext.Provider value={descriptor.onGetGridParameters?.()?.agGridLicenseKey ?? null}>
                 <TaskGridComponentsContext.Provider value={components}>
                     <InternalTaskGridDatasetControl
                         key={instanceState.remountKey}
@@ -149,7 +149,7 @@ export const TaskGrid = (props: ITaskGridProps) => {
     );
 }
 const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
-    const { datasetControl, onRemountRequested, taskGridDescriptor } = props;
+    const { datasetControl, onRemountRequested, descriptor } = props;
     const theme = useTheme();
     const styles = React.useMemo(() => getDatasetControlStyles(theme), [theme]);
     const provider = datasetControl.getDataset().getDataProvider() as ITaskDataProvider;
@@ -165,7 +165,7 @@ const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
 
     return <DatasetControlContext.Provider value={datasetControl}>
         <TaskDataProviderContext.Provider value={provider}>
-            <TaskGridDescriptorContext.Provider value={taskGridDescriptor}>
+            <TaskGridDescriptorContext.Provider value={descriptor}>
                 <RootElementIdContext.Provider value={rootElementId}>
                     <DatasetControlRenderer
                         onGetDatasetControlInstance={() => datasetControl}

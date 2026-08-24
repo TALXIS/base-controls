@@ -84,7 +84,7 @@ const gridCustomizerStrategy: IGridCustomizerStrategy = {
 }
 
 const TaskGridExample = () => <TaskGrid
-    taskGridDescriptor={descriptor} />
+    descriptor={descriptor} />
 `
 
 export const CustomizerRemoteSyncExample = () => <TaskGridExampleRunner seedCode={CUSTOMIZER_REMOTE_SYNC_CODE} />

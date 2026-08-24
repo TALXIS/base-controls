@@ -14,7 +14,7 @@ const getModules: GetModules = (data) => ({
 })
 
 const TaskGridExample = () => <TaskGrid
-    taskGridDescriptor={descriptor} />
+    descriptor={descriptor} />
 `
 
 export const ModuleUserQueriesExample = () => <TaskGridExampleRunner seedCode={MODULE_USER_QUERIES_CODE} />

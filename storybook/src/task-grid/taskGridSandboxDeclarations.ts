@@ -92,9 +92,9 @@ interface ITaskGridComponents {
     onRenderCommandBar: (props: ITaskGridCommandBarProps) => JSX.Element;
 }
 
-/** The grid. \`taskGridDescriptor\` is supplied by the sandbox. */
+/** The grid. \`descriptor\` is supplied by the sandbox. */
 declare const TaskGrid: (props: {
-    taskGridDescriptor: any;
+    descriptor: any;
     components?: Partial<ITaskGridComponents>;
     labels?: Record<string, string>;
 }) => JSX.Element;

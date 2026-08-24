@@ -14,7 +14,7 @@ const getModules: GetModules = () => ({
 })
 
 const TaskGridExample = () => <TaskGrid
-    taskGridDescriptor={descriptor} />
+    descriptor={descriptor} />
 `
 
 export const ModuleCustomColumnsExample = () => <TaskGridExampleRunner seedCode={MODULE_CUSTOM_COLUMNS_CODE} />

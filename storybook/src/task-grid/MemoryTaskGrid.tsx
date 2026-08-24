@@ -12,7 +12,7 @@ initializeIcons()
  * Everything `<TaskGrid />` takes except the two the harness supplies itself — so a story can pass
  * component overrides, labels, or any of the event props — plus which feature modules to register.
  */
-type IMemoryTaskGridProps = Omit<ITaskGridProps, 'taskGridDescriptor'> & {
+type IMemoryTaskGridProps = Omit<ITaskGridProps, 'descriptor'> & {
     /** Which modules the descriptor registers. Omit for the usual documentation set. */
     modules?: MemoryTaskGridModuleName[];
 }
@@ -24,5 +24,5 @@ type IMemoryTaskGridProps = Omit<ITaskGridProps, 'taskGridDescriptor'> & {
 export const MemoryTaskGrid = ({ modules, ...props }: IMemoryTaskGridProps) => {
     //one descriptor per mount - it owns the in-memory task state for the session
     const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor({ modules }), [])
-    return <TaskGrid {...props} taskGridDescriptor={descriptor} />
+    return <TaskGrid {...props} descriptor={descriptor} />
 }
