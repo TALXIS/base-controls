@@ -109,7 +109,6 @@ onDeleteTasks: async params => {
 
 ## Pairings that do not work
 
-- **\`MemoryUserQueryStrategy\` or \`MemoryTemplateDataProvider\` built from a fresh literal per call** — the builder runs on every remount, so what the user saved is dropped each time. Resolve the source once and close over it.
 - **Any Dataverse strategy outside a Dataverse host** — they call \`window.Xrm\` directly. This is why the Dataverse page has no live grid.
                 `.trim(),
             },
