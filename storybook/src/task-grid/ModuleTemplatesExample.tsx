@@ -5,8 +5,8 @@ import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 export const MODULE_TEMPLATES_CODE = `/** The modules this grid runs with. Anything not listed here is off. */
 const getModules: GetModules = (data) => ({
     onGetTemplatesModule: (context) => createTemplateModule({
-        //where the templates come from, where a captured one is written, and the task side a template
-        //is expanded into
+        //where the templates come from, where a captured one is written, and the grid it reads the task
+        //columns, metadata and hierarchy from
         provider: new MemoryTemplateDataProvider({ templates: data.templates, onGetTaskDataProvider: context.onGetTaskDataProvider }),
     }),
 })

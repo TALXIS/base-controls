@@ -26,7 +26,7 @@ export type IMemoryLookupManyParameters = ILookupManyDataProviderParameters;
  *
  * Most builders take no parameter: they close over whatever `onInitialize` already resolved. The
  * templates one receives the grid's module context, which is where its provider gets the task side it
- * expands into.
+ * reads from.
  */
 export interface IMemoryModules {
     /** Personal views. `createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) })`. */

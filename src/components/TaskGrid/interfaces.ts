@@ -85,11 +85,11 @@ export interface ITaskStrategyDeps {
 /** What every module builder can reach, whatever the module. */
 export interface ITaskGridModulesContext {
     /**
-     * The task provider the grid is building, for a module that operates on tasks — the templates
-     * module expands a template into them.
+     * The task provider the grid is building, for a module that works against tasks — the templates
+     * module reads the columns, the metadata and the hierarchy off it.
      *
-     * An accessor, not the instance: modules are resolved before the task provider exists, so a
-     * module holds this and calls it when it acts, never during its own construction.
+     * An accessor, not the instance: modules are resolved before the task provider exists, so a module
+     * holds this and calls it when it acts, never during its own construction.
      */
     onGetTaskDataProvider: () => ITaskDataProvider;
 }

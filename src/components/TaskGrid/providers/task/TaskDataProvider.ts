@@ -6,6 +6,7 @@ import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { ISavedQueryDataProvider} from "../saved-query";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
+import { ITemplateDataProvider } from "../template/TemplateDataProvider";
 
 /** One record an operation could not complete, and why. */
 export interface IFailedRecord {
@@ -71,6 +72,11 @@ export interface ITaskDataProviderParameters {
     strategy: ITaskDataProviderStrategy;
     savedQueryDataProvider: ISavedQueryDataProvider;
     customColumnsDataProvider?: ICustomColumnsDataProvider;
+    /**
+     * Present when the templates module is registered. The provider listens to it: a template resolves
+     * the tasks it expands into, and they are added to the grid as they are.
+     */
+    templateDataProvider?: ITemplateDataProvider;
     onIsFlatListEnabled: () => boolean;
 }
 
@@ -208,6 +214,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         this._strategy = parameters.strategy;
         this._customColumnsDataProvider = parameters.customColumnsDataProvider;
         this._onFlatListEnabled = parameters.onIsFlatListEnabled;
+        this._registerTaskEventListeners(parameters);
     }
 
     public getStrategy<T extends ITaskDataProviderStrategy>(): T {
@@ -561,6 +568,36 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })
+    }
+
+    /** Subscribes to everything the provider reacts to, once, at construction. */
+    private _registerTaskEventListeners(parameters: ITaskDataProviderParameters): void {
+        //expanding a template is what creates the tasks it describes: the provider is the first
+        //listener, so everything listening after it sees tasks that already exist
+        parameters.templateDataProvider?.templateEvents.addEventListener(
+            'onAfterTasksFromTemplateCreated',
+            (rawRecords, parentTaskId) => this._createTasksFromTemplate(rawRecords, parentTaskId),
+        );
+    }
+
+    /**
+     * Adds the tasks a template expanded into, raising the same events a task creation does.
+     *
+     * The records arrive finished — what they hold and where they sit is the template provider's — so
+     * this only adds them.
+     */
+    private async _createTasksFromTemplate(rawRecords: IRawRecord[] | null, parentTaskId?: string): Promise<void> {
+        if (!rawRecords?.length) {
+            return;
+        }
+        this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentTaskId);
+        await ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                this._createTasks(rawRecords, parentTaskId);
+                this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecords, parentTaskId);
+            },
+            onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
+        });
     }
 
     private _createTasks(rawRecords: IRawRecord[], parentId?: string) {

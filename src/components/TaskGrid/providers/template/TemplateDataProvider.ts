@@ -1,26 +1,44 @@
 import { IDataProvider, IEventEmitter, IRawRecord, IRecord } from "@talxis/client-libraries";
-import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
+import type { ITaskDataProvider } from "@components/TaskGrid/providers/task";
+
+/** What every {@link ITemplateDataProvider} implementation is constructed with. */
+export interface ITemplateDataProviderParams {
+    /**
+     * The task side both template operations work against: the grid a template is expanded into, and
+     * the one a template is captured from. Everything about a task — its columns, its metadata, its
+     * hierarchy — is read off it.
+     *
+     * An accessor, not the instance: the grid resolves the templates module before the task provider
+     * exists, so this is called when a template operation runs, never during construction. Descriptors
+     * hand it through their module context.
+     */
+    onGetTaskDataProvider: () => ITaskDataProvider;
+}
+
+/** What {@link ITemplateDataProvider.createTasksFromTemplate} needs to describe the tasks it expands to. */
+export interface ICreateTasksFromTemplateParams {
+    /** The template to expand. */
+    templateId: string;
+    /**
+     * The task the expansion lands under, or omitted for the grid's root. The record rather than its id:
+     * it is also what the new tasks' parent lookup points at.
+     */
+    parentRecord?: IRecord;
+}
 
 /** Lifecycle events raised around the two template operations: capturing one, and expanding one. */
 export interface ITemplateDataProviderEvents {
     onBeforeTemplateCreated: (taskId: string) => void;
     onAfterTemplateCreated: (record: IRawRecord | null) => void;
     onBeforeTasksFromTemplateCreated: (templateId: string) => void;
-    onAfterTasksFromTemplateCreated: (records: IRawRecord[] | null) => void;
-    onError: (error: any, message: string) => void;
-}
-
-/** What every {@link ITemplateDataProvider} implementation is constructed with. */
-export interface ITemplateDataProviderParams {
     /**
-     * The task side both template operations work against: the tasks a template expands into, and the
-     * task a template is captured from.
+     * The tasks a template expanded into, finished and ready to exist.
      *
-     * An accessor, not the instance — the grid resolves the templates module before the task provider
-     * exists, so this is called when a template operation runs, never during construction. Descriptors
-     * hand it through their module context.
+     * The task data provider is the first listener and adds them to the grid exactly as they are, so
+     * every later listener sees tasks that already exist.
      */
-    onGetTaskDataProvider: () => ITaskDataProvider;
+    onAfterTasksFromTemplateCreated: (records: IRawRecord[] | null, parentTaskId?: string) => void;
+    onError: (error: any, message: string) => void;
 }
 
 /**
@@ -29,7 +47,8 @@ export interface ITemplateDataProviderParams {
  * them.
  *
  * Both directions live here rather than on `ITaskDataProvider` — the task provider knows nothing about
- * templates. What this needs from the task side it gets through
+ * templates. It holds this provider as a dependency and listens for the tasks an expansion resolved;
+ * everything this needs about tasks it reads through
  * {@link ITemplateDataProviderParams.onGetTaskDataProvider}.
  */
 export interface ITemplateDataProvider extends IDataProvider {
@@ -41,11 +60,12 @@ export interface ITemplateDataProvider extends IDataProvider {
      */
     createTemplateFromTask(task: IRecord): Promise<IRawRecord | null>;
     /**
-     * Expands the template into a task and its subtree beneath `parentTaskId` — the grid's root when
-     * omitted. How the hierarchy is described, and how the tasks are created, is entirely the
-     * implementation's business.
+     * Expands the template into a task and its subtree, landing under the record
+     * {@link ICreateTasksFromTemplateParams.parentRecord} names. How the hierarchy is described, and what
+     * the tasks are built from, is entirely the implementation's business; adding them to the grid is the
+     * task provider's, which acts on {@link ITemplateDataProviderEvents.onAfterTasksFromTemplateCreated}.
      *
-     * @returns Every created task raw record, root first, or `null` if the operation was cancelled by the user. Throws on unexpected failure.
+     * @returns Every task raw record the template resolved to, root first, or `null` if the operation was cancelled by the user. Throws on unexpected failure.
      */
-    createTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null>;
+    createTasksFromTemplate(params: ICreateTasksFromTemplateParams): Promise<IRawRecord[] | null>;
 }

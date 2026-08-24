@@ -1,6 +1,6 @@
-import { IColumn, IRawRecord, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
-import { ITaskDataProvider, ITemplateDataProviderParams, TemplateDataProviderBase } from "@components/TaskGrid/providers";
-import { IRecordTree } from "@components/TaskGrid/providers/task/record-tree";
+import { IRawRecord, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { ICreateTasksFromTemplateParams, ITaskDataProvider, ITemplateDataProviderParams, TemplateDataProviderBase } from "@components/TaskGrid/providers";
+import { StackRank } from "@components/TaskGrid/stack-rank";
 import { IMemoryTaskTemplateNode, IMemoryTemplateSource } from "./interfaces";
 
 /** Constructor parameters for {@link MemoryTemplateDataProvider}. */
@@ -14,19 +14,26 @@ export interface IMemoryTemplateDataProviderParams extends ITemplateDataProvider
     templates: IMemoryTemplateSource;
 }
 
-/** The task-side data a single capture reads, resolved once from the task data provider. */
-interface ITemplateCaptureContext {
-    recordTree: IRecordTree;
-    /** Non-hidden task column names. */
-    visibleColumns: string[];
+/** Where one built task lands: what it hangs off, and which ranks it sorts between. */
+interface ITaskPlacement {
+    /** The parent lookup value, or `null` for a task at the grid's root. */
+    parentReference: ComponentFramework.EntityReference[] | null;
+    /** The rank it sorts after — the sibling built before it, when there is one. */
+    previousStackRank?: string;
+    /** The rank it sorts before — the first task already under the parent, when there is one. */
+    nextStackRank?: string;
 }
 
 /**
  * {@link ITemplateDataProvider} implementation backed entirely by in-memory records.
  *
- * Lists the templates the picker offers, expands one into a task subtree, and captures new ones from a
+ * Lists the templates the picker offers, resolves what one expands into, and captures new ones from a
  * task, without any server or Dataverse dependency. Intended for local development, tests, Storybook
  * and demos.
+ *
+ * Everything it needs to describe a task — the columns, the metadata, the hierarchy — it reads off the
+ * task provider it was constructed with. It never creates anything there: the task provider listens for
+ * what an expansion resolved and adds those records itself.
  *
  * Normally created by {@link MemoryTaskGridDescriptor}; construct it directly when you supply your
  * own descriptor, or subclass it to override either direction.
@@ -47,83 +54,93 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
     // ── Template expansion ───────────────────────────────────────────────────
 
     /**
-     * Recreates the template as a task and its whole subtree, in template order.
+     * Resolves the tasks the template expands into: the one built from the template record itself,
+     * followed by its whole subtree, depth-first and in template order.
      *
-     * Every task is created through the task provider's own `createTask`, then the template's values are
-     * applied to what came back — the task side is never told a template is involved.
+     * They come back finished — the task provider adds exactly these records to the grid.
      */
-    protected async onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
+    protected async onCreateTasksFromTemplate(params: ICreateTasksFromTemplateParams): Promise<IRawRecord[] | null> {
+        const { templateId, parentRecord } = params;
         const template = this.getRecordsMap()[templateId];
         if (!template) {
             return null;
         }
-        const tasks: IRawRecord[] = [];
-        const rootTaskId = await this._createTask(this._getTaskFieldsFromTemplate(template), parentTaskId, tasks);
-        if (!rootTaskId) {
-            return null;
-        }
-        await this._createChildren(this._params.templates.children?.[templateId] ?? [], rootTaskId, tasks);
+        const taskDataProvider = this._getTaskDataProvider();
+        //before every task already under the parent, filtered out of the view or not
+        const nextStackRank = taskDataProvider.getRecordTree().structure.getChildren(parentRecord?.getRecordId() ?? null)[0]
+            ?.getValue(taskDataProvider.getNativeColumns().stackRank) as string | undefined;
+        const rootTask = this._buildTask(this._getTaskFieldsFromTemplate(template), {
+            parentReference: parentRecord ? [parentRecord.getNamedReference()] : null,
+            nextStackRank,
+        });
+        const tasks = [rootTask];
+        this._buildChildren(this._params.templates.children?.[templateId] ?? [], rootTask, tasks);
         return tasks;
     }
 
     /**
-     * Creates the nodes beneath `parentTaskId`, each with its own subtree.
+     * Builds the nodes beneath `parentTask`, depth-first, appending each to `tasks`.
      *
-     * Back to front: `createTask` lands a new task before every existing sibling, so creating the last
-     * node first is what leaves them in the order the template describes.
+     * The descendants are ours to rank: they have no siblings in the grid yet, so each one ranks after
+     * the one built before it, which preserves the order the template describes.
      */
-    private async _createChildren(nodes: IMemoryTaskTemplateNode[], parentTaskId: string, tasks: IRawRecord[]): Promise<void> {
-        for (const node of [...nodes].reverse()) {
-            const taskId = await this._createTask(node.values, parentTaskId, tasks);
-            if (taskId && node.children?.length) {
-                await this._createChildren(node.children, taskId, tasks);
+    private _buildChildren(nodes: IMemoryTaskTemplateNode[], parentTask: IRawRecord, tasks: IRawRecord[]): void {
+        const parentReference = this._getNewTaskReference(parentTask);
+        const { stackRank } = this._getTaskDataProvider().getNativeColumns();
+        let previousStackRank: string | undefined;
+        for (const node of nodes) {
+            const task = this._buildTask(node.values, { parentReference, previousStackRank });
+            previousStackRank = task[stackRank] as string;
+            tasks.push(task);
+            if (node.children?.length) {
+                this._buildChildren(node.children, task, tasks);
             }
         }
     }
 
     /**
-     * Creates one task and writes `values` onto it, appending what was created to `tasks`.
+     * Builds one task record from the values it carries.
      *
-     * @returns The created task's id, or `null` when the task provider reported a cancellation.
+     * The id, the parent lookup and the stack rank are written last, so a template that happens to carry
+     * a column of the same name can never decide what the task is or where it lands.
      */
-    private async _createTask(values: Partial<IRawRecord>, parentTaskId: string | undefined, tasks: IRawRecord[]): Promise<string | null> {
+    private _buildTask(values: Partial<IRawRecord>, placement: ITaskPlacement): IRawRecord {
         const taskDataProvider = this._getTaskDataProvider();
-        const createdTask = await taskDataProvider.createTask(parentTaskId);
-        if (!createdTask) {
-            return null;
-        }
-        const taskId = createdTask[taskDataProvider.getMetadata().PrimaryIdAttribute] as string;
-        const task = { ...createdTask, ...this._getApplicableValues(values, taskDataProvider) };
-        //the record the provider just built is the one this updates in place
-        taskDataProvider.updateTaskData([task]);
-        tasks.push(task);
-        return taskId;
+        const { parentId, stackRank, stateCode } = taskDataProvider.getNativeColumns();
+        const task: IRawRecord = { ...values };
+        task[taskDataProvider.getMetadata().PrimaryIdAttribute] = crypto.randomUUID();
+        task[parentId] = placement.parentReference;
+        task[stackRank] = StackRank.between(placement.previousStackRank, placement.nextStackRank);
+        task[stateCode] ??= 0;
+        return task;
     }
 
     /**
-     * `values` minus the columns the task side owns: a template that happens to carry a column named
-     * like the task's own id, parent lookup or stack rank must not overwrite what the creation resolved.
+     * The same lookup value for a task this expansion has only just built: the grid has no record for it
+     * yet, so it is read off what we wrote.
      */
-    private _getApplicableValues(values: Partial<IRawRecord>, taskDataProvider: ITaskDataProvider): Partial<IRawRecord> {
-        const nativeColumns = taskDataProvider.getNativeColumns();
-        const owned = new Set([taskDataProvider.getMetadata().PrimaryIdAttribute, nativeColumns.parentId, nativeColumns.stackRank]);
-        return Object.fromEntries(Object.entries(values).filter(([columnName]) => !owned.has(columnName)));
+    private _getNewTaskReference(task: IRawRecord): ComponentFramework.EntityReference[] {
+        const taskDataProvider = this._getTaskDataProvider();
+        const metadata = taskDataProvider.getMetadata();
+        return [{
+            id: { guid: task[metadata.PrimaryIdAttribute] as string },
+            name: task[taskDataProvider.getNativeColumns().subject] as string,
+            //an empty string beats `undefined` when `LogicalName` was not supplied
+            etn: metadata.LogicalName ?? '',
+        }];
     }
 
-    /** Maps a template record onto the task fields the two entities share. */
+    /** Maps a template record onto the task fields the two entities share, plus the template's name. */
     private _getTaskFieldsFromTemplate(template: IRecord): Partial<IRawRecord> {
-        const taskDataProvider = this._getTaskDataProvider();
-        const metadata = this.getMetadata();
+        const { templates } = this._params;
         const rawTemplate = template.getRawData();
         const fields: Partial<IRawRecord> = {};
-        for (const column of taskDataProvider.getColumns()) {
-            if (column.name !== metadata?.PrimaryIdAttribute && rawTemplate[column.name] !== undefined) {
+        for (const column of templates.columns) {
+            if (column.name !== templates.metadata.PrimaryIdAttribute) {
                 fields[column.name] = rawTemplate[column.name];
             }
         }
-        if (metadata?.PrimaryNameAttribute) {
-            fields[taskDataProvider.getNativeColumns().subject] = template.getNamedReference().name ?? null;
-        }
+        fields[this._getTaskDataProvider().getNativeColumns().subject] = template.getNamedReference().name ?? null;
         return fields;
     }
 
@@ -146,7 +163,7 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
         }
 
         templates.records.push(template);
-        const children = this._buildTemplateNodes(task, this._getCaptureContext());
+        const children = this._buildTemplateNodes(task);
         if (children.length > 0) {
             templates.children ??= {};
             templates.children[templateId] = children;
@@ -162,24 +179,16 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
      * The children come from the complete hierarchy, so an active quick find does not drop the subtasks it
      * hides.
      */
-    private _buildTemplateNodes(task: IRecord, context: ITemplateCaptureContext): IMemoryTaskTemplateNode[] {
-        const children = context.recordTree.structure.getChildren(task.getRecordId());
+    private _buildTemplateNodes(task: IRecord): IMemoryTaskTemplateNode[] {
+        const visibleColumns = task.getColumns().filter(column => !column.isHidden).map(column => column.name);
+        const children = this._getTaskDataProvider().getRecordTree().structure.getChildren(task.getRecordId());
         return children.map(child => {
             const rawChild = child.getRawData();
             return {
-                values: Object.fromEntries(context.visibleColumns.map(columnName => [columnName, rawChild[columnName] ?? null])),
-                children: this._buildTemplateNodes(child, context),
+                values: Object.fromEntries(visibleColumns.map(columnName => [columnName, rawChild[columnName] ?? null])),
+                children: this._buildTemplateNodes(child),
             };
         });
-    }
-
-    /** Everything the capture needs from the task side: its hierarchy and its visible columns. */
-    private _getCaptureContext(): ITemplateCaptureContext {
-        const taskDataProvider = this._getTaskDataProvider();
-        return {
-            recordTree: taskDataProvider.getRecordTree(),
-            visibleColumns: taskDataProvider.getColumns().filter((column: IColumn) => !column.isHidden).map((column: IColumn) => column.name),
-        };
     }
 
     private _getTaskDataProvider(): ITaskDataProvider {

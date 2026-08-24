@@ -86,7 +86,7 @@ export interface IDataverseModules {
     onGetUserQueriesModule?: (context: IDataverseUserQueriesContext) => IUserQueryModule | undefined;
     /**
      * Task templates. `createTemplateModule({ provider })` — no Dataverse template provider ships, so the
-     * provider is your own. `context.onGetTaskDataProvider` is the task side it expands into.
+     * provider is your own. `context.onGetTaskDataProvider` is the task side it reads from.
      */
     onGetTemplatesModule?: (context: ITaskGridModulesContext) => ITemplateModule | undefined;
     /**

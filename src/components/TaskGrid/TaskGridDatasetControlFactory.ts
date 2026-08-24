@@ -64,6 +64,7 @@ export class TaskGridDatasetControlFactory {
             strategy: taskStrategy,
             savedQueryDataProvider: savedQueryDataProvider,
             customColumnsDataProvider: customColumnsDataProvider,
+            templateDataProvider: modules.templates?.provider,
             onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider)
         });
 

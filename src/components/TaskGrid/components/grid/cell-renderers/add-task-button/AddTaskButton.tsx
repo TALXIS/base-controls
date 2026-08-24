@@ -20,7 +20,7 @@ export const AddTaskButton = (props: ICellProps) => {
         //this needs to be done so the button menu does not overlay the dialog
         setIsButtonMounted(false);
         //the command only renders with the module registered, which is what makes getModule safe here
-        await datasetControl.getModule('templates').provider.createTasksFromTemplate(templateId, record.getRecordId());
+        await datasetControl.getModule('templates').provider.createTasksFromTemplate({ templateId, parentRecord: record });
         setIsButtonMounted(true);
     }
 

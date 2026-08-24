@@ -1,6 +1,6 @@
 import { DataProvider, EventEmitter, IRawRecord, IRecord } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils/error-handling";
-import { ITemplateDataProvider, ITemplateDataProviderEvents } from "./TemplateDataProvider";
+import { ICreateTasksFromTemplateParams, ITemplateDataProvider, ITemplateDataProviderEvents } from "./TemplateDataProvider";
 
 //the base class rather than IDataProvider: the interface declares `destroy` as a property, which a
 //subclass cannot override with a method
@@ -18,8 +18,7 @@ export type TemplateDataProviderConstructor<TBase extends DataProviderConstructo
  *
  * Extend the result with the base your platform needs and implement `onCreateTemplateFromTask` and
  * `onCreateTasksFromTemplate`. The mixin's constructor is untyped (`...args: any[]`), so declare your own
- * typed constructor — taking at least {@link ITemplateDataProviderParams} — and forward the base's own
- * parameters to `super`.
+ * typed constructor and forward the base's own parameters to `super`.
  *
  * @example
  * ```ts
@@ -27,9 +26,8 @@ export type TemplateDataProviderConstructor<TBase extends DataProviderConstructo
  *     protected async onCreateTemplateFromTask(task: IRecord) {
  *         return captureTemplate(task);
  *     }
- *     protected async onCreateTasksFromTemplate(templateId: string, parentTaskId?: string) {
- *         const task = await this._params.onGetTaskDataProvider().createTask(parentTaskId);
- *         return task ? [applyTemplate(task, templateId)] : null;
+ *     protected async onCreateTasksFromTemplate(params: ICreateTasksFromTemplateParams) {
+ *         return buildTasks(params);
  *     }
  * }
  * ```
@@ -57,12 +55,14 @@ export function TemplateDataProviderBase<TBase extends DataProviderConstructor>(
             this.templateEvents.clearEventListeners();
         }
 
-        public async createTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
-            this.templateEvents.dispatchEvent('onBeforeTasksFromTemplateCreated', templateId);
+        public async createTasksFromTemplate(params: ICreateTasksFromTemplateParams): Promise<IRawRecord[] | null> {
+            this.templateEvents.dispatchEvent('onBeforeTasksFromTemplateCreated', params.templateId);
             return ErrorHelper.executeWithErrorHandling({
                 operation: async () => {
-                    const rawRecords = await this.onCreateTasksFromTemplate(templateId, parentTaskId);
-                    this.templateEvents.dispatchEvent('onAfterTasksFromTemplateCreated', rawRecords);
+                    const rawRecords = await this.onCreateTasksFromTemplate(params);
+                    //raising it is what creates them: the task provider listens first and adds them to
+                    //the grid, so everything listening after this line sees tasks that exist
+                    this.templateEvents.dispatchEvent('onAfterTasksFromTemplateCreated', rawRecords, params.parentRecord?.getRecordId());
                     return rawRecords;
                 },
                 onError: (error, message) => this.templateEvents.dispatchEvent('onError', error, message)
@@ -78,11 +78,12 @@ export function TemplateDataProviderBase<TBase extends DataProviderConstructor>(
         }
 
         /**
-         * Expands the template into tasks — override this. Create them through the task provider the
-         * constructor was handed. Return `null` when the operation was cancelled by the user; throw on
+         * Expands the template into tasks — override this. Return the finished task raw records, root
+         * first: the task provider adds exactly what comes back to the grid, so everything a task needs
+         * to exist has to be on it. Return `null` when the operation was cancelled by the user; throw on
          * failure — the base reports both through {@link templateEvents}.
          */
-        protected onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null> {
+        protected onCreateTasksFromTemplate(params: ICreateTasksFromTemplateParams): Promise<IRawRecord[] | null> {
             throw new Error(`${this.constructor.name} does not implement onCreateTasksFromTemplate.`);
         }
     }

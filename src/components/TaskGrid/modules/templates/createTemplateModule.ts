@@ -7,8 +7,8 @@ export interface ITemplateModuleOptions {
     /**
      * Where templates are read from, captured to, and expanded into tasks. Typically
      * `new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider })`, or your own
-     * `ITemplateDataProvider`. It is handed the task side through its own constructor — see the
-     * `onGetTaskDataProvider` on the descriptor's module context.
+     * `ITemplateDataProvider`. It resolves what a template expands into; the grid's task provider adds
+     * those tasks.
      */
     provider: ITemplateDataProvider;
 }
