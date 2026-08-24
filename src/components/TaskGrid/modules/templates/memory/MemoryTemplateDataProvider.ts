@@ -8,8 +8,9 @@ export interface IMemoryTemplateDataProviderParams extends ITemplateDataProvider
     /**
      * The template entity plus the child hierarchy each template expands into.
      *
-     * **`records` is written into.** Creating a template pushes into that array — the same way the
-     * memory task strategy writes tasks — which is how templates outlive the grid's remounts.
+     * Read once and copied: the provider never writes into it. To keep a template captured at runtime,
+     * listen for `templateEvents.onAfterTemplateCreated` and take a {@link MemoryTemplateDataProvider.getTemplateSource}
+     * snapshot — otherwise it is gone with the provider.
      */
     templates: IMemoryTemplateSource;
 }
@@ -35,20 +36,42 @@ interface ITaskPlacement {
  * task provider it was constructed with. It never creates anything there: the task provider listens for
  * what an expansion resolved and adds those records itself.
  *
+ * It writes into nothing it was handed either. The template source is copied at construction, a capture
+ * lands in that copy, and keeping it is the consumer's call — listen for `onAfterTemplateCreated` and
+ * store what {@link MemoryTemplateDataProvider.getTemplateSource} returns.
+ *
  * Normally created by {@link MemoryTaskGridDescriptor}; construct it directly when you supply your
  * own descriptor, or subclass it to override either direction.
  */
 export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryDataProvider) {
     private _params: IMemoryTemplateDataProviderParams;
+    //copies, and the source of truth from here on: what the provider was handed belongs to whoever
+    //handed it over, so a capture is reported rather than written back
+    private _records: IRawRecord[];
+    private _children: Record<string, IMemoryTaskTemplateNode[]>;
 
     constructor(params: IMemoryTemplateDataProviderParams) {
         super({
-            //a copy: MemoryDataProvider swaps its internal array on delete
             dataSource: [...params.templates.records],
             metadata: params.templates.metadata,
         });
         this.setColumns(params.templates.columns);
         this._params = params;
+        this._records = [...params.templates.records];
+        this._children = { ...params.templates.children };
+    }
+
+    /**
+     * The template source as this provider currently holds it, including anything captured since it was
+     * built. Take a snapshot when {@link ITemplateDataProviderEvents.onAfterTemplateCreated} reports a
+     * capture and templates outlive the grid; ignore it and they do not.
+     */
+    public getTemplateSource(): IMemoryTemplateSource {
+        return {
+            ...this._params.templates,
+            records: [...this._records],
+            children: { ...this._children },
+        };
     }
 
     // ── Template expansion ───────────────────────────────────────────────────
@@ -74,7 +97,7 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
             nextStackRank,
         });
         const tasks = [rootTask];
-        this._buildChildren(this._params.templates.children?.[templateId] ?? [], rootTask, tasks);
+        this._buildChildren(this._children[templateId] ?? [], rootTask, tasks);
         return tasks;
     }
 
@@ -162,14 +185,12 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
             template[PrimaryNameAttribute] = task.getNamedReference().name ?? null;
         }
 
-        templates.records.push(template);
+        this._records.push(template);
         const children = this._buildTemplateNodes(task);
         if (children.length > 0) {
-            templates.children ??= {};
-            templates.children[templateId] = children;
+            this._children[templateId] = children;
         }
-        //already written - this only re-points an open picker at the updated list
-        this.setDataSource([...templates.records]);
+        this.setDataSource([...this._records]);
         return template;
     }
 

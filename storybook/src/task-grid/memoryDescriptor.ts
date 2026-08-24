@@ -111,9 +111,17 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore);
             return module;
         },
-        onGetTemplatesModule: context => !isEnabled('templates') ? undefined : createTemplateModule({
-            provider: new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider: context.onGetTaskDataProvider }),
-        }),
+        onGetTemplatesModule: context => {
+            if (!isEnabled('templates')) {
+                return undefined;
+            }
+            const provider = new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider: context.onGetTaskDataProvider });
+            //the provider keeps its own copy and writes into nothing it was handed, so the store is
+            //updated from out here whenever it reports a capture - the same contract the user queries
+            //above live with
+            provider.templateEvents.addEventListener('onAfterTemplateCreated', () => { templates = provider.getTemplateSource(); });
+            return createTemplateModule({ provider });
+        },
         onGetCustomColumnsModule: () => !isEnabled('customColumns') ? undefined : createCustomColumnsModule({
             strategy: new MemoryCustomColumnsStrategy(),
             enableCustomColumnCreation: true,
