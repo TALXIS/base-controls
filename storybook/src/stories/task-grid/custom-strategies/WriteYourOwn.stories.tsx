@@ -85,7 +85,7 @@ Worth checking each action's parameters before you implement its operation from 
 Two things worth copying from the memory strategy:
 
 - **Keep only what you were handed.** Store the provider and whatever your own loader resolved, and derive the rest on access — field names from \`provider.getNativeColumns()\`, columns from \`provider.getColumns()\`, the hierarchy from \`provider.getRecordTree()\`. A snapshot of derived values goes stale as soon as the user switches a view.
-- **Do not duplicate what another provider owns.** \`deps\` hands you the saved-query, template and custom-columns providers; read through them instead of keeping a second copy of their data.
+- **Do not duplicate what another provider owns.** The locator reaches the saved-query, template and custom-columns providers; read through them instead of keeping a second copy of their data.
 
 ### Raw records and the parent key
 
@@ -191,8 +191,8 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
         return { subject: 'subject', parentId: 'parentid', stackRank: 'stackrank', stateCode: 'statecode' }
     }
 
-    public onCreateTaskStrategy(deps: ITaskStrategyDeps) {
-        return new MyTaskStrategy(deps)
+    public onCreateTaskStrategy(services: ITaskGridServiceLocator) {
+        return new MyTaskStrategy(services)
     }
 
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
@@ -200,12 +200,12 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     //optional: omit it and the grid shows system views only
-    public onGetModules(): ITaskGridModules {
+    public onGetModules(services: ITaskGridServiceLocator): ITaskGridModules {
         return {
             userQueries: createUserQueryModule({
                 strategy: new MyUserQueryStrategy(),
                 enableSaveAsNewQuery: true,
-            }),
+            }, services),
         }
     }
 
@@ -215,7 +215,7 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
 }
 \`\`\`
 
-\`deps\` carries what the grid built for you — \`savedQueryDataProvider\`, and the \`enableTaskEditing\` / \`enableInlineCreation\` flags — so the strategy does not have to be told twice. The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
+\`services\` reaches everything the grid built — \`savedQueryDataProvider\`, \`gridParameters\`, the providers a module registered — so the strategy does not have to be told twice. Store it in the constructor and resolve inside the methods; see [**Overview → Services**](?path=/story/task-grid-custom-strategies-overview--overview). The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
 
 ## Where the rest lives
 

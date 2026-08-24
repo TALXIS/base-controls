@@ -1,6 +1,7 @@
 import { FetchXmlBuilder, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
-import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridModulesContext, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
+import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { DataverseTaskStrategy } from "@components/TaskGrid/strategies/dataverse/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
@@ -83,12 +84,12 @@ export interface IDataverseModules {
      * })
      * ```
      */
-    onGetUserQueriesModule?: (context: IDataverseUserQueriesContext) => IUserQueryModule | undefined;
+    onGetUserQueriesModule?: (context: IDataverseUserQueriesContext, services: ITaskGridServiceLocator) => IUserQueryModule | undefined;
     /**
      * Task templates. `createTemplateModule({ provider })` — no Dataverse template provider ships, so the
      * provider is your own. `context.onGetTaskDataProvider` is the task side it reads from.
      */
-    onGetTemplatesModule?: (context: ITaskGridModulesContext) => ITemplateModule | undefined;
+    onGetTemplatesModule?: (services: ITaskGridServiceLocator) => ITemplateModule | undefined;
     /**
      * User-defined columns. Needs the `talxis_attributedefinition` and `talxis_attributevalue` tables.
      *
@@ -101,7 +102,7 @@ export interface IDataverseModules {
      * })
      * ```
      */
-    onGetCustomColumnsModule?: (context: IDataverseCustomColumnsContext) => ICustomColumnsModule | undefined;
+    onGetCustomColumnsModule?: (context: IDataverseCustomColumnsContext, services: ITaskGridServiceLocator) => ICustomColumnsModule | undefined;
     /**
      * AG Grid customization: column definitions, row class rules, one-time init. The strategy is your
      * own. See [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
@@ -110,7 +111,7 @@ export interface IDataverseModules {
      * onGetGridCustomizerModule: () => createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy() })
      * ```
      */
-    onGetGridCustomizerModule?: () => IGridCustomizerModule | undefined;
+    onGetGridCustomizerModule?: (services: ITaskGridServiceLocator) => IGridCustomizerModule | undefined;
     /**
      * Candidate records for lookup-many columns. `DataverseLookupManyDataProviderFactory` builds the
      * provider from the column's own `FetchXml` binding, scoped by the two records on the context.
@@ -127,13 +128,13 @@ export interface IDataverseModules {
      * })
      * ```
      */
-    onGetLookupManyModule?: (context: IDataverseLookupManyContext) => ILookupManyModule | undefined;
+    onGetLookupManyModule?: (context: IDataverseLookupManyContext, services: ITaskGridServiceLocator) => ILookupManyModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
 export interface IDataverseTaskStrategyContext extends IDataverseStrategyContext {
-    /** The providers and flags the grid built. Forward them to the strategy's second argument. */
-    deps: ITaskStrategyDeps;
+    /** Everything the grid built. Forward it to the strategy's second argument. */
+    services: ITaskGridServiceLocator;
     /** The `baseFetchXml` from `onInitialize`. The strategy renders its Liquid variables itself. */
     fetchXml: string;
     /** The hydrated project record, when `projectRecord` was supplied. */
@@ -263,15 +264,15 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
      * Calls each builder on the `modules` resolved by `onInitialize`, each with the slice of context it
      * declares. An absent builder leaves that feature off.
      */
-    public onGetModules(modulesContext: ITaskGridModulesContext): ITaskGridModules {
+    public onGetModules(services: ITaskGridServiceLocator): ITaskGridModules {
         const context = this._getStrategyContext();
         const modules = this._initialized.modules;
         return {
-            userQueries: modules?.onGetUserQueriesModule?.(context),
-            templates: modules?.onGetTemplatesModule?.(modulesContext),
-            customColumns: modules?.onGetCustomColumnsModule?.(context),
-            gridCustomizer: modules?.onGetGridCustomizerModule?.(),
-            lookupMany: modules?.onGetLookupManyModule?.(context),
+            userQueries: modules?.onGetUserQueriesModule?.(context, services),
+            templates: modules?.onGetTemplatesModule?.(services),
+            customColumns: modules?.onGetCustomColumnsModule?.(context, services),
+            gridCustomizer: modules?.onGetGridCustomizerModule?.(services),
+            lookupMany: modules?.onGetLookupManyModule?.(context, services),
         };
     }
 
@@ -279,10 +280,10 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
      * Delegates to the `onCreateTaskStrategy` resolved by `onInitialize`, falling back to a plain
      * `DataverseTaskStrategy` over the resolved FetchXML.
      */
-    public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
+    public onCreateTaskStrategy(services: ITaskGridServiceLocator): ITaskDataProviderStrategy {
         const context: IDataverseTaskStrategyContext = {
             ...this._getStrategyContext(),
-            deps: deps,
+            services: services,
             fetchXml: this._fetchXml,
             projectRecord: this._projectRecord,
             sourceRecord: this._sourceRecord,
@@ -293,7 +294,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
                 projectRecord: this._projectRecord,
                 sourceRecord: this._sourceRecord,
             }),
-        }, deps);
+        }, services);
     }
 
     private async _getProjectRecord(): Promise<ISingleRecord | undefined> {

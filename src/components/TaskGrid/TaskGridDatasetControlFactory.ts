@@ -5,6 +5,7 @@ import { ITaskGridLabels } from "./labels";
 import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { TaskGridDatasetControl } from "./TaskGridDatasetControl";
+import { ServiceLocator } from "./services";
 
 /**
  * The slice of grid state that outlives a remount. The `TaskGrid` component owns it and hands the same
@@ -29,56 +30,48 @@ export class TaskGridDatasetControlFactory {
      * dataset and the control over them.
      */
     public static async createInstance(parameters: ITaskGridDatasetControlFactoryParameters): Promise<ITaskGridDatasetControl> {
+        const descriptor = parameters.taskGridDescriptor;
+        let savedQueryDataProvider: ISavedQueryDataProvider;
         let taskDataProvider: ITaskDataProvider;
-        await parameters.taskGridDescriptor.onLoadDependencies?.();
+        let datasetControl: ITaskGridDatasetControl;
+
+        //registered before anything is built: a resolver runs when a service is asked for, not now, so
+        //what is built in which order below stops mattering
+        const services = new ServiceLocator();
+        services.register('pcfContext', () => parameters.onGetPcfContext());
+        services.register('localizationService', () => parameters.localizationService);
+        services.register('descriptor', () => descriptor);
+        services.register('gridParameters', () => descriptor.onGetGridParameters?.() ?? {});
+        services.register('nativeColumns', () => ({ ...descriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME }));
+        services.register('savedQueryDataProvider', () => savedQueryDataProvider);
+        services.register('taskDataProvider', () => taskDataProvider);
+        services.register('datasetControl', () => datasetControl);
+
+        await descriptor.onLoadDependencies?.();
         //resolved once and threaded from here: onGetModules is never called again for this instance.
-        //the task provider is handed over as an accessor - it does not exist yet, and a module only ever
-        //calls it when it acts
-        const modules = parameters.taskGridDescriptor.onGetModules?.({
-            onGetTaskDataProvider: () => taskDataProvider,
-        }) ?? {};
+        //Each builder registers what its module brings, so the services below can reach it
+        const modules = descriptor.onGetModules?.(services) ?? {};
+        await services.find('customColumnsDataProvider')?.refresh();
 
-        const customColumnsDataProvider = modules.customColumns?.provider;
-        await customColumnsDataProvider?.refresh();
-
-        const savedQueryStrategy = parameters.taskGridDescriptor.onCreateSavedQueryStrategy();
-        const savedQueryDataProvider = new SavedQueryDataProvider(savedQueryStrategy, {
-            userQueryProvider: modules.userQueries?.provider,
-            localizationService: parameters.localizationService,
-            nativeColumns: { ...parameters.taskGridDescriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME },
-            customColumnsDataProvider: customColumnsDataProvider,
+        savedQueryDataProvider = new SavedQueryDataProvider(descriptor.onCreateSavedQueryStrategy(), {
+            services: services,
             preferredQuery: parameters.state.savedQuery,
-        })
+        });
         await savedQueryDataProvider.refresh();
 
-        const taskStrategy = parameters.taskGridDescriptor.onCreateTaskStrategy({
-            savedQueryDataProvider: savedQueryDataProvider,
-            customColumnsDataProvider: customColumnsDataProvider,
-            enableTaskEditing: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableTaskEditing ?? false,
-            enableInlineCreation: parameters.taskGridDescriptor.onGetGridParameters?.()?.enableInlineCreation ?? false,
-        })
-
         taskDataProvider = new TaskDataProvider({
-            localizationService: parameters.localizationService,
-            nativeColumns: { ...parameters.taskGridDescriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME },
-            strategy: taskStrategy,
-            savedQueryDataProvider: savedQueryDataProvider,
-            customColumnsDataProvider: customColumnsDataProvider,
-            templateDataProvider: modules.templates?.provider,
-            onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider)
+            strategy: descriptor.onCreateTaskStrategy(services),
+            services: services,
+            onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider),
         });
 
-        const dataset = new Dataset(taskDataProvider);
-
-        return new TaskGridDatasetControl({
-            dataset,
+        datasetControl = new TaskGridDatasetControl({
+            dataset: new Dataset(taskDataProvider),
             state: parameters.state,
-            taskGridDescriptor: parameters.taskGridDescriptor,
-            localizationService: parameters.localizationService,
-            savedQueryDataProvider: savedQueryDataProvider,
             modules: modules,
-            onGetPcfContext: () => parameters.onGetPcfContext(),
+            services: services,
         });
+        return datasetControl;
     }
 
     private static _getIsFlatlistEnabled(parameters: ITaskGridDatasetControlFactoryParameters, savedQueryDataProvider: ISavedQueryDataProvider): boolean {

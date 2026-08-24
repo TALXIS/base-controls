@@ -2,7 +2,7 @@ import { useEventEmitter } from "@hooks/useEventEmitter"
 import { IDatasetControlEvents } from "@utils/dataset-control";
 import { useRef } from "react";
 import * as React from "react";
-import { AgGridLicenseKeyContext, DatasetControlContext, LocalizationServiceContext, RootElementIdContext, TaskDataProviderContext, TaskGridComponentsContext, TaskGridDescriptorContext } from "./context";
+import { AgGridLicenseKeyContext, RootElementIdContext, ServicesContext, TaskGridComponentsContext } from "./context";
 import { DatasetControl as DatasetControlRenderer } from "../DatasetControl";
 import { useTheme } from "@fluentui/react";
 import { getDatasetControlStyles } from "./styles";
@@ -134,18 +134,16 @@ export const TaskGrid = (props: ITaskGridProps) => {
     }
 
     return (
-        <LocalizationServiceContext.Provider value={localizationService}>
-            <AgGridLicenseKeyContext.Provider value={descriptor.onGetGridParameters?.()?.agGridLicenseKey ?? null}>
-                <TaskGridComponentsContext.Provider value={components}>
-                    <InternalTaskGridDatasetControl
-                        key={instanceState.remountKey}
-                        {...props}
-                        datasetControl={instanceState.instance}
-                        onRemountRequested={createDatasetControlInstance}
-                    />
-                </TaskGridComponentsContext.Provider>
-            </AgGridLicenseKeyContext.Provider>
-        </LocalizationServiceContext.Provider>
+        <AgGridLicenseKeyContext.Provider value={descriptor.onGetGridParameters?.()?.agGridLicenseKey ?? null}>
+            <TaskGridComponentsContext.Provider value={components}>
+                <InternalTaskGridDatasetControl
+                    key={instanceState.remountKey}
+                    {...props}
+                    datasetControl={instanceState.instance}
+                    onRemountRequested={createDatasetControlInstance}
+                />
+            </TaskGridComponentsContext.Provider>
+        </AgGridLicenseKeyContext.Provider>
     );
 }
 const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
@@ -163,10 +161,9 @@ const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
         props.onReady?.(datasetControl, provider);
     }, []);
 
-    return <DatasetControlContext.Provider value={datasetControl}>
-        <TaskDataProviderContext.Provider value={provider}>
-            <TaskGridDescriptorContext.Provider value={descriptor}>
-                <RootElementIdContext.Provider value={rootElementId}>
+    //one context for everything the grid was built with; the hooks read what they need off it
+    return <ServicesContext.Provider value={datasetControl.getServices()}>
+        <RootElementIdContext.Provider value={rootElementId}>
                     <DatasetControlRenderer
                         onGetDatasetControlInstance={() => datasetControl}
                         onGetControlComponent={Grid}
@@ -186,8 +183,6 @@ const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
                                 }
                             }
                         }} />
-                </RootElementIdContext.Provider>
-            </TaskGridDescriptorContext.Provider>
-        </TaskDataProviderContext.Provider>
-    </DatasetControlContext.Provider >
+        </RootElementIdContext.Provider>
+    </ServicesContext.Provider>
 }

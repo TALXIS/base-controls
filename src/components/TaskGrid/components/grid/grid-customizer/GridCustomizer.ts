@@ -81,13 +81,14 @@ export class GridCustomizer implements IGridCustomizer {
 
     constructor(parameters: IGridCustomizerParameters) {
         this._datasetControl = parameters.datasetControl;
-        this._taskDataProvider = this._datasetControl.getDataProvider();
+        const services = this._datasetControl.getServices();
+        this._taskDataProvider = services.get('taskDataProvider');
         this._gridApi = parameters.gridApi;
-        this._localizationService = this._datasetControl.getLocalizationService();
-        this._nativeColumns = this._datasetControl.getNativeColumns();
+        this._localizationService = services.get('localizationService');
+        this._nativeColumns = services.get('nativeColumns');
         this._strategy = parameters.strategy;
         this._onGetComponents = parameters.onGetComponents;
-        this._pcfContext = this._datasetControl.getPcfContext();
+        this._pcfContext = services.get('pcfContext');
 
         this._gridDragHandler = new GridDragHandler({
             gridApi: this._gridApi,

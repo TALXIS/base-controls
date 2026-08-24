@@ -1,6 +1,7 @@
 import { Dataset, DataTypes, ICommand, IDataset, IRetrieveRecordCommandOptions, MemoryDataProvider } from "@talxis/client-libraries";
 import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
 import { ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { IDeletedUserQueriesResult, ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
@@ -20,13 +21,15 @@ export class ViewManager {
     private _userQueryProvider: IUserQueryDataProvider;
     private _viewsDataProvider: MemoryDataProvider;
     private _datasetControl: IDatasetControl;
+    private _services: ITaskGridServiceLocator;
     private _shouldRemountOnDismiss: boolean = false;
 
 
     constructor(taskGridDatasetControl: ITaskGridDatasetControl) {
         this._taskGridDatasetControl = taskGridDatasetControl
-        this._localizationService = taskGridDatasetControl.getLocalizationService();
-        this._savedQueryDataProvider = taskGridDatasetControl.getSavedQueryDataProvider();
+        this._services = taskGridDatasetControl.getServices();
+        this._localizationService = this._services.get('localizationService');
+        this._savedQueryDataProvider = this._services.get('savedQueryDataProvider');
         this._userQueryProvider = taskGridDatasetControl.getModule('userQueries').provider;
         this._viewsDataProvider = this._createViewsDataProvider();
         this._viewsDataProvider.setInterceptor('onRetrieveRecordCommand', (parameters, defaultAction) => this._onRetrieveRecordCommand(parameters, defaultAction));
@@ -69,7 +72,7 @@ export class ViewManager {
     private _createDatasetControl(dataset: IDataset): IDatasetControl {
         return new DatasetControl({
             controlId: 'viewManagerDatasetControl',
-            onGetPcfContext: () => this._taskGridDatasetControl.getPcfContext(),
+            onGetPcfContext: () => this._services.get('pcfContext'),
             state: {},
             onGetParameters: () => {
                 return {
@@ -103,7 +106,7 @@ export class ViewManager {
                 label: this._localizationService.getLocalizedString('deleteSelected'),
                 tooltip: this._localizationService.getLocalizedString('deleteSelected'),
                 execute: async () => {
-                    const result = await this._datasetControl.getPcfContext().navigation.openConfirmDialog({
+                    const result = await this._services.get('pcfContext').navigation.openConfirmDialog({
                         text: this._localizationService.getLocalizedString('confirmDialog.deleteSelectedRows.text')
                     })
                     if (result.confirmed) {
@@ -131,7 +134,7 @@ export class ViewManager {
     private _onAfterUserQueriesDeleted(result: IDeletedUserQueriesResult) {
         this._viewsDataProvider.setLoading(false);
         if (!result.success) {
-            this._datasetControl.getPcfContext().navigation.openConfirmDialog({
+            this._services.get('pcfContext').navigation.openConfirmDialog({
                 subtitle: this._localizationService.getLocalizedString('deletingUserQueriesError'),
                 text: result.errors.map(e => {
                     return `${this._viewsDataProvider.getRecordsMap()[e.queryId].getNamedReference().name}: ${ErrorHelper.getMessageFromError(e.error)}`

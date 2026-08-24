@@ -6,7 +6,7 @@ import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { ISavedQueryDataProvider} from "../saved-query";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
-import { ITemplateDataProvider } from "../template/TemplateDataProvider";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** One record an operation could not complete, and why. */
 export interface IFailedRecord {
@@ -67,16 +67,10 @@ export interface ITaskCreateParams extends ITaskSiblingContext {
 
 /** Constructor parameters for {@link TaskDataProvider}. */
 export interface ITaskDataProviderParameters {
-    nativeColumns: INativeColumns;
-    localizationService: ILocalizationService<ITaskGridLabels>;
+    /** Every data access and mutation goes through it. */
     strategy: ITaskDataProviderStrategy;
-    savedQueryDataProvider: ISavedQueryDataProvider;
-    customColumnsDataProvider?: ICustomColumnsDataProvider;
-    /**
-     * Present when the templates module is registered. The provider listens to it: a template resolves
-     * the tasks it expands into, and they are added to the grid as they are.
-     */
-    templateDataProvider?: ITemplateDataProvider;
+    /** Where the column names, the labels and the other providers are reached. */
+    services: ITaskGridServiceLocator;
     onIsFlatListEnabled: () => boolean;
 }
 
@@ -190,13 +184,10 @@ export interface ITaskDataProvider extends IDataProvider {
  * through the descriptor's task strategy.
  */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
-    private _nativeColumns: INativeColumns;
-    private _localizationService: ILocalizationService<ITaskGridLabels>;
+    private _services: ITaskGridServiceLocator;
     private _hasDataBeenLoaded: boolean = false;
     private _taskTree: RecordTree;
     private _strategy: ITaskDataProviderStrategy;
-    private _savedQueryDataProvider: ISavedQueryDataProvider;
-    private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _onFlatListEnabled: () => boolean;
     public readonly taskEvents: EventEmitter<ITaskDataProviderEventListener> = new EventEmitter<ITaskDataProviderEventListener>();
 
@@ -205,16 +196,30 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             dataSource: [],
             metadata: { PrimaryIdAttribute: 'id' }
         });
-        this._savedQueryDataProvider = parameters.savedQueryDataProvider;
-        this._nativeColumns = parameters.nativeColumns;
+        this._services = parameters.services;
         this._taskTree = new RecordTree({
             taskDataProvider: this
         })
-        this._localizationService = parameters.localizationService;
         this._strategy = parameters.strategy;
-        this._customColumnsDataProvider = parameters.customColumnsDataProvider;
         this._onFlatListEnabled = parameters.onIsFlatListEnabled;
-        this._registerTaskEventListeners(parameters);
+        this._registerTaskEventListeners();
+    }
+
+    private get _nativeColumns(): INativeColumns {
+        return this._services.get('nativeColumns');
+    }
+
+    private get _localizationService(): ILocalizationService<ITaskGridLabels> {
+        return this._services.get('localizationService');
+    }
+
+    private get _savedQueryDataProvider(): ISavedQueryDataProvider {
+        return this._services.get('savedQueryDataProvider');
+    }
+
+    /** The user-defined columns, when the custom-columns module is registered. */
+    private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
+        return this._services.find('customColumnsDataProvider');
     }
 
     public getStrategy<T extends ITaskDataProviderStrategy>(): T {
@@ -523,10 +528,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public createNewDataProvider(eventBubbleOptions?: IEventBubbleOptions): IDataProvider {
         return new TaskDataProvider({
-            localizationService: this._localizationService,
-            nativeColumns: this._nativeColumns,
             strategy: this._strategy,
-            savedQueryDataProvider: this._savedQueryDataProvider,
+            services: this._services,
             onIsFlatListEnabled: () => this._onFlatListEnabled(),
         });
     }
@@ -571,10 +574,11 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     /** Subscribes to everything the provider reacts to, once, at construction. */
-    private _registerTaskEventListeners(parameters: ITaskDataProviderParameters): void {
+    private _registerTaskEventListeners(): void {
         //expanding a template is what creates the tasks it describes: the provider is the first
-        //listener, so everything listening after it sees tasks that already exist
-        parameters.templateDataProvider?.templateEvents.addEventListener(
+        //listener, so everything listening after it sees tasks that already exist. Resolved here rather
+        //than held: the templates module registered its provider before this one was built
+        this._services.find('templateDataProvider')?.templateEvents.addEventListener(
             'onAfterTasksFromTemplateCreated',
             (rawRecords, parentTaskId) => this._createTasksFromTemplate(rawRecords, parentTaskId),
         );
@@ -607,7 +611,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 rawData: rawRecord,
                 recordId: rawRecord[this.getMetadata().PrimaryIdAttribute],
                 position: 'start',
-                
+
 
             },);
             const stackRankAttributeName = this.getNativeColumns().stackRank;

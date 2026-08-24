@@ -4,6 +4,7 @@ import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { IUserQueryDataProvider } from "@components/TaskGrid/modules/interfaces";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 
 /** Per-view outcome of deleting personal views. */
@@ -79,15 +80,8 @@ export interface ISavedQueryDataProvider {
 }
 
 interface ISavedQueryDataProviderParameters {
-    /**
-     * The personal-views provider, from the descriptor's user-queries module. Absent means the feature is
-     * off: no *My views*, no save commands and no view manager. Only the list is read from it here — every
-     * operation on those views belongs to the module.
-     */
-    userQueryProvider?: IUserQueryDataProvider;
-    nativeColumns: INativeColumns;
-    localizationService: ILocalizationService<ITaskGridLabels>;
-    customColumnsDataProvider?: ICustomColumnsDataProvider;
+    /** Where the column names, the labels and the optional module providers are reached. */
+    services: ITaskGridServiceLocator;
     preferredQuery?: Partial<ISavedQuery> & { id: string };
 }
 
@@ -97,22 +91,37 @@ interface ISavedQueryDataProviderParameters {
  */
 export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _strategy: ISavedQueryStrategy
-    private _userQueryProvider?: IUserQueryDataProvider;
+    private _services: ITaskGridServiceLocator;
     private _systemQueries: ISavedQuery[] = [];
     private _currentQuery?: ISavedQuery;
-    private _customColumnsDataProvider?: ICustomColumnsDataProvider;
-    private _nativeColumns: INativeColumns;
-    private _localizationService: ILocalizationService<ITaskGridLabels>;
     private _systemQueriesColumnsMap: Map<string, IColumn> = new Map();
     private _preferredQuery?: Partial<ISavedQuery> & { id: string };
 
     constructor(strategy: ISavedQueryStrategy, parameters: ISavedQueryDataProviderParameters) {
         this._strategy = strategy;
-        this._userQueryProvider = parameters.userQueryProvider;
+        this._services = parameters.services;
         this._preferredQuery = parameters.preferredQuery;
-        this._nativeColumns = parameters.nativeColumns;
-        this._customColumnsDataProvider = parameters.customColumnsDataProvider;
-        this._localizationService = parameters.localizationService;
+    }
+
+    /**
+     * The personal-views provider, from the user-queries module. Absent means the feature is off: no
+     * *My views*, no save commands and no view manager.
+     */
+    private get _userQueryProvider(): IUserQueryDataProvider | undefined {
+        return this._services.find('userQueryDataProvider');
+    }
+
+    /** The user-defined columns, when the custom-columns module is registered. */
+    private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
+        return this._services.find('customColumnsDataProvider');
+    }
+
+    private get _nativeColumns(): INativeColumns {
+        return this._services.get('nativeColumns');
+    }
+
+    private get _localizationService(): ILocalizationService<ITaskGridLabels> {
+        return this._services.get('localizationService');
     }
 
     public getSystemQueries(): ISavedQuery[] {

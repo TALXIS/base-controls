@@ -31,9 +31,9 @@ export class GridDragHandler extends EventEmitter<IGridDragHandlerEvents> {
     constructor(parameters: IGridDragHandlerParameters) {
         super();
         this._gridApi = parameters.gridApi;
-        this._dataProvider = parameters.datasetControl.getDataProvider();
+        this._dataProvider = parameters.datasetControl.getServices().get('taskDataProvider');
         this._datasetControl = parameters.datasetControl;
-        this._nativeColumns = parameters.datasetControl.getNativeColumns();
+        this._nativeColumns = parameters.datasetControl.getServices().get('nativeColumns');
         this._gridApi.setGridOption('rowDragEntireRow', true);
         this._gridApi.setGridOption('onRowDragMove', (e) => this._onRowDragMove(e));
         this._gridApi.setGridOption('onRowDragEnd', (e) => this._onRowDragEnd(e));

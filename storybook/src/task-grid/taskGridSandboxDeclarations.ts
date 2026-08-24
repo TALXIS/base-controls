@@ -245,12 +245,21 @@ interface IModuleData {
     lookupSources: Record<string, any>;
 }
 
+/** Where every service the grid was built with is reached: the providers, the labels, the PCF context. */
+interface ITaskGridServices {
+    /** @throws When nothing registered that service. */
+    get(key: string): any;
+    /** Undefined when the module that would register it is not registered. */
+    find(key: string): any;
+    register(key: string, resolve: () => any): void;
+}
+
 /** Define this to choose which modules the grid runs with. Called on every mount. */
 declare type GetModules = (data: IModuleData) => {
-    onGetUserQueriesModule?: () => any;
-    onGetTemplatesModule?: (context: { onGetTaskDataProvider: () => any }) => any;
-    onGetGridCustomizerModule?: () => any;
-    onGetLookupManyModule?: () => any;
+    onGetUserQueriesModule?: (services: ITaskGridServices) => any;
+    onGetTemplatesModule?: (services: ITaskGridServices) => any;
+    onGetGridCustomizerModule?: (services: ITaskGridServices) => any;
+    onGetLookupManyModule?: (services: ITaskGridServices) => any;
 };
 
 /** Personal views. Bring the strategy; the module brings the commands and dialogs. */
@@ -259,20 +268,23 @@ declare const createUserQueryModule: (options: {
     enableQueryManager?: boolean;
     enableSaveAsNewQuery?: boolean;
     enableSaveQueryChanges?: boolean;
-}) => any;
+}, services: ITaskGridServices) => any;
 /** Task templates. Bring the provider; the module brings the picker. */
-declare const createTemplateModule: (options: { provider: any }) => any;
+declare const createTemplateModule: (options: { provider: any }, services: ITaskGridServices) => any;
 /** Direct access to AG Grid. Bring the customizer strategy. */
-declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
+declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }, services: ITaskGridServices) => any;
 /** Lookup-many pickers. Return the candidates for each column. */
 declare const createLookupManyModule: (options: {
     createDataProvider: (parameters: { record: ITaskGridRecord; column: ITaskGridColumn }) => any;
 }) => any;
 
+/** The grid's services, inside a live example. */
+declare const useTaskGridServices: () => ITaskGridServices;
+
 /** Stores personal views in an array you hand it. */
 declare const MemoryUserQueryStrategy: new (params: { userQueries: any[] }) => any;
 /** Serves templates from an in-memory source, and captures new ones into it. */
-declare const MemoryTemplateDataProvider: new (params: { templates: any, onGetTaskDataProvider: () => any }) => any;
+declare const MemoryTemplateDataProvider: new (params: { templates: any, services: ITaskGridServices }) => any;
 /** Turns records you hold into a lookup-many picker's candidate provider. */
 declare const MemoryLookupManyDataProviderFactory: { create(source: any): any };
 `.trim()

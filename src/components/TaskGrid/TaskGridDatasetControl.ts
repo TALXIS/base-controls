@@ -10,6 +10,7 @@ import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-que
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ILookupManyDataProviderParameters, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
+import { ITaskGridServiceLocator } from "./services";
 import { ErrorHelper } from "@utils/error-handling";
 
 const STATE_CODE_ACTIVE = 0;
@@ -20,50 +21,54 @@ const STATE_CODE_ACTIVE = 0;
  */
 export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> implements ITaskGridDatasetControl {
     private _dataset: IDataset;
-    private _descriptor: ITaskGridDescriptor;
     private _dataProvider: ITaskDataProvider;
-    private _localizationService: ILocalizationService<ITaskGridLabels>;
-    private _savedQueryDataProvider: ISavedQueryDataProvider;
+    private _services: ITaskGridServiceLocator;
     private _controlId: string;
     private _state: ITaskGridState;
     private _gridParameters: ITaskGridParameters;
     private _modules: ITaskGridModules;
     private _commands: ICommand[] = [];
-    private _getPcfContext: () => ComponentFramework.Context<any, any>;
     private _changeToQueryId!: string;
 
     constructor(parameters: ITaskGridDatasetControlParameters) {
         super();
         this._dataset = parameters.dataset;
         this._dataProvider = this._dataset.getDataProvider() as ITaskDataProvider;
-        this._descriptor = parameters.taskGridDescriptor;
+        this._services = parameters.services;
         this._controlId = this._descriptor.onGetControlId?.() ?? `task-grid-dataset-control-${crypto.randomUUID()}`;
-        this._localizationService = parameters.localizationService;
-        this._savedQueryDataProvider = parameters.savedQueryDataProvider;
         this._state = parameters.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
         //resolved by the factory; onGetModules is never re-invoked from here
         this._modules = parameters.modules;
-        this._getPcfContext = parameters.onGetPcfContext;
         this._loadState(parameters.state);
         this.loadCommands([]);
         this._registerEventListeners();
+    }
+
+    public getServices(): ITaskGridServiceLocator {
+        return this._services;
+    }
+
+    /** The descriptor this grid was built from. */
+    private get _descriptor(): ITaskGridDescriptor {
+        return this._services.get('descriptor');
+    }
+
+    /** The service resolving every UI label. */
+    private get _localizationService(): ILocalizationService<ITaskGridLabels> {
+        return this._services.get('localizationService');
+    }
+
+    /** The views the grid runs on. */
+    private get _savedQueryDataProvider(): ISavedQueryDataProvider {
+        return this._services.get('savedQueryDataProvider');
     }
 
     public get editColumns(): IEditColumns {
         return new EditColumns({ datasetControl: this });
     }
 
-    public getNativeColumns() {
-        return {
-            ...this._descriptor.onGetFieldMapping(),
-            path: PATH_COLUMN_NAME
-        }
-    }
 
-    public getLocalizationService() {
-        return this._localizationService;
-    }
 
     public getControlId() {
         return this._controlId;
@@ -90,7 +95,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public getInactiveTasksVisibility() {
-        const stateCodeCondition = this._dataProvider.getFiltering()?.conditions?.find(condition => condition.attributeName === this.getNativeColumns().stateCode);
+        const stateCodeCondition = this._dataProvider.getFiltering()?.conditions?.find(condition => condition.attributeName === this._services.get('nativeColumns').stateCode);
         switch (stateCodeCondition?.conditionOperator) {
             case Operators.In.Value:
                 return stateCodeCondition.value?.includes('1') ?? false;
@@ -118,9 +123,6 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return !!this._modules.userQueries;
     }
 
-    public getSavedQueryDataProvider() {
-        return this._savedQueryDataProvider;
-    }
 
 
     public createLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider {
@@ -136,7 +138,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
             throw new Error('Cannot toggle flat list mode when there is no saved query in state');
         }
         this._state.savedQuery.isFlatListEnabled = enabled;
-        const pathColumn = this._dataProvider.getColumnsMap()[this.getNativeColumns().path];
+        const pathColumn = this._dataProvider.getColumnsMap()[this._services.get('nativeColumns').path];
         pathColumn.isHidden = !enabled;
         pathColumn.order = -1;
         //update the columns to trigger column sort
@@ -146,7 +148,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     public toggleHideInactiveTasks(hide: boolean) {
         const filtering = new Filtering(this._dataProvider);
-        const stateCodeFilter = filtering.getColumnFilter(this.getNativeColumns().stateCode);
+        const stateCodeFilter = filtering.getColumnFilter(this._services.get('nativeColumns').stateCode);
         stateCodeFilter.clear();
 
         if (hide) {
@@ -195,11 +197,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public getDataset(): IDataset {
         return this._dataset;
     }
-    public getDataProvider(): ITaskDataProvider {
-        return this._dataProvider;
-    }
     public getPcfContext(): ComponentFramework.Context<any> {
-        return this._getPcfContext();
+        return this._services.get('pcfContext');
     }
     public isTaskEditingEnabled(): boolean {
         return this._gridParameters.enableTaskEditing ?? false;

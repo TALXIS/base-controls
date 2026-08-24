@@ -1,5 +1,6 @@
 import { IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
-import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridModulesContext, ITaskGridParameters, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
+import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { MemoryTaskStrategy } from "@components/TaskGrid/strategies/memory/MemoryTaskStrategy";
@@ -30,7 +31,7 @@ export type IMemoryLookupManyParameters = ILookupManyDataProviderParameters;
  */
 export interface IMemoryModules {
     /** Personal views. `createUserQueryModule({ strategy: new MemoryUserQueryStrategy({ userQueries }) })`. */
-    onGetUserQueriesModule?: () => IUserQueryModule | undefined;
+    onGetUserQueriesModule?: (services: ITaskGridServiceLocator) => IUserQueryModule | undefined;
     /**
      * Task templates.
      *
@@ -40,27 +41,27 @@ export interface IMemoryModules {
      * })
      * ```
      */
-    onGetTemplatesModule?: (context: ITaskGridModulesContext) => ITemplateModule | undefined;
+    onGetTemplatesModule?: (services: ITaskGridServiceLocator) => ITemplateModule | undefined;
     /**
      * User-defined columns. `createCustomColumnsModule({ strategy })` — no in-memory strategy ships, so
      * the strategy is your own.
      */
-    onGetCustomColumnsModule?: () => ICustomColumnsModule | undefined;
+    onGetCustomColumnsModule?: (services: ITaskGridServiceLocator) => ICustomColumnsModule | undefined;
     /** AG Grid customization. `createGridCustomizerModule({ strategy })`. */
-    onGetGridCustomizerModule?: () => IGridCustomizerModule | undefined;
+    onGetGridCustomizerModule?: (services: ITaskGridServiceLocator) => IGridCustomizerModule | undefined;
     /**
      * Candidate records for lookup-many columns. `createLookupManyModule({ createDataProvider })`, where
      * `MemoryLookupManyDataProviderFactory.create` turns records you hold into the provider.
      *
      * Which columns render as lookup-many is driven by `metadata.LookupMany` on the column itself.
      */
-    onGetLookupManyModule?: () => ILookupManyModule | undefined;
+    onGetLookupManyModule?: (services: ITaskGridServiceLocator) => ILookupManyModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
 export interface IMemoryTaskStrategyContext extends IMemoryStrategyContext {
-    /** The providers and flags the grid built. Forward them to the strategy's second argument. */
-    deps: ITaskStrategyDeps;
+    /** Everything the grid built. Forward it to the strategy's second argument. */
+    services: ITaskGridServiceLocator;
 }
 
 /** What {@link IMemoryTaskGridDescriptorParams.onInitialize} resolves. */
@@ -168,14 +169,14 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     /** Calls each builder on the `modules` resolved by `onInitialize`. An absent builder leaves that feature off. */
-    public onGetModules(context: ITaskGridModulesContext): ITaskGridModules {
+    public onGetModules(services: ITaskGridServiceLocator): ITaskGridModules {
         const modules = this._getData().modules;
         return {
-            userQueries: modules?.onGetUserQueriesModule?.(),
-            templates: modules?.onGetTemplatesModule?.(context),
-            customColumns: modules?.onGetCustomColumnsModule?.(),
-            gridCustomizer: modules?.onGetGridCustomizerModule?.(),
-            lookupMany: modules?.onGetLookupManyModule?.(),
+            userQueries: modules?.onGetUserQueriesModule?.(services),
+            templates: modules?.onGetTemplatesModule?.(services),
+            customColumns: modules?.onGetCustomColumnsModule?.(services),
+            gridCustomizer: modules?.onGetGridCustomizerModule?.(services),
+            lookupMany: modules?.onGetLookupManyModule?.(services),
         };
     }
 
@@ -183,12 +184,12 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
      * Delegates to the `onCreateTaskStrategy` resolved by `onInitialize`, falling back to a plain
      * `MemoryTaskStrategy` over the resolved records.
      */
-    public onCreateTaskStrategy(deps: ITaskStrategyDeps): ITaskDataProviderStrategy {
+    public onCreateTaskStrategy(services: ITaskGridServiceLocator): ITaskDataProviderStrategy {
         const { records, metadata } = this._getData();
-        return this._getData().onCreateTaskStrategy?.({ ...this._getStrategyContext(), deps })
+        return this._getData().onCreateTaskStrategy?.({ ...this._getStrategyContext(), services })
             ?? new MemoryTaskStrategy({
                 onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
-            }, deps);
+            }, services);
     }
 
     // ── Internals ────────────────────────────────────────────────────────────

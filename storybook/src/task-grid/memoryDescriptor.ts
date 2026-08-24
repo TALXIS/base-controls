@@ -89,7 +89,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     //puts its UI in the bundle - a grid that never registers one does not ship it. A builder that
     //returns undefined leaves its feature off, exactly like omitting the key
     const builtInModules: IMemoryModules = {
-        onGetUserQueriesModule: () => {
+        onGetUserQueriesModule: (services) => {
             if (!isEnabled('userQueries')) {
                 return undefined;
             }
@@ -99,7 +99,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 enableQueryManager: true,
                 enableSaveAsNewQuery: true,
                 enableSaveQueryChanges: true,
-            });
+            }, services);
             //write the strategy's current state back into the store on every mutation, instead of
             //relying on it mutating the array we handed it - an explicit contract survives the
             //strategy changing how it stores things internally; a shared reference would not
@@ -109,20 +109,20 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore);
             return module;
         },
-        onGetTemplatesModule: context => {
+        onGetTemplatesModule: (services) => {
             if (!isEnabled('templates')) {
                 return undefined;
             }
-            const provider = new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider: context.onGetTaskDataProvider });
+            const provider = new MemoryTemplateDataProvider({ templates, services });
             //the provider keeps its own copy and writes into nothing it was handed, so the store is
             //updated from out here whenever it reports a capture - the same contract the user queries
             //above live with
             provider.templateEvents.addEventListener('onAfterTemplateCreated', () => { templates = provider.getTemplateSource(); });
-            return createTemplateModule({ provider });
+            return createTemplateModule({ provider }, services);
         },
-        onGetGridCustomizerModule: () => {
+        onGetGridCustomizerModule: (services) => {
             const strategy = options?.onGetGridCustomizerStrategy?.();
-            return strategy ? createGridCustomizerModule({ strategy }) : undefined;
+            return strategy ? createGridCustomizerModule({ strategy }, services) : undefined;
         },
         onGetLookupManyModule: () => !isEnabled('lookupMany') ? undefined : createLookupManyModule({
             createDataProvider: ({ column }) => {
@@ -137,7 +137,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
         ?? builtInModules;
 
     //task-level options belong to the strategy, so they are passed where it is built
-    const onCreateTaskStrategy = ({ deps, metadata }: IMemoryTaskStrategyContext) => new MemoryTaskStrategy({
+    const onCreateTaskStrategy = ({ services, metadata }: IMemoryTaskStrategyContext) => new MemoryTaskStrategy({
         //seeded from what the last mount ended with, not from the fixtures
         onInitialize: async provider => ({
             rawData: records,
@@ -169,7 +169,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
             return null;
         },
-    }, deps);
+    }, services);
 
     const onInitialize = async (): Promise<IMemoryTaskGridDescriptorInitializeResult> => {
         if (!isSeeded) {

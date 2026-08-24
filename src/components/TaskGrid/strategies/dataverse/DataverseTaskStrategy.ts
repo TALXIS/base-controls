@@ -11,7 +11,7 @@ import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-
 import { Liquid } from "liquidjs";
 import { IDataverseFieldMapping } from "@components/TaskGrid/descriptors/dataverse/DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "./LookupManyHandler";
-import { ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ITalxisCustomColumnsStrategy } from "@components/TaskGrid/modules/custom-columns/talxis";
 import {
     DataverseFormOperation,
@@ -161,22 +161,31 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     private _createFormId?: string;
     private _bulkEditFormId?: string;
     private _fetchXmlDataProvider!: IFetchXmlDataProvider;
-    private _isInlineCreateEnabled: boolean;
-    private _isEditingEnabled: boolean;
+    private _services: ITaskGridServiceLocator;
     private _isDeletingTasksWithChildrenEnabled = false;
     private _isCascadeDeleteEnabled = false;
     private _lookupManyColumns: ILookupManyColumn[] = [];
     private _customColumns: IColumn[] = [];
     private _sourceRecord?: ISingleRecord;
-    private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _lookupManyHandlers: { [colName: string]: LookupManyHandler } = {};
 
 
-    constructor(params: IDataverseTaskStrategyParams, deps: ITaskStrategyDeps) {
+    constructor(params: IDataverseTaskStrategyParams, services: ITaskGridServiceLocator) {
         this._params = params;
-        this._customColumnsDataProvider = deps.customColumnsDataProvider;
-        this._isInlineCreateEnabled = deps.enableInlineCreation;
-        this._isEditingEnabled = deps.enableTaskEditing;
+        this._services = services;
+    }
+
+    /** The user-defined columns, when the custom-columns module is registered. */
+    private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
+        return this._services.find('customColumnsDataProvider');
+    }
+
+    private get _isInlineCreateEnabled(): boolean {
+        return this._services.get('gridParameters').enableInlineCreation ?? false;
+    }
+
+    private get _isEditingEnabled(): boolean {
+        return this._services.get('gridParameters').enableTaskEditing ?? false;
     }
 
     public async onInitialize(provider: ITaskDataProvider): Promise<{ columns: IColumn[]; rawData: IRawRecord[]; metadata: any; }> {

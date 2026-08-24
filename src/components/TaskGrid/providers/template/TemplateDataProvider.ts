@@ -1,18 +1,17 @@
 import { IDataProvider, IEventEmitter, IRawRecord, IRecord } from "@talxis/client-libraries";
-import type { ITaskDataProvider } from "@components/TaskGrid/providers/task";
+import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** What every {@link ITemplateDataProvider} implementation is constructed with. */
 export interface ITemplateDataProviderParams {
     /**
-     * The task side both template operations work against: the grid a template is expanded into, and
-     * the one a template is captured from. Everything about a task — its columns, its metadata, its
-     * hierarchy — is read off it.
+     * Where the task side is reached: the grid a template is expanded into, and the one a template is
+     * captured from. Everything about a task — its columns, its metadata, its hierarchy — is read off
+     * `services.get('taskDataProvider')`.
      *
-     * An accessor, not the instance: the grid resolves the templates module before the task provider
-     * exists, so this is called when a template operation runs, never during construction. Descriptors
-     * hand it through their module context.
+     * Resolve it when a template operation runs, never during construction: the templates module is
+     * built before the task provider exists.
      */
-    onGetTaskDataProvider: () => ITaskDataProvider;
+    services: ITaskGridServiceLocator;
 }
 
 /** What {@link ITemplateDataProvider.createTasksFromTemplate} needs to describe the tasks it expands to. */

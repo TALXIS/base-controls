@@ -142,7 +142,7 @@ The one constructor parameter that is *not* resolved by \`onInitialize\` is \`he
 >             modules: {
 >                 onGetUserQueriesModule: () => {
 >                     const strategy = new MemoryUserQueryStrategy({ userQueries })
->                     const module = createUserQueryModule({ strategy })
+>                     const module = createUserQueryModule({ strategy }, services)
 >                     //write the strategy's current state back into the store on every mutation,
 >                     //rather than relying on it mutating the array it was constructed with
 >                     const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
@@ -165,10 +165,10 @@ The one constructor parameter that is *not* resolved by \`onInitialize\` is \`he
 > let records = SEED
 >
 > //returned from onInitialize, alongside the data
-> onCreateTaskStrategy: ({ deps, metadata }) => new MemoryTaskStrategy({
+> onCreateTaskStrategy: ({ services, metadata }) => new MemoryTaskStrategy({
 >     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
 >     onDestroy: params => records = params.rawData,
-> }, deps),
+> }, services),
 > \`\`\`
 >
 > Leave \`onDestroy\` out and every remount starts from the seed again — which is occasionally what you want, and otherwise a puzzling data loss.
@@ -202,11 +202,11 @@ const getQueryColumns = (...visibleColumnNames: string[]): IColumn[] =>
 
 ## Task options
 
-Anything that changes how *tasks* behave belongs to the task strategy, so it is passed where the strategy is built — in the \`onCreateTaskStrategy\` that \`onInitialize\` returns. \`MemoryTaskStrategy\` takes one required hook — \`onInitialize\`, resolving the store, the metadata and the columns — and an optional hook per operation beside it. The descriptor hands the callback the resolved \`records\` and \`metadata\` plus the grid's \`deps\`:
+Anything that changes how *tasks* behave belongs to the task strategy, so it is passed where the strategy is built — in the \`onCreateTaskStrategy\` that \`onInitialize\` returns. \`MemoryTaskStrategy\` takes one required hook — \`onInitialize\`, resolving the store, the metadata and the columns — and an optional hook per operation beside it. The descriptor hands the callback the resolved \`records\` and \`metadata\` plus the grid's \`services\` — the locator every shipped strategy is built with, forwarded untouched:
 
 \`\`\`ts
 //returned from onInitialize, next to the data
-onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
+onCreateTaskStrategy: ({ services, records, metadata }) => new MemoryTaskStrategy({
     //the one required hook: the store, the metadata and the columns to load with
     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
     //a created task starts with every column of the active view null - make it look like a task
@@ -216,7 +216,7 @@ onCreateTaskStrategy: ({ deps, records, metadata }) => new MemoryTaskStrategy({
     onIsRecordActive: ({ record }) => record.getValue('statuscode') != 5,
     //defaults to a no-op; this is where a real app would navigate
     onOpenDatasetItems: async ({ entityReferences, isTaskEditingEnabled }) => null,
-}, deps),
+}, services),
 \`\`\`
 
 Hand back the \`metadata\` you were given, and for the records hand back what the previous mount ended with — see \`onDestroy\` below. The primary id, parent lookup and stack rank are always computed by the strategy and cannot be overridden. Omit the callback entirely and the descriptor builds a plain \`MemoryTaskStrategy\` over the same data.
@@ -253,7 +253,7 @@ So persisting to a server is a hook away, with the local store kept in step by t
 
 ## Templates
 
-Register \`createTemplateModule\` from \`modules.onGetTemplatesModule\` and template-based creation appears in the ribbon. \`MemoryTemplateDataProvider\` takes the template source — an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into — and the task side it reads columns, metadata and hierarchy from, which the builder is handed on its \`context\`:
+Register \`createTemplateModule\` from \`modules.onGetTemplatesModule\` and template-based creation appears in the ribbon. \`MemoryTemplateDataProvider\` takes the template source — an \`IMemoryEntitySource\` plus a \`children\` map describing what each template expands into — and the grid's \`services\`, which is how it reaches the task side it reads columns, metadata and hierarchy from:
 
 \`\`\`ts
 const templates = {
@@ -273,9 +273,9 @@ const templates = {
 
 //returned from onInitialize
 modules: {
-    onGetTemplatesModule: context => createTemplateModule({
-        provider: new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider: context.onGetTaskDataProvider }),
-    }),
+    onGetTemplatesModule: services => createTemplateModule({
+        provider: new MemoryTemplateDataProvider({ templates, services }),
+    }, services),
 },
 \`\`\`
 
@@ -366,13 +366,13 @@ const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor(), [])
 
 \`\`\`ts
 const strategy = new MemoryUserQueryStrategy({ userQueries })
-const module = createUserQueryModule({ strategy, enableQueryManager: true })
+const module = createUserQueryModule({ strategy, enableQueryManager: true }, services)
 const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
 module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
 module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)
 module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore)
 
-const provider = new MemoryTemplateDataProvider({ templates, onGetTaskDataProvider })
+const provider = new MemoryTemplateDataProvider({ templates, services })
 provider.templateEvents.addEventListener('onAfterTemplateCreated', () => { templates = provider.getTemplateSource() })
 \`\`\`
 

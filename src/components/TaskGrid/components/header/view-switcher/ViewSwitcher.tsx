@@ -2,7 +2,7 @@ import { CommandBarButton as CommandBarButtonBase, ContextualMenuItemType, ICont
 import { usePcfContext } from "@utils";
 import * as React from "react"
 import { getViewSwitcherStyles } from "./styles";
-import { useDatasetControl, useLocalizationService, useTaskDataProvider } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider } from "@components/TaskGrid/context";
 import { useEventEmitter } from "@hooks";
 import { withButtonLoading } from "@legacy";
 
@@ -12,7 +12,7 @@ const CommandBarButton = withButtonLoading(CommandBarButtonBase);
 export const ViewSwitcher = () => {
     const localizationService = useLocalizationService();
     const datasetControl = useDatasetControl();
-    const savedQueryDataProvider = datasetControl.getSavedQueryDataProvider();
+    const savedQueryDataProvider = useServices().get('savedQueryDataProvider');
     const userQueriesModule = datasetControl.getModules().userQueries;
     const taskDataProvider = useTaskDataProvider();
     const systemQueries = savedQueryDataProvider.getSystemQueries();

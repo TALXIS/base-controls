@@ -213,6 +213,6 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
     }
 
     private _getTaskDataProvider(): ITaskDataProvider {
-        return this._params.onGetTaskDataProvider();
+        return this._params.services.get('taskDataProvider');
     }
 }

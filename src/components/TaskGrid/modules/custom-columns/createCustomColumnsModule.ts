@@ -1,5 +1,6 @@
 import { CustomColumnsDataProvider, ICustomColumnsStrategy } from "./CustomColumnsDataProvider";
 import { ICustomColumnsModule } from "../interfaces";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { EditColumns } from "./edit-columns/EditColumns";
 
 /** Options for {@link createCustomColumnsModule}. */
@@ -25,17 +26,21 @@ export interface ICustomColumnsModuleOptions {
  * @example
  * ```ts
  * modules: {
- *     onGetCustomColumnsModule: context => createCustomColumnsModule({
+ *     onGetCustomColumnsModule: (context, services) => createCustomColumnsModule({
  *         strategy: new TalxisCustomColumnsStrategy({ entityName: context.entityName }),
  *         enableCustomColumnCreation: true,
- *     }),
+ *     }, services),
  * }
  * ```
  */
-export const createCustomColumnsModule = (options: ICustomColumnsModuleOptions): ICustomColumnsModule => ({
-    provider: new CustomColumnsDataProvider(options.strategy),
-    components: { EditColumns },
-    enableCustomColumnCreation: options.enableCustomColumnCreation,
-    enableCustomColumnEditing: options.enableCustomColumnEditing,
-    enableCustomColumnDeletion: options.enableCustomColumnDeletion,
-});
+export const createCustomColumnsModule = (options: ICustomColumnsModuleOptions, services: ITaskGridServiceLocator): ICustomColumnsModule => {
+    const provider = new CustomColumnsDataProvider(options.strategy);
+    services.register('customColumnsDataProvider', () => provider);
+    return {
+        provider: provider,
+        components: { EditColumns },
+        enableCustomColumnCreation: options.enableCustomColumnCreation,
+        enableCustomColumnEditing: options.enableCustomColumnEditing,
+        enableCustomColumnDeletion: options.enableCustomColumnDeletion,
+    };
+};

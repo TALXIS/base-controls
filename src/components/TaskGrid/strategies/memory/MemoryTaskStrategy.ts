@@ -16,7 +16,8 @@ import {
     ITaskDataProviderStrategy,
     ITaskMoveParams,
 } from "@components/TaskGrid/providers";
-import { INativeColumns, ITaskStrategyDeps } from "@components/TaskGrid/interfaces";
+import { INativeColumns } from "@components/TaskGrid/interfaces";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import {
     IMemoryTaskActivityParams,
     IMemoryTaskAvailableColumnsParams,
@@ -142,14 +143,20 @@ export interface IMemoryTaskDestroyParams {
  */
 export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     private _params: IMemoryTaskStrategyParams;
-    private _isTaskEditingEnabled: boolean;
-    private _savedQueryDataProvider: ISavedQueryDataProvider;
+    private _services: ITaskGridServiceLocator;
     private _provider!: ITaskDataProvider;
 
-    constructor(params: IMemoryTaskStrategyParams, deps: ITaskStrategyDeps) {
+    constructor(params: IMemoryTaskStrategyParams, services: ITaskGridServiceLocator) {
         this._params = params;
-        this._isTaskEditingEnabled = deps.enableTaskEditing;
-        this._savedQueryDataProvider = deps.savedQueryDataProvider;
+        this._services = services;
+    }
+
+    private get _savedQueryDataProvider(): ISavedQueryDataProvider {
+        return this._services.get('savedQueryDataProvider');
+    }
+
+    private get _isTaskEditingEnabled(): boolean {
+        return this._services.get('gridParameters').enableTaskEditing ?? false;
     }
 
     // ── ITaskDataProviderStrategy ────────────────────────────────────────────

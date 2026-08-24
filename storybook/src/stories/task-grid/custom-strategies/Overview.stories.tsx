@@ -43,9 +43,9 @@ A descriptor answers three questions the grid cannot answer on its own: which co
 | Method | Required | Description |
 |--------|:--------:|-------------|
 | \`onGetFieldMapping()\` | ✅ | Maps column roles to physical attribute names in your schema. |
-| \`onCreateTaskStrategy(deps)\` | ✅ | Returns the strategy handling task CRUD, move, and template expansion. |
+| \`onCreateTaskStrategy(services)\` | ✅ | Returns the strategy handling task CRUD and move. \`services\` is the grid's service locator — forward it to a shipped strategy untouched. |
 | \`onCreateSavedQueryStrategy()\` | ✅ | Returns the strategy that loads the system views. |
-| \`onGetModules?()\` | — | Returns \`ITaskGridModules\` — the optional feature modules this grid runs with. Called once per mount, after \`onLoadDependencies\`. See [**Modules**](?path=/story/task-grid-modules--overview). |
+| \`onGetModules?(services)\` | — | Returns \`ITaskGridModules\` — the optional feature modules this grid runs with. Called once per mount, after \`onLoadDependencies\`. See [**Modules**](?path=/story/task-grid-modules--overview). |
 | \`onLoadDependencies?()\` | — | Async hook called once **before** anything else. Resolve configuration and fetch here. |
 | \`onGetHeight?()\` | — | Container height as a CSS string. Fills the parent when omitted. |
 | \`onGetGridParameters?()\` | — | \`ITaskGridParameters\` feature flags. |
@@ -74,7 +74,7 @@ Every flag in \`ITaskGridParameters\` defaults to \`false\` when \`onGetGridPara
 | \`onGetFieldMapping\` | ✅ | ✅ |
 | \`onCreateTaskStrategy\` | ✅ | ✅ |
 | \`onCreateSavedQueryStrategy\` | ✅ from \`systemQueries\` | ✅ from \`systemQueries\` |
-| \`onGetModules\` | ✅ from the \`modules\` your \`onInitialize\` resolves | ✅ same, each builder given its context slice |
+| \`onGetModules\` | ✅ from the \`modules\` your \`onInitialize\` resolves, each builder given the locator | ✅ same, each builder given its context slice and the locator |
 | \`onLoadDependencies\` | ✅ re-runs on every remount | ✅ re-runs on every remount |
 | \`onGetHeight\` | ✅ | ✅ |
 | \`onGetGridParameters\` | ✅ | ✅ |
@@ -87,12 +87,50 @@ Both descriptors forward every optional hook to something you resolve, so you ra
 The sequence matters, because the strategies are created *after* configuration resolves:
 
 1. \`onLoadDependencies()\` — awaited first. Anything async belongs here; on both shipped descriptors this is where \`onInitialize\` runs.
-2. \`onGetModules()\` — once per control instance. The resolved modules are threaded from here.
+2. \`onGetModules(services)\` — once per control instance. Each builder registers what its module brings, which is what makes those providers reachable from everywhere else.
 3. \`onCreateSavedQueryStrategy()\` and \`onGetFieldMapping()\`, then the saved-query provider refreshes.
-4. \`onCreateTaskStrategy(deps)\` — \`deps\` carries the template and custom-columns providers off the modules resolved in step 2. Creating a template is the template provider's own operation: call \`createTemplateFromTask\` on it, not on the task provider.
+4. \`onCreateTaskStrategy(services)\` — the strategy holds the locator and resolves what it needs when a method runs, so anything registered in step 2 is reachable. Creating a template is the template provider's own operation: call \`createTemplateFromTask\` on it, not on the task provider.
 5. The task strategy's own \`onInitialize(provider)\` runs, which is where it loads its records. Both shipped strategies await *their* required \`onInitialize\` hook there, so what they run on can be fetched asynchronously too.
 
 That ordering is why everything a module or strategy builder reads can assume it already exists. Neither descriptor caches across remounts — see [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Keeping data across remounts*.
+
+## Services
+
+Nothing is handed its dependencies through a growing parameter list. The grid builds one **service locator** and passes it to every strategy, provider and module builder; each class stores it and resolves what it needs at the moment it needs it.
+
+\`\`\`ts
+interface ITaskGridServiceLocator {
+    //throws when nothing registered it — for what your code cannot work without
+    get<K extends keyof ITaskGridServiceMap>(key: K): ITaskGridServiceMap[K]
+    //undefined when nothing registered it — for a feature that may simply be off
+    find<K extends keyof ITaskGridServiceMap>(key: K): ITaskGridServiceMap[K] | undefined
+    //how a service is reached; the resolver runs on every get, so it may return something built later
+    register<K extends keyof ITaskGridServiceMap>(key: K, resolve: () => ITaskGridServiceMap[K]): void
+}
+\`\`\`
+
+The grid always registers \`pcfContext\`, \`localizationService\`, \`descriptor\`, \`gridParameters\`, \`nativeColumns\`, \`datasetControl\`, \`taskDataProvider\` and \`savedQueryDataProvider\`. The rest arrive with a module — \`createTemplateModule\` registers \`templateDataProvider\`, \`createUserQueryModule\` registers \`userQueryDataProvider\`, \`createCustomColumnsModule\` registers \`customColumnsDataProvider\`, \`createGridCustomizerModule\` registers \`gridCustomizerStrategy\` — which is why those four builders take the locator as their second argument. Leave the module out and the key is simply absent, so reach for it with \`find\`.
+
+**Resolve in methods, not in constructors.** Resolvers are lazy, so \`taskDataProvider\` is registered before it exists; a \`get\` while it is still being built throws with a named error, while the same \`get\` from a method a moment later succeeds. That is what makes the mutual reachability safe.
+
+\`\`\`ts
+export class MyTaskStrategy implements ITaskDataProviderStrategy {
+    private _services: ITaskGridServiceLocator
+
+    constructor(services: ITaskGridServiceLocator) {
+        this._services = services   //stored, never resolved here
+    }
+
+    //a getter per dependency keeps the call sites readable
+    private get _savedQueries() { return this._services.get('savedQueryDataProvider') }
+
+    public onIsTaskEditingEnabled() {
+        return this._services.get('gridParameters').enableTaskEditing ?? false
+    }
+}
+\`\`\`
+
+In React, \`useTaskGridServices()\` returns the same locator, so a custom cell renderer or command reaches the providers without any props. Imperative code inside the grid goes through \`datasetControl.getServices()\`.
 
 ## The actions classes
 
@@ -143,7 +181,7 @@ export class MyTemplateDataProvider extends TemplateDataProviderBase(MemoryDataP
 }
 \`\`\`
 
-An expansion returns finished task raw records — ids, parent lookups and ordering included — and the grid adds them; the task strategy is not involved and never hears about templates. Everything you need to describe a task is on the \`ITaskDataProvider\` the provider is constructed with, through the \`onGetTaskDataProvider\` its module builder receives.
+An expansion returns finished task raw records — ids, parent lookups and ordering included — and the grid adds them; the task strategy is not involved and never hears about templates. Everything you need to describe a task is on the \`ITaskDataProvider\` the provider reaches through the locator it is constructed with — \`services.get('taskDataProvider')\`.
 
 The mixin owns \`templateEvents\` and the error handling, which is what drives the grid's loading state and error dialog. \`MemoryTemplateDataProvider\` is the reference implementation — see [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Templates*; \`DataverseTemplateDataProvider\` implements neither direction.
 
@@ -161,11 +199,13 @@ import {
     //the module builders
     createUserQueryModule, createTemplateModule,
     createGridCustomizerModule, createLookupManyModule,
+    //the locator, inside a React component
+    useTaskGridServices,
 } from '@talxis/base-controls'
 
 import type {
     //the descriptor contract and what it hands you
-    ITaskGridDescriptor, ITaskStrategyDeps, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
+    ITaskGridDescriptor, ITaskGridServiceLocator, ITaskGridServiceMap, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
     ICreateTasksFromTemplateParams,
     //the strategies and providers
     ITaskDataProviderStrategy, ITaskDataProvider, IRecordTree, IRecordTreeView, IRecordStructure,
@@ -188,7 +228,8 @@ import type {
 2. **Rows are in an unexpected order** — \`stackRank\` is unmapped, or the ranks are not comparable strings. See [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Ordering*.
 3. **Nothing renders and no error appears** — \`onLoadDependencies\` never resolved. It is awaited before the first provider is created, so a hanging promise there shows as an indefinite skeleton.
 4. **A feature is missing from the ribbon** — either its flag in \`onGetGridParameters\` defaults to \`false\`, or the module that provides it was never registered. A flag and a module are separate switches: the flag controls the UI, the module controls whether the feature exists at all, so both have to be in place.
-5. **A Dataverse grid never leaves the skeleton at all** — a startup read failed against a TALXIS model that is not in the environment: \`talxis_attributedefinition\` when the custom-columns module is registered, \`talxis_userquery\` when the user-queries one is. Neither read is error-wrapped. Drop the builder for the feature you have no model for.
+5. **\`No <service> is registered\`** — something resolved a service with \`get\` that only exists when a module registers it. Either register the module, or switch the call site to \`find\` and handle the feature being off. The same error during startup means a constructor resolved a service instead of waiting for the method that needs it.
+6. **A Dataverse grid never leaves the skeleton at all** — a startup read failed against a TALXIS model that is not in the environment: \`talxis_attributedefinition\` when the custom-columns module is registered, \`talxis_userquery\` when the user-queries one is. Neither read is error-wrapped. Drop the builder for the feature you have no model for.
 
 Then pick a route: [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview), [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview), or [**Write your own**](?path=/story/task-grid-custom-strategies-write-your-own--overview).
                 `.trim(),

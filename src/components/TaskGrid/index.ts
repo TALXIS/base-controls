@@ -12,7 +12,9 @@ export * from './descriptors';
 export * from './strategies';
 export * from './context';
 //the public names for the three hooks whose local names read as generic outside the grid
+export * from './services';
 export {
+    useServices as useTaskGridServices,
     useDatasetControl as useTaskGridDatasetControl,
     useLocalizationService as useTaskGridLabels,
     useRootElementId as useTaskGridRootElementId,

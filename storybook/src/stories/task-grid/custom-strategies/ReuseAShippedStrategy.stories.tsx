@@ -26,26 +26,26 @@ That is the cheapest way out of most awkward situations: Dataverse tasks in an e
 |---|---|---|---|
 | \`MemoryUserQueryStrategy\` | \`{ userQueries }\` — the array it reads and writes | none | Hand it the array you keep for the session, not a fresh literal: it is rebuilt per control instance, so a new array each time would wipe the views the user saved. |
 | \`TalxisUserQueryStrategy\` | \`{ entityName, recordId?, ownerId? }\` | \`talxis_userquery\` | State is server-side, so a second instance is fine. \`entityName\` is only the \`talxis_returnedtypecode\` filter value; omit \`ownerId\` and the views are shared environment-wide. |
-| \`MemoryTaskStrategy\` | \`({ onInitialize, …hooks }, deps)\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. Column metadata is passed through as the views declare it, so a lookup is filterable only if you said so — see [**Memory → Lookup-many columns**](?path=/story/task-grid-strategies-memory--overview). |
-| \`MemoryTemplateDataProvider\` | \`{ templates, onGetTaskDataProvider }\` — the template source, plus the task side it reads columns, metadata and hierarchy from | none | Pairs with any task strategy. It copies the source, so a template captured at runtime is kept only if you listen for \`onAfterTemplateCreated\` and store \`getTemplateSource()\`. |
-| \`DataverseTaskStrategy\` | \`({ onInitialize, …hooks }, deps)\` — \`onInitialize\` resolves the \`fetchXml\`, form ids and delete flags; the hooks sit beside it | Dataverse host, valid FetchXML | Reads and writes lookup-many relationship columns through the Xrm Web API, so those columns need their \`LookupMany\` metadata to be right. |
+| \`MemoryTaskStrategy\` | \`({ onInitialize, …hooks }, services)\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. Column metadata is passed through as the views declare it, so a lookup is filterable only if you said so — see [**Memory → Lookup-many columns**](?path=/story/task-grid-strategies-memory--overview). |
+| \`MemoryTemplateDataProvider\` | \`{ templates, services }\` — the template source, plus the locator it reaches the task side through | none | Pairs with any task strategy. It copies the source, so a template captured at runtime is kept only if you listen for \`onAfterTemplateCreated\` and store \`getTemplateSource()\`. |
+| \`DataverseTaskStrategy\` | \`({ onInitialize, …hooks }, services)\` — \`onInitialize\` resolves the \`fetchXml\`, form ids and delete flags; the hooks sit beside it | Dataverse host, valid FetchXML | Reads and writes lookup-many relationship columns through the Xrm Web API, so those columns need their \`LookupMany\` metadata to be right. |
 | \`MemoryLookupManyDataProviderFactory\` / \`DataverseLookupManyDataProviderFactory\` | \`.create(source)\` / \`.create(parameters)\` | records you hold / the column's \`FetchXml\` binding | What you return from a \`lookupMany\` module's \`createDataProvider\`, one provider per lookup-many cell. The Dataverse one takes the parameters it was handed as-is; both return \`undefined\` when they have nothing for the column. |
 
 Both shipped descriptors are themselves reusable this way: nothing stops you from holding a \`MemoryTaskGridDescriptor\` and delegating most hooks to it.
 
 ## How the pieces reach each other
 
-Whatever you return from \`onCreateTaskStrategy\` receives one argument, assembled by the grid rather than by you:
+Nothing is threaded by hand. Every shipped strategy and provider takes the grid's service locator and resolves what it needs when a method runs, so the pieces reach each other without appearing in one another's parameter lists:
 
 \`\`\`ts
-interface ITaskStrategyDeps {
-    enableInlineCreation: boolean
-    enableTaskEditing: boolean
-    savedQueryDataProvider: ISavedQueryDataProvider
-}
+//the descriptor hands the locator to your builder; forward it untouched
+onCreateTaskStrategy: ({ services }) => new MemoryTaskStrategy({ onInitialize }, services)
+
+//the same locator is what a provider is constructed with
+new MemoryTemplateDataProvider({ templates, services })
 \`\`\`
 
-The two optional members are present exactly when you implemented the matching descriptor hook, so a strategy that needs one is really asking you to implement that hook. Forward \`deps\` to the shipped constructor untouched — the flags come from \`onGetGridParameters\`, and the providers wrap the strategies created earlier in the startup sequence.
+What a locator holds depends on which modules the grid runs with — see [**Overview → Services**](?path=/story/task-grid-custom-strategies-overview--overview).
 
 ## Dataverse data, in-memory views
 
@@ -64,10 +64,10 @@ const descriptor = new DataverseTaskGridDescriptor({
         //personal views in memory, tasks in Dataverse. Importing createUserQueryModule is what brings
         //the view manager and the save dialogs along with the strategy
         modules: {
-            onGetUserQueriesModule: () => createUserQueryModule({
+            onGetUserQueriesModule: (context, services) => createUserQueryModule({
                 strategy: new MemoryUserQueryStrategy({ userQueries }),
                 enableQueryManager: true,
-            }),
+            }, services),
         },
     }),
 })
@@ -80,13 +80,13 @@ Note what is *not* here: no \`onGetTemplatesModule\`, so the template commands s
 If your data can be held in memory, you do not need a new task strategy at all. \`MemoryTaskStrategy\`'s one required hook is an async loader, so point it at your own data and keep everything else — from a descriptor of your own, or through the \`onCreateTaskStrategy\` \`MemoryTaskGridDescriptor\`'s \`onInitialize\` resolves:
 
 \`\`\`ts
-onCreateTaskStrategy: ({ deps }) => new MemoryTaskStrategy({
+onCreateTaskStrategy: ({ services }) => new MemoryTaskStrategy({
     onInitialize: async provider => ({
         rawData: await fetchMyTasks(),
         metadata: METADATA,
         columns: provider.getColumns(),
     }),
-}, deps),
+}, services),
 \`\`\`
 
 That gets you working create, delete, move, templates and editing against your own records. The grid holds the complete task set client-side no matter which strategy serves it, so loading everything up front costs you nothing here.

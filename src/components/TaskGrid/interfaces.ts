@@ -7,17 +7,16 @@ import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { ILocalizationService } from "@utils";
+import { ITaskGridServiceLocator } from "./services";
 
 /** What {@link TaskGridDatasetControlFactory} hands the control it builds. */
 export interface ITaskGridDatasetControlParameters {
     dataset: IDataset;
     state: ITaskGridState;
-    savedQueryDataProvider: ISavedQueryDataProvider;
-    taskGridDescriptor: ITaskGridDescriptor;
-    localizationService: ILocalizationService<ITaskGridLabels>;
     /** The feature modules, already resolved by the factory. */
     modules: ITaskGridModules;
-    onGetPcfContext: () => ComponentFramework.Context<any>;
+    /** Where everything else is reached — the descriptor, the providers, the PCF context, the labels. */
+    services: ITaskGridServiceLocator;
 }
 
 /** Maps functional column roles to the physical attribute (field) names in the consuming entity's schema. */
@@ -72,28 +71,6 @@ export interface ITaskGridParameters {
     rowHeight?: number;
 }
 
-/** Available data providers injected into `ITaskDataProviderStrategy` at construction time. */
-export interface ITaskStrategyDeps {
-    enableInlineCreation: boolean;
-    enableTaskEditing: boolean;
-    /** The system and user views the grid loaded — their columns are the strategy's column catalogue. */
-    savedQueryDataProvider: ISavedQueryDataProvider;
-    /** Present when the custom-columns module is registered. */
-    customColumnsDataProvider?: ICustomColumnsDataProvider;
-}
-
-/** What every module builder can reach, whatever the module. */
-export interface ITaskGridModulesContext {
-    /**
-     * The task provider the grid is building, for a module that works against tasks — the templates
-     * module reads the columns, the metadata and the hierarchy off it.
-     *
-     * An accessor, not the instance: modules are resolved before the task provider exists, so a module
-     * holds this and calls it when it acts, never during its own construction.
-     */
-    onGetTaskDataProvider: () => ITaskDataProvider;
-}
-
 /** Identifies the lookup-many cell whose candidate records are being requested. */
 export interface ILookupManyDataProviderParameters {
     /** The task record the cell belongs to. Use it to scope the candidate query to the row. */
@@ -115,7 +92,7 @@ export interface ITaskGridDescriptor {
      */
     onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
     /** Returns the strategy that handles all task CRUD, move, template and record-save operations. */
-    onCreateTaskStrategy: (deps: ITaskStrategyDeps) => ITaskDataProviderStrategy;
+    onCreateTaskStrategy: (services: ITaskGridServiceLocator) => ITaskDataProviderStrategy;
     /** Returns the container height as a CSS string. Falls back to a default stretch when omitted. */
     onGetHeight?: () => string | undefined;
     /**
@@ -132,7 +109,7 @@ export interface ITaskGridDescriptor {
      * The shipped descriptors expose this as a `modules` key of builders — see {@link IMemoryModules}
      * and {@link IDataverseModules}.
      */
-    onGetModules?: (context: ITaskGridModulesContext) => ITaskGridModules;
+    onGetModules?: (services: ITaskGridServiceLocator) => ITaskGridModules;
     /** Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
     onGetControlId?: () => string;
     /** Called before any data provider is created. Use for lazy loading or authentication. */
@@ -143,20 +120,12 @@ export interface ITaskGridDescriptor {
 
 /** Runtime interface for the TaskGrid control returned by `TaskGridDatasetControlFactory.createInstance`. */
 export interface ITaskGridDatasetControl extends IDatasetControl {
-    /** Returns the saved-query data provider managing system and user views. */
-    getSavedQueryDataProvider: () => ISavedQueryDataProvider;
     /**
      * Creates the `IDataProvider` supplying the candidate records of a lookup-many cell — its picker's
      * options. Called once per cell, because the candidates may depend on the row.
      * @throws If no `lookupMany` module is registered, or it returned nothing for this column.
      */
     createLookupManyDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider;
-    /** Returns the native column name mapping supplied by the descriptor. */
-    getNativeColumns: () => INativeColumns;
-    /** Returns the underlying `ITaskDataProvider` that backs the AG Grid data layer. */
-    getDataProvider: () => ITaskDataProvider;
-    /** Returns the localization service used to resolve all UI label strings. */
-    getLocalizationService: () => ILocalizationService<ITaskGridLabels>;
     /** Returns `true` when inactive tasks (stateCode = 1) are currently visible in the grid. */
     getInactiveTasksVisibility: () => boolean;
     /** Switches between hierarchical (tree) and flat-list view modes. Triggers a column re-sort. */
@@ -196,6 +165,8 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
      * module does, prefer {@link getModule}.
      */
     getModules: () => ITaskGridModules;
+    /** Everything the grid was built with: the providers, the descriptor, the PCF context, the labels. */
+    getServices: () => ITaskGridServiceLocator;
     /**
      * Returns a registered module by key, non-optional.
      * @throws If that module is not registered.
