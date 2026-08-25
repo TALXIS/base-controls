@@ -1,4 +1,5 @@
 import { ITaskDependency, ITaskDependencyStrategy, TaskDependencyType } from "../DependenciesProvider";
+import { refreshDependenciesOnTaskDeletion } from "../refreshDependenciesOnTaskDeletion";
 import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** How many task ids one request filters on. The number the task strategy batches at. */
@@ -6,10 +7,7 @@ const MAX_IDS_PER_REQUEST = 800;
 
 /** Constructor parameters for {@link DataverseTaskDependencyStrategy}. */
 export interface IDataverseTaskDependencyStrategyParams {
-    /**
-     * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use
-     * for it yet — one shape to remember, and nothing to change when it does.
-     */
+    /** Where the task side is reached, so a deleted task's dependencies are reloaded out of the grid. */
     services: ITaskGridServiceLocator;
     /** The dependency table. */
     entityName: string;
@@ -31,14 +29,21 @@ export interface IDataverseTaskDependencyStrategyParams {
  *
  * Nothing about the schema is assumed: the table, its attributes and its option set are all told to it,
  * so it serves any table shaped like a dependency — two task lookups and a link type. Wrap it in
- * `createDependenciesModule({ strategy })` and return that from the descriptor's
+ * `createDependenciesModule({ strategy, services })` and return that from the descriptor's
  * `modules.onGetDependenciesModule`.
+ *
+ * It follows the task side: after a delete the deleted tasks are reloaded, so their dependencies leave the
+ * grid and the cells at the other end of them repaint. Read-only otherwise — it deletes no rows itself, so
+ * that only clears anything if the rows actually go with the task. Where the relationship does not cascade
+ * the read returns them again, and a cell still counts a dependency on a task that is gone.
  */
 export class DataverseTaskDependencyStrategy implements ITaskDependencyStrategy {
     private _params: IDataverseTaskDependencyStrategyParams;
 
     constructor(params: IDataverseTaskDependencyStrategyParams) {
         this._params = params;
+        //no rows to prune first: they live in the table, so the reload is the whole of it
+        refreshDependenciesOnTaskDeletion(params.services);
     }
 
     public async onGetDependencies(params: { taskIds: string[] }): Promise<ITaskDependency[]> {

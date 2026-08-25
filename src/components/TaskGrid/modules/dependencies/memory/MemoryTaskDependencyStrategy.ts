@@ -1,12 +1,10 @@
 import { ITaskDependency, ITaskDependencyStrategy } from "../DependenciesProvider";
+import { refreshDependenciesOnTaskDeletion } from "../refreshDependenciesOnTaskDeletion";
 import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** Constructor parameters for {@link MemoryTaskDependencyStrategy}. */
 export interface IMemoryTaskDependencyStrategyParams {
-    /**
-     * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use
-     * for it yet — one shape to remember, and nothing to change when it does.
-     */
+    /** Where the task side is reached, so a deleted task takes its dependencies with it. */
     services: ITaskGridServiceLocator;
     /**
      * The dependencies. Written to: deleting a task removes the rows that pointed at it, so hand over
@@ -27,12 +25,11 @@ export interface IMemoryTaskDependencyStrategyParams {
  */
 export class MemoryTaskDependencyStrategy implements ITaskDependencyStrategy {
     private _dependencies: ITaskDependency[];
-    private _services: ITaskGridServiceLocator;
 
     constructor(params: IMemoryTaskDependencyStrategyParams) {
         this._dependencies = params.dependencies;
-        this._services = params.services;
-        this._registerEventListeners();
+        //the rows go before the reload, which reads back through onGetDependencies
+        refreshDependenciesOnTaskDeletion(params.services, taskIds => this._removeDependenciesOf(taskIds));
     }
 
     public async onGetDependencies(params: { taskIds: string[] }): Promise<ITaskDependency[]> {
@@ -41,31 +38,6 @@ export class MemoryTaskDependencyStrategy implements ITaskDependencyStrategy {
         return this._dependencies
             .filter(dependency => taskIds.has(dependency.predecessorTaskId) || taskIds.has(dependency.successorTaskId))
             .map(dependency => ({ ...dependency }));
-    }
-
-    /**
-     * Follows the task side's deletions: the rows pointing at a deleted task go, and the provider is
-     * asked to reload that task so its indexes — and the cells of the tasks at the other end of those
-     * rows — catch up.
-     *
-     * Waits for the task provider rather than resolving it: the grid builds its modules first, so there
-     * is nothing to reach at construction.
-     */
-    private _registerEventListeners(): void {
-        this._services.whenAvailable('taskDataProvider', ({ taskEvents }) => {
-            taskEvents.addEventListener('onAfterTasksDeleted', async result => {
-                //null when the delete was cancelled or failed outright, empty when nothing actually went
-                if (!result?.deletedTaskIds.length) {
-                    return;
-                }
-                //removed first: a refresh reads back through onGetDependencies, which would otherwise
-                //hand the very rows this is dropping straight back
-                this._removeDependenciesOf(result.deletedTaskIds);
-                //resolved here, not in the constructor: the module is registered after the strategy it
-                //was built from
-                await this._services.get('dependenciesModule').provider.refresh(result.deletedTaskIds);
-            });
-        });
     }
 
     /** Splices in place, so the deletion survives in whatever store the array came from. */
