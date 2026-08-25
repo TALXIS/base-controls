@@ -1,5 +1,5 @@
 import { Dataset } from "@talxis/client-libraries";
-import { ITaskDataProvider, TaskDataProvider } from "./providers/task";
+import { TaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
@@ -32,47 +32,48 @@ export class TaskGridDatasetControlFactory {
      */
     public static async createInstance(parameters: ITaskGridDatasetControlFactoryParameters): Promise<ITaskGridDatasetControl> {
         const descriptor = parameters.taskGridDescriptor;
-        let savedQueryDataProvider: ISavedQueryDataProvider;
-        let taskDataProvider: ITaskDataProvider;
-        let datasetControl: ITaskGridDatasetControl;
 
-        //registered before anything is built: a resolver runs when a service is asked for, not now, so
-        //what is built in which order below stops mattering
+        //every service is registered where it becomes available, never earlier: registering is what
+        //releases anything waiting on it through whenAvailable, so a key that resolves is a key that has
+        //something behind it. These three are the caller's own - there is nothing to wait for
         const services = new ServiceLocator();
         services.register('pcfContext', () => parameters.onGetPcfContext());
         services.register('localizationService', () => parameters.localizationService);
         services.register('descriptor', () => descriptor);
-        services.register('gridParameters', () => descriptor.onGetGridParameters?.() ?? {});
-        services.register('nativeColumns', () => ({ ...descriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME }));
-        services.register('savedQueryDataProvider', () => savedQueryDataProvider);
-        services.register('taskDataProvider', () => taskDataProvider);
-        services.register('datasetControl', () => datasetControl);
 
         await descriptor.onLoadDependencies?.();
+        //both read what onLoadDependencies resolved, so they follow it rather than the block above
+        services.register('gridParameters', () => descriptor.onGetGridParameters?.() ?? {});
+        services.register('nativeColumns', () => ({ ...descriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME }));
+
         //resolved once: onGetModules is never called again for this instance. Registering from what it
         //returned keeps the modules and the pieces they bring reachable from one place
         const modules = descriptor.onGetModules?.({ services }) ?? {};
         TaskGridDatasetControlFactory._registerModules(services, modules);
         await services.find('customColumnsModule')?.provider.refresh();
 
-        savedQueryDataProvider = new SavedQueryDataProvider({
+        const savedQueryDataProvider = new SavedQueryDataProvider({
             strategy: descriptor.onCreateSavedQueryStrategy({ services }),
             services: services,
             preferredQuery: parameters.state.savedQuery,
         });
+        //before the refresh, so anything the load reaches for can already resolve it
+        services.register('savedQueryDataProvider', () => savedQueryDataProvider);
         await savedQueryDataProvider.refresh();
 
-        taskDataProvider = new TaskDataProvider({
+        const taskDataProvider = new TaskDataProvider({
             strategy: descriptor.onCreateTaskStrategy({ services }),
             services: services,
             onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider),
         });
+        services.register('taskDataProvider', () => taskDataProvider);
 
-        datasetControl = new TaskGridDatasetControl({
+        const datasetControl = new TaskGridDatasetControl({
             dataset: new Dataset(taskDataProvider),
             state: parameters.state,
             services: services,
         });
+        services.register('datasetControl', () => datasetControl);
         //awaited here rather than left to the component: what loads after it needs the tasks that came
         //back, and the grid's own skeleton already covers everything this method awaits. After the
         //control, never before it - its constructor is what puts the view's columns, filtering and
