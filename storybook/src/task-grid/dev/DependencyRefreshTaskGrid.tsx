@@ -1,7 +1,7 @@
 import React from 'react'
 import { DefaultButton, initializeIcons, PrimaryButton, Stack, Text } from '@fluentui/react'
 import { createDependenciesModule, MemoryTaskDependencyStrategy, TaskGrid } from '@talxis/base-controls'
-import type { IDependenciesProvider, ITaskDependency, ITaskGridServiceLocator } from '@talxis/base-controls'
+import type { IDependenciesProvider, ITaskDependency } from '@talxis/base-controls'
 import { createMemoryTaskGridDescriptor } from '../memoryDescriptor'
 import { PARENT_ID_COL, PRIMARY_ID, TASKS } from '../memoryTaskData'
 
@@ -31,16 +31,10 @@ const subjectOf = (taskId: string) => SUBJECT_BY_TASK_ID.get(taskId) ?? taskId
  * refreshing **only the successor** changes two rows: the successor gained a predecessor, and the
  * predecessor gained a successor without ever being asked about. `onAfterDependenciesRefreshed` reports
  * both, and `DependenciesCellRenderer` repaints both — watch the second epic's *Successors* cell.
- *
- * Deleting the successor is the same thing arriving on its own: nothing here refreshes anything, the
- * provider hears `onAfterTasksDeleted` through the locator and refreshes the deleted task itself. Its
- * dependencies go, and the predecessor's cell clears without that row being touched either.
  */
 export const DependencyRefreshTaskGrid = () => {
     const providerRef = React.useRef<IDependenciesProvider>()
     const fixtureRef = React.useRef<ITaskDependency[]>()
-    const servicesRef = React.useRef<ITaskGridServiceLocator>()
-    const [isSuccessorDeleted, setIsSuccessorDeleted] = React.useState(false)
 
     const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor({
         //the module list still drives which columns the views carry, so the dependency columns show up
@@ -50,8 +44,6 @@ export const DependencyRefreshTaskGrid = () => {
                 //the very array the strategy reads, so a button below can add to it and have the next
                 //refresh pick the change up — the same trick the built-in registration uses for views
                 fixtureRef.current = data.dependencies
-                //the same locator the module is built against, so the buttons can reach the task side
-                servicesRef.current = services
                 const module = createDependenciesModule({
                     strategy: new MemoryTaskDependencyStrategy({ dependencies: data.dependencies }),
                     services,
@@ -79,12 +71,6 @@ export const DependencyRefreshTaskGrid = () => {
         refreshSuccessorOnly()
     }
 
-    //no refresh call anywhere here: the provider is listening to the task side for exactly this
-    const deleteSuccessor = async () => {
-        const result = await servicesRef.current?.get('taskDataProvider').deleteTasks([SUCCESSOR_TASK_ID])
-        setIsSuccessorDeleted(!!result?.deletedTaskIds.includes(SUCCESSOR_TASK_ID))
-    }
-
     const unlink = () => {
         const dependencies = fixtureRef.current
         const index = dependencies?.findIndex(dependency => dependency.id === DEPENDENCY_ID) ?? -1
@@ -101,14 +87,11 @@ export const DependencyRefreshTaskGrid = () => {
                 Linking <strong>{subjectOf(PREDECESSOR_TASK_ID)}</strong> → <strong>{subjectOf(SUCCESSOR_TASK_ID)}</strong>,
                 then refreshing <strong>{subjectOf(SUCCESSOR_TASK_ID)}</strong> alone. Watch the
                 <em> Successors</em> cell on <strong>{subjectOf(PREDECESSOR_TASK_ID)}</strong> — that row is never refreshed.
-                Then delete <strong>{subjectOf(SUCCESSOR_TASK_ID)}</strong>: nothing below asks for a refresh, and the
-                same cell clears on its own. Reload the story to start over.
             </Text>
             <Stack horizontal tokens={{ childrenGap: 8 }}>
-                <PrimaryButton text="Link, refresh successor only" onClick={link} disabled={isSuccessorDeleted} />
-                <DefaultButton text="Unlink, refresh successor only" onClick={unlink} disabled={isSuccessorDeleted} />
-                <DefaultButton text="Refresh successor (no change)" onClick={refreshSuccessorOnly} disabled={isSuccessorDeleted} />
-                <DefaultButton text={`Delete ${subjectOf(SUCCESSOR_TASK_ID)}`} onClick={deleteSuccessor} disabled={isSuccessorDeleted} />
+                <PrimaryButton text="Link, refresh successor only" onClick={link} />
+                <DefaultButton text="Unlink, refresh successor only" onClick={unlink} />
+                <DefaultButton text="Refresh successor (no change)" onClick={refreshSuccessorOnly} />
             </Stack>
             <TaskGrid descriptor={descriptor} />
         </Stack>

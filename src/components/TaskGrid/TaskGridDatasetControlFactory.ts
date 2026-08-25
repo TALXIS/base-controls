@@ -45,6 +45,7 @@ export class TaskGridDatasetControlFactory {
         services.register('gridParameters', () => descriptor.onGetGridParameters?.() ?? {});
         services.register('nativeColumns', () => ({ ...descriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME }));
         services.register('savedQueryDataProvider', () => savedQueryDataProvider);
+        services.register('taskDataProvider', () => taskDataProvider);
         services.register('datasetControl', () => datasetControl);
 
         await descriptor.onLoadDependencies?.();
@@ -65,9 +66,6 @@ export class TaskGridDatasetControlFactory {
             services: services,
             onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider),
         });
-        //registered here rather than with the resolvers above: this is the point the binding actually has
-        //a provider, and registering is what releases anything waiting on it through whenAvailable
-        services.register('taskDataProvider', () => taskDataProvider);
 
         datasetControl = new TaskGridDatasetControl({
             dataset: new Dataset(taskDataProvider),

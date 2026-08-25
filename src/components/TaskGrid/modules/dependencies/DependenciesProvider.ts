@@ -90,7 +90,6 @@ export class DependenciesProvider implements IDependenciesProvider {
     constructor(parameters: IDependenciesProviderParameters) {
         this._strategy = parameters.strategy;
         this._services = parameters.services;
-        this._registerEventListeners();
     }
 
     public async refresh(taskIds: string[]): Promise<void> {
@@ -128,27 +127,6 @@ export class DependenciesProvider implements IDependenciesProvider {
 
     public hasDependencies(taskId: string): boolean {
         return this._bySuccessor.has(taskId) || this._byPredecessor.has(taskId);
-    }
-
-    /**
-     * Follows the task side's deletions: a deleted task is refreshed, which is what takes its
-     * dependencies out of the set and reports the tasks at the other end of them as affected.
-     *
-     * Waits for the task provider rather than resolving it: the grid builds its modules before it, so
-     * there is nothing to reach at this point.
-     */
-    private _registerEventListeners(): void {
-        this._services.whenAvailable('taskDataProvider', ({ taskEvents }) => {
-            taskEvents.addEventListener('onAfterTasksDeleted', async result => {
-                //null when the delete was cancelled or failed outright, empty when nothing actually went
-                if (!result?.deletedTaskIds.length) {
-                    return;
-                }
-                //the strategy answers with nothing for a task that no longer exists, and an empty answer
-                //is what drops the dependencies that pointed at it
-                await this.refresh(result.deletedTaskIds);
-            });
-        });
     }
 
     /**
