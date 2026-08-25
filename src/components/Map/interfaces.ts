@@ -12,7 +12,6 @@ export interface IMap extends IControl<IMapParameters, IMapOutputs, Partial<ITra
 interface IMapEntityProps {
     LatitudeAttributeName: string;
     LongitudeAttributeName: string;
-
     RouteAttributeName?: string;
 }
 
