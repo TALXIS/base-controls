@@ -1,5 +1,7 @@
 import * as React from "react";
 import { Icon, useTheme } from "@fluentui/react";
+import { useEventEmitter } from "@hooks";
+import { useRerender } from "@legacy";
 import { ICellProps } from "@components/Grid/cells/cell/Cell";
 import { useServices } from "@components/TaskGrid/context";
 import { getDependenciesCellRendererStyles } from "./styles";
@@ -25,6 +27,14 @@ export const DependenciesCellRenderer = (props: IDependenciesCellRendererProps) 
     //get, not find: the column this renders in only exists because the module does
     const provider = useServices().get('dependenciesModule').provider;
     const taskId = props.record.getRecordId();
+    const rerender = useRerender();
+    //the event carries every affected task, so each cell picks out its own — including when the change came
+    //from a refresh of the task at the other end of the dependency
+    useEventEmitter(provider.events, 'onAfterDependenciesRefreshed', (affectedTaskIds: string[]) => {
+        if (affectedTaskIds.includes(taskId)) {
+            rerender();
+        }
+    });
     const dependencies = props.direction === 'predecessors' ? provider.getPredecessors(taskId) : provider.getSuccessors(taskId);
 
     if (dependencies.length === 0) {
