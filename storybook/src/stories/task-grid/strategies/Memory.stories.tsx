@@ -329,7 +329,7 @@ modules: {
 
 The strategy is asked once per mount, and only for the tasks the grid has loaded — a dependency counts when either of its ends is one of them, so a link pointing at a task outside the grid still arrives. It reads the array and never writes to it, so the same fixture can back several grids.
 
-Registering the module is what creates the **Predecessors** and **Successors** columns; they are the grid's, and they arrive hidden. See [**Modules → Task dependencies**](?path=/story/task-grid-modules--dependencies) for the columns, and [**Customizations**](?path=/story/task-grid-customizations--overview) under *Column metadata* for how they behave.
+Registering the module is what creates the **Predecessors** and **Successors** columns; they are the grid's, and they arrive hidden. See [**Modules → Task dependencies**](?path=/story/task-grid-modules--dependencies) for the columns, and [**Customizations**](?path=/story/task-grid-customizations--overview) under *Columns the grid owns* for how they behave.
 
 ## Ordering: stack ranks
 

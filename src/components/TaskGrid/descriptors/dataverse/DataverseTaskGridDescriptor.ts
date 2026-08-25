@@ -131,11 +131,23 @@ export interface IDataverseModules {
      */
     onGetLookupManyModule?: (context: IDataverseLookupManyContext, services: ITaskGridServiceLocator) => ILookupManyModule | undefined;
     /**
-     * Task dependencies. `createDependenciesModule({ strategy })` — no Dataverse dependency strategy
-     * ships, so the strategy is your own; it is where the `talxis_taskdependency` option-set codes are
-     * translated into the grid's own `TaskDependencyType`.
+     * Task dependencies.
      *
-     * Which column *renders* them is driven by the `TaskDependencies` custom control on the column.
+     * ```ts
+     * onGetDependenciesModule: () => createDependenciesModule({
+     *     strategy: new DataverseTaskDependencyStrategy({
+     *         entityName: 'talxis_taskdependency',
+     *         primaryIdAttribute: 'talxis_taskdependencyid',
+     *         predecessorAttribute: 'talxis_predecessortaskid',
+     *         successorAttribute: 'talxis_successortaskid',
+     *         typeAttribute: 'talxis_dependencytypecode',
+     *         dependencyTypeCodes: { 742070000: 'finishToStart' },
+     *     }),
+     * })
+     * ```
+     *
+     * The strategy assumes no schema — the table, its attributes and its option set are all yours to
+     * name. Registering the module is what creates the predecessors and successors columns.
      */
     onGetDependenciesModule?: (services: ITaskGridServiceLocator) => IDependenciesModule | undefined;
 }

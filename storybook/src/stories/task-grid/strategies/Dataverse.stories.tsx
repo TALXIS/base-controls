@@ -234,22 +234,37 @@ No Dataverse implementation ships: \`DataverseTemplateDataProvider\` lists templ
 
 ## Task dependencies
 
-No Dataverse implementation ships. The \`dependencies\` module is there for a strategy of your own, and that strategy is where the \`talxis_taskdependency\` row becomes what the grid reads:
+\`DataverseTaskDependencyStrategy\` reads dependency rows through the Web API. It knows nothing about your schema: the table, its two task lookups, its option set and what that option set's values mean are all arguments, so it serves any table shaped like a dependency.
 
 \`\`\`ts
-onGetDependencies: async ({ taskIds }) => {
-    const rows = await retrieveDependencies(taskIds)
-    return rows.map(row => ({
-        id: row.talxis_taskdependencyid,
-        predecessorTaskId: row._talxis_predecessortaskid_value,
-        successorTaskId: row._talxis_successortaskid_value,
-        //the grid works in names, not option-set values - this mapping is yours
-        type: DEPENDENCY_TYPES[row.talxis_dependencytypecode],
-    }))
-}
+import { createDependenciesModule, DataverseTaskDependencyStrategy } from '@talxis/base-controls'
+
+//returned from onInitialize
+modules: {
+    onGetDependenciesModule: () => createDependenciesModule({
+        strategy: new DataverseTaskDependencyStrategy({
+            entityName: 'talxis_taskdependency',
+            primaryIdAttribute: 'talxis_taskdependencyid',
+            predecessorAttribute: 'talxis_predecessortaskid',
+            successorAttribute: 'talxis_successortaskid',
+            typeAttribute: 'talxis_dependencytypecode',
+            //the grid works in link types, not option-set values, so the map is yours to state
+            dependencyTypeCodes: {
+                742070000: 'finishToStart',
+                742070001: 'startToStart',
+                742070002: 'finishToFinish',
+                742070003: 'startToFinish',
+            },
+        }),
+    }),
+},
 \`\`\`
 
-Without a strategy the module stays unregistered and the two columns do not exist. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
+Every parameter is required, and a value the map does not name **throws** rather than being guessed at — an unmapped code means the map has fallen behind the option set, which is worth hearing about.
+
+Two things worth knowing about the read. It is **scoped by the tasks the grid loaded**, in batches of 800 ids, and a dependency counts when either of its ends is one of them — so a link pointing at a task outside the current view still arrives, and widening the view widens the read. And it filters on nothing else: a **deactivated** dependency row is still counted, so a solution that deactivates rather than deletes them needs its own strategy for now.
+
+Registering the module is what creates the two columns — see [**Modules → Task dependencies**](?path=/story/task-grid-modules--dependencies).
 
 ## Ordering: stack ranks
 
