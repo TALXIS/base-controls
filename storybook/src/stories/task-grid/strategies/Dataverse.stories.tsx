@@ -260,7 +260,7 @@ modules: {
 },
 \`\`\`
 
-Every parameter is required, and a value the map does not name **throws** rather than being guessed at — an unmapped code means the map has fallen behind the option set, which is worth hearing about.
+Every parameter is required, including the map: the grid works in link types, so nothing can be inferred from a bare option-set value. A value the map does not name is currently treated as finish-to-start and warned about once — a temporary leniency, since the map is meant to name every value the attribute can hold.
 
 Two things worth knowing about the read. It is **scoped by the tasks the grid loaded**, in batches of 800 ids, and a dependency counts when either of its ends is one of them — so a link pointing at a task outside the current view still arrives, and widening the view widens the read. And it filters on nothing else: a **deactivated** dependency row is still counted, so a solution that deactivates rather than deletes them needs its own strategy for now.
 

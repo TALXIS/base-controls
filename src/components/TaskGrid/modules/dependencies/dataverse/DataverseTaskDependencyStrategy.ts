@@ -90,14 +90,17 @@ export class DataverseTaskDependencyStrategy implements ITaskDependencyStrategy 
     }
 
     /**
-     * @throws When the option set holds a value `dependencyTypeCodes` does not name. Guessing would
-     * mislabel the link, and the map is the one place that knows what the values mean.
+     * TEMPORARY: an unmapped option-set value should never happen — `dependencyTypeCodes` is meant to
+     * name every value the attribute can hold. Until that is proven against real data this falls back to
+     * finish-to-start and warns, rather than failing the whole load over one row. Make it throw once the
+     * mapping is trusted.
      */
     private _getType(code: unknown): TaskDependencyType {
         const type = this._params.dependencyTypeCodes[code as number];
-        if (!type) {
-            throw new Error(`No dependency type is mapped for ${this._params.typeAttribute} value ${code}. Add it to dependencyTypeCodes.`);
+        if (type) {
+            return type;
         }
-        return type;
+        console.warn(`[TaskGrid] ${this._params.typeAttribute} value ${code} is not in dependencyTypeCodes; treating it as finishToStart.`);
+        return 'finishToStart';
     }
 }
