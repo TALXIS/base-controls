@@ -192,16 +192,13 @@ export class GridCustomizer implements IGridCustomizer {
                 }
                 case PREDECESSORS_COLUMN_NAME:
                 case SUCCESSORS_COLUMN_NAME: {
+                    //get, not find: these columns exist because the module does, so one in a view without
+                    //it is a misconfiguration - better said out loud than rendered as an empty cell
+                    colDef.cellRenderer = this._services.get('dependenciesModule').components.CellRenderer;
+                    //a task's dependencies are not a value on the task, so there is nothing to edit
+                    colDef.editable = false;
                     //one renderer for both directions for now; it is handed the column it renders in, so
-                    //telling them apart is where the per-direction UI will start. Without the module the
-                    //columns do not exist at all, but a consumer can have declared one in a view of their
-                    //own - then it falls back to the plain cell
-                    const dependenciesCellRenderer = this._services.find('dependenciesModule')?.components.CellRenderer;
-                    if (dependenciesCellRenderer) {
-                        colDef.cellRenderer = dependenciesCellRenderer;
-                        //a task's dependencies are not a value on the task, so there is nothing to edit
-                        colDef.editable = false;
-                    }
+                    //telling them apart is where the per-direction UI will start
                     break;
                 }
             }
