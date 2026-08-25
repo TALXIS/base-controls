@@ -232,6 +232,25 @@ The parameters carry everything the factory needs: the cell's record and column 
 
 No Dataverse implementation ships: \`DataverseTemplateDataProvider\` lists templates through FetchXML but implements neither capturing one from a task nor expanding one into tasks. The \`templates\` module is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
 
+## Task dependencies
+
+No Dataverse implementation ships. The \`dependencies\` module is there for a strategy of your own, and that strategy is where the \`talxis_taskdependency\` row becomes what the grid reads:
+
+\`\`\`ts
+onGetDependencies: async ({ taskIds }) => {
+    const rows = await retrieveDependencies(taskIds)
+    return rows.map(row => ({
+        id: row.talxis_taskdependencyid,
+        predecessorTaskId: row._talxis_predecessortaskid_value,
+        successorTaskId: row._talxis_successortaskid_value,
+        //the grid works in names, not option-set values - this mapping is yours
+        type: DEPENDENCY_TYPES[row.talxis_dependencytypecode],
+    }))
+}
+\`\`\`
+
+Without a strategy the module stays unregistered and the two columns do not exist. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
+
 ## Ordering: stack ranks
 
 Ordering works the same way as everywhere else — [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Ordering* has the worked example. Two things are specific to Dataverse:

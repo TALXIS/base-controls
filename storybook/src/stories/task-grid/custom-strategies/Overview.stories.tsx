@@ -109,7 +109,7 @@ interface ITaskGridServiceLocator {
 }
 \`\`\`
 
-The grid always registers \`pcfContext\`, \`localizationService\`, \`descriptor\`, \`gridParameters\`, \`nativeColumns\`, \`datasetControl\`, \`taskDataProvider\` and \`savedQueryDataProvider\`. The rest are the modules \`onGetModules\` resolved, each under its own key — \`userQueriesModule\`, \`templatesModule\`, \`customColumnsModule\`, \`gridCustomizerModule\`, \`lookupManyModule\`. What a module brings hangs off the module, so there is one entry per feature rather than two:
+The grid always registers \`pcfContext\`, \`localizationService\`, \`descriptor\`, \`gridParameters\`, \`nativeColumns\`, \`datasetControl\`, \`taskDataProvider\` and \`savedQueryDataProvider\`. The rest are the modules \`onGetModules\` resolved, each under its own key — \`userQueriesModule\`, \`templatesModule\`, \`customColumnsModule\`, \`gridCustomizerModule\`, \`lookupManyModule\`, \`dependenciesModule\`. What a module brings hangs off the module, so there is one entry per feature rather than two:
 
 \`\`\`ts
 //off when the module is not registered

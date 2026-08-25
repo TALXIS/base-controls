@@ -31,9 +31,10 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 | Personal views, incl. create, rename and delete | \`MemoryUserQueryStrategy\`, wrapped by \`createUserQueryModule\` | \`modules.onGetUserQueriesModule\` returns one |
 | Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`modules.onGetTemplatesModule\` returns one |
 | Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`modules.onGetLookupManyModule\` returns one |
+| Task dependencies, in both directions | \`MemoryTaskDependencyStrategy\`, wrapped by \`createDependenciesModule\` | \`modules.onGetDependenciesModule\` returns one |
 | AG Grid customizer | yours | \`modules.onGetGridCustomizerModule\` returns one |
 
-Those last five are **modules**, and \`modules\` is part of what \`onInitialize\` resolves. [**Modules**](?path=/story/task-grid-modules--overview) covers what each one turns on, the builder options, and the bundle consequence.
+Those last six are **modules**, and \`modules\` is part of what \`onInitialize\` resolves. [**Modules**](?path=/story/task-grid-modules--overview) covers what each one turns on, the builder options, and the bundle consequence.
 
 Both descriptors accept the same modules, so the difference is which implementations ship: memory brings a user-query strategy and a template provider, Dataverse brings a user-query strategy but no template provider. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
 
@@ -307,6 +308,28 @@ modules: {
 The factory copies the records array before handing it over, so deleting inside a picker cannot mutate the one you keep.
 
 What makes a column render as a picker at all is its \`metadata.LookupMany\` — see [**Customizations**](?path=/story/task-grid-customizations--overview), under *Column metadata*. Try **Assigned To** and **Tags** in the grid below.
+
+## Task dependencies
+
+A dependency is a pair of task ids and the type of link between them:
+
+\`\`\`ts
+const DEPENDENCIES: ITaskDependency[] = [
+    { id: 'dep-01', predecessorTaskId: '1', successorTaskId: '2', type: 'finishToStart' },
+    { id: 'dep-02', predecessorTaskId: '2', successorTaskId: '3', type: 'startToStart' },
+]
+
+//returned from onInitialize
+modules: {
+    onGetDependenciesModule: () => createDependenciesModule({
+        strategy: new MemoryTaskDependencyStrategy({ dependencies: DEPENDENCIES }),
+    }),
+},
+\`\`\`
+
+The strategy is asked once per mount, and only for the tasks the grid has loaded — a dependency counts when either of its ends is one of them, so a link pointing at a task outside the grid still arrives. It reads the array and never writes to it, so the same fixture can back several grids.
+
+Registering the module is what creates the **Predecessors** and **Successors** columns; they are the grid's, and they arrive hidden. See [**Modules → Task dependencies**](?path=/story/task-grid-modules--dependencies) for the columns, and [**Customizations**](?path=/story/task-grid-customizations--overview) under *Column metadata* for how they behave.
 
 ## Ordering: stack ranks
 

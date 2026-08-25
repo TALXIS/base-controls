@@ -28,6 +28,7 @@ The grid's optional features are **modules**. You list the ones you want on the 
 | \`onGetUserQueriesModule\` | Personal views: *My views* in the view switcher, and the save and manage commands | where views are stored |
 | \`onGetTemplatesModule\` | Task templates: *New from template*, and *Create template from task* | where templates are stored, and what they expand into |
 | \`onGetLookupManyModule\` | Multi-record pickers on lookup-many columns | the candidate records |
+| \`onGetDependenciesModule\` | The **Predecessors** and **Successors** columns: what each task waits on, and what waits on it | where dependencies are read from |
 | \`onGetGridCustomizerModule\` | Direct access to AG Grid — see [**Customizer**](?path=/story/task-grid-modules-customizer--overview) | a customizer strategy |
 
 ## Turning one on
@@ -52,7 +53,7 @@ const descriptor = new MemoryTaskGridDescriptor({
 })
 \`\`\`
 
-That grid has personal views and nothing else. The same four keys work on \`DataverseTaskGridDescriptor\`, which hands each builder the entity name and record id it needs.
+That grid has personal views and nothing else. The same five keys work on \`DataverseTaskGridDescriptor\`, which hands each builder the entity name and record id it needs.
 
 Each builder takes the one thing only you can provide, plus a few switches for its commands:
 
@@ -61,6 +62,7 @@ Each builder takes the one thing only you can provide, plus a few switches for i
 | \`createUserQueryModule\` | \`strategy\` | \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` | \`userQueriesModule\` |
 | \`createTemplateModule\` | \`provider\` | — | \`templatesModule\` |
 | \`createLookupManyModule\` | \`createDataProvider\` | — | \`lookupManyModule\` |
+| \`createDependenciesModule\` | \`strategy\` | — | \`dependenciesModule\` |
 | \`createGridCustomizerModule\` | \`strategy\` | — | \`gridCustomizerModule\` |
 
 Whatever a builder returns, the grid registers under that key, so a module — and everything it brings — is reachable from the rest of the grid: \`services.find('templatesModule')?.provider\`. That is also how a templates provider describes the tasks a template expands into, in the other direction: \`services.get('taskDataProvider')\`. See [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies--overview).
@@ -131,7 +133,9 @@ export const Dependencies: Story = {
         docs: {
             description: {
                 story: `
-The **Dependencies** column shows what each task waits on and what waits on it — the tasks under *Website Redesign* are wired together here. The cell itself is a placeholder for now: it reports the counts in each direction, where chips naming the other task and an icon per dependency type will go.
+Two columns arrive with the module: **Predecessors** — what a task waits on — and **Successors** — what waits on it. The tasks under *Website Redesign* are wired together here, so each shows a count for its direction; a task with none stays blank.
+
+Both columns are the grid's, not yours: registering the module is what creates them, and they arrive hidden, offered in *Edit columns* under their own names. This grid's views name them, which is why they are on screen from the start. Neither sorts, filters nor edits — the cell reads the module rather than a value on the task.
                 `.trim(),
             },
         },

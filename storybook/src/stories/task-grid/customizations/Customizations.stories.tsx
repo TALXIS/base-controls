@@ -77,6 +77,12 @@ Most per-column behaviour comes from the column definitions your strategy return
 
 A column renders as a picker whenever \`metadata.LookupMany\` is set **and** the \`lookupMany\` module is registered — no customizer needed. Each extension ships a factory for the candidates: \`MemoryLookupManyDataProviderFactory\` from records you hold, \`DataverseLookupManyDataProviderFactory\` from the column's own \`FetchXml\` binding. Both columns are live in the grid below — **Assigned To** and **Tags**. Registering the module: [**Modules → lookupMany**](?path=/story/task-grid-modules--overview).
 
+### Columns the grid owns
+
+Two kinds of column are not yours to declare. **Path** is always there, holding each task's root-to-self chain. **Predecessors** and **Successors** appear only when the \`dependencies\` module is registered — registering it is what creates them.
+
+All three are virtual: they carry no value on the task, arrive hidden, and are added from *Edit columns* like any other. The two dependency columns are rendered by the module's own cell — a link glyph, a direction arrow and a count — and the grid keeps them out of sorting, filtering and editing, whichever view they appear in. There is no \`controls\` name to set; naming the column in a view of your own is the only way to place it yourself. Registering the module: [**Modules → Task dependencies**](?path=/story/task-grid-modules--dependencies).
+
 ### Making a column filterable
 
 A column offers a filter menu when its \`metadata.SupportedFilterConditionOperators\` is non-empty; leave it out and the menu is hidden for that column. Sorting and quick find are unaffected either way.

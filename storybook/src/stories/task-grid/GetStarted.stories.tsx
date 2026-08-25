@@ -92,7 +92,7 @@ onReady={(control, taskDataProvider) => {
 }}
 \`\`\`
 
-Two things to keep in mind: the grid **rebuilds both objects** whenever it remounts — switching a view or saving a record does it — so \`onReady\` fires again each time and any handle you stored goes stale; and at that moment the dataset refresh has been started but not awaited, so the records are not loaded yet. Use the provider's own \`onLoading\` / \`onBeforeFirstDataLoaded\` if you need the loaded moment.
+One thing to keep in mind: the grid **rebuilds both objects** whenever it remounts — switching a view or saving a record does it — so \`onReady\` fires again each time and any handle you stored goes stale. The records are already loaded when it fires; the control is not handed over until its first load has finished.
 
 ## Pick a strategy
 
@@ -100,7 +100,7 @@ Two descriptors ship with the package. Both satisfy the same contract, so the gr
 
 ### Memory
 
-Records live in your own process: task CRUD, views, templates and lookup-many pickers all run against the arrays you hand it. \`onInitialize\` is async, so those arrays can be fetched from a remote first — and since the grid holds the whole task set client-side whichever strategy you pick, serving it from memory costs you nothing.
+Records live in your own process: task CRUD, views, templates, dependencies and lookup-many pickers all run against the arrays you hand it. \`onInitialize\` is async, so those arrays can be fetched from a remote first — and since the grid holds the whole task set client-side whichever strategy you pick, serving it from memory costs you nothing.
 
 \`\`\`ts
 import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
@@ -120,7 +120,7 @@ const descriptor = new MemoryTaskGridDescriptor({
 })
 \`\`\`
 
-All parameters, templates and lookup-many data: [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview).
+All parameters, templates, dependencies and lookup-many data: [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview).
 
 ### Dataverse
 
