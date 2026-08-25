@@ -74,5 +74,3 @@ const XrmFormInternal = ({
         </XrmFormContext.Provider>
     </FormXmlContext.Provider>
 }
-
-<Form.Root onFieldValueChanged={()} onFormReady={(api) => api.}></Form.Root>
