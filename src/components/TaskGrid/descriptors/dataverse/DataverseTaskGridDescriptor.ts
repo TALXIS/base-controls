@@ -2,7 +2,7 @@ import { FetchXmlBuilder, ISingleRecord, RecordBuilder } from "@talxis/client-li
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
+import { ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { DataverseTaskStrategy } from "@components/TaskGrid/strategies/dataverse/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
 
@@ -130,6 +130,14 @@ export interface IDataverseModules {
      * ```
      */
     onGetLookupManyModule?: (context: IDataverseLookupManyContext, services: ITaskGridServiceLocator) => ILookupManyModule | undefined;
+    /**
+     * Task dependencies. `createDependenciesModule({ strategy })` — no Dataverse dependency strategy
+     * ships, so the strategy is your own; it is where the `talxis_taskdependency` option-set codes are
+     * translated into the grid's own `TaskDependencyType`.
+     *
+     * Which column *renders* them is driven by the `TaskDependencies` custom control on the column.
+     */
+    onGetDependenciesModule?: (services: ITaskGridServiceLocator) => IDependenciesModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -274,6 +282,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             customColumns: modules?.onGetCustomColumnsModule?.(context, services),
             gridCustomizer: modules?.onGetGridCustomizerModule?.(services),
             lookupMany: modules?.onGetLookupManyModule?.(context, services),
+            dependencies: modules?.onGetDependenciesModule?.(services),
         };
     }
 

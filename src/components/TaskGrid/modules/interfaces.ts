@@ -5,6 +5,7 @@ import { IDeletedUserQueriesResult, ISavedQuery } from "@components/TaskGrid/pro
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/TemplateDataProvider";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
+import type { IDependenciesProvider } from "@components/TaskGrid/modules/dependencies/DependenciesProvider";
 import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
 import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
 import type { ICellProps } from "@components/Grid/cells/cell/Cell";
@@ -148,6 +149,20 @@ export interface ILookupManyModule {
     components: ILookupManyComponents;
 }
 
+/** Every component the dependencies module needs. */
+export interface IDependenciesComponents {
+    /** The cell renderer `GridCustomizer` assigns to any column carrying the `TaskDependencies` control. */
+    CellRenderer: React.ComponentType<ICellProps>;
+}
+
+/** What the dependencies module contributes. Built by {@link createDependenciesModule}. */
+export interface IDependenciesModule {
+    /** The loaded dependencies, asked per task. */
+    provider: IDependenciesProvider;
+    /** The module's UI. */
+    components: IDependenciesComponents;
+}
+
 /**
  * The modules a grid runs with, one optional key per available feature. A key is filled by calling that
  * module's `create*Module` builder; omit it and neither the feature nor its UI exists.
@@ -163,4 +178,6 @@ export interface ITaskGridModules {
     gridCustomizer?: IGridCustomizerModule;
     /** Candidate records for lookup-many (multi-value picker) columns. */
     lookupMany?: ILookupManyModule;
+    /** Task dependencies: what each task waits on, and what waits on it. */
+    dependencies?: IDependenciesModule;
 }

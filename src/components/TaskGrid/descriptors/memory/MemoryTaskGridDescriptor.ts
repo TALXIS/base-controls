@@ -1,7 +1,7 @@
 import { IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { ICustomColumnsModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
+import { ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { MemoryTaskStrategy } from "@components/TaskGrid/strategies/memory/MemoryTaskStrategy";
 
@@ -56,6 +56,18 @@ export interface IMemoryModules {
      * Which columns render as lookup-many is driven by `metadata.LookupMany` on the column itself.
      */
     onGetLookupManyModule?: (services: ITaskGridServiceLocator) => ILookupManyModule | undefined;
+    /**
+     * Task dependencies.
+     *
+     * ```ts
+     * onGetDependenciesModule: () => createDependenciesModule({
+     *     strategy: new MemoryTaskDependencyStrategy({ dependencies }),
+     * })
+     * ```
+     *
+     * Which column *renders* them is driven by the `TaskDependencies` custom control on the column.
+     */
+    onGetDependenciesModule?: (services: ITaskGridServiceLocator) => IDependenciesModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -177,6 +189,7 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
             customColumns: modules?.onGetCustomColumnsModule?.(services),
             gridCustomizer: modules?.onGetGridCustomizerModule?.(services),
             lookupMany: modules?.onGetLookupManyModule?.(services),
+            dependencies: modules?.onGetDependenciesModule?.(services),
         };
     }
 

@@ -33,8 +33,8 @@ export interface ITaskGridProps {
      * the grid recreates both when a view changes or a record is saved. The way in to everything
      * imperative: the task operations and `taskEvents`, the saved queries, the selection.
      *
-     * The dataset refresh is kicked off just before this and not awaited, so the records are not loaded
-     * yet. Subscribe to the provider's `onLoading` or `onBeforeFirstDataLoaded` for that moment.
+     * The records are already loaded by then — the control's factory awaits the first load, so the grid
+     * mounts on data rather than filling in afterwards.
      */
     onReady?: (control: ITaskGridDatasetControl, taskDataProvider: ITaskDataProvider) => void;
     /**
@@ -157,7 +157,7 @@ const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
     useTaskGridEvents(props, datasetControl, provider);
 
     React.useEffect(() => {
-        datasetControl.getDataset().refresh();
+        //no refresh here: the factory awaited the first load, so the records are already in
         props.onReady?.(datasetControl, provider);
     }, []);
 

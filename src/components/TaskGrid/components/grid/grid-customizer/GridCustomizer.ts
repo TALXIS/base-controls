@@ -11,11 +11,13 @@ import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
 import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
+import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/TaskGrid/providers/saved-query";
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
 import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
 
 /** Name of the synthetic trailing column holding each row's add-task button. */
 export const ADD_TASK_COLUMN_NAME = 'addTask';
+
 
 /** AG Grid's `ColDef`, bound to the grid's record type. */
 export type ColDef = ColDefBase<IRecord>;
@@ -186,6 +188,20 @@ export class GridCustomizer implements IGridCustomizer {
                 }
                 case DatasetConstants.CHECKBOX_COLUMN_KEY: {
                     colDef.lockPosition = true;
+                    break;
+                }
+                case PREDECESSORS_COLUMN_NAME:
+                case SUCCESSORS_COLUMN_NAME: {
+                    //one renderer for both directions for now; it is handed the column it renders in, so
+                    //telling them apart is where the per-direction UI will start. Without the module the
+                    //columns do not exist at all, but a consumer can have declared one in a view of their
+                    //own - then it falls back to the plain cell
+                    const dependenciesCellRenderer = this._services.find('dependenciesModule')?.components.CellRenderer;
+                    if (dependenciesCellRenderer) {
+                        colDef.cellRenderer = dependenciesCellRenderer;
+                        //a task's dependencies are not a value on the task, so there is nothing to edit
+                        colDef.editable = false;
+                    }
                     break;
                 }
             }

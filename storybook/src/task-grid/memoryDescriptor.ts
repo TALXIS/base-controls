@@ -1,7 +1,7 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
-import { createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
-import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery } from '@talxis/base-controls';
+import { createDependenciesModule, createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskDependencyStrategy, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
+import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery, ITaskDependency } from '@talxis/base-controls';
 
 /**
  * `filtering.filterOperator` has no named enum in the ComponentFramework typings — the grid reads
@@ -24,10 +24,10 @@ const ACTIVE_STATE_CODE = '0';
  * loading state, and the ~1300 lines of sample records stay out of the story's initial chunk.
  */
 /** The feature modules {@link createMemoryTaskGridDescriptor} knows how to register. */
-export type MemoryTaskGridModuleName = 'userQueries' | 'templates' | 'lookupMany';
+export type MemoryTaskGridModuleName = 'userQueries' | 'templates' | 'lookupMany' | 'dependencies';
 
 /** What the docs grid registers when a story does not say otherwise. */
-const DEFAULT_MODULES: MemoryTaskGridModuleName[] = ['userQueries', 'templates', 'lookupMany'];
+const DEFAULT_MODULES: MemoryTaskGridModuleName[] = ['userQueries', 'templates', 'lookupMany', 'dependencies'];
 
 /**
  * The in-memory data the module builders close over. Handed to a story that registers its own modules,
@@ -40,6 +40,8 @@ export interface IMemoryModuleData {
     templates: IMemoryTemplateSource;
     /** The lookup-many candidate records, keyed by the column they belong to. */
     lookupSources: { [columnName: string]: IMemoryEntitySource };
+    /** The dependencies between the fixture tasks. */
+    dependencies: ITaskDependency[];
 }
 
 interface ICreateMemoryTaskGridDescriptorOptions {
@@ -71,6 +73,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     //user queries) rather than by this function never running again
     let isSeeded = false;
     let lookupSources: { [columnName: string]: IMemoryEntitySource } = {};
+    let dependencies: ITaskDependency[] = [];
     let templates: IMemoryTemplateSource;
     let userQueries: ISavedQuery[] = [];
     //the task records live here between mounts: the provider owns them while a grid is up, and hands
@@ -124,6 +127,9 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             const strategy = options?.onGetGridCustomizerStrategy?.();
             return strategy ? createGridCustomizerModule({ strategy }) : undefined;
         },
+        onGetDependenciesModule: () => !isEnabled('dependencies') ? undefined : createDependenciesModule({
+            strategy: new MemoryTaskDependencyStrategy({ dependencies }),
+        }),
         onGetLookupManyModule: () => !isEnabled('lookupMany') ? undefined : createLookupManyModule({
             createDataProvider: ({ column }) => {
                 const source = lookupSources[column.name];
@@ -133,7 +139,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     };
 
     //an example that defines its own modules wins outright; otherwise the built-in set above
-    const buildModules = (): IMemoryModules => options?.onGetModuleOverrides?.({ userQueries, templates, lookupSources })
+    const buildModules = (): IMemoryModules => options?.onGetModuleOverrides?.({ userQueries, templates, lookupSources, dependencies })
         ?? builtInModules;
 
     //task-level options belong to the strategy, so they are passed where it is built
@@ -175,10 +181,13 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
         if (!isSeeded) {
             const [
                 {
+                    PREDECESSORS_COL,
+                    SUCCESSORS_COL,
                     PARENT_ID_COL,
                     STACK_RANK_COL,
                     STATE_CODE_COL,
                     SUBJECT_COL,
+                    TASK_DEPENDENCIES,
                     TASK_SOURCE,
                     TEMPLATE_SOURCE,
                     getQueryColumns,
@@ -192,13 +201,16 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             //a demo without the lookupMany module has no picker for these columns, so they are not part
             //of its views - nor of what Edit columns can add back
             const getColumns = (...names: string[]) => getQueryColumns(...names)
-                .filter(column => isEnabled('lookupMany') || !column.metadata?.LookupMany);
+                .filter(column => isEnabled('lookupMany') || !column.metadata?.LookupMany)
+                //the same for the dependency columns: without the module they have no renderer to show
+                .filter(column => isEnabled('dependencies')
+                    || (column.name !== PREDECESSORS_COL && column.name !== SUCCESSORS_COL));
 
             const allTasks: ISavedQuery = {
                 id: '00000000-0000-0000-0000-000000000000',
                 name: 'All Tasks',
                 isFlatListEnabled: false,
-                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
+                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL),
                 quickFindColumns: [SUBJECT_COL],
             };
 
@@ -206,7 +218,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 id: 'uq-default-01-0000-0000-000000000000',
                 name: 'My Open Tasks',
                 isFlatListEnabled: false,
-                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
+                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL),
                 filtering: {
                     filterOperator: FILTER_OPERATOR_AND,
                     conditions: [{
@@ -222,7 +234,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 id: 'uq-default-02-0000-0000-000000000000',
                 name: 'High Priority',
                 isFlatListEnabled: false,
-                columns: getColumns('subject', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags'),
+                columns: getColumns('subject', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL),
                 filtering: {
                     filterOperator: FILTER_OPERATOR_AND,
                     conditions: [{
@@ -236,6 +248,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
 
             userQueries = [myOpenTasks, highPriority];
             templates = structuredClone(TEMPLATE_SOURCE);
+            dependencies = structuredClone(TASK_DEPENDENCIES);
             lookupSources = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE };
             //cloned per descriptor: sharing the module-level fixtures would let the grids on different
             //doc pages fight over one dataset. A generated dataset is already private to this call.

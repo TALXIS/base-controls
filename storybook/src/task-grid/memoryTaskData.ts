@@ -1,6 +1,7 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { LexoRank } from "lexorank";
-import type { IMemoryEntitySource, IMemoryTaskTemplateNode, IMemoryTemplateSource } from "@talxis/base-controls";
+import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@talxis/base-controls";
+import type { IMemoryEntitySource, IMemoryTaskTemplateNode, IMemoryTemplateSource, ITaskDependency } from "@talxis/base-controls";
 import { personRef, tagRef } from "./memoryLookupManyData";
 
 // ─── Column names ─────────────────────────────────────────────────────────────
@@ -12,6 +13,9 @@ export const PARENT_ID_COL = 'parentid';
 export const STACK_RANK_COL = 'stackrank';
 export const STATE_CODE_COL = 'statecode';
 export const PERCENT_COMPLETE_COL = 'percentcomplete';
+/** The grid's own dependency columns. Declared here so the demo's views show them out of the box. */
+export const PREDECESSORS_COL = PREDECESSORS_COLUMN_NAME;
+export const SUCCESSORS_COL = SUCCESSORS_COLUMN_NAME;
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -137,6 +141,22 @@ export const COLUMNS: IColumn[] = [
                 ColorPropertyName: { value: 'color', type: 'SingleLine.Text' as const },
             },
         }],
+    },
+    //the grid injects both of these itself when the dependencies module is registered - declared here
+    //only so the demo's views show them without a trip through Edit columns
+    {
+        name: PREDECESSORS_COL,
+        dataType: 'Multiple',
+        displayName: 'Predecessors',
+        isVirtual: true,
+        visualSizeFactor: 200,
+    },
+    {
+        name: SUCCESSORS_COL,
+        dataType: 'Multiple',
+        displayName: 'Successors',
+        isVirtual: true,
+        visualSizeFactor: 200,
     },
     // ── Native (hidden) columns ──────────────────────────────────────────────
     { name: PRIMARY_ID, dataType: 'SingleLine.Text', displayName: 'ID', visualSizeFactor: 280, isHidden: true },
@@ -1315,6 +1335,20 @@ const rollUpEfforts = (columnNames: string[]) => {
 };
 
 rollUpEfforts(['estimatedeffort', 'actualeffort']);
+
+// ─── Task dependencies ────────────────────────────────────────────────────────
+
+/**
+ * The dependencies inside Epic 1, covering all four dependency types. `Frontend Development` and
+ * `Launch & QA` each sit on both ends of one, so the cell has something to show in either direction.
+ */
+export const TASK_DEPENDENCIES: ITaskDependency[] = [
+    { id: 'dep-01', predecessorTaskId: tid(1, 1), successorTaskId: tid(1, 2), type: 'finishToStart' },
+    { id: 'dep-02', predecessorTaskId: tid(1, 2), successorTaskId: tid(1, 3), type: 'finishToStart' },
+    { id: 'dep-03', predecessorTaskId: tid(1, 3), successorTaskId: tid(1, 4), type: 'startToStart' },
+    { id: 'dep-04', predecessorTaskId: tid(1, 4), successorTaskId: tid(1, 5), type: 'finishToFinish' },
+    { id: 'dep-05', predecessorTaskId: tid(1, 3), successorTaskId: tid(1, 5), type: 'startToFinish' },
+];
 
 // ─── Sources consumed by the memory descriptor ────────────────────────────────
 // The strategy deep-clones these on init, so the fixtures below are never mutated.

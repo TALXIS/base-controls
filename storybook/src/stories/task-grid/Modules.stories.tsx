@@ -4,6 +4,7 @@ import { renderStory } from '../form/storyHelpers'
 import { ModuleUserQueriesExample } from '../../task-grid/ModuleUserQueriesExample'
 import { ModuleTemplatesExample } from '../../task-grid/ModuleTemplatesExample'
 import { ModuleLookupManyExample } from '../../task-grid/ModuleLookupManyExample'
+import { ModuleDependenciesExample } from '../../task-grid/ModuleDependenciesExample'
 
 const meta = {
     title: 'Task Grid/Modules',
@@ -117,6 +118,20 @@ export const LookupMany: Story = {
 **Assigned To** and **Tags** are now multi-record pickers — people with avatars, tags with colours. Click one to add or remove records; the options are whatever \`createDataProvider\` returned for that column.
 
 In the grids above, those same two columns are plain text: without the module they fall back to their default renderer.
+                `.trim(),
+            },
+        },
+    },
+}
+
+export const Dependencies: Story = {
+    name: 'Task dependencies',
+    render: () => renderStory(<ModuleDependenciesExample />),
+    parameters: {
+        docs: {
+            description: {
+                story: `
+The **Dependencies** column shows what each task waits on and what waits on it — the tasks under *Website Redesign* are wired together here. The cell itself is a placeholder for now: it reports the counts in each direction, where chips naming the other task and an icon per dependency type will go.
                 `.trim(),
             },
         },

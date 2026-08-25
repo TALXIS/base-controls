@@ -35,6 +35,10 @@ export interface ISavedQueryMetadata {
 
 /** Name of the virtual column holding each task's root-to-self path. */
 export const PATH_COLUMN_NAME = 'path__virtual';
+/** Name of the virtual column showing what a task waits on. Only exists with the dependencies module. */
+export const PREDECESSORS_COLUMN_NAME = 'predecessors__virtual';
+/** Name of the virtual column showing what waits on a task. Only exists with the dependencies module. */
+export const SUCCESSORS_COLUMN_NAME = 'successors__virtual';
 const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'stateCode'];
 
 /**
@@ -158,6 +162,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             throw new Error('At least one system query is required');
         }
         this._includePathColumn(systemQueries[0].columns);
+        this._includeDependencyColumns(systemQueries[0].columns);
         const allQueries = [...systemQueries, ...userQueries];
         this._systemQueries = systemQueries;
 
@@ -226,6 +231,19 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
                     }
                     break;
                 }
+                case PREDECESSORS_COLUMN_NAME:
+                case SUCCESSORS_COLUMN_NAME: {
+                    //enforced on every declaration of these columns, the grid's own and a consumer's
+                    //alike: the cell reads the dependencies module, not a value on the task, so there is
+                    //nothing here to write, sort or filter by
+                    column.disableSorting = true;
+                    column.metadata = {
+                        ...column.metadata,
+                        IsValidForUpdate: false,
+                        SupportedFilterConditionOperators: []
+                    }
+                    break;
+                }
             }
         }
     }
@@ -238,6 +256,36 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
                 displayName: this._localizationService.getLocalizedString('path'),
                 isVirtual: true,
                 visualSizeFactor: 300,
+                isHidden: true
+            })
+        }
+        return columns;
+    }
+
+    /**
+     * Adds the two dependency columns to the grid's column catalogue, so *Edit columns* offers each of
+     * them. Registering the module is what makes them exist at all; a consumer that declared one in a view
+     * of their own keeps it exactly as they wrote it.
+     */
+    private _includeDependencyColumns(columns: IColumn[]) {
+        if (!this._services.find('dependenciesModule')) {
+            return columns;
+        }
+        this._includeDependencyColumn(columns, PREDECESSORS_COLUMN_NAME, 'predecessors');
+        this._includeDependencyColumn(columns, SUCCESSORS_COLUMN_NAME, 'successors');
+        return columns;
+    }
+
+    private _includeDependencyColumn(columns: IColumn[], name: string, labelKey: keyof ITaskGridLabels) {
+        if (!columns.find(col => col.name === name)) {
+            //hidden: the columns are offered in *Edit columns*, so either direction can be taken on its
+            //own without the other appearing uninvited
+            columns.push({
+                name: name,
+                dataType: DataTypes.Multiple,
+                displayName: this._localizationService.getLocalizedString(labelKey),
+                isVirtual: true,
+                visualSizeFactor: 200,
                 isHidden: true
             })
         }

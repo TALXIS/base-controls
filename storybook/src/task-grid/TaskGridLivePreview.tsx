@@ -3,8 +3,9 @@ import React from 'react'
 import {
     TaskGrid, useTaskDataProvider, useTaskGridDatasetControl,
     createUserQueryModule, createTemplateModule,
-    createGridCustomizerModule, createLookupManyModule,
+    createGridCustomizerModule, createLookupManyModule, createDependenciesModule,
     MemoryUserQueryStrategy, MemoryTemplateDataProvider, MemoryLookupManyDataProviderFactory,
+    MemoryTaskDependencyStrategy,
 } from '@talxis/base-controls'
 import type { ITaskGridDescriptor } from '@talxis/base-controls'
 import { Alert, Autocomplete, Avatar, AvatarGroup, Button, Chip, LinearProgress, Menu, MenuItem, Popover, Rating, Slider, Snackbar, Stack, TextField, Tooltip, Typography } from '@mui/material'
@@ -76,9 +77,11 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 'createTemplateModule',
                 'createGridCustomizerModule',
                 'createLookupManyModule',
+                'createDependenciesModule',
                 'MemoryUserQueryStrategy',
                 'MemoryTemplateDataProvider',
                 'MemoryLookupManyDataProviderFactory',
+                'MemoryTaskDependencyStrategy',
                 `${transformed}
                  return {
                    Component: typeof TaskGridExample !== "undefined" ? TaskGridExample : null,
@@ -121,9 +124,11 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 createTemplateModule,
                 createGridCustomizerModule,
                 createLookupManyModule,
+                createDependenciesModule,
                 MemoryUserQueryStrategy,
                 MemoryTemplateDataProvider,
                 MemoryLookupManyDataProviderFactory,
+                MemoryTaskDependencyStrategy,
             ) as { Component: React.ComponentType | null; strategy?: any; getModules?: any }
 
             return { Component: result.Component, strategy: result.strategy, getModules: result.getModules, error: null as string | null }

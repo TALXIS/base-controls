@@ -243,6 +243,8 @@ interface IModuleData {
     templates: any;
     /** The lookup-many candidate records, keyed by column name. */
     lookupSources: Record<string, any>;
+    /** The dependencies between the fixture tasks. */
+    dependencies: any[];
 }
 
 /** Where every service the grid was built with is reached: the providers, the labels, the PCF context. */
@@ -260,6 +262,7 @@ declare type GetModules = (data: IModuleData) => {
     onGetTemplatesModule?: (services: ITaskGridServices) => any;
     onGetGridCustomizerModule?: (services: ITaskGridServices) => any;
     onGetLookupManyModule?: (services: ITaskGridServices) => any;
+    onGetDependenciesModule?: (services: ITaskGridServices) => any;
 };
 
 /** Personal views. Bring the strategy; the module brings the commands and dialogs. */
@@ -273,6 +276,8 @@ declare const createUserQueryModule: (options: {
 declare const createTemplateModule: (options: { provider: any }) => any;
 /** Direct access to AG Grid. Bring the customizer strategy. */
 declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
+/** Task dependencies. Bring the strategy; the module brings the cell renderer. */
+declare const createDependenciesModule: (options: { strategy: any }) => any;
 /** Lookup-many pickers. Return the candidates for each column. */
 declare const createLookupManyModule: (options: {
     createDataProvider: (parameters: { record: ITaskGridRecord; column: ITaskGridColumn }) => any;
@@ -287,4 +292,6 @@ declare const MemoryUserQueryStrategy: new (params: { userQueries: any[] }) => a
 declare const MemoryTemplateDataProvider: new (params: { templates: any, services: ITaskGridServices }) => any;
 /** Turns records you hold into a lookup-many picker's candidate provider. */
 declare const MemoryLookupManyDataProviderFactory: { create(source: any): any };
+/** Serves task dependencies from an array you hold. */
+declare const MemoryTaskDependencyStrategy: new (params: { dependencies: any[] }) => any;
 `.trim()
