@@ -3,7 +3,7 @@ import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
 /** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const CUSTOMIZER_AG_GRID_CODE = `const gridCustomizerStrategy: IGridCustomizerStrategy = {
-    onInitialize: (customizer) => {
+    onInitialize: ({ customizer }) => {
         //the raw ag-grid api, so anything the grid does not surface is still yours to set
         customizer.getGridApi().setGridOption('animateRows', true)
     },

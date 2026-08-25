@@ -24,24 +24,24 @@ That is the cheapest way out of most awkward situations: Dataverse tasks in an e
 
 | Piece | Construct with | Environment needs | Pairing caveat |
 |---|---|---|---|
-| \`MemoryUserQueryStrategy\` | \`{ userQueries }\` — the array it reads and writes | none | Hand it the array you keep for the session, not a fresh literal: it is rebuilt per control instance, so a new array each time would wipe the views the user saved. |
-| \`TalxisUserQueryStrategy\` | \`{ entityName, recordId?, ownerId? }\` | \`talxis_userquery\` | State is server-side, so a second instance is fine. \`entityName\` is only the \`talxis_returnedtypecode\` filter value; omit \`ownerId\` and the views are shared environment-wide. |
-| \`MemoryTaskStrategy\` | \`({ onInitialize, …hooks }, services)\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. Column metadata is passed through as the views declare it, so a lookup is filterable only if you said so — see [**Memory → Lookup-many columns**](?path=/story/task-grid-strategies-memory--overview). |
+| \`MemoryUserQueryStrategy\` | \`{ userQueries, services }\` — the array it reads and writes, plus the locator every strategy takes | none | Hand it the array you keep for the session, not a fresh literal: it is rebuilt per control instance, so a new array each time would wipe the views the user saved. |
+| \`TalxisUserQueryStrategy\` | \`{ entityName, recordId?, ownerId?, services }\` | \`talxis_userquery\` | State is server-side, so a second instance is fine. \`entityName\` is only the \`talxis_returnedtypecode\` filter value; omit \`ownerId\` and the views are shared environment-wide. |
+| \`MemoryTaskStrategy\` | \`{ onInitialize, services, …hooks }\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. Column metadata is passed through as the views declare it, so a lookup is filterable only if you said so — see [**Memory → Lookup-many columns**](?path=/story/task-grid-strategies-memory--overview). |
 | \`MemoryTemplateDataProvider\` | \`{ templates, services }\` — the template source, plus the locator it reaches the task side through | none | Pairs with any task strategy. It copies the source, so a template captured at runtime is kept only if you listen for \`onAfterTemplateCreated\` and store \`getTemplateSource()\`. |
-| \`DataverseTaskStrategy\` | \`({ onInitialize, …hooks }, services)\` — \`onInitialize\` resolves the \`fetchXml\`, form ids and delete flags; the hooks sit beside it | Dataverse host, valid FetchXML | Reads and writes lookup-many relationship columns through the Xrm Web API, so those columns need their \`LookupMany\` metadata to be right. |
-| \`MemoryTaskDependencyStrategy\` | \`{ dependencies }\` — the array it reads | none | Pairs with any task strategy: it is read-only and writes into nothing you handed it. It is asked for the tasks the grid loaded rather than deciding scope itself, so the array can hold dependencies for tasks the current view excludes. |
-| \`DataverseTaskDependencyStrategy\` | the table, its two task lookups, its option set and what the option set's values mean — all required | Dataverse host, a dependency table | Read-only, and scoped by the task ids the grid hands it rather than by a filter of its own, so widening the view widens the read. Nothing filters \`statecode\`: deactivated rows are counted. An option-set value the map does not name falls back to finish-to-start with a warning. |
-| \`MemoryLookupManyDataProviderFactory\` / \`DataverseLookupManyDataProviderFactory\` | \`.create(source)\` / \`.create(parameters)\` | records you hold / the column's \`FetchXml\` binding | What you return from a \`lookupMany\` module's \`createDataProvider\`, one provider per lookup-many cell. The Dataverse one takes the parameters it was handed as-is; both return \`undefined\` when they have nothing for the column. |
+| \`DataverseTaskStrategy\` | \`{ onInitialize, services, …hooks }\` — \`onInitialize\` resolves the \`fetchXml\`, form ids and delete flags; the hooks sit beside it | Dataverse host, valid FetchXML | Reads and writes lookup-many relationship columns through the Xrm Web API, so those columns need their \`LookupMany\` metadata to be right. |
+| \`MemoryTaskDependencyStrategy\` | \`{ dependencies, services }\` — the array it reads, plus the locator | none | Pairs with any task strategy: it is read-only and writes into nothing you handed it. It is asked for the tasks the grid loaded rather than deciding scope itself, so the array can hold dependencies for tasks the current view excludes. |
+| \`DataverseTaskDependencyStrategy\` | the table, its two task lookups, its option set, what the option set's values mean, and \`services\` — all required | Dataverse host, a dependency table | Read-only, and scoped by the task ids the grid hands it rather than by a filter of its own, so widening the view widens the read. Nothing filters \`statecode\`: deactivated rows are counted. An option-set value the map does not name falls back to finish-to-start with a warning. |
+| \`MemoryLookupManyDataProviderFactory\` / \`DataverseLookupManyDataProviderFactory\` | \`.create({ source, services })\` / \`.create(parameters)\` | records you hold / the column's \`FetchXml\` binding | What you return from a \`lookupMany\` module's \`createDataProvider\`, one provider per lookup-many cell. The Dataverse one takes the parameters it was handed as-is; both return \`undefined\` when they have nothing for the column. |
 
 Both shipped descriptors are themselves reusable this way: nothing stops you from holding a \`MemoryTaskGridDescriptor\` and delegating most hooks to it.
 
 ## How the pieces reach each other
 
-Nothing is threaded by hand. Every shipped strategy and provider takes the grid's service locator and resolves what it needs when a method runs, so the pieces reach each other without appearing in one another's parameter lists:
+One rule: every factory the grid calls hands you an object with \`services\` on it, and every strategy, provider and module factory takes \`services\` as a field of its own params object. Forward it and each piece resolves what it needs when a method runs:
 
 \`\`\`ts
 //the descriptor hands the locator to your builder; forward it untouched
-onCreateTaskStrategy: ({ services }) => new MemoryTaskStrategy({ onInitialize }, services)
+onCreateTaskStrategy: ({ services }) => new MemoryTaskStrategy({ onInitialize, services })
 
 //the same locator is what a provider is constructed with
 new MemoryTemplateDataProvider({ templates, services })
@@ -66,8 +66,9 @@ const descriptor = new DataverseTaskGridDescriptor({
         //personal views in memory, tasks in Dataverse. Importing createUserQueryModule is what brings
         //the view manager and the save dialogs along with the strategy
         modules: {
-            onGetUserQueriesModule: () => createUserQueryModule({
-                strategy: new MemoryUserQueryStrategy({ userQueries }),
+            onGetUserQueriesModule: ({ services }) => createUserQueryModule({
+                strategy: new MemoryUserQueryStrategy({ userQueries, services }),
+                services,
                 enableQueryManager: true,
             }),
         },
@@ -88,7 +89,7 @@ onCreateTaskStrategy: ({ services }) => new MemoryTaskStrategy({
         metadata: METADATA,
         columns: provider.getColumns(),
     }),
-}, services),
+}),
 \`\`\`
 
 That gets you working create, delete, move, templates and editing against your own records. The grid holds the complete task set client-side no matter which strategy serves it, so loading everything up front costs you nothing here.

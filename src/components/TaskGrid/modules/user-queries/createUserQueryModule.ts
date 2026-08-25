@@ -3,6 +3,7 @@ import { IUserQueryModule } from "../interfaces";
 import { UserQueryDataProvider } from "./UserQueryDataProvider";
 import { CreateViewDialog } from "./create-view-dialog";
 import { ViewManagerDialog } from "./view-manager";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** Options for {@link createUserQueryModule}. */
 export interface IUserQueryModuleOptions {
@@ -11,6 +12,8 @@ export interface IUserQueryModuleOptions {
      * `MemoryUserQueryStrategy`, `TalxisUserQueryStrategy`, or your own.
      */
     strategy: IUserQueryStrategy;
+    /** The locator the builder was handed. The provider reaches the task side through it. */
+    services: ITaskGridServiceLocator;
     /** Show *Manage views*. Defaults to `false`. */
     enableQueryManager?: boolean;
     /** Show *Save as new view*. Defaults to `false`. */
@@ -31,15 +34,16 @@ export interface IUserQueryModuleOptions {
  * @example
  * ```ts
  * modules: {
- *     onGetUserQueriesModule: () => createUserQueryModule({
- *         strategy: new MemoryUserQueryStrategy({ userQueries }),
+ *     onGetUserQueriesModule: ({ services }) => createUserQueryModule({
+ *         strategy: new MemoryUserQueryStrategy({ userQueries, services }),
+ *         services,
  *         enableQueryManager: true,
  *     }),
  * }
  * ```
  */
 export const createUserQueryModule = (options: IUserQueryModuleOptions): IUserQueryModule => {
-    const provider = new UserQueryDataProvider(options.strategy);
+    const provider = new UserQueryDataProvider({ strategy: options.strategy, services: options.services });
     return {
         provider: provider,
         components: {

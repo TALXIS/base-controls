@@ -158,7 +158,7 @@ Two things you no longer have to handle: the moving record is already excluded f
 \`ISavedQueryStrategy\` is a single method — the system views, which are mandatory:
 
 \`\`\`ts
-public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
+public onCreateSavedQueryStrategy({ services }: ITaskGridFactoryParams): ISavedQueryStrategy {
     return { onGetSystemQueries: async () => SYSTEM_QUERIES }
 }
 \`\`\`
@@ -191,8 +191,8 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
         return { subject: 'subject', parentId: 'parentid', stackRank: 'stackrank', stateCode: 'statecode' }
     }
 
-    public onCreateTaskStrategy(services: ITaskGridServiceLocator) {
-        return new MyTaskStrategy(services)
+    public onCreateTaskStrategy({ services }: ITaskGridFactoryParams) {
+        return new MyTaskStrategy({ services })
     }
 
     public onCreateSavedQueryStrategy(): ISavedQueryStrategy {
@@ -200,10 +200,11 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
     }
 
     //optional: omit it and the grid shows system views only
-    public onGetModules(): ITaskGridModules {
+    public onGetModules({ services }: ITaskGridFactoryParams): ITaskGridModules {
         return {
             userQueries: createUserQueryModule({
                 strategy: new MyUserQueryStrategy(),
+                services,
                 enableSaveAsNewQuery: true,
             }),
         }

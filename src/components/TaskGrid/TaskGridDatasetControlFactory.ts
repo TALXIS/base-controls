@@ -51,18 +51,19 @@ export class TaskGridDatasetControlFactory {
         await descriptor.onLoadDependencies?.();
         //resolved once: onGetModules is never called again for this instance. Registering from what it
         //returned keeps the modules and the pieces they bring reachable from one place
-        const modules = descriptor.onGetModules?.(services) ?? {};
+        const modules = descriptor.onGetModules?.({ services }) ?? {};
         TaskGridDatasetControlFactory._registerModules(services, modules);
         await services.find('customColumnsModule')?.provider.refresh();
 
-        savedQueryDataProvider = new SavedQueryDataProvider(descriptor.onCreateSavedQueryStrategy(), {
+        savedQueryDataProvider = new SavedQueryDataProvider({
+            strategy: descriptor.onCreateSavedQueryStrategy({ services }),
             services: services,
             preferredQuery: parameters.state.savedQuery,
         });
         await savedQueryDataProvider.refresh();
 
         taskDataProvider = new TaskDataProvider({
-            strategy: descriptor.onCreateTaskStrategy(services),
+            strategy: descriptor.onCreateTaskStrategy({ services }),
             services: services,
             onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider),
         });

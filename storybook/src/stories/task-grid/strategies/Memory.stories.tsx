@@ -141,9 +141,9 @@ The one constructor parameter that is *not* resolved by \`onInitialize\` is \`he
 >         return {
 >             records, metadata, fieldMapping, systemQueries,
 >             modules: {
->                 onGetUserQueriesModule: () => {
->                     const strategy = new MemoryUserQueryStrategy({ userQueries })
->                     const module = createUserQueryModule({ strategy })
+>                 onGetUserQueriesModule: ({ services }) => {
+>                     const strategy = new MemoryUserQueryStrategy({ userQueries, services })
+>                     const module = createUserQueryModule({ strategy, services })
 >                     //write the strategy's current state back into the store on every mutation,
 >                     //rather than relying on it mutating the array it was constructed with
 >                     const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
@@ -169,7 +169,7 @@ The one constructor parameter that is *not* resolved by \`onInitialize\` is \`he
 > onCreateTaskStrategy: ({ services, metadata }) => new MemoryTaskStrategy({
 >     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
 >     onDestroy: params => records = params.rawData,
-> }, services),
+> }),
 > \`\`\`
 >
 > Leave \`onDestroy\` out and every remount starts from the seed again — which is occasionally what you want, and otherwise a puzzling data loss.
@@ -217,7 +217,7 @@ onCreateTaskStrategy: ({ services, records, metadata }) => new MemoryTaskStrateg
     onIsRecordActive: ({ record }) => record.getValue('statuscode') != 5,
     //defaults to a no-op; this is where a real app would navigate
     onOpenDatasetItems: async ({ entityReferences, isTaskEditingEnabled }) => null,
-}, services),
+}),
 \`\`\`
 
 Hand back the \`metadata\` you were given, and for the records hand back what the previous mount ended with — see \`onDestroy\` below. The primary id, parent lookup and stack rank are always computed by the strategy and cannot be overridden. Omit the callback entirely and the descriptor builds a plain \`MemoryTaskStrategy\` over the same data.
@@ -274,9 +274,9 @@ const templates = {
 
 //returned from onInitialize
 modules: {
-    onGetTemplatesModule: services => createTemplateModule({
+    onGetTemplatesModule: ({ services }) => createTemplateModule({
         provider: new MemoryTemplateDataProvider({ templates, services }),
-    }, services),
+    }),
 },
 \`\`\`
 
@@ -296,10 +296,10 @@ const SOURCES: Record<string, IMemoryEntitySource> = {
 
 //returned from onInitialize
 modules: {
-    onGetLookupManyModule: () => createLookupManyModule({
+    onGetLookupManyModule: ({ services }) => createLookupManyModule({
         createDataProvider: ({ column }) => {
             const source = SOURCES[column.name]
-            return source && MemoryLookupManyDataProviderFactory.create(source)
+            return source && MemoryLookupManyDataProviderFactory.create({ source, services })
         },
     }),
 },
@@ -321,8 +321,8 @@ const DEPENDENCIES: ITaskDependency[] = [
 
 //returned from onInitialize
 modules: {
-    onGetDependenciesModule: (services) => createDependenciesModule({
-        strategy: new MemoryTaskDependencyStrategy({ dependencies: DEPENDENCIES }),
+    onGetDependenciesModule: ({ services }) => createDependenciesModule({
+        strategy: new MemoryTaskDependencyStrategy({ dependencies: DEPENDENCIES, services }),
         services,
     }),
 },
@@ -389,8 +389,8 @@ const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor(), [])
 | Personal views | Subscribe to the module provider's events and pull the strategy's current state |
 
 \`\`\`ts
-const strategy = new MemoryUserQueryStrategy({ userQueries })
-const module = createUserQueryModule({ strategy, enableQueryManager: true })
+const strategy = new MemoryUserQueryStrategy({ userQueries, services })
+const module = createUserQueryModule({ strategy, services, enableQueryManager: true })
 const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
 module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
 module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)

@@ -32,16 +32,18 @@ Personal saved views are backed by a TALXIS model rather than by your task entit
 
 | Feature | Module to register | Model it needs |
 |---|---|---|
-| Personal saved views | \`modules.onGetUserQueriesModule\` → \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...) })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
+| Personal saved views | \`modules.onGetUserQueriesModule\` → \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...), services })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
 
 \`\`\`ts
 //part of what onInitialize resolves - see Modules for the full picture
 modules: {
-    onGetUserQueriesModule: context => createUserQueryModule({
+    onGetUserQueriesModule: ({ services, entityName, recordId, userId }) => createUserQueryModule({
+        services,
         strategy: new TalxisUserQueryStrategy({
-            entityName: context.entityName,
-            recordId: context.recordId,
-            ownerId: context.userId,
+            entityName,
+            recordId,
+            ownerId: userId,
+            services,
         }),
         enableQueryManager: true,
     }),
@@ -87,11 +89,13 @@ const descriptor = new DataverseTaskGridDescriptor({
         gridParameters: { enableTaskEditing: true, enableViewSwitcher: true },
         //personal views are on because this registers the module - there is no flag for it
         modules: {
-            onGetUserQueriesModule: context => createUserQueryModule({
+            onGetUserQueriesModule: ({ services, entityName, recordId, userId }) => createUserQueryModule({
+                services,
                 strategy: new TalxisUserQueryStrategy({
-                    entityName: context.entityName,
-                    recordId: context.recordId,
-                    ownerId: context.userId,
+                    entityName,
+                    recordId,
+                    ownerId: userId,
+                    services,
                 }),
                 enableQueryManager: true,
             }),
@@ -108,7 +112,7 @@ const descriptor = new DataverseTaskGridDescriptor({
             }),
             //every other hook takes the parameters of the matching DataverseTaskActions method
             onGetFormParameters: (operation, parameters) => parameters,
-        }, services),
+        }),
     }),
 })
 \`\`\`
@@ -174,7 +178,7 @@ The one constructor parameter, next to \`onInitialize\`:
 
 ## Saved views
 
-Register \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...) })\` from \`modules.onGetUserQueriesModule\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
+Register \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...), services })\` from \`modules.onGetUserQueriesModule\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
 
 Without that module the feature is simply off, and its options — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` — have nowhere to be set, because they belong to the module rather than to \`gridParameters\`. Not registering it also keeps the view manager and both dialogs out of your bundle.
 
@@ -216,17 +220,18 @@ Feeding the picker is the \`lookupMany\` [**module**](?path=/story/task-grid-mod
 
 \`\`\`ts
 modules: {
-    onGetLookupManyModule: (context) => createLookupManyModule({
+    onGetLookupManyModule: ({ services, projectRecord, sourceRecord }) => createLookupManyModule({
         createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
             ...parameters,
-            projectRecord: context.projectRecord,
-            sourceRecord: context.sourceRecord,
+            projectRecord,
+            sourceRecord,
         }),
+        services,
     }),
 },
 \`\`\`
 
-The parameters carry everything the factory needs: the cell's record and column from the call, the project and source records from \`context\`. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
+The parameters carry everything the factory needs: the cell's record and column from the call, the project and source records from the builder's own params. It returns \`undefined\` for a column with no \`FetchXml\` binding, and the grid then reports that the column has no candidates.
 
 ## Templates
 
@@ -241,8 +246,10 @@ import { createDependenciesModule, DataverseTaskDependencyStrategy } from '@talx
 
 //returned from onInitialize
 modules: {
-    onGetDependenciesModule: (services) => createDependenciesModule({
+    onGetDependenciesModule: ({ services }) => createDependenciesModule({
+        services,
         strategy: new DataverseTaskDependencyStrategy({
+            services,
             entityName: 'talxis_taskdependency',
             primaryIdAttribute: 'talxis_taskdependencyid',
             predecessorAttribute: 'talxis_predecessortaskid',

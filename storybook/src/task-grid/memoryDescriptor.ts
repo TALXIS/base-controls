@@ -92,13 +92,14 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     //puts its UI in the bundle - a grid that never registers one does not ship it. A builder that
     //returns undefined leaves its feature off, exactly like omitting the key
     const builtInModules: IMemoryModules = {
-        onGetUserQueriesModule: () => {
+        onGetUserQueriesModule: ({ services }) => {
             if (!isEnabled('userQueries')) {
                 return undefined;
             }
-            const strategy = new MemoryUserQueryStrategy({ userQueries });
+            const strategy = new MemoryUserQueryStrategy({ userQueries, services });
             const module = createUserQueryModule({
                 strategy,
+                services,
                 enableQueryManager: true,
                 enableSaveAsNewQuery: true,
                 enableSaveQueryChanges: true,
@@ -112,7 +113,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore);
             return module;
         },
-        onGetTemplatesModule: (services) => {
+        onGetTemplatesModule: ({ services }) => {
             if (!isEnabled('templates')) {
                 return undefined;
             }
@@ -123,19 +124,20 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             provider.templateEvents.addEventListener('onAfterTemplateCreated', () => { templates = provider.getTemplateSource(); });
             return createTemplateModule({ provider });
         },
-        onGetGridCustomizerModule: () => {
+        onGetGridCustomizerModule: ({ services }) => {
             const strategy = options?.onGetGridCustomizerStrategy?.();
-            return strategy ? createGridCustomizerModule({ strategy }) : undefined;
+            return strategy ? createGridCustomizerModule({ strategy, services }) : undefined;
         },
-        onGetDependenciesModule: (services) => !isEnabled('dependencies') ? undefined : createDependenciesModule({
-            strategy: new MemoryTaskDependencyStrategy({ dependencies }),
+        onGetDependenciesModule: ({ services }) => !isEnabled('dependencies') ? undefined : createDependenciesModule({
+            strategy: new MemoryTaskDependencyStrategy({ dependencies, services }),
             services,
         }),
-        onGetLookupManyModule: () => !isEnabled('lookupMany') ? undefined : createLookupManyModule({
-            createDataProvider: ({ column }) => {
+        onGetLookupManyModule: ({ services }) => !isEnabled('lookupMany') ? undefined : createLookupManyModule({
+            createDataProvider: ({ column, services }) => {
                 const source = lookupSources[column.name];
-                return source && MemoryLookupManyDataProviderFactory.create(source);
+                return source && MemoryLookupManyDataProviderFactory.create({ source, services });
             },
+            services,
         }),
     };
 
@@ -176,7 +178,8 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
             return null;
         },
-    }, services);
+        services: services,
+    });
 
     const onInitialize = async (): Promise<IMemoryTaskGridDescriptorInitializeResult> => {
         if (!isSeeded) {

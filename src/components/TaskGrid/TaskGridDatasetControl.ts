@@ -109,8 +109,9 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
 
 
-    public createLookupManyDataProvider(parameters: ILookupManyDataProviderParameters): IDataProvider {
-        const dataProvider = this._services.find('lookupManyModule')?.createDataProvider(parameters);
+    public createLookupManyDataProvider(parameters: Omit<ILookupManyDataProviderParameters, 'services'>): IDataProvider {
+        //the locator comes from here rather than the cell: a caller should not have to thread it
+        const dataProvider = this._services.find('lookupManyModule')?.createDataProvider({ ...parameters, services: this._services });
         if (!dataProvider) {
             throw new Error(`Column "${parameters.column.name}" is marked as lookup-many, but no data provider was returned for it. Register a lookup-many module (createLookupManyModule) through your descriptor's "modules".`);
         }

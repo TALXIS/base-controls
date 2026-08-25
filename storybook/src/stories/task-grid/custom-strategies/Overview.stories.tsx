@@ -126,8 +126,9 @@ Leave a module out and its key is simply absent, which is what \`find\` is for.
 export class MyTaskStrategy implements ITaskDataProviderStrategy {
     private _services: ITaskGridServiceLocator
 
-    constructor(services: ITaskGridServiceLocator) {
-        this._services = services   //stored, never resolved here
+    //one params object, with services on it - the shape every strategy and provider uses
+    constructor(params: IMyTaskStrategyParams) {
+        this._services = params.services   //stored, never resolved here
     }
 
     //a getter per dependency keeps the call sites readable
@@ -214,7 +215,7 @@ import {
 
 import type {
     //the descriptor contract and what it hands you
-    ITaskGridDescriptor, ITaskGridServiceLocator, ITaskGridServiceMap, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
+    ITaskGridDescriptor, ITaskGridServiceLocator, ITaskGridServiceMap, ITaskGridFactoryParams, IFieldMapping, ITaskGridParameters, ITaskGridLabels,
     ICreateTasksFromTemplateParams,
     //the strategies and providers
     ITaskDataProviderStrategy, ITaskDataProvider, IRecordTree, IRecordTreeView, IRecordStructure,

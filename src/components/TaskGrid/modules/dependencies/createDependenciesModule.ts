@@ -22,8 +22,8 @@ export interface IDependenciesModuleOptions {
  * @example
  * ```ts
  * modules: {
- *     onGetDependenciesModule: (services) => createDependenciesModule({
- *         strategy: new MemoryTaskDependencyStrategy({ dependencies: DEPENDENCIES }),
+ *     onGetDependenciesModule: ({ services }) => createDependenciesModule({
+ *         strategy: new MemoryTaskDependencyStrategy({ dependencies: DEPENDENCIES, services }),
  *         services,
  *     }),
  * }

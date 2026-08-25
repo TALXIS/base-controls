@@ -75,6 +75,20 @@ export interface ILookupManyDataProviderParameters {
     record: IRecord;
     /** The lookup-many column definition, including its `metadata` and `controls` bindings. */
     column: IColumn;
+    /** Where the task side and the other modules are reached. */
+    services: ITaskGridServiceLocator;
+}
+
+/**
+ * What every factory the grid calls on a descriptor receives.
+ *
+ * One shape for all of them, so a consumer never has to remember which callback takes the locator where.
+ * A descriptor of your own may hand its builders more than this — the shipped ones add their loaded
+ * context — but `services` is always there.
+ */
+export interface ITaskGridFactoryParams {
+    /** Where every provider, module and grid service is reached. Resolve in methods, never in a constructor. */
+    services: ITaskGridServiceLocator;
 }
 
 /**
@@ -88,9 +102,9 @@ export interface ITaskGridDescriptor {
      * Returns the strategy responsible for loading system views. Personal views come from the
      * user-queries module instead.
      */
-    onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
+    onCreateSavedQueryStrategy: (params: ITaskGridFactoryParams) => ISavedQueryStrategy;
     /** Returns the strategy that handles all task CRUD, move, template and record-save operations. */
-    onCreateTaskStrategy: (services: ITaskGridServiceLocator) => ITaskDataProviderStrategy;
+    onCreateTaskStrategy: (params: ITaskGridFactoryParams) => ITaskDataProviderStrategy;
     /** Returns the container height as a CSS string. Falls back to a default stretch when omitted. */
     onGetHeight?: () => string | undefined;
     /**
@@ -101,13 +115,13 @@ export interface ITaskGridDescriptor {
      * mount, so nothing that must outlive a remount belongs in a module.
      *
      * ```ts
-     * onGetModules: () => ({ userQueries: createUserQueryModule({ strategy }) })
+     * onGetModules: ({ services }) => ({ userQueries: createUserQueryModule({ strategy, services }) })
      * ```
      *
      * The shipped descriptors expose this as a `modules` key of builders — see {@link IMemoryModules}
      * and {@link IDataverseModules}.
      */
-    onGetModules?: (services: ITaskGridServiceLocator) => ITaskGridModules;
+    onGetModules?: (params: ITaskGridFactoryParams) => ITaskGridModules;
     /** Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
     onGetControlId?: () => string;
     /** Called before any data provider is created. Use for lazy loading or authentication. */
@@ -123,7 +137,7 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
      * options. Called once per cell, because the candidates may depend on the row.
      * @throws If no `lookupMany` module is registered, or it returned nothing for this column.
      */
-    createLookupManyDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider;
+    createLookupManyDataProvider: (parameters: Omit<ILookupManyDataProviderParameters, 'services'>) => IDataProvider;
     /** Returns `true` when inactive tasks (stateCode = 1) are currently visible in the grid. */
     getInactiveTasksVisibility: () => boolean;
     /** Switches between hierarchical (tree) and flat-list view modes. Triggers a column re-sort. */

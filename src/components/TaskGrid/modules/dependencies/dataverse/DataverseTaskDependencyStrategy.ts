@@ -1,10 +1,16 @@
 import { ITaskDependency, ITaskDependencyStrategy, TaskDependencyType } from "../DependenciesProvider";
+import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** How many task ids one request filters on. The number the task strategy batches at. */
 const MAX_IDS_PER_REQUEST = 800;
 
 /** Constructor parameters for {@link DataverseTaskDependencyStrategy}. */
 export interface IDataverseTaskDependencyStrategyParams {
+    /**
+     * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use
+     * for it yet — one shape to remember, and nothing to change when it does.
+     */
+    services: ITaskGridServiceLocator;
     /** The dependency table. */
     entityName: string;
     /** The row's own id. */

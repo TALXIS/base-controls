@@ -3,7 +3,7 @@ import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
 /** Seed snippet of the example. `descriptor` comes from the sandbox. */
 export const CUSTOMIZER_FORMATTING_CODE = `const gridCustomizerStrategy: IGridCustomizerStrategy = {
-    onInitialize: (customizer) => {
+    onInitialize: ({ customizer }) => {
         const provider = customizer.getTaskDataProvider()
 
         const COMPLETED_STATUS = 5

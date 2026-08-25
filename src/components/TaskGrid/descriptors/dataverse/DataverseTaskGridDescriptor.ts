@@ -1,6 +1,6 @@
 import { FetchXmlBuilder, ISingleRecord, RecordBuilder } from "@talxis/client-libraries";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
-import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
+import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { DataverseTaskStrategy } from "@components/TaskGrid/strategies/dataverse/DataverseTaskStrategy";
@@ -53,21 +53,21 @@ export interface IDataverseLookupManyParameters extends ILookupManyDataProviderP
     sourceRecord?: ISingleRecord;
 }
 
-/** What {@link IDataverseModules.onGetUserQueriesModule} needs. */
-export type IDataverseUserQueriesContext = Pick<IDataverseStrategyContext, 'entityName' | 'recordId' | 'userId'>;
+/** What {@link IDataverseModules.onGetUserQueriesModule} is called with. */
+export type IDataverseUserQueriesParams = Pick<IDataverseStrategyContext, 'entityName' | 'recordId' | 'userId'> & ITaskGridFactoryParams;
 
-/** What {@link IDataverseModules.onGetCustomColumnsModule} needs. */
-export type IDataverseCustomColumnsContext = Pick<IDataverseStrategyContext, 'entityName' | 'recordId'>;
+/** What {@link IDataverseModules.onGetCustomColumnsModule} is called with. */
+export type IDataverseCustomColumnsParams = Pick<IDataverseStrategyContext, 'entityName' | 'recordId'> & ITaskGridFactoryParams;
 
-/** What {@link IDataverseModules.onGetLookupManyModule} needs. */
-export type IDataverseLookupManyContext = Pick<IDataverseStrategyContext, 'projectRecord' | 'sourceRecord'>;
+/** What {@link IDataverseModules.onGetLookupManyModule} is called with. */
+export type IDataverseLookupManyParams = Pick<IDataverseStrategyContext, 'projectRecord' | 'sourceRecord'> & ITaskGridFactoryParams;
 
 /**
  * The feature modules a Dataverse grid can run with, one builder per feature. Omit a key and that feature
  * is off.
  *
- * Each builder receives the slice of descriptor context its own strategy reads, followed by the grid's
- * service locator — pass that on to a provider that needs it, and ignore it otherwise.
+ * Each builder is called with one object: the slice of descriptor context its own strategy reads, plus
+ * the grid's service locator. Pass `services` on to whatever the builder constructs.
  */
 export interface IDataverseModules {
     /**
@@ -75,7 +75,7 @@ export interface IDataverseModules {
      * table.
      *
      * ```ts
-     * onGetUserQueriesModule: context => createUserQueryModule({
+     * onGetUserQueriesModule: ({ services, entityName }) => createUserQueryModule({
      *     strategy: new TalxisUserQueryStrategy({
      *         entityName: context.entityName,
      *         recordId: context.recordId,
@@ -84,18 +84,18 @@ export interface IDataverseModules {
      * })
      * ```
      */
-    onGetUserQueriesModule?: (context: IDataverseUserQueriesContext, services: ITaskGridServiceLocator) => IUserQueryModule | undefined;
+    onGetUserQueriesModule?: (params: IDataverseUserQueriesParams) => IUserQueryModule | undefined;
     /**
      * Task templates. `createTemplateModule({ provider })` — no Dataverse template provider ships, so the
      * provider is your own. Hand it the `services` this builder receives; that is how it reaches the task
      * side it reads from.
      */
-    onGetTemplatesModule?: (services: ITaskGridServiceLocator) => ITemplateModule | undefined;
+    onGetTemplatesModule?: (params: ITaskGridFactoryParams) => ITemplateModule | undefined;
     /**
      * User-defined columns. Needs the `talxis_attributedefinition` and `talxis_attributevalue` tables.
      *
      * ```ts
-     * onGetCustomColumnsModule: context => createCustomColumnsModule({
+     * onGetCustomColumnsModule: ({ services, entityName }) => createCustomColumnsModule({
      *     strategy: new TalxisCustomColumnsStrategy({
      *         entityName: context.entityName,
      *         recordId: context.recordId,
@@ -103,16 +103,16 @@ export interface IDataverseModules {
      * })
      * ```
      */
-    onGetCustomColumnsModule?: (context: IDataverseCustomColumnsContext, services: ITaskGridServiceLocator) => ICustomColumnsModule | undefined;
+    onGetCustomColumnsModule?: (params: IDataverseCustomColumnsParams) => ICustomColumnsModule | undefined;
     /**
      * AG Grid customization: column definitions, row class rules, one-time init. The strategy is your
      * own. See [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
      *
      * ```ts
-     * onGetGridCustomizerModule: () => createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy() })
+     * onGetGridCustomizerModule: ({ services }) => createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy() })
      * ```
      */
-    onGetGridCustomizerModule?: (services: ITaskGridServiceLocator) => IGridCustomizerModule | undefined;
+    onGetGridCustomizerModule?: (params: ITaskGridFactoryParams) => IGridCustomizerModule | undefined;
     /**
      * Candidate records for lookup-many columns. `DataverseLookupManyDataProviderFactory` builds the
      * provider from the column's own `FetchXml` binding, scoped by the two records on the context.
@@ -120,7 +120,7 @@ export interface IDataverseModules {
      * Which columns render as lookup-many is driven by `metadata.LookupMany` on the column itself.
      *
      * ```ts
-     * onGetLookupManyModule: (context) => createLookupManyModule({
+     * onGetLookupManyModule: ({ services, projectRecord }) => createLookupManyModule({
      *     createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
      *         ...parameters,
      *         projectRecord: context.projectRecord,
@@ -129,12 +129,12 @@ export interface IDataverseModules {
      * })
      * ```
      */
-    onGetLookupManyModule?: (context: IDataverseLookupManyContext, services: ITaskGridServiceLocator) => ILookupManyModule | undefined;
+    onGetLookupManyModule?: (params: IDataverseLookupManyParams) => ILookupManyModule | undefined;
     /**
      * Task dependencies.
      *
      * ```ts
-     * onGetDependenciesModule: (services) => createDependenciesModule({
+     * onGetDependenciesModule: ({ services }) => createDependenciesModule({
      *     strategy: new DataverseTaskDependencyStrategy({
      *         entityName: 'talxis_taskdependency',
      *         primaryIdAttribute: 'talxis_taskdependencyid',
@@ -150,7 +150,7 @@ export interface IDataverseModules {
      * The strategy assumes no schema — the table, its attributes and its option set are all yours to
      * name. Registering the module is what creates the predecessors and successors columns.
      */
-    onGetDependenciesModule?: (services: ITaskGridServiceLocator) => IDependenciesModule | undefined;
+    onGetDependenciesModule?: (params: ITaskGridFactoryParams) => IDependenciesModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -221,7 +221,7 @@ export interface IDataverseTaskGridDescriptorParams {
  *     fieldMapping: { parentId: 'talxis_parenttaskid', subject: 'subject', stackRank: 'talxis_stackrank' },
  *     systemQueries: [myDefaultView],
  *     modules: {
- *       onGetUserQueriesModule: context => createUserQueryModule({ strategy: new TalxisUserQueryStrategy({ entityName: context.entityName }) }),
+ *       onGetUserQueriesModule: ({ services, entityName }) => createUserQueryModule({ strategy: new TalxisUserQueryStrategy({ entityName: context.entityName }) }),
  *     },
  *   }),
  * });
@@ -286,16 +286,18 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
      * Calls each builder on the `modules` resolved by `onInitialize`, each with the slice of context it
      * declares. An absent builder leaves that feature off.
      */
-    public onGetModules(services: ITaskGridServiceLocator): ITaskGridModules {
-        const context = this._getStrategyContext();
+    public onGetModules({ services }: ITaskGridFactoryParams): ITaskGridModules {
+        //one object per builder: its context slice plus the locator. The declared types narrow the
+        //context to what each one reads, so a builder only sees the keys it was promised
+        const params = { ...this._getStrategyContext(), services };
         const modules = this._initialized.modules;
         return {
-            userQueries: modules?.onGetUserQueriesModule?.(context, services),
-            templates: modules?.onGetTemplatesModule?.(services),
-            customColumns: modules?.onGetCustomColumnsModule?.(context, services),
-            gridCustomizer: modules?.onGetGridCustomizerModule?.(services),
-            lookupMany: modules?.onGetLookupManyModule?.(context, services),
-            dependencies: modules?.onGetDependenciesModule?.(services),
+            userQueries: modules?.onGetUserQueriesModule?.(params),
+            templates: modules?.onGetTemplatesModule?.(params),
+            customColumns: modules?.onGetCustomColumnsModule?.(params),
+            gridCustomizer: modules?.onGetGridCustomizerModule?.(params),
+            lookupMany: modules?.onGetLookupManyModule?.(params),
+            dependencies: modules?.onGetDependenciesModule?.(params),
         };
     }
 
@@ -303,7 +305,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
      * Delegates to the `onCreateTaskStrategy` resolved by `onInitialize`, falling back to a plain
      * `DataverseTaskStrategy` over the resolved FetchXML.
      */
-    public onCreateTaskStrategy(services: ITaskGridServiceLocator): ITaskDataProviderStrategy {
+    public onCreateTaskStrategy({ services }: ITaskGridFactoryParams): ITaskDataProviderStrategy {
         const context: IDataverseTaskStrategyContext = {
             ...this._getStrategyContext(),
             services: services,
@@ -317,7 +319,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
                 projectRecord: this._projectRecord,
                 sourceRecord: this._sourceRecord,
             }),
-        }, services);
+            services: services,
+        });
     }
 
     private async _getProjectRecord(): Promise<ISingleRecord | undefined> {

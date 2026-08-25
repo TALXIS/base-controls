@@ -2,6 +2,7 @@ import { Attribute, DatasetConstants, DataType, DataTypes, FieldValue, IColumn, 
 import { DynamicEntityDefinition } from "@talxis/client-metadata";
 import { Attribute as IAttribute } from '@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition';
 import { ICustomColumnsStrategy } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
+import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** The table holding custom column definitions. */
 export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
@@ -10,6 +11,11 @@ export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 
 /** Constructor parameters for {@link TalxisCustomColumnsStrategy}. */
 export interface ITalxisCustomColumnsStrategyParameters {
+    /**
+     * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use
+     * for it yet — one shape to remember, and nothing to change when it does.
+     */
+    services: ITaskGridServiceLocator;
     /** Logical name of the entity for which dynamic attribute definitions are managed (e.g. `"task"`). */
     entityName: string;
     /** Scopes attribute definitions to a specific parent record. */
@@ -42,7 +48,7 @@ export interface ITalxisCustomColumnsStrategy extends ICustomColumnsStrategy {
  * Dynamic (user-defined) columns are modelled as `talxis_attributedefinition` records.
  * Column values are stored as `talxis_attributevalue` records linked to the record they belong to.
  *
- * Wrap an instance in `createCustomColumnsModule({ strategy })` and return it from the descriptor's
+ * Wrap an instance in `createCustomColumnsModule({ strategy, services })` and return it from the descriptor's
  * `modules.onGetCustomColumnsModule` to enable the custom-columns feature in the TaskGrid.
  */
 export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy {

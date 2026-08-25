@@ -2,6 +2,7 @@ import { ILookupManyDataProviderParameters } from "@components/TaskGrid/interfac
 import { IDataProvider } from "@talxis/client-libraries";
 import { ILookupManyModule } from "../interfaces";
 import { LookupManyCellRenderer } from "./cell-renderer";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** Options for {@link createLookupManyModule}. */
 export interface ILookupManyModuleOptions {
@@ -11,6 +12,8 @@ export interface ILookupManyModuleOptions {
      * grid throws when that column renders.
      */
     createDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider | undefined;
+    /** The locator the builder was handed, so the module can pass it to `createDataProvider`. */
+    services: ITaskGridServiceLocator;
 }
 
 /**
@@ -23,13 +26,18 @@ export interface ILookupManyModuleOptions {
  * @example
  * ```ts
  * modules: {
- *     onGetLookupManyModule: () => createLookupManyModule({
- *         createDataProvider: ({ column }) => MemoryLookupManyDataProviderFactory.create(SOURCES[column.name]),
+ *     onGetLookupManyModule: ({ services }) => createLookupManyModule({
+ *         createDataProvider: ({ column, services }) => MemoryLookupManyDataProviderFactory.create({
+ *             source: SOURCES[column.name],
+ *             services,
+ *         }),
+ *         services,
  *     }),
  * }
  * ```
  */
 export const createLookupManyModule = (options: ILookupManyModuleOptions): ILookupManyModule => ({
     createDataProvider: options.createDataProvider,
+    services: options.services,
     components: { CellRenderer: LookupManyCellRenderer },
 });

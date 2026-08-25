@@ -22,13 +22,14 @@ Read this page second. Both task strategies take **a hook per operation** on the
 
 \`\`\`ts
 new DataverseTaskStrategy({
+    services,
     onInitialize: async () => ({ fetchXml, projectRecord, sourceRecord, editFormId }),
     onCreateTask: async params => {
         const task = await DataverseTaskActions.createTask(params)
         //…post-process
         return task
     },
-}, services)
+})
 \`\`\`
 
 Subclass when you want to change several operations at once, hold state of your own between them, or override a hook that has no parameter — otherwise prefer the hook.
@@ -51,12 +52,13 @@ class MyTaskStrategy extends DataverseTaskStrategy {
 }
 \`\`\`
 
-The subclass takes the same two arguments as the original — \`{ onInitialize }\` and \`services\` — and you return it from the \`onCreateTaskStrategy\` your \`onInitialize\` resolves, no descriptor subclass required:
+The subclass takes the same single params object as the original — \`{ onInitialize, services }\` — and you return it from the \`onCreateTaskStrategy\` your \`onInitialize\` resolves, no descriptor subclass required:
 
 \`\`\`ts
 onCreateTaskStrategy: ({ services, fetchXml, projectRecord, sourceRecord }) => new MyTaskStrategy({
     onInitialize: async () => ({ fetchXml, projectRecord, sourceRecord, editFormId }),
-}, services),
+    services,
+}),
 \`\`\`
 
 ## Subclassing a descriptor

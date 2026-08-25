@@ -1,5 +1,6 @@
 import { DatasetConstants, IColumn, IEventEmitter, EventEmitter, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils";
+import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 
 /** Strategy interface for managing user-defined (dynamic) column definitions. */
@@ -50,12 +51,22 @@ export interface ICustomColumnsDataProviderEvents {
 }
 
 /** Wraps an {@link ICustomColumnsStrategy} with the grid's error handling and event dispatch. */
+/** Constructor parameters for {@link CustomColumnsDataProvider}. */
+export interface ICustomColumnsDataProviderParameters {
+    /** Where column definitions and values are stored. */
+    strategy: ICustomColumnsStrategy;
+    /** Where the task side and the other modules are reached. Resolve in methods, never in a constructor. */
+    services: ITaskGridServiceLocator;
+}
+
 export class CustomColumnsDataProvider implements ICustomColumnsDataProvider {
     private _strategy: ICustomColumnsStrategy;
+    private _services: ITaskGridServiceLocator;
     public events: IEventEmitter<ICustomColumnsDataProviderEvents> = new EventEmitter();
 
-    constructor(strategy: ICustomColumnsStrategy) {
-        this._strategy = strategy;
+    constructor(parameters: ICustomColumnsDataProviderParameters) {
+        this._strategy = parameters.strategy;
+        this._services = parameters.services;
     }
     public getStrategy<T extends ICustomColumnsStrategy>(): T {
         return this._strategy as T;

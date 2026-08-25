@@ -5,7 +5,7 @@ import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 export const CUSTOMIZER_VALIDATION_CODE = `const MAX_ESTIMATE_HOURS = 500
 
 const gridCustomizerStrategy: IGridCustomizerStrategy = {
-    onInitialize: (customizer) => {
+    onInitialize: ({ customizer }) => {
         const provider = customizer.getTaskDataProvider()
 
         //every record gets its expressions as it loads - the decorator only registers the ones whose

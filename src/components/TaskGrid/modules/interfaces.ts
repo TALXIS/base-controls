@@ -1,4 +1,5 @@
 import { IEventEmitter } from "@talxis/client-libraries";
+import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import type { IDataProvider } from "@talxis/client-libraries";
 import type { ILookupManyDataProviderParameters } from "@components/TaskGrid/interfaces";
 import { IDeletedUserQueriesResult, ISavedQuery } from "@components/TaskGrid/providers/saved-query";
@@ -130,6 +131,8 @@ export interface ICustomColumnsModule {
 export interface IGridCustomizerModule {
     /** Hooks into the grid's core behaviour: column definitions, row class rules, one-time init. */
     strategy: IGridCustomizerStrategy;
+    /** What the grid hands to the strategy's hooks. */
+    services: ITaskGridServiceLocator;
 }
 
 /** Every component the lookup-many module needs. */
@@ -146,6 +149,8 @@ export interface ILookupManyModule {
      * throws when that column renders.
      */
     createDataProvider: (parameters: ILookupManyDataProviderParameters) => IDataProvider | undefined;
+    /** What the grid passes to `createDataProvider` alongside the cell's record and column. */
+    services: ITaskGridServiceLocator;
     /** The module's UI. */
     components: ILookupManyComponents;
 }

@@ -3,19 +3,30 @@ import { ErrorHelper } from "@utils";
 import { IDeletedUserQueriesResult, ISavedQuery, ISavedQueryMetadata, IUserQueryStrategy } from "@components/TaskGrid/providers/saved-query";
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import { ICreateUserQueryParams, IUserQueryDataProvider, IUserQueryDataProviderEvents } from "../interfaces";
+import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /**
  * Wraps an {@link IUserQueryStrategy} with everything the grid needs around it: the lifecycle events, the
  * error handling that surfaces a failing strategy in the grid's own error dialog, the cached list of
  * views, and the capture of the grid's current state into a view.
  */
+/** Constructor parameters for {@link UserQueryDataProvider}. */
+export interface IUserQueryDataProviderParameters {
+    /** Where the views are stored. */
+    strategy: IUserQueryStrategy;
+    /** Where the task side and the other modules are reached. Resolve in methods, never in a constructor. */
+    services: ITaskGridServiceLocator;
+}
+
 export class UserQueryDataProvider implements IUserQueryDataProvider {
     private _strategy: IUserQueryStrategy;
+    private _services: ITaskGridServiceLocator;
     private _queries: ISavedQuery[] = [];
     public events = new EventEmitter<IUserQueryDataProviderEvents>();
 
-    constructor(strategy: IUserQueryStrategy) {
-        this._strategy = strategy;
+    constructor(parameters: IUserQueryDataProviderParameters) {
+        this._strategy = parameters.strategy;
+        this._services = parameters.services;
     }
 
     public getQueries(): ISavedQuery[] {

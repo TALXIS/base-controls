@@ -38,8 +38,9 @@ const descriptor = new MemoryTaskGridDescriptor({
         systemQueries: [ALL_TASKS_VIEW],
         gridParameters: { enableTaskEditing: true, enableRowDragging: true, enableViewSwitcher: true },
         modules: {
-            onGetUserQueriesModule: () => createUserQueryModule({
-                strategy: new MemoryUserQueryStrategy({ userQueries }),
+            onGetUserQueriesModule: ({ services }) => createUserQueryModule({
+                strategy: new MemoryUserQueryStrategy({ userQueries, services }),
+                services,
                 enableQueryManager: true,
             }),
         },
@@ -65,7 +66,7 @@ A module is one optional feature packaged as one object: the implementation you 
 | `gridCustomizer` | `createGridCustomizerModule` | Deep customization of the AG Grid instance: column definitions, row class rules, one-time init. |
 | `lookupMany` | `createLookupManyModule` | The multi-record picker on columns carrying `metadata.LookupMany`. |
 
-On the shipped descriptors you register them through a `modules` key of builders on what `onInitialize` resolves — one `onGetXModule` per feature. On a descriptor you wrote yourself, implement `ITaskGridDescriptor.onGetModules` and return the module objects under the plain keys.
+On the shipped descriptors you register them through a `modules` key of builders on what `onInitialize` resolves — one `onGetXModule` per feature. Every builder is called with one object carrying `services`, and every factory, strategy and provider takes `services` as a field of its single params object — one shape, everywhere, so there is nothing to look up. On a descriptor you wrote yourself, implement `ITaskGridDescriptor.onGetModules` and return the module objects under the plain keys.
 
 At runtime, read a module off the service locator: `services.find('templatesModule')` where the feature is optional to the caller, and `services.get('templatesModule')` — which throws when nothing registered it — where the caller only exists because the module does. What a module brings hangs off the module itself: `find('customColumnsModule')?.provider`.
 

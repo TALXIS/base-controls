@@ -37,6 +37,11 @@ import {
  */
 export interface IDataverseTaskStrategyParams {
     /**
+     * Where the grid's providers, modules and parameters are reached. Resolve in methods, never in the
+     * constructor: the strategy is built before the providers it reads.
+     */
+    services: ITaskGridServiceLocator;
+    /**
      * Resolves the FetchXML and the options the strategy runs on. Awaited inside the strategy's own
      * `onInitialize`, so anything it needs can be fetched or computed while the grid shows its skeleton.
      */
@@ -170,9 +175,9 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     private _lookupManyHandlers: { [colName: string]: LookupManyHandler } = {};
 
 
-    constructor(params: IDataverseTaskStrategyParams, services: ITaskGridServiceLocator) {
+    constructor(params: IDataverseTaskStrategyParams) {
         this._params = params;
-        this._services = services;
+        this._services = params.services;
     }
 
     /** The user-defined columns, when the custom-columns module is registered. */

@@ -55,6 +55,11 @@ export interface IMemoryTaskInitializeResult {
  */
 export interface IMemoryTaskStrategyParams {
     /**
+     * Where the grid's providers, modules and parameters are reached. Resolve in methods, never in the
+     * constructor: the strategy is built before the providers it reads.
+     */
+    services: ITaskGridServiceLocator;
+    /**
      * Resolves the records, the metadata and the columns the grid loads with. Awaited inside the
      * strategy's own `onInitialize`, so the grid's loading state covers the work.
      *
@@ -146,9 +151,9 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     private _services: ITaskGridServiceLocator;
     private _provider!: ITaskDataProvider;
 
-    constructor(params: IMemoryTaskStrategyParams, services: ITaskGridServiceLocator) {
+    constructor(params: IMemoryTaskStrategyParams) {
         this._params = params;
-        this._services = services;
+        this._services = params.services;
     }
 
     private get _savedQueryDataProvider(): ISavedQueryDataProvider {

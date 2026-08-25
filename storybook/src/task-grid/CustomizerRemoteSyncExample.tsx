@@ -34,7 +34,7 @@ const fetchRecalculatedRows = async (provider, recordIds: string[]) => {
 }
 
 const gridCustomizerStrategy: IGridCustomizerStrategy = {
-    onInitialize: (customizer) => {
+    onInitialize: ({ customizer }) => {
         const provider = customizer.getTaskDataProvider()
 
         provider.addEventListener('onRecordLoaded', (record) => {

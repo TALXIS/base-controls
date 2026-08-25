@@ -83,7 +83,9 @@ export interface ISavedQueryDataProvider {
     destroy: () => void;
 }
 
-interface ISavedQueryDataProviderParameters {
+export interface ISavedQueryDataProviderParameters {
+    /** Where the system views come from. */
+    strategy: ISavedQueryStrategy;
     /** Where the column names, the labels and the optional module providers are reached. */
     services: ITaskGridServiceLocator;
     preferredQuery?: Partial<ISavedQuery> & { id: string };
@@ -101,8 +103,8 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _systemQueriesColumnsMap: Map<string, IColumn> = new Map();
     private _preferredQuery?: Partial<ISavedQuery> & { id: string };
 
-    constructor(strategy: ISavedQueryStrategy, parameters: ISavedQueryDataProviderParameters) {
-        this._strategy = strategy;
+    constructor(parameters: ISavedQueryDataProviderParameters) {
+        this._strategy = parameters.strategy;
         this._services = parameters.services;
         this._preferredQuery = parameters.preferredQuery;
     }

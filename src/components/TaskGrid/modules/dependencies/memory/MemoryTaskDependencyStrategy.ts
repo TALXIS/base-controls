@@ -1,7 +1,13 @@
 import { ITaskDependency, ITaskDependencyStrategy } from "../DependenciesProvider";
+import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** Constructor parameters for {@link MemoryTaskDependencyStrategy}. */
 export interface IMemoryTaskDependencyStrategyParams {
+    /**
+     * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use
+     * for it yet — one shape to remember, and nothing to change when it does.
+     */
+    services: ITaskGridServiceLocator;
     /**
      * The dependencies. Read only — nothing here writes into the array, so a fixture can be shared
      * between grids.

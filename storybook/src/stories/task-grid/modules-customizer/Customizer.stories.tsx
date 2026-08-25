@@ -27,7 +27,7 @@ The other four modules, and how registering one works: [**Modules**](?path=/stor
 
 [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview) is a convenience over exactly this: it swaps a renderer or an editor without a strategy, without you finding the right column definition, and while handing you the grid's own component to fall back on. Reach for the customizer when that is not enough — when you want a record's *behaviour* rather than its looks, or an ag-grid option TaskGrid never surfaces.
 
-Register it with \`createGridCustomizerModule({ strategy })\`, so no subclass is involved — the strategy below is the same on memory and on Dataverse.
+Register it with \`createGridCustomizerModule({ strategy, services })\`, so no subclass is involved — the strategy below is the same on memory and on Dataverse.
 
 The strategy gets three hooks:
 

@@ -40,12 +40,12 @@ export const DependencyRefreshTaskGrid = () => {
         //the module list still drives which columns the views carry, so the dependency columns show up
         modules: ['dependencies'],
         onGetModuleOverrides: (data) => ({
-            onGetDependenciesModule: (services) => {
+            onGetDependenciesModule: ({ services }) => {
                 //the very array the strategy reads, so a button below can add to it and have the next
                 //refresh pick the change up — the same trick the built-in registration uses for views
                 fixtureRef.current = data.dependencies
                 const module = createDependenciesModule({
-                    strategy: new MemoryTaskDependencyStrategy({ dependencies: data.dependencies }),
+                    strategy: new MemoryTaskDependencyStrategy({ dependencies: data.dependencies, services }),
                     services,
                 })
                 providerRef.current = module.provider

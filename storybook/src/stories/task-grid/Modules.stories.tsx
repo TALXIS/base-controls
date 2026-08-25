@@ -44,8 +44,9 @@ const descriptor = new MemoryTaskGridDescriptor({
         records, metadata, fieldMapping, systemQueries,
         gridParameters: { enableViewSwitcher: true },
         modules: {
-            onGetUserQueriesModule: () => createUserQueryModule({
-                strategy: new MemoryUserQueryStrategy({ userQueries }),
+            onGetUserQueriesModule: ({ services }) => createUserQueryModule({
+                strategy: new MemoryUserQueryStrategy({ userQueries, services }),
+                services,
                 enableQueryManager: true,
             }),
         },

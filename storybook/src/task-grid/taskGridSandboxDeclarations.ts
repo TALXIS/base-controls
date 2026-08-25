@@ -122,7 +122,7 @@ interface ITaskGridRecordExpressions {
 /** Deep customization of the AG Grid instance, returned from the descriptor. */
 interface IGridCustomizerStrategy {
     /** Called once when the grid is ready. Register expression decorators and set grid options here. */
-    onInitialize: (customizer: IGridCustomizer) => void;
+    onInitialize: (params: { customizer: IGridCustomizer; services: ITaskGridServices }) => void;
     /** The computed ag-grid column definitions. Return them changed. */
     onGetColumnDefinitions?: (columnDefs: any[]) => any[];
     /** The grid's own row class rules. Return them extended or overridden. */
@@ -254,20 +254,28 @@ interface ITaskGridServices {
     /** Undefined when the module that would register it is not registered. */
     find(key: string): any;
     register(key: string, resolve: () => any): void;
+    /** Runs the callback as soon as that service exists - now, or when something registers it. */
+    whenAvailable(key: string, callback: (service: any) => void): void;
+}
+
+/** What every factory the grid calls is handed. One shape, so \`services\` is always in the same place. */
+interface ITaskGridFactoryParams {
+    services: ITaskGridServices;
 }
 
 /** Define this to choose which modules the grid runs with. Called on every mount. */
 declare type GetModules = (data: IModuleData) => {
-    onGetUserQueriesModule?: (services: ITaskGridServices) => any;
-    onGetTemplatesModule?: (services: ITaskGridServices) => any;
-    onGetGridCustomizerModule?: (services: ITaskGridServices) => any;
-    onGetLookupManyModule?: (services: ITaskGridServices) => any;
-    onGetDependenciesModule?: (services: ITaskGridServices) => any;
+    onGetUserQueriesModule?: (params: ITaskGridFactoryParams) => any;
+    onGetTemplatesModule?: (params: ITaskGridFactoryParams) => any;
+    onGetGridCustomizerModule?: (params: ITaskGridFactoryParams) => any;
+    onGetLookupManyModule?: (params: ITaskGridFactoryParams) => any;
+    onGetDependenciesModule?: (params: ITaskGridFactoryParams) => any;
 };
 
 /** Personal views. Bring the strategy; the module brings the commands and dialogs. */
 declare const createUserQueryModule: (options: {
     strategy: any;
+    services: ITaskGridServices;
     enableQueryManager?: boolean;
     enableSaveAsNewQuery?: boolean;
     enableSaveQueryChanges?: boolean;
@@ -275,23 +283,24 @@ declare const createUserQueryModule: (options: {
 /** Task templates. Bring the provider; the module brings the picker. */
 declare const createTemplateModule: (options: { provider: any }) => any;
 /** Direct access to AG Grid. Bring the customizer strategy. */
-declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
+declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy; services: ITaskGridServices }) => any;
 /** Task dependencies. Bring the strategy and the services your builder was handed. */
 declare const createDependenciesModule: (options: { strategy: any; services: ITaskGridServices }) => any;
 /** Lookup-many pickers. Return the candidates for each column. */
 declare const createLookupManyModule: (options: {
-    createDataProvider: (parameters: { record: ITaskGridRecord; column: ITaskGridColumn }) => any;
+    createDataProvider: (parameters: { record: ITaskGridRecord; column: ITaskGridColumn; services: ITaskGridServices }) => any;
+    services: ITaskGridServices;
 }) => any;
 
 /** The grid's services, inside a live example. */
 declare const useTaskGridServices: () => ITaskGridServices;
 
 /** Stores personal views in an array you hand it. */
-declare const MemoryUserQueryStrategy: new (params: { userQueries: any[] }) => any;
+declare const MemoryUserQueryStrategy: new (params: { userQueries: any[], services: ITaskGridServices }) => any;
 /** Serves templates from an in-memory source, and captures new ones into it. */
 declare const MemoryTemplateDataProvider: new (params: { templates: any, services: ITaskGridServices }) => any;
 /** Turns records you hold into a lookup-many picker's candidate provider. */
-declare const MemoryLookupManyDataProviderFactory: { create(source: any): any };
+declare const MemoryLookupManyDataProviderFactory: { create(params: { source: any, services: ITaskGridServices }): any };
 /** Serves task dependencies from an array you hold. */
-declare const MemoryTaskDependencyStrategy: new (params: { dependencies: any[] }) => any;
+declare const MemoryTaskDependencyStrategy: new (params: { dependencies: any[], services: ITaskGridServices }) => any;
 `.trim()

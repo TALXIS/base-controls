@@ -11,7 +11,7 @@ import { Liquid } from "liquidjs";
  *
  * @example
  * ```ts
- * onGetLookupManyModule: (context) => createLookupManyModule({
+ * onGetLookupManyModule: ({ services, projectRecord }) => createLookupManyModule({
  *     createDataProvider: (parameters) => DataverseLookupManyDataProviderFactory.create({
  *         ...parameters,
  *         projectRecord: context.projectRecord,

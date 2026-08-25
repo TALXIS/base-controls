@@ -24,7 +24,7 @@ export interface ITemplateModuleOptions {
  * @example
  * ```ts
  * modules: {
- *     onGetTemplatesModule: (services) => createTemplateModule({
+ *     onGetTemplatesModule: ({ services }) => createTemplateModule({
  *         provider: new MemoryTemplateDataProvider({ templates, services }),
  *     }),
  * }

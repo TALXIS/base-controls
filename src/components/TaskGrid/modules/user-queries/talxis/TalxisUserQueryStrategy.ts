@@ -2,6 +2,7 @@ import { FetchXmlDataProvider } from "@talxis/client-libraries";
 import { Liquid } from "liquidjs";
 import { IDeletedUserQueriesResult, ISavedQuery, IUserQueryStrategy } from "@components/TaskGrid/providers/saved-query/SavedQueryDataProvider";
 import { ErrorHelper } from "@utils/error-handling";
+import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 const FETCH_XML = `
 <fetch count="5000" page="1">
@@ -34,6 +35,11 @@ const _getFetchXml = (entityName: string, recordId?: string, ownerId?: string) =
 
 /** Constructor parameters for {@link TalxisUserQueryStrategy}. */
 export interface ITalxisUserQueryStrategyParameters {
+    /**
+     * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use
+     * for it yet — one shape to remember, and nothing to change when it does.
+     */
+    services: ITaskGridServiceLocator;
     /** Logical name of the entity whose queries are managed (used as `talxis_returnedtypecode`). */
     entityName: string;
     /** Scopes queries to a specific record (`talxis_recordid`). When omitted, only unscoped queries are returned. */

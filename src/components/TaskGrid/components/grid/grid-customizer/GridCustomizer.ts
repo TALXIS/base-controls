@@ -10,7 +10,7 @@ import { ILocalizationService } from "@utils";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
-import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
+import { INativeColumns, ITaskGridDatasetControl, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
 import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/TaskGrid/providers/saved-query";
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
 import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
@@ -27,10 +27,20 @@ export type GridApi = GridApiBase<IRecord>;
 export type RowClassRules = RowClassRulesBase<IRecord>;
 
 
+/** What {@link IGridCustomizerStrategy.onInitialize} is called with. */
+export interface IGridCustomizerInitializeParams extends ITaskGridFactoryParams {
+    /** The AG Grid instance and the grid control, for what the locator does not carry. */
+    customizer: IGridCustomizer;
+}
+
 /** Strategy interface for deep customization of the AG Grid instance inside TaskGrid. */
 export interface IGridCustomizerStrategy {
-    /** Called once after the grid is ready. The place for `registerExpressionDecorator` and other one-time setup. */
-    onInitialize: (customizer: IGridCustomizer) => void;
+    /**
+     * Called once after the grid is ready. The place for `registerExpressionDecorator` and other one-time
+     * setup. A customizer is usually a plain object with no constructor, so this is where it is handed
+     * `services` — keep it if anything else it does needs the grid.
+     */
+    onInitialize: (params: IGridCustomizerInitializeParams) => void;
     /** Receives the computed column definitions and may return a modified array. */
     onGetColumnDefinitions?: (columnDefs: ColDef[]) => ColDef[];
     /** Receives the default row class rules map and may return an extended or overridden version. */
@@ -102,7 +112,7 @@ export class GridCustomizer implements IGridCustomizer {
         this._patchGridApi();
         this._registerEventListeners();
         this._gridApi.setGridOption('rowClassRules', this._getRowClassRules());
-        this._strategy?.onInitialize?.(this);
+        this._strategy?.onInitialize?.({ customizer: this, services: this._services });
     }
 
     public getDatasetControl(): ITaskGridDatasetControl {

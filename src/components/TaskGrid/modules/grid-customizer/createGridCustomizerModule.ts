@@ -1,10 +1,13 @@
 import { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
 import { IGridCustomizerModule } from "../interfaces";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** Options for {@link createGridCustomizerModule}. */
 export interface IGridCustomizerModuleOptions {
     /** Hooks into the grid's core behaviour: column definitions, row class rules, one-time init. */
     strategy: IGridCustomizerStrategy;
+    /** The locator the builder was handed, so the module can hand it to the strategy's hooks. */
+    services: ITaskGridServiceLocator;
 }
 
 /**
@@ -16,10 +19,11 @@ export interface IGridCustomizerModuleOptions {
  * @example
  * ```ts
  * modules: {
- *     onGetGridCustomizerModule: () => createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy() }),
+ *     onGetGridCustomizerModule: ({ services }) => createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy(), services }),
  * }
  * ```
  */
 export const createGridCustomizerModule = (options: IGridCustomizerModuleOptions): IGridCustomizerModule => ({
     strategy: options.strategy,
+    services: options.services,
 });
