@@ -1,3 +1,4 @@
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { IDependenciesModule } from "../interfaces";
 import { DependenciesProvider, ITaskDependencyStrategy } from "./DependenciesProvider";
 import { DependenciesCellRenderer } from "./cell-renderer";
@@ -6,6 +7,8 @@ import { DependenciesCellRenderer } from "./cell-renderer";
 export interface IDependenciesModuleOptions {
     /** Where the dependencies are read from. */
     strategy: ITaskDependencyStrategy;
+    /** The locator the builder was handed. The provider reaches the task side through it. */
+    services: ITaskGridServiceLocator;
 }
 
 /**
@@ -19,13 +22,14 @@ export interface IDependenciesModuleOptions {
  * @example
  * ```ts
  * modules: {
- *     onGetDependenciesModule: () => createDependenciesModule({
+ *     onGetDependenciesModule: (services) => createDependenciesModule({
  *         strategy: new MemoryTaskDependencyStrategy({ dependencies: DEPENDENCIES }),
+ *         services,
  *     }),
  * }
  * ```
  */
 export const createDependenciesModule = (options: IDependenciesModuleOptions): IDependenciesModule => ({
-    provider: new DependenciesProvider(options.strategy),
+    provider: new DependenciesProvider({ strategy: options.strategy, services: options.services }),
     components: { CellRenderer: DependenciesCellRenderer },
 });

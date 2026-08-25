@@ -127,8 +127,9 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             const strategy = options?.onGetGridCustomizerStrategy?.();
             return strategy ? createGridCustomizerModule({ strategy }) : undefined;
         },
-        onGetDependenciesModule: () => !isEnabled('dependencies') ? undefined : createDependenciesModule({
+        onGetDependenciesModule: (services) => !isEnabled('dependencies') ? undefined : createDependenciesModule({
             strategy: new MemoryTaskDependencyStrategy({ dependencies }),
+            services,
         }),
         onGetLookupManyModule: () => !isEnabled('lookupMany') ? undefined : createLookupManyModule({
             createDataProvider: ({ column }) => {

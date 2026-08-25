@@ -134,7 +134,7 @@ export interface IDataverseModules {
      * Task dependencies.
      *
      * ```ts
-     * onGetDependenciesModule: () => createDependenciesModule({
+     * onGetDependenciesModule: (services) => createDependenciesModule({
      *     strategy: new DataverseTaskDependencyStrategy({
      *         entityName: 'talxis_taskdependency',
      *         primaryIdAttribute: 'talxis_taskdependencyid',
@@ -143,6 +143,7 @@ export interface IDataverseModules {
      *         typeAttribute: 'talxis_dependencytypecode',
      *         dependencyTypeCodes: { 742070000: 'finishToStart' },
      *     }),
+     *     services,
      * })
      * ```
      *

@@ -1,3 +1,5 @@
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+
 /** How the predecessor and the successor of a dependency relate in time. */
 export type TaskDependencyType = 'finishToStart' | 'startToStart' | 'finishToFinish' | 'startToFinish';
 
@@ -23,6 +25,14 @@ export interface ITaskDependencyStrategy {
      * them, so a dependency pointing at a task outside the grid still comes back.
      */
     onGetDependencies: (params: { taskIds: string[] }) => Promise<ITaskDependency[]>;
+}
+
+/** Constructor parameters for {@link DependenciesProvider}. */
+export interface IDependenciesProviderParameters {
+    /** Where the dependencies are read from. */
+    strategy: ITaskDependencyStrategy;
+    /** Where the task side and the other modules are reached. Resolve in methods, never in a constructor. */
+    services: ITaskGridServiceLocator;
 }
 
 /** The loaded dependencies, indexed so a cell can ask about one task. */
@@ -53,12 +63,14 @@ export interface IDependenciesProvider {
  */
 export class DependenciesProvider implements IDependenciesProvider {
     private _strategy: ITaskDependencyStrategy;
+    private _services: ITaskGridServiceLocator;
     private _dependencies: ITaskDependency[] = [];
     private _byPredecessor: Map<string, ITaskDependency[]> = new Map();
     private _bySuccessor: Map<string, ITaskDependency[]> = new Map();
 
-    constructor(strategy: ITaskDependencyStrategy) {
-        this._strategy = strategy;
+    constructor(parameters: IDependenciesProviderParameters) {
+        this._strategy = parameters.strategy;
+        this._services = parameters.services;
     }
 
     public async refresh(taskIds: string[]): Promise<void> {

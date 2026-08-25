@@ -276,8 +276,8 @@ declare const createUserQueryModule: (options: {
 declare const createTemplateModule: (options: { provider: any }) => any;
 /** Direct access to AG Grid. Bring the customizer strategy. */
 declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
-/** Task dependencies. Bring the strategy; the module brings the cell renderer. */
-declare const createDependenciesModule: (options: { strategy: any }) => any;
+/** Task dependencies. Bring the strategy and the services your builder was handed. */
+declare const createDependenciesModule: (options: { strategy: any; services: ITaskGridServices }) => any;
 /** Lookup-many pickers. Return the candidates for each column. */
 declare const createLookupManyModule: (options: {
     createDataProvider: (parameters: { record: ITaskGridRecord; column: ITaskGridColumn }) => any;

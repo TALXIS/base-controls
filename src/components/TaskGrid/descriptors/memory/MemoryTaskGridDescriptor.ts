@@ -60,8 +60,9 @@ export interface IMemoryModules {
      * Task dependencies.
      *
      * ```ts
-     * onGetDependenciesModule: () => createDependenciesModule({
+     * onGetDependenciesModule: (services) => createDependenciesModule({
      *     strategy: new MemoryTaskDependencyStrategy({ dependencies }),
+     *     services,
      * })
      * ```
      *

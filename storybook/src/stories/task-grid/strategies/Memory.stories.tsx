@@ -321,8 +321,9 @@ const DEPENDENCIES: ITaskDependency[] = [
 
 //returned from onInitialize
 modules: {
-    onGetDependenciesModule: () => createDependenciesModule({
+    onGetDependenciesModule: (services) => createDependenciesModule({
         strategy: new MemoryTaskDependencyStrategy({ dependencies: DEPENDENCIES }),
+        services,
     }),
 },
 \`\`\`

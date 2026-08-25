@@ -241,7 +241,7 @@ import { createDependenciesModule, DataverseTaskDependencyStrategy } from '@talx
 
 //returned from onInitialize
 modules: {
-    onGetDependenciesModule: () => createDependenciesModule({
+    onGetDependenciesModule: (services) => createDependenciesModule({
         strategy: new DataverseTaskDependencyStrategy({
             entityName: 'talxis_taskdependency',
             primaryIdAttribute: 'talxis_taskdependencyid',
@@ -256,6 +256,7 @@ modules: {
                 742070003: 'startToFinish',
             },
         }),
+        services,
     }),
 },
 \`\`\`
