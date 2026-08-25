@@ -62,4 +62,12 @@ export interface ITaskGridServiceLocator {
     find<TKey extends keyof ITaskGridServiceMap>(key: TKey): ITaskGridServiceMap[TKey] | undefined;
     /** Registers how a service is reached. Registering the same key again replaces it. */
     register<TKey extends keyof ITaskGridServiceMap>(key: TKey, resolve: () => ITaskGridServiceMap[TKey]): void;
+    /**
+     * Runs the callback with the service as soon as there is one — immediately when it already resolves,
+     * otherwise the moment something registers it. For wiring that belongs in a constructor but needs a
+     * service the grid has not built yet.
+     *
+     * Runs at most once per callback. A service that is never registered simply never calls back.
+     */
+    whenAvailable<TKey extends keyof ITaskGridServiceMap>(key: TKey, callback: (service: ITaskGridServiceMap[TKey]) => void): void;
 }
