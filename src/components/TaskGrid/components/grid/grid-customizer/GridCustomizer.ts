@@ -193,12 +193,12 @@ export class GridCustomizer implements IGridCustomizer {
                 case PREDECESSORS_COLUMN_NAME:
                 case SUCCESSORS_COLUMN_NAME: {
                     //get, not find: these columns exist because the module does, so one in a view without
-                    //it is a misconfiguration - better said out loud than rendered as an empty cell
-                    colDef.cellRenderer = this._services.get('dependenciesModule').components.CellRenderer;
+                    //it is a misconfiguration - better said out loud here, while the column definitions
+                    //are built, than rendered as an empty cell
+                    this._services.get('dependenciesModule');
+                    colDef.cellRenderer = columnName === PREDECESSORS_COLUMN_NAME ? this._predecessorsCellRenderer : this._successorsCellRenderer;
                     //a task's dependencies are not a value on the task, so there is nothing to edit
                     colDef.editable = false;
-                    //one renderer for both directions for now; it is handed the column it renders in, so
-                    //telling them apart is where the per-direction UI will start
                     break;
                 }
             }
@@ -240,6 +240,16 @@ export class GridCustomizer implements IGridCustomizer {
         colDef.cellRenderer = this._cellRenderer;
         colDef.cellEditor = this._cellEditor;
     }
+
+    //one renderer serves both columns, bound to its direction here rather than through
+    //`colDef.cellRendererParams` - that is a function AgGridModel owns, and it is what injects the
+    //record, the column and the value every cell needs. Stable fields, so a column definition pass does
+    //not hand ag-grid a new component identity each time
+    private _predecessorsCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
+        React.createElement(this._services.get('dependenciesModule').components.CellRenderer, { ...props, direction: 'predecessors' });
+
+    private _successorsCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
+        React.createElement(this._services.get('dependenciesModule').components.CellRenderer, { ...props, direction: 'successors' });
 
     private _cellRenderer = (props: ITaskGridCellProps): React.ReactElement => {
         return this._renderCell('renderer', props);

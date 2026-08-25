@@ -146,14 +146,14 @@ export const COLUMNS: IColumn[] = [
     //only so the demo's views show them without a trip through Edit columns
     {
         name: PREDECESSORS_COL,
-        dataType: 'Multiple',
+        dataType: 'SingleLine.Text',
         displayName: 'Predecessors',
         isVirtual: true,
         visualSizeFactor: 200,
     },
     {
         name: SUCCESSORS_COL,
-        dataType: 'Multiple',
+        dataType: 'SingleLine.Text',
         displayName: 'Successors',
         isVirtual: true,
         visualSizeFactor: 200,

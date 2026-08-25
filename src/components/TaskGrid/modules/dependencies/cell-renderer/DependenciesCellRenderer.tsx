@@ -1,32 +1,38 @@
 import * as React from "react";
+import { Icon, useTheme } from "@fluentui/react";
 import { ICellProps } from "@components/Grid/cells/cell/Cell";
 import { useServices } from "@components/TaskGrid/context";
 import { getDependenciesCellRendererStyles } from "./styles";
 
-/**
- * Renders a task's dependencies. `GridCustomizer` wires this in for any column carrying the
- * `TaskDependencies` custom control, but only once the `dependencies` module is registered — this
- * component is what that module contributes as its `components.CellRenderer`.
- *
- * Placeholder: it reports how many dependencies the task has in each direction. What goes here is a chip
- * per dependency — the other task, and an icon per `TaskDependencyType` showing which end of each task
- * the link attaches to — in both directions.
- */
-export const DependenciesCellRenderer = (props: ICellProps) => {
-    const services = useServices();
-    const styles = React.useMemo(() => getDependenciesCellRendererStyles(), []);
-    const provider = services.find('dependenciesModule')?.provider;
-    const taskId = props.record.getRecordId();
-    const predecessorCount = provider?.getPredecessors(taskId).length ?? 0;
-    const successorCount = provider?.getSuccessors(taskId).length ?? 0;
+/** Which side of a dependency a column shows. */
+export type TaskDependencyDirection = 'predecessors' | 'successors';
 
-    if (predecessorCount === 0 && successorCount === 0) {
+export interface IDependenciesCellRendererProps extends ICellProps {
+    /** Which side of the dependency this column shows. Bound per column by the grid. */
+    direction: TaskDependencyDirection;
+}
+
+/**
+ * Renders how many dependencies a task has in one direction: a link glyph, an arrow for the direction, and
+ * the count. Empty when the task has none.
+ *
+ * `GridCustomizer` wires this in for the grid's predecessors and successors columns, binding `direction`
+ * per column — this component is what the `dependencies` module contributes as its `components.CellRenderer`.
+ */
+export const DependenciesCellRenderer = (props: IDependenciesCellRendererProps) => {
+    const theme = useTheme();
+    const styles = React.useMemo(() => getDependenciesCellRendererStyles(theme), [theme]);
+    //get, not find: the column this renders in only exists because the module does
+    const provider = useServices().get('dependenciesModule').provider;
+    const taskId = props.record.getRecordId();
+    const dependencies = props.direction === 'predecessors' ? provider.getPredecessors(taskId) : provider.getSuccessors(taskId);
+
+    if (dependencies.length === 0) {
         return null;
     }
     return <div className={styles.root}>
-        {[
-            predecessorCount > 0 && `${predecessorCount} predecessor${predecessorCount > 1 ? 's' : ''}`,
-            successorCount > 0 && `${successorCount} successor${successorCount > 1 ? 's' : ''}`,
-        ].filter(Boolean).join(' · ')}
+        <Icon iconName="Link" className={styles.icon} />
+        <Icon iconName={props.direction === 'predecessors' ? 'SortDown' : 'SortUp'} className={styles.arrow} />
+        <span>{dependencies.length}</span>
     </div>
 }

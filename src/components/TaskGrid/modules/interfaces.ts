@@ -6,6 +6,7 @@ import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/TemplateDataProvider";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import type { IDependenciesProvider } from "@components/TaskGrid/modules/dependencies/DependenciesProvider";
+import type { IDependenciesCellRendererProps } from "@components/TaskGrid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
 import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
 import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
 import type { ICellProps } from "@components/Grid/cells/cell/Cell";
@@ -151,8 +152,11 @@ export interface ILookupManyModule {
 
 /** Every component the dependencies module needs. */
 export interface IDependenciesComponents {
-    /** The cell renderer `GridCustomizer` assigns to any column carrying the `TaskDependencies` control. */
-    CellRenderer: React.ComponentType<ICellProps>;
+    /**
+     * The cell renderer `GridCustomizer` assigns to the grid's predecessors and successors columns. One
+     * component for both: the grid binds `direction` to say which side the column shows.
+     */
+    CellRenderer: React.ComponentType<IDependenciesCellRendererProps>;
 }
 
 /** What the dependencies module contributes. Built by {@link createDependenciesModule}. */

@@ -282,7 +282,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             //own without the other appearing uninvited
             columns.push({
                 name: name,
-                dataType: DataTypes.Multiple,
+                dataType: DataTypes.SingleLineText,
                 displayName: this._localizationService.getLocalizedString(labelKey),
                 isVirtual: true,
                 visualSizeFactor: 200,
