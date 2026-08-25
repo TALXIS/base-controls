@@ -18,11 +18,19 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * Refreshing one task's dependencies changes two rows, because a dependency has two ends. Link the two
- * epics and refresh only the successor: `onAfterDependenciesRefreshed` reports both task ids, and the
- * predecessor's *Successors* cell repaints without its row ever being refreshed.
+ * Two things to poke at here.
  *
- * The grid's own factory always refreshes with every record it loaded, so this per-task path is not
+ * **Refresh, one task at a time.** A dependency has two ends, so refreshing one task changes two rows.
+ * Link the epics and refresh only the successor: `onAfterDependenciesRefreshed` reports both task ids and
+ * the predecessor's *Successors* cell repaints, without its row ever being refreshed.
+ *
+ * **Delete.** Nothing in the story refreshes anything — `MemoryTaskDependencyStrategy` hears
+ * `onAfterTasksDeleted` through the service locator, splices the rows that pointed at the deleted task out
+ * of the fixture array, and refreshes the provider itself. Deleting *Frontend Development* is the
+ * interesting one: it carries three shipped fixture dependencies, so the cells on *UX/UI Design*,
+ * *Content Migration* and *Launch & QA* should all clear.
+ *
+ * The grid's own factory always refreshes with every record it loaded, so the per-task path is not
  * reachable from the UI — hence a dev story rather than a documented example.
  */
 export const FarEndpoint: Story = {
