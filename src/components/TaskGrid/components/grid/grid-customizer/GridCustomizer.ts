@@ -11,7 +11,8 @@ import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
 import { INativeColumns, ITaskGridDatasetControl, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
-import { CHECKLIST_COLUMN_NAME, PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/TaskGrid/providers/saved-query";
+import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/TaskGrid/modules/dependencies/DependenciesProvider";
+import { CHECKLIST_COLUMN_NAME } from "@components/TaskGrid/modules/checklist/ChecklistProvider";
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
 import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
 

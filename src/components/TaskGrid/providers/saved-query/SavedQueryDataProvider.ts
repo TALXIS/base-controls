@@ -35,12 +35,6 @@ export interface ISavedQueryMetadata {
 
 /** Name of the virtual column holding each task's root-to-self path. */
 export const PATH_COLUMN_NAME = 'path__virtual';
-/** Name of the virtual column showing what a task waits on. Only exists with the dependencies module. */
-export const PREDECESSORS_COLUMN_NAME = 'predecessors__virtual';
-/** Name of the virtual column showing what waits on a task. Only exists with the dependencies module. */
-export const SUCCESSORS_COLUMN_NAME = 'successors__virtual';
-/** Name of the virtual column showing a task's checklist. Only exists with the checklist module. */
-export const CHECKLIST_COLUMN_NAME = 'checklist__virtual';
 const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'stateCode'];
 
 /**
@@ -66,6 +60,42 @@ export interface ISavedQueryStrategy {
     onGetSystemQueries: () => Promise<ISavedQuery[]>;
 }
 
+/**
+ * Applied to every query the provider serves, once it has finished building them — so a hook sees the final
+ * columns, sorting and filtering, and gets the last word on any of it.
+ *
+ * Mutates the query rather than returning one: these are the objects the provider hands out, and not all of
+ * them are its own.
+ */
+export type SavedQueryHook = (query: ISavedQuery) => void;
+
+/**
+ * One column, as a definition and a query's own declaration of it combine: the definition fills whatever the
+ * declaration leaves out, and anything the declaration states wins.
+ */
+const mergeColumn = (definition: IColumn, declared: IColumn): IColumn => ({
+    ...definition,
+    ...declared,
+    metadata: { ...definition.metadata, ...declared.metadata },
+});
+
+/**
+ * Adds a column to a query, or fills in a declaration of it.
+ *
+ * A query may name a column without describing it: a stored one keeps little more than the name, whether it
+ * shows and where it sits. Whatever it leaves out comes from the definition.
+ */
+export const applyColumn = (query: ISavedQuery, definition: IColumn): void => {
+    const declared = query.columns.find(column => column.name === definition.name);
+    //a copy, so the definition is not aliased by every query it is added to
+    if (!declared) {
+        query.columns.push({ ...definition });
+        return;
+    }
+    //in place, so anything already holding this column sees the merge as well
+    Object.assign(declared, mergeColumn(definition, declared));
+};
+
 /** Serves the system views, tracks which view is active, and normalises every view's columns. */
 export interface ISavedQueryDataProvider {
     /** Returns the full list of non-deletable system views. */
@@ -79,6 +109,8 @@ export interface ISavedQueryDataProvider {
     getCurrentQuery: () => ISavedQuery;
     /** Looks up a query by id across system and user queries. Throws if not found. */
     getSavedQuery(id: string): ISavedQuery;
+    /** Registers a hook. Only hooks registered before a `refresh` reach the queries it produces. */
+    registerHook: (hook: SavedQueryHook) => void;
     /** Fetches system and user queries and sets the initial active query. */
     refresh: () => Promise<void>;
     /** Releases the resources held by the provider. */
@@ -104,6 +136,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _currentQuery?: ISavedQuery;
     private _systemQueriesColumnsMap: Map<string, IColumn> = new Map();
     private _preferredQuery?: Partial<ISavedQuery> & { id: string };
+    private _hooks: SavedQueryHook[] = [];
 
     constructor(parameters: ISavedQueryDataProviderParameters) {
         this._strategy = parameters.strategy;
@@ -155,6 +188,10 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         return query;
     }
 
+    public registerHook(hook: SavedQueryHook): void {
+        this._hooks.push(hook);
+    }
+
     public async destroy() {
         //the module's provider owns its own listeners and is destroyed with it
     }
@@ -166,8 +203,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             throw new Error('At least one system query is required');
         }
         this._includePathColumn(systemQueries[0].columns);
-        this._includeDependencyColumns(systemQueries[0].columns);
-        this._includeChecklistColumn(systemQueries[0].columns);
         const allQueries = [...systemQueries, ...userQueries];
         this._systemQueries = systemQueries;
 
@@ -190,6 +225,18 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
             ...this._currentQuery,
             ...(preferredQueryInAllQueries ? this._preferredQuery : {}),
         }])[0];
+        //last, so a hook sees the finished query, preferred-query overlay included
+        this._applyHooks(userQueries);
+    }
+
+    /**
+     * The current query is a copy of whichever query it came from, with its own columns array, so it is
+     * hooked in its own right rather than through the one it was copied from.
+     */
+    private _applyHooks(userQueries: ISavedQuery[]): void {
+        for (const query of [...this._systemQueries, ...userQueries, this.getCurrentQuery()]) {
+            this._hooks.forEach(hook => hook(query));
+        }
     }
 
     private _processQueries(queries: ISavedQuery[]) {
@@ -236,20 +283,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
                     }
                     break;
                 }
-                case CHECKLIST_COLUMN_NAME:
-                case PREDECESSORS_COLUMN_NAME:
-                case SUCCESSORS_COLUMN_NAME: {
-                    //enforced on every declaration of these columns, the grid's own and a consumer's
-                    //alike: the cell reads the dependencies module, not a value on the task, so there is
-                    //nothing here to write, sort or filter by
-                    column.disableSorting = true;
-                    column.metadata = {
-                        ...column.metadata,
-                        IsValidForUpdate: false,
-                        SupportedFilterConditionOperators: []
-                    }
-                    break;
-                }
             }
         }
     }
@@ -269,57 +302,15 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     }
 
     /**
-     * Adds the two dependency columns to the grid's column catalogue, so *Edit columns* offers each of
-     * them. Registering the module is what makes them exist at all; a consumer that declared one in a view
-     * of their own keeps it exactly as they wrote it.
+     * Repairs each of a query's columns against the catalogue, which is what a stored query needs: it keeps
+     * little more than a column's name. A catalogue entry the query does not name is not added — it is not
+     * part of that query.
      */
-    private _includeDependencyColumns(columns: IColumn[]) {
-        if (!this._services.find('dependenciesModule')) {
-            return columns;
-        }
-        this._includeVirtualColumn(columns, PREDECESSORS_COLUMN_NAME, 'predecessors');
-        this._includeVirtualColumn(columns, SUCCESSORS_COLUMN_NAME, 'successors');
-        return columns;
-    }
-
-    /**
-     * Adds the checklist column to the grid's column catalogue, so *Edit columns* offers it. Registering
-     * the module is what makes it exist at all; a consumer that declared it in a view of their own keeps it
-     * exactly as they wrote it.
-     */
-    private _includeChecklistColumn(columns: IColumn[]) {
-        if (!this._services.find('checklistModule')) {
-            return columns;
-        }
-        return this._includeVirtualColumn(columns, CHECKLIST_COLUMN_NAME, 'checklist');
-    }
-
-    /**
-     * Adds one module-owned column to the catalogue, hidden: the columns are offered in *Edit columns*, so
-     * a grid never shows one uninvited — and for dependencies, either direction can be taken on its own.
-     */
-    private _includeVirtualColumn(columns: IColumn[], name: string, labelKey: keyof ITaskGridLabels) {
-        if (!columns.find(col => col.name === name)) {
-            columns.push({
-                name: name,
-                dataType: DataTypes.SingleLineText,
-                displayName: this._localizationService.getLocalizedString(labelKey),
-                isVirtual: true,
-                visualSizeFactor: 200,
-                isHidden: true
-            })
-        }
-        return columns;
-    }
-
     private _parseSavedQueryMetadata(metadata: ISavedQueryMetadata): ISavedQueryMetadata {
-        const parsed = metadata;
-
-        let columns = parsed.columns.map(col => {
-            const systemCol = this._systemQueriesColumnsMap.get(col.name);
-            return systemCol ? { ...systemCol, ...col, metadata: { ...systemCol.metadata, ...col.metadata } } : col;
+        const columns = metadata.columns.map(column => {
+            const systemColumn = this._systemQueriesColumnsMap.get(column.name);
+            return systemColumn ? mergeColumn(systemColumn, column) : column;
         });
-
-        return { ...parsed, columns };
+        return { ...metadata, columns };
     }
 }

@@ -1,5 +1,18 @@
-import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
+import { DataTypes, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { applyColumn } from "@components/TaskGrid/providers/saved-query";
+import type { ITaskGridLabels } from "@components/TaskGrid/labels";
+
+/** Name of the virtual column showing what a task waits on. Only exists with this module. */
+export const PREDECESSORS_COLUMN_NAME = 'predecessors__virtual';
+/** Name of the virtual column showing what waits on a task. Only exists with this module. */
+export const SUCCESSORS_COLUMN_NAME = 'successors__virtual';
+
+/** The two columns this module contributes to every view. */
+const COLUMNS: { name: string, labelKey: keyof ITaskGridLabels }[] = [
+    { name: PREDECESSORS_COLUMN_NAME, labelKey: 'predecessors' },
+    { name: SUCCESSORS_COLUMN_NAME, labelKey: 'successors' },
+];
 
 /** How the predecessor and the successor of a dependency relate in time. */
 export type TaskDependencyType = 'finishToStart' | 'startToStart' | 'finishToFinish' | 'startToFinish';
@@ -56,9 +69,8 @@ export interface IDependenciesProvider {
     /** Lifecycle events. */
     events: IEventEmitter<IDependenciesProviderEvents>;
     /**
-     * Loads the dependencies of the given tasks and builds the lookups the getters read. Awaited by the
-     * grid's factory with the tasks it just loaded, before anything renders — which is what lets every
-     * getter below be synchronous.
+     * Loads the dependencies of the given tasks and builds the lookups the getters read. Awaited before anything
+     * renders, which is what lets every getter below be synchronous.
      *
      * Merges rather than replaces: a task the call did not name keeps the dependencies it already has, so
      * refreshing a handful of tasks as they load is safe.
@@ -96,6 +108,28 @@ export class DependenciesProvider implements IDependenciesProvider {
     constructor(parameters: IDependenciesProviderParameters) {
         this._strategy = parameters.strategy;
         this._services = parameters.services;
+        this._registerColumns();
+    }
+
+    /**
+     * Puts this module's two columns on every view, hidden, so each direction can be taken on its own.
+     *
+     * Their cells read this provider rather than a value on the task, so there is nothing to write, sort or
+     * filter by. Described on every refresh, so a view that stored only the name gets the rest back.
+     */
+    private _registerColumns(): void {
+        this._services.whenAvailable('savedQueryDataProvider', provider => {
+            provider.registerHook(query => COLUMNS.forEach(({ name, labelKey }) => applyColumn(query, {
+                name: name,
+                dataType: DataTypes.SingleLineText,
+                displayName: this._services.get('localizationService').getLocalizedString(labelKey),
+                isVirtual: true,
+                visualSizeFactor: 200,
+                isHidden: true,
+                disableSorting: true,
+                metadata: { IsValidForUpdate: false, SupportedFilterConditionOperators: [] },
+            })));
+        });
     }
 
     public async refresh(taskIds: string[]): Promise<void> {

@@ -1,5 +1,9 @@
-import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
+import { DataTypes, EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+import { applyColumn } from "@components/TaskGrid/providers/saved-query";
+
+/** Name of the virtual column showing a task's checklist. Only exists with this module. */
+export const CHECKLIST_COLUMN_NAME = 'checklist__virtual';
 
 /**
  * Where a checklist item has got to. A named union rather than a flag, so the set can grow — `cancelled`,
@@ -55,9 +59,8 @@ export interface IChecklistProvider {
     /** Lifecycle events. */
     events: IEventEmitter<IChecklistProviderEvents>;
     /**
-     * Loads the checklist items of the given tasks and stores them against each one. Awaited by the grid's
-     * factory with the tasks it just loaded, before anything renders — which is what lets every getter
-     * below be synchronous.
+     * Loads the checklist items of the given tasks and stores them against each one. Awaited before anything renders,
+     * which is what lets every getter below be synchronous.
      *
      * Merges rather than replaces: a task the call did not name keeps the items it already has, so
      * refreshing a handful of tasks as they load is safe.
@@ -90,6 +93,28 @@ export class ChecklistProvider implements IChecklistProvider {
     constructor(parameters: IChecklistProviderParameters) {
         this._strategy = parameters.strategy;
         this._services = parameters.services;
+        this._registerColumns();
+    }
+
+    /**
+     * Puts this module's column on every view, hidden.
+     *
+     * Its cell reads this provider rather than a value on the task, so there is nothing to write, sort or
+     * filter by. Described on every refresh, so a view that stored only the name gets the rest back.
+     */
+    private _registerColumns(): void {
+        this._services.whenAvailable('savedQueryDataProvider', provider => {
+            provider.registerHook(query => applyColumn(query, {
+                name: CHECKLIST_COLUMN_NAME,
+                dataType: DataTypes.SingleLineText,
+                displayName: this._services.get('localizationService').getLocalizedString('checklist'),
+                isVirtual: true,
+                visualSizeFactor: 200,
+                isHidden: true,
+                disableSorting: true,
+                metadata: { IsValidForUpdate: false, SupportedFilterConditionOperators: [] },
+            }));
+        });
     }
 
     public async refresh(taskIds: string[]): Promise<void> {
