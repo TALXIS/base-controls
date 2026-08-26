@@ -4,6 +4,9 @@ import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 /** How the predecessor and the successor of a dependency relate in time. */
 export type TaskDependencyType = 'finishToStart' | 'startToStart' | 'finishToFinish' | 'startToFinish';
 
+/** Which end of a dependency is being asked about. */
+export type TaskDependencyDirection = 'predecessors' | 'successors';
+
 /**
  * One dependency between two tasks, as the grid sees it.
  *
@@ -61,15 +64,18 @@ export interface IDependenciesProvider {
      * refreshing a handful of tasks as they load is safe.
      */
     refresh: (taskIds: string[]) => Promise<void>;
-    /** Everything loaded so far, across every `refresh`. */
-    getAll: () => ITaskDependency[];
-    getDependency: (dependencyId: string) => ITaskDependency | undefined;
-    /** Everything touching the task, both directions. */
-    getDependenciesForTask: (taskId: string) => ITaskDependency[];
-    /** What the task waits on — the dependencies where it is the successor. */
+    /**
+     * Everything loaded so far, or — given a task — everything touching that task, in both directions.
+     * @param taskId Omit for the whole set.
+     */
+    getDependencies: (taskId?: string) => ITaskDependency[];
+    /** What the task waits on: the dependencies where it is the successor. */
     getPredecessors: (taskId: string) => ITaskDependency[];
-    /** What waits on the task — the dependencies where it is the predecessor. */
+    /** What waits on the task: the dependencies where it is the predecessor. */
     getSuccessors: (taskId: string) => ITaskDependency[];
+    /** One dependency by its own id, not a task's. */
+    getDependencyById: (dependencyId: string) => ITaskDependency | undefined;
+    /** Whether the task is at either end of anything. */
     hasDependencies: (taskId: string) => boolean;
 }
 
@@ -101,15 +107,10 @@ export class DependenciesProvider implements IDependenciesProvider {
         this.events.dispatchEvent('onAfterDependenciesRefreshed', this._affectedTaskIds(previous, this._dependencies));
     }
 
-    public getAll(): ITaskDependency[] {
-        return [...this._dependencies];
-    }
-
-    public getDependency(dependencyId: string): ITaskDependency | undefined {
-        return this._dependencies.find(dependency => dependency.id === dependencyId);
-    }
-
-    public getDependenciesForTask(taskId: string): ITaskDependency[] {
+    public getDependencies(taskId?: string): ITaskDependency[] {
+        if (taskId === undefined) {
+            return [...this._dependencies];
+        }
         const predecessors = this.getPredecessors(taskId);
         //a self-dependency sits in both indexes, so it would otherwise land in the result twice
         const predecessorIds = new Set(predecessors.map(dependency => dependency.id));
@@ -123,6 +124,10 @@ export class DependenciesProvider implements IDependenciesProvider {
 
     public getSuccessors(taskId: string): ITaskDependency[] {
         return [...(this._byPredecessor.get(taskId) ?? [])];
+    }
+
+    public getDependencyById(dependencyId: string): ITaskDependency | undefined {
+        return this._dependencies.find(dependency => dependency.id === dependencyId);
     }
 
     public hasDependencies(taskId: string): boolean {

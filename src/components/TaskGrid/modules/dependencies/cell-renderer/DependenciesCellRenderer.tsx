@@ -5,9 +5,7 @@ import { useRerender } from "@legacy";
 import { ICellProps } from "@components/Grid/cells/cell/Cell";
 import { useServices } from "@components/TaskGrid/context";
 import { getDependenciesCellRendererStyles } from "./styles";
-
-/** Which side of a dependency a column shows. */
-export type TaskDependencyDirection = 'predecessors' | 'successors';
+import type { TaskDependencyDirection } from "../DependenciesProvider";
 
 export interface IDependenciesCellRendererProps extends ICellProps {
     /** Which side of the dependency this column shows. Bound per column by the grid. */
