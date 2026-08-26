@@ -1370,12 +1370,12 @@ export const TASK_DEPENDENCIES: ITaskDependency[] = [
  */
 export const CHECKLIST_ITEMS: IChecklistItem[] = [
     { id: 'chk-01', taskId: tid(1, 1), name: 'Book the stakeholder slots', status: 'complete' },
-    { id: 'chk-02', taskId: tid(1, 1), name: 'Write the interview guide', description: 'One page, five questions.', status: 'complete' },
+    { id: 'chk-02', taskId: tid(1, 1), name: 'Write the interview guide', status: 'complete' },
     { id: 'chk-03', taskId: tid(1, 1), name: 'Summarise the findings', status: 'active' },
     { id: 'chk-04', taskId: tid(1, 2), name: 'Agree the colour palette', status: 'active' },
     { id: 'chk-05', taskId: tid(1, 2), name: 'Pick the type scale', status: 'active' },
     { id: 'chk-06', taskId: tid(1, 4), name: 'Inventory the old pages', status: 'complete' },
-    { id: 'chk-07', taskId: tid(1, 4), name: 'Map the redirects', description: 'Old URL to new, one row each.', status: 'complete' },
+    { id: 'chk-07', taskId: tid(1, 4), name: 'Map the redirects', status: 'complete' },
 ];
 
 export const TASK_SOURCE: IMemoryEntitySource = {

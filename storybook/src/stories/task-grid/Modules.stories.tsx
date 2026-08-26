@@ -157,7 +157,7 @@ One column arrives with the module: **Checklist**, showing how far a task's list
 
 The column is the grid's, not yours: registering the module is what creates it, and it arrives hidden, offered in *Edit columns* under its own name. This grid's views name it, which is why it is on screen from the start. It neither sorts, filters nor edits — the cell reads the module rather than a value on the task.
 
-An item carries a \`name\`, an optional \`description\` and a \`status\` of \`active\` or \`complete\`, and belongs to exactly one task. That one-owner rule is why the provider is as small as it is: \`refresh(taskIds)\` writes only the tasks it was given, so a task nobody asked about keeps what it had, and a task whose items are all gone ends up with none.
+An item carries an \`id\`, a \`name\` and a \`status\` of \`active\` or \`complete\`, and belongs to exactly one task. That one-owner rule is why the provider is as small as it is: \`refresh(taskIds)\` writes only the tasks it was given, so a task nobody asked about keeps what it had, and a task whose items are all gone ends up with none.
 
 The cell reads the module, not the task, and repaints from the provider's \`onAfterChecklistRefreshed\` event: it carries the tasks a refresh reloaded, and each cell watches for its own. Ticking an item off is not wired up yet — the column reports progress, it does not edit it.
                 `.trim(),

@@ -19,7 +19,6 @@ export interface IChecklistItem {
     taskId: string;
     name: string;
     status: ChecklistItemStatus;
-    description?: string;
 }
 
 /** Lifecycle events for the checklist load. */
