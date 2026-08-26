@@ -62,24 +62,39 @@ const getComponentOverrides = (columnAlignment: IColumn['alignment'] | undefined
 };
 
 /**
- * A stable name for a consumer-supplied theme override.
+ * A stable name for a theme override, from its content.
  *
- * Interned by identity rather than serialised: an override's `components` can hold style *functions*,
- * which JSON would drop - two different overrides would then look identical and get the same theme.
+ * Content and not identity: `getFieldFormatting` rebuilds its override on every call, and the formatting
+ * callback behind it is the consumer's own - so no override object survives from one render to the next,
+ * and a name taken from identity would be a new name every time.
+ *
+ * `undefined` means the override cannot be named, and so cannot be cached under one. That covers a style
+ * *function*, which is part of what an override does to a theme and which no serialisation can tell from
+ * another - naming two of those alike would hand the second one the first one's theme.
  */
-const overrideNames = new WeakMap<object, string>();
-let overrideCounter = 0;
-
-const getOverrideName = (override?: object): string => {
+const getOverrideName = (override?: object): string | undefined => {
     if (!override || Object.keys(override).length === 0) {
         return '';
     }
-    let name = overrideNames.get(override);
-    if (!name) {
-        name = `o${++overrideCounter}`;
-        overrideNames.set(override, name);
+    //an override that names itself is taken at its word, the same as everywhere else
+    const declaredName = (override as ITheme).id;
+    if (declaredName) {
+        return declaredName;
     }
-    return name;
+    let isNameable = true;
+    try {
+        const name = JSON.stringify(override, (_key, value) => {
+            if (typeof value === 'function') {
+                isNameable = false;
+            }
+            return value;
+        });
+        return isNameable ? name : undefined;
+    }
+    catch {
+        //a cycle, so there is nothing to name it by
+        return undefined;
+    }
 };
 
 export const CellContent = (props: ICellProps) => {
@@ -105,16 +120,25 @@ export const CellContent = (props: ICellProps) => {
     /**
      * Names the override this cell builds below. Everything the override varies by has to appear here:
      * the theme caches key on this id, so anything left out would serve another cell's theme.
+     *
+     * `undefined` when either override cannot be named. The theme is then built for this cell alone
+     * rather than cached under a name that does not hold, which is what keeps a cache from filling up
+     * with an entry per render.
      */
     const getThemeId = (formatting: ICustomColumnFormatting, parentOverrides?: object) => {
+        const formattingName = getOverrideName(formatting.themeOverride);
+        const parentName = getOverrideName(parentOverrides);
+        if (formattingName === undefined || parentName === undefined) {
+            return undefined;
+        }
         const aggregated = valueRef.current.aggregatedValue != null ? `agg:${valueRef.current.aggregatedValue}` : 'val';
         return [
             'cell',
             valueRef.current.columnAlignment ?? '',
             aggregated,
             formatting.backgroundColor,
-            getOverrideName(formatting.themeOverride),
-            getOverrideName(parentOverrides),
+            formattingName,
+            parentName,
         ].join('|');
     }
 

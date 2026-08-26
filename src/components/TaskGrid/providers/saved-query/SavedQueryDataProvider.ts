@@ -80,20 +80,39 @@ const mergeColumn = (definition: IColumn, declared: IColumn): IColumn => ({
 });
 
 /**
+ * A column detached from whatever it was built out of: its own `metadata`, and its own copy of every list
+ * in there. Enough that writing to one query's column cannot turn up in another's.
+ */
+const copyColumn = (column: IColumn): IColumn => {
+    if (!column.metadata) {
+        return { ...column };
+    }
+    const metadata: { [key: string]: any } = { ...column.metadata };
+    for (const [key, value] of Object.entries(metadata)) {
+        if (Array.isArray(value)) {
+            metadata[key] = [...value];
+        }
+    }
+    return { ...column, metadata: metadata as IColumn['metadata'] };
+};
+
+/**
  * Adds a column to a query, or fills in a declaration of it.
  *
  * A query may name a column without describing it: a stored one keeps little more than the name, whether it
  * shows and where it sits. Whatever it leaves out comes from the definition.
+ *
+ * One definition can be applied to any number of queries, so what lands on each is a copy — a column
+ * resized in one query is not resized in all of them.
  */
 export const applyColumn = (query: ISavedQuery, definition: IColumn): void => {
     const declared = query.columns.find(column => column.name === definition.name);
-    //a copy, so the definition is not aliased by every query it is added to
     if (!declared) {
-        query.columns.push({ ...definition });
+        query.columns.push(copyColumn(definition));
         return;
     }
     //in place, so anything already holding this column sees the merge as well
-    Object.assign(declared, mergeColumn(definition, declared));
+    Object.assign(declared, copyColumn(mergeColumn(definition, declared)));
 };
 
 /** Serves the system views, tracks which view is active, and normalises every view's columns. */

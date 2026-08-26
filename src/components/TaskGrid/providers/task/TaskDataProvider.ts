@@ -133,7 +133,12 @@ export interface ITaskDataProviderEventListener {
     onBeforeTasksCreated: (parentId?: string) => void;
     onAfterTasksCreated: (records: IRawRecord[] | null, parentId?: string) => void;
     onBeforeTaskMoved: () => void;
-    onAfterTaskMoved: (movingFromTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child') => void;
+    /**
+     * @param result The changed records, or `null` when the task did not move: the grid refused the drop,
+     * or the strategy returned nothing. Raised either way, so a listener that paired it with
+     * `onBeforeTaskMoved` still sees its end - check the result before acting on the move.
+     */
+    onAfterTaskMoved: (movingFromTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child', result: IRawRecord[] | null) => void;
     onTaskDataUpdated: (data: IRawRecord[]) => void;
     onRecordTreeUpdated: (updatedParentIds: (string | undefined)[]) => void;
     onBeforeDatasetItemsOpened: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean) => void;
@@ -327,12 +332,12 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 if (!params) {
                     //an impossible move - into the task's own subtree, or onto a record we do not hold.
                     //Refused here so no strategy has to guard against it
-                    this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position);
+                    this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position, null);
                     return null;
                 }
                 const result = await this._strategy.onMoveTask(params);
                 if (result !== null) this.updateTaskData(result);
-                this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position);
+                this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position, result);
                 return result;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
@@ -575,13 +580,17 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     /** Subscribes to everything the provider reacts to, once, at construction. */
     private _registerTaskEventListeners(): void {
-        //expanding a template is what creates the tasks it describes: the provider is the first
-        //listener, so everything listening after it sees tasks that already exist. Resolved here rather
-        //than held: the templates module registered its provider before this one was built
-        this._services.find('templatesModule')?.provider.templateEvents.addEventListener(
-            'onAfterTasksFromTemplateCreated',
-            (rawRecords, parentTaskId) => this._createTasksFromTemplate(rawRecords, parentTaskId),
-        );
+        //expanding a template is what creates the tasks it describes: subscribed before anything else
+        //gets the chance, so every later listener sees tasks that already exist.
+        //
+        //Waited for rather than resolved: this runs from a constructor, where nothing can be assumed to
+        //be registered yet. A module that is never registered simply never fires
+        this._services.whenAvailable('templatesModule', module => {
+            module.provider.templateEvents.addEventListener(
+                'onAfterTasksFromTemplateCreated',
+                (rawRecords, parentTaskId) => this._createTasksFromTemplate(rawRecords, parentTaskId),
+            );
+        });
     }
 
     /**

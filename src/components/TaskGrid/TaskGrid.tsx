@@ -52,8 +52,11 @@ export interface ITaskGridProps {
     onTasksDeleted?: (result: IDeleteTasksResult | null) => void;
     /** Called before a task is reordered or reparented. */
     onBeforeTaskMoved?: () => void;
-    /** Called after a task was reordered or reparented. */
-    onTaskMoved?: (movingTaskId: string, targetTaskId: string, position: 'above' | 'below' | 'child') => void;
+    /**
+     * Called after a move finished. `result` is `null` when the task did not move — the grid refused the
+     * drop, or the strategy cancelled — so check it before treating the move as done.
+     */
+    onTaskMoved?: (movingTaskId: string, targetTaskId: string, position: 'above' | 'below' | 'child', result: IRawRecord[] | null) => void;
     /** Called whenever the strategy hands back new raw data — after a move, a save that changed other rows, a manual `updateTaskData`. */
     onTaskDataUpdated?: (data: IRawRecord[]) => void;
     /** Called after the hierarchy was rebuilt, with the parents whose children changed. */

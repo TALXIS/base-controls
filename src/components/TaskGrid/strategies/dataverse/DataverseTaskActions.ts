@@ -215,49 +215,48 @@ export class DataverseTaskActions {
      * Deletes tasks through the Web API, optionally cascading to descendants.
      *
      * Without `isDeletingTasksWithChildrenEnabled`, a task that still has children is left alone and
-     * reported as an error rather than orphaning its subtree. Both the cascade and that check read the
-     * complete hierarchy, so the active filter cannot hide a child from either.
+     * reported as an error rather than orphaning its subtree — and nothing below it is touched either, so
+     * refusing a task can never cost it its children. The check is on what the grid asked for: a
+     * descendant the cascade pulls in is a consequence of deleting its parent, not a delete of its own.
+     *
+     * Both the cascade and the check read the complete hierarchy, so the active filter cannot hide a
+     * child from either.
      */
     public static async deleteTasks(params: IDataverseTaskDeleteParams): Promise<IDeleteTasksResult | null> {
         const { taskIds, provider, fetchXmlDataProvider, isCascadeDeleteEnabled, isDeletingTasksWithChildrenEnabled } = params;
         //the complete hierarchy, not the rendered one
         const structure = provider.getRecordTree().structure;
-        const allTaskIds: Set<string> = new Set(taskIds);
-        let success = true;
-        const notDeletableTaskIds: string[] = [];
+        const notDeletableTaskIds = isDeletingTasksWithChildrenEnabled
+            ? []
+            : taskIds.filter(taskId => structure.hasChildren(taskId));
+        //resolved before the cascade, so a refused task is never the reason its subtree goes
+        const refusedTaskIds = new Set(notDeletableTaskIds);
+        const requestedTaskIds = taskIds.filter(taskId => !refusedTaskIds.has(taskId));
+        const allTaskIds: Set<string> = new Set(requestedTaskIds);
         if (isCascadeDeleteEnabled) {
-            for (const taskId of taskIds) {
+            for (const taskId of requestedTaskIds) {
                 for (const descendant of structure.getDescendants(taskId)) {
                     allTaskIds.add(descendant.getRecordId());
                 }
             }
         }
-        if (!isDeletingTasksWithChildrenEnabled) {
-            for (const taskId of allTaskIds) {
-                if (structure.hasChildren(taskId)) {
-                    success = false;
-                    allTaskIds.delete(taskId);
-                    notDeletableTaskIds.push(taskId);
-                }
-            }
+
+        const attemptedTaskIds = [...allTaskIds];
+        const result = await fetchXmlDataProvider.deleteRecords(attemptedTaskIds);
+        const failures = result.results.filter(result => !result.success);
+        const failedTaskIds = new Set(failures.map(result => result.recordId));
+        //what actually went, not what was attempted: the provider drops a row for every id reported here,
+        //so a task whose delete failed has to stay out of it or it disappears while it still exists
+        const deletedTaskIds = attemptedTaskIds.filter(taskId => !failedTaskIds.has(taskId));
+        const errors = [
+            ...failures.map(failure => ({ id: failure.recordId, error: failure.errorMessage })),
+            //TODO: localize
+            ...notDeletableTaskIds.map(taskId => ({ id: taskId, error: 'Cannot delete task with children.' })),
+        ];
+        if (errors.length === 0) {
+            return { success: true, deletedTaskIds };
         }
-        const result = await fetchXmlDataProvider.deleteRecords([...allTaskIds]);
-        return {
-            success: result.success && success,
-            deletedTaskIds: [...allTaskIds],
-            errors: [...result.results.filter(result => !result.success).map(result => {
-                return {
-                    id: result.recordId,
-                    error: result.errorMessage
-                }
-            }), ...notDeletableTaskIds.map(id => {
-                return {
-                    id,
-                    //TODO: localize
-                    error: 'Cannot delete task with children.'
-                }
-            })]
-        }
+        return { success: false, deletedTaskIds, errors };
     }
 
     /**

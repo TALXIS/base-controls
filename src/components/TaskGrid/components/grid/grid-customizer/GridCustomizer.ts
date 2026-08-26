@@ -423,7 +423,17 @@ export class GridCustomizer implements IGridCustomizer {
         this._taskDataProvider.moveTask(draggedNode.id!, overNode.id!, position);
     }
 
-    private _moveInto(movingFromRecordId: string, movingToRecordId: string, position: 'child' | 'above' | 'below') {
+    /**
+     * Moves the row in the AG Grid store to where the task now sits.
+     *
+     * @param result What the move produced, or `null` when the task did not move: the provider refused
+     * the drop, or the strategy cancelled. Moving the store for either would show a move that never
+     * happened, so there is nothing to do.
+     */
+    private _moveInto(movingFromRecordId: string, movingToRecordId: string, position: 'child' | 'above' | 'below', result: IRawRecord[] | null) {
+        if (!result) {
+            return;
+        }
         const draggedRecord = this._taskDataProvider.getRecordsMap()[movingFromRecordId];
         const draggedNode = this._gridApi.getRowNode(movingFromRecordId)!;
         const overNode = this._gridApi.getRowNode(movingToRecordId)!;
@@ -504,7 +514,7 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
     private _registerEventListeners() {
-        this._taskDataProvider.taskEvents.addEventListener('onAfterTaskMoved', (movingFromTaskId, movingToTaskId, position) => this._moveInto(movingFromTaskId, movingToTaskId, position));
+        this._taskDataProvider.taskEvents.addEventListener('onAfterTaskMoved', (movingFromTaskId, movingToTaskId, position, result) => this._moveInto(movingFromTaskId, movingToTaskId, position, result));
         this._taskDataProvider.taskEvents.addEventListener('onAfterTasksCreated', (records, parentId) => this._onAfterTasksCreated(records, parentId));
         this._taskDataProvider.taskEvents.addEventListener('onRecordTreeUpdated', (updatedParentIds) => this._onRecordTreeUpdated(updatedParentIds));
         this._taskDataProvider.taskEvents.addEventListener('onTaskDataUpdated', (newData) => this._onAfterTaskDataUpdated(newData));
