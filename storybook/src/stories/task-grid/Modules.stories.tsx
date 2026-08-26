@@ -63,17 +63,49 @@ Each builder takes the one thing only you can provide, plus a few switches for i
 
 | Builder | Required | Optional, all off by default | Registered as |
 |---|---|---|---|
-| \`createUserQueryModule\` | \`strategy\`, \`services\` | \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` | \`userQueriesModule\` |
-| \`createTemplateModule\` | \`provider\` | — | \`templatesModule\` |
-| \`createLookupManyModule\` | \`createDataProvider\`, \`services\` | — | \`lookupManyModule\` |
-| \`createDependenciesModule\` | \`strategy\`, \`services\` | — | \`dependenciesModule\` |
-| \`createChecklistModule\` | \`strategy\`, \`services\` | — | \`checklistModule\` |
-| \`createCustomColumnsModule\` | \`strategy\`, \`services\` | \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\` | \`customColumnsModule\` |
+| \`createUserQueryModule\` | \`strategy\`, \`services\` | \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\`, \`components\` | \`userQueriesModule\` |
+| \`createTemplateModule\` | \`provider\` | \`components\` | \`templatesModule\` |
+| \`createLookupManyModule\` | \`createDataProvider\`, \`services\` | \`components\` | \`lookupManyModule\` |
+| \`createDependenciesModule\` | \`strategy\`, \`services\` | \`components\` | \`dependenciesModule\` |
+| \`createChecklistModule\` | \`strategy\`, \`services\` | \`components\` | \`checklistModule\` |
+| \`createCustomColumnsModule\` | \`strategy\`, \`services\` | \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\`, \`components\` | \`customColumnsModule\` |
 | \`createGridCustomizerModule\` | \`strategy\`, \`services\` | — | \`gridCustomizerModule\` |
 
 Whatever a builder returns is registered under that key, so a module and everything it brings is reachable from anywhere in the grid — \`services.find('templatesModule')?.provider\`. See [**Anatomy → Services**](?path=/story/task-grid-descriptors-anatomy--overview).
 
 \`onGetCustomColumnsModule\` is the one module with no in-memory implementation: \`TalxisCustomColumnsStrategy\` is the only strategy that ships for it, so it needs the TALXIS models and has no live demo here. See [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview).
+
+## Overriding a module's UI
+
+A module brings its own UI, and \`components\` replaces any part of it. Each member is an \`onRender…\`
+method taking that component's props:
+
+| Builder | Members |
+|---|---|
+| \`createChecklistModule\` | \`onRenderCell\` |
+| \`createDependenciesModule\` | \`onRenderCell\` — \`props.direction\` says which of the two columns is rendering |
+| \`createLookupManyModule\` | \`onRenderCell\` |
+| \`createTemplateModule\` | \`onRenderTemplateSelector\` |
+| \`createUserQueryModule\` | \`onRenderViewManager\`, \`onRenderCreateView\` |
+| \`createCustomColumnsModule\` | \`onRenderEditColumns\` |
+
+\`\`\`ts
+onGetChecklistModule: ({ services }) => createChecklistModule({
+    strategy: new MemoryChecklistStrategy({ items: CHECKLIST_ITEMS, services }),
+    services,
+    components: {
+        onRenderCell: (props) => <MyChecklistCell {...props} />,
+    },
+}),
+\`\`\`
+
+Anything you leave out keeps the component the module ships, and each module's defaults are exported —
+\`ChecklistComponents\`, \`DependenciesComponents\`, \`LookupManyModuleComponents\`, \`TemplateComponents\`,
+\`UserQueryComponents\`, \`CustomColumnsComponents\` — so you can call one from inside your own component
+to wrap the shipped rendering rather than reproduce it.
+
+This is per module. To reach *every* data column's cell instead, use \`onRenderCellRenderer\` on the grid's
+own \`components\` prop: see [**Customizations → Custom Components**](?path=/story/task-grid-customizations-custom-components--overview).
 
 Every grid below runs **one** module, so you can see exactly what it adds. Flip **Code** to read the registration, and edit it — remove the module and the feature disappears from the grid.
                 `.trim(),

@@ -1,6 +1,6 @@
 import { CustomColumnsDataProvider, ICustomColumnsStrategy } from "./CustomColumnsDataProvider";
-import { ICustomColumnsModule } from "../interfaces";
-import { EditColumns } from "./edit-columns/EditColumns";
+import { ICustomColumnsComponents, ICustomColumnsModule } from "../interfaces";
+import { CustomColumnsComponents } from "./moduleComponents";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** Options for {@link createCustomColumnsModule}. */
@@ -17,6 +17,8 @@ export interface ICustomColumnsModuleOptions {
     enableCustomColumnEditing?: boolean;
     /** Show the per-column delete command. Defaults to `false`. */
     enableCustomColumnDeletion?: boolean;
+    /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
+    components?: Partial<ICustomColumnsComponents>;
 }
 
 /**
@@ -40,7 +42,7 @@ export const createCustomColumnsModule = (options: ICustomColumnsModuleOptions):
     const provider = new CustomColumnsDataProvider({ strategy: options.strategy, services: options.services });
     return {
         provider: provider,
-        components: { EditColumns },
+        components: { ...CustomColumnsComponents, ...options.components },
         enableCustomColumnCreation: options.enableCustomColumnCreation,
         enableCustomColumnEditing: options.enableCustomColumnEditing,
         enableCustomColumnDeletion: options.enableCustomColumnDeletion,

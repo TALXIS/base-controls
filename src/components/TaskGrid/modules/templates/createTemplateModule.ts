@@ -1,6 +1,6 @@
 import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/TemplateDataProvider";
-import { ITemplateModule } from "../interfaces";
-import { TemplateSelector } from "./template-selector";
+import { ITemplateComponents, ITemplateModule } from "../interfaces";
+import { TemplateComponents } from "./moduleComponents";
 
 /** Options for {@link createTemplateModule}. */
 export interface ITemplateModuleOptions {
@@ -11,6 +11,8 @@ export interface ITemplateModuleOptions {
      * those tasks.
      */
     provider: ITemplateDataProvider;
+    /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
+    components?: Partial<ITemplateComponents>;
 }
 
 /**
@@ -32,5 +34,5 @@ export interface ITemplateModuleOptions {
  */
 export const createTemplateModule = (options: ITemplateModuleOptions): ITemplateModule => ({
     provider: options.provider,
-    components: { TemplateSelector },
+    components: { ...TemplateComponents, ...options.components },
 });

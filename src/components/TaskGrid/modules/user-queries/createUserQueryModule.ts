@@ -1,8 +1,7 @@
 import { IUserQueryStrategy } from "@components/TaskGrid/providers/saved-query";
-import { IUserQueryModule } from "../interfaces";
+import { IUserQueryComponents, IUserQueryModule } from "../interfaces";
+import { UserQueryComponents } from "./moduleComponents";
 import { UserQueryDataProvider } from "./UserQueryDataProvider";
-import { CreateViewDialog } from "./create-view-dialog";
-import { ViewManagerDialog } from "./view-manager";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
 /** Options for {@link createUserQueryModule}. */
@@ -20,6 +19,8 @@ export interface IUserQueryModuleOptions {
     enableSaveAsNewQuery?: boolean;
     /** Show *Save changes to current view*. Defaults to `false`. */
     enableSaveQueryChanges?: boolean;
+    /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
+    components?: Partial<IUserQueryComponents>;
 }
 
 /**
@@ -46,10 +47,7 @@ export const createUserQueryModule = (options: IUserQueryModuleOptions): IUserQu
     const provider = new UserQueryDataProvider({ strategy: options.strategy, services: options.services });
     return {
         provider: provider,
-        components: {
-            ViewManager: ViewManagerDialog,
-            CreateView: CreateViewDialog,
-        },
+        components: { ...UserQueryComponents, ...options.components },
         enableQueryManager: options.enableQueryManager,
         enableSaveAsNewQuery: options.enableSaveAsNewQuery,
         enableSaveQueryChanges: options.enableSaveQueryChanges,

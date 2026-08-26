@@ -5,3 +5,4 @@ export * from './memory';
 export * from './dataverse';
 export * from './talxis';
 export * from './cell-renderer';
+export * from './moduleComponents';

@@ -57,7 +57,7 @@ export const AddTaskButton = (props: ICellProps) => {
                 items: [{
                     key: 'dummy'
                 }],
-                onRenderMenuList: () => <templates.components.TemplateSelector onTemplateSelected={addTaskFromTemplate} />
+                onRenderMenuList: () => templates.components.onRenderTemplateSelector({ onTemplateSelected: addTaskFromTemplate })
             }
         }])];
     }

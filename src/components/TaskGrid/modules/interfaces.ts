@@ -65,12 +65,15 @@ export interface IUserQueryDialogProps {
     onDismiss: () => void;
 }
 
-/** Every component the personal-views UI needs. */
+/**
+ * Every component the personal-views UI renders. Override either through
+ * {@link IUserQueryModuleOptions.components}.
+ */
 export interface IUserQueryComponents {
     /** The *Manage views* dialog. */
-    ViewManager: React.ComponentType<IUserQueryDialogProps>;
+    onRenderViewManager: (props: IUserQueryDialogProps) => JSX.Element;
     /** The *Save as new view* dialog. */
-    CreateView: React.ComponentType<IUserQueryDialogProps>;
+    onRenderCreateView: (props: IUserQueryDialogProps) => JSX.Element;
 }
 
 /**
@@ -96,10 +99,10 @@ export interface ITemplateSelectorProps {
     onTemplateSelected: (templateId: string) => void;
 }
 
-/** Every component the templating UI needs. */
+/** Every component the templating UI renders. Override it through {@link ITemplateModuleOptions.components}. */
 export interface ITemplateComponents {
     /** The template picker, rendered inside the *New* and per-row add-task submenus. */
-    TemplateSelector: React.ComponentType<ITemplateSelectorProps>;
+    onRenderTemplateSelector: (props: ITemplateSelectorProps) => JSX.Element;
 }
 
 /** What the templates module contributes. Built by {@link createTemplateModule}. */
@@ -110,9 +113,13 @@ export interface ITemplateModule {
     components: ITemplateComponents;
 }
 
-/** The Edit Columns panel, with the custom-column commands wired in. A drop-in for the plain panel. */
+/**
+ * Every component the custom-columns UI renders. Override it through
+ * {@link ICustomColumnsModuleOptions.components}.
+ */
 export interface ICustomColumnsComponents {
-    EditColumns: React.ComponentType<IEditColumnsProps>;
+    /** The Edit Columns panel, with the custom-column commands wired in. */
+    onRenderEditColumns: (props: IEditColumnsProps) => JSX.Element;
 }
 
 /** What the custom-columns module contributes. Built by {@link createCustomColumnsModule}. */
@@ -137,10 +144,16 @@ export interface IGridCustomizerModule {
     services: ITaskGridServiceLocator;
 }
 
-/** Every component the lookup-many module needs. */
-export interface ILookupManyComponents {
-    /** The cell renderer `GridCustomizer` assigns to any column carrying `metadata.LookupMany`. */
-    CellRenderer: React.ComponentType<ICellProps>;
+/**
+ * Every component the lookup-many module renders. Override it through
+ * {@link ILookupManyModuleOptions.components}.
+ *
+ * Named for the module to leave `ILookupManyComponents` to the picker itself, whose members are its
+ * react-select slots.
+ */
+export interface ILookupManyModuleComponents {
+    /** The cell of any column carrying `metadata.LookupMany`. */
+    onRenderCell: (props: ICellProps) => JSX.Element;
 }
 
 /** What the lookup-many module contributes. Built by {@link createLookupManyModule}. */
@@ -154,16 +167,19 @@ export interface ILookupManyModule {
     /** What the grid passes to `createDataProvider` alongside the cell's record and column. */
     services: ITaskGridServiceLocator;
     /** The module's UI. */
-    components: ILookupManyComponents;
+    components: ILookupManyModuleComponents;
 }
 
-/** Every component the dependencies module needs. */
+/**
+ * Every component the dependencies module renders. Override it through
+ * {@link IDependenciesModuleOptions.components}.
+ */
 export interface IDependenciesComponents {
     /**
-     * The cell renderer `GridCustomizer` assigns to the grid's predecessors and successors columns. One
-     * component for both: the grid binds `direction` to say which side the column shows.
+     * The cell of the grid's predecessors and successors columns. One member for both: `props.direction`
+     * says which side the column shows.
      */
-    CellRenderer: React.ComponentType<IDependenciesCellRendererProps>;
+    onRenderCell: (props: IDependenciesCellRendererProps) => JSX.Element;
 }
 
 /** What the dependencies module contributes. Built by {@link createDependenciesModule}. */
@@ -174,10 +190,13 @@ export interface IDependenciesModule {
     components: IDependenciesComponents;
 }
 
-/** Every component the checklist module needs. */
+/**
+ * Every component the checklist module renders. Override it through
+ * {@link IChecklistModuleOptions.components}.
+ */
 export interface IChecklistComponents {
-    /** The cell renderer `GridCustomizer` assigns to the grid's checklist column. */
-    CellRenderer: React.ComponentType<IChecklistCellRendererProps>;
+    /** The cell of the grid's checklist column. */
+    onRenderCell: (props: IChecklistCellRendererProps) => JSX.Element;
 }
 
 /** What the checklist module contributes. Built by {@link createChecklistModule}. */

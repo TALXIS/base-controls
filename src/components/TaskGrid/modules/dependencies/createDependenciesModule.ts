@@ -1,7 +1,7 @@
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { IDependenciesModule } from "../interfaces";
+import { IDependenciesComponents, IDependenciesModule } from "../interfaces";
+import { DependenciesComponents } from "./moduleComponents";
 import { DependenciesProvider, ITaskDependencyStrategy } from "./DependenciesProvider";
-import { DependenciesCellRenderer } from "./cell-renderer";
 
 /** Options for {@link createDependenciesModule}. */
 export interface IDependenciesModuleOptions {
@@ -9,6 +9,8 @@ export interface IDependenciesModuleOptions {
     strategy: ITaskDependencyStrategy;
     /** The locator the builder was handed. The provider reaches the task side through it. */
     services: ITaskGridServiceLocator;
+    /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
+    components?: Partial<IDependenciesComponents>;
 }
 
 /**
@@ -31,5 +33,5 @@ export interface IDependenciesModuleOptions {
  */
 export const createDependenciesModule = (options: IDependenciesModuleOptions): IDependenciesModule => ({
     provider: new DependenciesProvider({ strategy: options.strategy, services: options.services }),
-    components: { CellRenderer: DependenciesCellRenderer },
+    components: { ...DependenciesComponents, ...options.components },
 });

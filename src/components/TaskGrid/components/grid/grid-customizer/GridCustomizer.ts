@@ -15,6 +15,7 @@ import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/Ta
 import { CHECKLIST_COLUMN_NAME } from "@components/TaskGrid/modules/checklist/ChecklistProvider";
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
 import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
+import type { IDependenciesCellRendererProps } from "@components/TaskGrid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
 
 /** Name of the synthetic trailing column holding each row's add-task button. */
 export const ADD_TASK_COLUMN_NAME = 'addTask';
@@ -204,7 +205,8 @@ export class GridCustomizer implements IGridCustomizer {
                 case CHECKLIST_COLUMN_NAME: {
                     //get, not find: this column exists because the module does, so one in a view without
                     //it is a misconfiguration - better said out loud here than rendered as an empty cell
-                    colDef.cellRenderer = this._services.get('checklistModule').components.CellRenderer;
+                    this._services.get('checklistModule');
+                    colDef.cellRenderer = this._checklistCellRenderer;
                     //a task's checklist is not a value on the task, so there is nothing to edit
                     colDef.editable = false;
                     break;
@@ -234,9 +236,8 @@ export class GridCustomizer implements IGridCustomizer {
                 }
             }
             //without the module the column falls back to whatever renderer it would otherwise get
-            const lookupManyCellRenderer = this._services.find('lookupManyModule')?.components.CellRenderer;
-            if (column?.metadata?.LookupMany && lookupManyCellRenderer) {
-                colDef.cellRenderer = lookupManyCellRenderer;
+            if (column?.metadata?.LookupMany && this._services.find('lookupManyModule')) {
+                colDef.cellRenderer = this._lookupManyCellRenderer;
                 colDef.autoHeight = true;
                 //editing happens inside the picker, not through an ag-grid cell editor
                 colDef.editable = false;
@@ -265,10 +266,21 @@ export class GridCustomizer implements IGridCustomizer {
     //record, the column and the value every cell needs. Stable fields, so a column definition pass does
     //not hand ag-grid a new component identity each time
     private _predecessorsCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
-        React.createElement(this._services.get('dependenciesModule').components.CellRenderer, { ...props, direction: 'predecessors' });
+        this._renderDependenciesCell({ ...props, direction: 'predecessors' });
 
     private _successorsCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
-        React.createElement(this._services.get('dependenciesModule').components.CellRenderer, { ...props, direction: 'successors' });
+        this._renderDependenciesCell({ ...props, direction: 'successors' });
+
+    //the module renders its own cell, so whatever it was built with - its default or an override - is
+    //what appears here
+    private _renderDependenciesCell = (props: IDependenciesCellRendererProps): React.ReactElement =>
+        this._services.get('dependenciesModule').components.onRenderCell(props);
+
+    private _checklistCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
+        this._services.get('checklistModule').components.onRenderCell(props);
+
+    private _lookupManyCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
+        this._services.get('lookupManyModule').components.onRenderCell(props);
 
     private _cellRenderer = (props: ITaskGridCellProps): React.ReactElement => {
         return this._renderCell('renderer', props);

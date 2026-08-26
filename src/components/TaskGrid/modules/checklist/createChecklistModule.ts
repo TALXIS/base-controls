@@ -1,7 +1,7 @@
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { IChecklistModule } from "../interfaces";
+import { IChecklistComponents, IChecklistModule } from "../interfaces";
+import { ChecklistComponents } from "./moduleComponents";
 import { ChecklistProvider, IChecklistStrategy } from "./ChecklistProvider";
-import { ChecklistCellRenderer } from "./cell-renderer";
 
 /** Options for {@link createChecklistModule}. */
 export interface IChecklistModuleOptions {
@@ -9,6 +9,8 @@ export interface IChecklistModuleOptions {
     strategy: IChecklistStrategy;
     /** The locator the builder was handed. The provider reaches the task side through it. */
     services: ITaskGridServiceLocator;
+    /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
+    components?: Partial<IChecklistComponents>;
 }
 
 /**
@@ -30,5 +32,5 @@ export interface IChecklistModuleOptions {
  */
 export const createChecklistModule = (options: IChecklistModuleOptions): IChecklistModule => ({
     provider: new ChecklistProvider({ strategy: options.strategy, services: options.services }),
-    components: { CellRenderer: ChecklistCellRenderer },
+    components: { ...ChecklistComponents, ...options.components },
 });

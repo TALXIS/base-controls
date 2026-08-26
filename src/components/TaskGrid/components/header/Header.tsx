@@ -7,7 +7,7 @@ import { getHeaderStyles } from "./styles";
 import { SettingsCallout } from "./settings-callout";
 import { useDatasetControl, useLocalizationService, useRootElementId, useServices, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
 import { ViewSwitcher } from "./view-switcher";
-import { EditColumns as EditColumnsBase } from "@components/DatasetControl/EditColumns/EditColumns";
+import { EditColumns as EditColumnsBase, IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
 
 interface ITaskGridHeaderProps {
     headerProps: IHeaderProps;
@@ -26,7 +26,11 @@ export const Header = (props: ITaskGridHeaderProps) => {
     const rootElementId = useRootElementId();
     const services = useServices();
     const customColumns = services.find('customColumnsModule');
-    const EditColumnsComponent = customColumns?.components.EditColumns ?? EditColumnsBase;
+    //the module brings its own panel with the custom-column commands wired in; without it the plain
+    //panel is what renders
+    const renderEditColumns = customColumns
+        ? customColumns.components.onRenderEditColumns
+        : (props: IEditColumnsProps) => <EditColumnsBase {...props} />;
 
     const hasContent = () => {
         return datasetControl.isViewSwitcherEnabled() ||
@@ -78,7 +82,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
                             shouldInputLoseFocusOnArrowKey: () => true
                         },
                         onRenderMenuList: () => isLoading ? <></> : (
-                            <templates.components.TemplateSelector onTemplateSelected={createTaskFromTemplate} />
+                            <>{templates.components.onRenderTemplateSelector({ onTemplateSelected: createTaskFromTemplate })}</>
                         )
                     }
                 }] : [])
@@ -179,24 +183,23 @@ export const Header = (props: ITaskGridHeaderProps) => {
                         })
                     }
                 })}
-                {editColumnsOpen &&
-                    <EditColumnsComponent
-                        onDismiss={() => setEditColumnsOpen(false)}
-                        showScopeSelector={datasetControl.isEditColumnsScopeSelectorEnabled()}
-                        panelProps={{
-                            isBlocking: true,
-                            onOuterClick: () => { },
-                            focusTrapZoneProps: {
-                                forceFocusInsideTrap: false
-                            },
-                            layerProps: {
-                                hostId: rootElementId,
-                                styles: {
-                                    root: styles.editColumnsLayerHost
-                                }
+                {editColumnsOpen && renderEditColumns({
+                    onDismiss: () => setEditColumnsOpen(false),
+                    showScopeSelector: datasetControl.isEditColumnsScopeSelectorEnabled(),
+                    panelProps: {
+                        isBlocking: true,
+                        onOuterClick: () => { },
+                        focusTrapZoneProps: {
+                            forceFocusInsideTrap: false
+                        },
+                        layerProps: {
+                            hostId: rootElementId,
+                            styles: {
+                                root: styles.editColumnsLayerHost
                             }
-                        }} />
-                }
+                        }
+                    }
+                })}
             </div>
         }
     });

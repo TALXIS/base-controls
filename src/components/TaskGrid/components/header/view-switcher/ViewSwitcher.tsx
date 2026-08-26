@@ -107,11 +107,9 @@ export const ViewSwitcher = () => {
             menuProps={{
                 items: getViewSwitcherItems()
             }} text={currentQuery.name} />
-        {showCreateViewDialog && userQueriesModule &&
-            <userQueriesModule.components.CreateView onDismiss={() => setShowCreateViewDialog(false)} />
-        }
-        {showViewManagerDialog && userQueriesModule &&
-            <userQueriesModule.components.ViewManager onDismiss={() => setShowViewManagerDialog(false)} />
-        }
+        {showCreateViewDialog && userQueriesModule
+            && userQueriesModule.components.onRenderCreateView({ onDismiss: () => setShowCreateViewDialog(false) })}
+        {showViewManagerDialog && userQueriesModule
+            && userQueriesModule.components.onRenderViewManager({ onDismiss: () => setShowViewManagerDialog(false) })}
     </>
 }
