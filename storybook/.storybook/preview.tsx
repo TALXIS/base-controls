@@ -100,13 +100,13 @@ const preview: Preview = {
           'Task Grid',
           [
             'Get started',
+            'Descriptors',
+            ['Anatomy', 'Memory', 'Dataverse', 'Talxis platform'],
             'Modules',
             ['Overview', 'Customizer'],
-            'Strategies',
-            ['Memory', 'Dataverse'],
             'Customizations',
             ['Overview', 'Custom Components'],
-            'Custom strategies',
+            'Extending',
             [
               'Overview',
               'Reuse a shipped strategy',

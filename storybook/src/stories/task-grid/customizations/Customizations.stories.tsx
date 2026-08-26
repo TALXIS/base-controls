@@ -45,13 +45,14 @@ Grouped by what they control:
 |---|---|
 | Editing | \`enableTaskEditing\`, \`enableTaskCreation\`, \`enableInlineCreation\`, \`enableTaskDeletion\` |
 | Ordering | \`enableRowDragging\`, \`enableSorting\`, \`enableFiltering\` |
+| Searching | \`enableQuickFind\` |
 | Views | \`enableViewSwitcher\` — the personal-view commands are options on the user-queries module instead, see below |
 | Columns | \`enableEditColumns\`, \`enableEditColumnsScopeSelector\` |
 | Display | \`enableShowHierarchyToggle\`, \`enableHideInactiveTasksToggle\`, \`enableNavigation\`, \`rowHeight\`, \`agGridLicenseKey\` |
 
 A few interact with each other: \`enableRowDragging\` is suppressed automatically in flat-list mode or when sorting by a non-rank column, and the personal-view commands only appear once \`enableViewSwitcher\` is on.
 
-Every flag defaults to \`false\`, so a feature missing from the ribbon is one of two things: its flag was left out of \`onGetGridParameters\`, or the module that provides it was never registered.
+So a feature missing from the ribbon is one of two things: its flag was left out of \`onGetGridParameters\`, or the module that provides it was never registered.
 
 Three \`enable*\` options are deliberately **not** on this list — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\`. They live on \`createUserQueryModule\`, because the commands they gate arrive with that module. See [**Modules**](?path=/story/task-grid-modules--overview).
 
@@ -79,9 +80,21 @@ A column renders as a picker whenever \`metadata.LookupMany\` is set **and** the
 
 ### Columns the grid owns
 
-Two kinds of column are not yours to declare. **Path** is always there, holding each task's root-to-self chain. **Predecessors** and **Successors** appear only when the \`dependencies\` module is registered — registering it is what creates them.
+Some columns are not yours to declare:
 
-All three are virtual: they carry no value on the task, arrive hidden, and are added from *Edit columns* like any other. The two dependency columns are rendered by the module's own cell — a link glyph, a direction arrow and a count — and the grid keeps them out of sorting, filtering and editing, whichever view they appear in. There is no \`controls\` name to set; naming the column in a view of your own is the only way to place it yourself. Registering the module: [**Modules → Task dependencies**](?path=/story/task-grid-modules--dependencies).
+| Column | Exists when |
+|---|---|
+| **Path** | always — each task's root-to-self chain |
+| **Predecessors**, **Successors** | the \`dependencies\` module is registered |
+| **Checklist** | the \`checklist\` module is registered |
+
+All of them are virtual: they carry no value on the task, arrive hidden, and are added from *Edit columns*
+like any other column. Each is rendered by the piece that owns it, and the grid keeps the module-owned ones
+out of sorting, filtering and editing, whichever view they appear in. There is no \`controls\` name to set —
+naming the column in a view of your own is the only way to place it yourself.
+
+Registering the modules: [**Task dependencies**](?path=/story/task-grid-modules--dependencies),
+[**Task checklists**](?path=/story/task-grid-modules--checklist).
 
 ### Making a column filterable
 

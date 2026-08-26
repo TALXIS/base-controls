@@ -4,7 +4,7 @@ import { renderStory } from '../../form/storyHelpers'
 import { BasicTaskGridExample } from '../../../task-grid/BasicTaskGridExample'
 
 const meta = {
-    title: 'Task Grid/Strategies/Memory',
+    title: 'Task Grid/Descriptors/Memory',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -32,11 +32,12 @@ It covers every feature the grid has a hook for, most of them through a dedicate
 | Templates, both expanding one into tasks and capturing one from a task | \`MemoryTemplateDataProvider\`, wrapped by \`createTemplateModule\` | \`modules.onGetTemplatesModule\` returns one |
 | Lookup-many pickers | \`MemoryLookupManyDataProviderFactory\`, one provider per column | \`modules.onGetLookupManyModule\` returns one |
 | Task dependencies, in both directions | \`MemoryTaskDependencyStrategy\`, wrapped by \`createDependenciesModule\` | \`modules.onGetDependenciesModule\` returns one |
+| Task checklists | \`MemoryChecklistStrategy\`, wrapped by \`createChecklistModule\` | \`modules.onGetChecklistModule\` returns one |
 | AG Grid customizer | yours | \`modules.onGetGridCustomizerModule\` returns one |
 
-Those last six are **modules**, and \`modules\` is part of what \`onInitialize\` resolves. [**Modules**](?path=/story/task-grid-modules--overview) covers what each one turns on, the builder options, and the bundle consequence.
+Everything below the first two rows is a **module**, and \`modules\` is part of what \`onInitialize\` resolves. [**Modules**](?path=/story/task-grid-modules--overview) covers what each one turns on and its builder options.
 
-Both descriptors accept the same modules, so the difference is which implementations ship: memory brings a user-query strategy and a template provider, Dataverse brings a user-query strategy but no template provider. And \`onInitialize\` is async, so the records can come from a server. It is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
+Both descriptors accept the same modules; what differs is which implementations ship. Memory brings one for every module except custom columns, which needs the TALXIS models. And \`onInitialize\` is async, so the records can come from a server — this is a complete, production-usable descriptor; see [**Using it in production**](#using-it-in-production).
 
 \`\`\`ts
 import { MemoryTaskGridDescriptor } from '@talxis/base-controls'
@@ -88,7 +89,7 @@ At runtime the mapping is available to strategies as \`provider.getNativeColumns
 
 > **Troubleshooting.** Everything renders flat → \`parentId\` is unmapped, or its raw value is a bare guid rather than the entity-reference array shown above. Rows come back in an unexpected order → \`stackRank\` is unmapped, or the ranks are not comparable strings.
 
-## Dependencies resolve asynchronously
+## Loading data asynchronously
 
 \`onInitialize\` is a promise, awaited once before anything is created. That is deliberate: seed data can be fetched, generated, or lazily imported, and the grid shows its own loading state while you do it.
 
@@ -126,53 +127,7 @@ Also resolved by \`onInitialize\`, all optional:
 
 The one constructor parameter that is *not* resolved by \`onInitialize\` is \`height\`.
 
-> **\`onInitialize\` runs on every remount**, and the \`onCreateTaskStrategy\` and \`modules\` it returns are rebuilt from whatever it just resolved. Guard the expensive or stateful part behind a flag of your own, so a remount reads the current store instead of re-fetching and discarding every view the user created since:
->
-> \`\`\`ts
-> let isSeeded = false
-> let userQueries: ISavedQuery[] = []
->
-> return new MemoryTaskGridDescriptor({
->     onInitialize: async () => {
->         if (!isSeeded) {
->             userQueries = await loadMyViews()
->             isSeeded = true
->         }
->         return {
->             records, metadata, fieldMapping, systemQueries,
->             modules: {
->                 onGetUserQueriesModule: ({ services }) => {
->                     const strategy = new MemoryUserQueryStrategy({ userQueries, services })
->                     const module = createUserQueryModule({ strategy, services })
->                     //write the strategy's current state back into the store on every mutation,
->                     //rather than relying on it mutating the array it was constructed with
->                     const syncStore = async () => { userQueries = await strategy.onGetUserQueries() }
->                     module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore)
->                     module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore)
->                     module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore)
->                     return module
->                 },
->             },
->         }
->     },
-> })
-> \`\`\`
-
-> **The \`records\` array is a seed, not a store.** The provider copies it and owns the data from then on: creating, deleting, editing and moving all happen on *its* records, and your array is never written to. Two grids can therefore share a fixture — though a \`structuredClone\` still keeps their record *objects* independent, since edits write through to them.
->
-> **Nothing survives a remount by itself**, and the grid remounts when *Edit columns* is applied, a view is switched, or the view manager closes. The task strategy's \`onDestroy\` hook is the seam: it hands you the records as they are just before the provider drops them, so you can give them back on the next \`onInitialize\`.
->
-> \`\`\`ts
-> let records = SEED
->
-> //returned from onInitialize, alongside the data
-> onCreateTaskStrategy: ({ services, metadata }) => new MemoryTaskStrategy({
->     onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
->     onDestroy: params => records = params.rawData,
-> }),
-> \`\`\`
->
-> Leave \`onDestroy\` out and every remount starts from the seed again — which is occasionally what you want, and otherwise a puzzling data loss.
+> **\`onInitialize\` runs on every remount**, and the \`onCreateTaskStrategy\` and \`modules\` it returns are rebuilt from whatever it just resolved. Nothing in the grid keeps your data between those calls — see [**Keeping data across remounts**](#keeping-data-across-remounts), which is the one thing to get right before shipping this descriptor.
 
 ### \`IMemoryEntitySource\`
 
@@ -224,7 +179,7 @@ Hand back the \`metadata\` you were given, and for the records hand back what th
 
 ### The hooks, and the defaults behind them
 
-Each hook falls back to the matching \`MemoryTaskActions\` method and receives its exact parameters, so an override can wrap the default rather than replace it — see [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview), under *The actions classes*.
+Each hook falls back to the matching \`MemoryTaskActions\` method and receives its exact parameters, so an override can wrap the default rather than replace it — see [**Extending**](?path=/story/task-grid-extending--overview), under *The actions classes*.
 
 | Hook | Default | 
 |---|---|
@@ -249,8 +204,6 @@ onRecordSave: async params => {
     return result
 },
 \`\`\`
-
-So persisting to a server is a hook away, with the local store kept in step by the action.
 
 ## Templates
 
@@ -282,7 +235,7 @@ modules: {
 
 Each node's \`values\` may set **any** task column, and \`children\` nests to any depth. Capturing a template *from* a task works in reverse: the task's visible column values become \`values\`, and its subtree becomes \`children\`.
 
-The provider copies the source and writes into nothing you handed it, so a template captured at runtime lives in the provider until you store it — see *Keeping data across remounts* below. The contract behind both directions is on [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview), under *The template data provider*.
+The provider copies the source and writes into nothing you handed it, so a template captured at runtime lives in the provider until you store it — see *Keeping data across remounts* below. The contract behind both directions is on [**Extending**](?path=/story/task-grid-extending--overview), under *The template data provider*.
 
 ## Lookup-many columns
 
@@ -332,6 +285,31 @@ The strategy is asked once per mount, and only for the tasks the grid has loaded
 
 Registering the module is what creates the **Predecessors** and **Successors** columns; they are the grid's, and they arrive hidden. See [**Modules → Task dependencies**](?path=/story/task-grid-modules--dependencies) for the columns, and [**Customizations**](?path=/story/task-grid-customizations--overview) under *Columns the grid owns* for how they behave.
 
+## Task checklists
+
+A checklist item is a name, a status and the task it belongs to:
+
+\`\`\`ts
+const CHECKLIST_ITEMS: IChecklistItem[] = [
+    { id: 'chk-01', taskId: '2', name: 'Collect requirements', status: 'complete' },
+    { id: 'chk-02', taskId: '2', name: 'Interview stakeholders', status: 'active' },
+]
+
+//returned from onInitialize
+modules: {
+    onGetChecklistModule: ({ services }) => createChecklistModule({
+        strategy: new MemoryChecklistStrategy({ items: CHECKLIST_ITEMS, services }),
+        services,
+    }),
+},
+\`\`\`
+
+The strategy is read-only and never writes to the array you hand it, so a fixture can be shared between
+grids. It is asked only for the tasks the grid has loaded, and each item belongs to exactly one task.
+
+Registering the module is what creates the **Checklist** column, which shows \`done/total\` for each task.
+See [**Modules → Task checklists**](?path=/story/task-grid-modules--checklist).
+
 ## Ordering: stack ranks
 
 Ordering uses <a href="https://en.wikipedia.org/wiki/Lexicographical_order" target="_blank" rel="noreferrer">lexicographic</a> rank strings rather than integer positions, so moving one row rewrites one record instead of renumbering its siblings. Drag a row in the grid below and only that row's \`stackrank\` changes:
@@ -351,7 +329,7 @@ StackRank.between(
 )
 \`\`\`
 
-\`StackRank\` is exported, and it is the only thing that imports \`lexorank\` — a strategy that orders some other way never pulls it in.
+\`StackRank\` is exported, so a strategy of your own can rank the same way.
 
 ## Keeping data across remounts
 
@@ -424,14 +402,14 @@ onInitialize: async () => {
 \`\`\`ts
 class MyTaskStrategy extends MemoryTaskStrategy {
     public async onRecordSave(record: IRecord) {
-        const changedFields = await super.onRecordSave(record)
-        await persist(record, changedFields)
-        return changedFields
+        const result = await super.onRecordSave(record)
+        await persist(record, result.fields)
+        return result
     }
 }
 \`\`\`
 
-\`onCreateTask\`, \`onDeleteTasks\` and \`onMoveTask\` take the same shape. Return the subclass from \`onCreateTaskStrategy\` — see [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
+\`onCreateTask\`, \`onDeleteTasks\` and \`onMoveTask\` take the same shape. Return the subclass from \`onCreateTaskStrategy\` — see [**Extend a shipped strategy**](?path=/story/task-grid-extending-extend-a-shipped-strategy--overview).
 
 ## Limits
 

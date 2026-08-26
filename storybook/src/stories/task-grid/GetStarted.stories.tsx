@@ -2,22 +2,9 @@ import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { renderStory } from '../form/storyHelpers'
 import { BasicTaskGridExample } from '../../task-grid/BasicTaskGridExample'
+import { docsPageWithExample } from '../docsPageWithExample'
 
-const meta = {
-    title: 'Task Grid/Get started',
-    tags: ['autodocs'],
-    parameters: {
-        controls: { disable: true },
-        docs: {
-            story: {
-                inline: true,
-            },
-            canvas: {
-                sourceState: 'none',
-                additionalActions: [],
-            },
-            description: {
-                component: `
+const DESCRIPTION = `
 Task Grid is a hierarchical task-management grid built on <a href="https://www.ag-grid.com/" target="_blank" rel="noreferrer">AG Grid</a>. It renders tasks as a parent–child tree and brings the surrounding behaviour with it: drag-and-drop reordering, inline editing, saved views, quick find and template-based task creation, working as one system.
 
 The grid below is real. It runs on the in-memory strategy, so everything you do to it — reorder, edit, create, delete, switch views — is the same code path a production grid uses. Flip **Code** to see what renders it, and edit it.
@@ -31,7 +18,7 @@ The grid below is real. It runs on the in-memory strategy, so everything you do 
 
 ## Render it
 
-The control ships no data access at all. Loading, saving, reordering and saved views are supplied by a **descriptor**, which is the single object you hand to the grid. The descriptor also decides which optional features exist, by listing the [**modules**](?path=/story/task-grid-modules--overview) it runs with:
+The control ships no data access at all. Loading, saving, reordering and saved views are supplied by a **descriptor**, the single object you hand to the grid. The descriptor also decides which optional features exist, by listing the [**modules**](?path=/story/task-grid-modules--overview) it runs with:
 
 \`\`\`tsx
 import { TaskGrid } from '@talxis/base-controls'
@@ -50,7 +37,7 @@ The grid reads the \`ComponentFramework.Context\` — navigation, formatting, er
 
 | Prop | Required | Description |
 |------|:--------:|-------------|
-| \`descriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration, and where the [**modules**](?path=/story/task-grid-modules--overview) are registered. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract. |
+| \`descriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration, and where the [**modules**](?path=/story/task-grid-modules--overview) are registered. See [**Extending**](?path=/story/task-grid-extending--overview) for the contract. |
 | \`labels?\` | — | Partial \`ITaskGridLabels\`. Any key you supply replaces the English default. |
 | \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton loader, the command bar, or the renderer/editor of any cell. |
 | \`onReady?\` | — | \`(control, taskDataProvider)\` — the grid's handle. See [**Reacting to the grid**](#reacting-to-the-grid). |
@@ -70,7 +57,7 @@ Every event the grid raises is a prop, so nothing needs a strategy or the impera
 | Templates | \`onBeforeTemplateCreated\`, \`onTemplateCreated\` |
 | Errors | \`onError\`, which fans in the task, view and template errors |
 
-A "created" or "updated" view prop receives \`null\` when the user cancelled the dialog, and the template props only fire when templates are enabled.
+Anything that can be cancelled reports it: a "created" or "updated" view prop receives \`null\` when the user closed the dialog, \`onTasksDeleted\` receives the per-task result, and \`onTaskMoved\` receives the changed records — or \`null\` when the task did not move, because the drop was refused or the strategy cancelled. The template props only fire when templates are enabled.
 
 \`\`\`tsx
 <TaskGrid
@@ -94,9 +81,9 @@ onReady={(control, taskDataProvider) => {
 
 One thing to keep in mind: the grid **rebuilds both objects** whenever it remounts — switching a view or saving a record does it — so \`onReady\` fires again each time and any handle you stored goes stale. The records are already loaded when it fires; the control is not handed over until its first load has finished.
 
-## Pick a strategy
+## Pick a descriptor
 
-Two descriptors ship with the package. Both satisfy the same contract, so the grid behaves identically — they differ only in where the records come from. Configure one and you are done; neither requires you to write a strategy.
+Two descriptors ship with the package. Both satisfy the same contract, so the grid behaves identically — they differ only in where the records come from. Configure one and you are done: neither asks you to write a strategy, even though supplying one is what a descriptor is for. See [**Descriptors → Anatomy**](?path=/story/task-grid-descriptors-anatomy--overview) for the contract they implement.
 
 ### Memory
 
@@ -120,7 +107,7 @@ const descriptor = new MemoryTaskGridDescriptor({
 })
 \`\`\`
 
-All parameters, templates, dependencies and lookup-many data: [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview).
+All parameters, templates, dependencies and lookup-many data: [**Descriptors → Memory**](?path=/story/task-grid-descriptors-memory--overview).
 
 ### Dataverse
 
@@ -144,15 +131,30 @@ const descriptor = new DataverseTaskGridDescriptor({
 })
 \`\`\`
 
-> Personal saved views come from a TALXIS model rather than your task entity (\`talxis_userquery\`). They are opt-in: you switch them on by registering the module, so an environment without the model simply leaves that module out. Covered on [**Strategies → Dataverse**](?path=/story/task-grid-strategies-dataverse--overview).
+> Personal saved views come from a TALXIS model rather than your task entity (\`talxis_userquery\`). They are opt-in: you switch them on by registering the module, so an environment without the model simply leaves that module out. Covered on [**Descriptors → Dataverse**](?path=/story/task-grid-descriptors-dataverse--overview).
 
 ## Where to go next
 
-- [**Modules**](?path=/story/task-grid-modules--overview) — what a module is, the five that ship, and how registering one turns a feature on. A live grid per module.
-- [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview) / [**Dataverse**](?path=/story/task-grid-strategies-dataverse--overview) — every parameter of the descriptor you picked.
+- [**Descriptors → Anatomy**](?path=/story/task-grid-descriptors-anatomy--overview) — what a descriptor must supply, what is optional, and how the grid's services fit together.
+- [**Memory**](?path=/story/task-grid-descriptors-memory--overview) / [**Dataverse**](?path=/story/task-grid-descriptors-dataverse--overview) — every parameter of the descriptor you picked. [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview) if you are on TALXIS.
+- [**Modules**](?path=/story/task-grid-modules--overview) — what a module is, the seven that ship, and how registering one turns a feature on. A live grid per module.
 - [**Customizations**](?path=/story/task-grid-customizations--overview) — feature flags, column metadata, labels, and replaceable components.
-- [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) — the descriptor contract, reusing individual shipped strategies, extending them, or writing your own.
-                `.trim(),
+- [**Extending**](?path=/story/task-grid-extending--overview) — reusing a shipped strategy, changing one behaviour, or writing your own.
+                `
+
+const meta = {
+    title: 'Task Grid/Get started',
+    tags: ['autodocs'],
+    parameters: {
+        controls: { disable: true },
+        docs: {
+            page: docsPageWithExample(DESCRIPTION),
+            story: {
+                inline: true,
+            },
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
             },
         },
     },

@@ -31,6 +31,7 @@ The grid's optional features are **modules**. You list the ones you want on the 
 | \`onGetLookupManyModule\` | Multi-record pickers on lookup-many columns | the candidate records |
 | \`onGetDependenciesModule\` | The **Predecessors** and **Successors** columns: what each task waits on, and what waits on it | where dependencies are read from |
 | \`onGetChecklistModule\` | The **Checklist** column: the items on each task, and whether they are done | where checklist items are read from |
+| \`onGetCustomColumnsModule\` | User-defined columns, created and edited from *Edit columns* | where the column definitions and values live |
 | \`onGetGridCustomizerModule\` | Direct access to AG Grid — see [**Customizer**](?path=/story/task-grid-modules-customizer--overview) | a customizer strategy |
 
 ## Turning one on
@@ -56,7 +57,7 @@ const descriptor = new MemoryTaskGridDescriptor({
 })
 \`\`\`
 
-That grid has personal views and nothing else. The same five keys work on \`DataverseTaskGridDescriptor\`, which hands each builder the entity name and record id it needs.
+That grid has personal views and nothing else. All seven keys work on \`DataverseTaskGridDescriptor\` too, which hands each builder the entity name and record id it needs.
 
 Each builder takes the one thing only you can provide, plus a few switches for its commands:
 
@@ -67,9 +68,12 @@ Each builder takes the one thing only you can provide, plus a few switches for i
 | \`createLookupManyModule\` | \`createDataProvider\`, \`services\` | — | \`lookupManyModule\` |
 | \`createDependenciesModule\` | \`strategy\`, \`services\` | — | \`dependenciesModule\` |
 | \`createChecklistModule\` | \`strategy\`, \`services\` | — | \`checklistModule\` |
+| \`createCustomColumnsModule\` | \`strategy\`, \`services\` | \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\` | \`customColumnsModule\` |
 | \`createGridCustomizerModule\` | \`strategy\`, \`services\` | — | \`gridCustomizerModule\` |
 
-Whatever a builder returns, the grid registers under that key, so a module — and everything it brings — is reachable from the rest of the grid: \`services.find('templatesModule')?.provider\`. That is also how a templates provider describes the tasks a template expands into, in the other direction: \`services.get('taskDataProvider')\`. See [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies--overview).
+Whatever a builder returns is registered under that key, so a module and everything it brings is reachable from anywhere in the grid — \`services.find('templatesModule')?.provider\`. See [**Anatomy → Services**](?path=/story/task-grid-descriptors-anatomy--overview).
+
+\`onGetCustomColumnsModule\` is the one module with no in-memory implementation: \`TalxisCustomColumnsStrategy\` is the only strategy that ships for it, so it needs the TALXIS models and has no live demo here. See [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview).
 
 Every grid below runs **one** module, so you can see exactly what it adds. Flip **Code** to read the registration, and edit it — remove the module and the feature disappears from the grid.
                 `.trim(),
@@ -105,7 +109,7 @@ export const Templates: Story = {
         docs: {
             description: {
                 story: `
-**New** now offers *New from template*, and so does the **+** button on each row. Select a task and *Create template from task* saves its whole subtree as a new template, which then shows up in the picker — for the rest of the session, unless you keep it yourself: see [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Keeping data across remounts*.
+**New** now offers *New from template*, and so does the **+** button on each row. Select a task and *Create template from task* saves its whole subtree as a new template, which then shows up in the picker — for the rest of the session, unless you keep it yourself: see [**Memory**](?path=/story/task-grid-descriptors-memory--overview), under *Keeping data across remounts*.
 
 Note the view dropdown has no *My views* group here — that is the personal-views module, and this grid does not register it.
                 `.trim(),
@@ -137,9 +141,9 @@ export const Dependencies: Story = {
         docs: {
             description: {
                 story: `
-Two columns arrive with the module: **Predecessors** — what a task waits on — and **Successors** — what waits on it. The tasks under *Website Redesign* are wired together here, so each shows a count for its direction; a task with none stays blank.
+Two columns arrive with the module: **Predecessors** — what a task waits on — and **Successors** — what waits on it. The tasks under *Website Redesign* are linked here, so each shows a count for its direction; a task with no links stays blank.
 
-Both columns are the grid's, not yours: registering the module is what creates them, and they arrive hidden, offered in *Edit columns* under their own names. This grid's views name them, which is why they are on screen from the start. Neither sorts, filters nor edits — the cell reads the module rather than a value on the task.
+Registering the module is what creates both columns. They arrive hidden and are offered in *Edit columns* under their own names; this grid's views name them, which is why they are on screen from the start. Neither can be sorted, filtered or edited, and there is no \`controls\` name to override — naming the column in a view is how you place it.
                 `.trim(),
             },
         },
@@ -153,13 +157,22 @@ export const Checklist: Story = {
         docs: {
             description: {
                 story: `
-One column arrives with the module: **Checklist**, showing how far a task's list has got as \`done/total\`. Expand *Website Redesign* to see all three states — *Discovery & Planning* is part-way at 2/3, *UX/UI Design* has not started at 0/2, and *Content Migration* is finished at 2/2, where the check turns green so a completed list reads without comparing the numbers. A task with no items stays blank.
+One column arrives with the module: **Checklist**, showing how far a task's list has got as \`done/total\`. Expand *Website Redesign* for all three states — *Discovery & Planning* part-way at 2/3, *UX/UI Design* not started at 0/2, and *Content Migration* finished at 2/2, where the check turns green so a completed list reads at a glance. A task with no items stays blank.
 
-The column is the grid's, not yours: registering the module is what creates it, and it arrives hidden, offered in *Edit columns* under its own name. This grid's views name it, which is why it is on screen from the start. It neither sorts, filters nor edits — the cell reads the module rather than a value on the task.
+Registering the module is what creates the column. It arrives hidden and is offered in *Edit columns* under its own name; this grid's views name it, which is why it is on screen from the start. It cannot be sorted, filtered or edited — the column reports progress, it does not change it.
 
-An item carries an \`id\`, a \`name\` and a \`status\` of \`active\` or \`complete\`, and belongs to exactly one task. That one-owner rule is why the provider is as small as it is: \`refresh(taskIds)\` writes only the tasks it was given, so a task nobody asked about keeps what it had, and a task whose items are all gone ends up with none.
+An item belongs to exactly one task, and carries what the column needs:
 
-The cell reads the module, not the task, and repaints from the provider's \`onAfterChecklistRefreshed\` event: it carries the tasks a refresh reloaded, and each cell watches for its own. Ticking an item off is not wired up yet — the column reports progress, it does not edit it.
+\`\`\`ts
+interface IChecklistItem {
+    id: string
+    taskId: string
+    name: string
+    status: 'active' | 'complete'
+}
+\`\`\`
+
+\`status\` is a named union rather than a boolean, so the set can grow without every consumer having to reinterpret a flag.
                 `.trim(),
             },
         },

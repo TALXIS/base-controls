@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { docsOnlyStory } from '../docsOnlyStory'
 
 const meta = {
-    title: 'Task Grid/Custom strategies/Reuse a shipped strategy',
+    title: 'Task Grid/Extending/Reuse a shipped strategy',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -26,7 +26,7 @@ That is the cheapest way out of most awkward situations: Dataverse tasks in an e
 |---|---|---|---|
 | \`MemoryUserQueryStrategy\` | \`{ userQueries, services }\` — the array it reads and writes, plus the locator every strategy takes | none | Hand it the array you keep for the session, not a fresh literal: it is rebuilt per control instance, so a new array each time would wipe the views the user saved. |
 | \`TalxisUserQueryStrategy\` | \`{ entityName, recordId?, ownerId?, services }\` | \`talxis_userquery\` | State is server-side, so a second instance is fine. \`entityName\` is only the \`talxis_returnedtypecode\` filter value; omit \`ownerId\` and the views are shared environment-wide. |
-| \`MemoryTaskStrategy\` | \`{ onInitialize, services, …hooks }\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. Column metadata is passed through as the views declare it, so a lookup is filterable only if you said so — see [**Memory → Lookup-many columns**](?path=/story/task-grid-strategies-memory--overview). |
+| \`MemoryTaskStrategy\` | \`{ onInitialize, services, …hooks }\` — \`onInitialize\` resolves \`{ rawData, metadata, columns }\`; one optional hook per operation sits beside it | none | \`onGetAvailableRelatedColumns\` returns \`[]\` — no related-entity columns. Column metadata is passed through as the views declare it, so a lookup is filterable only if you said so — see [**Memory → Lookup-many columns**](?path=/story/task-grid-descriptors-memory--overview). |
 | \`MemoryTemplateDataProvider\` | \`{ templates, services }\` — the template source, plus the locator it reaches the task side through | none | Pairs with any task strategy. It copies the source, so a template captured at runtime is kept only if you listen for \`onAfterTemplateCreated\` and store \`getTemplateSource()\`. |
 | \`DataverseTaskStrategy\` | \`{ onInitialize, services, …hooks }\` — \`onInitialize\` resolves the \`fetchXml\`, form ids and delete flags; the hooks sit beside it | Dataverse host, valid FetchXML | Reads and writes lookup-many relationship columns through the Xrm Web API, so those columns need their \`LookupMany\` metadata to be right. |
 | \`MemoryTaskDependencyStrategy\` | \`{ dependencies, services }\` — the array it reads and deletes from, plus the locator | none | Pairs with any task strategy. Hand it the array you keep for the session, not a shared fixture: deleting a task removes the rows that pointed at it. It is asked for the tasks the grid loaded rather than deciding scope itself, so the array can hold dependencies for tasks the current view excludes. |
@@ -47,7 +47,7 @@ onCreateTaskStrategy: ({ services }) => new MemoryTaskStrategy({ onInitialize, s
 new MemoryTemplateDataProvider({ templates, services })
 \`\`\`
 
-What a locator holds depends on which modules the grid runs with — see [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies--overview).
+What a locator holds depends on which modules the grid runs with — see [**Extending → Services**](?path=/story/task-grid-extending--overview).
 
 ## Dataverse data, in-memory views
 
@@ -108,7 +108,7 @@ onDeleteTasks: async params => {
 },
 \`\`\`
 
-\`onCreateTask\` and \`onMoveTask\` work the same way — and both are handed the siblings they land between, resolved over the whole dataset, so you never compute that yourself. That is a server-backed grid without implementing the interface — or a subclass — yourself. [**Strategies → Memory**](?path=/story/task-grid-strategies-memory--overview) has the snippet. Write the interface from scratch only when the data cannot be held in memory at all — which, given the above, means almost never. [**Write your own**](?path=/story/task-grid-custom-strategies-write-your-own--overview) covers that case.
+\`onCreateTask\` and \`onMoveTask\` work the same way — and both are handed the siblings they land between, resolved over the whole dataset, so you never compute that yourself. That is a server-backed grid without implementing the interface — or a subclass — yourself. [**Descriptors → Memory**](?path=/story/task-grid-descriptors-memory--overview) has the snippet. Write the interface from scratch only when the data cannot be held in memory at all — which, given the above, means almost never. [**Write your own**](?path=/story/task-grid-extending-write-your-own--overview) covers that case.
 
 ## Pairings that do not work
 

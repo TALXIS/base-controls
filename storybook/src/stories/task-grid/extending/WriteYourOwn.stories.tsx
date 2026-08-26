@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { docsOnlyStory } from '../docsOnlyStory'
 
 const meta = {
-    title: 'Task Grid/Custom strategies/Write your own',
+    title: 'Task Grid/Extending/Write your own',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -18,9 +18,9 @@ const meta = {
                 component: `
 When neither shipped strategy fits — a REST API, GraphQL, SQL through a gateway — you can write your own. The grid does not care where records come from. Reach for this when you want the mutations to go through your own code from the start, or when the shipped strategies' shapes fight you; if you only need remote *loading*, the memory strategy already does that.
 
-You need two pieces: a **descriptor** implementing \`ITaskGridDescriptor\`, and a **task strategy** implementing \`ITaskDataProviderStrategy\`. \`MemoryTaskStrategy\` in \`src/components/TaskGrid/strategies/memory/\` is the shortest complete implementation to read alongside this page — and \`MemoryTaskActions\` beside it holds the behaviour on its own, so you can call the parts that fit your data instead of rewriting them, and [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview) is worth reading first — if your records fit in memory, pointing \`MemoryTaskStrategy\` at your own loader gets you working CRUD without any of this.
+You need two pieces: a **descriptor** implementing \`ITaskGridDescriptor\`, and a **task strategy** implementing \`ITaskDataProviderStrategy\`. \`MemoryTaskStrategy\` in \`src/components/TaskGrid/strategies/memory/\` is the shortest complete implementation to read alongside this page — and \`MemoryTaskActions\` beside it holds the behaviour on its own, so you can call the parts that fit your data instead of rewriting them, and [**Reuse a shipped strategy**](?path=/story/task-grid-extending-reuse-a-shipped-strategy--overview) is worth reading first — if your records fit in memory, pointing \`MemoryTaskStrategy\` at your own loader gets you working CRUD without any of this.
 
-Where the interfaces on this page are imported from is listed under [**Imports**](?path=/story/task-grid-custom-strategies--overview).
+Where the interfaces on this page are imported from is listed under [**Imports**](?path=/story/task-grid-extending--overview).
 
 ## The task strategy
 
@@ -41,7 +41,7 @@ This is where the work is. The grid calls these hooks; you decide what they mean
 | \`onDestroy?()\` | — | Called just before the provider is torn down, on unmount and on every remount. Its data is still readable, so this is the last chance to hand the current records to whoever keeps them. |
 | \`onGetRootTaskId?()\` | — | Root the tree at one task. |
 
-Templates are not part of the strategy in either direction: capturing one from a task and expanding one into tasks both belong to the \`ITemplateDataProvider\` you wrap in \`createTemplateModule\` and return from \`onGetModules\` — see [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview), under *The template data provider*.
+Templates are not part of the strategy in either direction: capturing one from a task and expanding one into tasks both belong to the \`ITemplateDataProvider\` you wrap in \`createTemplateModule\` and return from \`onGetModules\` — see [**Extending**](?path=/story/task-grid-extending--overview), under *The template data provider*.
 
 ### \`onInitialize\` is your setup hook
 
@@ -216,11 +216,11 @@ export class MyTaskGridDescriptor implements ITaskGridDescriptor {
 }
 \`\`\`
 
-\`services\` reaches everything the grid built — \`savedQueryDataProvider\`, \`gridParameters\`, the providers a module registered — so the strategy does not have to be told twice. Store it in the constructor and resolve inside the methods; see [**Custom strategies → Services**](?path=/story/task-grid-custom-strategies--overview). The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
+\`services\` reaches everything the grid built — \`savedQueryDataProvider\`, \`gridParameters\`, the providers a module registered — so the strategy does not have to be told twice. Store it in the constructor and resolve inside the methods; see [**Extending → Services**](?path=/story/task-grid-extending--overview). The memory strategy answers \`onGetAvailableColumns\` from the views it is handed, and never keeps a copy of them.
 
 ## Where the rest lives
 
-The descriptor contract, the startup ordering and the template provider are on [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview). Shipped pieces you can drop into the descriptor above are on [**Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview), and [**Memory**](?path=/story/task-grid-strategies-memory--overview) is the reference implementation to read alongside your own.
+The descriptor contract, the startup ordering and the template provider are on [**Extending**](?path=/story/task-grid-extending--overview). Shipped pieces you can drop into the descriptor above are on [**Reuse a shipped strategy**](?path=/story/task-grid-extending-reuse-a-shipped-strategy--overview), and [**Memory**](?path=/story/task-grid-descriptors-memory--overview) is the reference implementation to read alongside your own.
                 `.trim(),
             },
         },

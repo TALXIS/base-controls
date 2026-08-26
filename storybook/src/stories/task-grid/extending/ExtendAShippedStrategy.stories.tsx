@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { docsOnlyStory } from '../docsOnlyStory'
 
 const meta = {
-    title: 'Task Grid/Custom strategies/Extend a shipped strategy',
+    title: 'Task Grid/Extending/Extend a shipped strategy',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -36,7 +36,7 @@ Subclass when you want to change several operations at once, hold state of your 
 
 ## Start with the params
 
-Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open, the grid customizer — and every optional feature: personal views, templates, task dependencies and lookup-many candidates are all **modules** on both shipped descriptors — see [**Modules**](?path=/story/task-grid-modules--overview). Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-custom-strategies--overview).
+Most of what looks like a subclass is a constructor callback. New-task defaults, what counts as active, what happens on open, the grid customizer — and every optional feature: personal views, templates, task dependencies and lookup-many candidates are all **modules** on both shipped descriptors — see [**Modules**](?path=/story/task-grid-modules--overview). Switching a feature on or answering it with a strategy of your own needs no subclass at all. See [**Before you subclass anything**](?path=/story/task-grid-extending--overview).
 
 ## Subclassing a task strategy
 
@@ -89,7 +89,7 @@ Overriding a hook the base class does not read is safe. Overriding one it does i
 
 ## When to stop
 
-If you find yourself overriding more than two hooks, or copying private logic to work around what you cannot reach, write the strategy instead — it is a smaller surface than it looks. [**Write your own**](?path=/story/task-grid-custom-strategies-write-your-own--overview).
+If you find yourself overriding more than two hooks, or copying private logic to work around what you cannot reach, write the strategy instead — it is a smaller surface than it looks. [**Write your own**](?path=/story/task-grid-extending-write-your-own--overview).
                 `.trim(),
             },
         },

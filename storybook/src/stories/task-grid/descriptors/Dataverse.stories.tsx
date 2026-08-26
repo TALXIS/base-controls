@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { docsOnlyStory } from '../docsOnlyStory'
 
 const meta = {
-    title: 'Task Grid/Strategies/Dataverse',
+    title: 'Task Grid/Descriptors/Dataverse',
     tags: ['autodocs'],
     parameters: {
         controls: { disable: true },
@@ -24,37 +24,26 @@ It handles the wiring a model-driven subgrid would give you: saved views persist
 import { DataverseTaskGridDescriptor } from '@talxis/base-controls'
 \`\`\`
 
-> There is no live grid on this page. Storybook mocks only \`Xrm.Utility.getGlobalContext()\` — \`Xrm.WebApi\` and \`getEntityMetadata\` are rejecting stubs, so this strategy cannot run outside a Dataverse host. That gap is exactly why the [**Memory**](?path=/story/task-grid-strategies-memory--overview) strategy exists.
+> There is no live grid on this page. Storybook mocks only \`Xrm.Utility.getGlobalContext()\` — \`Xrm.WebApi\` and \`getEntityMetadata\` are rejecting stubs, so this strategy cannot run outside a Dataverse host. That gap is exactly why the [**Memory**](?path=/story/task-grid-descriptors-memory--overview) strategy exists.
 
 ## Environment prerequisites
 
-Personal saved views are backed by a TALXIS model rather than by your task entity, and they are **opt-in**: you get them by registering the module that carries them. Say nothing and the model is never read — and the module's code is never pulled into your bundle.
+The descriptor itself needs nothing but your task table and the FetchXML that queries it. Personal views,
+dependencies, checklists and custom columns are each backed by a TALXIS model, and each one is **opt-in**: you
+get it by registering its module. Say nothing and the model is never read, and the module's code never enters
+your bundle.
 
-| Feature | Module to register | Model it needs |
-|---|---|---|
-| Personal saved views | \`modules.onGetUserQueriesModule\` → \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...), services })\` | \`talxis_userquery\` with \`talxis_userqueryid\`, \`talxis_name\`, \`talxis_description\`, \`talxis_layoutjson\`, \`talxis_returnedtypecode\`, \`talxis_recordid\`, \`ownerid\` |
+Which model each needs, and the strategies that come pre-configured for them:
+[**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview).
 
-\`\`\`ts
-//part of what onInitialize resolves - see Modules for the full picture
-modules: {
-    onGetUserQueriesModule: ({ services, entityName, recordId, userId }) => createUserQueryModule({
-        services,
-        strategy: new TalxisUserQueryStrategy({
-            entityName,
-            recordId,
-            ownerId: userId,
-            services,
-        }),
-        enableQueryManager: true,
-    }),
-},
-\`\`\`
+> Register a module whose model is **not** deployed and the grid sits on its loading skeleton and never
+> renders: the read happens before the first provider is created, outside the grid's error handling. If a
+> table is missing, leave its builder out.
 
-Each builder gets only the slice of context its own strategy needs — the entity name comes from your FetchXML, \`recordId\` from \`projectRecord\`, \`userId\` from the parameter of the same name — not one shared object every builder has to pick through. See [**Modules**](?path=/story/task-grid-modules--overview).
-
-> Register a module whose model is **not** deployed and the grid sits on its loading skeleton and never renders: both reads happen before the first provider is created, and neither is wrapped in the grid's error handling. If a table is missing, leave its builder out.
-
-Nothing stops you from answering a feature differently — return a strategy of your own, or one from another extension, and views can live wherever you like. Task loading and saving keep using the shipped \`DataverseTaskStrategy\`. See [**Custom strategies → Reuse a shipped strategy**](?path=/story/task-grid-custom-strategies-reuse-a-shipped-strategy--overview).
+Nothing stops you from answering a feature differently — return a strategy of your own, or one from another
+extension, and views can live wherever you like. Task loading and saving keep using the shipped
+\`DataverseTaskStrategy\`. See
+[**Extending → Reuse a shipped strategy**](?path=/story/task-grid-extending-reuse-a-shipped-strategy--overview).
 
 ## Setup
 
@@ -178,9 +167,15 @@ The one constructor parameter, next to \`onInitialize\`:
 
 ## Saved views
 
-Register \`createUserQueryModule({ strategy: new TalxisUserQueryStrategy(...), services })\` from \`modules.onGetUserQueriesModule\` and personal views are persisted as \`talxis_userquery\` rows, with each view's columns, filters and sorting serialized into \`talxis_layoutjson\`. Pass \`userId\` as its \`ownerId\` to scope them per user; leave it out and the views are shared across the environment. System views come from \`systemQueries\` and are never written.
+System views come from \`systemQueries\` and are never written to. Personal views are a module: register
+\`onGetUserQueriesModule\` and the *My views* group, the save commands and the view manager appear.
 
-Without that module the feature is simply off, and its options — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` — have nowhere to be set, because they belong to the module rather than to \`gridParameters\`. Not registering it also keeps the view manager and both dialogs out of your bundle.
+Their three options — \`enableQueryManager\`, \`enableSaveAsNewQuery\`, \`enableSaveQueryChanges\` — belong to
+\`createUserQueryModule\` rather than to \`gridParameters\`, because the commands they gate arrive with the
+module. Not registering it keeps the view manager and both dialogs out of your bundle.
+
+On TALXIS, \`TalxisUserQueryStrategy\` persists them for you:
+[**Talxis platform → Personal views**](?path=/story/task-grid-descriptors-talxis-platform--overview).
 
 ## Lookup-many columns
 
@@ -235,7 +230,7 @@ The parameters carry everything the factory needs: the cell's record and column 
 
 ## Templates
 
-No Dataverse implementation ships: \`DataverseTemplateDataProvider\` lists templates through FetchXML but implements neither capturing one from a task nor expanding one into tasks. The \`templates\` module is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Custom strategies**](?path=/story/task-grid-custom-strategies--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-strategies-memory--overview) for a working example.
+No Dataverse implementation ships: \`DataverseTemplateDataProvider\` lists templates through FetchXML but implements neither capturing one from a task nor expanding one into tasks. The \`templates\` module is there for a provider of your own; without one the template commands stay out of the ribbon. See [**Extending**](?path=/story/task-grid-extending--overview) for the contract to implement, and [**Memory**](?path=/story/task-grid-descriptors-memory--overview) for a working example.
 
 ## Task dependencies
 
@@ -263,29 +258,56 @@ modules: {
                 742070003: 'startToFinish',
             },
         }),
-        services,
     }),
 },
 \`\`\`
 
-Every parameter is required, including the map: the grid works in link types, so nothing can be inferred from a bare option-set value. A value the map does not name is currently treated as finish-to-start and warned about once — a temporary leniency, since the map is meant to name every value the attribute can hold.
+Every parameter is required, the map included: the grid works in link types, so nothing can be inferred from a bare option-set value. Name every value the attribute can hold — an unmapped value falls back to finish-to-start and warns.
 
-Two things worth knowing about the read. It is **scoped by the tasks the grid loaded**, in batches of 800 ids, and a dependency counts when either of its ends is one of them — so a link pointing at a task outside the current view still arrives, and widening the view widens the read. And it filters on nothing else: a **deactivated** dependency row is still counted, so a solution that deactivates rather than deletes them needs its own strategy for now.
+On the TALXIS platform this schema is already filled in: use \`TalxisTaskDependencyStrategy\` and pass nothing but the locator. See [**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview).
+
+Two things worth knowing about the read. It is **scoped by the tasks the grid loaded**, in batches of 800 ids, and a dependency counts when either of its ends is one of them — so a link pointing at a task outside the current view still arrives, and widening the view widens the read. And it filters on nothing else: a **deactivated** dependency row is still counted, so a solution that deactivates rather than deletes them needs a strategy of its own.
 
 Registering the module is what creates the two columns — see [**Modules → Task dependencies**](?path=/story/task-grid-modules--dependencies).
 
+## Task checklists
+
+No generic Dataverse implementation ships. On the TALXIS platform, \`TalxisChecklistStrategy\` reads each
+task's checklist from a JSON column on the task record — see
+[**Talxis platform**](?path=/story/task-grid-descriptors-talxis-platform--overview). Elsewhere, implement
+\`IChecklistStrategy\` yourself: it is one method returning the items for the tasks the grid has loaded.
+
+Registering the module is what creates the **Checklist** column — see
+[**Modules → Task checklists**](?path=/story/task-grid-modules--checklist).
+
+## Deleting tasks
+
+Two strategy options decide what deleting a parent task does. They resolve in this order:
+
+| \`isDeletingTasksWithChildrenEnabled\` | \`isCascadeDeleteEnabled\` | Result |
+|:---:|:---:|---|
+| \`false\` (default) | either | A task that has children is refused and reported as an error. Nothing under it is deleted. |
+| \`true\` | \`true\` | The task and its whole subtree are deleted. |
+| \`true\` | \`false\` | Only the task is deleted; what happens to its children is the relationship's delete behaviour. |
+
+The children check reads the complete hierarchy, so a child hidden by the active filter still counts.
+
+> Leave \`isCascadeDeleteEnabled\` off when the task parent relationship is **parental** in Dataverse: the
+> platform already deletes the subtree, and asking the client to delete it as well means deleting rows that
+> are already gone.
+
 ## Ordering: stack ranks
 
-Ordering works the same way as everywhere else — [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Ordering* has the worked example. Two things are specific to Dataverse:
+Ordering works the same way as everywhere else — [**Memory**](?path=/story/task-grid-descriptors-memory--overview), under *Ordering* has the worked example. Two things are specific to Dataverse:
 
 - The attribute you map to \`stackRank\` must be a **text** column.
 - Rows the FetchXML excludes are never loaded, so they cannot be ranked against. Keep the query broad enough to hold the siblings you reorder.
 
 ## Remounts cost a round trip
 
-\`onInitialize\` re-runs on every remount, and here that re-fetches the project and source records over the network. Keep it idempotent and cheap. The lifecycle itself is the same for both descriptors — see [**Memory**](?path=/story/task-grid-strategies-memory--overview), under *Keeping data across remounts*.
+\`onInitialize\` re-runs on every remount, and here that re-fetches the project and source records over the network. Keep it idempotent and cheap. The lifecycle itself is the same for both descriptors — see [**Memory**](?path=/story/task-grid-descriptors-memory--overview), under *Keeping data across remounts*.
 
-The only hook this descriptor has no parameter for is \`onGetControlId\`; the grid generates a UUID instead. To change what one of the native pieces does, see [**Extend a shipped strategy**](?path=/story/task-grid-custom-strategies-extend-a-shipped-strategy--overview).
+To change what one of the shipped pieces does, see [**Extend a shipped strategy**](?path=/story/task-grid-extending-extend-a-shipped-strategy--overview).
                 `.trim(),
             },
         },

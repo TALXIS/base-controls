@@ -177,7 +177,6 @@ export interface ITaskDataProvider extends IDataProvider {
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
     /** Returns `true` when the grid is displaying a flat list instead of a tree hierarchy. */
     isFlatListEnabled(): boolean;
-    /** Returns `true` when task creation is allowed (from `ITaskDataProviderStrategy.onIsTaskAddingEnabled`). */
     /** Returns the root task id when the tree is scoped to a subtree, or `null` for a full tree. */
     getRootTaskId: () => string | null;
     /** Moves a task to a position relative to another task. Returns the updated raw records, or `null` on cancellation. */
