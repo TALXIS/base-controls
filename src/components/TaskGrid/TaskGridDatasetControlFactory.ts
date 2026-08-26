@@ -79,9 +79,9 @@ export class TaskGridDatasetControlFactory {
         //control, never before it - its constructor is what puts the view's columns, filtering and
         //sorting on the provider, and the task strategy reads them as it loads
         await datasetControl.getDataset().refresh();
-        await services.find('dependenciesModule')?.provider.refresh(
-            taskDataProvider.getAllRecords().map(record => record.getRecordId()),
-        );
+        const loadedTaskIds = taskDataProvider.getAllRecords().map(record => record.getRecordId());
+        await services.find('dependenciesModule')?.provider.refresh(loadedTaskIds);
+        await services.find('checklistModule')?.provider.refresh(loadedTaskIds);
         return datasetControl;
     }
 
@@ -90,13 +90,14 @@ export class TaskGridDatasetControlFactory {
      * nothing, so its key stays absent and `find` reports the feature as off.
      */
     private static _registerModules(services: ITaskGridServiceLocator, modules: ITaskGridModules): void {
-        const { userQueries, templates, customColumns, gridCustomizer, lookupMany, dependencies } = modules;
+        const { userQueries, templates, customColumns, gridCustomizer, lookupMany, dependencies, checklist } = modules;
         userQueries && services.register('userQueriesModule', () => userQueries);
         templates && services.register('templatesModule', () => templates);
         customColumns && services.register('customColumnsModule', () => customColumns);
         gridCustomizer && services.register('gridCustomizerModule', () => gridCustomizer);
         lookupMany && services.register('lookupManyModule', () => lookupMany);
         dependencies && services.register('dependenciesModule', () => dependencies);
+        checklist && services.register('checklistModule', () => checklist);
     }
 
     private static _getIsFlatlistEnabled(parameters: ITaskGridDatasetControlFactoryParameters, savedQueryDataProvider: ISavedQueryDataProvider): boolean {

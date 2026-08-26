@@ -1,7 +1,7 @@
 import { IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
+import { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { MemoryTaskStrategy } from "@components/TaskGrid/strategies/memory/MemoryTaskStrategy";
 
@@ -69,6 +69,19 @@ export interface IMemoryModules {
      * Which column *renders* them is driven by the `TaskDependencies` custom control on the column.
      */
     onGetDependenciesModule?: (params: ITaskGridFactoryParams) => IDependenciesModule | undefined;
+    /**
+     * Task checklists.
+     *
+     * ```ts
+     * onGetChecklistModule: ({ services }) => createChecklistModule({
+     *     strategy: new MemoryChecklistStrategy({ items, services }),
+     *     services,
+     * })
+     * ```
+     *
+     * Registering it is what creates the grid's checklist column.
+     */
+    onGetChecklistModule?: (params: ITaskGridFactoryParams) => IChecklistModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -194,6 +207,7 @@ export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
             gridCustomizer: modules?.onGetGridCustomizerModule?.(params),
             lookupMany: modules?.onGetLookupManyModule?.(params),
             dependencies: modules?.onGetDependenciesModule?.(params),
+            checklist: modules?.onGetChecklistModule?.(params),
         };
     }
 

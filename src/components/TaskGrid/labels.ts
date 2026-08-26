@@ -38,6 +38,8 @@ export interface ITaskGridLabels {
     predecessors: string;
     /** Header of the column showing what waits on a task. */
     successors: string;
+    /** Header of the column showing a task's checklist. */
+    checklist: string;
     addChild: string;
     addCustomColumn: string;
     confirmColumnDelete: string;
@@ -90,6 +92,7 @@ export const TASK_GRID_LABELS: ITaskGridLabels = {
     path: 'Path',
     predecessors: 'Predecessors',
     successors: 'Successors',
+    checklist: 'Checklist',
     confirm: 'Confirm',
     confirmation: 'Confirmation',
     myViews: 'My views',

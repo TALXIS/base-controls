@@ -11,7 +11,7 @@ import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
 import { INativeColumns, ITaskGridDatasetControl, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
-import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/TaskGrid/providers/saved-query";
+import { CHECKLIST_COLUMN_NAME, PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/TaskGrid/providers/saved-query";
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
 import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
 
@@ -198,6 +198,14 @@ export class GridCustomizer implements IGridCustomizer {
                 }
                 case DatasetConstants.CHECKBOX_COLUMN_KEY: {
                     colDef.lockPosition = true;
+                    break;
+                }
+                case CHECKLIST_COLUMN_NAME: {
+                    //get, not find: this column exists because the module does, so one in a view without
+                    //it is a misconfiguration - better said out loud here than rendered as an empty cell
+                    colDef.cellRenderer = this._services.get('checklistModule').components.CellRenderer;
+                    //a task's checklist is not a value on the task, so there is nothing to edit
+                    colDef.editable = false;
                     break;
                 }
                 case PREDECESSORS_COLUMN_NAME:

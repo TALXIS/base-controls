@@ -2,7 +2,7 @@ import { FetchXmlBuilder, ISingleRecord, RecordBuilder } from "@talxis/client-li
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
+import { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { DataverseTaskStrategy } from "@components/TaskGrid/strategies/dataverse/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
 
@@ -151,6 +151,13 @@ export interface IDataverseModules {
      * name. Registering the module is what creates the predecessors and successors columns.
      */
     onGetDependenciesModule?: (params: ITaskGridFactoryParams) => IDependenciesModule | undefined;
+    /**
+     * Task checklists. No Dataverse checklist strategy ships, so the strategy is your own — anything
+     * satisfying `IChecklistStrategy`.
+     *
+     * Registering it is what creates the grid's checklist column.
+     */
+    onGetChecklistModule?: (params: ITaskGridFactoryParams) => IChecklistModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -298,6 +305,7 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             gridCustomizer: modules?.onGetGridCustomizerModule?.(params),
             lookupMany: modules?.onGetLookupManyModule?.(params),
             dependencies: modules?.onGetDependenciesModule?.(params),
+            checklist: modules?.onGetChecklistModule?.(params),
         };
     }
 

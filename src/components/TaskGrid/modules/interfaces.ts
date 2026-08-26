@@ -6,6 +6,8 @@ import { IDeletedUserQueriesResult, ISavedQuery } from "@components/TaskGrid/pro
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import { ITemplateDataProvider } from "@components/TaskGrid/providers/template/TemplateDataProvider";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
+import type { IChecklistProvider } from "@components/TaskGrid/modules/checklist/ChecklistProvider";
+import type { IChecklistCellRendererProps } from "@components/TaskGrid/modules/checklist/cell-renderer/ChecklistCellRenderer";
 import type { IDependenciesProvider } from "@components/TaskGrid/modules/dependencies/DependenciesProvider";
 import type { IDependenciesCellRendererProps } from "@components/TaskGrid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
 import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
@@ -172,6 +174,20 @@ export interface IDependenciesModule {
     components: IDependenciesComponents;
 }
 
+/** Every component the checklist module needs. */
+export interface IChecklistComponents {
+    /** The cell renderer `GridCustomizer` assigns to the grid's checklist column. */
+    CellRenderer: React.ComponentType<IChecklistCellRendererProps>;
+}
+
+/** What the checklist module contributes. Built by {@link createChecklistModule}. */
+export interface IChecklistModule {
+    /** The loaded checklist items, asked per task. */
+    provider: IChecklistProvider;
+    /** The module's UI. */
+    components: IChecklistComponents;
+}
+
 /**
  * The modules a grid runs with, one optional key per available feature. A key is filled by calling that
  * module's `create*Module` builder; omit it and neither the feature nor its UI exists.
@@ -189,4 +205,6 @@ export interface ITaskGridModules {
     lookupMany?: ILookupManyModule;
     /** Task dependencies: what each task waits on, and what waits on it. */
     dependencies?: IDependenciesModule;
+    /** Task checklists: the items on each task, and whether they are done. */
+    checklist?: IChecklistModule;
 }

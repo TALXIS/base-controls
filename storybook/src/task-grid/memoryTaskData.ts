@@ -1,7 +1,7 @@
 import { IColumn, IMemoryProviderEntityMetadata, IRawRecord } from "@talxis/client-libraries";
 import { LexoRank } from "lexorank";
-import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@talxis/base-controls";
-import type { IMemoryEntitySource, IMemoryTaskTemplateNode, IMemoryTemplateSource, ITaskDependency } from "@talxis/base-controls";
+import { CHECKLIST_COLUMN_NAME, PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@talxis/base-controls";
+import type { IChecklistItem, IMemoryEntitySource, IMemoryTaskTemplateNode, IMemoryTemplateSource, ITaskDependency } from "@talxis/base-controls";
 import { personRef, tagRef } from "./memoryLookupManyData";
 
 // ─── Column names ─────────────────────────────────────────────────────────────
@@ -16,6 +16,8 @@ export const PERCENT_COMPLETE_COL = 'percentcomplete';
 /** The grid's own dependency columns. Declared here so the demo's views show them out of the box. */
 export const PREDECESSORS_COL = PREDECESSORS_COLUMN_NAME;
 export const SUCCESSORS_COL = SUCCESSORS_COLUMN_NAME;
+/** The grid's own checklist column. Declared here so the demo's views show it out of the box. */
+export const CHECKLIST_COL = CHECKLIST_COLUMN_NAME;
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -155,6 +157,13 @@ export const COLUMNS: IColumn[] = [
         name: SUCCESSORS_COL,
         dataType: 'SingleLine.Text',
         displayName: 'Successors',
+        isVirtual: true,
+        visualSizeFactor: 200,
+    },
+    {
+        name: CHECKLIST_COL,
+        dataType: 'SingleLine.Text',
+        displayName: 'Checklist',
         isVirtual: true,
         visualSizeFactor: 200,
     },
@@ -1352,6 +1361,22 @@ export const TASK_DEPENDENCIES: ITaskDependency[] = [
 
 // ─── Sources consumed by the memory descriptor ────────────────────────────────
 // The strategy deep-clones these on init, so the fixtures below are never mutated.
+
+// ─── Task checklists ──────────────────────────────────────────────────────────
+
+/**
+ * A checklist on three of Epic 1's children, covering what the cell can show: partly done, nothing done
+ * yet, and one finished outright so the green state is on screen too.
+ */
+export const CHECKLIST_ITEMS: IChecklistItem[] = [
+    { id: 'chk-01', taskId: tid(1, 1), name: 'Book the stakeholder slots', status: 'complete' },
+    { id: 'chk-02', taskId: tid(1, 1), name: 'Write the interview guide', description: 'One page, five questions.', status: 'complete' },
+    { id: 'chk-03', taskId: tid(1, 1), name: 'Summarise the findings', status: 'active' },
+    { id: 'chk-04', taskId: tid(1, 2), name: 'Agree the colour palette', status: 'active' },
+    { id: 'chk-05', taskId: tid(1, 2), name: 'Pick the type scale', status: 'active' },
+    { id: 'chk-06', taskId: tid(1, 4), name: 'Inventory the old pages', status: 'complete' },
+    { id: 'chk-07', taskId: tid(1, 4), name: 'Map the redirects', description: 'Old URL to new, one row each.', status: 'complete' },
+];
 
 export const TASK_SOURCE: IMemoryEntitySource = {
     records: TASKS,

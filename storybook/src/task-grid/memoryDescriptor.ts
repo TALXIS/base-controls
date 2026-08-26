@@ -1,7 +1,7 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
-import { createDependenciesModule, createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryLookupManyDataProviderFactory, MemoryTaskDependencyStrategy, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
-import type { IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery, ITaskDependency } from '@talxis/base-controls';
+import { createChecklistModule, createDependenciesModule, createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryChecklistStrategy, MemoryLookupManyDataProviderFactory, MemoryTaskDependencyStrategy, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
+import type { IChecklistItem, IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery, ITaskDependency } from '@talxis/base-controls';
 
 /**
  * `filtering.filterOperator` has no named enum in the ComponentFramework typings — the grid reads
@@ -24,10 +24,10 @@ const ACTIVE_STATE_CODE = '0';
  * loading state, and the ~1300 lines of sample records stay out of the story's initial chunk.
  */
 /** The feature modules {@link createMemoryTaskGridDescriptor} knows how to register. */
-export type MemoryTaskGridModuleName = 'userQueries' | 'templates' | 'lookupMany' | 'dependencies';
+export type MemoryTaskGridModuleName = 'userQueries' | 'templates' | 'lookupMany' | 'dependencies' | 'checklist';
 
 /** What the docs grid registers when a story does not say otherwise. */
-const DEFAULT_MODULES: MemoryTaskGridModuleName[] = ['userQueries', 'templates', 'lookupMany', 'dependencies'];
+const DEFAULT_MODULES: MemoryTaskGridModuleName[] = ['userQueries', 'templates', 'lookupMany', 'dependencies', 'checklist'];
 
 /**
  * The in-memory data the module builders close over. Handed to a story that registers its own modules,
@@ -42,6 +42,8 @@ export interface IMemoryModuleData {
     lookupSources: { [columnName: string]: IMemoryEntitySource };
     /** The dependencies between the fixture tasks. */
     dependencies: ITaskDependency[];
+    /** The checklist items on the fixture tasks. */
+    checklist: IChecklistItem[];
 }
 
 interface ICreateMemoryTaskGridDescriptorOptions {
@@ -74,6 +76,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     let isSeeded = false;
     let lookupSources: { [columnName: string]: IMemoryEntitySource } = {};
     let dependencies: ITaskDependency[] = [];
+    let checklist: IChecklistItem[] = [];
     let templates: IMemoryTemplateSource;
     let userQueries: ISavedQuery[] = [];
     //the task records live here between mounts: the provider owns them while a grid is up, and hands
@@ -132,6 +135,10 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             strategy: new MemoryTaskDependencyStrategy({ dependencies, services }),
             services,
         }),
+        onGetChecklistModule: ({ services }) => !isEnabled('checklist') ? undefined : createChecklistModule({
+            strategy: new MemoryChecklistStrategy({ items: checklist, services }),
+            services,
+        }),
         onGetLookupManyModule: ({ services }) => !isEnabled('lookupMany') ? undefined : createLookupManyModule({
             createDataProvider: ({ column, services }) => {
                 const source = lookupSources[column.name];
@@ -142,7 +149,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     };
 
     //an example that defines its own modules wins outright; otherwise the built-in set above
-    const buildModules = (): IMemoryModules => options?.onGetModuleOverrides?.({ userQueries, templates, lookupSources, dependencies })
+    const buildModules = (): IMemoryModules => options?.onGetModuleOverrides?.({ userQueries, templates, lookupSources, dependencies, checklist })
         ?? builtInModules;
 
     //task-level options belong to the strategy, so they are passed where it is built
@@ -191,6 +198,8 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                     STACK_RANK_COL,
                     STATE_CODE_COL,
                     SUBJECT_COL,
+                    CHECKLIST_COL,
+                    CHECKLIST_ITEMS,
                     TASK_DEPENDENCIES,
                     TASK_SOURCE,
                     TEMPLATE_SOURCE,
@@ -208,13 +217,15 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 .filter(column => isEnabled('lookupMany') || !column.metadata?.LookupMany)
                 //the same for the dependency columns: without the module they have no renderer to show
                 .filter(column => isEnabled('dependencies')
-                    || (column.name !== PREDECESSORS_COL && column.name !== SUCCESSORS_COL));
+                    || (column.name !== PREDECESSORS_COL && column.name !== SUCCESSORS_COL))
+                //and the checklist column, which has no renderer without its module either
+                .filter(column => isEnabled('checklist') || column.name !== CHECKLIST_COL);
 
             const allTasks: ISavedQuery = {
                 id: '00000000-0000-0000-0000-000000000000',
                 name: 'All Tasks',
                 isFlatListEnabled: false,
-                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL),
+                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL, CHECKLIST_COL),
                 quickFindColumns: [SUBJECT_COL],
             };
 
@@ -222,7 +233,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 id: 'uq-default-01-0000-0000-000000000000',
                 name: 'My Open Tasks',
                 isFlatListEnabled: false,
-                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL),
+                columns: getColumns('subject', 'statuscode', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL, CHECKLIST_COL),
                 filtering: {
                     filterOperator: FILTER_OPERATOR_AND,
                     conditions: [{
@@ -238,7 +249,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
                 id: 'uq-default-02-0000-0000-000000000000',
                 name: 'High Priority',
                 isFlatListEnabled: false,
-                columns: getColumns('subject', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL),
+                columns: getColumns('subject', 'priority', 'scheduledend', 'estimatedeffort', 'percentcomplete', 'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL, CHECKLIST_COL),
                 filtering: {
                     filterOperator: FILTER_OPERATOR_AND,
                     conditions: [{
@@ -253,6 +264,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             userQueries = [myOpenTasks, highPriority];
             templates = structuredClone(TEMPLATE_SOURCE);
             dependencies = structuredClone(TASK_DEPENDENCIES);
+            checklist = structuredClone(CHECKLIST_ITEMS);
             lookupSources = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE };
             //cloned per descriptor: sharing the module-level fixtures would let the grids on different
             //doc pages fight over one dataset. A generated dataset is already private to this call.

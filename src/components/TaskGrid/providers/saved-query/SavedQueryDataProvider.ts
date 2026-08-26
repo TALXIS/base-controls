@@ -39,6 +39,8 @@ export const PATH_COLUMN_NAME = 'path__virtual';
 export const PREDECESSORS_COLUMN_NAME = 'predecessors__virtual';
 /** Name of the virtual column showing what waits on a task. Only exists with the dependencies module. */
 export const SUCCESSORS_COLUMN_NAME = 'successors__virtual';
+/** Name of the virtual column showing a task's checklist. Only exists with the checklist module. */
+export const CHECKLIST_COLUMN_NAME = 'checklist__virtual';
 const REQUIRED_COLUMNS = ['subject', 'parentId', 'stackRank', 'stateCode'];
 
 /**
@@ -165,6 +167,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         }
         this._includePathColumn(systemQueries[0].columns);
         this._includeDependencyColumns(systemQueries[0].columns);
+        this._includeChecklistColumn(systemQueries[0].columns);
         const allQueries = [...systemQueries, ...userQueries];
         this._systemQueries = systemQueries;
 
@@ -233,6 +236,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
                     }
                     break;
                 }
+                case CHECKLIST_COLUMN_NAME:
                 case PREDECESSORS_COLUMN_NAME:
                 case SUCCESSORS_COLUMN_NAME: {
                     //enforced on every declaration of these columns, the grid's own and a consumer's
@@ -273,15 +277,29 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         if (!this._services.find('dependenciesModule')) {
             return columns;
         }
-        this._includeDependencyColumn(columns, PREDECESSORS_COLUMN_NAME, 'predecessors');
-        this._includeDependencyColumn(columns, SUCCESSORS_COLUMN_NAME, 'successors');
+        this._includeVirtualColumn(columns, PREDECESSORS_COLUMN_NAME, 'predecessors');
+        this._includeVirtualColumn(columns, SUCCESSORS_COLUMN_NAME, 'successors');
         return columns;
     }
 
-    private _includeDependencyColumn(columns: IColumn[], name: string, labelKey: keyof ITaskGridLabels) {
+    /**
+     * Adds the checklist column to the grid's column catalogue, so *Edit columns* offers it. Registering
+     * the module is what makes it exist at all; a consumer that declared it in a view of their own keeps it
+     * exactly as they wrote it.
+     */
+    private _includeChecklistColumn(columns: IColumn[]) {
+        if (!this._services.find('checklistModule')) {
+            return columns;
+        }
+        return this._includeVirtualColumn(columns, CHECKLIST_COLUMN_NAME, 'checklist');
+    }
+
+    /**
+     * Adds one module-owned column to the catalogue, hidden: the columns are offered in *Edit columns*, so
+     * a grid never shows one uninvited — and for dependencies, either direction can be taken on its own.
+     */
+    private _includeVirtualColumn(columns: IColumn[], name: string, labelKey: keyof ITaskGridLabels) {
         if (!columns.find(col => col.name === name)) {
-            //hidden: the columns are offered in *Edit columns*, so either direction can be taken on its
-            //own without the other appearing uninvited
             columns.push({
                 name: name,
                 dataType: DataTypes.SingleLineText,

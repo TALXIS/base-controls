@@ -5,7 +5,7 @@ import type { ITaskGridLabels } from "@components/TaskGrid/labels";
 import type { INativeColumns, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
 import type { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import type { ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
-import type { ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
+import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 
 /**
  * Every dependency the grid can hand out, keyed by name and typed by its contract.
@@ -44,6 +44,8 @@ export interface ITaskGridServiceMap {
     lookupManyModule: ILookupManyModule;
     /** The dependencies module, cell renderer included. Present when it is registered. */
     dependenciesModule: IDependenciesModule;
+    /** The checklist module, cell renderer included. Present when it is registered. */
+    checklistModule: IChecklistModule;
 }
 
 /**

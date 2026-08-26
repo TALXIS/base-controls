@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Icon, useTheme } from "@fluentui/react";
+import { Icon, Text, useTheme } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
 import { ICellProps } from "@components/Grid/cells/cell/Cell";
@@ -41,6 +41,6 @@ export const DependenciesCellRenderer = (props: IDependenciesCellRendererProps) 
     return <div className={styles.root}>
         <Icon iconName="Link" className={styles.icon} />
         <Icon iconName={props.direction === 'predecessors' ? 'SortDown' : 'SortUp'} className={styles.arrow} />
-        <span>{dependencies.length}</span>
+        <Text>{dependencies.length}</Text>
     </div>
 }

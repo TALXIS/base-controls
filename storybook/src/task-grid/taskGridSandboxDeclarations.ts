@@ -245,6 +245,8 @@ interface IModuleData {
     lookupSources: Record<string, any>;
     /** The dependencies between the fixture tasks. */
     dependencies: any[];
+    /** The checklist items on the fixture tasks. */
+    checklist: any[];
 }
 
 /** Where every service the grid was built with is reached: the providers, the labels, the PCF context. */
@@ -270,6 +272,7 @@ declare type GetModules = (data: IModuleData) => {
     onGetGridCustomizerModule?: (params: ITaskGridFactoryParams) => any;
     onGetLookupManyModule?: (params: ITaskGridFactoryParams) => any;
     onGetDependenciesModule?: (params: ITaskGridFactoryParams) => any;
+    onGetChecklistModule?: (params: ITaskGridFactoryParams) => any;
 };
 
 /** Personal views. Bring the strategy; the module brings the commands and dialogs. */
@@ -286,6 +289,8 @@ declare const createTemplateModule: (options: { provider: any }) => any;
 declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy; services: ITaskGridServices }) => any;
 /** Task dependencies. Bring the strategy and the services your builder was handed. */
 declare const createDependenciesModule: (options: { strategy: any; services: ITaskGridServices }) => any;
+/** Task checklists. Bring the strategy and the services your builder was handed. */
+declare const createChecklistModule: (options: { strategy: any; services: ITaskGridServices }) => any;
 /** Lookup-many pickers. Return the candidates for each column. */
 declare const createLookupManyModule: (options: {
     createDataProvider: (parameters: { record: ITaskGridRecord; column: ITaskGridColumn; services: ITaskGridServices }) => any;
@@ -303,4 +308,6 @@ declare const MemoryTemplateDataProvider: new (params: { templates: any, service
 declare const MemoryLookupManyDataProviderFactory: { create(params: { source: any, services: ITaskGridServices }): any };
 /** Serves task dependencies from an array you hold. */
 declare const MemoryTaskDependencyStrategy: new (params: { dependencies: any[], services: ITaskGridServices }) => any;
+/** Serves task checklists from an array you hold. */
+declare const MemoryChecklistStrategy: new (params: { items: any[], services: ITaskGridServices }) => any;
 `.trim()
