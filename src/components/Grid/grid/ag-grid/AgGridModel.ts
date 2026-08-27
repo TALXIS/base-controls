@@ -59,6 +59,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _debouncedColumnResized: debounce.DebouncedFunction<(e: ColumnResizedEvent<IRecord>) => void>;
     private _debouncedSetSelectedNodes: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _expandedRowGroupIds: string[] = [];
+    private _chromeHeight: number | undefined;
     private _hasUserExpandedRowGroups: boolean = false;
     private _isLoadingNestedProviders: boolean = false;
     private _idsToAddToExpandGroupState = new Set<string>();
@@ -388,7 +389,14 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                     this._setLoadingOverlay(true);
                 }
                 this._setGridHeight();
+                //the only place the overlay is decided: every way rows come and go ends up here, the
+                //provider loading them as much as a control removing one through a server side
+                //transaction - and the latter the provider never hears about
+                this._setNoRowsOverlay();
             });
+            //`modelUpdated` does not fire for pinned rows, so without this the height would stay stale
+            //when a total row or a floating row appears or goes away
+            gridApi.addEventListener('pinnedRowDataChanged', () => this._setGridHeight());
             gridApi.addEventListener('columnMoved', (e: ColumnMovedEvent<IRecord>) => this._onColumnMoved(e));
             gridApi.addEventListener('firstDataRendered', () => this._handleSelectionFromState());
             gridApi.addEventListener('gridPreDestroyed', () => this._onDestroyed());
@@ -509,7 +517,6 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _onNewDataLoaded() {
         this._refreshServerSideModel();
         this._setCurrentColumns();
-        this._setNoRowsOverlay();
         this._scrollToTop();
     }
 
@@ -522,31 +529,79 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         });
     }
 
-    private _calculateGridHeight(): string {
+    /**
+     * The height the rows themselves need — every row up to {@link IGridModel.getMaxVisibleRows}, beyond
+     * which the grid scrolls instead of growing.
+     *
+     * Counts the displayed rows rather than the rendered ones: rendering is virtualized, so the rendered
+     * count depends on the height being calculated here and would feed back into itself.
+     */
+    private _getRowsHeight(): number {
         const defaultRowHeight = this._grid.getDefaultRowHeight();
-        let offset = 35;
-        if (this._dataset.grouping.getGroupBys().length > 0) {
-            offset += 30;
-        }
-        if (this._grid.getParameters().Height?.raw) {
-            return this._grid.getParameters().Height!.raw!;
-        }
-        else {
-            let totalRowHeight = 0;
-            let numberOfRecords = 0;
-            this.executeWithGridApi(gridApi => {
-                const renderedNodes = gridApi.getRenderedNodes();
-                totalRowHeight = renderedNodes.reduce((acc, node) => acc + (node.rowHeight ?? defaultRowHeight), 0);
-                numberOfRecords = renderedNodes.length;
-            });
-            if (numberOfRecords <= 15) {
-                const headerHeight = this._getContainer().querySelector('.ag-header-row')?.clientHeight ?? 0;
-                return `${totalRowHeight + headerHeight + offset}px`;
+        let rowsHeight = 0;
+        this.executeWithGridApi(gridApi => {
+            const visibleRowCount = Math.min(gridApi.getDisplayedRowCount(), this._grid.getMaxVisibleRows());
+            for (let i = 0; i < visibleRowCount; i++) {
+                //measured per row, since a row with a wrapping cell can be taller than the default
+                rowsHeight += gridApi.getDisplayedRowAtIndex(i)?.rowHeight ?? defaultRowHeight;
             }
-            else {
-                return `${defaultRowHeight * 17 + offset}px`;
+        });
+        //with no rows there would be nowhere to draw the "no records" overlay
+        return Math.max(rowsHeight, defaultRowHeight);
+    }
+
+    /**
+     * Everything the grid takes up that is not the scrollable row area: the header, any pinned rows, the
+     * group drop zone, and the borders of the boxes in between.
+     *
+     * Found by walking from the rows (`.ag-body`) up to the grid root and measuring what sits alongside
+     * the way up, so chrome this method has never heard of is counted too. Every part of the sum is
+     * content-sized, which is what makes it safe to measure a grid whose height this method set: nothing
+     * here depends on that height, so the result cannot feed back into itself.
+     */
+    private _getChromeHeight(): number {
+        const wrapper = this._getContainer()?.querySelector<HTMLElement>('.ag-root-wrapper');
+        const body = wrapper?.querySelector<HTMLElement>('.ag-body');
+        if (!wrapper || !body) {
+            //nothing laid out yet, or the grid is hidden: the last measurement beats guessing
+            return this._chromeHeight ?? 0;
+        }
+        let chromeHeight = 0;
+        let element: HTMLElement = body;
+        while (element !== wrapper) {
+            const parent: HTMLElement = element.parentElement!;
+            for (const sibling of Array.from(parent.children) as HTMLElement[]) {
+                //the overlay, the sticky rows and the invisible scrollbars are out of the flow, so they
+                //are drawn over the grid rather than taking any height of their own
+                if (sibling === element || this._isOutOfFlow(sibling)) {
+                    continue;
+                }
+                chromeHeight += sibling.offsetHeight;
+            }
+            chromeHeight += element.offsetHeight - element.clientHeight;
+            element = parent;
+        }
+        this._chromeHeight = chromeHeight + wrapper.offsetHeight - wrapper.clientHeight;
+        return this._chromeHeight;
+    }
+
+    private _isOutOfFlow(element: HTMLElement): boolean {
+        switch (getComputedStyle(element).position) {
+            case 'absolute':
+            case 'fixed': {
+                return true;
             }
         }
+        return false;
+    }
+
+    private _calculateGridHeight(): string {
+        const height = this._grid.getParameters().Height?.raw;
+        //an explicit height always wins
+        if (height) {
+            return height;
+        }
+        return `${this._getRowsHeight() + this._getChromeHeight()}px`;
     }
     private _setGridHeight() {
         setTimeout(() => {
@@ -726,7 +781,10 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             }
             this.executeWithGridApi(gridApi => {
                 gridApi.hideOverlay();
-                if (this._grid.getDataset().getDataProvider().getRecords().length === 0) {
+                //asked of the grid rather than the provider, so rows added or removed through a server
+                //side transaction count too. Pinned rows are not displayed rows, so a control's own
+                //floating row does not pass for a record here
+                if (gridApi.getDisplayedRowCount() === 0) {
                     gridApi.showNoRowsOverlay();
                 }
             });

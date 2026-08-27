@@ -21,7 +21,6 @@ export const ScratchCheckList = () => {
             <CheckList
                 provider={provider}
                 fieldMapping={FIELD_MAPPING}
-                height="600px"
             />
         </PcfContextProvider>
     )

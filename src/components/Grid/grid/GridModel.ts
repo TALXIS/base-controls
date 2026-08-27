@@ -12,6 +12,7 @@ import { Type as FilterType } from "@talxis/client-libraries";
 import hotkeys from 'hotkeys-js';
 
 const DEFAULT_ROW_HEIGHT = 42;
+const DEFAULT_MAX_VISIBLE_ROWS = 15;
 
 interface IGridDependencies {
     labels: Required<ITranslation<typeof gridTranslations>>;
@@ -119,6 +120,14 @@ export class GridModel {
             return height;
         }
         return DEFAULT_ROW_HEIGHT;
+    }
+
+    public getMaxVisibleRows(): number {
+        const maxVisibleRows = this.getParameters().MaxVisibleRows?.raw;
+        if (maxVisibleRows) {
+            return maxVisibleRows;
+        }
+        return DEFAULT_MAX_VISIBLE_ROWS;
     }
 
     public getSelectionType(): 'none' | 'single' | 'multiple' {

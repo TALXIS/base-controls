@@ -5,7 +5,9 @@ export const getGridStyles = (theme: ITheme) => {
     return mergeStyleSets({
         gridRoot: {
             height: '100%',
-            minHeight: 180,
+            //the "no records" overlay is centred over the whole grid, pinned rows included, so the grid
+            //needs to stay tall enough that the overlay clears them instead of being drawn over the top
+            minHeight: 220,
             display: 'flex',
             flexDirection: 'column',
             '--ag-borders': 'none !important',

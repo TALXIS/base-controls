@@ -22,6 +22,11 @@ export interface ICheckListProps {
      * render it into. Left unset, the control is only as tall as the grid's own minimum.
      */
     height?: string;
+    /**
+     * How many items the checklist grows to fit before it starts scrolling instead. Ignored when
+     * `height` is set — an explicit height always wins. Defaults to the grid's own 15.
+     */
+    maxVisibleRows?: number;
     /** Stable id for the control. Defaults to a generated one. */
     controlId?: string;
     /** AG Grid enterprise license key, when the host has one. */
@@ -61,6 +66,9 @@ export const CheckList = (props: ICheckListProps) => {
                 Grid: dataset,
                 Height: {
                     raw: propsRef.current.height ?? null
+                },
+                MaxVisibleRows: {
+                    raw: propsRef.current.maxVisibleRows ?? null
                 },
                 EnableEditing: {
                     raw: true
