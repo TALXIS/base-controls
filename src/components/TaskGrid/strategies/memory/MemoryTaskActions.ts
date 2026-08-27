@@ -16,7 +16,7 @@ import {
 } from "@components/TaskGrid/providers";
 import { IRecordStructure } from "@components/TaskGrid/providers/task/record-tree";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
-import { StackRank } from "@components/TaskGrid/stack-rank";
+import { StackRank } from "@utils/stack-rank";
 
 /** What every action that resolves a task by id needs. */
 interface IMemoryTaskLookup {

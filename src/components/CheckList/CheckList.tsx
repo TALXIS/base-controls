@@ -66,6 +66,9 @@ export const CheckList = (props: ICheckListProps) => {
                 EnableSorting: {
                     raw: false
                 },
+                SelectableRows: {
+                    raw: 'none'
+                },
                 EnableFiltering: {
                     raw: false
                 },
@@ -92,5 +95,5 @@ export const CheckList = (props: ICheckListProps) => {
 
     return <DatasetControlRenderer
         onGetDatasetControlInstance={() => datasetControl}
-        onGetControlComponent={Grid} />
+        onGetControlComponent={(props) => <Grid {...props} datasetControl={datasetControl} />} />
 }

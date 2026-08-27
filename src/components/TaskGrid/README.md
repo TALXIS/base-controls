@@ -83,7 +83,6 @@ At runtime, read a module off the service locator: `services.find('templatesModu
 | `descriptors/` | The shipped descriptors: `memory/MemoryTaskGridDescriptor`, `dataverse/DataverseTaskGridDescriptor`. |
 | `strategies/` | The shipped task strategies: `memory/MemoryTaskStrategy`, `dataverse/DataverseTaskStrategy` and their actions. |
 | `labels.ts` | `ITaskGridLabels`, `TASK_GRID_LABELS` — every localizable string. |
-| `stack-rank/` | `StackRank` — the lexicographic ordering both shipped strategies use. |
 
 Both descriptors are exported from the package root:
 

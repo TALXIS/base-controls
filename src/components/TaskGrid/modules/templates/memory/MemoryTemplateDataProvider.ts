@@ -1,6 +1,6 @@
 import { IRawRecord, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { ICreateTasksFromTemplateParams, ITaskDataProvider, ITemplateDataProviderParams, TemplateDataProviderBase } from "@components/TaskGrid/providers";
-import { StackRank } from "@components/TaskGrid/stack-rank";
+import { StackRank } from "@utils/stack-rank";
 import { IMemoryTaskTemplateNode, IMemoryTemplateSource } from "./interfaces";
 
 /** Constructor parameters for {@link MemoryTemplateDataProvider}. */
