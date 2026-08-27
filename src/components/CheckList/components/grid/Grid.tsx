@@ -23,7 +23,8 @@ export interface ICheckListGridProps extends IGrid {
 export const Grid = (props: ICheckListGridProps) => {
     const { datasetControl, ...gridProps } = props;
     const customizerRef = React.useRef<CheckListGridCustomizer>();
-    const styles = React.useMemo(() => getCheckListGridStyles(), []);
+    const theme = useTheme();
+    const styles = React.useMemo(() => getCheckListGridStyles(theme), [theme]);
 
     return <GridBase {...gridProps}
         onOverrideComponentProps={(props) => {

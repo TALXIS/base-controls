@@ -3,6 +3,7 @@ import { CellEditingStoppedEvent, CellFocusedEvent, CellValueChangedEvent } from
 import { DataTypes, DatasetConstants, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
 import { DeleteCell } from "../delete-cell";
+import { REORDERING_CLASS_NAME } from "../styles";
 import { ICheckListDatasetControl } from "../../../CheckListDatasetControl";
 
 /** AG Grid's `ColDef`, bound to the grid's record type. */
@@ -76,14 +77,10 @@ export class CheckListGridCustomizer {
     }
 
     /**
-     * Intercepts `setGridOption` for the two keys the checklist owns.
+     * Intercepts `setGridOption` for the keys the checklist owns.
      *
      * `columnDefs` so the column configuration survives every data load: the grid pushes it from its own
      * init *and* from every new page, so computing it once here would be overwritten by the next refresh.
-     *
-     * `animateRows` because the base grid model hard-codes it to `false` for every grid in the repo, from
-     * an `init()` that runs *after* this constructor. Setting it here directly would be overwritten a
-     * moment later; intercepting is what holds, and it confines the change to this grid.
      */
     private _patchGridApi() {
         this._setGridOption = this._gridApi.setGridOption.bind(this._gridApi);
@@ -91,11 +88,6 @@ export class CheckListGridCustomizer {
             switch (key) {
                 case 'columnDefs': {
                     this._setGridOption(key, this._getColumnDefinitions(value));
-                    break;
-                }
-                case 'animateRows': {
-                    //what makes a reordered row slide to its new place instead of jumping
-                    this._setGridOption(key, true);
                     break;
                 }
                 case 'pinnedBottomRowData': {
@@ -224,6 +216,15 @@ export class CheckListGridCustomizer {
         this._gridApi.setGridOption('rowDragEntireRow', enabled);
     }
 
+    /**
+     * Marks the grid as mid-reorder. The row transition hangs off this class rather than being always on:
+     * the grid rewrites row transforms as it recycles rows while scrolling, and a permanent transition
+     * makes every one of those animate — which reads as the whole list moving in slow motion.
+     */
+    private _setReordering(reordering: boolean) {
+        this._gridRoot?.classList.toggle(REORDERING_CLASS_NAME, reordering);
+    }
+
     private _onRowDragEnter(event: RowDragEvent<IRecord>) {
         //the new-record row is not one of the items: it has no rank and reorders nothing. AG Grid offers
         //no per-row veto once `rowDragEntireRow` is on - it gives every row a dragger, pinned included -
@@ -237,6 +238,7 @@ export class CheckListGridCustomizer {
         this._rowHeight = event.node.rowHeight ?? DEFAULT_ROW_HEIGHT;
         //the only handle on the grid's DOM: the node carries no element, and the api exposes none
         this._gridRoot = (event.event?.target as HTMLElement | null)?.closest('.ag-root') ?? null;
+        this._setReordering(true);
     }
 
     /**
@@ -270,6 +272,9 @@ export class CheckListGridCustomizer {
         const [previousRecord, nextRecord] = this._getNeighboursAt(targetIndex, startIndex);
         const stackRankColumn = this._datasetControl.getFieldMapping().stackRank;
 
+        //the drag is over: the transition comes off before the store moves the row, so the grid's own
+        //repositioning is not animated
+        this._setReordering(false);
         //the store still holds the old order, so it is moved now that the drop is final. Its own
         //repositioning of every row is what clears the preview offsets
         this._gridApi.applyServerSideTransaction({ remove: [record] });
@@ -314,12 +319,36 @@ export class CheckListGridCustomizer {
             return;
         }
         this._currentIndex = targetIndex;
-        for (let index = 0; index < this._gridApi.getDisplayedRowCount(); index++) {
-            const offset = this._getPreviewSlot(index, startIndex, targetIndex) * this._rowHeight;
-            for (const element of this._getRowElements(index)) {
+        //only the rendered rows: the grid virtualises, so most of a long list has no element to move.
+        //One query for the whole reflow rather than one per row - this runs on every row crossed
+        const elementsByRecordId = this._getRenderedRowElements();
+        for (const node of this._gridApi.getRenderedNodes()) {
+            const recordId = node.data?.getRecordId();
+            if (node.rowIndex === null || node.rowPinned || !recordId) {
+                continue;
+            }
+            const offset = this._getPreviewSlot(node.rowIndex, startIndex, targetIndex) * this._rowHeight;
+            for (const element of elementsByRecordId.get(recordId) ?? []) {
                 element.style.transform = `translateY(${offset}px)`;
             }
         }
+    }
+
+    /**
+     * Every rendered row's elements, keyed by record id. A row is drawn once per column container — the
+     * pinned ones carry the checkbox and the delete button — so all of them have to move together.
+     */
+    private _getRenderedRowElements(): Map<string, HTMLElement[]> {
+        const elementsByRecordId = new Map<string, HTMLElement[]>();
+        if (!this._gridRoot) {
+            return elementsByRecordId;
+        }
+        for (const element of this._gridRoot.querySelectorAll<HTMLElement>('.ag-row[row-id]')) {
+            const recordId = element.getAttribute('row-id')!;
+            const elements = elementsByRecordId.get(recordId);
+            elements ? elements.push(element) : elementsByRecordId.set(recordId, [element]);
+        }
+        return elementsByRecordId;
     }
 
     /** Where a row sits while the preview is showing: the dragged row leads, the rows it passed shift. */
@@ -338,19 +367,22 @@ export class CheckListGridCustomizer {
 
     /** Drops the preview and puts every row back on its real slot. */
     private _clearPreview() {
-        for (let index = 0; index < this._gridApi.getDisplayedRowCount(); index++) {
-            for (const element of this._getRowElements(index)) {
-                element.style.transform = `translateY(${index * this._rowHeight}px)`;
+        this._setReordering(false);
+        const elementsByRecordId = this._getRenderedRowElements();
+        for (const node of this._gridApi.getRenderedNodes()) {
+            const recordId = node.data?.getRecordId();
+            if (node.rowIndex === null || node.rowPinned || !recordId) {
+                continue;
+            }
+            for (const element of elementsByRecordId.get(recordId) ?? []) {
+                element.style.transform = `translateY(${node.rowIndex * this._rowHeight}px)`;
             }
         }
         this._dragStartIndex = null;
         this._currentIndex = null;
     }
 
-    /**
-     * Every element the row is drawn as. A row is rendered once per column container — the pinned left
-     * one carries the checkbox — so offsetting only the centre one leaves the tick behind.
-     */
+
     /**
      * A permanently visible row pinned below the list. Naming an item in it creates that item at the end
      * of the list and readies the row for the next one.
@@ -499,11 +531,4 @@ export class CheckListGridCustomizer {
         });
     }
 
-    private _getRowElements(index: number): HTMLElement[] {
-        const recordId = this._gridApi.getDisplayedRowAtIndex(index)?.data?.getRecordId();
-        if (!recordId || !this._gridRoot) {
-            return [];
-        }
-        return [...this._gridRoot.querySelectorAll<HTMLElement>(`.ag-row[row-id="${recordId}"]`)];
-    }
 }
