@@ -15,4 +15,5 @@ export * from './TextField';
 export * from './TwoOptions';
 export * from './Duration';
 export * from './GridInlineRibbon';
+export * from './CheckList';
 export * from './TaskGrid';
