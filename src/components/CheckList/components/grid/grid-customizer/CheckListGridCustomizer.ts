@@ -1,6 +1,6 @@
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, RowDragEvent } from "@ag-grid-community/core";
 import { CellEditingStoppedEvent, CellFocusedEvent, CellValueChangedEvent } from "@ag-grid-community/core";
-import { DatasetConstants, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
+import { DataTypes, DatasetConstants, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
 import { ICheckListDatasetControl } from "../../../CheckListDatasetControl";
 
@@ -11,6 +11,9 @@ type GridApi = GridApiBase<IRecord>;
 
 /** Only used if a node cannot report its own height, which it always can in practice. */
 const DEFAULT_ROW_HEIGHT = 42;
+
+/** What the new-record row shows instead of the empty-value dashes. */
+const NEW_ITEM_PLACEHOLDER = 'Add an item';
 
 /** What {@link CheckListGridCustomizer} is built from. */
 export interface ICheckListGridCustomizerParameters {
@@ -303,6 +306,19 @@ export class CheckListGridCustomizer {
         //newRecord, not getRecords: a provider that has not refreshed yet holds no raw records, so
         //getRecords would answer with an empty array and the pinned row would carry undefined
         this._draft = this._draftProvider.newRecord();
+        //the row exists only to be typed into, so its editor says so rather than showing empty-value
+        //dashes. Set per draft rather than once: the expression lives on the record's own field, and
+        //every reset builds a new record
+        this._draft.expressions.ui.setControlParametersExpression(
+            this._datasetControl.getFieldMapping().name,
+            (parameters) => ({
+                ...parameters,
+                Placeholder: {
+                    raw: NEW_ITEM_PLACEHOLDER,
+                    type: DataTypes.SingleLineText
+                }
+            })
+        );
         this._applyPinnedBottomRow();
     }
 
