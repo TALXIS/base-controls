@@ -2,6 +2,7 @@ import * as React from "react";
 import { GridReadyEvent } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { Grid as GridBase, IGrid } from "@components/Grid";
+import { useTheme } from "@fluentui/react";
 import { getClassNames } from "@utils";
 import { ICheckListDatasetControl } from "../../CheckListDatasetControl";
 import { CheckListGridCustomizer } from "./grid-customizer";

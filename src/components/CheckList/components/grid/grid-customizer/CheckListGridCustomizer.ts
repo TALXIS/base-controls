@@ -1,5 +1,6 @@
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, RowDragEvent } from "@ag-grid-community/core";
-import { DatasetConstants, IDataProvider, IRecord } from "@talxis/client-libraries";
+import { CellEditingStoppedEvent, CellFocusedEvent, CellValueChangedEvent } from "@ag-grid-community/core";
+import { DatasetConstants, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
 import { ICheckListDatasetControl } from "../../../CheckListDatasetControl";
 
@@ -43,12 +44,26 @@ export class CheckListGridCustomizer {
      * question after the first move.
      */
     private _currentIndex: number | null = null;
+    /**
+     * The record behind the pinned new-record row, and the throwaway provider that owns it. Own provider
+     * on purpose: the grid saves every cell edit as it is made, and a draft owned by the real provider
+     * would push a half-typed item at the consumer's backend on the first keystroke. A memory provider's
+     * save is a no-op, so nothing leaves the grid until the row is committed here.
+     */
+    private _draftProvider: MemoryDataProvider | null = null;
+    private _draft: IRecord | null = null;
+    /** The unpatched setter, for writes that must not run back through the patch. */
+    private _setGridOption!: GridApi['setGridOption'];
+    /** Mirrors the `rowDragEntireRow` option, so it is only written when it actually changes. */
+    private _isRowDragEnabled: boolean = false;
+
 
     constructor(parameters: ICheckListGridCustomizerParameters) {
         this._gridApi = parameters.gridApi;
         this._datasetControl = parameters.datasetControl;
         this._patchGridApi();
         this._enableRowDragging();
+        this._enableNewRecordRow();
     }
 
     private get _dataProvider(): IDataProvider {
@@ -66,20 +81,27 @@ export class CheckListGridCustomizer {
      * moment later; intercepting is what holds, and it confines the change to this grid.
      */
     private _patchGridApi() {
-        const originalSetGridOption = this._gridApi.setGridOption.bind(this._gridApi);
+        this._setGridOption = this._gridApi.setGridOption.bind(this._gridApi);
         this._gridApi.setGridOption = (key: any, value: any): void => {
             switch (key) {
                 case 'columnDefs': {
-                    originalSetGridOption(key, this._getColumnDefinitions(value));
+                    this._setGridOption(key, this._getColumnDefinitions(value));
                     break;
                 }
                 case 'animateRows': {
                     //what makes a reordered row slide to its new place instead of jumping
-                    originalSetGridOption(key, true);
+                    this._setGridOption(key, true);
+                    break;
+                }
+                case 'pinnedBottomRowData': {
+                    //the checklist owns this row. The base grid pushes its total row here on first data
+                    //load, which would drop the new-record row - and a total row is never configured for
+                    //a checklist, so whatever it wanted is discarded rather than merged
+                    this._applyPinnedBottomRow();
                     break;
                 }
                 default: {
-                    originalSetGridOption(key, value);
+                    this._setGridOption(key, value);
                 }
             }
         }
@@ -110,17 +132,33 @@ export class CheckListGridCustomizer {
      * and the reorder is previewed by offsetting the rows.
      */
     private _enableRowDragging() {
-        this._gridApi.setGridOption('rowDragEntireRow', true);
+        this._setRowDragEnabled(true);
         this._gridApi.setGridOption('onRowDragEnter', (event: RowDragEvent<IRecord>) => this._onRowDragEnter(event));
         this._gridApi.setGridOption('onRowDragMove', (event: RowDragEvent<IRecord>) => this._onRowDragMove(event));
         this._gridApi.setGridOption('onRowDragLeave', () => this._previewOrder(this._dragStartIndex));
         this._gridApi.setGridOption('onRowDragEnd', (event: RowDragEvent<IRecord>) => this._onRowDragEnd(event));
-        //a drag that starts inside an open cell editor would fight the editor for the mouse
-        this._gridApi.setGridOption('onCellEditingStarted', () => this._gridApi.setGridOption('rowDragEntireRow', false));
-        this._gridApi.setGridOption('onCellEditingStopped', () => this._gridApi.setGridOption('rowDragEntireRow', true));
+        //a drag that starts inside an open cell editor would fight the editor for the mouse. The matching
+        //re-enable lives in _onCellEditingStopped, which the new-record row shares - one grid option, one
+        //handler, or whichever was registered second would silently drop the other
+        this._gridApi.setGridOption('onCellEditingStarted', () => this._setRowDragEnabled(false));
+    }
+
+    /** The one writer of `rowDragEntireRow`; toggling it rebuilds every row's dragger, so only on change. */
+    private _setRowDragEnabled(enabled: boolean) {
+        if (this._isRowDragEnabled === enabled) {
+            return;
+        }
+        this._isRowDragEnabled = enabled;
+        this._gridApi.setGridOption('rowDragEntireRow', enabled);
     }
 
     private _onRowDragEnter(event: RowDragEvent<IRecord>) {
+        //the new-record row is not one of the items: it has no rank and reorders nothing. AG Grid offers
+        //no per-row veto once `rowDragEntireRow` is on - it gives every row a dragger, pinned included -
+        //so the drag is made inert here instead
+        if (event.node.rowPinned) {
+            return;
+        }
         this._draggedNode = event.node;
         this._dragStartIndex = event.node.rowIndex;
         this._currentIndex = event.node.rowIndex;
@@ -241,6 +279,144 @@ export class CheckListGridCustomizer {
      * Every element the row is drawn as. A row is rendered once per column container — the pinned left
      * one carries the checkbox — so offsetting only the centre one leaves the tick behind.
      */
+    /**
+     * A permanently visible row pinned below the list. Naming an item in it creates that item at the end
+     * of the list and readies the row for the next one.
+     */
+    private _enableNewRecordRow() {
+        this._resetDraft();
+        //also carries the drag re-enable - see _onCellEditingStopped
+        this._gridApi.setGridOption('onCellEditingStopped', (event: CellEditingStoppedEvent<IRecord>) => this._onCellEditingStopped(event));
+        this._gridApi.setGridOption('onCellFocused', (event: CellFocusedEvent<IRecord>) => this._onCellFocused(event));
+        this._gridApi.setGridOption('onCellValueChanged', (event: CellValueChangedEvent<IRecord>) => this._onCellValueChanged(event));
+    }
+
+    /** Builds a blank draft and hands it to the grid as the pinned row. */
+    private _resetDraft() {
+        const provider = this._dataProvider;
+        this._draftProvider = new MemoryDataProvider({
+            dataSource: [],
+            metadata: provider.getMetadata() as any,
+        });
+        //the real columns, so the draft's cells render and edit exactly like the list's own
+        this._draftProvider.setColumns(provider.getColumns());
+        //newRecord, not getRecords: a provider that has not refreshed yet holds no raw records, so
+        //getRecords would answer with an empty array and the pinned row would carry undefined
+        this._draft = this._draftProvider.newRecord();
+        this._applyPinnedBottomRow();
+    }
+
+    /** Writes the new-record row as the grid's only pinned bottom row. */
+    private _applyPinnedBottomRow() {
+        this._setGridOption('pinnedBottomRowData', this._draft ? [this._draft] : []);
+    }
+
+    /**
+     * The grid re-renders an edited cell by looking its row up in the row model, and a pinned row is not
+     * in it — its node id is `b-0`, not a record id. Without this the draft's cells keep showing the
+     * value they held before the edit.
+     */
+    private _onCellValueChanged(event: CellValueChangedEvent<IRecord>) {
+        if (event.rowPinned !== 'bottom') {
+            return;
+        }
+        const node = this._gridApi.getPinnedBottomRow(0);
+        if (node) {
+            this._gridApi.refreshCells({ rowNodes: [node], force: true });
+        }
+    }
+
+    /**
+     * The new-record row exists only to be typed into, so focusing one of its cells opens the editor
+     * there and then — no double click, and the row always shows editors rather than read-only values.
+     *
+     * Done here rather than with the column's own `oneClickEdit`, which is read off the column object
+     * every row shares and would turn the whole list into live inputs.
+     */
+    private _onCellFocused(event: CellFocusedEvent<IRecord>) {
+        if (event.rowPinned !== 'bottom' || event.rowIndex === null || event.rowIndex === undefined) {
+            return;
+        }
+        const colKey = typeof event.column === 'string' ? event.column : event.column?.getColId();
+        if (!colKey) {
+            return;
+        }
+        //startEditingCell focuses the cell in turn, so without this the two would call each other for ever
+        const isEditing = this._gridApi.getEditingCells().some(cell =>
+            cell.rowPinned === 'bottom' && cell.column.getColId() === colKey);
+        if (isEditing) {
+            return;
+        }
+        this._gridApi.startEditingCell({
+            rowIndex: event.rowIndex,
+            rowPinned: 'bottom',
+            colKey: colKey
+        });
+    }
+
+    /**
+     * Shared by both features: dragging is suspended while an editor is open and resumes here, and on the
+     * pinned row naming the item is what commits it. The other mapped fields stay optional.
+     */
+    private _onCellEditingStopped(event: CellEditingStoppedEvent<IRecord>) {
+        this._setRowDragEnabled(true);
+        if (event.rowPinned !== 'bottom') {
+            return;
+        }
+        const nameColumn = this._datasetControl.getFieldMapping().name;
+        const name = this._draft?.getValue(nameColumn);
+        if (name === null || name === undefined || name === '') {
+            return;
+        }
+        this._commitDraft();
+    }
+
+    /** Turns the draft into a real record at the end of the list, then starts a fresh draft. */
+    private async _commitDraft() {
+        const draft = this._draft;
+        if (!draft) {
+            return;
+        }
+        const provider = this._dataProvider;
+        const stackRankColumn = this._datasetControl.getFieldMapping().stackRank;
+        const rowCount = this._gridApi.getDisplayedRowCount();
+        const lastRecord = rowCount > 0 ? this._gridApi.getDisplayedRowAtIndex(rowCount - 1)?.data : undefined;
+
+        const rawData = draft.toRawData();
+        //appended: a rank after the last item, which `between` resolves with no next neighbour
+        rawData[stackRankColumn] = StackRank.between(lastRecord?.getValue(stackRankColumn), undefined);
+
+        //no recordId, so the provider assigns one and treats it as new
+        const record = provider.newRecord({ rawData: rawData });
+        //a fresh draft immediately, so the row is ready to type in while the save is still in flight
+        this._resetDraft();
+
+        const result = this._gridApi.applyServerSideTransaction({ add: [record], addIndex: rowCount });
+        //after the transaction, so the node exists to flash
+        if (result?.add?.length) {
+            this._gridApi.flashCells({ rowNodes: result.add });
+        }
+
+        //both deferred, and for the same reason: the transaction has been applied but the grid has not
+        //yet recomputed row bounds or rebuilt the pinned row, so neither the new row can be scrolled to
+        //nor the draft's cell edited until it has. The task grid defers its own post-create focus too
+        setTimeout(() => {
+            //the item is appended, so on a list taller than the viewport it lands below the fold
+            this._gridApi.ensureIndexVisible(rowCount, 'bottom');
+            this._startEditingDraft();
+        }, 0);
+        await record.save();
+    }
+
+    /** Puts the caret back in the draft's name cell so several items can be added without the mouse. */
+    private _startEditingDraft() {
+        this._gridApi.startEditingCell({
+            rowIndex: 0,
+            rowPinned: 'bottom',
+            colKey: this._datasetControl.getFieldMapping().name
+        });
+    }
+
     private _getRowElements(index: number): HTMLElement[] {
         const recordId = this._gridApi.getDisplayedRowAtIndex(index)?.data?.getRecordId();
         if (!recordId || !this._gridRoot) {
