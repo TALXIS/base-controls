@@ -283,6 +283,9 @@ export class CheckListGridCustomizer {
         const startIndex = this._dragStartIndex;
         const targetIndex = this._currentIndex;
         const record = draggedNode?.data;
+        //read before the move: the focused cell is tracked by row index, and the transactions below
+        //change which row sits at that index
+        const focusedColumn = this._gridApi.getFocusedCell()?.column;
         this._draggedNode = null;
 
         if (!record || targetIndex === null || startIndex === null || event.overIndex < 0) {
@@ -306,6 +309,15 @@ export class CheckListGridCustomizer {
         this._gridApi.applyServerSideTransaction({ add: [record], addIndex: targetIndex });
         this._dragStartIndex = null;
         this._currentIndex = null;
+
+        //the focus follows the row rather than the position. The grid holds it as an index, so after the
+        //move it would still point at the slot the row came from - which now holds a different item, and
+        //reads as the highlight jumping back to where the drag started
+        if (focusedColumn) {
+            //deferred for the same reason the post-create focus is: the row has to exist at its new
+            //index before it can be focused there
+            setTimeout(() => this._gridApi.setFocusedCell(targetIndex, focusedColumn), 0);
+        }
 
         record.setValue(stackRankColumn, StackRank.between(
             previousRecord?.getValue(stackRankColumn),
