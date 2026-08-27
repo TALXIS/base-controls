@@ -2,9 +2,8 @@ import * as React from "react";
 import { Dataset, IDataProvider } from "@talxis/client-libraries";
 import { DatasetControl as DatasetControlRenderer } from "@components/DatasetControl";
 import { Grid } from "./components/grid";
-import { getClassNames, usePcfContext } from "@utils";
+import { usePcfContext } from "@utils";
 import { CheckListDatasetControl, ICheckListDatasetControl, ICheckListFieldMapping } from "./CheckListDatasetControl";
-import { getCheckListStyles } from "./styles";
 
 /** Props for {@link CheckList}. */
 export interface ICheckListProps {
@@ -38,7 +37,6 @@ export interface ICheckListProps {
  * Reads the PCF context off `PcfContextProvider`, so render it inside one.
  */
 export const CheckList = (props: ICheckListProps) => {
-    const styles = React.useMemo(() => getCheckListStyles(props.height), [props.height]);
     const pcfContext = usePcfContext();
     const pcfContextRef = React.useRef(pcfContext);
     pcfContextRef.current = pcfContext;
@@ -94,19 +92,5 @@ export const CheckList = (props: ICheckListProps) => {
 
     return <DatasetControlRenderer
         onGetDatasetControlInstance={() => datasetControl}
-        onGetControlComponent={Grid}
-        onOverrideComponentProps={(props) => {
-            return {
-                ...props,
-                onRender: (props, defaultRender) => {
-                    return defaultRender({
-                        ...props,
-                        container: {
-                            ...props.container,
-                            className: getClassNames([props.container.className, styles.checkListRoot])
-                        }
-                    })
-                }
-            }
-        }} />
+        onGetControlComponent={Grid} />
 }
