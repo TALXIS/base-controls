@@ -1,16 +1,17 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-
-/**
- * Put on the grid root only while a row is being dragged. The row transition hangs off this rather than
- * being always on: the grid rewrites row transforms as it recycles rows while scrolling a long list, and
- * a permanent transition animates every one of those — which reads as the whole list moving in slow
- * motion. The customizer toggles it, and the selector below is the only thing that reads it.
- */
-export const REORDERING_CLASS_NAME = 'talxis_check-list--reordering';
+import { COMPLETION_COLUMN_NAME, REORDERING_CLASS_NAME } from "./constants";
 
 export const getCheckListGridStyles = (theme: ITheme) => {
     return mergeStyleSets({
         checkListGridRoot: {
+            //the grid draws a divider after the last left-pinned cell, exempting only its own control
+            //column by name. The completion column is a control column too, so it takes the same
+            //exemption rather than growing a border the grid's own checkbox never had.
+            //`.ag-cell` is in the selector to outrank that rule: both carry !important and would
+            //otherwise tie on specificity, which the later-registered stylesheet wins
+            [`.ag-pinned-left-cols-container .ag-cell.ag-cell-last-left-pinned[col-id="${COMPLETION_COLUMN_NAME}"]`]: {
+                borderRight: 'none !important'
+            },
             //short on purpose: two rows can be crossed in quick succession during a drag, and a longer
             //transition would still be running when the next reflow starts
             [`.${REORDERING_CLASS_NAME} .ag-row`]: {

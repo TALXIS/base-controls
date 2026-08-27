@@ -2,8 +2,9 @@ import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, RowDragEvent } 
 import { CellEditingStoppedEvent, CellFocusedEvent, CellValueChangedEvent } from "@ag-grid-community/core";
 import { DataTypes, DatasetConstants, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
+import { CompletionCell } from "../completion-cell";
 import { DeleteCell } from "../delete-cell";
-import { REORDERING_CLASS_NAME } from "../styles";
+import { COMPLETION_COLUMN_NAME, CONTROL_COLUMN_WIDTH, DELETE_COLUMN_NAME, REORDERING_CLASS_NAME } from "../constants";
 import { ICheckListDatasetControl } from "../../../CheckListDatasetControl";
 
 /** AG Grid's `ColDef`, bound to the grid's record type. */
@@ -13,10 +14,6 @@ type GridApi = GridApiBase<IRecord>;
 
 /** Only used if a node cannot report its own height, which it always can in practice. */
 const DEFAULT_ROW_HEIGHT = 42;
-
-/** The synthetic trailing column holding each item's delete button. */
-const DELETE_COLUMN_NAME = 'delete';
-const DELETE_COLUMN_WIDTH = 40;
 
 /** What {@link CheckListGridCustomizer} is built from. */
 export interface ICheckListGridCustomizerParameters {
@@ -110,8 +107,42 @@ export class CheckListGridCustomizer {
         //A checklist selects nothing, so the column only ever showed the per-row save status - dropped
         //rather than left as an empty gutter
         const definitions = columnDefs.filter(colDef => (colDef.colId ?? colDef.field) !== DatasetConstants.CHECKBOX_COLUMN_KEY);
+        this._injectCompletionColumn(definitions);
         this._injectDeleteColumn(definitions);
         return definitions;
+    }
+
+    /**
+     * Prepends the completion column. Guarded because this runs on every push of `columnDefs`, not once.
+     *
+     * `unshift` rather than `push`: order inside the pinned-left container follows the array, and `pinned`
+     * alone puts a column in that container without making it first.
+     */
+    private _injectCompletionColumn(columnDefs: ColDef[]) {
+        if (columnDefs.find(colDef => colDef.colId === COMPLETION_COLUMN_NAME)) {
+            return;
+        }
+        columnDefs.unshift({
+            colId: COMPLETION_COLUMN_NAME,
+            headerName: '',
+            width: CONTROL_COLUMN_WIDTH,
+            minWidth: CONTROL_COLUMN_WIDTH,
+            maxWidth: CONTROL_COLUMN_WIDTH,
+            //AG Grid's colDef defaults are `{ resizable: true, sortable: true }`, so a column holding a
+            //control opts into a resize handle and a sortable header unless both are said out loud
+            resizable: false,
+            sortable: false,
+            suppressMovable: true,
+            suppressSizeToFit: true,
+            pinned: 'left',
+            lockPinned: true,
+            //`true` is 'left' - the opposite of the delete column's explicit 'right'
+            lockPosition: true,
+            cellRenderer: CompletionCell,
+            cellRendererParams: {
+                label: this._datasetControl.getLocalizationService().getLocalizedString('markItemFinished')
+            }
+        });
     }
 
     /**
@@ -129,9 +160,9 @@ export class CheckListGridCustomizer {
         columnDefs.push({
             colId: DELETE_COLUMN_NAME,
             headerName: '',
-            width: DELETE_COLUMN_WIDTH,
-            minWidth: DELETE_COLUMN_WIDTH,
-            maxWidth: DELETE_COLUMN_WIDTH,
+            width: CONTROL_COLUMN_WIDTH,
+            minWidth: CONTROL_COLUMN_WIDTH,
+            maxWidth: CONTROL_COLUMN_WIDTH,
             //both explicit: AG Grid's colDef defaults are `{ resizable: true, sortable: true }`, so a
             //column holding a button would otherwise get a resize handle and a sortable header
             resizable: false,
