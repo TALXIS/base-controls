@@ -109,6 +109,7 @@ export class DependenciesProvider implements IDependenciesProvider {
         this._strategy = parameters.strategy;
         this._services = parameters.services;
         this._registerColumns();
+        this._registerCleanup();
     }
 
     /**
@@ -166,6 +167,16 @@ export class DependenciesProvider implements IDependenciesProvider {
 
     public hasDependencies(taskId: string): boolean {
         return this._bySuccessor.has(taskId) || this._byPredecessor.has(taskId);
+    }
+
+    /**
+     * Releases the provider's listeners when the control it belongs to goes away. Waited for rather than
+     * resolved: the module is built before the control exists.
+     */
+    private _registerCleanup(): void {
+        this._services.whenAvailable('datasetControl', datasetControl => {
+            datasetControl.events.addEventListener('onBeforeDestroy', () => this.events.clearEventListeners());
+        });
     }
 
     /**

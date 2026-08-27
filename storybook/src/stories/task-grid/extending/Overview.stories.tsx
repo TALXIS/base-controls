@@ -108,7 +108,7 @@ export class MyTemplateDataProvider extends TemplateDataProviderBase(MemoryDataP
 
 An expansion returns finished task raw records — ids, parent lookups and ordering included — and the grid adds them; the task strategy is not involved and never hears about templates. Everything you need to describe a task is on the \`ITaskDataProvider\` the provider reaches through the locator it is constructed with — \`services.get('taskDataProvider')\`.
 
-The mixin owns \`templateEvents\` and the error handling, which is what drives the grid's loading state and error dialog. \`MemoryTemplateDataProvider\` is the reference implementation — see [**Memory**](?path=/story/task-grid-descriptors-memory--overview), under *Templates*; \`DataverseTemplateDataProvider\` implements neither direction.
+The mixin owns \`templateEvents\` and the error handling, which is what drives the grid's loading state and error dialog. \`MemoryTemplateDataProvider\` is the reference implementation — see [**Memory → Feature data**](?path=/story/task-grid-descriptors-memory-feature-data--overview), under *Templates*; \`DataverseTemplateDataProvider\` implements neither direction.
 
 ## Adding a column of your own
 
@@ -194,7 +194,7 @@ import type {
 ## Troubleshooting
 
 1. **Everything is flat** — \`parentId\` is not mapped to the attribute that actually holds the parent value, or the raw value is in a shape the lookup reader does not recognise. Dataverse records carry it under \`_<lookup>_value\`; a hand-built record can instead put an entity-reference array under the plain column name. A bare guid under the plain name is the one combination that does not work.
-2. **Rows are in an unexpected order** — \`stackRank\` is unmapped, or the ranks are not comparable strings. See [**Memory**](?path=/story/task-grid-descriptors-memory--overview), under *Ordering*.
+2. **Rows are in an unexpected order** — \`stackRank\` is unmapped, or the ranks are not comparable strings. See [**Memory → Task options**](?path=/story/task-grid-descriptors-memory-task-options--overview), under *Ordering*.
 3. **Nothing renders and no error appears** — \`onLoadDependencies\` never resolved. It is awaited before the first provider is created, so a hanging promise there shows as an indefinite skeleton.
 4. **A feature is missing from the ribbon** — either its flag in \`onGetGridParameters\` defaults to \`false\`, or the module that provides it was never registered. A flag and a module are separate switches: the flag controls the UI, the module controls whether the feature exists at all, so both have to be in place.
 5. **\`No <service> is registered\`** — something resolved a service with \`get\` that only exists when a module registers it. Either register the module, or switch the call site to \`find\` and handle the feature being off. The same error during startup means a constructor resolved a service instead of waiting for the method that needs it.

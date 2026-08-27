@@ -8,9 +8,9 @@ export interface IMemoryTemplateDataProviderParams extends ITemplateDataProvider
     /**
      * The template entity plus the child hierarchy each template expands into.
      *
-     * Read once and copied: the provider never writes into it. To keep a template captured at runtime,
-     * listen for `templateEvents.onAfterTemplateCreated` and take a {@link MemoryTemplateDataProvider.getTemplateSource}
-     * snapshot — otherwise it is gone with the provider.
+     * Deep-cloned on the way in, records and children map alike, so the provider never writes into it. To keep a template captured at runtime, take a
+     * {@link MemoryTemplateDataProvider.getTemplateSource} snapshot from the grid's `onBeforeDestroy` prop;
+     * otherwise it goes with the provider.
      */
     templates: IMemoryTemplateSource;
 }
@@ -52,13 +52,14 @@ export class MemoryTemplateDataProvider extends TemplateDataProviderBase(MemoryD
 
     constructor(params: IMemoryTemplateDataProviderParams) {
         super({
-            dataSource: [...params.templates.records],
+            dataSource: structuredClone(params.templates.records),
             metadata: params.templates.metadata,
         });
         this.setColumns(params.templates.columns);
         this._params = params;
-        this._records = [...params.templates.records];
-        this._children = { ...params.templates.children };
+        this._records = structuredClone(params.templates.records);
+        //?? {} because the source may omit it, where the previous spread produced an empty map
+        this._children = structuredClone(params.templates.children ?? {});
     }
 
     /**

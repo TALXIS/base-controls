@@ -101,7 +101,14 @@ const preview: Preview = {
           [
             'Get started',
             'Descriptors',
-            ['Anatomy', 'Memory', 'Dataverse', 'Talxis platform'],
+            [
+              'Anatomy',
+              'Memory',
+              ['Overview', 'Task options', 'Feature data', 'Your data'],
+              'Dataverse',
+              ['Overview', 'Task options', 'Feature data'],
+              'Talxis platform',
+            ],
             'Modules',
             ['Overview', 'Customizer'],
             'Customizations',

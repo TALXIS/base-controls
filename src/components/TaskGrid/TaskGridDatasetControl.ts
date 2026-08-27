@@ -15,10 +15,30 @@ import { ErrorHelper } from "@utils/error-handling";
 const STATE_CODE_ACTIVE = 0;
 
 /**
+ * What only the task grid raises, kept off the shared {@link IDatasetControlEvents} that the generic
+ * dataset control also implements.
+ */
+export interface ITaskGridDatasetControlEvents {
+    /**
+     * The control is about to be torn down — on unmount, and on every remount (applying *Edit columns*,
+     * switching a view, closing the view manager).
+     *
+     * Every provider still holds its data when this fires, so it is where anything worth keeping is read
+     * off them. Forwarded to the grid's `onBeforeDestroy` prop.
+     */
+    onBeforeDestroy: () => void;
+}
+
+/**
  * The {@link ITaskGridDatasetControl} implementation. Built by {@link TaskGridDatasetControlFactory},
  * never constructed directly.
  */
 export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> implements ITaskGridDatasetControl {
+    /**
+     * The grid's own events. The inherited `addEventListener` carries the dataset-control set
+     * ({@link IDatasetControlEvents}); this one carries what only the task grid raises.
+     */
+    public readonly events = new EventEmitter<ITaskGridDatasetControlEvents>();
     private _dataset: IDataset;
     private _dataProvider: ITaskDataProvider;
     private _services: ITaskGridServiceLocator;
@@ -265,6 +285,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         throw new Error("Method not implemented.");
     }
     public destroy(): void {
+        //first, while every provider still holds its data: this is the consumer's chance to read it
+        this.events.dispatchEvent('onBeforeDestroy');
         this.saveState();
         this._dataProvider.destroy();
         this._savedQueryDataProvider.destroy();

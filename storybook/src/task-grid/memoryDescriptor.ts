@@ -1,7 +1,7 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
 import { createChecklistModule, createDependenciesModule, createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryChecklistStrategy, MemoryLookupManyDataProviderFactory, MemoryTaskDependencyStrategy, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
-import type { IChecklistItem, IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery, ITaskDependency } from '@talxis/base-controls';
+import type { IChecklistItem, IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery, ITaskDependency, ITaskGridServiceLocator } from '@talxis/base-controls';
 
 /**
  * `filtering.filterOperator` has no named enum in the ComponentFramework typings — the grid reads
@@ -70,18 +70,17 @@ interface ICreateMemoryTaskGridDescriptorOptions {
 
 export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDescriptorOptions) => {
     //the store. onInitialize is called again on every remount, but the seed below only ever runs once -
-    //every later call just hands back whatever is currently in these variables, kept current by the
-    //write-backs next to the modules and the task strategy below (onDestroy for records, events for
-    //user queries) rather than by this function never running again
+    //every later call hands back whatever is currently in these variables, which `keepSession` refreshes
+    //from the providers just before each control is torn down
     let isSeeded = false;
     let lookupSources: { [columnName: string]: IMemoryEntitySource } = {};
     let dependencies: ITaskDependency[] = [];
     let checklist: IChecklistItem[] = [];
     let templates: IMemoryTemplateSource;
     let userQueries: ISavedQuery[] = [];
-    //the task records live here between mounts: the provider owns them while a grid is up, and hands
-    //them back through the strategy's onDestroy when it is torn down - which is what makes a task the
-    //user created survive switching a view or applying Edit columns
+    //the task records live here between mounts: the provider owns copies while a grid is up, and they are
+    //read back below when it is torn down - which is what makes a task the user created survive switching
+    //a view or applying Edit columns
     let records: IRawRecord[] = [];
     let metadata: IMemoryTaskGridDescriptorInitializeResult['metadata'];
     let fieldMapping: IMemoryTaskGridDescriptorInitializeResult['fieldMapping'];
@@ -99,33 +98,19 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             if (!isEnabled('userQueries')) {
                 return undefined;
             }
-            const strategy = new MemoryUserQueryStrategy({ userQueries, services });
-            const module = createUserQueryModule({
-                strategy,
+            return createUserQueryModule({
+                strategy: new MemoryUserQueryStrategy({ userQueries, services }),
                 services,
                 enableQueryManager: true,
                 enableSaveAsNewQuery: true,
                 enableSaveQueryChanges: true,
             });
-            //write the strategy's current state back into the store on every mutation, instead of
-            //relying on it mutating the array we handed it - an explicit contract survives the
-            //strategy changing how it stores things internally; a shared reference would not
-            const syncStore = async () => { userQueries = await strategy.onGetUserQueries(); };
-            module.provider.events.addEventListener('onAfterUserQueryCreated', syncStore);
-            module.provider.events.addEventListener('onAfterUserQueryUpdated', syncStore);
-            module.provider.events.addEventListener('onAfterUserQueriesDeleted', syncStore);
-            return module;
         },
         onGetTemplatesModule: ({ services }) => {
             if (!isEnabled('templates')) {
                 return undefined;
             }
-            const provider = new MemoryTemplateDataProvider({ templates, services });
-            //the provider keeps its own copy and writes into nothing it was handed, so the store is
-            //updated from out here whenever it reports a capture - the same contract the user queries
-            //above live with
-            provider.templateEvents.addEventListener('onAfterTemplateCreated', () => { templates = provider.getTemplateSource(); });
-            return createTemplateModule({ provider });
+            return createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates, services }) });
         },
         onGetGridCustomizerModule: ({ services }) => {
             const strategy = options?.onGetGridCustomizerStrategy?.();
@@ -152,41 +137,63 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     const buildModules = (): IMemoryModules => options?.onGetModuleOverrides?.({ userQueries, templates, lookupSources, dependencies, checklist })
         ?? builtInModules;
 
+    /**
+     * Reads every provider back into the store just before the control is torn down, which is the one
+     * place this sandbox keeps anything. Nothing a memory strategy was handed is ever written to, so this
+     * is what makes a task, a view or a template the user created survive a remount.
+     *
+     * Subscribed through the locator rather than the grid's `onBeforeDestroy` prop, because a descriptor
+     * has no say over the props the example passes to `<TaskGrid />`.
+     */
+    const keepSession = (services: ITaskGridServiceLocator) => {
+        services.whenAvailable('datasetControl', datasetControl => {
+            datasetControl.events.addEventListener('onBeforeDestroy', () => {
+                records = services.get('taskDataProvider').getRawData();
+                userQueries = services.find('userQueriesModule')?.provider.getQueries() ?? userQueries;
+                dependencies = services.find('dependenciesModule')?.provider.getDependencies() ?? dependencies;
+                const templateProvider = services.find('templatesModule')?.provider as MemoryTemplateDataProvider | undefined;
+                templates = templateProvider?.getTemplateSource() ?? templates;
+            });
+        });
+    };
+
     //task-level options belong to the strategy, so they are passed where it is built
-    const onCreateTaskStrategy = ({ services, metadata }: IMemoryTaskStrategyContext) => new MemoryTaskStrategy({
-        //seeded from what the last mount ended with, not from the fixtures
-        onInitialize: async provider => ({
-            rawData: records,
-            metadata: metadata,
-            columns: provider.getColumns(),
-        }),
-        onDestroy: params => records = params.rawData,
-        //new rows should look like a real task rather than a row of empty cells
-        onGetNewTaskDefaults: () => ({
-            statuscode: 1,
-            priority: 1,
-            percentcomplete: 0,
-            actualeffort: 0,
-        }),
-        /**
-         * The fixtures keep `statecode` and `statuscode` in sync, but only `statuscode`
-         * is editable in the grid — so derive activity from it to keep styling correct
-         * after an edit.
-         *
-         * Read through the record instance the hook is handed, and compare loosely: the dataset
-         * layer normalises option-set values to strings, so the status arrives as `'5'`.
-         */
-        onIsRecordActive: ({ record }) => record.getValue('statuscode') != COMPLETED_STATUS_CODE
-            && record.getValue('statuscode') != CANCELLED_STATUS_CODE,
-        onOpenDatasetItems: async ({ entityReferences, isTaskEntity, isTaskEditingEnabled }) => {
-            const target = isTaskEntity ? 'task(s)' : 'related record(s)';
-            const mode = isTaskEditingEnabled ? 'edit' : 'read-only';
-            //a demo has nowhere to navigate to, so surface the intent without blocking the UI
-            console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
-            return null;
-        },
-        services: services,
-    });
+    const onCreateTaskStrategy = ({ services, metadata }: IMemoryTaskStrategyContext) => {
+        keepSession(services);
+        return new MemoryTaskStrategy({
+            //seeded from what the last mount ended with, not from the fixtures
+            onInitialize: async provider => ({
+                rawData: records,
+                metadata: metadata,
+                columns: provider.getColumns(),
+            }),
+            //new rows should look like a real task rather than a row of empty cells
+            onGetNewTaskDefaults: () => ({
+                statuscode: 1,
+                priority: 1,
+                percentcomplete: 0,
+                actualeffort: 0,
+            }),
+            /**
+             * The fixtures keep `statecode` and `statuscode` in sync, but only `statuscode`
+             * is editable in the grid — so derive activity from it to keep styling correct
+             * after an edit.
+             *
+             * Read through the record instance the hook is handed, and compare loosely: the dataset
+             * layer normalises option-set values to strings, so the status arrives as `'5'`.
+             */
+            onIsRecordActive: ({ record }) => record.getValue('statuscode') != COMPLETED_STATUS_CODE
+                && record.getValue('statuscode') != CANCELLED_STATUS_CODE,
+            onOpenDatasetItems: async ({ entityReferences, isTaskEntity, isTaskEditingEnabled }) => {
+                const target = isTaskEntity ? 'task(s)' : 'related record(s)';
+                const mode = isTaskEditingEnabled ? 'edit' : 'read-only';
+                //a demo has nowhere to navigate to, so surface the intent without blocking the UI
+                console.info(`[TaskGrid] open ${target} in ${mode} mode:`, entityReferences.map(reference => reference.name).join(', '));
+                return null;
+            },
+                services: services,
+        });
+    };
 
     const onInitialize = async (): Promise<IMemoryTaskGridDescriptorInitializeResult> => {
         if (!isSeeded) {

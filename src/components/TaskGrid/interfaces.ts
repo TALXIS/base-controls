@@ -1,4 +1,4 @@
-import { IColumn, IDataset, IDataProvider, IRecord } from "@talxis/client-libraries";
+import { IColumn, IDataset, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { IDatasetControl } from "@utils/dataset-control";
 import { ICustomColumnsDataProvider } from "./modules/custom-columns/CustomColumnsDataProvider";
 import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
@@ -6,6 +6,7 @@ import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
 import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
+import type { ITaskGridDatasetControlEvents } from "./TaskGridDatasetControl";
 import { ILocalizationService } from "@utils";
 import { ITaskGridServiceLocator } from "./services";
 
@@ -132,6 +133,11 @@ export interface ITaskGridDescriptor {
 
 /** Runtime interface for the TaskGrid control returned by `TaskGridDatasetControlFactory.createInstance`. */
 export interface ITaskGridDatasetControl extends IDatasetControl {
+    /**
+     * The grid's own events, separate from the dataset-control ones the control itself emits. Mirrors how
+     * {@link ITaskDataProvider} exposes `taskEvents`.
+     */
+    events: IEventEmitter<ITaskGridDatasetControlEvents>;
     /**
      * Creates the `IDataProvider` supplying the candidate records of a lookup-many cell — its picker's
      * options. Called once per cell, because the candidates may depend on the row.

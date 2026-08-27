@@ -5,6 +5,7 @@ import { IUserQueryDataProviderEvents } from "./modules/interfaces";
 import { IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProvider, ITaskDataProviderEventListener } from "./providers/task";
 import { ITemplateDataProviderEvents } from "./providers/template/TemplateDataProvider";
 import { ITaskGridDatasetControl } from "./interfaces";
+import type { ITaskGridDatasetControlEvents } from "./TaskGridDatasetControl";
 import { ITaskGridProps } from "./TaskGrid";
 
 /**
@@ -41,6 +42,10 @@ export const useTaskGridEvents = (props: ITaskGridProps, datasetControl: ITaskGr
     useEventEmitter<ITemplateDataProviderEvents>(templateEvents, 'onBeforeTemplateCreated', (taskId: string) => props.onBeforeTemplateCreated?.(taskId));
     useEventEmitter<ITemplateDataProviderEvents>(templateEvents, 'onAfterTemplateCreated', (record: IRawRecord | null) => props.onTemplateCreated?.(record));
     useEventEmitter<ITemplateDataProviderEvents>(templateEvents, 'onError', (error: any, message: string) => props.onError?.(error, message));
+
+    //the grid's own emitter, not the inherited dataset-control one. Fires while every provider still holds
+    //its data, so a consumer can read whatever it wants to keep
+    useEventEmitter<ITaskGridDatasetControlEvents>(datasetControl.events, 'onBeforeDestroy', () => props.onBeforeDestroy?.(datasetControl.getServices()));
 
     useEventEmitter<IDataProviderEventListeners>(taskDataProvider, 'onBeforeRecordSaved', (record: IRecord) => props.onBeforeRecordSaved?.(record));
     useEventEmitter<IDataProviderEventListeners>(taskDataProvider, 'onAfterRecordSaved', (result: IRecordSaveOperationResult) => props.onRecordSaved?.(result));

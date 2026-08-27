@@ -33,11 +33,11 @@ import {
 /** What {@link IMemoryTaskStrategyParams.onInitialize} resolves — everything the grid loads with. */
 export interface IMemoryTaskInitializeResult {
     /**
-     * The task records the grid loads with. The provider takes a copy of the array, so creations and
-     * deletions land on its own copy while edits and moves write through to these record objects.
+     * The task records the grid loads with. Deep-cloned on the way in, so nothing the grid does reaches
+     * what you passed.
      *
-     * Use {@link IMemoryTaskStrategyParams.onDestroy} to take the records before the provider goes away,
-     * and hand them back here next time.
+     * Nothing is kept for you either. To carry what the user did into the next mount, read
+     * `taskDataProvider.getRawData()` from the grid's `onBeforeDestroy` prop and hand it back here.
      */
     rawData: IRawRecord[];
     /** Entity metadata. `PrimaryIdAttribute` is required; `LogicalName` is recommended. */
@@ -71,15 +71,6 @@ export interface IMemoryTaskStrategyParams {
      * is `null`; the primary id, parent lookup and stack rank are always computed by the strategy.
      */
     onGetNewTaskDefaults?: (parentTaskId?: string) => Partial<IRawRecord>;
-    /**
-     * Called just before the provider is torn down — on unmount, and on every remount (applying *Edit
-     * columns*, switching a view, closing the view manager). Receives a copy of the records as they are at
-     * that moment, so it is the seam for keeping what the user did: `onDestroy: params => records =
-     * params.rawData`.
-     *
-     * Omit it and every remount starts from the seed again.
-     */
-    onDestroy?: (params: IMemoryTaskDestroyParams) => void;
     /**
      * Determines whether a task counts as active. Defaults to {@link MemoryTaskActions.isRecordActive} —
      * `record[stateCode] == 0`, using the state-code column from the descriptor's field mapping.
@@ -124,25 +115,14 @@ export interface IMemoryTaskStrategyParams {
     onRecordSave?: (params: IMemoryTaskSaveParams) => Promise<IRecordSaveOperationResult>;
 }
 
-/** What {@link IMemoryTaskStrategyParams.onDestroy} is handed. */
-export interface IMemoryTaskDestroyParams {
-    /**
-     * The provider's records at teardown, as a copy — keeping it is safe, and the provider is about to
-     * drop its own array.
-     */
-    rawData: IRawRecord[];
-    /** The entity metadata, so the records can be handed straight back next time. */
-    metadata: IMemoryProviderEntityMetadata;
-}
-
 /**
  * {@link ITaskDataProviderStrategy} implementation backed entirely by in-memory records. Supports the full
  * task surface — create, cascading delete, LexoRank reordering and inline editing — with no server
  * dependency.
  *
  * The behaviour lives in {@link MemoryTaskActions}; each hook here resolves that action's parameters and
- * calls it, unless an override was supplied. The strategy keeps no data of its own, so nothing survives a
- * remount unless `onDestroy` hands it back.
+ * calls it, unless an override was supplied. Nothing you hand it is ever written to, and nothing is kept
+ * across a remount — see the grid's `onBeforeDestroy` prop for keeping what the user did.
  *
  * Normally created by {@link MemoryTaskGridDescriptor}.
  */
@@ -171,8 +151,9 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         const { rawData, metadata, columns } = await this._params.onInitialize(provider);
         return {
             columns,
-            //a copy: the seed stays the consumer's array, the provider owns what it is handed
-            rawData: [...rawData],
+            //deep, not just the array: a save and a move write into these objects, and they have to be
+            //the provider's rather than the consumer's
+            rawData: structuredClone(rawData),
             metadata,
         };
     }
@@ -248,9 +229,6 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     /** The consumer's last look at the data, called by the provider before it drops it. */
-    public onDestroy(): void {
-        this._params.onDestroy?.({ rawData: [...this._records], metadata: this._metadata });
-    }
 
     public onIsRecordActive(recordId: string): boolean {
         const params: IMemoryTaskActivityParams = {

@@ -30,14 +30,15 @@ export interface IMemoryLookupManyFactoryParams {
  */
 export class MemoryLookupManyDataProviderFactory {
     /**
-     * @returns A provider over a copy of `params.source.records`, so deleting inside the picker cannot
-     * mutate the array you keep.
+     * @returns A provider over a deep clone of `params.source.records`, so nothing the picker does reaches
+     * what you keep.
      */
     public static create(params: IMemoryLookupManyFactoryParams): IDataProvider {
         const { source } = params;
         const provider = new MemoryDataProvider({
-            //a copy: MemoryDataProvider swaps its internal array on delete
-            dataSource: [...source.records],
+            //deep, not just the array: the provider swaps its array on delete and writes into the record
+            //objects on save
+            dataSource: structuredClone(source.records),
             metadata: source.metadata,
         });
         provider.setColumns(source.columns);

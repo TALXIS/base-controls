@@ -40,7 +40,8 @@ The grid reads the \`ComponentFramework.Context\` — navigation, formatting, er
 | \`descriptor\` | ✅ | Your \`ITaskGridDescriptor\`. The single entry point for all data access and configuration, and where the [**modules**](?path=/story/task-grid-modules--overview) are registered. See [**Extending**](?path=/story/task-grid-extending--overview) for the contract. |
 | \`labels?\` | — | Partial \`ITaskGridLabels\`. Any key you supply replaces the English default. |
 | \`components?\` | — | Partial \`ITaskGridComponents\`. Replaces the skeleton loader, the command bar, or the renderer/editor of any cell. |
-| \`onReady?\` | — | \`(control, taskDataProvider)\` — the grid's handle. See [**Reacting to the grid**](#reacting-to-the-grid). |
+| \`onReady?\` | — | \`(services)\` — the grid's service locator, and with it everything imperative. See [**Reacting to the grid**](#reacting-to-the-grid). |
+| \`onBeforeDestroy?\` | — | \`(services)\` — called before teardown, while every provider still holds its data. |
 | \`onError?\` | — | \`(error, message)\` for every error the grid reports — tasks, views and templates alike. It still shows its own dialog. |
 | event props | — | One per grid event, listed below. |
 
@@ -68,18 +69,20 @@ Anything that can be cancelled reports it: a "created" or "updated" view prop re
 />
 \`\`\`
 
-For anything the events cannot express — reloading, reading the selection, switching a view — take the handle. \`onReady\` hands you the control **and** its task data provider:
+For anything the events cannot express — reloading, reading the selection, switching a view — take the locator. \`onReady\` hands you the same \`ITaskGridServiceLocator\` the grid runs on, so every provider, the control and every registered module are one \`get\` away:
 
 \`\`\`tsx
-onReady={(control, taskDataProvider) => {
+onReady={services => {
     //everything imperative: reload, read the selection, switch the view
-    taskDataProvider.refresh()
-    control.getSelectedRecordIds()
-    control.changeSavedQuery(queryId)
+    services.get('taskDataProvider').refresh()
+    services.get('datasetControl').getSelectedRecordIds()
+    services.get('datasetControl').changeSavedQuery(queryId)
 }}
 \`\`\`
 
-One thing to keep in mind: the grid **rebuilds both objects** whenever it remounts — switching a view or saving a record does it — so \`onReady\` fires again each time and any handle you stored goes stale. The records are already loaded when it fires; the control is not handed over until its first load has finished.
+One thing to keep in mind: the grid **rebuilds everything** whenever it remounts — switching a view or saving a record does it — so \`onReady\` fires again each time with a fresh locator, and anything you stored from a previous one goes stale. The records are already loaded when it fires; the control is not handed over until its first load has finished.
+
+Its counterpart is \`onBeforeDestroy\`, which fires just before a teardown while every provider still holds its data — the place to read anything you want to keep. See [**Memory → Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview).
 
 ## Pick a descriptor
 

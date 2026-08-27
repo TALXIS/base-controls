@@ -29,6 +29,7 @@ export class UserQueryDataProvider implements IUserQueryDataProvider {
         this._services = parameters.services;
     }
 
+    /** The views as they now stand, kept in step by every operation below. */
     public getQueries(): ISavedQuery[] {
         return this._queries;
     }
@@ -47,13 +48,17 @@ export class UserQueryDataProvider implements IUserQueryDataProvider {
         this.events.dispatchEvent('onBeforeUserQueryCreated', name);
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
+                const savedQuery: ISavedQuery = {
+                    ...currentQuery,
+                    ...this._getMetadataForSavedQuery(provider)
+                };
                 const result = await this._strategy.onCreateUserQuery({
                     name: name,
                     description: description,
-                }, {
-                    ...currentQuery,
-                    ...this._getMetadataForSavedQuery(provider)
-                });
+                }, savedQuery);
+                if (result) {
+                    this._queries = [...this._queries, { ...savedQuery, id: result, name: name, description: description }];
+                }
                 this.events.dispatchEvent('onAfterUserQueryCreated', result);
                 return result;
             },
@@ -66,6 +71,9 @@ export class UserQueryDataProvider implements IUserQueryDataProvider {
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 const result = await this._strategy.onUpdateUserQuery(query);
+                if (result) {
+                    this._queries = this._queries.map(existing => existing.id === query.id ? query : existing);
+                }
                 this.events.dispatchEvent('onAfterUserQueryUpdated', result);
                 return result;
             },

@@ -9,25 +9,30 @@ export interface IMemoryUserQueryStrategyParams {
      */
     services: ITaskGridServiceLocator;
     /**
-     * The personal views. **This array is written into** — creating, renaming and deleting a view
-     * mutates it — so pass the one the descriptor persists rather than a copy.
+     * The personal views to start from. Copied on the way in, so creating, renaming and deleting a view
+     * never touches what you passed.
      */
     userQueries: ISavedQuery[];
 }
 
 /**
- * In-memory {@link IUserQueryStrategy} — personal views held in the array it was given, so a view
- * created just before the grid remounts is still there when the strategy is rebuilt.
+ * In-memory {@link IUserQueryStrategy} — personal views held in a copy of the array it was given.
+ *
+ * Nothing is kept across a remount. To carry views over, read `userQueriesModule.provider.getQueries()`
+ * from the grid's `onBeforeDestroy` prop and hand them back next time.
  */
 export class MemoryUserQueryStrategy implements IUserQueryStrategy {
     private _userQueries: ISavedQuery[];
 
     constructor(params: IMemoryUserQueryStrategyParams) {
-        this._userQueries = params.userQueries;
+        //deep, not `_cloneQuery`: that one copies a view one level, which is enough to keep two views
+        //apart but would leave a column's metadata shared with the array the consumer handed over
+        this._userQueries = structuredClone(params.userQueries);
     }
 
     public async onGetUserQueries(): Promise<ISavedQuery[]> {
-        return [...this._userQueries];
+        //cloned out as well: the grid writes into a view's columns, and that must not reach the store
+        return this._userQueries.map(query => this._cloneQuery(query));
     }
 
     public onIsUserQuery(queryId: string): boolean {

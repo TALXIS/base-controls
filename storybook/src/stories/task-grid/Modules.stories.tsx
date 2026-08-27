@@ -141,7 +141,7 @@ export const Templates: Story = {
         docs: {
             description: {
                 story: `
-**New** now offers *New from template*, and so does the **+** button on each row. Select a task and *Create template from task* saves its whole subtree as a new template, which then shows up in the picker — for the rest of the session, unless you keep it yourself: see [**Memory**](?path=/story/task-grid-descriptors-memory--overview), under *Keeping data across remounts*.
+**New** now offers *New from template*, and so does the **+** button on each row. Select a task and *Create template from task* saves its whole subtree as a new template, which then shows up in the picker — for the rest of the session, unless you keep it yourself: see [**Memory → Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview).
 
 Note the view dropdown has no *My views* group here — that is the personal-views module, and this grid does not register it.
                 `.trim(),

@@ -100,7 +100,7 @@ so it runs the first time anything asks for a column name.
 
 Two things follow. Anything a strategy or module reads at *call* time already exists, which is why resolving
 in methods works and resolving in constructors does not. And nothing is cached across remounts — see
-[**Memory**](?path=/story/task-grid-descriptors-memory--overview), under *Keeping data across remounts*.
+[**Memory → Your data**](?path=/story/task-grid-descriptors-memory-your-data--overview).
 
 ## Services
 

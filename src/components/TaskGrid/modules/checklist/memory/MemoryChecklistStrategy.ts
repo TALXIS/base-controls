@@ -9,8 +9,8 @@ export interface IMemoryChecklistStrategyParams {
      */
     services: ITaskGridServiceLocator;
     /**
-     * The checklist items. Read only — nothing here writes into the array, so a fixture can be shared
-     * between grids.
+     * The checklist items. Read only, and deep-cloned on the way in, so a fixture can be shared between
+     * grids.
      */
     items: IChecklistItem[];
 }
@@ -23,14 +23,11 @@ export class MemoryChecklistStrategy implements IChecklistStrategy {
     private _items: IChecklistItem[];
 
     constructor(params: IMemoryChecklistStrategyParams) {
-        this._items = params.items;
+        this._items = structuredClone(params.items);
     }
 
     public async onGetChecklistItems(params: { taskIds: string[] }): Promise<IChecklistItem[]> {
         const taskIds = new Set(params.taskIds);
-        //copies: what the provider stores is its own, so a caller cannot reach back into the fixture
-        return this._items
-            .filter(item => taskIds.has(item.taskId))
-            .map(item => ({ ...item }));
+        return this._items.filter(item => taskIds.has(item.taskId));
     }
 }

@@ -38,7 +38,7 @@ This is where the work is. The grid calls these hooks; you decide what they mean
 | \`onRecordSave(record)\` | ✅ | Persist an edited record. Return which fields you wrote. |
 | \`onIsRecordActive(recordId)\` | ✅ | Whether a task is active. Synchronous. |
 | \`onOpenDatasetItems(refs, isTaskEntity)\` | ✅ | The user opened records — navigate, open a dialog, or no-op. |
-| \`onDestroy?()\` | — | Called just before the provider is torn down, on unmount and on every remount. Its data is still readable, so this is the last chance to hand the current records to whoever keeps them. |
+| \`onDestroy?()\` | — | Called just before the provider is torn down, on unmount and on every remount — for releasing whatever the strategy holds. To *keep* data, use the grid's \`onBeforeDestroy\` prop instead: it covers every provider, not just this one. |
 | \`onGetRootTaskId?()\` | — | Root the tree at one task. |
 
 Templates are not part of the strategy in either direction: capturing one from a task and expanding one into tasks both belong to the \`ITemplateDataProvider\` you wrap in \`createTemplateModule\` and return from \`onGetModules\` — see [**Extending**](?path=/story/task-grid-extending--overview), under *The template data provider*.

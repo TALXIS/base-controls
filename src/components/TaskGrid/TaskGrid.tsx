@@ -13,6 +13,7 @@ import { ITemplateDataProviderEvents } from "./providers/template";
 import { ITaskGridLabels } from "./labels";
 import { TASK_GRID_LABELS } from "./labels";
 import { ITaskGridState, TaskGridDatasetControlFactory } from "./TaskGridDatasetControlFactory";
+import type { ITaskGridServiceLocator } from "./services";
 import { Header } from "./components/header/Header";
 import { ITaskGridComponents, TaskGridComponents } from "./components/components";
 import { ITaskGridDescriptor, ITaskGridDatasetControl } from "./interfaces";
@@ -29,14 +30,36 @@ export interface ITaskGridProps {
     /** Overrides for any subset of the replaceable components. See {@link ITaskGridComponents}. */
     components?: Partial<ITaskGridComponents>;
     /**
-     * Called with the control and its task data provider once mounted, and again for every rebuilt pair —
-     * the grid recreates both when a view changes or a record is saved. The way in to everything
-     * imperative: the task operations and `taskEvents`, the saved queries, the selection.
+     * Called with the grid's service locator once mounted, and again on every remount — the grid rebuilds
+     * everything when a view changes or a record is saved. The way in to everything imperative: the task
+     * provider and its `taskEvents`, the saved queries, the control, the selection, every registered
+     * module.
      *
      * The records are already loaded by then — the control's factory awaits the first load, so the grid
      * mounts on data rather than filling in afterwards.
+     *
+     * ```ts
+     * onReady={services => {
+     *     services.get('taskDataProvider').refresh()
+     *     services.get('datasetControl').getSelectedRecordIds()
+     * }}
+     * ```
      */
-    onReady?: (control: ITaskGridDatasetControl, taskDataProvider: ITaskDataProvider) => void;
+    onReady?: (services: ITaskGridServiceLocator) => void;
+    /**
+     * Called before the grid is torn down — on unmount, and on every remount. Every provider still holds
+     * its data, so this is where anything worth keeping is read off them.
+     *
+     * Nothing in the grid persists anything for you; this is the seam.
+     *
+     * ```ts
+     * onBeforeDestroy={services => {
+     *     records = services.get('taskDataProvider').getRawData()
+     *     userQueries = services.find('userQueriesModule')?.provider.getQueries() ?? []
+     * }}
+     * ```
+     */
+    onBeforeDestroy?: (services: ITaskGridServiceLocator) => void;
     /**
      * Called for every error the grid reports — task operations, saved queries and templates alike.
      * The grid still shows its own error dialog; this is for logging or a notification of your own.
@@ -161,7 +184,7 @@ const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
 
     React.useEffect(() => {
         //no refresh here: the factory awaited the first load, so the records are already in
-        props.onReady?.(datasetControl, provider);
+        props.onReady?.(datasetControl.getServices());
     }, []);
 
     //one context for everything the grid was built with; the hooks read what they need off it

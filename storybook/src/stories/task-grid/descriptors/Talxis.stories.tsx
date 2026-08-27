@@ -108,7 +108,7 @@ where dependencies are edited.
 Everything the generic strategy does it does — reads scoped to the loaded tasks, either end counting, a
 deleted task's dependencies leaving the grid — and everything it does not: no dependency row is ever written
 or deleted here, so a deactivated row still counts. See
-[**Dataverse → Task dependencies**](?path=/story/task-grid-descriptors-dataverse--overview) for the generic
+[**Dataverse → Feature data**](?path=/story/task-grid-descriptors-dataverse-feature-data--overview) for the generic
 version and what the columns look like.
 
 ## Checklists

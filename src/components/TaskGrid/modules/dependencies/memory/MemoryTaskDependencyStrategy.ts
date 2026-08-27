@@ -7,8 +7,8 @@ export interface IMemoryTaskDependencyStrategyParams {
     /** Where the task side is reached, so a deleted task takes its dependencies with it. */
     services: ITaskGridServiceLocator;
     /**
-     * The dependencies. Written to: deleting a task removes the rows that pointed at it, so hand over
-     * the array you keep for the session rather than a shared fixture.
+     * The dependencies to start from. Deep-cloned on the way in, so pruning the rows of a deleted task
+     * never touches what you passed.
      */
     dependencies: ITaskDependency[];
 }
@@ -27,20 +27,19 @@ export class MemoryTaskDependencyStrategy implements ITaskDependencyStrategy {
     private _dependencies: ITaskDependency[];
 
     constructor(params: IMemoryTaskDependencyStrategyParams) {
-        this._dependencies = params.dependencies;
+        //deep-cloned: the prune below is a write
+        this._dependencies = structuredClone(params.dependencies);
         //the rows go before the reload, which reads back through onGetDependencies
         refreshDependenciesOnTaskDeletion(params.services, taskIds => this._removeDependenciesOf(taskIds));
     }
 
     public async onGetDependencies(params: { taskIds: string[] }): Promise<ITaskDependency[]> {
         const taskIds = new Set(params.taskIds);
-        //copies: what the provider indexes is its own, so a caller cannot reach back into the fixture
-        return this._dependencies
-            .filter(dependency => taskIds.has(dependency.predecessorTaskId) || taskIds.has(dependency.successorTaskId))
-            .map(dependency => ({ ...dependency }));
+        return this._dependencies.filter(dependency =>
+            taskIds.has(dependency.predecessorTaskId) || taskIds.has(dependency.successorTaskId));
     }
 
-    /** Splices in place, so the deletion survives in whatever store the array came from. */
+    /** Splices this strategy's own copy; what the consumer passed is untouched. */
     private _removeDependenciesOf(taskIds: string[]): void {
         const deletedTaskIds = new Set(taskIds);
         for (let index = this._dependencies.length - 1; index >= 0; index--) {
