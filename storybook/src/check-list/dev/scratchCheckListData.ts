@@ -17,7 +17,6 @@ const COLUMNS: IColumn[] = [
         name: NAME_COL,
         dataType: DataTypes.SingleLineText,
         displayName: 'Item',
-        isPrimary: true,
         visualSizeFactor: 320,
     },
     {

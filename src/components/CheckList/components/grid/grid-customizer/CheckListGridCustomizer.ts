@@ -4,7 +4,7 @@ import { DataTypes, DatasetConstants, IDataProvider, IRecord, MemoryDataProvider
 import { StackRank } from "@utils/stack-rank";
 import { CompletionCell } from "../completion-cell";
 import { DeleteCell } from "../delete-cell";
-import { COMPLETION_COLUMN_NAME, CONTROL_COLUMN_WIDTH, DELETE_COLUMN_NAME, REORDERING_CLASS_NAME } from "../constants";
+import { COMPLETED_CLASS_NAME, COMPLETION_COLUMN_NAME, CONTROL_COLUMN_WIDTH, DELETE_COLUMN_NAME, REORDERING_CLASS_NAME } from "../constants";
 import { ICheckListDatasetControl } from "../../../CheckListDatasetControl";
 
 /** AG Grid's `ColDef`, bound to the grid's record type. */
@@ -107,9 +107,30 @@ export class CheckListGridCustomizer {
         //A checklist selects nothing, so the column only ever showed the per-row save status - dropped
         //rather than left as an empty gutter
         const definitions = columnDefs.filter(colDef => (colDef.colId ?? colDef.field) !== DatasetConstants.CHECKBOX_COLUMN_KEY);
+        this._markCompletedNameCells(definitions);
         this._injectCompletionColumn(definitions);
         this._injectDeleteColumn(definitions);
         return definitions;
+    }
+
+    /**
+     * Has the name cell of a finished item carry {@link COMPLETED_CLASS_NAME}, which is what strikes its
+     * text through.
+     *
+     * A class rule rather than a class: the grid owns the name column's renderer, so the styling has to
+     * come from the column definition, and it has to be re-decided per row. AG Grid re-evaluates the rule
+     * when the cell is refreshed, which is what the checkbox asks for after it writes.
+     */
+    private _markCompletedNameCells(columnDefs: ColDef[]) {
+        const { name, completed } = this._datasetControl.getFieldMapping();
+        const nameColumnDef = columnDefs.find(colDef => (colDef.colId ?? colDef.field) === name);
+        if (!nameColumnDef) {
+            return;
+        }
+        nameColumnDef.cellClassRules = {
+            //a TwoOptions field always reads back as the string '1' or '0'
+            [COMPLETED_CLASS_NAME]: (params) => params.data?.getValue(completed) === '1'
+        };
     }
 
     /**

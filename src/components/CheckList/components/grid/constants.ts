@@ -9,6 +9,9 @@
 /** Put on the grid root only while a row is being dragged. See the transition rule in `styles.ts`. */
 export const REORDERING_CLASS_NAME = 'talxis_check-list--reordering';
 
+/** Put on an item's name cell while the item is finished. See the strike-through rule in `styles.ts`. */
+export const COMPLETED_CLASS_NAME = 'talxis_check-list--completed';
+
 /** The synthetic leading column holding each item's finished checkbox. */
 export const COMPLETION_COLUMN_NAME = 'completion';
 
