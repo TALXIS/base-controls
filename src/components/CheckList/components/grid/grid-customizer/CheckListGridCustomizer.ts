@@ -106,18 +106,12 @@ export class CheckListGridCustomizer {
 
     /** The checklist's own column configuration. Runs on every push of `columnDefs`. */
     private _getColumnDefinitions(columnDefs: ColDef[]): ColDef[] {
-        for (const colDef of columnDefs) {
-            const columnName = (colDef.colId ?? colDef.field) as string;
-            switch (columnName) {
-                case DatasetConstants.CHECKBOX_COLUMN_KEY: {
-                    //the tick column leads the list and stays there - it is not one of the data columns
-                    colDef.lockPosition = true;
-                    break;
-                }
-            }
-        }
-        this._injectDeleteColumn(columnDefs);
-        return columnDefs;
+        //the grid adds a checkbox column whenever selection or editing is on, and editing is on here.
+        //A checklist selects nothing, so the column only ever showed the per-row save status - dropped
+        //rather than left as an empty gutter
+        const definitions = columnDefs.filter(colDef => (colDef.colId ?? colDef.field) !== DatasetConstants.CHECKBOX_COLUMN_KEY);
+        this._injectDeleteColumn(definitions);
+        return definitions;
     }
 
     /**

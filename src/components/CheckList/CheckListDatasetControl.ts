@@ -35,9 +35,9 @@ export interface ICheckListDatasetControl extends IDatasetControl {
 }
 
 /**
- * A deliberately stripped-down dataset control: ribbon only, no quick find, no edit columns and no
- * pagination. The flags are decided here rather than read off the parameters, so a caller cannot turn
- * one of them back on.
+ * A deliberately stripped-down dataset control: no command bar, no quick find, no edit columns and no
+ * pagination — the grid and the new-record row are the whole surface. The flags are decided here rather
+ * than read off the parameters, so a caller cannot turn one of them back on.
  *
  * Also the one owner of the {@link ICheckListFieldMapping} — it applies it to the provider once the
  * provider has preloaded, and hands it out through `getFieldMapping`.
@@ -94,8 +94,9 @@ export class CheckListDatasetControl extends DatasetControl implements ICheckLis
     public isRecordCountVisible(): boolean {
         return false;
     }
+    //with quick find, edit columns and the record count all off too, this leaves the header empty
     public isRibbonVisible(): boolean {
-        return true;
+        return false;
     }
 
     /**

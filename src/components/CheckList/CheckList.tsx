@@ -33,9 +33,9 @@ export interface ICheckListProps {
 }
 
 /**
- * A checklist over any `IDataProvider`. A stripped-down dataset control: ribbon only, no quick find, no
- * edit columns and no pagination. Cells are editable, and each edit is saved through the provider as it
- * is made.
+ * A checklist over any `IDataProvider`. A stripped-down dataset control: no command bar, no quick find,
+ * no edit columns and no pagination. Cells are editable, and each edit is saved through the provider as
+ * it is made.
  *
  * Reads the PCF context off `PcfContextProvider`, so render it inside one.
  */
