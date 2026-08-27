@@ -1,6 +1,8 @@
 import { DatasetControl, IDatasetControl } from "@utils/dataset-control";
 import { IDataset, IDataProvider } from "@talxis/client-libraries";
 import { IDatasetControlParameters } from "@components/DatasetControl";
+import { ILocalizationService } from "@utils";
+import { ICheckListLabels } from "./labels";
 
 /** Maps the checklist's three concepts onto columns in the provider's data. */
 export interface ICheckListFieldMapping {
@@ -17,6 +19,7 @@ export interface ICheckListDatasetControlParameters {
     dataset: IDataset;
     fieldMapping: ICheckListFieldMapping;
     controlId: string;
+    localizationService: ILocalizationService<ICheckListLabels>;
     onGetPcfContext: () => ComponentFramework.Context<any, any>;
     onGetParameters: () => IDatasetControlParameters;
 }
@@ -27,6 +30,8 @@ export interface ICheckListDatasetControl extends IDatasetControl {
     getControlId(): string;
     /** Which columns carry the label, the order and the completion state. */
     getFieldMapping(): ICheckListFieldMapping;
+    /** Resolves every string the checklist renders. */
+    getLocalizationService(): ILocalizationService<ICheckListLabels>;
 }
 
 /**
@@ -40,6 +45,7 @@ export interface ICheckListDatasetControl extends IDatasetControl {
 export class CheckListDatasetControl extends DatasetControl implements ICheckListDatasetControl {
     private _fieldMapping: ICheckListFieldMapping;
     private _controlId: string;
+    private _localizationService: ILocalizationService<ICheckListLabels>;
 
     constructor(parameters: ICheckListDatasetControlParameters) {
         super({
@@ -50,6 +56,7 @@ export class CheckListDatasetControl extends DatasetControl implements ICheckLis
         });
         this._fieldMapping = parameters.fieldMapping;
         this._controlId = parameters.controlId;
+        this._localizationService = parameters.localizationService;
         //not here: a provider such as FetchXmlDataProvider only knows its columns once it has preloaded,
         //so the mapping waits for the initialization to get that far
         this.setInterceptor('onInitialize', async (parameters, defaultAction) => {
@@ -65,6 +72,10 @@ export class CheckListDatasetControl extends DatasetControl implements ICheckLis
 
     public getFieldMapping(): ICheckListFieldMapping {
         return this._fieldMapping;
+    }
+
+    public getLocalizationService(): ILocalizationService<ICheckListLabels> {
+        return this._localizationService;
     }
 
     public isQuickFindVisible(): boolean {

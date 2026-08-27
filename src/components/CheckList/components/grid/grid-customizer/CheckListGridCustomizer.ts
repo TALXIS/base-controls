@@ -2,6 +2,7 @@ import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, RowDragEvent } 
 import { CellEditingStoppedEvent, CellFocusedEvent, CellValueChangedEvent } from "@ag-grid-community/core";
 import { DataTypes, DatasetConstants, IDataProvider, IRecord, MemoryDataProvider } from "@talxis/client-libraries";
 import { StackRank } from "@utils/stack-rank";
+import { DeleteCell } from "../delete-cell";
 import { ICheckListDatasetControl } from "../../../CheckListDatasetControl";
 
 /** AG Grid's `ColDef`, bound to the grid's record type. */
@@ -12,8 +13,9 @@ type GridApi = GridApiBase<IRecord>;
 /** Only used if a node cannot report its own height, which it always can in practice. */
 const DEFAULT_ROW_HEIGHT = 42;
 
-/** What the new-record row shows instead of the empty-value dashes. */
-const NEW_ITEM_PLACEHOLDER = 'Add an item';
+/** The synthetic trailing column holding each item's delete button. */
+const DELETE_COLUMN_NAME = 'delete';
+const DELETE_COLUMN_WIDTH = 40;
 
 /** What {@link CheckListGridCustomizer} is built from. */
 export interface ICheckListGridCustomizerParameters {
@@ -122,7 +124,74 @@ export class CheckListGridCustomizer {
                 }
             }
         }
+        this._injectDeleteColumn(columnDefs);
         return columnDefs;
+    }
+
+    /**
+     * Appends the delete column. Guarded because this runs on every push of `columnDefs`, not once.
+     *
+     * Carries no `field` and no value pipeline on purpose: the grid attaches its `valueGetter`, `editable`
+     * and `cellRendererParams` only to columns that came from the dataset, so a column added here is left
+     * alone — not editable, no value read off the record. What it does *not* inherit is AG Grid's own
+     * colDef defaults, which have to be turned off by hand below.
+     */
+    private _injectDeleteColumn(columnDefs: ColDef[]) {
+        if (columnDefs.find(colDef => colDef.colId === DELETE_COLUMN_NAME)) {
+            return;
+        }
+        columnDefs.push({
+            colId: DELETE_COLUMN_NAME,
+            headerName: '',
+            width: DELETE_COLUMN_WIDTH,
+            minWidth: DELETE_COLUMN_WIDTH,
+            maxWidth: DELETE_COLUMN_WIDTH,
+            //both explicit: AG Grid's colDef defaults are `{ resizable: true, sortable: true }`, so a
+            //column holding a button would otherwise get a resize handle and a sortable header
+            resizable: false,
+            sortable: false,
+            suppressMovable: true,
+            //the grid sizes its own columns to fit the viewport; without this the button column is
+            //stretched to absorb the slack
+            suppressSizeToFit: true,
+            //sticky to the right edge, so the button stays reachable however far the list is scrolled
+            pinned: 'right',
+            //the user cannot drag it out of the pinned area
+            lockPinned: true,
+            //'right', not true - a plain `true` locks a column to the left
+            lockPosition: 'right',
+            cellRenderer: DeleteCell,
+            cellRendererParams: {
+                onDelete: this._deleteRecord,
+                label: this._datasetControl.getLocalizationService().getLocalizedString('deleteItem')
+            }
+        });
+    }
+
+    /**
+     * Confirms, deletes through the provider, then takes the row out of the grid.
+     *
+     * The provider goes first: a delete it refuses leaves the row on screen, and the store never ends up
+     * disagreeing with the data. Removing from the store is what makes the row go without a refresh —
+     * `deleteRecords` dispatches no events, so nothing else reacts on its own.
+     */
+    private _deleteRecord = async (record: IRecord) => {
+        const localizationService = this._datasetControl.getLocalizationService();
+        const confirmation = await this._datasetControl.getPcfContext().navigation.openConfirmDialog({
+            text: localizationService.getLocalizedString('confirmDialog.deleteItem.text')
+        });
+        if (!confirmation.confirmed) {
+            return;
+        }
+        const result = await this._dataProvider.deleteRecords([record.getRecordId()]);
+        if (!result.success) {
+            this._datasetControl.getPcfContext().navigation.openErrorDialog({
+                message: localizationService.getLocalizedString('deletingItemError'),
+                details: result.results.map(operation => operation.errorMessage).filter(Boolean).join('\n')
+            });
+            return;
+        }
+        this._gridApi.applyServerSideTransaction({ remove: [record] });
     }
 
     /**
@@ -314,7 +383,7 @@ export class CheckListGridCustomizer {
             (parameters) => ({
                 ...parameters,
                 Placeholder: {
-                    raw: NEW_ITEM_PLACEHOLDER,
+                    raw: this._datasetControl.getLocalizationService().getLocalizedString('newItemPlaceholder'),
                     type: DataTypes.SingleLineText
                 }
             })
@@ -354,7 +423,8 @@ export class CheckListGridCustomizer {
             return;
         }
         const colKey = typeof event.column === 'string' ? event.column : event.column?.getColId();
-        if (!colKey) {
+        //the delete column holds a button, not a value - there is nothing to edit in it
+        if (!colKey || colKey === DELETE_COLUMN_NAME) {
             return;
         }
         //startEditingCell focuses the cell in turn, so without this the two would call each other for ever
@@ -407,11 +477,7 @@ export class CheckListGridCustomizer {
         //a fresh draft immediately, so the row is ready to type in while the save is still in flight
         this._resetDraft();
 
-        const result = this._gridApi.applyServerSideTransaction({ add: [record], addIndex: rowCount });
-        //after the transaction, so the node exists to flash
-        if (result?.add?.length) {
-            this._gridApi.flashCells({ rowNodes: result.add });
-        }
+        this._gridApi.applyServerSideTransaction({ add: [record], addIndex: rowCount });
 
         //both deferred, and for the same reason: the transaction has been applied but the grid has not
         //yet recomputed row bounds or rebuilt the pinned row, so neither the new row can be scrolled to

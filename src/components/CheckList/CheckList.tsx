@@ -2,8 +2,9 @@ import * as React from "react";
 import { Dataset, IDataProvider } from "@talxis/client-libraries";
 import { DatasetControl as DatasetControlRenderer } from "@components/DatasetControl";
 import { Grid } from "./components/grid";
-import { usePcfContext } from "@utils";
+import { LocalizationService, usePcfContext } from "@utils";
 import { CheckListDatasetControl, ICheckListDatasetControl, ICheckListFieldMapping } from "./CheckListDatasetControl";
+import { CHECK_LIST_LABELS, ICheckListLabels } from "./labels";
 
 /** Props for {@link CheckList}. */
 export interface ICheckListProps {
@@ -14,6 +15,8 @@ export interface ICheckListProps {
     provider: IDataProvider;
     /** Which columns in the provider's data carry the label, the order and the completion state. */
     fieldMapping: ICheckListFieldMapping;
+    /** Overrides for any subset of the UI strings. See {@link ICheckListLabels}. */
+    labels?: Partial<ICheckListLabels>;
     /**
      * Height for the control — a fixed value such as `'600px'`, or `'100%'` to fill the element you
      * render it into. Left unset, the control is only as tall as the grid's own minimum.
@@ -38,6 +41,7 @@ export interface ICheckListProps {
  */
 export const CheckList = (props: ICheckListProps) => {
     const pcfContext = usePcfContext();
+    const localizationService = React.useMemo(() => new LocalizationService({ ...CHECK_LIST_LABELS, ...props.labels }), []);
     const pcfContextRef = React.useRef(pcfContext);
     pcfContextRef.current = pcfContext;
     //the provider and the props the parameters read are held per mount: the control is built once
@@ -50,6 +54,7 @@ export const CheckList = (props: ICheckListProps) => {
         return new CheckListDatasetControl({
             dataset: dataset,
             fieldMapping: props.fieldMapping,
+            localizationService: localizationService,
             controlId: props.controlId ?? `check-list-dataset-control-${crypto.randomUUID()}`,
             onGetPcfContext: () => pcfContextRef.current,
             onGetParameters: () => ({
