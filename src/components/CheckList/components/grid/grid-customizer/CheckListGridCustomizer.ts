@@ -138,10 +138,9 @@ export class CheckListGridCustomizer {
             lockPinned: true,
             //`true` is 'left' - the opposite of the delete column's explicit 'right'
             lockPosition: true,
-            cellRenderer: CompletionCell,
-            cellRendererParams: {
-                label: this._datasetControl.getLocalizationService().getLocalizedString('markItemFinished')
-            }
+            //no `cellRendererParams`: the cell reads the column and its label off the control through
+            //the context it renders in
+            cellRenderer: CompletionCell
         });
     }
 

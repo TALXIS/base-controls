@@ -2,38 +2,54 @@ import * as React from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { Checkbox } from "@fluentui/react";
 import { IRecord } from "@talxis/client-libraries";
+import { useDatasetControl, useLocalizationService } from "../../../context";
 import { getCompletionCellStyles } from "./styles";
 
-/** What the checklist's completion column hands its cells. */
-export interface ICompletionCellProps extends ICellRendererParams<IRecord> {
-    label: string;
-}
-
 /**
- * The finished-or-not checkbox on one item's row.
+ * The finished-or-not checkbox on one item's row. The whole cell is the hitbox.
  *
- * Renders only — the checkbox is uncontrolled, so it toggles under the cursor but nothing is written to
- * the record and the state is lost on the next refresh.
+ * Takes nothing beyond what AG Grid hands every cell renderer: the column to write and the label to
+ * announce both come off the control, which the cell reaches through the context it already renders in.
+ *
+ * Holds the state it renders rather than reading the record on every render, so the tick follows the
+ * click. Seeded from the record, which is what carries the state across a row being destroyed and
+ * rebuilt.
  *
  * Typed on AG Grid's own params rather than the grid's `ICellProps`: that interface promises a `record`,
  * a `baseColumn` and a `value`, all of which arrive through `cellRendererParams` on a dataset column and
  * are absent on a column injected by the customizer.
  */
-export const CompletionCell = (props: ICompletionCellProps) => {
+export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
     const styles = React.useMemo(() => getCompletionCellStyles(), []);
+    const completedColumnName = useDatasetControl().getFieldMapping().completed;
+    const label = useLocalizationService().getLocalizedString('markItemFinished');
+    const record = props.data;
+    //a TwoOptions field reads back as the string '1' or '0' no matter what it was written with - the
+    //field sanitizes booleans and numbers into that on the way in, initial values included
+    const [completed, setCompleted] = React.useState<boolean>(() => record?.getValue(completedColumnName) === '1');
 
     //an item that does not exist yet cannot be finished. Checking the node, not the data: the new-record
     //row carries a real record, so a falsy-data check would not catch it
-    if (props.node.rowPinned || !props.data) {
+    if (props.node.rowPinned || !record) {
         return null;
     }
 
-    return <div className={styles.completionCellRoot}>
-        <Checkbox
-            title={props.label}
-            ariaLabel={props.label}
-            styles={{
-                checkbox: styles.checkBox
-            }} />
-    </div>
+    const onChange = (isCompleted: boolean) => {
+        setCompleted(isCompleted);
+        record.setValue(completedColumnName, isCompleted);
+        //the save has to be asked for: `EnableAutoSave` is what makes the grid save a cell editor's
+        //commit, and a write from a cell renderer is not one
+        record.save();
+    };
+
+    return <Checkbox
+        checked={completed}
+        title={label}
+        ariaLabel={label}
+        styles={{
+            root: styles.checkBoxRoot,
+            label: styles.checkBoxLabel,
+            checkbox: styles.checkBox
+        }}
+        onChange={(_, checked) => onChange(checked === true)} />
 }

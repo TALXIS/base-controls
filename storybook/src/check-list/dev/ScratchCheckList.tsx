@@ -1,12 +1,12 @@
 import React from 'react'
 import { CheckList, ICheckListFieldMapping } from '@talxis/base-controls'
 import { PcfContextProvider } from '@talxis/base-controls/utils/adapters/pcf-context/PcfContextProvider'
-import { createScratchProvider, NAME_COL, STACK_RANK_COL, STATUS_COL } from './scratchCheckListData'
+import { COMPLETED_COL, createScratchProvider, NAME_COL, STACK_RANK_COL } from './scratchCheckListData'
 
 const FIELD_MAPPING: ICheckListFieldMapping = {
     name: NAME_COL,
     stackRank: STACK_RANK_COL,
-    status: STATUS_COL,
+    completed: COMPLETED_COL,
 }
 
 /**

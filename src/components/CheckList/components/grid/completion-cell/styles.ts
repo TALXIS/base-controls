@@ -2,14 +2,21 @@ import { mergeStyleSets } from "@fluentui/react";
 
 export const getCompletionCellStyles = () => {
     return mergeStyleSets({
-        completionCellRoot: {
-            //filling the cell is required, not cosmetic: the grid zeroes cell padding, so an inline
-            //element would sit hard against the cell's edge instead of centred in it
+        checkBoxRoot: {
+            width: '100%',
+            height: '100%'
+        },
+        //the label is the checkbox's hitbox, so filling the cell with it is what makes the whole cell
+        //toggle. It also carries the centring: the grid zeroes cell padding, so without it the box would
+        //sit hard against the cell's edge
+        checkBoxLabel: {
             width: '100%',
             height: '100%',
-            display: 'flex',
+            //the label is a flex row, so both axes have to be said: `justifyContent` alone leaves the box
+            //centred horizontally but stuck to the top of the cell
+            justifyContent: 'center',
             alignItems: 'center',
-            justifyContent: 'center'
+            cursor: 'pointer'
         },
         //collapses the gutter Fluent reserves for a label. Without it the box sits left of centre by the
         //width of a label this checkbox does not have

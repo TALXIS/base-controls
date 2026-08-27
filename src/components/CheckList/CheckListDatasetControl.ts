@@ -10,8 +10,11 @@ export interface ICheckListFieldMapping {
     name: string;
     /** Column the list is ordered by. Hidden from the grid. */
     stackRank: string;
-    /** Column holding the item's completion state. */
-    status: string;
+    /**
+     * Boolean column the item's completion is stored in. Hidden from the grid - the checklist's own
+     * checkbox column is what shows and changes it.
+     */
+    completed: string;
 }
 
 /** What {@link CheckListDatasetControl} is built from. */
@@ -100,23 +103,24 @@ export class CheckListDatasetControl extends DatasetControl implements ICheckLis
     }
 
     /**
-     * Orders the list by the stack rank and lays the columns out: the label first, the status after it,
-     * the stack rank hidden. Mutating the map and setting the columns back is what triggers the sort.
+     * Orders the list by the stack rank and lays the columns out: the label first, with the stack rank
+     * and the completion both hidden - the former is only an ordering, the latter has the checkbox
+     * column. Mutating the map and setting the columns back is what triggers the sort.
      *
      * Runs from the `onInitialize` interceptor, after the provider preloaded and before the first page
      * is fetched — so the sorting is already on the provider when the records load.
      */
     private _applyFieldMapping(): void {
         const provider: IDataProvider = this.getDataset().getDataProvider();
-        const { name, stackRank, status } = this._fieldMapping;
+        const { name, stackRank, completed } = this._fieldMapping;
         const columnsMap = provider.getColumnsMap();
         this._assertColumnExists(columnsMap, 'name', name);
         this._assertColumnExists(columnsMap, 'stackRank', stackRank);
-        this._assertColumnExists(columnsMap, 'status', status);
+        this._assertColumnExists(columnsMap, 'completed', completed);
 
         columnsMap[stackRank].isHidden = true;
+        columnsMap[completed].isHidden = true;
         columnsMap[name].order = 0;
-        columnsMap[status].order = 1;
         provider.setColumns(provider.getColumns());
         provider.setSorting([{
             name: stackRank,
