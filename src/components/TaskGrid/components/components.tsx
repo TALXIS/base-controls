@@ -1,6 +1,5 @@
 import * as React from "react";
-import { ISkeletonProps } from "./skeleton";
-import { Skeleton } from "./skeleton";
+import { ISkeletonProps, Skeleton } from "@components/DatasetControl/skeleton";
 import { ICommandBarProps } from "@legacy";
 import { CommandBar } from "./header/command-bar";
 import type { ICellProps } from "@components/Grid/cells/cell/Cell";

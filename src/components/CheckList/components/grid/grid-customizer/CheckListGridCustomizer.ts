@@ -65,12 +65,21 @@ export class CheckListGridCustomizer {
         this._gridApi = parameters.gridApi;
         this._datasetControl = parameters.datasetControl;
         this._patchGridApi();
-        this._enableRowDragging();
-        this._enableNewRecordRow();
+        //a read-only checklist has neither: reordering writes a rank, and a row that adds an item has
+        //nothing to type into once the grid stops opening cell editors
+        if (this._isEditingEnabled) {
+            this._enableRowDragging();
+            this._enableNewRecordRow();
+        }
     }
 
     private get _dataProvider(): IDataProvider {
         return this._datasetControl.getDataset().getDataProvider();
+    }
+
+    /** Whether items can be changed at all. Everything the checklist adds for changing one asks first. */
+    private get _isEditingEnabled(): boolean {
+        return this._datasetControl.getParameters().EnableEditing?.raw !== false;
     }
 
     /**
@@ -174,7 +183,7 @@ export class CheckListGridCustomizer {
      * colDef defaults, which have to be turned off by hand below.
      */
     private _injectDeleteColumn(columnDefs: ColDef[]) {
-        if (columnDefs.find(colDef => colDef.colId === DELETE_COLUMN_NAME)) {
+        if (!this._isEditingEnabled || columnDefs.find(colDef => colDef.colId === DELETE_COLUMN_NAME)) {
             return;
         }
         columnDefs.push({
@@ -208,27 +217,21 @@ export class CheckListGridCustomizer {
     /**
      * Confirms, deletes through the provider, then takes the row out of the grid.
      *
-     * The provider goes first: a delete it refuses leaves the row on screen, and the store never ends up
-     * disagreeing with the data. Removing from the store is what makes the row go without a refresh —
-     * `deleteRecords` dispatches no events, so nothing else reacts on its own.
+     * Removing from the store is what makes the row go without a refresh — `deleteRecords` dispatches no
+     * events, so nothing else reacts on its own.
      */
     private _deleteRecord = async (record: IRecord) => {
-        const localizationService = this._datasetControl.getLocalizationService();
         const confirmation = await this._datasetControl.getPcfContext().navigation.openConfirmDialog({
-            text: localizationService.getLocalizedString('confirmDialog.deleteItem.text')
+            text: this._datasetControl.getLocalizationService().getLocalizedString('confirmDialog.deleteItem.text')
         });
         if (!confirmation.confirmed) {
             return;
         }
-        const result = await this._dataProvider.deleteRecords([record.getRecordId()]);
-        if (!result.success) {
-            this._datasetControl.getPcfContext().navigation.openErrorDialog({
-                message: localizationService.getLocalizedString('deletingItemError'),
-                details: result.results.map(operation => operation.errorMessage).filter(Boolean).join('\n')
-            });
-            return;
-        }
+        await this._dataProvider.deleteRecords([record.getRecordId()]);
         this._gridApi.applyServerSideTransaction({ remove: [record] });
+        this._datasetControl.events.dispatchEvent('onItemDeleted', record.getRecordId());
+        //a delete is the one change that never ends in a save, so it reports the new list itself
+        this._datasetControl.events.dispatchEvent('onDataChanged', this._datasetControl.getData());
     }
 
     /**
@@ -343,6 +346,9 @@ export class CheckListGridCustomizer {
             previousRecord?.getValue(stackRankColumn),
             nextRecord?.getValue(stackRankColumn)
         ));
+        //before the save, so a consumer always hears what happened before it hears about the save it
+        //caused - the same order every other event of the checklist's arrives in
+        this._datasetControl.events.dispatchEvent('onItemMoved', record.getRecordId());
         //explicitly: the grid saves an edit made through a cell editor, but nothing saves a value set
         //from code, and `autoSave` only decides whether the ribbon offers a save command
         await record.save();
@@ -576,6 +582,7 @@ export class CheckListGridCustomizer {
             this._gridApi.ensureIndexVisible(rowCount, 'bottom');
             this._startEditingDraft();
         }, 0);
+        this._datasetControl.events.dispatchEvent('onItemCreated', record.toRawData());
         await record.save();
     }
 

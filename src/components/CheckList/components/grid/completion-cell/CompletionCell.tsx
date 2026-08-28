@@ -21,9 +21,12 @@ import { getCompletionCellStyles } from "./styles";
  */
 export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
     const styles = React.useMemo(() => getCompletionCellStyles(), []);
-    const fieldMapping = useDatasetControl().getFieldMapping();
+    const datasetControl = useDatasetControl();
+    const fieldMapping = datasetControl.getFieldMapping();
     const completedColumnName = fieldMapping.completed;
     const label = useLocalizationService().getLocalizedString('markItemFinished');
+    //a read-only checklist still shows what is finished, it just cannot change it
+    const isEditingEnabled = datasetControl.getParameters().EnableEditing?.raw !== false;
     const record = props.data;
     //a TwoOptions field reads back as the string '1' or '0' no matter what it was written with - the
     //field sanitizes booleans and numbers into that on the way in, initial values included
@@ -44,10 +47,12 @@ export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
         //the save has to be asked for: `EnableAutoSave` is what makes the grid save a cell editor's
         //commit, and a write from a cell renderer is not one
         record.save();
+        datasetControl.events.dispatchEvent('onItemCompletionChanged', record.getRecordId(), isCompleted);
     };
 
     return <Checkbox
         checked={completed}
+        disabled={!isEditingEnabled}
         title={label}
         ariaLabel={label}
         styles={{

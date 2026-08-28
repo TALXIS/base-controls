@@ -17,3 +17,7 @@ export * from './Duration';
 export * from './GridInlineRibbon';
 export * from './CheckList';
 export * from './TaskGrid';
+//not re-exported through './DatasetControl': `Skeleton` has meant the form's since before this one
+//existed, and two of that name cannot live in one flat barrel
+export { Skeleton as DatasetControlSkeleton } from './DatasetControl/skeleton';
+export type { ISkeletonProps as IDatasetControlSkeletonProps } from './DatasetControl/skeleton';

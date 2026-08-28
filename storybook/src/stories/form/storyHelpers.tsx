@@ -123,10 +123,15 @@ interface IExampleRunnerProps {
     renderPreview: () => React.ReactNode
     renderCode: () => React.ReactNode
     error?: string | null
+    /**
+     * Overrides the frame's own minimum. Pass `0` for a control that sizes itself, so the preview is as
+     * tall as the control rather than leaving space under it.
+     */
+    previewMinHeight?: number
 }
 
 /** Toggles between a live preview and its source, shared by every "editable example" doc page. */
-export const ExampleRunner = ({ renderPreview, renderCode, error }: IExampleRunnerProps) => {
+export const ExampleRunner = ({ renderPreview, renderCode, error, previewMinHeight }: IExampleRunnerProps) => {
     const [showCode, setShowCode] = React.useState(false)
 
     return (
@@ -140,7 +145,7 @@ export const ExampleRunner = ({ renderPreview, renderCode, error }: IExampleRunn
                 />
             </div>
             <div className={exampleRunnerStyles.body}>
-                <div className={exampleRunnerStyles.previewFrame}>
+                <div className={exampleRunnerStyles.previewFrame} style={previewMinHeight === undefined ? undefined : { minHeight: previewMinHeight }}>
                     <div className={exampleRunnerStyles.viewportWindow}>
                         {showCode ? <div className={exampleRunnerStyles.codeFrame}>{renderCode()}</div> : renderPreview()}
                     </div>

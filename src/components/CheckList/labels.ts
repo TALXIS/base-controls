@@ -8,14 +8,11 @@ export interface ICheckListLabels {
     deleteItem: string;
     /** Asked before an item is deleted. */
     'confirmDialog.deleteItem.text': string;
-    /** Shown when the provider refused to delete an item. */
-    deletingItemError: string;
 }
 
 export const CHECK_LIST_LABELS: ICheckListLabels = {
     newItemPlaceholder: 'Add an item...',
     markItemFinished: 'Mark as finished',
     deleteItem: 'Delete',
-    'confirmDialog.deleteItem.text': 'Are you sure you want to delete this item?',
-    deletingItemError: 'The item could not be deleted.'
+    'confirmDialog.deleteItem.text': 'Are you sure you want to delete this item?'
 };

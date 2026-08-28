@@ -5,7 +5,7 @@ const COLUMN_HEADER_HEIGHT = 42;
 const ROW_HEIGHT = 42;
 const FOOTER_HEIGHT = 44;
 
-export const getSkeletonStyles = (theme: ITheme) => {
+export const getSkeletonStyles = (theme: ITheme, hasFixedHeight: boolean) => {
     const shimmerKeyframe = keyframes({
         '0%': { backgroundPosition: '-600px 0' },
         '100%': { backgroundPosition: '600px 0' },
@@ -77,10 +77,14 @@ export const getSkeletonStyles = (theme: ITheme) => {
             borderRadius: 2,
             flexShrink: 0,
         },
-        rows: {
+        //growing into the leftover space only works against a container that has a height of its own;
+        //with none, the rows are what give the placeholder its height
+        rows: hasFixedHeight ? {
             flexGrow: 1,
             overflow: 'auto',
             height: 0
+        } : {
+            height: 'auto'
         },
         row: {
             height: ROW_HEIGHT,
