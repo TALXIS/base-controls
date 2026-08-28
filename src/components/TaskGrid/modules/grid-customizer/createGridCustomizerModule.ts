@@ -3,8 +3,14 @@ import { IGridCustomizerModule } from "../interfaces";
 
 /** Options for {@link createGridCustomizerModule}. */
 export interface IGridCustomizerModuleOptions {
-    /** Hooks into the grid's column definitions and row class rules. */
-    strategy: IGridCustomizerStrategy;
+    /**
+     * Hooks into the grid's column definitions and row class rules.
+     *
+     * Typed loosely on purpose: both hooks are optional, so a strategy that does all its work in its
+     * constructor implements neither — and TypeScript refuses to assign a class with members of its own
+     * to an all-optional interface. The grid still only ever calls the two hooks.
+     */
+    strategy: IGridCustomizerStrategy | any;
 }
 
 /**

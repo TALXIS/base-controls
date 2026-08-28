@@ -52,6 +52,7 @@ export interface ICellValues {
 
 export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _grid: GridModel;
+    private _totalRowSubscribed: boolean = false;
     private _dataSource: ServerSideDatasource;
     private _gridApi: GridApi | undefined;
     private _hasUserResizedColumns: boolean = false;
@@ -379,6 +380,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._dataset.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded());
         this._dataset.addEventListener('onRenderRequested', () => this.executeWithGridApi(gridApi => gridApi.refreshCells()));
         this._dataset.addEventListener('onFirstDataLoaded', () => this._setTotalRow());
+        this._grid.addTotalRowCreatedListener(() => this._setTotalRow());
         this.executeWithGridApi(gridApi => {
             gridApi.addEventListener('gridSizeChanged', () => this._autoSizeColumns());
             gridApi.addEventListener('firstDataRendered', () => this._autoSizeColumns());
@@ -403,10 +405,20 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         });
     }
 
+    //idempotent: the total row provider only comes into existence once the dataset carries an
+    //aggregation, which can happen long after the grid mounted. Grids that never aggregate leave the
+    //pinned rows alone entirely - other features own that row (see CheckListGridCustomizer)
     private _setTotalRow() {
-        const totalRowDataProvider = this._grid.getTotalRow().getDataProvider();
-        totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
-        totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
+        const totalRow = this._grid.ensureTotalRow();
+        if (!totalRow) {
+            return;
+        }
+        if (!this._totalRowSubscribed) {
+            this._totalRowSubscribed = true;
+            const totalRowDataProvider = totalRow.getDataProvider();
+            totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
+            totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
+        }
         this._setPinnedRowData();
     }
 
@@ -518,6 +530,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._refreshServerSideModel();
         this._setCurrentColumns();
         this._scrollToTop();
+        //a view change can bring in aggregated columns, which is what creates the total row
+        this._setTotalRow();
     }
 
     private _refreshServerSideModel() {
@@ -763,7 +777,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private _setPinnedRowData() {
-        const totalRecord = this._grid.getTotalRow().getTotalRowRecord();
+        const totalRecord = this._grid.getTotalRow()?.getTotalRowRecord() ?? null;
         this.executeWithGridApi(gridApi => gridApi.setGridOption('pinnedBottomRowData', totalRecord ? [totalRecord] : []));
     }
 

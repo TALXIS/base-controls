@@ -290,7 +290,7 @@ declare const createUserQueryModule: (options: {
 /** Task templates. Bring the provider; the module brings the picker. */
 declare const createTemplateModule: (options: { provider: any }) => any;
 /** Direct access to AG Grid. Bring the customizer strategy. */
-declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
+declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy | any }) => any;
 /** Task dependencies. Bring the strategy and the services your builder was handed. */
 declare const createDependenciesModule: (options: { strategy: any; services: ITaskGridServices }) => any;
 /** Task checklists. Bring the strategy and the services your builder was handed. */

@@ -44,11 +44,12 @@ export class GridModel {
     private _labels: Required<ITranslation<typeof gridTranslations>>;
     private _theme: ITheme;
     private _sorting: Sorting;
-    private _totalRow: TotalRow
+    private _totalRow?: TotalRow;
     private _grouping: Grouping;
     private _filtering: Filtering;
     private _nestedProviderPagingLimitNotificationId: string | null = null;
     private _cachedGridColumnsMap: Map<string, IGridColumn> = new Map();
+    private _totalRowCreatedListeners: (() => void)[] = [];
 
     constructor({ onGetProps, labels, theme }: IGridDependencies) {
         this._getProps = onGetProps;
@@ -58,7 +59,6 @@ export class GridModel {
         this.evenRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.white, this._theme.semanticColors.bodyText);
         const provider = this.getDataset().getDataProvider();
         this._sorting = new Sorting(provider);
-        this._totalRow = new TotalRow(provider);
         this._filtering = new Filtering(provider, FieldValue);
         this._grouping = new Grouping(provider);
         this._registerEventListeners();
@@ -556,14 +556,14 @@ export class GridModel {
     public addAggregation(columnName: string, aggregationFunction: AggregationFunction) {
         this._getInternalDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._setAggregationDecorator(() => {
-                this._totalRow.addAggregation(columnName, aggregationFunction)
+                (this._totalRow ?? this._createTotalRow()).addAggregation(columnName, aggregationFunction)
             })
         })
     }
     public removeAggregation(alias: string) {
         this._getInternalDataProvider().executeWithUnsavedChangesBlocker(() => {
             this._setAggregationDecorator(() => {
-                this._totalRow.removeAggregation(alias);
+                this._totalRow?.removeAggregation(alias);
             })
         })
     }
@@ -612,8 +612,24 @@ export class GridModel {
             this._dataset.refresh();
         })
     }
-    public getTotalRow() {
+    /**
+     * Returns the total row provider, but only if it has already been created.
+     */
+    public getTotalRow(): TotalRow | undefined {
         return this._totalRow;
+    }
+
+    //the provider clones the whole data provider, so it is only created once the dataset
+    //actually carries an aggregation
+    public ensureTotalRow(): TotalRow | undefined {
+        if (this._totalRow || !this._isDatasetAggregated()) {
+            return this._totalRow;
+        }
+        return this._createTotalRow();
+    }
+
+    public addTotalRowCreatedListener(listener: () => void) {
+        this._totalRowCreatedListeners.push(listener);
     }
     public getFiltering() {
         return this._filtering;
@@ -777,6 +793,17 @@ export class GridModel {
         return !!column.metadata?.IsValidForUpdate;
     }
 
+    private _isDatasetAggregated(): boolean {
+        return this.getDataset().getDataProvider().getColumns().some(column => !!column.aggregation?.aggregationFunction);
+    }
+
+    private _createTotalRow(): TotalRow {
+        //assign before notifying so listeners reading the provider back see the instance
+        this._totalRow = new TotalRow(this.getDataset().getDataProvider());
+        this._totalRowCreatedListeners.map(listener => listener());
+        return this._totalRow;
+    }
+
     private _canColumnBeAggregated(column: IColumn): boolean {
         //aggregations disabled by default
         if (this.getParameters().EnableAggregation?.raw !== true) {
@@ -790,7 +817,7 @@ export class GridModel {
 
     private _registerEventListeners() {
         this._dataset.addEventListener('onAfterRecordSaved', () => this._refreshTotalRowOnAutoSave());
-        this._dataset.addEventListener('onAfterSaved', () => this._totalRow.refresh());
+        this._dataset.addEventListener('onAfterSaved', () => this._totalRow?.refresh());
         this._dataset.addEventListener('onNestedProviderPagingLimitReached', () => this._showNestedProviderPagingLimitNotification());
         this._setGroupingInterceptor();
     }
@@ -807,7 +834,7 @@ export class GridModel {
     }
     private _refreshTotalRowOnAutoSave() {
         if (this.isAutoSaveEnabled()) {
-            this._totalRow.refresh()
+            this._totalRow?.refresh()
         }
     }
 
