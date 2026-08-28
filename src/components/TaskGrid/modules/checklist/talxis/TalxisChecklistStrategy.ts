@@ -4,7 +4,7 @@ import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { applyColumn } from "@components/TaskGrid/providers/saved-query";
 
 /** The field each task carries its whole checklist in, as a JSON array. */
-const CHECKLIST_FIELD = 'talxis_checklist';
+const CHECKLIST_FIELD = 'talxis_checklistjson';
 
 /** Constructor parameters for {@link TalxisChecklistStrategy}. */
 export interface ITalxisChecklistStrategyParams {
