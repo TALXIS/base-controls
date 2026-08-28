@@ -22,8 +22,7 @@ import { getCompletionCellStyles } from "./styles";
 export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
     const styles = React.useMemo(() => getCompletionCellStyles(), []);
     const datasetControl = useDatasetControl();
-    const fieldMapping = datasetControl.getFieldMapping();
-    const completedColumnName = fieldMapping.completed;
+    const completedColumnName = datasetControl.getFieldMapping().completed;
     const label = useLocalizationService().getLocalizedString('markItemFinished');
     //a read-only checklist still shows what is finished, it just cannot change it
     const isEditingEnabled = datasetControl.getParameters().EnableEditing?.raw !== false;
@@ -41,13 +40,9 @@ export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
     const onChange = (isCompleted: boolean) => {
         setCompleted(isCompleted);
         record.setValue(completedColumnName, isCompleted);
-        //the name cell strikes its text through off a class rule, which AG Grid only re-decides when the
-        //cell is refreshed - nothing else asks for that, since this column is not the one that changed
-        props.api.refreshCells({ rowNodes: [props.node], columns: [fieldMapping.name], force: true });
         //the save has to be asked for: `EnableAutoSave` is what makes the grid save a cell editor's
         //commit, and a write from a cell renderer is not one
         record.save();
-        datasetControl.events.dispatchEvent('onItemCompletionChanged', record.getRecordId(), isCompleted);
     };
 
     return <Checkbox

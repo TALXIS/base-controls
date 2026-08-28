@@ -71,7 +71,6 @@ export interface ICheckListDatasetControl extends IDatasetControl {
  */
 export class CheckListDatasetControl extends DatasetControl implements ICheckListDatasetControl {
     public readonly events = new EventEmitter<ICheckListDatasetControlEvents>();
-    private _dataProvider: IDataProvider;
     private _fieldMapping: ICheckListFieldMapping;
     private _controlId: string;
     private _localizationService: ILocalizationService<ICheckListLabels>;
@@ -86,8 +85,7 @@ export class CheckListDatasetControl extends DatasetControl implements ICheckLis
         this._fieldMapping = parameters.fieldMapping;
         this._controlId = parameters.controlId;
         this._localizationService = parameters.localizationService;
-        this._dataProvider = parameters.dataset.getDataProvider();
-        this._registerDataProviderEvents(this._dataProvider);
+        this._registerDataProviderEvents(parameters.dataset.getDataProvider());
         //not here: a provider such as FetchXmlDataProvider only knows its columns once it has preloaded,
         //so the mapping waits for the initialization to get that far
         this.setInterceptor('onInitialize', async (parameters, defaultAction) => {
@@ -97,14 +95,8 @@ export class CheckListDatasetControl extends DatasetControl implements ICheckLis
         });
     }
 
-    /**
-     * Takes the checklist's own listeners off before the base tears the dataset down, and drops whatever
-     * was listening to the checklist's events. Removed one by one rather than cleared: the provider
-     * carries the grid's listeners too.
-     */
+    /** Drops whatever was listening to the checklist's events. The provider clears its own. */
     public destroy(): void {
-        this._dataProvider.removeEventListener('onAfterRecordSaved', this._onAfterRecordSaved);
-        this._dataProvider.removeEventListener('onError', this._onProviderError);
         this.events.clearEventListeners();
         super.destroy();
     }

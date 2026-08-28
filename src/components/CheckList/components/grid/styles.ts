@@ -22,17 +22,6 @@ export const getCheckListGridStyles = (theme: ITheme) => {
             //transition would still be running when the next reflow starts
             [`.${REORDERING_CLASS_NAME} .ag-row`]: {
                 transition: 'transform 0.15s ease-out'
-            },
-            //the new-record row: an input row rather than one of the items, so it reads as muted until
-            //something is typed into it
-            '.ag-floating-bottom .ag-row-pinned': {
-                borderTop: `1px solid ${theme.semanticColors.menuDivider}`,
-                backgroundColor: theme.semanticColors.bodyStandoutBackground,
-                fontStyle: 'italic',
-                color: theme.semanticColors.disabledText,
-                ':hover': {
-                    cursor: 'text'
-                }
             }
         }
     })

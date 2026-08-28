@@ -27,10 +27,8 @@ export interface ICheckListGridCustomizerParameters {
  *
  * Built in the grid's `onGridReady`, before the grid pushes its first columns.
  *
- * Adds no listeners to the data provider, and should not: the checklist never remounts and leaves the
- * provider alive on unmount (`DestroyDatasetOnUnmount` is false, the caller owns it), so a listener
- * registered here would outlive the grid and pile up across mounts. The grid options and the patched
- * `gridApi` are safe because they die with the AG Grid instance.
+ * The grid options and the patched `gridApi` die with the AG Grid instance, and the provider clears its
+ * own listeners when it is destroyed, so nothing here needs taking down by hand.
  */
 export class CheckListGridCustomizer {
     private _gridApi: GridApi;
@@ -65,12 +63,34 @@ export class CheckListGridCustomizer {
         this._gridApi = parameters.gridApi;
         this._datasetControl = parameters.datasetControl;
         this._patchGridApi();
+        this._dataProvider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
         //a read-only checklist has neither: reordering writes a rank, and a row that adds an item has
         //nothing to type into once the grid stops opening cell editors
         if (this._isEditingEnabled) {
             this._enableRowDragging();
             this._enableNewRecordRow();
         }
+    }
+
+    /**
+     * Reports a completion that changed, wherever the write came from — the checkbox, or a consumer
+     * setting the value itself — and redraws the name cell, whose strike-through follows it.
+     *
+     * Every other column's write goes past, the rank the drag writes included.
+     */
+    private _onRecordColumnValueChanged = (record: IRecord, columnName: string, newValue: any) => {
+        const { completed, name } = this._datasetControl.getFieldMapping();
+        if (columnName !== completed) {
+            return;
+        }
+        //the name cell strikes its text through off a class rule, and AG Grid only re-decides those when
+        //the cell is refreshed - nothing else asks for it, since the name is not the column that changed
+        const rowNode = this._gridApi.getRowNode(record.getRecordId());
+        if (rowNode) {
+            this._gridApi.refreshCells({ rowNodes: [rowNode], columns: [name], force: true });
+        }
+        //a TwoOptions field reads back as the string '1' or '0' whatever it was written with
+        this._datasetControl.events.dispatchEvent('onItemCompletionChanged', record.getRecordId(), newValue === '1');
     }
 
     private get _dataProvider(): IDataProvider {
