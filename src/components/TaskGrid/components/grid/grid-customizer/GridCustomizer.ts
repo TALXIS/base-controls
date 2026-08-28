@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
-import { DatasetConstants, IColumn, IRawRecord, IRecord } from "@talxis/client-libraries";
+import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
@@ -91,6 +91,8 @@ export class GridCustomizer implements IGridCustomizer {
     private _services: ITaskGridServiceLocator;
     private _gridDragHandler!: GridDragHandler;
     private _defaultCellComponents: Map<string, IDefaultCellComponents> = new Map();
+    private _recordIdsPendingRowRefresh: Set<string> = new Set();
+    private _isRowRefreshScheduled: boolean = false;
 
     constructor(parameters: IGridCustomizerParameters) {
         this._services = parameters.services;
@@ -540,6 +542,44 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
 
+    /**
+     * Row classes are a function of *saved* state — `isActive()` above all — and AG Grid only re-evaluates
+     * `rowClassRules` when a row node's data changes, never on a `refreshCells`. A record whose values are
+     * edited in place keeps its old classes forever, so every successful save refreshes its row.
+     *
+     * Only on success: a save that failed leaves the record dirty, and the row as the user last saw it.
+     */
+    private _onAfterRecordSaved = (result: IRecordSaveOperationResult) => {
+        if (!result.success) {
+            return;
+        }
+        //a bulk save reports every record on its own, so the rows they map to are refreshed in one pass
+        this._recordIdsPendingRowRefresh.add(result.recordId);
+        if (this._isRowRefreshScheduled) {
+            return;
+        }
+        this._isRowRefreshScheduled = true;
+        setTimeout(() => {
+            this._isRowRefreshScheduled = false;
+            const recordIds = this._recordIdsPendingRowRefresh;
+            this._recordIdsPendingRowRefresh = new Set();
+            this._refreshRowClasses(recordIds);
+        }, 0);
+    }
+
+    /**
+     * Re-pushes each node's own record, which is what makes AG Grid run the row class rules over it again.
+     * `updateData` with the same object refreshes the row's cells instead of replacing them, so an open
+     * cell editor is left alone — `redrawRows` would destroy it mid-edit.
+     */
+    private _refreshRowClasses(recordIds: Set<string>) {
+        for (const node of this._gridApi.getRenderedNodes()) {
+            if (node.data && node.id && recordIds.has(node.id)) {
+                node.updateData(node.data);
+            }
+        }
+    }
+
     private _onAfterTaskDataUpdated = (newData: IRawRecord[]) => {
         const recordIdsSet = new Set(newData.map(item => item[this._taskDataProvider.getMetadata().PrimaryIdAttribute]));
         const nodes = this._gridApi.getRenderedNodes().filter(node => recordIdsSet.has(node.id!));
@@ -554,6 +594,7 @@ export class GridCustomizer implements IGridCustomizer {
         this._taskDataProvider.taskEvents.addEventListener('onAfterTasksCreated', (records, parentId) => this._onAfterTasksCreated(records, parentId));
         this._taskDataProvider.taskEvents.addEventListener('onRecordTreeUpdated', (updatedParentIds) => this._onRecordTreeUpdated(updatedParentIds));
         this._taskDataProvider.taskEvents.addEventListener('onTaskDataUpdated', (newData) => this._onAfterTaskDataUpdated(newData));
+        this._taskDataProvider.addEventListener('onAfterRecordSaved', (result) => this._onAfterRecordSaved(result));
         this._gridDragHandler.addEventListener('onDragEnd', (dragOperation) => this._onDragEnd(dragOperation));
     }
 }

@@ -61,6 +61,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _debouncedSetSelectedNodes: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _expandedRowGroupIds: string[] = [];
     private _chromeHeight: number | undefined;
+    private _visibleOverlay: 'none' | 'loading' | 'noRows' = 'none';
     private _hasUserExpandedRowGroups: boolean = false;
     private _isLoadingNestedProviders: boolean = false;
     private _idsToAddToExpandGroupState = new Set<string>();
@@ -391,9 +392,9 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                     this._setLoadingOverlay(true);
                 }
                 this._setGridHeight();
-                //the only place the overlay is decided: every way rows come and go ends up here, the
-                //provider loading them as much as a control removing one through a server side
-                //transaction - and the latter the provider never hears about
+                //catches rows a control adds or removes through a server side transaction, which the
+                //provider never hears about. A provider load is decided when its loading ends instead,
+                //since the dataset still reports itself as loading while this fires
                 this._setNoRowsOverlay();
             });
             //`modelUpdated` does not fire for pinned rows, so without this the height would stay stale
@@ -783,26 +784,56 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     private _setLoadingOverlay(isLoading: boolean) {
         if (!isLoading) {
-            return this.executeWithGridApi(gridApi => gridApi.hideOverlay());
+            //the load can have come back empty, in which case the no records overlay has to take over
+            //from the loading one - hiding here would leave the grid blank
+            return this._setNoRowsOverlay();
         }
-        this.executeWithGridApi(gridApi => gridApi.showLoadingOverlay());
+        this._setOverlay('loading');
     }
 
     private _setNoRowsOverlay() {
         setTimeout(() => {
+            //the loading overlay owns the grid until the provider is done
             if (this._grid.getDataset().loading) {
                 return;
             }
             this.executeWithGridApi(gridApi => {
-                gridApi.hideOverlay();
                 //asked of the grid rather than the provider, so rows added or removed through a server
                 //side transaction count too. Pinned rows are not displayed rows, so a control's own
                 //floating row does not pass for a record here
-                if (gridApi.getDisplayedRowCount() === 0) {
-                    gridApi.showNoRowsOverlay();
-                }
+                this._setOverlay(gridApi.getDisplayedRowCount() === 0 ? 'noRows' : 'none');
             });
         }, 0);
+    }
+
+    /**
+     * The single way any overlay is shown or hidden. Repeating the overlay the grid already has is not
+     * harmless: AG Grid builds the overlay component asynchronously and ignores a show that arrives
+     * while the previous one is still being built, so a hide/show pair landing in that window leaves
+     * the overlay hidden with no way back.
+     */
+    private _setOverlay(overlay: 'none' | 'loading' | 'noRows') {
+        if (this._visibleOverlay === overlay) {
+            return;
+        }
+        this.executeWithGridApi(gridApi => {
+            //only remembered once it actually reached a grid, so a request made before the api exists
+            //is not mistaken for the overlay being up
+            this._visibleOverlay = overlay;
+            switch (overlay) {
+                case 'loading': {
+                    gridApi.showLoadingOverlay();
+                    break;
+                }
+                case 'noRows': {
+                    gridApi.showNoRowsOverlay();
+                    break;
+                }
+                default: {
+                    gridApi.hideOverlay();
+                }
+            }
+        });
     }
 
     private _isCellEditorEnabled(columnName: string, record: IRecord): boolean {

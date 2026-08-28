@@ -530,6 +530,26 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return super.getRecords();
     }
 
+    /**
+     * WORKAROUND for a bug in `MemoryDataProvider`, and it belongs in `@talxis/client-libraries`, not here.
+     *
+     * The memory provider keeps an id to array slot index over the data source and indexes a newly
+     * created row at `dataSource.length - 1` - the row it was pushed after, not the row itself. The first
+     * raw data update through the new record (a save ends with `setRawData(toRawData())`) therefore
+     * overwrites that neighbour, leaving the data source with two rows carrying the new id, and the next
+     * load refuses them: "duplicate records with the same identifier". Creating a task and then using
+     * quick find is enough to hit it. The `position: 'start'` branch is wrong in the same way - it never
+     * shifts the indexes the unshift moved.
+     *
+     * `setDataSource` rebuilds that index over the array as it now stands, so re-running it after every
+     * create puts every row back on its own slot. Remove this the moment the provider indexes creations
+     * correctly.
+     */
+    public onRecordCreate(record: IRecord, options?: { position: 'start' | 'end' }): void {
+        super.onRecordCreate(record, options);
+        this.setDataSource(this.getDataSource());
+    }
+
     public createNewDataProvider(eventBubbleOptions?: IEventBubbleOptions): IDataProvider {
         return new TaskDataProvider({
             strategy: this._strategy,
@@ -619,13 +639,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
                 rawData: rawRecord,
                 recordId: rawRecord[this.getMetadata().PrimaryIdAttribute],
             },);
-            const stackRankAttributeName = this.getNativeColumns().stackRank;
-            if (record.getValue(stackRankAttributeName) == null) {
-                console.warn(`Record with id ${record.getRecordId()} is missing stack rank value. Setting it to 0.`, record);
-                record.setValue(stackRankAttributeName, 0);
-                const newRawData = record.toRawData()
-                record.setRawData(newRawData);
-            }
             records.push(record);
         }
         if (records.length > 0) {
