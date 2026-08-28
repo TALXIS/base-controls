@@ -105,11 +105,13 @@ export interface IDataverseModules {
      */
     onGetCustomColumnsModule?: (params: IDataverseCustomColumnsParams) => ICustomColumnsModule | undefined;
     /**
-     * AG Grid customization: column definitions, row class rules, one-time init. The strategy is your
-     * own. See [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
+     * AG Grid customization: column definitions and row class rules. The strategy is your own, and takes
+     * the locator like every other. See [**Customizer**](?path=/story/task-grid-customizations-customizer--overview).
      *
      * ```ts
-     * onGetGridCustomizerModule: ({ services }) => createGridCustomizerModule({ strategy: new MyGridCustomizerStrategy() })
+     * onGetGridCustomizerModule: ({ services }) => createGridCustomizerModule({
+     *     strategy: new MyGridCustomizerStrategy({ services }),
+     * })
      * ```
      */
     onGetGridCustomizerModule?: (params: ITaskGridFactoryParams) => IGridCustomizerModule | undefined;

@@ -35,8 +35,8 @@ export const TaskGridExampleRunner = (props: ITaskGridExampleRunnerProps) => {
     const [code, setCode] = React.useState(props.seedCode)
     const [compileError, setCompileError] = React.useState<string | null>(null)
     const debouncedCode = useDebouncedCode(code)
-    //a snippet may define a `gridCustomizerStrategy`; the grid resolves it on every mount, and the
-    //preview remounts whenever the code settles, so an edited strategy takes effect
+    //a snippet may define a `GridCustomizerStrategy` class; the descriptor constructs it on every mount,
+    //and the preview remounts whenever the code settles, so an edited strategy takes effect
     const gridCustomizerStrategyRef = React.useRef<any>(undefined)
     //a snippet may define a `getModules(data)` factory; the descriptor calls it on every mount, so
     //changing which modules are registered takes effect on the next recompile
@@ -45,7 +45,11 @@ export const TaskGridExampleRunner = (props: ITaskGridExampleRunnerProps) => {
     //receives it, so editing the code never reloads the data
     const descriptor = React.useMemo(() => createMemoryTaskGridDescriptor({
         modules: props.modules,
-        onGetGridCustomizerStrategy: () => gridCustomizerStrategyRef.current,
+        //constructed with the locator, exactly as a consumer's strategy is
+        onGetGridCustomizerStrategy: ({ services }) => {
+            const StrategyClass = gridCustomizerStrategyRef.current
+            return StrategyClass ? new StrategyClass({ services }) : undefined
+        },
         onGetModuleOverrides: (data) => getModulesRef.current?.(data),
     }), [])
 
@@ -54,7 +58,7 @@ export const TaskGridExampleRunner = (props: ITaskGridExampleRunnerProps) => {
         renderPreview={() => <TaskGridLivePreview
             code={debouncedCode}
             descriptor={descriptor}
-            onGridCustomizerStrategy={(strategy) => { gridCustomizerStrategyRef.current = strategy }}
+            onGridCustomizerStrategy={(strategyClass) => { gridCustomizerStrategyRef.current = strategyClass }}
             onGetModules={(getModules) => { getModulesRef.current = getModules }}
             onError={setCompileError} />}
         renderCode={() => <TaskGridCodeEditor value={code} onChange={setCode} />} />

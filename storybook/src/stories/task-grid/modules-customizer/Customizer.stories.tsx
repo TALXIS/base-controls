@@ -27,17 +27,29 @@ The other four modules, and how registering one works: [**Modules**](?path=/stor
 
 [**Custom Components**](?path=/story/task-grid-customizations-custom-components--overview) is a convenience over exactly this: it swaps a renderer or an editor without a strategy, without you finding the right column definition, and while handing you the grid's own component to fall back on. Reach for the customizer when that is not enough — when you want a record's *behaviour* rather than its looks, or an ag-grid option TaskGrid never surfaces.
 
-Register it with \`createGridCustomizerModule({ strategy, services })\`, so no subclass is involved — the strategy below is the same on memory and on Dataverse.
+Register it with \`createGridCustomizerModule({ strategy })\`, so no subclass is involved — the strategy below is the same on memory and on Dataverse.
 
-The strategy gets three hooks:
+The strategy takes the locator in its constructor, like every other module's, and does its one-time setup there:
+
+\`\`\`ts
+class MyGridCustomizerStrategy implements IGridCustomizerStrategy {
+    constructor({ services }: ITaskGridFactoryParams) {
+        //registered with the modules, so it is already there
+        services.get('gridCustomizer').registerExpressionDecorator('estimatedeffort', () => …)
+        //the grid is built later, so it is waited for
+        services.whenAvailable('gridApi', (gridApi) => gridApi.setGridOption('animateRows', true))
+    }
+}
+\`\`\`
+
+Two services matter here. \`gridCustomizer\` is registered alongside the modules, so a strategy can \`get\` it straight away: \`registerExpressionDecorator(columnName, registrator)\` runs your registrator only when that column is part of the active view — a saved view need not contain the column you are targeting — and \`getTaskDataProvider()\` / \`getDatasetControl()\` are there for the records and the runtime control, both of which are services in their own right. \`gridApi\` is the raw ag-grid api, and it only exists once AG Grid hands one over, so it is waited for rather than resolved.
+
+Beyond that, two optional hooks are called on the strategy itself:
 
 | Hook | When | What you get |
 |---|---|---|
-| \`onInitialize(customizer)\` | once, after the grid is ready | the \`IGridCustomizer\` — see below |
 | \`onGetColumnDefinitions?(columnDefs)\` | every time the columns are computed | the finished ag-grid \`ColDef[]\`, to return changed |
 | \`onGetRowClassRules?(rules)\` | when the grid sets up its rows | the grid's own row class rules, to extend |
-
-\`IGridCustomizer\` is the way in: \`getGridApi()\` for the raw ag-grid api, \`getTaskDataProvider()\` for the records and provider events, \`getDatasetControl()\` for the runtime control, and \`registerExpressionDecorator(columnName, registrator)\` which runs your registrator only when that column is part of the active view — a saved view need not contain the column you are targeting.
 
 ## What it is for
 
@@ -46,7 +58,7 @@ The strategy gets three hooks:
 - **Rendering, if you want it here** — assigning \`colDef.cellRenderer\` in \`onGetColumnDefinitions\` is what the \`components\` hooks ultimately do for you.
 - **Staying in step with the server** — provider events give you the save lifecycle, so a change that makes the backend recalculate can be fetched back and merged in.
 
-> Flip the **Code** toggle on any story to read its snippet, and edit it: the grid recompiles as you type. A snippet here defines a \`gridCustomizerStrategy\` and the example feeds it to the descriptor.
+> Flip the **Code** toggle on any story to read its snippet, and edit it: the grid recompiles as you type. A snippet here defines a \`GridCustomizerStrategy\` class and the example hands it to the descriptor, which constructs it with the locator.
                 `.trim(),
             },
         },

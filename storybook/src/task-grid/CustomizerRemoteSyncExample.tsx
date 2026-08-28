@@ -33,54 +33,58 @@ const fetchRecalculatedRows = async (provider, recordIds: string[]) => {
     }))
 }
 
-const gridCustomizerStrategy: IGridCustomizerStrategy = {
-    onInitialize: ({ customizer }) => {
-        const provider = customizer.getTaskDataProvider()
+class GridCustomizerStrategy implements IGridCustomizerStrategy {
+    constructor({ services }: ITaskGridFactoryParams) {
+        //registered with the modules, so it is already there when a strategy is built
+        const customizer = services.get('gridCustomizer')
 
-        provider.addEventListener('onRecordLoaded', (record) => {
-            customizer.registerExpressionDecorator('estimatedeffort', () => {
-                //a parent's estimate is the rollup the server computes, so it is not something to type into
-                record.expressions.setDisabledExpression('estimatedeffort', () => {
-                    return provider.getRecordTree().view.hasChildren(record.getRecordId())
-                })
-                //and while the server is recalculating it, that one cell says so
-                record.expressions.ui.setLoadingExpression('estimatedeffort', () => {
-                    return loadingCells.get(record.getRecordId())?.has('estimatedeffort') ?? false
+        //the provider is built after the modules are, so it is waited for rather than resolved here
+        services.whenAvailable('taskDataProvider', (provider) => {
+            provider.addEventListener('onRecordLoaded', (record) => {
+                customizer.registerExpressionDecorator('estimatedeffort', () => {
+                    //a parent's estimate is the rollup the server computes, so it is not something to type into
+                    record.expressions.setDisabledExpression('estimatedeffort', () => {
+                        return provider.getRecordTree().view.hasChildren(record.getRecordId())
+                    })
+                    //and while the server is recalculating it, that one cell says so
+                    record.expressions.ui.setLoadingExpression('estimatedeffort', () => {
+                        return loadingCells.get(record.getRecordId())?.has('estimatedeffort') ?? false
+                    })
                 })
             })
-        })
 
-        provider.addEventListener('onAfterRecordSaved', async (result) => {
-            if (!result.success || !result.fields.some((field) => SYNCED_COLUMNS.includes(field))) {
-                return
-            }
-            //the server rolls the change up the hierarchy, so every ancestor is now stale
-            const ancestorIds = provider.getRecordTree().structure.getAncestorIds(result.recordId).slice(0, -1)
-            if (ancestorIds.length === 0) {
-                return
-            }
+            provider.addEventListener('onAfterRecordSaved', async (result) => {
+                if (!result.success || !result.fields.some((field) => SYNCED_COLUMNS.includes(field))) {
+                    return
+                }
+                //the server rolls the change up the hierarchy, so every ancestor is now stale
+                const ancestorIds = provider.getRecordTree().structure.getAncestorIds(result.recordId).slice(0, -1)
+                if (ancestorIds.length === 0) {
+                    return
+                }
 
-            for (const recordId of ancestorIds) {
-                loadingCells.set(recordId, new Set(SYNCED_COLUMNS))
-            }
-            provider.requestRender()
-
-            try {
-                const rows = await fetchRecalculatedRows(provider, ancestorIds)
-                const primaryId = provider.getMetadata().PrimaryIdAttribute
-                //updateTaskData replaces a record's raw data, so merge the returned columns over what the
-                //grid already holds - the server only sent back what it recalculated
-                const merged = rows
-                    .filter((row) => provider.getRecordsMap()[row[primaryId]])
-                    .map((row) => ({ ...provider.getRecordsMap()[row[primaryId]].getRawData(), ...row }))
-                provider.updateTaskData(merged)
-            }
-            finally {
-                loadingCells.clear()
+                for (const recordId of ancestorIds) {
+                    loadingCells.set(recordId, new Set(SYNCED_COLUMNS))
+                }
                 provider.requestRender()
-            }
+
+                try {
+                    const rows = await fetchRecalculatedRows(provider, ancestorIds)
+                    const primaryId = provider.getMetadata().PrimaryIdAttribute
+                    //updateTaskData replaces a record's raw data, so merge the returned columns over what the
+                    //grid already holds - the server only sent back what it recalculated
+                    const merged = rows
+                        .filter((row) => provider.getRecordsMap()[row[primaryId]])
+                        .map((row) => ({ ...provider.getRecordsMap()[row[primaryId]].getRawData(), ...row }))
+                    provider.updateTaskData(merged)
+                }
+                finally {
+                    loadingCells.clear()
+                    provider.requestRender()
+                }
+            })
         })
-    },
+    }
 }
 
 const TaskGridExample = () => <TaskGrid

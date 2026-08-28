@@ -138,10 +138,8 @@ export interface ICustomColumnsModule {
 
 /** What the grid-customizer module contributes. Built by {@link createGridCustomizerModule}. */
 export interface IGridCustomizerModule {
-    /** Hooks into the grid's core behaviour: column definitions, row class rules, one-time init. */
+    /** Hooks into the grid's column definitions and row class rules. */
     strategy: IGridCustomizerStrategy;
-    /** What the grid hands to the strategy's hooks. */
-    services: ITaskGridServiceLocator;
 }
 
 /**

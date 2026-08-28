@@ -6,11 +6,9 @@ import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
 import { AddTaskButton } from "../cell-renderers/add-task-button";
-import { ILocalizationService } from "@utils";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
-import { INativeColumns, ITaskGridDatasetControl, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
+import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
 import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/TaskGrid/modules/dependencies/DependenciesProvider";
 import { CHECKLIST_COLUMN_NAME } from "@components/TaskGrid/modules/checklist/ChecklistProvider";
 //type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
@@ -29,27 +27,36 @@ export type GridApi = GridApiBase<IRecord>;
 export type RowClassRules = RowClassRulesBase<IRecord>;
 
 
-/** What {@link IGridCustomizerStrategy.onInitialize} is called with. */
-export interface IGridCustomizerInitializeParams extends ITaskGridFactoryParams {
-    /** The AG Grid instance and the grid control, for what the locator does not carry. */
-    customizer: IGridCustomizer;
-}
-
-/** Strategy interface for deep customization of the AG Grid instance inside TaskGrid. */
+/**
+ * Strategy interface for deep customization of the AG Grid instance inside TaskGrid.
+ *
+ * Both hooks are optional, because one-time setup needs neither: the strategy takes the locator in its
+ * constructor like every other module's, and reaches the grid from there.
+ *
+ * ```ts
+ * class MyGridCustomizerStrategy implements IGridCustomizerStrategy {
+ *     constructor({ services }: ITaskGridFactoryParams) {
+ *         //registered with the modules, so it is already there
+ *         services.get('gridCustomizer').registerExpressionDecorator('estimatedeffort', () => …);
+ *         //the grid is built later, so it is waited for
+ *         services.whenAvailable('gridApi', gridApi => gridApi.setGridOption('animateRows', true));
+ *     }
+ * }
+ * ```
+ */
 export interface IGridCustomizerStrategy {
-    /**
-     * Called once after the grid is ready. The place for `registerExpressionDecorator` and other one-time
-     * setup. A customizer is usually a plain object with no constructor, so this is where it is handed
-     * `services` — keep it if anything else it does needs the grid.
-     */
-    onInitialize: (params: IGridCustomizerInitializeParams) => void;
     /** Receives the computed column definitions and may return a modified array. */
     onGetColumnDefinitions?: (columnDefs: ColDef[]) => ColDef[];
     /** Receives the default row class rules map and may return an extended or overridden version. */
     onGetRowClassRules?: (rules: RowClassRules) => RowClassRules;
 }
 
-/** Provides access to the AG Grid instance and the TaskGrid control to code running inside `IGridCustomizerStrategy`. */
+/**
+ * The grid's own AG Grid configuration, registered as the `gridCustomizer` service alongside the modules.
+ *
+ * `getGridApi` resolves the `gridApi` service, so it answers only once the grid has handed one over —
+ * before that it throws, and a strategy that needs the api waits for that service instead.
+ */
 export interface IGridCustomizer {
     /** Returns the underlying AG Grid `GridApi`. */
     getGridApi(): GridApi;
@@ -66,10 +73,8 @@ export interface IGridCustomizer {
 
 /** Constructor parameters for {@link GridCustomizer}. */
 export interface IGridCustomizerParameters {
-    gridApi: GridApi;
-    datasetControl: ITaskGridDatasetControl;
-    strategy?: IGridCustomizerStrategy;
-    onGetComponents: () => ITaskGridComponents;
+    /** Everything it runs on, resolved when it is needed rather than held. */
+    services: ITaskGridServiceLocator;
 }
 
 /** The renderer and editor a column would get before any override is applied. */
@@ -83,38 +88,14 @@ interface IDefaultCellComponents {
  * hands the optional {@link IGridCustomizerStrategy} its chance to change each of them.
  */
 export class GridCustomizer implements IGridCustomizer {
-    private _taskDataProvider: ITaskDataProvider;
-    private _gridApi: GridApi;
-    private _gridDragHandler: GridDragHandler;
-    private _localizationService: ILocalizationService<ITaskGridLabels>;
-    private _nativeColumns: INativeColumns;
-    private _pcfContext: ComponentFramework.Context<any>;
-    private _datasetControl: ITaskGridDatasetControl;
     private _services: ITaskGridServiceLocator;
-    private _strategy?: IGridCustomizerStrategy;
-    private _onGetComponents: () => ITaskGridComponents;
+    private _gridDragHandler!: GridDragHandler;
     private _defaultCellComponents: Map<string, IDefaultCellComponents> = new Map();
 
     constructor(parameters: IGridCustomizerParameters) {
-        this._datasetControl = parameters.datasetControl;
-        const services = this._datasetControl.getServices();
-        this._services = services;
-        this._taskDataProvider = services.get('taskDataProvider');
-        this._gridApi = parameters.gridApi;
-        this._localizationService = services.get('localizationService');
-        this._nativeColumns = services.get('nativeColumns');
-        this._strategy = parameters.strategy;
-        this._onGetComponents = parameters.onGetComponents;
-        this._pcfContext = services.get('pcfContext');
-
-        this._gridDragHandler = new GridDragHandler({
-            gridApi: this._gridApi,
-            datasetControl: this._datasetControl
-        });
-        this._patchGridApi();
-        this._registerEventListeners();
-        this._gridApi.setGridOption('rowClassRules', this._getRowClassRules());
-        this._strategy?.onInitialize?.({ customizer: this, services: this._services });
+        this._services = parameters.services;
+        //nothing here reaches for the grid: this is built with the modules, long before there is one
+        this._services.whenAvailable('gridApi', gridApi => this._attachToGrid(gridApi));
     }
 
     public getDatasetControl(): ITaskGridDatasetControl {
@@ -127,6 +108,49 @@ export class GridCustomizer implements IGridCustomizer {
 
     public getTaskDataProvider(): ITaskDataProvider {
         return this._taskDataProvider;
+    }
+
+    /**
+     * Everything that needs the grid, run the moment there is one — the drag handler writes grid options
+     * from its own constructor, and the patched `setGridOption` has to be in place before the grid pushes
+     * its first columns.
+     *
+     * Once only, for the first api: the control and the grid are built and thrown away together, so a
+     * second api under the same control is a StrictMode double-mount rather than a lifecycle to support.
+     */
+    private _attachToGrid(gridApi: GridApi) {
+        this._gridDragHandler = new GridDragHandler({
+            gridApi: gridApi,
+            datasetControl: this._datasetControl
+        });
+        this._patchGridApi();
+        this._registerEventListeners();
+        gridApi.setGridOption('rowClassRules', this._getRowClassRules());
+    }
+
+    private get _gridApi(): GridApi {
+        return this._services.get('gridApi');
+    }
+
+    private get _datasetControl(): ITaskGridDatasetControl {
+        return this._services.get('datasetControl');
+    }
+
+    private get _taskDataProvider(): ITaskDataProvider {
+        return this._services.get('taskDataProvider');
+    }
+
+    private get _nativeColumns(): INativeColumns {
+        return this._services.get('nativeColumns');
+    }
+
+    private get _components(): ITaskGridComponents {
+        return this._services.get('components');
+    }
+
+    /** The customization the caller registered, if the module is there at all. */
+    private get _strategy(): IGridCustomizerStrategy | undefined {
+        return this._services.find('gridCustomizerModule')?.strategy;
     }
 
     public registerExpressionDecorator(columnName: string, registrator: () => void) {
@@ -294,7 +318,7 @@ export class GridCustomizer implements IGridCustomizer {
         const columnName = (props.colDef?.colId ?? props.colDef?.field) as string;
         const defaults = this._defaultCellComponents.get(columnName) ?? {};
         const component = role === 'renderer' ? defaults.renderer : defaults.editor;
-        const components = this._onGetComponents();
+        const components = this._components;
         const onRender = role === 'renderer' ? components.onRenderCellRenderer : components.onRenderCellEditor;
         return onRender(props, (props) => React.createElement(component, props));
     }

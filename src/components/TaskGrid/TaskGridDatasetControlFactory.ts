@@ -1,4 +1,5 @@
 import { Dataset } from "@talxis/client-libraries";
+import { GridCustomizer } from "./components/grid/grid-customizer/GridCustomizer";
 import { TaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "./labels";
@@ -45,6 +46,11 @@ export class TaskGridDatasetControlFactory {
         //both read what onLoadDependencies resolved, so they follow it rather than the block above
         services.register('gridParameters', () => descriptor.onGetGridParameters?.() ?? {});
         services.register('nativeColumns', () => ({ ...descriptor.onGetFieldMapping(), path: PATH_COLUMN_NAME }));
+
+        //before the modules rather than with the grid: it resolves everything on demand, so it can exist
+        //before any of it does - and a module's strategy is built below, which is what needs it there
+        const gridCustomizer = new GridCustomizer({ services });
+        services.register('gridCustomizer', () => gridCustomizer);
 
         //resolved once: onGetModules is never called again for this instance. Registering from what it
         //returned keeps the modules and the pieces they bring reachable from one place

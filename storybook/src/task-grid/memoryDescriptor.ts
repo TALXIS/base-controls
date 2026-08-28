@@ -1,7 +1,7 @@
 import { Operators } from '@talxis/client-libraries';
 import type { IRawRecord } from '@talxis/client-libraries';
 import { createChecklistModule, createDependenciesModule, createGridCustomizerModule, createLookupManyModule, createTemplateModule, createUserQueryModule, MemoryChecklistStrategy, MemoryLookupManyDataProviderFactory, MemoryTaskDependencyStrategy, MemoryTaskGridDescriptor, MemoryTaskStrategy, MemoryTemplateDataProvider, MemoryUserQueryStrategy } from '@talxis/base-controls';
-import type { IChecklistItem, IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery, ITaskDependency, ITaskGridServiceLocator } from '@talxis/base-controls';
+import type { IChecklistItem, IGridCustomizerStrategy, IMemoryEntitySource, IMemoryModules, IMemoryTaskGridDescriptorInitializeResult, IMemoryTaskStrategyContext, IMemoryTemplateSource, ISavedQuery, ITaskDependency, ITaskGridFactoryParams, ITaskGridServiceLocator } from '@talxis/base-controls';
 
 /**
  * `filtering.filterOperator` has no named enum in the ComponentFramework typings — the grid reads
@@ -57,8 +57,8 @@ interface ICreateMemoryTaskGridDescriptorOptions {
      * a live example can define its own `modules` and have an edit take effect.
      */
     onGetModuleOverrides?: (data: IMemoryModuleData) => IMemoryModules | undefined;
-    /** Registered as the `gridCustomizer` module. Resolved once, on mount. */
-    onGetGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
+    /** Registered as the `gridCustomizer` module. Built once per mount, with the locator. */
+    onGetGridCustomizerStrategy?: (params: ITaskGridFactoryParams) => IGridCustomizerStrategy | undefined;
     /**
      * Replaces the hand-written fixture records, keeping the views, columns, templates and lookup
      * sources. The dev stories use it to mount a generated dataset.
@@ -113,8 +113,8 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
             return createTemplateModule({ provider: new MemoryTemplateDataProvider({ templates, services }) });
         },
         onGetGridCustomizerModule: ({ services }) => {
-            const strategy = options?.onGetGridCustomizerStrategy?.();
-            return strategy ? createGridCustomizerModule({ strategy, services }) : undefined;
+            const strategy = options?.onGetGridCustomizerStrategy?.({ services });
+            return strategy ? createGridCustomizerModule({ strategy }) : undefined;
         },
         onGetDependenciesModule: ({ services }) => !isEnabled('dependencies') ? undefined : createDependenciesModule({
             strategy: new MemoryTaskDependencyStrategy({ dependencies, services }),

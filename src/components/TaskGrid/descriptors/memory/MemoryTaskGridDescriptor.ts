@@ -47,7 +47,7 @@ export interface IMemoryModules {
      * the strategy is your own.
      */
     onGetCustomColumnsModule?: (params: ITaskGridFactoryParams) => ICustomColumnsModule | undefined;
-    /** AG Grid customization. `createGridCustomizerModule({ strategy, services })`. */
+    /** AG Grid customization. `createGridCustomizerModule({ strategy: new MyStrategy({ services }) })`. */
     onGetGridCustomizerModule?: (params: ITaskGridFactoryParams) => IGridCustomizerModule | undefined;
     /**
      * Candidate records for lookup-many columns. `createLookupManyModule({ createDataProvider, services })`, where

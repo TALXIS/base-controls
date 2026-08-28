@@ -6,6 +6,8 @@ import type { INativeColumns, ITaskGridDatasetControl, ITaskGridDescriptor, ITas
 import type { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import type { ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
 import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
+import type { GridApi, IGridCustomizer } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
+import type { ITaskGridComponents } from "@components/TaskGrid/components/components";
 
 /**
  * Every dependency the grid can hand out, keyed by name and typed by its contract.
@@ -28,6 +30,18 @@ export interface ITaskGridServiceMap {
     nativeColumns: INativeColumns;
     /** The control instance backing the current mount. */
     datasetControl: ITaskGridDatasetControl;
+    /** The replaceable parts of the grid's UI, as the caller's `components` prop resolved them. */
+    components: ITaskGridComponents;
+    /**
+     * The grid's own AG Grid configuration: column definitions, row class rules, cell components.
+     * Registered with the modules, so it is there before the grid is.
+     */
+    gridCustomizer: IGridCustomizer;
+    /**
+     * The raw AG Grid api. Registered the moment AG Grid hands one over, which is after everything else —
+     * so wait for it with `whenAvailable` rather than resolving it in a constructor.
+     */
+    gridApi: GridApi;
     /** The grid's data layer: the tasks, the hierarchy, and every task operation. */
     taskDataProvider: ITaskDataProvider;
     /** The views the grid runs on. */

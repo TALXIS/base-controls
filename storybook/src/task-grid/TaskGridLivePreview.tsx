@@ -25,8 +25,11 @@ interface ITaskGridLivePreviewProps {
      * recreating it on every edit would reload the grid and throw the session away.
      */
     descriptor: ITaskGridDescriptor
-    /** Receives the `gridCustomizerStrategy` the snippet defined, if it defined one. */
-    onGridCustomizerStrategy?: (strategy: any) => void
+    /**
+     * Receives the `GridCustomizerStrategy` class the snippet defined, if it defined one. The class, not
+     * an instance: it takes the locator, which only the descriptor holds.
+     */
+    onGridCustomizerStrategy?: (strategyClass: any) => void
     /** Receives the `getModules` factory the snippet defined, if it defined one. */
     onGetModules?: (getModules: any) => void
     onError?: (error: string | null) => void
@@ -88,7 +91,7 @@ export const TaskGridLivePreview = (props: ITaskGridLivePreviewProps) => {
                 `${transformed}
                  return {
                    Component: typeof TaskGridExample !== "undefined" ? TaskGridExample : null,
-                   strategy: typeof gridCustomizerStrategy !== "undefined" ? gridCustomizerStrategy : undefined,
+                   strategy: typeof GridCustomizerStrategy !== "undefined" ? GridCustomizerStrategy : undefined,
                    getModules: typeof getModules !== "undefined" ? getModules : undefined,
                  };`,
             )

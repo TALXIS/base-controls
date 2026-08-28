@@ -1,7 +1,6 @@
 import { IGrid, Grid as GridBase } from "@components/Grid"
 import * as React from "react"
-import { useAgGridLicenseKey, useDatasetControl, useServices, useTaskDataProvider, useTaskGridComponents } from "@components/TaskGrid/context";
-import { GridReadyEvent } from "@ag-grid-community/core";
+import { useAgGridLicenseKey, useServices, useTaskDataProvider } from "@components/TaskGrid/context";
 import { GridCustomizer } from "./grid-customizer/GridCustomizer";
 import { IRecord } from "@talxis/client-libraries";
 
@@ -10,21 +9,7 @@ import { IRecord } from "@talxis/client-libraries";
 export const Grid = (props: IGrid) => {
     const licenseKey = useAgGridLicenseKey();
     const taskDataProvider = useTaskDataProvider();
-    const gridCustomizerRef = React.useRef<GridCustomizer>();
-    const datasetControl = useDatasetControl();
     const services = useServices();
-    const components = useTaskGridComponents();
-    const componentsRef = React.useRef(components);
-    componentsRef.current = components;
-
-    const onGridReady = (event: GridReadyEvent) => {
-        gridCustomizerRef.current = new GridCustomizer({
-            datasetControl,
-            gridApi: event.api,
-            strategy: services.find('gridCustomizerModule')?.strategy,
-            onGetComponents: () => componentsRef.current
-        })
-    }
 
     return <GridBase {...props}
         parameters={{
@@ -42,7 +27,7 @@ export const Grid = (props: IGrid) => {
                 isServerSideGroup: (record: IRecord) => taskDataProvider.getRecordTree().view.hasChildren(record.getRecordId()),
                 getServerSideGroupKey: (record: IRecord) => record.getRecordId(),
                 onGridReady: (event) => {
-                    onGridReady(event);
+                    services.register('gridApi', () => event.api);
                     props.onGridReady?.(event);
                 }
             }

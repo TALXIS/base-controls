@@ -128,6 +128,9 @@ export const TaskGrid = (props: ITaskGridProps) => {
     const { descriptor } = props;
     const stateRef = useRef<ITaskGridState>({});
     const components = { ...TaskGridComponents, ...props.components };
+    //read through a ref by the components service: the merge above runs on every render
+    const componentsRef = useRef(components);
+    componentsRef.current = components;
     const pcfContext = usePcfContext();
     const pcfContextRef = useRef(pcfContext);
     pcfContextRef.current = pcfContext;
@@ -146,6 +149,9 @@ export const TaskGrid = (props: ITaskGridProps) => {
             state: stateRef.current,
             onGetPcfContext: () => pcfContextRef.current!,
         });
+        //registered here because this is where the components are merged, and before the state is set,
+        //which is what renders the grid that asks for them
+        instance.getServices().register('components', () => componentsRef.current);
         setInstanceState(prev => ({ instance, remountKey: (prev?.remountKey ?? 0) + 1 }));
     };
 

@@ -2,14 +2,17 @@ import React from 'react'
 import { TaskGridExampleRunner } from './TaskGridExampleRunner'
 
 /** Seed snippet of the example. `descriptor` comes from the sandbox. */
-export const CUSTOMIZER_AG_GRID_CODE = `const gridCustomizerStrategy: IGridCustomizerStrategy = {
-    onInitialize: ({ customizer }) => {
-        //the raw ag-grid api, so anything the grid does not surface is still yours to set
-        customizer.getGridApi().setGridOption('animateRows', true)
-    },
+export const CUSTOMIZER_AG_GRID_CODE = `class GridCustomizerStrategy implements IGridCustomizerStrategy {
+    constructor({ services }: ITaskGridFactoryParams) {
+        //the raw ag-grid api, so anything the grid does not surface is still yours to set. Waited for:
+        //the strategy is built long before the grid hands one over
+        services.whenAvailable('gridApi', (gridApi) => {
+            gridApi.setGridOption('animateRows', true)
+        })
+    }
 
     //the computed column definitions, straight from ag-grid - return them changed
-    onGetColumnDefinitions: (columnDefs) => {
+    onGetColumnDefinitions(columnDefs) {
         for (const colDef of columnDefs) {
             if (colDef.field === 'percentcomplete') {
                 colDef.pinned = 'right'
@@ -21,14 +24,16 @@ export const CUSTOMIZER_AG_GRID_CODE = `const gridCustomizerStrategy: IGridCusto
             }
         }
         return columnDefs
-    },
+    }
 
     //ag-grid row classes, evaluated per row - the grid's own rules are passed in
-    onGetRowClassRules: (rules) => ({
-        ...rules,
-        //option-set values arrive as numbers, but coerce anyway - a raw value is whatever the strategy stored
-        'demo-row--critical': (params) => Number(params.data?.getValue('priority')) === 3,
-    }),
+    onGetRowClassRules(rules) {
+        return {
+            ...rules,
+            //option-set values arrive as numbers, but coerce anyway - a raw value is whatever the strategy stored
+            'demo-row--critical': (params) => Number(params.data?.getValue('priority')) === 3,
+        }
+    }
 }
 
 //the same overlay the grid uses for its own row states: ::after rather than a cell background, so it

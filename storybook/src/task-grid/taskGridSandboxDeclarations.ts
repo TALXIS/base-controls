@@ -120,17 +120,21 @@ interface ITaskGridRecordExpressions {
 }
 
 /** Deep customization of the AG Grid instance, returned from the descriptor. */
+/**
+ * Both hooks are optional. One-time setup goes in the constructor, which takes \`services\` like every
+ * other strategy: \`gridCustomizer\` is registered with the modules, so it is already there, while
+ \`gridApi\` arrives when the grid does and is waited for.
+ */
 interface IGridCustomizerStrategy {
-    /** Called once when the grid is ready. Register expression decorators and set grid options here. */
-    onInitialize: (params: { customizer: IGridCustomizer; services: ITaskGridServices }) => void;
     /** The computed ag-grid column definitions. Return them changed. */
     onGetColumnDefinitions?: (columnDefs: any[]) => any[];
     /** The grid's own row class rules. Return them extended or overridden. */
     onGetRowClassRules?: (rules: Record<string, (params: any) => boolean>) => Record<string, (params: any) => boolean>;
 }
 
+/** The \`gridCustomizer\` service, registered alongside the modules. */
 interface IGridCustomizer {
-    /** The raw ag-grid \`GridApi\`. */
+    /** The raw ag-grid \`GridApi\`. Throws until the grid has handed one over. */
     getGridApi(): { setGridOption(key: string, value: any): void; refreshCells(params?: any): void; [key: string]: any };
     /** The provider backing the grid: records, the tree, provider events. */
     getTaskDataProvider(): {
@@ -286,7 +290,7 @@ declare const createUserQueryModule: (options: {
 /** Task templates. Bring the provider; the module brings the picker. */
 declare const createTemplateModule: (options: { provider: any }) => any;
 /** Direct access to AG Grid. Bring the customizer strategy. */
-declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy; services: ITaskGridServices }) => any;
+declare const createGridCustomizerModule: (options: { strategy: IGridCustomizerStrategy }) => any;
 /** Task dependencies. Bring the strategy and the services your builder was handed. */
 declare const createDependenciesModule: (options: { strategy: any; services: ITaskGridServices }) => any;
 /** Task checklists. Bring the strategy and the services your builder was handed. */

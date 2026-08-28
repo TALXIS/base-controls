@@ -69,7 +69,7 @@ Each builder takes the one thing only you can provide, plus a few switches for i
 | \`createDependenciesModule\` | \`strategy\`, \`services\` | \`components\` | \`dependenciesModule\` |
 | \`createChecklistModule\` | \`strategy\`, \`services\` | \`components\` | \`checklistModule\` |
 | \`createCustomColumnsModule\` | \`strategy\`, \`services\` | \`enableCustomColumnCreation\`, \`enableCustomColumnEditing\`, \`enableCustomColumnDeletion\`, \`components\` | \`customColumnsModule\` |
-| \`createGridCustomizerModule\` | \`strategy\`, \`services\` | — | \`gridCustomizerModule\` |
+| \`createGridCustomizerModule\` | \`strategy\` | — | \`gridCustomizerModule\` |
 
 Whatever a builder returns is registered under that key, so a module and everything it brings is reachable from anywhere in the grid — \`services.find('templatesModule')?.provider\`. See [**Anatomy → Services**](?path=/story/task-grid-descriptors-anatomy--overview).
 
