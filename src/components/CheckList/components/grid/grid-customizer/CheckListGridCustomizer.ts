@@ -536,7 +536,16 @@ export class CheckListGridCustomizer {
         });
         //the real columns, so the draft's cells render and edit exactly like the list's own - copied,
         //because `setColumns` writes onto the objects it is given and these belong to the visible grid
-        this._draftProvider.setColumns(provider.getColumns().map(column => ({ ...column })));
+        this._draftProvider.setColumns(provider.getColumns().map(column => ({
+            ...column,
+            //metadata copied too, and not only to keep the write off the real column: a required column
+            //is required of an item, and the row that adds one is not an item yet. Left as it is, a row
+            //nobody has typed into yet is drawn as a row somebody got wrong
+            metadata: {
+                ...column.metadata,
+                RequiredLevel: 0
+            }
+        })));
         //newRecord, not getRecords: a provider that has not refreshed yet holds no raw records, so
         //getRecords would answer with an empty array and the pinned row would carry undefined
         this._draft = this._draftProvider.newRecord();

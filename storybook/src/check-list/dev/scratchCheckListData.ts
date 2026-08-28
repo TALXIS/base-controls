@@ -11,6 +11,10 @@ export const COLUMNS: IColumn[] = [
         dataType: DataTypes.SingleLineText,
         displayName: 'Item',
         visualSizeFactor: 320,
+        metadata: {
+            //an item with no name is not an item, and this is the column the new-record row commits on
+            RequiredLevel: 1,
+        },
     },
     {
         name: COMPLETED_COL,
