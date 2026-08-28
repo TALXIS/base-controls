@@ -57,19 +57,46 @@ export class CheckListGridCustomizer {
     private _setGridOption!: GridApi['setGridOption'];
     /** Mirrors the `rowDragEntireRow` option, so it is only written when it actually changes. */
     private _isRowDragEnabled: boolean = false;
+    /** The row a commit is waiting to bring into view, taken by the next model update. */
+    private _rowToScrollTo: number | null = null;
 
 
     constructor(parameters: ICheckListGridCustomizerParameters) {
         this._gridApi = parameters.gridApi;
         this._datasetControl = parameters.datasetControl;
         this._patchGridApi();
-        this._dataProvider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
+        this._registerEventListeners();
         //a read-only checklist has neither: reordering writes a rank, and a row that adds an item has
         //nothing to type into once the grid stops opening cell editors
         if (this._isEditingEnabled) {
             this._enableRowDragging();
             this._enableNewRecordRow();
         }
+    }
+
+    private _registerEventListeners() {
+        this._dataProvider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
+        this._gridApi.addEventListener('modelUpdated', this._scrollToAddedRow);
+    }
+
+    /**
+     * Brings a newly added item into view, once the grid has said where every row sits — which is what a
+     * model update is, and all the visibility check and the scroll read.
+     */
+    private _scrollToAddedRow = () => {
+        setTimeout(() => {
+            const index = this._rowToScrollTo;
+            if (index === null) {
+                return;
+            }
+            this._rowToScrollTo = null;
+            if (!this._isRowVisible(index)) {
+                //the item is appended, so on a list taller than the viewport it lands below the fold
+                this._gridApi.ensureIndexVisible(index, 'bottom');
+            }
+            //we need to run this after grid grid height gets recalculated
+            //currently there is a timeout of 100
+        }, 101);
     }
 
     /**
@@ -592,18 +619,32 @@ export class CheckListGridCustomizer {
         //a fresh draft immediately, so the row is ready to type in while the save is still in flight
         this._resetDraft();
 
+        //set before the transaction, so the model update it causes is the one that acts on it
+        this._rowToScrollTo = rowCount;
         this._gridApi.applyServerSideTransaction({ add: [record], addIndex: rowCount });
 
-        //both deferred, and for the same reason: the transaction has been applied but the grid has not
-        //yet recomputed row bounds or rebuilt the pinned row, so neither the new row can be scrolled to
-        //nor the draft's cell edited until it has. The task grid defers its own post-create focus too
-        setTimeout(() => {
-            //the item is appended, so on a list taller than the viewport it lands below the fold
-            this._gridApi.ensureIndexVisible(rowCount, 'bottom');
-            this._startEditingDraft();
-        }, 0);
+        //deferred because the pinned row is rebuilt from the draft that was just replaced, and the cell
+        //cannot be edited until the grid has done it. The task grid defers its own post-create focus too
+        setTimeout(() => this._startEditingDraft(), 0);
         this._datasetControl.events.dispatchEvent('onItemCreated', record.toRawData());
         await record.save();
+    }
+
+    /**
+     * Whether the row at `index` is fully inside the scrolled viewport.
+     *
+     * Measured in pixels rather than against the displayed row range, which counts the rows AG Grid keeps
+     * rendered either side of the viewport as a buffer — a row just past the fold is among them, and
+     * would read as visible when it is not.
+     */
+    private _isRowVisible(index: number): boolean {
+        const rowNode = this._gridApi.getDisplayedRowAtIndex(index);
+        if (!rowNode || rowNode.rowTop === null) {
+            return false;
+        }
+        const viewport = this._gridApi.getVerticalPixelRange();
+        const rowBottom = rowNode.rowTop + (rowNode.rowHeight ?? DEFAULT_ROW_HEIGHT);
+        return rowNode.rowTop >= viewport.top && rowBottom <= viewport.bottom;
     }
 
     /** Puts the caret back in the draft's name cell so several items can be added without the mouse. */
