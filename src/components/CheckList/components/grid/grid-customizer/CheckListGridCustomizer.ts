@@ -52,6 +52,15 @@ export class CheckListGridCustomizer {
      * save is a no-op, so nothing leaves the grid until the row is committed here.
      */
     private _draftProvider: MemoryDataProvider | null = null;
+    /**
+     * The providers behind drafts that have been committed, kept until the grid goes away.
+     *
+     * Not destroyed as they are replaced: the grid holds on to the row it was editing for a while after
+     * the pinned row has moved on - it reads a last value out of it when the editor is taken down, which
+     * a destroyed provider answers by throwing. Nothing about the timing of that is ours to predict, so
+     * the providers are simply outlived instead. Each one holds a single uncommitted record.
+     */
+    private _retiredDraftProviders: MemoryDataProvider[] = [];
     private _draft: IRecord | null = null;
     /** The unpatched setter, for writes that must not run back through the patch. */
     private _setGridOption!: GridApi['setGridOption'];
@@ -77,26 +86,36 @@ export class CheckListGridCustomizer {
     private _registerEventListeners() {
         this._dataProvider.addEventListener('onRecordColumnValueChanged', this._onRecordColumnValueChanged);
         this._gridApi.addEventListener('modelUpdated', this._scrollToAddedRow);
+        //the one thing here that does need taking down by hand: the retired draft providers are kept
+        //alive on purpose, so something has to be the end of them
+        this._gridApi.addEventListener('gridPreDestroyed', () => this._destroyDraftProviders());
+    }
+
+    private _destroyDraftProviders() {
+        this._retiredDraftProviders.forEach(provider => provider.destroy());
+        this._retiredDraftProviders = [];
+        this._draftProvider?.destroy();
+        this._draftProvider = null;
     }
 
     /**
      * Brings a newly added item into view, once the grid has said where every row sits — which is what a
      * model update is, and all the visibility check and the scroll read.
+     *
+     * Scrolling here takes the editor off the row it moves away from, which has the grid read a last value
+     * out of the draft this commit has already replaced. That is safe because a retired draft keeps its
+     * provider — see `_retiredDraftProviders`.
      */
     private _scrollToAddedRow = () => {
-        setTimeout(() => {
-            const index = this._rowToScrollTo;
-            if (index === null) {
-                return;
-            }
-            this._rowToScrollTo = null;
-            if (!this._isRowVisible(index)) {
-                //the item is appended, so on a list taller than the viewport it lands below the fold
-                this._gridApi.ensureIndexVisible(index, 'bottom');
-            }
-            //we need to run this after grid grid height gets recalculated
-            //currently there is a timeout of 100
-        }, 101);
+        const index = this._rowToScrollTo;
+        if (index === null) {
+            return;
+        }
+        this._rowToScrollTo = null;
+        if (!this._isRowVisible(index)) {
+            //the item is appended, so on a list taller than the viewport it lands below the fold
+            this._gridApi.ensureIndexVisible(index, 'bottom');
+        }
     }
 
     /**
@@ -507,9 +526,10 @@ export class CheckListGridCustomizer {
     /** Builds a blank draft and hands it to the grid as the pinned row. */
     private _resetDraft() {
         const provider = this._dataProvider;
-        //the one it replaces has nothing left to render, and a provider per committed item would
-        //otherwise stay reachable from the record and expression it built
-        this._draftProvider?.destroy();
+        //retired rather than destroyed - see the field, the grid may still read from the row it owns
+        if (this._draftProvider) {
+            this._retiredDraftProviders.push(this._draftProvider);
+        }
         this._draftProvider = new MemoryDataProvider({
             dataSource: [],
             metadata: provider.getMetadata() as any,
