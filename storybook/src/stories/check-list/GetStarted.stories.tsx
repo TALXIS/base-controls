@@ -68,13 +68,13 @@ Everything you pass is copied, so the checklist never writes to your arrays.
 | Field | What it points at |
 |-------|-------------------|
 | \`id\` | The column each item is identified by. |
-| \`name\` | The item's label. The one mapped column that stays visible, and the one the new-item row types into. |
+| \`name\` | The item's label. The one mapped column that stays visible, and the one the new-item row types into. It sits wherever you list it in \`columns\`. |
 | \`stackRank\` | A text column holding a lexorank string. The list is ordered by it, and dragging an item writes a new one. Hidden. |
 | \`completed\` | A \`TwoOptions\` column. Hidden — the checkbox column is what shows and changes it. |
 
 ### Extra columns
 
-\`columns\` is not limited to the mapped four. Anything else you put there becomes its own column after the item name, editable like the rest — an option set renders as a coloured pill with a picker:
+\`columns\` is not limited to the mapped four. Anything else you put there becomes its own column, in the order you listed it, editable like the rest — an option set renders as a coloured pill with a picker:
 
 \`\`\`ts
 columns: [...columns, {

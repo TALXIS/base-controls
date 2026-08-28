@@ -1,7 +1,9 @@
 import * as React from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { Checkbox } from "@fluentui/react";
-import { IRecord } from "@talxis/client-libraries";
+import { IRecord, IRecordEvents } from "@talxis/client-libraries";
+import { useEventEmitter } from "@hooks/useEventEmitter";
+import { useRerender } from "@legacy";
 import { useDatasetControl, useLocalizationService } from "../../../context";
 import { getCompletionCellStyles } from "./styles";
 
@@ -11,9 +13,9 @@ import { getCompletionCellStyles } from "./styles";
  * Takes nothing beyond what AG Grid hands every cell renderer: the column to write and the label to
  * announce both come off the control, which the cell reaches through the context it already renders in.
  *
- * Holds the state it renders rather than reading the record on every render, so the tick follows the
- * click. Seeded from the record, which is what carries the state across a row being destroyed and
- * rebuilt.
+ * Renders straight off the record and redraws when the record reports the value changed, so a write from
+ * anywhere shows here — this checkbox, or a consumer setting the value itself. It keeps no copy of the
+ * value: a second source of truth drifts from the record the moment anything else writes.
  *
  * Typed on AG Grid's own params rather than the grid's `ICellProps`: that interface promises a `record`,
  * a `baseColumn` and a `value`, all of which arrive through `cellRendererParams` on a dataset column and
@@ -27,9 +29,13 @@ export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
     //a read-only checklist still shows what is finished, it just cannot change it
     const isEditingEnabled = datasetControl.getParameters().EnableEditing?.raw !== false;
     const record = props.data;
-    //a TwoOptions field reads back as the string '1' or '0' no matter what it was written with - the
-    //field sanitizes booleans and numbers into that on the way in, initial values included
-    const [completed, setCompleted] = React.useState<boolean>(() => record?.getValue(completedColumnName) === '1');
+    const rerender = useRerender();
+
+    useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', (columnName: string) => {
+        if (columnName === completedColumnName) {
+            rerender();
+        }
+    });
 
     //an item that does not exist yet cannot be finished. Checking the node, not the data: the new-record
     //row carries a real record, so a falsy-data check would not catch it
@@ -37,8 +43,11 @@ export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
         return null;
     }
 
+    //a TwoOptions field reads back as the string '1' or '0' no matter what it was written with - the
+    //field sanitizes booleans and numbers into that on the way in, initial values included
+    const completed = record.getValue(completedColumnName) === '1';
+
     const onChange = (isCompleted: boolean) => {
-        setCompleted(isCompleted);
         record.setValue(completedColumnName, isCompleted);
         //the save has to be asked for: `EnableAutoSave` is what makes the grid save a cell editor's
         //commit, and a write from a cell renderer is not one

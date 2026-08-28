@@ -140,9 +140,10 @@ export class CheckListDatasetControl extends DatasetControl implements ICheckLis
     }
 
     /**
-     * Orders the list by the stack rank and lays the columns out: the label first, with the stack rank
-     * and the completion both hidden - the former is only an ordering, the latter has the checkbox
-     * column. Mutating the map and setting the columns back is what triggers the sort.
+     * Orders the list by the stack rank and hides the two mapped columns that have somewhere else to
+     * show: the stack rank is only an ordering, and the completion has the checkbox column. The columns
+     * themselves stay in the order they arrived in. Mutating the map and setting the columns back is what
+     * triggers the sort.
      *
      * Runs from the `onInitialize` interceptor, after the provider preloaded and before the first page
      * is fetched — so the sorting is already on the provider when the records load.

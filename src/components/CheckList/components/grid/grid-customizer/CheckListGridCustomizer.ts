@@ -406,12 +406,11 @@ export class CheckListGridCustomizer {
      * rows are showing, not the store, which is still in its pre-drop order.
      */
     private _getNeighboursAt(targetIndex: number, startIndex: number): [IRecord | undefined, IRecord | undefined] {
-        const records: IRecord[] = [];
+        //one entry per displayed row, holes included: a row still loading has no record, and dropping it
+        //from the array would shift every index after it away from the row index it belongs to
+        const records: (IRecord | undefined)[] = [];
         for (let index = 0; index < this._gridApi.getDisplayedRowCount(); index++) {
-            const record = this._gridApi.getDisplayedRowAtIndex(index)?.data;
-            if (record) {
-                records.push(record);
-            }
+            records.push(this._gridApi.getDisplayedRowAtIndex(index)?.data);
         }
         const [dragged] = records.splice(startIndex, 1);
         records.splice(targetIndex, 0, dragged);
@@ -508,12 +507,16 @@ export class CheckListGridCustomizer {
     /** Builds a blank draft and hands it to the grid as the pinned row. */
     private _resetDraft() {
         const provider = this._dataProvider;
+        //the one it replaces has nothing left to render, and a provider per committed item would
+        //otherwise stay reachable from the record and expression it built
+        this._draftProvider?.destroy();
         this._draftProvider = new MemoryDataProvider({
             dataSource: [],
             metadata: provider.getMetadata() as any,
         });
-        //the real columns, so the draft's cells render and edit exactly like the list's own
-        this._draftProvider.setColumns(provider.getColumns());
+        //the real columns, so the draft's cells render and edit exactly like the list's own - copied,
+        //because `setColumns` writes onto the objects it is given and these belong to the visible grid
+        this._draftProvider.setColumns(provider.getColumns().map(column => ({ ...column })));
         //newRecord, not getRecords: a provider that has not refreshed yet holds no raw records, so
         //getRecords would answer with an empty array and the pinned row would carry undefined
         this._draft = this._draftProvider.newRecord();
