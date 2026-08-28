@@ -42,8 +42,8 @@ export interface IMemoryModuleData {
     lookupSources: { [columnName: string]: IMemoryEntitySource };
     /** The dependencies between the fixture tasks. */
     dependencies: ITaskDependency[];
-    /** The checklist items on the fixture tasks. */
-    checklist: IChecklistItem[];
+    /** The checklist items on the fixture tasks, keyed by task id. */
+    checklist: Record<string, IChecklistItem[]>;
 }
 
 interface ICreateMemoryTaskGridDescriptorOptions {
@@ -75,7 +75,7 @@ export const createMemoryTaskGridDescriptor = (options?: ICreateMemoryTaskGridDe
     let isSeeded = false;
     let lookupSources: { [columnName: string]: IMemoryEntitySource } = {};
     let dependencies: ITaskDependency[] = [];
-    let checklist: IChecklistItem[] = [];
+    let checklist: Record<string, IChecklistItem[]> = {};
     let templates: IMemoryTemplateSource;
     let userQueries: ISavedQuery[] = [];
     //the task records live here between mounts: the provider owns copies while a grid is up, and they are

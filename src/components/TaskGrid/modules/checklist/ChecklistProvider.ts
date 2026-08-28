@@ -6,23 +6,17 @@ import { applyColumn } from "@components/TaskGrid/providers/saved-query";
 export const CHECKLIST_COLUMN_NAME = 'checklist__virtual';
 
 /**
- * Where a checklist item has got to. A named union rather than a flag, so the set can grow — `cancelled`,
- * `blocked` — without every consumer having to reinterpret a boolean.
- */
-export type ChecklistItemStatus = 'active' | 'complete';
-
-/**
  * One checklist item on a task, as the grid sees it.
  *
- * Only what the grid uses is here — a strategy reading a richer record (an owner, a due date, audit
- * fields) keeps the rest to itself.
+ * Which task it belongs to is not on the item — the strategy returns items already grouped by task, and the
+ * provider keys its state the same way. Only what the grid uses is here; a strategy reading a richer record
+ * (an owner, a due date, audit fields) keeps the rest to itself.
  */
 export interface IChecklistItem {
     id: string;
-    /** The task this item belongs to. */
-    taskId: string;
     name: string;
-    status: ChecklistItemStatus;
+    /** Whether the item has been ticked off. */
+    isCompleted: boolean;
 }
 
 /** Lifecycle events for the checklist load. */
@@ -31,8 +25,8 @@ export interface IChecklistProviderEvents {
     onBeforeChecklistRefreshed: (taskIds: string[]) => void;
     /**
      * @param refreshedTaskIds The tasks that were just reloaded — the same ids `refresh` was called with.
-     * A cell watches for its own task and repaints; there is nothing finer to report, because an item
-     * belongs to one task, so a reload can only have changed the tasks it was asked about.
+     * A cell watches for its own task and repaints; there is nothing finer to report, because a reload can
+     * only have changed the tasks it was asked about.
      */
     onAfterChecklistRefreshed: (refreshedTaskIds: string[]) => void;
 }
@@ -40,10 +34,11 @@ export interface IChecklistProviderEvents {
 /** Where checklist items are read from. */
 export interface IChecklistStrategy {
     /**
-     * @param taskIds The tasks the grid has loaded. An item belongs to exactly one task, so only items
-     * whose `taskId` is one of these come back.
+     * @param taskIds The tasks the grid has loaded.
+     * @returns The items of each task, keyed by task id. A task with no items may be omitted or given an
+     * empty array; a task not in `taskIds` is ignored.
      */
-    onGetChecklistItems: (params: { taskIds: string[] }) => Promise<IChecklistItem[]>;
+    onGetChecklistItems: (params: { taskIds: string[] }) => Promise<Record<string, IChecklistItem[]>>;
 }
 
 /** Constructor parameters for {@link ChecklistProvider}. */
@@ -120,16 +115,11 @@ export class ChecklistProvider implements IChecklistProvider {
 
     public async refresh(taskIds: string[]): Promise<void> {
         this.events.dispatchEvent('onBeforeChecklistRefreshed', taskIds);
-        const items = await this._strategy.onGetChecklistItems({ taskIds });
-        const loadedByTask: Map<string, IChecklistItem[]> = new Map();
-        for (const item of items) {
-            const taskItems = loadedByTask.get(item.taskId);
-            taskItems ? taskItems.push(item) : loadedByTask.set(item.taskId, [item]);
-        }
+        const itemsByTask = await this._strategy.onGetChecklistItems({ taskIds });
         //written per refreshed task, which is the whole of the merge: a task the call did not name keeps
         //what it had, and one whose items are all gone is set to none of them
         for (const taskId of taskIds) {
-            this._itemsByTask.set(taskId, loadedByTask.get(taskId) ?? []);
+            this._itemsByTask.set(taskId, itemsByTask[taskId] ?? []);
         }
         this.events.dispatchEvent('onAfterChecklistRefreshed', taskIds);
     }

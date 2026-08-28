@@ -1372,15 +1372,21 @@ export const TASK_DEPENDENCIES: ITaskDependency[] = [
  * The three the docs point at by name, with the counts the Checklist story quotes — part-way, not started
  * and finished. Everything else is derived below, so these stay hand-written.
  */
-const NAMED_CHECKLIST_ITEMS: IChecklistItem[] = [
-    { id: 'chk-01', taskId: tid(1, 1), name: 'Book the stakeholder slots', status: 'complete' },
-    { id: 'chk-02', taskId: tid(1, 1), name: 'Write the interview guide', status: 'complete' },
-    { id: 'chk-03', taskId: tid(1, 1), name: 'Summarise the findings', status: 'active' },
-    { id: 'chk-04', taskId: tid(1, 2), name: 'Agree the colour palette', status: 'active' },
-    { id: 'chk-05', taskId: tid(1, 2), name: 'Pick the type scale', status: 'active' },
-    { id: 'chk-06', taskId: tid(1, 4), name: 'Inventory the old pages', status: 'complete' },
-    { id: 'chk-07', taskId: tid(1, 4), name: 'Map the redirects', status: 'complete' },
-];
+const NAMED_CHECKLIST_ITEMS: Record<string, IChecklistItem[]> = {
+    [tid(1, 1)]: [
+        { id: 'chk-01', name: 'Book the stakeholder slots', isCompleted: true },
+        { id: 'chk-02', name: 'Write the interview guide', isCompleted: true },
+        { id: 'chk-03', name: 'Summarise the findings', isCompleted: false },
+    ],
+    [tid(1, 2)]: [
+        { id: 'chk-04', name: 'Agree the colour palette', isCompleted: false },
+        { id: 'chk-05', name: 'Pick the type scale', isCompleted: false },
+    ],
+    [tid(1, 4)]: [
+        { id: 'chk-06', name: 'Inventory the old pages', isCompleted: true },
+        { id: 'chk-07', name: 'Map the redirects', isCompleted: true },
+    ],
+};
 
 /** The steps a derived checklist is built from — generic enough to read sensibly under any task. */
 const CHECKLIST_STEPS = [
@@ -1398,24 +1404,24 @@ const CHECKLIST_STEPS = [
  * How many items are ticked follows the task's own `percentcomplete`, so a row's checklist and its progress
  * bar never disagree. Derived from the records rather than written out, so it keeps up as the fixture grows.
  */
-const DERIVED_CHECKLIST_ITEMS: IChecklistItem[] = TASKS.flatMap((task, taskIndex) => {
+const DERIVED_CHECKLIST_ITEMS: Record<string, IChecklistItem[]> = {};
+TASKS.forEach((task, taskIndex) => {
     const taskId = task[PRIMARY_ID] as string;
-    if (NAMED_CHECKLIST_ITEMS.some(item => item.taskId === taskId) || taskIndex % 3 === 2) {
-        return [];
+    if (NAMED_CHECKLIST_ITEMS[taskId] || taskIndex % 3 === 2) {
+        return;
     }
     //two to four steps, varied by position so neighbouring rows do not all look the same
     const total = 2 + (taskIndex % 3);
     const percentComplete = (task.percentcomplete as number) ?? 0;
     const completed = Math.round((percentComplete / 100) * total);
-    return CHECKLIST_STEPS.slice(0, total).map((name, index) => ({
+    DERIVED_CHECKLIST_ITEMS[taskId] = CHECKLIST_STEPS.slice(0, total).map((name, index) => ({
         id: `chk-${taskId}-${index + 1}`,
-        taskId: taskId,
         name: name,
-        status: index < completed ? 'complete' : 'active',
-    } as IChecklistItem));
+        isCompleted: index < completed,
+    }));
 });
 
-export const CHECKLIST_ITEMS: IChecklistItem[] = [...NAMED_CHECKLIST_ITEMS, ...DERIVED_CHECKLIST_ITEMS];
+export const CHECKLIST_ITEMS: Record<string, IChecklistItem[]> = { ...NAMED_CHECKLIST_ITEMS, ...DERIVED_CHECKLIST_ITEMS };
 
 export const TASK_SOURCE: IMemoryEntitySource = {
     records: TASKS,

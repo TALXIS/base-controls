@@ -9,25 +9,24 @@ export interface IMemoryChecklistStrategyParams {
      */
     services: ITaskGridServiceLocator;
     /**
-     * The checklist items. Read only, and deep-cloned on the way in, so a fixture can be shared between
-     * grids.
+     * The checklist items of each task, keyed by task id — the same shape the strategy hands back. Read
+     * only, and deep-cloned on the way in, so a fixture can be shared between grids.
      */
-    items: IChecklistItem[];
+    items: Record<string, IChecklistItem[]>;
 }
 
 /**
- * In-memory {@link IChecklistStrategy} — the items come from the array it was given, with no Dataverse and
+ * In-memory {@link IChecklistStrategy} — the items come from the map it was given, with no Dataverse and
  * no network. Intended for local development, tests, Storybook and demos.
  */
 export class MemoryChecklistStrategy implements IChecklistStrategy {
-    private _items: IChecklistItem[];
+    private _items: Record<string, IChecklistItem[]>;
 
     constructor(params: IMemoryChecklistStrategyParams) {
         this._items = structuredClone(params.items);
     }
 
-    public async onGetChecklistItems(params: { taskIds: string[] }): Promise<IChecklistItem[]> {
-        const taskIds = new Set(params.taskIds);
-        return this._items.filter(item => taskIds.has(item.taskId));
+    public async onGetChecklistItems(params: { taskIds: string[] }): Promise<Record<string, IChecklistItem[]>> {
+        return Object.fromEntries(params.taskIds.map(taskId => [taskId, this._items[taskId] ?? []]));
     }
 }

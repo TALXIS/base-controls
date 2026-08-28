@@ -37,7 +37,7 @@ export const ChecklistCellRenderer = (props: IChecklistCellRendererProps) => {
     if (items.length === 0) {
         return null;
     }
-    const completedCount = items.filter(item => item.status === 'complete').length;
+    const completedCount = items.filter(item => item.isCompleted).length;
     const isCompleted = completedCount === items.length;
     return <div className={styles.root}>
         <Icon

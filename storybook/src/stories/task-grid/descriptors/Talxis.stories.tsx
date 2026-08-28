@@ -119,12 +119,12 @@ hidden, which is what makes the value arrive.
 
 \`\`\`json
 [
-    { "id": "9f0c…", "name": "Draft the brief", "stackrank": "0|100000:", "status": "complete" },
-    { "id": "3a41…", "name": "Review with client", "stackrank": "0|100001:" }
+    { "id": "9f0c…", "name": "Draft the brief", "isCompleted": true },
+    { "id": "3a41…", "name": "Review with client", "isCompleted": false }
 ]
 \`\`\`
 
-\`status\` is optional and absent means \`active\`. An empty column means the task has no checklist, and the
+Every item carries all three fields. An empty column means the task has no checklist, and the
 cell stays blank. The **Checklist** column the module creates shows \`done/total\` — see
 [**Modules → Task checklists**](?path=/story/task-grid-modules--checklist).
 

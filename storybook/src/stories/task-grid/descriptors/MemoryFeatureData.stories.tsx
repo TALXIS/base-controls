@@ -105,13 +105,16 @@ Registering the module is what creates the **Predecessors** and **Successors** c
 
 ## Task checklists
 
-A checklist item is a name, a status and the task it belongs to:
+A checklist item is a name and whether it is done. They are handed over keyed by task id — which task an
+item is under is the map, not a field on the item:
 
 \`\`\`ts
-const CHECKLIST_ITEMS: IChecklistItem[] = [
-    { id: 'chk-01', taskId: '2', name: 'Collect requirements', status: 'complete' },
-    { id: 'chk-02', taskId: '2', name: 'Interview stakeholders', status: 'active' },
-]
+const CHECKLIST_ITEMS: Record<string, IChecklistItem[]> = {
+    '2': [
+        { id: 'chk-01', name: 'Collect requirements', isCompleted: true },
+        { id: 'chk-02', name: 'Interview stakeholders', isCompleted: false },
+    ],
+}
 
 //returned from onInitialize
 modules: {
@@ -122,8 +125,8 @@ modules: {
 },
 \`\`\`
 
-The strategy is read-only and never writes to the array you hand it, so a fixture can be shared between
-grids. It is asked only for the tasks the grid has loaded, and each item belongs to exactly one task.
+The strategy is read-only and never writes to the map you hand it, so a fixture can be shared between
+grids. It is asked only for the tasks the grid has loaded, and answers with just those.
 
 Registering the module is what creates the **Checklist** column, which shows \`done/total\` for each task.
 See [**Modules → Task checklists**](?path=/story/task-grid-modules--checklist).

@@ -198,13 +198,12 @@ An item belongs to exactly one task, and carries what the column needs:
 \`\`\`ts
 interface IChecklistItem {
     id: string
-    taskId: string
     name: string
-    status: 'active' | 'complete'
+    isCompleted: boolean
 }
 \`\`\`
 
-\`status\` is a named union rather than a boolean, so the set can grow without every consumer having to reinterpret a flag.
+Which task an item is under is not on the item — the strategy hands its items back grouped by task id.
                 `.trim(),
             },
         },
