@@ -3,12 +3,13 @@ import { useControl } from '@hooks';
 import { ITwoOptions } from './interfaces';
 import React, { useEffect, useRef, useState } from 'react';
 import { OptionSet } from '../OptionSet';
+import { twoOptionsTranslations } from './translations';
 
 export const TwoOptions = (props: ITwoOptions) => {
     const parameters = props.parameters;
     const boundValue = parameters.value;
     const options = boundValue.attributes.Options;
-    const { sizing, onNotifyOutputChanged, theme } = useControl('TwoOptions', props);
+    const { labels, sizing, onNotifyOutputChanged, theme } = useControl('TwoOptions', props, twoOptionsTranslations);
     const context = props.context;
     const componentRef = useRef<any>(null);
 
@@ -68,8 +69,8 @@ export const TwoOptions = (props: ITwoOptions) => {
                     componentRef={componentRef}
                     disabled={context.mode.isControlDisabled}
                     inlineLabel
-                    onText={options.find(option => option.Value === 1)?.Label || 'Yes'}
-                    offText={options.find(option => option.Value === 0)?.Label || 'No'}
+                    onText={options.find(option => option.Value === 1)?.Label || labels.yes()}
+                    offText={options.find(option => option.Value === 0)?.Label || labels.no()}
                     onChange={(e, value) => handleChange(value)}
                 />)}
         </ThemeProvider>
