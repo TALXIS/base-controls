@@ -19,6 +19,9 @@ export interface ITalxisChecklistStrategyParams {
  * The module's own checklist column is virtual and is therefore never fetched, so this registers a real
  * hidden column for the JSON field on every saved query. That is what makes the value arrive.
  *
+ * On top of that it reloads a task whose form was just closed, because on this platform the form is where
+ * checklists are edited.
+ *
  * @example
  * ```ts
  * modules: {
@@ -35,12 +38,39 @@ export class TalxisChecklistStrategy implements IChecklistStrategy {
     constructor(params: ITalxisChecklistStrategyParams) {
         this._services = params.services;
         this._registerColumn();
+        this._registerEventListeners();
     }
 
     public async onGetChecklistItems({ taskIds }: { taskIds: string[] }): Promise<Record<string, IChecklistItem[]>> {
         const records = this._services.get('taskDataProvider').getRecordsMap();
         //a task with no record loaded has nothing to read, and no items is a legitimate answer for it
         return Object.fromEntries(taskIds.map(taskId => [taskId, this._getItems(records[taskId]?.getValue(CHECKLIST_FIELD))]));
+    }
+
+    /**
+     * Reloads a task's checklist when its form closes. The form is where it is edited here, so the items the
+     * grid parsed when the row loaded are stale the moment it is closed.
+     *
+     * A refresh is all it takes: the task record is fetched again as the form closes and its new field value
+     * is on the record before this runs, so re-reading it is what the provider does anyway. What the provider
+     * holds is the parsed items, and nothing else reparses them.
+     *
+     * Waits for the task provider rather than resolving it: the grid builds its modules first, so there is
+     * nothing to reach at construction.
+     */
+    private _registerEventListeners(): void {
+        this._services.whenAvailable('taskDataProvider', ({ taskEvents }) => {
+            taskEvents.addEventListener('onAfterDatasetItemsOpened', async (entityReferences, isTaskEntity) => {
+                //a lookup cell opens a related record, whose ids are not task ids
+                if (!isTaskEntity || entityReferences.length === 0) {
+                    return;
+                }
+                //the references, not the result: a form can come back reporting nothing updated, and a null
+                //result is the normal case rather than a failure
+                const taskIds = entityReferences.map(reference => reference.id.guid);
+                await this._services.get('checklistModule').provider.refresh(taskIds);
+            });
+        });
     }
 
     /**

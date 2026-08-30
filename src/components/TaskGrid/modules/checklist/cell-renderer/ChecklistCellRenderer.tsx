@@ -41,7 +41,7 @@ export const ChecklistCellRenderer = (props: IChecklistCellRendererProps) => {
     const isCompleted = completedCount === items.length;
     return <div className={styles.root}>
         <Icon
-            iconName={isCompleted ? 'CompletedSolid' : 'Completed'}
+            iconName={'Completed'}
             className={isCompleted ? styles.iconCompleted : styles.icon}
         />
         <Text>{completedCount}/{items.length}</Text>
