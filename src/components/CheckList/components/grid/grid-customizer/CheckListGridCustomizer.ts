@@ -377,8 +377,12 @@ export class CheckListGridCustomizer {
         const focusedColumn = this._gridApi.getFocusedCell()?.column;
         this._draggedNode = null;
 
+        //dropped on nothing - outside the grid, or past the last row. `_clearPreview` rather than a
+        //`_previewOrder` back to the start: both put the rows back, but only this one also takes the
+        //transition class off, which is otherwise left on for the rest of the mount and makes every
+        //later scroll animate the grid's own row recycling
         if (!record || targetIndex === null || startIndex === null || event.overIndex < 0) {
-            this._previewOrder(startIndex);
+            this._clearPreview();
             return;
         }
         if (targetIndex === startIndex) {

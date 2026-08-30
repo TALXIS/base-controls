@@ -440,8 +440,12 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             onGetFormParameters: this._getFormParameters,
             onGetRawRecords: ids => this.onGetRawRecords(ids),
         };
-        return await this._params.onCreateTask?.(params)
-            ?? DataverseTaskActions.createTask(params);
+        //the override is chosen on whether it exists, never on what it returned: these actions answer
+        //`null` for "the user cancelled", and `??` cannot tell that from an override that was never
+        //supplied - it would run the default over the cancellation and create the task anyway
+        return this._params.onCreateTask
+            ? await this._params.onCreateTask(params)
+            : await DataverseTaskActions.createTask(params);
     }
 
     public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
@@ -452,8 +456,10 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             isCascadeDeleteEnabled: this._isCascadeDeleteEnabled,
             isDeletingTasksWithChildrenEnabled: this._isDeletingTasksWithChildrenEnabled,
         };
-        return await this._params.onDeleteTasks?.(params)
-            ?? DataverseTaskActions.deleteTasks(params);
+        //presence, not result - see onCreateTask
+        return this._params.onDeleteTasks
+            ? await this._params.onDeleteTasks(params)
+            : await DataverseTaskActions.deleteTasks(params);
     }
 
     public async onOpenDatasetItems(entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean): Promise<IOpenDatasetItemsResult | null> {
@@ -467,8 +473,10 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             onGetFormParameters: this._getFormParameters,
             onGetRawRecords: ids => this.onGetRawRecords(ids),
         };
-        return await this._params.onOpenDatasetItems?.(params)
-            ?? DataverseTaskActions.openDatasetItems(params);
+        //presence, not result - see onCreateTask
+        return this._params.onOpenDatasetItems
+            ? await this._params.onOpenDatasetItems(params)
+            : await DataverseTaskActions.openDatasetItems(params);
     }
 
     public async onMoveTask(moveParams: ITaskMoveParams): Promise<IRawRecord[] | null> {
@@ -477,8 +485,10 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             ...this._entity,
             onGetRawRecords: ids => this.onGetRawRecords(ids),
         };
-        return await this._params.onMoveTask?.(params)
-            ?? DataverseTaskActions.moveTask(params);
+        //presence, not result - see onCreateTask
+        return this._params.onMoveTask
+            ? await this._params.onMoveTask(params)
+            : await DataverseTaskActions.moveTask(params);
     }
 
     public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {

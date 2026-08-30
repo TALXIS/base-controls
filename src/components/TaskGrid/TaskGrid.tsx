@@ -1,4 +1,5 @@
 import { useEventEmitter } from "@hooks/useEventEmitter"
+import { useIsMounted } from "@hooks/useIsMounted";
 import { IDatasetControlEvents } from "@utils/dataset-control";
 import { useRef } from "react";
 import * as React from "react";
@@ -141,6 +142,8 @@ export const TaskGrid = (props: ITaskGridProps) => {
         remountKey: number;
     } | null>(null);
 
+    const isMounted = useIsMounted();
+
     const createDatasetControlInstance = async () => {
         setInstanceState(null);
         const instance = await TaskGridDatasetControlFactory.createInstance({
@@ -149,6 +152,14 @@ export const TaskGrid = (props: ITaskGridProps) => {
             state: stateRef.current,
             onGetPcfContext: () => pcfContextRef.current!,
         });
+        //the factory awaits the descriptor's dependencies, the views and the first data load, so the grid
+        //can be gone by the time it resolves. A control that never renders is never handed to the dataset
+        //control renderer, and that renderer's unmount is the only thing that destroys one - so it is
+        //destroyed here instead, otherwise its providers and their listeners outlive the grid
+        if (!isMounted()) {
+            instance.destroy();
+            return;
+        }
         //registered here because this is where the components are merged, and before the state is set,
         //which is what renders the grid that asks for them
         instance.getServices().register('components', () => componentsRef.current);

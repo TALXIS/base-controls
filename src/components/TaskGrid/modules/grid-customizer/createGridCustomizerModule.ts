@@ -6,11 +6,12 @@ export interface IGridCustomizerModuleOptions {
     /**
      * Hooks into the grid's column definitions and row class rules.
      *
-     * Typed loosely on purpose: both hooks are optional, so a strategy that does all its work in its
-     * constructor implements neither — and TypeScript refuses to assign a class with members of its own
-     * to an all-optional interface. The grid still only ever calls the two hooks.
+     * `& object` rather than the interface alone: both hooks are optional, so a strategy that does all its
+     * work in its constructor implements neither — and TypeScript refuses to assign a type with no
+     * property in common to an all-optional one. Intersecting lifts exactly that rule and nothing else, so
+     * a misspelled hook is still rejected rather than silently never called.
      */
-    strategy: IGridCustomizerStrategy | any;
+    strategy: IGridCustomizerStrategy & object;
 }
 
 /**

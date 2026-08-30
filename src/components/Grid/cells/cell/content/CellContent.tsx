@@ -184,6 +184,12 @@ export const CellContent = (props: ICellProps) => {
         const v8FluentOverrides: any = hasOverrides || parentOverrides
             ? merge({}, ownOverrides, merge({}, parentOverrides ?? {}, formatting.themeOverride))
             : ownOverrides;
+        //an override that names itself would otherwise write its own id over the one computed above, and
+        //both theme caches key on that id - so a grid rendered inside another grid's cell, which inherits
+        //that cell's named override, would serve every one of its own cells the same theme. `getThemeId`
+        //already folds both overrides' names in, so it is the id that describes this cell. `undefined`
+        //has to win too: it is how a cell says it cannot be cached at all
+        v8FluentOverrides.id = ownOverrides.id;
         return ControlTheme.GenerateFluentDesignLanguage(formatting.primaryColor, formatting.backgroundColor, formatting.textColor, {
             v8FluentOverrides,
             applicationTheme: fluentDesignLanguage?.applicationTheme

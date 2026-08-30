@@ -231,7 +231,10 @@ export class RecordTree implements IRecordTree {
     // ── The index ───────────────────────────────────────────────────────────
 
     private _buildIndex(): IHierarchyIndex {
-        const records = this._getTaskDataProvider().getAllRecords();
+        //copied: `getAllRecords` hands back the provider's own records array, and the index is sorted into
+        //display order below - which on the original would silently reorder the provider's records as a
+        //side effect of building the tree
+        const records = [...this._getTaskDataProvider().getAllRecords()];
         const recordsMap = this._getTaskDataProvider().getRecordsMap();
         const parentIdColumn = this._getNativeColumns().parentId;
 

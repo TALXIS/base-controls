@@ -187,8 +187,12 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             columns: this._provider.getColumns(),
             onGetNewTaskDefaults: this._params.onGetNewTaskDefaults,
         };
-        return await this._params.onCreateTask?.(params)
-            ?? MemoryTaskActions.createTask(params);
+        //the override is chosen on whether it exists, never on what it returned: these actions answer
+        //`null` for "the user cancelled", and `??` cannot tell that from an override that was never
+        //supplied - it would run the default over the cancellation and create the task anyway
+        return this._params.onCreateTask
+            ? await this._params.onCreateTask(params)
+            : await MemoryTaskActions.createTask(params);
     }
 
     public async onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult> {
@@ -197,8 +201,10 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
             structure: this._provider.getRecordTree().structure,
             onGetRecord: taskId => this._getRecord(taskId),
         };
-        return await this._params.onDeleteTasks?.(params)
-            ?? MemoryTaskActions.deleteTasks(params);
+        //presence, not result - see onCreateTask
+        return this._params.onDeleteTasks
+            ? await this._params.onDeleteTasks(params)
+            : await MemoryTaskActions.deleteTasks(params);
     }
 
     public async onOpenDatasetItems(
@@ -215,8 +221,10 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
 
     public async onMoveTask(moveParams: ITaskMoveParams): Promise<IRawRecord[] | null> {
         const params: IMemoryTaskMoveParams = { ...moveParams, ...this._store };
-        return await this._params.onMoveTask?.(params)
-            ?? MemoryTaskActions.moveTask(params);
+        //presence, not result - see onCreateTask
+        return this._params.onMoveTask
+            ? await this._params.onMoveTask(params)
+            : await MemoryTaskActions.moveTask(params);
     }
 
     public async onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult> {
