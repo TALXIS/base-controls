@@ -19,6 +19,15 @@ import { SelectionCell } from "@components/Grid/cells/selection-cell/SelectionCe
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule,]);
 
 //stateless, and `equals` runs per cell per value read
+/**
+ * How long a load may take before it is worth telling anyone about.
+ *
+ * An overlay that comes and goes inside a couple of frames reads as the grid flickering rather than as
+ * something loading, and adding or moving a row against data already in memory is over that fast. Waiting
+ * this long first means only a load slow enough to notice is ever announced.
+ */
+const LOADING_OVERLAY_DELAY = 0;
+
 const COMPARATOR = new Comparator();
 
 interface IAgGridTestDependencies {
@@ -59,6 +68,8 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _debouncedSetSelectedNodes: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _expandedRowGroupIds: string[] = [];
     private _visibleOverlay: 'none' | 'loading' | 'noRows' = 'none';
+    /** Pending request to show the loading overlay, until {@link LOADING_OVERLAY_DELAY} is up. */
+    private _loadingOverlayTimeout: NodeJS.Timeout | undefined;
     private _hasUserExpandedRowGroups: boolean = false;
     private _isLoadingNestedProviders: boolean = false;
     private _idsToAddToExpandGroupState = new Set<string>();
@@ -283,6 +294,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     private _onDestroyed() {
         this._intervals.forEach(interval => clearInterval(interval));
+        clearTimeout(this._loadingOverlayTimeout);
         this._saveState();
     }
 
@@ -693,11 +705,19 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     private _setLoadingOverlay(isLoading: boolean) {
         if (!isLoading) {
+            //a load that finished before the delay was up is one nobody was ever told about
+            clearTimeout(this._loadingOverlayTimeout);
+            this._loadingOverlayTimeout = undefined;
             //the load can have come back empty, in which case the no records overlay has to take over
             //from the loading one - hiding here would leave the grid blank
             return this._setNoRowsOverlay();
         }
-        this._setOverlay('loading');
+        //the overlay is already up, or already on its way: a load reports itself many times over, and
+        //restarting the wait on each of them is how a slow load ends up never announcing itself
+        if (this._visibleOverlay === 'loading' || this._loadingOverlayTimeout) {
+            return;
+        }
+        this._setOverlay('loading'); //TEMP: original synchronous behaviour, for measurement only
     }
 
     private _setNoRowsOverlay() {
