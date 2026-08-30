@@ -93,6 +93,26 @@ columns: [...columns, {
 
 That is the \`Priority\` column in the example above. Delete it from the array in the **Code** window and it disappears; the values stay in the records either way.
 
+### Validation
+
+A column can carry validation, and the checklist enforces it on every edit. Mark one required through its metadata:
+
+\`\`\`ts
+{
+    name: 'name',
+    dataType: 'SingleLine.Text',
+    displayName: 'Item',
+    metadata: {
+        //1 or 2 - anything else is not required
+        RequiredLevel: 1,
+    },
+}
+\`\`\`
+
+That is the \`Item\` column in the example above: clear one and the cell reports it, and the item does not save. A failed edit raises \`onItemSaved\` with \`success: false\` and the offending fields in \`errors\`, and raises **no** \`onDataChanged\` — nothing stuck, so the item keeps the value it last saved with. See [**Reacting to changes**](?path=/story/checklist-reacting-to-changes--overview).
+
+The row that adds an item is exempt: an empty new-item row is not an item yet, so it is not drawn as one somebody got wrong. It still refuses to commit until you have typed a name.
+
 ## \`<CheckList />\` props
 
 | Prop | Required | Description |

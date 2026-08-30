@@ -46,7 +46,7 @@ Two things worth knowing about it:
 
 \`\`\`tsx
 onReady={api => {
-    //the items, including edits that have not been saved yet
+    //the items as they were last saved
     api.getData()
     //the same events as the props, subscribed to imperatively
     api.getEvents().addEventListener('onDataChanged', items => saveMyList(items))
@@ -55,7 +55,7 @@ onReady={api => {
 
 | Method | Description |
 |--------|-------------|
-| \`getData()\` | The current items, including unsaved edits. A copy — writing to it changes nothing. |
+| \`getData()\` | The items as they were last saved — an edit still in a cell editor, or one that failed validation, is not in here. A copy — writing to it changes nothing. |
 | \`getEvents()\` | The checklist's events, to subscribe to with \`addEventListener\`. |
 
 \`onReady\` fires as soon as the checklist is built, which is **before** its items have loaded — \`getData()\` in it comes back empty, as the log in the example shows. Read the items from \`onDataChanged\`, or from \`getData()\` any time later.

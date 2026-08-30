@@ -33,9 +33,17 @@ const getAutoHeightStyles = (rowHeight: number, maxVisibleRows: number) => {
         '.ag-root-wrapper-body.ag-layout-normal': {
             height: 'auto'
         },
+        //capped on both: the viewport is what scrolls, so the cap has to be there for it to know it has
+        //something to scroll - but the box around it is sized by the tallest thing in it, and the fake
+        //scrollbar alongside the rows carries the height of every row there is. Left uncapped, showing
+        //that scrollbar is what stretches the grid to the full length of its list
+        '.ag-body, .ag-body-viewport': {
+            maxHeight: rowHeight * maxVisibleRows
+        },
         '.ag-body-viewport': {
-            maxHeight: rowHeight * maxVisibleRows,
-            minHeight: EMPTY_ROWS_AREA_HEIGHT
+            //never past the cap: a min-height beats a max-height, so a list told to show fewer rows than
+            //the empty state needs would grow to fit the empty state instead of honouring the cap
+            minHeight: Math.min(EMPTY_ROWS_AREA_HEIGHT, rowHeight * maxVisibleRows)
         }
     };
 };

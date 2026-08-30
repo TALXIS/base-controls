@@ -16,6 +16,10 @@ export const CHECK_LIST_DOCS_COLUMNS: IColumn[] = [
         dataType: DataTypes.SingleLineText,
         displayName: 'Item',
         visualSizeFactor: 320,
+        metadata: {
+            //an item with no name is not an item, so every example has the requirement on
+            RequiredLevel: 1,
+        },
     },
     {
         name: COMPLETED_COL,

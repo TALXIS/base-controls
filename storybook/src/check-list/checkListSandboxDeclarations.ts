@@ -58,7 +58,7 @@ interface ICheckListEventEmitter {
 
 /** The handle onReady hands over. */
 interface ICheckListApi {
-    /** The items as they stand, unsaved edits included. */
+    /** The items as they were last saved. An edit that has not been saved is not in here. */
     getData(): ICheckListRawRecord[];
     /** The same events as the props, to subscribe to imperatively. */
     getEvents(): ICheckListEventEmitter;
