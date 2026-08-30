@@ -26,7 +26,7 @@ ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, Cli
  * something loading, and adding or moving a row against data already in memory is over that fast. Waiting
  * this long first means only a load slow enough to notice is ever announced.
  */
-const LOADING_OVERLAY_DELAY = 0;
+const LOADING_OVERLAY_DELAY = 150;
 
 const COMPARATOR = new Comparator();
 
@@ -717,7 +717,10 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         if (this._visibleOverlay === 'loading' || this._loadingOverlayTimeout) {
             return;
         }
-        this._setOverlay('loading'); //TEMP: original synchronous behaviour, for measurement only
+        this._loadingOverlayTimeout = setTimeout(() => {
+            this._loadingOverlayTimeout = undefined;
+            this._setOverlay('loading');
+        }, LOADING_OVERLAY_DELAY);
     }
 
     private _setNoRowsOverlay() {
