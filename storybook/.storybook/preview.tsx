@@ -122,6 +122,8 @@ const preview: Preview = {
             ],
           ],
           'Providers',
+          'Checklist',
+          ['Get started', 'Reacting to changes', 'Dev'],
         ],
       },
     },

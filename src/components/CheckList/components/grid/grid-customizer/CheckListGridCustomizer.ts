@@ -403,9 +403,10 @@ export class CheckListGridCustomizer {
         //move it would still point at the slot the row came from - which now holds a different item, and
         //reads as the highlight jumping back to where the drag started
         if (focusedColumn) {
-            //deferred for the same reason the post-create focus is: the row has to exist at its new
-            //index before it can be focused there
-            setTimeout(() => this._gridApi.setFocusedCell(targetIndex, focusedColumn), 0);
+            //now, not deferred: the transactions above have already moved the row, and a focus left at the
+            //old index for even a frame is drawn around whichever item took that slot - which is the
+            //highlight appearing to lag a row behind the one being dragged
+            this._gridApi.setFocusedCell(targetIndex, focusedColumn);
         }
 
         record.setValue(stackRankColumn, StackRank.between(
