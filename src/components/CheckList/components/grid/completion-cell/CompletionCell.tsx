@@ -26,7 +26,6 @@ export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
     const datasetControl = useDatasetControl();
     const completedColumnName = datasetControl.getFieldMapping().completed;
     const label = useLocalizationService().getLocalizedString('markItemFinished');
-    //a read-only checklist still shows what is finished, it just cannot change it
     const isEditingEnabled = datasetControl.getParameters().EnableEditing?.raw !== false;
     const record = props.data;
     const rerender = useRerender();
@@ -46,6 +45,10 @@ export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
     //a TwoOptions field reads back as the string '1' or '0' no matter what it was written with - the
     //field sanitizes booleans and numbers into that on the way in, initial values included
     const completed = record.getValue(completedColumnName) === '1';
+    //asked of the record rather than read off the column: it folds in everything that can hold the value
+    //still - a column that is not valid for update, an inactive record, a disabled expression. A
+    //read-only checklist still shows what is finished, it just cannot change it
+    const isEditable = isEditingEnabled && record.getColumnInfo(completedColumnName).security.editable;
 
     const onChange = (isCompleted: boolean) => {
         record.setValue(completedColumnName, isCompleted);
@@ -56,7 +59,7 @@ export const CompletionCell = (props: ICellRendererParams<IRecord>) => {
 
     return <Checkbox
         checked={completed}
-        disabled={!isEditingEnabled}
+        disabled={!isEditable}
         title={label}
         ariaLabel={label}
         styles={{
