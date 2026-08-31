@@ -5,28 +5,72 @@ import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { ISavedQueryDataProvider} from "../saved-query";
-import { ICustomColumnsDataProvider } from "../custom-columns";
+import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
+/** One record an operation could not complete, and why. */
 export interface IFailedRecord {
     id: string;
     error: any;
 }
 
+/** Outcome of a delete: which tasks went, and which failed. */
 export type IDeleteTasksResult =
     | { success: true; deletedTaskIds: string[] }
     | { success: false; deletedTaskIds: string[]; errors: IFailedRecord[] };
 
+/** Outcome of opening records: any that came back changed, and which failed. */
 export type IOpenDatasetItemsResult =
     | { success: true; updatedRecords: IRawRecord[] }
     | { success: false; updatedRecords: IRawRecord[]; errors: IFailedRecord[] };
 
 
+/**
+ * Where an operation lands: the parent it ends up under, and the siblings around it, resolved over the
+ * entire dataset so filtering and quick find cannot narrow them.
+ *
+ * The provider says which records the task lands between; how order is expressed is the strategy's. Read
+ * whatever you order by off the neighbours — `previousSibling?.getValue(nativeColumns.stackRank)` for the
+ * shipped lexicographic scheme, your own column for anything else.
+ */
+export interface ITaskSiblingContext {
+    /**
+     * The parent the task ends up under, or `undefined` for top level. `getRecordId()` is the id,
+     * `getNamedReference()` the lookup value to store.
+     */
+    parentRecord?: IRecord;
+    /** Every record under that parent, in order, excluding the task itself. */
+    siblings: IRecord[];
+    /** The sibling the task ends up immediately after, if any. */
+    previousSibling?: IRecord;
+    /** The sibling it ends up immediately before, if any. */
+    nextSibling?: IRecord;
+}
+
+/** What the provider hands `onMoveTask`. */
+export interface ITaskMoveParams extends ITaskSiblingContext {
+    /** The task being moved. */
+    movingTaskId: string;
+    /** The task it was dropped on. */
+    targetTaskId: string;
+    /** Where it landed relative to the target. */
+    position: 'above' | 'below' | 'child';
+    /** The record being moved. */
+    movingRecord: IRecord;
+    /** The record it was dropped on. */
+    targetRecord: IRecord;
+}
+
+/** What the provider hands `onCreateTask`. The sibling context is where the new task lands. */
+export interface ITaskCreateParams extends ITaskSiblingContext {
+}
+
+/** Constructor parameters for {@link TaskDataProvider}. */
 export interface ITaskDataProviderParameters {
-    nativeColumns: INativeColumns;
-    localizationService: ILocalizationService<ITaskGridLabels>;
+    /** Every data access and mutation goes through it. */
     strategy: ITaskDataProviderStrategy;
-    savedQueryDataProvider: ISavedQueryDataProvider;
-    customColumnsDataProvider?: ICustomColumnsDataProvider;
+    /** Where the column names, the labels and the other providers are reached. */
+    services: ITaskGridServiceLocator;
     onIsFlatListEnabled: () => boolean;
 }
 
@@ -42,42 +86,59 @@ export interface ITaskDataProviderStrategy {
     onGetAvailableColumns: (options?: IAvailableColumnOptions) => Promise<IColumn[]>;
     /** Returns linked-entity columns that can be used for filtering and sorting. */
     onGetAvailableRelatedColumns: () => Promise<IAvailableRelatedColumn[]>;
-    /** @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    onCreateTask(parentTaskId?: string): Promise<IRawRecord | null>;
+    /**
+     * Creates one task where {@link ITaskCreateParams} says — before every existing sibling, whether the
+     * active view shows them or not.
+     *
+     * @returns The created raw record, or `null` when the user cancelled.
+     */
+    onCreateTask(params: ITaskCreateParams): Promise<IRawRecord | null>;
     /**
      * @returns Result indicating which tasks were deleted and which failed.
      * `success: true` means all tasks were deleted. `success: false` means some or all failed.
      * Throws on unexpected failure.
      */
     onDeleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
-    /** @returns The created template raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    onCreateTemplateFromTask(taskId: string): Promise<IRawRecord | null>;
-    /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    onCreateTasksFromTemplate(templateId: string, parentTaskId?: string): Promise<IRawRecord[] | null>;
     /**
      * Opens one or more dataset items. When `isTaskEntity` is `true` the references point to task records;
      * when `false` they point to a related entity (e.g. a lookup target).
      */
     onOpenDatasetItems(entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean): Promise<IOpenDatasetItemsResult | null>;
-    /** Moves a task to a new position relative to another task. Returns the updated raw records, or `null` on cancellation. */
-    onMoveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null>;
+    /**
+     * Moves a task to a new position relative to another. {@link ITaskMoveParams} carries the neighbours
+     * it lands between, resolved over the whole dataset — a move into the task's own subtree never
+     * reaches here, the provider refuses it first.
+     *
+     * @returns The updated raw records, or `null` on cancellation.
+     */
+    onMoveTask(params: ITaskMoveParams): Promise<IRawRecord[] | null>;
     /** Persists inline cell edits for the given record. */
     onRecordSave(record: IRecord): Promise<IRecordSaveOperationResult>;
     /** Returns whether the given task record is currently active (non-completed). */
     onIsRecordActive(recordId: string): boolean;
+    /**
+     * Called just before the provider is torn down — on unmount, and on every remount. The provider's data
+     * is still readable, so this is the strategy's last chance to hand the current records to whoever
+     * keeps them.
+     */
+    onDestroy?: () => void;
     /** When provided, the task tree is scoped to the subtree of the returned task id. */
     onGetRootTaskId?: () => string | undefined
 }
 
+/** The task events, raised before and after each operation. Forwarded to the matching `ITaskGridProps` prop. */
 export interface ITaskDataProviderEventListener {
-    onBeforeTemplateCreated: (taskId: string) => void;
-    onAfterTemplateCreated: (record: IRawRecord | null) => void;
     onBeforeTasksDeleted: (taskIds: string[]) => void;
     onAfterTasksDeleted: (result: IDeleteTasksResult | null) => void;
     onBeforeTasksCreated: (parentId?: string) => void;
     onAfterTasksCreated: (records: IRawRecord[] | null, parentId?: string) => void;
     onBeforeTaskMoved: () => void;
-    onAfterTaskMoved: (movingFromTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child') => void;
+    /**
+     * @param result The changed records, or `null` when the task did not move: the grid refused the drop,
+     * or the strategy returned nothing. Raised either way, so a listener that paired it with
+     * `onBeforeTaskMoved` still sees its end - check the result before acting on the move.
+     */
+    onAfterTaskMoved: (movingFromTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child', result: IRawRecord[] | null) => void;
     onTaskDataUpdated: (data: IRawRecord[]) => void;
     onRecordTreeUpdated: (updatedParentIds: (string | undefined)[]) => void;
     onBeforeDatasetItemsOpened: (entityReferences: ComponentFramework.EntityReference[], isTaskEntity: boolean) => void;
@@ -87,7 +148,7 @@ export interface ITaskDataProviderEventListener {
 
 /** Extended data provider interface for task records. Adds task-specific operations on top of `IDataProvider`. */
 export interface ITaskDataProvider extends IDataProvider {
-    /** EventEmitter for task lifecycle events (create, delete, edit, move, template, error). */
+    /** EventEmitter for task lifecycle events (create, delete, edit, move, error). */
     taskEvents: IEventEmitter<ITaskDataProviderEventListener>;
     /** Returns the native column name mapping. */
     getNativeColumns(): INativeColumns;
@@ -114,27 +175,23 @@ export interface ITaskDataProvider extends IDataProvider {
      * Throws on unexpected failure before any deletes could be attempted.
      */
     deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null>;
-    /** @returns The created template raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    createTemplateFromTask(taskId: string): Promise<IRawRecord | null>;
-    /** @returns The created task raw records, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRawRecord[] | null>;
     /** Returns `true` when the grid is displaying a flat list instead of a tree hierarchy. */
     isFlatListEnabled(): boolean;
-    /** Returns `true` when task creation is allowed (from `ITaskDataProviderStrategy.onIsTaskAddingEnabled`). */
     /** Returns the root task id when the tree is scoped to a subtree, or `null` for a full tree. */
     getRootTaskId: () => string | null;
     /** Moves a task to a position relative to another task. Returns the updated raw records, or `null` on cancellation. */
     moveTask(movingTaskId: string, movingToTaskId: string, position: 'above' | 'below' | 'child'): Promise<IRawRecord[] | null>;
 }
 
+/**
+ * The grid's data layer: holds the loaded tasks, maintains the hierarchy, and routes every operation
+ * through the descriptor's task strategy.
+ */
 export class TaskDataProvider extends MemoryDataProvider implements ITaskDataProvider {
-    private _nativeColumns: INativeColumns;
-    private _localizationService: ILocalizationService<ITaskGridLabels>;
+    private _services: ITaskGridServiceLocator;
     private _hasDataBeenLoaded: boolean = false;
-    private _taskTree: IRecordTree;
+    private _taskTree: RecordTree;
     private _strategy: ITaskDataProviderStrategy;
-    private _savedQueryDataProvider: ISavedQueryDataProvider;
-    private _customColumnsDataProvider?: ICustomColumnsDataProvider;
     private _onFlatListEnabled: () => boolean;
     public readonly taskEvents: EventEmitter<ITaskDataProviderEventListener> = new EventEmitter<ITaskDataProviderEventListener>();
 
@@ -143,15 +200,30 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
             dataSource: [],
             metadata: { PrimaryIdAttribute: 'id' }
         });
-        this._savedQueryDataProvider = parameters.savedQueryDataProvider;
-        this._nativeColumns = parameters.nativeColumns;
+        this._services = parameters.services;
         this._taskTree = new RecordTree({
             taskDataProvider: this
         })
-        this._localizationService = parameters.localizationService;
         this._strategy = parameters.strategy;
-        this._customColumnsDataProvider = parameters.customColumnsDataProvider;
         this._onFlatListEnabled = parameters.onIsFlatListEnabled;
+        this._registerTaskEventListeners();
+    }
+
+    private get _nativeColumns(): INativeColumns {
+        return this._services.get('nativeColumns');
+    }
+
+    private get _localizationService(): ILocalizationService<ITaskGridLabels> {
+        return this._services.get('localizationService');
+    }
+
+    private get _savedQueryDataProvider(): ISavedQueryDataProvider {
+        return this._services.get('savedQueryDataProvider');
+    }
+
+    /** The user-defined columns, when the custom-columns module is registered. */
+    private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
+        return this._services.find('customColumnsModule')?.provider;
     }
 
     public getStrategy<T extends ITaskDataProviderStrategy>(): T {
@@ -255,47 +327,87 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 this.taskEvents.dispatchEvent('onBeforeTaskMoved');
-                const result = await this._strategy.onMoveTask(movingFromTaskId, movingToTaskId, position);
+                const params = this._resolveMove(movingFromTaskId, movingToTaskId, position);
+                if (!params) {
+                    //an impossible move - into the task's own subtree, or onto a record we do not hold.
+                    //Refused here so no strategy has to guard against it
+                    this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position, null);
+                    return null;
+                }
+                const result = await this._strategy.onMoveTask(params);
                 if (result !== null) this.updateTaskData(result);
-                this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position);
+                this.taskEvents.dispatchEvent('onAfterTaskMoved', movingFromTaskId, movingToTaskId, position, result);
                 return result;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
         })
     }
 
+    /**
+     * Resolves where a drop lands: the parent, and the siblings on either side of it, taken from the
+     * complete record set rather than the filtered view.
+     *
+     * @returns `null` when the move cannot be made.
+     */
+    private _resolveMove(movingTaskId: string, targetTaskId: string, position: 'above' | 'below' | 'child'): ITaskMoveParams | null {
+        const movingRecord = this.getRecordsMap()[movingTaskId];
+        const targetRecord = this.getRecordsMap()[targetTaskId];
+        if (!movingRecord || !targetRecord) {
+            return null;
+        }
+        //a task cannot become its own descendant: the hierarchy would cycle, and the record tree drops
+        //every record in a cycle - the rows would simply vanish. `pathIds` runs from the root down to the
+        //target itself, over the unfiltered records, so this covers dropping a task onto itself as well
+        if (this._taskTree.structure.getAncestorIds(targetTaskId).includes(movingTaskId)) {
+            return null;
+        }
+
+        const structure = this._taskTree.structure;
+        const parentTaskId = position === 'child'
+            ? targetTaskId
+            : structure.getParent(targetTaskId)?.getRecordId() ?? null;
+        const siblings = structure.getChildren(parentTaskId)
+            .filter(record => record.getRecordId() !== movingTaskId);
+        //the moving task is excluded, so it is never weighed against the position it is leaving
+        const neighbours = structure.getNeighbours(targetTaskId, { exclude: movingTaskId });
+        const [previousSibling, nextSibling] = position === 'child'
+            //first among its new children, so there is nothing before it
+            ? [undefined, siblings[0]]
+            : position === 'above'
+                ? [neighbours.previous, targetRecord]
+                : [targetRecord, neighbours.next];
+
+        return {
+            movingTaskId,
+            targetTaskId,
+            position,
+            movingRecord,
+            targetRecord,
+            parentRecord: parentTaskId ? this.getRecordsMap()[parentTaskId] : undefined,
+            siblings,
+            previousSibling,
+            nextSibling,
+        };
+    }
+
+    /** Where a newly created task lands: first among every existing child of its parent. */
+    private _resolveCreate(parentTaskId?: string): ITaskCreateParams {
+        const siblings = this._taskTree.structure.getChildren(parentTaskId ?? null);
+        return {
+            parentRecord: parentTaskId ? this.getRecordsMap()[parentTaskId] : undefined,
+            siblings,
+            previousSibling: undefined,
+            nextSibling: siblings[0],
+        };
+    }
+
     public async createTask(parentId?: string): Promise<IRawRecord | null> {
         this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentId);
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
-                const rawRecord = await this._strategy.onCreateTask(parentId);
+                const rawRecord = await this._strategy.onCreateTask(this._resolveCreate(parentId));
                 if (rawRecord) this._createTasks([rawRecord], parentId);
                 this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecord ? [rawRecord] : null, parentId);
-                return rawRecord;
-            },
-            onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
-        });
-    }
-
-    public async createTasksFromTemplate(templateId: string, parentId?: string): Promise<IRawRecord[] | null> {
-        this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentId);
-        return ErrorHelper.executeWithErrorHandling({
-            operation: async () => {
-                const rawRecords = await this._strategy.onCreateTasksFromTemplate(templateId, parentId);
-                if (rawRecords) this._createTasks(rawRecords, parentId);
-                this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecords, parentId);
-                return rawRecords;
-            },
-            onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
-        })
-    }
-
-    public async createTemplateFromTask(taskId: string): Promise<IRawRecord | null> {
-        this.taskEvents.dispatchEvent('onBeforeTemplateCreated', taskId);
-        return ErrorHelper.executeWithErrorHandling({
-            operation: async () => {
-                const rawRecord = await this._strategy.onCreateTemplateFromTask(taskId);
-                this.taskEvents.dispatchEvent('onAfterTemplateCreated', rawRecord);
                 return rawRecord;
             },
             onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
@@ -329,7 +441,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public getSortedRecordIds(): string[] {
-        return this._taskTree.getSortedIds();
+        return this._taskTree.view.getOrderedIds();
     }
 
     public async deleteTasks(taskIds: string[]): Promise<IDeleteTasksResult | null> {
@@ -377,6 +489,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public async destroy(): Promise<void> {
+        //before super, which drops the data: this is the strategy's last look at it
+        this._strategy.onDestroy?.();
         super.destroy();
         this.taskEvents.clearEventListeners();
     }
@@ -388,7 +502,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
     }
 
     public createGroupedRecordDataProvider(group: IRecord): IDataProvider {
-        const children = this._taskTree.getNodeMap().get(group.getRecordId())?.directChildren ?? [];
+        const children = this._taskTree.view.getChildren(group.getRecordId());
         return {
             ...this,
             getRecords: () => children,
@@ -399,29 +513,47 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
 
     public getPaging() {
         const paging = super.getPaging();
-        paging.totalResultCount = this._taskTree.getTotalCount()
-        paging.pageSize = this._taskTree.getTotalCount();
+        paging.totalResultCount = this._taskTree.view.getCount()
+        paging.pageSize = this._taskTree.view.getCount();
         return paging;
     }
 
     public getRecords(): IRecord[] {
         const records = super.getRecords();
-        if (records.length === 0 || this._taskTree.getNodeMap().size === 0) {
+        if (records.length === 0 || !this._taskTree.isBuilt()) {
             return [];
         }
-        return this._taskTree.getNodeMap().get(null as any)?.directChildren ?? [];
+        return this._taskTree.view.getChildren();
     }
 
     public getAllRecords(): IRecord[] {
         return super.getRecords();
     }
 
+    /**
+     * WORKAROUND for a bug in `MemoryDataProvider`, and it belongs in `@talxis/client-libraries`, not here.
+     *
+     * The memory provider keeps an id to array slot index over the data source and indexes a newly
+     * created row at `dataSource.length - 1` - the row it was pushed after, not the row itself. The first
+     * raw data update through the new record (a save ends with `setRawData(toRawData())`) therefore
+     * overwrites that neighbour, leaving the data source with two rows carrying the new id, and the next
+     * load refuses them: "duplicate records with the same identifier". Creating a task and then using
+     * quick find is enough to hit it. The `position: 'start'` branch is wrong in the same way - it never
+     * shifts the indexes the unshift moved.
+     *
+     * `setDataSource` rebuilds that index over the array as it now stands, so re-running it after every
+     * create puts every row back on its own slot. Remove this the moment the provider indexes creations
+     * correctly.
+     */
+    public onRecordCreate(record: IRecord, options?: { position: 'start' | 'end' }): void {
+        super.onRecordCreate(record, options);
+        this.setDataSource(this.getDataSource());
+    }
+
     public createNewDataProvider(eventBubbleOptions?: IEventBubbleOptions): IDataProvider {
         return new TaskDataProvider({
-            localizationService: this._localizationService,
-            nativeColumns: this._nativeColumns,
             strategy: this._strategy,
-            savedQueryDataProvider: this._savedQueryDataProvider,
+            services: this._services,
             onIsFlatListEnabled: () => this._onFlatListEnabled(),
         });
     }
@@ -465,21 +597,48 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         })
     }
 
+    /** Subscribes to everything the provider reacts to, once, at construction. */
+    private _registerTaskEventListeners(): void {
+        //expanding a template is what creates the tasks it describes: subscribed before anything else
+        //gets the chance, so every later listener sees tasks that already exist.
+        //
+        //Waited for rather than resolved: this runs from a constructor, where nothing can be assumed to
+        //be registered yet. A module that is never registered simply never fires
+        this._services.whenAvailable('templatesModule', module => {
+            module.provider.templateEvents.addEventListener(
+                'onAfterTasksFromTemplateCreated',
+                (rawRecords, parentTaskId) => this._createTasksFromTemplate(rawRecords, parentTaskId),
+            );
+        });
+    }
+
+    /**
+     * Adds the tasks a template expanded into, raising the same events a task creation does.
+     *
+     * The records arrive finished — what they hold and where they sit is the template provider's — so
+     * this only adds them.
+     */
+    private async _createTasksFromTemplate(rawRecords: IRawRecord[] | null, parentTaskId?: string): Promise<void> {
+        if (!rawRecords?.length) {
+            return;
+        }
+        this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentTaskId);
+        await ErrorHelper.executeWithErrorHandling({
+            operation: async () => {
+                this._createTasks(rawRecords, parentTaskId);
+                this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecords, parentTaskId);
+            },
+            onError: (error, message) => this.taskEvents.dispatchEvent('onError', error, message)
+        });
+    }
+
     private _createTasks(rawRecords: IRawRecord[], parentId?: string) {
         const records: IRecord[] = [];
         for (const rawRecord of rawRecords) {
             const record = this.newRecord({
                 rawData: rawRecord,
                 recordId: rawRecord[this.getMetadata().PrimaryIdAttribute],
-                position: 'start',
             },);
-            const stackRankAttributeName = this.getNativeColumns().stackRank;
-            if (record.getValue(stackRankAttributeName) == null) {
-                console.warn(`Record with id ${record.getRecordId()} is missing stack rank value. Setting it to 0.`, record);
-                record.setValue(stackRankAttributeName, 0);
-                const newRawData = record.toRawData()
-                record.setRawData(newRawData);
-            }
             records.push(record);
         }
         if (records.length > 0) {

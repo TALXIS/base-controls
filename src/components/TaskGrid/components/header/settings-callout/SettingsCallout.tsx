@@ -3,6 +3,7 @@ import * as React from "react"
 import { getSettingsCalloutStyles } from "./styles";
 import { useDatasetControl, useLocalizationService, useTaskDataProvider } from "@components/TaskGrid/context";
 
+/** The gear callout holding the hierarchy and inactive-task toggles. */
 export const SettingsCallout = () => {
     const localizationService = useLocalizationService();
     const datasetControl = useDatasetControl();

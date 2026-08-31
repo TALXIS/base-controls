@@ -28,6 +28,11 @@ export interface IGridParameters extends IParameters {
     EnableGroupedColumnsPinning?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableCommandBar?: Omit<ITwoOptionsProperty, 'attributes'>;
     RowHeight?: Omit<IWholeNumberProperty, 'attributes'>;
+    /**
+     * How many rows the grid grows to fit before it starts scrolling instead. Only applies while
+     * `Height` is unset — an explicit height always wins.
+     */
+    MaxVisibleRows?: Omit<IWholeNumberProperty, 'attributes'>;
     EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableAutoSave?: Omit<ITwoOptionsProperty, 'attributes'>;
     DefaultExpandedGroupLevel?: Omit<IWholeNumberProperty, 'attributes'>;

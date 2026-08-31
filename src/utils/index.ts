@@ -6,3 +6,4 @@ export * from './dataset';
 export * from './error-handling';
 export * from './localization';
 export * from './adapters';
+export * from './stack-rank';

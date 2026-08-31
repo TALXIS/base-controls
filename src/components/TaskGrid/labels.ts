@@ -1,3 +1,4 @@
+/** Every localizable string the grid renders. Override any subset through `ITaskGridProps.labels`. */
 export interface ITaskGridLabels {
     name: string;
     no: string;
@@ -33,6 +34,12 @@ export interface ITaskGridLabels {
     description: string;
     noTaskTemplates: string;
     path: string;
+    /** Header of the column showing what a task waits on. */
+    predecessors: string;
+    /** Header of the column showing what waits on a task. */
+    successors: string;
+    /** Header of the column showing a task's checklist. */
+    checklist: string;
     addChild: string;
     addCustomColumn: string;
     confirmColumnDelete: string;
@@ -76,12 +83,16 @@ export interface ITaskGridLabels {
     deletingUserQueriesError: string;
 }
 
+/** The English defaults for {@link ITaskGridLabels}. */
 export const TASK_GRID_LABELS: ITaskGridLabels = {
     name: 'Name',
     no: 'No',
     yes: 'Yes',
     ok: 'Ok',
     path: 'Path',
+    predecessors: 'Predecessors',
+    successors: 'Successors',
+    checklist: 'Checklist',
     confirm: 'Confirm',
     confirmation: 'Confirmation',
     myViews: 'My views',

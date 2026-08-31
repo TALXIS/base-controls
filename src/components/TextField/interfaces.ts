@@ -9,6 +9,8 @@ export interface ITextField extends IControl<ITextFieldParameters, ITextFieldOut
 export interface ITextFieldParameters extends IInputParameters {
     isResizable?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableTypeSuffix?: Omit<ITwoOptionsProperty, 'attributes'>;
+    /** Text shown while the field is empty. Left unset, the control's default `---` is used. */
+    Placeholder?: IStringProperty;
     value: IStringProperty;
 }
 

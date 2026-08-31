@@ -11,12 +11,13 @@ interface IProps extends ICellProps {
     data: IRecord;
 }
 
+/** The subject cell: the expander, the indentation and the drag handle around the task name. */
 export const GroupCell = (props: IProps) => {
     const provider = useTaskDataProvider();
     const record = props.data;
     const node = props.node;
     const expanded = node.expanded;
-    const hasChildren = provider.getRecordTree().hasChildren(record.getRecordId());
+    const hasChildren = provider.getRecordTree().view.hasChildren(record.getRecordId());
     const rerender = useRerender()
     const styles = React.useMemo(() => getGroupCellStyles(getTheme(), expanded), [expanded]);
     const buttonRef = useRef<HTMLElement>(null);
@@ -43,9 +44,9 @@ export const GroupCell = (props: IProps) => {
         }
         else {
             const offset = 32;
-            const hasChildren = provider.getRecordTree().hasChildren(record?.getRecordId());
+            const hasChildren = provider.getRecordTree().view.hasChildren(record?.getRecordId());
             switch (true) {
-                case node.level === 0 && provider.getRecordTree().isFlat(): {
+                case node.level === 0 && provider.getRecordTree().view.isFlat(): {
                     return 0;
                 }
                 case !hasChildren: {

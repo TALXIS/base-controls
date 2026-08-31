@@ -1,0 +1,28 @@
+import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { COMPLETED_CLASS_NAME, COMPLETION_COLUMN_NAME, REORDERING_CLASS_NAME } from "./constants";
+
+export const getCheckListGridStyles = (theme: ITheme) => {
+    return mergeStyleSets({
+        checkListGridRoot: {
+            //the grid draws a divider after the last left-pinned cell, exempting only its own control
+            //column by name. The completion column is a control column too, so it takes the same
+            //exemption rather than growing a border the grid's own checkbox never had.
+            //`.ag-cell` is in the selector to outrank that rule: both carry !important and would
+            //otherwise tie on specificity, which the later-registered stylesheet wins
+            [`.ag-pinned-left-cols-container .ag-cell.ag-cell-last-left-pinned[col-id="${COMPLETION_COLUMN_NAME}"]`]: {
+                borderRight: 'none !important'
+            },
+            //a finished item reads as struck through. Set on the cell rather than on the text inside it,
+            //which the grid's own renderer owns - a decoration from an ancestor is drawn over every
+            //inline descendant and cannot be turned off further down
+            [`.ag-cell.${COMPLETED_CLASS_NAME}`]: {
+                textDecoration: 'line-through'
+            },
+            //short on purpose: two rows can be crossed in quick succession during a drag, and a longer
+            //transition would still be running when the next reflow starts
+            [`.${REORDERING_CLASS_NAME} .ag-row`]: {
+                transition: 'transform 0.15s ease-out'
+            }
+        }
+    })
+}

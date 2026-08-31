@@ -1,0 +1,52 @@
+import { IDataProviderEventListeners, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { useEventEmitter } from "@hooks/useEventEmitter";
+import { IDeletedUserQueriesResult } from "./providers/saved-query";
+import { IUserQueryDataProviderEvents } from "./modules/interfaces";
+import { IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProvider, ITaskDataProviderEventListener } from "./providers/task";
+import { ITemplateDataProviderEvents } from "./providers/template/TemplateDataProvider";
+import { ITaskGridDatasetControl } from "./interfaces";
+import type { ITaskGridDatasetControlEvents } from "./TaskGridDatasetControl";
+import { ITaskGridProps } from "./TaskGrid";
+
+/**
+ * Forwards every event the grid raises to the matching prop on {@link ITaskGridProps}. The three
+ * `onError` sources are funnelled into the single `onError` prop.
+ */
+export const useTaskGridEvents = (props: ITaskGridProps, datasetControl: ITaskGridDatasetControl, taskDataProvider: ITaskDataProvider) => {
+    const { taskEvents } = taskDataProvider;
+    //undefined when the module is not registered; useEventEmitter tolerates that, so the props never fire
+    const services = datasetControl.getServices();
+    const queryEvents = services.find('userQueriesModule')?.provider.events;
+    const templateEvents = services.find('templatesModule')?.provider.templateEvents;
+
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onBeforeTasksCreated', (parentTaskId?: string) => props.onBeforeTasksCreated?.(parentTaskId));
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onAfterTasksCreated', (records: IRawRecord[] | null, parentTaskId?: string) => props.onTasksCreated?.(records, parentTaskId));
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onBeforeTasksDeleted', (taskIds: string[]) => props.onBeforeTasksDeleted?.(taskIds));
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onAfterTasksDeleted', (result: IDeleteTasksResult | null) => props.onTasksDeleted?.(result));
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onBeforeTaskMoved', () => props.onBeforeTaskMoved?.());
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onAfterTaskMoved', (movingTaskId: string, targetTaskId: string, position: 'above' | 'below' | 'child', result: IRawRecord[] | null) => props.onTaskMoved?.(movingTaskId, targetTaskId, position, result));
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onTaskDataUpdated', (data: IRawRecord[]) => props.onTaskDataUpdated?.(data));
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onRecordTreeUpdated', (updatedParentIds: (string | undefined)[]) => props.onRecordTreeUpdated?.(updatedParentIds));
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onBeforeDatasetItemsOpened', (references: ComponentFramework.EntityReference[], isTaskEntity: boolean) => props.onBeforeDatasetItemsOpened?.(references, isTaskEntity));
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onAfterDatasetItemsOpened', (references: ComponentFramework.EntityReference[], isTaskEntity: boolean, result: IOpenDatasetItemsResult | null) => props.onDatasetItemsOpened?.(references, isTaskEntity, result));
+    useEventEmitter<ITaskDataProviderEventListener>(taskEvents, 'onError', (error: any, message: string) => props.onError?.(error, message));
+
+    useEventEmitter<IUserQueryDataProviderEvents>(queryEvents, 'onBeforeUserQueryCreated', (queryName: string) => props.onBeforeUserQueryCreated?.(queryName));
+    useEventEmitter<IUserQueryDataProviderEvents>(queryEvents, 'onAfterUserQueryCreated', (result: string | null) => props.onUserQueryCreated?.(result));
+    useEventEmitter<IUserQueryDataProviderEvents>(queryEvents, 'onBeforeUserQueryUpdated', (queryId: string) => props.onBeforeUserQueryUpdated?.(queryId));
+    useEventEmitter<IUserQueryDataProviderEvents>(queryEvents, 'onAfterUserQueryUpdated', (result: string | null) => props.onUserQueryUpdated?.(result));
+    useEventEmitter<IUserQueryDataProviderEvents>(queryEvents, 'onBeforeUserQueriesDeleted', (queryIds: string[]) => props.onBeforeUserQueriesDeleted?.(queryIds));
+    useEventEmitter<IUserQueryDataProviderEvents>(queryEvents, 'onAfterUserQueriesDeleted', (result: IDeletedUserQueriesResult) => props.onUserQueriesDeleted?.(result));
+    useEventEmitter<IUserQueryDataProviderEvents>(queryEvents, 'onError', (error: any, message: string) => props.onError?.(error, message));
+
+    useEventEmitter<ITemplateDataProviderEvents>(templateEvents, 'onBeforeTemplateCreated', (taskId: string) => props.onBeforeTemplateCreated?.(taskId));
+    useEventEmitter<ITemplateDataProviderEvents>(templateEvents, 'onAfterTemplateCreated', (record: IRawRecord | null) => props.onTemplateCreated?.(record));
+    useEventEmitter<ITemplateDataProviderEvents>(templateEvents, 'onError', (error: any, message: string) => props.onError?.(error, message));
+
+    //the grid's own emitter, not the inherited dataset-control one. Fires while every provider still holds
+    //its data, so a consumer can read whatever it wants to keep
+    useEventEmitter<ITaskGridDatasetControlEvents>(datasetControl.events, 'onBeforeDestroy', () => props.onBeforeDestroy?.(datasetControl.getServices()));
+
+    useEventEmitter<IDataProviderEventListeners>(taskDataProvider, 'onBeforeRecordSaved', (record: IRecord) => props.onBeforeRecordSaved?.(record));
+    useEventEmitter<IDataProviderEventListeners>(taskDataProvider, 'onAfterRecordSaved', (result: IRecordSaveOperationResult) => props.onRecordSaved?.(result));
+};

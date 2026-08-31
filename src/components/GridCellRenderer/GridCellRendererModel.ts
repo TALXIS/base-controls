@@ -73,10 +73,10 @@ export class GridCellRendererModel {
             }
         }
         else if(this.getColumn().grouping?.isGrouped) {
-            //if the column is grouped, we should aways have --- as placeholder
+            //if the column is grouped, we should aways have a placeholder
             return {
                 value: formattedValue,
-                placeholder: formattedValue ?? '---'
+                placeholder: formattedValue ?? this._getPlaceholder()
             }
         }
         else if(this.getColumn().aggregation?.aggregationFunction) {
@@ -88,7 +88,7 @@ export class GridCellRendererModel {
         else {
             return {
                 value: formattedValue,
-                placeholder: formattedValue ?? '---'
+                placeholder: formattedValue ?? this._getPlaceholder()
             }
         }
     }
@@ -240,6 +240,14 @@ export class GridCellRendererModel {
         const dataType = this._getProps().parameters.value.type as DataType;
         const PropertyClass = propertyMap.get(dataType) ?? Property;
         return new PropertyClass(this);
+    }
+
+    /**
+     * What an empty cell shows. `??`, not `||`: a placeholder set to an empty string renders an empty
+     * cell rather than falling back to the dashes, which is the only way to ask for that.
+     */
+    private _getPlaceholder(): string {
+        return this._getProps().parameters.Placeholder?.raw ?? '---';
     }
 
     private _getIconProps(propName: 'PrefixIcon' | 'SuffixIcon'): IIconProps | undefined {

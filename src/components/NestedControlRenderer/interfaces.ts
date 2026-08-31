@@ -33,6 +33,7 @@ export interface INestedControlRendererParameters extends IParameters {
      * Optional configuration to set the control's state, such as enabling or disabling the control.
      */
     ControlStates?: IControlStates;
+
 }
 
 export interface INestedControlRendererComponentProps {

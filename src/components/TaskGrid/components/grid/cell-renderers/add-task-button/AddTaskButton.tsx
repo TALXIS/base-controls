@@ -3,9 +3,9 @@ import { ICellProps } from "@components/Grid/cells/cell/Cell"
 import * as React from "react"
 import { getAddTaskButtonStyles } from "./styles";
 import { IRecord } from "@talxis/client-libraries";
-import { RecordSelector } from "@components/TaskGrid/components/grid/record-selector/RecordSelector";
-import { useDatasetControl, useLocalizationService, useTaskDataProvider, useTaskGridDescriptor } from "@components/TaskGrid/context";
+import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider, useTaskGridDescriptor } from "@components/TaskGrid/context";
 
+/** Trailing per-row button that adds a subtask, or expands a template beneath the row. */
 export const AddTaskButton = (props: ICellProps) => {
     const styles = React.useMemo(() => getAddTaskButtonStyles(), []);
     const record: IRecord = props.data;
@@ -14,12 +14,14 @@ export const AddTaskButton = (props: ICellProps) => {
     const localizationService = useLocalizationService();
     const [isButtonMounted, setIsButtonMounted] = React.useState(true);
     const isTaskAddingEnabled = datasetControl.isTaskCreatingEnabled();
-    const isTemplatingEnabled = datasetControl.isTemplatingEnabled();
+    const services = useServices();
+    const isTemplatingEnabled = !!services.find('templatesModule');
 
     const addTaskFromTemplate = async (templateId: string) => {
         //this needs to be done so the button menu does not overlay the dialog
         setIsButtonMounted(false);
-        await taskDataProvider.createTasksFromTemplate(templateId, record.getRecordId());
+        //the command only renders with the module registered, which is what makes get safe here
+        await services.get('templatesModule').provider.createTasksFromTemplate({ templateId, parentRecord: record });
         setIsButtonMounted(true);
     }
 
@@ -31,7 +33,7 @@ export const AddTaskButton = (props: ICellProps) => {
     }
 
     const getMenuItems = (): IContextualMenuItem[] => {
-        const isTemplatingEnabled = datasetControl.isTemplatingEnabled();
+        const templates = services.find('templatesModule');
         return [{
             key: 'addChild',
             text: localizationService.getLocalizedString('addChild'),
@@ -40,11 +42,12 @@ export const AddTaskButton = (props: ICellProps) => {
             },
             onClick: () => { taskDataProvider.createTask(record.getRecordId()) }
         },
-        {
+        //the divider only makes sense with the templating commands below it
+        ...(!templates ? [] : [{
             key: 'divider',
             itemType: ContextualMenuItemType.Divider
         },
-        ...(!isTemplatingEnabled ? [] : [{
+        {
             key: 'taskFromTemplate',
             text: localizationService.getLocalizedString('taskFromTemplate'),
             iconProps: {
@@ -54,17 +57,7 @@ export const AddTaskButton = (props: ICellProps) => {
                 items: [{
                     key: 'dummy'
                 }],
-                onRenderMenuList: () => <RecordSelector
-                    provider={datasetControl.getTemplateDataProvider()}
-                    onRenderRecord={(props, defautRender) => {
-                        return defautRender({
-                            ...props,
-                            iconProps: {
-                                iconName: 'AddToShoppingList'
-                            }
-                        })
-                    }}
-                    onRecordSelected={addTaskFromTemplate} />
+                onRenderMenuList: () => templates.components.onRenderTemplateSelector({ onTemplateSelected: addTaskFromTemplate })
             }
         }])];
     }

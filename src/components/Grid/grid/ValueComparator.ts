@@ -5,6 +5,10 @@ import { ICellValues } from "./ag-grid/AgGridModel";
 export class Comparator {
 
     public isEqual(oldValues?: ICellValues, newValues?: ICellValues) {
+        //AG Grid asks this per cell per value read, and the common answer is "the same object"
+        if (oldValues === newValues) {
+            return true;
+        }
         if (!this._isEqual(oldValues?.value, newValues?.value)) {
             return false;
         }

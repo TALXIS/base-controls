@@ -34,12 +34,16 @@ export const Grid = (props: IGrid) => {
         return getGridInstance(() => propsRef.current, labels, theme)
     }, []);
 
-    const styles = useMemo(() => getGridStyles(theme), [theme]);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const height = grid.getParameters().Height?.raw;
+    const rowHeight = grid.getDefaultRowHeight();
+    const maxVisibleRows = grid.getMaxVisibleRows();
+    const styles = useMemo(
+        () => getGridStyles(theme, height, rowHeight, maxVisibleRows),
+        [theme, height, rowHeight, maxVisibleRows]
+    );
     const gridReadyRef = useRef<boolean>(false);
     const agGrid = useMemo(() => new AgGridModel({
-        grid: grid,
-        getContainer: () => containerRef.current!
+        grid: grid
     }), []);
 
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
@@ -85,7 +89,6 @@ export const Grid = (props: IGrid) => {
         <AgGridContext.Provider value={agGrid}>
             <ThemeProvider
                 className={getClassNames([className, styles.gridRoot, 'ag-theme-balham'])}
-                ref={containerRef}
             >
                 <AgGridReact
                     {...componentProps}

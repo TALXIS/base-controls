@@ -1,18 +1,20 @@
 import { CommandBarButton as CommandBarButtonBase, ContextualMenuItemType, IContextualMenuItem, useTheme } from "@fluentui/react"
+import { usePcfContext } from "@utils";
 import * as React from "react"
 import { getViewSwitcherStyles } from "./styles";
-import { useDatasetControl, useLocalizationService, usePcfContext, useTaskDataProvider } from "@components/TaskGrid/context";
-import { CreateViewDialog } from "./create-view-dialog";
-import { ViewManagerDialog } from "./view-manager";
+import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider } from "@components/TaskGrid/context";
 import { useEventEmitter } from "@hooks";
 import { withButtonLoading } from "@legacy";
 
 const CommandBarButton = withButtonLoading(CommandBarButtonBase);
 
+/** The view dropdown. Lists the personal views and their commands when the user-queries module is registered. */
 export const ViewSwitcher = () => {
     const localizationService = useLocalizationService();
     const datasetControl = useDatasetControl();
-    const savedQueryDataProvider = datasetControl.getSavedQueryDataProvider();
+    const services = useServices();
+    const savedQueryDataProvider = services.get('savedQueryDataProvider');
+    const userQueriesModule = services.find('userQueriesModule');
     const taskDataProvider = useTaskDataProvider();
     const systemQueries = savedQueryDataProvider.getSystemQueries();
     const userQueries = savedQueryDataProvider.getUserQueries();
@@ -23,10 +25,10 @@ export const ViewSwitcher = () => {
     const [showCreateViewDialog, setShowCreateViewDialog] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(false);
 
-    useEventEmitter(savedQueryDataProvider.queryEvents, 'onBeforeUserQueryUpdated', () => {
+    useEventEmitter(userQueriesModule?.provider.events, 'onBeforeUserQueryUpdated', () => {
         setIsLoading(true);
     });
-    useEventEmitter(savedQueryDataProvider.queryEvents, 'onAfterUserQueryUpdated', () => {
+    useEventEmitter(userQueriesModule?.provider.events, 'onAfterUserQueryUpdated', () => {
         setIsLoading(false);
     });
 
@@ -35,10 +37,10 @@ export const ViewSwitcher = () => {
     }
 
     const getViewSwitcherItems = (): IContextualMenuItem[] => {
-        const userQueriesEnabled = datasetControl.isUserQueriesFeatureEnabled();
-        const isViewManagerEnabled = datasetControl.isViewManagerEnabled();
-        const isSaveAsNewEnabled = datasetControl.isSaveQueryAsNewEnabled();
-        const isSaveEnabled = datasetControl.isSaveQueryChangesEnabled();
+        const userQueriesEnabled = !!userQueriesModule;
+        const isViewManagerEnabled = userQueriesModule?.enableQueryManager ?? false;
+        const isSaveAsNewEnabled = userQueriesModule?.enableSaveAsNewQuery ?? false;
+        const isSaveEnabled = userQueriesModule?.enableSaveQueryChanges ?? false;
 
         const mapQuery = (query: { id: string; name: string }): IContextualMenuItem => ({
             key: query.id,
@@ -74,12 +76,12 @@ export const ViewSwitcher = () => {
                     iconProps: { iconName: 'SaveAs' },
                     onClick: () => setShowCreateViewDialog(true)
                 }] : []),
-                ...(savedQueryDataProvider.isUserQuery(currentQuery.id) && isSaveEnabled ? [{
+                ...(userQueriesModule?.provider.isUserQuery(currentQuery.id) && isSaveEnabled ? [{
                     key: 'saveExistingView',
                     text: localizationService.getLocalizedString('saveExisting'),
                     iconProps: { iconName: 'Save' },
                     onClick: async () => {
-                        savedQueryDataProvider.updateUserQuery(taskDataProvider);
+                        userQueriesModule?.provider.updateFromGridState(currentQuery, taskDataProvider);
                     }
                 }] : []),
                 ...(isViewManagerEnabled ? [
@@ -105,11 +107,9 @@ export const ViewSwitcher = () => {
             menuProps={{
                 items: getViewSwitcherItems()
             }} text={currentQuery.name} />
-        {showCreateViewDialog &&
-            <CreateViewDialog onDismiss={() => setShowCreateViewDialog(false)} />
-        }
-        {showViewManagerDialog &&
-            <ViewManagerDialog onDismiss={() => setShowViewManagerDialog(false)} />
-        }
+        {showCreateViewDialog && userQueriesModule
+            && userQueriesModule.components.onRenderCreateView({ onDismiss: () => setShowCreateViewDialog(false) })}
+        {showViewManagerDialog && userQueriesModule
+            && userQueriesModule.components.onRenderViewManager({ onDismiss: () => setShowViewManagerDialog(false) })}
     </>
 }

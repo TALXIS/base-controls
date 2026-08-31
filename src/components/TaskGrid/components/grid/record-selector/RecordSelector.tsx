@@ -3,18 +3,23 @@ import { Dataset, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { DatasetControl as DatasetControlModel } from '@utils/dataset-control';
 import * as React from "react"
 import { Spinner } from "@legacy";
-import { getClassNames } from "@utils";
+import { getClassNames, usePcfContext } from "@utils";
 import { CommandBarButton, Icon, useTheme, Text, IButtonProps, DirectionalHint } from "@fluentui/react";
 import { getRecordSelectorStyles } from "./styles";
 import { FixedSizeList } from 'react-window';
-import { useLocalizationService, usePcfContext } from "@components/TaskGrid/context";
+import { useLocalizationService } from "@components/TaskGrid/context";
 
-interface IRecordSelectorProps {
+/** Props for {@link RecordSelector}. */
+export interface IRecordSelectorProps {
+    /** The records to offer. Searched and paged through the provider itself. */
     provider: IDataProvider;
+    /** Called with the chosen record's id. */
     onRecordSelected: (recordId: string) => void;
+    /** Wraps each record's button, for an icon or a secondary line of its own. */
     onRenderRecord?: (props: IButtonProps, defaultRender: (props: IButtonProps) => React.ReactNode) => React.ReactNode;
 }
 
+/** A searchable, virtualized single-record picker over any `IDataProvider`. */
 export const RecordSelector = (props: IRecordSelectorProps) => {
     const { onRecordSelected } = props;
     const providerRef = React.useRef(props.provider);

@@ -1,0 +1,18 @@
+/** Every localizable string the checklist renders. Override any subset through `ICheckListProps.labels`. */
+export interface ICheckListLabels {
+    /** Shown in the new-record row while it is empty. */
+    newItemPlaceholder: string;
+    /** Names the completion checkbox, which has no visible header of its own. */
+    markItemFinished: string;
+    /** Tooltip on an item's delete button. */
+    deleteItem: string;
+    /** Asked before an item is deleted. */
+    'confirmDialog.deleteItem.text': string;
+}
+
+export const CHECK_LIST_LABELS: ICheckListLabels = {
+    newItemPlaceholder: 'Add an item...',
+    markItemFinished: 'Mark as finished',
+    deleteItem: 'Delete',
+    'confirmDialog.deleteItem.text': 'Are you sure you want to delete this item?'
+};

@@ -1,33 +1,62 @@
+import * as React from "react";
 import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
-import { DatasetConstants, IColumn, IRawRecord, IRecord } from "@talxis/client-libraries";
+import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
 import { AddTaskButton } from "../cell-renderers/add-task-button";
-import { ILocalizationService } from "@utils";
-import { ITaskGridLabels } from "@components/TaskGrid/labels";
+import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
 import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
+import { PREDECESSORS_COLUMN_NAME, SUCCESSORS_COLUMN_NAME } from "@components/TaskGrid/modules/dependencies/DependenciesProvider";
+import { CHECKLIST_COLUMN_NAME } from "@components/TaskGrid/modules/checklist/ChecklistProvider";
+//type-only: components.tsx reaches back into TaskGrid/interfaces, so a value import would be a cycle
+import type { ITaskGridCellProps, ITaskGridComponents } from "@components/TaskGrid/components/components";
+import type { IDependenciesCellRendererProps } from "@components/TaskGrid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
 
+/** Name of the synthetic trailing column holding each row's add-task button. */
 export const ADD_TASK_COLUMN_NAME = 'addTask';
 
+
+/** AG Grid's `ColDef`, bound to the grid's record type. */
 export type ColDef = ColDefBase<IRecord>;
+/** AG Grid's `GridApi`, bound to the grid's record type. */
 export type GridApi = GridApiBase<IRecord>;
+/** AG Grid's `RowClassRules`, bound to the grid's record type. */
 export type RowClassRules = RowClassRulesBase<IRecord>;
 
 
-/** Strategy interface for deep customization of the AG Grid instance inside TaskGrid. */
+/**
+ * Strategy interface for deep customization of the AG Grid instance inside TaskGrid.
+ *
+ * Both hooks are optional, because one-time setup needs neither: the strategy takes the locator in its
+ * constructor like every other module's, and reaches the grid from there.
+ *
+ * ```ts
+ * class MyGridCustomizerStrategy implements IGridCustomizerStrategy {
+ *     constructor({ services }: ITaskGridFactoryParams) {
+ *         //registered with the modules, so it is already there
+ *         services.get('gridCustomizer').registerExpressionDecorator('estimatedeffort', () => …);
+ *         //the grid is built later, so it is waited for
+ *         services.whenAvailable('gridApi', gridApi => gridApi.setGridOption('animateRows', true));
+ *     }
+ * }
+ * ```
+ */
 export interface IGridCustomizerStrategy {
-    /** Called once after the grid is ready. Use to call `customizer.registerExpressionDecorator` or perform other one-time setup. */
-    onInitialize: (customizer: IGridCustomizer) => void;
     /** Receives the computed column definitions and may return a modified array. */
     onGetColumnDefinitions?: (columnDefs: ColDef[]) => ColDef[];
     /** Receives the default row class rules map and may return an extended or overridden version. */
     onGetRowClassRules?: (rules: RowClassRules) => RowClassRules;
 }
 
-/** Provides access to the AG Grid instance and the TaskGrid control to code running inside `IGridCustomizerStrategy`. */
+/**
+ * The grid's own AG Grid configuration, registered as the `gridCustomizer` service alongside the modules.
+ *
+ * `getGridApi` resolves the `gridApi` service, so it answers only once the grid has handed one over —
+ * before that it throws, and a strategy that needs the api waits for that service instead.
+ */
 export interface IGridCustomizer {
     /** Returns the underlying AG Grid `GridApi`. */
     getGridApi(): GridApi;
@@ -42,39 +71,33 @@ export interface IGridCustomizer {
     registerExpressionDecorator(columnName: string, registrator: () => void): void;
 }
 
+/** Constructor parameters for {@link GridCustomizer}. */
 export interface IGridCustomizerParameters {
-    gridApi: GridApi;
-    datasetControl: ITaskGridDatasetControl;
-    strategy?: IGridCustomizerStrategy;
+    /** Everything it runs on, resolved when it is needed rather than held. */
+    services: ITaskGridServiceLocator;
 }
 
+/** The renderer and editor a column would get before any override is applied. */
+interface IDefaultCellComponents {
+    renderer?: any;
+    editor?: any;
+}
+
+/**
+ * Builds the grid's AG Grid configuration — column definitions, row class rules, cell components — and
+ * hands the optional {@link IGridCustomizerStrategy} its chance to change each of them.
+ */
 export class GridCustomizer implements IGridCustomizer {
-    private _taskDataProvider: ITaskDataProvider;
-    private _gridApi: GridApi;
-    private _gridDragHandler: GridDragHandler;
-    private _localizationService: ILocalizationService<ITaskGridLabels>;
-    private _nativeColumns: INativeColumns;
-    private _pcfContext: ComponentFramework.Context<any>;
-    private _datasetControl: ITaskGridDatasetControl;
-    private _strategy?: IGridCustomizerStrategy;
+    private _services: ITaskGridServiceLocator;
+    private _gridDragHandler!: GridDragHandler;
+    private _defaultCellComponents: Map<string, IDefaultCellComponents> = new Map();
+    private _recordIdsPendingRowRefresh: Set<string> = new Set();
+    private _isRowRefreshScheduled: boolean = false;
 
     constructor(parameters: IGridCustomizerParameters) {
-        this._datasetControl = parameters.datasetControl;
-        this._taskDataProvider = this._datasetControl.getDataProvider();
-        this._gridApi = parameters.gridApi;
-        this._localizationService = this._datasetControl.getLocalizationService();
-        this._nativeColumns = this._datasetControl.getNativeColumns();
-        this._strategy = parameters.strategy;
-        this._pcfContext = this._datasetControl.getPcfContext();
-
-        this._gridDragHandler = new GridDragHandler({
-            gridApi: this._gridApi,
-            datasetControl: this._datasetControl
-        });
-        this._patchGridApi();
-        this._registerEventListeners();
-        this._gridApi.setGridOption('rowClassRules', this._getRowClassRules());
-        this._strategy?.onInitialize?.(this);
+        this._services = parameters.services;
+        //nothing here reaches for the grid: this is built with the modules, long before there is one
+        this._services.whenAvailable('gridApi', gridApi => this._attachToGrid(gridApi));
     }
 
     public getDatasetControl(): ITaskGridDatasetControl {
@@ -89,7 +112,49 @@ export class GridCustomizer implements IGridCustomizer {
         return this._taskDataProvider;
     }
 
-    //makes sure we do not try to register an expression for a column that does not exist
+    /**
+     * Everything that needs the grid, run the moment there is one — the drag handler writes grid options
+     * from its own constructor, and the patched `setGridOption` has to be in place before the grid pushes
+     * its first columns.
+     *
+     * Once only, for the first api: the control and the grid are built and thrown away together, so a
+     * second api under the same control is a StrictMode double-mount rather than a lifecycle to support.
+     */
+    private _attachToGrid(gridApi: GridApi) {
+        this._gridDragHandler = new GridDragHandler({
+            gridApi: gridApi,
+            datasetControl: this._datasetControl
+        });
+        this._patchGridApi();
+        this._registerEventListeners();
+        gridApi.setGridOption('rowClassRules', this._getRowClassRules());
+    }
+
+    private get _gridApi(): GridApi {
+        return this._services.get('gridApi');
+    }
+
+    private get _datasetControl(): ITaskGridDatasetControl {
+        return this._services.get('datasetControl');
+    }
+
+    private get _taskDataProvider(): ITaskDataProvider {
+        return this._services.get('taskDataProvider');
+    }
+
+    private get _nativeColumns(): INativeColumns {
+        return this._services.get('nativeColumns');
+    }
+
+    private get _components(): ITaskGridComponents {
+        return this._services.get('components');
+    }
+
+    /** The customization the caller registered, if the module is there at all. */
+    private get _strategy(): IGridCustomizerStrategy | undefined {
+        return this._services.find('gridCustomizerModule')?.strategy;
+    }
+
     public registerExpressionDecorator(columnName: string, registrator: () => void) {
         if (columnName && this._taskDataProvider.getColumnsMap()[columnName]) {
             registrator();
@@ -120,8 +185,7 @@ export class GridCustomizer implements IGridCustomizer {
         if (!params.data || this._taskDataProvider.isFlatListEnabled()) {
             return false
         }
-        const matchingRecords = this._taskDataProvider.getRecordTree().getMatchingRecords();
-        const result = !matchingRecords[params.data.getRecordId()];
+        const result = !this._taskDataProvider.getRecordTree().view.isMatching(params.data.getRecordId());
         if(result) {
             return result;
         }
@@ -149,7 +213,8 @@ export class GridCustomizer implements IGridCustomizer {
     private _getColumnDefinitions(columnDefs: ColDef[]) {
         this._injectAddTaskColumn(columnDefs);
         for (const colDef of columnDefs) {
-            const columnName = colDef.colId as string;
+            //ag-grid derives colId from field, but fall back for defs that only carry one of the two
+            const columnName = (colDef.colId ?? colDef.field) as string;
             const column = this._taskDataProvider.getColumnsMap()[columnName];
             const customCellRenderer = this._getCustomControlForColumn('renderer', column);
             const customCellEditor = this._getCustomControlForColumn('editor', column);
@@ -161,6 +226,26 @@ export class GridCustomizer implements IGridCustomizer {
                 }
                 case DatasetConstants.CHECKBOX_COLUMN_KEY: {
                     colDef.lockPosition = true;
+                    break;
+                }
+                case CHECKLIST_COLUMN_NAME: {
+                    //get, not find: this column exists because the module does, so one in a view without
+                    //it is a misconfiguration - better said out loud here than rendered as an empty cell
+                    this._services.get('checklistModule');
+                    colDef.cellRenderer = this._checklistCellRenderer;
+                    //a task's checklist is not a value on the task, so there is nothing to edit
+                    colDef.editable = false;
+                    break;
+                }
+                case PREDECESSORS_COLUMN_NAME:
+                case SUCCESSORS_COLUMN_NAME: {
+                    //get, not find: these columns exist because the module does, so one in a view without
+                    //it is a misconfiguration - better said out loud here, while the column definitions
+                    //are built, than rendered as an empty cell
+                    this._services.get('dependenciesModule');
+                    colDef.cellRenderer = columnName === PREDECESSORS_COLUMN_NAME ? this._predecessorsCellRenderer : this._successorsCellRenderer;
+                    //a task's dependencies are not a value on the task, so there is nothing to edit
+                    colDef.editable = false;
                     break;
                 }
             }
@@ -176,12 +261,68 @@ export class GridCustomizer implements IGridCustomizer {
                     break;
                 }
             }
+            //without the module the column falls back to whatever renderer it would otherwise get
+            if (column?.metadata?.LookupMany && this._services.find('lookupManyModule')) {
+                colDef.cellRenderer = this._lookupManyCellRenderer;
+                colDef.autoHeight = true;
+                //editing happens inside the picker, not through an ag-grid cell editor
+                colDef.editable = false;
+                colDef.suppressKeyboardEvent = () => true;
+            }
         }
 
         columnDefs.sort((a, b) => this._getColumnPriority(a) - this._getColumnPriority(b));
         columnDefs = this._strategy?.onGetColumnDefinitions?.(columnDefs) ?? columnDefs;
+        columnDefs.map(colDef => this._applyCellComponentOverrides(colDef));
         return columnDefs;
 
+    }
+
+    private _applyCellComponentOverrides(colDef: ColDef) {
+        const columnName = (colDef.colId ?? colDef.field) as string;
+        if (colDef.cellRenderer !== this._cellRenderer) {
+            this._defaultCellComponents.set(columnName, { renderer: colDef.cellRenderer, editor: colDef.cellEditor });
+        }
+        colDef.cellRenderer = this._cellRenderer;
+        colDef.cellEditor = this._cellEditor;
+    }
+
+    //one renderer serves both columns, bound to its direction here rather than through
+    //`colDef.cellRendererParams` - that is a function AgGridModel owns, and it is what injects the
+    //record, the column and the value every cell needs. Stable fields, so a column definition pass does
+    //not hand ag-grid a new component identity each time
+    private _predecessorsCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
+        this._renderDependenciesCell({ ...props, direction: 'predecessors' });
+
+    private _successorsCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
+        this._renderDependenciesCell({ ...props, direction: 'successors' });
+
+    //the module renders its own cell, so whatever it was built with - its default or an override - is
+    //what appears here
+    private _renderDependenciesCell = (props: IDependenciesCellRendererProps): React.ReactElement =>
+        this._services.get('dependenciesModule').components.onRenderCell(props);
+
+    private _checklistCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
+        this._services.get('checklistModule').components.onRenderCell(props);
+
+    private _lookupManyCellRenderer = (props: ITaskGridCellProps): React.ReactElement =>
+        this._services.get('lookupManyModule').components.onRenderCell(props);
+
+    private _cellRenderer = (props: ITaskGridCellProps): React.ReactElement => {
+        return this._renderCell('renderer', props);
+    }
+
+    private _cellEditor = (props: ITaskGridCellProps): React.ReactElement => {
+        return this._renderCell('editor', props);
+    }
+
+    private _renderCell(role: 'renderer' | 'editor', props: ITaskGridCellProps): React.ReactElement {
+        const columnName = (props.colDef?.colId ?? props.colDef?.field) as string;
+        const defaults = this._defaultCellComponents.get(columnName) ?? {};
+        const component = role === 'renderer' ? defaults.renderer : defaults.editor;
+        const components = this._components;
+        const onRender = role === 'renderer' ? components.onRenderCellRenderer : components.onRenderCellEditor;
+        return onRender(props, (props) => React.createElement(component, props));
     }
 
     private _getCustomControlForColumn(role: 'editor' | 'renderer', column?: IColumn): string | null {
@@ -212,8 +353,7 @@ export class GridCustomizer implements IGridCustomizer {
             },
             'talxis_task-grid_row--unmatched-parent': (params) => {
                 if (params.data) {
-                    const matchingRecordsMap = this._taskDataProvider.getRecordTree().getMatchingRecords();
-                    return !matchingRecordsMap[params.data!.getRecordId()]
+                    return !this._taskDataProvider.getRecordTree().view.isMatching(params.data!.getRecordId())
                 }
                 else {
                     return false;
@@ -233,7 +373,7 @@ export class GridCustomizer implements IGridCustomizer {
         return path.filter(id => id).reverse();
     }
 
-    //undefined means we should target top level
+    //an undefined id means the top level
     private _onRecordTreeUpdated = (affectedIds: (string | undefined)[]) => {
         for (const id of affectedIds) {
             if (!id) {
@@ -281,7 +421,6 @@ export class GridCustomizer implements IGridCustomizer {
 
     private _isDragOperationAllowed(dragOperation: IDragOperation): boolean {
         const { draggedNode, overNode } = dragOperation;
-        // Check if either node is null/undefined
         if (!draggedNode || !overNode) {
             return false;
         }
@@ -322,15 +461,24 @@ export class GridCustomizer implements IGridCustomizer {
         this._taskDataProvider.moveTask(draggedNode.id!, overNode.id!, position);
     }
 
-    private _moveInto(movingFromRecordId: string, movingToRecordId: string, position: 'child' | 'above' | 'below') {
-        const draggedRecordNode = this._taskDataProvider.getRecordTree().getNode(movingFromRecordId);
+    /**
+     * Moves the row in the AG Grid store to where the task now sits.
+     *
+     * @param result What the move produced, or `null` when the task did not move: the provider refused
+     * the drop, or the strategy cancelled. Moving the store for either would show a move that never
+     * happened, so there is nothing to do.
+     */
+    private _moveInto(movingFromRecordId: string, movingToRecordId: string, position: 'child' | 'above' | 'below', result: IRawRecord[] | null) {
+        if (!result) {
+            return;
+        }
         const draggedRecord = this._taskDataProvider.getRecordsMap()[movingFromRecordId];
         const draggedNode = this._gridApi.getRowNode(movingFromRecordId)!;
         const overNode = this._gridApi.getRowNode(movingToRecordId)!;
 
-        let addIndex: number | null = draggedRecordNode.index;
+        //a rendered position, which is what the AG Grid store counts
+        let addIndex: number | null = this._taskDataProvider.getRecordTree().view.getPosition(movingFromRecordId);
 
-        //first remove from old location
         this._gridApi.applyServerSideTransaction({
             route: this._getPathToParent(draggedNode),
             remove: [draggedRecord],
@@ -347,9 +495,7 @@ export class GridCustomizer implements IGridCustomizer {
             route: this._getPathToParent(overNode),
             update: [overNode.data],
         });
-        //then add to new location
         this._gridApi.applyServerSideTransaction({
-            // i need to set route to parent of over node
             route: [...this._getPathToParent(overNode), ...(position === 'child' ? [overNode.id!] : [])],
             add: [draggedRecord],
             addIndex: addIndex !== null ? addIndex : undefined,
@@ -396,6 +542,44 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
 
+    /**
+     * Row classes are a function of *saved* state — `isActive()` above all — and AG Grid only re-evaluates
+     * `rowClassRules` when a row node's data changes, never on a `refreshCells`. A record whose values are
+     * edited in place keeps its old classes forever, so every successful save refreshes its row.
+     *
+     * Only on success: a save that failed leaves the record dirty, and the row as the user last saw it.
+     */
+    private _onAfterRecordSaved = (result: IRecordSaveOperationResult) => {
+        if (!result.success) {
+            return;
+        }
+        //a bulk save reports every record on its own, so the rows they map to are refreshed in one pass
+        this._recordIdsPendingRowRefresh.add(result.recordId);
+        if (this._isRowRefreshScheduled) {
+            return;
+        }
+        this._isRowRefreshScheduled = true;
+        setTimeout(() => {
+            this._isRowRefreshScheduled = false;
+            const recordIds = this._recordIdsPendingRowRefresh;
+            this._recordIdsPendingRowRefresh = new Set();
+            this._refreshRowClasses(recordIds);
+        }, 0);
+    }
+
+    /**
+     * Re-pushes each node's own record, which is what makes AG Grid run the row class rules over it again.
+     * `updateData` with the same object refreshes the row's cells instead of replacing them, so an open
+     * cell editor is left alone — `redrawRows` would destroy it mid-edit.
+     */
+    private _refreshRowClasses(recordIds: Set<string>) {
+        for (const node of this._gridApi.getRenderedNodes()) {
+            if (node.data && node.id && recordIds.has(node.id)) {
+                node.updateData(node.data);
+            }
+        }
+    }
+
     private _onAfterTaskDataUpdated = (newData: IRawRecord[]) => {
         const recordIdsSet = new Set(newData.map(item => item[this._taskDataProvider.getMetadata().PrimaryIdAttribute]));
         const nodes = this._gridApi.getRenderedNodes().filter(node => recordIdsSet.has(node.id!));
@@ -406,10 +590,11 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
     private _registerEventListeners() {
-        this._taskDataProvider.taskEvents.addEventListener('onAfterTaskMoved', (movingFromTaskId, movingToTaskId, position) => this._moveInto(movingFromTaskId, movingToTaskId, position));
+        this._taskDataProvider.taskEvents.addEventListener('onAfterTaskMoved', (movingFromTaskId, movingToTaskId, position, result) => this._moveInto(movingFromTaskId, movingToTaskId, position, result));
         this._taskDataProvider.taskEvents.addEventListener('onAfterTasksCreated', (records, parentId) => this._onAfterTasksCreated(records, parentId));
         this._taskDataProvider.taskEvents.addEventListener('onRecordTreeUpdated', (updatedParentIds) => this._onRecordTreeUpdated(updatedParentIds));
         this._taskDataProvider.taskEvents.addEventListener('onTaskDataUpdated', (newData) => this._onAfterTaskDataUpdated(newData));
+        this._taskDataProvider.addEventListener('onAfterRecordSaved', (result) => this._onAfterRecordSaved(result));
         this._gridDragHandler.addEventListener('onDragEnd', (dragOperation) => this._onDragEnd(dragOperation));
     }
 }

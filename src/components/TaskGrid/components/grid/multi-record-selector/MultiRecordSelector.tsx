@@ -20,10 +20,12 @@ interface IMultiRecordSelectorProps {
     onOverrideComponentProps?: (props: AsyncProps<ComponentFramework.EntityReference, boolean, any>) => AsyncProps<ComponentFramework.EntityReference, boolean, any>;
 }
 
+/** Imperative handle for {@link MultiRecordSelector}. */
 export interface IMultRecordSelectorRef {
     openMenu: () => void;
 }
 
+/** A multi-record picker over an `IDataProvider`, used by lookup-many cells. */
 export const MultiRecordSelector = (props: IMultiRecordSelectorProps) => {
     const { dataProvider, onSelectionChange, selectedRecords = [], container } = props;
     const localizationService = useLocalizationService();
@@ -119,7 +121,6 @@ export const MultiRecordSelector = (props: IMultiRecordSelectorProps) => {
             MultiValueContainer: MultiValueContainer,
             MultiValueRemove: MultiValueRemove,
             MultiValueLabel: MultiValueLabel,
-            //Option: Option,
         },
     })
     return <React.Fragment key={renderKey}>

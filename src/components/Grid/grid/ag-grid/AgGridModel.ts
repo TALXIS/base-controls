@@ -18,9 +18,20 @@ import { LicenseManager } from "@ag-grid-enterprise/core";
 import { SelectionCell } from "@components/Grid/cells/selection-cell/SelectionCell";
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule,]);
 
+//stateless, and `equals` runs per cell per value read
+/**
+ * How long a load may take before it is worth telling anyone about.
+ *
+ * An overlay that comes and goes inside a couple of frames reads as the grid flickering rather than as
+ * something loading, and adding or moving a row against data already in memory is over that fast. Waiting
+ * this long first means only a load slow enough to notice is ever announced.
+ */
+const LOADING_OVERLAY_DELAY = 150;
+
+const COMPARATOR = new Comparator();
+
 interface IAgGridTestDependencies {
     grid: GridModel;
-    getContainer: () => HTMLDivElement;
 }
 
 export interface IAgGridModelEvents {
@@ -49,23 +60,25 @@ export interface ICellValues {
 
 export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _grid: GridModel;
+    private _totalRowSubscribed: boolean = false;
     private _dataSource: ServerSideDatasource;
     private _gridApi: GridApi | undefined;
     private _hasUserResizedColumns: boolean = false;
-    private _getContainer: () => HTMLDivElement;
     private _debouncedColumnResized: debounce.DebouncedFunction<(e: ColumnResizedEvent<IRecord>) => void>;
     private _debouncedSetSelectedNodes: debounce.DebouncedFunction<(ids: string[]) => void>;
     private _expandedRowGroupIds: string[] = [];
+    private _visibleOverlay: 'none' | 'loading' | 'noRows' = 'none';
+    /** Pending request to show the loading overlay, until {@link LOADING_OVERLAY_DELAY} is up. */
+    private _loadingOverlayTimeout: NodeJS.Timeout | undefined;
     private _hasUserExpandedRowGroups: boolean = false;
     private _isLoadingNestedProviders: boolean = false;
     private _idsToAddToExpandGroupState = new Set<string>();
     private _intervals: NodeJS.Timeout[] = [];
 
 
-    constructor({ grid, getContainer }: IAgGridTestDependencies) {
+    constructor({ grid }: IAgGridTestDependencies) {
         super();
         this._grid = grid;
-        this._getContainer = getContainer;
         this._dataSource = new ServerSideDatasource(this);
         this._debouncedColumnResized = debounce((e: ColumnResizedEvent<IRecord>) => this._onColumnResized(e));
         this._debouncedSetSelectedNodes = debounce((ids) => this._setSelectedNodes(ids), 0);
@@ -114,7 +127,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                     }
                 },
                 editable: (p) => this._isCellEditorEnabled(column.name, p.data),
-                equals: (valueA: ICellValues, valueB: ICellValues) => new Comparator().isEqual(valueA, valueB),
+                equals: (valueA: ICellValues, valueB: ICellValues) => COMPARATOR.isEqual(valueA, valueB),
                 headerComponent: ColumnHeader,
                 cellRenderer: Cell,
                 cellEditor: Cell,
@@ -209,6 +222,17 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     public onNotifyOutputChanged(record: IRecord, columnName: string, value: any, parameters: any) {
         record.setValue(columnName, value);
+        //AG Grid asks a cell for its values *before* the control reports a new one, so everything it
+        //cached - the value and the validation result derived from it - describes the value that has just
+        //been replaced. Recompute the row now that the record holds the new one, otherwise the cell keeps
+        //showing state for the old value: a validation error stayed invisible until the next edit.
+        this.executeWithGridApi(gridApi => {
+            const node = gridApi.getRowNode(record.getRecordId());
+            //no node means the row is not rendered, and it reads current values whenever it is
+            if (node) {
+                gridApi.refreshCells({ rowNodes: [node] });
+            }
+        });
         if(this.getGrid().isAutoSaveEnabled()) {
             record.save();
         }
@@ -270,6 +294,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
 
     private _onDestroyed() {
         this._intervals.forEach(interval => clearInterval(interval));
+        clearTimeout(this._loadingOverlayTimeout);
         this._saveState();
     }
 
@@ -364,6 +389,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._dataset.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded());
         this._dataset.addEventListener('onRenderRequested', () => this.executeWithGridApi(gridApi => gridApi.refreshCells()));
         this._dataset.addEventListener('onFirstDataLoaded', () => this._setTotalRow());
+        this._grid.addTotalRowCreatedListener(() => this._setTotalRow());
         this.executeWithGridApi(gridApi => {
             gridApi.addEventListener('gridSizeChanged', () => this._autoSizeColumns());
             gridApi.addEventListener('firstDataRendered', () => this._autoSizeColumns());
@@ -373,7 +399,10 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                 if (this._grid.getDataset().loading) {
                     this._setLoadingOverlay(true);
                 }
-                this._setGridHeight();
+                //catches rows a control adds or removes through a server side transaction, which the
+                //provider never hears about. A provider load is decided when its loading ends instead,
+                //since the dataset still reports itself as loading while this fires
+                this._setNoRowsOverlay();
             });
             gridApi.addEventListener('columnMoved', (e: ColumnMovedEvent<IRecord>) => this._onColumnMoved(e));
             gridApi.addEventListener('firstDataRendered', () => this._handleSelectionFromState());
@@ -381,10 +410,20 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         });
     }
 
+    //idempotent: the total row provider only comes into existence once the dataset carries an
+    //aggregation, which can happen long after the grid mounted. Grids that never aggregate leave the
+    //pinned rows alone entirely - other features own that row (see CheckListGridCustomizer)
     private _setTotalRow() {
-        const totalRowDataProvider = this._grid.getTotalRow().getDataProvider();
-        totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
-        totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
+        const totalRow = this._grid.ensureTotalRow();
+        if (!totalRow) {
+            return;
+        }
+        if (!this._totalRowSubscribed) {
+            this._totalRowSubscribed = true;
+            const totalRowDataProvider = totalRow.getDataProvider();
+            totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
+            totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
+        }
         this._setPinnedRowData();
     }
 
@@ -495,8 +534,9 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _onNewDataLoaded() {
         this._refreshServerSideModel();
         this._setCurrentColumns();
-        this._setNoRowsOverlay();
         this._scrollToTop();
+        //a view change can bring in aggregated columns, which is what creates the total row
+        this._setTotalRow();
     }
 
     private _refreshServerSideModel() {
@@ -506,41 +546,6 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
                 purge: true
             })
         });
-    }
-
-    private _calculateGridHeight(): string {
-        const defaultRowHeight = this._grid.getDefaultRowHeight();
-        let offset = 35;
-        if (this._dataset.grouping.getGroupBys().length > 0) {
-            offset += 30;
-        }
-        if (this._grid.getParameters().Height?.raw) {
-            return this._grid.getParameters().Height!.raw!;
-        }
-        else {
-            let totalRowHeight = 0;
-            let numberOfRecords = 0;
-            this.executeWithGridApi(gridApi => {
-                const renderedNodes = gridApi.getRenderedNodes();
-                totalRowHeight = renderedNodes.reduce((acc, node) => acc + (node.rowHeight ?? defaultRowHeight), 0);
-                numberOfRecords = renderedNodes.length;
-            });
-            if (numberOfRecords <= 15) {
-                const headerHeight = this._getContainer().querySelector('.ag-header-row')?.clientHeight ?? 0;
-                return `${totalRowHeight + headerHeight + offset}px`;
-            }
-            else {
-                return `${defaultRowHeight * 17 + offset}px`;
-            }
-        }
-    }
-    private _setGridHeight() {
-        setTimeout(() => {
-            const container = this._getContainer();
-            if (container) {
-                container.style.height = this._calculateGridHeight();
-            }
-        }, 100);
     }
 
     private _onColumnResized(e: ColumnResizedEvent<IRecord>) {
@@ -660,8 +665,11 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         }
         const customControl = this._grid.getControl(column, record, editing || !!column.oneClickEdit);
 
+        //resolved once: the control asks for its bindings while constructing its properties and again in
+        //getParameters(), and each call rebuilt the whole binding graph for the same record and column
+        const bindings = this._grid.getBindings(record, column, customControl);
         const control = new NestedControl({
-            onGetBindings: () => this._grid.getBindings(record, column, customControl),
+            onGetBindings: () => bindings,
             parentPcfContext: this._grid.getPcfContext(),
         });
         const parameters = columnInfo.ui.getControlParameters({
@@ -691,29 +699,73 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private _setPinnedRowData() {
-        const totalRecord = this._grid.getTotalRow().getTotalRowRecord();
+        const totalRecord = this._grid.getTotalRow()?.getTotalRowRecord() ?? null;
         this.executeWithGridApi(gridApi => gridApi.setGridOption('pinnedBottomRowData', totalRecord ? [totalRecord] : []));
     }
 
     private _setLoadingOverlay(isLoading: boolean) {
         if (!isLoading) {
-            return this.executeWithGridApi(gridApi => gridApi.hideOverlay());
+            //a load that finished before the delay was up is one nobody was ever told about
+            clearTimeout(this._loadingOverlayTimeout);
+            this._loadingOverlayTimeout = undefined;
+            //the load can have come back empty, in which case the no records overlay has to take over
+            //from the loading one - hiding here would leave the grid blank
+            return this._setNoRowsOverlay();
         }
-        this.executeWithGridApi(gridApi => gridApi.showLoadingOverlay());
+        //the overlay is already up, or already on its way: a load reports itself many times over, and
+        //restarting the wait on each of them is how a slow load ends up never announcing itself
+        if (this._visibleOverlay === 'loading' || this._loadingOverlayTimeout) {
+            return;
+        }
+        this._loadingOverlayTimeout = setTimeout(() => {
+            this._loadingOverlayTimeout = undefined;
+            this._setOverlay('loading');
+        }, LOADING_OVERLAY_DELAY);
     }
 
     private _setNoRowsOverlay() {
         setTimeout(() => {
+            //the loading overlay owns the grid until the provider is done
             if (this._grid.getDataset().loading) {
                 return;
             }
             this.executeWithGridApi(gridApi => {
-                gridApi.hideOverlay();
-                if (this._grid.getDataset().getDataProvider().getRecords().length === 0) {
-                    gridApi.showNoRowsOverlay();
-                }
+                //asked of the grid rather than the provider, so rows added or removed through a server
+                //side transaction count too. Pinned rows are not displayed rows, so a control's own
+                //floating row does not pass for a record here
+                this._setOverlay(gridApi.getDisplayedRowCount() === 0 ? 'noRows' : 'none');
             });
         }, 0);
+    }
+
+    /**
+     * The single way any overlay is shown or hidden. Repeating the overlay the grid already has is not
+     * harmless: AG Grid builds the overlay component asynchronously and ignores a show that arrives
+     * while the previous one is still being built, so a hide/show pair landing in that window leaves
+     * the overlay hidden with no way back.
+     */
+    private _setOverlay(overlay: 'none' | 'loading' | 'noRows') {
+        if (this._visibleOverlay === overlay) {
+            return;
+        }
+        this.executeWithGridApi(gridApi => {
+            //only remembered once it actually reached a grid, so a request made before the api exists
+            //is not mistaken for the overlay being up
+            this._visibleOverlay = overlay;
+            switch (overlay) {
+                case 'loading': {
+                    gridApi.showLoadingOverlay();
+                    break;
+                }
+                case 'noRows': {
+                    gridApi.showNoRowsOverlay();
+                    break;
+                }
+                default: {
+                    gridApi.hideOverlay();
+                }
+            }
+        });
     }
 
     private _isCellEditorEnabled(columnName: string, record: IRecord): boolean {

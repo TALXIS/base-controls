@@ -8,59 +8,83 @@ import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
-import { ICustomColumnsDataProvider } from "./providers/custom-columns/CustomColumnsDataProvider";
-import { ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
+import { ILookupManyDataProviderParameters, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
+import { ITaskGridServiceLocator } from "./services";
 import { ErrorHelper } from "@utils/error-handling";
 
 const STATE_CODE_ACTIVE = 0;
 
+/**
+ * What only the task grid raises, kept off the shared {@link IDatasetControlEvents} that the generic
+ * dataset control also implements.
+ */
+export interface ITaskGridDatasetControlEvents {
+    /**
+     * The control is about to be torn down — on unmount, and on every remount (applying *Edit columns*,
+     * switching a view, closing the view manager).
+     *
+     * Every provider still holds its data when this fires, so it is where anything worth keeping is read
+     * off them. Forwarded to the grid's `onBeforeDestroy` prop.
+     */
+    onBeforeDestroy: () => void;
+}
+
+/**
+ * The {@link ITaskGridDatasetControl} implementation. Built by {@link TaskGridDatasetControlFactory},
+ * never constructed directly.
+ */
 export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> implements ITaskGridDatasetControl {
+    /**
+     * The grid's own events. The inherited `addEventListener` carries the dataset-control set
+     * ({@link IDatasetControlEvents}); this one carries what only the task grid raises.
+     */
+    public readonly events = new EventEmitter<ITaskGridDatasetControlEvents>();
     private _dataset: IDataset;
-    private _descriptor: ITaskGridDescriptor;
     private _dataProvider: ITaskDataProvider;
-    private _templateDataProvider?: IDataProvider;
-    private _localizationService: ILocalizationService<ITaskGridLabels>;
-    private _savedQueryDataProvider: ISavedQueryDataProvider;
-    private _customColumnsDataProvider?: ICustomColumnsDataProvider;
+    private _services: ITaskGridServiceLocator;
     private _controlId: string;
     private _state: ITaskGridState;
     private _gridParameters: ITaskGridParameters;
     private _commands: ICommand[] = [];
-    private _getPcfContext: () => ComponentFramework.Context<any, any>;
     private _changeToQueryId!: string;
 
     constructor(parameters: ITaskGridDatasetControlParameters) {
         super();
         this._dataset = parameters.dataset;
         this._dataProvider = this._dataset.getDataProvider() as ITaskDataProvider;
-        this._descriptor = parameters.taskGridDescriptor;
+        this._services = parameters.services;
         this._controlId = this._descriptor.onGetControlId?.() ?? `task-grid-dataset-control-${crypto.randomUUID()}`;
-        this._localizationService = parameters.localizationService;
-        this._savedQueryDataProvider = parameters.savedQueryDataProvider;
-        this._customColumnsDataProvider = parameters.customColumnsDataProvider;
-        this._templateDataProvider = parameters.templateDataProvider;
         this._state = parameters.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
-        this._getPcfContext = parameters.onGetPcfContext;
         this._loadState(parameters.state);
         this.loadCommands([]);
         this._registerEventListeners();
+    }
+
+    public getServices(): ITaskGridServiceLocator {
+        return this._services;
+    }
+
+    /** The descriptor this grid was built from. */
+    private get _descriptor(): ITaskGridDescriptor {
+        return this._services.get('descriptor');
+    }
+
+    /** The service resolving every UI label. */
+    private get _localizationService(): ILocalizationService<ITaskGridLabels> {
+        return this._services.get('localizationService');
+    }
+
+    /** The views the grid runs on. */
+    private get _savedQueryDataProvider(): ISavedQueryDataProvider {
+        return this._services.get('savedQueryDataProvider');
     }
 
     public get editColumns(): IEditColumns {
         return new EditColumns({ datasetControl: this });
     }
 
-    public getNativeColumns() {
-        return {
-            ...this._descriptor.onGetFieldMapping(),
-            path: PATH_COLUMN_NAME
-        }
-    }
 
-    public getLocalizationService() {
-        return this._localizationService;
-    }
 
     public getControlId() {
         return this._controlId;
@@ -74,27 +98,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._gridParameters.enableEditColumnsScopeSelector ?? false;
     }
 
-    public isTemplatingEnabled(): boolean {
-        return !!this._templateDataProvider;
-    }
-
-    public isCustomColumnsEnabled(): boolean {
-        return !!this._customColumnsDataProvider;
-    }
-
     public isHideInactiveTasksToggleVisible(): boolean {
         return this._gridParameters.enableHideInactiveTasksToggle ?? false;
-    }
-
-    public isCustomColumnCreationEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnCreation ?? false;
-    }
-    
-    public isCustomColumnEditingEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnEditing ?? false;
-    }
-    public isCustomColumnDeletionEnabled(): boolean {
-        return this._gridParameters.enableCustomColumnDeletion ?? false;
     }
 
     public isInlineCreateEnabled(): boolean {
@@ -106,7 +111,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public getInactiveTasksVisibility() {
-        const stateCodeCondition = this._dataProvider.getFiltering()?.conditions?.find(condition => condition.attributeName === this.getNativeColumns().stateCode);
+        const stateCodeCondition = this._dataProvider.getFiltering()?.conditions?.find(condition => condition.attributeName === this._services.get('nativeColumns').stateCode);
         switch (stateCodeCondition?.conditionOperator) {
             case Operators.In.Value:
                 return stateCodeCondition.value?.includes('1') ?? false;
@@ -118,43 +123,19 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         }
     }
     
-    public isViewManagerEnabled(): boolean {
-        return this._gridParameters.enableQueryManager ?? false;
+    public isUserQueriesEnabled(): boolean {
+        return !!this._services.find('userQueriesModule');
     }
 
-    public isSaveQueryAsNewEnabled(): boolean {
-        return this._gridParameters.enableSaveAsNewQuery ?? false;
-    }
 
-    public isSaveQueryChangesEnabled(): boolean {
-        return this._gridParameters.enableSaveQueryChanges ?? false;
-    }
 
-    public isUserQueriesFeatureEnabled(): boolean {
-        return this._gridParameters.enableUserQueries ?? false;
-    }
-
-    public getSavedQueryDataProvider() {
-        return this._savedQueryDataProvider;
-    }
-
-    public getTemplateDataProvider(): IDataProvider {
-        if (!this._templateDataProvider) {
-            throw new Error('This TaskGridDatasetControl does not have a template data provider');
+    public createLookupManyDataProvider(parameters: Omit<ILookupManyDataProviderParameters, 'services'>): IDataProvider {
+        //the locator comes from here rather than the cell: a caller should not have to thread it
+        const dataProvider = this._services.find('lookupManyModule')?.createDataProvider({ ...parameters, services: this._services });
+        if (!dataProvider) {
+            throw new Error(`Column "${parameters.column.name}" is marked as lookup-many, but no data provider was returned for it. Register a lookup-many module (createLookupManyModule) through your descriptor's "modules".`);
         }
-        return this._templateDataProvider;
-    }
-
-
-    public createUserQueryDataProvider(): IDataProvider {
-        return this._descriptor.onCreateUserQueryDataProvider();
-    }
-
-    public getCustomColumnsDataProvider() {
-        if (!this._customColumnsDataProvider) {
-            throw new Error('This TaskGridDatasetControl does not have a custom columns data provider!');
-        }
-        return this._customColumnsDataProvider;
+        return dataProvider;
     }
 
     public toggleFlatList(enabled: boolean) {
@@ -162,7 +143,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
             throw new Error('Cannot toggle flat list mode when there is no saved query in state');
         }
         this._state.savedQuery.isFlatListEnabled = enabled;
-        const pathColumn = this._dataProvider.getColumnsMap()[this.getNativeColumns().path];
+        const pathColumn = this._dataProvider.getColumnsMap()[this._services.get('nativeColumns').path];
         pathColumn.isHidden = !enabled;
         pathColumn.order = -1;
         //update the columns to trigger column sort
@@ -172,7 +153,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     public toggleHideInactiveTasks(hide: boolean) {
         const filtering = new Filtering(this._dataProvider);
-        const stateCodeFilter = filtering.getColumnFilter(this.getNativeColumns().stateCode);
+        const stateCodeFilter = filtering.getColumnFilter(this._services.get('nativeColumns').stateCode);
         stateCodeFilter.clear();
 
         if (hide) {
@@ -221,11 +202,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     public getDataset(): IDataset {
         return this._dataset;
     }
-    public getDataProvider(): ITaskDataProvider {
-        return this._dataProvider;
-    }
     public getPcfContext(): ComponentFramework.Context<any> {
-        return this._getPcfContext();
+        return this._services.get('pcfContext');
     }
     public isTaskEditingEnabled(): boolean {
         return this._gridParameters.enableTaskEditing ?? false;
@@ -307,11 +285,14 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         throw new Error("Method not implemented.");
     }
     public destroy(): void {
+        //first, while every provider still holds its data: this is the consumer's chance to read it
+        this.events.dispatchEvent('onBeforeDestroy');
         this.saveState();
         this._dataProvider.destroy();
         this._savedQueryDataProvider.destroy();
-        this._customColumnsDataProvider?.destroy();
-        this._templateDataProvider?.destroy();
+        this._services.find('userQueriesModule')?.provider.destroy();
+        this._services.find('customColumnsModule')?.provider.destroy();
+        this._services.find('templatesModule')?.provider.destroy();
     }
     public requestRemount(): void {
         this.dispatchEvent('onRemountRequested');
@@ -384,21 +365,24 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     private _registerEventListeners() {
         this._dataProvider.taskEvents.addEventListener('onError', (error, message) => this._onError(error, message));
-        this._customColumnsDataProvider?.events.addEventListener('onError', (error, message) => this._onError(error, message));
-        this._savedQueryDataProvider.queryEvents.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._services.find('customColumnsModule')?.provider.events.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._services.find('userQueriesModule')?.provider.events.addEventListener('onError', (error, message) => this._onError(error, message));
         this._dataProvider.addEventListener('onRecordsSelected', (ids) => this._onSelectedRecordsChanged(ids));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksDeleted', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksDeleted', (result) => this._onAfterTasksDeleted(result));
         this._dataProvider.taskEvents.addEventListener('onBeforeTaskMoved', () => this._dataProvider.setLoading(true));
-        this._dataProvider.taskEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
-        this._dataProvider.taskEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onError', (error, message) => this._onError(error, message));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onBeforeTemplateCreated', () => this._dataProvider.setLoading(true));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onAfterTemplateCreated', () => this._dataProvider.setLoading(false));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onBeforeTasksFromTemplateCreated', () => this._dataProvider.setLoading(true));
+        this._services.find('templatesModule')?.provider.templateEvents.addEventListener('onAfterTasksFromTemplateCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeTasksCreated', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterTasksCreated', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onAfterTaskMoved', () => this._dataProvider.setLoading(false));
         this._dataProvider.taskEvents.addEventListener('onBeforeDatasetItemsOpened', () => this._dataProvider.setLoading(true));
         this._dataProvider.taskEvents.addEventListener('onAfterDatasetItemsOpened', () => this._dataProvider.setLoading(false));
-        this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
-        this._savedQueryDataProvider.queryEvents.addEventListener('onAfterUserQueryUpdated', (result) => this._dataProvider.setLoading(false));
+        this._services.find('userQueriesModule')?.provider.events.addEventListener('onAfterUserQueryCreated', (result) => this._onAfterUserQueryCreated(result));
+        this._services.find('userQueriesModule')?.provider.events.addEventListener('onAfterUserQueryUpdated', (result) => this._dataProvider.setLoading(false));
     }
 
     private _onError = (error: any, message: string) => {

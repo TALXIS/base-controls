@@ -1,22 +1,21 @@
-import { IDataset, IDataProvider } from "@talxis/client-libraries";
+import { IColumn, IDataset, IDataProvider, IEventEmitter, IRecord } from "@talxis/client-libraries";
 import { IDatasetControl } from "@utils/dataset-control";
-import { IGridCustomizerStrategy } from "./components/grid/grid-customizer";
-import { ICustomColumnsDataProvider, ICustomColumnsStrategy } from "./providers/custom-columns/CustomColumnsDataProvider";
+import { ICustomColumnsDataProvider } from "./modules/custom-columns/CustomColumnsDataProvider";
 import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-query";
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
+import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
 import { ITaskGridState } from "./TaskGridDatasetControlFactory";
+import type { ITaskGridDatasetControlEvents } from "./TaskGridDatasetControl";
 import { ILocalizationService } from "@utils";
+import { ITaskGridServiceLocator } from "./services";
 
+/** What {@link TaskGridDatasetControlFactory} hands the control it builds. */
 export interface ITaskGridDatasetControlParameters {
     dataset: IDataset;
     state: ITaskGridState;
-    savedQueryDataProvider: ISavedQueryDataProvider;
-    taskGridDescriptor: ITaskGridDescriptor;
-    localizationService: ILocalizationService<ITaskGridLabels>;
-    templateDataProvider?: IDataProvider;
-    customColumnsDataProvider?: ICustomColumnsDataProvider;
-    onGetPcfContext: () => ComponentFramework.Context<any>;
+    /** Where everything else is reached — the descriptor, the providers, the PCF context, the labels. */
+    services: ITaskGridServiceLocator;
 }
 
 /** Maps functional column roles to the physical attribute (field) names in the consuming entity's schema. */
@@ -31,6 +30,7 @@ export interface IFieldMapping {
     stateCode: string;
 }
 
+/** The field mapping plus the synthetic hierarchy path column the grid adds. */
 export interface INativeColumns extends IFieldMapping {
     path: string;
 }
@@ -58,20 +58,6 @@ export interface ITaskGridParameters {
     enableHideInactiveTasksToggle?: boolean;
     /** Show the personal/system scope selector inside the Edit Columns panel. Defaults to `false`. */
     enableEditColumnsScopeSelector?: boolean;
-    /** Enable user queries. Defaults to `false`. */
-    enableUserQueries?: boolean;
-    /** Show the query manager. Defaults to `false`. */
-    enableQueryManager?: boolean;
-    /** Show the "Save as new" button in the query manager. Defaults to `false`. */
-    enableSaveAsNewQuery?: boolean;
-    /** Show the "Save changes" button in the query manager. Defaults to `false`. */
-    enableSaveQueryChanges?: boolean;
-    /** Enable creation of custom columns. Defaults to `false`. */
-    enableCustomColumnCreation?: boolean;
-    /** Enable editing of custom columns. Defaults to `false`. */
-    enableCustomColumnEditing?: boolean;
-    /** Enable deletion of custom columns. Defaults to `false`. */
-    enableCustomColumnDeletion?: boolean;
     /** Enable inline creation of tasks. Defaults to `false`. */
     enableInlineCreation?: boolean;
     /** Enable navigation within the grid. Defaults to `false`. */
@@ -84,14 +70,26 @@ export interface ITaskGridParameters {
     rowHeight?: number;
 }
 
-/** Available data providers injected into `ITaskDataProviderStrategy` at construction time. */
-export interface ITaskStrategyDeps {
-    enableInlineCreation: boolean;
-    enableTaskEditing: boolean;
-    /** Present when the consumer provided `onCreateCustomColumnsStrategy`. */
-    customColumnsDataProvider?: ICustomColumnsDataProvider;
-    /** Present when the consumer provided `onCreateTemplateDataProvider`. */
-    templateDataProvider?: IDataProvider;
+/** Identifies the lookup-many cell whose candidate records are being requested. */
+export interface ILookupManyDataProviderParameters {
+    /** The task record the cell belongs to. Use it to scope the candidate query to the row. */
+    record: IRecord;
+    /** The lookup-many column definition, including its `metadata` and `controls` bindings. */
+    column: IColumn;
+    /** Where the task side and the other modules are reached. */
+    services: ITaskGridServiceLocator;
+}
+
+/**
+ * What every factory the grid calls on a descriptor receives.
+ *
+ * One shape for all of them, so a consumer never has to remember which callback takes the locator where.
+ * A descriptor of your own may hand its builders more than this — the shipped ones add their loaded
+ * context — but `services` is always there.
+ */
+export interface ITaskGridFactoryParams {
+    /** Where every provider, module and grid service is reached. Resolve in methods, never in a constructor. */
+    services: ITaskGridServiceLocator;
 }
 
 /**
@@ -101,50 +99,51 @@ export interface ITaskStrategyDeps {
 export interface ITaskGridDescriptor {
     /** Returns the mapping of logical column roles to physical schema attribute names. */
     onGetFieldMapping: () => IFieldMapping;
-    /** Returns the strategy responsible for loading system/user views and persisting view changes. */
-    onCreateSavedQueryStrategy: () => ISavedQueryStrategy;
+    /**
+     * Returns the strategy responsible for loading system views. Personal views come from the
+     * user-queries module instead.
+     */
+    onCreateSavedQueryStrategy: (params: ITaskGridFactoryParams) => ISavedQueryStrategy;
     /** Returns the strategy that handles all task CRUD, move, template and record-save operations. */
-    onCreateTaskStrategy: (deps: ITaskStrategyDeps) => ITaskDataProviderStrategy;
-    /** Returns an `IDataProvider` that drives the user-query creation/update dialog. */
-    onCreateUserQueryDataProvider: () => IDataProvider;
-    /** (Optional) Returns the container height as a CSS string. Falls back to a default stretch when omitted. */
+    onCreateTaskStrategy: (params: ITaskGridFactoryParams) => ITaskDataProviderStrategy;
+    /** Returns the container height as a CSS string. Falls back to a default stretch when omitted. */
     onGetHeight?: () => string | undefined;
-    /** (Optional) Returns the strategy for managing dynamic (user-defined) columns. When provided, the custom-columns feature is enabled. */
-    onCreateCustomColumnsStrategy?: () => ICustomColumnsStrategy | undefined;
-    /** (Optional) Returns an `IDataProvider` for task templates. When provided, the template-based task creation feature is enabled. */
-    onCreateTemplateDataProvider?: () => IDataProvider | undefined;
-    /** (Optional) Returns a strategy for deep customization of AG Grid column definitions, renderers, editors, and row class rules. */
-    onCreateGridCustomizerStrategy?: () => IGridCustomizerStrategy | undefined;
-    /** (Optional) Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
+    /**
+     * Returns the feature modules this grid runs with. A module is on because it is present, so omitting
+     * a key leaves both the feature and its UI out.
+     *
+     * Called once per mount, after `onLoadDependencies`. Everything it returns is rebuilt on the next
+     * mount, so nothing that must outlive a remount belongs in a module.
+     *
+     * ```ts
+     * onGetModules: ({ services }) => ({ userQueries: createUserQueryModule({ strategy, services }) })
+     * ```
+     *
+     * The shipped descriptors expose this as a `modules` key of builders — see {@link IMemoryModules}
+     * and {@link IDataverseModules}.
+     */
+    onGetModules?: (params: ITaskGridFactoryParams) => ITaskGridModules;
+    /** Returns a stable DOM/control identifier. Auto-generated as a UUID when omitted. */
     onGetControlId?: () => string;
-    /** (Optional) Async hook called before any data provider is created. Use for lazy loading or authentication. */
+    /** Called before any data provider is created. Use for lazy loading or authentication. */
     onLoadDependencies?: () => Promise<void>;
-    /** (Optional) Returns UI feature flags. All flags default to `true` when omitted. */
+    /** Returns UI feature flags. Every flag defaults to `false` when omitted. */
     onGetGridParameters?: () => ITaskGridParameters;
 }
 
 /** Runtime interface for the TaskGrid control returned by `TaskGridDatasetControlFactory.createInstance`. */
 export interface ITaskGridDatasetControl extends IDatasetControl {
     /**
-     * Returns the template `IDataProvider`.
-     * @throws If templating was not enabled (no `onCreateTemplateDataProvider` in the descriptor).
+     * The grid's own events, separate from the dataset-control ones the control itself emits. Mirrors how
+     * {@link ITaskDataProvider} exposes `taskEvents`.
      */
-    getTemplateDataProvider: () => IDataProvider;
-    /** Returns the saved-query data provider managing system and user views. */
-    getSavedQueryDataProvider: () => ISavedQueryDataProvider;
+    events: IEventEmitter<ITaskGridDatasetControlEvents>;
     /**
-     * Returns the custom-columns data provider.
-     * @throws If custom columns were not enabled (no `onCreateCustomColumnsStrategy` in the descriptor).
+     * Creates the `IDataProvider` supplying the candidate records of a lookup-many cell — its picker's
+     * options. Called once per cell, because the candidates may depend on the row.
+     * @throws If no `lookupMany` module is registered, or it returned nothing for this column.
      */
-    getCustomColumnsDataProvider: () => ICustomColumnsDataProvider;
-    /** Creates a fresh `IDataProvider` for the user-query creation/update dialog. */
-    createUserQueryDataProvider: () => IDataProvider;
-    /** Returns the native column name mapping supplied by the descriptor. */
-    getNativeColumns: () => INativeColumns;
-    /** Returns the underlying `ITaskDataProvider` that backs the AG Grid data layer. */
-    getDataProvider: () => ITaskDataProvider;
-    /** Returns the localization service used to resolve all UI label strings. */
-    getLocalizationService: () => ILocalizationService<ITaskGridLabels>;
+    createLookupManyDataProvider: (parameters: Omit<ILookupManyDataProviderParameters, 'services'>) => IDataProvider;
     /** Returns `true` when inactive tasks (stateCode = 1) are currently visible in the grid. */
     getInactiveTasksVisibility: () => boolean;
     /** Switches between hierarchical (tree) and flat-list view modes. Triggers a column re-sort. */
@@ -166,8 +165,6 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isHideInactiveTasksToggleVisible: () => boolean;
     /** Whether the scope selector is shown inside the Edit Columns panel (from `ITaskGridParameters.enableEditColumnsScopeSelector`). */
     isEditColumnsScopeSelectorEnabled: () => boolean;
-    /** Returns `true` when a template data provider was supplied through the descriptor. */
-    isTemplatingEnabled: () => boolean;
     /** Returns `true` when inline creation of tasks is enabled. */
     isTaskCreatingEnabled: () => boolean;
     /** Returns `true` when inline editing of tasks is enabled. */
@@ -178,22 +175,13 @@ export interface ITaskGridDatasetControl extends IDatasetControl {
     isViewSwitcherEnabled: () => boolean;
     /** Whether grid navigation is enabled (from `ITaskGridParameters.enableNavigation`). */
     isNavigationEnabled: () => boolean;
-    /** Returns `true` when a custom columns strategy was supplied through the descriptor. */
-    isCustomColumnsEnabled: () => boolean;
-    /** Whether the view manager is enabled (from `ITaskGridParameters.enableQueryManager`). */
-    isViewManagerEnabled: () => boolean;
-    /** Whether the "Save as new" button is enabled (from `ITaskGridParameters.enableSaveAsNewQuery`). */
-    isSaveQueryAsNewEnabled: () => boolean;
-    /** Whether the "Save changes" button is enabled (from `ITaskGridParameters.enableSaveQueryChanges`). */
-    isSaveQueryChangesEnabled: () => boolean;
-    /** Whether custom column creation is enabled (from `ITaskGridParameters.enableCustomColumnCreation`). */
-    isCustomColumnCreationEnabled: () => boolean;
-    /** Whether custom column editing is enabled (from `ITaskGridParameters.enableCustomColumnEditing`). */
-    isCustomColumnEditingEnabled: () => boolean;
-    /** Whether custom column deletion is enabled (from `ITaskGridParameters.enableCustomColumnDeletion`). */   
-    isCustomColumnDeletionEnabled: () => boolean;
-    /** Whether user queries are enabled (from `ITaskGridParameters.enableUserQueries`). */
-    isUserQueriesFeatureEnabled: () => boolean;
+    /**
+     * Everything the grid was built with: the modules the descriptor contributed, the providers they
+     * brought, the descriptor itself, the PCF context and the labels.
+     */
+    getServices: () => ITaskGridServiceLocator;
+    /** Returns `true` when the user-queries module is registered. */
+    isUserQueriesEnabled: () => boolean;
     /** Whether inline task creation is enabled (from `ITaskGridParameters.enableInlineCreation`). */
     isInlineCreateEnabled: () => boolean;
 }

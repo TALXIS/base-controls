@@ -122,9 +122,10 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
     };
 
     const onRender = (control: NestedControl, defaultRender: () => Promise<void>) => {
+        //a base control is a child of this component, so React has already rendered it with the props
+        //`refreshProps()` just produced - there is nothing to push into a container
         if (getRef().isBaseControl) {
-            const controlProps = control.getProps();
-            return ReactDOM.render(React.createElement(getBaseControl(), controlProps), control.getContainer());
+            return;
         }
         return defaultRender();
     }
@@ -132,6 +133,10 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
     const onUmount = (control: NestedControl, defaultUnmount: () => void) => {
         if (control.isMountedPcfComponent()) {
             return defaultUnmount();
+        }
+        //a base control lives in this component's tree, so React unmounts it with the rest of it
+        if (getRef().isBaseControl) {
+            return;
         }
         return ReactDOM.unmountComponentAtNode(control.getContainer())
     }
@@ -196,6 +201,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
         ref={internalControlRendererRef}
         labels={labels}
         control={getRef().control ?? undefined}
+        baseControl={getRef().isBaseControl ? getBaseControl() : undefined}
         parameters={getRef().props.parameters}
         componentProps={getRef().componentProps} />
 }
@@ -206,7 +212,8 @@ interface IInternalNestedControlRendererProps {
     labels: any;
     loadingType?: 'spinner' | 'shimmer';
     control?: NestedControl;
-
+    /** Set for base controls: rendered as a child of this component, instead of into the container. */
+    baseControl?: React.ComponentType<any>;
 }
 
 interface IInternalNestedControlRendererRef {
@@ -217,7 +224,7 @@ interface IInternalNestedControlRendererRef {
 
 const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererRef, IInternalNestedControlRendererProps>((props, ref) => {
     //once control is defined, it is initialized
-    const { control, parameters, componentProps, labels } = props;
+    const { control, parameters, componentProps, labels, baseControl: BaseControl } = props;
     const customControlContainerRef = useRef<HTMLDivElement>(null);
     const errorMessage = control?.getErrorMessage();
     const styles = useMemo(() => getInternalNestedControlStyles(), []);
@@ -258,6 +265,10 @@ const InternalNestedControlRenderer = forwardRef<IInternalNestedControlRendererR
                     {labels.control()} <b>{parameters.ControlName}</b> {labels.failedToLoad()}.
                 </MessageBar>
             }
-            <div className={styles.nestedControl} ref={customControlContainerRef} style={errorMessage ? {display: 'none'} : undefined} {...componentProps.controlContainerProps} />
+            <div className={styles.nestedControl} ref={customControlContainerRef} style={errorMessage ? { display: 'none' } : undefined} {...componentProps.controlContainerProps}>
+                {/* base controls only. Props are read during render so this pass shows the current ones,
+                    rather than the previous ones a container render would have left behind */}
+                {BaseControl && control && React.createElement(BaseControl, control.refreshProps())}
+            </div>
         </div>)
 })

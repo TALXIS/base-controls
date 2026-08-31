@@ -28,6 +28,8 @@ export interface IGridCellRendererParameters extends IParameters {
     }
     PrefixIcon: IStringProperty;
     SuffixIcon: IStringProperty;
+    /** Text shown when the cell has no value. Left unset, `---` is used. */
+    Placeholder?: IStringProperty;
 }
 
 export interface IGridCellRendererComponentProps {

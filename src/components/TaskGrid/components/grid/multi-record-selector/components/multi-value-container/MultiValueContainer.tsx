@@ -3,6 +3,7 @@ import { useTheme } from '@fluentui/react';
 import { MultiValueGenericProps } from 'react-select';
 import { getMultiValueContainerStyles } from './styles';
 
+/** Wraps one selected record in the picker. */
 export const MultiValueContainer = ({ children, innerProps, selectProps }: MultiValueGenericProps<ComponentFramework.EntityReference, boolean, any>) => {
     const theme = useTheme();
     const styles = React.useMemo(() => getMultiValueContainerStyles(theme, selectProps.isDisabled), [theme, selectProps.isDisabled]);

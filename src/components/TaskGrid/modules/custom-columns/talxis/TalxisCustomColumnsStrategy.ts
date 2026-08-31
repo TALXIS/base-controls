@@ -1,0 +1,362 @@
+import { Attribute, DatasetConstants, DataType, DataTypes, FieldValue, IColumn, IEventEmitter, IRawRecord, IRecord, IRecordSaveOperationResult, Sanitizer } from "@talxis/client-libraries";
+import { DynamicEntityDefinition } from "@talxis/client-metadata";
+import { Attribute as IAttribute } from '@talxis/client-metadata/dist/interfaces/entity/IEntityDefinition';
+import { ICustomColumnsStrategy } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
+import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
+
+/** The table holding custom column definitions. */
+export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
+/** The table holding custom column values. */
+export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
+
+/** Constructor parameters for {@link TalxisCustomColumnsStrategy}. */
+export interface ITalxisCustomColumnsStrategyParameters {
+    /**
+     * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use
+     * for it yet — one shape to remember, and nothing to change when it does.
+     */
+    services: ITaskGridServiceLocator;
+    /** Logical name of the entity for which dynamic attribute definitions are managed (e.g. `"task"`). */
+    entityName: string;
+    /** Scopes attribute definitions to a specific parent record. */
+    recordId?: string;
+    /**
+     * A navigation property of the relationship between the entity and
+     * `talxis_attributevalue`, either side of it. Only needed to disambiguate: the relationship is
+     * normally the single one Dataverse reports between the two, and
+     * {@link TalxisCustomColumnsStrategy.onRefresh} finds it without being told.
+     */
+    navigationPropertyName?: string;
+}
+
+/**
+ * Extends {@link ICustomColumnsStrategy} with Talxis-specific accessors needed to persist
+ * custom column values through the `talxis_attributevalue` entity.
+ */
+export interface ITalxisCustomColumnsStrategy extends ICustomColumnsStrategy {
+    getNavigationPropertyName: () => string;
+    getAttributeDefinitionIdFromColumnName: (columnName: string) => string;
+    /** Returns the `$expand` query parameter needed to fetch the related `talxis_attributevalue` records. */
+    getExpand: () => string;
+    /** Reads and returns the typed value for `column` from the raw attribute-value payload embedded in `rawRecord`. */
+    getValueFromRawRecord: (recordId: string, rawRecord: IRawRecord, column: IColumn) => any;
+}
+
+/**
+ * {@link ICustomColumnsStrategy} implementation for the Talxis platform on Dataverse.
+ *
+ * Dynamic (user-defined) columns are modelled as `talxis_attributedefinition` records.
+ * Column values are stored as `talxis_attributevalue` records linked to the record they belong to.
+ *
+ * Wrap an instance in `createCustomColumnsModule({ strategy, services })` and return it from the descriptor's
+ * `modules.onGetCustomColumnsModule` to enable the custom-columns feature in the TaskGrid.
+ */
+export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy {
+    private _entityName: string;
+    private _recordId?: string;
+    private _navigationPropertyNameHint?: string;
+    private _attributes: IAttribute[] = [];
+    private _attributeIdsMap: Map<string, string> = new Map();
+    //read off the relationship in onRefresh: the collection the values are expanded through, the lookup
+    //they bind against, and the entity set that lookup points at
+    private _navigationPropertyName?: string;
+    private _referencingEntityNavigationPropertyName?: string;
+    private _entitySetName?: string;
+
+    constructor(parameters: ITalxisCustomColumnsStrategyParameters) {
+        this._entityName = parameters.entityName;
+        this._recordId = parameters.recordId;
+        this._navigationPropertyNameHint = parameters.navigationPropertyName;
+    }
+
+    /** Fetches the latest `talxis_attributedefinition` records for the entity/record scope and returns them as `IColumn[]`. */
+    public async onRefresh(): Promise<IColumn[]> {
+        await this._resolveRelationship();
+        const entityDefinition = await DynamicEntityDefinition.fetchForRecord(this._entityName, this._recordId);
+        this._attributes = entityDefinition.Attributes;
+        return this.onGetColumns();
+    }
+
+    public getAttributeDefinitionIdFromColumnName(columnName: string): string {
+        return columnName.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
+    }
+
+    public getNavigationPropertyName(): string {
+        if (!this._navigationPropertyName) {
+            throw new Error(`${TalxisCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before anything reads a custom column.`);
+        }
+        return this._navigationPropertyName;
+    }
+
+    /** Returns the currently cached attribute definitions as `IColumn[]` without a network fetch. */
+    public onGetColumns(): IColumn[] {
+        return this._attributes.map(attr => {
+            const dataType = Attribute.GetDataTypeFromMetadata({ ...attr as any, attributeDescriptor: attr });
+            return {
+                name: `${attr.LogicalName}${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`,
+                isVirtual: true,
+                displayName: attr.DisplayName,
+                dataType: dataType,
+                visualSizeFactor: 200,
+                metadata: this._getMetadataForDataType(dataType, attr) as any
+            }
+        })
+    }
+
+    /** Deletes the `talxis_attributedefinition` record backing `columnName`, then refreshes the column list. Returns the deleted column name. */
+    public async onDeleteColumn(columnName: string): Promise<string | null> {
+        const id = columnName.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
+        await window.Xrm.WebApi.deleteRecord(ATTRIBUTE_DEFINITION_ENTITY_NAME, id);
+        await this.onRefresh();
+        return columnName
+    }
+
+    /** Opens the `talxis_attributedefinition` entity record form in a side dialog. Returns the new column name (with the custom-column suffix) when the record is saved, or `null` when the dialog is dismissed. */
+    public async onCreateColumn(): Promise<string | null> {
+        const { savedEntityReference } = await window.Xrm.Navigation.navigateTo({
+            entityName: ATTRIBUTE_DEFINITION_ENTITY_NAME,
+            pageType: 'entityrecord',
+            data: {
+                'talxis_entityname': this._entityName,
+                'talxis_recordid': this._recordId,
+            }
+        }, {
+            target: 2,
+        });
+        if (savedEntityReference && savedEntityReference.length > 0) {
+            const entityReference = savedEntityReference[0];
+            const id = Sanitizer.Guid.removeGuidBrackets(entityReference.id);
+            await this.onRefresh();
+            return `${id}${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`;
+        }
+        else return null
+    }
+
+    public getExpand(): string {
+        return `${this.getNavigationPropertyName()}(
+                $select=talxis_serialized_value,talxis_text_value,talxis_int_value,talxis_decimal_value,_talxis_choice_value_value,talxis_bit_value,talxis_date_value,talxis_datetime_userlocal_value,talxis_datetime_tzi_value,_talxis_attributedefinitionid_value
+        )`
+    }
+
+    /** Opens the existing `talxis_attributedefinition` record in a side dialog for editing, then refreshes columns. Returns `columnName` unchanged. */
+    public async onUpdateColumn(columnName: string): Promise<string | null> {
+        const attributeDefinitionId = columnName.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
+        await window.Xrm.Navigation.navigateTo({
+            entityName: ATTRIBUTE_DEFINITION_ENTITY_NAME,
+            pageType: 'entityrecord',
+            entityId: attributeDefinitionId
+        }, {
+            target: 2,
+        });
+        await this.onRefresh();
+        return columnName;
+    }
+
+    /**
+     * Upserts the `talxis_attributevalue` record for the dirty custom-column field on `record`.
+     * Creates a new record when no value exists yet; updates the existing one otherwise.
+     * @returns A save-operation result indicating success or the encountered error.
+     */
+    public async onSaveValue(regardingRecordId: string, column: IColumn, value: any): Promise<IRecordSaveOperationResult> {
+        const attributeDefinitionId = column.name.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
+        const attributeValueId = this._attributeIdsMap.get(`${regardingRecordId}_${attributeDefinitionId}`);
+        const payload = {
+            [this._getFieldNameForColumn(column)]: this._getValueForPayload(value, column),
+            'talxis_serialized_value': this._getSerializedValue(value),
+        }
+
+        try {
+
+            if (!attributeValueId) {
+                const result = await window.Xrm.WebApi.createRecord(ATTRIBUTE_VALUE_ENTITY_NAME, {
+                    ...payload,
+                    'talxis_attributedefinitionid@odata.bind': `/talxis_attributedefinitions(${attributeDefinitionId})`,
+                    [`${this._getReferencingEntityNavigationPropertyName()}@odata.bind`]: `/${this._getEntitySetName()}(${regardingRecordId})`,
+                });
+                this._attributeIdsMap.set(`${regardingRecordId}_${attributeDefinitionId}`, result.id);
+                return {
+                    success: true,
+                    recordId: result.id,
+                    fields: [column.name]
+                }
+            }
+
+            else {
+                await window.Xrm.WebApi.updateRecord(ATTRIBUTE_VALUE_ENTITY_NAME, attributeValueId, {
+                    ...payload
+                });
+                return {
+                    success: true,
+                    recordId: attributeValueId,
+                    fields: [column.name]
+                }
+            }
+        }
+        catch (err: any) {
+            return {
+                success: false,
+                recordId: attributeValueId ?? '',
+                fields: [column.name],
+                errors: [{
+                    message: err.message,
+                    fieldName: column.name
+                }]
+            }
+        }
+    }
+
+    /**
+     * Resolves the typed value for `column` from the embedded `talxis_attributevalue` collection inside
+     * `rawRecord`, caching the `talxis_attributevalueid` for {@link onSaveValue} to upsert against.
+     * @returns The typed column value, or `null` when no matching attribute value record is found.
+     */
+    public getValueFromRawRecord(recordId: string, rawRecord: IRawRecord, column: IColumn) {
+        const attribute = this._getAttributeFromRawRecord(recordId, rawRecord, column);
+        if (attribute == null) {
+            return null;
+        }
+        const fieldName = this._getFieldNameForColumn(column);
+
+        if (column.dataType === DataTypes.OptionSet) {
+            const metadata = column.metadata as any;
+            const optionSet = metadata.OptionSet as any;
+            const option = optionSet.find((option: any) => option.OptionId == attribute['_talxis_choice_value_value']);
+            return option ? option.Value : null;
+        }
+        return attribute[fieldName];
+    }
+
+    private _getAttributeFromRawRecord(recordId: string, rawRecord: IRawRecord, column: IColumn) {
+        const attributes: any[] = rawRecord[this.getNavigationPropertyName()] ?? [];
+        if (attributes.length === 0) {
+            return null;
+        }
+        const attributeDefinitionId = column.name.split(`${DatasetConstants.CUSTOM_COLUMN_NAME_SUFFIX}`)[0];
+        const attribute = attributes.find(attr => attr['_talxis_attributedefinitionid_value'] === attributeDefinitionId);
+        if (attribute) {
+            this._attributeIdsMap.set(`${recordId}_${attributeDefinitionId}`, attribute['talxis_attributevalueid']);
+        }
+        return attribute;
+    }
+
+    /**
+     * Reads the relationship to `talxis_attributevalue` off the entity's metadata and keeps the three
+     * names the grid needs from it: the collection to expand through, the lookup to bind against, and
+     * the entity set that lookup points at. A schema has one such relationship, so nothing has to be
+     * configured — `navigationPropertyName` is only consulted when there is more than one.
+     */
+    private async _resolveRelationship(): Promise<void> {
+        if (this._navigationPropertyName && this._referencingEntityNavigationPropertyName && this._entitySetName) {
+            return;
+        }
+        const metadata: any = await window.Xrm.Utility.getEntityMetadata(this._entityName);
+        const relationships: any[] = metadata.OneToManyRelationships.getAll()
+            .filter((relationship: any) => relationship.ReferencingEntity === ATTRIBUTE_VALUE_ENTITY_NAME);
+        const relationship = this._navigationPropertyNameHint
+            ? relationships.find(candidate =>
+                candidate.ReferencedEntityNavigationPropertyName === this._navigationPropertyNameHint ||
+                candidate.ReferencingEntityNavigationPropertyName === this._navigationPropertyNameHint)
+            : relationships[0];
+        if (!relationship) {
+            throw new Error(`Could not find a relationship between "${this._entityName}" and "${ATTRIBUTE_VALUE_ENTITY_NAME}"${this._navigationPropertyNameHint ? ` for navigation property "${this._navigationPropertyNameHint}"` : ''}. Custom columns need one to store their values against.`);
+        }
+        if (relationships.length > 1 && !this._navigationPropertyNameHint) {
+            throw new Error(`"${this._entityName}" has ${relationships.length} relationships to "${ATTRIBUTE_VALUE_ENTITY_NAME}". Pass "navigationPropertyName" to say which one holds the custom column values.`);
+        }
+        this._entitySetName = metadata.EntitySetName;
+        this._navigationPropertyName = relationship.ReferencedEntityNavigationPropertyName;
+        this._referencingEntityNavigationPropertyName = relationship.ReferencingEntityNavigationPropertyName;
+    }
+
+    private _getReferencingEntityNavigationPropertyName(): string {
+        if (!this._referencingEntityNavigationPropertyName) {
+            throw new Error(`${TalxisCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before a value can be saved.`);
+        }
+        return this._referencingEntityNavigationPropertyName;
+    }
+
+    private _getEntitySetName(): string {
+        if (!this._entitySetName) {
+            throw new Error(`${TalxisCustomColumnsStrategy.name} reads the relationship in onRefresh, which the grid awaits before a value can be saved.`);
+        }
+        return this._entitySetName;
+    }
+
+    private _getFieldNameForColumn(column: IColumn): string {
+        switch (column.dataType) {
+            case DataTypes.WholeNone:
+            case DataTypes.WholeDuration:
+            case DataTypes.WholeLanguage:
+            case DataTypes.WholeTimeZone:
+                return 'talxis_int_value';
+            case DataTypes.Decimal:
+                return 'talxis_decimal_value';
+            case DataTypes.OptionSet:
+                return 'talxis_choice_value@odata.bind';
+            case DataTypes.TwoOptions:
+                return 'talxis_bit_value';
+            case DataTypes.DateAndTimeDateOnly:
+                return 'talxis_date_value';
+            case DataTypes.DateAndTimeDateAndTime: {
+                return column.metadata?.Behavior === 3 ? 'talxis_datetime_tzi_value' : 'talxis_datetime_userlocal_value';
+            }
+            default:
+                return 'talxis_text_value';
+        }
+    }
+
+    private _getValueForPayload(value: any, column: IColumn): any {
+        switch (column.dataType) {
+            case 'TwoOptions': {
+                return value == '1' ? true : false;
+            }
+            case 'OptionSet': {
+                const attribute: IAttribute = column.metadata as any;
+                const optionSet = attribute.OptionSet as any;
+                const optionId = optionSet.find((option: any) => option.Value == value)?.OptionId;
+                if (optionId) {
+                    return `/talxis_attributeoptions(${optionId})`;
+                }
+                return null;
+            }
+            case 'DateAndTime.DateAndTime':
+            case 'DateAndTime.DateOnly': {
+                return value;
+            }
+            default: {
+                return value;
+            }
+        }
+    }
+
+    //the wire format dynamic attributes are stored in
+    private _getSerializedValue(value: any) {
+        return JSON.stringify({
+            raw: value,
+            error: false,
+            errorMessage: ''
+        })
+    }
+
+    private _getMetadataForDataType(dataType: DataType, attr: IAttribute) {
+        switch (dataType) {
+            case DataTypes.OptionSet:
+            case DataTypes.TwoOptions: {
+                return {
+                    ...attr,
+                    OptionSet: attr.OptionSet?.Options.map(option => {
+                        return {
+                            Label: option.Label,
+                            Value: option.Value,
+                            Color: option.Color,
+                            OptionId: option.talxis_OptionId
+                        }
+                    })
+                }
+            }
+            default: {
+                return attr;
+            }
+        }
+    }
+}

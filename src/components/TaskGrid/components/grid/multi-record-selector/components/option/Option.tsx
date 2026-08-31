@@ -3,6 +3,7 @@ import { useTheme } from '@fluentui/react';
 import { OptionProps } from 'react-select';
 import { getOptionStyles } from './styles';
 
+/** One candidate record in the picker menu. */
 export const Option = (props: OptionProps<ComponentFramework.EntityReference, boolean, any>) => {
     const { children, innerProps, isFocused, isSelected } = props;
     const theme = useTheme();

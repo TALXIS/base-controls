@@ -27,7 +27,8 @@ const preview: Preview = {
                   line-height: 1.65;
                 }
 
-                .form-strategy-hidden-preview.sbdocs-preview {
+                .form-strategy-hidden-preview.sbdocs-preview,
+                .docs-hidden-preview.sbdocs-preview {
                   display: none;
                 }
               `}
@@ -96,6 +97,33 @@ const preview: Preview = {
               ['Form Context', 'Overview', 'Samples'],
             ],
           ],
+          'Task Grid',
+          [
+            'Get started',
+            'Descriptors',
+            [
+              'Anatomy',
+              'Memory',
+              ['Overview', 'Task options', 'Feature data', 'Your data'],
+              'Dataverse',
+              ['Overview', 'Task options', 'Feature data'],
+              'Talxis platform',
+            ],
+            'Modules',
+            ['Overview', 'Customizer'],
+            'Customizations',
+            ['Overview', 'Custom Components'],
+            'Extending',
+            [
+              'Overview',
+              'Reuse a shipped strategy',
+              'Extend a shipped strategy',
+              'Write your own',
+            ],
+          ],
+          'Map',
+          'Checklist',
+          ['Get started', 'Reacting to changes', 'Dev'],
           'Providers',
         ],
       },

@@ -4,6 +4,7 @@ import { MessageBarType } from '@fluentui/react'
 import { Form } from '@talxis/base-controls/components/Form'
 import { getOverviewStrategy } from '../../form/overview/overviewModel'
 import { renderStory } from './storyHelpers'
+import { docsPageWithExample } from '../docsPageWithExample'
 
 const OverviewForm = () => {
     const [activeTab, setActiveTab] = React.useState('overview')
@@ -86,23 +87,8 @@ const OverviewForm = () => {
     )
 }
 
-const meta = {
-    title: 'Form/Get started',
-    tags: ['autodocs'],
-    parameters: {
-        docs: {
-            story: {
-                inline: true,
-            },
-            canvas: {
-                sourceState: 'none',
-                additionalActions: [],
-            },
-            description: {
-                component: `
-Form is a record-driven form runtime.
-
-It gives you the pieces that usually have to be wired by hand: layout, field binding, validation, notifications, tab and section structure, dirty tracking, and save orchestration working as one system.
+const DESCRIPTION = `
+Form is a record-driven form runtime. It gives you the pieces that usually have to be wired by hand: layout, field binding, validation, notifications, tab and section structure, dirty tracking, and save orchestration working as one system.
 
 The same runtime can be authored directly in React or driven from an Xrm/FormXml model. Both paths share the same core runtime, but they differ in how the layout is authored and how the runtime surface is exposed.
 
@@ -143,7 +129,20 @@ This is the best fit when:
 - you want to combine Base Controls React events with Xrm-style runtime access
 
 Go to [**Xrm Builder**](?path=/story/form-xrm--overview), [**Xrm Form Context Overview**](?path=/story/form-xrm-form-context-overview--overview), or [**Xrm Form Context Samples**](?path=/story/form-xrm-form-context-samples--qualification-review).
-                `.trim(),
+                `
+
+const meta = {
+    title: 'Form/Get started',
+    tags: ['autodocs'],
+    parameters: {
+        docs: {
+            page: docsPageWithExample(DESCRIPTION),
+            story: {
+                inline: true,
+            },
+            canvas: {
+                sourceState: 'none',
+                additionalActions: [],
             },
         },
     },
