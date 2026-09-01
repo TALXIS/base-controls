@@ -10,6 +10,7 @@ import { GanttComponents } from "./moduleComponents";
 import { IGanttMarkersModule } from "./modules/markers";
 import { IGanttSelectionBoxModule } from "./modules/selection-box";
 import { IGanttTaskCreateModule } from "./modules/task-create";
+import { IGanttTaskDraggingModule } from "./modules/task-dragging";
 import { IGanttTaskTooltipModule } from "./modules/task-tooltip";
 
 /** The Gantt's own modules, one optional key per feature. Filled by that module's builder. */
@@ -20,6 +21,8 @@ export interface IGanttModules {
     taskCreate?: IGanttTaskCreateModule;
     /** Selecting tasks by dragging a band over them. */
     selectionBox?: IGanttSelectionBoxModule;
+    /** Moving a task by dragging its bar, and changing its duration by dragging the bar's ends. */
+    taskDragging?: IGanttTaskDraggingModule;
     /** What a bar says when the pointer is on it. */
     taskTooltip?: IGanttTaskTooltipModule;
 }
@@ -93,9 +96,10 @@ export const createGanttModule = (options: IGanttModuleOptions): IGanttModule =>
 //registers each resolved module under its own key. A module the caller left out registers nothing, so its
 //key stays absent and `find` reports the feature as off
 const registerGanttModules = (services: IGanttServiceLocator, modules: IGanttModules): void => {
-    const { markers, taskCreate, selectionBox, taskTooltip } = modules;
+    const { markers, taskCreate, selectionBox, taskDragging, taskTooltip } = modules;
     markers && services.register('markersModule', () => markers);
     taskCreate && services.register('taskCreateModule', () => taskCreate);
     selectionBox && services.register('selectionBoxModule', () => selectionBox);
+    taskDragging && services.register('taskDraggingModule', () => taskDragging);
     taskTooltip && services.register('taskTooltipModule', () => taskTooltip);
 };

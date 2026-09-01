@@ -24,6 +24,12 @@ export const configureChart = (gantt: GanttStatic, services: IGanttServiceLocato
     gantt.config.details_on_dblclick = false;
     gantt.config.show_links = false;
     gantt.config.drag_links = false;
+    //what a drag writes is the task-dragging module's, so without it the bars are refused the gesture
+    //rather than moved on screen and never saved. Progress is never draggable: nothing draws or saves it
+    const taskDragging = services.find('taskDraggingModule');
+    gantt.config.drag_move = taskDragging?.settings.enableMove ?? false;
+    gantt.config.drag_resize = taskDragging?.settings.enableResize ?? false;
+    gantt.config.drag_progress = false;
     gantt.config.static_background = true;
     gantt.config.scale_height = 43;
     gantt.config.scroll_size = 14;

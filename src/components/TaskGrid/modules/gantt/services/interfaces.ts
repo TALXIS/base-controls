@@ -13,6 +13,7 @@ import type { IGanttInfiniteTimeline } from "../gantt-infinite-timeline";
 import type { IGanttMarkersProvider, IGanttMarkersModule } from "../modules/markers";
 import type { IGanttSelectionBoxModule } from "../modules/selection-box";
 import type { IGanttTaskCreateModule } from "../modules/task-create";
+import type { IGanttTaskDraggingModule } from "../modules/task-dragging";
 import type { IGanttTaskTooltipModule } from "../modules/task-tooltip";
 import type { IGanttSelection } from "../gantt-selection";
 import type { IGanttZooming } from "../gantt-zooming";
@@ -70,7 +71,7 @@ export interface IGanttServiceMap {
     ganttDates: IGanttDates;
     /** Keeps the chart's tasks in step with the grid's records. */
     ganttData: IGanttData;
-    /** Dragging and resizing a task bar. */
+    /** The chart's drag gesture: who owns the pointer, and when a bar is being dragged. */
     ganttDragging: IGanttDragging;
     /**
      * The Gantt's markers module, UI included. Present when it is registered — and its absence is what
@@ -89,6 +90,11 @@ export interface IGanttServiceMap {
      * what leaves the timeline without a band to drag.
      */
     selectionBoxModule: IGanttSelectionBoxModule;
+    /**
+     * The Gantt's task-dragging module. Present when it is registered — and its absence is what leaves the
+     * bars fixed, because it is read to decide which drag gestures the chart allows at all.
+     */
+    taskDraggingModule: IGanttTaskDraggingModule;
     /**
      * The Gantt's task-tooltip module, UI included. Present when it is registered — and its absence is what
      * leaves a bar saying nothing on hover.

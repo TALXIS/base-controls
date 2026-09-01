@@ -11,6 +11,7 @@ import {
     createGanttModule,
     createGanttSelectionBoxModule,
     createGanttTaskCreateModule,
+    createGanttTaskDraggingModule,
     createGanttTaskTooltipModule,
     createProjectModule,
 } from '@talxis/base-controls'
@@ -143,6 +144,7 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                                 },
                             }),
                             taskCreate: createGanttTaskCreateModule({ services }),
+                            //taskDragging: createGanttTaskDraggingModule({ services }),
                             selectionBox: createGanttSelectionBoxModule({ services }),
                             taskTooltip: createGanttTaskTooltipModule({ services }),
                         }),
