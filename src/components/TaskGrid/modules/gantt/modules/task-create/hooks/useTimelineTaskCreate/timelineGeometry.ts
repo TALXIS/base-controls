@@ -7,7 +7,7 @@ import {
     GANTT_TASK_ID_ATTRIBUTE,
     GANTT_TASK_LINE_CLASS,
     GANTT_TASK_ROW_CLASS,
-} from "../../../classNames";
+} from "../../../../classNames";
 
 /** Where a drag would create a task: the row under the pointer, in the chart's own coordinates. */
 export interface ITimelineCreateTarget {

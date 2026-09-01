@@ -9,6 +9,7 @@ import {
     MilestoneMarker,
     createGanttMarkersModule,
     createGanttModule,
+    createGanttTaskCreateModule,
     createProjectModule,
 } from '@talxis/base-controls'
 import type { ISavedQuery } from '@talxis/base-controls'
@@ -139,6 +140,7 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                                         : <Marker {...props} />,
                                 },
                             }),
+                            taskCreate: createGanttTaskCreateModule({ services }),
                         }),
                     }),
                     onGetProjectModule: ({ services }) => createProjectModule({

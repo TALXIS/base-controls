@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Formatting } from "@talxis/client-libraries";
 import { useTaskDataProvider } from '@components/TaskGrid/context';
-import { GANTT_TIMELINE_TASK_CREATE_CURSOR_CLASS } from '../../../classNames';
-import { useGanttService } from '../../../context';
+import { useGanttService, useGanttServices } from '../../../../context';
+import { getTaskCreateCursorStyles } from '../../styles';
 import { getCreateTarget, getTimelineX, isCreateTarget, ITimelineCreateTarget } from './timelineGeometry';
 import { useTimelineAutoScroll } from './useTimelineAutoScroll';
 
@@ -43,7 +43,11 @@ interface IActiveDrag extends ITimelineCreateTarget {
  * between the dragged dates, directly above the row it was drawn on. Waits for the chart and its dragging
  * part — bar dragging is suppressed while this is armed, so the two cannot both act on one gesture.
  */
+//one class for the whole module: mergeStyles hands back the same one for the same rules
+const CURSOR_CLASS = getTaskCreateCursorStyles();
+
 export const useTimelineTaskCreate = () => {
+    const services = useGanttServices();
     const gantt = useGanttService('ganttChart');
     const dragging = useGanttService('ganttDragging');
     const dates = useGanttService('ganttDates');
@@ -66,12 +70,17 @@ export const useTimelineTaskCreate = () => {
 
     const autoScroll = useTimelineAutoScroll({ gantt, canScrollLeft, onScrolled: () => updatePreview() });
 
+    //the grid decides whether tasks can be created at all; read at call time, as the strategies read theirs
+    const isTaskCreationEnabled = () => {
+        return services.get('taskGridServices').get('gridParameters').enableTaskCreation ?? false;
+    };
+
     const setTaskCreateMode = (enabled: boolean) => {
         if (!gantt || !dragging) {
             return;
         }
         dragging.setDraggingDisabled(enabled);
-        gantt.$root.classList.toggle(GANTT_TIMELINE_TASK_CREATE_CURSOR_CLASS, enabled);
+        gantt.$root.classList.toggle(CURSOR_CLASS, enabled);
     };
 
     const clearDrag = () => {
@@ -141,7 +150,7 @@ export const useTimelineTaskCreate = () => {
     };
 
     const onKeyDown = useCallback((event: KeyboardEvent) => {
-        if (event.key !== 'Control') {
+        if (event.key !== 'Control' || !isTaskCreationEnabled()) {
             return;
         }
         setTaskCreateMode(true);
@@ -160,7 +169,7 @@ export const useTimelineTaskCreate = () => {
     }, [gantt, dragging]);
 
     const onMouseDown = useCallback((event: MouseEvent) => {
-        if (!gantt || !event.ctrlKey || event.button !== 0) {
+        if (!gantt || !event.ctrlKey || event.button !== 0 || !isTaskCreationEnabled()) {
             return;
         }
         const target = getCreateTarget(gantt, event.target);

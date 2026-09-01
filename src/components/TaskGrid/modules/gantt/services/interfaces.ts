@@ -11,6 +11,7 @@ import type { IGanttDates } from "../gantt-dates";
 import type { IGanttDragging } from "../gantt-dragging";
 import type { IGanttInfiniteTimeline } from "../gantt-infinite-timeline";
 import type { IGanttMarkersProvider, IGanttMarkersModule } from "../modules/markers";
+import type { IGanttTaskCreateModule } from "../modules/task-create";
 import type { IGanttSelection } from "../gantt-selection";
 import type { IGanttZooming } from "../gantt-zooming";
 import type { IGanttLabels } from "../labels";
@@ -76,6 +77,11 @@ export interface IGanttServiceMap {
     markersModule: IGanttMarkersModule;
     /** The markers drawn over the timeline. Registered by the markers module once the chart exists. */
     ganttMarkers: IGanttMarkersProvider;
+    /**
+     * The Gantt's task-create module, UI included. Present when it is registered — and its absence is what
+     * makes the timeline one you cannot draw new tasks on.
+     */
+    taskCreateModule: IGanttTaskCreateModule;
     /** Selecting tasks on the chart, and mirroring the grid's selection. */
     ganttSelection: IGanttSelection;
     /** The zoom levels, and the slider's 0-100 mapping onto them. */

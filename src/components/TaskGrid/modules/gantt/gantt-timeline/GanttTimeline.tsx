@@ -2,8 +2,6 @@ import { useEffect, useMemo, useRef } from 'react';
 import 'gantt-trial/codebase/dhtmlxgantt.css';
 import { useTheme } from '@fluentui/react';
 import { getGanttStyles } from './styles';
-import { DatePreviewCallout, TimelineTaskCreateLine, TimelineTaskCreateRowOverlay } from './components';
-import { useTimelineTaskCreate } from './hooks/useTimelineTaskCreate';
 import { useTooltip } from './hooks/useTooltip';
 import { useSelectionBox } from './hooks/useSelectionBox';
 import { useGanttComponents, useGanttServices } from '../context';
@@ -22,7 +20,6 @@ export const GanttTimeline = () => {
     const theme = useTheme();
     const styles = useMemo(() => getGanttStyles(theme), [theme]);
     const { tooltip } = useTooltip();
-    const { hoverPreview, linePreview, rowOverlay } = useTimelineTaskCreate();
     useSelectionBox();
 
     useEffect(() => {
@@ -37,11 +34,9 @@ export const GanttTimeline = () => {
             <div className={styles.container}>
                 <div ref={ref} className={styles.root} />
                 {services.find('markersModule')?.components.onRenderMarkerLayer()}
-                {rowOverlay && <TimelineTaskCreateRowOverlay {...rowOverlay} />}
-                {linePreview && <TimelineTaskCreateLine {...linePreview} />}
+                {services.find('taskCreateModule')?.components.onRenderCreateLayer()}
             </div>
-            {hoverPreview && <DatePreviewCallout target={hoverPreview.target} date={hoverPreview.date} />}
-            {!hoverPreview && !linePreview && tooltip && components.onRenderTaskTooltip({ task: tooltip.task, event: tooltip.event })}
+            {tooltip && components.onRenderTaskTooltip({ task: tooltip.task, event: tooltip.event })}
         </>
     );
 }

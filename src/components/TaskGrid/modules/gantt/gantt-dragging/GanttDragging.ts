@@ -11,7 +11,10 @@ import {
 
 export interface IGanttDragging {
     events: IEventEmitter<IGanttDraggingEvents>;
+    /** Suppresses dragging a bar, for a gesture that wants the pointer for something else. */
     setDraggingDisabled: (disabled: boolean) => void;
+    /** Whether some other gesture has the pointer — drawing a task, or a box selection. */
+    isDraggingDisabled: () => boolean;
 }
 
 export interface IGanttDraggingEvents {
@@ -55,6 +58,10 @@ export class GanttDragging implements IGanttDragging {
         this._gantt.$root.classList.toggle(GANTT_DRAGGING_DISABLED_CLASS, disabled);
     }
 
+    public isDraggingDisabled(): boolean {
+        return this._gantt.$root.classList.contains(GANTT_DRAGGING_DISABLED_CLASS);
+    }
+
     private _registerEventListeners() {
         this._gantt.attachEvent('onBeforeTaskDrag', (id: string, mode: string) => this._onBeforeTaskDrag(id, mode));
         this._gantt.attachEvent('onTaskDrag', (id: string, mode: string) => this._onTaskDrag(id, mode));
@@ -62,7 +69,7 @@ export class GanttDragging implements IGanttDragging {
     }
 
     private _onBeforeTaskDrag(taskId: string, mode?: string) {
-        if (this._gantt.$root.classList.contains(GANTT_DRAGGING_DISABLED_CLASS)) {
+        if (this.isDraggingDisabled()) {
             return false;
         }
         const task = this._gantt.getTask(taskId);

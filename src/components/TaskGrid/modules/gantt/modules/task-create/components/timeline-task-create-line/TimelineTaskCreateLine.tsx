@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { DirectionalHint, useTheme } from '@fluentui/react';
 import { getTimelineTaskCreateLineStyles } from './styles';
-import { TaskTooltip } from '../task-tooltip';
-import { TaskTooltipCallout } from '../task-tooltip-callout';
+import { TaskTooltip, TaskTooltipCallout } from '../../../../gantt-timeline/components';
 
 export interface ITimelineTaskCreateLineProps {
     left: number;

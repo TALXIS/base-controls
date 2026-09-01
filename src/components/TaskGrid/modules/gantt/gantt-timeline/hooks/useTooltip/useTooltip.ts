@@ -29,6 +29,13 @@ export const useTooltip = () => {
 		if (!gantt) {
 			return;
 		}
+		//another gesture has the pointer - drawing a task, or a box selection. Two callouts over one
+		//pointer read as a glitch. Resolved here rather than closed over: this callback is built once, when
+		//there is no chart yet and so no dragging part either
+		if (services.find('ganttDragging')?.isDraggingDisabled()) {
+			setTooltipState(null);
+			return;
+		}
 		if (draggingTaskIdRef.current) {
 			setTooltipState({ task: gantt.getTask(draggingTaskIdRef.current), event });
 			return;
