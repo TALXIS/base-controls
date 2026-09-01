@@ -342,7 +342,7 @@ export class DataverseTaskActions {
      * Lookups stay entity references here; what a Dataverse create makes of them is the converters' job.
      */
     private static async _getNewTaskValues(params: IDataverseTaskCreateParams): Promise<INewTaskValues> {
-        const { parentRecord, nextSibling, fieldMapping, provider, projectReference, onGetNewTaskDefaults } = params;
+        const { parentRecord, previousSibling, nextSibling, fieldMapping, provider, projectReference, onGetNewTaskDefaults, data } = params;
         const placement: { [columnName: string]: any } = {};
         if (projectReference && fieldMapping.projectId) {
             placement[fieldMapping.projectId] = projectReference;
@@ -351,10 +351,15 @@ export class DataverseTaskActions {
         if (parentTaskId) {
             placement[fieldMapping.parentId] = provider.getRecordsMap()[parentTaskId].getNamedReference();
         }
-        //before every existing sibling the provider resolved, filtered out of the view or not
-        placement[fieldMapping.stackRank] = StackRank.between(undefined, this._getStackRank(nextSibling, fieldMapping));
+        //between the neighbours the create asked for, and before every existing sibling the provider
+        //resolved when it asked for none - filtered out of the view or not
+        placement[fieldMapping.stackRank] = StackRank.between(
+            this._getStackRank(previousSibling, fieldMapping),
+            this._getStackRank(nextSibling, fieldMapping)
+        );
         return {
-            defaults: await onGetNewTaskDefaults?.(params) ?? {},
+            //the caller's own values last, over what the consumer defaults every new task to
+            defaults: { ...await onGetNewTaskDefaults?.(params) ?? {}, ...data },
             placement: placement,
         };
     }

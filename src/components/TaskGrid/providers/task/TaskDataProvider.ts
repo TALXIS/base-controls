@@ -63,6 +63,21 @@ export interface ITaskMoveParams extends ITaskSiblingContext {
 
 /** What the provider hands `onCreateTask`. The sibling context is where the new task lands. */
 export interface ITaskCreateParams extends ITaskSiblingContext {
+    /**
+     * Values the new task starts with, keyed by column name — what the caller asked for rather than
+     * what the strategy defaults to, so a strategy applies these last.
+     */
+    data?: { [columnName: string]: any };
+}
+
+/** Where a created task lands, and what it starts with. See {@link ITaskDataProvider.createTask}. */
+export interface ICreateTaskOptions {
+    /** The sibling the new task lands immediately after. */
+    previousTaskId?: string;
+    /** The sibling it lands immediately before. Defaults to the parent's first child. */
+    nextTaskId?: string;
+    /** Values the new task starts with, keyed by column name. */
+    data?: { [columnName: string]: any };
 }
 
 /** Constructor parameters for {@link TaskDataProvider}. */
@@ -167,8 +182,13 @@ export interface ITaskDataProvider extends IDataProvider {
      * and delegates to `strategy.onOpenDatasetItems` with `isTaskEntity: true`.
      */
     openTaskItems(taskIds: string[]): Promise<IOpenDatasetItemsResult | null>;
-    /** @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure. */
-    createTask(parentTaskId?: string): Promise<IRawRecord | null>;
+    /**
+     * Creates one task under `parentTaskId` — top level when it is omitted. `options` says where among
+     * its siblings it lands and what values it starts with; without them it lands first, with only the
+     * strategy's own defaults.
+     * @returns The created task raw record, or `null` if the operation was cancelled by the user. Throws on unexpected failure.
+     */
+    createTask(parentTaskId?: string, options?: ICreateTaskOptions): Promise<IRawRecord | null>;
     /**
      * @returns Result indicating which tasks were deleted and which failed.
      * `success: true` means all tasks were deleted. `success: false` means some or all failed — `deletedTaskIds` still contains the ids that succeeded.
@@ -390,22 +410,27 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         };
     }
 
-    /** Where a newly created task lands: first among every existing child of its parent. */
-    private _resolveCreate(parentTaskId?: string): ITaskCreateParams {
+    /**
+     * Where a newly created task lands: first among every existing child of its parent, unless the
+     * caller named the siblings it goes between.
+     */
+    private _resolveCreate(parentTaskId?: string, options?: ICreateTaskOptions): ITaskCreateParams {
         const siblings = this._taskTree.structure.getChildren(parentTaskId ?? null);
+        const recordsMap = this.getRecordsMap();
         return {
-            parentRecord: parentTaskId ? this.getRecordsMap()[parentTaskId] : undefined,
+            parentRecord: parentTaskId ? recordsMap[parentTaskId] : undefined,
             siblings,
-            previousSibling: undefined,
-            nextSibling: siblings[0],
+            previousSibling: options?.previousTaskId ? recordsMap[options.previousTaskId] : undefined,
+            nextSibling: options?.nextTaskId ? recordsMap[options.nextTaskId] : (options?.previousTaskId ? undefined : siblings[0]),
+            data: options?.data,
         };
     }
 
-    public async createTask(parentId?: string): Promise<IRawRecord | null> {
+    public async createTask(parentId?: string, options?: ICreateTaskOptions): Promise<IRawRecord | null> {
         this.taskEvents.dispatchEvent('onBeforeTasksCreated', parentId);
         return ErrorHelper.executeWithErrorHandling({
             operation: async () => {
-                const rawRecord = await this._strategy.onCreateTask(this._resolveCreate(parentId));
+                const rawRecord = await this._strategy.onCreateTask(this._resolveCreate(parentId, options));
                 if (rawRecord) this._createTasks([rawRecord], parentId);
                 this.taskEvents.dispatchEvent('onAfterTasksCreated', rawRecord ? [rawRecord] : null, parentId);
                 return rawRecord;

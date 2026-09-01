@@ -5,6 +5,13 @@ export const getHeaderStyles = () => {
         root: {
             display: 'flex',
         },
+        //everything left of the ribbon: the view switcher, and the gantt's zoom slider when that module
+        //is registered
+        headerLeftContainer: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5
+        },
         //the Edit Columns panel's layer, whichever variant is rendering it
         editColumnsLayerHost: {
             zIndex: 1

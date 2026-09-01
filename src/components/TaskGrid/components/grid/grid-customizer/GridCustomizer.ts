@@ -6,6 +6,7 @@ import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
 import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
 import { AddTaskButton } from "../cell-renderers/add-task-button";
+import { HookRegistry } from "@utils";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { PERCENT_COMPLETE_CONTROL_NAME, PercentComplete } from "../cell-renderers/percent-complete";
 import { INativeColumns, ITaskGridDatasetControl } from "@components/TaskGrid/interfaces";
@@ -28,6 +29,15 @@ export type RowClassRules = RowClassRulesBase<IRecord>;
 
 
 /**
+ * Applied to the column definitions once they are built and the strategy has had its say — so a hook sees
+ * the finished definitions and gets the last word on any of them.
+ *
+ * Mutates rather than returning: these are the definitions the grid is about to be given, and a hook that
+ * adds or removes one writes to the array itself.
+ */
+export type GridColumnDefinitionsHook = (columnDefs: ColDef[]) => void;
+
+/**
  * Strategy interface for deep customization of the AG Grid instance inside TaskGrid.
  *
  * Both hooks are optional, because one-time setup needs neither: the strategy takes the locator in its
@@ -43,6 +53,9 @@ export type RowClassRules = RowClassRulesBase<IRecord>;
  *     }
  * }
  * ```
+ *
+ * This is the *descriptor's* say over the grid. A module contributing to the same definitions registers a
+ * {@link GridColumnDefinitionsHook} instead, which runs after whatever the strategy returned.
  */
 export interface IGridCustomizerStrategy {
     /** Receives the computed column definitions and may return a modified array. */
@@ -69,6 +82,15 @@ export interface IGridCustomizer {
      * Prevents errors when registering decorators for columns that may not be present in all views.
      */
     registerExpressionDecorator(columnName: string, registrator: () => void): void;
+    /**
+     * Registers a hook over the column definitions. Runs on every definitions pass, after the strategy's
+     * `onGetColumnDefinitions` — the strategy is the descriptor's say, hooks are the modules'.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     * Defaults to `0`, and hooks sharing a priority run in the order they were registered. A negative
+     * priority orders a hook ahead of the default ones, never ahead of the strategy.
+     */
+    registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): void;
 }
 
 /** Constructor parameters for {@link GridCustomizer}. */
@@ -91,6 +113,7 @@ export class GridCustomizer implements IGridCustomizer {
     private _services: ITaskGridServiceLocator;
     private _gridDragHandler!: GridDragHandler;
     private _defaultCellComponents: Map<string, IDefaultCellComponents> = new Map();
+    private _columnDefinitionsHooks = new HookRegistry<GridColumnDefinitionsHook>();
     private _recordIdsPendingRowRefresh: Set<string> = new Set();
     private _isRowRefreshScheduled: boolean = false;
 
@@ -153,6 +176,10 @@ export class GridCustomizer implements IGridCustomizer {
     /** The customization the caller registered, if the module is there at all. */
     private get _strategy(): IGridCustomizerStrategy | undefined {
         return this._services.find('gridCustomizerModule')?.strategy;
+    }
+
+    public registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): void {
+        this._columnDefinitionsHooks.register(hook, priority);
     }
 
     public registerExpressionDecorator(columnName: string, registrator: () => void) {
@@ -273,6 +300,8 @@ export class GridCustomizer implements IGridCustomizer {
 
         columnDefs.sort((a, b) => this._getColumnPriority(a) - this._getColumnPriority(b));
         columnDefs = this._strategy?.onGetColumnDefinitions?.(columnDefs) ?? columnDefs;
+        //before the cell-component overrides below, which own the renderer and editor identities
+        this._columnDefinitionsHooks.apply(columnDefs);
         columnDefs.map(colDef => this._applyCellComponentOverrides(colDef));
         return columnDefs;
 

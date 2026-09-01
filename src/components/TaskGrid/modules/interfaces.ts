@@ -13,6 +13,11 @@ import type { IDependenciesCellRendererProps } from "@components/TaskGrid/module
 import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
 import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
 import type { ICellProps } from "@components/Grid/cells/cell/Cell";
+import type { ICommandBarItemProps } from "@legacy";
+import type { IGanttServiceLocator } from "@components/TaskGrid/modules/gantt/services";
+import type { IGanttMarkerProps, IGanttTaskTooltipProps } from "@components/TaskGrid/modules/gantt/gantt-timeline/context";
+import type { IGanttViewProps } from "@components/TaskGrid/modules/gantt/gantt-view/GanttView";
+import type { IProjectProvider } from "@components/TaskGrid/modules/project";
 
 /** Lifecycle events for the personal-views operations. */
 export interface IUserQueryDataProviderEvents {
@@ -206,6 +211,47 @@ export interface IChecklistModule {
 }
 
 /**
+ * Every component the Gantt module renders. Override any subset through
+ * {@link IGanttModuleOptions.components}.
+ */
+export interface IGanttComponents {
+    /** The whole view: the task grid beside the timeline. Replaces the plain grid. */
+    onRenderView: (props: IGanttViewProps) => JSX.Element;
+    /** The timeline's zoom control, rendered in the header left of the ribbon. */
+    onRenderZoomSlider: () => JSX.Element;
+    /** The Gantt's part of the gear callout, rendered after the grid's own toggles. */
+    onRenderSettingsSection: () => JSX.Element;
+    /** The callout shown while hovering a task bar. */
+    onRenderTaskTooltip: (props: IGanttTaskTooltipProps) => JSX.Element;
+    /** One timeline marker — today, a project boundary, a milestone, or one of your own. */
+    onRenderMarker: (props: IGanttMarkerProps) => JSX.Element;
+}
+
+/** What the Gantt module contributes. Built by {@link createGanttModule}. */
+export interface IGanttModule {
+    /**
+     * Everything the module holds, under its own names: its `provider`, `components`, `fieldMapping` and
+     * `labels`. Built over the grid's locator, so it answers for the grid's services too.
+     */
+    services: IGanttServiceLocator;
+    /**
+     * The timeline's own ribbon commands — *Zoom to fit* and *Go to today*. The header appends them to
+     * the grid's.
+     *
+     * Wired by `createGanttModule` rather than taken from it: the commands are what the module is for,
+     * not something to configure. The ribbon itself stays one component, replaceable through
+     * {@link ITaskGridComponents.onRenderCommandBar}.
+     */
+    onGetCommandBarItems: () => ICommandBarItemProps[];
+}
+
+/** What the project module contributes. Built by {@link createProjectModule}. */
+export interface IProjectModule {
+    /** The project the tasks belong to, and the dates it spans. */
+    provider: IProjectProvider;
+}
+
+/**
  * The modules a grid runs with, one optional key per available feature. A key is filled by calling that
  * module's `create*Module` builder; omit it and neither the feature nor its UI exists.
  */
@@ -224,4 +270,8 @@ export interface ITaskGridModules {
     dependencies?: IDependenciesModule;
     /** Task checklists: the items on each task, and whether they are done. */
     checklist?: IChecklistModule;
+    /** The Gantt: a timeline beside the grid, with its own zoom, weekends and per-view state. */
+    gantt?: IGanttModule;
+    /** The project the tasks belong to. Read by the Gantt's project markers. */
+    project?: IProjectModule;
 }

@@ -6,7 +6,7 @@ import { ITaskGridLabels } from "./labels";
 import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { TaskGridDatasetControl } from "./TaskGridDatasetControl";
-import { ITaskGridServiceLocator, ServiceLocator } from "./services";
+import { ITaskGridServiceLocator, ITaskGridServiceMap, ServiceLocator } from "./services";
 import { ITaskGridModules } from "./modules/interfaces";
 
 /**
@@ -34,10 +34,7 @@ export class TaskGridDatasetControlFactory {
     public static async createInstance(parameters: ITaskGridDatasetControlFactoryParameters): Promise<ITaskGridDatasetControl> {
         const descriptor = parameters.taskGridDescriptor;
 
-        //every service is registered where it becomes available, never earlier: registering is what
-        //releases anything waiting on it through whenAvailable, so a key that resolves is a key that has
-        //something behind it. These three are the caller's own - there is nothing to wait for
-        const services = new ServiceLocator();
+        const services = new ServiceLocator<ITaskGridServiceMap>();
         services.register('pcfContext', () => parameters.onGetPcfContext());
         services.register('localizationService', () => parameters.localizationService);
         services.register('descriptor', () => descriptor);
@@ -96,7 +93,7 @@ export class TaskGridDatasetControlFactory {
      * nothing, so its key stays absent and `find` reports the feature as off.
      */
     private static _registerModules(services: ITaskGridServiceLocator, modules: ITaskGridModules): void {
-        const { userQueries, templates, customColumns, gridCustomizer, lookupMany, dependencies, checklist } = modules;
+        const { userQueries, templates, customColumns, gridCustomizer, lookupMany, dependencies, checklist, gantt, project } = modules;
         userQueries && services.register('userQueriesModule', () => userQueries);
         templates && services.register('templatesModule', () => templates);
         customColumns && services.register('customColumnsModule', () => customColumns);
@@ -104,6 +101,9 @@ export class TaskGridDatasetControlFactory {
         lookupMany && services.register('lookupManyModule', () => lookupMany);
         dependencies && services.register('dependenciesModule', () => dependencies);
         checklist && services.register('checklistModule', () => checklist);
+        //before the gantt: its extension and its columns resolve the project side through the locator
+        project && services.register('projectModule', () => project);
+        gantt && services.register('ganttModule', () => gantt);
     }
 
     private static _getIsFlatlistEnabled(parameters: ITaskGridDatasetControlFactoryParameters, savedQueryDataProvider: ISavedQueryDataProvider): boolean {

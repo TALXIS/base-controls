@@ -8,6 +8,7 @@ import { DatasetControl as DatasetControlRenderer } from "../DatasetControl";
 import { useTheme } from "@fluentui/react";
 import { getDatasetControlStyles } from "./styles";
 import { Grid } from "./components/grid";
+import type { IDatasetControlProps } from "../DatasetControl/interfaces";
 import { IDeleteTasksResult, IOpenDatasetItemsResult, ITaskDataProvider, ITaskDataProviderEventListener } from "./providers/task";
 import { IDeletedUserQueriesResult } from "./providers/saved-query";
 import { ITemplateDataProviderEvents } from "./providers/template";
@@ -199,6 +200,15 @@ const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
     useEventEmitter<IDatasetControlEvents>(datasetControl, 'onRemountRequested', onRemountRequested);
     useTaskGridEvents(props, datasetControl, provider);
 
+    //the gantt module renders the grid itself, beside its timeline - so it replaces the control
+    //component rather than wrapping it
+    const gantt = datasetControl.getServices().find('ganttModule');
+    const renderControlComponent: IDatasetControlProps['onGetControlComponent'] = (controlProps) => {
+        return gantt
+            ? gantt.services.get('components').onRenderView(controlProps)
+            : <Grid {...controlProps} />;
+    };
+
     React.useEffect(() => {
         //no refresh here: the factory awaited the first load, so the records are already in
         props.onReady?.(datasetControl.getServices());
@@ -209,7 +219,7 @@ const InternalTaskGridDatasetControl = (props: IInternalTaskGridProps) => {
         <RootElementIdContext.Provider value={rootElementId}>
                     <DatasetControlRenderer
                         onGetDatasetControlInstance={() => datasetControl}
-                        onGetControlComponent={Grid}
+                        onGetControlComponent={renderControlComponent}
                         onOverrideComponentProps={(props) => {
                             return {
                                 ...props,

@@ -1,2 +1,3 @@
 export * from './interfaces';
-export * from './ServiceLocator';
+export { ServiceLocator } from '@utils';
+export type { IServiceLocator } from '@utils';

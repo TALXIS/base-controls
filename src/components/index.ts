@@ -17,6 +17,7 @@ export * from './Duration';
 export * from './GridInlineRibbon';
 export * from './CheckList';
 export * from './TaskGrid';
+export * from './zoom-slider';
 //not re-exported through './DatasetControl': `Skeleton` has meant the form's since before this one
 //existed, and two of that name cannot live in one flat barrel
 export { Skeleton as DatasetControlSkeleton } from './DatasetControl/skeleton';

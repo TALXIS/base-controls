@@ -4,6 +4,8 @@ export * from './styling';
 export * from './BaseControls';
 export * from './dataset';
 export * from './error-handling';
+export * from './hook-registry';
+export * from './service-locator';
 export * from './localization';
 export * from './adapters';
 export * from './stack-rank';

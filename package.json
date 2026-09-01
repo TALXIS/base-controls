@@ -95,6 +95,7 @@
     "debounce": "^2.2.0",
     "external-svg-loader": "^1.7.1",
     "fast-deep-equal": "^3.1.3",
+    "gantt-trial": "/Users/dominikbrych/Repos/NETWORG/gantt_trial",
     "hotkeys-js": "^3.13.15",
     "humanize-duration": "^3.32.0",
     "lexorank": "^1.0.5",
@@ -102,8 +103,10 @@
     "lodash": "^4.17.21",
     "merge-anything": "^5.1.7",
     "numeral": "^2.0.6",
+    "react-resizable-panels": "^3.0.6",
     "react-select": "^5.10.2",
     "react-window": "1.8.10",
+    "selecto": "^1.26.3",
     "use-debounce": "^10.0.1",
     "validator": "^13.11.9"
   },

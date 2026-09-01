@@ -159,7 +159,7 @@ export class MemoryTaskActions {
     }
 
     /**
-     * Builds one task, ranked first among its siblings.
+     * Builds one task, ranked where the create asked for — first among its siblings by default.
      *
      * Returning it is what creates it: the provider adds whatever this hands back to its dataset.
      */
@@ -167,9 +167,15 @@ export class MemoryTaskActions {
         return this._buildTask({
             ...params,
             parentTaskId: params.parentRecord?.getRecordId() ?? null,
-            //before every existing sibling, filtered out of the view or not
-            stackRank: StackRank.between(undefined, this._getStackRank(params.nextSibling, params.nativeColumns)),
+            //between the neighbours the caller named, and before every existing sibling when it named
+            //none - filtered out of the view or not
+            stackRank: StackRank.between(
+                this._getStackRank(params.previousSibling, params.nativeColumns),
+                this._getStackRank(params.nextSibling, params.nativeColumns)
+            ),
             parentReference: this._getParentReference(params.parentRecord),
+            //the values the caller asked for, over the consumer's defaults
+            overrides: params.data,
         });
     }
 

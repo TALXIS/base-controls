@@ -26,6 +26,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
     const rootElementId = useRootElementId();
     const services = useServices();
     const customColumns = services.find('customColumnsModule');
+    const gantt = services.find('ganttModule');
     //the module brings its own panel with the custom-column commands wired in; without it the plain
     //panel is what renders
     const renderEditColumns = customColumns
@@ -40,7 +41,10 @@ export const Header = (props: ITaskGridHeaderProps) => {
             datasetControl.isTaskDeletingEnabled() ||
             datasetControl.isEditColumnsVisible() ||
             datasetControl.isShowHierarchyToggleVisible() ||
-            datasetControl.isHideInactiveTasksToggleVisible();
+            datasetControl.isHideInactiveTasksToggleVisible() ||
+            //the gantt brings its own commands and controls, so the bar has content whatever the grid's
+            //own flags say
+            !!gantt;
     }
 
     const createTaskFromTemplate = (templateId: string) => {
@@ -101,7 +105,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
         const selectedIds = provider.getSelectedRecordIds();
         const isLoading = provider.isLoading();
 
-        return [
+        const allItems: ICommandBarItemProps[] = [
             ...((getNewSubMenuItems(isTaskAddingEnabled, selectedIds, isLoading).length > 0) ? [{
                 key: 'new',
                 text: localizationService.getLocalizedString('new'),
@@ -142,7 +146,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
                 onClick: () => setEditColumnsOpen(true)
             } as ICommandBarItemProps,
             ] : []),
-            ...(isShowHierarchyToggleVisible || isHideInactiveTasksToggleVisible ? [{
+            ...(isShowHierarchyToggleVisible || isHideInactiveTasksToggleVisible || gantt ? [{
                 key: 'settings',
                 id: 'taskGridSettingsButton',
                 disabled: isLoading,
@@ -154,6 +158,7 @@ export const Header = (props: ITaskGridHeaderProps) => {
                 iconProps: { iconName: 'Settings' },
             }] : [])
         ];
+        return [...allItems, ...gantt?.onGetCommandBarItems() ?? []];
     }
 
     if (!hasContent()) return <></>
@@ -162,9 +167,12 @@ export const Header = (props: ITaskGridHeaderProps) => {
         ...props.headerProps,
         onRenderRibbonQuickFindWrapper: (props, defaultRender) => {
             return <div className={styles.root}>
-                {datasetControl.isViewSwitcherEnabled() &&
-                    <ViewSwitcher />
-                }
+                <div className={styles.headerLeftContainer}>
+                    {datasetControl.isViewSwitcherEnabled() &&
+                        <ViewSwitcher />
+                    }
+                    {gantt?.services.get('components').onRenderZoomSlider()}
+                </div>
                 {defaultRender({
                     ...props,
                     ribbonQuickFindContainerProps: {

@@ -2,7 +2,7 @@ import { FetchXmlBuilder, ISingleRecord, RecordBuilder } from "@talxis/client-li
 import { ISavedQuery, ISavedQueryStrategy, ITaskDataProviderStrategy, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import { IFieldMapping, ILookupManyDataProviderParameters, ITaskGridDescriptor, ITaskGridParameters, ITaskGridFactoryParams } from "@components/TaskGrid/interfaces";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
-import { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
+import { IChecklistModule, IGanttModule, IProjectModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITaskGridModules, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import { DataverseTaskStrategy } from "@components/TaskGrid/strategies/dataverse/DataverseTaskStrategy";
 import { EntityDefinition } from "@talxis/client-metadata";
 
@@ -160,6 +160,24 @@ export interface IDataverseModules {
      * Registering it is what creates the grid's checklist column.
      */
     onGetChecklistModule?: (params: ITaskGridFactoryParams) => IChecklistModule | undefined;
+    /**
+     * The Gantt: a timeline beside the grid.
+     *
+     * ```ts
+     * onGetGanttModule: ({ services }) => createGanttModule({
+     *     fieldMapping: { startDate: 'scheduledstart', endDate: 'scheduledend' },
+     *     services,
+     * })
+     * ```
+     *
+     * Registering it is what replaces the plain grid with the split view.
+     */
+    onGetGanttModule?: (params: ITaskGridFactoryParams) => IGanttModule | undefined;
+    /**
+     * The project the tasks belong to. Only the Gantt reads it today — registering it is what draws its
+     * project start and end markers.
+     */
+    onGetProjectModule?: (params: ITaskGridFactoryParams) => IProjectModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -308,6 +326,8 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             lookupMany: modules?.onGetLookupManyModule?.(params),
             dependencies: modules?.onGetDependenciesModule?.(params),
             checklist: modules?.onGetChecklistModule?.(params),
+            gantt: modules?.onGetGanttModule?.(params),
+            project: modules?.onGetProjectModule?.(params),
         };
     }
 

@@ -107,7 +107,7 @@ export class UserQueryDataProvider implements IUserQueryDataProvider {
     }
 
     private _getMetadataForSavedQuery(provider: ITaskDataProvider): ISavedQueryMetadata {
-        return {
+        const metadata: ISavedQueryMetadata = {
             sorting: provider.getSorting(),
             filtering: provider.getFiltering() ?? undefined,
             linking: provider.getLinking(),
@@ -129,7 +129,11 @@ export class UserQueryDataProvider implements IUserQueryDataProvider {
                     return newCol;
                 })
             ]
-        }
+        };
+        //the modules' own slices, each written under its own key - a saved view reopens with whatever they
+        //had when it was saved
+        this._services.get('savedQueryDataProvider').applyStateHooks(metadata);
+        return metadata;
     }
 
     private _addPropToMetadataQueryCol(col: IFetchXmlDataProviderColumn, propName: keyof IColumn, propValue: any) {

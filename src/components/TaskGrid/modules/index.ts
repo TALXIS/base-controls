@@ -6,3 +6,5 @@ export * from './grid-customizer';
 export * from './lookup-many';
 export * from './checklist';
 export * from './dependencies';
+export * from './gantt';
+export * from './project';

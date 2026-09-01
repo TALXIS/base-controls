@@ -1,7 +1,7 @@
 import { DataTypes, IColumn } from "@talxis/client-libraries";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
-import { ILocalizationService } from "@utils";
+import { HookRegistry, ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "@components/TaskGrid/labels";
 import { IUserQueryDataProvider } from "@components/TaskGrid/modules/interfaces";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
@@ -19,6 +19,11 @@ export interface ISavedQuery extends ISavedQueryMetadata {
     description?: string;
 }
 
+/** What each registered module stores per view, under its own key. Opaque to the grid. */
+export interface ISavedQueryModuleState {
+    [moduleKey: string]: unknown;
+}
+
 /** What a view applies to the grid. */
 export interface ISavedQueryMetadata {
     /** The columns to show, in order. Also the grid's column catalogue when the view is a system one. */
@@ -28,6 +33,8 @@ export interface ISavedQueryMetadata {
     linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[];
     /** Opens the view as a flat list instead of a tree. */
     isFlatListEnabled?: boolean;
+    /** What the modules store per view. Written by their state hooks; the grid only carries it. */
+    moduleState?: ISavedQueryModuleState;
     searchQuery?: string | undefined;
     /** The columns quick find searches. */
     quickFindColumns?: string[];
@@ -68,6 +75,15 @@ export interface ISavedQueryStrategy {
  * them are its own.
  */
 export type SavedQueryHook = (query: ISavedQuery) => void;
+
+/**
+ * Asked for a module's own state whenever a view's state is captured — a remount, or a save into a
+ * personal view.
+ *
+ * Mutates rather than returning, like {@link SavedQueryHook}: write the slice with {@link setModuleState},
+ * under a key of the module's own.
+ */
+export type SavedQueryStateHook = (metadata: Partial<ISavedQueryMetadata>) => void;
 
 /**
  * One column, as a definition and a query's own declaration of it combine: the definition fills whatever the
@@ -115,6 +131,17 @@ export const applyColumn = (query: ISavedQuery, definition: IColumn): void => {
     Object.assign(declared, copyColumn(mergeColumn(definition, declared)));
 };
 
+/** One module's slice of a view, or `undefined` when it never wrote one. */
+export const getModuleState = <TState>(metadata: Pick<ISavedQueryMetadata, 'moduleState'> | undefined, moduleKey: string): TState | undefined => {
+    return metadata?.moduleState?.[moduleKey] as TState | undefined;
+};
+
+/** Writes one module's slice onto the metadata, creating the bag on first write. */
+export const setModuleState = <TState>(metadata: Partial<ISavedQueryMetadata>, moduleKey: string, state: TState): void => {
+    metadata.moduleState ??= {};
+    metadata.moduleState[moduleKey] = state;
+};
+
 /** Serves the system views, tracks which view is active, and normalises every view's columns. */
 export interface ISavedQueryDataProvider {
     /** Returns the full list of non-deletable system views. */
@@ -128,8 +155,25 @@ export interface ISavedQueryDataProvider {
     getCurrentQuery: () => ISavedQuery;
     /** Looks up a query by id across system and user queries. Throws if not found. */
     getSavedQuery(id: string): ISavedQuery;
-    /** Registers a hook. Only hooks registered before a `refresh` reach the queries it produces. */
-    registerHook: (hook: SavedQueryHook) => void;
+    /**
+     * Registers a hook over the queries. Only hooks registered before a `refresh` reach the queries it
+     * produces.
+     *
+     * @param priority Ascending — a lower number runs earlier, so a higher one gets the later word.
+     * Defaults to `0`; hooks sharing a priority run in the order they were registered.
+     */
+    registerHook: (hook: SavedQueryHook, priority?: number) => void;
+    /**
+     * Registers a state hook. Runs on every capture from then on.
+     *
+     * @param priority As for {@link ISavedQueryDataProvider.registerHook}.
+     */
+    registerStateHook: (hook: SavedQueryStateHook, priority?: number) => void;
+    /**
+     * Runs every registered state hook over the metadata. Called by the grid wherever it captures a
+     * view's state — a consumer has no reason to call it.
+     */
+    applyStateHooks: (metadata: Partial<ISavedQueryMetadata>) => void;
     /** Fetches system and user queries and sets the initial active query. */
     refresh: () => Promise<void>;
     /** Releases the resources held by the provider. */
@@ -155,7 +199,8 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _currentQuery?: ISavedQuery;
     private _systemQueriesColumnsMap: Map<string, IColumn> = new Map();
     private _preferredQuery?: Partial<ISavedQuery> & { id: string };
-    private _hooks: SavedQueryHook[] = [];
+    private _hooks = new HookRegistry<SavedQueryHook>();
+    private _stateHooks = new HookRegistry<SavedQueryStateHook>();
 
     constructor(parameters: ISavedQueryDataProviderParameters) {
         this._strategy = parameters.strategy;
@@ -207,8 +252,16 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         return query;
     }
 
-    public registerHook(hook: SavedQueryHook): void {
-        this._hooks.push(hook);
+    public registerHook(hook: SavedQueryHook, priority?: number): void {
+        this._hooks.register(hook, priority);
+    }
+
+    public registerStateHook(hook: SavedQueryStateHook, priority?: number): void {
+        this._stateHooks.register(hook, priority);
+    }
+
+    public applyStateHooks(metadata: Partial<ISavedQueryMetadata>): void {
+        this._stateHooks.apply(metadata);
     }
 
     public async destroy() {
@@ -254,7 +307,7 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
      */
     private _applyHooks(userQueries: ISavedQuery[]): void {
         for (const query of [...this._systemQueries, ...userQueries, this.getCurrentQuery()]) {
-            this._hooks.forEach(hook => hook(query));
+            this._hooks.apply(query);
         }
     }
 

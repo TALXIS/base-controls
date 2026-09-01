@@ -1,11 +1,11 @@
 //types only: the map names every dependency by its contract, so registering a service can never pull an
 //implementation into the bundle
-import type { ILocalizationService } from "@utils";
+import type { ILocalizationService, IServiceLocator } from "@utils";
 import type { ITaskGridLabels } from "@components/TaskGrid/labels";
 import type { INativeColumns, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
 import type { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import type { ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
-import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGridCustomizerModule, ILookupManyModule, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
+import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGanttModule, IGridCustomizerModule, ILookupManyModule, IProjectModule, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import type { GridApi, IGridCustomizer } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
 import type { ITaskGridComponents } from "@components/TaskGrid/components/components";
 
@@ -60,30 +60,12 @@ export interface ITaskGridServiceMap {
     dependenciesModule: IDependenciesModule;
     /** The checklist module, cell renderer included. Present when it is registered. */
     checklistModule: IChecklistModule;
+    /** The Gantt module, timeline included. Present when it is registered. */
+    ganttModule: IGanttModule;
+    /** The project module. Present when it is registered. */
+    projectModule: IProjectModule;
 }
 
-/**
- * Where every strategy, provider and module reaches whatever it needs.
- *
- * Resolution is lazy — a resolver runs on each `get` — so a service can be registered before the thing
- * it returns exists. The rule that makes that safe: resolve in methods, never in a constructor.
- */
-export interface ITaskGridServiceLocator {
-    /**
-     * The service, for what your code cannot work without.
-     * @throws When nothing registered it.
-     */
-    get<TKey extends keyof ITaskGridServiceMap>(key: TKey): ITaskGridServiceMap[TKey];
-    /** The service, or `undefined` when nothing registered it — for a feature that may simply be off. */
-    find<TKey extends keyof ITaskGridServiceMap>(key: TKey): ITaskGridServiceMap[TKey] | undefined;
-    /** Registers how a service is reached. Registering the same key again replaces it. */
-    register<TKey extends keyof ITaskGridServiceMap>(key: TKey, resolve: () => ITaskGridServiceMap[TKey]): void;
-    /**
-     * Runs the callback with the service as soon as there is one — immediately when it already resolves,
-     * otherwise the moment something registers it. For wiring that belongs in a constructor but needs a
-     * service the grid has not built yet.
-     *
-     * Runs at most once per callback. A service that is never registered simply never calls back.
-     */
-    whenAvailable<TKey extends keyof ITaskGridServiceMap>(key: TKey, callback: (service: ITaskGridServiceMap[TKey]) => void): void;
+/** Where every strategy, provider and module reaches whatever the grid built. */
+export interface ITaskGridServiceLocator extends IServiceLocator<ITaskGridServiceMap> {
 }

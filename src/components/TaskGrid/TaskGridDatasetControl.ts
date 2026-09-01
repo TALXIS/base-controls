@@ -293,6 +293,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._services.find('userQueriesModule')?.provider.destroy();
         this._services.find('customColumnsModule')?.provider.destroy();
         this._services.find('templatesModule')?.provider.destroy();
+        //last: everything above still reaches its provider through the locator
+        this._services.destroy();
     }
     public requestRemount(): void {
         this.dispatchEvent('onRemountRequested');
@@ -326,6 +328,10 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
                 linking: this._dataProvider.getLinking(),
                 isFlatListEnabled: this._dataProvider.isFlatListEnabled(),
             }
+            //asked for last: a module's state is its own, and this is the rebuilt view it belongs to. Not
+            //done in the branch above, where the state is reset to the view being switched to - that view
+            //brings its own, and the outgoing one's must not follow the user into it
+            this._savedQueryDataProvider.applyStateHooks(this._state.savedQuery);
         }
     }
 

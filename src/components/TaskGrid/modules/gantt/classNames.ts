@@ -1,0 +1,17 @@
+export const GANTT_DRAGGING_DISABLED_CLASS = 'gantt_dragging_disabled';
+export const GANTT_SELECTION_CURSOR_CLASS = 'gantt_selection_cursor';
+export const GANTT_SELECTED_ROW_CLASS = 'gantt_selected';
+export const GANTT_ROW_INACTIVE_CLASS = 'gantt_row_inactive';
+export const GANTT_TASK_SELECTED_CLASS = 'gantt_task_selected';
+export const GANTT_TASK_SUMMARY_CLASS = 'gantt_task_summary';
+export const GANTT_TASK_LINE_CLASS = 'gantt_task_line';
+export const GANTT_TASK_SIDE_CONTENT_CLASS = 'gantt_side_content';
+export const GANTT_TIMELINE_TASK_CREATE_CURSOR_CLASS = 'gantt_timeline_task_create_cursor';
+export const GANTT_DATA_AREA_CLASS = 'gantt_data_area';
+export const GANTT_TASK_CONTAINER_CLASS = 'gantt_task';
+export const GANTT_TASK_ROW_CLASS = 'gantt_task_row';
+export const GANTT_TASK_BG_CLASS = 'gantt_task_bg';
+export const GANTT_TASK_CELL_CLASS = 'gantt_task_cell';
+export const GANTT_TASK_CONTENT_CLASS = 'gantt_task_content';
+export const WEEKEND_CLASS = 'weekend';
+export const GANTT_TASK_ID_ATTRIBUTE = 'data-task-id';
