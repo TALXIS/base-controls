@@ -1,12 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import {
-    CUSTOM_MARKER_CLASS,
-    MILESTONE_MARKER_CLASS,
-    PROJECT_END_MARKER_CLASS,
-    PROJECT_START_MARKER_CLASS,
-    TODAY_MARKER_CLASS,
-} from '../gantt-markers';
-import {
     GANTT_DATA_AREA_CLASS,
     GANTT_ROW_INACTIVE_CLASS,
     GANTT_SELECTION_CURSOR_CLASS,
@@ -210,7 +203,7 @@ export const getGanttStyles = (theme: ITheme) => {
             [`.gantt_scale_cell.${WEEKEND_CLASS}, .${GANTT_TASK_CELL_CLASS}.${WEEKEND_CLASS}`]: {
                 backgroundColor: theme.semanticColors.disabledBackground
             },
-            // ── Marker vertical lines ─────────────────────────────────────
+            //a marker's colour comes with the marker, as a class of its own
             '.gantt_marker': {
                 width: 2,
                 marginLeft: -1,
@@ -218,19 +211,7 @@ export const getGanttStyles = (theme: ITheme) => {
                 pointerEvents: 'none',
                 zIndex: 1
             },
-            [`.gantt_marker.${TODAY_MARKER_CLASS}`]: {
-                backgroundColor: 'var(--today-marker-color)',
-            },
-            [`.gantt_marker.${PROJECT_START_MARKER_CLASS}, .gantt_marker.${PROJECT_END_MARKER_CLASS}`]: {
-                backgroundColor: 'var(--project_start-marker-color)',
-            },
-            [`.gantt_marker.${MILESTONE_MARKER_CLASS}`]: {
-                backgroundColor: 'var(--milestone-marker-color)',
-            },
-            [`.gantt_marker.${CUSTOM_MARKER_CLASS}`]: {
-                backgroundColor: 'var(--custom-marker-color)',
-            },
-            // Hide the library-rendered chip — labels are injected into the scale header instead
+            //the library renders its own chip on the line; the labels are drawn on the scale instead
             '.gantt_marker .gantt_marker_content': {
                 display: 'none',
             },

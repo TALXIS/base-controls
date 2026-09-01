@@ -5,7 +5,6 @@ import { getGanttStyles } from './styles';
 import { DatePreviewCallout, TimelineTaskCreateLine, TimelineTaskCreateRowOverlay } from './components';
 import { useTimelineTaskCreate } from './hooks/useTimelineTaskCreate';
 import { useTooltip } from './hooks/useTooltip';
-import { useMarkers } from './hooks/useMarkers';
 import { useSelectionBox } from './hooks/useSelectionBox';
 import { useGanttComponents, useGanttServices } from '../context';
 
@@ -25,7 +24,6 @@ export const GanttTimeline = () => {
     const { tooltip } = useTooltip();
     const { hoverPreview, linePreview, rowOverlay } = useTimelineTaskCreate();
     useSelectionBox();
-    useMarkers();
 
     useEffect(() => {
         if (!ref.current) {
@@ -38,6 +36,7 @@ export const GanttTimeline = () => {
         <>
             <div className={styles.container}>
                 <div ref={ref} className={styles.root} />
+                {services.find('markersModule')?.components.onRenderMarkerLayer()}
                 {rowOverlay && <TimelineTaskCreateRowOverlay {...rowOverlay} />}
                 {linePreview && <TimelineTaskCreateLine {...linePreview} />}
             </div>

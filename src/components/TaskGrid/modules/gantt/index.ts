@@ -19,6 +19,6 @@ export * from './gantt-data';
 export * from './gantt-dates';
 export * from './gantt-dragging';
 export * from './gantt-infinite-timeline';
-export * from './gantt-markers';
+export * from './modules';
 export * from './gantt-selection';
 export * from './gantt-zooming';

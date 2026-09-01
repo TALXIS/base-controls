@@ -3,11 +3,17 @@ import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 import { IGanttComponents, IGanttModule } from "../interfaces";
 import { GanttManager } from "./gantt-manager";
 import { GanttViewState } from "./gantt-view-state";
-import { IGanttFieldMapping, IGanttServiceMap } from "./services";
+import { IGanttFieldMapping, IGanttServiceLocator, IGanttServiceMap } from "./services";
 import { getGanttCommandBarItems } from "./getGanttCommandBarItems";
-import { ICustomMarker } from "./gantt-markers";
 import { GANTT_LABELS, IGanttLabels } from "./labels";
 import { GanttComponents } from "./moduleComponents";
+import { IGanttMarkersModule } from "./modules/markers";
+
+/** The Gantt's own modules, one optional key per feature. Filled by that module's builder. */
+export interface IGanttModules {
+    /** The timeline's markers: today, the project's boundaries, and whatever a strategy returns. */
+    markers?: IGanttMarkersModule;
+}
 
 /** Options for {@link createGanttModule}. */
 export interface IGanttModuleOptions {
@@ -19,8 +25,13 @@ export interface IGanttModuleOptions {
     components?: Partial<IGanttComponents>;
     /** Overrides for any subset of the Gantt's own strings. See {@link IGanttLabels}. */
     labels?: Partial<IGanttLabels>;
-    /** Extra markers to draw on the timeline — a milestone, a release date, a deadline. */
-    onGetCustomMarkers?: () => ICustomMarker[];
+    /**
+     * The Gantt's own modules, each from its `createGantt*Module` builder. Omit a key and neither that
+     * feature nor its UI exists.
+     *
+     * Called with the Gantt's locator rather than the grid's: a module of the Gantt's extends the Gantt.
+     */
+    onGetModules?: (params: { services: IGanttServiceLocator }) => IGanttModules;
 }
 
 /**
@@ -57,12 +68,22 @@ export const createGanttModule = (options: IGanttModuleOptions): IGanttModule =>
     //header reads the view state on its first render, long before there is a chart
     const viewState = new GanttViewState({ services });
     services.register('ganttViewState', () => viewState);
+
+    //also before the manager: which modules are registered decides which chart plugins it enables
+    registerGanttModules(services, options.onGetModules?.({ services }) ?? {});
     //nothing reaches the manager, so it is not a service: constructing it is the point. Its constructor
     //puts this module's columns on the views and starts waiting for a grid and a container
-    new GanttManager({ services, onGetCustomMarkers: options.onGetCustomMarkers });
+    new GanttManager({ services });
 
     return {
         services: services,
         onGetCommandBarItems: () => getGanttCommandBarItems({ services }),
     };
+};
+
+//registers each resolved module under its own key. A module the caller left out registers nothing, so its
+//key stays absent and `find` reports the feature as off
+const registerGanttModules = (services: IGanttServiceLocator, modules: IGanttModules): void => {
+    const { markers } = modules;
+    markers && services.register('markersModule', () => markers);
 };

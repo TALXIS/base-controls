@@ -3,15 +3,14 @@ import { useTheme } from '@fluentui/react';
 import { getMarkerStyles } from './styles';
 import { Formatting } from '@talxis/client-libraries';
 import { IMarkerComponents, MarkerComponents } from './components';
-import { IGanttMarker } from '../../../gantt-markers';
+import { IGanttMarker } from '../../GanttMarkersProvider';
 
 export interface IMarkerProps extends IGanttMarker {
-    innerProps?: React.HtmlHTMLAttributes<HTMLDivElement>;
     components?: Partial<IMarkerComponents>;
 }
 
 export const Marker = (props: IMarkerProps) => {
-    const { text, start_date, type, innerProps } = props;
+    const { text, start_date } = props;
     const theme = useTheme();
     const color = props.color ?? theme.palette.themePrimary;
     const styles = useMemo(() => getMarkerStyles(theme, color), [theme, color]);
@@ -21,7 +20,6 @@ export const Marker = (props: IMarkerProps) => {
     const tooltipContent = formatting.formatDateShort(start_date) ?? '';
 
     return components.onRenderContainer({
-        ...innerProps,
         children: components.onRenderTooltipHost({
             id: id,
             content: tooltipContent,

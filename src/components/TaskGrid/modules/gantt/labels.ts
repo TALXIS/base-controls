@@ -11,12 +11,6 @@ export interface IGanttLabels {
     goToToday: string;
     /** The ribbon command fitting every task into the visible timeline. */
     zoomToFit: string;
-    /** The today marker's label. */
-    today: string;
-    /** The project start marker's label. */
-    projectStart: string;
-    /** The project end marker's label. */
-    projectEnd: string;
 }
 
 /** The defaults for {@link IGanttLabels}. */
@@ -25,7 +19,4 @@ export const GANTT_LABELS: IGanttLabels = {
     zoomSlider: 'Zoom slider',
     goToToday: 'Go to today',
     zoomToFit: 'Zoom to fit',
-    today: 'Today',
-    projectStart: 'Project Start',
-    projectEnd: 'Project End',
 };

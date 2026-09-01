@@ -29,3 +29,20 @@ export const Timeline: Story = {
     name: 'Timeline beside the grid',
     render: () => <GanttTaskGrid />,
 }
+
+/**
+ * The same thing over 10 000 generated tasks, off the fixed seed the large-dataset story uses — so a
+ * measurement here is comparable with the grid on its own.
+ *
+ * What this story is for: how long the chart takes to parse the tasks the grid loaded, and whether
+ * expanding, scrolling and *Zoom to fit* still behave when the timeline holds all of them.
+ */
+export const TenThousandTasks: Story = {
+    name: '10 000 tasks',
+    //the whole viewport, no padding: as many rows on screen as the grid will render
+    render: () => (
+        <div style={{ height: '100vh' }}>
+            <GanttTaskGrid count={10_000} seed={42} height="100%" />
+        </div>
+    ),
+}

@@ -10,7 +10,7 @@ import type { IGanttData } from "../gantt-data";
 import type { IGanttDates } from "../gantt-dates";
 import type { IGanttDragging } from "../gantt-dragging";
 import type { IGanttInfiniteTimeline } from "../gantt-infinite-timeline";
-import type { IGanttMarkers } from "../gantt-markers";
+import type { IGanttMarkersProvider, IGanttMarkersModule } from "../modules/markers";
 import type { IGanttSelection } from "../gantt-selection";
 import type { IGanttZooming } from "../gantt-zooming";
 import type { IGanttLabels } from "../labels";
@@ -69,8 +69,13 @@ export interface IGanttServiceMap {
     ganttData: IGanttData;
     /** Dragging and resizing a task bar. */
     ganttDragging: IGanttDragging;
-    /** The markers drawn over the timeline: today, the project's ends, custom ones. */
-    ganttMarkers: IGanttMarkers;
+    /**
+     * The Gantt's markers module, UI included. Present when it is registered — and its absence is what
+     * makes a timeline draw no markers.
+     */
+    markersModule: IGanttMarkersModule;
+    /** The markers drawn over the timeline. Registered by the markers module once the chart exists. */
+    ganttMarkers: IGanttMarkersProvider;
     /** Selecting tasks on the chart, and mirroring the grid's selection. */
     ganttSelection: IGanttSelection;
     /** The zoom levels, and the slider's 0-100 mapping onto them. */

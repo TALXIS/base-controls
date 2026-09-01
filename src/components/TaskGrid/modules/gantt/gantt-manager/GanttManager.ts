@@ -7,7 +7,6 @@ import { GanttDates } from '../gantt-dates';
 import { GanttDragging } from '../gantt-dragging';
 import { GanttExpansion, IGanttExpansion } from '../gantt-expansion';
 import { GanttInfiniteTimeline } from '../gantt-infinite-timeline';
-import { GanttMarkers, ICustomMarker } from '../gantt-markers';
 import { GanttScrollSync } from '../gantt-scroll-sync';
 import { GanttSelection, IGanttSelection } from '../gantt-selection';
 import { GanttZooming } from '../gantt-zooming';
@@ -15,14 +14,11 @@ import { GanttZooming } from '../gantt-zooming';
 export interface IGanttManagerParameters {
     /** Where the module's own services and the grid's are reached. */
     services: IGanttServiceLocator;
-    /** Extra markers to draw on the timeline. */
-    onGetCustomMarkers?: () => ICustomMarker[];
 }
 
 /** Builds the chart when the timeline hands over a container, and tears it down with the control. */
 export class GanttManager {
     private _services: IGanttServiceLocator;
-    private _onGetCustomMarkers: () => ICustomMarker[];
     private _gantt?: GanttStatic;
     private _selection?: IGanttSelection;
     private _expansion?: IGanttExpansion;
@@ -30,7 +26,6 @@ export class GanttManager {
 
     constructor(parameters: IGanttManagerParameters) {
         this._services = parameters.services;
-        this._onGetCustomMarkers = parameters.onGetCustomMarkers ?? (() => []);
         registerGanttColumns(this._services);
         registerGanttColumnDefinitions(this._services);
         //the chart cannot exist before there is something to draw it into, and that is the timeline
@@ -45,7 +40,8 @@ export class GanttManager {
     private _start(container: HTMLDivElement): void {
         const gantt = Gantt.getGanttInstance();
         this._gantt = gantt;
-        gantt.plugins({ drag_timeline: true, marker: true });
+        //the marker extension is only worth switching on for a Gantt whose markers module is registered
+        gantt.plugins({ drag_timeline: true, marker: !!this._services.find('markersModule') });
         configureChart(gantt, this._services);
         this._services.register('ganttChart', () => gantt);
 
@@ -54,7 +50,6 @@ export class GanttManager {
         const dragging = new GanttDragging({ services: this._services });
         const data = new GanttData({ services: this._services });
         const zooming = new GanttZooming({ services: this._services });
-        const markers = new GanttMarkers({ services: this._services, onGetCustomMarkers: this._onGetCustomMarkers });
         const selection = new GanttSelection({ services: this._services });
         const expansion = new GanttExpansion({ services: this._services });
         this._selection = selection;
@@ -69,12 +64,14 @@ export class GanttManager {
         this._services.register('ganttDragging', () => dragging);
         this._services.register('ganttData', () => data);
         this._services.register('ganttZooming', () => zooming);
-        this._services.register('ganttMarkers', () => markers);
         this._services.register('ganttSelection', () => selection);
         this._services.register('ganttExpansion', () => expansion);
 
         //the grid loads its records before anything renders, so they are already there to parse
         data.load();
+        //the markers module registered its provider when the chart appeared; its markers load here rather
+        //than from inside it, the way the grid drives its own providers' first load
+        void this._services.find('ganttMarkers')?.refresh();
     }
 
     //releases the chart when the control it belongs to goes away. Waited for rather than resolved: the module is built

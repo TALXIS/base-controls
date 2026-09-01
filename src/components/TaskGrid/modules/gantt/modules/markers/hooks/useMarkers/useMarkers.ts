@@ -1,37 +1,12 @@
 import { useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
-import { getMarkerStyles } from './styles';
-import {
-    CUSTOM_MARKER_CLASS,
-    IGanttMarkers,
-    IGanttMarkersEvents,
-    LABEL_OVERLAY_ATTR,
-    MILESTONE_MARKER_CLASS,
-    PROJECT_END_MARKER_CLASS,
-    PROJECT_START_MARKER_CLASS,
-    SCALE_LABEL_ATTR,
-    TODAY_MARKER_CLASS,
-} from '../../../gantt-markers';
-import { MarkerType } from '../../../gantt-markers';
+import { getMarkerLayerStyles } from './styles';
+import { LABEL_OVERLAY_ATTR, SCALE_LABEL_ATTR } from '../../classNames';
+import { IGanttMarkersProviderEvents } from '../../GanttMarkersProvider';
 import { useEventEmitter } from '@hooks';
-import { useGanttComponents, useGanttService } from '../../../context';
+import { useGanttService } from '../../../../context';
+import { useGanttMarkersComponents } from '../../context';
 
-
-const getMarkerType = (css: string): MarkerType => {
-    switch (css) {
-        case MILESTONE_MARKER_CLASS:
-            return 'milestone';
-        case PROJECT_START_MARKER_CLASS:
-            return 'project_start';
-        case PROJECT_END_MARKER_CLASS:
-            return 'project_end';
-        case TODAY_MARKER_CLASS:
-            return 'today';
-        case CUSTOM_MARKER_CLASS:
-        default:
-            return 'custom';
-    }
-};
 
 /**
  * Draws each marker's label as a React chip on the timeline's scale.
@@ -40,12 +15,12 @@ const getMarkerType = (css: string): MarkerType => {
  * on a zoom re-render. Waits for the marker part, which the manager registers once the chart is live.
  */
 export const useMarkers = () => {
-    const components = useGanttComponents();
+    const components = useGanttMarkersComponents();
     const gantt = useGanttService('ganttChart');
     const markers = useGanttService('ganttMarkers');
-    const styles = useMemo(() => getMarkerStyles(), []);
+    const styles = useMemo(() => getMarkerLayerStyles(), []);
 
-    useEventEmitter<IGanttMarkersEvents>(markers?.events, 'onMarkersUpdated', () => renderScaleLabels());
+    useEventEmitter<IGanttMarkersProviderEvents>(markers?.events, 'onMarkersUpdated', () => renderScaleLabels());
 
     const renderScaleLabels = () => {
         const taskEl = gantt?.$task;
@@ -70,16 +45,12 @@ export const useMarkers = () => {
             const left = gantt.posFromDate(marker.start_date);
             if (!left && left !== 0) continue;
 
+            //the slot is the layer's to place; what a marker draws inside it is the marker's
             const chip = document.createElement('div');
-            ReactDOM.render(components.onRenderMarker({
-                ...marker,
-                type: getMarkerType(marker.css ?? ''),
-                innerProps: {
-                    className: styles.chip,
-                    style: { left: `${left - 1}px` }
-                },
-            }), chip);
+            chip.className = styles.chip;
+            chip.style.left = `${left - 1}px`;
             chip.setAttribute(SCALE_LABEL_ATTR, String(marker.id));
+            ReactDOM.render(components.onRenderMarker({ ...marker }), chip);
             overlay.appendChild(chip);
         }
     };

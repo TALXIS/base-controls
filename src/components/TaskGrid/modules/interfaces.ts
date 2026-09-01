@@ -15,7 +15,7 @@ import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/gr
 import type { ICellProps } from "@components/Grid/cells/cell/Cell";
 import type { ICommandBarItemProps } from "@legacy";
 import type { IGanttServiceLocator } from "@components/TaskGrid/modules/gantt/services";
-import type { IGanttMarkerProps, IGanttTaskTooltipProps } from "@components/TaskGrid/modules/gantt/gantt-timeline/context";
+import type { IGanttTaskTooltipProps } from "@components/TaskGrid/modules/gantt/gantt-timeline/context";
 import type { IGanttViewProps } from "@components/TaskGrid/modules/gantt/gantt-view/GanttView";
 import type { IProjectProvider, ProjectData } from "@components/TaskGrid/modules/project";
 
@@ -223,8 +223,6 @@ export interface IGanttComponents {
     onRenderSettingsSection: () => JSX.Element;
     /** The callout shown while hovering a task bar. */
     onRenderTaskTooltip: (props: IGanttTaskTooltipProps) => JSX.Element;
-    /** One timeline marker — today, a project boundary, a milestone, or one of your own. */
-    onRenderMarker: (props: IGanttMarkerProps) => JSX.Element;
 }
 
 /** What the Gantt module contributes. Built by {@link createGanttModule}. */

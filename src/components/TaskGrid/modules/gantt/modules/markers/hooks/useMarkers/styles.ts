@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react";
 
-export const getMarkerStyles = () => {
+export const getMarkerLayerStyles = () => {
     return mergeStyleSets({
         overlay: {
             position: 'absolute',
