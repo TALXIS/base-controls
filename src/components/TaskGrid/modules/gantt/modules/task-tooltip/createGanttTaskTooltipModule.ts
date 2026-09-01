@@ -1,5 +1,5 @@
 import { ICalloutProps } from "@fluentui/react";
-import { ITaskTooltipProps } from "../../gantt-timeline/components";
+import { ITaskTooltipProps } from "./components";
 import { IGanttServiceLocator } from "../../services";
 import { GanttTaskTooltipComponents } from "./moduleComponents";
 

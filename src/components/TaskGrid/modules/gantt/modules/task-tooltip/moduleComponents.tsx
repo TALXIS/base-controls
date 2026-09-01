@@ -1,4 +1,4 @@
-import { TaskTooltip, TaskTooltipCallout } from "../../gantt-timeline/components";
+import { TaskTooltip, TaskTooltipCallout } from "./components";
 import { IGanttTaskTooltipComponents } from "./createGanttTaskTooltipModule";
 import { GanttTaskTooltipLayer } from "./tooltip-layer";
 
