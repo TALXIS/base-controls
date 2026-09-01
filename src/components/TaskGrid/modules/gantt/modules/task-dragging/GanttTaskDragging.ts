@@ -10,7 +10,7 @@ const RESIZE_MODE = 'resize';
 export interface IGanttTaskDraggingParameters {
     /** Where the chart and the records it draws are reached. */
     services: IGanttServiceLocator;
-    /** Which drag modes this module was asked to allow. */
+    /** Which drag gestures this module was asked to allow. */
     settings: IGanttTaskDraggingSettings;
 }
 
@@ -27,6 +27,9 @@ export class GanttTaskDragging {
     constructor(parameters: IGanttTaskDraggingParameters) {
         this._services = parameters.services;
         this._settings = parameters.settings;
+        //the chart allows the gestures this module implements, and no others - the core leaves them all off
+        this._gantt.config.drag_move = this._settings.enableMove;
+        this._gantt.config.drag_resize = this._settings.enableResize;
         //dates come out of a drag exactly where the pointer left them, so a bar can start and end mid-day
         this._gantt.config.round_dnd_dates = false;
         this._registerEventListeners();

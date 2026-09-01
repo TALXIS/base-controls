@@ -40,8 +40,7 @@ export class GanttManager {
     private _start(container: HTMLDivElement): void {
         const gantt = Gantt.getGanttInstance();
         this._gantt = gantt;
-        //the marker extension is only worth switching on for a Gantt whose markers module is registered
-        gantt.plugins({ drag_timeline: true, marker: !!this._services.find('markersModule') });
+        gantt.plugins({ drag_timeline: true });
         configureChart(gantt, this._services);
         this._services.register('ganttChart', () => gantt);
 

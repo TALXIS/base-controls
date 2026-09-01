@@ -92,7 +92,7 @@ export interface IGanttServiceMap {
     selectionBoxModule: IGanttSelectionBoxModule;
     /**
      * The Gantt's task-dragging module. Present when it is registered — and its absence is what leaves the
-     * bars fixed, because it is read to decide which drag gestures the chart allows at all.
+     * bars fixed, because nothing else asks the chart to allow a drag.
      */
     taskDraggingModule: IGanttTaskDraggingModule;
     /**

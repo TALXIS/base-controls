@@ -1,7 +1,7 @@
 import { IGanttServiceLocator } from "../../services";
 import { GanttTaskDragging } from "./GanttTaskDragging";
 
-/** Which drag modes the chart is set up for. Read by `configureChart`. */
+/** Which drag gestures the module implements, and configures the chart for. */
 export interface IGanttTaskDraggingSettings {
     enableMove: boolean;
     enableResize: boolean;
@@ -9,7 +9,7 @@ export interface IGanttTaskDraggingSettings {
 
 /** What the task-dragging module contributes. Built by {@link createGanttTaskDraggingModule}. */
 export interface IGanttTaskDraggingModule {
-    /** What the module was asked to allow. What the chart is configured from. */
+    /** Which gestures this module was asked to allow. */
     settings: IGanttTaskDraggingSettings;
 }
 

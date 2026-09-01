@@ -43,8 +43,8 @@ export interface IGanttMarkersModuleOptions {
  * Builds the Gantt's markers module: the today line, the project's boundaries, and whatever your strategy
  * returns, each drawn over the timeline's scale.
  *
- * Assign it to `markers` on the Gantt's `onGetModules`. Registering it is what enables the chart's `marker`
- * plugin — without it a timeline draws no markers at all.
+ * Assign it to `markers` on the Gantt's `onGetModules`. It brings the chart's `marker` plugin with it —
+ * without this module a timeline draws no markers at all.
  *
  * @example
  * ```ts
@@ -68,7 +68,10 @@ export const createGanttMarkersModule = (options: IGanttMarkersModuleOptions): I
 
     //the provider needs a chart, which the manager only creates once the timeline hands over a container -
     //so the module waits for it rather than being built with one
-    services.whenAvailable('ganttChart', () => {
+    services.whenAvailable('ganttChart', gantt => {
+        //the only feature that needs an extension loaded, so it loads it: `plugins` adds what is not there
+        //yet and leaves the rest alone, and the chart is not drawn until the manager inits it
+        gantt.plugins({ marker: true });
         const markers = new GanttMarkersProvider({
             services,
             settings: {
