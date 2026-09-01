@@ -1,6 +1,6 @@
 import { LocalizationService } from "@utils";
 import { IGanttServiceLocator } from "../../services";
-import { GanttMarkersProvider, IGanttMarkersStrategy } from "./GanttMarkersProvider";
+import { GanttMarkersProvider, IGanttMarkerOptions, IGanttMarkersStrategy } from "./GanttMarkersProvider";
 import { IGanttMarkerProps } from "./context";
 import { GANTT_MARKERS_LABELS, IGanttMarkersLabels } from "./labels";
 import { GanttMarkersComponents } from "./moduleComponents";
@@ -23,14 +23,14 @@ export interface IGanttMarkersModule {
 export interface IGanttMarkersModuleOptions {
     /** The Gantt's own locator, from `IGanttModuleOptions.onGetModules`. */
     services: IGanttServiceLocator;
-    /** Draw the line marking today. Defaults to `false`. */
-    enableTodayMarker?: boolean;
+    /** The line marking today: whether it is drawn, and in what colour. Not drawn by default. */
+    todayMarker?: IGanttMarkerOptions;
     /**
-     * Draw the project's start and end. Defaults to `false`.
+     * The project's start and end: whether they are drawn, and in what colour. Not drawn by default.
      *
      * The dates come from the project module, so nothing is drawn unless that module is registered too.
      */
-    enableProjectMarkers?: boolean;
+    projectMarkers?: IGanttMarkerOptions;
     /** Where markers of your own come from — a milestone, a release date, a deadline. */
     strategy?: IGanttMarkersStrategy;
     /** Replaces the module's UI. Anything omitted keeps the component the module ships. */
@@ -54,8 +54,8 @@ export interface IGanttMarkersModuleOptions {
  *     onGetModules: ({ services }) => ({
  *         markers: createGanttMarkersModule({
  *             services,
- *             enableTodayMarker: true,
- *             enableProjectMarkers: true,
+ *             todayMarker: { enabled: true },
+ *             projectMarkers: { enabled: true, color: 'rgb(255, 185, 0)' },
  *         }),
  *     }),
  * })
@@ -71,9 +71,9 @@ export const createGanttMarkersModule = (options: IGanttMarkersModuleOptions): I
     services.whenAvailable('ganttChart', () => {
         const markers = new GanttMarkersProvider({
             services,
-            flags: {
-                enableTodayMarker: options.enableTodayMarker ?? false,
-                enableProjectMarkers: options.enableProjectMarkers ?? false,
+            settings: {
+                today: options.todayMarker ?? {},
+                project: options.projectMarkers ?? {},
             },
             labels: labels,
             strategy: options.strategy,

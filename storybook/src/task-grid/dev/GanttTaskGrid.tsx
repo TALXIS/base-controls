@@ -121,8 +121,8 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                         onGetModules: ({ services }) => ({
                             markers: createGanttMarkersModule({
                                 services,
-                                enableTodayMarker: true,
-                                enableProjectMarkers: true,
+                                todayMarker: { enabled: true },
+                                projectMarkers: { enabled: true },
                                 strategy: new MemoryGanttMarkersStrategy({
                                     services,
                                     markers: [{

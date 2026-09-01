@@ -13,28 +13,43 @@ export interface IGanttMarkersStrategy {
     onGetMarkers: () => Promise<ICustomMarker[]>;
 }
 
-/** Which of the markers the module draws are switched on. */
-export interface IGanttMarkersFlags {
-    /** Draw the line marking today. */
-    enableTodayMarker: boolean;
-    /** Draw the project's start and end, when the project module is registered. */
-    enableProjectMarkers: boolean;
+/** One of the markers the module draws itself: whether it is drawn, and in what colour. */
+export interface IGanttMarkerOptions {
+    /** Draw it. Defaults to `false`. */
+    enabled?: boolean;
+    /** What the line is coloured, and the chip on the scale with it. Defaults to the module's own. */
+    color?: string;
+}
+
+/** The markers the module draws itself, as opposed to the ones a strategy returns. */
+export interface IGanttMarkersSettings {
+    /** The line marking today. */
+    today: IGanttMarkerOptions;
+    /** The project's start and end, drawn when the project module is registered too. */
+    project: IGanttMarkerOptions;
 }
 
 export interface IGanttMarkersProviderParameters {
     /** Where the chart and the project are reached. */
     services: IGanttServiceLocator;
-    /** Which markers to draw. */
-    flags: IGanttMarkersFlags;
+    /** Which of the module's own markers to draw, and in what colour. */
+    settings: IGanttMarkersSettings;
     /** The module's own strings. */
     labels: ILocalizationService<IGanttMarkersLabels>;
-    /** Where markers of the consumer's own come from. Omitted draws only what the flags ask for. */
+    /** Where markers of the consumer's own come from. Omitted draws only what the settings ask for. */
     strategy?: IGanttMarkersStrategy;
 }
 
 export interface IGanttMarkersProviderEvents {
-    /** Every marker was drawn again. Fires once per draw, whatever the set contains. */
-    onMarkersUpdated: () => void;
+    onBeforeMarkersRefreshed: () => void;
+    /** @param markers The markers as they now stand — the same set `getMarkers` returns. */
+    onAfterMarkersRefreshed: (markers: IGanttMarker[]) => void;
+    /**
+     * The chart holds a freshly drawn set: after a refresh, and after the chart cleared its own and they
+     * were drawn again. Separate from the refresh events because a redraw reads nothing — the chips on the
+     * scale follow this one.
+     */
+    onMarkersDrawn: () => void;
     onError: (error: any, message: string) => void;
 }
 
@@ -63,8 +78,8 @@ export interface IGanttMarker {
  */
 export type ICustomMarker = Omit<IGanttMarker, 'id'>;
 
-const PROJECT_MARKER_COLOR = 'rgb(255, 185, 0)';
-const TODAY_MARKER_COLOR = '#0078d4';
+const DEFAULT_PROJECT_MARKER_COLOR = 'rgb(255, 185, 0)';
+const DEFAULT_TODAY_MARKER_COLOR = '#0078d4';
 
 /** The two markers the project module's dates drive, by the id each is drawn under. */
 const PROJECT_MARKER_LABELS: Record<'project_start' | 'project_end', keyof IGanttMarkersLabels> = {
@@ -82,7 +97,7 @@ const PROJECT_MARKER_LABELS: Record<'project_start' | 'project_end', keyof IGant
  */
 export class GanttMarkersProvider implements IGanttMarkersProvider {
     private _services: IGanttServiceLocator;
-    private _flags: IGanttMarkersFlags;
+    private _settings: IGanttMarkersSettings;
     private _labelsService: ILocalizationService<IGanttMarkersLabels>;
     private _strategy?: IGanttMarkersStrategy;
     private _projectProvider: IProjectProvider | null;
@@ -91,10 +106,10 @@ export class GanttMarkersProvider implements IGanttMarkersProvider {
 
     constructor(parameters: IGanttMarkersProviderParameters) {
         this._services = parameters.services;
-        this._flags = parameters.flags;
+        this._settings = parameters.settings;
         this._labelsService = parameters.labels;
         this._strategy = parameters.strategy;
-        this._projectProvider = this._flags.enableProjectMarkers
+        this._projectProvider = this._settings.project.enabled
             ? this._taskGridServices.find('projectModule')?.provider ?? null
             : null;
         this._registerEventListeners();
@@ -107,24 +122,27 @@ export class GanttMarkersProvider implements IGanttMarkersProvider {
     public async refresh(): Promise<void> {
         await ErrorHelper.executeWithErrorHandling({
             operation: async () => {
-                this._draw([...this._getFlagMarkers(), ...await this._getStrategyMarkers()]);
+                this.events.dispatchEvent('onBeforeMarkersRefreshed');
+                this._draw([...this._getOwnMarkers(), ...await this._getStrategyMarkers()]);
+                this.events.dispatchEvent('onAfterMarkersRefreshed', this._markers);
             },
             onError: (error, message) => this.events.dispatchEvent('onError', error, message),
         });
     }
 
-    /** Today and the project's ends: what the flags ask for, needing nothing loaded. */
-    private _getFlagMarkers(): IGanttMarker[] {
+    /** Today and the project's ends: what the settings ask for, needing nothing loaded. */
+    private _getOwnMarkers(): IGanttMarker[] {
         const markers: IGanttMarker[] = [];
-        if (this._flags.enableTodayMarker) {
+        if (this._settings.today.enabled) {
             markers.push({
                 id: 'today',
                 start_date: new Date(),
                 text: this._labels.getLocalizedString('today'),
-                color: TODAY_MARKER_COLOR,
+                color: this._settings.today.color ?? DEFAULT_TODAY_MARKER_COLOR,
             });
         }
-        //null unless the flag asked for them, so this is where both the flag and the module's absence land
+        //null unless the settings asked for them, so this is where both that and the project module's
+        //absence land
         const project = this._projectProvider?.getProject();
         for (const id of ['project_start', 'project_end'] as const) {
             const date = id === 'project_start' ? project?.startDate : project?.endDate;
@@ -135,7 +153,7 @@ export class GanttMarkersProvider implements IGanttMarkersProvider {
                 id: id,
                 start_date: date,
                 text: this._labels.getLocalizedString(PROJECT_MARKER_LABELS[id]),
-                color: PROJECT_MARKER_COLOR,
+                color: this._settings.project.color ?? DEFAULT_PROJECT_MARKER_COLOR,
             });
         }
 
@@ -156,7 +174,7 @@ export class GanttMarkersProvider implements IGanttMarkersProvider {
             this._gantt.addMarker({ ...marker, css: marker.color && getMarkerLineStyles(marker.color) });
         }
 
-        this.events.dispatchEvent('onMarkersUpdated');
+        this.events.dispatchEvent('onMarkersDrawn');
     }
 
     private _clear(): void {

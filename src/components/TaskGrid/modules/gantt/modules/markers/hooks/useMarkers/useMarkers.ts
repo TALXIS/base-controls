@@ -20,7 +20,7 @@ export const useMarkers = () => {
     const markers = useGanttService('ganttMarkers');
     const styles = useMemo(() => getMarkerLayerStyles(), []);
 
-    useEventEmitter<IGanttMarkersProviderEvents>(markers?.events, 'onMarkersUpdated', () => renderScaleLabels());
+    useEventEmitter<IGanttMarkersProviderEvents>(markers?.events, 'onMarkersDrawn', () => renderScaleLabels());
 
     const renderScaleLabels = () => {
         const taskEl = gantt?.$task;
