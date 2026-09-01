@@ -2,7 +2,6 @@ import { ITheme, mergeStyleSets } from "@fluentui/react";
 import {
     GANTT_DATA_AREA_CLASS,
     GANTT_ROW_INACTIVE_CLASS,
-    GANTT_SELECTION_CURSOR_CLASS,
     GANTT_TASK_BG_CLASS,
     GANTT_TASK_CELL_CLASS,
     GANTT_TASK_CONTAINER_CLASS,
@@ -144,7 +143,7 @@ export const getGanttStyles = (theme: ITheme) => {
                     cursor: 'not-allowed',
                 },
             },
-            [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SELECTED_CLASS}, .${GANTT_TASK_LINE_CLASS}.gantt_selection_preview`]: {
+            [`.${GANTT_TASK_LINE_CLASS}.${GANTT_TASK_SELECTED_CLASS}`]: {
                 filter: 'brightness(1.06) saturate(1.08)',
                 transition: 'outline-color 120ms ease, filter 120ms ease',
                 zIndex: 2,
@@ -177,18 +176,6 @@ export const getGanttStyles = (theme: ITheme) => {
             },
             [`.${GANTT_DATA_AREA_CLASS}:active`]: {
                 cursor: 'grabbing',
-            },
-            //while a box selection is being drawn nothing offers to be grabbed
-            [[
-                `&.${GANTT_SELECTION_CURSOR_CLASS}`,
-                `&.${GANTT_SELECTION_CURSOR_CLASS} .${GANTT_TASK_BG_CLASS}`,
-                `&.${GANTT_SELECTION_CURSOR_CLASS} .${GANTT_TASK_CELL_CLASS}`,
-                `&.${GANTT_SELECTION_CURSOR_CLASS} .${GANTT_DATA_AREA_CLASS}`,
-                `&.${GANTT_SELECTION_CURSOR_CLASS} .${GANTT_TASK_LINE_CLASS}`,
-                `&.${GANTT_SELECTION_CURSOR_CLASS} .${GANTT_TASK_LINE_CLASS} *`,
-                `&.${GANTT_SELECTION_CURSOR_CLASS} .gantt_left`,
-            ].join(', ')]: {
-                cursor: 'default',
             },
             position: 'relative',
             [`.${GANTT_TASK_CONTENT_CLASS}`]: {

@@ -11,6 +11,7 @@ import type { IGanttDates } from "../gantt-dates";
 import type { IGanttDragging } from "../gantt-dragging";
 import type { IGanttInfiniteTimeline } from "../gantt-infinite-timeline";
 import type { IGanttMarkersProvider, IGanttMarkersModule } from "../modules/markers";
+import type { IGanttSelectionBoxModule } from "../modules/selection-box";
 import type { IGanttTaskCreateModule } from "../modules/task-create";
 import type { IGanttSelection } from "../gantt-selection";
 import type { IGanttZooming } from "../gantt-zooming";
@@ -82,6 +83,11 @@ export interface IGanttServiceMap {
      * makes the timeline one you cannot draw new tasks on.
      */
     taskCreateModule: IGanttTaskCreateModule;
+    /**
+     * The Gantt's selection-box module, UI included. Present when it is registered — and its absence is
+     * what leaves the timeline without a band to drag.
+     */
+    selectionBoxModule: IGanttSelectionBoxModule;
     /** Selecting tasks on the chart, and mirroring the grid's selection. */
     ganttSelection: IGanttSelection;
     /** The zoom levels, and the slider's 0-100 mapping onto them. */

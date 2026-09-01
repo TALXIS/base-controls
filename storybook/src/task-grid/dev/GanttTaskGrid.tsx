@@ -9,6 +9,7 @@ import {
     MilestoneMarker,
     createGanttMarkersModule,
     createGanttModule,
+    createGanttSelectionBoxModule,
     createGanttTaskCreateModule,
     createProjectModule,
 } from '@talxis/base-controls'
@@ -141,6 +142,7 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                                 },
                             }),
                             taskCreate: createGanttTaskCreateModule({ services }),
+                            selectionBox: createGanttSelectionBoxModule({ services }),
                         }),
                     }),
                     onGetProjectModule: ({ services }) => createProjectModule({

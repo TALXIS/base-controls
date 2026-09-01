@@ -8,6 +8,7 @@ import { getGanttCommandBarItems } from "./getGanttCommandBarItems";
 import { GANTT_LABELS, IGanttLabels } from "./labels";
 import { GanttComponents } from "./moduleComponents";
 import { IGanttMarkersModule } from "./modules/markers";
+import { IGanttSelectionBoxModule } from "./modules/selection-box";
 import { IGanttTaskCreateModule } from "./modules/task-create";
 
 /** The Gantt's own modules, one optional key per feature. Filled by that module's builder. */
@@ -16,6 +17,8 @@ export interface IGanttModules {
     markers?: IGanttMarkersModule;
     /** Creating a task by dragging across empty timeline space. */
     taskCreate?: IGanttTaskCreateModule;
+    /** Selecting tasks by dragging a band over them. */
+    selectionBox?: IGanttSelectionBoxModule;
 }
 
 /** Options for {@link createGanttModule}. */
@@ -87,7 +90,8 @@ export const createGanttModule = (options: IGanttModuleOptions): IGanttModule =>
 //registers each resolved module under its own key. A module the caller left out registers nothing, so its
 //key stays absent and `find` reports the feature as off
 const registerGanttModules = (services: IGanttServiceLocator, modules: IGanttModules): void => {
-    const { markers, taskCreate } = modules;
+    const { markers, taskCreate, selectionBox } = modules;
     markers && services.register('markersModule', () => markers);
     taskCreate && services.register('taskCreateModule', () => taskCreate);
+    selectionBox && services.register('selectionBoxModule', () => selectionBox);
 };

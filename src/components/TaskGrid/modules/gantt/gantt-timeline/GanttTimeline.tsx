@@ -3,7 +3,6 @@ import 'gantt-trial/codebase/dhtmlxgantt.css';
 import { useTheme } from '@fluentui/react';
 import { getGanttStyles } from './styles';
 import { useTooltip } from './hooks/useTooltip';
-import { useSelectionBox } from './hooks/useSelectionBox';
 import { useGanttComponents, useGanttServices } from '../context';
 
 /**
@@ -20,7 +19,6 @@ export const GanttTimeline = () => {
     const theme = useTheme();
     const styles = useMemo(() => getGanttStyles(theme), [theme]);
     const { tooltip } = useTooltip();
-    useSelectionBox();
 
     useEffect(() => {
         if (!ref.current) {
@@ -35,6 +33,7 @@ export const GanttTimeline = () => {
                 <div ref={ref} className={styles.root} />
                 {services.find('markersModule')?.components.onRenderMarkerLayer()}
                 {services.find('taskCreateModule')?.components.onRenderCreateLayer()}
+                {services.find('selectionBoxModule')?.components.onRenderSelectionBoxLayer()}
             </div>
             {tooltip && components.onRenderTaskTooltip({ task: tooltip.task, event: tooltip.event })}
         </>

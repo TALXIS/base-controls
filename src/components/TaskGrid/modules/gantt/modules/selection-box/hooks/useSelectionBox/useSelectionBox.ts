@@ -1,14 +1,17 @@
 import Selecto, { OnDragEnd, OnDragStart, OnScroll, OnSelect } from "selecto";
 import { useCallback, useEffect, useRef } from "react";
-import { useGanttService } from '../../../context';
+import { useGanttService, useGanttServices } from '../../../../context';
 import {
-    GANTT_SELECTION_CURSOR_CLASS,
     GANTT_TASK_SELECTED_CLASS,
     GANTT_TASK_LINE_CLASS,
     GANTT_TASK_SIDE_CONTENT_CLASS,
-} from '../../../classNames';
+} from '../../../../classNames';
+import { getSelectionBoxCursorStyles } from '../../styles';
 
 const EDGE_SCROLL_THRESHOLD = 50;
+
+//one class for the whole module: mergeStyles hands back the same one for the same rules
+const CURSOR_CLASS = getSelectionBoxCursorStyles();
 
 /**
  * Rubber-band selection over the chart, on shift-drag.
@@ -16,6 +19,7 @@ const EDGE_SCROLL_THRESHOLD = 50;
  * Waits for the chart itself: `Selecto` binds to `$task`, which only exists once the chart is drawn.
  */
 export const useSelectionBox = () => {
+    const services = useGanttServices();
     const gantt = useGanttService('ganttChart');
     const dragging = useGanttService('ganttDragging');
     const selection = useGanttService('ganttSelection');
@@ -32,12 +36,16 @@ export const useSelectionBox = () => {
         return taskElement as HTMLElement;
     }
 
+    //resolved here rather than closed over: the key handlers below are built once, when there is no chart
+    //yet and so no dragging part either
     const setSelectionMode = (enabled: boolean) => {
-        if (!gantt || !dragging) {
+        const chart = services.find('ganttChart');
+        const chartDragging = services.find('ganttDragging');
+        if (!chart || !chartDragging) {
             return;
         }
-        dragging.setDraggingDisabled(enabled);
-        gantt.$root.classList.toggle(GANTT_SELECTION_CURSOR_CLASS, enabled);
+        chartDragging.setDraggingDisabled(enabled);
+        chart.$root.classList.toggle(CURSOR_CLASS, enabled);
     };
 
     const start = () => {
