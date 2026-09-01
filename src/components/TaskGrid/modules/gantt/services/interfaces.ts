@@ -13,6 +13,7 @@ import type { IGanttInfiniteTimeline } from "../gantt-infinite-timeline";
 import type { IGanttMarkersProvider, IGanttMarkersModule } from "../modules/markers";
 import type { IGanttSelectionBoxModule } from "../modules/selection-box";
 import type { IGanttTaskCreateModule } from "../modules/task-create";
+import type { IGanttTaskTooltipModule } from "../modules/task-tooltip";
 import type { IGanttSelection } from "../gantt-selection";
 import type { IGanttZooming } from "../gantt-zooming";
 import type { IGanttLabels } from "../labels";
@@ -88,6 +89,11 @@ export interface IGanttServiceMap {
      * what leaves the timeline without a band to drag.
      */
     selectionBoxModule: IGanttSelectionBoxModule;
+    /**
+     * The Gantt's task-tooltip module, UI included. Present when it is registered — and its absence is what
+     * leaves a bar saying nothing on hover.
+     */
+    taskTooltipModule: IGanttTaskTooltipModule;
     /** Selecting tasks on the chart, and mirroring the grid's selection. */
     ganttSelection: IGanttSelection;
     /** The zoom levels, and the slider's 0-100 mapping onto them. */

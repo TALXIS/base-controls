@@ -2,8 +2,6 @@ import * as React from "react";
 import { useServices } from "@components/TaskGrid/context";
 import { IGanttServiceMap } from "./services";
 
-export * from "./gantt-timeline/context";
-
 /**
  * The Gantt module itself.
  * @throws When the module is not registered, which is also when nothing in here should be rendering.

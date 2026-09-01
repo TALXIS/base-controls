@@ -1,16 +1,26 @@
+import { Task } from 'gantt-trial';
 import { Formatting } from '@talxis/client-libraries';
-import { TaskTooltip } from '../task-tooltip';
 import { useServices, useTaskDataProvider } from '@components/TaskGrid/context';
-import { IGanttTaskTooltipProps, useGanttServices } from '../../../context';
-import { TaskTooltipAdapterComponents, ITaskTooltipAdapterComponents } from './components';
+import { useGanttServices } from '../../../../context';
+import { useGanttTaskTooltipComponents } from '../../context';
 
-export interface ITaskTooltipAdapterProps extends IGanttTaskTooltipProps {
-    components?: Partial<ITaskTooltipAdapterComponents>;
+export interface ITaskTooltipAdapterProps {
+    /** The task the pointer is on, or the one being dragged. */
+    task: Task;
+    /** The pointer event that opened it — what the callout is positioned against. */
+    event: MouseEvent;
 }
 
+/**
+ * Everything the tooltip needs, read off the task and formatted: the name, the dates, how long it runs, the
+ * colour of its status.
+ *
+ * Plumbing rather than a component to swap — {@link IGanttTaskTooltipComponents.onRenderTooltip} is what a
+ * consumer replaces, and it receives what this worked out.
+ */
 export const TaskTooltipAdapter = (props: ITaskTooltipAdapterProps) => {
     const { task, event } = props;
-    const components = { ...TaskTooltipAdapterComponents, ...props.components };
+    const components = useGanttTaskTooltipComponents();
     const taskDataProvider = useTaskDataProvider();
     const services = useGanttServices();
     const taskGridServices = useServices();
@@ -31,20 +41,17 @@ export const TaskTooltipAdapter = (props: ITaskTooltipAdapterProps) => {
         statusColor = options.find(option => option.Value == statusCode)?.Color;
     }
 
-
     return components.onRenderCallout({
         target: {
             x: event.clientX + 10,
             y: event.clientY + 12,
         },
-        children: (
-            <TaskTooltip
-                taskName={record?.getValue(nativeColumns.subject)}
-                startDate={startDate}
-                endDate={endDate}
-                duration={duration}
-                statusColor={statusColor}
-            />
-        )
+        children: components.onRenderTooltip({
+            taskName: record?.getValue(nativeColumns.subject),
+            startDate: startDate,
+            endDate: endDate,
+            duration: duration,
+            statusColor: statusColor,
+        }),
     });
 };

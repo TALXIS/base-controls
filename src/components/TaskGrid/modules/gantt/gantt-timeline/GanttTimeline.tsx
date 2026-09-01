@@ -2,8 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import 'gantt-trial/codebase/dhtmlxgantt.css';
 import { useTheme } from '@fluentui/react';
 import { getGanttStyles } from './styles';
-import { useTooltip } from './hooks/useTooltip';
-import { useGanttComponents, useGanttServices } from '../context';
+import { useGanttServices } from '../context';
 
 /**
  * The timeline half of the split view.
@@ -14,11 +13,9 @@ import { useGanttComponents, useGanttServices } from '../context';
  */
 export const GanttTimeline = () => {
     const services = useGanttServices();
-    const components = useGanttComponents();
     const ref = useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const styles = useMemo(() => getGanttStyles(theme), [theme]);
-    const { tooltip } = useTooltip();
 
     useEffect(() => {
         if (!ref.current) {
@@ -34,8 +31,8 @@ export const GanttTimeline = () => {
                 {services.find('markersModule')?.components.onRenderMarkerLayer()}
                 {services.find('taskCreateModule')?.components.onRenderCreateLayer()}
                 {services.find('selectionBoxModule')?.components.onRenderSelectionBoxLayer()}
+                {services.find('taskTooltipModule')?.components.onRenderTooltipLayer()}
             </div>
-            {tooltip && components.onRenderTaskTooltip({ task: tooltip.task, event: tooltip.event })}
         </>
     );
 }

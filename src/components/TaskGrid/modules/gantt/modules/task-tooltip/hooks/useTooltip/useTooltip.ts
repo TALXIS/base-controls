@@ -1,9 +1,9 @@
 import { Task } from 'gantt-trial'
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEventEmitter } from '@hooks';
-import { IGanttDraggingEvents } from '../../../gantt-dragging';
-import { GANTT_TASK_ROW_CLASS } from '../../../classNames';
-import { useGanttService, useGanttServices } from '../../../context';
+import { IGanttDraggingEvents } from '../../../../gantt-dragging';
+import { GANTT_TASK_ROW_CLASS } from '../../../../classNames';
+import { useGanttService, useGanttServices } from '../../../../context';
 
 /** The hovered task and the pointer event that opened the tooltip on it. */
 export interface ITooltipState {
