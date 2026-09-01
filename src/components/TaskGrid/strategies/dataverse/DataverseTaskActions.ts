@@ -19,6 +19,7 @@ import {
     ITaskMoveParams,
 } from "@components/TaskGrid/providers";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
+import { IDataverseProject } from "@components/TaskGrid/modules/project";
 import { INativeColumns } from "@components/TaskGrid/interfaces";
 import { StackRank } from "@utils/stack-rank";
 import { IDataverseFieldMapping } from "@components/TaskGrid/descriptors/dataverse/DataverseTaskGridDescriptor";
@@ -93,8 +94,8 @@ export interface IDataverseTaskAvailableRelatedColumnsParams {
  * what a task starts with, and nothing that performs the create.
  */
 export interface IDataverseNewTaskDefaultsParams extends ITaskCreateParams, IDataverseTaskEntity {
-    /** The project new tasks are linked to, when the descriptor supplied one. */
-    projectReference?: ComponentFramework.EntityReference;
+    /** The project new tasks are linked to, as the project module resolved it. */
+    project?: IDataverseProject;
     /** The record the grid is scoped by, when the descriptor supplied one. */
     sourceRecord?: ISingleRecord;
     /** When `true` the record is created straight through the Web API; otherwise a form is opened. */
@@ -339,10 +340,10 @@ export class DataverseTaskActions {
     //the project, the parent task, and the rank that puts it before its siblings. Lookups stay entity references here;
     //what a Dataverse create makes of them is the converters' job.
     private static async _getNewTaskValues(params: IDataverseTaskCreateParams): Promise<INewTaskValues> {
-        const { parentRecord, previousSibling, nextSibling, fieldMapping, provider, projectReference, onGetNewTaskDefaults, data } = params;
+        const { parentRecord, previousSibling, nextSibling, fieldMapping, provider, project, onGetNewTaskDefaults, data } = params;
         const placement: { [columnName: string]: any } = {};
-        if (projectReference && fieldMapping.projectId) {
-            placement[fieldMapping.projectId] = projectReference;
+        if (project && fieldMapping.projectId) {
+            placement[fieldMapping.projectId] = this._getProjectLookup(project);
         }
         const parentTaskId = parentRecord?.getRecordId();
         if (parentTaskId) {
@@ -424,6 +425,11 @@ export class DataverseTaskActions {
                 `/${referencedMetadata.EntitySetName}(${reference.id.guid})`;
         }
         return payload;
+    }
+
+    //the project as a lookup value, which is the one shape a Dataverse write can bind to
+    private static _getProjectLookup(project: IDataverseProject): ComponentFramework.EntityReference {
+        return { id: { guid: project.id }, name: project.name ?? '', etn: project.data.entityName };
     }
 
     //the entity reference behind a value, whether it arrived bare or as the array a lookup column holds.

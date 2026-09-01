@@ -81,6 +81,9 @@ export class TaskGridDatasetControlFactory {
         //back, and the grid's own skeleton already covers everything this method awaits. After the
         //control, never before it - its constructor is what puts the view's columns, filtering and
         //sorting on the provider, and the task strategy reads them as it loads
+        //before the tasks: the task strategy reads the project as it loads - into its query, and onto
+        //every task it creates
+        await services.find('projectModule')?.provider.refresh();
         await datasetControl.getDataset().refresh();
         const loadedTaskIds = taskDataProvider.getAllRecords().map(record => record.getRecordId());
         await services.find('dependenciesModule')?.provider.refresh(loadedTaskIds);
@@ -99,7 +102,6 @@ export class TaskGridDatasetControlFactory {
         lookupMany && services.register('lookupManyModule', () => lookupMany);
         dependencies && services.register('dependenciesModule', () => dependencies);
         checklist && services.register('checklistModule', () => checklist);
-        //before the gantt: its extension and its columns resolve the project side through the locator
         project && services.register('projectModule', () => project);
         gantt && services.register('ganttModule', () => gantt);
     }

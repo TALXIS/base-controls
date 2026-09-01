@@ -2,9 +2,8 @@ import React from 'react'
 import { initializeIcons } from '@fluentui/react'
 import { MemoryTaskGridDescriptor, TaskGrid, createGanttModule, createProjectModule } from '@talxis/base-controls'
 import type { IProjectStrategy, ISavedQuery } from '@talxis/base-controls'
-import { IRecord } from '@talxis/client-libraries'
+import { IRawRecord } from '@talxis/client-libraries'
 import {
-    ENTITY_NAME,
     PARENT_ID_COL,
     PERCENT_COMPLETE_COL,
     STACK_RANK_COL,
@@ -30,16 +29,16 @@ const ALL_TASKS: ISavedQuery = {
 }
 
 /** The dates the fixture tasks span, so the project markers have somewhere to sit. */
-const getFixtureDates = (tasks: IRecord[]) => {
-    const times = (columnName: string) => tasks
-        .map(task => task.getValue(columnName))
-        .filter((value): value is string => !!value)
+const getFixtureDates = (records: IRawRecord[]) => {
+    const times = (columnName: string) => records
+        .map(record => record[columnName])
+        .filter((value): value is string => typeof value === 'string')
         .map(value => new Date(value).getTime())
     const starts = times(START_DATE_COL)
     const ends = times(END_DATE_COL)
     return {
-        startDate: starts.length ? new Date(Math.min(...starts)) : null,
-        endDate: ends.length ? new Date(Math.max(...ends)) : null,
+        startDate: starts.length ? new Date(Math.min(...starts)) : undefined,
+        endDate: ends.length ? new Date(Math.max(...ends)) : undefined,
     }
 }
 
@@ -54,9 +53,10 @@ export const GanttTaskGrid = () => {
     const descriptor = React.useMemo(() => {
         const records = structuredClone(TASK_SOURCE.records)
         const projectStrategy: IProjectStrategy = {
-            onGetProject: async ({ tasks }) => ({
-                ...getFixtureDates(tasks),
-                entityReference: { id: { guid: '00000000-0000-0000-0000-00000000proj' }, name: 'Dev Project', etn: ENTITY_NAME },
+            onGetProject: async () => ({
+                id: '00000000-0000-0000-0000-00000000proj',
+                name: 'Dev Project',
+                ...getFixtureDates(records),
             }),
         }
         return new MemoryTaskGridDescriptor({
@@ -96,7 +96,6 @@ export const GanttTaskGrid = () => {
                     }),
                     onGetProjectModule: ({ services }) => createProjectModule({
                         strategy: projectStrategy,
-                        dateColumnNames: [START_DATE_COL, END_DATE_COL],
                         services,
                     }),
                 },

@@ -161,8 +161,8 @@ export class GanttMarkers implements IGanttMarkers {
 
     private _registerEventListeners() {
         this._projectProvider?.events.addEventListener('onAfterProjectRefreshed', project => {
-            this._setProjectMarker('project_start', project.startDate);
-            this._setProjectMarker('project_end', project.endDate);
+            this._setProjectMarker('project_start', project.startDate ?? null);
+            this._setProjectMarker('project_end', project.endDate ?? null);
         });
         //the chart drops every marker it holds on a clear, so they are drawn again from what is held here
         this._gantt.attachEvent('onClear', () => this._redraw());
@@ -171,8 +171,9 @@ export class GanttMarkers implements IGanttMarkers {
 
     private _draw() {
         this._addTodayMarker();
-        this._setProjectMarker('project_start', this._projectProvider?.getStartDate() ?? null);
-        this._setProjectMarker('project_end', this._projectProvider?.getEndDate() ?? null);
+        const project = this._projectProvider?.getProject();
+        this._setProjectMarker('project_start', project?.startDate ?? null);
+        this._setProjectMarker('project_end', project?.endDate ?? null);
         this._addCustomMarkers();
     }
 

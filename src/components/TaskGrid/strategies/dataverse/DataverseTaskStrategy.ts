@@ -8,6 +8,7 @@ import {
     ITaskMoveParams,
 } from "@components/TaskGrid/providers";
 import { ICustomColumnsDataProvider } from "@components/TaskGrid/modules/custom-columns/CustomColumnsDataProvider";
+import { IDataverseProject, toDataverseProject } from "@components/TaskGrid/modules/project";
 import { Liquid } from "liquidjs";
 import { IDataverseFieldMapping } from "@components/TaskGrid/descriptors/dataverse/DataverseTaskGridDescriptor";
 import { LookupManyHandler } from "./LookupManyHandler";
@@ -120,8 +121,6 @@ export interface IDataverseTaskInitializeResult {
     createFormId?: string;
     /** Form ID to open when bulk-editing multiple selected tasks. */
     bulkEditFormId?: string;
-    /** Project record reference. When provided, new tasks are pre-linked to this project. */
-    projectRecord?: ISingleRecord;
 
     sourceRecord?: ISingleRecord;
     /** When set, the task hierarchy is rooted at this task ID. */
@@ -158,8 +157,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     private _fetchXml!: string;
     private _entitySetName!: string;
     private _entityName!: string;
-    private _projectReference?: ComponentFramework.EntityReference;
-    private _projectRecord?: ISingleRecord;
     private _rootTaskId?: string;
     private _provider!: ITaskDataProvider;
     private _editFormId?: string;
@@ -185,6 +182,14 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
         return this._services.find('customColumnsModule')?.provider
     }
 
+    //the project module is the one place the grid's project lives. Refreshed before the tasks load, so it
+    //already answers by the time a query is rendered or a task created
+    private get _project(): IDataverseProject | undefined {
+        const project = this._services.find('projectModule')?.provider.getProject();
+        return project && toDataverseProject(project);
+    }
+
+
     private get _isInlineCreateEnabled(): boolean {
         return this._services.get('gridParameters').enableInlineCreation ?? false;
     }
@@ -196,8 +201,6 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     public async onInitialize(provider: ITaskDataProvider): Promise<{ columns: IColumn[]; rawData: IRawRecord[]; metadata: any; }> {
         const dependencies = await this._params.onInitialize();
         this._fetchXml = dependencies.fetchXml;
-        this._projectRecord = dependencies.projectRecord;
-        this._projectReference = this._projectRecord?.getNamedReference();
         this._sourceRecord = dependencies.sourceRecord;
         this._editFormId = dependencies.editFormId;
         this._rootTaskId = dependencies.rootTaskId;
@@ -404,10 +407,12 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
     }
 
     private _getFetchXml(): string {
+        const project = this._project;
         return LIQUID.parseAndRenderSync(this._fetchXml, {
             project: {
-                id: this._projectReference?.id.guid,
-                ...this._projectRecord?.getRawData()
+                id: project?.id,
+                name: project?.name,
+                ...project?.data
             },
             currentRecord: {
                 id: this._sourceRecord?.getNamedReference().id.guid,
@@ -434,7 +439,7 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
             ...this._entity,
             isInlineCreateEnabled: this._isInlineCreateEnabled,
             createFormId: this._createFormId,
-            projectReference: this._projectReference,
+            project: this._project,
             sourceRecord: this._sourceRecord,
             onGetNewTaskDefaults: this._params.onGetNewTaskDefaults,
             onGetFormParameters: this._getFormParameters,

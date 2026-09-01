@@ -100,10 +100,9 @@ const descriptor = new DataverseTaskGridDescriptor({
             }),
         },
         //the form ids, the delete behaviour and the root task are the strategy's options
-        onCreateTaskStrategy: ({ services, fetchXml, projectRecord, sourceRecord }) => new DataverseTaskStrategy({
+        onCreateTaskStrategy: ({ services, fetchXml, sourceRecord }) => new DataverseTaskStrategy({
             onInitialize: async () => ({
                 fetchXml,
-                projectRecord,
                 sourceRecord,
                 editFormId,
                 createFormId,
@@ -146,8 +145,8 @@ The full set: \`onGetAvailableColumns\`, \`onGetAvailableRelatedColumns\`, \`onC
 
 | Variable | Description |
 |---|---|
-| \`{{ project.id }}\` | GUID of the \`projectRecord\`, when one was supplied. |
-| \`{{ project.<attribute> }}\` | Any raw attribute of that project record. |
+| \`{{ project.id }}\` | GUID of the project the project module resolved. |
+| \`{{ project.<attribute> }}\` | Any column that project carries in its \`data\`. |
 | \`{{ currentRecord.id }}\` | GUID of the \`sourceRecord\`, when one was supplied. |
 | \`{{ currentRecord.<attribute> }}\` | Any raw attribute of that source record. |
 
@@ -162,7 +161,7 @@ Resolved by \`onInitialize\`:
 | \`baseFetchXml\` | ✅ | FetchXML driving the initial load. May use the Liquid variables above. |
 | \`fieldMapping\` | ✅ | Column roles, plus the optional \`projectId\` lookup. |
 | \`systemQueries\` | ✅ | Non-deletable views in the view switcher. At least one, and their columns are the grid's catalogue. |
-| \`projectRecord?\` | — | The project these tasks belong to. Injected into Liquid templates and pre-filled on create. |
+| \`projectRecord?\` | — | The project these tasks belong to. Handed to the project and lookup-many builders; register the project module over it to reach the Liquid variables and the link new tasks get. |
 | \`sourceRecord?\` | — | An additional record exposed to Liquid templates (a sprint or board, say). |
 | \`userId?\` | — | Current user GUID. Pass it to the user-query strategy to scope personal views per user. |
 | \`gridParameters?\` | — | Feature flags. See [**Customizations**](?path=/story/task-grid-customizations--overview). |

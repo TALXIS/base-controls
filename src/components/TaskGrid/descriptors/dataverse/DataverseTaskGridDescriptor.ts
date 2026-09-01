@@ -9,7 +9,10 @@ import { EntityDefinition } from "@talxis/client-metadata";
 
 /** Dataverse-specific field mapping. Extends the base with an optional project lookup column. */
 export interface IDataverseFieldMapping extends Omit<IFieldMapping, 'stateCode'> {
-    /** Logical name of the lookup attribute that points to the parent project record. Required when `projectRecord` is set on the descriptor. */
+    /**
+     * Logical name of the lookup attribute that points to the parent project record. Required for a new
+     * task to be linked to the project the project module resolved.
+     */
     projectId?: string;
 }
 
@@ -61,6 +64,9 @@ export type IDataverseCustomColumnsParams = Pick<IDataverseStrategyContext, 'ent
 
 /** What {@link IDataverseModules.onGetLookupManyModule} is called with. */
 export type IDataverseLookupManyParams = Pick<IDataverseStrategyContext, 'projectRecord' | 'sourceRecord'> & ITaskGridFactoryParams;
+
+/** What {@link IDataverseTaskGridModules.onGetProjectModule} receives. */
+export type IDataverseProjectParams = Pick<IDataverseStrategyContext, 'projectRecord'> & ITaskGridFactoryParams;
 
 /**
  * The feature modules a Dataverse grid can run with, one builder per feature. Omit a key and that feature
@@ -174,10 +180,18 @@ export interface IDataverseModules {
      */
     onGetGanttModule?: (params: ITaskGridFactoryParams) => IGanttModule | undefined;
     /**
-     * The project the tasks belong to. Only the Gantt reads it today — registering it is what draws its
-     * project start and end markers.
+     * The project the tasks belong to: the Gantt's start and end markers, and the project every new task
+     * is linked to. `DataverseProjectStrategy` turns the descriptor's own `projectRecord` into one.
+     *
+     * @example
+     * ```ts
+     * onGetProjectModule: ({ services, projectRecord }) => projectRecord && createProjectModule({
+     *     strategy: new DataverseProjectStrategy({ projectRecord }),
+     *     services,
+     * }),
+     * ```
      */
-    onGetProjectModule?: (params: ITaskGridFactoryParams) => IProjectModule | undefined;
+    onGetProjectModule?: (params: IDataverseProjectParams) => IProjectModule | undefined;
 }
 
 /** What the descriptor hands a consumer-supplied task strategy. */
@@ -186,8 +200,6 @@ export interface IDataverseTaskStrategyContext extends IDataverseStrategyContext
     services: ITaskGridServiceLocator;
     /** The `baseFetchXml` from `onInitialize`. The strategy renders its Liquid variables itself. */
     fetchXml: string;
-    /** The hydrated project record, when `projectRecord` was supplied. */
-    projectRecord?: ISingleRecord;
     /** The hydrated source record, when `sourceRecord` was supplied. */
     sourceRecord?: ISingleRecord;
 }
@@ -200,7 +212,11 @@ export interface IDataverseTaskGridDescriptorInitializeResult {
     fieldMapping: IDataverseFieldMapping;
     /** System (non-deletable) views exposed in the view switcher. At least one is required, and their columns are the grid's column catalogue. */
     systemQueries: ISavedQuery[];
-    /** The project these tasks belong to. Injected into Liquid templates and pre-filled on create. */
+    /**
+     * The project these tasks belong to. Hydrated here and handed to the project and lookup-many module
+     * builders — register the project module over it (`DataverseProjectStrategy`) for the task query's
+     * `{{ project.* }}` and the link every new task gets.
+     */
     projectRecord?: RecordInput;
     /** An additional record exposed to Liquid templates. Its data is propagated into the FetchXML. */
     sourceRecord?: RecordInput;
@@ -339,13 +355,11 @@ export class DataverseTaskGridDescriptor implements ITaskGridDescriptor {
             ...this._getStrategyContext(),
             services: services,
             fetchXml: this._fetchXml,
-            projectRecord: this._projectRecord,
             sourceRecord: this._sourceRecord,
         };
         return this._initialized.onCreateTaskStrategy?.(context) ?? new DataverseTaskStrategy({
             onInitialize: async () => ({
                 fetchXml: this._fetchXml,
-                projectRecord: this._projectRecord,
                 sourceRecord: this._sourceRecord,
             }),
             services: services,

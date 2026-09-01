@@ -23,7 +23,7 @@ Read this page second. Both task strategies take **a hook per operation** on the
 \`\`\`ts
 new DataverseTaskStrategy({
     services,
-    onInitialize: async () => ({ fetchXml, projectRecord, sourceRecord, editFormId }),
+    onInitialize: async () => ({ fetchXml, sourceRecord, editFormId }),
     onCreateTask: async params => {
         const task = await DataverseTaskActions.createTask(params)
         //…post-process

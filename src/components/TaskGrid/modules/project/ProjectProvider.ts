@@ -1,121 +1,102 @@
-import { EventEmitter, IEventEmitter, IRecord } from "@talxis/client-libraries";
+import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { ErrorHelper } from "@utils";
 import { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
-/** The project the grid's tasks belong to, as the grid sees it. */
-export interface IProject {
-    /** Where the project starts, or `null` when it has none. */
-    startDate: Date | null;
-    /** Where it ends, or `null` when it has none. */
-    endDate: Date | null;
-    /** The project record itself. */
-    entityReference: ComponentFramework.EntityReference;
+/** Anything a strategy carries on a project beyond the fields the grid names itself. */
+export type ProjectData = { [columnName: string]: any };
+
+/**
+ * The project the grid's tasks belong to, as the grid sees it.
+ *
+ * @typeParam TData What this project's strategy carries in `data` — see `IDataverseProjectData` for the
+ * shape the Dataverse side needs.
+ */
+export interface IProject<TData extends ProjectData = ProjectData> {
+    /** The project record's id. */
+    id: string;
+    /** What it is called, when the project has a name to show. */
+    name?: string;
+    /** Where the project starts, when it has a start. */
+    startDate?: Date;
+    /** Where it ends, when it has an end. */
+    endDate?: Date;
+    /**
+     * Whatever else the strategy carries — the project's own columns, and whatever its platform needs of
+     * the project that the grid has no field for.
+     */
+    data?: TData;
 }
 
 /** Where the project is read from. */
-export interface IProjectStrategy {
-    /**
-     * @param tasks The tasks the grid has loaded — for a project whose span is derived from them rather
-     * than stored. Wherever the truth lives, the server included, this is where it is read.
-     */
-    onGetProject: (params: { tasks: IRecord[] }) => Promise<IProject>;
+export interface IProjectStrategy<TData extends ProjectData = ProjectData> {
+    /** Wherever the truth lives, the server included, this is where the project is read. */
+    onGetProject: () => Promise<IProject<TData>>;
 }
 
 /** Lifecycle events for the project load. */
-export interface IProjectProviderEvents {
+export interface IProjectProviderEvents<TData extends ProjectData = ProjectData> {
     onBeforeProjectRefreshed: () => void;
     /** @param project The project as it now stands. The Gantt's project markers follow this. */
-    onAfterProjectRefreshed: (project: IProject) => void;
+    onAfterProjectRefreshed: (project: IProject<TData>) => void;
     onError: (error: any, message: string) => void;
 }
 
-export interface IProjectProviderParameters {
+export interface IProjectProviderParameters<TData extends ProjectData = ProjectData> {
     /** Where the project is read from. */
-    strategy: IProjectStrategy;
+    strategy: IProjectStrategy<TData>;
     /** Where the task side and the other modules are reached. Resolve in methods, never in a constructor. */
     services: ITaskGridServiceLocator;
-    /**
-     * The task columns whose edits move the project's dates. A save touching one of them refreshes the
-     * project; omit them and only the first load resolves it.
-     */
-    dateColumnNames?: string[];
 }
 
-/** The loaded project, kept current as the tasks change. */
-export interface IProjectProvider {
+/** The project as it was loaded. */
+export interface IProjectProvider<TData extends ProjectData = ProjectData> {
     /** Lifecycle events. */
-    events: IEventEmitter<IProjectProviderEvents>;
+    events: IEventEmitter<IProjectProviderEvents<TData>>;
+    /** Reads the project through the strategy, reports it, and hands it back. */
+    refresh: () => Promise<IProject<TData>>;
     /**
-     * Reads the project through the strategy and reports it. Driven by the provider itself — on the first
-     * data load, and after a save that touched one of `dateColumnNames`.
-     * @param tasks The tasks to resolve it from. Defaults to every loaded task.
+     * The project. There is always one — the strategy answers with a project or fails.
+     * @throws Before the first refresh completed, which the grid does as it loads.
      */
-    refresh: (tasks?: IRecord[]) => Promise<void>;
-    /** Where the project starts, or `null` when it has none — or nothing has loaded yet. */
-    getStartDate: () => Date | null;
-    /** Where it ends, or `null` when it has none — or nothing has loaded yet. */
-    getEndDate: () => Date | null;
-    /** The project record. `undefined` until the first load completed. */
-    getEntityReference: () => ComponentFramework.EntityReference | undefined;
+    getProject: () => IProject<TData>;
 }
 
 /**
- * An {@link IProjectStrategy} with what it loaded kept for whoever asks, and the wiring that keeps it
- * current: the first data load resolves it, and a save that moved a task's dates resolves it again.
+ * An {@link IProjectStrategy} with what it loaded kept for whoever asks.
  *
- * Built by `createProjectModule`, never constructed directly by a consumer.
+ * Refreshed once, by the grid, as it finishes loading — the same way the dependencies and checklist
+ * providers are driven. Built by `createProjectModule`, never constructed directly by a consumer.
  */
-export class ProjectProvider implements IProjectProvider {
-    public events = new EventEmitter<IProjectProviderEvents>();
-    private _strategy: IProjectStrategy;
+export class ProjectProvider<TData extends ProjectData = ProjectData> implements IProjectProvider<TData> {
+    public events = new EventEmitter<IProjectProviderEvents<TData>>();
+    private _strategy: IProjectStrategy<TData>;
     private _services: ITaskGridServiceLocator;
-    private _dateColumnNames: string[];
-    private _project?: IProject;
+    private _project?: IProject<TData>;
 
-    constructor(parameters: IProjectProviderParameters) {
+    constructor(parameters: IProjectProviderParameters<TData>) {
         this._strategy = parameters.strategy;
         this._services = parameters.services;
-        this._dateColumnNames = parameters.dateColumnNames ?? [];
-        this._registerRefresh();
         this._registerCleanup();
     }
 
-    public async refresh(tasks?: IRecord[]): Promise<void> {
-        await ErrorHelper.executeWithErrorHandling({
+    public async refresh(): Promise<IProject<TData>> {
+        return await ErrorHelper.executeWithErrorHandling({
             operation: async () => {
                 this.events.dispatchEvent('onBeforeProjectRefreshed');
-                const project = await this._strategy.onGetProject({ tasks: tasks ?? this._taskDataProvider.getAllRecords() });
+                const project = await this._strategy.onGetProject();
                 this._project = project;
                 this.events.dispatchEvent('onAfterProjectRefreshed', project);
+                return project;
             },
             onError: (error, message) => this.events.dispatchEvent('onError', error, message),
         });
     }
 
-    public getStartDate(): Date | null {
-        return this._project?.startDate ?? null;
-    }
-
-    public getEndDate(): Date | null {
-        return this._project?.endDate ?? null;
-    }
-
-    public getEntityReference(): ComponentFramework.EntityReference | undefined {
-        return this._project?.entityReference;
-    }
-
-    //nothing outside has to drive the load: the provider follows the task side itself. Waited for rather than resolved
-    //— the module is built before the data layer exists.
-    private _registerRefresh(): void {
-        this._services.whenAvailable('taskDataProvider', provider => {
-            provider.addEventListener('onFirstDataLoaded', () => this.refresh());
-            provider.addEventListener('onAfterRecordSaved', result => {
-                if (!result.success || !result.fields.some(field => this._dateColumnNames.includes(field))) {
-                    return;
-                }
-                this.refresh();
-            });
-        });
+    public getProject(): IProject<TData> {
+        if (!this._project) {
+            throw new Error('The project has not been loaded yet. The grid refreshes it as it loads, so it is only there after that.');
+        }
+        return this._project;
     }
 
     //releases the provider's listeners when the control it belongs to goes away. Waited for rather than resolved: the
@@ -124,9 +105,5 @@ export class ProjectProvider implements IProjectProvider {
         this._services.whenAvailable('datasetControl', datasetControl => {
             datasetControl.events.addEventListener('onBeforeDestroy', () => this.events.clearEventListeners());
         });
-    }
-
-    private get _taskDataProvider() {
-        return this._services.get('taskDataProvider');
     }
 }

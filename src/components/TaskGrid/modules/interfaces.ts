@@ -17,7 +17,7 @@ import type { ICommandBarItemProps } from "@legacy";
 import type { IGanttServiceLocator } from "@components/TaskGrid/modules/gantt/services";
 import type { IGanttMarkerProps, IGanttTaskTooltipProps } from "@components/TaskGrid/modules/gantt/gantt-timeline/context";
 import type { IGanttViewProps } from "@components/TaskGrid/modules/gantt/gantt-view/GanttView";
-import type { IProjectProvider } from "@components/TaskGrid/modules/project";
+import type { IProjectProvider, ProjectData } from "@components/TaskGrid/modules/project";
 
 /** Lifecycle events for the personal-views operations. */
 export interface IUserQueryDataProviderEvents {
@@ -246,9 +246,9 @@ export interface IGanttModule {
 }
 
 /** What the project module contributes. Built by {@link createProjectModule}. */
-export interface IProjectModule {
+export interface IProjectModule<TData extends ProjectData = ProjectData> {
     /** The project the tasks belong to, and the dates it spans. */
-    provider: IProjectProvider;
+    provider: IProjectProvider<TData>;
 }
 
 /**
