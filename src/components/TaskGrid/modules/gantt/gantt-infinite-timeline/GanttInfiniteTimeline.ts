@@ -124,8 +124,9 @@ export class GanttInfiniteTimeline implements IGanttInfiniteTimeline {
             repaint = true;
         }
         if (repaint) {
+            //deferred, so the chart can be torn down before it runs - a scroll that lands on unmount
             setTimeout(() => {
-                this._gantt.render();
+                this._services.find('ganttChart')?.render();
             }, 20)
         }
     }

@@ -80,7 +80,10 @@ export const useTimelineTaskCreate = () => {
             return;
         }
         dragging.setDraggingDisabled(enabled);
-        gantt.$root.classList.toggle(CURSOR_CLASS, enabled);
+        //the chart drops its root in `destructor`, and this stands the gesture down from a cleanup that
+        //can run after that
+        const root: HTMLElement | undefined = gantt.$root;
+        root?.classList.toggle(CURSOR_CLASS, enabled);
     };
 
     const clearDrag = () => {
@@ -237,17 +240,20 @@ export const useTimelineTaskCreate = () => {
         window.addEventListener('keydown', onKeyDown);
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
-        //captured, because the chart's own mousedown handler would otherwise get there first
-        gantt.$root.addEventListener('contextmenu', onContextMenu, true);
-        gantt.$root.addEventListener('mousedown', onMouseDown, true);
+        //held rather than read again on cleanup: the chart drops its root in `destructor`, which can happen
+        //before this effect is cleaned up. Captured listeners, because the chart's own mousedown handler
+        //would otherwise get there first
+        const root = gantt.$root;
+        root.addEventListener('contextmenu', onContextMenu, true);
+        root.addEventListener('mousedown', onMouseDown, true);
 
         return () => {
             window.removeEventListener('keyup', onKeyUp);
             window.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('mouseup', onMouseUp);
-            gantt.$root.removeEventListener('contextmenu', onContextMenu, true);
-            gantt.$root.removeEventListener('mousedown', onMouseDown, true);
+            root.removeEventListener('contextmenu', onContextMenu, true);
+            root.removeEventListener('mousedown', onMouseDown, true);
             setTaskCreateMode(false);
             autoScroll.stop();
             clearDrag();

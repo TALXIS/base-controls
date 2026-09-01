@@ -45,12 +45,18 @@ export class GanttDragging implements IGanttDragging {
         return this._services.get('ganttChart');
     }
 
+    //the chart is typed as always having a root, but `destructor` drops it and takes the chart's
+    //registration with it - and a gesture can stand down after that, from a React cleanup
+    private get _root(): HTMLElement | undefined {
+        return this._services.find('ganttChart')?.$root;
+    }
+
     public setDraggingDisabled(disabled: boolean) {
-        this._gantt.$root.classList.toggle(GANTT_DRAGGING_DISABLED_CLASS, disabled);
+        this._root?.classList.toggle(GANTT_DRAGGING_DISABLED_CLASS, disabled);
     }
 
     public isDraggingDisabled(): boolean {
-        return this._gantt.$root.classList.contains(GANTT_DRAGGING_DISABLED_CLASS);
+        return this._root?.classList.contains(GANTT_DRAGGING_DISABLED_CLASS) ?? false;
     }
 
     private _registerEventListeners() {
