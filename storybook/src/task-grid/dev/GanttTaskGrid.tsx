@@ -1,7 +1,7 @@
 import React from 'react'
 import { initializeIcons } from '@fluentui/react'
-import { MemoryTaskGridDescriptor, TaskGrid, createGanttModule, createProjectModule } from '@talxis/base-controls'
-import type { IProjectStrategy, ISavedQuery } from '@talxis/base-controls'
+import { MemoryProjectStrategy, MemoryTaskGridDescriptor, TaskGrid, createGanttModule, createProjectModule } from '@talxis/base-controls'
+import type { ISavedQuery } from '@talxis/base-controls'
 import { IRawRecord } from '@talxis/client-libraries'
 import {
     PARENT_ID_COL,
@@ -52,13 +52,6 @@ const getFixtureDates = (records: IRawRecord[]) => {
 export const GanttTaskGrid = () => {
     const descriptor = React.useMemo(() => {
         const records = structuredClone(TASK_SOURCE.records)
-        const projectStrategy: IProjectStrategy = {
-            onGetProject: async () => ({
-                id: '00000000-0000-0000-0000-00000000proj',
-                name: 'Dev Project',
-                ...getFixtureDates(records),
-            }),
-        }
         return new MemoryTaskGridDescriptor({
             height: '700px',
             onInitialize: async () => ({
@@ -95,7 +88,14 @@ export const GanttTaskGrid = () => {
                         services,
                     }),
                     onGetProjectModule: ({ services }) => createProjectModule({
-                        strategy: projectStrategy,
+                        strategy: new MemoryProjectStrategy({
+                            project: {
+                                id: '00000000-0000-0000-0000-00000000proj',
+                                name: 'Dev Project',
+                                ...getFixtureDates(records),
+                            },
+                            services,
+                        }),
                         services,
                     }),
                 },
