@@ -133,7 +133,6 @@ export interface IMemoryTaskGridDescriptorInitializeResult {
     modules?: IMemoryModules;
 }
 
-/** Constructor parameters for {@link MemoryTaskGridDescriptor}. */
 export interface IMemoryTaskGridDescriptorParams {
     /**
      * Resolves everything: the records, the metadata, the field mapping, the system views, the grid
@@ -178,7 +177,7 @@ export interface IMemoryTaskGridDescriptorParams {
  */
 export class MemoryTaskGridDescriptor implements ITaskGridDescriptor {
     private _params: IMemoryTaskGridDescriptorParams;
-    /** Whatever the last `onLoadDependencies()` call resolved. */
+    //whatever the last `onLoadDependencies()` call resolved.
     private _initialized!: IMemoryTaskGridDescriptorInitializeResult;
 
     constructor(params: IMemoryTaskGridDescriptorParams) {

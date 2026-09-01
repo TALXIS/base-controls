@@ -13,7 +13,6 @@ export interface IGanttInfiniteTimeline {
     isScrollBlocked: () => boolean;
 }
 
-/** Constructor parameters for {@link GanttInfiniteTimeline}. */
 export interface IGanttInfiniteTimelineParameters {
     /** Where the chart and the other parts are reached. */
     services: IGanttServiceLocator;

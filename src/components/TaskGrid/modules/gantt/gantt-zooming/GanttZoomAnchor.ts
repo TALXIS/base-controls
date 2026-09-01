@@ -2,7 +2,6 @@ import { GanttStatic } from "gantt-trial";
 import { IGanttServiceLocator } from "../services";
 import { IGanttViewStateProvider } from "../gantt-view-state";
 
-/** Constructor parameters for {@link GanttZoomAnchor}. */
 export interface IGanttZoomAnchorParameters {
     /** Where the chart and the view's state are reached. */
     services: IGanttServiceLocator;
@@ -11,9 +10,8 @@ export interface IGanttZoomAnchorParameters {
 /**
  * The date a zoom keeps under the pointer.
  *
- * Zooming re-renders the scale, which would otherwise leave the user looking at a different part of the
- * project than the one they were pointing at. The anchor is remembered until they scroll — that is them
- * choosing somewhere else — and written through to the view's state so a remount reopens there.
+ * Remembered until the user scrolls — that is them choosing somewhere else — and written through to the
+ * view's state so a remount reopens there.
  */
 export class GanttZoomAnchor {
     private _services: IGanttServiceLocator;
@@ -37,9 +35,8 @@ export class GanttZoomAnchor {
     /**
      * The date to hold at `anchorX` — the one already pending, or the date now under it.
      *
-     * Taking the pending one first is what keeps a run of zoom steps anchored to the same date instead of
-     * drifting with each re-render. There is nothing to anchor to until the chart has rendered a scale, so
-     * the first zoom of a mount can come back empty.
+     * Pending-first keeps a run of zoom steps on the same date instead of drifting with each re-render.
+     * Empty until the chart has rendered a scale to read positions from.
      */
     public getStableDate(anchorX: number): Date | undefined {
         if (this._pendingDate) {

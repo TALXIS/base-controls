@@ -4,13 +4,9 @@ import { IRecord } from "@talxis/client-libraries";
 import { RowGroupOpenedEvent } from "@ag-grid-community/core";
 import { IGanttServiceLocator } from "../services";
 
-/**
- * How long a click waits before it toggles a row. A double click opens the task instead, so the toggle
- * has to wait long enough to see whether a second click is coming.
- */
+/** A double click opens the task, so the toggle has to wait to see whether a second click is coming. */
 const TASK_CLICK_DELAY_MS = 200;
 
-/** Constructor parameters for {@link GanttExpansion}. */
 export interface IGanttExpansionParameters {
     /** Where the chart and the grid's api are reached. */
     services: IGanttServiceLocator;
@@ -27,9 +23,8 @@ export interface IGanttExpansion {
 /**
  * Expansion, end to end: the rows the user opened, the chart's open/close, and the grid's.
  *
- * Both directions live here because they are one concern — a row is open or it is not, and whichever half
- * the user clicked, the other follows. Neither direction needs an echo guard: each side is only touched
- * when it disagrees, which is what stops the loop.
+ * Neither direction needs an echo guard — each side is only touched when it disagrees, which is what
+ * stops the loop.
  */
 export class GanttExpansion implements IGanttExpansion {
     private _services: IGanttServiceLocator;
@@ -53,7 +48,6 @@ export class GanttExpansion implements IGanttExpansion {
 
     private _registerChartEventListeners(): void {
         const chart = this._chart;
-        //a click toggles the row, a double click opens the task
         chart.attachEvent('onTaskClick', (taskId: string) => {
             this._debouncedToggle.clear();
             this._debouncedToggle(taskId);
@@ -75,7 +69,6 @@ export class GanttExpansion implements IGanttExpansion {
         });
     }
 
-    /** The user clicked a task bar: the chart and the grid both follow. */
     private _toggle(taskId: string): void {
         const expanded = !this._chart.getTask(taskId).$open;
         this._setChartTaskExpanded(taskId, expanded);

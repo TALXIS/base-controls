@@ -80,7 +80,6 @@ export interface ICreateTaskOptions {
     data?: { [columnName: string]: any };
 }
 
-/** Constructor parameters for {@link TaskDataProvider}. */
 export interface ITaskDataProviderParameters {
     /** Every data access and mutation goes through it. */
     strategy: ITaskDataProviderStrategy;
@@ -241,7 +240,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._services.get('savedQueryDataProvider');
     }
 
-    /** The user-defined columns, when the custom-columns module is registered. */
+    //the user-defined columns, when the custom-columns module is registered.
     private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
         return this._services.find('customColumnsModule')?.provider;
     }
@@ -363,12 +362,7 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         })
     }
 
-    /**
-     * Resolves where a drop lands: the parent, and the siblings on either side of it, taken from the
-     * complete record set rather than the filtered view.
-     *
-     * @returns `null` when the move cannot be made.
-     */
+    //the siblings a drop lands between come from the complete record set, not the filtered view
     private _resolveMove(movingTaskId: string, targetTaskId: string, position: 'above' | 'below' | 'child'): ITaskMoveParams | null {
         const movingRecord = this.getRecordsMap()[movingTaskId];
         const targetRecord = this.getRecordsMap()[targetTaskId];
@@ -410,10 +404,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         };
     }
 
-    /**
-     * Where a newly created task lands: first among every existing child of its parent, unless the
-     * caller named the siblings it goes between.
-     */
+    //where a newly created task lands: first among every existing child of its parent, unless the caller named the
+    //siblings it goes between.
     private _resolveCreate(parentTaskId?: string, options?: ICreateTaskOptions): ITaskCreateParams {
         const siblings = this._taskTree.structure.getChildren(parentTaskId ?? null);
         const recordsMap = this.getRecordsMap();
@@ -622,7 +614,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         })
     }
 
-    /** Subscribes to everything the provider reacts to, once, at construction. */
     private _registerTaskEventListeners(): void {
         //expanding a template is what creates the tasks it describes: subscribed before anything else
         //gets the chance, so every later listener sees tasks that already exist.
@@ -637,12 +628,8 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         });
     }
 
-    /**
-     * Adds the tasks a template expanded into, raising the same events a task creation does.
-     *
-     * The records arrive finished — what they hold and where they sit is the template provider's — so
-     * this only adds them.
-     */
+    //adds the tasks a template expanded into, raising the same events a task creation does. The records arrive finished
+    //— what they hold and where they sit is the template provider's — so this only adds them.
     private async _createTasksFromTemplate(rawRecords: IRawRecord[] | null, parentTaskId?: string): Promise<void> {
         if (!rawRecords?.length) {
             return;

@@ -180,7 +180,7 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
         this._services = params.services;
     }
 
-    /** The user-defined columns, when the custom-columns module is registered. */
+    //the user-defined columns, when the custom-columns module is registered.
     private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
         return this._services.find('customColumnsModule')?.provider
     }
@@ -385,11 +385,11 @@ export class DataverseTaskStrategy implements ITaskDataProviderStrategy {
         })
     }
 
-    /** Routes a form's parameters through the `onGetFormParameters` hook, defaulting to no change. */
+    //routes a form's parameters through the `onGetFormParameters` hook, defaulting to no change.
     private _getFormParameters = (operation: DataverseFormOperation, defaultParameters: IFormParameters): IFormParameters =>
         this._params.onGetFormParameters?.(operation, defaultParameters) ?? defaultParameters;
 
-    /** What every write needs to address a task: the entity, its set, the mapping and the provider. */
+    //what every write needs to address a task: the entity, its set, the mapping and the provider.
     private get _entity(): { entityName: string; entitySetName: string; fieldMapping: IDataverseFieldMapping; provider: ITaskDataProvider } {
         return {
             entityName: this._entityName,

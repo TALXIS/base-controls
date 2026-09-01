@@ -208,15 +208,13 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         this._preferredQuery = parameters.preferredQuery;
     }
 
-    /**
-     * The personal-views provider, from the user-queries module. Absent means the feature is off: no
-     * *My views*, no save commands and no view manager.
-     */
+    //the personal-views provider, from the user-queries module. Absent means the feature is off: no *My views*, no save
+    //commands and no view manager.
     private get _userQueryProvider(): IUserQueryDataProvider | undefined {
         return this._services.find('userQueriesModule')?.provider;
     }
 
-    /** The user-defined columns, when the custom-columns module is registered. */
+    //the user-defined columns, when the custom-columns module is registered.
     private get _customColumnsDataProvider(): ICustomColumnsDataProvider | undefined {
         return this._services.find('customColumnsModule')?.provider;
     }
@@ -301,10 +299,8 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         this._applyHooks(userQueries);
     }
 
-    /**
-     * The current query is a copy of whichever query it came from, with its own columns array, so it is
-     * hooked in its own right rather than through the one it was copied from.
-     */
+    //the current query is a copy of whichever query it came from, with its own columns array, so it is hooked in its
+    //own right rather than through the one it was copied from.
     private _applyHooks(userQueries: ISavedQuery[]): void {
         for (const query of [...this._systemQueries, ...userQueries, this.getCurrentQuery()]) {
             this._hooks.apply(query);
@@ -373,11 +369,8 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
         return columns;
     }
 
-    /**
-     * Repairs each of a query's columns against the catalogue, which is what a stored query needs: it keeps
-     * little more than a column's name. A catalogue entry the query does not name is not added — it is not
-     * part of that query.
-     */
+    //repairs each of a query's columns against the catalogue, which is what a stored query needs: it keeps little more
+    //than a column's name. A catalogue entry the query does not name is not added — it is not part of that query.
     private _parseSavedQueryMetadata(metadata: ISavedQueryMetadata): ISavedQueryMetadata {
         const columns = metadata.columns.map(column => {
             const systemColumn = this._systemQueriesColumnsMap.get(column.name);

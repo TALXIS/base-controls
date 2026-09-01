@@ -12,7 +12,6 @@ export interface IGanttData {
     load: () => void;
 }
 
-/** Constructor parameters for {@link GanttData}. */
 export interface IGanttDataParameters {
     /** Where the chart and the other parts are reached. */
     services: IGanttServiceLocator;
@@ -85,7 +84,7 @@ export class GanttData implements IGanttData {
         this._isFirstLoad = false;
     }
 
-    /** Every record the grid renders, in its display order — the rows the chart mirrors. */
+    //the tree's view is the grid's own display order, so the chart mirrors the rows the user sees
     private _getVisibleRecords(): IRecord[] {
         const recordsMap = this._dataProvider.getRecordsMap();
         return this._dataProvider.getRecordTree().view.getOrderedIds()

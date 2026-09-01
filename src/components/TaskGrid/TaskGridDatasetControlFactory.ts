@@ -88,10 +88,8 @@ export class TaskGridDatasetControlFactory {
         return datasetControl;
     }
 
-    /**
-     * Registers each resolved module under its own key. A module the descriptor left out registers
-     * nothing, so its key stays absent and `find` reports the feature as off.
-     */
+    //registers each resolved module under its own key. A module the descriptor left out registers nothing, so its key
+    //stays absent and `find` reports the feature as off.
     private static _registerModules(services: ITaskGridServiceLocator, modules: ITaskGridModules): void {
         const { userQueries, templates, customColumns, gridCustomizer, lookupMany, dependencies, checklist, gantt, project } = modules;
         userQueries && services.register('userQueriesModule', () => userQueries);

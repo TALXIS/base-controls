@@ -335,12 +335,9 @@ export class DataverseTaskActions {
 
     // ── Creating a task ──────────────────────────────────────────────────────
 
-    /**
-     * Everything a new task starts with, keyed by column: the caller's defaults, and the placement the
-     * grid resolves — the project, the parent task, and the rank that puts it before its siblings.
-     *
-     * Lookups stay entity references here; what a Dataverse create makes of them is the converters' job.
-     */
+    //everything a new task starts with, keyed by column: the caller's defaults, and the placement the grid resolves —
+    //the project, the parent task, and the rank that puts it before its siblings. Lookups stay entity references here;
+    //what a Dataverse create makes of them is the converters' job.
     private static async _getNewTaskValues(params: IDataverseTaskCreateParams): Promise<INewTaskValues> {
         const { parentRecord, previousSibling, nextSibling, fieldMapping, provider, projectReference, onGetNewTaskDefaults, data } = params;
         const placement: { [columnName: string]: any } = {};
@@ -364,7 +361,7 @@ export class DataverseTaskActions {
         };
     }
 
-    /** Creates the task through the Web API, values and placement in one body. */
+    //creates the task through the Web API, values and placement in one body.
     private static async _createTaskThroughWebApi(values: INewTaskValues, params: IDataverseTaskCreateParams): Promise<IRawRecord | null> {
         const { entityName, onGetRawRecords } = params;
         const payload = await this._toWebApiPayload({ ...values.defaults, ...values.placement }, entityName);
@@ -372,13 +369,9 @@ export class DataverseTaskActions {
         return (await onGetRawRecords([result.id]))[0];
     }
 
-    /**
-     * Opens the create form with the values prefilled, then writes the placement onto what was saved —
-     * the rank the form has no field for, and the links the grid resolved.
-     *
-     * The defaults are not written again: they reached the form as prefill, and what the user did with
-     * them there is what the task keeps.
-     */
+    //opens the create form with the values prefilled, then writes the placement onto what was saved — the rank the form
+    //has no field for, and the links the grid resolved. The defaults are not written again: they reached the form as
+    //prefill, and what the user did with them there is what the task keeps.
     private static async _createTaskThroughForm(values: INewTaskValues, params: IDataverseTaskCreateParams): Promise<IRawRecord | null> {
         const { entityName, createFormId, onGetFormParameters, onGetRawRecords } = params;
         const { pageInput, navigationOptions } = onGetFormParameters('create', {
@@ -399,10 +392,8 @@ export class DataverseTaskActions {
         return (await onGetRawRecords([entityReference.id.guid]))[0];
     }
 
-    /**
-     * The values as the `data` a create form reads: a lookup becomes the three keys the form binds to,
-     * everything else is written as it came.
-     */
+    //the values as the `data` a create form reads: a lookup becomes the three keys the form binds to, everything else
+    //is written as it came.
     private static _toFormPrefill(values: { [columnName: string]: any }): { [key: string]: any } {
         const data: { [key: string]: any } = {};
         for (const [columnName, value] of Object.entries(values)) {
@@ -418,10 +409,8 @@ export class DataverseTaskActions {
         return data;
     }
 
-    /**
-     * The same values as a Web API body: a lookup becomes the `@odata.bind` its navigation property and
-     * the target's entity set spell out, everything else is written as it came.
-     */
+    //the same values as a Web API body: a lookup becomes the `@odata.bind` its navigation property and the target's
+    //entity set spell out, everything else is written as it came.
     private static async _toWebApiPayload(values: { [columnName: string]: any }, entityName: string): Promise<{ [key: string]: any }> {
         const payload: { [key: string]: any } = {};
         for (const [columnName, value] of Object.entries(values)) {
@@ -437,7 +426,7 @@ export class DataverseTaskActions {
         return payload;
     }
 
-    /** The entity reference behind a value, whether it arrived bare or as the array a lookup column holds. */
+    //the entity reference behind a value, whether it arrived bare or as the array a lookup column holds.
     private static _getLookupReference(value: any): ComponentFramework.EntityReference | null {
         const candidate = Array.isArray(value) ? value[0] : value;
         return candidate?.id?.guid && candidate?.etn ? candidate as ComponentFramework.EntityReference : null;
@@ -445,7 +434,7 @@ export class DataverseTaskActions {
 
     // ── Forms ────────────────────────────────────────────────────────────────
 
-    /** The side dialog every form opens in, unless the consumer overrides the parameters. */
+    //the side dialog every form opens in, unless the consumer overrides the parameters.
     private static _getFormNavigationOptions(): Xrm.Navigation.NavigationOptions {
         return {
             target: 2,
@@ -497,12 +486,12 @@ export class DataverseTaskActions {
 
     // ── Relationships and ranking ────────────────────────────────────────────
 
-    /** A sibling's rank, read off the record the provider resolved. */
+    //A sibling's rank, read off the record the provider resolved.
     private static _getStackRank(sibling: IRecord | undefined, fieldMapping: IDataverseFieldMapping): string | undefined {
         return sibling?.getValue(fieldMapping.stackRank) as string | undefined;
     }
 
-    /** The navigation property behind a lookup column, resolved from the entity's relationships. */
+    //the navigation property behind a lookup column, resolved from the entity's relationships.
     private static async _getNavigationalPropertyName(entityName: string, referencedEntityName: string, referencingAttribute: string): Promise<string> {
         const metadata: any = await window.Xrm.Utility.getEntityMetadata(entityName);
         const relationship = metadata.ManyToOneRelationships.getAll().find((rel: any) =>

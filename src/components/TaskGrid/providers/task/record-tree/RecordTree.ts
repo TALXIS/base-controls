@@ -66,7 +66,6 @@ export interface IRecordTree {
     readonly structure: IRecordStructure;
 }
 
-/** Constructor parameters for {@link RecordTree}. */
 interface IRecordTreeParameters {
     taskDataProvider: ITaskDataProvider;
 }
@@ -124,7 +123,7 @@ export class RecordTree implements IRecordTree {
     private _index: IHierarchyIndex = EMPTY_INDEX;
     private _projection: IViewProjection = EMPTY_PROJECTION;
     private _isBuilt = false;
-    /** Descendant lists, resolved on demand and dropped on the next build. */
+    //descendant lists, resolved on demand and dropped on the next build.
     private _descendants: Map<string, IRecord[]> = new Map();
 
     public readonly view: IRecordTreeView;
@@ -267,7 +266,7 @@ export class RecordTree implements IRecordTree {
         };
     }
 
-    /** Root-to-self ids and names per record, in one pass reusing the chains already resolved. */
+    //root-to-self ids and names per record, in one pass reusing the chains already resolved.
     private _buildAncestors(
         records: IRecord[],
         recordsMap: { [recordId: string]: IRecord },
@@ -313,7 +312,7 @@ export class RecordTree implements IRecordTree {
         return { ancestorIds, ancestorNames };
     }
 
-    /** The records no root reaches: a parent chain that loops, plus everything hanging below one. */
+    //the records no root reaches: a parent chain that loops, plus everything hanging below one.
     private _findUnreachable(records: IRecord[], childrenByParent: Map<string | null, IRecord[]>): Set<string> {
         const reachable = new Set<string>();
         const queue = [...(childrenByParent.get(null) ?? [])];
@@ -432,7 +431,7 @@ export class RecordTree implements IRecordTree {
 
     // ── The throwaway providers ─────────────────────────────────────────────
 
-    /** Which records match the active filter and quick find. Skipped entirely when nothing filters. */
+    //which records match the active filter and quick find. Skipped entirely when nothing filters.
     private _buildMatchingIds(index: IHierarchyIndex): Set<string> {
         const taskDataProvider = this._getTaskDataProvider();
         const filtering = taskDataProvider.getFiltering();
@@ -451,7 +450,7 @@ export class RecordTree implements IRecordTree {
         return new Set(Object.keys(provider.getRecordsMap()));
     }
 
-    /** Record id to its position in the provider's own sort order. */
+    //record id to its position in the provider's own sort order.
     private _buildSortingMap(index: IHierarchyIndex): { [recordId: string]: number } {
         const sortingMap: { [recordId: string]: number } = {};
         let position = -1;
@@ -476,7 +475,7 @@ export class RecordTree implements IRecordTree {
         return provider;
     }
 
-    /** Writes each record's ancestor names onto the virtual path column, reusing the resolved chains. */
+    //writes each record's ancestor names onto the virtual path column, reusing the resolved chains.
     private _patchRecordPaths(index: IHierarchyIndex): void {
         const pathColumn = this._getNativeColumns().path;
         if (!this._getTaskDataProvider().getColumnsMap()[pathColumn]) {

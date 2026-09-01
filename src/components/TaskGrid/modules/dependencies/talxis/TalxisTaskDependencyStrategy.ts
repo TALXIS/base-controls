@@ -20,7 +20,6 @@ const SCHEMA: Omit<IDataverseTaskDependencyStrategyParams, 'services'> = {
     },
 };
 
-/** Constructor parameters for {@link TalxisTaskDependencyStrategy}. */
 export interface ITalxisTaskDependencyStrategyParams {
     /**
      * Where the task side is reached: a deleted task's dependencies leave the grid, and a task whose form
@@ -57,13 +56,9 @@ export class TalxisTaskDependencyStrategy extends DataverseTaskDependencyStrateg
         this._registerEventListeners(params.services);
     }
 
-    /**
-     * Reloads a task's dependencies when its form closes. The form is where they are edited here, so what
-     * the grid holds for that task is stale the moment it is reopened.
-     *
-     * Waits for the task provider rather than resolving it: the grid builds its modules first, so there is
-     * nothing to reach at construction.
-     */
+    //reloads a task's dependencies when its form closes. The form is where they are edited here, so what the grid holds
+    //for that task is stale the moment it is reopened. Waits for the task provider rather than resolving it: the grid
+    //builds its modules first, so there is nothing to reach at construction.
     private _registerEventListeners(services: ITaskGridServiceLocator): void {
         services.whenAvailable('taskDataProvider', ({ taskEvents }) => {
             taskEvents.addEventListener('onAfterDatasetItemsOpened', async (entityReferences, isTaskEntity) => {

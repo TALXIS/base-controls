@@ -41,7 +41,6 @@ export interface IChecklistStrategy {
     onGetChecklistItems: (params: { taskIds: string[] }) => Promise<Record<string, IChecklistItem[]>>;
 }
 
-/** Constructor parameters for {@link ChecklistProvider}. */
 export interface IChecklistProviderParameters {
     /** Where the checklist items are read from. */
     strategy: IChecklistStrategy;
@@ -92,12 +91,9 @@ export class ChecklistProvider implements IChecklistProvider {
         this._registerCleanup();
     }
 
-    /**
-     * Puts this module's column on every view, hidden.
-     *
-     * Its cell reads this provider rather than a value on the task, so there is nothing to write, sort or
-     * filter by. Described on every refresh, so a view that stored only the name gets the rest back.
-     */
+    //puts this module's column on every view, hidden. Its cell reads this provider rather than a value on the task, so
+    //there is nothing to write, sort or filter by. Described on every refresh, so a view that stored only the name gets
+    //the rest back.
     private _registerColumns(): void {
         this._services.whenAvailable('savedQueryDataProvider', provider => {
             provider.registerHook(query => applyColumn(query, {
@@ -140,10 +136,8 @@ export class ChecklistProvider implements IChecklistProvider {
         return this.getItems(taskId).length > 0;
     }
 
-    /**
-     * Releases the provider's listeners when the control it belongs to goes away. Waited for rather than
-     * resolved: the module is built before the control exists.
-     */
+    //releases the provider's listeners when the control it belongs to goes away. Waited for rather than resolved: the
+    //module is built before the control exists.
     private _registerCleanup(): void {
         this._services.whenAvailable('datasetControl', datasetControl => {
             datasetControl.events.addEventListener('onBeforeDestroy', () => this.events.clearEventListeners());

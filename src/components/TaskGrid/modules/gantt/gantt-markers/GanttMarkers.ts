@@ -6,7 +6,6 @@ import { IGanttLabels } from "../labels";
 import { IProjectProvider } from '@components/TaskGrid/modules/project';
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 
-/** Constructor parameters for {@link GanttMarkers}. */
 export interface IGanttMarkersParameters {
     /** Where the chart, the project and the labels are reached. */
     services: IGanttServiceLocator;
@@ -139,7 +138,6 @@ export class GanttMarkers implements IGanttMarkers {
         }
     }
 
-    /** Adds, moves or removes one of the project's two markers, following the date it was given. */
     private _setProjectMarker(type: ProjectMarkerType, date: Date | null) {
         const existing = this._findByType(type);
         if (existing && !date) {

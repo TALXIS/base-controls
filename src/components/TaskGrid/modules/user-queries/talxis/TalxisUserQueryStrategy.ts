@@ -33,7 +33,6 @@ const _getFetchXml = (entityName: string, recordId?: string, ownerId?: string) =
     return LIQUID.parseAndRenderSync(FETCH_XML, { entityName, recordId, ownerId });
 }
 
-/** Constructor parameters for {@link TalxisUserQueryStrategy}. */
 export interface ITalxisUserQueryStrategyParameters {
     /**
      * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use

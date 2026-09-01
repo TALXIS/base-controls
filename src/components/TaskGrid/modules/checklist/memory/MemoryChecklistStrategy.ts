@@ -1,7 +1,6 @@
 import { IChecklistItem, IChecklistStrategy } from "../ChecklistProvider";
 import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
-/** Constructor parameters for {@link MemoryChecklistStrategy}. */
 export interface IMemoryChecklistStrategyParams {
     /**
      * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use

@@ -1,7 +1,6 @@
 import { IDeletedUserQueriesResult, ISavedQuery, IUserQueryStrategy } from "@components/TaskGrid/providers";
 import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
-/** Constructor parameters for {@link MemoryUserQueryStrategy}. */
 export interface IMemoryUserQueryStrategyParams {
     /**
      * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use

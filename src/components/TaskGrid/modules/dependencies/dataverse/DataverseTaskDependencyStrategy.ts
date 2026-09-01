@@ -5,7 +5,6 @@ import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 /** How many task ids one request filters on. The number the task strategy batches at. */
 const MAX_IDS_PER_REQUEST = 800;
 
-/** Constructor parameters for {@link DataverseTaskDependencyStrategy}. */
 export interface IDataverseTaskDependencyStrategyParams {
     /** Where the task side is reached, so a deleted task's dependencies are reloaded out of the grid. */
     services: ITaskGridServiceLocator;
@@ -100,12 +99,9 @@ export class DataverseTaskDependencyStrategy implements ITaskDependencyStrategy 
         return [...dependencies.values()];
     }
 
-    /**
-     * TEMPORARY: an unmapped option-set value should never happen — `dependencyTypeCodes` is meant to
-     * name every value the attribute can hold. Until that is proven against real data this falls back to
-     * finish-to-start and warns, rather than failing the whole load over one row. Make it throw once the
-     * mapping is trusted.
-     */
+    //TEMPORARY: an unmapped option-set value should never happen — `dependencyTypeCodes` is meant to name every value
+    //the attribute can hold. Until that is proven against real data this falls back to finish-to-start and warns,
+    //rather than failing the whole load over one row. Make it throw once the mapping is trusted.
     private _getType(code: unknown): TaskDependencyType {
         const type = this._params.dependencyTypeCodes[code as number];
         if (type) {

@@ -260,28 +260,22 @@ export class MemoryTaskActions {
 
     // ── Parent lookup ────────────────────────────────────────────────────────
 
-    /**
-     * The lookup value a task record stores for its parent: an entity-reference array under the plain
-     * column name, taken from the parent's own `getNamedReference()`.
-     *
-     * The display name is a snapshot — renaming a parent does not rewrite the references its children hold.
-     */
+    //the lookup value a task record stores for its parent: an entity-reference array under the plain column name, taken
+    //from the parent's own `getNamedReference()`. The display name is a snapshot — renaming a parent does not rewrite
+    //the references its children hold.
     private static _getParentReference(parent: IRecord | undefined): ComponentFramework.EntityReference[] | null {
         return parent ? [parent.getNamedReference()] : null;
     }
 
-    /** A sibling's rank, read off the record the provider resolved. */
+    //A sibling's rank, read off the record the provider resolved.
     private static _getStackRank(sibling: IRecord | undefined, nativeColumns: INativeColumns): string | undefined {
         return sibling?.getValue(nativeColumns.stackRank) as string | undefined;
     }
 
     // ── Task construction ────────────────────────────────────────────────────
 
-    /**
-     * Builds a new task record: every known column starts as `null`, the caller's defaults are
-     * applied on top, and the primary id, parent lookup and stack rank are computed last so they can
-     * never be overridden.
-     */
+    //builds a new task record: every known column starts as `null`, the caller's defaults are applied on top, and the
+    //primary id, parent lookup and stack rank are computed last so they can never be overridden.
     private static _buildTask(params: {
         metadata: IMemoryProviderEntityMetadata;
         nativeColumns: INativeColumns;

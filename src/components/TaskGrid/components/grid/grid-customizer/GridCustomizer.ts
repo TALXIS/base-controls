@@ -93,7 +93,6 @@ export interface IGridCustomizer {
     registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): void;
 }
 
-/** Constructor parameters for {@link GridCustomizer}. */
 export interface IGridCustomizerParameters {
     /** Everything it runs on, resolved when it is needed rather than held. */
     services: ITaskGridServiceLocator;
@@ -135,14 +134,10 @@ export class GridCustomizer implements IGridCustomizer {
         return this._taskDataProvider;
     }
 
-    /**
-     * Everything that needs the grid, run the moment there is one — the drag handler writes grid options
-     * from its own constructor, and the patched `setGridOption` has to be in place before the grid pushes
-     * its first columns.
-     *
-     * Once only, for the first api: the control and the grid are built and thrown away together, so a
-     * second api under the same control is a StrictMode double-mount rather than a lifecycle to support.
-     */
+    //everything that needs the grid, run the moment there is one — the drag handler writes grid options from its own
+    //constructor, and the patched `setGridOption` has to be in place before the grid pushes its first columns. Once
+    //only, for the first api: the control and the grid are built and thrown away together, so a second api under the
+    //same control is a StrictMode double-mount rather than a lifecycle to support.
     private _attachToGrid(gridApi: GridApi) {
         this._gridDragHandler = new GridDragHandler({
             gridApi: gridApi,
@@ -173,7 +168,7 @@ export class GridCustomizer implements IGridCustomizer {
         return this._services.get('components');
     }
 
-    /** The customization the caller registered, if the module is there at all. */
+    //the customization the caller registered, if the module is there at all.
     private get _strategy(): IGridCustomizerStrategy | undefined {
         return this._services.find('gridCustomizerModule')?.strategy;
     }
@@ -490,13 +485,8 @@ export class GridCustomizer implements IGridCustomizer {
         this._taskDataProvider.moveTask(draggedNode.id!, overNode.id!, position);
     }
 
-    /**
-     * Moves the row in the AG Grid store to where the task now sits.
-     *
-     * @param result What the move produced, or `null` when the task did not move: the provider refused
-     * the drop, or the strategy cancelled. Moving the store for either would show a move that never
-     * happened, so there is nothing to do.
-     */
+    //a null result is a move that did not happen - the provider refused the drop, or the strategy cancelled - and
+    //moving the store for it would show the user a move the data never made
     private _moveInto(movingFromRecordId: string, movingToRecordId: string, position: 'child' | 'above' | 'below', result: IRawRecord[] | null) {
         if (!result) {
             return;
@@ -571,13 +561,10 @@ export class GridCustomizer implements IGridCustomizer {
     }
 
 
-    /**
-     * Row classes are a function of *saved* state — `isActive()` above all — and AG Grid only re-evaluates
-     * `rowClassRules` when a row node's data changes, never on a `refreshCells`. A record whose values are
-     * edited in place keeps its old classes forever, so every successful save refreshes its row.
-     *
-     * Only on success: a save that failed leaves the record dirty, and the row as the user last saw it.
-     */
+    //row classes are a function of *saved* state — `isActive()` above all — and AG Grid only re-evaluates
+    //`rowClassRules` when a row node's data changes, never on a `refreshCells`. A record whose values are edited in
+    //place keeps its old classes forever, so every successful save refreshes its row. Only on success: a save that
+    //failed leaves the record dirty, and the row as the user last saw it.
     private _onAfterRecordSaved = (result: IRecordSaveOperationResult) => {
         if (!result.success) {
             return;
@@ -596,11 +583,9 @@ export class GridCustomizer implements IGridCustomizer {
         }, 0);
     }
 
-    /**
-     * Re-pushes each node's own record, which is what makes AG Grid run the row class rules over it again.
-     * `updateData` with the same object refreshes the row's cells instead of replacing them, so an open
-     * cell editor is left alone — `redrawRows` would destroy it mid-edit.
-     */
+    //re-pushes each node's own record, which is what makes AG Grid run the row class rules over it again. `updateData`
+    //with the same object refreshes the row's cells instead of replacing them, so an open cell editor is left alone —
+    //`redrawRows` would destroy it mid-edit.
     private _refreshRowClasses(recordIds: Set<string>) {
         for (const node of this._gridApi.getRenderedNodes()) {
             if (node.data && node.id && recordIds.has(node.id)) {

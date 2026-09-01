@@ -15,7 +15,6 @@ export interface IGanttSelection {
     destroy: () => void;
 }
 
-/** Constructor parameters for {@link GanttSelection}. */
 export interface IGanttSelectionParameters {
     /** Where the chart and the other parts are reached. */
     services: IGanttServiceLocator;

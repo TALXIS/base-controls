@@ -51,7 +51,6 @@ export interface ICustomColumnsDataProviderEvents {
 }
 
 /** Wraps an {@link ICustomColumnsStrategy} with the grid's error handling and event dispatch. */
-/** Constructor parameters for {@link CustomColumnsDataProvider}. */
 export interface ICustomColumnsDataProviderParameters {
     /** Where column definitions and values are stored. */
     strategy: ICustomColumnsStrategy;

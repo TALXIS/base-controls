@@ -56,7 +56,6 @@ export interface ITaskDependencyStrategy {
     onGetDependencies: (params: { taskIds: string[] }) => Promise<ITaskDependency[]>;
 }
 
-/** Constructor parameters for {@link DependenciesProvider}. */
 export interface IDependenciesProviderParameters {
     /** Where the dependencies are read from. */
     strategy: ITaskDependencyStrategy;
@@ -112,12 +111,9 @@ export class DependenciesProvider implements IDependenciesProvider {
         this._registerCleanup();
     }
 
-    /**
-     * Puts this module's two columns on every view, hidden, so each direction can be taken on its own.
-     *
-     * Their cells read this provider rather than a value on the task, so there is nothing to write, sort or
-     * filter by. Described on every refresh, so a view that stored only the name gets the rest back.
-     */
+    //puts this module's two columns on every view, hidden, so each direction can be taken on its own. Their cells read
+    //this provider rather than a value on the task, so there is nothing to write, sort or filter by. Described on every
+    //refresh, so a view that stored only the name gets the rest back.
     private _registerColumns(): void {
         this._services.whenAvailable('savedQueryDataProvider', provider => {
             provider.registerHook(query => COLUMNS.forEach(({ name, labelKey }) => applyColumn(query, {
@@ -169,22 +165,18 @@ export class DependenciesProvider implements IDependenciesProvider {
         return this._bySuccessor.has(taskId) || this._byPredecessor.has(taskId);
     }
 
-    /**
-     * Releases the provider's listeners when the control it belongs to goes away. Waited for rather than
-     * resolved: the module is built before the control exists.
-     */
+    //releases the provider's listeners when the control it belongs to goes away. Waited for rather than resolved: the
+    //module is built before the control exists.
     private _registerCleanup(): void {
         this._services.whenAvailable('datasetControl', datasetControl => {
             datasetControl.events.addEventListener('onBeforeDestroy', () => this.events.clearEventListeners());
         });
     }
 
-    /**
-     * The tasks touched by a dependency that is in one of the two sets but not the other — which covers
-     * every way a refresh can matter: a dependency appeared, one vanished, an endpoint moved (both the old
-     * and the new counterpart differ), or the type changed. Both ends of every such dependency count,
-     * which is what puts a task the refresh never named in the result.
-     */
+    //the tasks touched by a dependency that is in one of the two sets but not the other — which covers every way a
+    //refresh can matter: a dependency appeared, one vanished, an endpoint moved (both the old and the new counterpart
+    //differ), or the type changed. Both ends of every such dependency count, which is what puts a task the refresh
+    //never named in the result.
     private _affectedTaskIds(previous: ITaskDependency[], next: ITaskDependency[]): string[] {
         const previousKeys = new Set(previous.map(dependency => this._identity(dependency)));
         const nextKeys = new Set(next.map(dependency => this._identity(dependency)));
@@ -207,11 +199,9 @@ export class DependenciesProvider implements IDependenciesProvider {
         return `${dependency.id}|${dependency.predecessorTaskId}|${dependency.successorTaskId}|${dependency.type}`;
     }
 
-    /**
-     * What a refresh leaves alone: the dependencies it did not speak for. One is dropped when either
-     * endpoint is a refreshed task — the load is now the truth for it, including having deleted it — or
-     * when the load returned it again, so the same dependency cannot land in the set twice.
-     */
+    //what a refresh leaves alone: the dependencies it did not speak for. One is dropped when either endpoint is a
+    //refreshed task — the load is now the truth for it, including having deleted it — or when the load returned it
+    //again, so the same dependency cannot land in the set twice.
     private _untouchedBy(taskIds: string[], loaded: ITaskDependency[]): ITaskDependency[] {
         const refreshedTaskIds = new Set(taskIds);
         const loadedIds = new Set(loaded.map(dependency => dependency.id));

@@ -10,7 +10,6 @@ import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
  * error handling that surfaces a failing strategy in the grid's own error dialog, the cached list of
  * views, and the capture of the grid's current state into a view.
  */
-/** Constructor parameters for {@link UserQueryDataProvider}. */
 export interface IUserQueryDataProviderParameters {
     /** Where the views are stored. */
     strategy: IUserQueryStrategy;

@@ -12,12 +12,10 @@ import {
 const DEFAULT_ROW_HEIGHT = 42;
 
 /**
- * Everything the chart is told before it is drawn: its options, its layout, and the templates that dress
- * its rows and bars.
+ * Everything the chart is told before it is drawn: its options, its layout, its templates.
  *
- * Called by the manager between creating the chart and `init`. The templates are closures over the
- * locator rather than over values, because they run on every render and the answers change: the
- * selection, the hierarchy, whether weekends are shown.
+ * The templates close over the locator rather than over values, because they run on every render and the
+ * answers change: the selection, the hierarchy, whether weekends are shown.
  */
 export const configureChart = (gantt: GanttStatic, services: IGanttServiceLocator): void => {
     gantt.config.show_grid = false;

@@ -2,7 +2,6 @@ import { ITaskDependency, ITaskDependencyStrategy } from "../DependenciesProvide
 import { refreshDependenciesOnTaskDeletion } from "../refreshDependenciesOnTaskDeletion";
 import type { ITaskGridServiceLocator } from "@components/TaskGrid/services";
 
-/** Constructor parameters for {@link MemoryTaskDependencyStrategy}. */
 export interface IMemoryTaskDependencyStrategyParams {
     /** Where the task side is reached, so a deleted task takes its dependencies with it. */
     services: ITaskGridServiceLocator;
@@ -39,7 +38,7 @@ export class MemoryTaskDependencyStrategy implements ITaskDependencyStrategy {
             taskIds.has(dependency.predecessorTaskId) || taskIds.has(dependency.successorTaskId));
     }
 
-    /** Splices this strategy's own copy; what the consumer passed is untouched. */
+    //splices this strategy's own copy; what the consumer passed is untouched.
     private _removeDependenciesOf(taskIds: string[]): void {
         const deletedTaskIds = new Set(taskIds);
         for (let index = this._dependencies.length - 1; index >= 0; index--) {

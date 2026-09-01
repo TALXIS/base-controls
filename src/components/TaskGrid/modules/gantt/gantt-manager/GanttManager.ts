@@ -12,7 +12,6 @@ import { GanttScrollSync } from '../gantt-scroll-sync';
 import { GanttSelection, IGanttSelection } from '../gantt-selection';
 import { GanttZooming } from '../gantt-zooming';
 
-/** Constructor parameters for {@link GanttManager}. */
 export interface IGanttManagerParameters {
     /** Where the module's own services and the grid's are reached. */
     services: IGanttServiceLocator;
@@ -20,15 +19,7 @@ export interface IGanttManagerParameters {
     onGetCustomMarkers?: () => ICustomMarker[];
 }
 
-/**
- * Builds the chart when the timeline hands over a container, and tears it down with the control.
- *
- * Built with the modules, long before there is a grid or a container, so the two things it does at that
- * point are the two that cannot wait: putting the timeline's columns on the views before they load, and
- * registering the hook that shapes the grid's column definitions.
- *
- * Built by `createGanttModule`, never constructed directly by a consumer.
- */
+/** Builds the chart when the timeline hands over a container, and tears it down with the control. */
 export class GanttManager {
     private _services: IGanttServiceLocator;
     private _onGetCustomMarkers: () => ICustomMarker[];
@@ -48,12 +39,9 @@ export class GanttManager {
         this._registerCleanup();
     }
 
-    /**
-     * Builds the chart and its parts. The order is the contract: the chart is registered before the parts
-     * are built, because they configure it; anything that listens to the elements the chart *draws* is
-     * built after `init`; and the parts are registered after `init` too, because their presence is what
-     * tells the rest of the module the chart can be drawn on.
-     */
+    //the order is the contract: the chart is registered before the parts that configure it, anything
+    //listening to elements it draws is built after init, and the parts are registered after init because
+    //their presence is what says the chart can be drawn on
     private _start(container: HTMLDivElement): void {
         const gantt = Gantt.getGanttInstance();
         this._gantt = gantt;
@@ -89,10 +77,8 @@ export class GanttManager {
         data.load();
     }
 
-    /**
-     * Releases the chart when the control it belongs to goes away. Waited for rather than resolved: the
-     * module is built before the control exists.
-     */
+    //releases the chart when the control it belongs to goes away. Waited for rather than resolved: the module is built
+    //before the control exists.
     private _registerCleanup(): void {
         this._services.get('taskGridServices').whenAvailable('datasetControl', datasetControl => {
             datasetControl.events.addEventListener('onBeforeDestroy', () => this._destroy());

@@ -218,7 +218,6 @@ export interface IDataverseTaskGridDescriptorInitializeResult {
     modules?: IDataverseModules;
 }
 
-/** Constructor parameters for {@link DataverseTaskGridDescriptor}. */
 export interface IDataverseTaskGridDescriptorParams {
     /**
      * Resolves everything: the FetchXML, the field mapping, the system views, the records the query is

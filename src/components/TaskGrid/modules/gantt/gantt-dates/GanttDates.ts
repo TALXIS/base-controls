@@ -12,7 +12,6 @@ export interface IGanttDates {
     getDateFromString: (dateStr: string) => Date | null;
 }
 
-/** Constructor parameters for {@link GanttDates}. */
 export interface IGanttDatesParameters {
     /** Where the field mapping and the records are reached. */
     services: IGanttServiceLocator;

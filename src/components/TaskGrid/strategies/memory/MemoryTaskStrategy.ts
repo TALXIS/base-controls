@@ -249,7 +249,7 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
 
     // ── Derived state ────────────────────────────────────────────────────────
 
-    /** What every action reads: the provider's records and the names on them. */
+    //what every action reads: the provider's records and the names on them.
     private get _store(): { records: IRawRecord[]; metadata: IMemoryProviderEntityMetadata; nativeColumns: INativeColumns } {
         return {
             records: this._records,
@@ -258,34 +258,30 @@ export class MemoryTaskStrategy implements ITaskDataProviderStrategy {
         };
     }
 
-    /** The provider's records — the store. Read at call time, because the provider maintains it. */
+    //the provider's records — the store. Read at call time, because the provider maintains it.
     private get _records(): IRawRecord[] {
         return this._provider.getRawData();
     }
 
-    /** The entity metadata, owned by the provider — it was handed it by `onInitialize`. */
+    //the entity metadata, owned by the provider — it was handed it by `onInitialize`.
     private get _metadata(): IMemoryProviderEntityMetadata {
         return this._provider.getMetadata();
     }
 
-    /** The physical field names the descriptor mapped, owned by the provider. */
+    //the physical field names the descriptor mapped, owned by the provider.
     private get _nativeColumns(): INativeColumns {
         return this._provider.getNativeColumns();
     }
 
-    /**
-     * The grid's record instance for a task — what the actions work with. It carries the reads
-     * (`getValue`, `getNamedReference`) and, through `getRawData()`, the very object in the caller's
-     * array, so nothing needs a raw lookup of its own.
-     */
+    //the grid's record instance for a task — what the actions work with. It carries the reads (`getValue`,
+    //`getNamedReference`) and, through `getRawData()`, the very object in the caller's array, so nothing needs a raw
+    //lookup of its own.
     private _getRecord(taskId: string): IRecord | undefined {
         return this._provider.getRecordsMap()[taskId];
     }
 
-    /**
-     * The raw record for a task, for `onGetRawRecords` alone — the one hook that has to answer in raw
-     * data. Reads the provider's own map, which holds the very objects it was handed.
-     */
+    //the raw record for a task, for `onGetRawRecords` alone — the one hook that has to answer in raw data. Reads the
+    //provider's own map, which holds the very objects it was handed.
     private _getTask(taskId: string): IRawRecord | undefined {
         return this._provider.getRawDataMap()[taskId];
     }

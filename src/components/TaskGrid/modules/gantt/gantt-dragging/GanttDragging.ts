@@ -19,7 +19,6 @@ export interface IGanttDraggingEvents {
     onDragEnded: () => void;
 }
 
-/** Constructor parameters for {@link GanttDragging}. */
 export interface IGanttDraggingParameters {
     /** Where the chart and the other parts are reached. */
     services: IGanttServiceLocator;

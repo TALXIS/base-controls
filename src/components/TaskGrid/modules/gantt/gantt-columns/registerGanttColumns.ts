@@ -5,11 +5,8 @@ import { IGanttServiceLocator } from "../services";
 /**
  * Puts the timeline's columns on every view, hidden where a view leaves one out.
  *
- * They are ordinary task attributes rather than columns of the module's own, so the definitions come from
- * the views themselves — a system view showing the column is what describes it. The same thing the grid
- * does with the columns its own field mapping names.
- *
- * Called while the module is built, which is what puts the hook in before the views are loaded.
+ * They are ordinary task attributes, so their definitions come from the views themselves — a system view
+ * showing the column is what describes it. Registered while the module is built, before any view loads.
  */
 export const registerGanttColumns = (services: IGanttServiceLocator): void => {
     services.get('taskGridServices').whenAvailable('savedQueryDataProvider', provider => {

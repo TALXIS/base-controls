@@ -29,7 +29,6 @@ export interface IProjectProviderEvents {
     onError: (error: any, message: string) => void;
 }
 
-/** Constructor parameters for {@link ProjectProvider}. */
 export interface IProjectProviderParameters {
     /** Where the project is read from. */
     strategy: IProjectStrategy;
@@ -105,10 +104,8 @@ export class ProjectProvider implements IProjectProvider {
         return this._project?.entityReference;
     }
 
-    /**
-     * Nothing outside has to drive the load: the provider follows the task side itself. Waited for rather
-     * than resolved — the module is built before the data layer exists.
-     */
+    //nothing outside has to drive the load: the provider follows the task side itself. Waited for rather than resolved
+    //— the module is built before the data layer exists.
     private _registerRefresh(): void {
         this._services.whenAvailable('taskDataProvider', provider => {
             provider.addEventListener('onFirstDataLoaded', () => this.refresh());
@@ -121,10 +118,8 @@ export class ProjectProvider implements IProjectProvider {
         });
     }
 
-    /**
-     * Releases the provider's listeners when the control it belongs to goes away. Waited for rather than
-     * resolved: the module is built before the control exists.
-     */
+    //releases the provider's listeners when the control it belongs to goes away. Waited for rather than resolved: the
+    //module is built before the control exists.
     private _registerCleanup(): void {
         this._services.whenAvailable('datasetControl', datasetControl => {
             datasetControl.events.addEventListener('onBeforeDestroy', () => this.events.clearEventListeners());

@@ -8,7 +8,6 @@ enum RelationshipType {
     ManyToMany = 1
 }
 
-/** Constructor parameters for {@link LookupManyHandler}. */
 export interface ILookupManyHandlerParameters {
     /**
      * Logical name of the entity the column sits on — the task entity. Its metadata is where the

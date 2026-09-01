@@ -9,7 +9,6 @@ export const ATTRIBUTE_DEFINITION_ENTITY_NAME = 'talxis_attributedefinition';
 /** The table holding custom column values. */
 export const ATTRIBUTE_VALUE_ENTITY_NAME = 'talxis_attributevalue';
 
-/** Constructor parameters for {@link TalxisCustomColumnsStrategy}. */
 export interface ITalxisCustomColumnsStrategyParameters {
     /**
      * Where the rest of the grid is reached. Every strategy takes it, whether or not this one has a use
@@ -239,12 +238,10 @@ export class TalxisCustomColumnsStrategy implements ITalxisCustomColumnsStrategy
         return attribute;
     }
 
-    /**
-     * Reads the relationship to `talxis_attributevalue` off the entity's metadata and keeps the three
-     * names the grid needs from it: the collection to expand through, the lookup to bind against, and
-     * the entity set that lookup points at. A schema has one such relationship, so nothing has to be
-     * configured — `navigationPropertyName` is only consulted when there is more than one.
-     */
+    //reads the relationship to `talxis_attributevalue` off the entity's metadata and keeps the three names the grid
+    //needs from it: the collection to expand through, the lookup to bind against, and the entity set that lookup points
+    //at. A schema has one such relationship, so nothing has to be configured — `navigationPropertyName` is only
+    //consulted when there is more than one.
     private async _resolveRelationship(): Promise<void> {
         if (this._navigationPropertyName && this._referencingEntityNavigationPropertyName && this._entitySetName) {
             return;

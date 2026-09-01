@@ -19,7 +19,6 @@ export interface IGanttZooming {
     isLevelWithDaysVisible: () => boolean;
 }
 
-/** Constructor parameters for {@link GanttZooming}. */
 export interface IGanttZoomingParameters {
     /** Where the chart and the other parts are reached. */
     services: IGanttServiceLocator;
@@ -163,11 +162,7 @@ export class GanttZooming implements IGanttZooming {
         }
     }
 
-    /**
-     * A scroll the user made means the next zoom should anchor where they now are. One we made — while
-     * re-rendering the range around an anchor — means nothing, and the timeline is what knows the
-     * difference.
-     */
+    //a scroll of ours, re-rendering the range around an anchor, is not the user choosing somewhere else
     private _onHorizontalScroll(): void {
         if (this._timeline.isScrollBlocked()) {
             return;

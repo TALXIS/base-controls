@@ -26,7 +26,6 @@ export interface IGanttViewStateEvents {
     onShowWeekendsChanged: (showWeekends: boolean) => void;
 }
 
-/** Constructor parameters for {@link GanttViewState}. */
 export interface IGanttViewStateParameters {
     /** Where the control that carries the state, and the views that persist it, are reached. */
     services: IGanttServiceLocator;
@@ -99,12 +98,8 @@ export class GanttViewState implements IGanttViewStateProvider {
         this._getState().anchorDate = anchorDate?.toISOString();
     }
 
-    /**
-     * Read once and then held.
-     *
-     * Read lazily rather than in the constructor: this is built before the control exists, and it is the
-     * control's state that carries the slice over from the previous mount.
-     */
+    //read lazily: this is built before the control exists, and the control's state is what carries the
+    //slice over from the previous mount
     private _getState(): IGanttViewState {
         if (!this._state) {
             const state = this._services.get('taskGridServices').get('datasetControl').getState() as ITaskGridState;
@@ -116,7 +111,6 @@ export class GanttViewState implements IGanttViewStateProvider {
         return this._state;
     }
 
-    /** Hands the state back whenever the grid captures a view's — a remount, or a save into a view. */
     private _registerStateHook(): void {
         this._services.get('taskGridServices').whenAvailable('savedQueryDataProvider', provider => {
             provider.registerStateHook(metadata => setModuleState(metadata, GANTT_MODULE_STATE_KEY, this._getState()));

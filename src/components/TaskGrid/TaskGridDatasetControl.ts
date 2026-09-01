@@ -65,17 +65,14 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         return this._services;
     }
 
-    /** The descriptor this grid was built from. */
     private get _descriptor(): ITaskGridDescriptor {
         return this._services.get('descriptor');
     }
 
-    /** The service resolving every UI label. */
     private get _localizationService(): ILocalizationService<ITaskGridLabels> {
         return this._services.get('localizationService');
     }
 
-    /** The views the grid runs on. */
     private get _savedQueryDataProvider(): ISavedQueryDataProvider {
         return this._services.get('savedQueryDataProvider');
     }
