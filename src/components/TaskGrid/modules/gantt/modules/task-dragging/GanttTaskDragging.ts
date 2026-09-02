@@ -2,7 +2,9 @@ import { GanttStatic } from 'gantt-trial';
 import { ITaskDataProvider } from '@components/TaskGrid/providers';
 import { ITaskGridServiceLocator } from '@components/TaskGrid/services';
 import { IGanttFieldMapping, IGanttServiceLocator } from '../../services';
+import { GANTT_TASK_LINE_CLASS } from '../../classNames';
 import { IGanttDates } from '../../gantt-dates';
+import { IGanttInfiniteTimeline } from '../../gantt-infinite-timeline';
 import { IGanttTaskDraggingSettings } from './createGanttTaskDraggingModule';
 
 const RESIZE_MODE = 'resize';
@@ -47,6 +49,10 @@ export class GanttTaskDragging {
         return this._services.get('ganttDates');
     }
 
+    private get _timeline(): IGanttInfiniteTimeline {
+        return this._services.get('ganttInfiniteTimeline');
+    }
+
     private get _fieldMapping(): IGanttFieldMapping {
         return this._services.get('fieldMapping');
     }
@@ -60,19 +66,64 @@ export class GanttTaskDragging {
     }
 
     private _registerEventListeners() {
-        this._gantt.attachEvent('onBeforeTaskDrag', (id: string, mode: string) => this._onBeforeTaskDrag(mode));
+        this._gantt.attachEvent('onBeforeTaskDrag', (id: string, mode: string) => this._onBeforeTaskDrag(id, mode));
         this._gantt.attachEvent('onTaskDrag', (id: string, mode: string) => this._onTaskDrag(id, mode));
-        this._gantt.attachEvent('onAfterTaskDrag', () => this._onAfterTaskDrag());
+        this._gantt.attachEvent('onAfterTaskDrag', (id: string) => this._onAfterTaskDrag(id));
+        this._gantt.attachEvent('onGanttReady', this._onGanttReady);
+        this._gantt.attachEvent('onDestroy', this._onDestroy);
     }
+
+    //the pointer listeners go on once there is a root to put them on: the modules are built before the
+    //chart is drawn into one
+    private _onGanttReady = () => {
+        //captured, because the chart measures the bar against the scale in its own mousedown handler and
+        //the scale has to already fit the bar by then
+        this._gantt.$root?.addEventListener('mousedown', this._onPointerDown, true);
+        //on the document, so a press released off the chart is still an end - and after the chart's own
+        //handler, which sits on the body and is what finishes the drag
+        document.addEventListener('mouseup', this._onPointerUp);
+        return true;
+    };
+
+    private _onDestroy = () => {
+        document.removeEventListener('mouseup', this._onPointerUp);
+        return true;
+    };
+
+    private _onPointerDown = (event: MouseEvent) => {
+        if (!this._isTaskEditingEnabled) {
+            return;
+        }
+        if (!(event.target as HTMLElement)?.closest?.(`.${GANTT_TASK_LINE_CLASS}`)) {
+            return;
+        }
+        const taskId = this._gantt.locate(event);
+        if (!this._gantt.isTaskExists(taskId)) {
+            return;
+        }
+        const task = this._gantt.getTask(taskId);
+        if (task?.start_date && task?.end_date) {
+            this._timeline.fitRangeTo({ startDate: task.start_date, endDate: task.end_date });
+        }
+    };
+
+    //every press ends here, including one that never became a drag - and the range a press fitted is one
+    //the timeline would otherwise keep rendering
+    private _onPointerUp = () => {
+        this._timeline.restoreRange();
+    };
 
     //the chart runs every handler attached to this event and lets any of them veto, so the core's own
     //reasons to refuse a drag are not repeated here. Read now rather than captured: the parameter can
     //change without the chart being rebuilt
-    private _onBeforeTaskDrag(mode?: string): boolean {
+    private _onBeforeTaskDrag(taskId: string, mode?: string): boolean {
         if (!this._isTaskEditingEnabled) {
             return false;
         }
-        return mode === RESIZE_MODE ? this._settings.enableResize : this._settings.enableMove;
+        if (mode === RESIZE_MODE ? !this._settings.enableResize : !this._settings.enableMove) {
+            return false;
+        }
+        return true;
     }
 
     private _onTaskDrag(taskId: string, mode: string) {
@@ -86,8 +137,7 @@ export class GanttTaskDragging {
         }
         else {
             const draggedRecord = this._taskDataProvider.getRecordsMap()[taskId];
-            const originalDraggedStartDate = draggedRecord.getValue(startColumnName);
-            const originalDraggedStartTime = this._dates.getDateFromString(originalDraggedStartDate)?.getTime();
+            const originalDraggedStartTime = this._dates.getStartDate(draggedRecord)?.getTime();
             const draggedTaskStartTime = draggedTask.start_date?.getTime();
 
             if (originalDraggedStartTime === undefined || draggedTaskStartTime === undefined) {
@@ -95,7 +145,7 @@ export class GanttTaskDragging {
             }
 
             const draggedOffset = draggedTaskStartTime - originalDraggedStartTime;
-            const originalEndDate = this._dates.getDateFromString(draggedRecord.getValue(endColumnName));
+            const originalEndDate = this._dates.getEndDate(draggedRecord);
 
             if (!originalEndDate) {
                 return;
@@ -109,7 +159,8 @@ export class GanttTaskDragging {
         }
     }
 
-    private _onAfterTaskDrag() {
+    private _onAfterTaskDrag(taskId: string) {
         this._taskDataProvider.save();
     }
+
 }

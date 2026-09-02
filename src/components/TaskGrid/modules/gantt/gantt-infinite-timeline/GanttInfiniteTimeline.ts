@@ -5,6 +5,15 @@ import { IGanttServiceLocator } from '../services';
 export interface IGanttInfiniteTimeline {
     /** Rebuilds the rendered range around a date, keeping the visible span. */
     shrink: (params: { date: Date }) => void;
+    /**
+     * Grows the rendered range so a span falls inside it, for a gesture the chart measures in pixels.
+     *
+     * Call it before the chart takes any measurement of its own - growing the range's start moves the
+     * content's origin, and a coordinate taken before that means something else afterwards.
+     */
+    fitRangeTo: (params: { startDate: Date, endDate: Date }) => void;
+    /** Puts the range back to the one before {@link IGanttInfiniteTimeline.fitRangeTo} grew it. */
+    restoreRange: () => void;
     /** Scrolls to today, widening the range first when today is outside it. */
     jumpToToday: () => void;
     /** Runs the callback with this class's own scroll reactions suppressed. */
@@ -20,8 +29,10 @@ export interface IGanttInfiniteTimelineParameters {
 
 export class GanttInfiniteTimeline implements IGanttInfiniteTimeline {
     private static readonly _targetTimelineWidth = 5000;
+    private static readonly _fallbackDragHeadroom = 30 * 86_400_000;
 
     private _services: IGanttServiceLocator;
+    private _rangeBeforeFitting?: { startDate?: Date, endDate?: Date };
     private _blockScrollHandler = false;
     private _isLayoutReady = true;
 
@@ -61,6 +72,39 @@ export class GanttInfiniteTimeline implements IGanttInfiniteTimeline {
         }
     }
 
+    /**
+     * The chart works a drag out from pixels, and a position off the rendered scale has no date at all -
+     * so a bar reaching past either end of the scale cannot be dragged or resized towards that end until
+     * the scale reaches it. Grown by a screenful, which is as far as one gesture can travel.
+     */
+    public fitRangeTo(params: { startDate: Date, endDate: Date }) {
+        const { min_date: renderedStart, max_date: renderedEnd } = this._gantt.getState();
+        const growStart = !!renderedStart && +params.startDate < +renderedStart;
+        const growEnd = !!renderedEnd && +params.endDate > +renderedEnd;
+        if (!growStart && !growEnd) {
+            return;
+        }
+        const headroom = this._getViewportDuration();
+        this._rangeBeforeFitting ??= { startDate: this._gantt.config.start_date, endDate: this._gantt.config.end_date };
+        if (growStart) {
+            this._gantt.config.start_date = new Date(+params.startDate - headroom);
+        }
+        if (growEnd) {
+            this._gantt.config.end_date = new Date(+params.endDate + headroom);
+        }
+        this._renderKeepingViewport();
+    }
+
+    public restoreRange() {
+        if (!this._rangeBeforeFitting) {
+            return;
+        }
+        this._gantt.config.start_date = this._rangeBeforeFitting.startDate;
+        this._gantt.config.end_date = this._rangeBeforeFitting.endDate;
+        this._rangeBeforeFitting = undefined;
+        this._renderKeepingViewport();
+    }
+
     public shrink(params: { date: Date }) {
         const { date: anchorDate } = params;
         const scrollState = this._gantt.getScrollState();
@@ -88,18 +132,47 @@ export class GanttInfiniteTimeline implements IGanttInfiniteTimeline {
     }
 
 
-    private _registerEventListeners() {
-        this._gantt.attachEvent('onGanttScroll', (left: number, _top: number) => {
-            if (this._blockScrollHandler || !this._isLayoutReady) return;
-            this._onHorizontalScroll();
-        });
-        this._gantt.attachEvent('onGanttReady', () => {
-            setTimeout(() => {
-                this._isLayoutReady = true;
-            }, 1000);
-            return true;
+    //a range whose start moves takes every position on the chart with it, so the view is put back on the
+    //date it was showing rather than on the pixel it was showing
+    private _renderKeepingViewport() {
+        const leftEdgeDate = this._gantt.dateFromPos(this._gantt.getScrollState().x);
+        this.executeWithScrollBlock(() => {
+            this._gantt.render();
+            if (leftEdgeDate) {
+                this._gantt.scrollTo(this._gantt.posFromDate(leftEdgeDate));
+            }
         });
     }
+
+    private _getViewportDuration(): number {
+        const viewportWidth = this._gantt.$task?.offsetWidth ?? 0;
+        const leftPos = this._gantt.getScrollState().x;
+        const leftDate = this._gantt.dateFromPos(leftPos);
+        const rightDate = this._gantt.dateFromPos(leftPos + viewportWidth);
+        if (!leftDate || !rightDate) {
+            return GanttInfiniteTimeline._fallbackDragHeadroom;
+        }
+        return +rightDate - +leftDate;
+    }
+
+    private _registerEventListeners() {
+        this._gantt.attachEvent('onGanttScroll', this._onGanttScroll);
+        this._gantt.attachEvent('onGanttReady', this._onGanttReady);
+    }
+
+    private _onGanttScroll = () => {
+        if (this._blockScrollHandler || !this._isLayoutReady) {
+            return;
+        }
+        this._onHorizontalScroll();
+    };
+
+    private _onGanttReady = () => {
+        setTimeout(() => {
+            this._isLayoutReady = true;
+        }, 1000);
+        return true;
+    };
 
     private _onHorizontalScroll() {
         const unit = this._gantt.getScale().unit;
