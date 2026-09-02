@@ -7,9 +7,7 @@ export interface IGanttDates {
     getStartDate: (records?: IRecord[]) => Date | null;
     getEndDate: (records?: IRecord[]) => Date | null;
     getStartEndDateFromRecords: (records: IRecord[]) => { startDate: Date | null, endDate: Date | null, startRecord: IRecord | null, endRecord: IRecord | null };
-    getStartDateColumnName: () => string;
-    getEndDateColumnName: () => string;
-    getDateFromString: (dateStr: string) => Date | null;
+    getDateFromString: (dateStr: string | null) => Date | null;
 }
 
 export interface IGanttDatesParameters {
@@ -22,14 +20,6 @@ export class GanttDates implements IGanttDates {
 
     constructor(parameters: IGanttDatesParameters) {
         this._services = parameters.services;
-    }
-
-    public getStartDateColumnName(): string {
-        return this._services.get('fieldMapping').startDate;
-    }
-
-    public getEndDateColumnName(): string {
-        return this._services.get('fieldMapping').endDate;
     }
 
     public getDateFromString(date: string | null): Date | null {
@@ -48,8 +38,7 @@ export class GanttDates implements IGanttDates {
     }
 
     public getStartEndDateFromRecords(records: IRecord[]): { startDate: Date | null, endDate: Date | null, startRecord: IRecord | null, endRecord: IRecord | null } {
-        const startDateColumnName = this.getStartDateColumnName();
-        const endDateColumnName = this.getEndDateColumnName();
+        const { startDate: startDateColumnName, endDate: endDateColumnName } = this._services.get('fieldMapping');
         let minDate: Date | null = null;
         let maxDate: Date | null = null;
         let startRecord: IRecord | null = null;

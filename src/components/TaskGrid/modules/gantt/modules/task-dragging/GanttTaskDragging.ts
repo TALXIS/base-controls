@@ -1,7 +1,7 @@
 import { GanttStatic } from 'gantt-trial';
 import { ITaskDataProvider } from '@components/TaskGrid/providers';
 import { ITaskGridServiceLocator } from '@components/TaskGrid/services';
-import { IGanttServiceLocator } from '../../services';
+import { IGanttFieldMapping, IGanttServiceLocator } from '../../services';
 import { IGanttDates } from '../../gantt-dates';
 import { IGanttTaskDraggingSettings } from './createGanttTaskDraggingModule';
 
@@ -47,6 +47,10 @@ export class GanttTaskDragging {
         return this._services.get('ganttDates');
     }
 
+    private get _fieldMapping(): IGanttFieldMapping {
+        return this._services.get('fieldMapping');
+    }
+
     private get _taskDataProvider(): ITaskDataProvider {
         return this._taskGridServices.get('taskDataProvider');
     }
@@ -73,8 +77,7 @@ export class GanttTaskDragging {
 
     private _onTaskDrag(taskId: string, mode: string) {
         const draggedTask = this._gantt.getTask(taskId);
-        const startColumnName = this._dates.getStartDateColumnName();
-        const endColumnName = this._dates.getEndDateColumnName();
+        const { startDate: startColumnName, endDate: endColumnName } = this._fieldMapping;
 
         if (mode === RESIZE_MODE) {
             const record = this._taskDataProvider.getRecordsMap()[taskId];

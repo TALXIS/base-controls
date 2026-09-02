@@ -17,6 +17,7 @@ export const toGanttTask = (record: IRecord, services: IGanttServiceLocator): Ta
     const taskGridServices = services.get('taskGridServices');
     const taskDataProvider = taskGridServices.get('taskDataProvider');
     const dates = services.get('ganttDates');
+    const fieldMapping = services.get('fieldMapping');
     const recordId = record.getRecordId();
     const parent: ComponentFramework.EntityReference | null = record.getValue(taskGridServices.get('nativeColumns').parentId)?.[0];
     const hasChildren = taskDataProvider.getRecordTree().view.hasChildren(recordId);
@@ -24,8 +25,8 @@ export const toGanttTask = (record: IRecord, services: IGanttServiceLocator): Ta
     return {
         id: recordId,
         text: record.getNamedReference().name,
-        start_date: dates.getDateFromString(record.getValue(dates.getStartDateColumnName())) ?? undefined,
-        end_date: dates.getDateFromString(record.getValue(dates.getEndDateColumnName())) ?? undefined,
+        start_date: dates.getDateFromString(record.getValue(fieldMapping.startDate)) ?? undefined,
+        end_date: dates.getDateFromString(record.getValue(fieldMapping.endDate)) ?? undefined,
         bar_height: hasChildren ? SUMMARY_BAR_HEIGHT : TASK_BAR_HEIGHT,
         progress: getProgress(record, services),
         parent: taskDataProvider.isFlatListEnabled() ? undefined : parent?.id?.guid,

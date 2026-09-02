@@ -48,9 +48,9 @@ const CURSOR_CLASS = getTaskCreateCursorStyles();
 
 export const useTimelineTaskCreate = () => {
     const services = useGanttServices();
+    const fieldMapping = services.get('fieldMapping');
     const gantt = useGanttService('ganttChart');
     const dragging = useGanttService('ganttDragging');
-    const dates = useGanttService('ganttDates');
     const taskDataProvider = useTaskDataProvider();
     const formatting = Formatting.Get();
     const [linePreview, setLinePreview] = useState<ILinePreview | null>(null);
@@ -131,7 +131,7 @@ export const useTimelineTaskCreate = () => {
 
     const createTask = () => {
         const activeDrag = activeDragRef.current;
-        if (!gantt || !dates || !activeDrag?.currentTaskId) {
+        if (!gantt || !activeDrag?.currentTaskId) {
             return;
         }
         //never backwards: dragging right to left leaves the span at the day it started on
@@ -146,8 +146,8 @@ export const useTimelineTaskCreate = () => {
                 previousTaskId: recordTree.structure.getNeighbours(activeDrag.currentTaskId).previous?.getRecordId(),
                 nextTaskId: activeDrag.currentTaskId,
                 data: {
-                    [dates.getStartDateColumnName()]: gantt.dateFromPos(activeDrag.anchorTimelineX),
-                    [dates.getEndDateColumnName()]: gantt.dateFromPos(endTimelineX),
+                    [fieldMapping.startDate]: gantt.dateFromPos(activeDrag.anchorTimelineX),
+                    [fieldMapping.endDate]: gantt.dateFromPos(endTimelineX),
                 },
             });
     };
@@ -222,7 +222,7 @@ export const useTimelineTaskCreate = () => {
         clearDrag();
         setHoverPreview(null);
         setTaskCreateMode(false);
-    }, [gantt, dragging, dates]);
+    }, [gantt, dragging]);
 
     const onContextMenu = useCallback((event: MouseEvent) => {
         //Ctrl+click is the gesture on a Mac, so its context menu is not wanted here
