@@ -25,8 +25,8 @@ export const toGanttTask = (record: IRecord, services: IGanttServiceLocator): Ta
     return {
         id: recordId,
         text: record.getNamedReference().name,
-        start_date: dates.getDateFromString(record.getValue(fieldMapping.startDate)) ?? undefined,
-        end_date: dates.getDateFromString(record.getValue(fieldMapping.endDate)) ?? undefined,
+        start_date: dates.getStartDate(record) ?? undefined,
+        end_date: dates.getEndDate(record) ?? undefined,
         bar_height: hasChildren ? SUMMARY_BAR_HEIGHT : TASK_BAR_HEIGHT,
         progress: getProgress(record, services),
         parent: taskDataProvider.isFlatListEnabled() ? undefined : parent?.id?.guid,

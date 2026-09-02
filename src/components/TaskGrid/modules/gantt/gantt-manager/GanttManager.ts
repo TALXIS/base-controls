@@ -42,9 +42,13 @@ export class GanttManager {
         this._gantt = gantt;
         gantt.plugins({ drag_timeline: true });
         configureChart(gantt, this._services);
+
+        //the zoom levels are built from what the date columns hold, so this one is in place before the
+        //parts that read it - it needs nothing from the chart itself
+        const dates = new GanttDates({ services: this._services });
+        this._services.register('ganttDates', () => dates);
         this._services.register('ganttChart', () => gantt);
 
-        const dates = new GanttDates({ services: this._services });
         const timeline = new GanttInfiniteTimeline({ services: this._services });
         const dragging = new GanttDragging({ services: this._services });
         const data = new GanttData({ services: this._services });
@@ -58,7 +62,6 @@ export class GanttManager {
         //after the chart drew itself, because this one listens to elements it creates. Held rather than
         //registered: nothing reaches it, it just keeps the two viewports in step
         this._scrollSync = new GanttScrollSync({ services: this._services });
-        this._services.register('ganttDates', () => dates);
         this._services.register('ganttInfiniteTimeline', () => timeline);
         this._services.register('ganttDragging', () => dragging);
         this._services.register('ganttData', () => data);

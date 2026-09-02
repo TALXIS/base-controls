@@ -27,9 +27,6 @@ const MILLISECONDS_PER_UNIT: Record<string, number> = {
     week: 604_800_000,
 };
 
-/** Above this level the scale shows single days, which is what makes marking weekends meaningful. */
-const DAY_SCALE_LEVEL = 4;
-
 /** Coarsest last: what makes one scale finer than another. */
 const UNIT_ORDER = ['hour', 'day', 'week', 'month', 'quarter', 'year'];
 
@@ -140,13 +137,25 @@ export const getFinestScale = (level: IGanttZoomLevelDefinition): IScale | null 
 };
 
 /**
- * Whether single days are on the scale.
+ * The levels worth showing: one that subdivides a day says nothing without a time of day to show.
+ *
+ * Filtered by what a level *is* rather than by its position, so a level added or reordered later needs no
+ * change here.
+ */
+export const getUsableLevels = <TLevel extends IGanttZoomLevelDefinition>(levels: TLevel[], hasTimeOfDay: boolean): TLevel[] => {
+    return hasTimeOfDay ? levels : levels.filter(level => getFinestScale(level)?.unit !== 'hour');
+};
+
+/**
+ * Whether single days are on the scale, which is what makes marking weekends meaningful.
  *
  * Read off the chart rather than asked of the zooming part: the templates that need it run during `init`,
- * before the parts are registered.
+ * before the parts are registered. Derived from the level's own scales rather than its index, because the
+ * ladder is only as long as the date columns' precision allows.
  */
 export const isDayScaleVisible = (gantt: GanttStatic): boolean => {
-    return gantt.ext.zoom.getCurrentLevel() > DAY_SCALE_LEVEL;
+    const level = gantt.ext.zoom.getLevels()[gantt.ext.zoom.getCurrentLevel()];
+    return !!level?.scales?.some(scale => scale.unit === 'day' && (scale.step ?? 1) === 1);
 };
 
 export const clampPercent = (percent: number): number => {

@@ -8,7 +8,7 @@ import { IGanttInfiniteTimeline } from '../gantt-infinite-timeline';
 import { ZoomingConfig } from './ZoomingConfig';
 import { getZoomApi, IZoomWheelEvent } from './zoomApi';
 import { GanttZoomAnchor } from './GanttZoomAnchor';
-import { clampPercent, findFitPercent, getTickStep, getZoomState, isDayScaleVisible } from './zoomScale';
+import { clampPercent, findFitPercent, getTickStep, getUsableLevels, getZoomState, isDayScaleVisible } from './zoomScale';
 import { IGanttViewStateProvider } from '../gantt-view-state';
 
 /** The zoom, as the slider's continuous 0-100 laid over the chart's discrete levels. */
@@ -42,7 +42,9 @@ export class GanttZooming implements IGanttZooming {
         this._services = parameters.services;
         this._anchor = new GanttZoomAnchor({ services: this._services });
 
-        this._gantt.ext.zoom.init(ZoomingConfig.getScrollZoomConfig(this._gantt, this._formatting.locale));
+        const config = ZoomingConfig.getScrollZoomConfig(this._gantt, this._formatting.locale);
+        //an hour level only means something against a column that holds a time of day
+        this._gantt.ext.zoom.init({ ...config, levels: getUsableLevels(config.levels ?? [], this._dates.hasTimeOfDay()) });
         this._tickStep = getTickStep(this._gantt.ext.zoom.getLevels().length);
         this._overrideWheelHandler();
         this._registerEventListeners();
