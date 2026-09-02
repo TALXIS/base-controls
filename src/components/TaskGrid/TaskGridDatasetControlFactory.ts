@@ -3,20 +3,12 @@ import { GridCustomizer } from "./components/grid/grid-customizer/GridCustomizer
 import { TaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "./labels";
-import { ISavedQuery, ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
+import { ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
+import { ITaskGridState, TaskGridState } from "./providers/state";
 import { ITaskGridDatasetControl, ITaskGridDescriptor } from "./interfaces";
 import { TaskGridDatasetControl } from "./TaskGridDatasetControl";
 import { ITaskGridServiceLocator, ITaskGridServiceMap, ServiceLocator } from "./services";
 import { ITaskGridModules } from "./modules/interfaces";
-
-/**
- * The slice of grid state that outlives a remount. The `TaskGrid` component owns it and hands the same
- * object to every control it builds.
- */
-export interface ITaskGridState {
-    /** The view to load with — set when the user switches views, so the next control opens on it. */
-    savedQuery?: Partial<ISavedQuery> & { id: string; linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[] };
-}
 
 interface ITaskGridDatasetControlFactoryParameters {
     state: ITaskGridState;
@@ -34,7 +26,12 @@ export class TaskGridDatasetControlFactory {
     public static async createInstance(parameters: ITaskGridDatasetControlFactoryParameters): Promise<ITaskGridDatasetControl> {
         const descriptor = parameters.taskGridDescriptor;
 
+
         const services = new ServiceLocator<ITaskGridServiceMap>();
+        //first: it is what everything below reads the view to open on from, and what a module's slice is
+        //reached through
+        const taskGridState = new TaskGridState({ state: parameters.state });
+        services.register('taskGridState', () => taskGridState);
         services.register('pcfContext', () => parameters.onGetPcfContext());
         services.register('localizationService', () => parameters.localizationService);
         services.register('descriptor', () => descriptor);
@@ -58,7 +55,6 @@ export class TaskGridDatasetControlFactory {
         const savedQueryDataProvider = new SavedQueryDataProvider({
             strategy: descriptor.onCreateSavedQueryStrategy({ services }),
             services: services,
-            preferredQuery: parameters.state.savedQuery,
         });
         //before the refresh, so anything the load reaches for can already resolve it
         services.register('savedQueryDataProvider', () => savedQueryDataProvider);
@@ -67,7 +63,7 @@ export class TaskGridDatasetControlFactory {
         const taskDataProvider = new TaskDataProvider({
             strategy: descriptor.onCreateTaskStrategy({ services }),
             services: services,
-            onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(parameters, savedQueryDataProvider),
+            onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(taskGridState, savedQueryDataProvider),
         });
         services.register('taskDataProvider', () => taskDataProvider);
 
@@ -106,9 +102,11 @@ export class TaskGridDatasetControlFactory {
         gantt && services.register('ganttModule', () => gantt);
     }
 
-    private static _getIsFlatlistEnabled(parameters: ITaskGridDatasetControlFactoryParameters, savedQueryDataProvider: ISavedQueryDataProvider): boolean {
+    //the state first, then the view: the state carries what the user last toggled in this session, and the
+    //view only says what it was saved with. Everything else reads this through `taskDataProvider`
+    private static _getIsFlatlistEnabled(taskGridState: TaskGridState, savedQueryDataProvider: ISavedQueryDataProvider): boolean {
         const currentQueryId = savedQueryDataProvider.getCurrentQuery().id;
-        return parameters.state.savedQuery?.isFlatListEnabled ?? savedQueryDataProvider.getSavedQuery(currentQueryId).isFlatListEnabled ?? false;
+        return taskGridState.getView()?.isFlatListEnabled ?? savedQueryDataProvider.getSavedQuery(currentQueryId).isFlatListEnabled ?? false;
     }
 
 }

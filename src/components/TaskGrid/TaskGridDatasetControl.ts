@@ -6,7 +6,7 @@ import { IDeleteTasksResult, ITaskDataProvider } from "./providers/task";
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider, PATH_COLUMN_NAME } from "./providers/saved-query";
-import { ITaskGridState } from "./TaskGridDatasetControlFactory";
+import { ITaskGridState, ITaskGridStateProvider } from "./providers/state";
 import { Type } from "@talxis/client-libraries/dist/utils/fetch-xml/filter/Type";
 import { ILookupManyDataProviderParameters, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters, ITaskGridDatasetControlParameters } from "./interfaces";
 import { ITaskGridServiceLocator } from "./services";
@@ -43,6 +43,8 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     private _dataProvider: ITaskDataProvider;
     private _services: ITaskGridServiceLocator;
     private _controlId: string;
+    //held only to hand out: the grid component and ag-grid read and write this very object. The slices
+    //this control owns go through `_taskGridState`
     private _state: ITaskGridState;
     private _gridParameters: ITaskGridParameters;
     private _commands: ICommand[] = [];
@@ -56,7 +58,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
         this._controlId = this._descriptor.onGetControlId?.() ?? `task-grid-dataset-control-${crypto.randomUUID()}`;
         this._state = parameters.state;
         this._gridParameters = this._descriptor.onGetGridParameters?.() ?? {};
-        this._loadState(parameters.state);
+        this._loadState();
         this.loadCommands([]);
         this._registerEventListeners();
     }
@@ -71,6 +73,10 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     private get _localizationService(): ILocalizationService<ITaskGridLabels> {
         return this._services.get('localizationService');
+    }
+
+    private get _taskGridState(): ITaskGridStateProvider {
+        return this._services.get('taskGridState');
     }
 
     private get _savedQueryDataProvider(): ISavedQueryDataProvider {
@@ -136,10 +142,11 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
 
     public toggleFlatList(enabled: boolean) {
-        if (!this._state.savedQuery) {
+        const view = this._taskGridState.getView();
+        if (!view) {
             throw new Error('Cannot toggle flat list mode when there is no saved query in state');
         }
-        this._state.savedQuery.isFlatListEnabled = enabled;
+        this._taskGridState.setView({ ...view, isFlatListEnabled: enabled });
         const pathColumn = this._dataProvider.getColumnsMap()[this._services.get('nativeColumns').path];
         pathColumn.isHidden = !enabled;
         pathColumn.order = -1;
@@ -304,38 +311,40 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
     }
     public saveState(): void {
         if (this._changeToQueryId) {
-            this._state.savedQuery = {
-                id: this._changeToQueryId
-            }
-            //@ts-ignore
-            if(this._state.AgGridState) {
-                //clean up AgGrid state as it might not be compatible with new query
-                //@ts-ignore
-                delete this._state.AgGridState;
-            }
+            this._captureViewSwitch(this._changeToQueryId);
+            return;
         }
-        else {
-            const currentQueryId = this._savedQueryDataProvider.getCurrentQuery().id;
-            this._state.savedQuery = {
-                ...this._savedQueryDataProvider.getSavedQuery(currentQueryId),
-                filtering: this._dataProvider.getFiltering() ?? undefined,
-                sorting: this._dataProvider.getSorting(),
-                columns: this._dataProvider.getColumns(),
-                searchQuery: this._dataProvider.getSearchQuery() ?? undefined,
-                linking: this._dataProvider.getLinking(),
-                isFlatListEnabled: this._dataProvider.isFlatListEnabled(),
-            }
-            //asked for last: a module's state is its own, and this is the rebuilt view it belongs to. Not
-            //done in the branch above, where the state is reset to the view being switched to - that view
-            //brings its own, and the outgoing one's must not follow the user into it
-            this._savedQueryDataProvider.applyStateHooks(this._state.savedQuery);
-        }
+        this._captureCurrentView();
     }
 
-    private _loadState(state: ITaskGridState) {
+    //the view being switched to brings its own settings, so nothing of the outgoing one is captured - not
+    //its rebuilt slice, and not what its modules kept. The grid layer's slice goes too: it was laid out
+    //for columns the next view may not have
+    private _captureViewSwitch(queryId: string): void {
+        this._taskGridState.setView({ id: queryId });
+        this._taskGridState.clearGridState();
+    }
+
+    private _captureCurrentView(): void {
+        const currentQueryId = this._savedQueryDataProvider.getCurrentQuery().id;
+        const view = {
+            ...this._savedQueryDataProvider.getSavedQuery(currentQueryId),
+            filtering: this._dataProvider.getFiltering() ?? undefined,
+            sorting: this._dataProvider.getSorting(),
+            columns: this._dataProvider.getColumns(),
+            searchQuery: this._dataProvider.getSearchQuery() ?? undefined,
+            linking: this._dataProvider.getLinking(),
+            isFlatListEnabled: this._dataProvider.isFlatListEnabled(),
+        };
+        this._taskGridState.setView(view);
+        //asked for last: a module's state is its own, and this is the rebuilt view it belongs to
+        this._taskGridState.applyCaptureHooks(view);
+    }
+
+    private _loadState() {
         let currentQuery = this._savedQueryDataProvider.getCurrentQuery();
-        if (!state.savedQuery) {
-            state.savedQuery = currentQuery;
+        if (!this._taskGridState.getView()) {
+            this._taskGridState.setView(currentQuery);
         }
         //at this point current query might be missing required properties
         let { filtering, sorting, columns, searchQuery, linking } = currentQuery;

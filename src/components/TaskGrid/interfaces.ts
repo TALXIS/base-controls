@@ -5,7 +5,7 @@ import { ISavedQueryDataProvider, ISavedQueryStrategy } from "./providers/saved-
 import { ITaskDataProviderStrategy, ITaskDataProvider } from "./providers/task";
 import { ITaskGridModules } from "./modules/interfaces";
 import { ITaskGridLabels } from "./labels";
-import { ITaskGridState } from "./TaskGridDatasetControlFactory";
+import { ITaskGridState } from "./providers/state";
 import type { ITaskGridDatasetControlEvents } from "./TaskGridDatasetControl";
 import { ILocalizationService } from "@utils";
 import { ITaskGridServiceLocator } from "./services";

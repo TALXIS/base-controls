@@ -5,6 +5,7 @@ import type { ITaskGridLabels } from "@components/TaskGrid/labels";
 import type { INativeColumns, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
 import type { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import type { ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
+import type { ITaskGridStateProvider } from "@components/TaskGrid/providers/state";
 import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGanttModule, IGridCustomizerModule, ILookupManyModule, IProjectModule, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
 import type { GridApi, IGridCustomizer } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
 import type { ITaskGridComponents } from "@components/TaskGrid/components/components";
@@ -20,6 +21,8 @@ import type { ITaskGridComponents } from "@components/TaskGrid/components/compon
 export interface ITaskGridServiceMap {
     /** The PCF context the grid renders in: navigation, formatting, dialogs. */
     pcfContext: ComponentFramework.Context<any>;
+    /** What the grid carries across a remount: the view to open on, and what modules keep. */
+    taskGridState: ITaskGridStateProvider;
     /** Resolves every UI label. */
     localizationService: ILocalizationService<ITaskGridLabels>;
     /** The descriptor this grid was built from. */

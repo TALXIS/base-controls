@@ -131,7 +131,7 @@ export class UserQueryDataProvider implements IUserQueryDataProvider {
         };
         //the modules' own slices, each written under its own key - a saved view reopens with whatever they
         //had when it was saved
-        this._services.get('savedQueryDataProvider').applyStateHooks(metadata);
+        this._services.get('taskGridState').applyCaptureHooks(metadata);
         return metadata;
     }
 

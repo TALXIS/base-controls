@@ -33,7 +33,7 @@ export interface ISavedQueryMetadata {
     linking?: ComponentFramework.PropertyHelper.DataSetApi.LinkEntityExposedExpression[];
     /** Opens the view as a flat list instead of a tree. */
     isFlatListEnabled?: boolean;
-    /** What the modules store per view. Written by their state hooks; the grid only carries it. */
+    /** What the modules store per view. Written as the view is captured; the grid only carries it. */
     moduleState?: ISavedQueryModuleState;
     searchQuery?: string | undefined;
     /** The columns quick find searches. */
@@ -75,15 +75,6 @@ export interface ISavedQueryStrategy {
  * them are its own.
  */
 export type SavedQueryHook = (query: ISavedQuery) => void;
-
-/**
- * Asked for a module's own state whenever a view's state is captured — a remount, or a save into a
- * personal view.
- *
- * Mutates rather than returning, like {@link SavedQueryHook}: write the slice with {@link setModuleState},
- * under a key of the module's own.
- */
-export type SavedQueryStateHook = (metadata: Partial<ISavedQueryMetadata>) => void;
 
 /**
  * One column, as a definition and a query's own declaration of it combine: the definition fills whatever the
@@ -131,17 +122,6 @@ export const applyColumn = (query: ISavedQuery, definition: IColumn): void => {
     Object.assign(declared, copyColumn(mergeColumn(definition, declared)));
 };
 
-/** One module's slice of a view, or `undefined` when it never wrote one. */
-export const getModuleState = <TState>(metadata: Pick<ISavedQueryMetadata, 'moduleState'> | undefined, moduleKey: string): TState | undefined => {
-    return metadata?.moduleState?.[moduleKey] as TState | undefined;
-};
-
-/** Writes one module's slice onto the metadata, creating the bag on first write. */
-export const setModuleState = <TState>(metadata: Partial<ISavedQueryMetadata>, moduleKey: string, state: TState): void => {
-    metadata.moduleState ??= {};
-    metadata.moduleState[moduleKey] = state;
-};
-
 /** Serves the system views, tracks which view is active, and normalises every view's columns. */
 export interface ISavedQueryDataProvider {
     /** Returns the full list of non-deletable system views. */
@@ -163,17 +143,6 @@ export interface ISavedQueryDataProvider {
      * Defaults to `0`; hooks sharing a priority run in the order they were registered.
      */
     registerHook: (hook: SavedQueryHook, priority?: number) => void;
-    /**
-     * Registers a state hook. Runs on every capture from then on.
-     *
-     * @param priority As for {@link ISavedQueryDataProvider.registerHook}.
-     */
-    registerStateHook: (hook: SavedQueryStateHook, priority?: number) => void;
-    /**
-     * Runs every registered state hook over the metadata. Called by the grid wherever it captures a
-     * view's state — a consumer has no reason to call it.
-     */
-    applyStateHooks: (metadata: Partial<ISavedQueryMetadata>) => void;
     /** Fetches system and user queries and sets the initial active query. */
     refresh: () => Promise<void>;
     /** Releases the resources held by the provider. */
@@ -183,9 +152,8 @@ export interface ISavedQueryDataProvider {
 export interface ISavedQueryDataProviderParameters {
     /** Where the system views come from. */
     strategy: ISavedQueryStrategy;
-    /** Where the column names, the labels and the optional module providers are reached. */
+    /** Where the column names, the labels, the state and the optional module providers are reached. */
     services: ITaskGridServiceLocator;
-    preferredQuery?: Partial<ISavedQuery> & { id: string };
 }
 
 /**
@@ -198,14 +166,17 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
     private _systemQueries: ISavedQuery[] = [];
     private _currentQuery?: ISavedQuery;
     private _systemQueriesColumnsMap: Map<string, IColumn> = new Map();
-    private _preferredQuery?: Partial<ISavedQuery> & { id: string };
     private _hooks = new HookRegistry<SavedQueryHook>();
-    private _stateHooks = new HookRegistry<SavedQueryStateHook>();
 
     constructor(parameters: ISavedQueryDataProviderParameters) {
         this._strategy = parameters.strategy;
         this._services = parameters.services;
-        this._preferredQuery = parameters.preferredQuery;
+    }
+
+    //the view the grid was left on, which a refresh opens on when it still exists. Read at call time: the
+    //state outlives this provider, and a remount builds a new one over the view the last one captured
+    private get _preferredQuery(): Partial<ISavedQuery> & { id: string } | undefined {
+        return this._services.get('taskGridState').getView();
     }
 
     //the personal-views provider, from the user-queries module. Absent means the feature is off: no *My views*, no save
@@ -252,14 +223,6 @@ export class SavedQueryDataProvider implements ISavedQueryDataProvider {
 
     public registerHook(hook: SavedQueryHook, priority?: number): void {
         this._hooks.register(hook, priority);
-    }
-
-    public registerStateHook(hook: SavedQueryStateHook, priority?: number): void {
-        this._stateHooks.register(hook, priority);
-    }
-
-    public applyStateHooks(metadata: Partial<ISavedQueryMetadata>): void {
-        this._stateHooks.apply(metadata);
     }
 
     public async destroy() {

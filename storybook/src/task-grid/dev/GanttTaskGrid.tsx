@@ -148,7 +148,7 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                             taskDragging: createGanttTaskDraggingModule({ services }),
                             selectionBox: createGanttSelectionBoxModule({ services }),
                             taskTooltip: createGanttTaskTooltipModule({ services }),
-                            // PROBE: weekends removed
+                            weekends: createGanttWeekendsModule({ services }),
                         }),
                     }),
                     onGetProjectModule: ({ services }) => createProjectModule({

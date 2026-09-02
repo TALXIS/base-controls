@@ -1,6 +1,5 @@
 import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
-import { getModuleState, setModuleState } from "@components/TaskGrid/providers/saved-query";
-import { ITaskGridState } from "@components/TaskGrid/TaskGridDatasetControlFactory";
+import { IModuleState } from "@components/TaskGrid/providers/state";
 import { IGanttServiceLocator } from "../services";
 
 /** How the timeline was left on a view: what the module stores, and reads back when that view reopens. */
@@ -50,55 +49,38 @@ export interface IGanttViewStateProvider {
 export class GanttViewState implements IGanttViewStateProvider {
     public readonly events: IEventEmitter<IGanttViewStateEvents> = new EventEmitter<IGanttViewStateEvents>();
     private _services: IGanttServiceLocator;
-    private _state?: IGanttViewState;
+    private _state: IModuleState<IGanttViewState>;
 
     constructor(parameters: IGanttViewStateParameters) {
         this._services = parameters.services;
-        this._registerStateHook();
+        this._state = parameters.services.get('taskGridServices').get('taskGridState')
+            .module<IGanttViewState>(GANTT_MODULE_STATE_KEY, 'view');
     }
 
     public getZoomLevel(): number | undefined {
-        return this._getState().zoomLevel;
+        return this._state.get().zoomLevel;
     }
 
     public setZoomLevel(zoomLevel: number): void {
-        this._getState().zoomLevel = zoomLevel;
+        this._state.set({ zoomLevel });
         this.events.dispatchEvent('onZoomLevelChanged', zoomLevel);
     }
 
     public getGanttWidth(): number | undefined {
-        return this._getState().ganttWidth;
+        return this._state.get().ganttWidth;
     }
 
     public setGanttWidth(ganttWidth: number): void {
-        this._getState().ganttWidth = ganttWidth;
+        this._state.set({ ganttWidth });
     }
 
     public getAnchorDate(): Date | undefined {
-        const anchorDate = this._getState().anchorDate;
+        const anchorDate = this._state.get().anchorDate;
         return anchorDate ? new Date(anchorDate) : undefined;
     }
 
     public setAnchorDate(anchorDate?: Date): void {
-        this._getState().anchorDate = anchorDate?.toISOString();
-    }
-
-    //read lazily: this is built before the control exists, and the control's state is what carries the
-    //slice over from the previous mount
-    private _getState(): IGanttViewState {
-        if (!this._state) {
-            const state = this._services.get('taskGridServices').get('datasetControl').getState() as ITaskGridState;
-            if (!state.savedQuery) {
-                throw new Error('Cannot access gantt state before the control is initialized with a saved query.');
-            }
-            this._state = getModuleState<IGanttViewState>(state.savedQuery, GANTT_MODULE_STATE_KEY) ?? {};
-        }
-        return this._state;
-    }
-
-    private _registerStateHook(): void {
-        this._services.get('taskGridServices').whenAvailable('savedQueryDataProvider', provider => {
-            provider.registerStateHook(metadata => setModuleState(metadata, GANTT_MODULE_STATE_KEY, this._getState()));
-        });
+        this._state.set({ anchorDate: anchorDate?.toISOString() });
     }
 }
+
