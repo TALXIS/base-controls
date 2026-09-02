@@ -199,12 +199,17 @@ export const getGanttStyles = (theme: ITheme) => {
                 backgroundColor: theme.semanticColors.disabledBackground
             },
             //a marker's colour comes with the marker, as a class of its own
+            //above every bar, selected ones included: a line marks a date the bars are read against, so a
+            //bar must never cover it. On the area rather than the marker, so one rule decides it for all
+            //of them - a selected bar lifts itself to 2 through the rule above
+            '.gantt_marker_area': {
+                zIndex: 3,
+            },
             '.gantt_marker': {
                 width: 2,
                 marginLeft: -1,
                 opacity: 1,
                 pointerEvents: 'none',
-                zIndex: 1
             },
             //the library renders its own chip on the line; the labels are drawn on the scale instead
             '.gantt_marker .gantt_marker_content': {
