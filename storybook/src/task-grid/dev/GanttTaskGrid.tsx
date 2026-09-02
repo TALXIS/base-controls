@@ -13,6 +13,7 @@ import {
     createGanttTaskCreateModule,
     createGanttTaskDraggingModule,
     createGanttTaskTooltipModule,
+    createGanttWeekendsModule,
     createProjectModule,
 } from '@talxis/base-controls'
 import type { ISavedQuery } from '@talxis/base-controls'
@@ -147,6 +148,7 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                             taskDragging: createGanttTaskDraggingModule({ services }),
                             selectionBox: createGanttSelectionBoxModule({ services }),
                             taskTooltip: createGanttTaskTooltipModule({ services }),
+                            // PROBE: weekends removed
                         }),
                     }),
                     onGetProjectModule: ({ services }) => createProjectModule({

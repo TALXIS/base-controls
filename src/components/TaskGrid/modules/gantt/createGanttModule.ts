@@ -11,6 +11,7 @@ import { IGanttMarkersModule } from "./modules/markers";
 import { IGanttSelectionBoxModule } from "./modules/selection-box";
 import { IGanttTaskCreateModule } from "./modules/task-create";
 import { IGanttTaskDraggingModule } from "./modules/task-dragging";
+import { IGanttWeekendsModule } from "./modules/weekends";
 import { IGanttTaskTooltipModule } from "./modules/task-tooltip";
 
 /** The Gantt's own modules, one optional key per feature. Filled by that module's builder. */
@@ -25,6 +26,8 @@ export interface IGanttModules {
     taskDragging?: IGanttTaskDraggingModule;
     /** What a bar says when the pointer is on it. */
     taskTooltip?: IGanttTaskTooltipModule;
+    /** Dropping weekends from the scale, and the toggle that puts them back. */
+    weekends?: IGanttWeekendsModule;
 }
 
 /** Options for {@link createGanttModule}. */
@@ -48,7 +51,7 @@ export interface IGanttModuleOptions {
 
 /**
  * Builds the Gantt module: you supply which columns carry the task dates, this brings the timeline
- * beside the grid, the zoom and weekend controls in the header, and the state that keeps them per view.
+ * beside the grid, the zoom controls in the header, and the state that keeps them per view.
  *
  * Assign it to a `modules` key — `modules.onGetGanttModule` on a shipped descriptor, or `onGetModules`
  * on a descriptor of your own. Registering it is what replaces the plain grid with the split view.
@@ -96,10 +99,11 @@ export const createGanttModule = (options: IGanttModuleOptions): IGanttModule =>
 //registers each resolved module under its own key. A module the caller left out registers nothing, so its
 //key stays absent and `find` reports the feature as off
 const registerGanttModules = (services: IGanttServiceLocator, modules: IGanttModules): void => {
-    const { markers, taskCreate, selectionBox, taskDragging, taskTooltip } = modules;
+    const { markers, taskCreate, selectionBox, taskDragging, taskTooltip, weekends } = modules;
     markers && services.register('markersModule', () => markers);
     taskCreate && services.register('taskCreateModule', () => taskCreate);
     selectionBox && services.register('selectionBoxModule', () => selectionBox);
     taskDragging && services.register('taskDraggingModule', () => taskDragging);
     taskTooltip && services.register('taskTooltipModule', () => taskTooltip);
+    weekends && services.register('weekendsModule', () => weekends);
 };

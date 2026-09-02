@@ -5,7 +5,7 @@ export * from './context';
 export * from './labels';
 export * from './classNames';
 export * from './getGanttCommandBarItems';
-export * from './weekend-toggle';
+export * from './gantt-settings-section';
 export * from './zoom-slider-adapter';
 export * from './gantt-view';
 export * from './gantt-timeline';

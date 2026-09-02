@@ -5,8 +5,6 @@ import { IGanttServiceLocator } from "../services";
 
 /** How the timeline was left on a view: what the module stores, and reads back when that view reopens. */
 export interface IGanttViewState {
-    /** Whether weekends are drawn on the timeline. */
-    showWeekends?: boolean;
     /** The timeline panel's width, as a percentage of the split view. */
     ganttWidth?: number;
     /** The zoom, as the slider's 0-100 value. */
@@ -22,8 +20,6 @@ export const GANTT_MODULE_STATE_KEY = 'gantt';
 export interface IGanttViewStateEvents {
     /** The slider re-renders on this, and the zooming part applies it to the chart. */
     onZoomLevelChanged: (zoomLevel: number) => void;
-    /** The settings toggle re-renders on this, and the chart re-renders with weekends in or out. */
-    onShowWeekendsChanged: (showWeekends: boolean) => void;
 }
 
 export interface IGanttViewStateParameters {
@@ -32,7 +28,7 @@ export interface IGanttViewStateParameters {
 }
 
 /**
- * The timeline's settings on the view that is open: the zoom, the weekends, the panel width, the anchor.
+ * The timeline's settings on the view that is open: the zoom, the panel width, the anchor.
  *
  * The grid stores the slice opaquely — this is the only code that knows its shape — and hands it back
  * whenever a view's state is captured, which is what makes the zoom survive a remount and a saved view.
@@ -42,8 +38,6 @@ export interface IGanttViewStateProvider {
     events: IEventEmitter<IGanttViewStateEvents>;
     getZoomLevel: () => number | undefined;
     setZoomLevel: (zoomLevel: number) => void;
-    isWeekendVisible: () => boolean;
-    showWeekend: (showWeekends: boolean) => void;
     /** The timeline panel's width, as a percentage of the split view. */
     getGanttWidth: () => number | undefined;
     setGanttWidth: (ganttWidth: number) => void;
@@ -70,15 +64,6 @@ export class GanttViewState implements IGanttViewStateProvider {
     public setZoomLevel(zoomLevel: number): void {
         this._getState().zoomLevel = zoomLevel;
         this.events.dispatchEvent('onZoomLevelChanged', zoomLevel);
-    }
-
-    public isWeekendVisible(): boolean {
-        return this._getState().showWeekends ?? false;
-    }
-
-    public showWeekend(showWeekends: boolean): void {
-        this._getState().showWeekends = showWeekends;
-        this.events.dispatchEvent('onShowWeekendsChanged', showWeekends);
     }
 
     public getGanttWidth(): number | undefined {

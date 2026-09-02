@@ -1,5 +1,5 @@
 import { IGanttComponents } from "../interfaces";
-import { GanttWeekendToggle } from "./weekend-toggle";
+import { GanttSettingsSection } from "./gantt-settings-section";
 import { ZoomSliderAdapter } from "./zoom-slider-adapter";
 import { GanttView } from "./gantt-view";
 
@@ -7,5 +7,5 @@ import { GanttView } from "./gantt-view";
 export const GanttComponents: IGanttComponents = {
     onRenderView: (props) => <GanttView {...props} />,
     onRenderZoomSlider: () => <ZoomSliderAdapter />,
-    onRenderSettingsSection: () => <GanttWeekendToggle />,
+    onRenderSettingsSection: () => <GanttSettingsSection />,
 };

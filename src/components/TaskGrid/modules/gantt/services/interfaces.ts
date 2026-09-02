@@ -15,6 +15,7 @@ import type { IGanttSelectionBoxModule } from "../modules/selection-box";
 import type { IGanttTaskCreateModule } from "../modules/task-create";
 import type { IGanttTaskDraggingModule } from "../modules/task-dragging";
 import type { IGanttTaskTooltipModule } from "../modules/task-tooltip";
+import type { IGanttWeekends, IGanttWeekendsLabels, IGanttWeekendsModule } from "../modules/weekends";
 import type { IGanttSelection } from "../gantt-selection";
 import type { IGanttZooming } from "../gantt-zooming";
 import type { IGanttLabels } from "../labels";
@@ -55,7 +56,7 @@ export interface IGanttServiceMap {
      * and this is how you cross.
      */
     taskGridServices: ITaskGridServiceLocator;
-    /** How the timeline is set up on the view that is open: zoom, weekends, panel width, anchor. */
+    /** How the timeline is set up on the view that is open: zoom, panel width, anchor. */
     ganttViewState: IGanttViewStateProvider;
     /** The task columns the timeline draws from. */
     fieldMapping: IGanttFieldMapping;
@@ -100,6 +101,15 @@ export interface IGanttServiceMap {
      * leaves a bar saying nothing on hover.
      */
     taskTooltipModule: IGanttTaskTooltipModule;
+    /**
+     * The Gantt's weekends module, UI included. Present when it is registered — and its absence is what
+     * keeps the Gantt clear of the chart's PRO-only scale features.
+     */
+    weekendsModule: IGanttWeekendsModule;
+    /** Whether weekends are drawn. Registered by the weekends module once the chart exists. */
+    ganttWeekends: IGanttWeekends;
+    /** Resolves the weekends module's own strings. */
+    weekendsLabels: ILocalizationService<IGanttWeekendsLabels>;
     /** Selecting tasks on the chart, and mirroring the grid's selection. */
     ganttSelection: IGanttSelection;
     /** The zoom levels, and the slider's 0-100 mapping onto them. */

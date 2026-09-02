@@ -3,8 +3,6 @@
  * the module's, and are overridden through {@link IGanttModuleOptions.labels}.
  */
 export interface IGanttLabels {
-    /** The weekend toggle in the settings callout. */
-    hideWeekends: string;
     /** Accessible name of the zoom slider. */
     zoomSlider: string;
     /** The ribbon command scrolling the timeline to today. */
@@ -15,7 +13,6 @@ export interface IGanttLabels {
 
 /** The defaults for {@link IGanttLabels}. */
 export const GANTT_LABELS: IGanttLabels = {
-    hideWeekends: 'Hide weekends',
     zoomSlider: 'Zoom slider',
     goToToday: 'Go to today',
     zoomToFit: 'Zoom to fit',

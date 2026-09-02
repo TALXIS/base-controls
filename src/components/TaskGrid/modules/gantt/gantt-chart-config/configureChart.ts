@@ -15,7 +15,7 @@ const DEFAULT_ROW_HEIGHT = 42;
  * Everything the chart is told before it is drawn: its options, its layout, its templates.
  *
  * The templates close over the locator rather than over values, because they run on every render and the
- * answers change: the selection, the hierarchy, whether weekends are shown.
+ * answers change: the selection, the hierarchy, the scale the chart is on.
  */
 export const configureChart = (gantt: GanttStatic, services: IGanttServiceLocator): void => {
     gantt.config.show_grid = false;
@@ -45,29 +45,19 @@ export const configureChart = (gantt: GanttStatic, services: IGanttServiceLocato
             { view: 'scrollbar', id: 'scrollHor', height: 20 },
         ],
     };
-    gantt.templates.timeline_cell_class = (_task, date) => getWeekendClass(gantt, date, services);
+    gantt.templates.timeline_cell_class = (_task, date) => getWeekendClass(gantt, date);
     gantt.templates.task_row_class = (_start, _end, task) => getTaskRowClass(task, services);
     gantt.templates.task_class = (_start, _end, task) => getTaskClass(task, services);
     //the bar carries no text of its own: the name is drawn beside it, where it stays readable at any
     //zoom level
     gantt.templates.task_text = () => '';
     gantt.templates.leftside_text = (_start, _end, task) => task.text;
-    applyWeekendVisibility(gantt, services);
 };
 
-/**
- * Weekends are dropped from the scale rather than hidden, so the bars close up over them.
- *
- * Applied again whenever the setting changes, which is why it is exported.
- */
-export const applyWeekendVisibility = (gantt: GanttStatic, services: IGanttServiceLocator): void => {
-    gantt.ignore_time = date => !services.get('ganttViewState').isWeekendVisible() && isWeekend(date) && isDayScaleVisible(gantt);
-};
-
-const getWeekendClass = (gantt: GanttStatic, date: Date, services: IGanttServiceLocator): string | undefined => {
-    return services.get('ganttViewState').isWeekendVisible() && isWeekend(date) && isDayScaleVisible(gantt)
-        ? WEEKEND_CLASS
-        : undefined;
+//marked whether or not weekends can be hidden - taking them out of the scale is the weekends module's, and
+//needs a PRO licence. Only where single days are on the scale, which is where a weekend means anything
+const getWeekendClass = (gantt: GanttStatic, date: Date): string | undefined => {
+    return isWeekend(date) && isDayScaleVisible(gantt) ? WEEKEND_CLASS : undefined;
 };
 
 const getTaskRowClass = (task: Task, services: IGanttServiceLocator): string => {
@@ -89,6 +79,7 @@ const isSelected = (task: Task, services: IGanttServiceLocator): boolean => {
     return services.get('taskGridServices').get('taskDataProvider').getSelectedRecordIds().includes(task.id as string);
 };
 
-const isWeekend = (date: Date): boolean => {
+/** What both the core's marking and the weekends module's skipping call a weekend. */
+export const isWeekend = (date: Date): boolean => {
     return date.getDay() === 0 || date.getDay() === 6;
 };
