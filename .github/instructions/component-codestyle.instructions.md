@@ -43,3 +43,12 @@ export * from './ComponentName';
 - Export the defaults through `components/index.ts`.
 - Merge default and user-provided component mappings in the component body.
 - Do not add `onRender...` callback scaffolding unless explicitly requested.
+
+## Event handlers
+
+- Register a handler longer than one line as a named arrow function property, not inline — a named
+  reference can be removed again, and the registration site stays a readable list of what is listened to.
+- Keep an inline arrow only for a single-line delegation to a named method.
+- Name the property after the event: `_onGanttReady`, `_onPointerDown`.
+- Use an arrow property rather than a method so `this` survives being passed as a listener, and so
+  `removeEventListener` is handed the same reference that was added.
