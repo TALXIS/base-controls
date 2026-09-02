@@ -2,11 +2,19 @@ import React from 'react'
 import { Stack, Text, initializeIcons } from '@fluentui/react'
 import {
     Marker,
+    MemoryChecklistStrategy,
     MemoryGanttMarkersStrategy,
+    MemoryLookupManyDataProviderFactory,
     MemoryProjectStrategy,
+    MemoryTaskDependencyStrategy,
     MemoryTaskGridDescriptor,
+    MemoryTaskStrategy,
+    MemoryTemplateDataProvider,
+    MemoryUserQueryStrategy,
     TaskGrid,
     MilestoneMarker,
+    createChecklistModule,
+    createDependenciesModule,
     createGanttMarkersModule,
     createGanttModule,
     createGanttSelectionBoxModule,
@@ -14,19 +22,29 @@ import {
     createGanttTaskDraggingModule,
     createGanttTaskTooltipModule,
     createGanttWeekendsModule,
+    createLookupManyModule,
     createProjectModule,
+    createTemplateModule,
+    createUserQueryModule,
 } from '@talxis/base-controls'
-import type { ISavedQuery } from '@talxis/base-controls'
+import type { IChecklistItem, IMemoryEntitySource, IMemoryTemplateSource, ISavedQuery, ITaskDependency, ITaskGridServiceLocator } from '@talxis/base-controls'
 import { IRawRecord } from '@talxis/client-libraries'
 import {
+    CHECKLIST_COL,
+    CHECKLIST_ITEMS,
     PARENT_ID_COL,
     PERCENT_COMPLETE_COL,
+    PREDECESSORS_COL,
     STACK_RANK_COL,
     STATE_CODE_COL,
     SUBJECT_COL,
+    SUCCESSORS_COL,
+    TASK_DEPENDENCIES,
     TASK_SOURCE,
+    TEMPLATE_SOURCE,
     getQueryColumns,
 } from '../memoryTaskData'
+import { PEOPLE_SOURCE, TAGS_SOURCE } from '../memoryLookupManyData'
 import { generateTasks } from './generateTasks'
 
 //the TaskGrid renders Fluent icons but, unlike Form, nothing in its tree registers them
@@ -40,7 +58,20 @@ const ALL_TASKS: ISavedQuery = {
     id: '00000000-0000-0000-0000-00000000dev1',
     name: 'All Tasks',
     isFlatListEnabled: false,
-    columns: getQueryColumns(SUBJECT_COL, START_DATE_COL, END_DATE_COL, PERCENT_COMPLETE_COL),
+    columns: getQueryColumns(
+        SUBJECT_COL, START_DATE_COL, END_DATE_COL, PERCENT_COMPLETE_COL,
+        'assignedto', 'tags', PREDECESSORS_COL, SUCCESSORS_COL, CHECKLIST_COL,
+    ),
+    quickFindColumns: [SUBJECT_COL],
+}
+
+//a second view, so the switcher has somewhere to switch to - and with different columns, which is what
+//makes a view change worth watching
+const SCHEDULE: ISavedQuery = {
+    id: '00000000-0000-0000-0000-00000000dev2',
+    name: 'Schedule',
+    isFlatListEnabled: false,
+    columns: getQueryColumns(SUBJECT_COL, START_DATE_COL, END_DATE_COL),
     quickFindColumns: [SUBJECT_COL],
 }
 
@@ -82,13 +113,38 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
     const { count, seed, height = '700px' } = props
     const [generatedInMs, setGeneratedInMs] = React.useState<number>()
 
-    const descriptor = React.useMemo(() => new MemoryTaskGridDescriptor({
+    const descriptor = React.useMemo(() => {
+        //the sandbox's store. `onInitialize` runs again on every remount - a view switch, applying Edit
+        //columns, saving a personal view - and hands back whatever is in here, which `keepSession` reads
+        //off the providers just before each control is torn down
+        let records: IRawRecord[] = []
+        let userQueries: ISavedQuery[] = []
+        let dependencies: ITaskDependency[] = structuredClone(TASK_DEPENDENCIES)
+        let checklist: Record<string, IChecklistItem[]> = structuredClone(CHECKLIST_ITEMS)
+        let templates: IMemoryTemplateSource = structuredClone(TEMPLATE_SOURCE)
+        const lookupSources: { [columnName: string]: IMemoryEntitySource } = { assignedto: PEOPLE_SOURCE, tags: TAGS_SOURCE }
+
+        const keepSession = (services: ITaskGridServiceLocator) => {
+            services.whenAvailable('datasetControl', datasetControl => {
+                datasetControl.events.addEventListener('onBeforeDestroy', () => {
+                    records = services.get('taskDataProvider').getRawData()
+                    userQueries = services.find('userQueriesModule')?.provider.getQueries() ?? userQueries
+                    dependencies = services.find('dependenciesModule')?.provider.getDependencies() ?? dependencies
+                    const templateProvider = services.find('templatesModule')?.provider as MemoryTemplateDataProvider | undefined
+                    templates = templateProvider?.getTemplateSource() ?? templates
+                })
+            })
+        }
+
+        return new MemoryTaskGridDescriptor({
         height,
         onInitialize: async () => {
             const startedAt = performance.now()
-            const records = count === undefined
-                ? structuredClone(TASK_SOURCE.records)
-                : generateTasks({ count, seed })
+            if (!records.length) {
+                records = count === undefined
+                    ? structuredClone(TASK_SOURCE.records)
+                    : generateTasks({ count, seed })
+            }
             setGeneratedInMs(performance.now() - startedAt)
 
             return {
@@ -100,7 +156,7 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                     stackRank: STACK_RANK_COL,
                     stateCode: STATE_CODE_COL,
                 },
-                systemQueries: [ALL_TASKS],
+                systemQueries: [ALL_TASKS, SCHEDULE],
                 gridParameters: {
                     enableTaskCreation: true,
                     enableTaskEditing: true,
@@ -109,12 +165,50 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                     enableShowHierarchyToggle: true,
                     enableHideInactiveTasksToggle: true,
                     enableQuickFind: true,
+                    enableViewSwitcher: true,
+                    enableEditColumns: true,
                     enableSorting: true,
                     enableFiltering: true,
                     enableNavigation: true,
                     enableRowDragging: true,
                 },
+                onCreateTaskStrategy: ({ services, metadata }) => {
+                    keepSession(services)
+                    return new MemoryTaskStrategy({
+                        //seeded from what the last mount ended with, not from the fixtures
+                        onInitialize: async provider => ({ rawData: records, metadata, columns: provider.getColumns() }),
+                        services,
+                    })
+                },
+                //every module this sandbox can back with in-memory data. Custom columns is the one that is
+                //missing: no in-memory strategy ships for it, and the grid customizer needs a strategy of
+                //its own to be worth registering
                 modules: {
+                    onGetUserQueriesModule: ({ services }) => createUserQueryModule({
+                        strategy: new MemoryUserQueryStrategy({ userQueries, services }),
+                        services,
+                        enableQueryManager: true,
+                        enableSaveAsNewQuery: true,
+                        enableSaveQueryChanges: true,
+                    }),
+                    onGetTemplatesModule: ({ services }) => createTemplateModule({
+                        provider: new MemoryTemplateDataProvider({ templates, services }),
+                    }),
+                    onGetDependenciesModule: ({ services }) => createDependenciesModule({
+                        strategy: new MemoryTaskDependencyStrategy({ dependencies, services }),
+                        services,
+                    }),
+                    onGetChecklistModule: ({ services }) => createChecklistModule({
+                        strategy: new MemoryChecklistStrategy({ items: checklist, services }),
+                        services,
+                    }),
+                    onGetLookupManyModule: ({ services }) => createLookupManyModule({
+                        createDataProvider: ({ column, services }) => {
+                            const source = lookupSources[column.name]
+                            return source && MemoryLookupManyDataProviderFactory.create({ source, services })
+                        },
+                        services,
+                    }),
                     onGetGanttModule: ({ services }) => createGanttModule({
                         fieldMapping: {
                             startDate: START_DATE_COL,
@@ -165,7 +259,8 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                 },
             }
         },
-    }), [count, seed, height])
+        })
+    }, [count, seed, height])
 
     return (
         <Stack tokens={{ childrenGap: 8 }} styles={{ root: { height: '100%' } }}>

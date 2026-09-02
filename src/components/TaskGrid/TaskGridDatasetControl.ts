@@ -343,9 +343,7 @@ export class TaskGridDatasetControl extends EventEmitter<IDatasetControlEvents> 
 
     private _loadState() {
         let currentQuery = this._savedQueryDataProvider.getCurrentQuery();
-        if (!this._taskGridState.getView()) {
-            this._taskGridState.setView(currentQuery);
-        }
+        this._taskGridState.setView(currentQuery);
         //at this point current query might be missing required properties
         let { filtering, sorting, columns, searchQuery, linking } = currentQuery;
         this._dataProvider.setColumns(columns);
