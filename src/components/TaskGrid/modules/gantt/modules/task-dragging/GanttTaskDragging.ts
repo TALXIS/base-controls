@@ -9,6 +9,20 @@ import { IGanttTaskDraggingSettings } from './createGanttTaskDraggingModule';
 
 const RESIZE_MODE = 'resize';
 
+/** One dragged bar's cached pixel coordinates, as the chart holds them while a gesture runs. */
+interface IGanttDragState {
+    start_x?: number;
+    pos?: { x: number, y: number };
+    obj_s_x?: number;
+    obj_e_x?: number;
+}
+
+/** The chart's task drag-and-drop state, which is not in its public API. */
+interface IGanttTaskDnd {
+    drag: IGanttDragState | null;
+    dragMultiple?: { [taskId: string]: IGanttDragState };
+}
+
 export interface IGanttTaskDraggingParameters {
     /** Where the chart and the records it draws are reached. */
     services: IGanttServiceLocator;
@@ -128,6 +142,13 @@ export class GanttTaskDragging {
 
     private _onTaskDrag(taskId: string, mode: string) {
         const draggedTask = this._gantt.getTask(taskId);
+        //so the bar can be dragged past either end of what is drawn, rather than stopping at it
+        if (draggedTask?.end_date) {
+            this._timeline.extendRangeEnd({ date: draggedTask.end_date });
+        }
+        if (draggedTask?.start_date) {
+            this._shiftDragCoordinates(this._timeline.extendRangeStart({ date: draggedTask.start_date }));
+        }
         const { startDate: startColumnName, endDate: endColumnName } = this._fieldMapping;
 
         if (mode === RESIZE_MODE) {
@@ -157,6 +178,39 @@ export class GanttTaskDragging {
             draggedRecord.setValue(startColumnName, draggedTask.start_date);
             draggedRecord.setValue(endColumnName, draggedTask.end_date);
         }
+    }
+
+    /**
+     * Moves a running drag's coordinates along with the range it is measured against.
+     *
+     * The chart works a drag out from pixel positions it caches when the gesture starts, and those are
+     * measured from the start of the rendered range — so growing the range backwards moves the origin out
+     * from under them, and the bar jumps by however far it moved. There is no public way to ask the chart
+     * to re-base them, so they are shifted here: the only place that reaches into its drag state.
+     *
+     * @param offset How far every position on the chart moved, in pixels.
+     */
+    private _shiftDragCoordinates(offset: number) {
+        const taskDnd = (this._gantt as unknown as { _tasks_dnd?: IGanttTaskDnd })._tasks_dnd;
+        if (!taskDnd?.drag || !offset) {
+            return;
+        }
+        const shift = (drag: IGanttDragState) => {
+            if (drag.start_x !== undefined) {
+                drag.start_x += offset;
+            }
+            if (drag.pos) {
+                drag.pos.x += offset;
+            }
+            if (drag.obj_s_x !== undefined) {
+                drag.obj_s_x += offset;
+            }
+            if (drag.obj_e_x !== undefined) {
+                drag.obj_e_x += offset;
+            }
+        };
+        shift(taskDnd.drag);
+        Object.values(taskDnd.dragMultiple ?? {}).forEach(shift);
     }
 
     private _onAfterTaskDrag(taskId: string) {

@@ -1,77 +1,37 @@
 import { GanttStatic } from "gantt-trial";
-import { IGanttServiceLocator } from "../services";
-import { IGanttViewStateProvider } from "../gantt-view-state";
-
-export interface IGanttZoomAnchorParameters {
-    /** Where the chart and the view's state are reached. */
-    services: IGanttServiceLocator;
-}
 
 /**
- * The date a zoom keeps under the pointer.
+ * The date a zoom holds still, and where it is held.
  *
- * Remembered until the user scrolls — that is them choosing somewhere else — and written through to the
- * view's state so a remount reopens there.
+ * Remembered across a run of zoom steps rather than read from the chart each time: the chart works the
+ * date out from pixels and lands the scroll on a whole one, so re-deriving it every step drifts — over a
+ * wheel spin by days, and a zoom in and back out stops coming home. Dropped when the user scrolls, or
+ * when the pointer moves to a different position, because either is them choosing a new date to hold.
  */
 export class GanttZoomAnchor {
-    private _services: IGanttServiceLocator;
-    private _pendingDate: Date | undefined;
+    private _date?: Date;
+    private _x?: number;
 
-    constructor(parameters: IGanttZoomAnchorParameters) {
-        this._services = parameters.services;
-        this._pendingDate = this._viewState.getAnchorDate();
+    /** @param x Where the date is held, in pixels from the left of the visible chart. */
+    public remember(date: Date, x: number): void {
+        this._date = date;
+        this._x = Math.round(x);
     }
 
-    /** Where the next zoom should keep the timeline, in pixels from the left of the visible chart. */
-    public getAnchorX(): number {
-        if (!this._pendingDate) {
-            return this._getViewportCentreX();
-        }
-
-        const anchorX = this._gantt.posFromDate(this._pendingDate) - this._gantt.getScrollState().x;
-        return Math.max(0, Math.min(this._getViewportWidth(), anchorX));
+    public forget(): void {
+        this._date = undefined;
+        this._x = undefined;
     }
 
     /**
-     * The date to hold at `anchorX` — the one already pending, or the date now under it.
+     * The date to hold at `x` — the remembered one, or the one the chart has there now.
      *
-     * Pending-first keeps a run of zoom steps on the same date instead of drifting with each re-render.
-     * Empty until the chart has rendered a scale to read positions from.
+     * Nothing until the chart has rendered a scale to read positions from.
      */
-    public getStableDate(anchorX: number): Date | undefined {
-        if (this._pendingDate) {
-            return this._pendingDate;
+    public resolve(gantt: GanttStatic, x: number): Date | undefined {
+        if (this._date && this._x === Math.round(x)) {
+            return this._date;
         }
-        const date = this._gantt.dateFromPos(this._gantt.getScrollState().x + anchorX);
-        this.set(date);
-        return date;
-    }
-
-    public set(date: Date | undefined): void {
-        if (date) {
-            this._viewState.setAnchorDate(date);
-        }
-        this._pendingDate = date;
-    }
-
-    /** Forgets the anchor: the next zoom picks up wherever the user is looking now. */
-    public clear(): void {
-        this.set(undefined);
-    }
-
-    private _getViewportCentreX(): number {
-        return this._getViewportWidth() / 2;
-    }
-
-    private _getViewportWidth(): number {
-        return this._gantt.$task?.offsetWidth ?? 0;
-    }
-
-    private get _gantt(): GanttStatic {
-        return this._services.get('ganttChart');
-    }
-
-    private get _viewState(): IGanttViewStateProvider {
-        return this._services.get('ganttViewState');
+        return gantt.dateFromPos(gantt.getScrollState().x + x) ?? undefined;
     }
 }

@@ -9,6 +9,12 @@ const HOLD_INTERVAL = 75;
 export interface IZoomSliderProps {
     value: number;
     onChange: (value: number) => void;
+    /** Defaults to `0`. */
+    min?: number;
+    /** Defaults to `100`. */
+    max?: number;
+    /** What the buttons move by, and what the slider snaps to. Defaults to `1`. */
+    step?: number;
     disabled?: boolean;
     /** Accessible name of the slider itself. */
     ariaLabel?: string;
@@ -16,7 +22,7 @@ export interface IZoomSliderProps {
 }
 
 export const ZoomSlider = (props: IZoomSliderProps) => {
-    const { onChange, disabled } = props;
+    const { onChange, disabled, min = 0, max = 100, step = 1 } = props;
     const valuerRef = useRef(props.value);
     valuerRef.current = props.value;
     const theme = useTheme();
@@ -25,8 +31,8 @@ export const ZoomSlider = (props: IZoomSliderProps) => {
     const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    const changeZoomLevel = (step: number) => {
-        onChange(valuerRef.current + step);
+    const changeZoomLevel = (direction: number) => {
+        onChange(Math.max(min, Math.min(max, valuerRef.current + direction * step)));
     };
 
     const stopHold = () => {
@@ -71,8 +77,9 @@ export const ZoomSlider = (props: IZoomSliderProps) => {
                 disabled: disabled,
                 ariaLabel: props.ariaLabel,
                 className: styles.slider,
-                min: 0,
-                max: 100,
+                min: min,
+                max: max,
+                step: step,
                 value: valuerRef.current,
                 showValue: false,
                 styles: {

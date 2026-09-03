@@ -1,16 +1,5 @@
 import { GanttStatic } from "gantt-trial";
 
-/** One scale row of a zoom level — a unit, and how many of it per column. */
-export interface IGanttScaleDefinition {
-    unit: string;
-    step?: number;
-}
-
-/** One zoom level, as the chart's zoom extension holds it. */
-export interface IGanttZoomLevelDefinition {
-    scales?: IGanttScaleDefinition[];
-}
-
 /** The wheel event the extension's own handler is given. */
 export interface IZoomWheelEvent {
     clientX: number;
@@ -24,20 +13,15 @@ export interface IZoomWheelEvent {
 /**
  * The parts of dhtmlx's zoom extension that are not in its public API.
  *
- * The slider maps 0-100 onto *both* the level and the column width inside it, which the extension has no
- * public way to do — so the level setter and the wheel handler are reached directly. The width bounds are
- * not read back from here: they are values we hand to `zoom.init` ourselves, and `ZoomingConfig` is where
- * they live. Everything that depends on the library's internals is named here, so an upgrade has one place
- * to check.
+ * Only the level setter, and only for its second argument: given a position it reads the date under it,
+ * re-renders, and scrolls that date back to it — the whole of what a zoom has to do to stay under the
+ * pointer, in one scroll. The public `setLevel` always passes `0`, which makes the extension re-centre on
+ * a date of its own instead, so it would have to be undone by hand. Everything that depends on the
+ * library's internals is named here, so an upgrade has one place to check.
  */
 export interface IGanttZoomApi {
     _initialized: boolean;
-    _exitFitMode: () => void;
-    _setScaleDates: () => void;
     _setLevel: (levelIndex: number, anchorX: number) => void;
-    _handler: (event: IZoomWheelEvent) => void;
-    getLevels: () => IGanttZoomLevelDefinition[];
-    getCurrentLevel: () => number;
 }
 
 /** The chart's zoom extension, with what {@link IGanttZoomApi} adds to its public surface. */

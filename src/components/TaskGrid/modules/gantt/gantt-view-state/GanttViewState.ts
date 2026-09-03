@@ -1,12 +1,31 @@
-import { EventEmitter, IEventEmitter } from "@talxis/client-libraries";
 import { IModuleState } from "@components/TaskGrid/providers/state";
 import { IGanttServiceLocator } from "../services";
+
+/**
+ * A zoom as it is stored: the scale the chart was showing, and how wide its columns were.
+ *
+ * Stored as the scale itself rather than as a position, because which zoom levels are usable depends on
+ * what the mapped date columns hold - so a position means different things on different views.
+ */
+export interface IGanttZoomState {
+    /** The unit of the level's finest scale, and how many of it a column spans. */
+    unit: string;
+    step: number;
+    columnWidth: number;
+}
 
 /** How the timeline was left on a view: what the module stores, and reads back when that view reopens. */
 export interface IGanttViewState {
     /** The timeline panel's width, as a percentage of the split view. */
     ganttWidth?: number;
-    /** The zoom, as the slider's 0-100 value. */
+    /** The zoom the timeline was showing. */
+    zoom?: IGanttZoomState;
+    /**
+     * The zoom, as the slider's 0-100 value.
+     *
+     * @deprecated What a zoom was stored as before {@link IGanttZoomState}. Read when a view carries no
+     * `zoom`, and still written beside it, so a view saved here reopens on a build that predates it.
+     */
     zoomLevel?: number;
     /** The date the timeline is centred on, as an ISO string. */
     anchorDate?: string;
@@ -14,12 +33,6 @@ export interface IGanttViewState {
 
 /** The key this module's state is stored under. Part of what a saved view persists, so it is fixed. */
 export const GANTT_MODULE_STATE_KEY = 'gantt';
-
-/** What changed, for the parts of the UI that draw it. */
-export interface IGanttViewStateEvents {
-    /** The slider re-renders on this, and the zooming part applies it to the chart. */
-    onZoomLevelChanged: (zoomLevel: number) => void;
-}
 
 export interface IGanttViewStateParameters {
     /** Where the control that carries the state, and the views that persist it, are reached. */
@@ -33,9 +46,12 @@ export interface IGanttViewStateParameters {
  * whenever a view's state is captured, which is what makes the zoom survive a remount and a saved view.
  */
 export interface IGanttViewStateProvider {
-    /** What changed. */
-    events: IEventEmitter<IGanttViewStateEvents>;
+    /** The zoom the view was left on, or nothing on a view that never stored one. */
+    getZoom: () => IGanttZoomState | undefined;
+    setZoom: (zoom: IGanttZoomState) => void;
+    /** @deprecated The zoom as an older build stored it. Read when a view carries no `zoom`. */
     getZoomLevel: () => number | undefined;
+    /** @deprecated Written beside `zoom`, so a view saved here reopens on a build that predates it. */
     setZoomLevel: (zoomLevel: number) => void;
     /** The timeline panel's width, as a percentage of the split view. */
     getGanttWidth: () => number | undefined;
@@ -47,7 +63,6 @@ export interface IGanttViewStateProvider {
 
 /** Holds {@link IGanttViewStateProvider}. Built by `createGanttModule`, before there is a chart. */
 export class GanttViewState implements IGanttViewStateProvider {
-    public readonly events: IEventEmitter<IGanttViewStateEvents> = new EventEmitter<IGanttViewStateEvents>();
     private _services: IGanttServiceLocator;
     private _state: IModuleState<IGanttViewState>;
 
@@ -57,13 +72,20 @@ export class GanttViewState implements IGanttViewStateProvider {
             .module<IGanttViewState>(GANTT_MODULE_STATE_KEY, 'view');
     }
 
+    public getZoom(): IGanttZoomState | undefined {
+        return this._state.get().zoom;
+    }
+
+    public setZoom(zoom: IGanttZoomState): void {
+        this._state.set({ zoom });
+    }
+
     public getZoomLevel(): number | undefined {
         return this._state.get().zoomLevel;
     }
 
     public setZoomLevel(zoomLevel: number): void {
         this._state.set({ zoomLevel });
-        this.events.dispatchEvent('onZoomLevelChanged', zoomLevel);
     }
 
     public getGanttWidth(): number | undefined {

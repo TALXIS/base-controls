@@ -73,7 +73,7 @@ export class GanttManager {
         data.load();
         //the markers module registered its provider when the chart appeared; its markers load here rather
         //than from inside it, the way the grid drives its own providers' first load
-        void this._services.find('ganttMarkers')?.refresh();
+        this._services.find('ganttMarkers')?.refresh();
     }
 
     //releases the chart when the control it belongs to goes away. Waited for rather than resolved: the module is built

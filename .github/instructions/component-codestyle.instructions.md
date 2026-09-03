@@ -52,3 +52,13 @@ export * from './ComponentName';
 - Name the property after the event: `_onGanttReady`, `_onPointerDown`.
 - Use an arrow property rather than a method so `this` survives being passed as a listener, and so
   `removeEventListener` is handed the same reference that was added.
+
+## Free functions vs methods
+
+- Pull a method out of a class only for a reason that survives review: it is **pure** (values in, values
+  out, no state and no chart/service) and the class is easier to read without it, it is **shared** by more
+  than one consumer, or it **isolates a foreign API** so every reach into someone else's internals has one
+  file to check on upgrade.
+- "This method got long" is not one of those reasons. A long private method stays a private method.
+- Never export a helper whose only caller is one class. Folder `index.ts` files are the package's public
+  surface — publish what other parts read, keep the rest folder-internal.

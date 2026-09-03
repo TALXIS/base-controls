@@ -2,24 +2,26 @@ import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks";
 import { useTaskDataProvider } from "@components/TaskGrid/context";
 import { ZoomSlider } from "@components/zoom-slider";
-import { IGanttViewStateEvents } from '../gantt-view-state';
-import { useGanttLabels, useGanttViewState } from "../context";
+import { IGanttZoomingEvents } from '../gantt-zooming';
+import { useGanttLabels, useGanttService } from "../context";
 
 /** The timeline's zoom, as the slider the header renders left of the ribbon. */
 export const ZoomSliderAdapter = () => {
     const provider = useTaskDataProvider();
-    const viewState = useGanttViewState();
+    const zooming = useGanttService('ganttZooming');
     const labels = useGanttLabels();
-    const value = viewState.getZoomLevel() ?? 0;
     const rerender = useRerender();
-    useEventEmitter<IGanttViewStateEvents>(viewState.events, 'onZoomLevelChanged', rerender);
+    useEventEmitter<IGanttZoomingEvents>(zooming?.events, 'onZoomChanged', rerender);
 
     return (
         <ZoomSlider
             ariaLabel={labels.getLocalizedString('zoomSlider')}
-            value={value}
-            disabled={provider.isLoading()}
-            onChange={(nextValue: number) => viewState.setZoomLevel(nextValue)}
+            min={0}
+            max={Math.max(0, (zooming?.getStopCount() ?? 1) - 1)}
+            step={1}
+            value={zooming?.getStopIndex() ?? 0}
+            disabled={!zooming || provider.isLoading()}
+            onChange={(stopIndex: number) => zooming?.setStopIndex(stopIndex)}
         />
     );
 }
