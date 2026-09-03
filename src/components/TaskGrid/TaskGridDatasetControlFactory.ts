@@ -73,12 +73,6 @@ export class TaskGridDatasetControlFactory {
             services: services,
         });
         services.register('datasetControl', () => datasetControl);
-        //awaited here rather than left to the component: what loads after it needs the tasks that came
-        //back, and the grid's own skeleton already covers everything this method awaits. After the
-        //control, never before it - its constructor is what puts the view's columns, filtering and
-        //sorting on the provider, and the task strategy reads them as it loads
-        //before the tasks: the task strategy reads the project as it loads - into its query, and onto
-        //every task it creates
         await services.find('projectModule')?.provider.refresh();
         await datasetControl.getDataset().refresh();
         const loadedTaskIds = taskDataProvider.getAllRecords().map(record => record.getRecordId());
