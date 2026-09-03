@@ -12,6 +12,7 @@ export const Grid = (props: IGrid) => {
     const services = useServices();
 
     return <GridBase {...props}
+        onGetRowData={() => taskDataProvider.getVisibleRecords()}
         parameters={{
             ...props.parameters,
             LicenseKey: {
@@ -21,11 +22,15 @@ export const Grid = (props: IGrid) => {
         onOverrideComponentProps={(props) => {
             return {
                 ...props,
+                //every task is already in memory, so the grid holds the whole hierarchy rather than
+                //asking for a level at a time. A level fetched on demand renders as a placeholder row
+                //until it arrives, and the chart - which has every task - then shows a different task on
+                //the same line
+                rowModelType: 'clientSide' as const,
                 treeData: true,
+                getDataPath: (record: IRecord) => taskDataProvider.getRecordTree().structure.getAncestorIds(record.getRecordId()),
                 suppressGroupRowsSticky: true,
                 processUnpinnedColumns: () => [],
-                isServerSideGroup: (record: IRecord) => taskDataProvider.getRecordTree().view.hasChildren(record.getRecordId()),
-                getServerSideGroupKey: (record: IRecord) => record.getRecordId(),
                 onGridReady: (event) => {
                     services.register('gridApi', () => event.api);
                     props.onGridReady?.(event);

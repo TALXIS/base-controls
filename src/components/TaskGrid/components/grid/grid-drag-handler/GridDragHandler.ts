@@ -89,13 +89,10 @@ export class GridDragHandler extends EventEmitter<IGridDragHandlerEvents> {
     }
 
     private _refreshRowClasses(node?: IRowNode<IRecord>) {
-        if (!node) {
+        if (!node?.data) {
             return;
         }
-        //@ts-ignore - typings - getGroupKeys missing in type
-        const keys = [...node.getGroupKeys()].slice(0, -1);
-        this._gridApi.applyServerSideTransactionAsync({
-            route: keys,
+        this._gridApi.applyTransactionAsync({
             update: [node.data]
         })
     }

@@ -63,33 +63,20 @@ export class GanttData implements IGanttData {
     }
 
     private _loadTasksToGantt() {
-        const previousOpenState = new Map<string, boolean>();
-        this._gantt.eachTask((task: Task) => previousOpenState.set(String(task.id), !!task.$open));
+        //what is open is not carried over from the chart any more: every task is built with what the
+        //expansion authority says, which is also what the grid draws, so a reload cannot leave the two
+        //halves disagreeing
+        const data = this._dataProvider.getVisibleRecords().map(record => toGanttTask(record, this._services));
 
-        const records = this._getVisibleRecords();
-        const data = records.map(record => {
-            const task = toGanttTask(record, this._services);
-            const previousOpen = previousOpenState.get(String(task.id));
-            if (previousOpen !== undefined) {
-                task.open = previousOpen;
-            }
-            return task;
-        });
-
-        this._gantt.clearAll();
-        this._gantt.parse({
-            data: data
+        //one repaint for the whole load: `parse` repaints by itself, and so does everything it triggers
+        this._gantt.batchUpdate(() => {
+            this._gantt.clearAll();
+            this._gantt.parse({
+                data: data
+            });
         });
         this.events.dispatchEvent('onDataParsed', this._isFirstLoad);
         this._isFirstLoad = false;
-    }
-
-    //the tree's view is the grid's own display order, so the chart mirrors the rows the user sees
-    private _getVisibleRecords(): IRecord[] {
-        const recordsMap = this._dataProvider.getRecordsMap();
-        return this._dataProvider.getRecordTree().view.getOrderedIds()
-            .map(recordId => recordsMap[recordId])
-            .filter((record): record is IRecord => !!record);
     }
 
     private _onAfterTasksCreated(rawRecords: IRawRecord[] | null, parentId?: string) {
@@ -144,7 +131,9 @@ export class GanttData implements IGanttData {
 
             if (parentId && this._gantt.isTaskExists(parentId)) {
                 this._syncRecordsToGanttByIds([parentId], false);
-                this._gantt.open(parentId);
+                //reported rather than opened here, so the row the new task went into is open on both
+                //halves of the split view and stays open on the next load
+                this._taskGridServices.get('taskExpansion').setExpanded(parentId, true);
             }
         });
 

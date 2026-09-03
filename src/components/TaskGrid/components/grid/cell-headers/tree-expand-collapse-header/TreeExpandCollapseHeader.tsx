@@ -2,13 +2,13 @@ import { IconButton } from "@fluentui/react";
 import { ICellProps } from "@components/Grid/cells/cell/Cell"
 import * as React from "react"
 import { getTreeExpandCollapseHeaderStyles } from "./styles";
-import { useTaskDataProvider } from "@components/TaskGrid/context";
+import { useServices, useTaskDataProvider } from "@components/TaskGrid/context";
 
 /** Header of the subject column, carrying the expand-all / collapse-all toggle. */
 export const TreeExpandCollapseHeader = (props: ICellProps) => {
     const styles = React.useMemo(() => getTreeExpandCollapseHeaderStyles(), []);
     const taskDataProvider = useTaskDataProvider();
-    const { api } = { ...props }
+    const expansion = useServices().get('taskExpansion');
     
     if (taskDataProvider.isFlatListEnabled()) {
         return <></>
@@ -16,7 +16,7 @@ export const TreeExpandCollapseHeader = (props: ICellProps) => {
     else {
         return (
             <div className={styles.root}>
-                <IconButton onClick={() => api.expandAll()} styles={{
+                <IconButton onClick={() => expansion.expandAll()} styles={{
                     root: styles.button
                 }} iconProps={{
                     iconName: 'Add',
@@ -24,7 +24,7 @@ export const TreeExpandCollapseHeader = (props: ICellProps) => {
                         root: styles.icon
                     },
                 }} />
-                <IconButton onClick={() => api.collapseAll()} styles={{
+                <IconButton onClick={() => expansion.collapseAll()} styles={{
                     root: styles.button
                 }} iconProps={{
                     styles: {

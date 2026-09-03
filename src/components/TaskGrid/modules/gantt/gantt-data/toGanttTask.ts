@@ -31,7 +31,7 @@ export const toGanttTask = (record: IRecord, services: IGanttServiceLocator): Ta
         progress: getProgress(record, services),
         parent: taskDataProvider.isFlatListEnabled() ? undefined : parent?.id?.guid,
         active: record.isActive(),
-        open: isOpenByDefault(recordId, services),
+        open: services.get('taskGridServices').get('taskExpansion').shouldRenderExpanded(recordId),
     };
 };
 
@@ -44,15 +44,3 @@ const getProgress = (record: IRecord, services: IGanttServiceLocator): number =>
     return (record.getValue(columnName) ?? 0) / 100;
 };
 
-const isOpenByDefault = (recordId: string, services: IGanttServiceLocator): boolean => {
-    const taskDataProvider = services.get('taskGridServices').get('taskDataProvider');
-    if (taskDataProvider.isFlatListEnabled()) {
-        return false;
-    }
-    //a task the filter or quick find did not match is only on the chart because a descendant of it was
-    //matched, so it opens to show that descendant
-    if (!taskDataProvider.getRecordTree().view.isMatching(recordId)) {
-        return true;
-    }
-    return services.get('ganttExpansion').isTaskExpanded(recordId);
-};

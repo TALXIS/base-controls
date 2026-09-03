@@ -4,6 +4,7 @@ import type { ILocalizationService, IServiceLocator } from "@utils";
 import type { ITaskGridLabels } from "@components/TaskGrid/labels";
 import type { INativeColumns, ITaskGridDatasetControl, ITaskGridDescriptor, ITaskGridParameters } from "@components/TaskGrid/interfaces";
 import type { ITaskDataProvider } from "@components/TaskGrid/providers/task";
+import type { ITaskExpansionProvider } from "@components/TaskGrid/providers/expansion";
 import type { ISavedQueryDataProvider } from "@components/TaskGrid/providers/saved-query";
 import type { ITaskGridStateProvider } from "@components/TaskGrid/providers/state";
 import type { IChecklistModule, ICustomColumnsModule, IDependenciesModule, IGanttModule, IGridCustomizerModule, ILookupManyModule, IProjectModule, ITemplateModule, IUserQueryModule } from "@components/TaskGrid/modules/interfaces";
@@ -47,6 +48,8 @@ export interface ITaskGridServiceMap {
     gridApi: GridApi;
     /** The grid's data layer: the tasks, the hierarchy, and every task operation. */
     taskDataProvider: ITaskDataProvider;
+    /** Which rows are expanded. The one authority both halves of the split view mirror. */
+    taskExpansion: ITaskExpansionProvider;
     /** The views the grid runs on. */
     savedQueryDataProvider: ISavedQueryDataProvider;
     /** The personal-views module, UI included. Present when it is registered. */

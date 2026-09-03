@@ -1,8 +1,9 @@
 import * as React from "react";
-import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
+import { ColDef as ColDefBase, GridApi as GridApiBase, IRowNode, IsGroupOpenByDefaultParams, IsServerSideGroupOpenByDefaultParams, RowClassRules as RowClassRulesBase } from "@ag-grid-community/core";
 import { ITaskDataProvider } from "@components/TaskGrid/providers/task";
 import { DatasetConstants, IColumn, IRawRecord, IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { GridDragHandler, IDragOperation } from "../grid-drag-handler";
+import { GridExpansionSync } from "../grid-expansion-sync";
 import { GroupCell } from "../group-cell";
 import { TreeExpandCollapseHeader } from "../cell-headers/tree-expand-collapse-header";
 import { AddTaskButton } from "../cell-renderers/add-task-button";
@@ -111,6 +112,7 @@ interface IDefaultCellComponents {
 export class GridCustomizer implements IGridCustomizer {
     private _services: ITaskGridServiceLocator;
     private _gridDragHandler!: GridDragHandler;
+    private _gridExpansionSync?: GridExpansionSync;
     private _defaultCellComponents: Map<string, IDefaultCellComponents> = new Map();
     private _columnDefinitionsHooks = new HookRegistry<GridColumnDefinitionsHook>();
     private _recordIdsPendingRowRefresh: Set<string> = new Set();
@@ -144,6 +146,7 @@ export class GridCustomizer implements IGridCustomizer {
             datasetControl: this._datasetControl
         });
         this._patchGridApi();
+        this._gridExpansionSync = new GridExpansionSync({ services: this._services });
         this._registerEventListeners();
         gridApi.setGridOption('rowClassRules', this._getRowClassRules());
     }
@@ -193,7 +196,11 @@ export class GridCustomizer implements IGridCustomizer {
                     break;
                 }
                 case 'isServerSideGroupOpenByDefault': {
-                    originalSetGridOption(key, (params: IsServerSideGroupOpenByDefaultParams) => this._isServerSideGroupOpenByDefault(params, (params) => value(params)));
+                    originalSetGridOption(key, (params: IsServerSideGroupOpenByDefaultParams) => this._isGroupOpenByDefault(params.data, () => value(params)));
+                    break;
+                }
+                case 'isGroupOpenByDefault': {
+                    originalSetGridOption(key, (params: IsGroupOpenByDefaultParams) => this._isGroupOpenByDefault(params.rowNode.data, () => value(params)));
                     break;
                 }
                 default: {
@@ -203,15 +210,13 @@ export class GridCustomizer implements IGridCustomizer {
         }
     }
 
-    private _isServerSideGroupOpenByDefault(params: IsServerSideGroupOpenByDefaultParams, defaultAction: (params: IsServerSideGroupOpenByDefaultParams) => boolean): boolean {
-        if (!params.data || this._taskDataProvider.isFlatListEnabled()) {
-            return false
+    //the grid's own default expanded level is handed over as the fallback, so a host that configures one
+    //still gets it for a row the user has never touched
+    private _isGroupOpenByDefault(record: IRecord | undefined, onGetFallback: () => boolean): boolean {
+        if (!record) {
+            return false;
         }
-        const result = !this._taskDataProvider.getRecordTree().view.isMatching(params.data.getRecordId());
-        if(result) {
-            return result;
-        }
-        return defaultAction(params);
+        return this._services.get('taskExpansion').shouldRenderExpanded(record.getRecordId(), onGetFallback);
     }
 
     private _injectAddTaskColumn(columnDefs: ColDef[]) {
@@ -387,32 +392,21 @@ export class GridCustomizer implements IGridCustomizer {
         return this._strategy?.onGetRowClassRules?.(rules) ?? rules;
     }
 
-    private _getPathToParent(node: IRowNode<IRecord> | null): string[] {
-        const path: string[] = [];
-        let parent = node?.parent;
-        while (parent) {
-            path.push(parent.id!);
-            parent = parent.parent;
-        }
-        return path.filter(id => id).reverse();
+
+    /**
+     * Hands the grid the rows as they now are.
+     *
+     * The hierarchy is worked out from the rows themselves, so a create, a delete or a move is just the
+     * new list — there is no level to patch, and no route to work out. `getRowId` is what lets the grid
+     * keep the row objects it already has, so what is expanded, selected or being edited survives.
+     */
+    private _setRowData(): void {
+        this._gridApi.setGridOption('rowData', this._taskDataProvider.getVisibleRecords());
     }
 
     //an undefined id means the top level
-    private _onRecordTreeUpdated = (affectedIds: (string | undefined)[]) => {
-        for (const id of affectedIds) {
-            if (!id) {
-                this._gridApi.refreshServerSide();
-            }
-            else {
-                const node = this._gridApi.getRowNode(id)!;
-                this._gridApi.refreshServerSide({
-                    route: this._getPathToParent(node)
-                });
-                this._gridApi.refreshServerSide({
-                    route: [...this._getPathToParent(node), id]
-                })
-            }
-        }
+    private _onRecordTreeUpdated = () => {
+        this._setRowData();
         this._gridApi.refreshCells({
             columns: [this._nativeColumns.subject],
             force: true
@@ -491,39 +485,12 @@ export class GridCustomizer implements IGridCustomizer {
         if (!result) {
             return;
         }
-        const draggedRecord = this._taskDataProvider.getRecordsMap()[movingFromRecordId];
-        const draggedNode = this._gridApi.getRowNode(movingFromRecordId)!;
-        const overNode = this._gridApi.getRowNode(movingToRecordId)!;
-
-        //a rendered position, which is what the AG Grid store counts
-        let addIndex: number | null = this._taskDataProvider.getRecordTree().view.getPosition(movingFromRecordId);
-
-        this._gridApi.applyServerSideTransaction({
-            route: this._getPathToParent(draggedNode),
-            remove: [draggedRecord],
-        });
-
-        //update the store where dragged parent node is (so the arrow can disappear if needed)
-        this._gridApi.applyServerSideTransaction({
-            route: this._getPathToParent(draggedNode.parent),
-            update: [draggedNode.data],
-        });
-
-        //update the store where over node is (so the arrow can appear if needed)
-        this._gridApi.applyServerSideTransaction({
-            route: this._getPathToParent(overNode),
-            update: [overNode.data],
-        });
-        this._gridApi.applyServerSideTransaction({
-            route: [...this._getPathToParent(overNode), ...(position === 'child' ? [overNode.id!] : [])],
-            add: [draggedRecord],
-            addIndex: addIndex !== null ? addIndex : undefined,
-        });
+        //the record already moved in the data, and the rows carry the hierarchy, so the move is told to
+        //the grid as the new row list
+        this._setRowData();
 
         if (position === 'child') {
-            setTimeout(() => {
-                overNode.setExpanded(true);
-            }, 0);
+            this._services.get('taskExpansion').setExpanded(movingToRecordId, true);
         }
         this._gridApi.refreshCells({
             columns: [this._nativeColumns.subject],
@@ -606,7 +573,7 @@ export class GridCustomizer implements IGridCustomizer {
     private _registerEventListeners() {
         this._taskDataProvider.taskEvents.addEventListener('onAfterTaskMoved', (movingFromTaskId, movingToTaskId, position, result) => this._moveInto(movingFromTaskId, movingToTaskId, position, result));
         this._taskDataProvider.taskEvents.addEventListener('onAfterTasksCreated', (records, parentId) => this._onAfterTasksCreated(records, parentId));
-        this._taskDataProvider.taskEvents.addEventListener('onRecordTreeUpdated', (updatedParentIds) => this._onRecordTreeUpdated(updatedParentIds));
+        this._taskDataProvider.taskEvents.addEventListener('onRecordTreeUpdated', () => this._onRecordTreeUpdated());
         this._taskDataProvider.taskEvents.addEventListener('onTaskDataUpdated', (newData) => this._onAfterTaskDataUpdated(newData));
         this._taskDataProvider.addEventListener('onAfterRecordSaved', (result) => this._onAfterRecordSaved(result));
         this._gridDragHandler.addEventListener('onDragEnd', (dragOperation) => this._onDragEnd(dragOperation));

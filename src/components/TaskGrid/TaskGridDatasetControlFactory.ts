@@ -1,6 +1,7 @@
 import { Dataset } from "@talxis/client-libraries";
 import { GridCustomizer } from "./components/grid/grid-customizer/GridCustomizer";
 import { TaskDataProvider } from "./providers/task";
+import { TaskExpansionProvider } from './providers/expansion';
 import { ILocalizationService } from "@utils";
 import { ITaskGridLabels } from "./labels";
 import { ISavedQueryDataProvider, PATH_COLUMN_NAME, SavedQueryDataProvider } from "./providers/saved-query";
@@ -66,6 +67,9 @@ export class TaskGridDatasetControlFactory {
             onIsFlatListEnabled: () => TaskGridDatasetControlFactory._getIsFlatlistEnabled(taskGridState, savedQueryDataProvider),
         });
         services.register('taskDataProvider', () => taskDataProvider);
+        //before the first load, because the hierarchy that load builds prunes it
+        const taskExpansion = new TaskExpansionProvider({ services });
+        services.register('taskExpansion', () => taskExpansion);
 
         const datasetControl = new TaskGridDatasetControl({
             dataset: new Dataset(taskDataProvider),

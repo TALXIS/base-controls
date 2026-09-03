@@ -5,7 +5,7 @@ import { getTheme, IconButton } from "@fluentui/react";
 import { useRerender } from '@legacy';
 import { getGroupCellStyles } from "./styles";
 import { useRef } from "react";
-import { useTaskDataProvider } from "@components/TaskGrid/context";
+import { useServices, useTaskDataProvider } from "@components/TaskGrid/context";
 
 interface IProps extends ICellProps {
     data: IRecord;
@@ -14,6 +14,7 @@ interface IProps extends ICellProps {
 /** The subject cell: the expander, the indentation and the drag handle around the task name. */
 export const GroupCell = (props: IProps) => {
     const provider = useTaskDataProvider();
+    const expansion = useServices().get('taskExpansion');
     const record = props.data;
     const node = props.node;
     const expanded = node.expanded;
@@ -30,7 +31,7 @@ export const GroupCell = (props: IProps) => {
     const toggleExpand = React.useCallback((e) => {
         e.stopPropagation();
         e.preventDefault();
-        node.setExpanded(!node.expanded)
+        expansion.toggle(record.getRecordId());
     }, []);
 
     React.useEffect(() => {
@@ -44,7 +45,6 @@ export const GroupCell = (props: IProps) => {
         }
         else {
             const offset = 32;
-            const hasChildren = provider.getRecordTree().view.hasChildren(record?.getRecordId());
             switch (true) {
                 case node.level === 0 && provider.getRecordTree().view.isFlat(): {
                     return 0;

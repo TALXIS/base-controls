@@ -11,12 +11,15 @@ import { ServerSideDatasource } from "./ServerSideDatasource";
 import { RecordSelectionCheckBox } from "@components/Grid/column-headers/record-selection-checkbox/RecordSelectionCheckbox";
 import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
+import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
 import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
 import { FullRowLoading } from "@components/Grid/loading/full-row/FullRowLoading";
 import { FullWidthCellRendererError } from "@components/Grid/errors/FullWidthCellRendererError/FullWidthCellRendererError";
 import { LicenseManager } from "@ag-grid-enterprise/core";
 import { SelectionCell } from "@components/Grid/cells/selection-cell/SelectionCell";
-ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClipboardModule,]);
+//both row models are registered because a grid picks one per instance: paging a dataset needs the
+//server-side one, a set already held in memory the client-side one
+ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClientSideRowModelModule, ClipboardModule,]);
 
 //stateless, and `equals` runs per cell per value read
 /**
@@ -66,7 +69,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     private _hasUserResizedColumns: boolean = false;
     private _debouncedColumnResized: debounce.DebouncedFunction<(e: ColumnResizedEvent<IRecord>) => void>;
     private _debouncedSetSelectedNodes: debounce.DebouncedFunction<(ids: string[]) => void>;
-    private _expandedRowGroupIds: string[] = [];
+    private _expandedRowGroupIds: Set<string> = new Set();
     private _visibleOverlay: 'none' | 'loading' | 'noRows' = 'none';
     /** Pending request to show the loading overlay, until {@link LOADING_OVERLAY_DELAY} is up. */
     private _loadingOverlayTimeout: NodeJS.Timeout | undefined;
@@ -184,7 +187,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     public toggleGroup(node: IRowNode<IRecord>) {
         node.setExpanded(!node.expanded);
         //clears the expanded rows in memory so it does not interfere with the next group expansion
-        this._expandedRowGroupIds = [];
+        this._expandedRowGroupIds.clear();
         this._hasUserExpandedRowGroups = true;
     }
 
@@ -427,10 +430,28 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
         this._setPinnedRowData();
     }
 
+    /**
+     * Which row model the grid was created with.
+     *
+     * The two models take their rows, their refreshes, their selection and their default expansion
+     * through different APIs, and the wrong one is a silent no-op rather than an error — so every one of
+     * those four places asks this first. The choice itself belongs to whoever renders the grid: paging a
+     * dataset wants the server-side model, a set already held in memory wants the client-side one.
+     */
+    private _isClientSideRowModel(gridApi: GridApi): boolean {
+        return gridApi.getGridOption('rowModelType') === 'clientSide';
+    }
+
     private _setGridOptions() {
         this.executeWithGridApi(gridApi => {
-            gridApi.setGridOption('serverSideDatasource', this._dataSource);
-            gridApi.setGridOption('isServerSideGroupOpenByDefault', (params) => this._syncExpandedRowGroups(params));
+            if (this._isClientSideRowModel(gridApi)) {
+                gridApi.setGridOption('isGroupOpenByDefault', (params) =>
+                    this._syncExpandedRowGroups({ rowNode: params.rowNode } as IsServerSideGroupOpenByDefaultParams));
+            }
+            else {
+                gridApi.setGridOption('serverSideDatasource', this._dataSource);
+                gridApi.setGridOption('isServerSideGroupOpenByDefault', (params) => this._syncExpandedRowGroups(params));
+            }
             gridApi.setGridOption('loadingCellRenderer', FullRowLoading)
             gridApi.setGridOption('suppressDragLeaveHidesColumns', true);
             gridApi.setGridOption('isFullWidthRow', (params) => this._isFullWidthRow(params));
@@ -504,7 +525,7 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private _syncExpandedRowGroups(params: IsServerSideGroupOpenByDefaultParams): boolean {
-        if (this._expandedRowGroupIds.includes(params.rowNode.id!)) {
+        if (this._expandedRowGroupIds.has(params.rowNode.id!)) {
             return true
         }
         else if (this._canExpandRowGroupsByDefault()) {
@@ -532,16 +553,23 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
     }
 
     private _onNewDataLoaded() {
-        this._refreshServerSideModel();
+        this._refreshRowModel();
         this._setCurrentColumns();
         this._scrollToTop();
         //a view change can bring in aggregated columns, which is what creates the total row
         this._setTotalRow();
     }
 
-    private _refreshServerSideModel() {
+    private _refreshRowModel() {
         this.executeWithGridApi(gridApi => {
-            this._expandedRowGroupIds = gridApi.getState()?.rowGroupExpansion?.expandedRowGroupIds ?? [];
+            if (this._isClientSideRowModel(gridApi)) {
+                //the same records are handed over again: with `getRowId` set the grid works out the
+                //difference itself and keeps the row objects it already has, so what is expanded, selected
+                //or being edited survives a load
+                gridApi.setGridOption('rowData', this._grid.getRowData() ?? this._dataset.getRecords());
+                return;
+            }
+            this._expandedRowGroupIds = new Set(gridApi.getState()?.rowGroupExpansion?.expandedRowGroupIds ?? []);
             gridApi.refreshServerSide({
                 purge: true
             })
@@ -634,15 +662,43 @@ export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
             clearInterval(checkLoadingNestedProviders);
         }
         this.executeWithGridApi(gridApi => {
-            gridApi.setServerSideSelectionState({
-                selectAll: false,
-                toggledNodes: this._grid.getDataset().getDataProvider().getSelectedRecordIds({ includeGroupRecordIds: true })
-            })
+            const selectedIds = this._grid.getDataset().getDataProvider().getSelectedRecordIds({ includeGroupRecordIds: true });
+            if (this._isClientSideRowModel(gridApi)) {
+                this._setNodesSelectedById(gridApi, new Set(selectedIds));
+            }
+            else {
+                gridApi.setServerSideSelectionState({
+                    selectAll: false,
+                    toggledNodes: selectedIds
+                })
+            }
             gridApi.refreshCells({
                 columns: [CHECKBOX_COLUMN_KEY],
                 force: true
             })
         });
+    }
+
+    //one walk of the rows and two calls, rather than a write per row: every write of ours reports itself
+    //as coming from the api, which is what `_onSelectionChanged` ignores
+    private _setNodesSelectedById(gridApi: GridApi, selectedIds: Set<string>): void {
+        const toSelect: IRowNode<IRecord>[] = [];
+        const toDeselect: IRowNode<IRecord>[] = [];
+        gridApi.forEachNode(node => {
+            if (!node.id) {
+                return;
+            }
+            const shouldBeSelected = selectedIds.has(node.id);
+            if (shouldBeSelected !== node.isSelected()) {
+                (shouldBeSelected ? toSelect : toDeselect).push(node);
+            }
+        });
+        if (toSelect.length) {
+            gridApi.setNodesSelected({ nodes: toSelect, newValue: true, source: 'api' });
+        }
+        if (toDeselect.length) {
+            gridApi.setNodesSelected({ nodes: toDeselect, newValue: false, source: 'api' });
+        }
     }
 
     private _areChildProvidersLoading(): boolean {

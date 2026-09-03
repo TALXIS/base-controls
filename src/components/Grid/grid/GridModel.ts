@@ -78,6 +78,11 @@ export class GridModel {
         return this._getProps().state;
     }
 
+    /** The rows a client-side grid renders, when the caller supplies them. */
+    public getRowData(): IRecord[] | undefined {
+        return this._getProps().onGetRowData?.();
+    }
+
     public getParameters(): IGridParameters {
         return this._getProps().parameters;
     }

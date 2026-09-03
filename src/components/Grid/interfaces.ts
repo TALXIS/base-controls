@@ -3,11 +3,20 @@ import { ITranslation } from "@hooks";
 import { IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@interfaces";
 import { IControl, IOutputs } from "@interfaces/context";
 import { gridTranslations } from "./translations";
-import { IDataset } from "@talxis/client-libraries";
+import { IDataset, IRecord } from "@talxis/client-libraries";
 
 
 export interface IGrid extends IControl<IGridParameters, IGridOutputs, Partial<ITranslation<typeof gridTranslations>>, AgGridReactProps> {
-
+    /**
+     * The records the grid renders, for a grid told to run on the client-side row model
+     * (`rowModelType: 'clientSide'` through `onOverrideComponentProps`).
+     *
+     * That model holds every row at once instead of asking a datasource for one level at a time, so the
+     * rows have to be handed to it — and only the caller knows what they are: a hierarchy gives every
+     * level in display order, a flat grid gives its page. Ignored on the server-side model, which is the
+     * default and pages through {@link IDataset} itself.
+     */
+    onGetRowData?: () => IRecord[];
 }
 
 export interface IGridParameters extends IParameters {
