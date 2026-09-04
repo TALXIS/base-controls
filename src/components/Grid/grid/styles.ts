@@ -101,9 +101,6 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
             '.ms-Checkbox.is-disabled .ms-Checkbox-checkbox': {
                 borderColor: `${theme.semanticColors.disabledBorder} !important`
             },
-            '.ag-pinned-left-cols-container .ag-cell-last-left-pinned:not([col-id="__checkbox__virtual"])': {
-                borderRight: `1px solid ${theme.semanticColors.menuDivider} !important`
-            },
             '.ag-cell-highlight': {
                 '::after': {
                     content: "''",
