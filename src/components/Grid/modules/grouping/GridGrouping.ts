@@ -7,6 +7,8 @@ import { IGridGroupingComponents } from "./moduleComponents";
 import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../grid/column-header";
 import { IGridColumn } from "../../grid/columns";
 import { IGridGroupingServiceLocator } from "./services";
+import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
+import { IGroupingStrategy, IGroupingStrategyModule } from "./strategies";
 
 /** How many children a group loads before it stops and says so. */
 const CHILD_LIMIT = 5000;
@@ -25,19 +27,25 @@ export interface IGroupingSettings {
 export interface IGridGroupingParameters {
     /** This module's own locator, which is what everything inside it reaches through. */
     services: IGridGroupingServiceLocator;
+    /** Where a group's children come from, which is what the caller's row model decides. */
+    strategy: IGroupingStrategyModule;
     settings: IGroupingSettings;
 }
 
 /**
  * Grouping the rows by a column.
  *
- * The groups are the dataset's: a group row's children come from a provider of their own, which is why
- * this only works on the server-side row model — nothing else asks for a level at a time.
+ * The groups are the dataset's: a group row's children come from a provider of their own. Where those
+ * children come from is the one thing the row model decides, and that is what {@link IGroupingStrategy}
+ * holds — everything here is the same on both.
  */
 export class GridGrouping {
     private _services: IGridGroupingServiceLocator;
     private _settings: IGroupingSettings;
     private _grouping: Grouping;
+    private _strategy: IGroupingStrategy;
+    /** How many levels of groups are open. `-1` is none, and it is what the header steps. */
+    private _expandedLevel: number;
     private _expandedRowGroupIds: Set<string> = new Set();
     private _hasUserExpanded: boolean = false;
     private _childLimitNotificationId?: string;
@@ -45,10 +53,30 @@ export class GridGrouping {
     constructor(parameters: IGridGroupingParameters) {
         this._services = parameters.services;
         this._settings = parameters.settings;
+        this._expandedLevel = parameters.settings.defaultExpandedLevel;
         this._grouping = new Grouping(this._provider);
+        //before the strategy, so a strategy of its own listening for a load is behind this: what the
+        //levels are put back to is what a child provider groups its own records by
         this._interceptNestedGrouping();
+        this._strategy = parameters.strategy.create({ services: this._services });
+        //ahead of `AgGridModel`, which registers its own listener only once there is an api - so whatever
+        //the strategy needs on the grid is on it before the first rows are pushed
+        this._gridServices.whenAvailable('gridApi', gridApi => this._strategy.applyGridOptions(gridApi));
         //only a grouped provider has children to run out of
         this._provider.addEventListener('onNestedProviderPagingLimitReached', () => this._warnChildLimitReached());
+    }
+
+    /** The strings this module renders, for its own components. */
+    public getLabels(): ILocalizationService<IGridGroupingLabels> {
+        return this._labels;
+    }
+
+    /**
+     * The rows the grid is to be given, where the row model takes them as data rather than asking for a
+     * level at a time.
+     */
+    public getRows(): IRecord[] | undefined {
+        return this._strategy.getRows();
     }
 
     public getGrouping(): Grouping {
@@ -83,7 +111,7 @@ export class GridGrouping {
         return record.getDataProvider().grouping.getGroupBys()[0]?.columnName === column.name;
     }
 
-    /** Whether a group row opens itself: what was open before a reload, else the configured depth. */
+    /** Whether a group row opens itself: what was open before a reload, else the level that is open. */
     public isGroupOpenByDefault(node: IRowNode<IRecord>): boolean {
         if (node.id && this._expandedRowGroupIds.has(node.id)) {
             return true;
@@ -91,7 +119,44 @@ export class GridGrouping {
         if (this._hasUserExpanded) {
             return false;
         }
-        return node.level <= this._settings.defaultExpandedLevel;
+        return node.level <= this._expandedLevel;
+    }
+
+    /** How many levels of groups are open. `-1` is none. */
+    public getExpandedLevel(): number {
+        return this._expandedLevel;
+    }
+
+    /** The deepest level there is to open, which is the innermost group-by. */
+    public getDeepestLevel(): number {
+        return this._provider.grouping.getGroupBys().length - 1;
+    }
+
+    /**
+     * Opens the groups down to a level and closes the rest.
+     *
+     * Every node with children rather than every group row the grid happens to have drawn — on the
+     * server-side model that is the levels already fetched, and a group opened here fetches its own
+     * children, which then read this same level and open in turn.
+     */
+    public setExpandedLevel(level: number): void {
+        this._expandedLevel = Math.min(Math.max(level, -1), this.getDeepestLevel());
+        //the level is the authority from here: what the user had opened by hand would otherwise keep
+        //overriding it
+        this._expandedRowGroupIds.clear();
+        this._hasUserExpanded = false;
+        const gridApi = this._gridServices.find('gridApi');
+        if (!gridApi) {
+            return;
+        }
+        //the record decides what a group row is: AG Grid's own `group` flag is set on the server-side
+        //model and not under `treeData`, where a group is a row of ours that happens to have children
+        gridApi.forEachNode(node => {
+            if (this.isGroupRow(node)) {
+                node.setExpanded(node.level <= this._expandedLevel);
+            }
+        });
+        this._gridServices.get('rowModel').applyExpansionChange(gridApi);
     }
 
     /** What was open before a purge, so the levels the user had opened come back. */
@@ -121,26 +186,28 @@ export class GridGrouping {
     }
 
     /**
-     * Puts `rowGroup` on a grouped column, moves it to the front, and pins it if asked.
+     * Moves a grouped column to the front, pins it if asked, and adds the column the levels are opened
+     * from.
      *
      * The grid builds definitions that know nothing of groups; this is the whole of what grouping needs
-     * on them.
+     * on them, bar what the row model decides.
      */
     public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
         const columnsMap = this._provider.getColumnsMap();
-        for (const colDef of columnDefs) {
-            const columnName = colDef.colId ?? colDef.field;
-            const column = columnName ? columnsMap[columnName] : undefined;
-            if (!column?.grouping?.isGrouped) {
-                continue;
-            }
-            colDef.rowGroup = true;
+        const isGrouped = (colDef: ColDef<IRecord>): boolean =>
+            !!columnsMap[colDef.colId ?? colDef.field ?? '']?.grouping?.isGrouped;
+        for (const colDef of columnDefs.filter(isGrouped)) {
+            this._strategy.applyGroupedColumnDefinition(colDef);
             if (this._settings.pinGroupedColumns) {
                 colDef.pinned = 'left';
             }
         }
         //grouped columns first, so the hierarchy reads left to right
-        columnDefs.sort((left, right) => Number(!!right.rowGroup) - Number(!!left.rowGroup));
+        columnDefs.sort((left, right) => Number(isGrouped(right)) - Number(isGrouped(left)));
+        //nothing to open while nothing is grouped, and a column of empty cells is worse than none
+        if (columnDefs.some(isGrouped)) {
+            columnDefs.push(getGroupExpansionColumnDefinition(this._onRenderExpansionHeader));
+        }
     }
 
     /** The grouping icon and what it stands for, while the column is what the rows are grouped by. */
@@ -237,6 +304,10 @@ export class GridGrouping {
     }
 
 
+    //the render method reached through a field of ours, rather than handed to AG Grid directly: what it
+    //gets has to keep one identity, and a component whose identity changed is one it rebuilds
+    private _onRenderExpansionHeader = (): JSX.Element => this.components.onRenderExpansionHeader();
+
     /** The parts this module renders, merged with whatever the caller replaced. */
     public get components(): IGridGroupingComponents {
         return this._services.get('components');
@@ -246,8 +317,12 @@ export class GridGrouping {
         return this._services.get('labels');
     }
 
+    private get _gridServices() {
+        return this._services.get('gridServices');
+    }
+
     private get _provider() {
-        return this._services.get('gridServices').get('provider');
+        return this._gridServices.get('provider');
     }
 
 

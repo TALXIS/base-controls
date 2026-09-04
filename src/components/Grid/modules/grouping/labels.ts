@@ -7,6 +7,10 @@ export interface IGridGroupingLabels {
     headerTitle: string;
     /** What this module's section of a column's menu is called. */
     menuSection: string;
+    /** What opening one more level of groups is called. */
+    expandLevel: string;
+    /** What closing one level of groups is called. */
+    collapseLevel: string;
 }
 
 /** The English defaults for {@link IGridGroupingLabels}. */
@@ -16,4 +20,6 @@ export const GRID_GROUPING_LABELS: IGridGroupingLabels = {
     maximumGroupChildrenLimitReached: 'The maximum limit of {{maxGroupChildren}} child records has been reached. Records above this limit will not be loaded.',
     headerTitle: 'Group',
     menuSection: 'Grouping',
+    expandLevel: 'Expand one level',
+    collapseLevel: 'Collapse one level',
 };

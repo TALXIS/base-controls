@@ -113,7 +113,10 @@ export class GridSelection {
         const hasModifier = (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey;
         //the checkbox owns its own click, and a group row gives up selecting on a plain one: a click there
         //is for expanding it, and its checkbox or a modifier is how it gets selected instead
-        const isGroupRow = !!rowId && !!this._gridApi.getRowNode(rowId)?.group;
+        //asked of the grouping module, whose answer is the record's: AG Grid's own `group` flag is set on
+        //the server-side model and not under `treeData`, where a group row is one of ours
+        const node = rowId ? this._gridApi.getRowNode(rowId) : undefined;
+        const isGroupRow = !!node && !!this._services.get('gridServices').find('grouping')?.isGroupRow(node);
         if (this.isSelectionColumn(colId ?? undefined) || (isGroupRow && !hasModifier)) {
             _.stopPropagationForAgGrid(event);
         }

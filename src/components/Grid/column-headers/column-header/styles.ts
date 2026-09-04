@@ -17,7 +17,9 @@ export const getColumnHeaderStyles = (theme: ITheme, alignment: Required<IColumn
         columnDisplayNameContainer: {
             display: 'flex',
             flex: 1,
+            gap: 5,
             overflow: 'hidden',
+            alignItems: 'center',
             justifyContent: getJustifyContent(alignment),
             //a right-aligned column reads outwards from its edge, so the name follows what a module drew
             order: alignment === 'right' ? 2 : undefined

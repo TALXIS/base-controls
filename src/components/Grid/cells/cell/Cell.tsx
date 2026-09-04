@@ -144,6 +144,18 @@ export const InternalCell = (props: ICellProps) => {
         node.expanded
     ), [props.isCellEditor, theme, props.value.columnAlignment, node.expanded]);
 
+    const isColumnExpandable = !!grouping?.isColumnExpandable(record, column);
+
+    //the chevron is drawn from the node, so it has to hear about the node changing: expansion is also set
+    //from the group header and by AG Grid itself, neither of which goes through this component
+    useEffect(() => {
+        if (!isColumnExpandable) {
+            return;
+        }
+        node.addEventListener('expandedChanged', rerender);
+        return () => node.removeEventListener('expandedChanged', rerender);
+    }, [isColumnExpandable]);
+
     useEventEmitter<IRecordEvents>(record, 'onAfterSaved', (result: IRecordSaveOperationResult) => {
         if (!result.success) {
             const errors = result.errors ?? [];
@@ -197,17 +209,14 @@ export const InternalCell = (props: ICellProps) => {
         }
         return (
             <>
-                {grouping?.isColumnExpandable(record, column) &&
+                {isColumnExpandable &&
                     <IconButton
                         iconProps={{ iconName: 'ChevronRight' }}
                         styles={{
                             root: styles.groupToggleButtonRoot,
                             icon: styles.groupToggleButtonIcon
                         }}
-                        onClick={() => {
-                            grouping.toggleGroup(node);
-                            rerender();
-                        }} />
+                        onClick={() => grouping!.toggleGroup(node)} />
                 }
                 {(column.type !== 'action' || column.name === Constants.RIBBON_BUTTONS_COLUMN_NAME) &&
                     <CellContent {...props} />

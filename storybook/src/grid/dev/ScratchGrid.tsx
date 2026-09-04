@@ -1,5 +1,5 @@
 import React from 'react'
-import { createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createServerSideRowModelModule, Grid, IGridModules } from '@talxis/base-controls'
+import { createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModules } from '@talxis/base-controls'
 import { MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATA_SOURCE, PRIMARY_ID } from './scratchGridData'
 
@@ -56,8 +56,14 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         sorting: props.sorting ? createSortingModule() : undefined,
         filtering: props.filtering ? createFilteringModule() : undefined,
         aggregation: props.aggregation ? createAggregationModule() : undefined,
-        //only offered on the server-side model, which is the only one it works on
-        grouping: props.grouping && props.rowModel === 'serverSide' ? createGroupingModule() : undefined,
+        //the strategy has to be the one for the row model above, which is what the module is refused for
+        grouping: props.grouping
+            ? createGroupingModule({
+                strategy: props.rowModel === 'clientSide'
+                    ? createClientSideGroupingStrategy()
+                    : createServerSideGroupingStrategy(),
+            })
+            : undefined,
     }), [key])
 
     return <Grid

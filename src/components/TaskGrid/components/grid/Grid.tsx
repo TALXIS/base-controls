@@ -25,7 +25,7 @@ export const Grid = (props: IControlProps) => {
         sorting: parameters.EnableSorting?.raw !== false ? createSortingModule() : undefined,
         filtering: parameters.EnableFiltering?.raw !== false ? createFilteringModule() : undefined,
         aggregation: parameters.EnableAggregation?.raw === true ? createAggregationModule() : undefined,
-        //grouping needs the server-side row model, which this grid does not use
+        //no grouping: this grid supplies a tree of its own below, and the module would supply a second
     }), []);
 
     return <GridBase

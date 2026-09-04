@@ -32,11 +32,20 @@ export class ClientSideRowModel implements IGridRowModel {
             this._services.find('grouping')?.isGroupOpenByDefault(params.rowNode) ?? false);
     }
 
+    /**
+     * Asked of the grouping module where there is one: a hierarchy is every level in one array, and only
+     * that module knows how to project the provider into it.
+     */
     public refresh(gridApi: GridApi<IRecord>): void {
         //the same records are handed over again: with `getRowId` set the grid works out the difference
         //itself and keeps the row objects it already has, so what is expanded, selected or being edited
         //survives a load
-        gridApi.setGridOption('rowData', this._services.get('provider').getRecords());
+        gridApi.setGridOption('rowData',
+            this._services.find('grouping')?.getRows() ?? this._services.get('provider').getRecords());
+    }
+
+    public applyExpansionChange(gridApi: GridApi<IRecord>): void {
+        gridApi.onGroupExpandedOrCollapsed();
     }
 
     public getSelectedRecordIds(gridApi: GridApi<IRecord>): string[] {

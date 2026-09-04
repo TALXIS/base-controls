@@ -1,13 +1,21 @@
 import { LocalizationService, ServiceLocator } from "@utils";
 import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
-import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
 import { IGridModule } from "../interfaces";
 import { GRID_GROUPING_LABELS, IGridGroupingLabels } from "./labels";
 import { GridGroupingComponents, IGridGroupingComponents } from "./moduleComponents";
 import { GridGrouping } from "./GridGrouping";
 import { IGridGroupingServiceMap } from "./services";
+import { IGroupingStrategyModule } from "./strategies";
 
 export interface IGroupingModuleOptions {
+    /**
+     * Where a group's children come from, which is the one part of grouping the row model decides:
+     * {@link createServerSideGroupingStrategy} or {@link createClientSideGroupingStrategy}.
+     *
+     * Required, and has to be the one for the grid's own row model — a grid is refused rather than left
+     * rendering group rows nothing ever fills.
+     */
+    strategy: IGroupingStrategyModule;
     /** Localized strings this module renders. */
     labels?: Partial<IGridGroupingLabels>;
     /** The parts of this module to render differently. */
@@ -28,20 +36,23 @@ export interface IGroupingModuleOptions {
 /**
  * Builds the module that groups the rows by a column.
  *
- * Only works on the server-side row model, and says so: the groups here are the dataset's, and a group's
- * children come from a provider only `ServerSideDatasource` asks for. A grid on the client-side model is
- * refused rather than left with group affordances that do nothing.
+ * Works on either row model, and the strategy is which one: the server-side model fetches a group's
+ * children when it is opened, the client-side model is handed every level at once as a tree.
  *
  * @example
  * ```tsx
- * <Grid modules={{ rowModel: createServerSideRowModelModule(), grouping: createGroupingModule() }} />
+ * <Grid modules={{
+ *     rowModel: createServerSideRowModelModule(),
+ *     grouping: createGroupingModule({ strategy: createServerSideGroupingStrategy() }),
+ * }} />
  * ```
  */
-export const createGroupingModule = (options?: IGroupingModuleOptions): IGridModule => ({
-    //the server-side model is its own dependency, not the caller's choice
-    agGridModules: [RowGroupingModule, ServerSideRowModelModule],
-    requiresRowModel: 'serverSide',
+export const createGroupingModule = (options: IGroupingModuleOptions): IGridModule => ({
+    agGridModules: [RowGroupingModule],
     getInitialComponentProps: () => ({ groupDisplayType: 'custom' }),
+    //the strategy names the row model it groups on, so the mismatch is caught here rather than as a grid
+    //that renders groups and never fills them
+    requiresRowModel: options.strategy.rowModel,
     onRegister: gridServices => {
         //the module's own locator: what it registers here is what everything inside it reaches, with the
         //grid's own locator as the one key that crosses over
@@ -50,17 +61,18 @@ export const createGroupingModule = (options?: IGroupingModuleOptions): IGridMod
         //built once, then registered: a resolver runs on every lookup, and what it hands out has to be
         //the same object each time - the components most of all, since AG Grid rebuilds a cell whose
         //renderer identity changed
-        const labels = new LocalizationService<IGridGroupingLabels>({ ...GRID_GROUPING_LABELS, ...options?.labels });
-        const components = { ...GridGroupingComponents, ...options?.components };
+        const labels = new LocalizationService<IGridGroupingLabels>({ ...GRID_GROUPING_LABELS, ...options.labels });
+        const components = { ...GridGroupingComponents, ...options.components };
         services.register('labels', () => labels);
         services.register('components', () => components);
         const grouping = new GridGrouping({
             services,
+            strategy: options.strategy,
             settings: {
-                allowUserGrouping: options?.allowUserGrouping ?? true,
-                type: options?.type ?? 'nested',
-                defaultExpandedLevel: options?.defaultExpandedLevel ?? -1,
-                pinGroupedColumns: options?.pinGroupedColumns ?? true,
+                allowUserGrouping: options.allowUserGrouping ?? true,
+                type: options.type ?? 'nested',
+                defaultExpandedLevel: options.defaultExpandedLevel ?? -1,
+                pinGroupedColumns: options.pinGroupedColumns ?? true,
             },
         });
         gridServices.register('grouping', () => grouping);

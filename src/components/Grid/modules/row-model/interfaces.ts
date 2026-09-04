@@ -23,6 +23,8 @@ export interface IGridRowModel {
     applyGridOptions: (gridApi: GridApi<IRecord>) => void;
     /** New data landed: hand the rows over, or ask for them again. */
     refresh: (gridApi: GridApi<IRecord>) => void;
+    /** Makes a change made to node expansion visible. A repaint on one model, nothing on the other. */
+    applyExpansionChange: (gridApi: GridApi<IRecord>) => void;
     /** Puts a set of selected records onto the rows. */
     setSelectedRecordIds: (gridApi: GridApi<IRecord>, recordIds: string[]) => void;
     /** Which records the grid itself has selected. */

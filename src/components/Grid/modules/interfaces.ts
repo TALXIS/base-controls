@@ -51,7 +51,7 @@ export interface IGridModules {
     sorting?: IGridModule;
     /** Filtering by a column: {@link createFilteringModule}. */
     filtering?: IGridModule;
-    /** Grouping the rows by a column: {@link createGroupingModule}. Server-side row model only. */
+    /** Grouping the rows by a column: {@link createGroupingModule}. */
     grouping?: IGridModule;
     /** Totals under the rows: {@link createAggregationModule}. */
     aggregation?: IGridModule;

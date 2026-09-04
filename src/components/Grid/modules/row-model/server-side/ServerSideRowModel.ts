@@ -44,6 +44,12 @@ export class ServerSideRowModel implements IGridRowModel {
     }
 
     /**
+     * Nothing to do: a node expanded here asks the datasource for its children, and drawing them is what
+     * the answer already does. `onGroupExpandedOrCollapsed` is a logged no-op on this model.
+     */
+    public applyExpansionChange(): void { }
+
+    /**
      * Read off the selection state rather than the nodes: `getSelectedNodes` is backed by a map that only
      * node-level selection writes to, so it cannot see a state installed by `setServerSideSelectionState`.
      *
