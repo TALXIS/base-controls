@@ -121,7 +121,7 @@ export const Duration = (props: IDuration) => {
                 alignItems: 'center',
             },
             callout: {
-                height: 300
+                maxHeight: 300
             }
         },
         calloutProps: {
