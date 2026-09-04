@@ -14,6 +14,9 @@ export const getSelectionColumnDefinition = (components: IGridSelectionComponent
     headerName: '',
     width: 40,
     lockPinned: true,
+    //locked, not just pinned: a module reordering the definitions - grouping puts its own columns first -
+    //would otherwise push the checkboxes out of the leading position a row is selected from
+    lockPosition: 'left',
     resizable: false,
     pinned: 'left',
     headerComponent: components.onRenderHeader,

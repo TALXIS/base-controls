@@ -136,6 +136,9 @@ export class GridColumns {
             headerName: '',
             width: 40,
             lockPinned: true,
+            //locked for the same reason as the checkbox column it stands in for: a module reordering the
+            //definitions must not push it out of the leading position
+            lockPosition: 'left',
             resizable: false,
             sortable: false,
             pinned: 'left',
