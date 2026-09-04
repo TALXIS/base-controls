@@ -39,8 +39,7 @@ export const Playground: Story = {
     },
     argTypes: {
         rowModel: { control: 'inline-radio', options: ['serverSide', 'clientSide'] },
-        //grouping only works on the server-side row model, so the toggle does nothing on the other one
-        grouping: { description: 'Server-side row model only.' },
+        grouping: { description: 'Fetches a level at a time on the server-side row model, the whole tree on the client-side one.' },
         selectableRows: { control: 'inline-radio', options: ['none', 'single', 'multiple'] },
     },
     render: (args: IScratchGridProps) => (

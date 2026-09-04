@@ -1,6 +1,6 @@
 import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { IContextualMenuItem } from "@fluentui/react";
-import { DataTypes, Formatting, Grouping, IColumn, IGroupByMetadata, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
+import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadata, IInternalDataProvider, IRecord } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
@@ -97,8 +97,16 @@ export class GridGrouping {
             && column.dataType !== DataTypes.MultiSelectOptionSet;
     }
 
+    /**
+     * Whether the row stands for a group rather than for a record.
+     *
+     * The record's own id, which is how the dataset itself tells the two apart. Not the provider's
+     * summarization type: a leaf's provider carries a group-by of its own whenever there is a level below
+     * it, so that reads as a group for rows that are records. And not AG Grid's `group` flag either, which
+     * is set on the server-side model and never under `treeData`.
+     */
     public isGroupRow(node: IRowNode<IRecord>): boolean {
-        return node.data?.getSummarizationType() === 'grouping';
+        return !!node.data?.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX);
     }
 
     /**
@@ -149,8 +157,6 @@ export class GridGrouping {
         if (!gridApi) {
             return;
         }
-        //the record decides what a group row is: AG Grid's own `group` flag is set on the server-side
-        //model and not under `treeData`, where a group is a row of ours that happens to have children
         gridApi.forEachNode(node => {
             if (this.isGroupRow(node)) {
                 node.setExpanded(node.level <= this._expandedLevel);

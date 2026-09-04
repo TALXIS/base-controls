@@ -112,9 +112,8 @@ export class GridSelection {
         const colId = target.closest?.('[col-id]')?.getAttribute('col-id');
         const hasModifier = (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey;
         //the checkbox owns its own click, and a group row gives up selecting on a plain one: a click there
-        //is for expanding it, and its checkbox or a modifier is how it gets selected instead
-        //asked of the grouping module, whose answer is the record's: AG Grid's own `group` flag is set on
-        //the server-side model and not under `treeData`, where a group row is one of ours
+        //is for expanding it, and its checkbox or a modifier is how it gets selected instead. A row under
+        //a group is a record like any other, so it selects
         const node = rowId ? this._gridApi.getRowNode(rowId) : undefined;
         const isGroupRow = !!node && !!this._services.get('gridServices').find('grouping')?.isGroupRow(node);
         if (this.isSelectionColumn(colId ?? undefined) || (isGroupRow && !hasModifier)) {
@@ -134,9 +133,18 @@ export class GridSelection {
     private _onProviderSelectionChanged = (): void => {
         const selectedRecordIds = this._provider.getSelectedRecordIds({ includeGroupRecordIds: true });
         this._rowModel.setSelectedRecordIds(this._gridApi, selectedRecordIds);
-        //the checkbox is what reads the state, and only the grid can be told to draw it again
-        this._gridApi.refreshCells({ columns: [DataProvider.CONST.CHECKBOX_COLUMN_KEY], force: true });
+        this._refreshSelectionColumn();
     };
+
+    /**
+     * Draws the checkboxes again.
+     *
+     * What a checkbox reads — the row's own selection, and how much of a group's is selected — is not
+     * among its props, so nothing about a selection changing re-renders it on its own.
+     */
+    private _refreshSelectionColumn(): void {
+        this._gridApi.refreshCells({ columns: [DataProvider.CONST.CHECKBOX_COLUMN_KEY], force: true });
+    }
 
     private _onModelUpdated = (): void => {
         this._applyPendingRestore();
@@ -155,9 +163,10 @@ export class GridSelection {
             selectedRecordIdsByProvider.set(provider, []);
         }
         for (const recordId of this._rowModel.getSelectedRecordIds(this._gridApi)) {
-            //a grouped provider's records are in the root's map too, so this finds the one holding it - and
-            //a nested group id written to the root instead corrupts that provider's counts
-            const provider = this._provider.getRecordsMap()[recordId]?.getDataProvider() ?? this._provider;
+            //the row's own record, which is the one that was clicked. Not the root's copy of it: the root
+            //holds a record of its own for every id, whose provider is the root - so a row under a group
+            //would have its selection written there instead of to the provider that holds the group
+            const provider = this._gridApi.getRowNode(recordId)?.data?.getDataProvider() ?? this._provider;
             const recordIds = selectedRecordIdsByProvider.get(provider) ?? [];
             recordIds.push(recordId);
             selectedRecordIdsByProvider.set(provider, recordIds);

@@ -38,8 +38,7 @@ export class ClientSideGroupingStrategy implements IGroupingStrategy {
      * going through the cell pipeline on group rows — no formatting, no controls, no notifications.
      */
     public applyGridOptions(gridApi: GridApi<IRecord>): void {
-        gridApi.setGridOption('getDataPath', record => getRecordPath(record));
-        this._applyTreeData();
+        this._applyTreeData(gridApi);
     }
 
     /** Nothing: `rowGroup` would have AG Grid group the rows itself, over a tree it was handed grouped. */
@@ -52,10 +51,22 @@ export class ClientSideGroupingStrategy implements IGroupingStrategy {
     /**
      * A tree only while there is something to nest: a grid whose group-bys are gone is a flat list, and
      * every path would be a record of its own.
+     *
+     * The path goes on and comes off with `treeData`, not once at the start — the grouping stage reads the
+     * two together, and a path left behind on a grid that is no longer a tree breaks it.
      */
-    private _applyTreeData(): void {
-        this._services.get('gridServices').find('gridApi')
-            ?.setGridOption('treeData', this._provider.grouping.getGroupBys().length > 0);
+    private _applyTreeData(gridApi = this._services.get('gridServices').find('gridApi')): void {
+        if (!gridApi) {
+            return;
+        }
+        const isTree = this._provider.grouping.getGroupBys().length > 0;
+        //only on a change: `treeData` is a managed property, and setting it runs the grouping stage over
+        //the rows - which on a grid that has not been given any yet has nothing to group and throws
+        if (!!gridApi.getGridOption('treeData') === isTree) {
+            return;
+        }
+        gridApi.setGridOption('getDataPath', isTree ? getRecordPath : undefined);
+        gridApi.setGridOption('treeData', isTree);
     }
 
     /**
