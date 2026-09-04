@@ -1,12 +1,11 @@
 import { SpinnerSize, Text } from '@fluentui/react';
 import { Spinner } from '@legacy';
-import { useGridInstance } from '@components/Grid/grid/useGridInstance';
 import { useMemo } from 'react';
 import { getLoadingOverlayStyles } from './styles';
+import { useGridService } from "@components/Grid/grid/useGridService";
 
 export const LoadingOverlay = () => {
-    const grid = useGridInstance();
-    const provider = grid.getDataset().getDataProvider();
+    const provider = useGridService('provider');
     const loadingMessage = provider.getLoadingMessage();
     const styles = useMemo(() => getLoadingOverlayStyles(), []);
 

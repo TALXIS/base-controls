@@ -1,17 +1,16 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyleSets } from "@fluentui/react";
-import { IRecord, Constants, DataProvider, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
+import { IRecord, Constants, DataProvider, IControlParameters, ICustomColumnControl, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useThemeGenerator, useRerender } from "@legacy";
-import { getClassNames } from "@utils";
+import { getClassNames , usePcfContext} from "@utils";
 import { useMemo, useEffect, useRef, useCallback } from "react";
 import { useControlTheme } from "@utils";
-import { ICellValues } from "@components/Grid/grid/ag-grid/AgGridModel";
-import { IGridColumn } from "@components/Grid/grid/GridModel";
-import { useGridInstance } from "@components/Grid/grid/useGridInstance";
+import { ICellValues } from "@components/Grid/grid/cells";
+import { IGridColumn } from "@components/Grid/grid/columns";
+import { useGridService } from '@components/Grid/grid/useGridService';
 import { CellContent } from "./content/CellContent";
 import { Notifications } from "./notifications/Notifications";
 import { getCellStyles, getInnerCellStyles } from "./styles";
-import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { CellErrorBoundary } from "@components/error-boundary";
 
@@ -20,13 +19,18 @@ export interface ICellProps extends ICellRendererParams {
     isCellEditor: boolean;
     record: IRecord;
     value: ICellValues;
+    /** Which control renders the value, worked out where `isCellEditor` is known. */
+    customControl: Required<ICustomColumnControl>;
+    /** What that control renders with. */
+    parameters: IControlParameters;
 }
 
 export const Cell = (props: ICellProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const { record, node, baseColumn } = props;
     const column = baseColumn;
-    const grid = useGridInstance();
+    const settings = useGridService('settings');
+    const grouping = useGridService('grouping');
     const lastLoadingRefValue = useRef<boolean>(props.value.loading);
     const rerender = useRerender();
 
@@ -48,7 +52,7 @@ export const Cell = (props: ICellProps) => {
                 if (_column.aggregation?.aggregationFunction && !_column.grouping?.isGrouped) {
                     return false;
                 }
-                if (grid.getGroupType() === 'nested') {
+                if (grouping?.getType() === 'nested') {
                     return dataProvider.grouping.getGroupBys()[0].columnName !== column.name
                 }
                 return !column.grouping?.isGrouped;
@@ -66,14 +70,6 @@ export const Cell = (props: ICellProps) => {
     })();
     lastLoadingRefValue.current = props.value.loading;
 
-    const onCellClick = useCallback((e: MouseEvent) => {
-        if (record.getDataProvider().getSummarizationType() === 'grouping' && !grid.isSelectionModifierKeyPressed()) {
-            //e.stopPropagation();
-        }
-        else if (node.isSelected()) {
-            //e.stopPropagation();
-        }
-    }, []);
 
     const onFieldValueChanged = useCallback(async (columnName: string) => {
         if (columnName !== column.name) {
@@ -94,17 +90,12 @@ export const Cell = (props: ICellProps) => {
         cellRoot: {
             width: '100%',
             height: skipCellRendering && column.autoHeight
-                ? `${grid.getDefaultRowHeight()}px !important`
+                ? `${settings.getDefaultRowHeight()}px !important`
                 : '100% !important'
         }
     }), [skipCellRendering, column.autoHeight]);
     useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', onFieldValueChanged);
 
-    useEffect(() => {
-        const container = containerRef.current;
-        container?.addEventListener('click', onCellClick);
-        return () => container?.removeEventListener('click', onCellClick);
-    }, []);
 
     return <div className={topLevelCellWrapperStyles.cellRoot} ref={containerRef}>
         {!skipCellRendering &&
@@ -138,13 +129,13 @@ export const InternalCell = (props: ICellProps) => {
     const record = props.record;
     const node = props.node;
     const formatting = props.value.customFormatting;
-    const grid = useGridInstance();
-    const agGrid = useAgGridInstance();
+    const grouping = useGridService('grouping');
+    const labels = useGridService('labels');
     const errorRef = useRef<boolean>(props.value.error);
     const notifications = props.value.notifications;
     const errorMessageRef = useRef<string | undefined>(props.value.errorMessage);
     const theme = useTheme();
-    const applicationTheme = useControlTheme(grid.getPcfContext().fluentDesignLanguage);
+    const applicationTheme = useControlTheme(usePcfContext().fluentDesignLanguage);
     const rerender = useRerender();
     const styles = useMemo(() => getInnerCellStyles(
         props.isCellEditor,
@@ -206,7 +197,7 @@ export const InternalCell = (props: ICellProps) => {
         }
         return (
             <>
-                {grid.isColumnExpandable(record, column) &&
+                {grouping?.isColumnExpandable(record, column) &&
                     <IconButton
                         iconProps={{ iconName: 'ChevronRight' }}
                         styles={{
@@ -214,7 +205,7 @@ export const InternalCell = (props: ICellProps) => {
                             icon: styles.groupToggleButtonIcon
                         }}
                         onClick={() => {
-                            agGrid.toggleGroup(node);
+                            grouping.toggleGroup(node);
                             rerender();
                         }} />
                 }
@@ -241,7 +232,7 @@ export const InternalCell = (props: ICellProps) => {
         if (shouldShowNotEditableNotification()) {
             result.push({
                 key: 'noteditable',
-                text: grid.getLabels()['value-not-editable'](),
+                text: labels.getLocalizedString('valueNotEditable'),
                 iconOnly: true,
                 disabled: true,
                 tooltipHostProps: tooltipProps,

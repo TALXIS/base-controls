@@ -14,7 +14,6 @@ export type BaseControl =
     | 'Grid'
     | 'DatasetControl'
     | 'NestedControl'
-    | 'GridColumnHeader'
     | 'Ribbon'
     | 'GridInlineRibbon';
 
@@ -53,9 +52,6 @@ export class BaseControls {
     
     public static get TwoOptions(): 'TwoOptions' {
         return 'TwoOptions';
-    }
-    public static get GridColumnHeader(): 'GridColumnHeader' {
-        return 'GridColumnHeader';
     }
     public static get Ribbon(): 'Ribbon' {
         return 'Ribbon';
@@ -109,7 +105,6 @@ export class BaseControls {
             BaseControls.Duration,
             BaseControls.TextField,
             BaseControls.GridCellRenderer,
-            BaseControls.GridColumnHeader,
             BaseControls.Ribbon,
             BaseControls.GridInlineRibbon
         ]

@@ -2,8 +2,7 @@ import { ICommandBarItemProps, useTheme, ICommandBar, PrimaryButton, DefaultButt
 import { IAddControlNotificationOptions, ICustomColumnFormatting, IControlNotificationAction, IColumn } from "@talxis/client-libraries";
 import { CommandBar, useResizeObserver, useThemeGenerator } from "@legacy";
 import { useMemo, useState, useRef, useEffect } from "react";
-import { useControlTheme } from "@utils";
-import { useGridInstance } from "@components/Grid/grid/useGridInstance";
+import { useControlTheme , usePcfContext} from "@utils";
 import { getNotificationStyles } from "./styles";
 
 interface INotifications {
@@ -17,7 +16,6 @@ interface INotifications {
 
 export const Notifications = (props: INotifications) => {
     const { notifications, formatting, farItems, isActionColumn, columnAlignment } = { ...props };
-    const grid = useGridInstance();
     const theme = useTheme();
     const styles = useMemo(() => getNotificationStyles(isActionColumn, columnAlignment), [isActionColumn, columnAlignment]);
     const iconId = useMemo(() => `icon${crypto.randomUUID()}`, []);
@@ -119,7 +117,7 @@ export const Notifications = (props: INotifications) => {
         }
     }
 
-    const contextualMenuTheme = useControlTheme(grid.getPcfContext().fluentDesignLanguage);
+    const contextualMenuTheme = useControlTheme(usePcfContext().fluentDesignLanguage);
     const { items, overflowItems } = getCommandBarItems();
 
     useEffect(() => {

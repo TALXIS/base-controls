@@ -3,9 +3,8 @@ import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
 import { ICellProps } from "@components/Grid/cells/cell/Cell";
 import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/modules/lookup-many/components";
-import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
-import { useGridInstance } from "@components/Grid/grid/useGridInstance";
 import { ThemeProvider } from "@fluentui/react";
+import { useGridService } from "@components/Grid/grid/useGridService";
 
 enum ControlName {
     LookupMany = 'LookupMany',
@@ -33,7 +32,7 @@ export const LookupManyCellRenderer = (props: ICellProps) => {
     const controlName = (customControl?.name ?? ControlName.LookupMany) as ControlName;
     const bindings = customControl?.bindings;
     const provider = useTaskDataProvider();
-    const isNavigationEnabled = useGridInstance().isNavigationEnabled();
+    const isNavigationEnabled = useGridService('settings').isNavigationEnabled();
     const value: ComponentFramework.EntityReference[] | undefined = record.getValue(props.colDef!.colId!) as ComponentFramework.EntityReference[] | undefined;
 
     const onSelectionChange = (selectedRecords: ComponentFramework.EntityReference[]) => {

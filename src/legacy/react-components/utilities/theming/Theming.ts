@@ -54,7 +54,7 @@ export class Theming {
             return Theming._NormalizeTheme(v8Theme);
         })!;
         //an empty override still costs a full Fluent deep merge, and the grid hands one down for every
-        //cell (`GridModel.getFieldFormatting` returns `themeOverride: {}`)
+        //cell (`GridCells.getFieldFormatting` returns `themeOverride: {}`)
         if (!themeOverride || Object.keys(themeOverride).length === 0) {
             return theme;
         }

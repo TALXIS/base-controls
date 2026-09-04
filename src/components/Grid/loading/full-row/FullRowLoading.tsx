@@ -2,13 +2,13 @@ import { Shimmer } from "@fluentui/react"
 import { useMemo } from "react"
 import { getFullRowLoadingStyles } from "./styles"
 import { ILoadingCellRendererParams } from "@ag-grid-community/core"
-import { useGridInstance } from "@components/Grid/grid/useGridInstance"
 import { IRecord } from "@talxis/client-libraries"
 import { FullWidthCellRendererError } from "@components/Grid/errors/FullWidthCellRendererError/FullWidthCellRendererError"
+import { useGridService } from "@components/Grid/grid/useGridService";
 
 export const FullRowLoading = (props: ILoadingCellRendererParams) => {
     const styles = useMemo(() => getFullRowLoadingStyles(), []);
-    const grid = useGridInstance();
+    const provider = useGridService('provider');
     const {node} = props;
 
     const getDataProvider = () => {
@@ -17,7 +17,7 @@ export const FullRowLoading = (props: ILoadingCellRendererParams) => {
             return parentRecord.getDataProvider().getGroupedRecordDataProvider(parentRecord.getRecordId())!
         }
         else {
-            return grid.getDataset().getDataProvider();
+            return provider;
         }
     }
     if (!node.failedLoad) {

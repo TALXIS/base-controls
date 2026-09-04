@@ -1,54 +1,55 @@
 import { Checkbox, ThemeProvider, useTheme } from "@fluentui/react";
 import { getGlobalCheckboxStyles } from "./styles";
 import { Theming, useRerender, useThemeGenerator } from "@legacy";
-import { useGridInstance } from "@components/Grid/grid/useGridInstance";
+import { useGridService } from "@components/Grid/grid/useGridService";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IDataProviderEventListeners } from "@talxis/client-libraries";
+import { IGridSelectionState } from "../../GridSelection";
 
 
 export const RecordSelectionCheckBox = () => {
-    const grid = useGridInstance();
-    const dataset = grid.getDataset();
+    const selection = useGridService('selection')!;
+    const provider = useGridService('provider');
     const styles = getGlobalCheckboxStyles();
     const rerender = useRerender();
-    useEventEmitter<IDataProviderEventListeners>(dataset, 'onRecordsSelected', rerender);
+    useEventEmitter<IDataProviderEventListeners>(provider, 'onRecordsSelected', rerender);
 
 
-    const getCheckBoxState = () => {
-        const selectedRecordIds = dataset.getDataProvider().getSelectedRecordIds({ includeGroupRecordIds: true, includeChildrenRecordIds: false });
+    const getCheckBoxState = (): IGridSelectionState => {
+        const selectedRecordIds = provider.getSelectedRecordIds({ includeGroupRecordIds: true, includeChildrenRecordIds: false });
         if (selectedRecordIds.length === 0) {
             return 'unchecked';
         }
-        if (selectedRecordIds.length === dataset.sortedRecordIds.length) {
+        if (selectedRecordIds.length === provider.getSortedRecordIds().length) {
             return 'checked';
         }
-        return 'intermediate'; //indeterminate state, when some records are selected but not all
+        return 'indeterminate';
     }
 
     const onChange = (checked?: boolean) => {
         if (checked) {
-            dataset.setSelectedRecordIds(dataset.sortedRecordIds);
+            provider.setSelectedRecordIds(provider.getSortedRecordIds());
         }
         else {
-            dataset.clearSelectedRecordIds();
+            provider.clearSelectedRecordIds();
         }
     }
     const checkboxState = getCheckBoxState();
 
-    if (dataset.sortedRecordIds.length === 0 && !dataset.loading) {
+    if (provider.getSortedRecordIds().length === 0 && !provider.isLoading()) {
         return <></>
     }
     else {
         return (
             <div className={styles.root}>
-                {grid.getSelectionType() === 'multiple' &&
+                {selection.getMode() === 'multiple' &&
                     <Checkbox
                         checked={checkboxState === 'checked'}
                         styles={{
                             checkbox: styles.checkbox
                         }}
-                        disabled={dataset.grouping.getGroupBys().length > 0}
-                        indeterminate={checkboxState === 'intermediate'}
+                        disabled={provider.grouping.getGroupBys().length > 0}
+                        indeterminate={checkboxState === 'indeterminate'}
                         onChange={(e, checked) => onChange(checked)} />
                 }
             </div>

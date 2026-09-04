@@ -1,20 +1,7 @@
-import { ITheme, mergeStyleSets } from "@fluentui/react"
+import { mergeStyleSets } from "@fluentui/react"
 
-export const getSelectionCellStyles = (theme: ITheme) => {
+export const getSelectionCellStyles = () => {
     return mergeStyleSets({
-        selectionCellRoot: {
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        saveSuccessBtn: {
-            color: theme.semanticColors.successIcon,
-        },
-        saveErrorBtn: {
-            color: theme.semanticColors.errorIcon,
-        },
         checkBoxContainer: {
             width: '100%',
             height: '100%',

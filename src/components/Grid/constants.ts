@@ -1,1 +1,0 @@
-export const CHECKBOX_COLUMN_KEY = '__checkbox__virtual';

@@ -2,91 +2,50 @@ import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
 import { getJustifyContent } from "@components/Grid/grid/styles";
 
-export const getColumnHeaderStyles = (theme: ITheme, columnAlignment: Required<IColumn['alignment']>) => {
+export const getColumnHeaderStyles = (theme: ITheme, alignment: Required<IColumn['alignment']>) => {
     return mergeStyleSets({
-        root: {
+        commandBarButtonRoot: {
             width: '100%',
-            textAlign: 'left',
             height: 42,
             paddingLeft: 10,
             paddingRight: 10,
-            justifyContent: 'flex-start',
-            '.ms-Button-flexContainer': {
-                justifyContent: 'flex-start',
-                width: '100%',
-                gap: 2,
-                pointerEvents: 'none'
-            }
+            overflow: 'hidden'
         },
-        labelWrapper: {
+        commandBarButtonFlexContainer: {
+            gap: 5
+        },
+        columnDisplayNameContainer: {
+            display: 'flex',
             flex: 1,
-            display: 'flex',
-            minWidth: 0,
-            justifyContent: getJustifyContent(columnAlignment)
-        },
-        label: {
             overflow: 'hidden',
+            justifyContent: getJustifyContent(alignment),
+            //a right-aligned column reads outwards from its edge, so the name follows what a module drew
+            order: alignment === 'right' ? 2 : undefined
+        },
+        columnDisplayNameText: {
+            fontWeight: 600,
             textOverflow: 'ellipsis',
-            cursor: 'pointer',
+            overflow: 'hidden',
         },
-        requiredSymbol: {
-            color: theme.semanticColors.errorIcon,
-            position: 'relative',
-            top: 4,
-            left: 2
+        asterix: {
+            color: theme.semanticColors.errorText
         },
-        filterSortIcons: {
+        suffixIconsContainer: {
             display: 'flex',
-            gap: 2
-        },
-        editIcon: {
-            marginRight: 3
+            alignItems: 'center'
         }
     })
 }
 
 export const getColumnHeaderContextualMenuStyles = (theme: ITheme) => {
     return mergeStyleSets({
-        item: {
-            '& .is-checked': {
+        menu: {
+            //what a column is already sorted or totalled by is a checked entry, and Fluent only marks it
+            //with an icon the entry's own icon has taken
+            '.ms-ContextualMenu-link.is-checked': {
                 backgroundColor: theme.semanticColors.buttonBackgroundHovered,
                 fontWeight: 600
             }
         }
     });
 };
-
-export const filterCalloutStyles = mergeStyleSets({
-    root: {
-        minHeight: 200,
-        padding: 16,
-        '.ms-Callout-main': {
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 180,
-            gap: 10
-        },
-        '.TALXIS__combobox__root, [class*="TALXIS__textfield__root"], [class*="TALXIS__tag-picker__root"]': {
-            padding: `0x !important`
-        }
-    },
-    title: {
-        fontWeight: 600,
-        flexGrow: 1
-    },
-    header: {
-        display: 'flex',
-        'i': {
-            fontSize: 12
-        }
-    },
-    valueControlsContainer: {
-        flexGrow: 1
-    },
-    datasetColumnFilteringRoot: {
-        flexGrow: 1
-    },
-    datasetColumnFilteringButtons: {
-        justifyContent: 'flex-end',
-    }
-});

@@ -1,16 +1,15 @@
 import { Icon } from '@fluentui/react';
 import { Text } from '@fluentui/react';
-import { useGridInstance } from '@components/Grid/grid/useGridInstance';
+import { useGridService } from '@components/Grid/grid/useGridService';
 import { emptyRecordStyles } from './styles';
 
 export const EmptyRecords = () => {
-    const grid = useGridInstance();
-    const labels = grid.getLabels();
+    const labels = useGridService('labels');
 
     return (
         <div className={emptyRecordStyles.emptyRecordsRoot}>
             <Icon className={emptyRecordStyles.icon} iconName='SearchAndApps' />
-            <Text>{labels.norecordsfound()}</Text>
+            <Text>{labels.getLocalizedString('noRecordsFound')}</Text>
         </div>
     )
 }

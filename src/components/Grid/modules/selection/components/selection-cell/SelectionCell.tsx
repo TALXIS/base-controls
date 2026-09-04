@@ -1,112 +1,49 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { IRecord, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { Spinner, useRerender } from "@legacy";
-import { Checkbox, IconButton, SpinnerSize, ThemeProvider } from "@fluentui/react";
-import { useEventEmitter } from "@hooks";
-import { CheckmarkCircle24Filled, ErrorCircle24Filled } from "@fluentui/react-icons";
+import { IRecord } from "@talxis/client-libraries";
+import { Checkbox } from "@fluentui/react";
+import { useGridService } from "@components/Grid/grid/useGridService";
+import { RecordSaveIndicator } from "@components/Grid/cells/record-save-indicator";
 import { getSelectionCellStyles } from "./styles";
-import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
-import { useGridInstance } from "@components/Grid/grid/useGridInstance";
-import { RecordSaveErrorCallout } from "./record-save-error-callout/RecordSaveErrorCallout";
 
 interface ISelectionCellProps extends ICellRendererParams {
     record: IRecord;
 }
 
+/**
+ * The checkbox a row is selected by.
+ *
+ * Wrapped in {@link RecordSaveIndicator}, which takes the space over while the row has a save to report and
+ * hands it back when it does not — the row saying what happened to it matters more than selecting it, and
+ * there is only room in this column for one of the two.
+ */
 export const SelectionCell = (props: ISelectionCellProps) => {
     const { record } = props;
-    const saveResultButtonId = useMemo(() => `selection_result_${crypto.randomUUID()}`, []);
-    const grid = useGridInstance();
-    const agGrid = useAgGridInstance();
-    const checkBoxRef = useRef<HTMLDivElement>(null);
-    const recordSelectionState = agGrid.getRecordSelectionState(props.node);
-    const isRecordSelectionDisabled = grid.isRecordSelectionDisabled(record);
-    const theme = grid.getDefaultCellTheme(record);
-    const styles = useMemo(() => getSelectionCellStyles(theme), []);
-    const rerender = useRerender();
-    const [saveResult, setSaveResult] = useState<IRecordSaveOperationResult | null>(null);
-    const [isRecordSaveErrorCalloutVisible, setIsRecordSaveErrorCalloutVisible] = useState<boolean>(false);
+    const selection = useGridService('selection')!;
+    const recordSelectionState = selection.getRecordSelectionState(props.node);
+    const isRecordSelectionDisabled = selection.isRecordSelectionDisabled(record);
+    const styles = useMemo(() => getSelectionCellStyles(), []);
 
-    const onAfterSaved = (result: IRecordSaveOperationResult) => {
-        setSaveResult(result);
-        if (result.success) {
-            setTimeout(() => setSaveResult(null), 2000);
-        }
-    }
-
-    const onCheckBoxClick = useCallback(e => {
+    const onCheckBoxClick = (e: React.MouseEvent) => {
+        //the row underneath would select itself as well, and the provider is what decides selection here
         e.stopPropagation();
         e.preventDefault();
         if (!isRecordSelectionDisabled) {
-            record.getDataProvider().toggleSelectedRecordId(record.getRecordId(), { clearExisting: agGrid.getGrid().getSelectionType() === 'single' });
+            record.getDataProvider().toggleSelectedRecordId(record.getRecordId(), { clearExisting: selection.getMode() === 'single' });
         }
-    }, []);
+    };
 
-    useEffect(() => {
-        //this needs to be done like this because stopPropagation in React onClick
-        //does not stop the event from propagating to the grid (cause by synthentic events)
-        //https://stackoverflow.com/questions/24415631/reactjs-syntheticevent-stoppropagation-only-works-with-react-events
-        if (checkBoxRef.current) {
-            checkBoxRef.current.addEventListener('click', onCheckBoxClick)
-        }
-        return () => {
-            checkBoxRef.current?.removeEventListener('click', onCheckBoxClick);
-        }
-    }, [saveResult]);
-
-    useEventEmitter<IRecordEvents>(record, ['onBeforeSaved', 'onAfterSaved'], rerender);
-    useEventEmitter<IRecordEvents>(record, 'onAfterSaved', onAfterSaved);
-
-    return <ThemeProvider theme={theme} className={styles.selectionCellRoot}>
-        {(() => {
-            if(record.getSummarizationType() === 'aggregation') {
-                return <></>
-            }
-            if (record.isSaving()) {
-                return <Spinner size={SpinnerSize.xSmall} />
-            }
-            else if (saveResult) {
-                return (
-                    <>
-                        <IconButton
-                            id={saveResultButtonId}
-                            onClick={() => setIsRecordSaveErrorCalloutVisible(!saveResult.success)}
-                            onRenderIcon={() => {
-                                if (saveResult?.success) {
-                                    return <CheckmarkCircle24Filled className={styles.saveSuccessBtn} />
-                                }
-                                else {
-                                    return <ErrorCircle24Filled className={styles.saveErrorBtn} />
-                                }
-                            }}
-                        />
-                        {isRecordSaveErrorCalloutVisible &&
-                            <RecordSaveErrorCallout
-                                record={record}
-                                saveResult={saveResult}
-                                targetId={saveResultButtonId}
-                                onDismiss={() => setIsRecordSaveErrorCalloutVisible(false)}
-                                onClearSaveResult={() => setSaveResult(null)} />
-                        }
-                    </>
-                )
-            }
-            else if (grid.getSelectionType() !== 'none') {
-                return (
-                    <div
-                        ref={checkBoxRef}
-                        className={styles.checkBoxContainer}>
-                        <Checkbox
-                            checked={recordSelectionState === 'checked'}
-                            disabled={isRecordSelectionDisabled}
-                            indeterminate={recordSelectionState === 'indeterminate'}
-                            styles={{
-                                checkbox: styles.checkBox
-                            }} />
-                    </div>
-                )
-            }
-        })()}
-    </ThemeProvider>
+    return <RecordSaveIndicator record={record}>
+        <div
+            onClick={onCheckBoxClick}
+            className={styles.checkBoxContainer}>
+            <Checkbox
+                checked={recordSelectionState === 'checked'}
+                disabled={isRecordSelectionDisabled}
+                indeterminate={recordSelectionState === 'indeterminate'}
+                styles={{
+                    checkbox: styles.checkBox
+                }} />
+        </div>
+    </RecordSaveIndicator>
 }

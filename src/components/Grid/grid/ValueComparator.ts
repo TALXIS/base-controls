@@ -1,6 +1,6 @@
 import { IAddControlNotificationOptions, ICustomColumnComponent, ICustomColumnFormatting } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
-import { ICellValues } from "./ag-grid/AgGridModel";
+import { ICellValues } from "./cells/interfaces";
 
 export class Comparator {
 
@@ -15,13 +15,7 @@ export class Comparator {
         if (!this._isEqual(oldValues?.aggregatedValue, newValues?.aggregatedValue)) {
             return false;
         }
-        if (!this._isEqual(oldValues?.height, newValues?.height)) {
-            return false;
-        }
         if (!this._isEqual(oldValues?.columnAlignment, newValues?.columnAlignment)) {
-            return false;
-        }
-        if (!this._isEqual(this._filterParameters(oldValues?.parameters), this._filterParameters(newValues?.parameters))) {
             return false;
         }
         if (!this._areNotificationsEqual(oldValues?.notifications ?? [], newValues?.notifications ?? [])) {
@@ -31,9 +25,6 @@ export class Comparator {
             return false;
         }
         if (!this._isEqual(this._parseFormatting(oldValues?.customFormatting), this._parseFormatting(newValues?.customFormatting))) {
-            return false;
-        }
-        if (!this._isEqual(oldValues?.customControl, newValues?.customControl)) {
             return false;
         }
         if (!this._isEqual(oldValues?.error, newValues?.error)) {
@@ -78,23 +69,6 @@ export class Comparator {
             }
         }
         return formatting;
-    }
-
-    private _filterParameters(params: any) {
-        if (!params) return {};
-        const { Dataset, Record, Column, ...filteredParams } = params;
-        let paramsToCompare: any = {};
-        Object.entries(filteredParams).map(([key, parameter]: any) => {
-            paramsToCompare[key] = { ...parameter };
-            delete paramsToCompare[key].attributes;
-            Object.entries(paramsToCompare[key]).map(([attributePropKey, value]) => {
-                if (typeof value === 'function') {
-                    delete paramsToCompare[key][attributePropKey];
-                }
-            })
-
-        })
-        return paramsToCompare;
     }
 
     private _parseCustomComponent(component?: ICustomColumnComponent) {

@@ -21,6 +21,8 @@ export class ServiceLocator<TServiceMap extends object> implements IServiceLocat
     }
 
     public find<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey] | undefined {
+        //the resolver runs per lookup and nothing is memoized: `() => new Something()` is a different
+        //instance to every caller, which is why a resolver hands back something already built
         return this._resolvers.get(key)?.() as TServiceMap[TKey] | undefined;
     }
 

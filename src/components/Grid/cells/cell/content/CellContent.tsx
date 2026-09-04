@@ -2,14 +2,13 @@ import { useTheme, ITextFieldStyles, IComboBoxStyles, IDatePickerStyles, IToggle
 import { Client, DataProvider, DeepPartial, ICommand, IColumn, ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
 import React from "react";
 import { useDebouncedCallback } from "use-debounce";
-import { IFluentDesignState, ControlTheme } from "@utils";
+import { IFluentDesignState, ControlTheme , usePcfContext} from "@utils";
 import { ITheme } from "@legacy";
 import { NestedControlRenderer } from "@components/NestedControlRenderer";
 import { getJustifyContent } from "@components/Grid/grid/styles";
-import { useGridInstance } from "@components/Grid/grid/useGridInstance";
 import { ICellProps } from "../Cell";
 import { getCellContentStyles } from "./styles";
-import { useAgGridInstance } from "@components/Grid/grid/ag-grid/useAgGridInstance";
+import { useGridService } from "@components/Grid/grid/useGridService";
 
 const client = new Client();
 
@@ -103,8 +102,8 @@ export const CellContent = (props: ICellProps) => {
     const valueRef = React.useRef(props.value);
     columnRef.current = props.baseColumn;
     valueRef.current = props.value
-    const grid = useGridInstance();
-    const agGrid = useAgGridInstance();
+    const cells = useGridService('cells');
+    const pcfContext = usePcfContext();
     const record = props.data;
     const node = props.node;
     const themeRef = React.useRef(useTheme());
@@ -157,7 +156,7 @@ export const CellContent = (props: ICellProps) => {
     }
 
     const getFluentDesignLanguage = (fluentDesignLanguage?: IFluentDesignState) => {
-        const formatting = grid.getFieldFormatting(record, getColumn().name);
+        const formatting = cells.getFieldFormatting(record, getColumn().name);
         const parentOverrides = fluentDesignLanguage?.v8FluentOverrides;
         const hasOverrides = !!formatting.themeOverride && Object.keys(formatting.themeOverride).length > 0;
         const columnAlignment = valueRef.current.columnAlignment;
@@ -201,7 +200,7 @@ export const CellContent = (props: ICellProps) => {
     }
 
     const onNotifyOutputChanged = (outputs: any) => {
-        agGrid.onNotifyOutputChanged(record, columnRef.current.name, outputs.value, valueRef.current.parameters)
+        cells.onNotifyOutputChanged(record, columnRef.current.name, outputs.value, props.parameters)
     }
     const debouncedNotifyOutputChanged = useDebouncedCallback((outputs) => onNotifyOutputChanged(outputs), 100);
 
@@ -217,11 +216,11 @@ export const CellContent = (props: ICellProps) => {
         return <></>
     }
     return <NestedControlRenderer
-        context={grid.getPcfContext()}
+        context={pcfContext}
         parameters={{
-            ControlName: valueRef.current.customControl.name,
+            ControlName: props.customControl.name,
             LoadingType: 'shimmer',
-            Bindings: grid.getBindings(record, getColumn(), valueRef.current.customControl),
+            Bindings: cells.getBindings(record, getColumn(), props.customControl),
             ControlStates: {
                 isControlDisabled: isControlDisabled()
             },
@@ -272,7 +271,6 @@ export const CellContent = (props: ICellProps) => {
                 },
                 onOverrideRender: (control, isCustomPcfComponent, defaultRender) => {
                     if (isCustomPcfComponent) {
-                        //grid.setUsesNestedPcfs();
                     }
                     if (valueRef.current.customComponent) {
                         const result = valueRef.current.customComponent.onRender(control.getProps(), themeRef.current, control.getContainer())
@@ -311,7 +309,7 @@ export const CellContent = (props: ICellProps) => {
                     //we still might have old one's cached in valueRef
                     const columnInfo = record.getColumnInfo(getColumn().name);
                     const parameters = columnInfo.ui.getControlParameters({
-                        ...grid.getFieldBindingParameters(record, getColumn(), props.isCellEditor),
+                        ...cells.getFieldBindingParameters(record, getColumn(), props.isCellEditor),
                         ...controlProps.parameters
                     })
                     return {

@@ -1,8 +1,10 @@
 /**
  * Where whatever is registered under a name is reached, for any map of names to contracts.
  *
- * Resolution is lazy — a resolver runs on each `get` — so a service can be registered before the thing
- * it returns exists. The rule that makes that safe: resolve in methods, never in a constructor.
+ * Resolution is lazy — a resolver runs on each `get`, and nothing is cached — so a service can be
+ * registered before the thing it returns exists. Two rules follow from that: resolve in methods, never in
+ * a constructor; and register an instance you already built rather than a resolver that builds one. See
+ * {@link IServiceLocator.register}.
  */
 export interface IServiceLocator<TServiceMap extends object> {
     /**
@@ -12,7 +14,22 @@ export interface IServiceLocator<TServiceMap extends object> {
     get<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey];
     /** The service, or `undefined` when nothing registered it — for a feature that may simply be off. */
     find<TKey extends keyof TServiceMap>(key: TKey): TServiceMap[TKey] | undefined;
-    /** Registers how a service is reached. Registering the same key again replaces it. */
+    /**
+     * Registers how a service is reached. Registering the same key again replaces it.
+     *
+     * `resolve` is a resolver, not a factory: it runs on **every** lookup, and whatever it returns is what
+     * that lookup gets. So build the instance first and hand it back —
+     * `const part = new Part(); register('part', () => part)` — rather than
+     * `register('part', () => new Part())`, which gives every caller a different one. A part that holds
+     * anything at all is the case that breaks: registrations made on it, subscriptions, cached work.
+     *
+     * Two consequences of the same laziness, both worth knowing:
+     * - Registering does not construct. A resolver over `new Something()` never runs until something
+     *   resolves the key, so a part whose *construction* is the point must be built before it is
+     *   registered rather than inside the resolver.
+     * - A resolver can be registered before what it returns exists, which is what makes
+     *   {@link IServiceLocator.whenAvailable} and resolving-in-methods work.
+     */
     register<TKey extends keyof TServiceMap>(key: TKey, resolve: () => TServiceMap[TKey]): void;
     /**
      * Runs the callback with the service as soon as there is one — immediately when it already resolves,

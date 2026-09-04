@@ -1,10 +1,11 @@
 import { Callout, IconButton, ICalloutProps } from '@fluentui/react';
 import { Text } from '@fluentui/react';
 import { DatasetColumnFiltering } from '@components/DatasetControl/Filtering/DatasetColumnFiltering';
-import { getClassNames } from '@utils';
+import { getClassNames , usePcfContext} from '@utils';
 import { useEffect } from 'react';
-import { IGridColumn } from '@components/Grid/grid/GridModel';
-import { useGridInstance } from '@components/Grid/grid/useGridInstance';
+import { IGridColumn } from '@components/Grid/grid/columns';
+import { useGridService } from '@components/Grid/grid/useGridService';
+import { useGridFilteringLabels } from './useGridFilteringLabels';
 import { filterCalloutStyles } from './styles';
 import { ILookup } from '@components/Lookup';
 import { INestedControlRenderer } from '@components/NestedControlRenderer/interfaces';
@@ -17,17 +18,17 @@ export interface IFilterCallout extends ICalloutProps {
 
 export const FilterCallout = (props: IFilterCallout) => {
     const { column, onDismiss } = { ...props };
-    const grid = useGridInstance();
-    const dataset = grid.getDataset();
-    const dataProvider = dataset.getDataProvider() as IInternalDataProvider;
-    const context = grid.getPcfContext();
-    const labels = grid.getLabels();
+    const filtering = useGridService('filtering')!;
+    const provider = useGridService('provider');
+    const dataProvider = provider as IInternalDataProvider;
+    const context = usePcfContext();
+    const labels = useGridFilteringLabels();
 
     const onColumnFilterSaved = (filter: ComponentFramework.PropertyHelper.DataSetApi.FilterExpression) => {
         dataProvider.executeWithUnsavedChangesBlocker(() => {
             onDismiss();
-            dataset.filtering.setFilter(filter);
-            dataset.refresh();
+            provider.setFiltering(filter);
+            provider.refresh();
         })
     }
 
@@ -74,8 +75,8 @@ export const FilterCallout = (props: IFilterCallout) => {
 
     useEffect(() => {
         return () => {
-            if (!column.isFiltered) {
-                grid.removeColumnFilter(column.name)
+            if (!filtering.isFiltered(column)) {
+                filtering.removeColumnFilter(column.name)
             }
         }
     }, []);
@@ -86,7 +87,7 @@ export const FilterCallout = (props: IFilterCallout) => {
             calloutWidth={230}
             className={filterCalloutStyles.root}>
             <div className={filterCalloutStyles.header}>
-                <Text className={filterCalloutStyles.title} variant="mediumPlus">{labels['filtermenu-filterby']()}</Text>
+                <Text className={filterCalloutStyles.title} variant="mediumPlus">{labels.getLocalizedString('filterMenuFilterBy')}</Text>
                 <IconButton onClick={() => onDismiss()} iconProps={{
                     iconName: 'ChromeClose',
                 }} />
@@ -96,7 +97,7 @@ export const FilterCallout = (props: IFilterCallout) => {
                     ColumnName: {
                         raw: column.name,
                     },
-                    Filtering: grid.getFiltering()
+                    Filtering: filtering.getFiltering()
                 }}
                 onNotifyOutputChanged={(outputs) => onColumnFilterSaved(outputs)}
                 onOverrideComponentProps={(props) => {

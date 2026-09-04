@@ -761,7 +761,15 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
             <div className={styles.tableWrap}>
                 <DatasetControl
                     onGetDatasetControlInstance={() => datasetControl}
-                    onGetControlComponent={(controlProps) => <Grid {...controlProps} />}
+                    onGetControlComponent={(controlProps) => <Grid
+                        provider={controlProps.parameters.Grid.getDataProvider()}
+                        enableEditing={controlProps.parameters.EnableEditing?.raw === true}
+                        enableNavigation={controlProps.parameters.EnableNavigation?.raw !== false}
+                        enableZebra={controlProps.parameters.EnableZebra?.raw !== false}
+                        selectableRows={controlProps.parameters.SelectableRows?.raw}
+                        rowHeight={controlProps.parameters.RowHeight?.raw ?? undefined}
+                        height={controlProps.parameters.Height?.raw ?? undefined}
+                    />}
                     onOverrideComponentProps={() => ({
                         onRender: (renderProps: IDatasetControlRenderProps, defaultRender: (props: IDatasetControlRenderProps) => ReactElement) => defaultRender({
                             ...renderProps,

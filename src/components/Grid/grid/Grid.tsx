@@ -1,99 +1,91 @@
 import { useEffect, useMemo, useRef } from "react";
-import { GetRowIdParams, GridReadyEvent, GridState } from "@ag-grid-community/core";
+import { GetRowIdParams } from "@ag-grid-community/core";
+import { AgGridReactProps } from "@ag-grid-community/react";
 import { IRecord } from "@talxis/client-libraries";
-import { AgGridModel } from "./ag-grid/AgGridModel";
-import { AgGridReact } from "@ag-grid-community/react";
 import { LoadingOverlay } from "../overlays/loading/LoadingOverlay";
 import { EmptyRecords } from "../overlays/empty-records/EmptyRecordsOverlay";
-import { ITheme, useStateValues } from "@legacy";
-import { getClassNames } from "@utils";
+import { getClassNames, usePcfContext, useControlTheme } from "@utils";
 import { IGrid } from "../interfaces";
-import { GridModel } from "./GridModel";
-import { useControl } from "@hooks";
-import { gridTranslations } from "../translations";
-import { GridContext } from "./GridContext";
-import { ThemeProvider } from "@fluentui/react";
+import { createGridInstance } from "./createGridInstance";
 import { getGridStyles } from "./styles";
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
-import { AgGridContext } from "./ag-grid/AgGridContext";
+import { GridServicesContext } from "./GridServicesContext";
+import { GridComponents } from "./components";
 
-const getGridInstance = (onGetProps: () => IGrid, labels: any, theme: ITheme): GridModel => {
-    return new GridModel({
-        labels: labels,
-        onGetProps: () => onGetProps(),
-        theme: theme
-    })
-}
+const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 
+/**
+ * A grid over an {@link IDataProvider}.
+ *
+ * Reads the PCF context off `PcfContextProvider`, so render it inside one.
+ */
 export const Grid = (props: IGrid) => {
-    const { labels, theme, className } = useControl('Grid', props, gridTranslations);
+    const pcfContext = usePcfContext();
+    const theme = useControlTheme(pcfContext.fluentDesignLanguage);
     const propsRef = useRef<IGrid>(props);
     propsRef.current = props;
-    const grid = useMemo(() => {
-        return getGridInstance(() => propsRef.current, labels, theme)
-    }, []);
 
-    const height = grid.getParameters().Height?.raw;
-    const rowHeight = grid.getDefaultRowHeight();
-    const maxVisibleRows = grid.getMaxVisibleRows();
-    const styles = useMemo(
-        () => getGridStyles(theme, height, rowHeight, maxVisibleRows),
-        [theme, height, rowHeight, maxVisibleRows]
-    );
-    const gridReadyRef = useRef<boolean>(false);
-    const agGrid = useMemo(() => new AgGridModel({
-        grid: grid
+    const { settings, services, initialComponentProps, destroy } = useMemo(() => createGridInstance({
+        onGetProps: () => propsRef.current,
+        pcfContext: pcfContext,
+        theme: theme,
     }), []);
 
-    const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
+    const rowHeight = settings.getDefaultRowHeight();
+    const styles = useMemo(
+        () => getGridStyles(theme, props.height, rowHeight, settings.getMaxVisibleRows()),
+        [theme, props.height, rowHeight]
+    );
 
+    //not memoized: a slot closes over the caller's own state, and freezing it at mount is how that goes stale
+    const components = { ...GridComponents, ...props.components };
 
-    const onGridReady = (event: GridReadyEvent<IRecord, any>) => {
-        agGrid.init(event.api);
-        gridReadyRef.current = true;
-    }
-
+    //AgGridReact is a child, so its teardown - and the `onDestroy` it fires - runs before this. The locator
+    //must not go first: the parts under it are what AG Grid is still talking to
     useEffect(() => {
         return () => {
-            grid.destroy();
+            destroy();
+            services.destroy();
         }
     }, []);
 
-    const componentProps = onOverrideComponentProps({
+    const componentProps: AgGridReactProps<IRecord> = {
+        //the modules first: the grid has the last word on anything it also sets
+        ...initialComponentProps,
         getRowId: (params: GetRowIdParams<IRecord>) => `${params.data.getRecordId()}`,
-        rowModelType: 'serverSide' as const,
         //needs to be set here, crashes if set via API
-        rowHeight: grid.getDefaultRowHeight(),
-        rowSelection: agGrid.getSelectionType(),
+        rowHeight: rowHeight,
         loadingOverlayComponent: LoadingOverlay,
         noRowsOverlayComponent: EmptyRecords,
         enableGroupEdit: true,
         reactiveCustomComponents: true,
-        initialState: props.state?.AgGridState,
+        initialState: props.state,
         gridOptions: {
             getRowStyle: (params) => {
                 const record = params.data;
                 if (!record) {
-                    return undefined
+                    return undefined;
                 }
                 return {
-                    backgroundColor: grid.getDefaultCellTheme(record).semanticColors.bodyBackground,
+                    backgroundColor: services.get('theming').getCellTheme(record).semanticColors.bodyBackground,
                 }
             },
         },
-        onGridReady: onGridReady,
-    })
+        //the caller first, then the api: registering it is what builds the parts that talk to AG Grid, and
+        //the first thing they do is push columns - which a caller configuring those has to be ahead of
+        onGridReady: (event) => {
+            propsRef.current.onGridReady?.(event.api);
+            services.register('gridApi', () => event.api);
+        },
+        //before AG Grid tears down, so `getState()` still answers for whoever wants to persist it
+        onGridPreDestroyed: (event) => propsRef.current.onDestroy?.(event.api),
+    }
 
-    return <GridContext.Provider value={grid}>
-        <AgGridContext.Provider value={agGrid}>
-            <ThemeProvider
-                className={getClassNames([className, styles.gridRoot, 'ag-theme-balham'])}
-            >
-                <AgGridReact
-                    {...componentProps}
-                />
-            </ThemeProvider>
-        </AgGridContext.Provider>
-    </GridContext.Provider>
+    //one context: everything a component needs is in the locator, `grid` included
+    return <GridServicesContext.Provider value={services}>
+        <div className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
+            {components.onRenderAgGrid(componentProps)}
+        </div>
+    </GridServicesContext.Provider>
 }

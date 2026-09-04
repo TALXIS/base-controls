@@ -1,7 +1,8 @@
 import { IButtonProps, IMessageBarProps, IShimmerProps, ITextProps, ThemeProviderProps } from "@fluentui/react";
 import { ITranslation } from "@hooks";
-import { IControl, IStringProperty, ITwoOptionsProperty } from "@interfaces";
-import { IGridOutputs, IGridParameters } from "../Grid";
+import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty, IWholeNumberProperty } from "@interfaces";
+import { IDataset } from "@talxis/client-libraries";
+
 import { gridTranslations } from "../Grid/translations";
 import { datasetControlTranslations } from "./translations";
 import { ICalloutProps as ICalloutPropsBase, ICommandBarProps, ITextFieldProps } from "@legacy";
@@ -11,7 +12,7 @@ import { IDatasetControl } from "@utils/dataset-control";
 import { IColumn } from "@talxis/client-libraries";
 
 
-export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IGridOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {
+export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParameters, IOutputs, Partial<ITranslation<typeof datasetControlTranslations & typeof gridTranslations>>, IDatasetControlComponentProps>, 'parameters' | 'context' | 'state'> {
     /**
      * Used to provide the Dataset control instance.
      */
@@ -22,8 +23,39 @@ export interface IDatasetControlProps extends Omit<IControl<IDatasetControlParam
     onGetControlComponent: (props: Omit<IDatasetControlProps, 'onOverrideComponentProps'> & { parameters: IDatasetControlParameters; context: ComponentFramework.Context<any, any>, state: ComponentFramework.Dictionary }) => React.ReactElement<IControl<any, any, any, any>>
 }
 
-export interface IDatasetControlParameters extends IGridParameters {
+/**
+ * What a dataset control is given.
+ *
+ * These stay PCF-shaped properties because a manifest binds them. The `Grid` they configure takes plain
+ * props of its own, so a control that renders one maps the two — see the grid wrappers under `TaskGrid`
+ * and `CheckList`.
+ */
+export interface IDatasetControlParameters extends IParameters {
+    Grid: IDataset;
+    EnableEditing?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnablePagination?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableFiltering?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableSorting?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableNavigation?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableQuickFind?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableOptionSetColors?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableRecordCount?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableZebra?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableGrouping?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableAggregation?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableGroupedColumnsPinning?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableCommandBar?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnablePageSizeSwitcher?: Omit<ITwoOptionsProperty, 'attributes'>;
+    EnableAutoSave?: Omit<ITwoOptionsProperty, 'attributes'>;
     EnableEditColumns?: Omit<ITwoOptionsProperty, 'attributes'>;
+    RowHeight?: Omit<IWholeNumberProperty, 'attributes'>;
+    MaxVisibleRows?: Omit<IWholeNumberProperty, 'attributes'>;
+    DefaultExpandedGroupLevel?: Omit<IWholeNumberProperty, 'attributes'>;
+    Height?: IStringProperty;
+    InlineRibbonButtonIds?: IStringProperty;
+    LicenseKey?: IStringProperty;
+    GroupingType?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"nested" | "flat">, 'type'>;
+    SelectableRows?: Omit<ComponentFramework.PropertyTypes.EnumProperty<"none" | "single" | "multiple">, 'type'>;
     ClientApiWebresourceName?: IStringProperty;
     ClientApiFunctionName?: IStringProperty;
     DestroyDatasetOnUnmount?: Omit<ITwoOptionsProperty, 'attributes'>;

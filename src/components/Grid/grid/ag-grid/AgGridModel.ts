@@ -1,844 +1,99 @@
-import { CellClickedEvent, CellDoubleClickedEvent, ColDef, ColumnMovedEvent, ColumnResizedEvent, GridApi, IRowNode, IsFullWidthRowParams, IsServerSideGroupOpenByDefaultParams, ModuleRegistry, SelectionChangedEvent, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
-import debounce from 'debounce';
-import { GridModel, IGridColumn } from "../GridModel";
-import { Client, DataProvider, EventEmitter, IAddControlNotificationOptions, IColumn, IColumnInfo, IControlParameters, ICustomColumnComponent, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IRecord, Operators } from "@talxis/client-libraries";
-import { NestedControl } from "@components/NestedControlRenderer/NestedControl";
-import { Cell } from "@components/Grid/cells/cell/Cell";
-import { ColumnHeader } from "@components/Grid/column-headers/column-header/ColumnHeader";
-import { CHECKBOX_COLUMN_KEY } from "@components/Grid/constants";
-import { Comparator } from "../ValueComparator";
-import { ServerSideDatasource } from "./ServerSideDatasource";
-import { RecordSelectionCheckBox } from "@components/Grid/column-headers/record-selection-checkbox/RecordSelectionCheckbox";
+import { GridApi, ModuleRegistry } from "@ag-grid-community/core";
+import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
 import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
 import { ClipboardModule } from "@ag-grid-enterprise/clipboard";
 import { FullRowLoading } from "@components/Grid/loading/full-row/FullRowLoading";
-import { FullWidthCellRendererError } from "@components/Grid/errors/FullWidthCellRendererError/FullWidthCellRendererError";
-import { LicenseManager } from "@ag-grid-enterprise/core";
-import { SelectionCell } from "@components/Grid/cells/selection-cell/SelectionCell";
+import { IGridServiceLocator } from "@components/Grid/services";
 //both row models are registered because a grid picks one per instance: paging a dataset needs the
 //server-side one, a set already held in memory the client-side one
 ModuleRegistry.registerModules([RowGroupingModule, ServerSideRowModelModule, ClientSideRowModelModule, ClipboardModule,]);
 
-//stateless, and `equals` runs per cell per value read
+export interface IAgGridModelParameters {
+    services: IGridServiceLocator;
+}
+
 /**
- * How long a load may take before it is worth telling anyone about.
+ * The wiring between the grid and AG Grid.
  *
- * An overlay that comes and goes inside a couple of frames reads as the grid flickering rather than as
- * something loading, and adding or moving a row against data already in memory is over that fast. Waiting
- * this long first means only a load slow enough to notice is ever announced.
+ * What is left here is only what needs an api and belongs to no one feature: the options every grid is set
+ * up with, the handshake with whichever row model it was given, and pushing columns and rows when the
+ * provider says there are new ones. Sizing, order, overlays, expansion and the total row each live with
+ * whatever owns them.
  */
-const LOADING_OVERLAY_DELAY = 150;
+export class AgGridModel {
+    private _services: IGridServiceLocator;
 
-const COMPARATOR = new Comparator();
-
-interface IAgGridTestDependencies {
-    grid: GridModel;
-}
-
-export interface IAgGridModelEvents {
-    onRefresh: () => void;
-}
-
-
-export interface ICellValues {
-    notifications: IAddControlNotificationOptions[];
-    customFormatting: Required<ICustomColumnFormatting>;
-    customControl: Required<ICustomColumnControl>;
-    customComponent: ICustomColumnComponent;
-    loading: boolean;
-    value: any;
-    aggregatedValue: any;
-    error: boolean;
-    height: number;
-    errorMessage: string;
-    parameters: IControlParameters;
-    columnAlignment: Required<IColumn['alignment']>;
-    editing: boolean;
-    editable: boolean;
-    disabled: boolean;
-    saving: boolean;
-}
-
-export class AgGridModel extends EventEmitter<IAgGridModelEvents> {
-    private _grid: GridModel;
-    private _totalRowSubscribed: boolean = false;
-    private _dataSource: ServerSideDatasource;
-    private _gridApi: GridApi | undefined;
-    private _hasUserResizedColumns: boolean = false;
-    private _debouncedColumnResized: debounce.DebouncedFunction<(e: ColumnResizedEvent<IRecord>) => void>;
-    private _debouncedSetSelectedNodes: debounce.DebouncedFunction<(ids: string[]) => void>;
-    private _expandedRowGroupIds: Set<string> = new Set();
-    private _visibleOverlay: 'none' | 'loading' | 'noRows' = 'none';
-    /** Pending request to show the loading overlay, until {@link LOADING_OVERLAY_DELAY} is up. */
-    private _loadingOverlayTimeout: NodeJS.Timeout | undefined;
-    private _hasUserExpandedRowGroups: boolean = false;
-    private _isLoadingNestedProviders: boolean = false;
-    private _idsToAddToExpandGroupState = new Set<string>();
-    private _intervals: NodeJS.Timeout[] = [];
-
-
-    constructor({ grid }: IAgGridTestDependencies) {
-        super();
-        this._grid = grid;
-        this._dataSource = new ServerSideDatasource(this);
-        this._debouncedColumnResized = debounce((e: ColumnResizedEvent<IRecord>) => this._onColumnResized(e));
-        this._debouncedSetSelectedNodes = debounce((ids) => this._setSelectedNodes(ids), 0);
-        this._localHarnessDebugSetup();
-        const licenseKey = this._grid.getLicenseKey();
-        if (licenseKey) {
-            LicenseManager.setLicenseKey(licenseKey);
-        }
+    constructor({ services }: IAgGridModelParameters) {
+        this._services = services;
+        //built with the grid rather than with its api, so nothing that renders can find this missing: the
+        //first thing the api-side setup does is push columns, and AG Grid renders their headers from that
+        this._services.whenAvailable('gridApi', () => this._onGridApiAvailable());
     }
 
-    public getColumns(gridColumns: IGridColumn[]): ColDef[] {
-        if (this._grid.getDataset().grouping.getGroupBys().length > 0 && !this._grid.isGroupedColumnsPinnedEnabled()) {
-            this._sortColumns(gridColumns);
-        }
-        const agColumns: ColDef[] = [];
-        for (const column of gridColumns) {
-            if (column.isHidden) {
-                continue;
-            }
-            const agColumn: ColDef = {
-                colId: column.name,
-                field: column.name,
-                headerName: column.displayName,
-                width: column.visualSizeFactor,
-                sortable: !column.disableSorting,
-                lockPinned: true,
-                resizable: column.isResizable,
-                autoHeaderHeight: true,
-                autoHeight: this._isColumnAutoHeightEnabled(column),
-                suppressMovable: column.isDraggable === false ? true : false,
-                pinned: this._isColumnPinned(column),
-                headerComponentParams: {
-                    baseColumn: column
-                },
-                rowGroup: column.grouping?.isGrouped,
-                cellRendererParams: (p: any) => {
-                    return {
-                        ...this._getCellParameters(p.data, column),
-                        isCellEditor: false
-                    }
-                },
-                cellEditorParams: (p: any) => {
-                    return {
-                        ...this._getCellParameters(p.data, column),
-                        isCellEditor: true
-                    }
-                },
-                editable: (p) => this._isCellEditorEnabled(column.name, p.data),
-                equals: (valueA: ICellValues, valueB: ICellValues) => COMPARATOR.isEqual(valueA, valueB),
-                headerComponent: ColumnHeader,
-                cellRenderer: Cell,
-                cellEditor: Cell,
-                valueGetter: (p: ValueGetterParams<IRecord>) => this._valueGetter(p, column),
-                valueFormatter: (p: ValueFormatterParams<IRecord>) => this._valueFormatter(p),
-                suppressKeyboardEvent: (p) => this._suppressKeyboardEvent(p, column),
-                onCellDoubleClicked: (e: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(e),
-            }
-            agColumns.push(agColumn);
-        }
-        if (this._grid.getSelectionType() !== 'none' || this._grid.isEditingEnabled()) {
-            agColumns.unshift(this._createCheckBoxColumn())
-        }
-        return agColumns;
-    }
-
-    public executeWithGridApi(callback: (gridApi: GridApi) => void) {
-        if (!this._gridApi || this._gridApi.isDestroyed()) {
-            return;
-        }
-        return callback(this._gridApi);
-    }
-
-    public init(gridApi: GridApi) {
-        this._gridApi = gridApi;
+    /**
+     * Everything that needs a grid to talk to, in the order it needs doing.
+     *
+     * The listeners first, so nothing the options below set off is missed; then the grid's own options;
+     * then the columns. A load that finished before any of this existed is simply the state it reads at
+     * the end, which is why there is no catching up to do.
+     */
+    private _onGridApiAvailable(): void {
         this._registerEventListeners();
         this._setGridOptions();
+        //after the grid's own, so the row model has the last word on anything it also sets
+        this._services.get('rowModel').applyGridOptions(this._gridApi);
         this._setCurrentColumns();
-        if (!this._grid.getDataset().loading) {
-            //we need to call this here since the events already fired before the grid api was ready
+        if (!this._provider.isLoading()) {
             this._onNewDataLoaded();
-            this._setTotalRow();
         }
     }
 
-    public getGrid(): GridModel {
-        return this._grid;
+    private _registerEventListeners(): void {
+        this._provider.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded());
+        this._provider.addEventListener('onRenderRequested', () => this._gridApi.refreshCells());
     }
 
-    public getSelectionType(): 'single' | 'multiple' | undefined {
-        switch (this._grid.getSelectionType()) {
-            case 'none': {
-                return undefined;
-            }
-            case 'single': {
-                return 'single';
-            }
-            case 'multiple': {
-                return 'multiple';
-            }
-        }
+    private _setGridOptions(): void {
+        this._gridApi.setGridOption('loadingCellRenderer', FullRowLoading);
+        this._gridApi.setGridOption('suppressDragLeaveHidesColumns', true);
+        this._gridApi.setGridOption('animateRows', false);
+        this._gridApi.setGridOption('groupDisplayType', 'custom');
     }
 
-    public toggleGroup(node: IRowNode<IRecord>) {
-        node.setExpanded(!node.expanded);
-        //clears the expanded rows in memory so it does not interfere with the next group expansion
-        this._expandedRowGroupIds.clear();
-        this._hasUserExpandedRowGroups = true;
-    }
-
-    public getRecordSelectionState(node: IRowNode<IRecord>): 'checked' | 'unchecked' | 'indeterminate' {
-        const record = node.data!;
-        const dataProvider = record.getDataProvider();
-        const childDataProvider = dataProvider.getGroupedRecordDataProvider(record.getRecordId());
-        let result: 'checked' | 'unchecked' | 'indeterminate';
-        if (childDataProvider) {
-            if (node.isSelected()) {
-                result = 'checked';
-            }
-            else {
-                if (childDataProvider.getSelectedRecordIds().length === 0) {
-                    result = 'unchecked';
-                }
-                else {
-                    result = 'indeterminate';
-                }
-            }
-        }
-        else {
-            result = node.isSelected() ? 'checked' : 'unchecked';
-        }
-        if (record.getSummarizationType() === 'grouping') {
-            if (result === 'unchecked') {
-                this._idsToAddToExpandGroupState.delete(record.getRecordId());
-            }
-            else {
-                this._idsToAddToExpandGroupState.add(record.getRecordId());
-            }
-        }
-        return result;
-    }
-
-    public onNotifyOutputChanged(record: IRecord, columnName: string, value: any, parameters: any) {
-        record.setValue(columnName, value);
-        //AG Grid asks a cell for its values *before* the control reports a new one, so everything it
-        //cached - the value and the validation result derived from it - describes the value that has just
-        //been replaced. Recompute the row now that the record holds the new one, otherwise the cell keeps
-        //showing state for the old value: a validation error stayed invisible until the next edit.
-        this.executeWithGridApi(gridApi => {
-            const node = gridApi.getRowNode(record.getRecordId());
-            //no node means the row is not rendered, and it reads current values whenever it is
-            if (node) {
-                gridApi.refreshCells({ rowNodes: [node] });
-            }
-        });
-        if(this.getGrid().isAutoSaveEnabled()) {
-            record.save();
-        }
-        const { ShouldUnmountWhenOutputChanges } = parameters;
-        if (ShouldUnmountWhenOutputChanges?.raw) {
-            this.executeWithGridApi(gridApi => gridApi.stopEditing());
-        }
-    }
-
-    private _localHarnessDebugSetup() {
-        if (this._grid.getParameters().IsLocalHarnessDebugMode?.raw === 'true') {
-            window.addEventListener('visibilitychange', () => {
-                this._saveState();
-            })
-        }
-    }
-
-    private _createCheckBoxColumn(): ColDef {
-        return {
-            colId: DataProvider.CONST.CHECKBOX_COLUMN_KEY,
-            field: DataProvider.CONST.CHECKBOX_COLUMN_KEY,
-            headerName: '',
-            width: 40,
-            lockPinned: true,
-            resizable: false,
-            pinned: 'left',
-            headerComponent: RecordSelectionCheckBox,
-            cellRenderer: SelectionCell,
-            suppressSizeToFit: true,
-            suppressMovable: true,
-            valueGetter: () => null,
-            valueFormatter: () => '',
-            cellRendererParams: (p: any) => {
-                return {
-                    record: p.data
-                }
-            }
-        }
-    }
-
-    private _sortColumns(columns: IGridColumn[]): IGridColumn[] {
-        return columns.sort((a, b) => {
-            // If both columns have the same grouping status, maintain original order (return 0)
-            if ((a.grouping?.isGrouped || false) === (b.grouping?.isGrouped || false)) {
-                return 0;
-            }
-            // If a is grouped, it should come first
-            if (a.grouping?.isGrouped) {
-                return -1;
-            }
-            // If b is grouped, it should come first
-            if (b.grouping?.isGrouped) {
-                return 1;
-            }
-            // Default case, should never reach here given the first condition
-            return 0;
-        });
-    }
-
-    private _onDestroyed() {
-        this._intervals.forEach(interval => clearInterval(interval));
-        clearTimeout(this._loadingOverlayTimeout);
-        this._saveState();
-    }
-
-    private _setCurrentColumns() {
-        const gridColumns = this._grid.getGridColumns();
-        this.executeWithGridApi(gridApi => gridApi.setGridOption('columnDefs', this.getColumns(gridColumns)));
-        this._autoSizeColumns();
-    }
-
-    private _isColumnAutoHeightEnabled(column: IGridColumn): boolean {
-        return !!column.autoHeight
-    }
-
-    private _onCellDoubleClick(e: CellDoubleClickedEvent<IRecord>) {
-        const column = this._dataset.getDataProvider().getColumnsMap()[e.colDef.colId!]!
-        switch (true) {
-            case !this._grid.isNavigationEnabled():
-            //do not navigate on editable columns
-            case this._grid.isColumnEditable(column.name, e.data):
-            //do not navigate on aggregated/grouped rows
-            case e.data?.getSummarizationType() !== 'none':
-            //do not allow double click navigation for editable grids (it creates confusion between double clicking read only columns to navigate and double clicking editable columns to edit)
-            case this._grid.isEditingEnabled():
-            //do not navigate on checkbox column
-            case column.name === DataProvider.CONST.CHECKBOX_COLUMN_KEY: {
-                break;
-            }
-            default: {
-                const record = e.data!;
-                record.getDataProvider().openDatasetItem(record.getNamedReference());
-            }
-        }
-    }
-
-    private _saveState() {
-        this.executeWithGridApi(gridApi => {
-            const { rowSelection, columnOrder, ...gridState } = gridApi.getState();
-            const selectedGroupIds = this._grid.getDataset().getSelectedRecordIds({ includeGroupRecordIds: true }).filter(id => id.startsWith(DataProvider.CONST.GROUP_PREFIX));
-            const expandedRowGroupIds = new Set<string>([...selectedGroupIds, ...this._idsToAddToExpandGroupState.values()]);
-            if (expandedRowGroupIds.size > 0) {
-                gridState.rowGroupExpansion = {
-                    expandedRowGroupIds: [...expandedRowGroupIds.values()]
-                }
-            }
-            const state = this.getGrid().getState() || {};
-            state.AgGridState = gridState;
-            this.getGrid().getPcfContext().mode.setControlState(state);
-        });
-    }
-
-    private _isColumnPinned(column: IGridColumn) {
-        switch (true) {
-            case column.grouping?.isGrouped && this._grid.isGroupedColumnsPinnedEnabled(): {
-                return true;
-            }
-            default: {
-                return false;
-            }
-        }
-    }
-
-    private _getCellParameters(record: IRecord, column: IGridColumn) {
-        return {
-            baseColumn: column,
-            record: record
-        }
-    }
-
-    private _scrollToTop() {
-        this.executeWithGridApi(gridApi => gridApi.ensureIndexVisible(0, 'top'));
-    }
-
-    private _canExpandRowGroupsByDefault(): boolean {
-        if (this._hasUserExpandedRowGroups) {
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
-
-    private _suppressKeyboardEvent(params: SuppressKeyboardEventParams<IRecord, any>, column: IGridColumn): boolean {
-        if (column.oneClickEdit) {
-            return true;
-        }
-        return false;
-    }
-
-    private _registerEventListeners() {
-        this._dataset.addEventListener('onLoading', (isLoading: boolean) => this._setLoadingOverlay(this._dataset.loading));
-        this._dataset.addEventListener('onRecordsSelected', (ids: string[]) => this._debouncedSetSelectedNodes(ids));
-        this._dataset.addEventListener('onNewDataLoaded', () => this._onNewDataLoaded());
-        this._dataset.addEventListener('onRenderRequested', () => this.executeWithGridApi(gridApi => gridApi.refreshCells()));
-        this._dataset.addEventListener('onFirstDataLoaded', () => this._setTotalRow());
-        this._grid.addTotalRowCreatedListener(() => this._setTotalRow());
-        this.executeWithGridApi(gridApi => {
-            gridApi.addEventListener('gridSizeChanged', () => this._autoSizeColumns());
-            gridApi.addEventListener('firstDataRendered', () => this._autoSizeColumns());
-            gridApi.addEventListener('selectionChanged', (e: SelectionChangedEvent) => this._onSelectionChanged(e));
-            gridApi.addEventListener('columnResized', (e: any) => this._debouncedColumnResized(e));
-            gridApi.addEventListener('modelUpdated', () => {
-                if (this._grid.getDataset().loading) {
-                    this._setLoadingOverlay(true);
-                }
-                //catches rows a control adds or removes through a server side transaction, which the
-                //provider never hears about. A provider load is decided when its loading ends instead,
-                //since the dataset still reports itself as loading while this fires
-                this._setNoRowsOverlay();
-            });
-            gridApi.addEventListener('columnMoved', (e: ColumnMovedEvent<IRecord>) => this._onColumnMoved(e));
-            gridApi.addEventListener('firstDataRendered', () => this._handleSelectionFromState());
-            gridApi.addEventListener('gridPreDestroyed', () => this._onDestroyed());
-        });
-    }
-
-    //idempotent: the total row provider only comes into existence once the dataset carries an
-    //aggregation, which can happen long after the grid mounted. Grids that never aggregate leave the
-    //pinned rows alone entirely - other features own that row (see CheckListGridCustomizer)
-    private _setTotalRow() {
-        const totalRow = this._grid.ensureTotalRow();
-        if (!totalRow) {
-            return;
-        }
-        if (!this._totalRowSubscribed) {
-            this._totalRowSubscribed = true;
-            const totalRowDataProvider = totalRow.getDataProvider();
-            totalRowDataProvider.addEventListener('onLoading', () => this._setPinnedRowData());
-            totalRowDataProvider.addEventListener('onError', () => this._setPinnedRowData());
-        }
-        this._setPinnedRowData();
-    }
-
-    /**
-     * Which row model the grid was created with.
-     *
-     * The two models take their rows, their refreshes, their selection and their default expansion
-     * through different APIs, and the wrong one is a silent no-op rather than an error — so every one of
-     * those four places asks this first. The choice itself belongs to whoever renders the grid: paging a
-     * dataset wants the server-side model, a set already held in memory wants the client-side one.
-     */
-    private _isClientSideRowModel(gridApi: GridApi): boolean {
-        return gridApi.getGridOption('rowModelType') === 'clientSide';
-    }
-
-    private _setGridOptions() {
-        this.executeWithGridApi(gridApi => {
-            if (this._isClientSideRowModel(gridApi)) {
-                gridApi.setGridOption('isGroupOpenByDefault', (params) =>
-                    this._syncExpandedRowGroups({ rowNode: params.rowNode } as IsServerSideGroupOpenByDefaultParams));
-            }
-            else {
-                gridApi.setGridOption('serverSideDatasource', this._dataSource);
-                gridApi.setGridOption('isServerSideGroupOpenByDefault', (params) => this._syncExpandedRowGroups(params));
-            }
-            gridApi.setGridOption('loadingCellRenderer', FullRowLoading)
-            gridApi.setGridOption('suppressDragLeaveHidesColumns', true);
-            gridApi.setGridOption('isFullWidthRow', (params) => this._isFullWidthRow(params));
-            gridApi.setGridOption('fullWidthCellRenderer', FullWidthCellRendererError);
-            gridApi.setGridOption('fullWidthCellRendererParams', (params: IsFullWidthRowParams<IRecord>) => this._getFullWidthCellRendererParams(params))
-            gridApi.setGridOption('suppressCopyRowsToClipboard', true);
-            gridApi.setGridOption('animateRows', false);
-            gridApi.setGridOption('groupDisplayType', 'custom');
-        });
-    }
-
-    private _isFullWidthRow(params: IsFullWidthRowParams<IRecord>): boolean {
-        const provider = params.rowNode.data?.getDataProvider();
-        switch (true) {
-            case provider?.getSummarizationType() === 'aggregation' && provider.isError(): {
-                return true;
-            }
-            default: {
-                return false;
-            }
-        }
-    }
-
-    //this should only be triggered when we load the grid with some item pre-selected from state
-    //e.g. navigating to a record and coming back to the grid
-    private _handleSelectionFromState() {
-        const selectedRecordIds = this._grid.getDataset().getSelectedRecordIds();
-        this._grid.getDataset().clearSelectedRecordIds();
-        let isScrolledToMiddle = false;
-        const localIntervals: NodeJS.Timeout[] = [];
-        const resolvedProviderSet = new Set<IDataProvider>();
-        for (const id of selectedRecordIds) {
-            const interval = setInterval(() => {
-                const record = this._grid.getDataset().getDataProvider().getRecordsMap()[id];
-                if (record) {
-                    clearInterval(interval);
-                    const provider = record.getDataProvider();
-                    if (!resolvedProviderSet.has(provider)) {
-                        const recordIdsToSelect = selectedRecordIds.filter(id => provider.getRecordsMap()[id])
-                        provider.setSelectedRecordIds(recordIdsToSelect);
-                        resolvedProviderSet.add(provider);
-                    }
-                    if (!isScrolledToMiddle) {
-                        const middleSelectedRecordId = selectedRecordIds[Math.floor(selectedRecordIds.length / 2)]
-                        this.executeWithGridApi(gridApi => {
-                            const node = gridApi.getRowNode(middleSelectedRecordId);
-                            if (node) {
-                                isScrolledToMiddle = true;
-                                gridApi.ensureNodeVisible(node!, 'middle');
-                            }
-                        });
-                    }
-                }
-            }, 100);
-            localIntervals.push(interval);
-            this._intervals.push(interval);
-        }
-        //abandon the selection after 5 seconds
-        //this could be done better by detecting if we are done loading all providers
-        setTimeout(() => {
-            localIntervals.forEach(interval => clearInterval(interval));
-        }, 5000);
-    }
-
-    private _getFullWidthCellRendererParams(params: IsFullWidthRowParams<IRecord>) {
-        //@ts-ignore - typings seem to be incorrect
-        const provider = params.node.data?.getDataProvider()
-        return {
-            errorMessage: provider?.getErrorMessage()
-        }
-    }
-
-    private _syncExpandedRowGroups(params: IsServerSideGroupOpenByDefaultParams): boolean {
-        if (this._expandedRowGroupIds.has(params.rowNode.id!)) {
-            return true
-        }
-        else if (this._canExpandRowGroupsByDefault()) {
-            return params.rowNode.level <= this._grid.getDefaultExpandedGroupLevel();
-        }
-        else return false;
-    }
-
-    private _onColumnMoved(e: ColumnMovedEvent<IRecord>) {
-        const movedColumn = this._grid.getDataset().getDataProvider().getColumnsMap()[e.column?.getColId()!];
-        if (!e.finished || e.source !== 'uiColumnMoved') {
-            return;
-        }
-        let order = 0;
-        const newColumnsMap = new Map<string, IColumn>(this._grid.getDataset().columns.map(col => [col.name, col]));
-        for (const colId of e.api.getState().columnOrder?.orderedColIds!) {
-            if (newColumnsMap.has(colId)) {
-                newColumnsMap.set(colId, { ...newColumnsMap.get(colId)!, order: order++ });
-            }
-        }
-        this._dataset.setColumns([...newColumnsMap.values()]);
-        if (movedColumn?.grouping?.isGrouped) {
-            this._dataset.refresh();
-        }
-    }
-
-    private _onNewDataLoaded() {
-        this._refreshRowModel();
+    private _onNewDataLoaded(): void {
+        this._services.get('rowModel').refresh(this._gridApi);
         this._setCurrentColumns();
         this._scrollToTop();
-        //a view change can bring in aggregated columns, which is what creates the total row
-        this._setTotalRow();
     }
 
-    private _refreshRowModel() {
-        this.executeWithGridApi(gridApi => {
-            if (this._isClientSideRowModel(gridApi)) {
-                //the same records are handed over again: with `getRowId` set the grid works out the
-                //difference itself and keeps the row objects it already has, so what is expanded, selected
-                //or being edited survives a load
-                gridApi.setGridOption('rowData', this._grid.getRowData() ?? this._dataset.getRecords());
-                return;
-            }
-            this._expandedRowGroupIds = new Set(gridApi.getState()?.rowGroupExpansion?.expandedRowGroupIds ?? []);
-            gridApi.refreshServerSide({
-                purge: true
-            })
-        });
-    }
-
-    private _onColumnResized(e: ColumnResizedEvent<IRecord>) {
-        if (e.source === 'uiColumnResized') {
-            this._hasUserResizedColumns = true;
-            this._updateColumnVisualSizeFactor(e);
-        }
-    }
-
-    private _autoSizeColumns() {
-        if (this._hasUserResizedColumns) {
-            return;
-        }
-        this.executeWithGridApi(gridApi => {
-            gridApi.sizeColumnsToFit({
-                columnLimits: this._grid.getDataset().columns.map(col => {
-                    return {
-                        key: col.name,
-                        minWidth: col.visualSizeFactor
-                    }
-                })
-            });
-        });
-    }
-
-    private _updateColumnVisualSizeFactor(e: ColumnResizedEvent<IRecord>) {
-        const resizedColumnKey = e.column?.getColId();
-        if (!resizedColumnKey) {
-            return;
-        }
-        const columns = this._grid.getDataset().columns; const newColumns = columns.map(col => {
-            if (col.name === resizedColumnKey) {
-                return {
-                    ...col,
-                    visualSizeFactor: e.column?.getActualWidth()!
-                }
-            }
-            return col;
-        })
-        this._grid.getDataset().setColumns(newColumns);
-    }
-
-    private _onSelectionChanged(e: SelectionChangedEvent<IRecord>) {
-        switch (true) {
-            case e.source === 'api':
-            case e.source === 'apiSelectAll': {
-                return;
-            }
-        }
-        let selectedNodes: IRowNode<IRecord>[] = [];
-        this.executeWithGridApi(gridApi => {
-            selectedNodes = gridApi.getSelectedNodes();
-        });
-        //if we click a grouped record, do not propagate the selection to children
-        const providerSelectedRecordIdsMap = new Map<IDataProvider, string[]>();
-        selectedNodes.map(node => {
-            const record = node.data!;
-            const provider = record.getDataProvider();
-            if (!providerSelectedRecordIdsMap.has(provider)) {
-                providerSelectedRecordIdsMap.set(provider, []);
-            }
-            providerSelectedRecordIdsMap.get(provider)!.push(record.getRecordId());
-        })
-        providerSelectedRecordIdsMap.forEach((ids, provider) => {
-            provider.setSelectedRecordIds(ids);
-        });
-    }
-
-    private async _setSelectedNodes(ids: string[]) {
-        //interval to prevent infinite loading
-        const checkLoadingNestedProviders = setInterval(() => {
-            if (this._isLoadingNestedProviders && !this._areChildProvidersLoading()) {
-                this._isLoadingNestedProviders = false;
-                this._dataset.getDataProvider().setLoading(false);
-                clearInterval(checkLoadingNestedProviders);
-            }
-        }, 500);
-        this._intervals.push(checkLoadingNestedProviders);
-        if (!this._isLoadingNestedProviders && this._areChildProvidersLoading()) {
-            this._isLoadingNestedProviders = true;
-            this._dataset.getDataProvider().setLoading(true);
-        }
-        else if (this._isLoadingNestedProviders && !this._areChildProvidersLoading()) {
-            this._isLoadingNestedProviders = false;
-            this._dataset.getDataProvider().setLoading(false);
-            clearInterval(checkLoadingNestedProviders);
-        }
-        this.executeWithGridApi(gridApi => {
-            const selectedIds = this._grid.getDataset().getDataProvider().getSelectedRecordIds({ includeGroupRecordIds: true });
-            if (this._isClientSideRowModel(gridApi)) {
-                this._setNodesSelectedById(gridApi, new Set(selectedIds));
-            }
-            else {
-                gridApi.setServerSideSelectionState({
-                    selectAll: false,
-                    toggledNodes: selectedIds
-                })
-            }
-            gridApi.refreshCells({
-                columns: [CHECKBOX_COLUMN_KEY],
-                force: true
-            })
-        });
-    }
-
-    //one walk of the rows and two calls, rather than a write per row: every write of ours reports itself
-    //as coming from the api, which is what `_onSelectionChanged` ignores
-    private _setNodesSelectedById(gridApi: GridApi, selectedIds: Set<string>): void {
-        const toSelect: IRowNode<IRecord>[] = [];
-        const toDeselect: IRowNode<IRecord>[] = [];
-        gridApi.forEachNode(node => {
-            if (!node.id) {
-                return;
-            }
-            const shouldBeSelected = selectedIds.has(node.id);
-            if (shouldBeSelected !== node.isSelected()) {
-                (shouldBeSelected ? toSelect : toDeselect).push(node);
-            }
-        });
-        if (toSelect.length) {
-            gridApi.setNodesSelected({ nodes: toSelect, newValue: true, source: 'api' });
-        }
-        if (toDeselect.length) {
-            gridApi.setNodesSelected({ nodes: toDeselect, newValue: false, source: 'api' });
-        }
-    }
-
-    private _areChildProvidersLoading(): boolean {
-        const childProviders = this._dataset.getDataProvider().getGroupedRecordDataProviders(true).filter(x => x.getParentRecordId());
-        return childProviders.some(provider => provider.isLoading());
-    }
-
-    private _valueFormatter(p: ValueFormatterParams<IRecord>): string {
-        const formattedValue = this._grid.getRecordFormattedValue(p.data!, p.colDef.colId!);
-        return formattedValue.value ?? formattedValue.aggregatedValue;
-    }
-
-    private _valueGetter(p: ValueGetterParams<IRecord>, column: IGridColumn) {
-        const record = p.data!;
-        let editing: boolean = false;
-        const columnInfo = record.getColumnInfo(column.name) as IColumnInfo;
-        //i hate this, there is no other way to get the information if we are in edit mode or not
-        if (Error().stack!.includes('startEditing')) {
-            editing = true;
-        }
-        const customControl = this._grid.getControl(column, record, editing || !!column.oneClickEdit);
-
-        //resolved once: the control asks for its bindings while constructing its properties and again in
-        //getParameters(), and each call rebuilt the whole binding graph for the same record and column
-        const bindings = this._grid.getBindings(record, column, customControl);
-        const control = new NestedControl({
-            onGetBindings: () => bindings,
-            parentPcfContext: this._grid.getPcfContext(),
-        });
-        const parameters = columnInfo.ui.getControlParameters({
-            ...this._grid.getFieldBindingParameters(record, column, editing),
-            ...control.getParameters(),
-        });
-        if (column.oneClickEdit && record.getSummarizationType() === 'none') {
-            editing = true;
-        }
-        const value = this._grid.getRecordValue(record, column);
-        return {
-            notifications: columnInfo.ui.getNotifications(),
-            value: value.value,
-            customFormatting: this._grid.getFieldFormatting(record, column.name),
-            customControl: customControl,
-            error: columnInfo.error,
-            aggregatedValue: value.aggregatedValue,
-            loading: columnInfo.ui.isLoading(),
-            errorMessage: columnInfo.errorMessage,
-            editable: column.isEditable && columnInfo.security.editable,
-            editing: editing,
-            parameters: parameters,
-            saving: record.isSaving(),
-            columnAlignment: column.alignment,
-            customComponent: columnInfo.ui.getCustomControlComponent()
-        } as ICellValues;
-    }
-
-    private _setPinnedRowData() {
-        const totalRecord = this._grid.getTotalRow()?.getTotalRowRecord() ?? null;
-        this.executeWithGridApi(gridApi => gridApi.setGridOption('pinnedBottomRowData', totalRecord ? [totalRecord] : []));
-    }
-
-    private _setLoadingOverlay(isLoading: boolean) {
-        if (!isLoading) {
-            //a load that finished before the delay was up is one nobody was ever told about
-            clearTimeout(this._loadingOverlayTimeout);
-            this._loadingOverlayTimeout = undefined;
-            //the load can have come back empty, in which case the no records overlay has to take over
-            //from the loading one - hiding here would leave the grid blank
-            return this._setNoRowsOverlay();
-        }
-        //the overlay is already up, or already on its way: a load reports itself many times over, and
-        //restarting the wait on each of them is how a slow load ends up never announcing itself
-        if (this._visibleOverlay === 'loading' || this._loadingOverlayTimeout) {
-            return;
-        }
-        this._loadingOverlayTimeout = setTimeout(() => {
-            this._loadingOverlayTimeout = undefined;
-            this._setOverlay('loading');
-        }, LOADING_OVERLAY_DELAY);
-    }
-
-    private _setNoRowsOverlay() {
-        setTimeout(() => {
-            //the loading overlay owns the grid until the provider is done
-            if (this._grid.getDataset().loading) {
-                return;
-            }
-            this.executeWithGridApi(gridApi => {
-                //asked of the grid rather than the provider, so rows added or removed through a server
-                //side transaction count too. Pinned rows are not displayed rows, so a control's own
-                //floating row does not pass for a record here
-                this._setOverlay(gridApi.getDisplayedRowCount() === 0 ? 'noRows' : 'none');
-            });
-        }, 0);
+    private _setCurrentColumns(): void {
+        this._gridApi.setGridOption('columnDefs', this._services.get('columns').getColumnDefinitions());
     }
 
     /**
-     * The single way any overlay is shown or hidden. Repeating the overlay the grid already has is not
-     * harmless: AG Grid builds the overlay component asynchronously and ignores a show that arrives
-     * while the previous one is still being built, so a hide/show pair landing in that window leaves
-     * the overlay hidden with no way back.
+     * Back to the first row, because a load is a different list: a new page, a new sort, a new view.
+     *
+     * Nothing to scroll to while a load is still in flight or came back empty — and it reports itself again
+     * when it lands, which is when there is somewhere to go.
      */
-    private _setOverlay(overlay: 'none' | 'loading' | 'noRows') {
-        if (this._visibleOverlay === overlay) {
+    private _scrollToTop(): void {
+        if (this._provider.isLoading() || this._provider.getSortedRecordIds().length === 0) {
             return;
         }
-        this.executeWithGridApi(gridApi => {
-            //only remembered once it actually reached a grid, so a request made before the api exists
-            //is not mistaken for the overlay being up
-            this._visibleOverlay = overlay;
-            switch (overlay) {
-                case 'loading': {
-                    gridApi.showLoadingOverlay();
-                    break;
-                }
-                case 'noRows': {
-                    gridApi.showNoRowsOverlay();
-                    break;
-                }
-                default: {
-                    gridApi.hideOverlay();
-                }
-            }
-        });
+        this._gridApi.ensureIndexVisible(0, 'top');
     }
 
-    private _isCellEditorEnabled(columnName: string, record: IRecord): boolean {
-
-        const column = this._grid.getGridColumnByName(columnName);        // check column eligibility for cell editor
-        switch (true) {
-            //never allow cell editor for oneClickEdit - everything is handled by cell renderer in this case
-            case column.oneClickEdit:
-            //never allow cell editor for non-editable columns
-            case !column.isEditable: {
-                return false;
-            }
-        }
-        return record.getColumnInfo(column.name).security.editable;
+    /**
+     * `get`, and not optional: this class is only ever constructed once the api is registered, so an
+     * absent one is a bug in the factory rather than a state to tolerate.
+     */
+    private get _gridApi(): GridApi<IRecord> {
+        return this._services.get('gridApi');
     }
 
-    private get _dataset() {
-        return this._grid.getDataset();
+    private get _provider(): IDataProvider {
+        return this._services.get('provider');
     }
 }

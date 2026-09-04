@@ -17,7 +17,6 @@ import ReactDOM from 'react-dom';
 import { useControlLabels } from '@hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
 import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
-import { GridColumnHeader } from '../GridColumnHeader/GridColumnHeader';
 import { Ribbon } from '../Ribbon/Ribbon';
 import { GridInlineRibbon } from '../GridInlineRibbon/GridInlineRibbon';
 
@@ -107,9 +106,6 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 return Duration;
             case 'GridCellRenderer':
                 return GridCellRenderer;
-            case 'GridColumnHeader': {
-                return GridColumnHeader;
-            }
             case 'GridInlineRibbon': {
                 return GridInlineRibbon;
             }

@@ -2,7 +2,7 @@ import { Dialog } from "@fluentui/react"
 import * as React from "react"
 import { getViewManagerDialogStyles } from "./styles";
 import { DatasetControl as DatasetControlRenderer } from '@components/DatasetControl';
-import { Grid } from '@components/Grid';
+import { createServerSideRowModelModule, Grid } from '@components/Grid';
 import { getClassNames } from "@utils";
 import { ViewManager } from "./ViewManager";
 import { useDatasetControl, useLocalizationService, useRootElementId } from "@components/TaskGrid/context";
@@ -62,7 +62,13 @@ export const ViewManagerDialog = (props: IViewManagerDialogProps) => {
                         }
                     }
                 }}
-                onGetControlComponent={(props) => <Grid {...props} />}
+                onGetControlComponent={(controlProps) => <Grid
+                    provider={controlProps.parameters.Grid.getDataProvider()}
+                    modules={{ rowModel: createServerSideRowModelModule() }}
+                    enableEditing={controlProps.parameters.EnableEditing?.raw === true}
+                    enableNavigation={controlProps.parameters.EnableNavigation?.raw !== false}
+                    enableAutoSave={controlProps.parameters.EnableAutoSave?.raw === true}
+                />}
              />
     </Dialog>
 }

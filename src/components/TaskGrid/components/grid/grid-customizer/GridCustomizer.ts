@@ -401,7 +401,7 @@ export class GridCustomizer implements IGridCustomizer {
      * keep the row objects it already has, so what is expanded, selected or being edited survives.
      */
     private _setRowData(): void {
-        this._gridApi.setGridOption('rowData', this._taskDataProvider.getVisibleRecords());
+        this._gridApi.setGridOption('rowData', this._taskDataProvider.getRecords());
     }
 
     //an undefined id means the top level

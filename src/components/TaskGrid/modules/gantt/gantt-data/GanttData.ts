@@ -66,7 +66,7 @@ export class GanttData implements IGanttData {
         //what is open is not carried over from the chart any more: every task is built with what the
         //expansion authority says, which is also what the grid draws, so a reload cannot leave the two
         //halves disagreeing
-        const data = this._dataProvider.getVisibleRecords().map(record => toGanttTask(record, this._services));
+        const data = this._dataProvider.getRecords().map(record => toGanttTask(record, this._services));
 
         //one repaint for the whole load: `parse` repaints by itself, and so does everything it triggers
         this._gantt.batchUpdate(() => {

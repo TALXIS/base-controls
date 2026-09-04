@@ -175,7 +175,6 @@ export interface ITaskDataProvider extends IDataProvider {
     /** Returns the current hierarchical record tree built from loaded task data. */
     getRecordTree(): IRecordTree;
     /** Every record the view renders, in the order it renders them. Both surfaces are built from it. */
-    getVisibleRecords(): IRecord[];
     /** Applies updated raw record data in-place and rebuilds the tree if hierarchy changed. */
     updateTaskData(newData: IRawRecord[]): void;
     /**
@@ -255,18 +254,6 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return this._strategy.onGetRootTaskId?.() ?? null;
     }
 
-    /**
-     * Every record the view renders, in the order it renders them.
-     *
-     * What both halves of the split view are built from: the grid takes these as its rows and the chart
-     * parses the same list, so the two cannot disagree about which rows exist or what order they are in.
-     */
-    public getVisibleRecords(): IRecord[] {
-        const recordsMap = this.getRecordsMap();
-        return this.getRecordTree().view.getOrderedIds()
-            .map(recordId => recordsMap[recordId])
-            .filter((record): record is IRecord => !!record);
-    }
 
     /**
      * Rebuilds the hierarchy and drops what expansion remembers about records that are gone.
@@ -561,12 +548,22 @@ export class TaskDataProvider extends MemoryDataProvider implements ITaskDataPro
         return paging;
     }
 
+    /**
+     * Every record the view renders, in the order it renders them.
+     *
+     * What both halves of the split view are built from: the grid takes these as its rows and the chart
+     * parses the same list, so the two cannot disagree about which rows exist or what order they are in.
+     * The paging beside this reports the same count.
+     */
     public getRecords(): IRecord[] {
         const records = super.getRecords();
         if (records.length === 0 || !this._taskTree.isBuilt()) {
             return [];
         }
-        return this._taskTree.view.getChildren();
+        const recordsMap = this.getRecordsMap();
+        return this._taskTree.view.getOrderedIds()
+            .map(recordId => recordsMap[recordId])
+            .filter((record): record is IRecord => !!record);
     }
 
     public getAllRecords(): IRecord[] {

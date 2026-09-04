@@ -2,8 +2,7 @@ import { useMemo } from "react"
 import { getRecordSaveErrorCalloutStyles } from "./styles"
 import { Callout, Link, Text, ThemeProvider } from "@fluentui/react";
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
-import { useControlTheme } from "@utils";
-import { useGridInstance } from "@components/Grid/grid/useGridInstance";
+import { useControlTheme , usePcfContext} from "@utils";
 
 interface IRecordSaveCalloutProps {
     targetId: string;
@@ -16,8 +15,7 @@ interface IRecordSaveCalloutProps {
 export const RecordSaveErrorCallout = (props: IRecordSaveCalloutProps) => {
     const { saveResult, record, targetId, onDismiss, onClearSaveResult } = props;
     const styles = useMemo(() => getRecordSaveErrorCalloutStyles(), []);
-    const grid = useGridInstance();
-    const theme = useControlTheme(grid.getPcfContext().fluentDesignLanguage);
+    const theme = useControlTheme(usePcfContext().fluentDesignLanguage);
 
     return <Callout
         className={styles.errorCallout}
