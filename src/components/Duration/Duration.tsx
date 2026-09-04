@@ -80,12 +80,13 @@ export const Duration = (props: IDuration) => {
         }
     };
 
-    const durationOptions = props.durationOptions ?? DEFAULT_DURATION_OPTIONS;
-
-    const comboBoxOptions: IComboBoxOption[] = useMemo(() => durationOptions.map(minutes => ({
-        key: minutes.toString(),
-        text: formatter(minutes) ?? "",
-    })), [durationOptions, hoursPerDay]);
+    const comboBoxOptions: IComboBoxOption[] = useMemo(() => {
+        const durationOptions: number[] = parameters.DurationOptions?.raw ? JSON.parse(parameters.DurationOptions.raw) : DEFAULT_DURATION_OPTIONS;
+        return durationOptions.map(minutes => ({
+            key: minutes.toString(),
+            text: formatter(minutes) ?? "",
+        }));
+    }, [parameters.DurationOptions?.raw, hoursPerDay]);
 
     const { value, labels, sizing, setValue, onNotifyOutputChanged, theme } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs, Required<IDuration>['translations']>('Duration', props, {
         formatter: formatter,
