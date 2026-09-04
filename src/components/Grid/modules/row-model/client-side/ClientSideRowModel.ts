@@ -39,6 +39,10 @@ export class ClientSideRowModel implements IGridRowModel {
         gridApi.setGridOption('rowData', this._services.get('provider').getRecords());
     }
 
+    public getSelectedRecordIds(gridApi: GridApi<IRecord>): string[] {
+        return gridApi.getSelectedNodes().map(node => node.id).filter((id): id is string => !!id);
+    }
+
     public setSelectedRecordIds(gridApi: GridApi<IRecord>, recordIds: string[]): void {
         const selectedIds = new Set(recordIds);
         const toSelect: any[] = [];

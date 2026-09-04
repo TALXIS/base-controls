@@ -1,4 +1,4 @@
-import { GridApi, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
+import { _, GridApi, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
 import { DataProvider, IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridSelectionServiceLocator } from "./services";
 import { IGridSelectionComponents } from "./moduleComponents";
@@ -24,7 +24,6 @@ export interface IGridSelectionParameters {
 export class GridSelection {
     private _services: IGridSelectionServiceLocator;
     private _mode: 'single' | 'multiple';
-    private _isApplying = false;
     /** What the host persisted, until the records it names have been loaded and it can be applied. */
     private _pendingRestoreRecordIds: string[] = [];
 
@@ -70,12 +69,8 @@ export class GridSelection {
      * further groups.
      */
     public isRecordSelectionDisabled(record: IRecord): boolean {
-        const gridServices = this._services.get('gridServices');
         const provider = record.getDataProvider();
-        const groupBys = gridServices.get('provider').grouping.getGroupBys();
-        if (gridServices.find('grouping')?.getType() === 'nested' && provider.getNestingLevel() < groupBys.length - 1) {
-            return true;
-        }
+        //a group selects every record under it, which is the opposite of what `single` means
         return provider.getSummarizationType() === 'grouping' && this._mode === 'single';
     }
 
@@ -84,14 +79,17 @@ export class GridSelection {
         return this._services.get('components');
     }
 
-    /** Releases the listener this holds on the provider, which outlives the grid otherwise. */
+    /** Releases the listeners this holds, which outlive the grid otherwise. */
     public destroy(): void {
         this._provider.removeEventListener('onRecordsSelected', this._onProviderSelectionChanged);
+        this._services.get('gridServices').find('gridRoot')?.removeEventListener('click', this._onCaptureClick, true);
     }
 
     private _onGridApiAvailable(): void {
         this._provider.addEventListener('onRecordsSelected', this._onProviderSelectionChanged);
         this._gridApi.addEventListener('selectionChanged', this._onGridSelectionChanged);
+        this._services.get('gridServices').whenAvailable('gridRoot',
+            gridRoot => gridRoot.addEventListener('click', this._onCaptureClick, true));
         //what the host persisted, taken and cleared in one go: it is the grid's to apply from here, and
         //leaving it on the provider would have the first write of ours read as the user's
         this._pendingRestoreRecordIds = this._provider.getSelectedRecordIds();
@@ -101,25 +99,40 @@ export class GridSelection {
         }
     }
 
+    /**
+     * Decides what may reach AG Grid's own row-click selection, before it gets the chance.
+     *
+     * The marker is what AG Grid checks on its first line, and unlike `stopPropagation` it leaves the DOM
+     * event alone — so the checkbox's own handler still runs. It has to be the capture phase: AG Grid
+     * listens on the row container, which is ahead of React's delegated handler in bubble order.
+     */
+    private _onCaptureClick = (event: Event): void => {
+        const target = event.target as HTMLElement;
+        const rowId = target.closest?.('[row-id]')?.getAttribute('row-id');
+        const colId = target.closest?.('[col-id]')?.getAttribute('col-id');
+        const hasModifier = (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey;
+        //the checkbox owns its own click, and a group row gives up selecting on a plain one: a click there
+        //is for expanding it, and its checkbox or a modifier is how it gets selected instead
+        const isGroupRow = !!rowId && !!this._gridApi.getRowNode(rowId)?.group;
+        if (this.isSelectionColumn(colId ?? undefined) || (isGroupRow && !hasModifier)) {
+            _.stopPropagationForAgGrid(event);
+        }
+    };
+
     private _onGridSelectionChanged = (event: SelectionChangedEvent<IRecord>): void => {
-        //our own write comes back as an api-sourced change, and so does the header's select-all
-        if (this._isApplying || event.source === 'api' || event.source === 'apiSelectAll') {
+        //the source is the only fence there is: `selectionChanged` reaches a listener asynchronously, so a
+        //flag set around our own write is always cleared again before this runs
+        if (event.source === 'api' || event.source === 'apiSelectAll') {
             return;
         }
         this._writeToProviders();
     };
 
     private _onProviderSelectionChanged = (): void => {
-        this._isApplying = true;
-        try {
-            const selectedRecordIds = this._provider.getSelectedRecordIds({ includeGroupRecordIds: true });
-            this._services.get('gridServices').get('rowModel').setSelectedRecordIds(this._gridApi, selectedRecordIds);
-            //the checkbox is what reads the state, and only the grid can be told to draw it again
-            this._gridApi.refreshCells({ columns: [DataProvider.CONST.CHECKBOX_COLUMN_KEY], force: true });
-        }
-        finally {
-            this._isApplying = false;
-        }
+        const selectedRecordIds = this._provider.getSelectedRecordIds({ includeGroupRecordIds: true });
+        this._rowModel.setSelectedRecordIds(this._gridApi, selectedRecordIds);
+        //the checkbox is what reads the state, and only the grid can be told to draw it again
+        this._gridApi.refreshCells({ columns: [DataProvider.CONST.CHECKBOX_COLUMN_KEY], force: true });
     };
 
     private _onModelUpdated = (): void => {
@@ -138,19 +151,22 @@ export class GridSelection {
         for (const provider of this._getProvidersHoldingSelection()) {
             selectedRecordIdsByProvider.set(provider, []);
         }
-        for (const node of this._gridApi.getSelectedNodes()) {
-            const record = node.data!;
-            const provider = record.getDataProvider();
+        for (const recordId of this._rowModel.getSelectedRecordIds(this._gridApi)) {
+            //a grouped provider's records are in the root's map too, so this finds the one holding it - and
+            //a nested group id written to the root instead corrupts that provider's counts
+            const provider = this._provider.getRecordsMap()[recordId]?.getDataProvider() ?? this._provider;
             const recordIds = selectedRecordIdsByProvider.get(provider) ?? [];
-            recordIds.push(record.getRecordId());
+            recordIds.push(recordId);
             selectedRecordIdsByProvider.set(provider, recordIds);
         }
         selectedRecordIdsByProvider.forEach((recordIds, provider) => provider.setSelectedRecordIds(recordIds));
     }
 
+    //group ids asked for explicitly: a group marker is a selection worth seeding to empty, and it is the
+    //only way to be sure of getting one
     private _getProvidersHoldingSelection(): IDataProvider[] {
         return [this._provider, ...this._provider.getGroupedRecordDataProviders(true)]
-            .filter(provider => provider.getSelectedRecordIds({ includeChildrenRecordIds: false }).length > 0);
+            .filter(provider => provider.getSelectedRecordIds({ includeChildrenRecordIds: false, includeGroupRecordIds: true }).length > 0);
     }
 
     /**
@@ -181,6 +197,10 @@ export class GridSelection {
     //the middle one rather than the first, so a run of selected rows is shown surrounded by its own context
     private _scrollToSelection(nodes: IRowNode<IRecord>[]): void {
         this._gridApi.ensureNodeVisible(nodes[Math.floor(nodes.length / 2)], 'middle');
+    }
+
+    private get _rowModel() {
+        return this._services.get('gridServices').get('rowModel');
     }
 
     private get _gridApi(): GridApi<IRecord> {

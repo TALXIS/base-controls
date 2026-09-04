@@ -43,6 +43,21 @@ export class ServerSideRowModel implements IGridRowModel {
         gridApi.refreshServerSide({ purge: true });
     }
 
+    /**
+     * Read off the selection state rather than the nodes: `getSelectedNodes` is backed by a map that only
+     * node-level selection writes to, so it cannot see a state installed by `setServerSideSelectionState`.
+     *
+     * The ids are flat because this grid never sets `groupSelectsChildren` — the nested shape of
+     * `toggledNodes` belongs to that mode, and a group here selects its children through the provider.
+     */
+    public getSelectedRecordIds(gridApi: GridApi<IRecord>): string[] {
+        const toggledNodes: unknown = gridApi.getServerSideSelectionState()?.toggledNodes;
+        if (!Array.isArray(toggledNodes)) {
+            return [];
+        }
+        return toggledNodes.filter((node): node is string => typeof node === 'string');
+    }
+
     public setSelectedRecordIds(gridApi: GridApi<IRecord>, recordIds: string[]): void {
         gridApi.setServerSideSelectionState({
             selectAll: false,

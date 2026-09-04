@@ -22,9 +22,10 @@ export const SelectionCell = (props: ISelectionCellProps) => {
     const isRecordSelectionDisabled = selection.isRecordSelectionDisabled(record);
     const styles = useMemo(() => getSelectionCellStyles(), []);
 
+    //the label would otherwise activate the checkbox it wraps, and that second click toggles the record
+    //straight back off. Keeping the click from also selecting the row is `GridSelection`'s capture
+    //listener, which a React handler cannot do - it runs after AG Grid's own
     const onCheckBoxClick = (e: React.MouseEvent) => {
-        //the row underneath would select itself as well, and the provider is what decides selection here
-        e.stopPropagation();
         e.preventDefault();
         if (!isRecordSelectionDisabled) {
             record.getDataProvider().toggleSelectedRecordId(record.getRecordId(), { clearExisting: selection.getMode() === 'single' });

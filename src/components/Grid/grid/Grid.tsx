@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { GetRowIdParams } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { IRecord } from "@talxis/client-libraries";
@@ -82,9 +82,19 @@ export const Grid = (props: IGrid) => {
         onGridPreDestroyed: (event) => propsRef.current.onDestroy?.(event.api),
     }
 
+    //registered rather than passed down: a part that has to see a DOM event before AG Grid's own listeners
+    //needs this element, and it does not exist until the grid has mounted
+    const onGridRootRef = useCallback((gridRoot: HTMLDivElement | null) => {
+        if (gridRoot) {
+            services.register('gridRoot', () => gridRoot);
+        }
+    }, []);
+
     //one context: everything a component needs is in the locator, `grid` included
     return <GridServicesContext.Provider value={services}>
-        <div className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
+        <div
+            ref={onGridRootRef}
+            className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
             {components.onRenderAgGrid(componentProps)}
         </div>
     </GridServicesContext.Provider>

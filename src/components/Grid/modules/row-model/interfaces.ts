@@ -25,4 +25,6 @@ export interface IGridRowModel {
     refresh: (gridApi: GridApi<IRecord>) => void;
     /** Puts a set of selected records onto the rows. */
     setSelectedRecordIds: (gridApi: GridApi<IRecord>, recordIds: string[]) => void;
+    /** Which records the grid itself has selected. */
+    getSelectedRecordIds: (gridApi: GridApi<IRecord>) => string[];
 }

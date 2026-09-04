@@ -29,6 +29,11 @@ export interface IGridServiceMap {
     provider: IDataProvider;
     /** The host context. Needed outside React, where a cell's nested control is constructed. */
     pcfContext: ComponentFramework.Context<any, any>;
+    /**
+     * The grid's own element. Registered once it is mounted, which is what a part listening for a DOM event
+     * ahead of AG Grid's own listeners needs — so wait for it with `whenAvailable`.
+     */
+    gridRoot: HTMLElement;
     /** Every string the grid renders, resolved. There from the start. */
     labels: ILocalizationService<IGridLabels>;
     /**
@@ -74,7 +79,7 @@ export interface IGridServiceMap {
  * over once it has built a grid. Every other key is there from the moment the grid is assembled, which is
  * what lets `useGridService` type those as always present.
  */
-export type IOptionalGridService = 'gridApi' | 'selection' | 'sorting' | 'filtering' | 'grouping' | 'aggregation';
+export type IOptionalGridService = 'gridApi' | 'gridRoot' | 'selection' | 'sorting' | 'filtering' | 'grouping' | 'aggregation';
 
 /** Where the grid's parts find each other. */
 export type IGridServiceLocator = IServiceLocator<IGridServiceMap>;
