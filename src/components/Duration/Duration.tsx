@@ -5,8 +5,7 @@ import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
 import numeral from "numeral";
 import { getDefaultDurationTranslations } from './translations';
-import { durationOptions } from "./durationOptions";
-import humanizeDuration, { HumanizerOptions, Unit } from "humanize-duration";
+import { DEFAULT_DURATION_OPTIONS } from "./durationOptions";
 import { Formatting, Numeral } from "@talxis/client-libraries";
 
 export const Duration = (props: IDuration) => {
@@ -14,7 +13,6 @@ export const Duration = (props: IDuration) => {
     const boundValue = parameters.value;
     const componentRef = useRef<IComboBox>(null);
     const context = props.context;
-    const formattingInfo = context.userSettings;
     const numberFormatting = context.userSettings.numberFormattingInfo;
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
     const hoursPerDay = typeof parameters.HoursPerDay?.raw === 'number' && parameters.HoursPerDay.raw > 0 ? parameters.HoursPerDay.raw : 24;
@@ -82,15 +80,12 @@ export const Duration = (props: IDuration) => {
         }
     };
 
-    const presetOptions = (): IComboBoxOption[] => {
-        const formattedOptions = durationOptions.map(option => ({
-            key: option.Value.toString(),
-            text: formatter(parseInt(option.Label)) ?? "",
-        }));
-        return formattedOptions;
-    };
+    const durationOptions = props.durationOptions ?? DEFAULT_DURATION_OPTIONS;
 
-    const comboBoxOptions: IComboBoxOption[] = presetOptions();
+    const comboBoxOptions: IComboBoxOption[] = useMemo(() => durationOptions.map(minutes => ({
+        key: minutes.toString(),
+        text: formatter(minutes) ?? "",
+    })), [durationOptions, hoursPerDay]);
 
     const { value, labels, sizing, setValue, onNotifyOutputChanged, theme } = useInputBasedControl<string | null, IDurationParameters, IDurationOutputs, Required<IDuration>['translations']>('Duration', props, {
         formatter: formatter,
@@ -126,7 +121,7 @@ export const Duration = (props: IDuration) => {
                 alignItems: 'center',
             },
             callout: {
-                height: 300
+                maxHeight: `300px !important`
             }
         },
         calloutProps: {
