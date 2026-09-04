@@ -3,7 +3,8 @@ import { DataProvider, DataTypes, IColumn, IDataProvider, IRecord } from "@talxi
 import { HookRegistry } from "@utils";
 import { Cell } from "../../cells/cell/Cell";
 import { ColumnHeader } from "../../column-headers/column-header/ColumnHeader";
-import { RecordSaveIndicator } from "../../cells/record-save-indicator";
+import { RecordSaveIndicatorCell } from "../../cells/record-save-indicator";
+import { suppressRendererInPinnedRows } from "./suppressRendererInPinnedRows";
 import { Comparator } from "../ValueComparator";
 import { ICellValues } from "../cells/interfaces";
 import { IGridColumn } from "./interfaces";
@@ -142,8 +143,9 @@ export class GridColumns {
             suppressMovable: true,
             valueGetter: () => null,
             valueFormatter: () => '',
-            cellRenderer: RecordSaveIndicator,
+            cellRenderer: RecordSaveIndicatorCell,
             cellRendererParams: (params: any) => ({ record: params.data }),
+            cellRendererSelector: suppressRendererInPinnedRows,
         };
     }
 

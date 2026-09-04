@@ -1,5 +1,6 @@
 import { ColDef } from "@ag-grid-community/core";
 import { DataProvider, IRecord } from "@talxis/client-libraries";
+import { suppressRendererInPinnedRows } from "../../grid/columns";
 import { IGridSelectionComponents } from "./moduleComponents";
 
 /**
@@ -22,4 +23,5 @@ export const getSelectionColumnDefinition = (components: IGridSelectionComponent
     valueGetter: () => null,
     valueFormatter: () => '',
     cellRendererParams: (params: any) => ({ record: params.data }),
+    cellRendererSelector: suppressRendererInPinnedRows,
 });

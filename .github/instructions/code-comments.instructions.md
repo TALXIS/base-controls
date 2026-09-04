@@ -23,13 +23,17 @@ Default to **zero** comments. Code should carry its own meaning through naming a
 - **Section banners and decoration.** `// ---- Helpers ----`, ASCII art, boxes.
 - **Commented-out code.** Delete it.
 - **Obvious TODOs.** No speculative `// TODO: maybe make this configurable`.
+- **Design justification.** Why this shape rather than another shape the file does not contain. If the alternative isn't in the code, arguing against it is history.
+- **Name restatements in TSDoc.** `isSaving` does not need `/** Whether it is saving. */`. Document the field the reader would guess wrong, not the four they would guess right.
 
 ## Style
 
 - One line where possible. Two sentences is already long; a paragraph almost never belongs in source.
+- A TSDoc block is one sentence saying what the thing is for. A second paragraph explaining how it came to be built that way belongs in the commit message.
 - Plain, factual, present tense. No hedging, no enthusiasm, no explaining yourself to the reader.
 - `//` for implementation notes, TSDoc `/** */` only for public API.
 - Match the surrounding file's comment density — if the neighbouring code has no comments, that's the target.
+- Comments are the exception, not an annotation layer. Past roughly one comment line in ten, you are writing prose where naming and structure should have carried it — and a short file with a long header is the same failure.
 
 ## The survival test
 

@@ -1,11 +1,12 @@
-import { useMemo } from "react"
+import { RefObject, useMemo } from "react"
 import { getRecordSaveErrorCalloutStyles } from "./styles"
 import { Callout, Link, Text, ThemeProvider } from "@fluentui/react";
 import { IRecord, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useControlTheme , usePcfContext} from "@utils";
 
 interface IRecordSaveCalloutProps {
-    targetId: string;
+    /** What the callout points at. */
+    target: RefObject<HTMLDivElement>;
     saveResult: IRecordSaveOperationResult;
     record: IRecord;
     onDismiss: () => void;
@@ -13,7 +14,7 @@ interface IRecordSaveCalloutProps {
 }
 
 export const RecordSaveErrorCallout = (props: IRecordSaveCalloutProps) => {
-    const { saveResult, record, targetId, onDismiss, onClearSaveResult } = props;
+    const { saveResult, record, target, onDismiss, onClearSaveResult } = props;
     const styles = useMemo(() => getRecordSaveErrorCalloutStyles(), []);
     const theme = useControlTheme(usePcfContext().fluentDesignLanguage);
 
@@ -21,7 +22,7 @@ export const RecordSaveErrorCallout = (props: IRecordSaveCalloutProps) => {
         className={styles.errorCallout}
         theme={theme}
         onDismiss={onDismiss}
-        target={`#${targetId}`}>
+        target={target}>
         <Text block className={styles.errorCalloutTitle} variant="xLarge">Record could not be saved</Text>
         <ThemeProvider theme={theme} className={styles.errorCalloutContent}>
             {saveResult.errors?.map((error, i) => {
