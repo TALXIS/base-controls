@@ -9,6 +9,7 @@ import { Comparator } from "../ValueComparator";
 import { ICellValues } from "../cells/interfaces";
 import { IGridColumn } from "./interfaces";
 import { IGridServiceLocator } from "../../services";
+import { mergeStyles } from "@components/TaskGrid/components/grid/multi-record-selector";
 
 //stateless, and `equals` runs per cell per value read
 const COMPARATOR = new Comparator();
