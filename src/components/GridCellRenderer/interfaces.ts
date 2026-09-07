@@ -37,7 +37,7 @@ export interface IGridCellRendererComponentProps {
 }
 
 interface IComponentProps {
-    container: ThemeProviderProps;
+    container: React.HTMLAttributes<HTMLDivElement>;
     onRenderContentContainer: (props: IContentContainerProps, defaultRender: (props: IContentContainerProps) => React.ReactElement) => React.ReactElement;
     onRenderAggregationLabel: (props: ILabelProps, defaultRender: (props: ILabelProps) => React.ReactElement) => React.ReactElement;
 }

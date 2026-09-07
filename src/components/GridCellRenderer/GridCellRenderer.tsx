@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { GridCellRendererModel } from "./GridCellRendererModel";
 import { useControl } from "@hooks";
-import { Icon, Label, ThemeProvider, Text } from "@fluentui/react";
+import { Icon, Label, Text } from "@fluentui/react";
 import { IGridCellRenderer } from "./interfaces";
 import { getClassNames } from "@utils";
 import { getGridCellRendererStyles } from "./styles";
@@ -10,7 +10,7 @@ import { ModelContext } from "./useModel";
 import { gridGroupCellRendererTranslations } from "./translations";
 
 export const GridCellRenderer = (props: IGridCellRenderer) => {
-    const { theme, labels, className, sizing } = useControl('GridCellRenderer', props, gridGroupCellRendererTranslations);
+    const { theme, labels, className } = useControl('GridCellRenderer', props, gridGroupCellRendererTranslations);
     const propsRef = useRef<IGridCellRenderer>(props);
     propsRef.current = props;
     const model = useMemo(() => {
@@ -20,7 +20,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             labels: labels,
         });
     }, []);
-    const styles = useMemo(() => getGridCellRendererStyles(model, sizing.height), [model, sizing.height]);
+    const styles = useMemo(() => getGridCellRendererStyles(model), [model]);
     const onOverrideComponentProps = props.onOverrideComponentProps ?? ((props) => props);
 
     const componentProps = onOverrideComponentProps({
@@ -32,14 +32,13 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             {componentProps.onRender({
                 container: {
                     className: getClassNames([className, styles.gridCellRendererRoot]),
-                    title: model.getFormattedValue().value!,
-                    theme: theme
+                    title: model.getFormattedValue().value!
                 },
                 onRenderContentContainer: (props, defaultRender) => defaultRender(props),
                 onRenderAggregationLabel: (props, defaultRender) => defaultRender(props)
             }, (props) => {
                 return (
-                    <ThemeProvider {...props.container}>
+                    <div {...props.container}>
                         {props.onRenderAggregationLabel({
                             children: model.getAggregationLabel(),
                             className: styles.aggregationLabel
@@ -128,7 +127,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
                                 </div>
                             );
                         })}
-                    </ThemeProvider>
+                    </div>
                 );
             })}
         </ModelContext.Provider>

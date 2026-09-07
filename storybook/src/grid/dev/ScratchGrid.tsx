@@ -53,7 +53,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule(),
         clipboard: props.clipboard ? createClipboardModule() : undefined,
-        //cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
+        cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
         selection: props.selectableRows === 'none' ? undefined : createSelectionModule({ mode: props.selectableRows }),
         sorting: props.sorting ? createSortingModule() : undefined,
         filtering: props.filtering ? createFilteringModule() : undefined,

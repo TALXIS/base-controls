@@ -56,42 +56,51 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
             minHeight: 220,
             display: 'flex',
             flexDirection: 'column',
-            '--ag-borders': 'none !important',
             '.ag-root-wrapper': {
                 maxHeight: '100%',
-                '--ag-selected-row-background-color': theme.palette.themePrimary,
-                '--ag-range-selection-border-color': theme.palette.themePrimary,
-                '--ag-row-hover-color': theme.palette.black,
+                //every state the grid draws comes from these rather than from rules of ours: the row's
+                //hover and selection, a highlighted range and its edges, the flash after a value changed,
+                //the cell that has focus. Translucent, because AG Grid paints them straight over the row -
+                //an opaque colour here is what used to need an `opacity` rule to undo
+                //
+                //on the wrapper rather than on the root, which is the element carrying `ag-theme-balham`:
+                //a variable set on an inner element wins over the one it would inherit whatever order the
+                //stylesheets happen to be in, and the theme's own is injected after ours
+                '--ag-background-color': theme.semanticColors.bodyBackground,
+                '--ag-foreground-color': theme.semanticColors.bodyText,
+                '--ag-header-background-color': theme.semanticColors.bodyBackground,
+                '--ag-border-color': theme.semanticColors.menuDivider,
                 '--ag-row-border-color': theme.semanticColors.menuDivider,
-                '--ag-cell-horizontal-padding': 0,
+                '--ag-selected-row-background-color': `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 80%)`,
+                '--ag-row-hover-color': `color-mix(in srgb, ${theme.palette.black}, transparent 90%)`,
+                '--ag-range-selection-background-color': `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 85%)`,
+                '--ag-range-selection-border-color': theme.palette.themePrimary,
+                '--ag-range-selection-highlight-color': `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 70%)`,
                 '--ag-input-focus-border-color': theme.semanticColors.inputFocusBorderAlt,
-                borderBottom: `1px solid ${theme.semanticColors.menuDivider}`,
-                '.ag-row::before': {
-                    zIndex: 1
-                },
-                '.ag-row-hover::before': {
-                    opacity: 0.1
-                },
-                '.ag-row-selected::before': {
-                    opacity: 0.2
-                }
+                '--ag-cell-horizontal-padding': 0,
+                //no separator between cells, no box around the grid, and none of the borders AG Grid
+                //calls critical - the pinned column separator is one of those, and it is not wanted. The
+                //two that are, under the header and above the total row, are declared below
+                //
+                //`critical` as well as `borders`: it is defined as `var(--ag-borders)` on the element
+                //carrying the theme, so it is already resolved by the time it reaches this one
+                '--ag-cell-horizontal-border': 'none',
+                '--ag-borders': 'none',
+                '--ag-borders-critical': 'none',
+                borderBottom: `1px solid ${theme.semanticColors.menuDivider}`
             },
             '.ag-body': {
                 borderTop: `1px solid ${theme.semanticColors.menuDivider}`
-            },
-            '.ag-header-viewport': {
-                backgroundColor: `${theme.semanticColors.bodyBackground}`
             },
             '.ag-center-cols-container': {
                 minWidth: '100%',
             },
             '.ag-header-cell': {
                 paddingLeft: 0,
-                paddingRight: 0,
-                backgroundColor: `${theme.semanticColors.bodyBackground} !important`
+                paddingRight: 0
             },
+            //the cell renders a control of its own, which has to be clipped to it rather than spill
             '.ag-cell': {
-                border: 'none !important',
                 borderRadius: 0,
                 overflow: 'hidden'
             },
@@ -101,59 +110,8 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
             '.ms-Checkbox.is-disabled .ms-Checkbox-checkbox': {
                 borderColor: `${theme.semanticColors.disabledBorder} !important`
             },
-            '.ag-cell-highlight': {
-                '::after': {
-                    content: "''",
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 70%)`,
-                    'view-transition-name': 'cell-highlight',
-                }
-            },
-            //a highlighted block is drawn over the cell rather than behind it: AG Grid colours the cell
-            //itself, and every cell here has an opaque background of its own that would cover that
-            '.ag-cell-range-selected:not(.ag-cell-range-single-cell)': {
-                '::after': {
-                    content: "''",
-                    position: 'absolute',
-                    inset: 0,
-                    backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 85%)`,
-                    pointerEvents: 'none'
-                }
-            },
-            //the edges of the block, so it reads as one region rather than as coloured cells. Drawn on the
-            //cell rather than on the overlay above: a border on that would sit inside the neighbouring fill
-            '.ag-cell-range-top': {
-                borderTop: `1px solid ${theme.palette.themePrimary} !important`
-            },
-            '.ag-cell-range-right': {
-                borderRight: `1px solid ${theme.palette.themePrimary} !important`
-            },
-            '.ag-cell-range-bottom': {
-                borderBottom: `1px solid ${theme.palette.themePrimary} !important`
-            },
-            '.ag-cell-range-left': {
-                borderLeft: `1px solid ${theme.palette.themePrimary} !important`
-            },
             '.ag-overlay-loading-wrapper': {
                 backdropFilter: 'blur(1px)'
-            },
-            '.ag-cell-focus': {
-                zIndex: 2,
-                '::after': {
-                    content: "''",
-                    position: 'absolute',
-                    inset: '-1px',
-                    border: `3px solid ${theme.semanticColors.inputFocusBorderAlt}`,
-                    borderRadius: theme.effects.roundedCorner2,
-                    pointerEvents: 'none'
-                }
-            },
-            '.ag-cell-focus:has([data-is-valid="false"])': {
-                '::after': {
-                    borderColor: `${theme.semanticColors.errorIcon} !important`
-                }
             },
             '.ag-floating-bottom .ag-row-pinned': {
                 borderTop: `1px solid ${theme.semanticColors.menuDivider}`,

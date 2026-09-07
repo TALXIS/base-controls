@@ -1,20 +1,28 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
 
-//resolved once: these rules are constant, and this used to be re-merged per cell on every theme identity
-//change even though the theme was never read
-export const cellStyles = mergeStyleSets({
+/**
+ * The cell's one element.
+ *
+ * @param fixedHeight What the cell is worth in pixels rather than filling the row. Only a summarized row
+ * in an auto-height column, which stands for a group rather than for a value.
+ */
+export const getCellStyles = (theme: ITheme, fixedHeight?: number) => mergeStyleSets({
     cellRoot: {
-        height: '100% !important',
         width: '100%',
+        height: fixedHeight !== undefined ? `${fixedHeight}px !important` : '100% !important',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        //the text and the font a theme provider would have applied here, without its background: a cell
+        //that paints its own hides what AG Grid drew on the one behind it - the range, the flash, the
+        //row's hover and selection
+        color: theme.semanticColors.bodyText,
+        fontFamily: theme.fonts.medium.fontFamily,
+        fontSize: theme.fonts.medium.fontSize,
+        fontWeight: theme.fonts.medium.fontWeight
     }
 });
-
-/** @deprecated Use {@link cellStyles} — the styles are constant, the argument was never read. */
-export const getCellStyles = (_theme?: ITheme) => cellStyles;
 
 export const getInnerCellStyles = (isEditing: boolean, theme: ITheme, columnAlignment: IColumn['alignment'], isExpanded: boolean) => {
     return mergeStyleSets({

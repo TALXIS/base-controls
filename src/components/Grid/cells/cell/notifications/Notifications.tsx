@@ -1,4 +1,4 @@
-import { ICommandBarItemProps, useTheme, ICommandBar, PrimaryButton, DefaultButton, Link, Icon, ThemeProvider, Callout, Text } from "@fluentui/react";
+import { ICommandBarItemProps, ICommandBar, ITheme, PrimaryButton, DefaultButton, Link, Icon, ThemeProvider, Callout, Text } from "@fluentui/react";
 import { IAddControlNotificationOptions, ICustomColumnFormatting, IControlNotificationAction, IColumn } from "@talxis/client-libraries";
 import { CommandBar, useResizeObserver, useThemeGenerator } from "@legacy";
 import { useMemo, useState, useRef, useEffect } from "react";
@@ -6,6 +6,8 @@ import { useControlTheme , usePcfContext} from "@utils";
 import { getNotificationStyles } from "./styles";
 
 interface INotifications {
+    /** The cell's theme. Handed over: nothing above this provides one. */
+    theme: ITheme,
     notifications: IAddControlNotificationOptions[],
     formatting: Required<ICustomColumnFormatting>,
     isActionColumn: boolean;
@@ -15,8 +17,7 @@ interface INotifications {
 
 
 export const Notifications = (props: INotifications) => {
-    const { notifications, formatting, farItems, isActionColumn, columnAlignment } = { ...props };
-    const theme = useTheme();
+    const { notifications, formatting, farItems, isActionColumn, columnAlignment, theme } = { ...props };
     const styles = useMemo(() => getNotificationStyles(isActionColumn, columnAlignment), [isActionColumn, columnAlignment]);
     const iconId = useMemo(() => `icon${crypto.randomUUID()}`, []);
     const [selectedNotification, setSelectedNotification] = useState<IAddControlNotificationOptions | null>(null);

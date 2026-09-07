@@ -2,9 +2,7 @@ import { mergeStyleSets } from "@fluentui/react"
 import { IColumn } from "@talxis/client-libraries";
 import { GridCellRendererModel } from "./GridCellRendererModel";
 
-let minHeight: number | undefined = undefined;
-
-export const getGridCellRendererStyles = (model: GridCellRendererModel, height?: number) => {
+export const getGridCellRendererStyles = (model: GridCellRendererModel) => {
     const columnAlignment = model.getColumnAlignment();
     const theme = model.getControlTheme();
     const isMultiline = model.isMultiline();
@@ -13,13 +11,15 @@ export const getGridCellRendererStyles = (model: GridCellRendererModel, height?:
     const formattedAggregatedValue = model.getFormattedAggregatedValue();
     const value = model.getValue();
 
-    if(minHeight === undefined) {
-        minHeight = height;
-    }
     return mergeStyleSets({
         gridCellRendererRoot: {
+            //the text and the font are inherited from the cell rather than set here: these styles are
+            //resolved once per control, so a theme read here is the one it had when it mounted - and a
+            //cell whose formatting changes afterwards would keep rendering in the old one
+            //
+            //no height floor of its own either: AG Grid measures this to size an auto-height row and then
+            //takes `Math.max(measured, rowHeight)`, so a floor here only inflates what it measures
             height: '100%',
-            minHeight: autoHeightEnabled ? minHeight : undefined,
             paddingLeft: 8,
             paddingRight: 8,
             display: 'flex',

@@ -1,4 +1,4 @@
-import { CellDoubleClickedEvent, GridApi, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, CellStyle, GridApi, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { DataProvider, DataType, DataTypes, IColumn, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IRecord, Sanitizer } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import { BaseControls, HookRegistry } from "@utils";
@@ -313,6 +313,24 @@ export class GridCells {
             type: DataTypes.TwoOptions
         }
         return parameters;
+    }
+
+    /**
+     * The background a cell paints, where its formatting asked for one.
+     *
+     * Given to AG Grid for the cell element rather than applied inside it: whatever a cell paints itself
+     * covers what AG Grid drew on the cell behind it — the range, the value flash, the row's selection —
+     * so only a cell that was actually given a colour of its own gets one.
+     */
+    public getCellStyle(record: IRecord | undefined, columnName: string): CellStyle | undefined {
+        if (!record) {
+            return undefined;
+        }
+        const backgroundColor = this.getFieldFormatting(record, columnName).backgroundColor;
+        if (backgroundColor === this._services.get('theming').getCellTheme(record).semanticColors.bodyBackground) {
+            return undefined;
+        }
+        return { backgroundColor };
     }
 
     public getFieldFormatting(record: IRecord, columnName: string): Required<ICustomColumnFormatting> {

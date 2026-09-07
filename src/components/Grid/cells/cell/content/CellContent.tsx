@@ -1,4 +1,4 @@
-import { useTheme, ITextFieldStyles, IComboBoxStyles, IDatePickerStyles, IToggleStyles, mergeThemes, merge } from "@fluentui/react";
+import { ITextFieldStyles, IComboBoxStyles, IDatePickerStyles, IToggleStyles, mergeThemes, merge } from "@fluentui/react";
 import { Client, DataProvider, DeepPartial, ICommand, IColumn, ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
 import React from "react";
 import { useDebouncedCallback } from "use-debounce";
@@ -6,7 +6,7 @@ import { IFluentDesignState, ControlTheme , usePcfContext} from "@utils";
 import { ITheme } from "@legacy";
 import { NestedControlRenderer } from "@components/NestedControlRenderer";
 import { getJustifyContent } from "@components/Grid/grid/styles";
-import { ICellProps } from "../Cell";
+import { ICellContentProps } from "../Cell";
 import { getCellContentStyles } from "./styles";
 import { useGridService } from "@components/Grid/grid/useGridService";
 
@@ -96,7 +96,7 @@ const getOverrideName = (override?: object): string | undefined => {
     }
 };
 
-export const CellContent = (props: ICellProps) => {
+export const CellContent = (props: ICellContentProps) => {
     const columnRef = React.useRef(props.baseColumn);
     const mountedRef = React.useRef(false);
     const valueRef = React.useRef(props.value);
@@ -106,8 +106,8 @@ export const CellContent = (props: ICellProps) => {
     const pcfContext = usePcfContext();
     const record = props.data;
     const node = props.node;
-    const themeRef = React.useRef(useTheme());
-    themeRef.current = useTheme();
+    const themeRef = React.useRef(props.theme);
+    themeRef.current = props.theme;
     const styles = React.useMemo(() => getCellContentStyles(valueRef.current.columnAlignment, node.rowHeight!), [valueRef.current.columnAlignment, node.rowHeight]);
     //defer loading of the nested control to solve edge case where the changed values from onNotifyOutputChanged triggered by unmount would not be available straight away
     const [shouldRenderNestedControl, setShouldRenderNestedControl] = React.useState(false);

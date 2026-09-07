@@ -1,5 +1,5 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { ThemeProvider, useTheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton, mergeStyleSets } from "@fluentui/react";
+import { ITheme, Shimmer, ICommandBarItemProps, ITooltipHostProps, IconButton } from "@fluentui/react";
 import { IRecord, Constants, DataProvider, IControlParameters, ICustomColumnControl, IRecordEvents, IRecordSaveOperationResult } from "@talxis/client-libraries";
 import { useThemeGenerator, useRerender } from "@legacy";
 import { getClassNames , usePcfContext} from "@utils";
@@ -23,6 +23,17 @@ export interface ICellProps extends ICellRendererParams {
     customControl: Required<ICustomColumnControl>;
     /** What that control renders with. */
     parameters: IControlParameters;
+}
+
+/**
+ * What a cell's own parts render with.
+ *
+ * The theme is handed down rather than provided: nothing between the row and a base control provides one,
+ * so whatever needs it is given it. A control gets its own through `context.fluentDesignLanguage`, which
+ * `CellContent` builds for it.
+ */
+export interface ICellContentProps extends ICellProps {
+    theme: ITheme;
 }
 
 export const Cell = (props: ICellProps) => {
@@ -84,47 +95,28 @@ export const Cell = (props: ICellProps) => {
     }, []);
 
 
-    //two variants in practice, and this runs per cell: the group/aggregation row in an auto-height column
-    //needs a fixed height, everything else fills the row
-    const topLevelCellWrapperStyles = useMemo(() => mergeStyleSets({
-        cellRoot: {
-            width: '100%',
-            height: skipCellRendering && column.autoHeight
-                ? `${settings.getDefaultRowHeight()}px !important`
-                : '100% !important'
-        }
-    }), [skipCellRendering, column.autoHeight]);
+    const { customFormatting } = props.value;
+    const cellTheme = useThemeGenerator(customFormatting.primaryColor, customFormatting.backgroundColor, customFormatting.textColor, customFormatting.themeOverride);
+    //a group or aggregation row in an auto-height column stands for a group rather than for a value, so it
+    //is worth a row rather than whatever the column grew to
+    const styles = useMemo(() => getCellStyles(
+        cellTheme,
+        skipCellRendering && column.autoHeight ? settings.getDefaultRowHeight() : undefined
+    ), [cellTheme, skipCellRendering, column.autoHeight]);
     useEventEmitter<IRecordEvents>(record, 'onFieldValueChanged', onFieldValueChanged);
+    useEventEmitter<IRecordEvents>(record, 'onBeforeSaved', rerender);
 
-
-    return <div className={topLevelCellWrapperStyles.cellRoot} ref={containerRef}>
+    return <div className={getClassNames([styles.cellRoot, customFormatting.className])} ref={containerRef}>
         {!skipCellRendering &&
             <CellErrorBoundary>
-                <CellContentWrapper {...props} />
+                <InternalCell {...props} theme={cellTheme} />
             </CellErrorBoundary>
         }
     </div>
 }
 
-const CellContentWrapper = (props: ICellProps) => {
-    const { value: cellData, record } = props;
-    const { customFormatting } = cellData;
-    const cellTheme = useThemeGenerator(customFormatting.primaryColor, customFormatting.backgroundColor, customFormatting.textColor, customFormatting.themeOverride);
-    const styles = useMemo(() => getCellStyles(cellTheme), [cellTheme])
-    const cellRef = useRef<HTMLDivElement>(null);
-    const rerender = useRerender();
-    useEventEmitter<IRecordEvents>(record, 'onBeforeSaved', rerender);
 
-    return <ThemeProvider
-        ref={cellRef}
-        theme={cellTheme}
-        className={getClassNames([styles.cellRoot, customFormatting.className])}>
-        <InternalCell {...props} />
-    </ThemeProvider>
-}
-
-
-export const InternalCell = (props: ICellProps) => {
+export const InternalCell = (props: ICellContentProps) => {
     const column = props.baseColumn;
     const record = props.record;
     const node = props.node;
@@ -134,7 +126,7 @@ export const InternalCell = (props: ICellProps) => {
     const errorRef = useRef<boolean>(props.value.error);
     const notifications = props.value.notifications;
     const errorMessageRef = useRef<string | undefined>(props.value.errorMessage);
-    const theme = useTheme();
+    const theme = props.theme;
     const applicationTheme = useControlTheme(usePcfContext().fluentDesignLanguage);
     const rerender = useRerender();
     const styles = useMemo(() => getInnerCellStyles(
@@ -273,6 +265,7 @@ export const InternalCell = (props: ICellProps) => {
 
     const renderNotifications = (): JSX.Element => {
         return <Notifications
+            theme={theme}
             formatting={formatting}
             isActionColumn={column.type === 'action'}
             columnAlignment={props.value.columnAlignment}

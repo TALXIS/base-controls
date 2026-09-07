@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { IColorfulOptionSetValueRendererProps as IColorfulOptionSetValueRendererPropsBase, IColorfulOptionValueRendererProps as IColorfulOptionValueRendererPropsBase } from "@components/GridCellRenderer/interfaces"
 import { getColorfulOptionSetValuesRendererStyles, getColorfulOptionValueRendererStyles } from "./styles";
-import { PartialTheme, Text, ThemeProvider, useTheme, merge } from "@fluentui/react";
+import { PartialTheme, Text, ThemeProvider, merge } from "@fluentui/react";
 import { Theming, useThemeGenerator } from "@legacy";
 import { useModel } from "@components/GridCellRenderer/useModel";
 
@@ -40,8 +40,8 @@ export const ColorfulOptionSetValueRenderer = (props: IColorfulOptionSetValueRen
 const ColorOptionValueRenderer = (props: IColorfulOptionValueRendererProps) => {
     const { option, onRenderOption } = props;
     const model = useModel();
-    const theme = useTheme();
-    const backgroundColor = option.Color ?? theme.palette.neutralLight;
+    //the cell's theme, off the model: nothing above this provides one
+    const backgroundColor = option.Color ?? model.getControlTheme().palette.neutralLight;
     const textColor = Theming.GetTextColorForBackground(backgroundColor);
     const styles = useMemo(() => getColorfulOptionValueRendererStyles(), []);
     const optionTheme = useThemeGenerator(textColor, backgroundColor, textColor, merge({}, {

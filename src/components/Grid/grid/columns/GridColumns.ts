@@ -198,6 +198,8 @@ export class GridColumns {
             headerComponentParams: {
                 baseColumn: column
             },
+            //the cell element, not the content: a background inside it would cover what AG Grid drew on it
+            cellStyle: (params) => cells.getCellStyle(params.data, column.name),
             cellRendererParams: (params: any) => cells.getCellParameters(params.data, column, false),
             cellEditorParams: (params: any) => cells.getCellParameters(params.data, column, true),
             editable: (params) => cells.isCellEditorEnabled(column, params.data!),
