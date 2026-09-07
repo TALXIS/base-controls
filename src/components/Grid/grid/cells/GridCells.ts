@@ -317,8 +317,9 @@ export class GridCells {
 
     public getFieldFormatting(record: IRecord, columnName: string): Required<ICustomColumnFormatting> {
         const theming = this._services.get('theming');
-        //the selection column has no record value to format, so it takes the row's plain colours
-        if (this._services.find('selection')?.isSelectionColumn(columnName) || !record) {
+        //a column of the grid's own rather than the dataset's - the checkboxes, the column a save is
+        //reported in - is not among the record's columns, so there is no value of its to format
+        if (!record || !record.getDataProvider().getColumnsMap()[columnName]) {
             return theming.getPlainFormatting(record);
         }
         return theming.getColumnFormatting(record, columnName);

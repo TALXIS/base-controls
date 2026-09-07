@@ -1,5 +1,7 @@
-import { _, GridApi, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
+import { _, ColDef, GridApi, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
 import { DataProvider, IDataProvider, IRecord } from "@talxis/client-libraries";
+import { RECORD_SAVE_COLUMN_KEY } from "../../grid/columns";
+import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { IGridSelectionServiceLocator } from "./services";
 import { IGridSelectionComponents } from "./moduleComponents";
 
@@ -36,6 +38,20 @@ export class GridSelection {
     /** How many rows may be selected at once. */
     public getMode(): 'single' | 'multiple' {
         return this._mode;
+    }
+
+    /**
+     * Adds the column the checkboxes live in, and takes out the one a save is otherwise reported in.
+     *
+     * The two occupy the same place and the checkbox cell reports a save itself, so a grid with selection
+     * needs only the one column.
+     */
+    public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
+        const recordSaveColumnIndex = columnDefs.findIndex(colDef => colDef.colId === RECORD_SAVE_COLUMN_KEY);
+        if (recordSaveColumnIndex !== -1) {
+            columnDefs.splice(recordSaveColumnIndex, 1);
+        }
+        columnDefs.unshift(getSelectionColumnDefinition(this.components));
     }
 
     /** Whether the column carrying the checkboxes is this one. */

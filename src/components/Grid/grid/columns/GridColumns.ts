@@ -17,7 +17,7 @@ const COMPARATOR = new Comparator();
 const DEFAULT_COLUMN_WIDTH = 200;
 
 /** The key the save column takes. Its own: the dataset reserves none for a record's save state. */
-const RECORD_SAVE_COLUMN_KEY = 'recordSaveStatus';
+export const RECORD_SAVE_COLUMN_KEY = 'recordSaveStatus';
 
 /**
  * A hook over the column definitions the grid is about to be given.
@@ -92,19 +92,23 @@ export class GridColumns {
      * Whether a column takes input at all, and whether this record's copy of it does.
      *
      * Without a record this answers for the column alone; with one it also asks what that record's security
-     * says. A column that carries no value of its own — the checkboxes, the inline ribbon — is never
-     * editable, and neither is a file or an image, which have no editor.
+     * says. A column the dataset does not have — one of the grid's own — is never editable, and neither is
+     * the inline ribbon, a file or an image.
      */
     public isColumnEditable(columnName: string, record?: IRecord): boolean {
         //a record's own provider where there is one: a group's children are a provider of their own, and
         //its copy of the column is what governs that row
         const provider = record?.getDataProvider() ?? this._provider;
-        const column = provider.getColumnsMap()[columnName]!;
+        const column = provider.getColumnsMap()[columnName];
+        //a column of the grid's own rather than the dataset's - the checkboxes, the column a save is
+        //reported in - holds nothing of the record's, so there is nothing in it to edit
+        if (!column) {
+            return false;
+        }
         switch (true) {
             case !this._settings.isEditingEnabled():
             case record?.isSaving():
             case column.oneClickEdit:
-            case !!this._services.find('selection')?.isSelectionColumn(column.name):
             case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME:
             case column.dataType === DataTypes.File:
             case column.dataType === DataTypes.Image: {
@@ -121,14 +125,15 @@ export class GridColumns {
     /**
      * The column a row reports its save in, where one is wanted.
      *
-     * `undefined` on a grid that does not edit, because it has no saves to report — and on one with
-     * selection, because the checkbox cell reports them in the space it already occupies.
+     * `undefined` on a grid that does not edit, because it has no saves to report. A grid with selection
+     * has no need of it either, and the selection module takes it back out — the checkbox cell reports a
+     * save in the space it already occupies.
      *
-     * Pinned and unmovable, like the checkbox column it stands in for. It carries no value of its own,
+     * Pinned and unmovable, like the checkbox column that replaces it. It carries no value of its own,
      * which is why the getter and the formatter answer nothing.
      */
     private _getRecordSaveColumnDefinition(): ColDef<IRecord> | undefined {
-        if (!this._settings.isEditingEnabled() || this._services.find('selection')) {
+        if (!this._settings.isEditingEnabled()) {
             return undefined;
         }
         return {
@@ -136,7 +141,7 @@ export class GridColumns {
             headerName: '',
             width: 40,
             lockPinned: true,
-            //locked for the same reason as the checkbox column it stands in for: a module reordering the
+            //locked for the same reason as the checkbox column that replaces it: a module reordering the
             //definitions must not push it out of the leading position
             lockPosition: 'left',
             resizable: false,

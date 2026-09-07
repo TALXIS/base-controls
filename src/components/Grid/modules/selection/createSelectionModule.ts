@@ -1,6 +1,5 @@
 import { ServiceLocator } from "@utils";
 import { IGridModule } from "../interfaces";
-import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { GridSelection } from "./GridSelection";
 import { IGridSelectionServiceMap } from "./services";
 import { GridSelectionComponents, IGridSelectionComponents } from "./moduleComponents";
@@ -36,12 +35,9 @@ export const createSelectionModule = (options: ISelectionModuleOptions): IGridMo
         services.register('components', () => components);
         const selection = new GridSelection({ services, mode: options.mode });
         gridServices.register('selection', () => selection);
-        //read off the module rather than merged again here: one merge means the renderer AG Grid is given
-        //keeps one identity, and a changed one rebuilds every cell
-        //
-        //Ahead of the default hooks, because it is the first column and what follows should order against it
+        //ahead of the default hooks, because it is the first column and what follows should order against it
         gridServices.get('columns').registerColumnDefinitionsHook(
-            columnDefs => columnDefs.unshift(getSelectionColumnDefinition(selection.components)), -1);
+            columnDefs => selection.applyColumnDefinitions(columnDefs), -1);
     },
     onDestroy: gridServices => gridServices.get('selection').destroy(),
 });
