@@ -3,6 +3,7 @@ export * from './row-model';
 export * from './license';
 export * from './clipboard';
 export * from './selection';
+export * from './cell-selection';
 export * from './sorting';
 export * from './filtering';
 export * from './aggregation';

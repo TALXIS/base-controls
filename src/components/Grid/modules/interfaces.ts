@@ -47,6 +47,11 @@ export interface IGridModules {
     license?: IGridLicenseModule;
     /** Selecting rows: {@link createSelectionModule}. Without it, nothing is selectable. */
     selection?: IGridModule;
+    /**
+     * Highlighting cells by dragging across them: {@link createCellSelectionModule}. What is highlighted
+     * is what the clipboard copies.
+     */
+    cellSelection?: IGridModule;
     /** Sorting by a column: {@link createSortingModule}. */
     sorting?: IGridModule;
     /** Filtering by a column: {@link createFilteringModule}. */

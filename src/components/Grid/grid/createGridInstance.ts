@@ -108,6 +108,7 @@ const orderModules = (modules: IGridModules): IGridModule[] => [
     modules.license,
     modules.rowModel,
     modules.selection,
+    modules.cellSelection,
     modules.sorting,
     modules.filtering,
     modules.grouping,

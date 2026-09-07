@@ -111,6 +111,31 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                     'view-transition-name': 'cell-highlight',
                 }
             },
+            //a highlighted block is drawn over the cell rather than behind it: AG Grid colours the cell
+            //itself, and every cell here has an opaque background of its own that would cover that
+            '.ag-cell-range-selected:not(.ag-cell-range-single-cell)': {
+                '::after': {
+                    content: "''",
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 85%)`,
+                    pointerEvents: 'none'
+                }
+            },
+            //the edges of the block, so it reads as one region rather than as coloured cells. Drawn on the
+            //cell rather than on the overlay above: a border on that would sit inside the neighbouring fill
+            '.ag-cell-range-top': {
+                borderTop: `1px solid ${theme.palette.themePrimary} !important`
+            },
+            '.ag-cell-range-right': {
+                borderRight: `1px solid ${theme.palette.themePrimary} !important`
+            },
+            '.ag-cell-range-bottom': {
+                borderBottom: `1px solid ${theme.palette.themePrimary} !important`
+            },
+            '.ag-cell-range-left': {
+                borderLeft: `1px solid ${theme.palette.themePrimary} !important`
+            },
             '.ag-overlay-loading-wrapper': {
                 backdropFilter: 'blur(1px)'
             },

@@ -1,11 +1,12 @@
 import React from 'react'
-import { createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModules } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModules } from '@talxis/base-controls'
 import { MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATA_SOURCE, PRIMARY_ID } from './scratchGridData'
 
 export interface IScratchGridProps {
     rowModel: 'clientSide' | 'serverSide'
     clipboard: boolean
+    cellSelection: boolean
     enableEditing: boolean
     enableAutoSave: boolean
     enableNavigation: boolean
@@ -46,12 +47,13 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     }, [provider])
 
     //remounted on every change: modules are read once, which is the contract this story holds to
-    const key = `${props.rowModel}-${props.clipboard}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
+    const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
         rowModel: props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule(),
         clipboard: props.clipboard ? createClipboardModule() : undefined,
+        //cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
         selection: props.selectableRows === 'none' ? undefined : createSelectionModule({ mode: props.selectableRows }),
         sorting: props.sorting ? createSortingModule() : undefined,
         filtering: props.filtering ? createFilteringModule() : undefined,

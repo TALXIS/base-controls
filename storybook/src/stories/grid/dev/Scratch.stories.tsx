@@ -25,7 +25,8 @@ export const Playground: Story = {
     name: 'Playground',
     args: {
         rowModel: 'serverSide',
-        clipboard: false,
+        clipboard: true,
+        cellSelection: true,
         enableEditing: true,
         enableAutoSave: true,
         enableNavigation: true,
