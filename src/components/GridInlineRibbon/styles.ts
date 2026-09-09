@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react"
 import { IColumn } from "@talxis/client-libraries"
-import { getJustifyContent } from "../GridCellRenderer/styles"
+import { getJustifyContent } from "@utils"
 
 export const getGridInlineRibbonStyles = (columnAlignment: Required<IColumn['alignment']>, height: number) => {
     return mergeStyleSets({

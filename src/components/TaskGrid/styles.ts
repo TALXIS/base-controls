@@ -27,7 +27,8 @@ export const getDatasetControlStyles = (theme: ITheme) => {
             '.ag-cell-auto-height': {
                 backgroundColor: theme.semanticColors.bodyBackground
             },
-            '.talxis__baseControl__GridCellRenderer [class^="colorfulOptionValueRendererRoot"]': {
+            //an option fills the cell it is in rather than shrinking to its label
+            '[class^="optionsRoot"] > *': {
                 maxWidth: '100%',
                 textAlign: 'center'
             },

@@ -1,6 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
-import { getJustifyContent } from "@components/Grid/grid/styles";
+import { getJustifyContent } from "@utils";
 
 export const getColumnHeaderStyles = (theme: ITheme, alignment: Required<IColumn['alignment']>) => {
     return mergeStyleSets({

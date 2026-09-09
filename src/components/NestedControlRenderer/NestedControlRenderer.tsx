@@ -16,9 +16,9 @@ import { MessageBar, MessageBarButton, MessageBarType, Shimmer, SpinnerSize } fr
 import ReactDOM from 'react-dom';
 import { useControlLabels } from '@hooks';
 import { getDefaultNestedControlRendererTranslations } from './translations';
-import { GridCellRenderer } from '../GridCellRenderer/GridCellRenderer';
 import { Ribbon } from '../Ribbon/Ribbon';
 import { GridInlineRibbon } from '../GridInlineRibbon/GridInlineRibbon';
+import { GridCellRenderer } from '../GridCellRenderer';
 
 interface IRef {
     control: NestedControl | null;
@@ -112,6 +112,7 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
             case 'Ribbon': {
                 return Ribbon;
             }
+            //a name nobody recognises gets the plainest control there is rather than nothing at all
             default:
                 return GridCellRenderer;
         }

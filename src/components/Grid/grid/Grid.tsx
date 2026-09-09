@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { GetRowIdParams } from "@ag-grid-community/core";
+import { ThemeProvider } from "@fluentui/react";
 import { AgGridReactProps } from "@ag-grid-community/react";
 import { IRecord } from "@talxis/client-libraries";
 import { LoadingOverlay } from "../overlays/loading/LoadingOverlay";
@@ -68,7 +69,7 @@ export const Grid = (props: IGrid) => {
                     return undefined;
                 }
                 return {
-                    backgroundColor: services.get('theming').getCellTheme(record).semanticColors.bodyBackground,
+                    backgroundColor: services.get('theming').getTheme().semanticColors.bodyBackground,
                 }
             },
         },
@@ -90,12 +91,17 @@ export const Grid = (props: IGrid) => {
         }
     }, []);
 
-    //one context: everything a component needs is in the locator, `grid` included
+    //one context: everything a component needs is in the locator, `grid` included. The theme provider is
+    //what puts the grid's own theme above every cell, so a cell that reads `useTheme()` gets it rather than
+    //the host's - and only a cell with a theme of its own then needs a provider. `applyTo='none'` because
+    //the grid paints its own surfaces through `getGridStyles`
     return <GridServicesContext.Provider value={services}>
-        <div
+        <ThemeProvider
+            theme={theme}
+            applyTo='none'
             ref={onGridRootRef}
             className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
             {components.onRenderAgGrid(componentProps)}
-        </div>
+        </ThemeProvider>
     </GridServicesContext.Provider>
 }

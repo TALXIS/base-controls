@@ -53,8 +53,7 @@ export class Theming {
             v8Theme.id = key;
             return Theming._NormalizeTheme(v8Theme);
         })!;
-        //an empty override still costs a full Fluent deep merge, and the grid hands one down for every
-        //cell (`GridCells.getFieldFormatting` returns `themeOverride: {}`)
+        //an empty override still costs a full Fluent deep merge, and a caller passing one per cell pays it
         if (!themeOverride || Object.keys(themeOverride).length === 0) {
             return theme;
         }

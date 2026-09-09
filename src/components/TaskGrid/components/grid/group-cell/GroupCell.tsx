@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Cell, ICellProps } from '@components/Grid/cells/cell/Cell'
+import { FieldCellAdapter, IGridCellProps } from '@components/Grid/cells'
 import { IRecord } from "@talxis/client-libraries";
 import { getTheme, IconButton } from "@fluentui/react";
 import { useRerender } from '@legacy';
@@ -7,7 +7,7 @@ import { getGroupCellStyles } from "./styles";
 import { useRef } from "react";
 import { useServices, useTaskDataProvider } from "@components/TaskGrid/context";
 
-interface IProps extends ICellProps {
+interface IProps extends IGridCellProps {
     data: IRecord;
 }
 
@@ -81,6 +81,6 @@ export const GroupCell = (props: IProps) => {
                 className={styles.chevronButton}
             />
         }
-        <Cell {...props}  />
+        <FieldCellAdapter {...props} />
     </div>
 }

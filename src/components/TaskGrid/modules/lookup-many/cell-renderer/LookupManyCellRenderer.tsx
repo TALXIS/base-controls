@@ -1,7 +1,7 @@
 import { useDatasetControl, useTaskDataProvider } from "@components/TaskGrid/context";
 import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
-import { ICellProps } from "@components/Grid/cells/cell/Cell";
+import { IGridCellProps } from "@components/Grid/cells";
 import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/modules/lookup-many/components";
 import { ThemeProvider } from "@fluentui/react";
 import { useGridService } from "@components/Grid/grid/useGridService";
@@ -18,7 +18,7 @@ enum ControlName {
  * that module contributes as its `components.CellRenderer`. The candidate records come from
  * `datasetControl.createLookupManyDataProvider`, and the visual variant from the column's custom control.
  */
-export const LookupManyCellRenderer = (props: ICellProps) => {
+export const LookupManyCellRenderer = (props: IGridCellProps) => {
     const { api, baseColumn, record } = props;
     const datasetControl = useDatasetControl();
     const [isDisabled, setIsDisabled] = React.useState(true);
@@ -34,6 +34,7 @@ export const LookupManyCellRenderer = (props: ICellProps) => {
     const provider = useTaskDataProvider();
     const isNavigationEnabled = useGridService('settings').isNavigationEnabled();
     const value: ComponentFramework.EntityReference[] | undefined = record.getValue(props.colDef!.colId!) as ComponentFramework.EntityReference[] | undefined;
+    const isEditable = !!baseColumn.isEditable && record.getColumnInfo(baseColumn.name).security.editable;
 
     const onSelectionChange = (selectedRecords: ComponentFramework.EntityReference[]) => {
         record.setValue(props.colDef!.colId!, selectedRecords);
@@ -109,7 +110,7 @@ export const LookupManyCellRenderer = (props: ICellProps) => {
         }
     }
     const onSwitchToEditMode = useCallback(() => {
-        if (props.value.editable) {
+        if (isEditable) {
             setIsDisabled(false);
         }
         setTimeout(() => {
@@ -117,7 +118,7 @@ export const LookupManyCellRenderer = (props: ICellProps) => {
             element?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
             element?.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, button: 0 }));
         })
-    }, [props.value.editable]);
+    }, [isEditable]);
 
     useEffect(() => {
         props.eGridCell.addEventListener('dblclick', onSwitchToEditMode);

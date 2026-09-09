@@ -20,16 +20,36 @@ const gridMetadata = (dataType: DataType, canBeGrouped: boolean = false) => ({
 /** What the aggregation module offers in a number column's menu. */
 const SUPPORTED_AGGREGATIONS: AggregationFunction[] = ['sum', 'avg', 'max', 'min']
 
-const STATUS_OPTIONS = [
+export const STATUS_OPTIONS = [
     { Value: 1, Label: 'Not started', Color: '#a4262c' },
     { Value: 2, Label: 'In progress', Color: '#c19c00' },
     { Value: 3, Label: 'Done', Color: '#107c10' },
+    { Value: 4, Label: 'Blocked', Color: '#d13438' },
+    { Value: 5, Label: 'In review', Color: '#0078d4' },
+    { Value: 6, Label: 'Deferred', Color: '#605e5c' },
 ]
 
-const TAG_OPTIONS = [
+/**
+ * Enough of them, in enough colours, to see a row of options run out of room.
+ *
+ * The palette is deliberately uneven - a fluorescent green and a washed-out grey among the rest - since
+ * what a tag does with an arbitrary colour is the thing worth looking at. `Onboarding` carries no colour
+ * at all, which is the neutral tag.
+ */
+export const TAG_OPTIONS = [
     { Value: 10, Label: 'Backend', Color: '#0078d4' },
     { Value: 20, Label: 'Frontend', Color: '#8764b8' },
     { Value: 30, Label: 'Docs', Color: '#498205' },
+    { Value: 40, Label: 'Design', Color: '#e3008c' },
+    { Value: 50, Label: 'Infrastructure', Color: '#005b70' },
+    { Value: 60, Label: 'Testing', Color: '#ca5010' },
+    { Value: 70, Label: 'Accessibility', Color: '#00ff7f' },
+    { Value: 80, Label: 'Performance', Color: '#b146c2' },
+    { Value: 90, Label: 'Security', Color: '#d13438' },
+    { Value: 100, Label: 'Internationalization', Color: '#c8c6c4' },
+    { Value: 110, Label: 'Analytics', Color: '#038387' },
+    { Value: 120, Label: 'Release engineering', Color: '#986f0b' },
+    { Value: 130, Label: 'Onboarding', Color: '' },
 ]
 
 const BILLABLE_OPTIONS = [
@@ -170,8 +190,18 @@ const lookup = (columnName: string, entityName: string, id: string, name: string
 })
 
 const OWNERS = ['Ada', 'Grace', 'Alan', 'Edsger']
-const STATUSES = [1, 2, 3]
-const TAGS = [[10], [20, 30], [10, 20, 30], []]
+const STATUSES = [1, 2, 3, 4, 5, 6]
+//sets of every size worth seeing: none, one, a few, more than a narrow column holds, and all of them
+const TAGS = [
+    [10],
+    [20, 30],
+    [10, 20, 30, 40],
+    [],
+    [10, 20, 30, 40, 50, 60, 70],
+    [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130],
+    [50, 90],
+    [100, 120, 130],
+]
 const KINDS = ['Feature', 'Bug', 'Chore']
 const LANGUAGES = [1033, 1029, 1031]
 const TIME_ZONES = [85, 105, 190]

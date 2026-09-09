@@ -1,5 +1,4 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { IColumn } from "@talxis/client-libraries";
 
 /**
  * How tall the rows area stays when there is nothing in it.
@@ -122,17 +121,3 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
         }
     })
 };
-
-export const getJustifyContent = (columnAlignment: Required<IColumn['alignment']>) => {
-    switch (columnAlignment) {
-        case 'left': {
-            return 'flex-start'
-        }
-        case 'center': {
-            return 'center'
-        }
-        case 'right': {
-            return 'flex-end'
-        }
-    }
-}

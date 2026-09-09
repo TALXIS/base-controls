@@ -10,7 +10,6 @@ export type BaseControl =
     | 'GridCellRenderer'
     | 'Lookup'
     | 'TwoOptions'
-    | 'GridCellRenderer'
     | 'Grid'
     | 'DatasetControl'
     | 'NestedControl'

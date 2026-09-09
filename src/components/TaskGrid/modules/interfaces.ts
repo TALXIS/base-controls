@@ -12,7 +12,7 @@ import type { IDependenciesProvider } from "@components/TaskGrid/modules/depende
 import type { IDependenciesCellRendererProps } from "@components/TaskGrid/modules/dependencies/cell-renderer/DependenciesCellRenderer";
 import type { IEditColumnsProps } from "@components/DatasetControl/EditColumns/EditColumns";
 import type { IGridCustomizerStrategy } from "@components/TaskGrid/components/grid/grid-customizer/GridCustomizer";
-import type { ICellProps } from "@components/Grid/cells/cell/Cell";
+import type { IGridCellProps } from "@components/Grid/cells";
 import type { ICommandBarItemProps } from "@legacy";
 import type { IGanttServiceLocator } from "@components/TaskGrid/modules/gantt/services";
 import type { IGanttViewProps } from "@components/TaskGrid/modules/gantt/gantt-view/GanttView";
@@ -155,7 +155,7 @@ export interface IGridCustomizerModule {
  */
 export interface ILookupManyModuleComponents {
     /** The cell of any column carrying `metadata.LookupMany`. */
-    onRenderCell: (props: ICellProps) => JSX.Element;
+    onRenderCell: (props: IGridCellProps) => JSX.Element;
 }
 
 /** What the lookup-many module contributes. Built by {@link createLookupManyModule}. */

@@ -1,4 +1,6 @@
 export * from './grid/Grid';
+export * from './cells';
+export * from './grid/rows';
 export * from './grid/components';
 export * from './interfaces';
 export * from './labels';

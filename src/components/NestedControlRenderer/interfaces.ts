@@ -5,7 +5,7 @@ import { NestedControl } from "./NestedControl";
 import { DataType } from "@talxis/client-libraries";
 import { getDefaultNestedControlRendererTranslations } from "./translations";
 
-type ControlNameOptions = 'TextField' | 'OptionSet' | 'MultiSelectOptionSet' | 'Lookup' | 'Decimal' | 'Duration' | 'DateTime' | 'GridCellRenderer' | (string & {});
+type ControlNameOptions = 'TextField' | 'OptionSet' | 'MultiSelectOptionSet' | 'Lookup' | 'Decimal' | 'Duration' | 'DateTime' | (string & {});
 
 export interface INestedControlRenderer extends IControl<INestedControlRendererParameters, IOutputs, ReturnType<typeof getDefaultNestedControlRendererTranslations>, INestedControlRendererComponentProps> {
 }

@@ -1,93 +1,97 @@
 import { ITheme, Theming } from "@legacy";
-import { ICustomColumnFormatting, IRecord } from "@talxis/client-libraries";
-import { merge } from "merge-anything";
-import { IGridServiceLocator } from "../../services";
+import { IRecord } from "@talxis/client-libraries";
+import { HookRegistry } from "@utils";
 
 export interface IGridThemingParameters {
-    services: IGridServiceLocator;
-    /** The control's theme. It does not change while a grid is alive. */
+    /** The control's theme, which every cell takes unless its column or a hook says otherwise. */
     theme: ITheme;
 }
 
+/** A cell's theme, and whether it differs from the grid's own. */
+export interface IGridCellTheme {
+    theme: ITheme;
+    isCustom: boolean;
+}
+
 /**
- * Where a theme comes from.
+ * Overrides the theme a cell is drawn in. Replace `result.theme` to give the cell another.
  *
- * The control's own is derived in React, where `useControlTheme` lives, and handed over. What is derived
- * here is the per-row and per-column variants of it — which a row asks for on every render, so they are
- * worked out once and kept rather than rebuilt per cell.
+ * Return one from `Theming.GenerateThemeV8`: whether a cell counts as custom is decided by the theme's id,
+ * and a theme built any other way carries none.
  */
+export type GridCellThemeHook = (result: { theme: ITheme }, params: { record: IRecord; columnName: string }) => void;
+
+/** Which theme a cell is drawn in. */
 export class GridTheming {
-    private _services: IGridServiceLocator;
     private _theme: ITheme;
-    private _oddRowCellTheme: ITheme;
-    private _evenRowCellTheme: ITheme;
+    private _hooks = new HookRegistry<GridCellThemeHook>();
 
     constructor(parameters: IGridThemingParameters) {
-        this._services = parameters.services;
         this._theme = parameters.theme;
-        this._oddRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.neutralLighterAlt, this._theme.semanticColors.bodyText);
-        this._evenRowCellTheme = Theming.GenerateThemeV8(this._theme.palette.themePrimary, this._theme.palette.white, this._theme.semanticColors.bodyText);
     }
 
-    /** The control's theme, as the component derived it. */
-    public getControlTheme(): ITheme {
+    /** The grid's own theme, which is what a cell gets unless something asks for another. */
+    public getTheme(): ITheme {
         return this._theme;
     }
 
-    /** A row's theme: the zebra variant, and the one a summarized or nested row takes instead. */
-    public getCellTheme(record: IRecord): ITheme {
-        const summarizationType = record.getDataProvider().getSummarizationType();
-        if (summarizationType !== 'none') {
-            return this._oddRowCellTheme;
-        }
-        //child of a group record
-        if (record.getDataProvider().getParentDataProvider()) {
-            return this._evenRowCellTheme;
-        }
-        if (record.getIndex() % 2 === 0 || !this._services.get('settings').isZebraEnabled()) {
-            return this._evenRowCellTheme;
-        }
-        return this._oddRowCellTheme;
+    /**
+     * Registers a hook over the theme a cell is drawn in. Runs per cell per render, so keep it cheap.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    public registerCellThemeHook(hook: GridCellThemeHook, priority?: number): void {
+        this._hooks.register(hook, priority);
+    }
+
+    /** What theme this cell needs, and whether that is one of its own. */
+    public getCellTheme(record: IRecord, columnName: string): IGridCellTheme {
+        const result = { theme: this._getDefaultTheme(record, columnName) };
+        this._hooks.apply(result, { record: record, columnName: columnName });
+        return { theme: result.theme, isCustom: !this._isGridTheme(result.theme) };
     }
 
     /**
-     * What a column's formatting asks for, over the row's theme.
+     * The background this cell paints, where a hook or its column gave it a theme of its own.
      *
-     * A background of its own is taken as emphasis: the text goes to whatever reads on it and the medium
-     * font gains weight, unless the column named a primary colour itself.
+     * `undefined` for a cell drawn in the grid's own theme: the row already carries that background, and a
+     * cell painting one of its own covers what AG Grid drew on the one behind it - the range, the value
+     * flash, the row's selection.
      */
-    public getColumnFormatting(record: IRecord, columnName: string): Required<ICustomColumnFormatting> {
-        const defaultTheme = this.getCellTheme(record);
-        const defaultBackgroundColor = defaultTheme.semanticColors.bodyBackground;
-        const customFormatting = record.getColumnInfo(columnName).ui.getCustomFormatting(defaultTheme) ?? {};
-        const result: Required<ICustomColumnFormatting> = {
-            backgroundColor: customFormatting.backgroundColor ?? defaultBackgroundColor,
-            primaryColor: customFormatting.primaryColor ?? this._theme.palette.themePrimary,
-            textColor: customFormatting.textColor ?? '',
-            className: customFormatting.className ?? '',
-            themeOverride: customFormatting.themeOverride ?? {}
-        };
-        if (result.backgroundColor !== defaultBackgroundColor) {
-            result.themeOverride = merge({}, { fonts: { medium: { fontWeight: 600 } } }, result.themeOverride);
-            if (!customFormatting.primaryColor) {
-                result.primaryColor = Theming.GetTextColorForBackground(result.backgroundColor);
-            }
-        }
-        if (!result.textColor) {
-            result.textColor = Theming.GetTextColorForBackground(result.backgroundColor);
-        }
-        return result;
+    public getCellBackgroundColor(record: IRecord, columnName: string): string | undefined {
+        const { theme, isCustom } = this.getCellTheme(record, columnName);
+        return isCustom ? theme.semanticColors.bodyBackground : undefined;
     }
 
-    /** What a column with no record of its own shows: the checkbox column, and anything like it. */
-    public getPlainFormatting(record: IRecord): Required<ICustomColumnFormatting> {
-        const backgroundColor = this.getCellTheme(record).semanticColors.bodyBackground;
-        return {
-            primaryColor: this._theme.palette.themePrimary,
-            backgroundColor: backgroundColor,
-            textColor: Theming.GetTextColorForBackground(backgroundColor),
-            className: '',
-            themeOverride: {}
-        };
+    /**
+     * The theme a cell takes before any hook: the grid's own, or one built from what its column asked for.
+     *
+     * Legacy, kept for back compat: `getCustomFormatting` is how a host coloured cells by value before
+     * hooks existed, and a hook is the way to do it now. This goes when nothing needs it.
+     */
+    private _getDefaultTheme(record: IRecord, columnName: string): ITheme {
+        const formatting = record.getColumnInfo(columnName).ui.getCustomFormatting(this._theme) ?? {};
+        //carried at runtime but absent from `ICustomColumnFormatting`. A formatting that means something
+        //names itself, and `GenerateThemeV8` takes the id as a promise that the same one means the same
+        //theme - so it is both what identifies a custom theme and what it is cached on
+        const id = (formatting as ITheme).id;
+        if (!id) {
+            return this._theme;
+        }
+        const backgroundColor = formatting.backgroundColor ?? this._theme.semanticColors.bodyBackground;
+        const isRecoloured = backgroundColor !== this._theme.semanticColors.bodyBackground;
+        //a background of its own is taken as emphasis: the text goes to whatever reads on it, and so does
+        //the primary colour unless the column named one itself
+        const contrast = Theming.GetTextColorForBackground(backgroundColor);
+        return Theming.GenerateThemeV8(
+            formatting.primaryColor ?? (isRecoloured ? contrast : this._theme.palette.themePrimary),
+            backgroundColor,
+            formatting.textColor || (isRecoloured ? contrast : this._theme.semanticColors.bodyText),
+            { id: id });
+    }
+
+    /** Whether a theme is the grid's own. */
+    private _isGridTheme(theme: ITheme): boolean {
+        return theme.id === this._theme.id;
     }
 }

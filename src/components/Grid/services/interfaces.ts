@@ -8,6 +8,7 @@ import type { IGridRowModel } from "../modules/row-model/interfaces";
 import type { GridTheming } from "../grid/theming";
 import type { GridColumns } from "../grid/columns";
 import type { GridCells } from "../grid/cells";
+import type { GridRows } from "../grid/rows";
 import type { GridColumnHeaderParts } from "../grid/column-header";
 import type { GridColumnLayout } from "../grid/column-layout";
 import type { GridOverlays } from "../grid/overlays";
@@ -21,6 +22,9 @@ import type { GridGrouping } from "../modules/grouping/GridGrouping";
 export interface IGridServiceMap {
     /** What the caller asked the grid to be, with its defaults applied. There from the start. */
     settings: GridSettings;
+    /** What a cell draws: its value, and whatever a module made of it. */
+    /** What is true of a row rather than of one of its cells. */
+    rows: GridRows;
     /**
      * Where the records, the columns and the paging come from.
      *

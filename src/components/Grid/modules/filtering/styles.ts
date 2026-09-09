@@ -1,6 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
-import { getJustifyContent } from "@components/Grid/grid/styles";
 
 export const filterCalloutStyles = mergeStyleSets({
     root: {

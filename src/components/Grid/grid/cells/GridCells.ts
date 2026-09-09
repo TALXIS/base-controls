@@ -1,494 +1,345 @@
-import { CellDoubleClickedEvent, CellStyle, GridApi, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
-import { DataProvider, DataType, DataTypes, IColumn, ICustomColumnControl, ICustomColumnFormatting, IDataProvider, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { CellDoubleClickedEvent, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { DataProvider, DataType, DataTypes, IColumn, IControlParameters, ICustomColumnControl, IDataProvider, IDataset, IRecord } from "@talxis/client-libraries";
 import { merge } from "merge-anything";
 import { BaseControls, HookRegistry } from "@utils";
-import { IBinding } from "@components/NestedControlRenderer/interfaces";
-import { NestedControl } from "@components/NestedControlRenderer/NestedControl";
+import { IGridCellRenderer, IGridCellRendererParameters } from "@components/GridCellRenderer";
+import { IControl, IParameters } from "@interfaces";
 import { IGridColumn } from "../columns/interfaces";
-import { ICellValues } from "./interfaces";
 import { IGridServiceLocator } from "../../services";
 
+/** What a cell draws, once every module has had its say. */
+export interface IGridField {
+    /** What the record holds for this column. */
+    value: any;
+    /** What it reads as. */
+    formattedValue: string | null;
+    /** Whether the value is still being fetched. */
+    loading: boolean;
+    /** Whether the row may be dragged taller from this cell. */
+    isResizable: boolean;
+}
+
 /**
- * A hook over the values a cell reads.
+ * A hook over what a cell draws.
  *
- * Mutates rather than returning: the bag is on its way to the cell, and a module adds what it knows —
- * an aggregated value, say — without the grid having to know the feature exists.
+ * Handed the defaults and mutates them: what a cell shows, whether it is still waiting, whether the row may
+ * be dragged taller from it. The grid knows nothing of why.
  */
-export type GridCellValuesHook = (values: ICellValues, params: { record: IRecord; column: IColumn }) => void;
+export type GridFieldHook = (field: IGridField, params: { record: IRecord; columnName: string }) => void;
+
+/**
+ * A hook over which control draws a cell.
+ *
+ * Handed the control the column resolved to and replaces `result.control` to draw the cell with another.
+ * A control other than `GridCellRenderer` is what makes a cell go through the nested-control registry.
+ */
+export type GridControlHook = (result: { control: Required<ICustomColumnControl> }, params: { record: IRecord; columnName: string; takesInput: boolean }) => void;
+
+/**
+ * A hook over the parameters the control drawing a cell is handed.
+ *
+ * Mutates them, and reaches the control itself rather than the wrapper around it: the cell renderer's own
+ * parameters on the native path, and the nested control's - not its `ControlName` and `Bindings` - on the
+ * other.
+ */
+export type GridControlParametersHook = (parameters: IParameters, params: { record: IRecord; columnName: string; takesInput: boolean }) => void;
 
 export interface IGridCellsParameters {
     services: IGridServiceLocator;
 }
 
 /**
- * What a cell shows.
+ * What a cell shows, and what it shows it with.
  *
- * Everything a cell needs is worked out here and handed over as one bag, because AG Grid asks for it per
- * cell per value read: the control it renders with, the value, the formatting, whether it may be edited.
- * A module adds to that bag through a hook rather than the grid knowing what it wants.
+ * `getField` is the one place a cell's value is worked out, whoever is asking: the renderer, the bindings a
+ * control is built from, and the bag AG Grid compares to decide on a refresh. A module changes what a cell
+ * draws through a field hook rather than the grid knowing the feature exists.
  */
 export class GridCells {
     private _services: IGridServiceLocator;
-    private _hooks = new HookRegistry<GridCellValuesHook>();
+    private _fieldHooks = new HookRegistry<GridFieldHook>();
+    private _controlHooks = new HookRegistry<GridControlHook>();
+    private _controlParametersHooks = new HookRegistry<GridControlParametersHook>();
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
     }
 
     /**
-     * Registers a hook over a cell's values. Runs per cell per value read, so keep it cheap.
+     * Registers a hook over what a cell draws. Runs per cell per render, so keep it cheap.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
-    public registerCellValuesHook(hook: GridCellValuesHook, priority?: number): void {
-        this._hooks.register(hook, priority);
+    public registerFieldHook(hook: GridFieldHook, priority?: number): void {
+        this._fieldHooks.register(hook, priority);
     }
 
-    /** What a cell reads, for the column it is in. */
-    public getValues(params: ValueGetterParams<IRecord>, column: IGridColumn): ICellValues | undefined {
-        return this._valueGetter(params, column);
+    /**
+     * Registers a hook over what draws a cell. Runs per cell per render, so keep it cheap.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    public registerControlHook(hook: GridControlHook, priority?: number): void {
+        this._controlHooks.register(hook, priority);
+    }
+
+    /** What this cell draws: the record's own, and whatever a module made of it. */
+    public getField(record: IRecord, columnName: string): IGridField {
+        const column = record.getDataProvider().getColumnsMap()[columnName]!;
+        const field: IGridField = {
+            value: record.getValue(columnName),
+            formattedValue: record.getFormattedValue(columnName),
+            loading: record.getColumnInfo(columnName).ui.isLoading(),
+            isResizable: !!column.autoHeight,
+        };
+        this._fieldHooks.apply(field, { record: record, columnName: columnName });
+        return field;
+    }
+
+    /**
+     * Whether this cell takes input: the column must allow it, and so must the record's security.
+     *
+     * A column the dataset does not have - one of the grid's own - is never editable, and neither is the
+     * inline ribbon, a file or an image.
+     */
+    public isCellEditable(record: IRecord, columnName: string): boolean {
+        //the record's own provider: a group's children are a provider of their own, and its copy of the
+        //column is what governs that row
+        const column = record.getDataProvider().getColumnsMap()[columnName];
+        //a column of the grid's own rather than the dataset's - the checkboxes, the column a save is
+        //reported in - holds nothing of the record's, so there is nothing in it to edit
+        if (!column) {
+            return false;
+        }
+        switch (true) {
+            case !this._settings.isEditingEnabled():
+            case record.isSaving():
+            //a one-click-edit column's control is the cell, so there is no edit mode to enter
+            case column.oneClickEdit:
+            case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME:
+            case column.dataType === DataTypes.File:
+            case column.dataType === DataTypes.Image: {
+                return false;
+            }
+        }
+        //undefined means the record says nothing about it, and the column already said yes
+        return record.getColumnInfo(column.name)?.security.editable ?? true;
+    }
+
+    /** A cell reported a new value: the record takes it, and saves it where the grid saves as it goes. */
+    public setValue(record: IRecord, columnName: string, value: any): void {
+        record.setValue(columnName, value);
+        if (this._settings.isAutoSaveEnabled()) {
+            record.save();
+        }
+    }
+
+    /** What a cell holds, for the column it is in. */
+    public getValue(params: ValueGetterParams<IRecord>, column: IGridColumn): any {
+        if (!params.data) {
+            return null;
+        }
+        return this.getField(params.data, column.name).value;
     }
 
     /** What a cell shows when it is not rendering a control of its own. */
     public getFormattedValue(params: ValueFormatterParams<IRecord>): string {
-        return this._valueFormatter(params);
+        if (!params.data) {
+            return '';
+        }
+        return this.getField(params.data, params.colDef.colId!).formattedValue ?? '';
     }
 
     /**
-     * What a cell renderer or editor is given.
+     * Registers a hook over the parameters the control drawing a cell is handed. Runs per cell per render,
+     * so keep it cheap.
      *
-     * The control and its parameters are worked out here rather than in the value getter, because
-     * `isCellEditor` is AG Grid's own answer and only the params it hands over carry it. One value getter
-     * serves both the renderer and the editor and so cannot know which of them it is answering.
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
-    public getCellParameters(record: IRecord, column: IGridColumn, isCellEditor: boolean) {
-        //a row with no record of its own is a placeholder, and there is no control to configure for it
-        if (!record) {
-            return { baseColumn: column, record: record, isCellEditor: isCellEditor };
-        }
-        const customControl = this.getControl(column, record, isCellEditor || !!column.oneClickEdit);
+    public registerControlParametersHook(hook: GridControlParametersHook, priority?: number): void {
+        this._controlParametersHooks.register(hook, priority);
+    }
+
+    /**
+     * Whether something other than the cell renderer draws this cell, which is what tells a caller to go
+     * through the nested-control registry rather than rendering the cell renderer itself.
+     */
+    public isCustomRendererEnabled(record: IRecord, column: IGridColumn, takesInput: boolean): boolean {
+        return this._isCustomRenderer(this.getCustomControl(record, column, takesInput), takesInput);
+    }
+
+    /**
+     * What draws this cell, and what it is given.
+     *
+     * The cell renderer draws the value wherever it can, which is most cells. A column that named a control
+     * of its own, one that holds the inline ribbon, and a cell taking input go through the nested-control
+     * registry instead, which is the only thing that can resolve a control by name - and which takes these
+     * same props.
+     */
+    public getControlProps(record: IRecord, column: IGridColumn, takesInput: boolean): IGridCellRenderer {
+        const control = this.getCustomControl(record, column, takesInput);
+        const parameters = this._getCellParameters(record, column, control, takesInput);
         return {
-            baseColumn: column,
-            record: record,
-            isCellEditor: isCellEditor,
-            customControl: customControl,
-            parameters: this._getControlParameters(record, column, customControl, isCellEditor),
+            context: this._services.get('pcfContext'),
+            //a custom control merges these into its own parameters and finalizes them there, so the
+            //record's expression and the hooks run once over the whole bag rather than twice over half
+            parameters: this._isCustomRenderer(control, takesInput) ? parameters : this.getFinalControlParameters(parameters, record, column, takesInput) as IGridCellRendererParameters,
         };
     }
 
-    /** Whether a column takes a cell editor at all, for this record. */
-    public isCellEditorEnabled(column: IGridColumn, record: IRecord): boolean {
-        switch (true) {
-            //never allow cell editor for oneClickEdit - everything is handled by cell renderer in this case
-            case column.oneClickEdit:
-            //never allow cell editor for non-editable columns
-            case !column.isEditable: {
-                return false;
-            }
-        }
-        return record.getColumnInfo(column.name).security.editable;
+    private _isCustomRenderer(control: ICustomColumnControl, takesInput: boolean): boolean {
+        //a cell taking input is a control whatever the column named: the renderer only ever draws
+        return takesInput || control.name !== BaseControls.GridCellRenderer;
     }
 
-    /** Whether the grid keeps a keystroke to itself rather than letting AG Grid navigate with it. */
-    public suppressKeyboardEvent(column: IGridColumn): boolean {
-        return !!column.oneClickEdit;
-    }
-
-    public onNotifyOutputChanged(record: IRecord, columnName: string, value: any, parameters: any) {
-        record.setValue(columnName, value);
-        //AG Grid asks a cell for its values *before* the control reports a new one, so everything it
-        //cached - the value and the validation result derived from it - describes the value that has just
-        //been replaced. Recompute the row now that the record holds the new one, otherwise the cell keeps
-        //showing state for the old value: a validation error stayed invisible until the next edit.
-        this._withGridApi(gridApi => {
-            const node = gridApi.getRowNode(record.getRecordId());
-            //no node means the row is not rendered, and it reads current values whenever it is
-            if (node) {
-                gridApi.refreshCells({ rowNodes: [node] });
-            }
-        });
-        if (this._settings.isAutoSaveEnabled()) {
-            record.save();
-        }
-        const { ShouldUnmountWhenOutputChanges } = parameters;
-        if (ShouldUnmountWhenOutputChanges?.raw) {
-            this._withGridApi(gridApi => gridApi.stopEditing());
-        }
-    }
-
-    public getControl(column: IColumn, record: IRecord, editing: boolean): Required<ICustomColumnControl> {
-        editing = record.getSummarizationType() === 'aggregation' ? false : editing;
-        //file and image currently do not support editor, always force cell renderers
-        switch (column.dataType) {
-            case 'File':
-            case 'Image': {
-                return {
-                    name: 'GridCellRenderer',
-                    appliesTo: 'both',
-                    bindings: {}
-                }
-            }
-        }
-        const defaultControl: Required<ICustomColumnControl> = {
-            name: (() => {
-                if (record.getSummarizationType() === 'aggregation') {
-                    return 'GridCellRenderer';
-                }
-                if (column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME) {
-                    return BaseControls.GridInlineRibbon;
-                }
-                if (editing) {
-                    return BaseControls.GetControlNameForDataType(column.dataType as DataType)
-                }
-                return 'GridCellRenderer';
-            })(),
-            appliesTo: 'both',
-            bindings: {}
-        };
-        const customControls = record.getColumnInfo(column.name).ui.getCustomControls([defaultControl]);
-        const appliesToValue = editing ? 'editor' : 'renderer';
-        const customControl = customControls.find(
-            control => control.appliesTo === 'both' || control.appliesTo === appliesToValue
-        );
-        if (customControl) {
-            return merge(defaultControl, customControl) as Required<ICustomColumnControl>;
-        }
-
-        return defaultControl;
-    }
-
-    public getBindings(record: IRecord, column: IColumn, control: ICustomColumnControl) {
-        const columnInfo = record.getColumnInfo(column.name);
-        const bindings: { [name: string]: IBinding } = {
-            'value': {
-                isStatic: false,
-                type: column.dataType as any,
-                value: this._getControlValue(record, column),
-                formattedValue: this.getRecordFormattedValue(record, column).value,
-                error: columnInfo.error,
-                errorMessage: columnInfo.errorMessage,
-                onNotifyOutputChanged: () => { },
-                metadata: {
-                    onOverrideMetadata: () => column.metadata
-                }
-            },
-            'IsCellCustomizer': {
-                isStatic: true,
-                type: DataTypes.TwoOptions,
-                value: true
-            }
-        }
-        if (control.bindings) {
-            Object.entries(control.bindings).map(([name, binding]) => {
-                bindings[name] = {
-                    isStatic: true,
-                    type: binding.type!,
-                    value: binding.value
-                }
-            })
-        }
-        return bindings;
-    }
-
-    public getFieldBindingParameters(record: IRecord, column: IColumn, editing: boolean) {
-        //make sure we have IColumn, not IGridColumn
-        column = record.getDataProvider().getColumnsMap()[column.name]!;
-        const summarizationType = record.getDataProvider().getSummarizationType();
-        const value = this.getRecordValue(record, column);
-        const formattedValue = this.getRecordFormattedValue(record, column);
-        const aggregationColumn = record.getDataProvider().getColumnsMap()[column.aggregation?.alias!];
-        const parameters: any = {
-            Dataset: {
-                raw: this._provider,
-                type: DataTypes.Object
-            },
-            Record: {
-                raw: record,
-                type: DataTypes.Object
-            },
-            Column: {
-                raw: column,
-                type: DataTypes.Object
-            }
-        }
-        parameters.AggregatedValue = {
-            raw: value.aggregatedValue,
-            formatted: formattedValue.aggregatedValue,
-            type: aggregationColumn?.dataType ?? DataTypes.Decimal
-        }
-        parameters.EnableNavigation = {
-            raw: (() => {
-                if (!this._settings.isNavigationEnabled()) {
-                    return false;
-                }
-                if (summarizationType === 'aggregation') {
-                    return false;
-                }
-                else if (summarizationType === 'grouping') {
+    /** What a cell hands whatever draws it, before the record and the hooks have their say. */
+    private _getCellParameters(record: IRecord, column: IGridColumn, control: ICustomColumnControl, takesInput: boolean): IGridCellRendererParameters {
+        const field = this.getField(record, column.name);
+        const parameters: IGridCellRendererParameters = {
+            value: field.value,
+            ColumnAlignment: { raw: column.alignment ?? 'left' },
+            CellType: { raw: takesInput ? 'editor' : 'renderer' },
+            EnableNavigation: { raw: this._isNavigationSupported(record, column), type: DataTypes.TwoOptions },
+            Column: { raw: record.getDataProvider().getColumnsMap()[column.name]! },
+            Dataset: { raw: this._provider as unknown as IDataset },
+            Record: { raw: record },
+            PrefixIcon: { raw: null, type: DataTypes.SingleLineText },
+            SuffixIcon: { raw: null, type: DataTypes.SingleLineText },
+            IsPrimaryColumn: { raw: column.isPrimary, type: DataTypes.TwoOptions },
+            ShowErrorMessage: { raw: false, type: DataTypes.TwoOptions },
+            AutoFocus: { raw: takesInput, type: DataTypes.TwoOptions },
+            IsInlineNewEnabled: { raw: false, type: DataTypes.TwoOptions },
+            EnableTypeSuffix: { raw: false, type: DataTypes.TwoOptions },
+            EnableOptionSetColors: { raw: this._settings.areOptionSetColorsEnabled(), type: DataTypes.TwoOptions },
+            CommandButtonIds: { raw: this._settings.getInlineRibbonButtonIds(), type: DataTypes.SingleLineText },
+            ShouldUnmountWhenOutputChanges: {
+                raw: (() => {
                     switch (column.dataType) {
-                        case DataTypes.LookupCustomer:
-                        case DataTypes.LookupRegarding:
-                        case DataTypes.LookupOwner:
-                        case DataTypes.LookupSimple:
-                        case DataTypes.File:
-                        case DataTypes.Image:
-                        case DataTypes.SingleLineEmail:
-                        case DataTypes.SingleLineUrl:
-                        case DataTypes.SingleLinePhone: {
-                            return true;
-                        }
-                        default: {
+                        //these report a partial change as a value, so an editor of theirs stays open
+                        case DataTypes.DateAndTimeDateAndTime:
+                        case DataTypes.MultiSelectOptionSet: {
                             return false;
                         }
+                        default: {
+                            return true;
+                        }
                     }
-                }
-                else {
-                    return true;
-                }
-            })(),
-            type: DataTypes.TwoOptions
-        }
-        parameters.ColumnAlignment = {
-            raw: column.alignment,
-            type: DataTypes.SingleLineText
-        }
-        parameters.IsPrimaryColumn = {
-            raw: column.isPrimary,
-            type: DataTypes.TwoOptions
-        }
-        parameters.ShowErrorMessage = {
-            raw: false,
-            type: DataTypes.TwoOptions
-        }
-        parameters.CellType = {
-            raw: editing ? 'editor' : 'renderer',
-            type: DataTypes.SingleLineText
-        }
-        parameters.AutoFocus = {
-            raw: editing,
-            type: DataTypes.TwoOptions
-        }
-        parameters.AggregationFunction = {
-            raw: summarizationType === 'aggregation' ? aggregationColumn?.aggregation?.aggregationFunction : null,
-            type: DataTypes.SingleLineText
-        }
-        parameters.PrefixIcon = {
-            raw: null,
-            type: DataTypes.SingleLineText
-        }
-        parameters.SuffixIcon = {
-            raw: null,
-            type: DataTypes.SingleLineText
-        }
-        parameters.IsInlineNewEnabled = {
-            raw: false,
-            type: DataTypes.TwoOptions
-        }
-        parameters.EnableTypeSuffix = {
-            raw: false,
-            type: DataTypes.TwoOptions
-        }
-        parameters.EnableOptionSetColors = {
-            raw: this._settings.areOptionSetColorsEnabled(),
-            type: DataTypes.TwoOptions
-        }
-        parameters.CommandButtonIds = {
-            raw: this._settings.getInlineRibbonButtonIds(),
-            type: DataTypes.SingleLineText
-        }
-        parameters.ShouldUnmountWhenOutputChanges = {
-            raw: (() => {
-                //by default, leave cell editor opened for these types since
-                // they can output partial changes as values
-                switch (column.dataType) {
-                    case 'DateAndTime.DateAndTime':
-                    case 'MultiSelectPicklist': {
-                        return false;
-                    }
-                    default: {
-                        return true;
-                    }
-                }
-            })(),
-            type: DataTypes.TwoOptions
-        }
+                })(),
+                type: DataTypes.TwoOptions
+            },
+        };
+        //what the column asked for wins: the icons and the placeholder are its to name, and a binding is
+        //where it names them
+        Object.entries(control.bindings ?? {}).forEach(([name, binding]) => {
+            parameters[name] = { raw: binding.value, type: binding.type };
+        });
         return parameters;
     }
 
     /**
-     * The background a cell paints, where its formatting asked for one.
+     * The parameters a control is actually handed: what was built for it, what the record made of that, and
+     * what a hook made of that.
      *
-     * Given to AG Grid for the cell element rather than applied inside it: whatever a cell paints itself
-     * covers what AG Grid drew on the cell behind it — the range, the value flash, the row's selection —
-     * so only a cell that was actually given a colour of its own gets one.
+     * The record's expression comes first, so a hook has the last word on a column that overrides its own
+     * parameters.
      */
-    public getCellStyle(record: IRecord | undefined, columnName: string): CellStyle | undefined {
-        if (!record) {
-            return undefined;
-        }
-        const backgroundColor = this.getFieldFormatting(record, columnName).backgroundColor;
-        if (backgroundColor === this._services.get('theming').getCellTheme(record).semanticColors.bodyBackground) {
-            return undefined;
-        }
-        return { backgroundColor };
+    public getFinalControlParameters(parameters: IParameters, record: IRecord, column: IColumn, takesInput: boolean): IParameters {
+        //legacy, kept for back compat: the record's expression is how a host changed a control's parameters
+        //before hooks existed, and a hook is the way to do it now
+        const overridden = record.getColumnInfo(column.name).ui.getControlParameters(parameters as IControlParameters);
+        this._controlParametersHooks.apply(overridden, { record: record, columnName: column.name, takesInput: takesInput });
+        return overridden;
     }
 
-    public getFieldFormatting(record: IRecord, columnName: string): Required<ICustomColumnFormatting> {
-        const theming = this._services.get('theming');
-        //a column of the grid's own rather than the dataset's - the checkboxes, the column a save is
-        //reported in - is not among the record's columns, so there is no value of its to format
-        if (!record || !record.getDataProvider().getColumnsMap()[columnName]) {
-            return theming.getPlainFormatting(record);
-        }
-        return theming.getColumnFormatting(record, columnName);
+    /**
+     * Which control draws this cell: the column's own where it named one, the grid's renderer otherwise,
+     * and whatever a hook made of that.
+     *
+     * The one way in: what a cell renders with, and whether that counts as a custom renderer, are the same
+     * question asked twice.
+     */
+    public getCustomControl(record: IRecord, column: IColumn, takesInput: boolean): Required<ICustomColumnControl> {
+        const result = { control: this._getDefaultControl(record, column, takesInput) };
+        this._controlHooks.apply(result, { record: record, columnName: column.name, takesInput: takesInput });
+        return result.control;
     }
 
-    public getRecordValue(record: IRecord, column: IColumn | string) {
-        return this._getRecordValue(record, column, false);
+    private _getDefaultControl(record: IRecord, column: IColumn, takesInput: boolean): Required<ICustomColumnControl> {
+        const control: Required<ICustomColumnControl> = {
+            name: this._getDefaultControlName(column, takesInput),
+            appliesTo: 'both',
+            bindings: {}
+        };
+        //legacy, kept for back compat: naming a control on the column is how a host replaced a cell's
+        //control before hooks existed, and a hook is the way to do it now
+        const customControls = record.getColumnInfo(column.name).ui.getCustomControls([control]);
+        const appliesTo = takesInput ? 'editor' : 'renderer';
+        //a column may name one control for drawing and another for input, so it is not simply the first
+        const customControl = customControls.find(candidate => candidate.appliesTo === 'both' || candidate.appliesTo === appliesTo);
+        //merged rather than taken: a custom control that names only a name keeps the default's bindings
+        return customControl ? merge(control, customControl) as Required<ICustomColumnControl> : control;
     }
-    public getRecordFormattedValue(record: IRecord, column: IColumn | string) {
-        return this._getRecordValue(record, column, true);
-    }
-    //returns record value in a form that is compatible with PCF typings
-    private _getControlValue(record: IRecord, column: IColumn | string): any {
-        const columnName = typeof column === 'string' ? column : column.name;
-        column = record.getDataProvider().getColumnsMap()[columnName]!;
-        //can be the aggregated value
-        let value = this.getRecordValue(record, column).value;
+
+    private _getDefaultControlName(column: IColumn, takesInput: boolean): string {
         switch (column.dataType) {
-            //getValue always returns string for TwoOptions
-            case 'TwoOptions': {
-                if (typeof value === 'string') {
-                    value = value == '1' ? true : false
-                }
-                break;
-            }
-            //getValue always returns string for OptionSet
-            case 'OptionSet': {
-                value = value ? parseInt(value) : null;
-                break;
-            }
-            case 'MultiSelectPicklist': {
-                value = value ? value.split(',').map((x: string) => parseInt(x)) : null;
-                break;
-            }
-            case 'Lookup.Simple':
-            case 'Lookup.Customer':
-            case 'Lookup.Owner':
-            case 'Lookup.Regarding': {
-                //our implementation returns array, Power Apps returns object
-                if (value && !Array.isArray(value)) {
-                    value = [value];
-                }
-                value = value?.map((x: ComponentFramework.EntityReference) => Sanitizer.Lookup.getLookupValue(x))
-                break;
+            //file and image have no editor, so they draw whether or not the cell takes input
+            case DataTypes.File:
+            case DataTypes.Image: {
+                return BaseControls.GridCellRenderer;
             }
         }
-        return value;
-    }
-
-    private _getRecordValue(record: IRecord, column: IColumn | string, formatted: boolean): { value: any; aggregatedValue: any } {
-        if (!record) {
-            return {
-                value: null,
-                aggregatedValue: null
-            }
+        if (column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME) {
+            return BaseControls.GridInlineRibbon;
         }
-        const columnName = typeof column === 'string' ? column : column.name;
-        column = record.getDataProvider().getColumnsMap()[columnName]!;
-        if (!column) {
-            return {
-                value: null,
-                aggregatedValue: null
-            }
-        }
-        const method = formatted ? 'getFormattedValue' : 'getValue';
-        const groupBy = record.getDataProvider().grouping.getGroupBy(column.grouping?.alias!);
-        const aggregation = record.getDataProvider().aggregation.getAggregation(column.aggregation?.alias!);
-
-        let value = record[method](columnName);
-        let aggregatedValue = null;
-
-        if (groupBy) {
-            value = record[method](groupBy.alias);
-        }
-        if (aggregation) {
-            aggregatedValue = record[method](aggregation.alias);
-        }
-        return {
-            value: value,
-            aggregatedValue: aggregatedValue
-        }
-    }
-
-    private _valueFormatter(p: ValueFormatterParams<IRecord>): string {
-        const formattedValue = this.getRecordFormattedValue(p.data!, p.colDef.colId!);
-        return formattedValue.value ?? formattedValue.aggregatedValue;
-    }
-
-    //the bindings are resolved once and handed back: the control asks for them while constructing its
-    //properties and again in getParameters(), and each call rebuilt the whole binding graph for the same
-    //record and column
-    private _getControlParameters(record: IRecord, column: IGridColumn, customControl: Required<ICustomColumnControl>, isCellEditor: boolean) {
-        const bindings = this.getBindings(record, column, customControl);
-        const control = new NestedControl({
-            onGetBindings: () => bindings,
-            parentPcfContext: this._services.get('pcfContext'),
-        });
-        return record.getColumnInfo(column.name).ui.getControlParameters({
-            ...this.getFieldBindingParameters(record, column, isCellEditor),
-            ...control.getParameters(),
-        });
-    }
-
-    private _valueGetter(p: ValueGetterParams<IRecord>, column: IGridColumn) {
-        const record = p.data!;
-        const columnInfo = record.getColumnInfo(column.name);
-        const value = this.getRecordValue(record, column);
-        const values = {
-            notifications: columnInfo.ui.getNotifications(),
-            value: value.value,
-            customFormatting: this.getFieldFormatting(record, column.name),
-            error: columnInfo.error,
-            aggregatedValue: value.aggregatedValue,
-            loading: columnInfo.ui.isLoading(),
-            errorMessage: columnInfo.errorMessage,
-            editable: column.isEditable && columnInfo.security.editable,
-            saving: record.isSaving(),
-            columnAlignment: column.alignment,
-            customComponent: columnInfo.ui.getCustomControlComponent()
-        } as ICellValues;
-        //what a module knows about this cell, which the grid does not
-        this._hooks.apply(values, { record, column });
-        return values;
+        return takesInput ? BaseControls.GetControlNameForDataType(column.dataType as DataType) : BaseControls.GridCellRenderer;
     }
 
     /**
      * Navigation on a double click, for the definitions the columns part builds.
      *
      * An editable grid never navigates: a double click there means "edit this" on some columns and "open
-     * this" on others, and one gesture cannot mean both. Neither does a summarized row, which stands for a
-     * group rather than a record, nor a column whose cell is not a value at all.
+     * this" on others, and one gesture cannot mean both. Neither does a column whose cell is not a value
+     * at all.
      */
     public onCellDoubleClick(event: CellDoubleClickedEvent<IRecord>): void {
+        const record = event.data;
+        //a row with no record of its own stands for nothing to open
+        if (!record) {
+            return;
+        }
         const column = this._provider.getColumnsMap()[event.colDef.colId!]!;
         switch (true) {
             case !this._settings.isNavigationEnabled():
             case this._settings.isEditingEnabled():
-            case this._services.get('columns').isColumnEditable(column.name, event.data):
-            case event.data?.getSummarizationType() !== 'none':
+            case this.isCellEditable(record, column.name):
             case !!this._services.find('selection')?.isSelectionColumn(column.name): {
                 return;
             }
         }
-        const record = event.data!;
         record.getDataProvider().openDatasetItem(record.getNamedReference());
     }
 
-    private _withGridApi(callback: (gridApi: GridApi<IRecord>) => void): void {
-        const gridApi = this._services.find('gridApi');
-        if (gridApi && !gridApi.isDestroyed()) {
-            callback(gridApi);
+    /** Whether this column's value is one that can be followed at all. */
+    private _isNavigationSupported(record: IRecord, column: IColumn): boolean {
+        if (!this._settings.isNavigationEnabled()) {
+            return false;
+        }
+        switch (column.dataType) {
+            case DataTypes.LookupCustomer:
+            case DataTypes.LookupRegarding:
+            case DataTypes.LookupOwner:
+            case DataTypes.LookupSimple:
+            case DataTypes.File:
+            case DataTypes.Image:
+            case DataTypes.SingleLineEmail:
+            case DataTypes.SingleLineUrl:
+            case DataTypes.SingleLinePhone: {
+                return true;
+            }
+            default: {
+                const metadata = record.getDataProvider().getMetadata() as Xrm.Metadata.EntityMetadata | undefined;
+                return !!column.isPrimary || column.name === metadata?.PrimaryNameAttribute;
+            }
         }
     }
 
