@@ -113,7 +113,6 @@ export class GridCells {
         }
         switch (true) {
             case !this._settings.isEditingEnabled():
-            case record.isSaving():
             //a one-click-edit column's control is the cell, so there is no edit mode to enter
             case column.oneClickEdit:
             case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME:

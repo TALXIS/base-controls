@@ -31,9 +31,19 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const { record, baseColumn: column, node } = cellProps;
     const cells = useGridService('cells');
     const rows = useGridService('rows');
+    const gridApi = useGridService('gridApi');
     const theming = useGridService('theming');
     const control = cells.getCustomControl(record, column, takesInput);
     const field = cells.getField(record, column.name);
+
+    const onNotifyOutputChanged = (value: any) => {
+        cells.setValue(record, column.name, value);
+        //most controls report a whole value, so the edit is over the moment they report one - the ones
+        //that report a partial value say so, and their editor stays open
+        if (parameters.ShouldUnmountWhenOutputChanges?.raw) {
+            gridApi?.stopEditing();
+        }
+    };
 
     return <NestedControlRenderer
         context={context}
@@ -47,7 +57,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                 value: field.value,
                 formattedValue: field.formattedValue,
                 enableNavigation: !!parameters.EnableNavigation?.raw,
-                onNotifyOutputChanged: value => cells.setValue(record, column.name, value)
+                onNotifyOutputChanged: value => onNotifyOutputChanged(value)
             }),
             ControlStates: {
                 isControlDisabled: !cells.isCellEditable(record, column.name)
