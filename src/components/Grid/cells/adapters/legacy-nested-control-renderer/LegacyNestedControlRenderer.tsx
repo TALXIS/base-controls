@@ -30,7 +30,6 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const { context, parameters } = controlProps;
     const { record, baseColumn: column, node } = cellProps;
     const cells = useGridService('cells');
-    const rows = useGridService('rows');
     const gridApi = useGridService('gridApi');
     const theming = useGridService('theming');
     const control = cells.getCustomControl(record, column, takesInput);
