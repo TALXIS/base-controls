@@ -4,7 +4,7 @@ import { INestedControlRendererComponentProps } from "@components/NestedControlR
 import { IGridCellRenderer } from "@components/GridCellRenderer";
 import { IControl } from "@interfaces";
 import { GridControl } from "../../../services/cells";
-import { useGridService } from "../../../useGridService";
+import { useGridCell } from "../../cell-host";
 import { ICellProps } from "../../interfaces";
 import { getBindings } from "./getBindings";
 import { NestedReactRoot } from "./nested-react-root";
@@ -31,7 +31,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const { controlProps, cellProps, control } = props;
     const { context, parameters } = controlProps;
     const { record, baseColumn: column, node } = cellProps;
-    const theming = useGridService('theming');
+    const cellTheme = useGridCell().getTheme();
     const customControl = control.getCustomControl();
     const field = control.getField();
 
@@ -84,7 +84,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                             }),
                             parameters: controlParameters,
                             fluentDesignLanguage: getCellFluentDesignLanguage({
-                                theme: theming.getCellTheme(record, column.name).theme,
+                                theme: cellTheme.getValue(),
                                 columnAlignment: column.alignment,
                                 parent: controlProps.context.fluentDesignLanguage
                             }),

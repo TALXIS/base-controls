@@ -1,6 +1,5 @@
-import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, ICellRendererParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, CellStyle, ColDef, ICellRendererParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { createElement } from "react";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
 import { FieldControl } from "../../components/adapters";
@@ -67,7 +66,7 @@ export class GridColumns {
             columnDefs.unshift(recordSaveColumn);
         }
         this._hooks.apply(columnDefs);
-        return columnDefs.map(columnDef => this._withCellStyle(columnDef));
+        return columnDefs;
     }
 
     /** Every column the provider carries, as the grid sees it. */
@@ -118,10 +117,9 @@ export class GridColumns {
             suppressMovable: true,
             valueGetter: () => null,
             valueFormatter: () => '',
-            cellRenderer: CellHost,
-            cellRendererParams: (params: ICellRendererParams<IRecord>) => ({
-                children: createElement(RecordSaveIndicatorCell, { ...params, record: params.data! }),
-            }),
+            cellRenderer: (params: ICellRendererParams<IRecord>) => <CellHost record={params.data!} columnName={RECORD_SAVE_COLUMN_KEY}>
+                <RecordSaveIndicatorCell {...params} record={params.data!} />
+            </CellHost>,
             cellRendererSelector: suppressRendererInPinnedRows,
         };
     }
@@ -162,6 +160,7 @@ export class GridColumns {
             headerComponentParams: {
                 baseColumn: column
             },
+            cellStyle: (params) => this._getCellStyle(params.data!, column.name),
             cellRendererParams: (params: any) => this._getCellRendererParameters(params.data, column),
             editable: (params) => this._isEditable(params.data, column.name),
             cellEditorParams: (params: any) => ({ ...this._getCellRendererParameters(params.data, column), editing: true }),
@@ -221,20 +220,6 @@ export class GridColumns {
     }
 
     /**
-     * Every column's cells paint the theme of the cell they are, a module's own column included: a
-     * checkbox or a save state is still drawn in a cell, and a hook can theme it like any other.
-     *
-     * A definition that sets its own `cellStyle` keeps it.
-     */
-    private _withCellStyle(columnDef: ColDef<IRecord>): ColDef<IRecord> {
-        return {
-            //a row standing for no record - a group, a total - has no cell theme to paint
-            cellStyle: (params: CellClassParams<IRecord>) => params.data ? this._getCellStyle(params.data, columnDef.colId!) : undefined,
-            ...columnDef,
-        };
-    }
-
-    /**
      * What AG Grid paints on the cell element.
      *
      * Given to AG Grid rather than painted inside the cell, so the cell's background is on the element the
@@ -247,7 +232,7 @@ export class GridColumns {
     /** What a cell needs to draw a value: no control and no bindings, since nothing there reads them. */
     private _getCellRendererParameters(record: IRecord, column: IGridColumn): IGridCellRendererParams {
         //a one-click-edit column takes input without ever entering edit mode, so its renderer is an editor
-        return { baseColumn: column, record: record, editing: !!column.oneClickEdit };
+        return { baseColumn: column, record: record, columnName: column.name, editing: !!column.oneClickEdit };
     }
 
     private get _cells() {

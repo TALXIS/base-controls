@@ -9,7 +9,6 @@ import { GRID_LABELS, IGridLabels } from "./labels";
 import { IGridServiceLocator, IGridServiceMap } from "./services";
 import { AgGridModel } from "./services/ag-grid/AgGridModel";
 import { GridSettings } from "./services/settings";
-import { GridTheming } from "./services/theming";
 import { GridRows } from "./services/rows";
 import { GridColumns } from "./services/columns";
 import { GridCells } from "./services/cells";
@@ -57,18 +56,17 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     //the one service whose resolver is the point: it runs on every lookup, so a provider handed over later
     //is the one every part reads
     services.register('provider', () => onGetProps().provider);
+    services.register('theme', () => theme);
     //constructed, then registered: a resolver runs on every lookup, so `() => new X()` would hand out a
     //fresh instance each time - and these hold what the modules registered on them
-    const theming = new GridTheming({ theme });
     const columns = new GridColumns({ services });
-    const cells = new GridCells();
+    const cells = new GridCells({ services });
     const rows = new GridRows({ services });
     const columnHeader = new GridColumnHeaderParts({ services });
     //both wait for an api and then talk only to it, so nothing has to be registered before them - and
     //being ahead of `AgGridModel` is what puts their listeners on the grid before it pushes anything
     const columnLayout = new GridColumnLayout({ services });
     const overlays = new GridOverlays({ services });
-    services.register('theming', () => theming);
     services.register('columns', () => columns);
     services.register('cells', () => cells);
     services.register('rows', () => rows);

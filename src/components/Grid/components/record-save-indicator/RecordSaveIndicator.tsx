@@ -16,7 +16,7 @@ export interface IRecordSaveIndicatorProps {
 export const RecordSaveIndicator = (props: IRecordSaveIndicatorProps) => {
     const { record, status } = props;
     const rootRef = useRef<HTMLDivElement>(null);
-    const theme = useGridService('theming').getTheme();
+    const theme = useGridService('theme');
     const styles = useMemo(() => getRecordSaveIndicatorStyles(theme), [theme]);
     const [isErrorCalloutVisible, setIsErrorCalloutVisible] = useState<boolean>(false);
     const saveResult = status.saveResult;

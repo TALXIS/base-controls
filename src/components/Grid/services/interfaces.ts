@@ -1,11 +1,11 @@
 import type { GridApi } from "@ag-grid-community/core";
 import type { IDataProvider, IRecord } from "@talxis/client-libraries";
+import type { ITheme } from "@legacy";
 import type { ILocalizationService, IServiceLocator } from "@utils";
 import type { GridSettings } from "../services/settings";
 import type { IGridLabels } from "../labels";
 import type { AgGridModel } from "../services/ag-grid/AgGridModel";
 import type { IGridRowModel } from "../modules/row-model/interfaces";
-import type { GridTheming } from "../services/theming";
 import type { GridColumns } from "../services/columns";
 import type { GridCells } from "../services/cells";
 import type { GridRows } from "../services/rows";
@@ -45,8 +45,8 @@ export interface IGridServiceMap {
      * does not need one — so wait for it with `whenAvailable` rather than resolving it in a constructor.
      */
     gridApi: GridApi<IRecord>;
-    /** Where a theme comes from: the control's, a row's, a column's. There from the start. */
-    theming: GridTheming;
+    /** The theme the control was given. There from the start, and it does not change while a grid is alive. */
+    theme: ITheme;
     /** The column definitions, and the hooks a module puts its own on them through. There from the start. */
     columns: GridColumns;
     /** What a cell shows, and the hooks a module adds to it through. There from the start. */

@@ -62,17 +62,17 @@ export const Grid = (props: IGrid) => {
         enableGroupEdit: true,
         reactiveCustomComponents: true,
         initialState: props.state,
-        gridOptions: {
+/*         gridOptions: {
             getRowStyle: (params) => {
                 const record = params.data;
                 if (!record) {
                     return undefined;
                 }
                 return {
-                    backgroundColor: services.get('theming').getTheme().semanticColors.bodyBackground,
+                    backgroundColor: services.get('theme').semanticColors.bodyBackground,
                 }
             },
-        },
+        }, */
         //the caller first, then the api: registering it is what builds the parts that talk to AG Grid, and
         //the first thing they do is push columns - which a caller configuring those has to be ahead of
         onGridReady: (event) => {

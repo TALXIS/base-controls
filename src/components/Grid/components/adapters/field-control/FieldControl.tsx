@@ -5,6 +5,7 @@ import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IGridRowsEvents } from "../../../services/rows";
 import { useGridControl } from "../../../useGridControl";
+import { CellHost } from "../../cell-host";
 import { ICellProps } from "../../interfaces";
 
 export type IFieldControlProps = ICellProps;
@@ -26,7 +27,9 @@ export const FieldControl = (props: IFieldControlProps) => {
     });
 
     const controlProps = control.getControlProps();
-    return control.isCustomRendererEnabled()
-        ? <LegacyNestedControlRenderer controlProps={controlProps} cellProps={cellProps} control={control} />
-        : <GridCellRenderer {...controlProps} />;
+    return <CellHost {...props}>
+        {control.isCustomRendererEnabled()
+            ? <LegacyNestedControlRenderer controlProps={controlProps} cellProps={cellProps} control={control} />
+            : <GridCellRenderer {...controlProps} />}
+    </CellHost>;
 };

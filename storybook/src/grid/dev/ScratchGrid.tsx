@@ -1,6 +1,6 @@
 import React from 'react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModules, OptionSet } from '@talxis/base-controls'
-import { MemoryDataProvider } from '@talxis/client-libraries'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModule, IGridModules, IGridServiceLocator, OptionSet } from '@talxis/base-controls'
+import { DataProvider, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATA_SOURCE, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
 /**
@@ -39,6 +39,78 @@ const OptionSetPreview = (props: {
             onNotifyOutputChanged={(outputs: { value?: number }) => setValue(outputs.value ?? null)} />
     </div>
 }
+
+/** The status a row's colour is taken from, and what each one paints. */
+const STATUS_COLOURS: Record<number, { background: string; text: string }> = {
+    1: { background: '#fde7e9', text: '#7a1015' },
+    3: { background: '#dff6dd', text: '#0b5a0b' },
+    4: { background: '#4b1113', text: '#ffd9dc' },
+    5: { background: '#deecf9', text: '#004578' },
+}
+
+/**
+ * A cell theme hook, wired onto whichever module the story is given, so the theming can be seen.
+ *
+ * Colours the whole row from its status and then gives `estimate` a theme of its own on top, which is
+ * what proves a later hook gets the later word - and that a cell theme is per cell rather than per row.
+ */
+const withCellThemeHook = (module: IGridModule): IGridModule => ({
+    ...module,
+    onRegister: (services: IGridServiceLocator) => {
+        module.onRegister?.(services)
+        const cells = services.get('cells')
+        cells.registerCellThemeHook((theme, params) => {
+            const colours = STATUS_COLOURS[params.record.getValue('status') as number]
+            if (!colours) {
+                return
+            }
+            return {
+                ...theme,
+                id: `scratch-status-${params.record.getValue('status')}`,
+                semanticColors: {
+                    ...theme.semanticColors,
+                    bodyBackground: colours.background,
+                    bodyText: colours.text,
+                },
+            }
+        })
+        //later, so it wins on the one column it cares about
+        cells.registerCellThemeHook((theme, params) => {
+            if (params.columnName !== 'estimate') {
+                return
+            }
+            return {
+                ...theme,
+                id: 'scratch-estimate',
+                semanticColors: {
+                    ...theme.semanticColors,
+                    bodyBackground: '#fff4ce',
+                    bodyText: '#4a3800',
+                },
+            }
+        }, 10)
+        //the checkbox column, in colours nothing would ship: it is a cell like any other, and a hook can
+        //say so
+        cells.registerCellThemeHook((theme, params) => {
+            if (params.columnName !== DataProvider.CONST.CHECKBOX_COLUMN_KEY) {
+                return
+            }
+            const isOddRow = (params.record.getValue('priority') as number) % 2 === 1
+            return {
+                ...theme,
+                id: `scratch-checkbox-${isOddRow}`,
+                semanticColors: {
+                    ...theme.semanticColors,
+                    bodyBackground: isOddRow ? '#ff00ff' : '#00ffc8',
+                    bodyText: isOddRow ? '#00ff00' : '#7a0033',
+                    inputBorder: '#ff8c00',
+                    inputBackgroundChecked: '#ff1493',
+                    inputBackgroundCheckedHovered: '#00bfff',
+                },
+            }
+        }, 20)
+    },
+})
 
 export interface IScratchGridProps {
     rowModel: 'clientSide' | 'serverSide'
@@ -86,9 +158,9 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
-        rowModel: props.rowModel === 'clientSide'
+        rowModel: withCellThemeHook(props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
-            : createServerSideRowModelModule(),
+            : createServerSideRowModelModule()),
         clipboard: props.clipboard ? createClipboardModule() : undefined,
         cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
         selection: props.selectableRows === 'none' ? undefined : createSelectionModule({ mode: props.selectableRows }),

@@ -1,5 +1,6 @@
 export * from './components';
 export * from './adapters';
+export * from './cell-host';
 export * from './record-save-indicator';
 //aliased, and the ui pieces reached through the namespace: `ICellProps`, `Cell`, `Control` and
 //`Notifications` are all taken in the package's flat barrel
