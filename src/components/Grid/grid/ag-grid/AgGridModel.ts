@@ -60,6 +60,8 @@ export class AgGridModel {
         this._gridApi.setGridOption('suppressDragLeaveHidesColumns', true);
         this._gridApi.setGridOption('animateRows', false);
         this._gridApi.setGridOption('groupDisplayType', 'custom');
+        this._gridApi.setGridOption('enterNavigatesVertically', true);
+        this._gridApi.setGridOption('enterNavigatesVerticallyAfterEdit', true);
     }
 
     private _onNewDataLoaded(): void {

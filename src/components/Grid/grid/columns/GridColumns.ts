@@ -1,4 +1,4 @@
-import { CellDoubleClickedEvent, CellStyle, ColDef, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, CellStyle, ColDef, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
@@ -163,7 +163,6 @@ export class GridColumns {
             cellRendererParams: (params: any) => this._getCellRendererParameters(params.data, column),
             editable: (params) => !!params.data && cells.isCellEditable(params.data, column.name),
             cellEditorParams: (params: any) => ({ ...this._getCellRendererParameters(params.data, column), editing: true }),
-            suppressKeyboardEvent: (params) => this._suppressKeyboardEvent(params, column),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeader,
             cellRenderer: Cell,
@@ -172,21 +171,6 @@ export class GridColumns {
             valueFormatter: (params: ValueFormatterParams<IRecord>) => cells.getFormattedValue(params),
             onCellDoubleClicked: (event: CellDoubleClickedEvent<IRecord>) => cells.onCellDoubleClick(event),
         };
-    }
-
-    /**
-     * Whether a keystroke is the control's to handle rather than the grid's.
-     *
-     * AG Grid listens on the row container, which a React tree's delegated handlers sit above - so its
-     * Enter closes an editor before the control inside it ever sees the key. A control that handles Enter
-     * itself says so through `HandlesEnterKey`, and this is what keeps the grid out of its way.
-     */
-    private _suppressKeyboardEvent(params: SuppressKeyboardEventParams<IRecord>, column: IGridColumn): boolean {
-        if (!params.editing || !params.data || params.event.key !== 'Enter') {
-            return false;
-        }
-        const { parameters } = this._services.get('cells').getControlProps(params.data, column, params.editing);
-        return !!parameters.HandlesEnterKey?.raw;
     }
 
     /**

@@ -205,7 +205,6 @@ export class GridCells {
             PrefixIcon: { raw: null, type: DataTypes.SingleLineText },
             SuffixIcon: { raw: null, type: DataTypes.SingleLineText },
             IsPrimaryColumn: { raw: column.isPrimary, type: DataTypes.TwoOptions },
-            HandlesEnterKey: { raw: this._handlesEnterKey(column), type: DataTypes.TwoOptions },
             ShowErrorMessage: { raw: false, type: DataTypes.TwoOptions },
             AutoFocus: { raw: takesInput, type: DataTypes.TwoOptions },
             IsInlineNewEnabled: { raw: false, type: DataTypes.TwoOptions },
@@ -317,28 +316,6 @@ export class GridCells {
             }
         }
         record.getDataProvider().openDatasetItem(record.getNamedReference());
-    }
-
-    /**
-     * Whether this column's control handles Enter itself: the ones that open a menu, where Enter is how a
-     * highlighted option is chosen.
-     */
-    private _handlesEnterKey(column: IColumn): boolean {
-        switch (column.dataType) {
-            case DataTypes.OptionSet:
-            case DataTypes.MultiSelectOptionSet:
-            case DataTypes.LookupSimple:
-            case DataTypes.LookupCustomer:
-            case DataTypes.LookupOwner:
-            case DataTypes.LookupRegarding:
-            case DataTypes.DateAndTimeDateAndTime:
-            case DataTypes.DateAndTimeDateOnly: {
-                return true;
-            }
-            default: {
-                return false;
-            }
-        }
     }
 
     /** Whether this column's value is one that can be followed at all. */

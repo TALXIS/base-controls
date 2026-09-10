@@ -1,9 +1,10 @@
 import { IDateTime } from "./interfaces";
-import { ICalendarDayGridStyles, IDatePicker, IProcessedStyleSet, ThemeProvider } from "@fluentui/react";
+import { IDatePicker, ThemeProvider } from "@fluentui/react";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
-import { Calendar, IInternalCalendarProps } from "./components/Calendar";
+import { Calendar } from "./components/Calendar";
+import { DateTimeContext, IDateTimeContext } from "./context";
 import { DatePicker } from "@legacy";
 import { useControlSizing } from "@hooks/useControlSizing";
 import dayjs from "dayjs";
@@ -26,28 +27,21 @@ export const DateTime = (componentProps: IDateTime) => {
         }
     }, []);
 
-    const getRestrictedDates = (): Date[] | undefined => {
-        if (!parameters.RestrictedDates?.raw) {
-            return undefined;
-        }
-        return JSON.parse(parameters.RestrictedDates?.raw).map((x: string) => new Date(x))
-    }
-
-    const onOverrideDayCellProps = (element: HTMLElement, date: Date, classNames: IProcessedStyleSet<ICalendarDayGridStyles>) => {
-        if (!element || !parameters.RestrictedDaysOfWeek?.raw) {
-            return;
-        }
-        const weekDaysToExclude: number[] = JSON.parse(parameters.RestrictedDaysOfWeek.raw);
-        if (weekDaysToExclude.includes(date.getDay())) {
-            element.setAttribute('data-is-focusable', 'false');
-            element.classList?.add(classNames.dayOutsideBounds!);
-            (element.children[0] as HTMLButtonElement).disabled = true;
-        }
-    }
-
     const onSelectDate = useDebouncedCallback((value: Date | null | undefined) => {
         date.set(value!);
     }, 0);
+
+    /** What the picker's own parts read: the calendar is one component, handed the control rather than props. */
+    const dateTime: IDateTimeContext = {
+        parameters: parameters,
+        isDateTime: isDateTime,
+        date: date,
+        patterns: patterns,
+        labels: labels,
+        theme: theme,
+        applicationTheme: componentProps.context.fluentDesignLanguage?.applicationTheme,
+        lastInputedTimeString: lastInputedTimeString
+    };
 
     const datePickerProps = onOverrideComponentProps({
         className: styles.datePicker,
@@ -84,50 +78,7 @@ export const DateTime = (componentProps: IDateTime) => {
                 iconName: 'Copy'
             }
         } : undefined,
-        calendarAs: (props) => {
-            const calendarProps: IInternalCalendarProps = {
-                ...props,
-                isMonthPickerVisible: parameters.EnableMonthPicker?.raw !== false,
-                isDayPickerVisible: parameters.EnableDayPicker?.raw !== false,
-                calendarDayProps: {
-                    restrictedDates: getRestrictedDates(),
-                    customDayCellRef: onOverrideDayCellProps
-                },
-                value: date.get(),
-                strings: {
-                    goToToday: labels.goToToday(),
-                    days: JSON.parse(labels.days()),
-                    months: JSON.parse(labels.months()),
-                    shortDays: JSON.parse(labels.shortDays()),
-                    shortMonths: JSON.parse(labels.shortMonths())
-                },
-                timePickerProps: {
-                    dateTimeFormat: patterns.fullDateTimePattern,
-                    autoComplete: "off",
-                    autoCapitalize: "off",
-                    timeFormat: patterns.shortTimePattern,
-                    label: labels.time(),
-                    visible: isDateTime,
-                    errorMessage: labels.invalidTimeInput(),
-                    lastInputedTimeString: lastInputedTimeString.current,
-                    useHour12: patterns.shortTimePattern.endsWith('A'),
-                    onChange: (time?: string) => {
-                        date.set(undefined, time);
-                        lastInputedTimeString.current = time;
-                    },
-                    value: date.get(),
-                    formattedDateTime: date.getFormatted() ?? "",
-                    strings: {
-                        invalidInputErrorMessage: labels.invalidTimeInput()
-                    }
-                },
-                theme: componentProps.context.fluentDesignLanguage?.applicationTheme ?? theme
-            };
-            if (isDateTime) {
-                calendarProps.onSelectDate = (newDate) => date.set(newDate)
-            }
-            return <Calendar {...calendarProps} />
-        },
+        calendarAs: Calendar,
         errorMessage: parameters.value.errorMessage,
         textField: {
             value: date.getFormatted() ?? "",
@@ -153,8 +104,10 @@ export const DateTime = (componentProps: IDateTime) => {
     });
 
     return (
-        <ThemeProvider theme={theme} applyTo="none" ref={ref}>
-            <DatePicker {...datePickerProps} />
-        </ThemeProvider>
+        <DateTimeContext.Provider value={dateTime}>
+            <ThemeProvider theme={theme} applyTo="none" ref={ref}>
+                <DatePicker {...datePickerProps} />
+            </ThemeProvider>
+        </DateTimeContext.Provider>
     );
 };
