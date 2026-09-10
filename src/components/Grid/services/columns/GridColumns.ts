@@ -1,8 +1,9 @@
-import { CellDoubleClickedEvent, CellStyle, ColDef, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, CellStyle, ColDef, ICellRendererParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
 import { FieldControl } from "../../components/adapters";
+import { CellHost } from "../../components/cell-host";
 import { GridControl } from "../cells";
 import { IGridCellRendererParams } from "../../components/interfaces";
 import { ColumnHeader } from "../../components/column-header/ColumnHeader";
@@ -10,7 +11,6 @@ import { RecordSaveIndicatorCell } from "../../components/record-save-indicator"
 import { suppressRendererInPinnedRows } from "./suppressRendererInPinnedRows";
 import { IGridColumn } from "./interfaces";
 import { IGridServiceLocator } from "../../services";
-import { Cell } from "@components/Grid/components/adapters/cell/Cell";
 
 
 /** What a column is worth when it does not say: a dataset column always carries one, an authored one may not. */
@@ -117,8 +117,9 @@ export class GridColumns {
             suppressMovable: true,
             valueGetter: () => null,
             valueFormatter: () => '',
-            cellRenderer: RecordSaveIndicatorCell,
-            cellRendererParams: (params: any) => ({ record: params.data }),
+            cellRenderer: (params: ICellRendererParams<IRecord>) => <CellHost record={params.data!} columnName={RECORD_SAVE_COLUMN_KEY}>
+                <RecordSaveIndicatorCell {...params} record={params.data!} />
+            </CellHost>,
             cellRendererSelector: suppressRendererInPinnedRows,
         };
     }
@@ -159,13 +160,13 @@ export class GridColumns {
             headerComponentParams: {
                 baseColumn: column
             },
-            cellStyle: (params) => this._getCellStyle(params.data, column.name),
+            cellStyle: (params) => this._getCellStyle(params.data!, column.name),
             cellRendererParams: (params: any) => this._getCellRendererParameters(params.data, column),
             editable: (params) => this._isEditable(params.data, column.name),
             cellEditorParams: (params: any) => ({ ...this._getCellRendererParameters(params.data, column), editing: true }),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeader,
-            cellRenderer: Cell,
+            cellRenderer: CellHost,
             cellEditor: FieldControl,
             valueGetter: (params: ValueGetterParams<IRecord>) => this._getValue(params.data, column.name),
             valueFormatter: (params: ValueFormatterParams<IRecord>) => this._getFormattedValue(params.data, column.name),
@@ -221,21 +222,21 @@ export class GridColumns {
     /**
      * What AG Grid paints on the cell element.
      *
-     * Given to AG Grid rather than painted inside the cell, so the background it draws for the range, the
-     * value flash and the row's selection is not covered by one of the cell's own.
+     * Given to AG Grid rather than painted inside the cell, so the cell's background is on the element the
+     * grid itself draws on.
      */
-    private _getCellStyle(record: IRecord | undefined, columnName: string): CellStyle | undefined {
-        if (!record) {
-            return undefined;
-        }
-        const backgroundColor = this._services.get('theming').getCellBackgroundColor(record, columnName);
-        return backgroundColor ? { backgroundColor: backgroundColor } : undefined;
+    private _getCellStyle(record: IRecord, columnName: string): CellStyle {
+        return { backgroundColor: this._cells.getCell(record, columnName).getTheme().getValue().semanticColors.bodyBackground };
     }
 
     /** What a cell needs to draw a value: no control and no bindings, since nothing there reads them. */
     private _getCellRendererParameters(record: IRecord, column: IGridColumn): IGridCellRendererParams {
         //a one-click-edit column takes input without ever entering edit mode, so its renderer is an editor
-        return { baseColumn: column, record: record, editing: !!column.oneClickEdit };
+        return { baseColumn: column, record: record, columnName: column.name, editing: !!column.oneClickEdit };
+    }
+
+    private get _cells() {
+        return this._services.get('cells');
     }
 
     private get _settings() {
