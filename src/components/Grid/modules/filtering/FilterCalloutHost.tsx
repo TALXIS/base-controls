@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEventEmitter } from "@hooks";
-import { useGridService } from "../../grid/useGridService";
+import { useGridService } from "../../useGridService";
 import { IGridFilteringEvents } from "./GridFiltering";
 import { FilterCallout } from "./FilterCallout";
 import { IFilterCalloutProps } from "./moduleComponents";

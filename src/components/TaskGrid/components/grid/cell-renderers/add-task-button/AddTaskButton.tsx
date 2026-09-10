@@ -1,5 +1,5 @@
 import { ContextualMenuItemType, Icon, IconButton, IContextualMenuItem } from "@fluentui/react"
-import { IGridCellProps } from "@components/Grid/cells"
+import { IGridCellProps } from "@components/Grid"
 import * as React from "react"
 import { getAddTaskButtonStyles } from "./styles";
 import { IRecord } from "@talxis/client-libraries";

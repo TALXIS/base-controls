@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FieldCellAdapter, IGridCellProps } from '@components/Grid/cells'
+import { FieldCellAdapter, IGridCellProps } from '@components/Grid'
 import { IRecord } from "@talxis/client-libraries";
 import { getTheme, IconButton } from "@fluentui/react";
 import { useRerender } from '@legacy';

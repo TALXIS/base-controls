@@ -1,6 +1,6 @@
 import { _, ColDef, GridApi, IRowNode, SelectionChangedEvent } from "@ag-grid-community/core";
 import { DataProvider, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { RECORD_SAVE_COLUMN_KEY } from "../../grid/columns";
+import { RECORD_SAVE_COLUMN_KEY } from "../../services/columns";
 import { getSelectionColumnDefinition } from "./getSelectionColumnDefinition";
 import { IGridSelectionServiceLocator } from "./services";
 import { IGridSelectionComponents } from "./moduleComponents";

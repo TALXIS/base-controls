@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IconButton } from "@fluentui/react";
 import { useRerender } from "@legacy";
-import { useGridService } from "../../../../grid/useGridService";
+import { useGridService } from "../../../../useGridService";
 import { useGridGroupingLabels } from "../../useGridGroupingLabels";
 import { getGroupExpandCollapseHeaderStyles } from "./styles";
 

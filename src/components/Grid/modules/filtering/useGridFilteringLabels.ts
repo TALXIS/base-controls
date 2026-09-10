@@ -1,5 +1,5 @@
 import { ILocalizationService } from "@utils";
-import { useGridService } from "../../grid/useGridService";
+import { useGridService } from "../../useGridService";
 import { IGridFilteringLabels } from "./labels";
 
 /**

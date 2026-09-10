@@ -1,5 +1,5 @@
 import { IconButton } from "@fluentui/react";
-import { IGridCellProps } from "@components/Grid/cells"
+import { IGridCellProps } from "@components/Grid"
 import * as React from "react"
 import { getTreeExpandCollapseHeaderStyles } from "./styles";
 import { useServices, useTaskDataProvider } from "@components/TaskGrid/context";

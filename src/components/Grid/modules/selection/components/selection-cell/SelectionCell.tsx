@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { Checkbox } from "@fluentui/react";
-import { useGridService } from "@components/Grid/grid/useGridService";
-import { RecordSaveIndicator, useRecordSaveStatus } from "@components/Grid/cells/record-save-indicator";
+import { useGridService } from "@components/Grid/useGridService";
+import { RecordSaveIndicator, useRecordSaveStatus } from "@components/Grid/components/record-save-indicator";
 import { getSelectionCellStyles } from "./styles";
 
 interface ISelectionCellProps extends ICellRendererParams {

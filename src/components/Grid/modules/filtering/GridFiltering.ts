@@ -4,8 +4,8 @@ import { FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as
 import { ILocalizationService } from "@utils";
 import { IGridFilteringLabels } from "./labels";
 import { IGridFilteringComponents } from "./moduleComponents";
-import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../grid/column-header";
-import { IGridColumn } from "../../grid/columns";
+import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../services/column-header";
+import { IGridColumn } from "../../services/columns";
 import { IGridFilteringServiceLocator } from "./services";
 
 /** What changed about the filter a column header has open. */

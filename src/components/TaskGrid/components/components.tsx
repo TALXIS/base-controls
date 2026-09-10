@@ -2,7 +2,7 @@ import * as React from "react";
 import { ISkeletonProps, Skeleton } from "@components/DatasetControl/skeleton";
 import { ICommandBarProps } from "@legacy";
 import { CommandBar } from "./header/command-bar";
-import type { IGridCellProps } from "@components/Grid/cells";
+import type { IGridCellProps } from "@components/Grid";
 
 /**
  * Props every TaskGrid cell renderer and cell editor receives: AG Grid's `ICellRendererParams` plus the

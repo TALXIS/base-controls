@@ -1,8 +1,8 @@
 import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, TotalRow } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridAggregationLabels } from "./labels";
-import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../grid/column-header";
-import { IGridColumn } from "../../grid/columns";
+import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../services/column-header";
+import { IGridColumn } from "../../services/columns";
 import { IGridAggregationServiceLocator } from "./services";
 
 /** Which label names a total, per aggregation a column can carry. */

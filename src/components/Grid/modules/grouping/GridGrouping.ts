@@ -4,8 +4,8 @@ import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadat
 import { ILocalizationService } from "@utils";
 import { IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
-import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../grid/column-header";
-import { IGridColumn } from "../../grid/columns";
+import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../services/column-header";
+import { IGridColumn } from "../../services/columns";
 import { IGridGroupingServiceLocator } from "./services";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
 import { IGroupingStrategy, IGroupingStrategyModule } from "./strategies";

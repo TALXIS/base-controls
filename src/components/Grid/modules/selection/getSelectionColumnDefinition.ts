@@ -1,6 +1,6 @@
 import { ColDef } from "@ag-grid-community/core";
 import { DataProvider, IRecord } from "@talxis/client-libraries";
-import { suppressRendererInPinnedRows } from "../../grid/columns";
+import { suppressRendererInPinnedRows } from "../../services/columns";
 import { IGridSelectionComponents } from "./moduleComponents";
 
 /**

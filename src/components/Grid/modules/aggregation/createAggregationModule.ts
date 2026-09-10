@@ -1,7 +1,7 @@
 import { IRowNode, IsFullWidthRowParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { LocalizationService, ServiceLocator } from "@utils";
-import { FullWidthCellRendererError } from "@components/Grid/errors/FullWidthCellRendererError/FullWidthCellRendererError";
+import { FullWidthCellRendererError } from "@components/Grid/components/errors/FullWidthCellRendererError/FullWidthCellRendererError";
 import { IGridModule } from "../interfaces";
 import { GRID_AGGREGATION_LABELS, IGridAggregationLabels } from "./labels";
 import { GridAggregation } from "./GridAggregation";

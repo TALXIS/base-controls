@@ -1,6 +1,6 @@
 import { GridApi, GridState } from "@ag-grid-community/core";
 import { IDataProvider, IRecord } from "@talxis/client-libraries";
-import { IGridComponents } from "./grid/components";
+import { IGridComponents } from "./components";
 import { IGridModules } from "./modules";
 import { IGridLabels } from "./labels";
 

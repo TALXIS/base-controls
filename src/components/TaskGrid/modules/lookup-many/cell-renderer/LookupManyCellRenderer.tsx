@@ -1,10 +1,10 @@
 import { useDatasetControl, useTaskDataProvider } from "@components/TaskGrid/context";
 import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
-import { IGridCellProps } from "@components/Grid/cells";
+import { IGridCellProps } from "@components/Grid";
 import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/modules/lookup-many/components";
 import { ThemeProvider } from "@fluentui/react";
-import { useGridService } from "@components/Grid/grid/useGridService";
+import { useGridService } from "@components/Grid";
 
 enum ControlName {
     LookupMany = 'LookupMany',

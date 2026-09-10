@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Icon } from "@fluentui/react";
-import { IGridColumn } from "../../grid/columns";
+import { IGridColumn } from "../../services/columns";
 import { FilterCalloutHost } from "./FilterCalloutHost";
 
 export interface IFilterCalloutProps {

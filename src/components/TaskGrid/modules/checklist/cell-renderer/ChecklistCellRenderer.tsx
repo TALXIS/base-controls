@@ -2,7 +2,7 @@ import * as React from "react";
 import { Icon, Text, useTheme } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
-import { IGridCellProps } from "@components/Grid/cells";
+import { IGridCellProps } from "@components/Grid";
 import { useServices } from "@components/TaskGrid/context";
 import { getChecklistCellRendererStyles } from "./styles";
 

@@ -4,8 +4,8 @@ import { DataTypes, IColumn, IInternalDataProvider, IRecord, Sorting } from "@ta
 import { ILocalizationService } from "@utils";
 import { IGridSortingLabels } from "./labels";
 import { IGridSortingComponents } from "./moduleComponents";
-import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../grid/column-header";
-import { IGridColumn } from "../../grid/columns";
+import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../services/column-header";
+import { IGridColumn } from "../../services/columns";
 import { IGridSortingServiceLocator } from "./services";
 
 export interface IGridSortingParameters {
