@@ -1,6 +1,7 @@
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
-import { IGridCellLoading } from "./GridCells";
+import { ICommandBarItemProps } from "@fluentui/react";
+import { IGridCellCommands, IGridCellLoading } from "./GridCells";
 import { GridCellTheme } from "./GridCellTheme";
 
 export interface IGridCellParameters {
@@ -63,6 +64,18 @@ export class GridCell {
         const result: IGridCellLoading = { isLoading: false };
         this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this._columnName });
         return result.isLoading;
+    }
+
+    /**
+     * What this cell offers to do. Nothing, unless a hook says otherwise.
+     *
+     * Answered on every call, for the same reason as {@link isLoading}: a hook reads state that changes
+     * under it.
+     */
+    public getCommands(): ICommandBarItemProps[] {
+        const result: IGridCellCommands = { items: [] };
+        this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this._columnName });
+        return result.items;
     }
 
     /** Whether this cell has left the screen, after which nothing should be asked of it. */

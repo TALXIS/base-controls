@@ -1,6 +1,6 @@
 import React from 'react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModules, OptionSet } from '@talxis/base-controls'
-import { MemoryDataProvider } from '@talxis/client-libraries'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridCellThemeColors, IGridModule, IGridModules, IGridServiceLocator, OptionSet } from '@talxis/base-controls'
+import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATA_SOURCE, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
 /**
@@ -39,6 +39,72 @@ const OptionSetPreview = (props: {
             onNotifyOutputChanged={(outputs: { value?: number }) => setValue(outputs.value ?? null)} />
     </div>
 }
+
+/** Colours that sit next to each other without shouting: soft tints, and a few deep ones for contrast. */
+const CELL_PALETTES: IGridCellThemeColors[] = [
+    { background: '#eef3fb', text: '#22364f', primary: '#3d6ea8' },
+    { background: '#eef6f0', text: '#1e4430', primary: '#2f7d55' },
+    { background: '#fdf4e7', text: '#4f3a17', primary: '#a9741e' },
+    { background: '#fbeff1', text: '#4e2530', primary: '#a84257' },
+    { background: '#f1eefa', text: '#332a52', primary: '#6a56b5' },
+    { background: '#eaf5f6', text: '#1d4348', primary: '#2b7b83' },
+    { background: '#faf0e6', text: '#4a3320', primary: '#9b6434' },
+    //the deep ones, so light text on a dark cell is part of what the story shows
+    { background: '#26364a', text: '#dce7f5', primary: '#8fb6e6' },
+    { background: '#2c3a2e', text: '#dbeada', primary: '#8fc79a' },
+    { background: '#3a2b3f', text: '#efdff2', primary: '#c99bd4' },
+]
+
+/** Anything to a number, the same number every time: the colours have to survive a re-render. */
+const hashOf = (record: IRecord, columnName: string) =>
+    [...`${record.getRecordId()}_${columnName}`].reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 7)
+
+/**
+ * A colour per cell and a command or two, wired onto whichever module the story is given.
+ *
+ * Every third cell is left alone - a hook that writes nothing leaves the cell in its row's theme, which is
+ * where the zebra stripe shows through.
+ */
+const withCellHooks = (module: IGridModule): IGridModule => ({
+    ...module,
+    onRegister: (services: IGridServiceLocator) => {
+        module.onRegister?.(services)
+        //a long row of commands on the name cells, so what a bar does when the column cannot fit it is
+        //part of what the story shows
+        services.get('cells').registerCellCommandsHook((result, params) => {
+            if (params.columnName !== 'name') {
+                return
+            }
+            const command = (key: string, iconName: string, disabled?: boolean) => ({
+                key: key,
+                iconOnly: true,
+                iconProps: { iconName: iconName },
+                title: key,
+                disabled: disabled,
+                onClick: () => console.log(key, params.record.getRecordId()),
+            })
+            result.items.push(
+                command('Open', 'OpenInNewWindow'),
+                command('Edit', 'Edit'),
+                command('Copy', 'Copy'),
+                command('Share', 'Share'),
+                command('Flag', 'Flag'),
+                command('Assign', 'FollowUser'),
+                command('Comment', 'Comment'),
+                command('Download', 'Download'),
+                command('Archive', 'Archive'),
+                command('Delete', 'Delete', true),
+            )
+        })
+        services.get('cells').registerCellThemeHook((result, params) => {
+            const hash = hashOf(params.record, params.columnName)
+            if (hash % 3 === 0) {
+                return
+            }
+            result.colors = CELL_PALETTES[hash % CELL_PALETTES.length]
+        })
+    },
+})
 
 export interface IScratchGridProps {
     rowModel: 'clientSide' | 'serverSide'
@@ -86,9 +152,9 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
-        rowModel: props.rowModel === 'clientSide'
+        rowModel: withCellHooks(props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
-            : createServerSideRowModelModule(),
+            : createServerSideRowModelModule()),
         clipboard: props.clipboard ? createClipboardModule() : undefined,
         cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
         selection: props.selectableRows === 'none' ? undefined : createSelectionModule({ mode: props.selectableRows }),

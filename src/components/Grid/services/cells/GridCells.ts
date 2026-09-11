@@ -1,3 +1,4 @@
+import { ICommandBarItemProps } from "@fluentui/react";
 import { ITheme } from "@legacy";
 import { ICustomColumnControl, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
@@ -87,6 +88,20 @@ export interface IGridCellLoading {
     isLoading: boolean;
 }
 
+/** What a cell offers to do, as the hooks leave it. */
+export interface IGridCellCommands {
+    /** What the command bar draws. Empty, so a cell shows none until something adds one. */
+    items: ICommandBarItemProps[];
+}
+
+/**
+ * A hook over the commands a cell offers.
+ *
+ * Handed the list so far and mutates it. Runs for every cell on every render, so add from what is already
+ * in hand rather than fetching here - and give each item a `key` that means the same thing next render.
+ */
+export type GridCellCommandsHook = (result: IGridCellCommands, params: { record: IRecord; columnName: string }) => void;
+
 /**
  * A hook over whether a cell is waiting.
  *
@@ -112,6 +127,7 @@ export class GridCells {
     private _controlParametersHooks = new HookRegistry<GridControlParametersHook>();
     private _cellThemeHooks = new HookRegistry<GridCellThemeHook>();
     private _cellLoadingHooks = new HookRegistry<GridCellLoadingHook>();
+    private _cellCommandsHooks = new HookRegistry<GridCellCommandsHook>();
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
@@ -195,6 +211,15 @@ export class GridCells {
         this._cellLoadingHooks.register(hook, priority);
     }
 
+    /**
+     * Registers a hook over the commands a cell offers. Runs per cell per render, so keep it cheap.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    public registerCellCommandsHook(hook: GridCellCommandsHook, priority?: number): void {
+        this._cellCommandsHooks.register(hook, priority);
+    }
+
     /** Run by the `GridControl` of the cell in question, which is the only caller of these three. */
     public applyFieldHooks(result: IGridField, params: IGridCellHookParameters): void {
         this._fieldHooks.apply(result, params);
@@ -216,5 +241,10 @@ export class GridCells {
     /** Run by the cell in question, which is the only caller. */
     public applyCellLoadingHooks(result: IGridCellLoading, params: { record: IRecord; columnName: string }): void {
         this._cellLoadingHooks.apply(result, params);
+    }
+
+    /** Run by the cell in question, which is the only caller. */
+    public applyCellCommandsHooks(result: IGridCellCommands, params: { record: IRecord; columnName: string }): void {
+        this._cellCommandsHooks.apply(result, params);
     }
 }
