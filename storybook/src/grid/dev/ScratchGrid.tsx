@@ -1,7 +1,6 @@
 import React from 'react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModule, IGridModules, IGridServiceLocator, OptionSet } from '@talxis/base-controls'
-import { DataProvider, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
-import { ITheme } from '@fluentui/react'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridCellThemeColors, IGridModule, IGridModules, IGridServiceLocator, OptionSet } from '@talxis/base-controls'
+import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATA_SOURCE, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
 /**
@@ -41,57 +40,45 @@ const OptionSetPreview = (props: {
     </div>
 }
 
-/** A cell's palette: what it is drawn on, what it reads as, and what an accent in it takes. */
-interface ICellPalette {
-    background: string
-    text: string
-    primary: string
-}
-
-/** The status a row's colours are taken from. Every status paints, so no row is left in the grid's own theme. */
-const STATUS_PALETTES: Record<number, ICellPalette> = {
-    //not started - cool slate
-    1: { background: '#eef1f6', text: '#2b3a4b', primary: '#4a6785' },
-    //in progress - warm sand
-    2: { background: '#fdf3e3', text: '#5c4318', primary: '#b7791f' },
-    //done - sage
-    3: { background: '#e8f4ec', text: '#1c4a2c', primary: '#2e7d4f' },
-    //blocked - deep plum, the one dark row
-    4: { background: '#3a2231', text: '#f6e3ef', primary: '#e79ac8' },
-    //in review - dusty blue
-    5: { background: '#e7eff8', text: '#1f3c5c', primary: '#3b6ea5' },
-    //deferred - muted clay
-    6: { background: '#f6ece7', text: '#5a3a2c', primary: '#a4643f' },
-}
-
-/** What a cell with no status of its own is drawn in - still its own palette, so every cell carries one. */
-const DEFAULT_PALETTE: ICellPalette = { background: '#f7f7f8', text: '#32323a', primary: '#5b5fc7' }
-
-/** A theme in a cell's palette, id and all: the id is what tells the grid this is a theme of the cell's own. */
-const getCellTheme = (theme: ITheme, id: string, palette: ICellPalette): ITheme => ({
-    ...theme,
-    id: id,
-    palette: {
-        ...theme.palette,
-        themePrimary: palette.primary,
-        themeDark: palette.primary,
-        themeDarker: palette.primary,
-        neutralPrimary: palette.text,
-        white: palette.background,
-    },
-    semanticColors: {
-        ...theme.semanticColors,
-        bodyBackground: palette.background,
-        bodyText: palette.text,
-        bodySubtext: palette.text,
-        link: palette.primary,
-        inputBorder: palette.primary,
-        inputBackgroundChecked: palette.primary,
-    },
-})
+/**
+ * A spread of palettes, deliberately uneven: pastels next to near-black, a neon, a barely-there grey, a
+ * couple with a primary that fights the background. If a cell looks right in all of them it looks right.
+ */
+const PALETTES: IGridCellThemeColors[] = [
+    //cool slate
+    { background: '#eef1f6', text: '#2b3a4b', primary: '#4a6785' },
+    //warm sand
+    { background: '#fdf3e3', text: '#5c4318', primary: '#b7791f' },
+    //sage
+    { background: '#e8f4ec', text: '#1c4a2c', primary: '#2e7d4f' },
+    //deep plum, light text
+    { background: '#3a2231', text: '#f6e3ef', primary: '#e79ac8' },
+    //near black, the darkest surface here
+    { background: '#121214', text: '#e8e8ec', primary: '#7f9cf5' },
+    //midnight blue with a warm accent, a primary that fights its background
+    { background: '#10233f', text: '#d8e4f5', primary: '#ffb347' },
+    //neon on dark, fully saturated
+    { background: '#0d1f17', text: '#c9ffe5', primary: '#00ff9c' },
+    //hot magenta, a light surface that is anything but neutral
+    { background: '#ffe6f4', text: '#5c0f3a', primary: '#d6007f' },
+    //flat grey, almost no contrast between surface and text
+    { background: '#d9d9dd', text: '#4a4a52', primary: '#6e6e78' },
+    //paper white with a red accent
+    { background: '#ffffff', text: '#1b1b1f', primary: '#d13438' },
+    //teal, mid-lightness surface
+    { background: '#bfe3e0', text: '#0b3b38', primary: '#0f766e' },
+    //mustard, a surface bright enough to need dark everything
+    { background: '#f3d06b', text: '#3d2f00', primary: '#7a5c00' },
+    //one colour for all three, checkbox cell included: nothing to read the text against, which is what
+    //the generator has to make something of rather than crash on
+    { background: '#0078d4', text: '#0078d4', primary: '#0078d4' },
+]
 
 /** A cell, by what it is: the same cell answers the same whichever render is asking. */
 const getCellKey = (record: IRecord, columnName: string) => `${record.getRecordId()}_${columnName}`
+
+/** Which row this is, near enough: the records are keyed `1`, `2`, … by the memory provider. */
+const getRowIndex = (record: IRecord) => Number.parseInt(record.getRecordId().replace(/\D/g, ''), 10) || 0
 
 /** Scattered, but the same scattering every render - `Math.random()` here would shimmer a different cell each time. */
 const isScatteredCell = (key: string, everyNth: number) =>
@@ -100,38 +87,29 @@ const isScatteredCell = (key: string, everyNth: number) =>
 /**
  * The cell hooks, wired onto whichever module the story is given, so what they do can be seen.
  *
- * Colours the whole row from its status and then gives `estimate` a theme of its own on top, which is
- * what proves a later hook gets the later word - and that a cell theme is per cell rather than per row.
- * The last one leaves a scattering of cells shimmering.
+ * Colours the whole row - every column of it, the checkbox included - and then gives `estimate` an accent
+ * of its own on top, which is what proves a later hook gets the later word. The last one leaves a
+ * scattering of cells shimmering.
  */
 const withCellHooks = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
         const cells = services.get('cells')
-        //every cell gets a palette of its own: the row's status decides it, and a row with none still
-        //paints rather than falling back to the grid's theme
+        //every row gets a palette of its own, cycling through the whole spread rather than the handful a
+        //status column happens to hold
         cells.registerCellThemeHook((result, params) => {
-            const status = params.record.getValue('status') as number
-            result.theme = getCellTheme(result.theme, `scratch-status-${status ?? 'none'}`,
-                STATUS_PALETTES[status] ?? DEFAULT_PALETTE)
+            result.colors = { ...PALETTES[getRowIndex(params.record) % PALETTES.length] }
         })
         //later, so it wins on the one column it cares about
         cells.registerCellThemeHook((result, params) => {
             if (params.columnName !== 'estimate') {
                 return
             }
-            result.theme = getCellTheme(result.theme, 'scratch-estimate',
-                { background: '#fff8e1', text: '#4a3800', primary: '#c77800' })
+            //only the accent: the surface and the text stay whatever the row decided, which is what a
+            //column-level hook over a row-level one should be able to do
+            result.colors.primary = '#c77800'
         }, 10)
-        //the checkbox column, in a palette of its own: it is a cell like any other, and a hook can say so
-        cells.registerCellThemeHook((result, params) => {
-            if (params.columnName !== DataProvider.CONST.CHECKBOX_COLUMN_KEY) {
-                return
-            }
-            result.theme = getCellTheme(result.theme, 'scratch-checkbox',
-                { background: '#eceaf8', text: '#2f2a55', primary: '#6b4fd8' })
-        }, 20)
         //a scattering of cells that never stop waiting, which is what a module fetching something of its
         //own would look like until it arrives
         cells.registerCellLoadingHook((result, params) => {

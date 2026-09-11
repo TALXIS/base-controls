@@ -1,7 +1,7 @@
 import { ITheme, Theming } from "@legacy";
 import { IColumn, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
-import { IGridCellThemeResult } from "./GridCells";
+import { IGridCellThemeColors, IGridCellThemeResult } from "./GridCells";
 
 export interface IGridCellThemeParameters {
     services: IGridServiceLocator;
@@ -22,40 +22,56 @@ export class GridCellTheme {
     }
 
     public getValue(): ITheme {
-        const result: IGridCellThemeResult = { theme: this._getDefaultTheme() };
+        const result: IGridCellThemeResult = { colors: this._getDefaultColors() };
         this._cells.applyCellThemeHooks(result, { record: this._record, columnName: this._columnName });
-        return result.theme;
+        if (result.theme) {
+            if (!result.theme.id) {
+                throw new Error(`[Grid] The theme a hook gave the ${this._columnName} cell carries no id. An id is what the grid caches the theme on and what tells it apart from the grid's own, so a theme without one cannot be used.`);
+            }
+            return result.theme;
+        }
+        const { primary, background, text } = result.colors;
+        //the grid's own three colours generate the grid's own theme - the generator is keyed on them, so
+        //an untouched cell gets that instance back rather than a copy of it
+        return Theming.GenerateThemeV8(primary, background, text);
     }
 
+    /** Whether this is a theme of the cell's own rather than the one the whole grid is drawn in. */
     public isCustom(): boolean {
         return this.getValue().id !== this._gridTheme.id;
     }
 
     /**
-     * Legacy: taking the theme off the record's own formatting is how cells were coloured before hooks
-     * existed. Register a cell theme hook instead - this goes when nothing needs it.
+     * What the cell is drawn in before any hook: the grid's colours, or the ones its column asked for.
+     *
+     * Legacy: `getCustomFormatting` is how a host coloured cells by value before hooks existed, and a hook
+     * is the way to do it now. This goes when nothing needs it.
      */
-    private _getDefaultTheme(): ITheme {
-        const gridTheme = this._gridTheme;
+    private _getDefaultColors(): IGridCellThemeColors {
+        const gridColors = this._gridColors;
         if (!this._column) {
-            return gridTheme;
+            return gridColors;
         }
-        const formatting = this._record.getColumnInfo(this._columnName).ui.getCustomFormatting(gridTheme) ?? {};
-        const id = (formatting as ITheme).id;
-        if (!id) {
-            if (Object.keys(formatting).length > 0) {
-                console.warn(`[Grid] The custom formatting on column ${this._columnName} carries no id, so it is ignored. A formatting has to name itself for its theme to be built and cached.`);
-            }
-            return gridTheme;
-        }
-        const backgroundColor = formatting.backgroundColor ?? gridTheme.semanticColors.bodyBackground;
-        const isRecoloured = backgroundColor !== gridTheme.semanticColors.bodyBackground;
-        const contrast = Theming.GetTextColorForBackground(backgroundColor);
-        return Theming.GenerateThemeV8(
-            formatting.primaryColor ?? (isRecoloured ? contrast : gridTheme.palette.themePrimary),
-            backgroundColor,
-            formatting.textColor || (isRecoloured ? contrast : gridTheme.semanticColors.bodyText),
-            { id: id });
+        const formatting = this._record.getColumnInfo(this._columnName).ui.getCustomFormatting(this._gridTheme) ?? {};
+        const background = formatting.backgroundColor ?? gridColors.background;
+        const isRecoloured = background !== gridColors.background;
+        //a background of its own is taken as emphasis: the text goes to whatever reads on it, and so does
+        //the primary colour unless the column named one itself
+        const contrast = Theming.GetTextColorForBackground(background);
+        return {
+            primary: formatting.primaryColor ?? (isRecoloured ? contrast : gridColors.primary),
+            background: background,
+            text: formatting.textColor || (isRecoloured ? contrast : gridColors.text),
+        };
+    }
+
+    private get _gridColors(): IGridCellThemeColors {
+        const gridTheme = this._gridTheme;
+        return {
+            primary: gridTheme.palette.themePrimary,
+            background: gridTheme.semanticColors.bodyBackground,
+            text: gridTheme.semanticColors.bodyText,
+        };
     }
 
     private get _column(): IColumn | undefined {

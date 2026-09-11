@@ -50,18 +50,34 @@ export type GridControlHook = (result: { control: Required<ICustomColumnControl>
  */
 export type GridControlParametersHook = (result: IParameters, params: IGridCellHookParameters) => void;
 
+/** The three colours a cell's theme is generated from. */
+export interface IGridCellThemeColors {
+    primary: string;
+    background: string;
+    text: string;
+}
+
 /** The theme a cell is drawn in, as the hooks leave it. */
 export interface IGridCellThemeResult {
-    theme: ITheme;
+    /**
+     * The colours the cell's theme is generated from. All three are always set, so a hook changes the one
+     * it cares about and the rest stay as whatever decided them.
+     */
+    colors: IGridCellThemeColors;
+    /**
+     * A theme to draw the cell in instead of generating one, which wins over `colors`.
+     *
+     * It has to carry an `id`, and the same id has to mean the same theme: that is what the grid caches on
+     * and what tells a cell's theme apart from the grid's. `Theming.GenerateThemeV8` ids what it builds.
+     */
+    theme?: ITheme;
 }
 
 /**
  * A hook over the theme a cell is drawn in.
  *
- * Replace `result.theme` to give the cell another - the theme handed over is not one to write into, since
- * it may be the grid's own or a cached one other cells are drawn in too. Build one with
- * `Theming.GenerateThemeV8`: whether a cell counts as custom is decided by the theme's id, and a theme
- * built any other way carries none.
+ * Edit `result.colors` to recolour the cell, or set `result.theme` for one the three colours cannot
+ * express. Runs per cell per render, so keep it cheap.
  */
 export type GridCellThemeHook = (result: IGridCellThemeResult, params: { record: IRecord; columnName: string }) => void;
 
