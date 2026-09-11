@@ -19,18 +19,12 @@ export const Cell = (props: ICellAdapterProps) => {
     const { components: componentOverrides, ...cellProps } = props;
     const { record, baseColumn: column } = cellProps;
     const control = useGridControl(record, column.name);
-    const rows = useGridService('rows');
     const components = { ...CellComponents, ...componentOverrides };
     const { loading, isResizable } = control.getField();
 
     //the cell's theme is the host's to apply, which is where every cell now gets one
     return components.onRenderCell({
         alignment: column.alignment,
-        resizeOptions: {
-            resizable: isResizable,
-            height: isResizable ? rows.getHeight(record) : undefined,
-            onResizeEnd: height => rows.setHeight(record, height),
-        },
         children: <>
             {loading && components.onRenderLoading()}
             {!loading && <CellErrorBoundary>{components.onRenderControl(cellProps)}</CellErrorBoundary>}

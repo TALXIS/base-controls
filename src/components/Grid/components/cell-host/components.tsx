@@ -1,6 +1,6 @@
 import { ICommandsComponents } from "../adapters/commands/components";
 import { IControlComponents } from "../adapters/control/components";
-import { CellUi, ICellContainerProps } from "../ui";
+import { CellUi, ICellContainerProps, IRowResizeGripProps } from "../ui";
 
 /** The replaceable pieces of a cell's host. Override through `ICellHostProps.components`. */
 export interface ICellHostComponents {
@@ -8,6 +8,8 @@ export interface ICellHostComponents {
     onRenderContainer: (props: ICellContainerProps) => JSX.Element;
     /** What the cell's control is drawn with: the element it sits in, and what draws the value. */
     control?: Partial<IControlComponents>;
+    /** What a row is dragged taller by. Called only where the column can grow. */
+    onRenderRowResizeGrip?: (props: IRowResizeGripProps) => JSX.Element;
     /** What a cell shows while it is waiting. Called only while it is. */
     onRenderLoading: () => JSX.Element;
     /** What the cell's commands are drawn with. */
@@ -18,4 +20,5 @@ export interface ICellHostComponents {
 export const CellHostComponents: ICellHostComponents = {
     onRenderContainer: props => <CellUi.Container {...props} />,
     onRenderLoading: () => <CellUi.Loading />,
+    onRenderRowResizeGrip: props => <CellUi.RowResizeGrip {...props} />,
 };

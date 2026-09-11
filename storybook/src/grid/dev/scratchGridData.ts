@@ -102,7 +102,7 @@ export const COLUMNS: IColumn[] = [
         metadata: gridMetadata(DataTypes.SingleLineUrl),
     },
     {
-        name: 'notes', dataType: DataTypes.Multiple, displayName: 'Notes', visualSizeFactor: 240,
+        name: 'notes', dataType: DataTypes.Multiple, displayName: 'Notes', visualSizeFactor: 240, autoHeight: true,
         metadata: gridMetadata(DataTypes.Multiple),
     },
     {

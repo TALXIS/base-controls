@@ -1,5 +1,9 @@
 import { useLayoutEffect, useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
+import { IRecord } from "@talxis/client-libraries";
+import { useRerender } from "@legacy";
+import { useEventEmitter } from "@hooks/useEventEmitter";
+import { IGridRowsEvents } from "../../services/rows";
 import { Commands } from "../adapters/commands";
 import { Control } from "../adapters/control";
 import { CustomizerContext, ThemeContext } from "@fluentui/react";
@@ -23,6 +27,8 @@ export interface ICellHostProps extends ICellRendererParams {
 export const CellHost = (props: ICellHostProps) => {
     const { data: record, children, components: componentOverrides } = props;
     const cells = useGridService('cells');
+    const rows = useGridService('rows');
+    const rerender = useRerender();
     const components = { ...CellHostComponents, ...componentOverrides };
     const colDef = props.colDef!;
     const cell = useMemo(() => cells.createCell(record, colDef), [cells, record, colDef]);
@@ -33,23 +39,42 @@ export const CellHost = (props: ICellHostProps) => {
         return () => cells.removeCell(cell);
     }, [cells, cell]);
 
+    //a height set anywhere else - another cell of the same row being dragged - is this cell's height too
+    useEventEmitter<IGridRowsEvents>(rows, 'onRowHeightChanged', (changed: IRecord) => {
+        if (changed.getRecordId() === record.getRecordId()) {
+            rerender();
+        }
+    });
+
+    const getContainer = () => components.onRenderContainer({
+        //what `applyTo='element'` painted: the cell's surface and the text on it
+        style: { backgroundColor: theme.semanticColors.bodyBackground, color: theme.semanticColors.bodyText },
+        children: cell.isLoading()
+            ? components.onRenderLoading()
+            : <><Cell.Control /><Cell.Commands /></>,
+    });
+
+    const getContent = () => {
+        //`autoHeight` is what lets AG Grid take the row's height from what the cell draws, and dragging a
+        //row taller is nothing without it
+        if (!colDef.autoHeight || !components.onRenderRowResizeGrip) {
+            return getContainer();
+        }
+        return components.onRenderRowResizeGrip({
+            height: rows.getHeight(record),
+            onResizeEnd: height => rows.setHeight(record, height),
+            children: getContainer(),
+        });
+    };
+
     return <GridCellContext.Provider value={cell}>
         <ThemeContext.Provider value={theme}>
             <CustomizerContext.Provider value={getCellCustomizerContext(theme)}>
-                {components.onRenderContainer({
-                    //what `applyTo='element'` painted: the cell's surface and the text on it
-                    style: { backgroundColor: theme.semanticColors.bodyBackground, color: theme.semanticColors.bodyText },
-                    children: cell.isLoading() ? 
-                    components.onRenderLoading() :
-                    <>
-                    <Cell.Control />
-                    <Cell.Commands />
-                    </>
-                })}
+                {getContent()}
             </CustomizerContext.Provider>
         </ThemeContext.Provider>
     </GridCellContext.Provider>;
 };
 
-/** The cell, with what a cell can draw of its own hanging off it: `Cell.Commands`. */
+/** The cell, with what a cell can draw of its own hanging off it: `Cell.Control`, `Cell.Commands`. */
 export const Cell = Object.assign(CellHost, { Commands: Commands, Control: Control });
