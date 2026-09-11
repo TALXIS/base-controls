@@ -1,4 +1,4 @@
-import { CellUi, IControlUiProps } from "../../ui";
+import { CellUi, ICellControlProps } from "../../ui";
 
 /** How a field's control is framed. Override through `IFieldControlWrapperProps.components`. */
 export interface IFieldControlWrapperComponents {
@@ -8,7 +8,7 @@ export interface IFieldControlWrapperComponents {
      * `children` is whatever drew, so replacing this changes what surrounds a control rather than what the
      * control is.
      */
-    onRenderContainer: (props: IControlUiProps) => JSX.Element;
+    onRenderContainer: (props: ICellControlProps) => JSX.Element;
 }
 
 /** The defaults for {@link IFieldControlWrapperComponents}. */

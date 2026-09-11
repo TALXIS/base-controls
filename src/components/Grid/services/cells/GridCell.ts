@@ -67,6 +67,19 @@ export class GridCell {
     }
 
     /**
+     * What this cell reads as.
+     *
+     * `undefined` for a column of the grid's own rather than the dataset's - the checkboxes, the column a
+     * save is reported in - which hold nothing of the record's to read.
+     */
+    public getFormattedValue(): string | null | undefined {
+        if (!this._record.getDataProvider().getColumnsMap()[this._columnName]) {
+            return undefined;
+        }
+        return this._record.getFormattedValue(this._columnName);
+    }
+
+    /**
      * What this cell offers to do. Nothing, unless a hook says otherwise.
      *
      * Answered on every call, for the same reason as {@link isLoading}: a hook reads state that changes

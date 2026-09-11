@@ -3,6 +3,7 @@ export { Cell as FieldCellAdapter } from './cell';
 export { CellComponents } from './cell';
 export type { ICellAdapterProps, ICellComponents } from './cell';
 export * from './commands';
+export * from './control';
 export * from './field-control';
 export * from './field-control-wrapper';
 export * from './legacy-nested-control-renderer';

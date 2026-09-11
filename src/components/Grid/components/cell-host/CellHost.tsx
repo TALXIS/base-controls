@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { Commands } from "../adapters/commands";
+import { Control } from "../adapters/control";
 import { CustomizerContext, ThemeContext } from "@fluentui/react";
 import { useGridService } from "../../useGridService";
 import { CellHostComponents, ICellHostComponents } from "./components";
@@ -24,8 +25,6 @@ export const CellHost = (props: ICellHostProps) => {
     const columnName = props.column!.getColId();
     const cells = useGridService('cells');
     const components = { ...CellHostComponents, ...componentOverrides };
-    //only where the host was given one: a map carrying `undefined` would put out the adapter's own default
-    const commandsComponents = components.onRenderCommands ? { onRenderCommands: components.onRenderCommands } : undefined;
     const cell = useMemo(() => cells.createCell(record, columnName), [cells, record, columnName]);
     const theme = cell.getTheme().getValue();
 
@@ -46,7 +45,7 @@ export const CellHost = (props: ICellHostProps) => {
                 {components.onRenderContainer({
                     //what `applyTo='element'` painted: the cell's surface and the text on it
                     style: { backgroundColor: theme.semanticColors.bodyBackground, color: theme.semanticColors.bodyText },
-                    children: cell.isLoading() ? components.onRenderLoading() : <>{children} {props.valueFormatted}<Cell.Commands components={commandsComponents} /></>,
+                    children: cell.isLoading() ? components.onRenderLoading() : <>{children}<Cell.Control components={components.control} /><Cell.Commands components={components.commands} /></>,
                 })}
             </CustomizerContext.Provider>
         </ThemeContext.Provider>
@@ -54,4 +53,4 @@ export const CellHost = (props: ICellHostProps) => {
 };
 
 /** The cell, with what a cell can draw of its own hanging off it: `Cell.Commands`. */
-export const Cell = Object.assign(CellHost, { Commands: Commands });
+export const Cell = Object.assign(CellHost, { Commands: Commands, Control: Control });

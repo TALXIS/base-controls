@@ -1,18 +1,17 @@
 import { ICommandsComponents } from "../adapters/commands/components";
+import { IControlComponents } from "../adapters/control/components";
 import { CellUi, ICellContainerProps } from "../ui";
 
 /** The replaceable pieces of a cell's host. Override through `ICellHostProps.components`. */
 export interface ICellHostComponents {
     /** The element the cell is drawn in, and what its theme reaches the content through. */
     onRenderContainer: (props: ICellContainerProps) => JSX.Element;
+    /** What the cell's control is drawn with: the element it sits in, and what draws the value. */
+    control?: Partial<IControlComponents>;
     /** What a cell shows while it is waiting. Called only while it is. */
     onRenderLoading: () => JSX.Element;
-    /**
-     * What a cell offers to do, drawn after what it shows. Called only where it offers any.
-     *
-     * Left out to keep the command bar the commands are drawn in today.
-     */
-    onRenderCommands?: ICommandsComponents['onRenderCommands'];
+    /** What the cell's commands are drawn with. */
+    commands?: Partial<ICommandsComponents>;
 }
 
 /** The defaults for {@link ICellHostComponents}. */
