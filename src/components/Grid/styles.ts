@@ -50,7 +50,8 @@ const getAutoHeightStyles = (rowHeight: number, maxVisibleRows: number) => {
 export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: number = 42, maxVisibleRows: number = 15) => {
     return mergeStyleSets({
         gridRoot: {
-            //the "no records" overlay is centred over the whole grid, pinned rows included, so the grid
+            height: 800
+/*             //the "no records" overlay is centred over the whole grid, pinned rows included, so the grid
             //needs to stay tall enough that the overlay clears them instead of being drawn over the top
             minHeight: 220,
             display: 'flex',
@@ -118,6 +119,6 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
             },
             //the grid is either as tall as it was told to be, or as tall as its rows
             ...(height ? { height: height } : getAutoHeightStyles(rowHeight, maxVisibleRows))
-        }
-    })
+        } */
+    }})
 };
