@@ -67,8 +67,8 @@ export interface IGridCellThemeResult {
     /**
      * A theme to draw the cell in instead of generating one, which wins over `colors`.
      *
-     * It has to carry an `id`, and the same id has to mean the same theme: that is what the grid caches on
-     * and what tells a cell's theme apart from the grid's. `Theming.GenerateThemeV8` ids what it builds.
+     * Hand back the same instance for the same theme where you can: what a cell's theme reaches its
+     * content through is cached on the theme object.
      */
     theme?: ITheme;
 }

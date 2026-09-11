@@ -31,6 +31,16 @@ export class GridRows extends EventEmitter<IGridRowsEvents> {
         return this._heights[record.getRecordId()] ?? this._settings.getDefaultRowHeight();
     }
 
+    /**
+     * Where this row sits, or `undefined` before AG Grid has placed it.
+     *
+     * Read from the row node rather than kept: the index is what sorting, filtering and grouping change,
+     * and the node is where AG Grid keeps the answer.
+     */
+    public getIndex(record: IRecord): number | undefined {
+        return this._services.find('gridApi')?.getRowNode(record.getRecordId())?.rowIndex ?? undefined;
+    }
+
     public setHeight(record: IRecord, height: number): void {
         this._heights[record.getRecordId()] = height;
         this.dispatchEvent('onRowHeightChanged', record, height);

@@ -1,12 +1,8 @@
-import { useMemo } from "react";
-import { ThemeProvider } from "@fluentui/react";
 import { CellErrorBoundary } from "@components/error-boundary";
-import { useGridCell } from "../../cell-host";
 import { useGridControl } from "../../../useGridControl";
 import { useGridService } from "../../../useGridService";
 import { ICellProps } from "../../interfaces";
 import { CellComponents, ICellComponents } from "./components";
-import { getCellAdapterStyles } from "./styles";
 
 export interface ICellAdapterProps extends ICellProps {
     components?: Partial<ICellComponents>;
@@ -24,12 +20,11 @@ export const Cell = (props: ICellAdapterProps) => {
     const { record, baseColumn: column } = cellProps;
     const control = useGridControl(record, column.name);
     const rows = useGridService('rows');
-    const theme = useGridCell().getTheme();
     const components = { ...CellComponents, ...componentOverrides };
-    const styles = useMemo(() => getCellAdapterStyles(), []);
     const { loading, isResizable } = control.getField();
 
-    const cell = components.onRenderCell({
+    //the cell's theme is the host's to apply, which is where every cell now gets one
+    return components.onRenderCell({
         alignment: column.alignment,
         resizeOptions: {
             resizable: isResizable,
@@ -42,10 +37,4 @@ export const Cell = (props: ICellAdapterProps) => {
             {components.onRenderNotifications({ record: record, column: column })}
         </>,
     });
-
-    if (!theme.isCustom()) {
-        return cell;
-    }
-    //`applyTo='none'` so the provider paints nothing: the background is AG Grid's to draw
-    return <ThemeProvider theme={theme.getValue()} applyTo='none' className={styles.themeProvider}>{cell}</ThemeProvider>;
 };

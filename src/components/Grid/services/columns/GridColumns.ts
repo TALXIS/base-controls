@@ -1,4 +1,4 @@
-import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, ColDef, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
@@ -66,7 +66,7 @@ export class GridColumns {
             columnDefs.unshift(recordSaveColumn);
         }
         this._hooks.apply(columnDefs);
-        return columnDefs.map(columnDef => this._withCellStyle(columnDef));
+        return columnDefs;
     }
 
     /** Every column the provider carries, as the grid sees it. */
@@ -216,38 +216,10 @@ export class GridColumns {
         return new GridControl({ services: this._services, record: record, columnName: columnName });
     }
 
-    /**
-     * Every column's cells paint the theme of the cell they are, a module's own column included: a
-     * checkbox or a save state is still drawn in a cell, and a hook can theme it like any other.
-     *
-     * A definition that sets its own `cellStyle` keeps it.
-     */
-    private _withCellStyle(columnDef: ColDef<IRecord>): ColDef<IRecord> {
-        return {
-            //a row standing for no record - a group, a total - has no cell theme to paint
-            cellStyle: (params: CellClassParams<IRecord>) => params.data ? this._getCellStyle(params.data, columnDef.colId!) : undefined,
-            ...columnDef,
-        };
-    }
-
-    /**
-     * What AG Grid paints on the cell element.
-     *
-     * Given to AG Grid rather than painted inside the cell, so the cell's background is on the element the
-     * grid itself draws on.
-     */
-    private _getCellStyle(record: IRecord, columnName: string): CellStyle {
-        return { backgroundColor: this._cells.getCell(record, columnName).getTheme().getValue().semanticColors.bodyBackground };
-    }
-
     /** What a cell needs to draw a value: no control and no bindings, since nothing there reads them. */
     private _getCellRendererParameters(record: IRecord, column: IGridColumn): IGridCellRendererParams {
         //a one-click-edit column takes input without ever entering edit mode, so its renderer is an editor
         return { baseColumn: column, record: record, editing: !!column.oneClickEdit };
-    }
-
-    private get _cells() {
-        return this._services.get('cells');
     }
 
     private get _settings() {
