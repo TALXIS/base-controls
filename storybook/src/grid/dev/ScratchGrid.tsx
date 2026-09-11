@@ -1,6 +1,6 @@
 import React from 'react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridCellThemeColors, IGridModule, IGridModules, IGridServiceLocator, OptionSet } from '@talxis/base-controls'
-import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModules, OptionSet } from '@talxis/base-controls'
+import { MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DATA_SOURCE, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
 /**
@@ -39,59 +39,6 @@ const OptionSetPreview = (props: {
             onNotifyOutputChanged={(outputs: { value?: number }) => setValue(outputs.value ?? null)} />
     </div>
 }
-
-/** Colours that sit next to each other without shouting: soft tints, and a few deep ones for contrast. */
-const CELL_PALETTES: IGridCellThemeColors[] = [
-    { background: '#eef3fb', text: '#22364f', primary: '#3d6ea8' },
-    { background: '#eef6f0', text: '#1e4430', primary: '#2f7d55' },
-    { background: '#fdf4e7', text: '#4f3a17', primary: '#a9741e' },
-    { background: '#fbeff1', text: '#4e2530', primary: '#a84257' },
-    { background: '#f1eefa', text: '#332a52', primary: '#6a56b5' },
-    { background: '#eaf5f6', text: '#1d4348', primary: '#2b7b83' },
-    { background: '#faf0e6', text: '#4a3320', primary: '#9b6434' },
-    //the deep ones, so light text on a dark cell is part of what the story shows
-    { background: '#26364a', text: '#dce7f5', primary: '#8fb6e6' },
-    { background: '#2c3a2e', text: '#dbeada', primary: '#8fc79a' },
-    { background: '#3a2b3f', text: '#efdff2', primary: '#c99bd4' },
-]
-
-/** Anything to a number, the same number every time: the colours have to survive a re-render. */
-const hashOf = (key: string) => [...key].reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 7)
-
-/** A cell, by what it is: the same cell answers the same whichever render is asking. */
-const getCellKey = (record: IRecord, columnName: string) => `${record.getRecordId()}_${columnName}`
-
-/** Scattered, but the same scattering every render - `Math.random()` here would shimmer a different cell each time. */
-const isScatteredCell = (key: string, everyNth: number) =>
-    [...key].reduce((hash, character) => hash + character.charCodeAt(0), 0) % everyNth === 0
-
-/**
- * The cell hooks, wired onto whichever module the story is given, so what they do can be seen.
- *
- * Most cells are drawn in a theme of their own and the rest in the grid's, which is what a hook leaving a
- * cell alone looks like. A scattering of them is left shimmering.
- */
-const withCellHooks = (module: IGridModule): IGridModule => ({
-    ...module,
-    onRegister: (services: IGridServiceLocator) => {
-        module.onRegister?.(services)
-        const cells = services.get('cells')
-        //a colour per cell, and every third cell left alone - a hook that writes nothing leaves the cell
-        //in the grid's own theme, which is what most of a real grid looks like
-        cells.registerCellThemeHook((result, params) => {
-            const hash = hashOf(getCellKey(params.record, params.columnName))
-            if (hash % 3 === 0) {
-                return
-            }
-            result.colors = CELL_PALETTES[hash % CELL_PALETTES.length]
-        })
-        //a scattering of cells that never stop waiting, which is what a module fetching something of its
-        //own would look like until it arrives
-        cells.registerCellLoadingHook((result, params) => {
-            result.isLoading = isScatteredCell(getCellKey(params.record, params.columnName), 9)
-        })
-    },
-})
 
 export interface IScratchGridProps {
     rowModel: 'clientSide' | 'serverSide'
@@ -139,9 +86,9 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
-        rowModel: withCellHooks(props.rowModel === 'clientSide'
+        rowModel: props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
-            : createServerSideRowModelModule()),
+            : createServerSideRowModelModule(),
         clipboard: props.clipboard ? createClipboardModule() : undefined,
         cellSelection: props.cellSelection ? createCellSelectionModule() : undefined,
         selection: props.selectableRows === 'none' ? undefined : createSelectionModule({ mode: props.selectableRows }),

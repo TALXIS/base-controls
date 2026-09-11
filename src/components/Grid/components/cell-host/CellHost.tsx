@@ -35,6 +35,7 @@ export const CellHost = (props: ICellHostProps) => {
     //inherits rather than replacing it with a copy nothing asked for
     return <GridCellContext.Provider value={cell}>
         {components.onRenderContainer({
+            applyTo: 'none',
             theme: theme.isCustom() ? theme.getValue() : undefined,
             children: cell.isLoading() ? components.onRenderLoading() : <>{children} {props.valueFormatted}</>,
         })}

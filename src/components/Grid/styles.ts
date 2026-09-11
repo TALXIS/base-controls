@@ -174,6 +174,13 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 '--talxis-cell-outline-bottom': '1px',
                 '--talxis-cell-outline-left': '1px',
             },
+            //the flash after a copy, and the one after a value changed: both are a background AG Grid puts
+            //on the cell for a moment, which the cell's own colour covers. A copy saying "that went to the
+            //clipboard" is worth keeping, so this is last of the state rules and carries `.ag-cell` in the
+            //selector - the range rule's `:not()` counts towards its weight, and would otherwise win
+            [`.ag-cell.ag-cell-highlight .${CELL_CONTAINER_CLASS_NAME}::after, .ag-cell.ag-cell-data-changed .${CELL_CONTAINER_CLASS_NAME}::after`]: {
+                backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 55%)`,
+            },
             '.ag-cell-wrapper:has([data-is-loading="true"])': {
                 height: '100%'
             },
