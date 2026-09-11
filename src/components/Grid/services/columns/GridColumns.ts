@@ -1,6 +1,5 @@
-import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, ICellRendererParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
-import { createElement } from "react";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
 import { FieldControl } from "../../components/adapters";
@@ -118,10 +117,7 @@ export class GridColumns {
             suppressMovable: true,
             valueGetter: () => null,
             valueFormatter: () => '',
-            cellRenderer: CellHost,
-            cellRendererParams: (params: ICellRendererParams<IRecord>) => ({
-                children: createElement(RecordSaveIndicatorCell, { ...params, record: params.data! }),
-            }),
+            cellRenderer: RecordSaveIndicatorCell,
             cellRendererSelector: suppressRendererInPinnedRows,
         };
     }

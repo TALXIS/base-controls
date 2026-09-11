@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { Checkbox, useTheme } from "@fluentui/react";
+import { CellHost } from "@components/Grid/components/cell-host";
 import { useGridService } from "@components/Grid/useGridService";
 import { RecordSaveIndicator, useRecordSaveStatus } from "@components/Grid/components/record-save-indicator";
 import { getSelectionCellStyles } from "./styles";
@@ -19,8 +20,6 @@ export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
     const isRecordSelectionDisabled = selection.isRecordSelectionDisabled(record);
     const styles = useMemo(() => getSelectionCellStyles(), []);
 
-    console.log(useTheme().id)
-
     //the label would otherwise activate the checkbox it wraps, and that second click toggles the record
     //straight back off. Keeping the click from also selecting the row is `GridSelection`'s capture
     //listener, which a React handler cannot do - it runs after AG Grid's own
@@ -31,18 +30,18 @@ export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
         }
     };
 
-    if (saveStatus.hasAnythingToReport) {
-        return <RecordSaveIndicator record={record} status={saveStatus} />;
-    }
-    return <div
-        onClick={onCheckBoxClick}
-        className={styles.checkBoxContainer}>
-        <Checkbox
-            checked={recordSelectionState === 'checked'}
-            disabled={isRecordSelectionDisabled}
-            indeterminate={recordSelectionState === 'indeterminate'}
-            styles={{
-                checkbox: styles.checkBox
-            }} />
-    </div>
+    return <CellHost {...props}>
+        {saveStatus.hasAnythingToReport && <RecordSaveIndicator record={record} status={saveStatus} />}
+        {!saveStatus.hasAnythingToReport && <div
+            onClick={onCheckBoxClick}
+            className={styles.checkBoxContainer}>
+            <Checkbox
+                checked={recordSelectionState === 'checked'}
+                disabled={isRecordSelectionDisabled}
+                indeterminate={recordSelectionState === 'indeterminate'}
+                styles={{
+                    checkbox: styles.checkBox
+                }} />
+        </div>}
+    </CellHost>;
 };

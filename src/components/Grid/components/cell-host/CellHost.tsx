@@ -1,10 +1,12 @@
 import { useLayoutEffect, useMemo } from "react";
+import { ICellRendererParams } from "@ag-grid-community/core";
 import { useGridService } from "../../useGridService";
+import { CellHostComponents, ICellHostComponents } from "./components";
 import { GridCellContext } from "./context";
-import { ICellProps } from "../interfaces";
 
-export interface ICellHostProps extends ICellProps {
+export interface ICellHostProps extends ICellRendererParams {
     children?: React.ReactNode;
+    components?: Partial<ICellHostComponents>;
 }
 
 /**
@@ -15,9 +17,10 @@ export interface ICellHostProps extends ICellProps {
  * this has no cell, and `useGridCell` says so.
  */
 export const CellHost = (props: ICellHostProps) => {
-    const { data: record, children } = props;
+    const { data: record, children, components: componentOverrides } = props;
     const columnName = props.column!.getColId();
     const cells = useGridService('cells');
+    const components = { ...CellHostComponents, ...componentOverrides };
     const cell = useMemo(() => cells.createCell(record, columnName), [cells, record, columnName]);
 
     //registered in a layout effect rather than in the render: a render React throws away must not leave a
@@ -27,5 +30,7 @@ export const CellHost = (props: ICellHostProps) => {
         return () => cells.removeCell(cell);
     }, [cells, cell]);
 
-    return <GridCellContext.Provider value={cell}>{children}</GridCellContext.Provider>;
+    return <GridCellContext.Provider value={cell}>
+        {components.onRenderTheme({ theme: cell.getTheme(), children: children })}
+    </GridCellContext.Provider>;
 };
