@@ -4,13 +4,12 @@ import { IRecord } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IGridRowsEvents } from "../../services/rows";
+import { ThemeContext } from "@utils";
 import { Commands } from "../adapters/commands";
 import { Control } from "../adapters/control";
-import { CustomizerContext, ThemeContext } from "@fluentui/react";
 import { useGridService } from "../../useGridService";
 import { CellHostComponents, ICellHostComponents } from "./components";
 import { GridCellContext } from "./context";
-import { getCellCustomizerContext } from "./themeContexts";
 
 export interface ICellHostProps extends ICellRendererParams {
     children?: React.ReactNode;
@@ -68,11 +67,7 @@ export const CellHost = (props: ICellHostProps) => {
     };
 
     return <GridCellContext.Provider value={cell}>
-        <ThemeContext.Provider value={theme}>
-            <CustomizerContext.Provider value={getCellCustomizerContext(theme)}>
-                {getContent()}
-            </CustomizerContext.Provider>
-        </ThemeContext.Provider>
+        <ThemeContext theme={theme}>{getContent()}</ThemeContext>
     </GridCellContext.Provider>;
 };
 
