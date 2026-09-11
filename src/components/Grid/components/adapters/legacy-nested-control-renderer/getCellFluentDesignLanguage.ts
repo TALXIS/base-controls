@@ -1,13 +1,14 @@
 import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles, merge } from "@fluentui/react";
 import { DeepPartial, IColumn } from "@talxis/client-libraries";
 import { ITheme } from "@legacy";
-import { ControlTheme, getJustifyContent, IFluentDesignState } from "@utils";
+import { ControlTheme, getJustifyContent, IAlignment, IFluentDesignState } from "@utils";
 
 //the component overrides depend only on the column alignment, so there are three of them in the whole
 //application - they used to be rebuilt, and deep-merged, per cell per render
 const componentOverridesByAlignment = new Map<IColumn['alignment'] | undefined, DeepPartial<ITheme>['components']>();
 
-const getComponentOverrides = (columnAlignment: IColumn['alignment'] | undefined) => {
+const getComponentOverrides = (columnAlignment: IColumn['alignment']) => {
+    const alignment: IAlignment = columnAlignment ?? 'left';
     const cached = componentOverridesByAlignment.get(columnAlignment);
     if (cached) {
         return cached;
@@ -41,7 +42,7 @@ const getComponentOverrides = (columnAlignment: IColumn['alignment'] | undefined
         'Toggle': {
             styles: {
                 root: {
-                    justifyContent: getJustifyContent(columnAlignment)
+                    justifyContent: getJustifyContent(alignment)
                 }
             } as IToggleStyles
         }

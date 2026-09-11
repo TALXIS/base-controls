@@ -1,8 +1,9 @@
-import { IColumn } from "@talxis/client-libraries";
+/** Where something sits across the width it is given. */
+export type IAlignment = 'left' | 'center' | 'right';
 
 /** What an alignment comes to as flex placement. */
-export const getJustifyContent = (columnAlignment: Required<IColumn['alignment']>) => {
-    switch (columnAlignment) {
+export const getJustifyContent = (alignment: IAlignment) => {
+    switch (alignment) {
         case 'left': {
             return 'flex-start'
         }

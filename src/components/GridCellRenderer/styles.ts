@@ -1,9 +1,9 @@
 import { CSSProperties } from "react";
 import { mergeStyleSets } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
-import { getJustifyContent } from "@utils";
+import { getJustifyContent, IAlignment } from "@utils";
 
-export const getGridCellRendererStyles = (columnAlignment: Required<IColumn['alignment']>, isMultiline: boolean) => {
+export const getGridCellRendererStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {
     return mergeStyleSets({
         gridCellRendererRoot: {
             //fills whatever it is put in and carries nothing of its own, so a wrapper can place it between

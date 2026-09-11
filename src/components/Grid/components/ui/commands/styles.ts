@@ -20,9 +20,7 @@ export const getCellCommandsStyles = () => {
                 height: '100%',
                 padding: 0,
             },
-            //at the end of the cell, after whatever it was already showing
             primarySet: {
-                justifyContent: 'flex-end',
                 '.ms-Button': {
                     backgroundColor: 'transparent',
                     height: '100%',

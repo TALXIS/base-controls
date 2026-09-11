@@ -1,8 +1,8 @@
 import { mergeStyleSets } from "@fluentui/react";
-import { getJustifyContent } from "@utils";
+import { getJustifyContent, IAlignment } from "@utils";
 import { IOptionSetRendererProps } from "./OptionSetRenderer";
 
-export const getOptionSetRendererStyles = (alignment: Required<IOptionSetRendererProps['alignment']>) => {
+export const getOptionSetRendererStyles = (alignment: IAlignment) => {
     return mergeStyleSets({
         optionSetRoot: {
             display: 'flex',

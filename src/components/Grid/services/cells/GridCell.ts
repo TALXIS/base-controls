@@ -48,6 +48,7 @@ export class GridCell {
     public getColumnName(): string {
         return this._columnName;
     }
+    
 
     /** What this cell is drawn in. */
     public getTheme(): GridCellTheme {

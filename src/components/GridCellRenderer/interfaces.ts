@@ -1,4 +1,5 @@
 import { IControl, IOutputs, IParameters, IStringProperty, ITwoOptionsProperty } from "@interfaces";
+import { IAlignment } from "@utils";
 import { IColumn, IDataset, IRecord } from "@talxis/client-libraries";
 import { IGridCellRendererComponents } from "./components";
 
@@ -16,7 +17,7 @@ export interface IFileValue {
 
 export interface IGridCellRendererParameters extends IParameters {
     value: any;
-    ColumnAlignment: Omit<ComponentFramework.PropertyTypes.EnumProperty<'left' | 'center' | 'right'>, 'type'>;
+    ColumnAlignment: Omit<ComponentFramework.PropertyTypes.EnumProperty<IAlignment>, 'type'>;
     CellType: Omit<ComponentFramework.PropertyTypes.EnumProperty<'renderer' | 'editor'>, 'type'>;
     EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
     Column: {

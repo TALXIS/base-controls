@@ -1,7 +1,7 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { getJustifyContent } from "@utils";
+import { getJustifyContent, IAlignment } from "@utils";
 
-export const getCellStyles = (theme: ITheme, alignment: 'left' | 'center' | 'right') => {
+export const getCellStyles = (theme: ITheme, alignment: IAlignment) => {
     return mergeStyleSets({
         cellRoot: {
             width: '100%',

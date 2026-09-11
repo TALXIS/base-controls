@@ -5,7 +5,8 @@ const HORIZONTAL_PADDING = 10;
 
 export const getCellControlStyles = () => mergeStyleSets({
     control: {
-        flex: 1,
+        //as wide as what it draws: a control filling the cell leaves the row no space to place it in
+        flex: '0 1 auto',
         display: 'flex',
         alignItems: 'center',
         minWidth: 0,

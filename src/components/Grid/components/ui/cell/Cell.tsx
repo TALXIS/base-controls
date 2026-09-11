@@ -1,11 +1,12 @@
 import React, { useMemo, useRef } from "react";
 import { useTheme } from "@fluentui/react";
+import { IAlignment } from "@utils";
 import { RowResizeGrip } from "./row-resize-grip";
 import { getCellStyles } from "./styles";
 
 export interface ICellUiProps {
     /** How the content sits. Left, unless told otherwise. */
-    alignment?: 'left' | 'center' | 'right';
+    alignment?: IAlignment;
     resizeOptions?: ICellResizeOptions;
     children?: React.ReactNode;
 }

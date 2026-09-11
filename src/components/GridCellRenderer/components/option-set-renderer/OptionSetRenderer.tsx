@@ -1,4 +1,5 @@
 import { Fragment, useMemo } from "react";
+import { IAlignment } from "@utils";
 import { OptionSetRendererComponents, IOptionSetRendererComponents } from "./components";
 import { getOptionSetRendererStyles } from "./styles";
 
@@ -6,7 +7,7 @@ export interface IOptionSetRendererProps {
     /** The options to draw, in the order they should read. */
     options: IOptionSetRendererOption[];
     /** How they sit in the space they are given. Left, unless told otherwise. */
-    alignment?: 'left' | 'center' | 'right';
+    alignment?: IAlignment;
     components?: Partial<IOptionSetRendererComponents>;
 }
 

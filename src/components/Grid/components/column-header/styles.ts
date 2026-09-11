@@ -1,8 +1,8 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
 import { IColumn } from "@talxis/client-libraries";
-import { getJustifyContent } from "@utils";
+import { getJustifyContent, IAlignment } from "@utils";
 
-export const getColumnHeaderStyles = (theme: ITheme, alignment: Required<IColumn['alignment']>) => {
+export const getColumnHeaderStyles = (theme: ITheme, alignment: IAlignment) => {
     return mergeStyleSets({
         commandBarButtonRoot: {
             width: '100%',
