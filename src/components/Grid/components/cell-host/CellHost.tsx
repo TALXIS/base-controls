@@ -43,7 +43,7 @@ export const CellHost = (props: ICellHostProps) => {
                     components.onRenderLoading() :
                     <>
                     <Cell.Control />
-                    <Cell.Commands />,
+                    <Cell.Commands />
                     </>
                 })}
             </CustomizerContext.Provider>
