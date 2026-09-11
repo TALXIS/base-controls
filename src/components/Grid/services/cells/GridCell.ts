@@ -1,3 +1,4 @@
+import { ColDef } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 import { ICommandBarItemProps } from "@fluentui/react";
@@ -7,7 +8,8 @@ import { GridCellTheme } from "./GridCellTheme";
 export interface IGridCellParameters {
     services: IGridServiceLocator;
     record: IRecord;
-    columnName: string;
+    /** The column AG Grid is drawing, which is what a cell is the cell of. */
+    colDef: ColDef<IRecord>;
 }
 
 //enough to tell two cells apart in a registry, including the same one drawn twice while AG Grid swaps a
@@ -23,7 +25,7 @@ let instanceCount = 0;
 export class GridCell {
     private _services: IGridServiceLocator;
     private _record: IRecord;
-    private _columnName: string;
+    private _colDef: ColDef<IRecord>;
     private _id: string;
     private _theme: GridCellTheme;
     private _isDestroyed: boolean = false;
@@ -31,9 +33,9 @@ export class GridCell {
     constructor(parameters: IGridCellParameters) {
         this._services = parameters.services;
         this._record = parameters.record;
-        this._columnName = parameters.columnName;
-        this._id = `${parameters.record.getRecordId()}_${parameters.columnName}_${++instanceCount}`;
-        this._theme = new GridCellTheme(parameters);
+        this._colDef = parameters.colDef;
+        this._id = `${parameters.record.getRecordId()}_${this.getColumnName()}_${++instanceCount}`;
+        this._theme = new GridCellTheme({ services: parameters.services, record: parameters.record, columnName: this.getColumnName() });
     }
 
     /** What tells this cell apart from every other one, this render of it included. */
@@ -45,10 +47,15 @@ export class GridCell {
         return this._record;
     }
 
-    public getColumnName(): string {
-        return this._columnName;
+    /** The column this cell is in, as AG Grid was given it. */
+    public getColDef(): ColDef<IRecord> {
+        return this._colDef;
     }
-    
+
+    public getColumnName(): string {
+        return this._colDef.colId!;
+    }
+
 
     /** What this cell is drawn in. */
     public getTheme(): GridCellTheme {
@@ -63,7 +70,7 @@ export class GridCell {
      */
     public isLoading(): boolean {
         const result: IGridCellLoading = { isLoading: false };
-        this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this._columnName });
+        this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result.isLoading;
     }
 
@@ -74,10 +81,10 @@ export class GridCell {
      * save is reported in - which hold nothing of the record's to read.
      */
     public getFormattedValue(): string | null | undefined {
-        if (!this._record.getDataProvider().getColumnsMap()[this._columnName]) {
+        if (!this._record.getDataProvider().getColumnsMap()[this.getColumnName()]) {
             return undefined;
         }
-        return this._record.getFormattedValue(this._columnName);
+        return this._record.getFormattedValue(this.getColumnName());
     }
 
     /**
@@ -88,7 +95,7 @@ export class GridCell {
      */
     public getCommands(): ICommandBarItemProps[] {
         const result: IGridCellCommands = { items: [] };
-        this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this._columnName });
+        this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result.items;
     }
 

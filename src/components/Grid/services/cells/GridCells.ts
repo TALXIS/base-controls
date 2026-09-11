@@ -1,3 +1,4 @@
+import { ColDef } from "@ag-grid-community/core";
 import { ICommandBarItemProps } from "@fluentui/react";
 import { ITheme } from "@legacy";
 import { ICustomColumnControl, IRecord } from "@talxis/client-libraries";
@@ -134,8 +135,8 @@ export class GridCells {
     }
 
     /** A cell of this grid. `CellHost` creates the ones that are rendered, and nothing else should. */
-    public createCell(record: IRecord, columnName: string): GridCell {
-        return new GridCell({ services: this._services, record: record, columnName: columnName });
+    public createCell(record: IRecord, colDef: ColDef<IRecord>): GridCell {
+        return new GridCell({ services: this._services, record: record, colDef: colDef });
     }
 
     /** Registers a cell as rendered. `CellHost` does this on mount, and nothing else should. */
@@ -154,15 +155,9 @@ export class GridCells {
         return [...this._renderedCells.values()];
     }
 
-    /**
-     * The cell drawing this field.
-     *
-     * Built on the spot where none is rendered yet: AG Grid asks about a row before the cell that draws it
-     * is mounted, and a caller asking for a cell wants an answer rather than an `undefined` to handle.
-     */
-    public getCell(record: IRecord, columnName: string): GridCell {
-        const rendered = this.getCells().find(cell => cell.getRecord().getRecordId() === record.getRecordId() && cell.getColumnName() === columnName);
-        return rendered ?? this.createCell(record, columnName);
+    /** The cell drawing this field, where one is rendered. */
+    public getCell(record: IRecord, columnName: string): GridCell | undefined {
+        return this.getCells().find(cell => cell.getRecord().getRecordId() === record.getRecordId() && cell.getColumnName() === columnName);
     }
 
     /**

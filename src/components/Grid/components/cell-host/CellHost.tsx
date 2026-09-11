@@ -22,10 +22,10 @@ export interface ICellHostProps extends ICellRendererParams {
  */
 export const CellHost = (props: ICellHostProps) => {
     const { data: record, children, components: componentOverrides } = props;
-    const columnName = props.column!.getColId();
     const cells = useGridService('cells');
     const components = { ...CellHostComponents, ...componentOverrides };
-    const cell = useMemo(() => cells.createCell(record, columnName), [cells, record, columnName]);
+    const colDef = props.colDef!;
+    const cell = useMemo(() => cells.createCell(record, colDef), [cells, record, colDef]);
     const theme = cell.getTheme().getValue();
 
     useLayoutEffect(() => {

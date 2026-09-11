@@ -155,6 +155,9 @@ export class GridColumns {
             autoHeaderHeight: true,
             autoHeight: !!column.autoHeight,
             suppressMovable: column.isDraggable === false,
+            //kept on the definition itself: what AG Grid hands a cell is its `colDef`, so a cell can read
+            //this without a lookup back to the column
+            propBag: { alignment: column.alignment },
             headerComponentParams: {
                 baseColumn: column
             },
