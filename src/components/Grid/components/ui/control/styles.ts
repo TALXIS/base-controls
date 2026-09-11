@@ -1,18 +1,10 @@
 import { mergeStyleSets } from "@fluentui/react";
+import { IAlignment } from "@utils";
 
-/** What sits between a cell's content and its edge. AG Grid is told to give a cell none of its own. */
-const HORIZONTAL_PADDING = 10;
-
-export const getCellControlStyles = () => mergeStyleSets({
+export const getCellControlStyles = (alignment: IAlignment) => mergeStyleSets({
     control: {
-        //as wide as what it draws: a control filling the cell leaves the row no space to place it in
-        flex: '0 1 auto',
-        display: 'flex',
-        alignItems: 'center',
-        minWidth: 0,
-        overflow: 'hidden',
-        height: '100%',
-        paddingLeft: HORIZONTAL_PADDING,
-        paddingRight: HORIZONTAL_PADDING,
+        //a right-aligned column reads outwards from its edge, so the value goes last and whatever else the
+        //cell draws - the commands - ends up on the inside of it
+        order: alignment === 'right' ? 1 : 0,
     },
 });

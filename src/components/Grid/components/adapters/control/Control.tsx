@@ -15,5 +15,8 @@ export const Control = (props: IControlAdapterProps) => {
     const cell = useGridCell();
     const components = { ...ControlComponents, ...props.components };
 
-    return components.onRenderControl({ children: cell.getFormattedValue() });
+    return components.onRenderControl({
+        children: cell.getFormattedValue(),
+        alignment: cell.getColDef().propBag?.alignment,
+    });
 };

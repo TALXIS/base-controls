@@ -11,8 +11,12 @@ export interface ICommandsAdapterProps {
  * Reads the cell it is drawn in, so it has to be inside a `CellHost`.
  */
 export const Commands = (props: ICommandsAdapterProps) => {
-    const items = useGridCell().getCommands();
+    const cell = useGridCell();
+    const items = cell.getCommands();
     const components = { ...CommandsComponents, ...props.components };
 
-    return components.onRenderCommands({ items: items });
+    return components.onRenderCommands({
+        items: items,
+        alignment: cell.getColDef().propBag?.alignment,
+    });
 };

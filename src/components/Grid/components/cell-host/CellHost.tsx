@@ -37,7 +37,6 @@ export const CellHost = (props: ICellHostProps) => {
         <ThemeContext.Provider value={theme}>
             <CustomizerContext.Provider value={getCellCustomizerContext(theme)}>
                 {components.onRenderContainer({
-                    alignment: 'right',
                     //what `applyTo='element'` painted: the cell's surface and the text on it
                     style: { backgroundColor: theme.semanticColors.bodyBackground, color: theme.semanticColors.bodyText },
                     children: cell.isLoading() ? 

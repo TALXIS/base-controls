@@ -1,31 +1,11 @@
-import { ICommandBarStyles, mergeStyleSets } from "@fluentui/react";
+import { mergeStyleSets } from "@fluentui/react";
+import { IAlignment } from "@utils";
 
-export const getCellCommandsStyles = () => {
-    const classNames = mergeStyleSets({
-        //`CommandBar` hands its native props to the `ResizeGroup` root, which is the box the bar measures
-        //itself against - so this is where a width it can shrink into has to go. Without one the group
-        //measures nothing, nothing fits, and the bar never leaves its hidden measuring pass
-        commandsRoot: {
-            flex: '1 1 auto',
-            minWidth: 0,
-            height: '100%',
-        },
-    });
-    return {
-        commandsRoot: classNames.commandsRoot,
-        commandBar: {
-            //no surface of its own: the cell's theme is already painting behind the bar
-            root: {
-                backgroundColor: 'transparent',
-                height: '100%',
-                padding: 0,
-            },
-            primarySet: {
-                '.ms-Button': {
-                    backgroundColor: 'transparent',
-                    height: '100%',
-                },
-            },
-        } as ICommandBarStyles,
-    };
-};
+export const getCellCommandsStyles = (alignment: IAlignment) => mergeStyleSets({
+    //`CommandBar` hands its native props to the `ResizeGroup` root, so this is the class that lands on it
+    commandsRoot: {
+        //before the value on a right-aligned column, after it on any other: the value keeps the edge its
+        //column reads from
+        order: alignment === 'right' ? 0 : 1,
+    },
+});

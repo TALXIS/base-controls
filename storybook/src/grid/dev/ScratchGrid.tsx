@@ -69,31 +69,32 @@ const withCellHooks = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
-        //a long row of commands on the name cells, so what a bar does when the column cannot fit it is
-        //part of what the story shows
+        //a row of commands on the name cells, some labelled and some not, so what a bar does with both
+        //is part of what the story shows
         services.get('cells').registerCellCommandsHook((result, params) => {
             if (params.columnName !== 'name') {
                 return
             }
-            const command = (key: string, iconName: string, disabled?: boolean) => ({
+            const command = (key: string, iconName: string, options?: { text?: string, disabled?: boolean }) => ({
                 key: key,
-                iconOnly: true,
+                text: options?.text,
+                iconOnly: !options?.text,
                 iconProps: { iconName: iconName },
                 title: key,
-                disabled: disabled,
+                disabled: options?.disabled,
                 onClick: () => console.log(key, params.record.getRecordId()),
             })
             result.items.push(
-                command('Open', 'OpenInNewWindow'),
-                command('Edit', 'Edit'),
+                command('Open', 'OpenInNewWindow', { text: 'Open' }),
+                command('Edit', 'Edit', { text: 'Edit' }),
+                command('Assign', 'FollowUser', { text: 'Assign to me' }),
+                command('Delete', 'Delete', { text: 'Delete', disabled: true }),
                 command('Copy', 'Copy'),
                 command('Share', 'Share'),
                 command('Flag', 'Flag'),
-                command('Assign', 'FollowUser'),
                 command('Comment', 'Comment'),
                 command('Download', 'Download'),
                 command('Archive', 'Archive'),
-                command('Delete', 'Delete', true),
             )
         })
         services.get('cells').registerCellThemeHook((result, params) => {
