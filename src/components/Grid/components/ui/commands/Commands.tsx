@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import { CommandBar, ICommandBar, ICommandBarProps } from "@fluentui/react";
+import { CommandBar, concatStyleSets, ICommandBar, ICommandBarProps } from "@fluentui/react";
 import { useResizeObserver } from "@legacy";
 import { getClassNames, IAlignment } from "@utils";
 import { getCellCommandsStyles } from "./styles";
@@ -25,6 +25,10 @@ export const Commands = (props: ICellCommandsProps) => {
     }
 
     return <div ref={element => element && observe(element)} className={getClassNames([styles.commandsRoot, className])}>
-        <CommandBar {...commandBarProps} componentRef={commandBarRef} className={styles.commandBar} />
+        <CommandBar
+            {...commandBarProps}
+            componentRef={commandBarRef}
+            className={styles.commandBar}
+            styles={concatStyleSets(styles.commandBarStyles, props.styles)} />
     </div>;
 };
