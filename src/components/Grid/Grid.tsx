@@ -21,7 +21,7 @@ const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
  *
  * Reads the PCF context off `PcfContextProvider`, so render it inside one.
  */
-export const Grid = (props: IGrid) => {
+export const GridRoot = (props: IGrid) => {
     const pcfContext = usePcfContext();
     const theme = useControlTheme(pcfContext.fluentDesignLanguage);
     const propsRef = useRef<IGrid>(props);

@@ -9,7 +9,7 @@ import { ClientSideRowModel } from "./ClientSideRowModel";
  *
  * @example
  * ```tsx
- * <Grid dataset={dataset} modules={{ rowModel: createClientSideRowModelModule() }} />
+ * <Grid.Root dataset={dataset} modules={{ rowModel: createClientSideRowModelModule() }} />
  * ```
  */
 export const createClientSideRowModelModule = (): IGridRowModelModule => ({

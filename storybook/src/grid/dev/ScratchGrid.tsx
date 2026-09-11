@@ -197,7 +197,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             <OptionSetPreview label='Colours off' options={STATUS_OPTIONS} initialValue={2}
                 enableColors={false} />
         </div>
-        <Grid
+        <Grid.Root
             key={key}
             provider={provider}
             modules={modules}

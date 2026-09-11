@@ -22,7 +22,7 @@ export interface IAggregationModuleOptions {
  *
  * @example
  * ```tsx
- * <Grid modules={{ rowModel: createServerSideRowModelModule(), aggregation: createAggregationModule() }} />
+ * <Grid.Root modules={{ rowModel: createServerSideRowModelModule(), aggregation: createAggregationModule() }} />
  * ```
  */
 export const createAggregationModule = (options?: IAggregationModuleOptions): IGridModule => ({

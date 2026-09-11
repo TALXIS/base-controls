@@ -62,7 +62,7 @@ export const ViewManagerDialog = (props: IViewManagerDialogProps) => {
                         }
                     }
                 }}
-                onGetControlComponent={(controlProps) => <Grid
+                onGetControlComponent={(controlProps) => <Grid.Root
                     provider={controlProps.parameters.Grid.getDataProvider()}
                     modules={{ rowModel: createServerSideRowModelModule() }}
                     enableEditing={controlProps.parameters.EnableEditing?.raw === true}

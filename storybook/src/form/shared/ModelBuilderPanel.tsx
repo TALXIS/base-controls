@@ -761,7 +761,7 @@ export const ModelBuilderPanel = (props: IModelBuilderPanelProps) => {
             <div className={styles.tableWrap}>
                 <DatasetControl
                     onGetDatasetControlInstance={() => datasetControl}
-                    onGetControlComponent={(controlProps) => <Grid
+                    onGetControlComponent={(controlProps) => <Grid.Root
                         provider={controlProps.parameters.Grid.getDataProvider()}
                         enableEditing={controlProps.parameters.EnableEditing?.raw === true}
                         enableNavigation={controlProps.parameters.EnableNavigation?.raw !== false}

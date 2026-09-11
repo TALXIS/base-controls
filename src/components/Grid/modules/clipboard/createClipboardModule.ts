@@ -35,7 +35,7 @@ export type IGridClipboardOptions = Pick<AgGridReactProps<IRecord>,
  *
  * @example
  * ```tsx
- * <Grid modules={{ rowModel: createClientSideRowModelModule(), clipboard: createClipboardModule() }} />
+ * <Grid.Root modules={{ rowModel: createClientSideRowModelModule(), clipboard: createClipboardModule() }} />
  * ```
  */
 export const createClipboardModule = (options?: IGridClipboardOptions): IGridClipboardModule => ({

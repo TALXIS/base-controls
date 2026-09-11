@@ -28,7 +28,7 @@ export const Grid = (props: IControlProps) => {
         //no grouping: this grid supplies a tree of its own below, and the module would supply a second
     }), []);
 
-    return <GridBase
+    return <GridBase.Root
         provider={parameters.Grid.getDataProvider()}
         modules={modules}
         enableEditing={parameters.EnableEditing?.raw === true}

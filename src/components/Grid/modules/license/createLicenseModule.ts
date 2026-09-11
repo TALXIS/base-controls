@@ -14,7 +14,7 @@ export interface ILicenseModuleOptions {
  *
  * @example
  * ```tsx
- * <Grid modules={{ rowModel: createServerSideRowModelModule(), license: createLicenseModule({ key }) }} />
+ * <Grid.Root modules={{ rowModel: createServerSideRowModelModule(), license: createLicenseModule({ key }) }} />
  * ```
  */
 export const createLicenseModule = ({ key }: ILicenseModuleOptions): IGridLicenseModule => ({

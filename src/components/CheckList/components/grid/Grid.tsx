@@ -45,7 +45,7 @@ export const Grid = (props: ICheckListGridProps) => {
         }) : undefined,
     }), []);
 
-    return <GridBase
+    return <GridBase.Root
         provider={parameters.Grid.getDataProvider()}
         modules={modules}
         enableEditing={parameters.EnableEditing?.raw === true}

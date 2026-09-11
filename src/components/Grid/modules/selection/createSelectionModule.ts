@@ -19,7 +19,7 @@ export interface ISelectionModuleOptions {
  *
  * @example
  * ```tsx
- * <Grid modules={{ rowModel: createClientSideRowModelModule(), selection: createSelectionModule({ mode: 'multiple' }) }} />
+ * <Grid.Root modules={{ rowModel: createClientSideRowModelModule(), selection: createSelectionModule({ mode: 'multiple' }) }} />
  * ```
  */
 export const createSelectionModule = (options: ISelectionModuleOptions): IGridModule => ({

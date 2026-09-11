@@ -28,7 +28,7 @@ export type IGridCellSelectionOptions = Pick<AgGridReactProps<IRecord>,
  *
  * @example
  * ```tsx
- * <Grid modules={{
+ * <Grid.Root modules={{
  *     rowModel: createClientSideRowModelModule(),
  *     cellSelection: createCellSelectionModule(),
  *     clipboard: createClipboardModule(),

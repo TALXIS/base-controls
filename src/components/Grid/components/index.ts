@@ -6,4 +6,4 @@ export * from './record-save-indicator';
 //`Notifications` are all taken in the package's flat barrel
 export type { ICellProps as IGridCellProps, IGridCellRendererParams } from './interfaces';
 export { CellUi } from './ui';
-export type { ICellUi, ICellUiProps, ICellResizeOptions, ICellThemeProps, IControlUiProps, ICellNotificationsProps } from './ui';
+export type { ICellUi, ICellUiProps, ICellResizeOptions, ICellContainerProps, IControlUiProps, ICellNotificationsProps } from './ui';

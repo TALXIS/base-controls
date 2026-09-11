@@ -12,9 +12,9 @@ export interface ICellHostProps extends ICellRendererParams {
 /**
  * The cell everything is drawn inside.
  *
- * Draws nothing itself: it creates the `GridCell` its children belong to, registers it as rendered, and
- * destroys it when it unmounts. A renderer, an editor or a module's own cell that does not render through
- * this has no cell, and `useGridCell` says so.
+ * Creates the `GridCell` its children belong to, registers it as rendered, destroys it when it unmounts,
+ * and draws the container that cell is in. A renderer, an editor or a module's own cell that does not
+ * render through this has no cell, and `useGridCell` says so.
  */
 export const CellHost = (props: ICellHostProps) => {
     const { data: record, children, components: componentOverrides } = props;
@@ -22,6 +22,7 @@ export const CellHost = (props: ICellHostProps) => {
     const cells = useGridService('cells');
     const components = { ...CellHostComponents, ...componentOverrides };
     const cell = useMemo(() => cells.createCell(record, columnName), [cells, record, columnName]);
+    const theme = cell.getTheme();
 
     //registered in a layout effect rather than in the render: a render React throws away must not leave a
     //cell in the registry with nothing left to unmount it
@@ -30,7 +31,9 @@ export const CellHost = (props: ICellHostProps) => {
         return () => cells.removeCell(cell);
     }, [cells, cell]);
 
+    //no theme where the cell is drawn in the grid's own: the container then passes down whatever it
+    //inherits rather than replacing it with a copy nothing asked for
     return <GridCellContext.Provider value={cell}>
-        {components.onRenderTheme({ theme: cell.getTheme(), children: children })}
+        {components.onRenderContainer({ theme: theme.isCustom() ? theme.getValue() : undefined, children: children })}
     </GridCellContext.Provider>;
 };

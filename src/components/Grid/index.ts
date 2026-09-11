@@ -1,4 +1,5 @@
 export * from './Grid';
+export * from './namespace';
 export * from './useGridService';
 export * from './useGridControl';
 export * from './components';

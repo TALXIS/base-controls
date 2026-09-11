@@ -13,7 +13,7 @@ import { IGridSortingServiceMap } from "./services";
  *
  * @example
  * ```tsx
- * <Grid modules={{ rowModel: createServerSideRowModelModule(), sorting: createSortingModule() }} />
+ * <Grid.Root modules={{ rowModel: createServerSideRowModelModule(), sorting: createSortingModule() }} />
  * ```
  */
 export interface ISortingModuleOptions {

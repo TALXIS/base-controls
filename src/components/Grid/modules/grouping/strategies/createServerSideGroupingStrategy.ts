@@ -9,7 +9,7 @@ import { ServerSideGroupingStrategy } from "./ServerSideGroupingStrategy";
  *
  * @example
  * ```tsx
- * <Grid modules={{
+ * <Grid.Root modules={{
  *     rowModel: createServerSideRowModelModule(),
  *     grouping: createGroupingModule({ strategy: createServerSideGroupingStrategy() }),
  * }} />

@@ -11,7 +11,7 @@ import { ClientSideGroupingStrategy } from "./ClientSideGroupingStrategy";
  *
  * @example
  * ```tsx
- * <Grid modules={{
+ * <Grid.Root modules={{
  *     rowModel: createClientSideRowModelModule(),
  *     grouping: createGroupingModule({ strategy: createClientSideGroupingStrategy() }),
  * }} />

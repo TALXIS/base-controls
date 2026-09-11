@@ -13,7 +13,7 @@ import { GridFilteringComponents, IGridFilteringComponents } from "./moduleCompo
  *
  * @example
  * ```tsx
- * <Grid modules={{ rowModel: createServerSideRowModelModule(), filtering: createFilteringModule() }} />
+ * <Grid.Root modules={{ rowModel: createServerSideRowModelModule(), filtering: createFilteringModule() }} />
  * ```
  */
 export interface IFilteringModuleOptions {
