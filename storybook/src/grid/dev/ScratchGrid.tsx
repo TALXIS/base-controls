@@ -40,45 +40,26 @@ const OptionSetPreview = (props: {
     </div>
 }
 
-/**
- * A spread of palettes, deliberately uneven: pastels next to near-black, a neon, a barely-there grey, a
- * couple with a primary that fights the background. If a cell looks right in all of them it looks right.
- */
-const PALETTES: IGridCellThemeColors[] = [
-    //cool slate
-    { background: '#eef1f6', text: '#2b3a4b', primary: '#4a6785' },
-    //warm sand
-    { background: '#fdf3e3', text: '#5c4318', primary: '#b7791f' },
-    //sage
-    { background: '#e8f4ec', text: '#1c4a2c', primary: '#2e7d4f' },
-    //deep plum, light text
-    { background: '#3a2231', text: '#f6e3ef', primary: '#e79ac8' },
-    //near black, the darkest surface here
-    { background: '#121214', text: '#e8e8ec', primary: '#7f9cf5' },
-    //midnight blue with a warm accent, a primary that fights its background
-    { background: '#10233f', text: '#d8e4f5', primary: '#ffb347' },
-    //neon on dark, fully saturated
-    { background: '#0d1f17', text: '#c9ffe5', primary: '#00ff9c' },
-    //hot magenta, a light surface that is anything but neutral
-    { background: '#ffe6f4', text: '#5c0f3a', primary: '#d6007f' },
-    //flat grey, almost no contrast between surface and text
-    { background: '#d9d9dd', text: '#4a4a52', primary: '#6e6e78' },
-    //paper white with a red accent
-    { background: '#ffffff', text: '#1b1b1f', primary: '#d13438' },
-    //teal, mid-lightness surface
-    { background: '#bfe3e0', text: '#0b3b38', primary: '#0f766e' },
-    //mustard, a surface bright enough to need dark everything
-    { background: '#f3d06b', text: '#3d2f00', primary: '#7a5c00' },
-    //one colour for all three, checkbox cell included: nothing to read the text against, which is what
-    //the generator has to make something of rather than crash on
-    { background: '#0078d4', text: '#0078d4', primary: '#0078d4' },
+/** Colours that sit next to each other without shouting: soft tints, and a few deep ones for contrast. */
+const CELL_PALETTES: IGridCellThemeColors[] = [
+    { background: '#eef3fb', text: '#22364f', primary: '#3d6ea8' },
+    { background: '#eef6f0', text: '#1e4430', primary: '#2f7d55' },
+    { background: '#fdf4e7', text: '#4f3a17', primary: '#a9741e' },
+    { background: '#fbeff1', text: '#4e2530', primary: '#a84257' },
+    { background: '#f1eefa', text: '#332a52', primary: '#6a56b5' },
+    { background: '#eaf5f6', text: '#1d4348', primary: '#2b7b83' },
+    { background: '#faf0e6', text: '#4a3320', primary: '#9b6434' },
+    //the deep ones, so light text on a dark cell is part of what the story shows
+    { background: '#26364a', text: '#dce7f5', primary: '#8fb6e6' },
+    { background: '#2c3a2e', text: '#dbeada', primary: '#8fc79a' },
+    { background: '#3a2b3f', text: '#efdff2', primary: '#c99bd4' },
 ]
+
+/** Anything to a number, the same number every time: the colours have to survive a re-render. */
+const hashOf = (key: string) => [...key].reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 7)
 
 /** A cell, by what it is: the same cell answers the same whichever render is asking. */
 const getCellKey = (record: IRecord, columnName: string) => `${record.getRecordId()}_${columnName}`
-
-/** Which row this is, near enough: the records are keyed `1`, `2`, … by the memory provider. */
-const getRowIndex = (record: IRecord) => Number.parseInt(record.getRecordId().replace(/\D/g, ''), 10) || 0
 
 /** Scattered, but the same scattering every render - `Math.random()` here would shimmer a different cell each time. */
 const isScatteredCell = (key: string, everyNth: number) =>
@@ -87,29 +68,23 @@ const isScatteredCell = (key: string, everyNth: number) =>
 /**
  * The cell hooks, wired onto whichever module the story is given, so what they do can be seen.
  *
- * Colours the whole row - every column of it, the checkbox included - and then gives `estimate` an accent
- * of its own on top, which is what proves a later hook gets the later word. The last one leaves a
- * scattering of cells shimmering.
+ * Most cells are drawn in a theme of their own and the rest in the grid's, which is what a hook leaving a
+ * cell alone looks like. A scattering of them is left shimmering.
  */
 const withCellHooks = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
         const cells = services.get('cells')
-        //every row gets a palette of its own, cycling through the whole spread rather than the handful a
-        //status column happens to hold
+        //a colour per cell, and every third cell left alone - a hook that writes nothing leaves the cell
+        //in the grid's own theme, which is what most of a real grid looks like
         cells.registerCellThemeHook((result, params) => {
-            result.colors = { ...PALETTES[getRowIndex(params.record) % PALETTES.length] }
-        })
-        //later, so it wins on the one column it cares about
-        cells.registerCellThemeHook((result, params) => {
-            if (params.columnName !== 'estimate') {
+            const hash = hashOf(getCellKey(params.record, params.columnName))
+            if (hash % 3 === 0) {
                 return
             }
-            //only the accent: the surface and the text stay whatever the row decided, which is what a
-            //column-level hook over a row-level one should be able to do
-            result.colors.primary = '#c77800'
-        }, 10)
+            result.colors = CELL_PALETTES[hash % CELL_PALETTES.length]
+        })
         //a scattering of cells that never stop waiting, which is what a module fetching something of its
         //own would look like until it arrives
         cells.registerCellLoadingHook((result, params) => {

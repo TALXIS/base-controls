@@ -1,4 +1,5 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
+import { CELL_CONTAINER_CLASS_NAME } from "./components/ui/cell-container/styles";
 
 /**
  * How tall the rows area stays when there is nothing in it.
@@ -50,8 +51,7 @@ const getAutoHeightStyles = (rowHeight: number, maxVisibleRows: number) => {
 export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: number = 42, maxVisibleRows: number = 15) => {
     return mergeStyleSets({
         gridRoot: {
-            height: 800
-/*             //the "no records" overlay is centred over the whole grid, pinned rows included, so the grid
+            //the "no records" overlay is centred over the whole grid, pinned rows included, so the grid
             //needs to stay tall enough that the overlay clears them instead of being drawn over the top
             minHeight: 220,
             display: 'flex',
@@ -71,9 +71,11 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 '--ag-header-background-color': theme.semanticColors.bodyBackground,
                 '--ag-border-color': theme.semanticColors.menuDivider,
                 '--ag-row-border-color': theme.semanticColors.menuDivider,
-                '--ag-selected-row-background-color': `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 80%)`,
-                '--ag-row-hover-color': `color-mix(in srgb, ${theme.palette.black}, transparent 90%)`,
-                '--ag-range-selection-background-color': `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 85%)`,
+                //the states are drawn as overlays below rather than as backgrounds: a cell in a theme of
+                //its own covers anything painted under it, and these are what AG Grid paints under it
+                '--ag-selected-row-background-color': 'transparent',
+                '--ag-row-hover-color': 'transparent',
+                '--ag-range-selection-background-color': 'transparent',
                 '--ag-range-selection-border-color': theme.palette.themePrimary,
                 '--ag-range-selection-highlight-color': `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 70%)`,
                 '--ag-input-focus-border-color': theme.semanticColors.inputFocusBorderAlt,
@@ -100,15 +102,80 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 paddingRight: 0
             },
             //the cell renders a control of its own, which has to be clipped to it rather than spill
-            '.ag-cell': {
+            //
+            //no border: AG Grid keeps a transparent 1px one on every cell to draw the range and the focus
+            //outline in, and that frame is a strip of the row showing around a cell drawn in a theme of its
+            //own. Both outlines are drawn on the cell's body instead
+            //
+            //the width rather than `border: none`: AG Grid's range rules set a border *style* on the edges
+            //of a range, and a styled border with no width of its own falls back to `medium` - three pixels
+            //`.ag-ltr .ag-cell` in the selector as well as `.ag-cell`: AG Grid gives the cell's right
+            //border a width of its own from there, and a rule of the same weight would not put it back
+            '.ag-cell, .ag-ltr .ag-cell, .ag-rtl .ag-cell': {
                 borderRadius: 0,
-                overflow: 'hidden'
+                overflow: 'hidden',
+                borderWidth: 0,
+            },
+            //every state the grid draws on a cell is an overlay over the cell's body rather than a colour
+            //under it: the body carries the cell's own theme, and anything painted beneath it is covered
+            //
+            //the outline is four shadows rather than a border, so the sides compose: each is off until the
+            //cell is told it is on that edge of a range
+            [`.${CELL_CONTAINER_CLASS_NAME}::after`]: {
+                content: '""',
+                position: 'absolute',
+                inset: 0,
+                pointerEvents: 'none',
+                zIndex: 1,
+                '--talxis-cell-outline-color': theme.palette.themePrimary,
+                '--talxis-cell-outline-top': '0px',
+                '--talxis-cell-outline-right': '0px',
+                '--talxis-cell-outline-bottom': '0px',
+                '--talxis-cell-outline-left': '0px',
+                boxShadow: `inset 0 var(--talxis-cell-outline-top) 0 0 var(--talxis-cell-outline-color), inset calc(-1 * var(--talxis-cell-outline-right)) 0 0 0 var(--talxis-cell-outline-color), inset 0 calc(-1 * var(--talxis-cell-outline-bottom)) 0 0 var(--talxis-cell-outline-color), inset var(--talxis-cell-outline-left) 0 0 0 var(--talxis-cell-outline-color)`,
+            },
+            //`ag-cell-range-selected` as well as the edge class: a cell carries `ag-cell-range-left` for
+            //being first in its column group whether or not anything is selected, which is what put a line
+            //down the side of every checkbox cell
+            [`.ag-cell-range-selected:not(.ag-cell-range-single-cell).ag-cell-range-top .${CELL_CONTAINER_CLASS_NAME}::after`]: { '--talxis-cell-outline-top': '1px' },
+            [`.ag-cell-range-selected:not(.ag-cell-range-single-cell).ag-cell-range-right .${CELL_CONTAINER_CLASS_NAME}::after`]: { '--talxis-cell-outline-right': '1px' },
+            [`.ag-cell-range-selected:not(.ag-cell-range-single-cell).ag-cell-range-bottom .${CELL_CONTAINER_CLASS_NAME}::after`]: { '--talxis-cell-outline-bottom': '1px' },
+            [`.ag-cell-range-selected:not(.ag-cell-range-single-cell).ag-cell-range-left .${CELL_CONTAINER_CLASS_NAME}::after`]: { '--talxis-cell-outline-left': '1px' },
+            //a range of one cell is outlined the whole way round rather than by its edges
+            [`.ag-cell-range-single-cell .${CELL_CONTAINER_CLASS_NAME}::after`]: {
+                '--talxis-cell-outline-top': '1px',
+                '--talxis-cell-outline-right': '1px',
+                '--talxis-cell-outline-bottom': '1px',
+                '--talxis-cell-outline-left': '1px',
+            },
+            //`currentColor` is the cell's own text, so the tint darkens a light cell and lightens a dark
+            //one without either having to be named
+            [`.ag-row-hover .${CELL_CONTAINER_CLASS_NAME}::after`]: {
+                backgroundColor: 'color-mix(in srgb, currentColor, transparent 92%)',
+            },
+            //the grid's accent rather than the cell's: what is selected reads the same the whole way down,
+            //however the rows are coloured
+            [`.ag-row-selected .${CELL_CONTAINER_CLASS_NAME}::after`]: {
+                backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 80%)`,
+            },
+            [`.ag-cell-range-selected:not(.ag-cell-focus) .${CELL_CONTAINER_CLASS_NAME}::after, .ag-cell-range-single-cell .${CELL_CONTAINER_CLASS_NAME}::after`]: {
+                backgroundColor: `color-mix(in srgb, ${theme.palette.themePrimary}, transparent 85%)`,
+            },
+            //the focused cell is outlined the whole way round, in the colour an input takes when it has
+            //focus - the same one AG Grid drew in the border this replaces
+            //
+            //and it is the one cell nothing is tinted over: what has focus is what is being read or typed
+            //in, so it keeps its own colour whatever the row around it is doing
+            [`.ag-cell-focus .${CELL_CONTAINER_CLASS_NAME}::after`]: {
+                backgroundColor: 'transparent',
+                '--talxis-cell-outline-color': theme.semanticColors.inputFocusBorderAlt,
+                '--talxis-cell-outline-top': '1px',
+                '--talxis-cell-outline-right': '1px',
+                '--talxis-cell-outline-bottom': '1px',
+                '--talxis-cell-outline-left': '1px',
             },
             '.ag-cell-wrapper:has([data-is-loading="true"])': {
                 height: '100%'
-            },
-            '.ms-Checkbox.is-disabled .ms-Checkbox-checkbox': {
-                borderColor: `${theme.semanticColors.disabledBorder} !important`
             },
             '.ag-overlay-loading-wrapper': {
                 backdropFilter: 'blur(1px)'
@@ -119,6 +186,6 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
             },
             //the grid is either as tall as it was told to be, or as tall as its rows
             ...(height ? { height: height } : getAutoHeightStyles(rowHeight, maxVisibleRows))
-        } */
-    }})
+        }
+    })
 };
