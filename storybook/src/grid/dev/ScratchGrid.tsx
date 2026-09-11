@@ -197,6 +197,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             provider={provider}
             modules={modules}
             height='420px'
+            rowHeight={24}
             enableEditing={props.enableEditing}
             enableAutoSave={props.enableAutoSave}
             enableNavigation={props.enableNavigation}
