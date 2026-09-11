@@ -1,6 +1,7 @@
 import { ITheme, Theming } from "@legacy";
 import { IColumn, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
+import { IGridCellThemeResult } from "./GridCells";
 
 export interface IGridCellThemeParameters {
     services: IGridServiceLocator;
@@ -21,7 +22,9 @@ export class GridCellTheme {
     }
 
     public getValue(): ITheme {
-        return this._cells.applyCellThemeHooks(this._getDefaultTheme(), { record: this._record, columnName: this._columnName });
+        const result: IGridCellThemeResult = { theme: this._getDefaultTheme() };
+        this._cells.applyCellThemeHooks(result, { record: this._record, columnName: this._columnName });
+        return result.theme;
     }
 
     public isCustom(): boolean {

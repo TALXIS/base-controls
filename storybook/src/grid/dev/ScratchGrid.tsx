@@ -1,6 +1,7 @@
 import React from 'react'
 import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModule, IGridModules, IGridServiceLocator, OptionSet } from '@talxis/base-controls'
-import { DataProvider, MemoryDataProvider } from '@talxis/client-libraries'
+import { DataProvider, IRecord, MemoryDataProvider } from '@talxis/client-libraries'
+import { ITheme } from '@fluentui/react'
 import { COLUMNS, DATA_SOURCE, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
 /**
@@ -40,75 +41,102 @@ const OptionSetPreview = (props: {
     </div>
 }
 
-/** The status a row's colour is taken from, and what each one paints. */
-const STATUS_COLOURS: Record<number, { background: string; text: string }> = {
-    1: { background: '#fde7e9', text: '#7a1015' },
-    3: { background: '#dff6dd', text: '#0b5a0b' },
-    4: { background: '#4b1113', text: '#ffd9dc' },
-    5: { background: '#deecf9', text: '#004578' },
+/** A cell's palette: what it is drawn on, what it reads as, and what an accent in it takes. */
+interface ICellPalette {
+    background: string
+    text: string
+    primary: string
 }
 
+/** The status a row's colours are taken from. Every status paints, so no row is left in the grid's own theme. */
+const STATUS_PALETTES: Record<number, ICellPalette> = {
+    //not started - cool slate
+    1: { background: '#eef1f6', text: '#2b3a4b', primary: '#4a6785' },
+    //in progress - warm sand
+    2: { background: '#fdf3e3', text: '#5c4318', primary: '#b7791f' },
+    //done - sage
+    3: { background: '#e8f4ec', text: '#1c4a2c', primary: '#2e7d4f' },
+    //blocked - deep plum, the one dark row
+    4: { background: '#3a2231', text: '#f6e3ef', primary: '#e79ac8' },
+    //in review - dusty blue
+    5: { background: '#e7eff8', text: '#1f3c5c', primary: '#3b6ea5' },
+    //deferred - muted clay
+    6: { background: '#f6ece7', text: '#5a3a2c', primary: '#a4643f' },
+}
+
+/** What a cell with no status of its own is drawn in - still its own palette, so every cell carries one. */
+const DEFAULT_PALETTE: ICellPalette = { background: '#f7f7f8', text: '#32323a', primary: '#5b5fc7' }
+
+/** A theme in a cell's palette, id and all: the id is what tells the grid this is a theme of the cell's own. */
+const getCellTheme = (theme: ITheme, id: string, palette: ICellPalette): ITheme => ({
+    ...theme,
+    id: id,
+    palette: {
+        ...theme.palette,
+        themePrimary: palette.primary,
+        themeDark: palette.primary,
+        themeDarker: palette.primary,
+        neutralPrimary: palette.text,
+        white: palette.background,
+    },
+    semanticColors: {
+        ...theme.semanticColors,
+        bodyBackground: palette.background,
+        bodyText: palette.text,
+        bodySubtext: palette.text,
+        link: palette.primary,
+        inputBorder: palette.primary,
+        inputBackgroundChecked: palette.primary,
+    },
+})
+
+/** A cell, by what it is: the same cell answers the same whichever render is asking. */
+const getCellKey = (record: IRecord, columnName: string) => `${record.getRecordId()}_${columnName}`
+
+/** Scattered, but the same scattering every render - `Math.random()` here would shimmer a different cell each time. */
+const isScatteredCell = (key: string, everyNth: number) =>
+    [...key].reduce((hash, character) => hash + character.charCodeAt(0), 0) % everyNth === 0
+
 /**
- * A cell theme hook, wired onto whichever module the story is given, so the theming can be seen.
+ * The cell hooks, wired onto whichever module the story is given, so what they do can be seen.
  *
  * Colours the whole row from its status and then gives `estimate` a theme of its own on top, which is
  * what proves a later hook gets the later word - and that a cell theme is per cell rather than per row.
+ * The last one leaves a scattering of cells shimmering.
  */
-const withCellThemeHook = (module: IGridModule): IGridModule => ({
+const withCellHooks = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
         const cells = services.get('cells')
-        cells.registerCellThemeHook((theme, params) => {
-            const colours = STATUS_COLOURS[params.record.getValue('status') as number]
-            if (!colours) {
-                return
-            }
-            return {
-                ...theme,
-                id: `scratch-status-${params.record.getValue('status')}`,
-                semanticColors: {
-                    ...theme.semanticColors,
-                    bodyBackground: colours.background,
-                    bodyText: colours.text,
-                },
-            }
+        //every cell gets a palette of its own: the row's status decides it, and a row with none still
+        //paints rather than falling back to the grid's theme
+        cells.registerCellThemeHook((result, params) => {
+            const status = params.record.getValue('status') as number
+            result.theme = getCellTheme(result.theme, `scratch-status-${status ?? 'none'}`,
+                STATUS_PALETTES[status] ?? DEFAULT_PALETTE)
         })
         //later, so it wins on the one column it cares about
-        cells.registerCellThemeHook((theme, params) => {
+        cells.registerCellThemeHook((result, params) => {
             if (params.columnName !== 'estimate') {
                 return
             }
-            return {
-                ...theme,
-                id: 'scratch-estimate',
-                semanticColors: {
-                    ...theme.semanticColors,
-                    bodyBackground: '#fff4ce',
-                    bodyText: '#4a3800',
-                },
-            }
+            result.theme = getCellTheme(result.theme, 'scratch-estimate',
+                { background: '#fff8e1', text: '#4a3800', primary: '#c77800' })
         }, 10)
-        //the checkbox column, in colours nothing would ship: it is a cell like any other, and a hook can
-        //say so
-        cells.registerCellThemeHook((theme, params) => {
+        //the checkbox column, in a palette of its own: it is a cell like any other, and a hook can say so
+        cells.registerCellThemeHook((result, params) => {
             if (params.columnName !== DataProvider.CONST.CHECKBOX_COLUMN_KEY) {
                 return
             }
-            const isOddRow = (params.record.getValue('priority') as number) % 2 === 1
-            return {
-                ...theme,
-                id: `scratch-checkbox-${isOddRow}`,
-                semanticColors: {
-                    ...theme.semanticColors,
-                    bodyBackground: isOddRow ? '#ff00ff' : '#00ffc8',
-                    bodyText: isOddRow ? '#00ff00' : '#7a0033',
-                    inputBorder: '#ff8c00',
-                    inputBackgroundChecked: '#ff1493',
-                    inputBackgroundCheckedHovered: '#00bfff',
-                },
-            }
+            result.theme = getCellTheme(result.theme, 'scratch-checkbox',
+                { background: '#eceaf8', text: '#2f2a55', primary: '#6b4fd8' })
         }, 20)
+        //a scattering of cells that never stop waiting, which is what a module fetching something of its
+        //own would look like until it arrives
+        cells.registerCellLoadingHook((result, params) => {
+            result.isLoading = isScatteredCell(getCellKey(params.record, params.columnName), 9)
+        })
     },
 })
 
@@ -158,7 +186,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
-        rowModel: withCellThemeHook(props.rowModel === 'clientSide'
+        rowModel: withCellHooks(props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule()),
         clipboard: props.clipboard ? createClipboardModule() : undefined,

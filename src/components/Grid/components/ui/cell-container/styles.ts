@@ -5,6 +5,7 @@ export const getCellContainerStyles = () => mergeStyleSets({
     cellContainer: {
         width: '100%',
         height: '100%',
-        display: 'flex'
+        display: 'flex',
+        alignItems: 'center',
     },
 });

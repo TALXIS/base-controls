@@ -34,6 +34,9 @@ export const CellHost = (props: ICellHostProps) => {
     //no theme where the cell is drawn in the grid's own: the container then passes down whatever it
     //inherits rather than replacing it with a copy nothing asked for
     return <GridCellContext.Provider value={cell}>
-        {components.onRenderContainer({ theme: theme.isCustom() ? theme.getValue() : undefined, children: children })}
+        {components.onRenderContainer({
+            theme: theme.isCustom() ? theme.getValue() : undefined,
+            children: cell.isLoading() ? components.onRenderLoading() : children,
+        })}
     </GridCellContext.Provider>;
 };

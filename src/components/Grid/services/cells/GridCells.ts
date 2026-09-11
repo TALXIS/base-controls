@@ -31,7 +31,7 @@ export interface IGridCellHookParameters {
  * Handed the defaults and mutates them: what a cell shows, whether it is still waiting, whether the row may
  * be dragged taller from it. The grid knows nothing of why.
  */
-export type GridFieldHook = (field: IGridField, params: IGridCellHookParameters) => void;
+export type GridFieldHook = (result: IGridField, params: IGridCellHookParameters) => void;
 
 /**
  * A hook over which control draws a cell.
@@ -48,17 +48,36 @@ export type GridControlHook = (result: { control: Required<ICustomColumnControl>
  * parameters on the native path, and the nested control's - not its `ControlName` and `Bindings` - on the
  * other.
  */
-export type GridControlParametersHook = (parameters: IParameters, params: IGridCellHookParameters) => void;
+export type GridControlParametersHook = (result: IParameters, params: IGridCellHookParameters) => void;
+
+/** The theme a cell is drawn in, as the hooks leave it. */
+export interface IGridCellThemeResult {
+    theme: ITheme;
+}
 
 /**
- * Overrides the theme a cell is drawn in. Return another to give the cell that one, nothing to leave it.
+ * A hook over the theme a cell is drawn in.
  *
- * Returned rather than mutated because a theme is a value the grid hands on rather than an object to
- * change: the one handed over may be the grid's own, or a cached one another cell is drawn in too. Build
- * one with `Theming.GenerateThemeV8` - whether a cell counts as custom is decided by the theme's id, and
- * a theme built any other way carries none.
+ * Replace `result.theme` to give the cell another - the theme handed over is not one to write into, since
+ * it may be the grid's own or a cached one other cells are drawn in too. Build one with
+ * `Theming.GenerateThemeV8`: whether a cell counts as custom is decided by the theme's id, and a theme
+ * built any other way carries none.
  */
-export type GridCellThemeHook = (theme: ITheme, params: { record: IRecord; columnName: string }) => ITheme | void;
+export type GridCellThemeHook = (result: IGridCellThemeResult, params: { record: IRecord; columnName: string }) => void;
+
+/** What a cell is waiting on, as the hooks leave it. */
+export interface IGridCellLoading {
+    /** Whether the cell is waiting on something rather than able to draw. */
+    isLoading: boolean;
+}
+
+/**
+ * A hook over whether a cell is waiting.
+ *
+ * Handed the answer so far and mutates it. Runs for every cell on every render, so answer from what is
+ * already in hand rather than starting the fetch from inside it.
+ */
+export type GridCellLoadingHook = (result: IGridCellLoading, params: { record: IRecord; columnName: string }) => void;
 
 export interface IGridCellsParameters {
     services: IGridServiceLocator;
@@ -75,7 +94,8 @@ export class GridCells {
     private _fieldHooks = new HookRegistry<GridFieldHook>();
     private _controlHooks = new HookRegistry<GridControlHook>();
     private _controlParametersHooks = new HookRegistry<GridControlParametersHook>();
-    private _cellThemeHooks = new HookRegistry<(result: { theme: ITheme }, params: { record: IRecord; columnName: string }) => void>();
+    private _cellThemeHooks = new HookRegistry<GridCellThemeHook>();
+    private _cellLoadingHooks = new HookRegistry<GridCellLoadingHook>();
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
@@ -147,29 +167,38 @@ export class GridCells {
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
     public registerCellThemeHook(hook: GridCellThemeHook, priority?: number): void {
-        //a hook returns a theme rather than changing one, so what is registered is the write back
-        this._cellThemeHooks.register((result, params) => {
-            result.theme = hook(result.theme, params) ?? result.theme;
-        }, priority);
+        this._cellThemeHooks.register(hook, priority);
+    }
+
+    /**
+     * Registers a hook over whether a cell is waiting. Runs per cell per render, so keep it cheap.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    public registerCellLoadingHook(hook: GridCellLoadingHook, priority?: number): void {
+        this._cellLoadingHooks.register(hook, priority);
     }
 
     /** Run by the `GridControl` of the cell in question, which is the only caller of these three. */
-    public applyFieldHooks(field: IGridField, params: IGridCellHookParameters): void {
-        this._fieldHooks.apply(field, params);
+    public applyFieldHooks(result: IGridField, params: IGridCellHookParameters): void {
+        this._fieldHooks.apply(result, params);
     }
 
     public applyControlHooks(result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters): void {
         this._controlHooks.apply(result, params);
     }
 
-    public applyControlParametersHooks(parameters: IParameters, params: IGridCellHookParameters): void {
-        this._controlParametersHooks.apply(parameters, params);
+    public applyControlParametersHooks(result: IParameters, params: IGridCellHookParameters): void {
+        this._controlParametersHooks.apply(result, params);
     }
 
-    /** The theme a cell is drawn in, once every hook has had its say. Run by that cell's `GridCellTheme`. */
-    public applyCellThemeHooks(theme: ITheme, params: { record: IRecord; columnName: string }): ITheme {
-        const result = { theme: theme };
+    /** Run by the `GridCellTheme` of the cell in question. */
+    public applyCellThemeHooks(result: IGridCellThemeResult, params: { record: IRecord; columnName: string }): void {
         this._cellThemeHooks.apply(result, params);
-        return result.theme;
+    }
+
+    /** Run by the cell in question, which is the only caller. */
+    public applyCellLoadingHooks(result: IGridCellLoading, params: { record: IRecord; columnName: string }): void {
+        this._cellLoadingHooks.apply(result, params);
     }
 }

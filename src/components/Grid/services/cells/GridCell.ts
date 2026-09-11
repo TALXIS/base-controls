@@ -1,5 +1,6 @@
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
+import { IGridCellLoading } from "./GridCells";
 import { GridCellTheme } from "./GridCellTheme";
 
 export interface IGridCellParameters {
@@ -19,6 +20,7 @@ let instanceCount = 0;
  * Whatever belongs to a single cell lives here, and goes when the cell does.
  */
 export class GridCell {
+    private _services: IGridServiceLocator;
     private _record: IRecord;
     private _columnName: string;
     private _id: string;
@@ -26,6 +28,7 @@ export class GridCell {
     private _isDestroyed: boolean = false;
 
     constructor(parameters: IGridCellParameters) {
+        this._services = parameters.services;
         this._record = parameters.record;
         this._columnName = parameters.columnName;
         this._id = `${parameters.record.getRecordId()}_${parameters.columnName}_${++instanceCount}`;
@@ -50,6 +53,18 @@ export class GridCell {
         return this._theme;
     }
 
+    /**
+     * Whether this cell is waiting on something. `false` unless a hook says otherwise.
+     *
+     * Answered on every call: a hook reads state that changes under it, and a cell holding on to the first
+     * answer would never stop shimmering.
+     */
+    public isLoading(): boolean {
+        const result: IGridCellLoading = { isLoading: false };
+        this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this._columnName });
+        return result.isLoading;
+    }
+
     /** Whether this cell has left the screen, after which nothing should be asked of it. */
     public isDestroyed(): boolean {
         return this._isDestroyed;
@@ -62,5 +77,9 @@ export class GridCell {
      */
     public destroy(): void {
         this._isDestroyed = true;
+    }
+
+    private get _cells() {
+        return this._services.get('cells');
     }
 }
