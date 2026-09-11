@@ -36,7 +36,7 @@ export const CellHost = (props: ICellHostProps) => {
     return <GridCellContext.Provider value={cell}>
         {components.onRenderContainer({
             theme: theme.isCustom() ? theme.getValue() : undefined,
-            children: cell.isLoading() ? components.onRenderLoading() : children,
+            children: cell.isLoading() ? components.onRenderLoading() : <>{children} {props.valueFormatted}</>,
         })}
     </GridCellContext.Provider>;
 };
