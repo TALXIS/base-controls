@@ -3,7 +3,10 @@ import { CellCommands } from "../commands/CellCommands";
 import { Field } from "../field/Field";
 import { FieldControl } from "../field-control/FieldControl";
 import { FieldValidation } from "../field-validation/FieldValidation";
+import { CellLoading } from "../loading/CellLoading";
+import { CellContainer } from "../container/CellContainer";
 import { CellRoot } from "../root/CellRoot";
+import { RowResizeGrip } from "../row-resize-grip/RowResizeGrip";
 
 export interface IGridFieldCellProps extends ICellRendererParams {
     /**
@@ -22,13 +25,17 @@ export interface IGridFieldCellProps extends ICellRendererParams {
  * instead: this one would bind a field that is not one.
  */
 export const FieldCell = (props: IGridFieldCellProps) => {
-    //the field goes outside the cell rather than in it: what a cell draws of its own - the red border of
-    //a value the record refuses - is the cell reading the field it is bound to
-    return <Field record={props.data} name={props.colDef!.colId!}>
-        <CellRoot {...props}>
-            <FieldControl editing={props.editing} />
-            <CellCommands />
-            <FieldValidation />
-        </CellRoot>
-    </Field>;
+    return <CellRoot {...props}>
+        <Field record={props.data} name={props.colDef!.colId!}>
+            <RowResizeGrip>
+                <CellContainer>
+                    <CellLoading>
+                        <FieldControl editing={props.editing} />
+                        <CellCommands />
+                        <FieldValidation />
+                    </CellLoading>
+                </CellContainer>
+            </RowResizeGrip>
+        </Field>
+    </CellRoot>;
 };

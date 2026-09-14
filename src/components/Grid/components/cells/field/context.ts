@@ -18,7 +18,7 @@ export const useGridField = (): GridField | undefined => {
 export const useRequiredGridField = (): GridField => {
     const field = useGridField();
     if (!field) {
-        throw new Error(`This has to be rendered inside a ${GridFieldContext.displayName}.Provider, which is what binds it to a field.`);
+        throw new Error('This has to be drawn inside Grid.Field, which is what binds it to a record\'s column.');
     }
     return field;
 };

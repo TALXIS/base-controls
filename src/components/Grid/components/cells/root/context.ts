@@ -13,7 +13,7 @@ GridCellContext.displayName = 'GridCell';
 export const useGridCell = (): GridCell => {
     const cell = useContext(GridCellContext);
     if (!cell) {
-        throw new Error('This has to be rendered inside a CellRoot, which is what creates the cell it belongs to.');
+        throw new Error('This has to be drawn inside Grid.CellRoot, which is what creates the cell it belongs to.');
     }
     return cell;
 };

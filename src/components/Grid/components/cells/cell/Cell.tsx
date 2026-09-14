@@ -1,6 +1,9 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { CellCommands } from "../commands/CellCommands";
+import { CellLoading } from "../loading/CellLoading";
+import { CellContainer } from "../container/CellContainer";
 import { CellRoot } from "../root/CellRoot";
+import { RowResizeGrip } from "../row-resize-grip/RowResizeGrip";
 
 export interface IGridCellProps extends ICellRendererParams {
     children?: React.ReactNode;
@@ -15,7 +18,13 @@ export interface IGridCellProps extends ICellRendererParams {
  */
 export const Cell = (props: IGridCellProps) => {
     return <CellRoot {...props}>
-        {props.children}
-        <CellCommands />
+        <RowResizeGrip>
+            <CellContainer>
+                <CellLoading>
+                    {props.children}
+                    <CellCommands />
+                </CellLoading>
+            </CellContainer>
+        </RowResizeGrip>
     </CellRoot>;
 };
