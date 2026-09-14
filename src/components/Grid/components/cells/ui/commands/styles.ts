@@ -1,15 +1,20 @@
 import { ICommandBarStyles, mergeStyleSets } from "@fluentui/react";
 import { IAlignment } from "@utils";
 
+//what a bar is down to once everything it holds is in the menu: the button that opens it
+const OVERFLOW_BUTTON_WIDTH = 40;
+
 export const getCellCommandsStyles = (alignment: IAlignment) => {
     const classNames = mergeStyleSets({
         commandsRoot: {
             //after the value, or before it where the column reads from the right
             order: alignment === 'right' ? 1 : 2,
-            //a flex item that can shrink, so the bar has a bounded box to fit into rather than the width
-            //its buttons would like
-            flex: '1 1 auto',
-            minWidth: 0,
+            //the bar takes the room the value leaves, and is the first to give it back: a shrink factor
+            //nothing else can outweigh, so the bar answers a value that needs the room by moving its
+            //commands into the overflow menu, down to the width of the button that opens it. What the
+            //value still cannot fit in is clipped instead
+            flex: '1 1000 auto',
+            minWidth: OVERFLOW_BUTTON_WIDTH,
         },
         //`CommandBar` hands its native props to the `ResizeGroup` root, so this is the class that lands on
         //the box it measures: as wide as what it was given, which is what makes the overflow menu appear
