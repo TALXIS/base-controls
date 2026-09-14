@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Icon, TooltipHost, useTheme } from "@fluentui/react";
+import { Icon, ITheme, TooltipHost, useTheme } from "@fluentui/react";
 import { IAlignment } from "@utils";
 import { getFieldErrorStyles } from "./styles";
 
@@ -8,6 +8,13 @@ export interface IFieldErrorProps {
     message: string;
     /** Which edge the cell reads from. Left, unless told otherwise. */
     alignment?: IAlignment;
+    /**
+     * What the tooltip is drawn in.
+     *
+     * A tooltip is drawn over the grid rather than in the cell, so it takes the grid's theme rather than
+     * the colours of whatever one cell happens to be painted in.
+     */
+    surfaceTheme?: ITheme;
 }
 
 /**
@@ -18,7 +25,7 @@ export interface IFieldErrorProps {
  * cell of another size.
  */
 export const FieldError = (props: IFieldErrorProps) => {
-    const { message, alignment = 'left' } = props;
+    const { message, alignment = 'left', surfaceTheme } = props;
     const theme = useTheme();
     const styles = useMemo(() => getFieldErrorStyles(theme, alignment), [theme, alignment]);
 
@@ -26,7 +33,8 @@ export const FieldError = (props: IFieldErrorProps) => {
         <div className={styles.outline} aria-hidden />
         {/* `hostClassName`, not `className`: what a `TooltipHost` is styled by is the former, and the
             latter reaches nothing */}
-        <TooltipHost content={message} hostClassName={styles.fieldErrorRoot}>
+        <TooltipHost content={message} hostClassName={styles.fieldErrorRoot}
+            tooltipProps={{ theme: surfaceTheme }} calloutProps={{ theme: surfaceTheme }}>
             <Icon iconName='StatusErrorFull' className={styles.icon} aria-label={message} />
         </TooltipHost>
     </>;

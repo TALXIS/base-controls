@@ -97,9 +97,24 @@ const withCellHooks = (module: IGridModule): IGridModule => ({
                 disabled: options?.disabled,
                 onClick: () => console.log(key, params.record.getRecordId()),
             })
+            //two of them open a menu of their own, which is the other surface a cell draws outside itself
+            const submenu = (key: string, iconName: string, text: string, choices: string[]) => ({
+                //the click opens the menu rather than doing anything of its own
+                ...command(key, iconName, { text: text }),
+                onClick: undefined,
+                subMenuProps: {
+                    items: choices.map(choice => ({
+                        key: `${key}_${choice}`,
+                        text: choice,
+                        onClick: () => console.log(key, choice, params.record.getRecordId()),
+                    })),
+                },
+            })
             result.items.push(
                 command('Open', 'OpenInNewWindow', { text: 'Open' }),
                 command('Edit', 'Edit', { text: 'Edit' }),
+                submenu('Status', 'CheckMark', 'Set status', ['Not started', 'In progress', 'Done', 'Blocked']),
+                submenu('Move', 'Move', 'Move to', ['Backlog', 'This sprint', 'Next sprint']),
                 command('Assign', 'FollowUser', { text: 'Assign to me' }),
                 command('Delete', 'Delete', { text: 'Delete', disabled: true }),
                 command('Copy', 'Copy'),

@@ -2,6 +2,7 @@ import { IRecordEvents } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useRequiredGridField } from "../field/context";
+import { useGridService } from "../../../useGridService";
 import { useGridCell } from "../root/context";
 import { FieldValidationComponents, IGridFieldValidationComponents } from "./components";
 
@@ -19,6 +20,7 @@ export interface IGridFieldValidationProps {
 export const FieldValidation = (props: IGridFieldValidationProps) => {
     const field = useRequiredGridField();
     const cell = useGridCell();
+    const gridTheme = useGridService('theme');
     const record = field.getRecord();
     const components = { ...FieldValidationComponents, ...props.components };
     const rerender = useRerender();
@@ -31,5 +33,5 @@ export const FieldValidation = (props: IGridFieldValidationProps) => {
     if (!error) {
         return null;
     }
-    return components.onRenderFieldError({ message: errorMessage, alignment: cell.getColDef().propBag?.alignment });
+    return components.onRenderFieldError({ message: errorMessage, alignment: cell.getColDef().propBag?.alignment, surfaceTheme: gridTheme });
 };

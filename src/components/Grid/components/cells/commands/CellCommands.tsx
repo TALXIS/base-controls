@@ -1,3 +1,4 @@
+import { useGridService } from "../../../useGridService";
 import { useGridCell } from "../root/context";
 import { CellCommandsComponents, IGridCellCommandsComponents } from "./components";
 
@@ -13,10 +14,12 @@ export interface IGridCellCommandsProps {
 export const CellCommands = (props: IGridCellCommandsProps) => {
     const cell = useGridCell();
     const items = cell.getCommands();
+    const gridTheme = useGridService('theme');
     const components = { ...CellCommandsComponents, ...props.components };
 
     return components.onRenderCommands({
         items: items,
         alignment: cell.getColDef().propBag?.alignment,
+        surfaceTheme: gridTheme,
     });
 };
