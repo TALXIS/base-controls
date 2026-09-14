@@ -72,6 +72,19 @@ const withCellHooks = (module: IGridModule): IGridModule => ({
         //a row of commands on the name cells, some labelled and some not, so what a bar does with both
         //is part of what the story shows
         services.get('cells').registerCellCommandsHook((result, params) => {
+            //two of them on the estimates, which change the value rather than log it: an estimate dragged
+            //over what the team plans in is what makes the cell say the record refuses it
+            if (params.columnName === 'estimate') {
+                const step = (key: string, iconName: string, by: number) => ({
+                    key: key,
+                    iconOnly: true,
+                    iconProps: { iconName: iconName },
+                    title: key,
+                    onClick: () => params.record.setValue('estimate', Math.max(0, Number(params.record.getValue('estimate') ?? 0) + by)),
+                })
+                result.items.push(step('Longer', 'Add', 1), step('Shorter', 'Remove', -1))
+                return
+            }
             if (params.columnName !== 'name') {
                 return
             }
