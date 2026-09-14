@@ -1,7 +1,6 @@
 import { ColDef } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
-import { ICommandBarItemProps } from "@fluentui/react";
 import { IGridCellCommands, IGridCellLoading } from "./GridCells";
 import { GridCellTheme } from "./GridCellTheme";
 import { GridField } from "../fields";
@@ -98,15 +97,16 @@ export class GridCell {
     }
 
     /**
-     * What this cell offers to do. Nothing, unless a hook says otherwise.
+     * What this cell offers to do, as buttons and as what the overflow menu holds. Nothing of either,
+     * unless a hook says otherwise.
      *
      * Answered on every call, for the same reason as {@link isLoading}: a hook reads state that changes
      * under it.
      */
-    public getCommands(): ICommandBarItemProps[] {
-        const result: IGridCellCommands = { items: [] };
+    public getCommands(): IGridCellCommands {
+        const result: IGridCellCommands = { items: [], overflowItems: [] };
         this._cells.applyCellCommandsHooks(result, { record: this._record, columnName: this.getColumnName() });
-        return result.items;
+        return result;
     }
 
     /** Whether this cell has left the screen, after which nothing should be asked of it. */

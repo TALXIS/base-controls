@@ -19,13 +19,14 @@ export interface ICellCommandsProps extends ICommandBarProps {
 
 /** The commands a cell offers, drawn to fit the row it is in. Nothing where there are none to draw. */
 export const Commands = (props: ICellCommandsProps) => {
-    const { alignment = 'left', className, surfaceTheme, overflowButtonProps, items, ...commandBarProps } = props;
+    const { alignment = 'left', className, surfaceTheme, overflowButtonProps, items, overflowItems, ...commandBarProps } = props;
     const styles = useMemo(() => getCellCommandsStyles(alignment), [alignment]);
     const themedItems = useMemo(() => getThemedItems(items, surfaceTheme), [items, surfaceTheme]);
+    const themedOverflowItems = useMemo(() => overflowItems && getThemedItems(overflowItems, surfaceTheme), [overflowItems, surfaceTheme]);
     const commandBarRef = useRef<ICommandBar>(null);
     const observe = useResizeObserver(() => commandBarRef.current?.remeasure());
 
-    if (items.length === 0) {
+    if (items.length === 0 && !overflowItems?.length) {
         return null;
     }
 
@@ -33,6 +34,7 @@ export const Commands = (props: ICellCommandsProps) => {
         <CommandBar
             {...commandBarProps}
             items={themedItems}
+            overflowItems={themedOverflowItems}
             //what the bar puts in its overflow menu is merged into these, so the theme survives
             overflowButtonProps={{ ...overflowButtonProps, menuProps: getThemedMenu({ items: [], ...overflowButtonProps?.menuProps }, surfaceTheme) }}
             componentRef={commandBarRef}

@@ -117,12 +117,16 @@ const withCellHooks = (module: IGridModule): IGridModule => ({
                 submenu('Move', 'Move', 'Move to', ['Backlog', 'This sprint', 'Next sprint']),
                 command('Assign', 'FollowUser', { text: 'Assign to me' }),
                 command('Delete', 'Delete', { text: 'Delete', disabled: true }),
-                command('Copy', 'Copy'),
-                command('Share', 'Share'),
-                command('Flag', 'Flag'),
-                command('Comment', 'Comment'),
-                command('Download', 'Download'),
-                command('Archive', 'Archive'),
+            )
+            //the rest are never drawn as buttons: a menu is built when it is opened, so these cost the
+            //cell nothing until someone asks for them
+            result.overflowItems.push(
+                command('Copy', 'Copy', { text: 'Copy' }),
+                command('Share', 'Share', { text: 'Share' }),
+                command('Flag', 'Flag', { text: 'Flag' }),
+                command('Comment', 'Comment', { text: 'Comment' }),
+                command('Download', 'Download', { text: 'Download' }),
+                command('Archive', 'Archive', { text: 'Archive' }),
             )
         })
         services.get('cells').registerCellThemeHook((result, params) => {

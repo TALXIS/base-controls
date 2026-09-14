@@ -30,9 +30,9 @@ export const FieldCell = (props: IGridFieldCellProps) => {
             <RowResizeGrip>
                 <CellContainer>
                     <CellLoading>
+                        <FieldValidation />
                         <FieldControl editing={props.editing} />
                         <CellCommands />
-                        <FieldValidation />
                     </CellLoading>
                 </CellContainer>
             </RowResizeGrip>

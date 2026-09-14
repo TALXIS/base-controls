@@ -73,6 +73,13 @@ export interface IGridCellLoading {
 export interface IGridCellCommands {
     /** What the command bar draws. Empty, so a cell shows none until something adds one. */
     items: ICommandBarItemProps[];
+    /**
+     * The ones that live in the overflow menu however much room the cell has.
+     *
+     * A menu is built only when it is opened, so a command put here costs a cell nothing until someone
+     * asks for it - which is what to reach for when a cell offers more than a row has room to draw.
+     */
+    overflowItems: ICommandBarItemProps[];
 }
 
 /**
