@@ -2,7 +2,6 @@ import { CellDoubleClickedEvent, ColDef, ValueFormatterParams, ValueGetterParams
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
-import { FieldControl } from "../../components/adapters";
 import { CellHost } from "../../components/cell-host";
 import { GridControl } from "../cells";
 import { IGridCellRendererParams } from "../../components/interfaces";
@@ -167,7 +166,7 @@ export class GridColumns {
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeader,
             cellRenderer: CellHost,
-            cellEditor: FieldControl,
+            cellEditor: CellHost,
             valueGetter: (params: ValueGetterParams<IRecord>) => this._getValue(params.data, column.name),
             valueFormatter: (params: ValueFormatterParams<IRecord>) => this._getFormattedValue(params.data, column.name),
             onCellDoubleClicked: (event: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(event),

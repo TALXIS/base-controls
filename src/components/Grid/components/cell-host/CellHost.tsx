@@ -12,6 +12,11 @@ import { CellHostComponents, ICellHostComponents } from "./components";
 import { GridCellContext } from "./context";
 
 export interface ICellHostProps extends ICellRendererParams {
+    /**
+     * Whether the cell takes input rather than only drawing its value: an editor AG Grid opened, or a
+     * one-click-edit column, whose control is the cell.
+     */
+    editing?: boolean;
     children?: React.ReactNode;
     components?: Partial<ICellHostComponents>;
 }
@@ -50,7 +55,7 @@ export const CellHost = (props: ICellHostProps) => {
         style: { backgroundColor: theme.semanticColors.bodyBackground, color: theme.semanticColors.bodyText },
         children: cell.isLoading()
             ? components.onRenderLoading()
-            : <><Cell.Control /><Cell.Commands /></>,
+            : <><Cell.Control editing={props.editing} /><Cell.Commands /></>,
     });
 
     const getContent = () => {

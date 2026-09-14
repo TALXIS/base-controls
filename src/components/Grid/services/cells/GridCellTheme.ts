@@ -47,13 +47,13 @@ export class GridCellTheme {
         //the row's theme, not the grid's: a formatting that changes nothing hands back the theme it was
         //given, and handing it the grid's would paint every striped row in the grid's own surface
         const formatting = this._record.getColumnInfo(this._columnName).ui.getCustomFormatting(this._rowTheme) ?? {};
-        const background = formatting.backgroundColor ?? rowColors.background;
+        const background = formatting.backgroundColor || rowColors.background;
         const isRecoloured = background !== rowColors.background;
         //a background of its own is taken as emphasis: the text goes to whatever reads on it, and so does
         //the primary colour unless the column named one itself
         const contrast = Theming.GetTextColorForBackground(background);
         return {
-            primary: formatting.primaryColor ?? (isRecoloured ? contrast : rowColors.primary),
+            primary: formatting.primaryColor || (isRecoloured ? contrast : rowColors.primary),
             background: background,
             text: formatting.textColor || (isRecoloured ? contrast : rowColors.text),
         };

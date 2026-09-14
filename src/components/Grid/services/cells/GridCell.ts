@@ -4,6 +4,7 @@ import { IGridServiceLocator } from "../../services";
 import { ICommandBarItemProps } from "@fluentui/react";
 import { IGridCellCommands, IGridCellLoading } from "./GridCells";
 import { GridCellTheme } from "./GridCellTheme";
+import { GridControl } from "./GridControl";
 
 export interface IGridCellParameters {
     services: IGridServiceLocator;
@@ -28,6 +29,7 @@ export class GridCell {
     private _colDef: ColDef<IRecord>;
     private _id: string;
     private _theme: GridCellTheme;
+    private _control?: GridControl;
     private _isDestroyed: boolean = false;
 
     constructor(parameters: IGridCellParameters) {
@@ -74,17 +76,24 @@ export class GridCell {
         return result.isLoading;
     }
 
+    /** What draws this cell's value, once {@link createControl} has made one. */
+    public getControl(): GridControl | undefined {
+        return this._control;
+    }
+
     /**
-     * What this cell reads as.
+     * Makes what draws this cell's value, which is the control adapter's to do: whether a cell takes input
+     * is what the cell is being drawn for, and that is not known until it is.
      *
      * `undefined` for a column of the grid's own rather than the dataset's - the checkboxes, the column a
-     * save is reported in - which hold nothing of the record's to read.
+     * save is reported in - which hold nothing of the record's to draw.
      */
-    public getFormattedValue(): string | null | undefined {
+    public createControl(takesInput?: boolean): GridControl | undefined {
         if (!this._record.getDataProvider().getColumnsMap()[this.getColumnName()]) {
             return undefined;
         }
-        return this._record.getFormattedValue(this.getColumnName());
+        this._control = new GridControl({ services: this._services, record: this._record, columnName: this.getColumnName(), takesInput: takesInput });
+        return this._control;
     }
 
     /**

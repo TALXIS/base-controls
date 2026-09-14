@@ -5,7 +5,7 @@ import { IGridCellRenderer } from "@components/GridCellRenderer";
 import { IControl } from "@interfaces";
 import { GridControl } from "../../../services/cells";
 import { useGridCell } from "../../cell-host";
-import { ICellProps } from "../../interfaces";
+import { useGridService } from "../../../useGridService";
 import { getBindings } from "./getBindings";
 import { NestedReactRoot } from "./nested-react-root";
 import { getCellFluentDesignLanguage } from "./getCellFluentDesignLanguage";
@@ -15,8 +15,6 @@ const client = new Client();
 export interface ILegacyNestedControlRendererProps {
     /** What the cell renderer would have been given, which is what the control is given too. */
     controlProps: IGridCellRenderer;
-    /** The cell this control is drawn in, as AG Grid described it. */
-    cellProps: ICellProps;
     /** The cell this is drawing, which knows whether it takes input. */
     control: GridControl;
 }
@@ -28,10 +26,13 @@ export interface ILegacyNestedControlRendererProps {
  * cell's theme, the row's height, and whether the field refuses input.
  */
 export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererProps) => {
-    const { controlProps, cellProps, control } = props;
+    const { controlProps, control } = props;
     const { context, parameters } = controlProps;
-    const { record, baseColumn: column, node } = cellProps;
-    const cellTheme = useGridCell().getTheme();
+    const cell = useGridCell();
+    const rows = useGridService('rows');
+    const record = cell.getRecord();
+    const column = record.getDataProvider().getColumnsMap()[cell.getColumnName()];
+    const cellTheme = cell.getTheme();
     const customControl = control.getCustomControl();
     const field = control.getField();
 
@@ -78,8 +79,8 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                             ...controlProps.context,
                             mode: Object.create(controlProps.context.mode, {
                                 allocatedHeight: {
-                                    //the row as AG Grid has it, which is what a resized one measured to
-                                    value: node.rowHeight! - 4
+                                    //the row as the grid has it, which is what a resized one was dragged to
+                                    value: rows.getHeight(record) - 4
                                 },
                             }),
                             parameters: controlParameters,
