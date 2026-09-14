@@ -16,4 +16,4 @@ export interface IGridCellRendererParams {
 }
 
 /** What AG Grid hands whatever renders a cell, plus the above. */
-export interface ICellProps extends ICellRendererParams, IGridCellRendererParams { }
+export interface IGridCellRendererProps extends ICellRendererParams, IGridCellRendererParams { }

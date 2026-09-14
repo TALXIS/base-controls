@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { IRecord } from "@talxis/client-libraries";
-import { GridField } from "../../services/fields";
+import { GridField } from "../../../services/fields";
 import { GridFieldContext } from "./context";
 
-export interface IFieldProps {
+export interface IGridFieldProps {
     record: IRecord;
     /** The column to bind to, by name. */
     name: string;
@@ -16,7 +16,7 @@ export interface IFieldProps {
  * Draws nothing of its own: whatever is under it reaches the field with `useGridField`, and what being
  * bound to one implies - what it reads as, whether it is valid - follows from there.
  */
-export const Field = (props: IFieldProps) => {
+export const Field = (props: IGridFieldProps) => {
     const { record, name, children } = props;
     //the record instance, not its id: a reload hands the same row a new record, and a field holding the
     //previous one would answer for a record nothing is looking at

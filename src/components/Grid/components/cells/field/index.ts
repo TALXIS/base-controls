@@ -1,4 +1,4 @@
-//`Field` is not re-exported: the package's flat barrel already has fields of the form's, and the namespace
-//is where this one is published
-export type { IFieldProps } from './Field';
+//`Field` is published through the namespace rather than the flat barrel: the name is far too generic to
+//sit in one shared with every other control's
+export type { IGridFieldProps } from './Field';
 export * from './context';

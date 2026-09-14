@@ -1,9 +1,5 @@
 export * from './components';
-export * from './adapters';
-export * from './cell-host';
+export * from './cells';
 export * from './record-save-indicator';
-//aliased, and the ui pieces reached through the namespace: `ICellProps`, `Cell`, `Control` and
-//`Notifications` are all taken in the package's flat barrel
-export type { ICellProps as IGridCellProps, IGridCellRendererParams } from './interfaces';
-export { CellUi } from './ui';
-export type { ICellUi, ICellUiProps, IRowResizeGripProps, ICellContainerProps, ICellControlProps, ICellNotificationsProps } from './ui';
+//aliased: what a cell renderer is handed, as opposed to what a cell component takes
+export type { IGridCellRendererProps, IGridCellRendererParams } from './interfaces';

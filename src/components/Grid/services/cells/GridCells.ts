@@ -7,18 +7,6 @@ import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
 import { GridCell } from "./GridCell";
 
-/** What a cell draws, once every module has had its say. */
-export interface IGridField {
-    /** What the record holds for this column. */
-    value: any;
-    /** What it reads as. */
-    formattedValue: string | null;
-    /** Whether the value is still being fetched. */
-    loading: boolean;
-    /** Whether the row may be dragged taller from this cell. */
-    isResizable: boolean;
-}
-
 /** Which cell a hook is running for. */
 export interface IGridCellHookParameters {
     record: IRecord;
@@ -26,14 +14,6 @@ export interface IGridCellHookParameters {
     /** Whether the control takes input rather than only drawing the value. */
     takesInput: boolean;
 }
-
-/**
- * A hook over what a cell draws.
- *
- * Handed the defaults and mutates them: what a cell shows, whether it is still waiting, whether the row may
- * be dragged taller from it. The grid knows nothing of why.
- */
-export type GridFieldHook = (result: IGridField, params: IGridCellHookParameters) => void;
 
 /**
  * A hook over which control draws a cell.
@@ -118,12 +98,11 @@ export interface IGridCellsParameters {
 /**
  * Every cell the grid has on screen, and what a module changes about all of them.
  *
- * What any single cell shows is its own `GridControl`'s, which runs the hooks registered here.
+ * What any single cell shows is its own `GridFieldControl`'s, which runs the hooks registered here.
  */
 export class GridCells {
     private _services: IGridServiceLocator;
     private _renderedCells = new Map<string, GridCell>();
-    private _fieldHooks = new HookRegistry<GridFieldHook>();
     private _controlHooks = new HookRegistry<GridControlHook>();
     private _controlParametersHooks = new HookRegistry<GridControlParametersHook>();
     private _cellThemeHooks = new HookRegistry<GridCellThemeHook>();
@@ -134,12 +113,12 @@ export class GridCells {
         this._services = parameters.services;
     }
 
-    /** A cell of this grid. `CellHost` creates the ones that are rendered, and nothing else should. */
+    /** A cell of this grid. `CellRoot` creates the ones that are rendered, and nothing else should. */
     public createCell(record: IRecord, colDef: ColDef<IRecord>): GridCell {
         return new GridCell({ services: this._services, record: record, colDef: colDef });
     }
 
-    /** Registers a cell as rendered. `CellHost` does this on mount, and nothing else should. */
+    /** Registers a cell as rendered. `CellRoot` does this on mount, and nothing else should. */
     public addCell(cell: GridCell): void {
         this._renderedCells.set(cell.getId(), cell);
     }
@@ -158,15 +137,6 @@ export class GridCells {
     /** The cell drawing this field, where one is rendered. */
     public getCell(record: IRecord, columnName: string): GridCell | undefined {
         return this.getCells().find(cell => cell.getRecord().getRecordId() === record.getRecordId() && cell.getColumnName() === columnName);
-    }
-
-    /**
-     * Registers a hook over what a cell draws. Runs per cell per render, so keep it cheap.
-     *
-     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
-     */
-    public registerFieldHook(hook: GridFieldHook, priority?: number): void {
-        this._fieldHooks.register(hook, priority);
     }
 
     /**
@@ -215,11 +185,7 @@ export class GridCells {
         this._cellCommandsHooks.register(hook, priority);
     }
 
-    /** Run by the `GridControl` of the cell in question, which is the only caller of these three. */
-    public applyFieldHooks(result: IGridField, params: IGridCellHookParameters): void {
-        this._fieldHooks.apply(result, params);
-    }
-
+    /** Run by the `GridFieldControl` of the cell in question, which is the only caller of these two. */
     public applyControlHooks(result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters): void {
         this._controlHooks.apply(result, params);
     }

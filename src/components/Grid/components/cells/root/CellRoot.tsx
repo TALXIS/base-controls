@@ -3,40 +3,31 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
-import { IGridRowsEvents } from "../../services/rows";
 import { ThemeContext } from "@utils";
-import { Commands } from "../adapters/commands";
-import { Control } from "../adapters/control";
-import { useGridService } from "../../useGridService";
-import { CellHostComponents, ICellHostComponents } from "./components";
+import { IGridRowsEvents } from "../../../services/rows";
+import { useGridService } from "../../../useGridService";
+import { CellUi } from "../ui";
 import { GridCellContext } from "./context";
 
-export interface ICellHostProps extends ICellRendererParams {
-    /**
-     * Whether the cell takes input rather than only drawing its value: an editor AG Grid opened, or a
-     * one-click-edit column, whose control is the cell.
-     */
-    editing?: boolean;
+export interface IGridCellRootProps extends ICellRendererParams {
     children?: React.ReactNode;
-    components?: Partial<ICellHostComponents>;
 }
 
 /**
- * The cell everything is drawn inside.
+ * The cell everything else is drawn inside.
  *
  * Creates the `GridCell` its children belong to, registers it as rendered, destroys it when it unmounts,
- * and draws the container that cell is in. A renderer, an editor or a module's own cell that does not
- * render through this has no cell, and `useGridCell` says so.
+ * and draws the surface that cell is on. What goes in it is the caller's: `Grid.FieldCell` and `Grid.Cell`
+ * are the two ready-made answers. Anything drawn outside one of these has no cell, and `useGridCell`
+ * says so.
  */
-export const CellHost = (props: ICellHostProps) => {
-    const { data: record, children, components: componentOverrides } = props;
+export const CellRoot = (props: IGridCellRootProps) => {
+    const { data: record, children } = props;
     const cells = useGridService('cells');
     const rows = useGridService('rows');
     const rerender = useRerender();
-    const components = { ...CellHostComponents, ...componentOverrides };
     const colDef = props.colDef!;
     const cell = useMemo(() => cells.createCell(record, colDef), [cells, record, colDef]);
-    const theme = cell.getTheme().getValue();
 
     useLayoutEffect(() => {
         cells.addCell(cell);
@@ -50,31 +41,24 @@ export const CellHost = (props: ICellHostProps) => {
         }
     });
 
-    const getContainer = () => components.onRenderContainer({
-        //what `applyTo='element'` painted: the cell's surface and the text on it
-        style: { backgroundColor: theme.semanticColors.bodyBackground, color: theme.semanticColors.bodyText },
-        children: cell.isLoading()
-            ? components.onRenderLoading()
-            : <><Cell.Control editing={props.editing} /><Cell.Commands /></>,
-    });
+    const theme = cell.getTheme().getValue();
+
+    const getContainer = () => <CellUi.Container>
+        {cell.isLoading() ? <CellUi.Loading /> : children}
+    </CellUi.Container>;
 
     const getContent = () => {
-        //`autoHeight` is what lets AG Grid take the row's height from what the cell draws, and dragging a
-        //row taller is nothing without it
-        if (!colDef.autoHeight || !components.onRenderRowResizeGrip) {
+        if (!colDef.autoHeight) {
             return getContainer();
         }
-        return components.onRenderRowResizeGrip({
-            height: rows.getHeight(record),
-            onResizeEnd: height => rows.setHeight(record, height),
-            children: getContainer(),
-        });
+        return <CellUi.RowResizeGrip
+            height={rows.getHeight(record)}
+            onResizeEnd={height => rows.setHeight(record, height)}>
+            {getContainer()}
+        </CellUi.RowResizeGrip>;
     };
 
     return <GridCellContext.Provider value={cell}>
         <ThemeContext theme={theme}>{getContent()}</ThemeContext>
     </GridCellContext.Provider>;
 };
-
-/** The cell, with what a cell can draw of its own hanging off it: `Cell.Control`, `Cell.Commands`. */
-export const Cell = Object.assign(CellHost, { Commands: Commands, Control: Control });

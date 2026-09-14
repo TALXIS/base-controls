@@ -3,8 +3,8 @@ import { NestedControlRenderer } from "@components/NestedControlRenderer";
 import { INestedControlRendererComponentProps } from "@components/NestedControlRenderer/interfaces";
 import { IGridCellRenderer } from "@components/GridCellRenderer";
 import { IControl } from "@interfaces";
-import { GridControl } from "../../../services/cells";
-import { useGridCell } from "../../cell-host";
+import { GridFieldControl } from "../../../services/cells";
+import { useGridCell } from "../root";
 import { useGridService } from "../../../useGridService";
 import { getBindings } from "./getBindings";
 import { NestedReactRoot } from "./nested-react-root";
@@ -16,7 +16,7 @@ export interface ILegacyNestedControlRendererProps {
     /** What the cell renderer would have been given, which is what the control is given too. */
     controlProps: IGridCellRenderer;
     /** The cell this is drawing, which knows whether it takes input. */
-    control: GridControl;
+    control: GridFieldControl;
 }
 
 /**
@@ -48,8 +48,8 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                     record: record,
                     column: column,
                     control: customControl,
-                    value: field.value,
-                    formattedValue: field.formattedValue,
+                    value: field.getValue(),
+                    formattedValue: field.getFormattedValue(),
                     enableNavigation: !!parameters.EnableNavigation?.raw,
                     onNotifyOutputChanged: value => control.setValue(value)
                 }),

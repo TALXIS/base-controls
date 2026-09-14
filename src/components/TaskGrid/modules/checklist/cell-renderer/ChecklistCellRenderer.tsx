@@ -2,11 +2,11 @@ import * as React from "react";
 import { Icon, Text, useTheme } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
-import { IGridCellProps } from "@components/Grid";
+import { IGridCellRendererProps } from "@components/Grid";
 import { useServices } from "@components/TaskGrid/context";
 import { getChecklistCellRendererStyles } from "./styles";
 
-export interface IChecklistCellRendererProps extends IGridCellProps { }
+export interface IChecklistCellRendererProps extends IGridCellRendererProps { }
 
 /**
  * Renders how far a task's checklist has got: a circled check and `done/total`. Empty when the task has no

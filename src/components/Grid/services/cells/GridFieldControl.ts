@@ -4,12 +4,12 @@ import { BaseControls } from "@utils";
 import { IGridCellRenderer, IGridCellRendererParameters } from "@components/GridCellRenderer";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
-import { IGridField } from "./GridCells";
+import { GridField } from "../fields";
 
-export interface IGridControlParameters {
+export interface IGridFieldControlParameters {
     services: IGridServiceLocator;
-    record: IRecord;
-    columnName: string;
+    /** The field this draws, which is what makes it a control of anything. */
+    field: GridField;
     /** Whether the control takes input rather than only drawing the value. */
     takesInput?: boolean;
 }
@@ -18,43 +18,38 @@ export interface IGridControlParameters {
  * What one cell shows, and what it shows it with.
  *
  * Built for a cell and asked about that cell, so nothing here is told which record or column it is talking
- * about. `getField` is the one place a cell's value is worked out, whoever is asking: the renderer, the
- * bindings a control is built from, and what AG Grid reads. A module changes any of it through a hook on
- * `GridCells` rather than the grid knowing the feature exists.
+ * about. What it draws comes off the field it is bound to; which control draws it, and what that control
+ * is handed, is what a module changes through a hook on `GridCells` rather than the grid knowing the
+ * feature exists.
  */
-export class GridControl {
+export class GridFieldControl {
     private _services: IGridServiceLocator;
     private _record: IRecord;
     private _columnName: string;
     private _takesInput: boolean;
+    private _field: GridField;
 
-    constructor(parameters: IGridControlParameters) {
+    constructor(parameters: IGridFieldControlParameters) {
         this._services = parameters.services;
-        this._record = parameters.record;
-        this._columnName = parameters.columnName;
+        this._field = parameters.field;
+        this._record = parameters.field.getRecord();
+        this._columnName = parameters.field.getColumnName();
         this._takesInput = !!parameters.takesInput;
     }
 
-    /** What this cell draws: the record's own, and whatever a module made of it. */
-    public getField(): IGridField {
-        const field: IGridField = {
-            value: this._record.getValue(this._columnName),
-            formattedValue: this._record.getFormattedValue(this._columnName),
-            loading: this._record.getColumnInfo(this._columnName).ui.isLoading(),
-            isResizable: !!this._column?.autoHeight,
-        };
-        this._cells.applyFieldHooks(field, this._hookParams);
-        return field;
+    /** What this cell is bound to. */
+    public getField(): GridField {
+        return this._field;
     }
 
     /** What this cell holds. */
     public getValue(): any {
-        return this.getField().value;
+        return this._field.getValue();
     }
 
     /** What this cell shows when it is not rendering a control of its own. */
     public getFormattedValue(): string {
-        return this.getField().formattedValue ?? '';
+        return this._field.getFormattedValue() ?? '';
     }
 
     /** A cell reported a new value: the record takes it, and saves it where the grid saves as it goes. */
@@ -155,9 +150,8 @@ export class GridControl {
     /** What a cell hands whatever draws it, before the record and the hooks have their say. */
     private _getCellParameters(control: ICustomColumnControl): IGridCellRendererParameters {
         const column = this._column!;
-        const field = this.getField();
         const parameters: IGridCellRendererParameters = {
-            value: field.value,
+            value: this._field.getValue(),
             ColumnAlignment: { raw: column.alignment ?? 'left' },
             CellType: { raw: this._takesInput ? 'editor' : 'renderer' },
             EnableNavigation: { raw: this._isNavigationSupported(), type: DataTypes.TwoOptions },

@@ -1,5 +1,5 @@
 import { IRecord } from "@talxis/client-libraries";
-import { IGridColumn } from "../../../services/columns";
+import { IGridColumn } from "../../../../services/columns";
 
 export interface ICellNotificationsProps {
     record: IRecord;

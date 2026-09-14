@@ -2,12 +2,12 @@ import * as React from "react";
 import { Icon, Text, useTheme } from "@fluentui/react";
 import { useEventEmitter } from "@hooks";
 import { useRerender } from "@legacy";
-import { IGridCellProps } from "@components/Grid";
+import { IGridCellRendererProps } from "@components/Grid";
 import { useServices } from "@components/TaskGrid/context";
 import { getDependenciesCellRendererStyles } from "./styles";
 import type { TaskDependencyDirection } from "../DependenciesProvider";
 
-export interface IDependenciesCellRendererProps extends IGridCellProps {
+export interface IDependenciesCellRendererProps extends IGridCellRendererProps {
     /** Which side of the dependency this column shows. Bound per column by the grid. */
     direction: TaskDependencyDirection;
 }

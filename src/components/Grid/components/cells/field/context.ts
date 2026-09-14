@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { GridField } from "../../services/fields";
+import { GridField } from "../../../services/fields";
 
 export const GridFieldContext = createContext<GridField | undefined>(undefined);
 GridFieldContext.displayName = 'GridField';

@@ -1,11 +1,11 @@
 import { IconButton } from "@fluentui/react";
-import { IGridCellProps } from "@components/Grid"
+import { IGridCellRendererProps } from "@components/Grid"
 import * as React from "react"
 import { getTreeExpandCollapseHeaderStyles } from "./styles";
 import { useServices, useTaskDataProvider } from "@components/TaskGrid/context";
 
 /** Header of the subject column, carrying the expand-all / collapse-all toggle. */
-export const TreeExpandCollapseHeader = (props: IGridCellProps) => {
+export const TreeExpandCollapseHeader = (props: IGridCellRendererProps) => {
     const styles = React.useMemo(() => getTreeExpandCollapseHeaderStyles(), []);
     const taskDataProvider = useTaskDataProvider();
     const expansion = useServices().get('taskExpansion');

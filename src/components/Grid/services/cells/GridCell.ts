@@ -4,7 +4,8 @@ import { IGridServiceLocator } from "../../services";
 import { ICommandBarItemProps } from "@fluentui/react";
 import { IGridCellCommands, IGridCellLoading } from "./GridCells";
 import { GridCellTheme } from "./GridCellTheme";
-import { GridControl } from "./GridControl";
+import { GridField } from "../fields";
+import { GridFieldControl } from "./GridFieldControl";
 
 export interface IGridCellParameters {
     services: IGridServiceLocator;
@@ -20,7 +21,7 @@ let instanceCount = 0;
 /**
  * One cell of the grid, for as long as it is on screen.
  *
- * Created by `CellHost` and by nothing else: a cell that draws without one is a cell the grid cannot see.
+ * Created by `CellRoot` and by nothing else: a cell that draws without one is a cell the grid cannot see.
  * Whatever belongs to a single cell lives here, and goes when the cell does.
  */
 export class GridCell {
@@ -29,7 +30,7 @@ export class GridCell {
     private _colDef: ColDef<IRecord>;
     private _id: string;
     private _theme: GridCellTheme;
-    private _control?: GridControl;
+    private _control?: GridFieldControl;
     private _isDestroyed: boolean = false;
 
     constructor(parameters: IGridCellParameters) {
@@ -77,22 +78,22 @@ export class GridCell {
     }
 
     /** What draws this cell's value, once {@link createControl} has made one. */
-    public getControl(): GridControl | undefined {
+    public getControl(): GridFieldControl | undefined {
         return this._control;
     }
 
     /**
-     * Makes what draws this cell's value, which is the control adapter's to do: whether a cell takes input
-     * is what the cell is being drawn for, and that is not known until it is.
+     * Makes what draws this cell's value, which is the control adapter's to do: the field it draws is the
+     * adapter's to hand over, and whether it takes input is not known until the cell is being drawn.
      *
-     * `undefined` for a column of the grid's own rather than the dataset's - the checkboxes, the column a
-     * save is reported in - which hold nothing of the record's to draw.
+     * `undefined` for a field whose column is the grid's own rather than the dataset's - the checkboxes,
+     * the column a save is reported in - which hold nothing of the record's to draw.
      */
-    public createControl(takesInput?: boolean): GridControl | undefined {
-        if (!this._record.getDataProvider().getColumnsMap()[this.getColumnName()]) {
+    public createControl(field: GridField, takesInput?: boolean): GridFieldControl | undefined {
+        if (!field.getColumn()) {
             return undefined;
         }
-        this._control = new GridControl({ services: this._services, record: this._record, columnName: this.getColumnName(), takesInput: takesInput });
+        this._control = new GridFieldControl({ services: this._services, field: field, takesInput: takesInput });
         return this._control;
     }
 

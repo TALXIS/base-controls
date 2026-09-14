@@ -1,6 +1,6 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { CellHost } from "../cell-host";
+import { Cell } from "../cells/cell/Cell";
 import { RecordSaveIndicator } from "./RecordSaveIndicator";
 import { useRecordSaveStatus } from "./useRecordSaveStatus";
 
@@ -10,7 +10,7 @@ export const RecordSaveIndicatorCell = (props: ICellRendererParams<IRecord>) => 
     const record = props.data!;
     const status = useRecordSaveStatus(record);
 
-    return <CellHost {...props}>
+    return <Cell {...props}>
         {status.hasAnythingToReport && <RecordSaveIndicator record={record} status={status} />}
-    </CellHost>;
+    </Cell>;
 };

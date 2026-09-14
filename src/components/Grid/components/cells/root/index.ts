@@ -1,6 +1,3 @@
-//`Cell` is not re-exported: the package's flat barrel already has one of the form's, and the namespace
-//is where this one is published
-export { CellHost } from './CellHost';
-export type { ICellHostProps } from './CellHost';
-export * from './components';
+//`CellRoot` is published through the namespace rather than the flat barrel, like every other cell part
+export type { IGridCellRootProps } from './CellRoot';
 export * from './context';

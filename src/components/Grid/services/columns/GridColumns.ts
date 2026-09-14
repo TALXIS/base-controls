@@ -2,8 +2,9 @@ import { CellDoubleClickedEvent, ColDef, ValueFormatterParams, ValueGetterParams
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
-import { CellHost } from "../../components/cell-host";
-import { GridControl } from "../cells";
+import { FieldCell } from "../../components/cells/field-cell/FieldCell";
+import { GridFieldControl } from "../cells";
+import { GridField } from "../fields";
 import { IGridCellRendererParams } from "../../components/interfaces";
 import { ColumnHeader } from "../../components/column-header/ColumnHeader";
 import { RecordSaveIndicatorCell } from "../../components/record-save-indicator";
@@ -165,8 +166,8 @@ export class GridColumns {
             cellEditorParams: (params: any) => ({ ...this._getCellRendererParameters(params.data, column), editing: true }),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeader,
-            cellRenderer: CellHost,
-            cellEditor: CellHost,
+            cellRenderer: FieldCell,
+            cellEditor: FieldCell,
             valueGetter: (params: ValueGetterParams<IRecord>) => this._getValue(params.data, column.name),
             valueFormatter: (params: ValueFormatterParams<IRecord>) => this._getFormattedValue(params.data, column.name),
             onCellDoubleClicked: (event: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(event),
@@ -214,8 +215,8 @@ export class GridColumns {
     }
 
     /** The cell AG Grid is asking about, as something to ask. */
-    private _getControl(record: IRecord, columnName: string): GridControl {
-        return new GridControl({ services: this._services, record: record, columnName: columnName });
+    private _getControl(record: IRecord, columnName: string): GridFieldControl {
+        return new GridFieldControl({ services: this._services, field: new GridField({ record: record, columnName: columnName }) });
     }
 
     /** What a cell needs to draw a value: no control and no bindings, since nothing there reads them. */

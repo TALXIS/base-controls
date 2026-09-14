@@ -1,7 +1,7 @@
 import { useDatasetControl, useTaskDataProvider } from "@components/TaskGrid/context";
 import React, { useCallback, useEffect } from "react";
 import AsyncSelect from "react-select/async";
-import { IGridCellProps } from "@components/Grid";
+import { IGridCellRendererProps } from "@components/Grid";
 import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/modules/lookup-many/components";
 import { ThemeProvider } from "@fluentui/react";
 import { useGridService } from "@components/Grid";
@@ -18,7 +18,7 @@ enum ControlName {
  * that module contributes as its `components.CellRenderer`. The candidate records come from
  * `datasetControl.createLookupManyDataProvider`, and the visual variant from the column's custom control.
  */
-export const LookupManyCellRenderer = (props: IGridCellProps) => {
+export const LookupManyCellRenderer = (props: IGridCellRendererProps) => {
     const { api, baseColumn, record } = props;
     const datasetControl = useDatasetControl();
     const [isDisabled, setIsDisabled] = React.useState(true);
