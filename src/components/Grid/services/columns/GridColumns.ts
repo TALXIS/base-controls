@@ -1,10 +1,10 @@
-import { CellDoubleClickedEvent, ColDef, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
 import { FieldCellEditor } from "../../components/cells/field-cell-editor/FieldCellEditor";
 import { FieldCellRenderer } from "../../components/cells/field-cell-renderer/FieldCellRenderer";
-import { GridFieldControl } from "../cells";
+import { GridCellTheme, GridFieldControl } from "../cells";
 import { GridField } from "../fields";
 import { IGridCellRendererParams } from "../../components/interfaces";
 import { ColumnHeader } from "../../components/column-header/ColumnHeader";
@@ -162,6 +162,7 @@ export class GridColumns {
             headerComponentParams: {
                 baseColumn: column
             },
+            cellStyle: (params: CellClassParams<IRecord>) => this._getCellStyle(params.data, column.name),
             cellRendererParams: (params: any) => this._getCellRendererParameters(params.data, column),
             editable: (params) => this._isEditable(params.data, column.name),
             cellEditorParams: (params: any) => this._getCellRendererParameters(params.data, column),
@@ -173,6 +174,22 @@ export class GridColumns {
             valueFormatter: (params: ValueFormatterParams<IRecord>) => this._getFormattedValue(params.data, column.name),
             onCellDoubleClicked: (event: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(event),
         };
+    }
+
+    /**
+     * What the cell is painted in: the surface of the theme that cell is drawn in.
+     *
+     * Painted on the cell itself rather than on what is drawn inside it, because the cell is the element
+     * that fills the row - a cell of a column that did not grow the row is taller than anything it holds.
+     */
+    private _getCellStyle(record: IRecord | undefined, columnName: string): CellStyle | undefined {
+        if (!record) {
+            return undefined;
+        }
+        //its own rather than the rendered cell's: AG Grid asks for this while it builds the cell, which is
+        //before the cell that would answer has been drawn and registered
+        const theme = new GridCellTheme({ services: this._services, record: record, columnName: columnName }).getValue();
+        return { backgroundColor: theme.semanticColors.bodyBackground, color: theme.semanticColors.bodyText };
     }
 
     /** Whether AG Grid may put this cell into edit mode. */

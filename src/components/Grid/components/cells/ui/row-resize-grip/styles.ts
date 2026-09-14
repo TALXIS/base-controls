@@ -1,9 +1,7 @@
 import { mergeStyleSets } from "@fluentui/react";
 
 export const getRowResizeGripStyles = () => mergeStyleSets({
-    //what the cell draws goes inside it, and the grip is placed against its bottom edge
     gripRoot: {
-        position: 'relative',
         display: 'flex',
         width: '100%',
         height: '100%',
