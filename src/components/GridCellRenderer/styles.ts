@@ -6,9 +6,12 @@ import { getJustifyContent, IAlignment } from "@utils";
 export const getGridCellRendererStyles = (columnAlignment: IAlignment, isMultiline: boolean) => {
     return mergeStyleSets({
         gridCellRendererRoot: {
-            //fills whatever it is put in and carries nothing of its own, so a wrapper can place it between
-            //a chevron and a count, or under a label, and it still behaves as the value
+            //fills whatever it is put in, so a wrapper can place it between a chevron and a count, or under
+            //a label, and it still behaves as the value
             flex: 1,
+            //the value keeps off the edge it is aligned to, rather than every caller insetting it
+            paddingLeft: 8,
+            paddingRight: 8,
             display: 'flex',
             alignItems: isMultiline ? 'flex-start' : 'center',
             justifyContent: getJustifyContent(columnAlignment),

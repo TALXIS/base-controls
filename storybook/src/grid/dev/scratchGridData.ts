@@ -208,7 +208,11 @@ const TIME_ZONES = [85, 105, 190]
 //a 1x1 transparent PNG, so the image column has something of its own to show without fetching anything
 const PIXEL = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
 
-export const DATA_SOURCE: IRawRecord[] = Array.from({ length: 40 }, (_, index) => {
+/** How many rows the story draws unless it asks for more. */
+export const DEFAULT_ROW_COUNT = 40
+
+/** The rows, however many of them are wanted: the same shapes repeated, which is what a stress test needs. */
+export const getDataSource = (rowCount: number = DEFAULT_ROW_COUNT): IRawRecord[] => Array.from({ length: rowCount }, (_, index) => {
     const number = index + 1
     return {
         [PRIMARY_ID]: `task-${number}`,
@@ -232,7 +236,7 @@ export const DATA_SOURCE: IRawRecord[] = Array.from({ length: 40 }, (_, index) =
         ...lookup('assignedto', 'systemuser', `user-${(index % 4) + 1}`, OWNERS[index % OWNERS.length]!),
         ...lookup('customer', index % 2 === 0 ? 'account' : 'contact', `customer-${(index % 3) + 1}`,
             index % 2 === 0 ? `Account ${(index % 3) + 1}` : `Contact ${(index % 3) + 1}`),
-        ...lookup('regarding', 'mem_task', `task-${((index + 1) % 40) + 1}`, `Task ${((index + 1) % 40) + 1}`),
+        ...lookup('regarding', 'mem_task', `task-${((index + 1) % rowCount) + 1}`, `Task ${((index + 1) % rowCount) + 1}`),
         duration: (index % 6) * 30 + 15,
         language: LANGUAGES[index % LANGUAGES.length],
         timezone: TIME_ZONES[index % TIME_ZONES.length],
@@ -251,3 +255,5 @@ export const DATA_SOURCE: IRawRecord[] = Array.from({ length: 40 }, (_, index) =
         payload: JSON.stringify({ retries: index % 3, source: 'scratch' }),
     }
 })
+
+export const DATA_SOURCE: IRawRecord[] = getDataSource()

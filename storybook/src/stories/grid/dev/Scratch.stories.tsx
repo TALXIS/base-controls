@@ -49,3 +49,26 @@ export const Playground: Story = {
         </div>
     ),
 }
+
+/**
+ * The same grid over ten thousand rows, which is what says whether a cell is cheap enough.
+ *
+ * Everything a cell does per render is in play here - its theme, the hooks, the commands, the validation -
+ * so scrolling this is the measure of what the cell costs. The modules that hold the whole set in memory
+ * are off, because what is being tested is the cells rather than the row model.
+ */
+export const Stress: Story = {
+    name: 'Stress',
+    args: {
+        ...Playground.args,
+        rowCount: 10000,
+        grouping: false,
+        aggregation: false,
+    },
+    argTypes: Playground.argTypes,
+    render: (args: IScratchGridProps) => (
+        <div style={{ padding: 18 }}>
+            <ScratchGrid {...args} />
+        </div>
+    ),
+}

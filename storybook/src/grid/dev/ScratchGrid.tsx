@@ -1,7 +1,7 @@
 import React from 'react'
 import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridCellThemeColors, IGridModule, IGridModules, IGridServiceLocator, OptionSet } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
-import { COLUMNS, DATA_SOURCE, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
+import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
 /**
  * What a base control needs of a host, and no more.
@@ -149,6 +149,8 @@ export interface IScratchGridProps {
     grouping: boolean
     aggregation: boolean
     selectableRows: 'none' | 'single' | 'multiple'
+    /** How many rows the in-memory provider holds. */
+    rowCount?: number
 }
 
 /**
@@ -160,9 +162,10 @@ export interface IScratchGridProps {
  * be grouped, and `estimate` the one that says what it can total.
  */
 export const ScratchGrid = (props: IScratchGridProps) => {
+    const rowCount = props.rowCount ?? DEFAULT_ROW_COUNT
     const provider = React.useMemo(() => {
         const provider = new MemoryDataProvider({
-            dataSource: DATA_SOURCE,
+            dataSource: getDataSource(rowCount),
             metadata: {
                 PrimaryIdAttribute: PRIMARY_ID,
                 PrimaryNameAttribute: 'name',
@@ -171,8 +174,11 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             },
         })
         provider.setColumns(COLUMNS)
+        //the row models hand the grid whatever the provider holds, and what it holds is one page: a story
+        //asking for ten thousand rows wants them all in play rather than the first fifty
+        provider.getPaging().setPageSize(rowCount)
         return provider
-    }, [])
+    }, [rowCount])
 
     React.useEffect(() => {
         provider.refresh()

@@ -153,7 +153,7 @@ export class GridColumns {
             minWidth: column.visualSizeFactor ?? DEFAULT_COLUMN_WIDTH,
             lockPinned: true,
             autoHeaderHeight: true,
-            autoHeight: !!column.autoHeight,
+            //autoHeight: !!column.autoHeight,
             suppressMovable: column.isDraggable === false,
             //kept on the definition itself: what AG Grid hands a cell is its `colDef`, so a cell can read
             //this without a lookup back to the column

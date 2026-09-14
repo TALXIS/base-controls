@@ -10,8 +10,14 @@ export const getCellContainerStyles = (theme: ITheme) => mergeStyleSets({
         height: '100%',
         display: 'flex',
         alignItems: 'center',
-        //the cell's surface: AG Grid paints the row, and this is what a cell of its own theme paints over it
+        //what a `ThemeProvider` paints on the element it is given, which is what a cell is: AG Grid paints
+        //the row, and this is the cell's own theme over it
         backgroundColor: theme.semanticColors.bodyBackground,
         color: theme.semanticColors.bodyText,
+        fontFamily: theme.fonts.medium.fontFamily,
+        fontSize: theme.fonts.medium.fontSize,
+        fontWeight: theme.fonts.medium.fontWeight,
+        MozOsxFontSmoothing: theme.fonts.medium.MozOsxFontSmoothing,
+        WebkitFontSmoothing: theme.fonts.medium.WebkitFontSmoothing,
     },
 });
