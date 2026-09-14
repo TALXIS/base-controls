@@ -47,6 +47,7 @@ export class GridField {
     }
 
     /** Whether the value is one the record will accept, and what is wrong with it if it is not. */
+    //TODO: FOR CODE REViEW - THIS SHOULD RETURN NO ERROR IF EDITING IS DISABLED
     public isValid(): IFieldValidationResult {
         const { error, errorMessage } = this._record.getColumnInfo(this._columnName);
         return { error: error, errorMessage: errorMessage };

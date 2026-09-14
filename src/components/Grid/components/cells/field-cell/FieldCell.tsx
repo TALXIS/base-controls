@@ -2,6 +2,7 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { CellCommands } from "../commands/CellCommands";
 import { Field } from "../field/Field";
 import { FieldControl } from "../field-control/FieldControl";
+import { FieldValidation } from "../field-validation/FieldValidation";
 import { CellRoot } from "../root/CellRoot";
 
 export interface IGridFieldCellProps extends ICellRendererParams {
@@ -21,10 +22,13 @@ export interface IGridFieldCellProps extends ICellRendererParams {
  * instead: this one would bind a field that is not one.
  */
 export const FieldCell = (props: IGridFieldCellProps) => {
-    return <CellRoot {...props}>
-        <Field record={props.data} name={props.colDef!.colId!}>
+    //the field goes outside the cell rather than in it: what a cell draws of its own - the red border of
+    //a value the record refuses - is the cell reading the field it is bound to
+    return <Field record={props.data} name={props.colDef!.colId!}>
+        <CellRoot {...props}>
             <FieldControl editing={props.editing} />
             <CellCommands />
-        </Field>
-    </CellRoot>;
+            <FieldValidation />
+        </CellRoot>
+    </Field>;
 };

@@ -150,6 +150,16 @@ export const ScratchGrid = (props: IScratchGridProps) => {
         provider.refresh()
     }, [provider])
 
+    //a value the record refuses, so a cell can be seen saying so: an estimate this team would not plan in
+    React.useEffect(() => {
+        provider.addEventListener('onRecordLoaded', (record: IRecord) => {
+            record.expressions.setValidationExpression('estimate', () => {
+                const estimate = Number(record.getValue('estimate') ?? 0)
+                return { error: estimate > 5, errorMessage: `An estimate of ${estimate} days is more than the 5 this team plans a task in.` }
+            })
+        })
+    }, [provider])
+
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
