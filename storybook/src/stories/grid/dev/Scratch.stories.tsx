@@ -36,7 +36,7 @@ export const Playground: Story = {
         filtering: true,
         grouping: true,
         aggregation: true,
-        selectableRows: 'none',
+        selectableRows: 'multiple',
     },
     argTypes: {
         rowModel: { control: 'inline-radio', options: ['serverSide', 'clientSide'] },
