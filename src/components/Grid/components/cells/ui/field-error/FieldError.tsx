@@ -1,10 +1,13 @@
 import { useMemo } from "react";
 import { Icon, TooltipHost, useTheme } from "@fluentui/react";
+import { IAlignment } from "@utils";
 import { getFieldErrorStyles } from "./styles";
 
 export interface IFieldErrorProps {
     /** What is wrong with the value, in the words the record put it. */
     message: string;
+    /** Which edge the cell reads from. Left, unless told otherwise. */
+    alignment?: IAlignment;
 }
 
 /**
@@ -15,13 +18,16 @@ export interface IFieldErrorProps {
  * cell of another size.
  */
 export const FieldError = (props: IFieldErrorProps) => {
+    const { message, alignment = 'left' } = props;
     const theme = useTheme();
-    const styles = useMemo(() => getFieldErrorStyles(theme), [theme]);
+    const styles = useMemo(() => getFieldErrorStyles(theme, alignment), [theme, alignment]);
 
     return <>
         <div className={styles.outline} aria-hidden />
-        <TooltipHost content={props.message} className={styles.fieldErrorRoot}>
-            <Icon iconName='StatusErrorFull' className={styles.icon} aria-label={props.message} />
+        {/* `hostClassName`, not `className`: what a `TooltipHost` is styled by is the former, and the
+            latter reaches nothing */}
+        <TooltipHost content={message} hostClassName={styles.fieldErrorRoot}>
+            <Icon iconName='StatusErrorFull' className={styles.icon} aria-label={message} />
         </TooltipHost>
     </>;
 };
