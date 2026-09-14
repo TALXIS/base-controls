@@ -1,6 +1,6 @@
 import { ColDef } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { Cell } from "@components/Grid/components/cells/cell/Cell";
+import { CellRenderer } from "@components/Grid/components/cells/cell-renderer/CellRenderer";
 
 /** The key the expansion column takes. Its own: the dataset reserves none for it. */
 export const GROUP_EXPANSION_COLUMN_KEY = 'groupExpansion';
@@ -30,5 +30,5 @@ export const getGroupExpansionColumnDefinition = (onRenderHeader: () => JSX.Elem
     headerComponent: onRenderHeader,
     //a cell of the grid's own rather than the dataset's: no field to bind, but the theme, the stripe and
     //the state overlays are the row's and this column is part of the row
-    cellRenderer: Cell,
+    cellRenderer: CellRenderer,
 });

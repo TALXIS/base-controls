@@ -1,5 +1,5 @@
 import { ProgressIndicator } from "@fluentui/react";
-import { Grid as GridBase, IGridCellRendererProps } from "@components/Grid";
+import { Grid as GridBase, IGridCellParams } from "@components/Grid";
 import * as React from "react";
 import { getPercentCompleteStyles } from "./styles";
 
@@ -7,12 +7,12 @@ import { getPercentCompleteStyles } from "./styles";
 export const PERCENT_COMPLETE_CONTROL_NAME = "PercentComplete";
 
 /** Renders a numeric column as a progress bar, and edits it as a slider. */
-export const PercentComplete = (props: IGridCellRendererProps) => {
+export const PercentComplete = (props: IGridCellParams) => {
     const value: number | null = props.value;
     const styles = React.useMemo(() => getPercentCompleteStyles(), []);
     
     if (props.record.getColumnInfo(props.baseColumn.name).ui.isLoading()) {
-        return <GridBase.FieldCell {...props} />
+        return <GridBase.FieldCellRenderer {...props} />
     }
     return <div className={styles.root}>
         <ProgressIndicator

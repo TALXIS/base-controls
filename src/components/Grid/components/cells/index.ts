@@ -1,7 +1,9 @@
-//the two ready-made cells first: they are what a column is drawn with, and everything below them is what
-//a consumer builds their own out of
-export * from './cell';
-export * from './field-cell';
+//the four ready-made cells first: they are what a column is drawn and edited with, and everything below
+//them is what a consumer builds their own out of
+export * from './cell-renderer';
+export * from './field-cell-renderer';
+export * from './cell-editor';
+export * from './field-cell-editor';
 export * from './root';
 export * from './container';
 export * from './field';

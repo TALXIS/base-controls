@@ -9,11 +9,11 @@ export interface IGridCellRendererParams {
     /**
      * Whether the control takes input rather than only drawing the value.
      *
-     * The editor definition says so outright; a renderer says so for a one-click-edit column, whose control
-     * is the cell.
+     * What a one-click-edit column's renderer says of itself, its control being the cell: an editor takes
+     * input by being one, and says nothing.
      */
     editing?: boolean;
 }
 
 /** What AG Grid hands whatever renders a cell, plus the above. */
-export interface IGridCellRendererProps extends ICellRendererParams, IGridCellRendererParams { }
+export interface IGridCellParams extends ICellRendererParams, IGridCellRendererParams { }

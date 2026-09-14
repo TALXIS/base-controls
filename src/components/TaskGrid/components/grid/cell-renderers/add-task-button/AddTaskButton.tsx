@@ -1,12 +1,12 @@
 import { ContextualMenuItemType, Icon, IconButton, IContextualMenuItem } from "@fluentui/react"
-import { IGridCellRendererProps } from "@components/Grid"
+import { IGridCellParams } from "@components/Grid"
 import * as React from "react"
 import { getAddTaskButtonStyles } from "./styles";
 import { IRecord } from "@talxis/client-libraries";
 import { useDatasetControl, useLocalizationService, useServices, useTaskDataProvider, useTaskGridDescriptor } from "@components/TaskGrid/context";
 
 /** Trailing per-row button that adds a subtask, or expands a template beneath the row. */
-export const AddTaskButton = (props: IGridCellRendererProps) => {
+export const AddTaskButton = (props: IGridCellParams) => {
     const styles = React.useMemo(() => getAddTaskButtonStyles(), []);
     const record: IRecord = props.data;
     const taskDataProvider = useTaskDataProvider();

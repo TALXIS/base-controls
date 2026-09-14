@@ -1,17 +1,13 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { CellCommands } from "../commands/CellCommands";
+import { CellRenderer } from "../cell-renderer/CellRenderer";
 import { Field } from "../field/Field";
 import { FieldControl } from "../field-control/FieldControl";
 import { FieldValidation } from "../field-validation/FieldValidation";
-import { CellLoading } from "../loading/CellLoading";
-import { CellContainer } from "../container/CellContainer";
-import { CellRoot } from "../root/CellRoot";
-import { RowResizeGrip } from "../row-resize-grip/RowResizeGrip";
 
-export interface IGridFieldCellProps extends ICellRendererParams {
+export interface IGridFieldCellRendererProps extends ICellRendererParams {
     /**
-     * Whether the cell takes input rather than only drawing its value: an editor AG Grid opened, or a
-     * one-click-edit column, whose control is the cell.
+     * Whether the cell takes input rather than only drawing its value, which a one-click-edit column's
+     * cell does without an editor ever being opened.
      */
     editing?: boolean;
 }
@@ -19,23 +15,19 @@ export interface IGridFieldCellProps extends ICellRendererParams {
 /**
  * The cell of a record's column: bound to the field, and drawing what that field holds.
  *
- * What the grid draws for every dataset column, as a renderer and as an editor, and what a consumer
- * renders for a column of their own that holds a value. A column the record has no field for - the
- * checkboxes, the column a save is reported in, a column the grid added itself - takes `Grid.Cell`
- * instead: this one would bind a field that is not one.
+ * What the grid draws for every dataset column, and what a consumer renders for a column of their own that
+ * holds a value. A column the record has no field for - the checkboxes, the column a save is reported in,
+ * a column the grid added itself - takes `Grid.CellRenderer` instead: this one would bind a field that is
+ * not one.
+ *
+ * The binding goes around the cell rather than inside it, which is what lets everything drawn in the cell
+ * read the field - the mark on a value the record refuses as much as the control.
  */
-export const FieldCell = (props: IGridFieldCellProps) => {
-    return <CellRoot {...props}>
-        <Field record={props.data} name={props.colDef!.colId!}>
-            <RowResizeGrip>
-                <CellContainer>
-                    <CellLoading>
-                        <FieldValidation />
-                        <FieldControl editing={props.editing} />
-                        <CellCommands />
-                    </CellLoading>
-                </CellContainer>
-            </RowResizeGrip>
-        </Field>
-    </CellRoot>;
+export const FieldCellRenderer = (props: IGridFieldCellRendererProps) => {
+    return <Field record={props.data} name={props.colDef!.colId!}>
+        <CellRenderer {...props}>
+            <FieldValidation />
+            <FieldControl editing={props.editing} />
+        </CellRenderer>
+    </Field>;
 };

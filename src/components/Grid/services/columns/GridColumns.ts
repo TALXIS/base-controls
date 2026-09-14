@@ -2,7 +2,8 @@ import { CellDoubleClickedEvent, ColDef, ValueFormatterParams, ValueGetterParams
 import { IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
-import { FieldCell } from "../../components/cells/field-cell/FieldCell";
+import { FieldCellEditor } from "../../components/cells/field-cell-editor/FieldCellEditor";
+import { FieldCellRenderer } from "../../components/cells/field-cell-renderer/FieldCellRenderer";
 import { GridFieldControl } from "../cells";
 import { GridField } from "../fields";
 import { IGridCellRendererParams } from "../../components/interfaces";
@@ -163,11 +164,11 @@ export class GridColumns {
             },
             cellRendererParams: (params: any) => this._getCellRendererParameters(params.data, column),
             editable: (params) => this._isEditable(params.data, column.name),
-            cellEditorParams: (params: any) => ({ ...this._getCellRendererParameters(params.data, column), editing: true }),
+            cellEditorParams: (params: any) => this._getCellRendererParameters(params.data, column),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeader,
-            cellRenderer: FieldCell,
-            cellEditor: FieldCell,
+            cellRenderer: FieldCellRenderer,
+            cellEditor: FieldCellEditor,
             valueGetter: (params: ValueGetterParams<IRecord>) => this._getValue(params.data, column.name),
             valueFormatter: (params: ValueFormatterParams<IRecord>) => this._getFormattedValue(params.data, column.name),
             onCellDoubleClicked: (event: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(event),

@@ -2,14 +2,14 @@ import * as React from "react";
 import { ISkeletonProps, Skeleton } from "@components/DatasetControl/skeleton";
 import { ICommandBarProps } from "@legacy";
 import { CommandBar } from "./header/command-bar";
-import type { IGridCellRendererProps } from "@components/Grid";
+import type { IGridCellParams } from "@components/Grid";
 
 /**
  * Props every TaskGrid cell renderer and cell editor receives: AG Grid's `ICellRendererParams` plus the
  * `record`, `baseColumn`, `value` and `isCellEditor` the grid injects through `cellRendererParams` /
  * `cellEditorParams`.
  */
-export type ITaskGridCellProps = IGridCellRendererProps;
+export type ITaskGridCellProps = IGridCellParams;
 
 /** The replaceable parts of the grid's UI. Override any subset through `ITaskGridProps.components`. */
 export interface ITaskGridComponents {
