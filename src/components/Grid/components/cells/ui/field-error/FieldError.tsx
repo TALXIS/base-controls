@@ -1,13 +1,10 @@
 import { useMemo } from "react";
 import { Icon, ITheme, TooltipHost, useTheme } from "@fluentui/react";
-import { IAlignment } from "@utils";
 import { getFieldErrorStyles } from "./styles";
 
 export interface IFieldErrorProps {
     /** What is wrong with the value, in the words the record put it. */
     message: string;
-    /** Which edge the cell reads from. Left, unless told otherwise. */
-    alignment?: IAlignment;
     /**
      * What the tooltip is drawn in.
      *
@@ -25,9 +22,9 @@ export interface IFieldErrorProps {
  * cell of another size.
  */
 export const FieldError = (props: IFieldErrorProps) => {
-    const { message, alignment = 'left', surfaceTheme } = props;
+    const { message, surfaceTheme } = props;
     const theme = useTheme();
-    const styles = useMemo(() => getFieldErrorStyles(theme, alignment), [theme, alignment]);
+    const styles = useMemo(() => getFieldErrorStyles(theme), [theme]);
 
     return <>
         <div className={styles.outline} aria-hidden />

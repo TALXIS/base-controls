@@ -3,7 +3,6 @@ import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useRequiredGridField } from "../field/context";
 import { useGridService } from "../../../useGridService";
-import { useGridCell } from "../root/context";
 import { FieldValidationComponents, IGridFieldValidationComponents } from "./components";
 
 export interface IGridFieldValidationProps {
@@ -19,7 +18,6 @@ export interface IGridFieldValidationProps {
  */
 export const FieldValidation = (props: IGridFieldValidationProps) => {
     const field = useRequiredGridField();
-    const cell = useGridCell();
     const gridTheme = useGridService('theme');
     const record = field.getRecord();
     const components = { ...FieldValidationComponents, ...props.components };
@@ -33,5 +31,5 @@ export const FieldValidation = (props: IGridFieldValidationProps) => {
     if (!error) {
         return null;
     }
-    return components.onRenderFieldError({ message: errorMessage, alignment: cell.getColDef().propBag?.alignment, surfaceTheme: gridTheme });
+    return components.onRenderFieldError({ message: errorMessage, surfaceTheme: gridTheme });
 };

@@ -4,9 +4,8 @@ import { IAlignment } from "@utils";
 export const getCellCommandsStyles = (alignment: IAlignment) => {
     const classNames = mergeStyleSets({
         commandsRoot: {
-            //before the value on a right-aligned column, after it on any other: the value keeps the edge
-            //its column reads from
-            order: alignment === 'right' ? 0 : 1,
+            //after the value, or before it where the column reads from the right
+            order: alignment === 'right' ? 1 : 2,
             //a flex item that can shrink, so the bar has a bounded box to fit into rather than the width
             //its buttons would like
             flex: '1 1 auto',

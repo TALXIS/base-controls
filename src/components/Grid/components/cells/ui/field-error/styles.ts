@@ -1,7 +1,6 @@
 import { ITheme, mergeStyleSets } from "@fluentui/react";
-import { IAlignment } from "@utils";
 
-export const getFieldErrorStyles = (theme: ITheme, alignment: IAlignment) => mergeStyleSets({
+export const getFieldErrorStyles = (theme: ITheme) => mergeStyleSets({
     outline: {
         position: 'absolute',
         inset: 0,
@@ -14,9 +13,9 @@ export const getFieldErrorStyles = (theme: ITheme, alignment: IAlignment) => mer
         alignItems: 'center',
         paddingLeft: 5,
         paddingRight: 5,
-        //outermost, on the edge the column does not read from: the mark belongs to the cell rather than to
-        //the value, so it sits past everything the cell draws
-        order: alignment === 'right' ? 2 : undefined
+        //first, whichever edge the column reads from: what the record refuses is the first thing about a
+        //cell rather than a mark after its value
+        order: 0,
     },
     icon: {
         color: theme.semanticColors.errorText,
