@@ -9,11 +9,13 @@ export const getCellCommandsStyles = (alignment: IAlignment) => {
         commandsRoot: {
             //after the value, or before it where the column reads from the right
             order: alignment === 'right' ? 1 : 2,
-            //the bar takes the room the value leaves, and is the first to give it back: a shrink factor
-            //nothing else can outweigh, so the bar answers a value that needs the room by moving its
-            //commands into the overflow menu, down to the width of the button that opens it. What the
-            //value still cannot fit in is clipped instead
-            flex: '1 1000 auto',
+            //what the value leaves, near enough all of it: the grow factor outweighs the value's so the
+            //room a short value does not need goes to the bar rather than being split with it.
+            //
+            //Measured from nothing rather than from the bar's own width, because the bar answers a
+            //narrower box by moving commands into the overflow menu - a box sized to what it currently
+            //draws would collapse to the overflow button and never come back
+            flex: '1000 1 0',
             minWidth: OVERFLOW_BUTTON_WIDTH,
         },
         //`CommandBar` hands its native props to the `ResizeGroup` root, so this is the class that lands on
