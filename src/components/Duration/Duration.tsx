@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useInputBasedControl } from '@hooks/useInputBasedControl';
 import { IDuration, IDurationOutputs, IDurationParameters } from './interfaces';
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
+import { ThemeContext } from '@utils';
 import numeral from "numeral";
 import { getDefaultDurationTranslations } from './translations';
 import { durationOptions } from "./durationOptions";
@@ -151,8 +152,8 @@ export const Duration = (props: IDuration) => {
     });
 
     return (
-        <ThemeProvider theme={theme} applyTo="none">
+        <ThemeContext theme={theme}>
             <ComboBox {...componentProps} />
-        </ThemeProvider>
+        </ThemeContext>
     );
 };

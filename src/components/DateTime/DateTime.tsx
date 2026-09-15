@@ -1,5 +1,6 @@
 import { IDateTime } from "./interfaces";
-import { IDatePicker, ThemeProvider } from "@fluentui/react";
+import { IDatePicker } from "@fluentui/react";
+import { CachedThemeProvider } from "@utils";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
@@ -105,9 +106,9 @@ export const DateTime = (componentProps: IDateTime) => {
 
     return (
         <DateTimeContext.Provider value={dateTime}>
-            <ThemeProvider theme={theme} applyTo="none" ref={ref}>
+            <CachedThemeProvider theme={theme} applyTo="none" ref={ref}>
                 <DatePicker {...datePickerProps} />
-            </ThemeProvider>
+            </CachedThemeProvider>
         </DateTimeContext.Provider>
     );
 };

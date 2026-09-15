@@ -36,23 +36,21 @@ export const useComboBoxTheme = (props: IOptionSet, theme: ITheme): [boolean, IT
      * Since we are creating new theme for combobox, we need to add the overrides in cases where there is no color feature enabled or no color is selected.
      */
     const getThemeOverride = (colorFeatureEnabled: boolean): DeepPartial<Theme> => {
-        const override: DeepPartial<ITheme> = {
-            ...props.context.fluentDesignLanguage?.v8FluentOverrides
+        const hostOverride = props.context.fluentDesignLanguage?.v8FluentOverrides;
+        if (!colorFeatureEnabled || !selectedOptionColor) {
+            return { ...hostOverride };
         }
-        if(!colorFeatureEnabled) {
-            return override;
-        }
-        if(!selectedOptionColor) {
-            return override;
-        }
-        delete override.semanticColors?.inputBackground;
+        //the option's colour is the input background here, so the host's is dropped - out of a copy of its
+        //overrides rather than out of the object itself, which every other control reads the same instance of
+        const { inputBackground, ...semanticColors } = hostOverride?.semanticColors ?? {};
         return {
             fonts: {
                 medium: {
                     fontWeight: 600
                 }
             },
-            ...override,
+            ...hostOverride,
+            ...(hostOverride?.semanticColors ? { semanticColors: semanticColors } : {}),
         };
     }
 

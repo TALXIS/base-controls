@@ -62,9 +62,17 @@ export class Theming {
         //merge every time, because two anonymous overrides cannot be told apart
         const overrideId = (themeOverride as ITheme).id;
         if (!overrideId) {
-            return mergeThemes(theme, themeOverride) as ITheme;
+            const merged = mergeThemes(theme, themeOverride) as ITheme;
+            //`mergeThemes` copies the base's id onto what is now a different theme, and an id is read as the
+            //promise that the same id means the same theme - so an override nothing can name carries none
+            merged.id = undefined;
+            return merged;
         }
-        return ThemeCache.get(`${key}_${overrideId}`, () => mergeThemes(theme, themeOverride) as ITheme);
+        return ThemeCache.get(`${key}_${overrideId}`, () => {
+            const merged = mergeThemes(theme, themeOverride) as ITheme;
+            merged.id = `${key}_${overrideId}`;
+            return merged;
+        });
     }
 
     public static IsLightColor(color: string) {

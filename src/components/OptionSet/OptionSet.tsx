@@ -3,6 +3,7 @@ import { IOptionSet } from './interfaces';
 import { useControl } from '@hooks';
 import { ComboBox } from "@legacy";
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
+import { ThemeContext } from '@utils';
 import { useEffect, useMemo, useRef } from 'react';
 import { useComboBoxTheme } from './useComboBoxTheme';
 import { getComboBoxStyles } from './styles';
@@ -82,8 +83,8 @@ export const OptionSet = (props: IOptionSet) => {
     });
 
     return (
-        <ThemeProvider theme={overridenTheme} applyTo="none">
+        <ThemeContext theme={overridenTheme}>
             <ComboBox
                 {...componentProps} />
-        </ThemeProvider>);
+        </ThemeContext>);
 };

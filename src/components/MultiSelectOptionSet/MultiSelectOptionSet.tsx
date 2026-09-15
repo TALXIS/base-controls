@@ -3,6 +3,7 @@ import { IMultiSelectOptionSet } from './interfaces';
 import { useControl } from '@hooks';
 import { ComboBox } from "@legacy";
 import { IComboBox, IComboBoxOption, ThemeProvider } from '@fluentui/react';
+import { ThemeContext } from '@utils';
 import { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import React from 'react';
@@ -139,8 +140,8 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
     });
 
     return (
-        <ThemeProvider theme={theme} applyTo="none">
+        <ThemeContext theme={theme}>
             <ComboBox {...componentProps} />
-        </ThemeProvider>
+        </ThemeContext>
     );
 };

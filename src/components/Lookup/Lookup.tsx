@@ -2,7 +2,7 @@
 import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ThemeProvider } from "@fluentui/react";
+import { CachedThemeProvider } from "@utils";
 import { IItemProps, TagPicker } from "@legacy";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "@hooks/useMouseOver";
@@ -287,8 +287,8 @@ export const Lookup = (props: ILookup) => {
     });
 
     return (
-        <ThemeProvider applyTo="none" theme={theme} className={`talxis__lookupControl ${styles.root}`} ref={ref}>
+        <CachedThemeProvider applyTo="none" theme={theme} className={`talxis__lookupControl ${styles.root}`} ref={ref}>
             <TagPicker {...componentProps} />
-        </ThemeProvider>
+        </CachedThemeProvider>
     );
 };

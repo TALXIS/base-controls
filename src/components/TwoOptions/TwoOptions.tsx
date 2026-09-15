@@ -1,4 +1,5 @@
-import { ThemeProvider, Toggle } from '@fluentui/react';
+import { Toggle } from '@fluentui/react';
+import { ThemeContext } from '@utils';
 import { useControl } from '@hooks';
 import { ITwoOptions } from './interfaces';
 import React, { useEffect, useRef, useState } from 'react';
@@ -33,7 +34,7 @@ export const TwoOptions = (props: ITwoOptions) => {
     };
 
     return (
-        <ThemeProvider theme={theme} applyTo='none'>
+        <ThemeContext theme={theme}>
             {isColorFeatureEnabled() ? (
                 <OptionSet
                     context={props.context}
@@ -73,6 +74,6 @@ export const TwoOptions = (props: ITwoOptions) => {
                     offText={options.find(option => option.Value === 0)?.Label || labels.no()}
                     onChange={(e, value) => handleChange(value)}
                 />)}
-        </ThemeProvider>
+        </ThemeContext>
     )
 };

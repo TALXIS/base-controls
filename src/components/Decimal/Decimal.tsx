@@ -4,7 +4,8 @@ import { IDecimal, IDecimalOutputs, IDecimalParameters } from "./interfaces";
 import React, { useEffect, useMemo, useRef } from "react";
 import numeral from "numeral";
 import { CURRENCY_NEGATIVE_PATTERN, CURRENCY_POSITIVE_PATTERN, NUMBER_NEGATIVE_PATTERN } from "@/constants";
-import { ICommandBarItemProps, ThemeProvider } from "@fluentui/react";
+import { ICommandBarItemProps } from "@fluentui/react";
+import { ThemeContext } from "@utils";
 import { ArrowButtons, IArrowButtons } from "./components/ArrowButtons";
 import { Numeral } from "@talxis/client-libraries";
 
@@ -214,8 +215,8 @@ export const Decimal = (props: IDecimal) => {
         onKeyDown: onKeyDown,
     });
     return (
-        <ThemeProvider theme={theme} applyTo="none">
+        <ThemeContext theme={theme}>
             <TextField {...componentProps} />
-        </ThemeProvider>
+        </ThemeContext>
     );
 };
