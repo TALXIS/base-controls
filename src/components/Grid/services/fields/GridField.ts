@@ -22,11 +22,12 @@ export interface IGridFieldParameters {
 export class GridField {
     private _record: IRecord;
     private _columnName: string;
+    private _unregisterCellEditableHook?: () => void;
 
     constructor(parameters: IGridFieldParameters) {
         this._record = parameters.record;
         this._columnName = parameters.columnName;
-        parameters.cells?.registerCellEditableHook(this._onCellEditable);
+        this._unregisterCellEditableHook = parameters.cells?.registerCellEditableHook(this._onCellEditable);
     }
 
     public getRecord(): IRecord {
@@ -69,13 +70,22 @@ export class GridField {
     public isValid(): IFieldValidationResult {
         return this._getField().isValid();
     }
-
     /**
      * What the record holds for this column.
      *
      * Asked for rather than kept: a record hands back the same field for the same column, and one held on
      * to here would outlive a reload that replaced it.
      */
+    /**
+     * The field is gone: what it registered goes with it.
+     *
+     * Called by whoever built it with `cells`, since the hooks there outlive the field otherwise - and a
+     * grid mints a field per bound cell it draws.
+     */
+    public destroy(): void {
+        this._unregisterCellEditableHook?.();
+    }
+
     /** The field's word on whether the cell drawing it may be edited, which a cell cannot answer itself. */
     private _onCellEditable: GridCellEditableHook = (result, params) => {
         if (params.record !== this._record || params.columnName !== this._columnName) {

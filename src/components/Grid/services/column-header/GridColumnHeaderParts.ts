@@ -74,8 +74,8 @@ export class GridColumnHeaderParts {
      * @param priority Ascending, so a module can place its section against the others: sorting at `0`,
      * filtering at `10`, grouping at `20`, totals at `30`.
      */
-    public registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): void {
-        this._menuSectionHooks.register(hook, priority);
+    public registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void {
+        return this._menuSectionHooks.register(hook, priority);
     }
 
     /**
@@ -87,8 +87,8 @@ export class GridColumnHeaderParts {
      *
      * @param priority Ascending, and applied after all the sections regardless.
      */
-    public registerColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): void {
-        this._menuItemHooks.register(hook, priority);
+    public registerColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void {
+        return this._menuItemHooks.register(hook, priority);
     }
 
     /**
@@ -115,8 +115,8 @@ export class GridColumnHeaderParts {
     }
 
     /** Registers a hook over what a column header draws beside its name. */
-    public registerColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): void {
-        this._adornmentHooks.register(hook, priority);
+    public registerColumnHeaderAdornmentsHook(hook: GridColumnHeaderAdornmentsHook, priority?: number): () => void {
+        return this._adornmentHooks.register(hook, priority);
     }
 
     /** Everything the modules draw for a column, in order. */

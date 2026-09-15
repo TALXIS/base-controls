@@ -166,8 +166,8 @@ export class GridCells {
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
-    public registerControlHook(hook: GridControlHook, priority?: number): void {
-        this._controlHooks.register(hook, priority);
+    public registerControlHook(hook: GridControlHook, priority?: number): () => void {
+        return this._controlHooks.register(hook, priority);
     }
 
     /**
@@ -176,8 +176,8 @@ export class GridCells {
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
-    public registerControlParametersHook(hook: GridControlParametersHook, priority?: number): void {
-        this._controlParametersHooks.register(hook, priority);
+    public registerControlParametersHook(hook: GridControlParametersHook, priority?: number): () => void {
+        return this._controlParametersHooks.register(hook, priority);
     }
 
     /**
@@ -185,8 +185,8 @@ export class GridCells {
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
-    public registerCellThemeHook(hook: GridCellThemeHook, priority?: number): void {
-        this._cellThemeHooks.register(hook, priority);
+    public registerCellThemeHook(hook: GridCellThemeHook, priority?: number): () => void {
+        return this._cellThemeHooks.register(hook, priority);
     }
 
     /**
@@ -194,8 +194,8 @@ export class GridCells {
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
-    public registerCellLoadingHook(hook: GridCellLoadingHook, priority?: number): void {
-        this._cellLoadingHooks.register(hook, priority);
+    public registerCellLoadingHook(hook: GridCellLoadingHook, priority?: number): () => void {
+        return this._cellLoadingHooks.register(hook, priority);
     }
 
     /**
@@ -203,8 +203,8 @@ export class GridCells {
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
-    public registerCellCommandsHook(hook: GridCellCommandsHook, priority?: number): void {
-        this._cellCommandsHooks.register(hook, priority);
+    public registerCellCommandsHook(hook: GridCellCommandsHook, priority?: number): () => void {
+        return this._cellCommandsHooks.register(hook, priority);
     }
 
     /**
@@ -212,8 +212,8 @@ export class GridCells {
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
-    public registerCellEditableHook(hook: GridCellEditableHook, priority?: number): void {
-        this._cellEditableHooks.register(hook, priority);
+    public registerCellEditableHook(hook: GridCellEditableHook, priority?: number): () => void {
+        return this._cellEditableHooks.register(hook, priority);
     }
 
     /** Run by the `GridFieldControl` of the cell in question, which is the only caller of these two. */

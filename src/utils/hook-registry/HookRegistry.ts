@@ -20,10 +20,15 @@ export class HookRegistry<THook extends (...args: any[]) => void> {
     /**
      * @param priority Ascending — a lower number runs earlier, so a higher one gets the later word.
      * Defaults to `0`.
+     * @returns Takes the hook back off. Whatever registers one with a shorter life than the registry's
+     * holds on to this, since a registry keeps what it is given until it is told otherwise.
      */
-    public register(hook: THook, priority: number = 0): void {
+    public register(hook: THook, priority: number = 0): () => void {
         this._hooks.push({ hook, priority });
         this._hooks.sort((left, right) => left.priority - right.priority);
+        return () => {
+            this._hooks = this._hooks.filter(registered => registered.hook !== hook);
+        };
     }
 
     /** Runs every hook in order, with whatever the owner hands over. */

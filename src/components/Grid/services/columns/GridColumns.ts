@@ -54,8 +54,8 @@ export class GridColumns {
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      * Defaults to `0`, and hooks sharing a priority run in the order they were registered.
      */
-    public registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): void {
-        this._hooks.register(hook, priority);
+    public registerColumnDefinitionsHook(hook: GridColumnDefinitionsHook, priority?: number): () => void {
+        return this._hooks.register(hook, priority);
     }
 
     /** The definitions the grid is to be given, after every module has had its say. */
