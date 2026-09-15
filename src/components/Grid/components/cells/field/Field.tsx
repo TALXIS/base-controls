@@ -1,8 +1,8 @@
-import { useLayoutEffect, useMemo } from "react";
+import { useContext, useLayoutEffect, useMemo } from "react";
 import { IRecord } from "@talxis/client-libraries";
 import { GridField } from "../../../services/fields";
 import { GridFieldContext } from "./context";
-import { useGridService } from "../../../useGridService";
+import { GridServicesContext } from "../../../context";
 
 export interface IGridFieldProps {
     record: IRecord;
@@ -19,10 +19,10 @@ export interface IGridFieldProps {
  */
 export const Field = (props: IGridFieldProps) => {
     const { record, name, children } = props;
-    const cells = useGridService('cells');
+    const services = useContext(GridServicesContext);
     //the record instance, not its id: a reload hands the same row a new record, and a field holding the
     //previous one would answer for a record nothing is looking at
-    const field = useMemo(() => new GridField({ record: record, columnName: name, cells: cells }), [record, name, cells]);
+    const field = useMemo(() => new GridField({ record: record, columnName: name, services: services }), [record, name, services]);
 
     useLayoutEffect(() => () => field.destroy(), [field]);
 

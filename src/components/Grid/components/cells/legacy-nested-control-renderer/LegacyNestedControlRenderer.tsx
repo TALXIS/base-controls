@@ -51,7 +51,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                     value: field.getValue(),
                     formattedValue: field.getFormattedValue(),
                     enableNavigation: !!parameters.EnableNavigation?.raw,
-                    onNotifyOutputChanged: value => control.setValue(value)
+                    onNotifyOutputChanged: value => field.setValue(value)
                 }),
                 ControlStates: {
                     isControlDisabled: !cell.isEditable()

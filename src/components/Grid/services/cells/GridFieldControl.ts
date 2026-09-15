@@ -42,14 +42,6 @@ export class GridFieldControl {
         return this._field;
     }
 
-    /** A cell reported a new value: the record takes it, and saves it where the grid saves as it goes. */
-    public setValue(value: any): void {
-        this._record.setValue(this._columnName, value);
-        if (this._settings.isAutoSaveEnabled()) {
-            this._record.save();
-        }
-    }
-
     /**
      * Whether something other than the cell renderer draws this cell, which is what tells a caller to go
      * through the nested-control registry rather than rendering the cell renderer itself.

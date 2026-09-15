@@ -1,6 +1,7 @@
 import { IColumn, IField, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
 import { Theming } from "@legacy";
-import type { GridCellEditableHook, GridCellLoadingHook, GridCellThemeHook, GridCells } from "../cells";
+import type { GridCellEditableHook, GridCellLoadingHook, GridCellThemeHook } from "../cells";
+import type { IGridServiceLocator } from "../../services";
 
 /** Where the field's own hooks sit: ahead of everything registered for the grid, which argues with them. */
 const FIELD_HOOK_PRIORITY = -100;
@@ -9,13 +10,13 @@ export interface IGridFieldParameters {
     record: IRecord;
     columnName: string;
     /**
-     * The cells of the grid this field is drawn in, where it is drawn in one.
+     * The grid this field is drawn in, where it is drawn in one.
      *
-     * What the field tells them about itself: a cell knows nothing of fields, so whether the one drawing
-     * this field may be edited, whether it is waiting, and what colours it asks for are the field's to
-     * answer.
+     * What the field tells its cells about itself - a cell knows nothing of fields, so whether the one
+     * drawing this field may be edited, whether it is waiting, and what colours it asks for are the
+     * field's to answer - and what a value written here is saved by.
      */
-    cells?: GridCells;
+    services?: IGridServiceLocator;
 }
 
 /**
@@ -27,6 +28,7 @@ export interface IGridFieldParameters {
 export class GridField {
     private _record: IRecord;
     private _columnName: string;
+    private _services?: IGridServiceLocator;
     private _unregisterCellEditableHook?: () => void;
     private _unregisterCellLoadingHook?: () => void;
     private _unregisterCellThemeHook?: () => void;
@@ -34,9 +36,11 @@ export class GridField {
     constructor(parameters: IGridFieldParameters) {
         this._record = parameters.record;
         this._columnName = parameters.columnName;
-        this._unregisterCellEditableHook = parameters.cells?.registerCellEditableHook(this._onCellEditable, FIELD_HOOK_PRIORITY);
-        this._unregisterCellLoadingHook = parameters.cells?.registerCellLoadingHook(this._onCellLoading, FIELD_HOOK_PRIORITY);
-        this._unregisterCellThemeHook = parameters.cells?.registerCellThemeHook(this._onCellTheme, FIELD_HOOK_PRIORITY);
+        this._services = parameters.services;
+        const cells = parameters.services?.get('cells');
+        this._unregisterCellEditableHook = cells?.registerCellEditableHook(this._onCellEditable, FIELD_HOOK_PRIORITY);
+        this._unregisterCellLoadingHook = cells?.registerCellLoadingHook(this._onCellLoading, FIELD_HOOK_PRIORITY);
+        this._unregisterCellThemeHook = cells?.registerCellThemeHook(this._onCellTheme, FIELD_HOOK_PRIORITY);
     }
 
     public getRecord(): IRecord {
@@ -56,8 +60,12 @@ export class GridField {
         return this._getField().getValue();
     }
 
-    public setValue(newValue: any) {
+    /** The value the field is given: the record takes it, and saves it where the grid saves as it goes. */
+    public setValue(newValue: any): void {
         this._record.setValue(this._columnName, newValue);
+        if (this._services?.get('settings').isAutoSaveEnabled()) {
+            this._record.save();
+        }
     }
 
     public getFormattedValue(): string | null {
