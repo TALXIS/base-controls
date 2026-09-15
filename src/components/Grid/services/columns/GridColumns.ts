@@ -1,4 +1,4 @@
-import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { DataProvider, DataTypes, IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
@@ -172,6 +172,7 @@ export class GridColumns {
             cellRendererParams: this._getCellRendererParameters(column),
             editable: this._getEditorAvailability(column),
             cellEditorParams: this._getCellRendererParameters(column),
+            suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheInputsOwn(params),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeader,
             cellRenderer: FieldCellRenderer,
@@ -221,6 +222,31 @@ export class GridColumns {
     /** The column as everything downstream reads it: the dataset's, with the grid's own answers on it. */
     private _getGridColumn(column: IColumn): IGridColumn {
         return { ...column, isRequired: this._isColumnRequired(column), isEditable: this._isColumnEditable(column) };
+    }
+
+    /**
+     * Whether a key press belongs to the input it was typed in rather than to the grid.
+     *
+     * A cell whose control takes input without an editor being opened - a one-click-edit column, or a
+     * consumer's own cell - is focused inside an input AG Grid does not know about, so the gestures it
+     * would read as grid commands are the caret's: selecting the text rather than every cell, copying the
+     * value rather than the range, walking the characters rather than the columns. What moves between
+     * cells - tab, enter, escape - stays the grid's.
+     */
+    private _isKeyTheInputsOwn(params: SuppressKeyboardEventParams<IRecord>): boolean {
+        //an open editor is a case AG Grid already knows to keep out of
+        if (params.editing) {
+            return false;
+        }
+        const target = params.event.target as HTMLElement | null;
+        if (!target?.matches('input, textarea, [contenteditable="true"]')) {
+            return false;
+        }
+        const key = params.event.key;
+        if (params.event.ctrlKey || params.event.metaKey) {
+            return ['a', 'c', 'v', 'x'].includes(key.toLowerCase());
+        }
+        return ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Backspace', 'Delete'].includes(key);
     }
 
     /** What AG Grid compares to decide whether a cell needs redrawing. */
