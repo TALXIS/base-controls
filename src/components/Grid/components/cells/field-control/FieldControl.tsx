@@ -17,8 +17,10 @@ export interface IGridFieldControlProps {
  *
  * Requires a field: it is drawn for the column of a record. Reads the cell it is drawn in, so it has to be
  * inside a `CellRoot`, and owns the subscription on this path, because a value AG Grid cannot see change is
- * a value it does not refresh. What it makes is the cell's control, and what draws with it is
- * `Grid.ControlRenderer`, which reads it back out of the context put here.
+ * a value it does not refresh.
+ *
+ * What draws the value is `Grid.ControlRenderer`, which this renders and hands `onRenderValue` on to: a
+ * consumer changing what a value looks like overrides that rather than composing the renderer themselves.
  */
 export const FieldControl = (props: IGridFieldControlProps) => {
     const cell = useGridCell();
@@ -34,6 +36,6 @@ export const FieldControl = (props: IGridFieldControlProps) => {
     });
 
     return <GridFieldControlContext.Provider value={control}>
-        {components.onRenderControl({ control: control, children: <ControlRenderer /> })}
+        {components.onRenderControl({ control: control, children: <ControlRenderer components={{ onRenderValue: components.onRenderValue }} /> })}
     </GridFieldControlContext.Provider>;
 };
