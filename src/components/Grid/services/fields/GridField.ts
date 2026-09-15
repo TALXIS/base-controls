@@ -1,5 +1,5 @@
 import { IColumn, IField, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
-import type { GridCellEditableHook, GridCells } from "../cells";
+import type { GridCellEditableHook, GridCellLoadingHook, GridCells } from "../cells";
 
 export interface IGridFieldParameters {
     record: IRecord;
@@ -8,7 +8,7 @@ export interface IGridFieldParameters {
      * The cells of the grid this field is drawn in, where it is drawn in one.
      *
      * What the field tells them about itself: a cell knows nothing of fields, so whether the one drawing
-     * this field may be edited is the field's to answer.
+     * this field may be edited, and whether it is waiting, are the field's to answer.
      */
     cells?: GridCells;
 }
@@ -23,11 +23,13 @@ export class GridField {
     private _record: IRecord;
     private _columnName: string;
     private _unregisterCellEditableHook?: () => void;
+    private _unregisterCellLoadingHook?: () => void;
 
     constructor(parameters: IGridFieldParameters) {
         this._record = parameters.record;
         this._columnName = parameters.columnName;
         this._unregisterCellEditableHook = parameters.cells?.registerCellEditableHook(this._onCellEditable);
+        this._unregisterCellLoadingHook = parameters.cells?.registerCellLoadingHook(this._onCellLoading);
     }
 
     public getRecord(): IRecord {
@@ -51,16 +53,6 @@ export class GridField {
         this._record.setValue(this._columnName, newValue);
     }
 
-    /**
-     * Whether this field's value may be changed at all.
-     *
-     * The record's own answer, which already covers a host's `disabledExpression`, an inactive record, a
-     * group or total row, and what the column's metadata allows.
-     */
-    public isEditable(): boolean {
-        return !this._getField().isDisabled();
-    }
-
     public getFormattedValue(): string | null {
         return this._getField().getFormattedValue();
     }
@@ -70,12 +62,7 @@ export class GridField {
     public isValid(): IFieldValidationResult {
         return this._getField().isValid();
     }
-    /**
-     * What the record holds for this column.
-     *
-     * Asked for rather than kept: a record hands back the same field for the same column, and one held on
-     * to here would outlive a reload that replaced it.
-     */
+
     /**
      * The field is gone: what it registered goes with it.
      *
@@ -84,16 +71,38 @@ export class GridField {
      */
     public destroy(): void {
         this._unregisterCellEditableHook?.();
+        this._unregisterCellLoadingHook?.();
     }
 
     /** The field's word on whether the cell drawing it may be edited, which a cell cannot answer itself. */
     private _onCellEditable: GridCellEditableHook = (result, params) => {
-        if (params.record !== this._record || params.columnName !== this._columnName) {
+        if (!this._isDrawnBy(params)) {
             return;
         }
-        result.isEditable = this.isEditable();
+        //the record's own answer, which already covers a host's `disabledExpression`, an inactive record,
+        //a group or total row, and what the column's metadata allows
+        result.isEditable = !this._getField().isDisabled();
     };
 
+    /** The field's word on whether the cell drawing it is waiting, which a cell cannot answer itself. */
+    private _onCellLoading: GridCellLoadingHook = (result, params) => {
+        if (!this._isDrawnBy(params)) {
+            return;
+        }
+        result.isLoading = this._getField().ui.isLoading();
+    };
+
+    /** Whether a cell hook is running for the cell this field is drawn in, rather than for another one. */
+    private _isDrawnBy(params: { record: IRecord; columnName: string }): boolean {
+        return params.record === this._record && params.columnName === this._columnName;
+    }
+
+    /**
+     * What the record holds for this column.
+     *
+     * Asked for rather than kept: a record hands back the same field for the same column, and one held on
+     * to here would outlive a reload that replaced it.
+     */
     private _getField(): IField {
         return this._record.getField(this._columnName);
     }
