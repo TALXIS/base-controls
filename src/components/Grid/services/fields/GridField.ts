@@ -42,6 +42,10 @@ export class GridField {
         return this._record.getValue(this._columnName);
     }
 
+    public setValue(newValue: any) {
+        this._record.setValue(this._columnName, newValue);
+    }
+
     public getFormattedValue(): string | null {
         return this._record.getFormattedValue(this._columnName);
     }
