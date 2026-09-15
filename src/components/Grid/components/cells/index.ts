@@ -8,6 +8,7 @@ export * from './root';
 export * from './container';
 export * from './field';
 export * from './field-control';
+export * from './control-renderer';
 export * from './field-validation';
 export * from './commands';
 export * from './loading';

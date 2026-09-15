@@ -1,6 +1,7 @@
 import { CellEditor } from "./components/cells/cell-editor/CellEditor";
 import { CellRenderer } from "./components/cells/cell-renderer/CellRenderer";
 import { CellCommands } from "./components/cells/commands/CellCommands";
+import { ControlRenderer } from "./components/cells/control-renderer/ControlRenderer";
 import { Field } from "./components/cells/field/Field";
 import { FieldCellEditor } from "./components/cells/field-cell-editor/FieldCellEditor";
 import { FieldCellRenderer } from "./components/cells/field-cell-renderer/FieldCellRenderer";
@@ -38,6 +39,8 @@ export interface IGridNamespace {
     Field: typeof Field;
     /** A piece of the field cells: what draws the value of the field it is drawn inside. */
     FieldControl: typeof FieldControl;
+    /** A piece of {@link FieldControl}: what the control it made draws the value with. */
+    ControlRenderer: typeof ControlRenderer;
     /** A piece of {@link FieldCellRenderer}: what it says when the record refuses the value. */
     FieldValidation: typeof FieldValidation;
 }
@@ -55,5 +58,6 @@ export const Grid: IGridNamespace = {
     RowResizeGrip: RowResizeGrip,
     Field: Field,
     FieldControl: FieldControl,
+    ControlRenderer: ControlRenderer,
     FieldValidation: FieldValidation,
 };

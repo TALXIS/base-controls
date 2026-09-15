@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { IRecordEvents } from "@talxis/client-libraries";
-import { GridCellRenderer } from "@components/GridCellRenderer";
 import { useRerender } from "@legacy";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useGridCell } from "../root/context";
 import { useRequiredGridField } from "../field";
-import { LegacyNestedControlRenderer } from "../legacy-nested-control-renderer";
+import { ControlRenderer } from "../control-renderer/ControlRenderer";
+import { GridFieldControlContext } from "./context";
 import { FieldControlComponents, IGridFieldControlComponents } from "./components";
 
 export interface IGridFieldControlProps {
@@ -19,8 +19,8 @@ export interface IGridFieldControlProps {
  *
  * Requires a field: it is drawn for the column of a record. Reads the cell it is drawn in, so it has to be
  * inside a `CellRoot`, and owns the subscription on this path, because a value AG Grid cannot see change is
- * a value it does not refresh. Which control draws the value is the cell's own `GridFieldControl`'s to
- * decide.
+ * a value it does not refresh. What it makes is the cell's control, and what draws with it is
+ * `Grid.ControlRenderer`, which reads it back out of the context put here.
  */
 export const FieldControl = (props: IGridFieldControlProps) => {
     const cell = useGridCell();
@@ -35,12 +35,7 @@ export const FieldControl = (props: IGridFieldControlProps) => {
         rerender();
     });
 
-    const controlProps = control.getControlProps();
-
-    return components.onRenderControl({
-        alignment: cell.getColDef().propBag?.column?.alignment,
-        children: control.isCustomRendererEnabled()
-            ? <LegacyNestedControlRenderer controlProps={controlProps} control={control} />
-            : <GridCellRenderer {...controlProps} />,
-    });
+    return <GridFieldControlContext.Provider value={control}>
+        {components.onRenderControl({ control: control, children: <ControlRenderer /> })}
+    </GridFieldControlContext.Provider>;
 };

@@ -1,21 +1,22 @@
 import React, { useMemo } from "react";
-import { getClassNames, IAlignment } from "@utils";
+import { getClassNames } from "@utils";
+import { GridFieldControl } from "../../../../services/cells";
 import { getCellControlStyles } from "./styles";
 
 export interface ICellControlProps extends React.HTMLAttributes<HTMLDivElement> {
-    /** Where what it draws sits. Left, unless told otherwise. */
-    alignment?: IAlignment;
+    /** What the cell draws, which is what says how what it draws is laid out. */
+    control: GridFieldControl;
 }
 
 /**
- * What a cell draws for its value.
+ * The room a cell's value is drawn in.
  *
- * A placeholder as far as the value goes: it draws whatever it is given, which today is the text the grid
- * draws through AG Grid's own `valueFormatted`. The control that belongs here - the renderer, the editor,
- * a module's own - arrives the same way.
+ * Lays out rather than draws: what fills it is whatever it is given, and how much of the cell it takes -
+ * and which edge it reads from - is the column's alignment, which the control it is handed knows.
  */
 export const Control = (props: ICellControlProps) => {
-    const { alignment = 'left', className, ...divProps } = props;
+    const { control, className, ...divProps } = props;
+    const alignment = control.getField().getColumn().alignment ?? 'left';
     const styles = useMemo(() => getCellControlStyles(alignment), [alignment]);
 
     return <div {...divProps} className={getClassNames([styles.control, className])} />;
