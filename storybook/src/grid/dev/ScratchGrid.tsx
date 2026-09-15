@@ -40,13 +40,41 @@ const OptionSetPreview = (props: {
     </div>
 }
 
+/** The columns whose control takes input in the cell itself, with no editor to open. Add a name to try one. */
+const ONE_CLICK_EDIT_COLUMNS = ['name']
+
+/**
+ * The wash a row takes from the state it is in, by status value.
+ *
+ * Pale on purpose: this is the background of every cell in the row, and what is drawn on it - the values,
+ * the option set's own colours - still has to read.
+ */
+const STATUS_TINTS: { [status: number]: string } = {
+    1: '#fdf3f3',
+    2: '#fdf8e7',
+    3: '#eff8ef',
+    4: '#fdf0f0',
+    5: '#eff6fd',
+    6: '#f4f4f4',
+}
+
 /** The commands a cell offers, wired onto whichever module the story is given. */
 const withCellHooks = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
-        //a row of commands on the name cells, some labelled and some not, so what a bar does with both
-        //is part of what the story shows
+        //a row of commands on the two text columns, some labelled and some not, so what a bar does with
+        //both is part of what the story shows - and one of those columns edits on a click while the other
+        //opens an editor, so what commands do beside an input is in the story too
+        //the state a row is in, washed over every cell of it - the checkboxes included, which is what a
+        //theme hook reaches and the record's own formatting expression cannot: that one is a field's, and
+        //a column the grid added itself has no field
+        services.get('cells').registerCellThemeHook((result, params) => {
+            const background = STATUS_TINTS[Number(params.record.getValue('status') ?? 0)]
+            if (background) {
+                result.colors.background = background
+            }
+        })
         services.get('cells').registerCellCommandsHook((result, params) => {
             //two of them on the estimates, which change the value rather than log it: an estimate dragged
             //over what the team plans in is what makes the cell say the record refuses it
@@ -61,7 +89,7 @@ const withCellHooks = (module: IGridModule): IGridModule => ({
                 result.items.push(step('Longer', 'Add', 1), step('Shorter', 'Remove', -1))
                 return
             }
-            if (params.columnName !== 'name') {
+            if (params.columnName !== 'name' && params.columnName !== 'owner') {
                 return
             }
             const command = (key: string, iconName: string, options?: { text?: string, disabled?: boolean }) => ({
@@ -122,8 +150,6 @@ export interface IScratchGridProps {
     grouping: boolean
     aggregation: boolean
     selectableRows: 'none' | 'single' | 'multiple'
-    /** How many of the leading columns take input in the cell itself, with no editor to open. */
-    oneClickEditColumns: number
     /** How many rows the in-memory provider holds. */
     rowCount?: number
 }
@@ -138,7 +164,6 @@ export interface IScratchGridProps {
  */
 export const ScratchGrid = (props: IScratchGridProps) => {
     const rowCount = props.rowCount ?? DEFAULT_ROW_COUNT
-    const oneClickEditColumns = props.oneClickEditColumns ?? 0
     const provider = React.useMemo(() => {
         const provider = new MemoryDataProvider({
             dataSource: getDataSource(rowCount),
@@ -149,12 +174,12 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                 EntitySetName: 'mem_tasks',
             },
         })
-        provider.setColumns(COLUMNS.map((column, index) => index < oneClickEditColumns ? { ...column, oneClickEdit: true } : column))
+        provider.setColumns(COLUMNS.map(column => ONE_CLICK_EDIT_COLUMNS.includes(column.name) ? { ...column, oneClickEdit: true } : column))
         //the row models hand the grid whatever the provider holds, and what it holds is one page: a story
         //asking for ten thousand rows wants them all in play rather than the first fifty
         provider.getPaging().setPageSize(rowCount)
         return provider
-    }, [rowCount, oneClickEditColumns])
+    }, [rowCount])
 
     React.useEffect(() => {
         provider.refresh()
