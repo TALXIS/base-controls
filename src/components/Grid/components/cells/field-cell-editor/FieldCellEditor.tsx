@@ -14,7 +14,7 @@ export interface IGridFieldCellEditorProps extends ICellRendererParams { }
 export const FieldCellEditor = (props: IGridFieldCellEditorProps) => {
     return <Field record={props.data} name={props.colDef!.colId!}>
         <CellEditor {...props}>
-            <FieldControl editing />
+            <FieldControl />
         </CellEditor>
     </Field>;
 };

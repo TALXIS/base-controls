@@ -1,16 +1,11 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
+import { IGridCellRendererParams } from "../../interfaces";
 import { CellRenderer } from "../cell-renderer/CellRenderer";
 import { Field } from "../field/Field";
 import { FieldControl } from "../field-control/FieldControl";
 import { FieldValidation } from "../field-validation/FieldValidation";
 
-export interface IGridFieldCellRendererProps extends ICellRendererParams {
-    /**
-     * Whether the cell takes input rather than only drawing its value, which a one-click-edit column's
-     * cell does without an editor ever being opened.
-     */
-    editing?: boolean;
-}
+export interface IGridFieldCellRendererProps extends ICellRendererParams, IGridCellRendererParams { }
 
 /**
  * The cell of a record's column: bound to the field, and drawing what that field holds.
@@ -27,7 +22,7 @@ export const FieldCellRenderer = (props: IGridFieldCellRendererProps) => {
     return <Field record={props.data} name={props.colDef!.colId!}>
         <CellRenderer {...props}>
             <FieldValidation />
-            <FieldControl editing={props.editing} />
+            <FieldControl />
         </CellRenderer>
     </Field>;
 };

@@ -136,8 +136,8 @@ export class GridCells {
     }
 
     /** A cell of this grid. `CellRoot` creates the ones that are rendered, and nothing else should. */
-    public createCell(record: IRecord, colDef: ColDef<IRecord>, node?: IRowNode<IRecord>): GridCell {
-        return new GridCell({ services: this._services, record: record, colDef: colDef, node: node });
+    public createCell(record: IRecord, colDef: ColDef<IRecord>, node?: IRowNode<IRecord>, editing?: boolean): GridCell {
+        return new GridCell({ services: this._services, record: record, colDef: colDef, node: node, editing: editing });
     }
 
     /** Registers a cell as rendered. `CellRoot` does this on mount, and nothing else should. */

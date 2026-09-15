@@ -1,10 +1,11 @@
 import { useContext, useLayoutEffect, useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { ThemeContext } from "@utils";
+import { IGridCellRendererParams } from "../../interfaces";
 import { useGridService } from "../../../useGridService";
 import { GridCellContext } from "./context";
 
-export interface IGridCellRootProps extends ICellRendererParams {
+export interface IGridCellRootProps extends ICellRendererParams, IGridCellRendererParams {
     children?: React.ReactNode;
 }
 
@@ -13,7 +14,7 @@ export interface IGridCellRootProps extends ICellRendererParams {
  *
  * Creates that cell, registers it as rendered, destroys it when it unmounts, and puts it and its theme
  * where the rest can reach them - which is why it is the only piece a caller hands AG Grid's parameters
- * to. It draws nothing itself: `Grid.CellContainer` is the element, and everything else is a piece inside
+ * to, and why whether the cell takes input is read here rather than passed down. It draws nothing itself: `Grid.CellContainer` is the element, and everything else is a piece inside
  * that. A component drawn outside a cell root has no cell, and `useGridCell` says so.
  */
 export const CellRoot = (props: IGridCellRootProps) => {
@@ -21,7 +22,7 @@ export const CellRoot = (props: IGridCellRootProps) => {
     const cells = useGridService('cells');
     const parentCell = useContext(GridCellContext);
     const colDef = props.colDef!;
-    const cell = useMemo(() => cells.createCell(record, colDef, props.node), [cells, record, colDef, props.node]);
+    const cell = useMemo(() => cells.createCell(record, colDef, props.node, props.editing), [cells, record, colDef, props.node, props.editing]);
 
     useLayoutEffect(() => {
         cells.addCell(cell);

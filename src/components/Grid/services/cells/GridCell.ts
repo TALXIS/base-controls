@@ -13,6 +13,13 @@ export interface IGridCellParameters {
     colDef: ColDef<IRecord>;
     /** The row AG Grid is drawing, where the cell is one being drawn rather than one being asked about. */
     node?: IRowNode<IRecord>;
+    /**
+     * Whether this cell takes input rather than only drawing its value.
+     *
+     * True of an editor, and of a one-click-edit column's cell, whose control takes input without an
+     * editor ever being opened.
+     */
+    editing?: boolean;
 }
 
 //enough to tell two cells apart in a registry, including the same one drawn twice while AG Grid swaps a
@@ -32,12 +39,14 @@ export class GridCell {
     private _id: string;
     private _theme: GridCellTheme;
     private _control?: GridFieldControl;
+    private _editing: boolean;
     private _isDestroyed: boolean = false;
 
     constructor(parameters: IGridCellParameters) {
         this._services = parameters.services;
         this._record = parameters.record;
         this._colDef = parameters.colDef;
+        this._editing = !!parameters.editing;
         this._id = `${parameters.record.getRecordId()}_${this.getColumnName()}_${++instanceCount}`;
         this._theme = new GridCellTheme({ services: parameters.services, record: parameters.record, columnName: this.getColumnName(), node: parameters.node });
     }
@@ -78,6 +87,11 @@ export class GridCell {
         return result.isLoading;
     }
 
+    /** Whether this cell takes input rather than only drawing its value. */
+    public isEditing(): boolean {
+        return this._editing;
+    }
+
     /** What draws this cell's value, once {@link createControl} has made one. */
     public getControl(): GridFieldControl | undefined {
         return this._control;
@@ -85,10 +99,10 @@ export class GridCell {
 
     /**
      * Makes what draws this cell's value, which is the control adapter's to do: the field it draws is the
-     * adapter's to hand over, and whether it takes input is not known until the cell is being drawn.
+     * adapter's to hand over, and nothing else about it is the adapter's to decide.
      */
-    public createControl(field: GridField, takesInput?: boolean): GridFieldControl {
-        this._control = new GridFieldControl({ services: this._services, field: field, takesInput: takesInput });
+    public createControl(field: GridField): GridFieldControl {
+        this._control = new GridFieldControl({ services: this._services, field: field, takesInput: this._editing });
         return this._control;
     }
 

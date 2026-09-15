@@ -9,8 +9,6 @@ import { GridFieldControlContext } from "./context";
 import { FieldControlComponents, IGridFieldControlComponents } from "./components";
 
 export interface IGridFieldControlProps {
-    /** Whether the control takes input rather than only drawing the value. */
-    editing?: boolean;
     components?: Partial<IGridFieldControlComponents>;
 }
 
@@ -27,7 +25,7 @@ export const FieldControl = (props: IGridFieldControlProps) => {
     //a field control without a field is a bug in whoever drew it, not a cell to be drawn empty
     const field = useRequiredGridField();
     const record = field.getRecord();
-    const control = useMemo(() => cell.createControl(field, props.editing), [cell, field, props.editing]);
+    const control = useMemo(() => cell.createControl(field), [cell, field]);
     const components = { ...FieldControlComponents, ...props.components };
     const rerender = useRerender();
 
