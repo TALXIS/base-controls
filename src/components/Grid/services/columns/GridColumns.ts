@@ -1,11 +1,10 @@
-import { CellClassParams, CellDoubleClickedEvent, CellStyle, ColDef, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, ColDef, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { DataProvider, DataTypes, IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
 import { FieldCellEditor } from "../../components/cells/field-cell-editor/FieldCellEditor";
 import { FieldCellRenderer } from "../../components/cells/field-cell-renderer/FieldCellRenderer";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
-import { GridCellTheme } from "../cells";
 import { GridField } from "../fields";
 import { IGridCellRendererParams } from "../../components/interfaces";
 import { ColumnHeader } from "../../components/column-header/ColumnHeader";
@@ -168,7 +167,6 @@ export class GridColumns {
             //TODO: grid specific setting
             suppressMovable: column.isDraggable === false,
             propBag: { column: this._getGridColumn(column) },
-            cellStyle: (params: CellClassParams<IRecord>) => this._getCellStyle(params, column.name),
             cellRendererParams: this._getCellRendererParameters(column),
             editable: this._getEditorAvailability(column),
             cellEditorParams: this._getCellRendererParameters(column),
@@ -181,23 +179,6 @@ export class GridColumns {
             valueFormatter: (params: ValueFormatterParams<IRecord>) => this._getFormattedValue(params.data, column.name),
             onCellDoubleClicked: (event: CellDoubleClickedEvent<IRecord>) => this._onCellDoubleClick(event),
         };
-    }
-
-    /**
-     * What the cell is painted in: the surface of the theme that cell is drawn in.
-     *
-     * Painted on the cell itself rather than on what is drawn inside it, because the cell is the element
-     * that fills the row - a cell of a column that did not grow the row is taller than anything it holds.
-     */
-    private _getCellStyle(params: CellClassParams<IRecord>, columnName: string): CellStyle | undefined {
-        const record = params.data;
-        if (!record) {
-            return undefined;
-        }
-        //its own rather than the rendered cell's: AG Grid asks for this while it builds the cell, which is
-        //before the cell that would answer has been drawn and registered
-        const theme = new GridCellTheme({ services: this._services, record: record, columnName: columnName, node: params.node }).getValue();
-        return { backgroundColor: theme.semanticColors.bodyBackground, color: theme.semanticColors.bodyText };
     }
 
     /**

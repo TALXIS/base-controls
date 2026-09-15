@@ -1,9 +1,15 @@
-import { useContext, useLayoutEffect, useMemo } from "react";
+import { useContext, useLayoutEffect, useMemo, useState } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
+import { IRecordEvents } from "@talxis/client-libraries";
 import { ThemeContext } from "@utils";
+import { useEventEmitter } from "@hooks/useEventEmitter";
 import { IGridCellRendererParams } from "../../interfaces";
 import { useGridService } from "../../../useGridService";
-import { GridCellContext } from "./context";
+import { GridCellContext, GridCellRevisionContext } from "./context";
+
+//a constant rather than an array built per render: `useEventEmitter` keys its subscription on what it is
+//given, and every cell of the grid subscribes here
+const RECORD_EVENTS: (keyof IRecordEvents)[] = ['onFieldValueChanged', 'onAfterSaved'];
 
 export interface IGridCellRootProps extends ICellRendererParams, IGridCellRendererParams {
     children?: React.ReactNode;
@@ -23,11 +29,25 @@ export const CellRoot = (props: IGridCellRootProps) => {
     const parentCell = useContext(GridCellContext);
     const colDef = props.colDef!;
     const cell = useMemo(() => cells.createCell(record, colDef, props.node, props.editing), [cells, record, colDef, props.node, props.editing]);
+    const theme = cell.getTheme().getValue();
+    const [revision, setRevision] = useState(() => Symbol('cellRevision'));
+
+    //the whole cell, on any change to the record rather than to this column: what a cell answers its hooks
+    //is the record's, so a value that decides whether another cell may be edited, what it is drawn in, or
+    //what its control is handed, changes what this cell draws too
+    useEventEmitter<IRecordEvents>(record, RECORD_EVENTS, () => {
+        setRevision(Symbol('cellRevision'));
+    });
 
     useLayoutEffect(() => {
         cells.addCell(cell);
         return () => cells.removeCell(cell);
     }, [cells, cell]);
+
+    useLayoutEffect(() => {
+        props.eGridCell.style.backgroundColor = theme.semanticColors.bodyBackground;
+        props.eGridCell.style.color = theme.semanticColors.bodyText;
+    }, [props.eGridCell, theme]);
 
     //a cell inside a cell is two cells for one column of one record, and everything that reaches for the
     //cell it is drawn in would reach the wrong one
@@ -36,6 +56,8 @@ export const CellRoot = (props: IGridCellRootProps) => {
     }
 
     return <GridCellContext.Provider value={cell}>
-        <ThemeContext theme={cell.getTheme().getValue()}>{children}</ThemeContext>
+        <GridCellRevisionContext.Provider value={revision}>
+            <ThemeContext theme={theme}>{children}</ThemeContext>
+        </GridCellRevisionContext.Provider>
     </GridCellContext.Provider>;
 };

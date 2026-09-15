@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import { GridField } from "../../../services/fields";
+import { GridCellRevisionContext } from "../root/context";
 
 export const GridFieldContext = createContext<GridField | undefined>(undefined);
 GridFieldContext.displayName = 'GridField';
@@ -11,6 +12,8 @@ GridFieldContext.displayName = 'GridField';
  * to one has to draw without one. What cannot draw without one asks {@link useRequiredGridField}.
  */
 export const useGridField = (): GridField | undefined => {
+    //what a field answers is the record's, and the record changes under whatever is drawing it
+    useContext(GridCellRevisionContext);
     return useContext(GridFieldContext);
 };
 
