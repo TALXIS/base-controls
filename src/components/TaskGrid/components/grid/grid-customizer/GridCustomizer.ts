@@ -260,8 +260,10 @@ export class GridCustomizer implements IGridCustomizer {
                     //it is a misconfiguration - better said out loud here than rendered as an empty cell
                     this._services.get('checklistModule');
                     colDef.cellRenderer = this._checklistCellRenderer;
-                    //a task's checklist is not a value on the task, so there is nothing to edit
+                    //a task's checklist is not a value on the task, so there is nothing to edit: no
+                    //editor to open, and nothing a cell could change either
                     colDef.editable = false;
+                    colDef.propBag = { ...colDef.propBag, column: { ...colDef.propBag!.column!, isEditable: false } };
                     break;
                 }
                 case PREDECESSORS_COLUMN_NAME:
@@ -271,8 +273,10 @@ export class GridCustomizer implements IGridCustomizer {
                     //are built, than rendered as an empty cell
                     this._services.get('dependenciesModule');
                     colDef.cellRenderer = columnName === PREDECESSORS_COLUMN_NAME ? this._predecessorsCellRenderer : this._successorsCellRenderer;
-                    //a task's dependencies are not a value on the task, so there is nothing to edit
+                    //a task's dependencies are not a value on the task, so there is nothing to edit: no
+                    //editor to open, and nothing a cell could change either
                     colDef.editable = false;
+                    colDef.propBag = { ...colDef.propBag, column: { ...colDef.propBag!.column!, isEditable: false } };
                     break;
                 }
             }
@@ -292,7 +296,8 @@ export class GridCustomizer implements IGridCustomizer {
             if (column?.metadata?.LookupMany && this._services.find('lookupManyModule')) {
                 colDef.cellRenderer = this._lookupManyCellRenderer;
                 colDef.autoHeight = true;
-                //editing happens inside the picker, not through an ag-grid cell editor
+                //editing happens inside the picker, not through an ag-grid cell editor - the column stays
+                //editable, which is what the picker asks the cell before it lets anything be chosen
                 colDef.editable = false;
                 colDef.suppressKeyboardEvent = () => true;
             }

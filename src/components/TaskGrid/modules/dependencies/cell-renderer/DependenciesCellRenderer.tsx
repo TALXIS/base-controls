@@ -24,7 +24,7 @@ export const DependenciesCellRenderer = (props: IDependenciesCellRendererProps) 
     const styles = React.useMemo(() => getDependenciesCellRendererStyles(theme), [theme]);
     //get, not find: the column this renders in only exists because the module does
     const provider = useServices().get('dependenciesModule').provider;
-    const taskId = props.record.getRecordId();
+    const taskId = props.data.getRecordId();
     const rerender = useRerender();
     //the event carries every affected task, so each cell picks out its own — including when the change came
     //from a refresh of the task at the other end of the dependency

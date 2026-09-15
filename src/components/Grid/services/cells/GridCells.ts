@@ -63,6 +63,12 @@ export interface IGridCellThemeResult {
  */
 export type GridCellThemeHook = (result: IGridCellThemeResult, params: { record: IRecord; columnName: string }) => void;
 
+/** Whether a cell may be edited, as the hooks leave it. */
+export interface IGridCellEditable {
+    /** Whether what the cell holds may be changed. */
+    isEditable: boolean;
+}
+
 /** What a cell is waiting on, as the hooks leave it. */
 export interface IGridCellLoading {
     /** Whether the cell is waiting on something rather than able to draw. */
@@ -98,6 +104,14 @@ export type GridCellCommandsHook = (result: IGridCellCommands, params: { record:
  */
 export type GridCellLoadingHook = (result: IGridCellLoading, params: { record: IRecord; columnName: string }) => void;
 
+/**
+ * A hook over whether a cell may be edited.
+ *
+ * Handed the answer so far and mutates it. What the column said is not its to argue with: a column that
+ * cannot be edited is `editable: false` on its definition, and a cell of one never asks.
+ */
+export type GridCellEditableHook = (result: IGridCellEditable, params: { record: IRecord; columnName: string }) => void;
+
 export interface IGridCellsParameters {
     services: IGridServiceLocator;
 }
@@ -115,6 +129,7 @@ export class GridCells {
     private _cellThemeHooks = new HookRegistry<GridCellThemeHook>();
     private _cellLoadingHooks = new HookRegistry<GridCellLoadingHook>();
     private _cellCommandsHooks = new HookRegistry<GridCellCommandsHook>();
+    private _cellEditableHooks = new HookRegistry<GridCellEditableHook>();
 
     constructor(parameters: IGridCellsParameters) {
         this._services = parameters.services;
@@ -192,6 +207,15 @@ export class GridCells {
         this._cellCommandsHooks.register(hook, priority);
     }
 
+    /**
+     * Registers a hook over whether a cell may be edited. Runs per cell per render, so keep it cheap.
+     *
+     * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
+     */
+    public registerCellEditableHook(hook: GridCellEditableHook, priority?: number): void {
+        this._cellEditableHooks.register(hook, priority);
+    }
+
     /** Run by the `GridFieldControl` of the cell in question, which is the only caller of these two. */
     public applyControlHooks(result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters): void {
         this._controlHooks.apply(result, params);
@@ -209,6 +233,11 @@ export class GridCells {
     /** Run by the cell in question, which is the only caller. */
     public applyCellLoadingHooks(result: IGridCellLoading, params: { record: IRecord; columnName: string }): void {
         this._cellLoadingHooks.apply(result, params);
+    }
+
+    /** Run by the cell in question, which is the only caller. */
+    public applyCellEditableHooks(result: IGridCellEditable, params: { record: IRecord; columnName: string }): void {
+        this._cellEditableHooks.apply(result, params);
     }
 
     /** Run by the cell in question, which is the only caller. */

@@ -1,7 +1,7 @@
 import { ColDef } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
-import { IGridCellCommands, IGridCellLoading } from "./GridCells";
+import { IGridCellCommands, IGridCellEditable, IGridCellLoading } from "./GridCells";
 import { GridCellTheme } from "./GridCellTheme";
 import { GridField } from "../fields";
 import { GridFieldControl } from "./GridFieldControl";
@@ -84,16 +84,27 @@ export class GridCell {
     /**
      * Makes what draws this cell's value, which is the control adapter's to do: the field it draws is the
      * adapter's to hand over, and whether it takes input is not known until the cell is being drawn.
-     *
-     * `undefined` for a field whose column is the grid's own rather than the dataset's - the checkboxes,
-     * the column a save is reported in - which hold nothing of the record's to draw.
      */
-    public createControl(field: GridField, takesInput?: boolean): GridFieldControl | undefined {
-        if (!field.getColumn()) {
-            return undefined;
-        }
+    public createControl(field: GridField, takesInput?: boolean): GridFieldControl {
         this._control = new GridFieldControl({ services: this._services, field: field, takesInput: takesInput });
         return this._control;
+    }
+
+    /**
+     * Whether what this cell holds may be changed. `true` unless the definition or a hook says otherwise.
+     *
+     * Answered on every call, for the same reason as {@link isLoading}: a hook reads state that changes
+     * under it.
+     */
+    public isEditable(): boolean {
+        //the column's word is the last one, and it is not `editable` - that is AG Grid's question about
+        //opening an editor, which a one-click-edit column answers no to while changing its value happily
+        if (this._colDef.propBag?.column?.isEditable === false) {
+            return false;
+        }
+        const result: IGridCellEditable = { isEditable: true };
+        this._cells.applyCellEditableHooks(result, { record: this._record, columnName: this.getColumnName() });
+        return result.isEditable;
     }
 
     /**

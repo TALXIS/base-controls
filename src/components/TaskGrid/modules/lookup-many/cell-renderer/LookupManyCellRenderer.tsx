@@ -4,7 +4,7 @@ import AsyncSelect from "react-select/async";
 import { IGridCellParams } from "@components/Grid";
 import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/modules/lookup-many/components";
 import { ThemeProvider } from "@fluentui/react";
-import { useGridService } from "@components/Grid";
+import { useGridCell, useGridService } from "@components/Grid";
 
 enum ControlName {
     LookupMany = 'LookupMany',
@@ -19,22 +19,24 @@ enum ControlName {
  * `datasetControl.createLookupManyDataProvider`, and the visual variant from the column's custom control.
  */
 export const LookupManyCellRenderer = (props: IGridCellParams) => {
-    const { api, baseColumn, record } = props;
+    const { api, data: record } = props;
+    //the dataset column rides on the definition, which is what AG Grid hands every cell
+    const column = props.colDef!.propBag!.column!;
     const datasetControl = useDatasetControl();
     const [isDisabled, setIsDisabled] = React.useState(true);
     //one provider per cell: the picker drives it statefully via setSearchQuery/refresh, so a shared
     //instance would let one open cell clobber another's search
     const dataProvider = React.useMemo(
-        () => datasetControl.createLookupManyDataProvider({ record, column: baseColumn }),
-        [baseColumn.name, record.getRecordId()],
+        () => datasetControl.createLookupManyDataProvider({ record, column: column }),
+        [column.name, record.getRecordId()],
     );
-    const customControl = record.getColumnInfo(baseColumn.name).ui.getCustomControls([])?.[0];
+    const customControl = record.getColumnInfo(column.name).ui.getCustomControls([])?.[0];
     const controlName = (customControl?.name ?? ControlName.LookupMany) as ControlName;
     const bindings = customControl?.bindings;
     const provider = useTaskDataProvider();
     const isNavigationEnabled = useGridService('settings').isNavigationEnabled();
     const value: ComponentFramework.EntityReference[] | undefined = record.getValue(props.colDef!.colId!) as ComponentFramework.EntityReference[] | undefined;
-    const isEditable = !!baseColumn.isEditable && record.getColumnInfo(baseColumn.name).security.editable;
+    const isEditable = useGridCell().isEditable();
 
     const onSelectionChange = (selectedRecords: ComponentFramework.EntityReference[]) => {
         record.setValue(props.colDef!.colId!, selectedRecords);
@@ -48,7 +50,7 @@ export const LookupManyCellRenderer = (props: IGridCellParams) => {
 
     const onRecordOpen = (entityReference: ComponentFramework.EntityReference) => {
         provider.openDatasetItem(entityReference, {
-            columnName: baseColumn.name
+            columnName: column.name
         });
     }
 

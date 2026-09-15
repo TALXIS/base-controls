@@ -1,10 +1,10 @@
+import { IColumn } from "@talxis/client-libraries";
 import * as React from "react";
 import { Icon } from "@fluentui/react";
-import { IGridColumn } from "../../services/columns";
 import { FilterCalloutHost } from "./FilterCalloutHost";
 
 export interface IFilterCalloutProps {
-    column: IGridColumn;
+    column: IColumn;
     /** What the callout is anchored to: the header the filter was opened from. */
     target: React.RefObject<HTMLDivElement>;
 }

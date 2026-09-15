@@ -16,15 +16,16 @@ export interface IBindingsParameters {
 /** What a nested control is bound to: the cell's value, what the grid tells every control, and its own. */
 export const getBindings = (parameters: IBindingsParameters): { [name: string]: IBinding } => {
     const { record, column, control, formattedValue, enableNavigation, onNotifyOutputChanged } = parameters;
-    const columnInfo = record.getColumnInfo(column.name);
+    //the field's own answer, which is what the cell draws its own mark from as well
+    const validity = record.getField(column.name).isValid();
     const bindings: { [name: string]: IBinding } = {
         'value': {
             isStatic: false,
             type: column.dataType as any,
             value: getControlValue(column, parameters.value),
             formattedValue: formattedValue,
-            error: columnInfo.error,
-            errorMessage: columnInfo.errorMessage,
+            error: validity.error,
+            errorMessage: validity.errorMessage,
             onNotifyOutputChanged: onNotifyOutputChanged,
             metadata: {
                 onOverrideMetadata: () => column.metadata

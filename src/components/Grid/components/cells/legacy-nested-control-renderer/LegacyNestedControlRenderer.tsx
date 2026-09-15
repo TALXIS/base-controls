@@ -54,7 +54,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                     onNotifyOutputChanged: value => control.setValue(value)
                 }),
                 ControlStates: {
-                    isControlDisabled: !control.isEditable()
+                    isControlDisabled: !cell.isEditable()
                 }
             }}
             onOverrideComponentProps={(componentProps: INestedControlRendererComponentProps) => ({

@@ -52,6 +52,24 @@ export class GridSelection {
             columnDefs.splice(recordSaveColumnIndex, 1);
         }
         columnDefs.unshift(getSelectionColumnDefinition(this.components));
+        columnDefs.forEach(colDef => this._suppressNavigation(colDef));
+    }
+
+    /**
+     * Takes navigation off the checkbox column: a double click there is a second click on a checkbox, not a
+     * request to open the record.
+     *
+     * Wraps what the definition already does rather than replacing it, so every other column keeps whatever
+     * the grid, or a hook before this one, put there.
+     */
+    private _suppressNavigation(colDef: ColDef<IRecord>): void {
+        const onCellDoubleClicked = colDef.onCellDoubleClicked;
+        colDef.onCellDoubleClicked = event => {
+            if (this.isSelectionColumn(event.colDef.colId ?? undefined)) {
+                return;
+            }
+            onCellDoubleClicked?.(event);
+        };
     }
 
     /** Whether the column carrying the checkboxes is this one. */

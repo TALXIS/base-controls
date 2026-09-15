@@ -15,7 +15,7 @@ export interface IDeleteCellProps extends ICellRendererParams<IRecord> {
  * The delete button on one item's row.
  *
  * Typed on AG Grid's own params rather than the grid's `ICellProps`: that interface promises a `record`,
- * a `baseColumn` and a `value`, all of which arrive through `cellRendererParams` on a dataset column and
+ * and a `value`, which arrive through `cellRendererParams` on a dataset column and
  * are absent on a column injected by the customizer.
  */
 export const DeleteCell = (props: IDeleteCellProps) => {

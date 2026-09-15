@@ -18,7 +18,7 @@ import { getCompletionCellStyles } from "./styles";
  * value: a second source of truth drifts from the record the moment anything else writes.
  *
  * Typed on AG Grid's own params rather than the grid's `ICellProps`: that interface promises a `record`,
- * a `baseColumn` and a `value`, all of which arrive through `cellRendererParams` on a dataset column and
+ * and a `value`, which arrive through `cellRendererParams` on a dataset column and
  * are absent on a column injected by the customizer.
  */
 export const CompletionCell = (props: ICellRendererParams<IRecord>) => {

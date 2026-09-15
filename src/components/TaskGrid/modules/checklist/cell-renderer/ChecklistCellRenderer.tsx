@@ -24,7 +24,7 @@ export const ChecklistCellRenderer = (props: IChecklistCellRendererProps) => {
     const styles = React.useMemo(() => getChecklistCellRendererStyles(theme), [theme]);
     //get, not find: the column this renders in only exists because the module does
     const provider = useServices().get('checklistModule').provider;
-    const taskId = props.record.getRecordId();
+    const taskId = props.data.getRecordId();
     const rerender = useRerender();
     //the event carries every task the refresh reloaded, so each cell picks out its own
     useEventEmitter(provider.events, 'onAfterChecklistRefreshed', (refreshedTaskIds: string[]) => {

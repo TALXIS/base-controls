@@ -6,7 +6,7 @@ import type { IGridCellParams } from "@components/Grid";
 
 /**
  * Props every TaskGrid cell renderer and cell editor receives: AG Grid's `ICellRendererParams` plus the
- * `record`, `baseColumn`, `value` and `isCellEditor` the grid injects through `cellRendererParams` /
+ * `record`, `value` and `isCellEditor` the grid injects through `cellRendererParams` /
  * `cellEditorParams`.
  */
 export type ITaskGridCellProps = IGridCellParams;
@@ -22,7 +22,7 @@ export interface ITaskGridComponents {
      * otherwise have used for that column — the base cell, the group cell, `PercentComplete`, the
      * lookup-many renderer, or a component assigned by `IGridCustomizerStrategy`.
      *
-     * Switch on `props.baseColumn?.name` and delegate the rest to `defaultRender`. Not called for the
+     * Switch on `props.colDef?.colId` and delegate the rest to `defaultRender`. Not called for the
      * checkbox and add-task columns, whose props do not carry a record.
      */
     onRenderCellRenderer: (props: ITaskGridCellProps, defaultRender: (props: ITaskGridCellProps) => React.ReactElement) => React.ReactElement;

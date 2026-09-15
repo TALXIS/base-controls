@@ -11,7 +11,7 @@ export const PercentComplete = (props: IGridCellParams) => {
     const value: number | null = props.value;
     const styles = React.useMemo(() => getPercentCompleteStyles(), []);
     
-    if (props.record.getColumnInfo(props.baseColumn.name).ui.isLoading()) {
+    if (props.data.getColumnInfo(props.colDef!.colId!).ui.isLoading()) {
         return <GridBase.FieldCellRenderer {...props} />
     }
     return <div className={styles.root}>

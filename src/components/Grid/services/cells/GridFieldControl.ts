@@ -42,49 +42,12 @@ export class GridFieldControl {
         return this._field;
     }
 
-    /** What this cell holds. */
-    public getValue(): any {
-        return this._field.getValue();
-    }
-
-    /** What this cell shows when it is not rendering a control of its own. */
-    public getFormattedValue(): string {
-        return this._field.getFormattedValue() ?? '';
-    }
-
     /** A cell reported a new value: the record takes it, and saves it where the grid saves as it goes. */
     public setValue(value: any): void {
         this._record.setValue(this._columnName, value);
         if (this._settings.isAutoSaveEnabled()) {
             this._record.save();
         }
-    }
-
-    /**
-     * Whether this cell takes input: the column must allow it, and so must the record's security.
-     *
-     * A column the dataset does not have - one of the grid's own - is never editable, and neither is the
-     * inline ribbon, a file or an image.
-     */
-    public isEditable(): boolean {
-        const column = this._column;
-        //a column of the grid's own rather than the dataset's - the checkboxes, the column a save is
-        //reported in - holds nothing of the record's, so there is nothing in it to edit
-        if (!column) {
-            return false;
-        }
-        switch (true) {
-            case !this._settings.isEditingEnabled():
-            //a one-click-edit column's control is the cell, so there is no edit mode to enter
-            case column.oneClickEdit:
-            case column.name === DataProvider.CONST.RIBBON_BUTTONS_COLUMN_NAME:
-            case column.dataType === DataTypes.File:
-            case column.dataType === DataTypes.Image: {
-                return false;
-            }
-        }
-        //undefined means the record says nothing about it, and the column already said yes
-        return this._record.getColumnInfo(column.name)?.security.editable ?? true;
     }
 
     /**

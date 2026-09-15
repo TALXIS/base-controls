@@ -4,8 +4,7 @@ import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadat
 import { ILocalizationService } from "@utils";
 import { IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
-import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../services/column-header";
-import { IGridColumn } from "../../services/columns";
+import { IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridGroupingServiceLocator } from "./services";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
 import { IGroupingStrategy, IGroupingStrategyModule } from "./strategies";
@@ -217,7 +216,7 @@ export class GridGrouping {
     }
 
     /** The grouping icon and what it stands for, while the column is what the rows are grouped by. */
-    public applyColumnHeaderAdornments(adornments: IGridColumnHeaderAdornment[], column: IGridColumn): void {
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], column: IColumn): void {
         if (!this.isColumnGrouped(column)) {
             return;
         }
@@ -230,7 +229,7 @@ export class GridGrouping {
     }
 
     /** What a column's menu offers: grouping by it, or ungrouping it. */
-    public applyMenuSection(sections: IGridColumnMenuSection[], column: IGridColumn): void {
+    public applyMenuSection(sections: IColumnMenuSection[], column: IColumn): void {
         if (!this.canColumnBeGrouped(column)) {
             return;
         }

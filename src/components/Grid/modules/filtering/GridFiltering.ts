@@ -4,8 +4,7 @@ import { FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as
 import { ILocalizationService } from "@utils";
 import { IGridFilteringLabels } from "./labels";
 import { IGridFilteringComponents } from "./moduleComponents";
-import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../services/column-header";
-import { IGridColumn } from "../../services/columns";
+import { IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridFilteringServiceLocator } from "./services";
 
 /** What changed about the filter a column header has open. */
@@ -51,7 +50,7 @@ export class GridFiltering {
         return (column.metadata?.SupportedFilterConditionOperators ?? []).length > 0;
     }
 
-    public isFiltered(column: IGridColumn): boolean {
+    public isFiltered(column: IColumn): boolean {
         return this._filtering.getColumnFilter(column.name).isAppliedToDataset();
     }
 
@@ -101,7 +100,7 @@ export class GridFiltering {
     }
 
     /** What a column's menu offers: opening the filter, and clearing it. */
-    public applyMenuSection(sections: IGridColumnMenuSection[], column: IGridColumn): void {
+    public applyMenuSection(sections: IColumnMenuSection[], column: IColumn): void {
         if (!this.isColumnFilterable(column)) {
             return;
         }
@@ -123,7 +122,7 @@ export class GridFiltering {
     }
 
     /** The funnel, while a filter is applied to the dataset. */
-    public applyColumnHeaderAdornments(adornments: IGridColumnHeaderAdornment[], column: IGridColumn): void {
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], column: IColumn): void {
         if (!this.isFiltered(column)) {
             return;
         }

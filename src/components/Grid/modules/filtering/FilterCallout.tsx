@@ -3,7 +3,7 @@ import { Text } from '@fluentui/react';
 import { DatasetColumnFiltering } from '@components/DatasetControl/Filtering/DatasetColumnFiltering';
 import { getClassNames , usePcfContext} from '@utils';
 import { useEffect } from 'react';
-import { IGridColumn } from '@components/Grid/services/columns';
+import { IColumn } from '@talxis/client-libraries';
 import { useGridService } from '@components/Grid/useGridService';
 import { useGridFilteringLabels } from './useGridFilteringLabels';
 import { filterCalloutStyles } from './styles';
@@ -12,7 +12,7 @@ import { INestedControlRenderer } from '@components/NestedControlRenderer/interf
 import { IInternalDataProvider } from '@talxis/client-libraries';
 
 export interface IFilterCallout extends ICalloutProps {
-    column: IGridColumn;
+    column: IColumn;
     onDismiss: () => void;
 }
 

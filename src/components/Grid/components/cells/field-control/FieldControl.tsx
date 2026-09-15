@@ -17,8 +17,7 @@ export interface IGridFieldControlProps {
 /**
  * What a cell draws for its value, and what tells it to redraw.
  *
- * Requires a field: it is drawn for the column of a record, so a column of the grid's own - the checkboxes,
- * the column a save is reported in - draws nothing here. Reads the cell it is drawn in, so it has to be
+ * Requires a field: it is drawn for the column of a record. Reads the cell it is drawn in, so it has to be
  * inside a `CellRoot`, and owns the subscription on this path, because a value AG Grid cannot see change is
  * a value it does not refresh. Which control draws the value is the cell's own `GridFieldControl`'s to
  * decide.
@@ -36,13 +35,10 @@ export const FieldControl = (props: IGridFieldControlProps) => {
         rerender();
     });
 
-    if (!control) {
-        return null;
-    }
     const controlProps = control.getControlProps();
 
     return components.onRenderControl({
-        alignment: cell.getColDef().propBag?.alignment,
+        alignment: cell.getColDef().propBag?.column?.alignment,
         children: control.isCustomRendererEnabled()
             ? <LegacyNestedControlRenderer controlProps={controlProps} control={control} />
             : <GridCellRenderer {...controlProps} />,

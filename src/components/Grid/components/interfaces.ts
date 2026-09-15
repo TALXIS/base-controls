@@ -1,11 +1,8 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { IGridColumn } from "../services/columns";
 
 /** What this grid adds to what AG Grid hands a cell, and the whole of what `cellRendererParams` builds. */
 export interface IGridCellRendererParams {
-    baseColumn: IGridColumn;
-    record: IRecord;
     /**
      * Whether the control takes input rather than only drawing the value.
      *
@@ -16,4 +13,7 @@ export interface IGridCellRendererParams {
 }
 
 /** What AG Grid hands whatever renders a cell, plus the above. */
-export interface IGridCellParams extends ICellRendererParams, IGridCellRendererParams { }
+export interface IGridCellParams extends ICellRendererParams<IRecord>, IGridCellRendererParams {
+    /** The record the row stands for. Narrowed from AG Grid's optional one: these cells only render on rows that have one. */
+    data: IRecord;
+}

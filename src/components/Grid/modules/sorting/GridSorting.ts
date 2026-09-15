@@ -4,8 +4,7 @@ import { DataTypes, IColumn, IInternalDataProvider, IRecord, Sorting } from "@ta
 import { ILocalizationService } from "@utils";
 import { IGridSortingLabels } from "./labels";
 import { IGridSortingComponents } from "./moduleComponents";
-import { IGridColumnHeaderAdornment, IGridColumnMenuSection } from "../../services/column-header";
-import { IGridColumn } from "../../services/columns";
+import { IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
 import { IGridSortingServiceLocator } from "./services";
 
 export interface IGridSortingParameters {
@@ -36,11 +35,11 @@ export class GridSorting {
         return !!column.metadata?.IsValidForGrid && column.dataType !== DataTypes.MultiSelectOptionSet;
     }
 
-    public isSorted(column: IGridColumn): boolean {
+    public isSorted(column: IColumn): boolean {
         return this._provider.getSorting().some(sorted => sorted.name === column.name);
     }
 
-    public isSortedDescending(column: IGridColumn): boolean {
+    public isSortedDescending(column: IColumn): boolean {
         return this._provider.getSorting().find(sorted => sorted.name === column.name)?.sortDirection === 1;
     }
 
@@ -71,7 +70,7 @@ export class GridSorting {
     }
 
     /** What a column's menu offers: the two directions, and clearing them. */
-    public applyMenuSection(sections: IGridColumnMenuSection[], column: IGridColumn): void {
+    public applyMenuSection(sections: IColumnMenuSection[], column: IColumn): void {
         if (!this.isColumnSortable(column)) {
             return;
         }
@@ -100,7 +99,7 @@ export class GridSorting {
     }
 
     /** The sort direction, as the header shows it. */
-    public applyColumnHeaderAdornments(adornments: IGridColumnHeaderAdornment[], column: IGridColumn): void {
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], column: IColumn): void {
         if (!this.isSorted(column)) {
             return;
         }

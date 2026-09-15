@@ -1,9 +1,9 @@
 import { IRecord } from "@talxis/client-libraries";
-import { IGridColumn } from "../../../../services/columns";
+import { IColumn } from "@talxis/client-libraries";
 
 export interface ICellNotificationsProps {
     record: IRecord;
-    column: IGridColumn;
+    column: IColumn;
 }
 
 /** What a cell has to say about its field. A stub: it draws nothing yet. */

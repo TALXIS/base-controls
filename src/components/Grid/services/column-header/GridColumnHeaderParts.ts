@@ -1,6 +1,6 @@
+import { IColumn } from "@talxis/client-libraries";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { HookRegistry } from "@utils";
-import { IGridColumn } from "../columns/interfaces";
 import { IGridServiceLocator } from "../../services";
 
 /**
@@ -10,7 +10,7 @@ import { IGridServiceLocator } from "../../services";
  * array. Sections rather than loose entries, so no module has to know whether anything ran before it, and
  * none can leave a heading over somebody else's items.
  */
-export type GridColumnMenuSectionsHook = (sections: IGridColumnMenuSection[], column: IGridColumn) => void;
+export type GridColumnMenuSectionsHook = (sections: IColumnMenuSection[], column: IColumn) => void;
 
 /**
  * A hook over the menu the sections became.
@@ -19,7 +19,7 @@ export type GridColumnMenuSectionsHook = (sections: IGridColumnMenuSection[], co
  * change to what another module put there. Runs after the sections have been laid out, on the entries the
  * menu is about to be given.
  */
-export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], column: IGridColumn) => void;
+export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], column: IColumn) => void;
 
 /**
  * Something a module draws in a column header beside its name.
@@ -27,7 +27,7 @@ export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], column: IGr
  * A sort direction, a filter, a grouping, a total: each belongs to the module that knows about it, and
  * core only knows where they sit and in what order.
  */
-export interface IGridColumnHeaderAdornment {
+export interface IColumnHeaderAdornment {
     key: string;
     /** Before the name, or after it. */
     placement: 'prefix' | 'suffix';
@@ -38,17 +38,17 @@ export interface IGridColumnHeaderAdornment {
 }
 
 /** A hook over what a column header draws. Mutates the array it is handed. */
-export type GridColumnHeaderAdornmentsHook = (adornments: IGridColumnHeaderAdornment[], column: IGridColumn) => void;
+export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], column: IColumn) => void;
 
 /** What a module contributes to a column's menu, under a heading of its own. */
-export interface IGridColumnMenuSection {
+export interface IColumnMenuSection {
     key: string;
     /** What the section is called, which is what tells the reader whose entries these are. */
     title: string;
     items: IContextualMenuItem[];
 }
 
-export interface IGridColumnHeaderPartsParameters {
+export interface IColumnHeaderPartsParameters {
     services: IGridServiceLocator;
 }
 
@@ -64,7 +64,7 @@ export class GridColumnHeaderParts {
     private _menuItemHooks = new HookRegistry<GridColumnMenuItemsHook>();
     private _adornmentHooks = new HookRegistry<GridColumnHeaderAdornmentsHook>();
 
-    constructor(parameters: IGridColumnHeaderPartsParameters) {
+    constructor(parameters: IColumnHeaderPartsParameters) {
         this._services = parameters.services;
     }
 
@@ -97,8 +97,8 @@ export class GridColumnHeaderParts {
      * Each section becomes a heading and the entries under it. A module that offered nothing for this
      * column contributes no heading either.
      */
-    public getMenuItems(column: IGridColumn): IContextualMenuItem[] {
-        const sections: IGridColumnMenuSection[] = [];
+    public getMenuItems(column: IColumn): IContextualMenuItem[] {
+        const sections: IColumnMenuSection[] = [];
         this._menuSectionHooks.apply(sections, column);
         const items = sections
             .filter(section => section.items.length > 0)
@@ -120,8 +120,8 @@ export class GridColumnHeaderParts {
     }
 
     /** Everything the modules draw for a column, in order. */
-    public getAdornments(column: IGridColumn): IGridColumnHeaderAdornment[] {
-        const adornments: IGridColumnHeaderAdornment[] = [];
+    public getAdornments(column: IColumn): IColumnHeaderAdornment[] {
+        const adornments: IColumnHeaderAdornment[] = [];
         this._adornmentHooks.apply(adornments, column);
         return adornments;
     }
