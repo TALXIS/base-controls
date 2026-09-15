@@ -11,12 +11,12 @@ export interface IThemeContextProps {
 /**
  * The theme everything drawn inside it is themed by, without drawing anything itself.
  *
- * A cheap `ThemeProvider` for a theme that is already whole, which is what to reach for when many of them
- * are rendered at once - a themed grid cell being the case it was written for. `ThemeProvider` deep-merges
- * the theme into the one above it, builds the customizations a `styled()` component reads, and resolves a
- * class to paint with, all memoised per instance, so two hundred cells pay for all three two hundred times.
- * Here the theme goes through as it came, the customizations are cached per theme, and nothing is painted.
- * Measured over two hundred cells: ~17ms against ~1ms.
+ * For a theme that is already whole: it goes through as it came, nothing is merged into it and nothing is
+ * painted, and the customizations a `styled()` component reads are cached per theme rather than built per
+ * instance. That is the whole of it, and it is what makes it cheap enough to render per grid cell -
+ * `ThemeProvider` does all three per instance, measured at ~17ms against ~1ms over two hundred cells.
+ *
+ * Wanting an element painted in the theme is `CachedThemeProvider`, which is this with one rendered.
  */
 export const ThemeContext = (props: IThemeContextProps) => {
     const { theme, children } = props;
