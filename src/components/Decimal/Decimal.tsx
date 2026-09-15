@@ -178,6 +178,7 @@ export const Decimal = (props: IDecimal) => {
         suffixItems: getSuffixItems(),
         autoFocus: parameters.AutoFocus?.raw,
         errorMessage: boundValue.errorMessage,
+        fillAvailableSpace: sizing.fillsAvailableSpace,
         styles: {
             fieldGroup: {
                 height: sizing.height,

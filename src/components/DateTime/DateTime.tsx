@@ -11,6 +11,9 @@ import { useControlSizing } from "@hooks/useControlSizing";
 import dayjs from "dayjs";
 import { useDebouncedCallback } from "use-debounce";
 
+//the picker fills what it is drawn in, so what it is drawn in has to be the container's height
+const FILL_STYLE: React.CSSProperties = { height: '100%' };
+
 export const DateTime = (componentProps: IDateTime) => {
     const ref = useRef<HTMLDivElement>(null);
     const onOverrideComponentProps = componentProps.onOverrideComponentProps ?? ((props) => props);
@@ -19,7 +22,7 @@ export const DateTime = (componentProps: IDateTime) => {
     const parameters = componentProps.parameters;
     const [isDateTime, theme, labels, date, patterns] = useDateTime(componentProps, ref);
     const styles = getDateTimeStyles(theme);
-    const { height, width } = useControlSizing(componentProps.context.mode);
+    const { height, width, fillsAvailableSpace } = useControlSizing(componentProps.context.mode, componentProps.parameters);
     const lastInputedTimeString = useRef<string>();
 
     useEffect(() => {
@@ -48,6 +51,7 @@ export const DateTime = (componentProps: IDateTime) => {
         className: styles.datePicker,
         componentRef: datePickerRef,
         hideErrorMessage: !parameters.ShowErrorMessage?.raw,
+        fillAvailableSpace: fillsAvailableSpace,
         keepCalendarOpenAfterDaySelect: isDateTime,
         readOnly: context.mode.isControlDisabled,
         //@ts-ignore - this is a hack to close the calendar when dates get selected on date only fields
@@ -106,7 +110,7 @@ export const DateTime = (componentProps: IDateTime) => {
 
     return (
         <DateTimeContext.Provider value={dateTime}>
-            <CachedThemeProvider theme={theme} applyTo="none" ref={ref}>
+            <CachedThemeProvider theme={theme} applyTo="none" ref={ref} style={fillsAvailableSpace ? FILL_STYLE : undefined}>
                 <DatePicker {...datePickerProps} />
             </CachedThemeProvider>
         </DateTimeContext.Provider>

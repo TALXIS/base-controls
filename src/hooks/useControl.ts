@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { IControl, IOutputs, IParameters } from "../interfaces";
 import { useControlTheme } from "../utils/theme/hooks/useControlTheme";
-import { useControlSizing } from "./useControlSizing";
+import { IControlSizing, useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
 import { ITheme } from "../legacy/react-components";
 import dayjs from "dayjs";
@@ -9,10 +9,7 @@ import { IDefaultTranslations, ITranslation, useControlLabels } from "./useContr
 
 export interface IControlController<TTranslations, TOutputs> {
     labels: Required<ITranslation<TTranslations>>,
-    sizing: {
-        width?: number,
-        height?: number
-    },
+    sizing: IControlSizing,
     className: string;
     theme: ITheme;
     onNotifyOutputChanged: (outputs: TOutputs) => void,
@@ -24,7 +21,7 @@ export interface IControlController<TTranslations, TOutputs> {
 export const useControl = <TParameters extends IParameters, TOutputs extends IOutputs, TTranslations>(name: string, props: IControl<TParameters, TOutputs, TTranslations, any>, defaultTranslations?: IDefaultTranslations): IControlController<TTranslations, TOutputs> => {
     const context = props.context;
     const parametersRef = useRef<TParameters>(props.parameters);
-    const sizing = useControlSizing(props.context.mode);
+    const sizing = useControlSizing(props.context.mode, props.parameters);
     const labels = useControlLabels({
         languageId: context.userSettings.languageId,
         translations: props.translations,

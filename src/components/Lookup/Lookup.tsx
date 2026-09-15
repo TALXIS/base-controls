@@ -19,7 +19,7 @@ export const Lookup = (props: ILookup) => {
     const ref = useRef<HTMLDivElement>(null);
     const componentRef = useRef<IBasePicker<ITag>>(null);
     const itemLimit = props.parameters.MultipleEnabled?.raw === true ? Infinity : 1
-    const { height } = useControlSizing(props.context.mode);
+    const { height, fillsAvailableSpace } = useControlSizing(props.context.mode, props.parameters);
     const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props);
     const styles = getLookupStyles(theme, itemLimit === 1, height);
     const suggestionsCalloutTheme = props.context.fluentDesignLanguage?.applicationTheme ?? theme;
@@ -186,6 +186,7 @@ export const Lookup = (props: ILookup) => {
         stackItems: itemLimit === 1,
         errorMessage: props.parameters.value.errorMessage,
         hideErrorMessage: !props.parameters.ShowErrorMessage?.raw,
+        fillAvailableSpace: fillsAvailableSpace,
         pickerCalloutProps: {
             layerProps: {
                 eventBubblingEnabled: true

@@ -26,4 +26,11 @@ export interface IBaseParameters extends IParameters {
     */
     AutoFocus?:  Omit<ITwoOptionsProperty, 'attributes'>;
     ForceDisable?: Omit<ITwoOptionsProperty, 'attributes'>;
+    /**
+     * Lets the control be whatever height its container gives it, rather than the height it was allocated.
+     *
+     * For a host that sizes the box itself - a grid cell is one - which the control then fills, and shrinks
+     * with. Unset, the control is the height it was allocated, which is what a form gives it.
+     */
+    FillAvailableSpace?: Omit<ITwoOptionsProperty, 'attributes'>;
 }

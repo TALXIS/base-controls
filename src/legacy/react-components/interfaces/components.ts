@@ -15,6 +15,15 @@ export interface IReadOnly {
     readOnly?: boolean;
 }
 /**  
+    For components that can be drawn at whatever height their container gives them, rather than at the height they size themselves to. Everything between the component's root and the element carrying its border has to stretch for this to reach the input, which is what the class `useClassNames` adds does.
+*/
+export interface IFillAvailableSpace {
+    /**  
+     * Draws the component at the height of its container, filling what room there is and shrinking below its usual height where there is none.
+    */
+    fillAvailableSpace?: boolean;
+}
+/**  
     For components that can be disabled, meaning that they can't be interacted with.
 */
 export interface IDisabled {

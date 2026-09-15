@@ -1,6 +1,6 @@
 import { ITextField, TextField as TextFieldBase, useTheme } from "@fluentui/react";
 import { ITextFieldProps as ITextFieldPropsBase } from "@fluentui/react";
-import { ICopyButton, IDeleteButton, IDisabled, IErrorMessage, IPrefix, IReadOnly, ISuffix } from '@legacy/interfaces/components';
+import { ICopyButton, IDeleteButton, IDisabled, IErrorMessage, IFillAvailableSpace, IPrefix, IReadOnly, ISuffix } from '@legacy/interfaces/components';
 import { useClassNames } from '@legacy/hooks/useClassNames';
 import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { getTextFieldStyles } from "./styles";
@@ -8,7 +8,7 @@ import { InputButtons } from '@legacy/utilities/components/InputButtons/InputBut
 export interface ITextFieldProps extends Omit<ITextFieldPropsBase, 'errorMessage' | 'ref'>,
     IReadOnly, ICopyButton,
     IDeleteButton, IDisabled, IErrorMessage,
-    IPrefix, ISuffix {
+    IPrefix, ISuffix, IFillAvailableSpace {
         value: string | undefined
 };
 /**  

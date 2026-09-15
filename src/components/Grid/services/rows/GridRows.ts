@@ -26,37 +26,15 @@ export class GridRows extends EventEmitter<IGridRowsEvents> {
         this._services = parameters.services;
         this._services.whenAvailable('gridApi', gridApi => this._onGridApiAvailable(gridApi));
     }
-
-    /**
-     * Whether this is a row the user is at: the one under the pointer, the one holding the focused cell,
-     * or one they have selected.
-     *
-     * What a cell draws only for a row being used - its commands - asks this, so that everything else on
-     * screen is spared the cost of drawing it.
-     */
+    
     public isActive(record: IRecord): boolean {
         const recordId = record.getRecordId();
         return recordId === this._hoveredRecordId || recordId === this._focusedRecordId || this._selectedRecordIds.has(recordId);
     }
 
-    /**
-     * How tall this row is: what it was dragged to, or what a row is worth by default.
-     *
-     * A height on the row node does not survive: `checkAutoHeights` recomputes one from what its
-     * auto-height cells measure and overwrites it. So the drag grows the cell's own content, and this is
-     * what a cell re-created by scrolling reads to come back to the same size.
-     */
     public getHeight(record: IRecord): number {
         return this._heights[record.getRecordId()] ?? this._settings.getDefaultRowHeight();
     }
-
-    /**
-     * Where this row sits, or `undefined` before AG Grid has placed it.
-     *
-     * Read from the row node rather than kept: the index is what sorting, filtering and grouping change,
-     * and the node is where AG Grid keeps the answer. Finding that node by record id walks every row the
-     * model holds, so anything handed a node of its own reads `node.rowIndex` instead of asking this.
-     */
     public getIndex(record: IRecord): number | undefined {
         return this._services.find('gridApi')?.getRowNode(record.getRecordId())?.rowIndex ?? undefined;
     }

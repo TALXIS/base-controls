@@ -60,6 +60,8 @@ export const TwoOptions = (props: ITwoOptions) => {
                             height: sizing.height,
                             width: sizing.width,
                             marginBottom: 0,
+                            //the pill is its own size, and stays centred in whatever the toggle fills
+                            ...(sizing.fillsAvailableSpace && { display: 'flex', alignItems: 'center' }),
                         },
                         container: {
                             alignItems: 'center'

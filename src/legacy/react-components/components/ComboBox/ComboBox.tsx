@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { IComboBoxProps as IComboBoxPropsBase, IComboBox, ComboBox as ComboBoxBase, getCommandBarStyles, useTheme, ISelectableOption, ICommandBarItemProps, PrimaryButton, TextField, Icon, ThemeProvider } from "@fluentui/react";
-import { ICopyButton, IDeleteButton, IDisabled, IErrorMessage, IPrefix, IReadOnly, ISuffix } from '@legacy/interfaces/components';
+import { ICopyButton, IDeleteButton, IDisabled, IErrorMessage, IFillAvailableSpace, IPrefix, IReadOnly, ISuffix } from '@legacy/interfaces/components';
 import { useClassNames } from '@legacy/hooks/useClassNames';
 import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
 import { getComboBoxStyles } from './styles';
 import ReactDOM from 'react-dom';
 
 export interface IComboBoxProps extends Omit<IComboBoxPropsBase, 'errorMessage' | 'caretDownButtonStyles'>, IReadOnly,
-    IErrorMessage, IDeleteButton, IDisabled, IPrefix, ISuffix, IDeleteButton, ICopyButton {
+    IErrorMessage, IDeleteButton, IDisabled, IPrefix, ISuffix, IDeleteButton, ICopyButton, IFillAvailableSpace {
 }
 
 export const ComboBox = React.forwardRef<HTMLDivElement, IComboBoxProps>((props, ref) => {

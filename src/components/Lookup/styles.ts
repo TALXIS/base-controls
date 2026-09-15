@@ -31,15 +31,17 @@ export const getTargetSelectorStyles = (theme: ITheme) => {
     })
 }
 
-const getHeight = (height?: number) => {
-    if(height === -1 || height === 0) {
+/** The height as something to do arithmetic with, which is nothing when the control fills its container. */
+const getHeight = (height?: number | string) => {
+    if(typeof height !== 'number' || height === -1 || height === 0) {
         return undefined;
     }
     return height;
 }
 
-export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?: number) => {
+export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?: number | string) => {
     const _height = getHeight(height);
+    const fillsAvailableSpace = height === '100%';
     return mergeStyleSets({
         displayName: 'talxis__lookupControl',
         root: {
@@ -58,8 +60,10 @@ export const getLookupStyles = (theme: ITheme, isSingleSelect: boolean, height?:
                 height: _height && isSingleSelect ? _height - 6 : undefined
             },
             '.ms-BasePicker-text': {
-                minHeight: _height ?? 32,
-                height: 'min-content',
+                //filling is the container's answer, so there is no floor to keep it off: the picker is as
+                //tall as what it is drawn in, and as short
+                minHeight: fillsAvailableSpace ? undefined : _height ?? 32,
+                height: fillsAvailableSpace ? '100%' : 'min-content',
                 paddingRight: !isSingleSelect ? 36 : undefined,
                 alignItems: 'baseline',
 

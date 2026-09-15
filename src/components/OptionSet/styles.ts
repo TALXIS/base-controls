@@ -1,6 +1,6 @@
 import { mergeStyleSets } from "@fluentui/react"
 
-export const getComboBoxStyles = (width?: number, height?: number) => {
+export const getComboBoxStyles = (width?: number, height?: number | string) => {
     return mergeStyleSets({
         root: {
             height: height,

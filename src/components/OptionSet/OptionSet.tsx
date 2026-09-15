@@ -78,6 +78,7 @@ export const OptionSet = (props: IOptionSet) => {
                 },
             },
         }),
+        fillAvailableSpace: sizing.fillsAvailableSpace,
         onChange: (e, option) => handleChange(option),
         onRenderOption: colorFeatureEnabled ? (option) => onRenderColorfulOption(Options, option, theme) : undefined,
     });

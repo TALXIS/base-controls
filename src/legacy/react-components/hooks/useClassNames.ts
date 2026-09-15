@@ -1,10 +1,10 @@
-import { IDisabled, IErrorMessage, IReadOnly } from "../interfaces/components";
+import { IDisabled, IErrorMessage, IFillAvailableSpace, IReadOnly } from "../interfaces/components";
 import { mergeStyles, useTheme } from "@fluentui/react";
 import { useMemo } from "react";
 import { ITheme } from "../utilities";
 
 
-interface IComponentProps extends IReadOnly, IErrorMessage, IDisabled {
+interface IComponentProps extends IReadOnly, IErrorMessage, IDisabled, IFillAvailableSpace {
     className?: string;
     [key: string]: any;
 }
@@ -37,6 +37,9 @@ export const useClassNames = (componentName: string, componentProps: IComponentP
     if(componentProps.hideErrorMessage) {
         result += ` ${useMemo(() => getHideErrorMessageStyles(), [])}`
     }
+    if(componentProps.fillAvailableSpace) {
+        result += ` ${useMemo(() => getFillAvailableSpaceStyles(), [])}`
+    }
     result += ` ${useMemo(() => getHoverOnlyStyle(), [])}`
     return result;
 };
@@ -46,6 +49,25 @@ const getHideErrorMessageStyles = () => {
         '.ms-TextField-errorMessage, &.ms-ComboBox-container > [id*="-error"], .TALXIS__errorMessage': {
             display: 'none'
         }
+    });
+}
+
+/**
+ * What it takes for a component to be the height of its container.
+ *
+ * Every element between the root and the one carrying the border, for each component this hook names: a
+ * height on the root alone stops at the first of them that sizes itself.
+ */
+const getFillAvailableSpaceStyles = () => {
+    return mergeStyles({
+        height: '100%',
+        //the text field, and the one a date picker draws inside its own wrapper
+        '.ms-TextField, .ms-TextField-wrapper, .ms-TextField-fieldGroup, >div, >div>.ms-TextField': {
+            height: '100%'
+        },
+        '&.ms-ComboBox-container .ms-ComboBox, .ms-BasePicker-text': {
+            height: '100%'
+        },
     });
 }
 

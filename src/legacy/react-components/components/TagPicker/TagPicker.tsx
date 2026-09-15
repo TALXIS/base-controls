@@ -12,7 +12,7 @@ import { CommandBar } from '../CommandBar/CommandBar';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { Text } from '@fluentui/react'
-import { IDisabled, IErrorMessage, IReadOnly } from '@legacy/interfaces/components';
+import { IDisabled, IErrorMessage, IFillAvailableSpace, IReadOnly } from '@legacy/interfaces/components';
 import { getSuggestionsStyles, getTagPickerStyles } from './styles';
 import { useTheme } from '@fluentui/react';
 import { useClassNames } from '@legacy/hooks/useClassNames';
@@ -65,7 +65,7 @@ export interface ISearchButtonProps extends ICommandBarItemProps {
  * interface. Also adds additional props to support extented functionality.
 */
 export interface ITagPickerProps extends Omit<ITagPickerPropsBase, 'selectedItems' | 'onResolveSuggestions' | 'createGenericItem' | 'onRenderSuggestionsItem' | 'onRenderItem' | 'onItemSelected' | 'onChange' | 'ref'>,
-    IDisabled, IReadOnly, IErrorMessage {
+    IDisabled, IReadOnly, IErrorMessage, IFillAvailableSpace {
     /**  
      * Refer to https://developer.microsoft.com/en-us/fluentui#/controls/web/pickers for additional info about this prop.
     */

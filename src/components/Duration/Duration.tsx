@@ -117,6 +117,7 @@ export const Duration = (props: IDuration) => {
         autofill: parameters.AutoFocus?.raw === true ? { autoFocus: true } : undefined,
         readOnly: context.mode.isControlDisabled,
         useComboBoxAsMenuWidth: true,
+        fillAvailableSpace: sizing.fillsAvailableSpace,
         errorMessage: boundValue.errorMessage,
         text: value ?? '',
         styles: {

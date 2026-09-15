@@ -84,6 +84,7 @@ export const TextField = (props: ITextField) => {
         multiline: isTextArea,
         autoFocus: parameters.AutoFocus?.raw,
         placeholder: parameters.Placeholder?.raw ?? undefined,
+        fillAvailableSpace: sizing.fillsAvailableSpace,
         styles: {
             fieldGroup: {
                 height: sizing.height,

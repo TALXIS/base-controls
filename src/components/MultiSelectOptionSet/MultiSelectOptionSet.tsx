@@ -136,6 +136,7 @@ export const MultiSelectOptionSet = (props: IMultiSelectOptionSet) => {
                 handleChange(null);
             }
         } : undefined,
+        fillAvailableSpace: sizing.fillsAvailableSpace,
         onChange: (e, option) => handleChange(option),
     });
 

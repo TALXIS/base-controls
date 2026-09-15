@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { DatePicker as DatePickerBase, ICommandBarItemProps, IDatePicker, ITextField } from "@fluentui/react";
-import { IReadOnly, IErrorMessage, IDisabled, IDeleteButton, ISuffix, IPrefix, ICopyButton } from '@legacy/interfaces/components';
+import { IReadOnly, IErrorMessage, IDisabled, IDeleteButton, IFillAvailableSpace, ISuffix, IPrefix, ICopyButton } from '@legacy/interfaces/components';
 import { useTheme } from "@fluentui/react";
 import { IDatePickerProps as IDatePickerPropsBase } from "@fluentui/react";
 import { getDatePickerStyles } from './styles';
@@ -11,7 +11,7 @@ import { useClassNames } from '@legacy/hooks/useClassNames';
 
 
 export interface IDatePickerProps extends IDatePickerPropsBase, IReadOnly,
-    IErrorMessage, IDisabled, IDeleteButton, ISuffix, IPrefix, ICopyButton, IDeleteButton {
+    IErrorMessage, IDisabled, IDeleteButton, ISuffix, IPrefix, ICopyButton, IDeleteButton, IFillAvailableSpace {
     keepCalendarOpenAfterDaySelect?: boolean;
     onSelectDate: (date: Date | null | undefined) => void;
     value: Date | undefined;
