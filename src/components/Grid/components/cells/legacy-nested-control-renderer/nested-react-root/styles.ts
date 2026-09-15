@@ -5,5 +5,6 @@ export const getNestedReactRootStyles = () => mergeStyleSets({
         flex: 1,
         minWidth: 0,
         height: '100%',
+        display: 'flex'
     },
 });

@@ -12,5 +12,7 @@ export const getCellControlStyles = (alignment: IAlignment) => mergeStyleSets({
         flex: '1 1 auto',
         minWidth: 0,
         overflow: 'hidden',
+        display: 'flex',
+        height: '100%'
     },
 });
