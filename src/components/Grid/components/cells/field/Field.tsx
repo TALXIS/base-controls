@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { IRecord } from "@talxis/client-libraries";
 import { GridField } from "../../../services/fields";
 import { GridFieldContext } from "./context";
+import { useGridService } from "../../../useGridService";
 
 export interface IGridFieldProps {
     record: IRecord;
@@ -18,9 +19,10 @@ export interface IGridFieldProps {
  */
 export const Field = (props: IGridFieldProps) => {
     const { record, name, children } = props;
+    const cells = useGridService('cells');
     //the record instance, not its id: a reload hands the same row a new record, and a field holding the
     //previous one would answer for a record nothing is looking at
-    const field = useMemo(() => new GridField({ record: record, columnName: name }), [record, name]);
+    const field = useMemo(() => new GridField({ record: record, columnName: name, cells: cells }), [record, name, cells]);
 
     return <GridFieldContext.Provider value={field}>{children}</GridFieldContext.Provider>;
 };

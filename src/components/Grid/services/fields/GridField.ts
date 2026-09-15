@@ -1,8 +1,16 @@
 import { IColumn, IField, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
+import type { GridCellEditableHook, GridCells } from "../cells";
 
 export interface IGridFieldParameters {
     record: IRecord;
     columnName: string;
+    /**
+     * The cells of the grid this field is drawn in, where it is drawn in one.
+     *
+     * What the field tells them about itself: a cell knows nothing of fields, so whether the one drawing
+     * this field may be edited is the field's to answer.
+     */
+    cells?: GridCells;
 }
 
 /**
@@ -18,6 +26,7 @@ export class GridField {
     constructor(parameters: IGridFieldParameters) {
         this._record = parameters.record;
         this._columnName = parameters.columnName;
+        parameters.cells?.registerCellEditableHook(this._onCellEditable);
     }
 
     public getRecord(): IRecord {
@@ -67,6 +76,14 @@ export class GridField {
      * Asked for rather than kept: a record hands back the same field for the same column, and one held on
      * to here would outlive a reload that replaced it.
      */
+    /** The field's word on whether the cell drawing it may be edited, which a cell cannot answer itself. */
+    private _onCellEditable: GridCellEditableHook = (result, params) => {
+        if (params.record !== this._record || params.columnName !== this._columnName) {
+            return;
+        }
+        result.isEditable = this.isEditable();
+    };
+
     private _getField(): IField {
         return this._record.getField(this._columnName);
     }
