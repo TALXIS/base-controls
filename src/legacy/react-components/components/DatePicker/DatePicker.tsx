@@ -6,6 +6,7 @@ import { useTheme } from "@fluentui/react";
 import { IDatePickerProps as IDatePickerPropsBase } from "@fluentui/react";
 import { getDatePickerStyles } from './styles';
 import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
+import { PASSWORD_MANAGER_IGNORE_PROPS } from '@legacy/utilities/passwordManagerProps';
 import { ITheme } from '@legacy/utilities';
 import { useClassNames } from '@legacy/hooks/useClassNames';
 
@@ -152,6 +153,7 @@ export const DatePicker = React.forwardRef<HTMLDivElement, IDatePickerProps>((pr
                 }
             }}
             textField={{
+                ...PASSWORD_MANAGER_IGNORE_PROPS,
                 ...props.textField,
                 readOnly: props.readOnly,
                 errorMessage: props.errorMessage,

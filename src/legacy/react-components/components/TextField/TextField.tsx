@@ -5,6 +5,7 @@ import { useClassNames } from '@legacy/hooks/useClassNames';
 import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { getTextFieldStyles } from "./styles";
 import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
+import { PASSWORD_MANAGER_IGNORE_PROPS } from '@legacy/utilities/passwordManagerProps';
 export interface ITextFieldProps extends Omit<ITextFieldPropsBase, 'errorMessage' | 'ref'>,
     IReadOnly, ICopyButton,
     IDeleteButton, IDisabled, IErrorMessage,
@@ -84,6 +85,7 @@ export const TextField = forwardRef<undefined, ITextFieldProps>((props, ref) => 
     }
     return (
         <TextFieldBase
+            {...PASSWORD_MANAGER_IGNORE_PROPS}
             {...props}
             title={props.title ?? props.value}
             componentRef={componentRef}

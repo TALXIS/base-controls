@@ -37,9 +37,11 @@ export const Playground: Story = {
         grouping: true,
         aggregation: true,
         selectableRows: 'multiple',
+        oneClickEditColumns: 4,
     },
     argTypes: {
         rowModel: { control: 'inline-radio', options: ['serverSide', 'clientSide'] },
+        oneClickEditColumns: { control: { type: 'range', min: 0, max: 8 }, description: 'How many of the leading columns take input in the cell itself, with no editor to open.' },
         grouping: { description: 'Fetches a level at a time on the server-side row model, the whole tree on the client-side one.' },
         selectableRows: { control: 'inline-radio', options: ['none', 'single', 'multiple'] },
     },

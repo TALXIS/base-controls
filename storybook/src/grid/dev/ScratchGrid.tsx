@@ -122,6 +122,8 @@ export interface IScratchGridProps {
     grouping: boolean
     aggregation: boolean
     selectableRows: 'none' | 'single' | 'multiple'
+    /** How many of the leading columns take input in the cell itself, with no editor to open. */
+    oneClickEditColumns: number
     /** How many rows the in-memory provider holds. */
     rowCount?: number
 }
@@ -136,6 +138,7 @@ export interface IScratchGridProps {
  */
 export const ScratchGrid = (props: IScratchGridProps) => {
     const rowCount = props.rowCount ?? DEFAULT_ROW_COUNT
+    const oneClickEditColumns = props.oneClickEditColumns ?? 0
     const provider = React.useMemo(() => {
         const provider = new MemoryDataProvider({
             dataSource: getDataSource(rowCount),
@@ -146,12 +149,12 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                 EntitySetName: 'mem_tasks',
             },
         })
-        provider.setColumns(COLUMNS)
+        provider.setColumns(COLUMNS.map((column, index) => index < oneClickEditColumns ? { ...column, oneClickEdit: true } : column))
         //the row models hand the grid whatever the provider holds, and what it holds is one page: a story
         //asking for ten thousand rows wants them all in play rather than the first fifty
         provider.getPaging().setPageSize(rowCount)
         return provider
-    }, [rowCount])
+    }, [rowCount, oneClickEditColumns])
 
     React.useEffect(() => {
         provider.refresh()

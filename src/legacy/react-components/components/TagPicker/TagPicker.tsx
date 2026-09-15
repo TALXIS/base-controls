@@ -18,6 +18,7 @@ import { useTheme } from '@fluentui/react';
 import { useClassNames } from '@legacy/hooks/useClassNames';
 import { InputErrorMessage } from '@legacy/utilities/components/InputErrorMessage/InputErrorMessage';
 import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
+import { PASSWORD_MANAGER_IGNORE_PROPS } from '@legacy/utilities/passwordManagerProps';
 
 /**  
  * Extented native `ICommandBarItemProps` (https://developer.microsoft.com/en-us/fluentui#/controls/web/commandbar#ICommandBarItemProps) interface to allow showing of buttons only when cursor hovers over the picker.
@@ -387,6 +388,7 @@ export const TagPicker = React.forwardRef<any, ITagPickerProps>((props, ref) => 
                     createGenericItem={props.createGenericItem as ((input: string, ValidationState: ValidationState) => ITag | ISuggestionModel<ITag>) | undefined}
                     onItemSelected={props.onItemSelected as ((selectedItem?: ITag | undefined) => ITag | PromiseLike<ITag> | null) | undefined}
                     inputProps={{
+                        ...PASSWORD_MANAGER_IGNORE_PROPS,
                         ...props.inputProps,
                         readOnly: props.readOnly,
                         placeholder: props.inputProps?.placeholder || '---',

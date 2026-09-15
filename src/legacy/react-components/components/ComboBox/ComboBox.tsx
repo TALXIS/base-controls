@@ -4,6 +4,7 @@ import { ICopyButton, IDeleteButton, IDisabled, IErrorMessage, IFillAvailableSpa
 import { useClassNames } from '@legacy/hooks/useClassNames';
 import { InputButtons } from '@legacy/utilities/components/InputButtons/InputButtons';
 import { getComboBoxStyles } from './styles';
+import { PASSWORD_MANAGER_IGNORE_PROPS } from '@legacy/utilities/passwordManagerProps';
 import ReactDOM from 'react-dom';
 
 export interface IComboBoxProps extends Omit<IComboBoxPropsBase, 'errorMessage' | 'caretDownButtonStyles'>, IReadOnly,
@@ -113,6 +114,7 @@ export const ComboBox = React.forwardRef<HTMLDivElement, IComboBoxProps>((props,
         componentRef={componentRef}
         className={classNames}
         autofill={{
+            ...PASSWORD_MANAGER_IGNORE_PROPS,
             ...props.autofill,
             title: props.autofill?.title ?? props.options?.find(opt => opt.key == props.selectedKey)?.text,
             readOnly: props.readOnly ?? props.disabled,

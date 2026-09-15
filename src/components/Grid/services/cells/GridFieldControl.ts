@@ -112,7 +112,7 @@ export class GridFieldControl {
             SuffixIcon: { raw: null, type: DataTypes.SingleLineText },
             IsPrimaryColumn: { raw: column.isPrimary, type: DataTypes.TwoOptions },
             ShowErrorMessage: { raw: false, type: DataTypes.TwoOptions },
-            AutoFocus: { raw: this._takesInput, type: DataTypes.TwoOptions },
+            AutoFocus: { raw: this._takesInput && !column.oneClickEdit, type: DataTypes.TwoOptions },
             FillAvailableSpace: { raw: true, type: DataTypes.TwoOptions },
             IsInlineNewEnabled: { raw: false, type: DataTypes.TwoOptions },
             EnableTypeSuffix: { raw: false, type: DataTypes.TwoOptions },
