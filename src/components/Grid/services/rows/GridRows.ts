@@ -54,7 +54,8 @@ export class GridRows extends EventEmitter<IGridRowsEvents> {
      * Where this row sits, or `undefined` before AG Grid has placed it.
      *
      * Read from the row node rather than kept: the index is what sorting, filtering and grouping change,
-     * and the node is where AG Grid keeps the answer.
+     * and the node is where AG Grid keeps the answer. Finding that node by record id walks every row the
+     * model holds, so anything handed a node of its own reads `node.rowIndex` instead of asking this.
      */
     public getIndex(record: IRecord): number | undefined {
         return this._services.find('gridApi')?.getRowNode(record.getRecordId())?.rowIndex ?? undefined;

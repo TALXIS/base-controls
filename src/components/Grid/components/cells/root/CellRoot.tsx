@@ -21,7 +21,7 @@ export const CellRoot = (props: IGridCellRootProps) => {
     const cells = useGridService('cells');
     const parentCell = useContext(GridCellContext);
     const colDef = props.colDef!;
-    const cell = useMemo(() => cells.createCell(record, colDef), [cells, record, colDef]);
+    const cell = useMemo(() => cells.createCell(record, colDef, props.node), [cells, record, colDef, props.node]);
 
     useLayoutEffect(() => {
         cells.addCell(cell);

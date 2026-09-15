@@ -1,4 +1,5 @@
 import { ITheme, Theming } from "@legacy";
+import { IRowNode } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 import { IGridCellThemeColors, IGridCellThemeResult } from "./GridCells";
@@ -7,6 +8,7 @@ export interface IGridCellThemeParameters {
     services: IGridServiceLocator;
     record: IRecord;
     columnName: string;
+    node?: IRowNode<IRecord>;
 }
 
 /** The theme one cell is drawn in: the grid's own, unless its column or a hook asked for another. */
@@ -14,11 +16,13 @@ export class GridCellTheme {
     private _services: IGridServiceLocator;
     private _record: IRecord;
     private _columnName: string;
+    private _node?: IRowNode<IRecord>;
 
     constructor(parameters: IGridCellThemeParameters) {
         this._services = parameters.services;
         this._record = parameters.record;
         this._columnName = parameters.columnName;
+        this._node = parameters.node;
     }
 
     public getValue(): ITheme {
@@ -54,8 +58,7 @@ export class GridCellTheme {
     }
 
     private get _isEvenRow(): boolean {
-        //a row AG Grid has not placed yet is drawn unstriped rather than guessed at
-        return (this._services.get('rows').getIndex(this._record) ?? 0) % 2 === 0;
+        return (this._node?.rowIndex ?? 0) % 2 === 0;
     }
 
     private get _settings() {

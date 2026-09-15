@@ -168,7 +168,7 @@ export class GridColumns {
             //TODO: grid specific setting
             suppressMovable: column.isDraggable === false,
             propBag: { column: this._getGridColumn(column) },
-            cellStyle: (params: CellClassParams<IRecord>) => this._getCellStyle(params.data, column.name),
+            cellStyle: (params: CellClassParams<IRecord>) => this._getCellStyle(params, column.name),
             cellRendererParams: this._getCellRendererParameters(column),
             editable: this._getEditorAvailability(column),
             cellEditorParams: this._getCellRendererParameters(column),
@@ -188,13 +188,14 @@ export class GridColumns {
      * Painted on the cell itself rather than on what is drawn inside it, because the cell is the element
      * that fills the row - a cell of a column that did not grow the row is taller than anything it holds.
      */
-    private _getCellStyle(record: IRecord | undefined, columnName: string): CellStyle | undefined {
+    private _getCellStyle(params: CellClassParams<IRecord>, columnName: string): CellStyle | undefined {
+        const record = params.data;
         if (!record) {
             return undefined;
         }
         //its own rather than the rendered cell's: AG Grid asks for this while it builds the cell, which is
         //before the cell that would answer has been drawn and registered
-        const theme = new GridCellTheme({ services: this._services, record: record, columnName: columnName }).getValue();
+        const theme = new GridCellTheme({ services: this._services, record: record, columnName: columnName, node: params.node }).getValue();
         return { backgroundColor: theme.semanticColors.bodyBackground, color: theme.semanticColors.bodyText };
     }
 

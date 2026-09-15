@@ -1,4 +1,4 @@
-import { ColDef } from "@ag-grid-community/core";
+import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { ICommandBarItemProps } from "@fluentui/react";
 import { ITheme } from "@legacy";
 import { ICustomColumnControl, IRecord } from "@talxis/client-libraries";
@@ -136,8 +136,8 @@ export class GridCells {
     }
 
     /** A cell of this grid. `CellRoot` creates the ones that are rendered, and nothing else should. */
-    public createCell(record: IRecord, colDef: ColDef<IRecord>): GridCell {
-        return new GridCell({ services: this._services, record: record, colDef: colDef });
+    public createCell(record: IRecord, colDef: ColDef<IRecord>, node?: IRowNode<IRecord>): GridCell {
+        return new GridCell({ services: this._services, record: record, colDef: colDef, node: node });
     }
 
     /** Registers a cell as rendered. `CellRoot` does this on mount, and nothing else should. */

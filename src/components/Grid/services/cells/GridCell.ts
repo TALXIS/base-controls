@@ -1,4 +1,4 @@
-import { ColDef } from "@ag-grid-community/core";
+import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 import { IGridCellCommands, IGridCellEditable, IGridCellLoading } from "./GridCells";
@@ -11,6 +11,8 @@ export interface IGridCellParameters {
     record: IRecord;
     /** The column AG Grid is drawing, which is what a cell is the cell of. */
     colDef: ColDef<IRecord>;
+    /** The row AG Grid is drawing, where the cell is one being drawn rather than one being asked about. */
+    node?: IRowNode<IRecord>;
 }
 
 //enough to tell two cells apart in a registry, including the same one drawn twice while AG Grid swaps a
@@ -37,7 +39,7 @@ export class GridCell {
         this._record = parameters.record;
         this._colDef = parameters.colDef;
         this._id = `${parameters.record.getRecordId()}_${this.getColumnName()}_${++instanceCount}`;
-        this._theme = new GridCellTheme({ services: parameters.services, record: parameters.record, columnName: this.getColumnName() });
+        this._theme = new GridCellTheme({ services: parameters.services, record: parameters.record, columnName: this.getColumnName(), node: parameters.node });
     }
 
     /** What tells this cell apart from every other one, this render of it included. */
