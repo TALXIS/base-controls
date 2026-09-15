@@ -1,5 +1,5 @@
 import { ITheme, Theming } from "@legacy";
-import { IColumn, IRecord } from "@talxis/client-libraries";
+import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 import { IGridCellThemeColors, IGridCellThemeResult } from "./GridCells";
 
@@ -22,7 +22,7 @@ export class GridCellTheme {
     }
 
     public getValue(): ITheme {
-        const result: IGridCellThemeResult = { colors: this._getDefaultColors() };
+        const result: IGridCellThemeResult = { colors: this._rowColors };
         this._cells.applyCellThemeHooks(result, { record: this._record, columnName: this._columnName });
         if (result.theme) {
             return result.theme;
@@ -33,32 +33,6 @@ export class GridCellTheme {
         return Theming.GenerateThemeV8(primary, background, text);
     }
 
-    /**
-     * What the cell is drawn in before any hook: its row's colours, or the ones its column asked for.
-     *
-     * Legacy: `getCustomFormatting` is how a host coloured cells by value before hooks existed, and a hook
-     * is the way to do it now. This goes when nothing needs it.
-     */
-    private _getDefaultColors(): IGridCellThemeColors {
-        const rowColors = this._rowColors;
-        if (!this._column) {
-            return rowColors;
-        }
-        //the row's theme, not the grid's: a formatting that changes nothing hands back the theme it was
-        //given, and handing it the grid's would paint every striped row in the grid's own surface
-        const formatting = this._record.getColumnInfo(this._columnName).ui.getCustomFormatting(this._rowTheme) ?? {};
-        const background = formatting.backgroundColor || rowColors.background;
-        const isRecoloured = background !== rowColors.background;
-        //a background of its own is taken as emphasis: the text goes to whatever reads on it, and so does
-        //the primary colour unless the column named one itself
-        const contrast = Theming.GetTextColorForBackground(background);
-        return {
-            primary: formatting.primaryColor || (isRecoloured ? contrast : rowColors.primary),
-            background: background,
-            text: formatting.textColor || (isRecoloured ? contrast : rowColors.text),
-        };
-    }
-
     /** The colours of the row this cell is in: the grid's, striped on every other row. */
     private get _rowColors(): IGridCellThemeColors {
         const gridTheme = this._gridTheme;
@@ -67,12 +41,6 @@ export class GridCellTheme {
             background: this._rowBackground,
             text: gridTheme.semanticColors.bodyText,
         };
-    }
-
-    /** The row's colours as a theme, which is what a column's formatting is asked to work from. */
-    private get _rowTheme(): ITheme {
-        const { primary, background, text } = this._rowColors;
-        return Theming.GenerateThemeV8(primary, background, text);
     }
 
     /** What the row this cell is in is drawn on: the grid's surface, or a step off it on every other row. */
@@ -92,10 +60,6 @@ export class GridCellTheme {
 
     private get _settings() {
         return this._services.get('settings');
-    }
-
-    private get _column(): IColumn | undefined {
-        return this._record.getDataProvider().getColumnsMap()[this._columnName];
     }
 
     private get _gridTheme(): ITheme {
