@@ -1,6 +1,7 @@
-import { IColumn, IField, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
+import { IColumn, IControlParameters, ICustomColumnControl, IField, IFieldValidationResult, IRecord } from "@talxis/client-libraries";
+import { merge } from "merge-anything";
 import { Theming } from "@legacy";
-import type { GridCellEditableHook, GridCellLoadingHook, GridCellThemeHook } from "../cells";
+import type { GridCellEditableHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../cells";
 import type { IGridServiceLocator } from "../../services";
 
 /** Where the field's own hooks sit: ahead of everything registered for the grid, which argues with them. */
@@ -32,6 +33,8 @@ export class GridField {
     private _unregisterCellEditableHook?: () => void;
     private _unregisterCellLoadingHook?: () => void;
     private _unregisterCellThemeHook?: () => void;
+    private _unregisterControlHook?: () => void;
+    private _unregisterControlParametersHook?: () => void;
 
     constructor(parameters: IGridFieldParameters) {
         this._record = parameters.record;
@@ -41,6 +44,8 @@ export class GridField {
         this._unregisterCellEditableHook = cells?.registerCellEditableHook(this._onCellEditable, FIELD_HOOK_PRIORITY);
         this._unregisterCellLoadingHook = cells?.registerCellLoadingHook(this._onCellLoading, FIELD_HOOK_PRIORITY);
         this._unregisterCellThemeHook = cells?.registerCellThemeHook(this._onCellTheme, FIELD_HOOK_PRIORITY);
+        this._unregisterControlHook = cells?.registerControlHook(this._onControl, FIELD_HOOK_PRIORITY);
+        this._unregisterControlParametersHook = cells?.registerControlParametersHook(this._onControlParameters, FIELD_HOOK_PRIORITY);
     }
 
     public getRecord(): IRecord {
@@ -88,6 +93,8 @@ export class GridField {
         this._unregisterCellEditableHook?.();
         this._unregisterCellLoadingHook?.();
         this._unregisterCellThemeHook?.();
+        this._unregisterControlHook?.();
+        this._unregisterControlParametersHook?.();
     }
 
     /** The field's word on whether the cell drawing it may be edited, which a cell cannot answer itself. */
@@ -132,6 +139,44 @@ export class GridField {
             background: background,
             text: formatting.textColor || (isRecoloured ? contrast : colors.text),
         };
+    };
+
+    /**
+     * The control the column named for a cell of this field.
+     *
+     * Legacy: naming a control on the column is how a host replaced a cell's control before hooks existed,
+     * and a hook is the way to do it now. It reaches the grid through the data provider, which is no place
+     * for what a cell is drawn with - so it arrives as a hook like everything a consumer would register,
+     * and goes when nothing sets it any more.
+     */
+    private _onControl: GridControlHook = (result, params) => {
+        if (!this._isDrawnBy(params)) {
+            return;
+        }
+        const appliesTo = params.takesInput ? 'editor' : 'renderer';
+        //a column may name one control for drawing and another for input, so it is not simply the first
+        const customControl = this._getField().ui.getCustomControls([result.control])
+            .find(candidate => candidate.appliesTo === 'both' || candidate.appliesTo === appliesTo);
+        if (!customControl) {
+            return;
+        }
+        //merged rather than taken: a custom control that names only a name keeps the default's bindings
+        result.control = merge(result.control, customControl) as Required<ICustomColumnControl>;
+    };
+
+    /**
+     * What the column makes of the parameters a cell of this field is drawn with.
+     *
+     * Legacy, and for the same reason as {@link _onControl}: a control's parameters are not something a
+     * data provider should be deciding, and a hook is where this belongs.
+     */
+    private _onControlParameters: GridControlParametersHook = (result, params) => {
+        if (!this._isDrawnBy(params)) {
+            return;
+        }
+        //written back into what it was handed: the expression builds a bag of its own, and a hook after
+        //this one is given the one the control will be drawn with
+        Object.assign(result, this._getField().ui.getControlParameters({ ...result } as IControlParameters));
     };
 
     /** Whether a cell hook is running for the cell this field is drawn in, rather than for another one. */

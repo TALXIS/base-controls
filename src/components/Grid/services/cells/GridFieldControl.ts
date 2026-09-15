@@ -1,5 +1,4 @@
-import { DataProvider, DataType, DataTypes, IColumn, IControlParameters, ICustomColumnControl, IDataProvider, IDataset, IRecord } from "@talxis/client-libraries";
-import { merge } from "merge-anything";
+import { DataProvider, DataType, DataTypes, IColumn, ICustomColumnControl, IDataProvider, IDataset, IRecord } from "@talxis/client-libraries";
 import { BaseControls } from "@utils";
 import { IGridCellRenderer, IGridCellRendererParameters } from "@components/GridCellRenderer";
 import { IParameters } from "@interfaces";
@@ -19,8 +18,8 @@ export interface IGridFieldControlParameters {
  *
  * Built for a cell and asked about that cell, so nothing here is told which record or column it is talking
  * about. What it draws comes off the field it is bound to; which control draws it, and what that control
- * is handed, is what a module changes through a hook on `GridCells` rather than the grid knowing the
- * feature exists.
+ * is handed, is what a hook on `GridCells` decides - the field's own among them - rather than the grid
+ * knowing the feature exists.
  */
 export class GridFieldControl {
     private _services: IGridServiceLocator;
@@ -70,8 +69,8 @@ export class GridFieldControl {
     }
 
     /**
-     * Which control draws this cell: the column's own where it named one, the grid's renderer otherwise,
-     * and whatever a hook made of that.
+     * Which control draws this cell: the grid's renderer, unless a hook named another - which is how the
+     * column's own control reaches it, the field registering that.
      *
      * The one way in: what a cell renders with, and whether that counts as a custom renderer, are the same
      * question asked twice.
@@ -83,18 +82,14 @@ export class GridFieldControl {
     }
 
     /**
-     * The parameters a control is actually handed: what was built for it, what the record made of that, and
-     * what a hook made of that.
+     * The parameters a control is actually handed: what was built for it, and what the hooks made of that.
      *
-     * The record's expression comes first, so a hook has the last word on a column that overrides its own
-     * parameters.
+     * The field's own hook runs first, so a module or a consumer has the later word on a column that
+     * overrides its own parameters.
      */
     public getFinalControlParameters(parameters: IParameters): IParameters {
-        //legacy, kept for back compat: the record's expression is how a host changed a control's parameters
-        //before hooks existed, and a hook is the way to do it now
-        const overridden = this._record.getColumnInfo(this._columnName).ui.getControlParameters(parameters as IControlParameters);
-        this._cells.applyControlParametersHooks(overridden, this._hookParams);
-        return overridden;
+        this._cells.applyControlParametersHooks(parameters, this._hookParams);
+        return parameters;
     }
 
     private _isCustomRenderer(control: ICustomColumnControl): boolean {
@@ -102,7 +97,7 @@ export class GridFieldControl {
         return this._takesInput || control.name !== BaseControls.GridCellRenderer;
     }
 
-    /** What a cell hands whatever draws it, before the record and the hooks have their say. */
+    /** What a cell hands whatever draws it, before the hooks have their say. */
     private _getCellParameters(control: ICustomColumnControl): IGridCellRendererParameters {
         const column = this._column!;
         const parameters: IGridCellRendererParameters = {
@@ -147,19 +142,11 @@ export class GridFieldControl {
     }
 
     private _getDefaultControl(): Required<ICustomColumnControl> {
-        const control: Required<ICustomColumnControl> = {
+        return {
             name: this._getDefaultControlName(),
             appliesTo: 'both',
             bindings: {}
         };
-        //legacy, kept for back compat: naming a control on the column is how a host replaced a cell's
-        //control before hooks existed, and a hook is the way to do it now
-        const customControls = this._record.getColumnInfo(this._columnName).ui.getCustomControls([control]);
-        const appliesTo = this._takesInput ? 'editor' : 'renderer';
-        //a column may name one control for drawing and another for input, so it is not simply the first
-        const customControl = customControls.find(candidate => candidate.appliesTo === 'both' || candidate.appliesTo === appliesTo);
-        //merged rather than taken: a custom control that names only a name keeps the default's bindings
-        return customControl ? merge(control, customControl) as Required<ICustomColumnControl> : control;
     }
 
     private _getDefaultControlName(): string {
