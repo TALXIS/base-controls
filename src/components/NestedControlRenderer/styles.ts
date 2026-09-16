@@ -4,6 +4,7 @@ const FLEX_STYLE = {
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 1,
+    minWidth: 0
 }
 
 export const getNestedControlStyles = (isBaseControl: boolean) => {
