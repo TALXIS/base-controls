@@ -116,6 +116,15 @@ export const getGridStyles = (theme: ITheme, height?: string | null, rowHeight: 
                 overflow: 'hidden',
                 borderWidth: 0,
             },
+            //AG Grid gives every child of a cell's wrapper the height of a row, which is what a cell that
+            //is only as tall as its row wants. An editor is a child of that wrapper too, and a cell taller
+            //than its row - one of an auto-height column - would draw its editor a row tall and clip the
+            //rest of it
+            //`.ag-cell` in the selector as well: AG Grid's own rule weighs the same without it, and the
+            //one that comes last would win
+            '.ag-cell.ag-cell-inline-editing .ag-cell-wrapper > *': {
+                height: '100%',
+            },
             //every state the grid draws on a cell is an overlay over the cell's body rather than a colour
             //under it: the body carries the cell's own theme, and anything painted beneath it is covered
             //

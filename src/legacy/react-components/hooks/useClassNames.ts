@@ -63,10 +63,20 @@ const getFillAvailableSpaceStyles = () => {
         height: '100%',
         //the text field, and the one a date picker draws inside its own wrapper
         '.ms-TextField, .ms-TextField-wrapper, .ms-TextField-fieldGroup, >div, >div>.ms-TextField': {
-            height: '100%'
+            height: '100%',
+            //a multiline field keeps a minimum for the rows it was asked for, which is taller than the
+            //space a cell of the grid has to give it
+            minHeight: 0
         },
         '&.ms-ComboBox-container .ms-ComboBox, .ms-BasePicker-text': {
             height: '100%'
+        },
+        //a multiline field asks for the height its rows need, which is taller than the space it was given
+        '&.ms-TextField--multiline .ms-TextField-field, .ms-TextField--multiline .ms-TextField-field': {
+            height: '100%',
+            minHeight: 0,
+            //its padding is inside the height it was given, which is all there is
+            boxSizing: 'border-box'
         },
     });
 }

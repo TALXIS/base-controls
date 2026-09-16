@@ -71,6 +71,11 @@ export class GridCell {
         return this._colDef.colId!;
     }
 
+    /** The row AG Grid is drawing this cell in, where the cell is one being drawn rather than asked about. */
+    public getNode(): IRowNode<IRecord> | undefined {
+        return this._node;
+    }
+
 
     /** What this cell is drawn in. */
     public getTheme(): GridCellTheme {

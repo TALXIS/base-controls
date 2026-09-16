@@ -1,7 +1,5 @@
-import { IRecord } from "@talxis/client-libraries";
+import { useEffect } from "react";
 import { useRerender } from "@legacy";
-import { useEventEmitter } from "@hooks/useEventEmitter";
-import { IGridRowsEvents } from "../../../services/rows";
 import { useGridService } from "../../../useGridService";
 import { useIsInsideCellContainer } from "../container/context";
 import { useGridCell } from "../root/context";
@@ -23,17 +21,24 @@ export const RowResizeGrip = (props: IGridRowResizeGripProps) => {
     const { children } = props;
     const cell = useGridCell();
     const hasContainerAbove = useIsInsideCellContainer();
-    const record = cell.getRecord();
-    const rows = useGridService('rows');
+    const gridApi = useGridService('gridApi');
     const components = { ...RowResizeGripComponents, ...props.components };
+    const node = cell.getNode();
     const rerender = useRerender();
 
-    //a height set anywhere else - another cell of the same row being dragged - is this cell's height too
-    useEventEmitter<IGridRowsEvents>(rows, 'onRowHeightChanged', (changed: IRecord) => {
-        if (changed.getRecordId() === record.getRecordId()) {
-            rerender();
-        }
-    });
+    //what a drag starts from is the row's height, and the row is what another cell's drag changed
+    useEffect(() => {
+        const onHeightChanged = () => rerender();
+        node?.addEventListener('heightChanged', onHeightChanged);
+        return () => node?.removeEventListener('heightChanged', onHeightChanged);
+    }, [node]);
+
+    //the row rather than the cell: AG Grid works an auto-height row out from what its cells measure, and
+    //an editor is not one of the cells it measures
+    const onResize = (height: number) => {
+        node?.setRowHeight(height);
+        gridApi?.onRowHeightChanged();
+    };
 
     //a container above this means the grip was drawn inside one, and the drag grows this element while
     //the container has already been sized to what holds it: the container has to be the one inside
@@ -44,8 +49,8 @@ export const RowResizeGrip = (props: IGridRowResizeGripProps) => {
         return <>{children}</>;
     }
     return components.onRenderRowResizeGrip({
-        height: rows.getHeight(record),
-        onResizeEnd: height => rows.setHeight(record, height),
+        height: node?.rowHeight ?? undefined,
+        onResize: onResize,
         children: children,
     });
 };

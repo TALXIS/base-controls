@@ -3,8 +3,6 @@ import { EventEmitter, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 
 export interface IGridRowsEvents {
-    /** A row was given a height of its own. */
-    onRowHeightChanged: (record: IRecord, height: number) => void;
     /** Which rows the user is at changed: the pointer moved, focus moved, or a selection was made. */
     onActiveRowsChanged: () => void;
 }
@@ -16,7 +14,6 @@ export interface IGridRowsParameters {
 /** What is true of a row rather than of one of its cells. */
 export class GridRows extends EventEmitter<IGridRowsEvents> {
     private _services: IGridServiceLocator;
-    private _heights: Record<string, number> = {};
     private _hoveredRecordId?: string;
     private _focusedRecordId?: string;
     private _selectedRecordIds = new Set<string>();
@@ -26,22 +23,14 @@ export class GridRows extends EventEmitter<IGridRowsEvents> {
         this._services = parameters.services;
         this._services.whenAvailable('gridApi', gridApi => this._onGridApiAvailable(gridApi));
     }
-    
+
     public isActive(record: IRecord): boolean {
         const recordId = record.getRecordId();
         return recordId === this._hoveredRecordId || recordId === this._focusedRecordId || this._selectedRecordIds.has(recordId);
     }
 
-    public getHeight(record: IRecord): number {
-        return this._heights[record.getRecordId()] ?? this._settings.getDefaultRowHeight();
-    }
     public getIndex(record: IRecord): number | undefined {
         return this._services.find('gridApi')?.getRowNode(record.getRecordId())?.rowIndex ?? undefined;
-    }
-
-    public setHeight(record: IRecord, height: number): void {
-        this._heights[record.getRecordId()] = height;
-        this.dispatchEvent('onRowHeightChanged', record, height);
     }
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
@@ -79,9 +68,5 @@ export class GridRows extends EventEmitter<IGridRowsEvents> {
             this._focusedRecordId = recordId;
         }
         this.dispatchEvent('onActiveRowsChanged');
-    }
-
-    private get _settings() {
-        return this._services.get('settings');
     }
 }

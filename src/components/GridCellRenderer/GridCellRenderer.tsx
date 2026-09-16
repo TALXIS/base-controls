@@ -23,7 +23,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const alignment = ColumnAlignment.raw ?? 'left';
     const value = record.getValue(column.name);
     const formattedValue = record.getFormattedValue(column.name);
-    const isMultiline = isMultilineDataType(dataType);
+    const isMultiline = !!column.autoHeight;
     const styles = useMemo(() => getGridCellRendererStyles(alignment, isMultiline), [alignment, isMultiline]);
     const components = { ...GridCellRendererComponents, ...props.components };
 
@@ -90,18 +90,6 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
         {renderValue()}
         {SuffixIcon?.raw && components.onRenderSuffixIcon({ iconName: SuffixIcon.raw })}
     </div>;
-};
-
-const isMultilineDataType = (dataType?: string): boolean => {
-    switch (dataType) {
-        case DataTypes.SingleLineTextArea:
-        case DataTypes.Multiple: {
-            return true;
-        }
-        default: {
-            return false;
-        }
-    }
 };
 
 const getHref = (dataType: string, value: any): string => {

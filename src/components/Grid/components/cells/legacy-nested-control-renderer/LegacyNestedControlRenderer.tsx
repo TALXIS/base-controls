@@ -29,7 +29,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const { controlProps, control } = props;
     const { context, parameters } = controlProps;
     const cell = useGridCell();
-    const rows = useGridService('rows');
+    const settings = useGridService('settings');
     const record = cell.getRecord();
     const column = record.getDataProvider().getColumnsMap()[cell.getColumnName()];
     const cellTheme = cell.getTheme();
@@ -80,7 +80,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                             mode: Object.create(controlProps.context.mode, {
                                 allocatedHeight: {
                                     //the row as the grid has it, which is what a resized one was dragged to
-                                    value: rows.getHeight(record) - 4
+                                    value: (cell.getNode()?.rowHeight ?? settings.getDefaultRowHeight()) - 4
                                 },
                             }),
                             parameters: controlParameters,
