@@ -1,3 +1,4 @@
+import { useGridCell } from "../root/context";
 import { useGridFieldControl } from "../field-control/context";
 import { LegacyNestedControlRenderer } from "../legacy-nested-control-renderer";
 import { ControlRendererComponents, IGridControlRendererComponents } from "./components";
@@ -13,6 +14,7 @@ export interface IGridControlRendererProps {
  * one. Which of the two paths a cell takes is that control's answer rather than this component's.
  */
 export const ControlRenderer = (props: IGridControlRendererProps) => {
+    const cell = useGridCell();
     const control = useGridFieldControl();
     const components = { ...ControlRendererComponents, ...props.components };
     const controlProps = control.getControlProps();
@@ -20,7 +22,11 @@ export const ControlRenderer = (props: IGridControlRendererProps) => {
     //a column that named a control of its own, and a cell taking input, go through the nested-control
     //registry - the only thing that resolves a control by name
     if (control.isCustomRendererEnabled()) {
-        return <LegacyNestedControlRenderer controlProps={controlProps} control={control} />;
+        //keyed: `AutoFocus` decides a control's first render, so entering a cell has to draw a new control
+        return <LegacyNestedControlRenderer
+            key={`${cell.isBeingEdited()}`}
+            controlProps={controlProps}
+            control={control} />;
     }
     return components.onRenderValue(controlProps);
 };

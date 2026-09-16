@@ -150,7 +150,7 @@ export const Duration = (props: IDuration) => {
                 value: valueExtractor(value?.text ?? '') as any
             });
             //a duration picked from the list is the whole of the input: the editor has nothing left to take
-            parameters.Cell?.raw?.closeEditor();
+            parameters.Cell?.raw?.finishEditing();
         }
     });
 

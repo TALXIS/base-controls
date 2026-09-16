@@ -25,7 +25,8 @@ export interface IGridCellRendererParameters extends IParameters {
         raw: IColumn;
     }
     /**
-     * The cell this is drawn in, which is what it may do there and what it offers.
+     * The cell this is drawn in, which is what it may do there and what it offers - `finishEditing()` above
+     * all, which says the control has nothing more to take.
      *
      * `raw` is `undefined` while the cell is being drawn for the first time, since the grid is told about a
      * cell once it is on screen.

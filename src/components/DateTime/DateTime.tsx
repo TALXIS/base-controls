@@ -35,7 +35,7 @@ export const DateTime = (componentProps: IDateTime) => {
         date.set(value!);
         //a date-only field is finished once a day is picked, and this is the only path that says so: a
         //date and time one keeps its calendar open for the time, which is why it does not come through here
-        parameters.Cell?.raw?.closeEditor();
+        parameters.Cell?.raw?.finishEditing();
     }, 0);
 
     /** What the picker's own parts read: the calendar is one component, handed the control rather than props. */

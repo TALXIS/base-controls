@@ -170,7 +170,7 @@ export class GridColumns {
             cellRendererParams: this._getCellRendererParameters(column),
             editable: this._getEditorAvailability(column),
             cellEditorParams: this._getCellRendererParameters(column),
-            suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheInputsOwn(params),
+            suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeader,
             cellRenderer: FieldCellRenderer,
@@ -206,28 +206,39 @@ export class GridColumns {
     }
 
     /**
-     * Whether a key press belongs to the input it was typed in rather than to the grid.
+     * Whether a key press belongs to the control it was pressed in rather than to the grid.
+     *
+     * The one rule for it. What starts and ends an edit is `GridEditing`'s; this is every other key, for a
+     * control the user is already in.
      *
      * A cell whose control takes input without an editor being opened - a one-click-edit column, or a
-     * consumer's own cell - is focused inside an input AG Grid does not know about, so the gestures it
-     * would read as grid commands are the caret's: selecting the text rather than every cell, copying the
-     * value rather than the range, walking the characters rather than the columns. What moves between
-     * cells - tab, enter, escape - stays the grid's.
+     * consumer's own cell - is focused inside something AG Grid does not know about, so the gestures it
+     * would read as grid commands are that control's: selecting the text rather than every cell, copying
+     * the value rather than the range, walking the characters rather than the columns, and pressing a
+     * toggle rather than moving off it. What moves between cells - tab, escape, and enter out of an input
+     * - stays the grid's.
      */
-    private _isKeyTheInputsOwn(params: SuppressKeyboardEventParams<IRecord>): boolean {
-        //an open editor is a case AG Grid already knows to keep out of
+    private _isKeyTheControlsOwn(params: SuppressKeyboardEventParams<IRecord>): boolean {
+        const target = params.event.target as HTMLElement | null;
+        const key = params.event.key;
+        //what a button answers with: the browser makes a click of it, which is the only way to work a toggle
+        //or a checkbox from the keyboard - an editor drawn around one included, where the grid would
+        //otherwise close the editor over a value the user was trying to change
+        if (target?.matches('button, [role="switch"], [role="checkbox"], [role="radio"]')) {
+            return key === 'Enter' || key === ' ';
+        }
+        //an input with an editor around it is a case AG Grid already knows to keep out of
         if (params.editing) {
             return false;
         }
-        const target = params.event.target as HTMLElement | null;
         if (!target?.matches('input, textarea, [contenteditable="true"]')) {
             return false;
         }
-        const key = params.event.key;
         if (params.event.ctrlKey || params.event.metaKey) {
             return ['a', 'c', 'v', 'x'].includes(key.toLowerCase());
         }
-        return ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Backspace', 'Delete'].includes(key);
+        //space included: it selects the row everywhere else, and is a character where an input has the focus
+        return [' ', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Backspace', 'Delete'].includes(key);
     }
 
     /** What AG Grid compares to decide whether a cell needs redrawing. */
@@ -275,7 +286,7 @@ export class GridColumns {
     /** What a cell needs to draw a value beyond the record AG Grid hands it. */
     private _getCellRendererParameters(column: IColumn): IGridCellRendererParams {
         //a one-click-edit column takes input without ever entering edit mode, so its renderer is an editor
-        return { editing: !!column.oneClickEdit };
+        return { takesInput: !!column.oneClickEdit };
     }
 
     private get _cells() {

@@ -12,6 +12,7 @@ import { GridSettings } from "./services/settings";
 import { GridRows } from "./services/rows";
 import { GridColumns } from "./services/columns";
 import { GridCells } from "./services/cells";
+import { GridEditing } from "./services/editing";
 import { GridKeyboard } from "./services/keyboard";
 import { GridColumnHeaderParts } from "./services/column-header";
 import { GridColumnLayout } from "./services/column-layout";
@@ -67,6 +68,7 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     const cells = new GridCells({ services });
     const rows = new GridRows({ services });
     const keyboard = new GridKeyboard({ services });
+    const editing = new GridEditing({ services });
     const columnHeader = new GridColumnHeaderParts({ services });
     //both wait for an api and then talk only to it, so nothing has to be registered before them - and
     //being ahead of `AgGridModel` is what puts their listeners on the grid before it pushes anything
@@ -76,6 +78,7 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     services.register('cells', () => cells);
     services.register('rows', () => rows);
     services.register('keyboard', () => keyboard);
+    services.register('editing', () => editing);
     services.register('columnHeader', () => columnHeader);
     services.register('columnLayout', () => columnLayout);
     services.register('overlays', () => overlays);

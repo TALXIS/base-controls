@@ -44,7 +44,7 @@ export const OptionSet = (props: IOptionSet) => {
         });
         //choosing is the whole of the input here: an editor left open over the option just picked is one
         //the user has to dismiss for nothing
-        parameters.Cell?.raw?.closeEditor();
+        parameters.Cell?.raw?.finishEditing();
     };
 
     const componentProps = onOverrideComponentProps({

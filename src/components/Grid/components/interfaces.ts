@@ -4,12 +4,12 @@ import { IRecord } from "@talxis/client-libraries";
 /** What this grid adds to what AG Grid hands a cell, and the whole of what `cellRendererParams` builds. */
 export interface IGridCellRendererParams {
     /**
-     * Whether the control takes input rather than only drawing the value.
+     * Whether the cell draws a control the user can type in rather than the value it holds.
      *
      * What a one-click-edit column's renderer says of itself, its control being the cell: an editor takes
      * input by being one, and says nothing.
      */
-    editing?: boolean;
+    takesInput?: boolean;
 }
 
 /** What AG Grid hands whatever renders a cell, plus the above. */
