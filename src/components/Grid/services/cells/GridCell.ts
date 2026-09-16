@@ -92,6 +92,16 @@ export class GridCell {
         return this._editing;
     }
 
+    /**
+     * Closes the editor over this cell, keeping what was written in it.
+     *
+     * For a control that finishes on a choice rather than on a blur - an option, a date, a duration - which
+     * would otherwise leave its editor open over the value it has already reported.
+     */
+    public closeEditor(): void {
+        this._services.find('gridApi')?.stopEditing();
+    }
+
     /** What draws this cell's value, once {@link createControl} has made one. */
     public getControl(): GridFieldControl | undefined {
         return this._control;

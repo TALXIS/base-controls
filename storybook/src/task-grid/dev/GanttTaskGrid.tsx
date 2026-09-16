@@ -1,9 +1,7 @@
 import React from 'react'
 import { Stack, Text, initializeIcons } from '@fluentui/react'
 import {
-    Marker,
     MemoryChecklistStrategy,
-    MemoryGanttMarkersStrategy,
     MemoryLookupManyDataProviderFactory,
     MemoryProjectStrategy,
     MemoryTaskDependencyStrategy,
@@ -12,16 +10,8 @@ import {
     MemoryTemplateDataProvider,
     MemoryUserQueryStrategy,
     TaskGrid,
-    MilestoneMarker,
     createChecklistModule,
     createDependenciesModule,
-    createGanttMarkersModule,
-    createGanttModule,
-    createGanttSelectionBoxModule,
-    createGanttTaskCreateModule,
-    createGanttTaskDraggingModule,
-    createGanttTaskTooltipModule,
-    createGanttWeekendsModule,
     createLookupManyModule,
     createProjectModule,
     createTemplateModule,
@@ -52,7 +42,6 @@ initializeIcons()
 
 const START_DATE_COL = 'scheduledstart'
 const END_DATE_COL = 'scheduledend'
-const STATUS_CODE_COL = 'statuscode'
 
 const ALL_TASKS: ISavedQuery = {
     id: '00000000-0000-0000-0000-00000000dev1',
@@ -99,11 +88,11 @@ export interface IGanttTaskGridProps {
 }
 
 /**
- * The memory Task Grid with the gantt module registered — the timeline beside the grid.
+ * The memory Task Grid the gantt module is developed against, with the module itself left out for now.
  *
- * Scratch story: the fixtures already carry start, end and percent-complete columns, so the module only
- * has to be told which ones they are. The project module supplies the span the project markers sit at, and
- * the Gantt's own markers module draws them — plus today, and one milestone of its own.
+ * Everything the timeline needs is still here - the fixtures carry start, end and percent-complete columns,
+ * and the project module supplies the span the project markers sit at - so registering `onGetGanttModule`
+ * again is what brings the chart back.
  *
  * `count` swaps the fixtures for a generated dataset, through the same generator the large-dataset story
  * uses so the two are comparable. Generation sits inside `onInitialize`, behind the grid's own loading
@@ -208,42 +197,6 @@ export const GanttTaskGrid = (props: IGanttTaskGridProps = {}) => {
                             return source && MemoryLookupManyDataProviderFactory.create({ source, services })
                         },
                         services,
-                    }),
-                    onGetGanttModule: ({ services }) => createGanttModule({
-                        fieldMapping: {
-                            startDate: START_DATE_COL,
-                            endDate: END_DATE_COL,
-                            percentComplete: PERCENT_COMPLETE_COL,
-                            statusCode: STATUS_CODE_COL,
-                        },
-                        services,
-                        onGetModules: ({ services }) => ({
-                            markers: createGanttMarkersModule({
-                                services,
-                                todayMarker: { enabled: true },
-                                projectMarkers: { enabled: true },
-                                strategy: new MemoryGanttMarkersStrategy({
-                                    services,
-                                    markers: [{
-                                        text: 'Beta cutoff',
-                                        start_date: new Date(2026, 0, 15),
-                                        color: 'rgb(136, 23, 152)',
-                                    }],
-                                }),
-                                //what a marker looks like is decided here: ours are diamonds, the grid's
-                                //own stay chips
-                                components: {
-                                    onRenderMarker: (props) => props.id.toString().startsWith('custom')
-                                        ? <MilestoneMarker {...props} />
-                                        : <Marker {...props} />,
-                                },
-                            }),
-                            taskCreate: createGanttTaskCreateModule({ services }),
-                            taskDragging: createGanttTaskDraggingModule({ services }),
-                            selectionBox: createGanttSelectionBoxModule({ services }),
-                            taskTooltip: createGanttTaskTooltipModule({ services }),
-                            weekends: createGanttWeekendsModule({ services }),
-                        }),
                     }),
                     onGetProjectModule: ({ services }) => createProjectModule({
                         strategy: new MemoryProjectStrategy({

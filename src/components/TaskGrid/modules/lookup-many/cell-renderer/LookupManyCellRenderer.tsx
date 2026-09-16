@@ -4,7 +4,7 @@ import AsyncSelect from "react-select/async";
 import { IGridCellParams } from "@components/Grid";
 import { ColorfulLookupMany, ILookupManyProps, LookupMany, PeopleLookupMany } from "@components/TaskGrid/modules/lookup-many/components";
 import { ThemeProvider } from "@fluentui/react";
-import { useGridCell, useGridService } from "@components/Grid";
+import { useGridService } from "@components/Grid";
 
 enum ControlName {
     LookupMany = 'LookupMany',
@@ -36,7 +36,9 @@ export const LookupManyCellRenderer = (props: IGridCellParams) => {
     const provider = useTaskDataProvider();
     const isNavigationEnabled = useGridService('settings').isNavigationEnabled();
     const value: ComponentFramework.EntityReference[] | undefined = record.getValue(props.colDef!.colId!) as ComponentFramework.EntityReference[] | undefined;
-    const isEditable = useGridCell().isEditable();
+    //asked of the column and the record rather than of a cell: this is the column's `cellRenderer`, so
+    //there is no `Grid.CellRoot` above it and no cell to ask
+    const isEditable = !!column.isEditable && record.getColumnInfo(column.name).security.editable;
 
     const onSelectionChange = (selectedRecords: ComponentFramework.EntityReference[]) => {
         record.setValue(props.colDef!.colId!, selectedRecords);

@@ -1,3 +1,4 @@
+import type { GridCell } from "@components/Grid";
 import { IProperty, ITwoOptionsProperty } from "./property";
 
 export interface IParameters {
@@ -33,4 +34,12 @@ export interface IBaseParameters extends IParameters {
      * with. Unset, the control is the height it was allocated, which is what a form gives it.
      */
     FillAvailableSpace?: Omit<ITwoOptionsProperty, 'attributes'>;
+    /**
+     * The grid cell this control is drawn in, where a grid is drawing it.
+     *
+     * What the cell knows about itself is the control's to use - closing the editor over it, above all.
+     * `undefined` outside a grid, and while a cell is drawn for the first time: the grid is told about a
+     * cell once it is on screen.
+     */
+    Cell?: { raw: GridCell | undefined };
 }

@@ -2,6 +2,7 @@ export * from './Grid';
 export * from './namespace';
 export * from './useGridService';
 export * from './components';
+export * from './services/cells';
 export * from './services/rows';
 export * from './services/fields';
 export * from './interfaces';

@@ -149,6 +149,8 @@ export const Duration = (props: IDuration) => {
                 //any is needed here because we can return string in case of error values
                 value: valueExtractor(value?.text ?? '') as any
             });
+            //a duration picked from the list is the whole of the input: the editor has nothing left to take
+            parameters.Cell?.raw?.closeEditor();
         }
     });
 

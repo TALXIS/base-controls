@@ -4,6 +4,7 @@ import { IGridCellRenderer, IGridCellRendererParameters } from "@components/Grid
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
 import { GridField } from "../fields";
+import { GridCell } from "./GridCell";
 
 export interface IGridFieldControlParameters {
     services: IGridServiceLocator;
@@ -106,6 +107,7 @@ export class GridFieldControl {
             CellType: { raw: this._takesInput ? 'editor' : 'renderer' },
             EnableNavigation: { raw: this._isNavigationSupported(), type: DataTypes.TwoOptions },
             Column: { raw: column },
+            Cell: { raw: this._cell },
             Dataset: { raw: this._provider as unknown as IDataset },
             Record: { raw: this._record },
             PrefixIcon: { raw: null, type: DataTypes.SingleLineText },
@@ -196,6 +198,11 @@ export class GridFieldControl {
      */
     private get _column(): IColumn | undefined {
         return this._record.getDataProvider().getColumnsMap()[this._columnName];
+    }
+
+    /** The cell this draws, which the grid knows by the field it is bound to. */
+    private get _cell(): GridCell | undefined {
+        return this._cells.getCell(this._record, this._columnName);
     }
 
     private get _hookParams() {
