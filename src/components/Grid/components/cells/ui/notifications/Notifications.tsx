@@ -6,5 +6,5 @@ export interface ICellNotificationsProps {
     column: IColumn;
 }
 
-/** What a cell has to say about its field. A stub: it draws nothing yet. */
+/** What a cell has to say about its field. */
 export const Notifications = (_props: ICellNotificationsProps) => null;

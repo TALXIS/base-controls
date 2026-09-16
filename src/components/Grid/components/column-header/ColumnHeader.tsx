@@ -7,19 +7,13 @@ import { getColumnHeaderContextualMenuStyles, getColumnHeaderStyles } from './st
 
 export interface IColumnHeader extends IHeaderParams { }
 
-/**
- * A column's header: its name, what the modules draw beside it, and the menu they offer for it.
- *
- * Nothing here knows what sorting, filtering, grouping or totals are. A header on a grid with none of
- * them registered shows a name and opens nothing.
- */
+/** A column's header: its name, what the modules draw beside it, and the menu they offer for it. */
 export const ColumnHeader = (props: IColumnHeader) => {
     const columnHeaderParts = useGridService('columnHeader');
     const filtering = useGridService('filtering');
     const theme = useTheme();
     const colDef = props.column.getColDef();
-    //what the grid worked out about the column travels on the definition, which is what AG Grid hands a
-    //header - there is no second column object to reconcile with it
+    //what the grid worked out about the column travels on the definition
     const column = colDef.propBag?.column;
     const [menuItems, setMenuItems] = React.useState<IContextualMenuItem[] | null>(null);
     const buttonRef = React.useRef<HTMLDivElement>(null);
@@ -29,8 +23,7 @@ export const ColumnHeader = (props: IColumnHeader) => {
     const adornments = column ? columnHeaderParts.getAdornments(column) : [];
     const prefixes = adornments.filter(adornment => adornment.placement === 'prefix');
     const suffixes = adornments.filter(adornment => adornment.placement === 'suffix');
-    //what the adornments add to the name, so a totalled column reads as "Estimate (Sum)". The tooltip
-    //only: the header shows the column's own name, which is what the width was chosen for
+    //what the adornments add to the name, so a totalled column reads as "Estimate (Sum)".
     const titles = adornments.map(adornment => adornment.title).filter(Boolean);
     const title = titles.length ? `${colDef.headerName} (${titles.join(', ')})` : colDef.headerName;
 
@@ -85,7 +78,7 @@ const preventDismissOnEvent = (e: Event | React.MouseEvent<Element, MouseEvent> 
     if (target?.classList?.contains('ag-body-viewport') || target?.classList?.contains('ag-body-vertical-scroll-viewport')) {
         return true;
     }
-    //ios outputs horizontal scroll if focused in callout btn which would result in dismiss of callout
+    //ios outputs horizontal scroll if focused in callout btn.
     if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
         return true;
     }

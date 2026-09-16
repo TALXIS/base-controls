@@ -7,22 +7,16 @@ export interface IGridControlRendererProps {
     components?: Partial<IGridControlRendererComponents>;
 }
 
-/**
- * What draws a cell's value.
- *
- * Reads the control it is drawn under, so it belongs inside a `Grid.FieldControl`, which is what creates
- * one. Which of the two paths a cell takes is that control's answer rather than this component's.
- */
+/** What draws a cell's value. */
 export const ControlRenderer = (props: IGridControlRendererProps) => {
     const cell = useGridCell();
     const control = useGridFieldControl();
     const components = { ...ControlRendererComponents, ...props.components };
     const controlProps = control.getControlProps();
 
-    //a column that named a control of its own, and a cell taking input, go through the nested-control
-    //registry - the only thing that resolves a control by name
+    //a column that named a control of its own
     if (control.isCustomRendererEnabled()) {
-        //keyed: `AutoFocus` decides a control's first render, so entering a cell has to draw a new control
+        //keyed: `AutoFocus` decides a control's first render
         return <LegacyNestedControlRenderer
             key={`${cell.isBeingEdited()}`}
             controlProps={controlProps}

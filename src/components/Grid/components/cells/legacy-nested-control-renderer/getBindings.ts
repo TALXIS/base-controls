@@ -13,7 +13,7 @@ export interface IBindingsParameters {
     onNotifyOutputChanged: (value: any) => void;
 }
 
-/** What a nested control is bound to: the cell's value, what the grid tells every control, and its own. */
+/** What a nested control is bound to */
 export const getBindings = (parameters: IBindingsParameters): { [name: string]: IBinding } => {
     const { record, column, control, formattedValue, enableNavigation, onNotifyOutputChanged } = parameters;
     //the field's own answer, which is what the cell draws its own mark from as well
@@ -54,7 +54,7 @@ export const getBindings = (parameters: IBindingsParameters): { [name: string]: 
     return bindings;
 };
 
-/** The value in the shape PCF typings promise, which is not always the shape a record holds it in. */
+/** The value in the shape PCF typings promise. */
 const getControlValue = (column: IColumn, value: any): any => {
     switch (column.dataType) {
         //getValue always returns string for TwoOptions

@@ -6,7 +6,7 @@ export interface ISortIconProps {
     descending: boolean;
 }
 
-/** The replaceable parts of sorting. Override through `createSortingModule({ components })`. */
+/** The replaceable parts of sorting. */
 export interface IGridSortingComponents {
     /** What a sorted column shows in its header. */
     onRenderSortIcon: (props: ISortIconProps) => JSX.Element;

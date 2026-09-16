@@ -1,4 +1,4 @@
-/** Every localizable string this module renders. Override any subset through its `labels` option. */
+/** Every localizable string this module renders. */
 export interface IGridAggregationLabels {
     totalNone: string;
     totalAverage: string;

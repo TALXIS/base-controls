@@ -11,6 +11,5 @@ export * from './labels';
 export * from './modules';
 export * from './services';
 export type { IGridColDefPropBag, IGridColumn } from './services/columns';
-//re-exported so a caller overriding `onRenderAgGrid` renders the same copy this package registered its
-//AG Grid modules with: a second copy cannot see that registry and renders nothing at all
+//a second copy of AG Grid cannot see the module registry this one wrote to
 export { AgGridReact } from '@ag-grid-community/react';

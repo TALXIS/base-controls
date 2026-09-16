@@ -13,8 +13,7 @@ export const getFieldErrorStyles = (theme: ITheme) => mergeStyleSets({
         alignItems: 'center',
         paddingLeft: 5,
         paddingRight: 5,
-        //first, whichever edge the column reads from: what the record refuses is the first thing about a
-        //cell rather than a mark after its value
+        //first, whichever edge the column reads from
         order: 0,
     },
     icon: {

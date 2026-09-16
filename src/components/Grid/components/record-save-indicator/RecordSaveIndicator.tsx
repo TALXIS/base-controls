@@ -12,7 +12,7 @@ export interface IRecordSaveIndicatorProps {
     status: IRecordSaveStatus;
 }
 
-/** What happened to a record the grid saved: that it is saving, that it succeeded, or why it failed. */
+/** What happened to a record the grid saved. */
 export const RecordSaveIndicator = (props: IRecordSaveIndicatorProps) => {
     const { record, status } = props;
     const rootRef = useRef<HTMLDivElement>(null);

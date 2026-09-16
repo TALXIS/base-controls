@@ -16,16 +16,11 @@ export interface IGridFilteringEvents {
 }
 
 export interface IGridFilteringParameters {
-    /** This module's own locator, which is what everything inside it reaches through. */
+    /** This module's own locator. */
     services: IGridFilteringServiceLocator;
 }
 
-/**
- * Filtering the grid by a column.
- *
- * The dataset holds the filter; this drives it, says what a column's menu offers, and owns the callout the
- * menu opens — including whether it is open, so the grid never has to know about a two-step.
- */
+/** Filtering the grid by a column. */
 export class GridFiltering {
     private _services: IGridFilteringServiceLocator;
     private _filtering: Filtering;
@@ -88,7 +83,7 @@ export class GridFiltering {
         this.events.dispatchEvent('onFilterClosed');
     }
 
-    /** Puts `filter` on the definitions, which the grid itself no longer knows to set. */
+    /** Puts `filter` on the definitions. */
     public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
         for (const colDef of columnDefs) {
             const columnName = colDef.colId ?? colDef.field;

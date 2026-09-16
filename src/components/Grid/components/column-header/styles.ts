@@ -21,7 +21,7 @@ export const getColumnHeaderStyles = (theme: ITheme, alignment: IAlignment) => {
             overflow: 'hidden',
             alignItems: 'center',
             justifyContent: getJustifyContent(alignment),
-            //a right-aligned column reads outwards from its edge, so the name follows what a module drew
+            //a right-aligned column reads outwards from its edge
             order: alignment === 'right' ? 2 : undefined
         },
         columnDisplayNameText: {
@@ -42,8 +42,7 @@ export const getColumnHeaderStyles = (theme: ITheme, alignment: IAlignment) => {
 export const getColumnHeaderContextualMenuStyles = (theme: ITheme) => {
     return mergeStyleSets({
         menu: {
-            //what a column is already sorted or totalled by is a checked entry, and Fluent only marks it
-            //with an icon the entry's own icon has taken
+            //Fluent marks a checked entry with an icon the entry's own icon has taken
             '.ms-ContextualMenu-link.is-checked': {
                 backgroundColor: theme.semanticColors.buttonBackgroundHovered,
                 fontWeight: 600

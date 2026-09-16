@@ -11,25 +11,13 @@ import { GridCell } from "./GridCell";
 export interface IGridCellHookParameters {
     record: IRecord;
     columnName: string;
-    /** Whether the control takes input rather than only drawing the value. */
     takesInput: boolean;
 }
 
-/**
- * A hook over which control draws a cell.
- *
- * Handed the control the column resolved to and replaces `result.control` to draw the cell with another.
- * A control other than `GridCellRenderer` is what makes a cell go through the nested-control registry.
- */
+/** A hook over which control draws a cell. */
 export type GridControlHook = (result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters) => void;
 
-/**
- * A hook over the parameters the control drawing a cell is handed.
- *
- * Mutates them, and reaches the control itself rather than the wrapper around it: the cell renderer's own
- * parameters on the native path, and the nested control's - not its `ControlName` and `Bindings` - on the
- * other.
- */
+/** A hook over the parameters the control drawing a cell is handed. */
 export type GridControlParametersHook = (result: IParameters, params: IGridCellHookParameters) => void;
 
 /** The three colours a cell's theme is generated from. */
@@ -41,26 +29,13 @@ export interface IGridCellThemeColors {
 
 /** The theme a cell is drawn in, as the hooks leave it. */
 export interface IGridCellThemeResult {
-    /**
-     * The colours the cell's theme is generated from. All three are always set, so a hook changes the one
-     * it cares about and the rest stay as whatever decided them.
-     */
+    /** The colours the cell's theme is generated from. */
     colors: IGridCellThemeColors;
-    /**
-     * A theme to draw the cell in instead of generating one, which wins over `colors`.
-     *
-     * Hand back the same instance for the same theme where you can: what a cell's theme reaches its
-     * content through is cached on the theme object.
-     */
+    /** A theme to draw the cell in instead of generating one. */
     theme?: ITheme;
 }
 
-/**
- * A hook over the theme a cell is drawn in.
- *
- * Edit `result.colors` to recolour the cell, or set `result.theme` for one the three colours cannot
- * express. Runs per cell per render, so keep it cheap.
- */
+/** A hook over the theme a cell is drawn in. */
 export type GridCellThemeHook = (result: IGridCellThemeResult, params: { record: IRecord; columnName: string }) => void;
 
 /** Whether a cell may be edited, as the hooks leave it. */
@@ -77,50 +52,26 @@ export interface IGridCellLoading {
 
 /** What a cell offers to do, as the hooks leave it. */
 export interface IGridCellCommands {
-    /** What the command bar draws. Empty, so a cell shows none until something adds one. */
+    /** What the command bar draws. */
     items: ICommandBarItemProps[];
-    /**
-     * The ones that live in the overflow menu however much room the cell has.
-     *
-     * A menu is built only when it is opened, so a command put here costs a cell nothing until someone
-     * asks for it - which is what to reach for when a cell offers more than a row has room to draw.
-     */
+    /** The ones that live in the overflow menu however much room the cell has. */
     overflowItems: ICommandBarItemProps[];
 }
 
-/**
- * A hook over the commands a cell offers.
- *
- * Handed the list so far and mutates it. Runs for every cell on every render, so add from what is already
- * in hand rather than fetching here - and give each item a `key` that means the same thing next render.
- */
+/** A hook over the commands a cell offers. */
 export type GridCellCommandsHook = (result: IGridCellCommands, params: { record: IRecord; columnName: string }) => void;
 
-/**
- * A hook over whether a cell is waiting.
- *
- * Handed the answer so far and mutates it. Runs for every cell on every render, so answer from what is
- * already in hand rather than starting the fetch from inside it.
- */
+/** A hook over whether a cell is waiting. */
 export type GridCellLoadingHook = (result: IGridCellLoading, params: { record: IRecord; columnName: string }) => void;
 
-/**
- * A hook over whether a cell may be edited.
- *
- * Handed the answer so far and mutates it. What the column said is not its to argue with: a column that
- * cannot be edited is `editable: false` on its definition, and a cell of one never asks.
- */
+/** A hook over whether a cell may be edited. */
 export type GridCellEditableHook = (result: IGridCellEditable, params: { record: IRecord; columnName: string }) => void;
 
 export interface IGridCellsParameters {
     services: IGridServiceLocator;
 }
 
-/**
- * Every cell the grid has on screen, and what a module changes about all of them.
- *
- * What any single cell shows is its own `GridFieldControl`'s, which runs the hooks registered here.
- */
+/** Every cell the grid has on screen. */
 export class GridCells {
     private _services: IGridServiceLocator;
     private _renderedCells = new Map<string, GridCell>();
@@ -135,12 +86,12 @@ export class GridCells {
         this._services = parameters.services;
     }
 
-    /** A cell of this grid. `CellRoot` creates the ones that are rendered, and nothing else should. */
+    /** A cell of this grid. */
     public createCell(record: IRecord, colDef: ColDef<IRecord>, node?: IRowNode<IRecord>, takesInput?: boolean): GridCell {
         return new GridCell({ services: this._services, record: record, colDef: colDef, node: node, takesInput: takesInput });
     }
 
-    /** Registers a cell as rendered. `CellRoot` does this on mount, and nothing else should. */
+    /** Registers a cell as rendered. */
     public addCell(cell: GridCell): void {
         this._renderedCells.set(cell.getId(), cell);
     }
@@ -162,7 +113,7 @@ export class GridCells {
     }
 
     /**
-     * Registers a hook over what draws a cell. Runs per cell per render, so keep it cheap.
+     * Registers a hook over what draws a cell.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
@@ -171,8 +122,7 @@ export class GridCells {
     }
 
     /**
-     * Registers a hook over the parameters the control drawing a cell is handed. Runs per cell per render,
-     * so keep it cheap.
+     * Registers a hook over the parameters the control drawing a cell is handed.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
@@ -181,7 +131,7 @@ export class GridCells {
     }
 
     /**
-     * Registers a hook over the theme a cell is drawn in. Runs per cell per render, so keep it cheap.
+     * Registers a hook over the theme a cell is drawn in.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
@@ -190,7 +140,7 @@ export class GridCells {
     }
 
     /**
-     * Registers a hook over whether a cell is waiting. Runs per cell per render, so keep it cheap.
+     * Registers a hook over whether a cell is waiting.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
@@ -199,7 +149,7 @@ export class GridCells {
     }
 
     /**
-     * Registers a hook over the commands a cell offers. Runs per cell per render, so keep it cheap.
+     * Registers a hook over the commands a cell offers.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
@@ -208,7 +158,7 @@ export class GridCells {
     }
 
     /**
-     * Registers a hook over whether a cell may be edited. Runs per cell per render, so keep it cheap.
+     * Registers a hook over whether a cell may be edited.
      *
      * @param priority Ascending: a lower number runs earlier, so a higher one gets the later word.
      */
@@ -216,7 +166,7 @@ export class GridCells {
         return this._cellEditableHooks.register(hook, priority);
     }
 
-    /** Run by the `GridFieldControl` of the cell in question, which is the only caller of these two. */
+    /** Run by the `GridFieldControl` of the cell in question. */
     public applyControlHooks(result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters): void {
         this._controlHooks.apply(result, params);
     }

@@ -10,13 +10,7 @@ export interface IGridCellCommandsProps {
     components?: Partial<IGridCellCommandsComponents>;
 }
 
-/**
- * A cell's commands, as the command bar wants them.
- *
- * Reads the cell it is drawn in, so it has to be inside a `CellRoot`. Drawn only for a row the user is at
- * - under the pointer, holding the focused cell, or selected - because a command bar is the most expensive
- * thing a cell draws, and a grid is mostly rows nobody is using.
- */
+/** A cell's commands, as the command bar wants them. */
 export const CellCommands = (props: IGridCellCommandsProps) => {
     const cell = useGridCell();
     const rows = useGridService('rows');
@@ -24,8 +18,7 @@ export const CellCommands = (props: IGridCellCommandsProps) => {
     const components = { ...CellCommandsComponents, ...props.components };
     const rerender = useRerender();
     const isActive = rows.isActive(cell.getRecord());
-    //what this cell last drew from, so that rows the change did not concern are left alone: every cell on
-    //screen hears every change, and with a selection made that is most of them
+    //what this cell last drew from.
     const wasActive = useRef(isActive);
     wasActive.current = isActive;
 

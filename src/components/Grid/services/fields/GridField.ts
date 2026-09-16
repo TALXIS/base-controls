@@ -4,28 +4,17 @@ import { Theming } from "@legacy";
 import type { GridCellEditableHook, GridCellLoadingHook, GridCellThemeHook, GridControlHook, GridControlParametersHook } from "../cells";
 import type { IGridServiceLocator } from "../../services";
 
-/** Where the field's own hooks sit: ahead of everything registered for the grid, which argues with them. */
+/** Where the field's own hooks sit: ahead of everything registered for the grid. */
 const FIELD_HOOK_PRIORITY = -100;
 
 export interface IGridFieldParameters {
     record: IRecord;
     columnName: string;
-    /**
-     * The grid this field is drawn in, where it is drawn in one.
-     *
-     * What the field tells its cells about itself - a cell knows nothing of fields, so whether the one
-     * drawing this field may be edited, whether it is waiting, and what colours it asks for are the
-     * field's to answer - and what a value written here is saved by.
-     */
+    /** The grid this field is drawn in, where it is drawn in one. */
     services?: IGridServiceLocator;
 }
 
-/**
- * One column of one record, and everything that follows from a component being bound to it.
- *
- * Answers on every call rather than holding anything: a record changes under whoever is drawing it, and a
- * field that answered once would answer for a value that is gone.
- */
+/** One column of one record, and everything that follows from a component being bound to it. */
 export class GridField {
     private _record: IRecord;
     private _columnName: string;
@@ -65,7 +54,7 @@ export class GridField {
         return this._getField().getValue();
     }
 
-    /** The value the field is given: the record takes it, and saves it where the grid saves as it goes. */
+    /** The value the field is given: the record takes it, and saves it. */
     public setValue(newValue: any): void {
         this._record.setValue(this._columnName, newValue);
         if (this._services?.get('settings').isAutoSaveEnabled()) {
@@ -77,18 +66,13 @@ export class GridField {
         return this._getField().getFormattedValue();
     }
 
-    /** Whether the value is one the record will accept, and what is wrong with it if it is not. */
+    /** Whether the value is one the record will accept. */
     //TODO: FOR CODE REViEW - THIS SHOULD RETURN NO ERROR IF EDITING IS DISABLED
     public isValid(): IFieldValidationResult {
         return this._getField().isValid();
     }
 
-    /**
-     * The field is gone: what it registered goes with it.
-     *
-     * Called by whoever built it with `cells`, since the hooks there outlive the field otherwise - and a
-     * grid mints a field per bound cell it draws.
-     */
+    /** The field is gone: what it registered goes with it. */
     public destroy(): void {
         this._unregisterCellEditableHook?.();
         this._unregisterCellLoadingHook?.();
@@ -97,17 +81,16 @@ export class GridField {
         this._unregisterControlParametersHook?.();
     }
 
-    /** The field's word on whether the cell drawing it may be edited, which a cell cannot answer itself. */
+    /** The field's word on whether the cell drawing it may be edited. */
     private _onCellEditable: GridCellEditableHook = (result, params) => {
         if (!this._isDrawnBy(params)) {
             return;
         }
-        //the record's own answer, which already covers a host's `disabledExpression`, an inactive record,
-        //a group or total row, and what the column's metadata allows
+        //the record already answers for `disabledExpression`, inactive records and group rows
         result.isEditable = !this._getField().isDisabled();
     };
 
-    /** The field's word on whether the cell drawing it is waiting, which a cell cannot answer itself. */
+    /** The field's word on whether the cell drawing it is waiting. */
     private _onCellLoading: GridCellLoadingHook = (result, params) => {
         if (!this._isDrawnBy(params)) {
             return;
@@ -115,24 +98,17 @@ export class GridField {
         result.isLoading = this._getField().ui.isLoading();
     };
 
-    /**
-     * The colours the column asks a cell of this field to be drawn in.
-     *
-     * Legacy: `getCustomFormatting` is how a host coloured cells by value before the theme hook existed,
-     * and the hook is the way to do it now. Goes when nothing needs it.
-     */
+    /** The colours the column asks a cell of this field to be drawn in. */
     private _onCellTheme: GridCellThemeHook = (result, params) => {
         if (!this._isDrawnBy(params)) {
             return;
         }
         const colors = result.colors;
-        //the colours it came in with, not the grid's: a formatting that changes nothing hands back the
-        //theme it was given, and handing it the grid's would paint every striped row in the grid's surface
+        //the colours it came in with, not the grid's
         const formatting = this._getField().ui.getCustomFormatting(Theming.GenerateThemeV8(colors.primary, colors.background, colors.text)) ?? {};
         const background = formatting.backgroundColor || colors.background;
         const isRecoloured = background !== colors.background;
-        //a background of its own is taken as emphasis: the text goes to whatever reads on it, and so does
-        //the primary colour unless the column named one itself
+        //a background of its own is taken as emphasis
         const contrast = Theming.GetTextColorForBackground(background);
         result.colors = {
             primary: formatting.primaryColor || (isRecoloured ? contrast : colors.primary),
@@ -141,55 +117,39 @@ export class GridField {
         };
     };
 
-    /**
-     * The control the column named for a cell of this field.
-     *
-     * Legacy: naming a control on the column is how a host replaced a cell's control before hooks existed,
-     * and a hook is the way to do it now. It reaches the grid through the data provider, which is no place
-     * for what a cell is drawn with - so it arrives as a hook like everything a consumer would register,
-     * and goes when nothing sets it any more.
-     */
+    /** The control the column named for a cell of this field. */
     private _onControl: GridControlHook = (result, params) => {
         if (!this._isDrawnBy(params)) {
             return;
         }
         const appliesTo = params.takesInput ? 'editor' : 'renderer';
-        //a column may name one control for drawing and another for input, so it is not simply the first
+        //a column may name one control for drawing and another for input
         const customControl = this._getField().ui.getCustomControls([result.control])
             .find(candidate => candidate.appliesTo === 'both' || candidate.appliesTo === appliesTo);
         if (!customControl) {
             return;
         }
-        //merged rather than taken: a custom control that names only a name keeps the default's bindings
+        //merged rather than taken
         result.control = merge(result.control, customControl) as Required<ICustomColumnControl>;
     };
 
     /**
      * What the column makes of the parameters a cell of this field is drawn with.
-     *
-     * Legacy, and for the same reason as {@link _onControl}: a control's parameters are not something a
-     * data provider should be deciding, and a hook is where this belongs.
      */
     private _onControlParameters: GridControlParametersHook = (result, params) => {
         if (!this._isDrawnBy(params)) {
             return;
         }
-        //written back into what it was handed: the expression builds a bag of its own, and a hook after
-        //this one is given the one the control will be drawn with
+        //written back into what it was handed
         Object.assign(result, this._getField().ui.getControlParameters({ ...result } as IControlParameters));
     };
 
-    /** Whether a cell hook is running for the cell this field is drawn in, rather than for another one. */
+    /** Whether a cell hook is running for the cell this field is drawn in. */
     private _isDrawnBy(params: { record: IRecord; columnName: string }): boolean {
         return params.record === this._record && params.columnName === this._columnName;
     }
 
-    /**
-     * What the record holds for this column.
-     *
-     * Asked for rather than kept: a record hands back the same field for the same column, and one held on
-     * to here would outlive a reload that replaced it.
-     */
+    /** What the record holds for this column. */
     private _getField(): IField {
         return this._record.getField(this._columnName);
     }

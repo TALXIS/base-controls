@@ -3,13 +3,9 @@ import { IGridRowModelModule } from "../../interfaces";
 import { ServerSideRowModel } from "./ServerSideRowModel";
 
 /**
- * Builds the row-model module that reads a level at a time through a datasource — what a grid paging a
- * dataset it does not hold wants.
+ * Builds the row-model module that reads a level at a time through a datasource.
  *
  * @example
- * ```tsx
- * <Grid.Root dataset={dataset} modules={{ rowModel: createServerSideRowModelModule() }} />
- * ```
  */
 export const createServerSideRowModelModule = (): IGridRowModelModule => ({
     agGridModules: [AgServerSideRowModelModule],

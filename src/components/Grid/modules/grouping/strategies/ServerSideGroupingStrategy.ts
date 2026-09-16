@@ -2,12 +2,7 @@ import { ColDef } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { IGroupingStrategy } from "./interfaces";
 
-/**
- * Grouping where a level is asked for when it is opened.
- *
- * There is next to nothing here because the mechanism is `ServerSideDatasource`: it answers a request
- * carrying the keys of the group that was expanded, and `rowGroup` is what puts those keys in the request.
- */
+/** Grouping where a level is asked for when it is opened. */
 export class ServerSideGroupingStrategy implements IGroupingStrategy {
     public applyGridOptions(): void { }
 

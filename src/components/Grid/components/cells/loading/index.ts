@@ -1,3 +1,3 @@
-//`CellLoading` is published through the namespace rather than the flat barrel, like every cell part
+//`CellLoading` is published through the namespace.
 export type { IGridCellLoadingProps } from './CellLoading';
 export * from './components';

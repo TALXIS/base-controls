@@ -4,22 +4,12 @@ import type { IRecord } from "@talxis/client-libraries";
 import type { IGridServiceLocator } from "../services";
 import type { IGridRowModelType } from "./row-model/interfaces";
 
-/**
- * One thing a grid can be given rather than born with.
- *
- * A module registers what it contributes before the grid is created, so a grid can be assembled from the
- * parts a caller actually wants — and so the code only one kind of grid needs lives with that kind rather
- * than in the middle of the grid.
- */
+/** One thing a grid can be given rather than born with. */
 export interface IGridModule {
-    /** The AG Grid modules this one needs in the registry. */
     agGridModules?: Module[];
-    /**
-     * The row model this one only works on, if it is particular. Checked when the grid is assembled, which
-     * throws rather than letting the combination render a grid where the feature quietly does nothing.
-     */
+    /** The row model this one only works on, if it is particular. */
     requiresRowModel?: IGridRowModelType;
-    /** Options the grid must be created with. Merged with every other module's. */
+    /** Options the grid must be created with. */
     getInitialComponentProps?: () => Partial<AgGridReactProps<IRecord>>;
     /** Registers what the module contributes, if anything outlives construction. */
     onRegister?: (services: IGridServiceLocator) => void;
@@ -27,7 +17,7 @@ export interface IGridModule {
     onDestroy?: (services: IGridServiceLocator) => void;
 }
 
-/** How the grid gets its rows. Not optional: a grid has to get them from somewhere. */
+/** How the grid gets its rows. */
 export interface IGridRowModelModule extends IGridModule { }
 
 /** The AG Grid enterprise licence. */
@@ -38,19 +28,12 @@ export interface IGridClipboardModule extends IGridModule { }
 
 /** The modules a grid was given. */
 export interface IGridModules {
-    /**
-     * How the grid gets its rows: {@link createServerSideRowModelModule} to page a dataset,
-     * {@link createClientSideRowModelModule} for a set already held in memory.
-     */
     rowModel: IGridRowModelModule;
-    /** The AG Grid enterprise licence: {@link createLicenseModule}. Without it, AG Grid runs unlicensed. */
+    /** The AG Grid enterprise licence: {@link createLicenseModule}. */
     license?: IGridLicenseModule;
-    /** Selecting rows: {@link createSelectionModule}. Without it, nothing is selectable. */
+    /** Selecting rows: {@link createSelectionModule}. */
     selection?: IGridModule;
-    /**
-     * Highlighting cells by dragging across them: {@link createCellSelectionModule}. What is highlighted
-     * is what the clipboard copies.
-     */
+    /** Highlighting cells by dragging across them: {@link createCellSelectionModule}. */
     cellSelection?: IGridModule;
     /** Sorting by a column: {@link createSortingModule}. */
     sorting?: IGridModule;

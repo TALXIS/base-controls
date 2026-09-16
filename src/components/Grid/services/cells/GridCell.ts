@@ -11,27 +11,16 @@ export interface IGridCellParameters {
     record: IRecord;
     /** The column AG Grid is drawing, which is what a cell is the cell of. */
     colDef: ColDef<IRecord>;
-    /** The row AG Grid is drawing, where the cell is one being drawn rather than one being asked about. */
+    /** The row AG Grid is drawing. */
     node?: IRowNode<IRecord>;
-    /**
-     * Whether this cell draws a control the user can type in rather than the value it holds.
-     *
-     * True of an editor, and of a one-click-edit column's cell, whose control takes input without an
-     * editor ever being opened.
-     */
+    /** Whether this cell draws a control the user can type in. */
     takesInput?: boolean;
 }
 
-//enough to tell two cells apart in a registry, including the same one drawn twice while AG Grid swaps a
-//renderer for an editor
+//enough to tell two cells apart in the registry, a renderer and its editor included
 let instanceCount = 0;
 
-/**
- * One cell of the grid, for as long as it is on screen.
- *
- * Created by `CellRoot` and by nothing else: a cell that draws without one is a cell the grid cannot see.
- * Whatever belongs to a single cell lives here, and goes when the cell does.
- */
+/** One cell of the grid, for as long as it is on screen. */
 export class GridCell {
     private _services: IGridServiceLocator;
     private _record: IRecord;
@@ -71,7 +60,7 @@ export class GridCell {
         return this._colDef.colId!;
     }
 
-    /** The row AG Grid is drawing this cell in, where the cell is one being drawn rather than asked about. */
+    /** The row AG Grid is drawing this cell in. */
     public getNode(): IRowNode<IRecord> | undefined {
         return this._node;
     }
@@ -81,29 +70,24 @@ export class GridCell {
         return this._theme;
     }
 
-    /**
-     * Whether this cell is waiting on something. `false` unless a hook says otherwise.
-     *
-     * Answered on every call: a hook reads state that changes under it, and a cell holding on to the first
-     * answer would never stop shimmering.
-     */
+    /** Whether this cell is waiting on something. */
     public isLoading(): boolean {
         const result: IGridCellLoading = { isLoading: false };
         this._cells.applyCellLoadingHooks(result, { record: this._record, columnName: this.getColumnName() });
         return result.isLoading;
     }
 
-    /** Whether this cell draws a control the user can type in rather than the value it holds. */
+    /** Whether this cell draws a control the user can type in. */
     public takesInput(): boolean {
         return this._takesInput;
     }
 
-    /** Whether that control is drawn in the cell itself rather than in an editor opened over it. */
+    /** Whether that control is drawn in the cell itself. */
     public takesInputInPlace(): boolean {
         return !!this._colDef.propBag?.column?.oneClickEdit;
     }
 
-    /** Whether the user is editing this cell, which is what its control is handed as `AutoFocus`. */
+    /** Whether the user is editing this cell. */
     public isBeingEdited(): boolean {
         //an editor was opened because the user asked to type here
         if (this._takesInput && !this.takesInputInPlace()) {
@@ -117,10 +101,7 @@ export class GridCell {
         this._editing.start(this);
     }
 
-    /**
-     * The edit is over: the control has nothing more to take, or the user pressed the key that leaves.
-     * Whatever was opened over the cell closes and the highlight comes back.
-     */
+    /** The edit is over: the control has nothing more to take, or the user pressed the key that */
     public finishEditing(): void {
         this._editing.finish(this);
     }
@@ -130,24 +111,17 @@ export class GridCell {
         return this._control;
     }
 
-    /**
-     * Makes what draws this cell's value, which is the control adapter's to do: the field it draws is the
-     * adapter's to hand over, and nothing else about it is the adapter's to decide.
-     */
+    /** Makes what draws this cell's value. */
     public createControl(field: GridField): GridFieldControl {
         this._control = new GridFieldControl({ services: this._services, field: field, cell: this, takesInput: this._takesInput });
         return this._control;
     }
 
     /**
-     * Whether what this cell holds may be changed. `true` unless the definition or a hook says otherwise.
-     *
-     * Answered on every call, for the same reason as {@link isLoading}: a hook reads state that changes
-     * under it.
+     * Whether what this cell holds may be changed.
      */
     public isEditable(): boolean {
-        //the column's word is the last one, and it is not `editable` - that is AG Grid's question about
-        //opening an editor, which a one-click-edit column answers no to while changing its value happily
+        //the column's word is the last one, and it is not `editable`
         if (this._colDef.propBag?.column?.isEditable === false) {
             return false;
         }
@@ -157,11 +131,7 @@ export class GridCell {
     }
 
     /**
-     * What this cell offers to do, as buttons and as what the overflow menu holds. Nothing of either,
-     * unless a hook says otherwise.
-     *
-     * Answered on every call, for the same reason as {@link isLoading}: a hook reads state that changes
-     * under it.
+     * What this cell offers to do, as buttons and as what the overflow menu holds.
      */
     public getCommands(): IGridCellCommands {
         const result: IGridCellCommands = { items: [], overflowItems: [] };
@@ -169,16 +139,12 @@ export class GridCell {
         return result;
     }
 
-    /** Whether this cell has left the screen, after which nothing should be asked of it. */
+    /** Whether this cell has left the screen, after. */
     public isDestroyed(): boolean {
         return this._isDestroyed;
     }
 
-    /**
-     * The cell has left the screen: whatever it was holding goes with it.
-     *
-     * Called by `GridCells.removeCell`, so a destroyed cell is never one the registry still hands out.
-     */
+    /** The cell has left the screen: whatever it was holding goes with it. */
     public destroy(): void {
         this._isDestroyed = true;
     }

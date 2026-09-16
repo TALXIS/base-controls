@@ -2,23 +2,16 @@ import { ColDef } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { CellRenderer } from "@components/Grid/components/cells/cell-renderer/CellRenderer";
 
-/** The key the expansion column takes. Its own: the dataset reserves none for it. */
+/** The key the expansion column takes. */
 export const GROUP_EXPANSION_COLUMN_KEY = 'groupExpansion';
 
-/**
- * The column whose header opens and closes the groups a level at a time.
- *
- * Pinned and unmovable, like the checkbox column: what it holds is about the rows rather than about any one
- * of them. The header is the whole of it — the cells carry no value, which is why the getter and the
- * formatter answer nothing.
- */
+/** The column whose header opens and closes the groups a level at a time. */
 export const getGroupExpansionColumnDefinition = (onRenderHeader: () => JSX.Element): ColDef<IRecord> => ({
     colId: GROUP_EXPANSION_COLUMN_KEY,
     headerName: '',
     width: 60,
     lockPinned: true,
-    //locked, not just pinned: the grouped columns are sorted to the front, and this must be neither sorted
-    //along with them nor pushed out of the leading position by a module that reorders the definitions
+    //locked, not just pinned: nothing may sort or reorder this out of the front
     lockPosition: 'left',
     resizable: false,
     sortable: false,
@@ -28,7 +21,6 @@ export const getGroupExpansionColumnDefinition = (onRenderHeader: () => JSX.Elem
     valueGetter: () => null,
     valueFormatter: () => '',
     headerComponent: onRenderHeader,
-    //a cell of the grid's own rather than the dataset's: no field to bind, but the theme, the stripe and
-    //the state overlays are the row's and this column is part of the row
+    //a cell of the grid's own rather than the dataset's
     cellRenderer: CellRenderer,
 });

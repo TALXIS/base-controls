@@ -12,18 +12,10 @@ export interface IGridFieldControlParameters {
     field: GridField;
     /** The cell this draws, which is the one that made it. */
     cell: GridCell;
-    /** Whether the control takes input rather than only drawing the value. */
     takesInput?: boolean;
 }
 
-/**
- * What one cell shows, and what it shows it with.
- *
- * Built for a cell and asked about that cell, so nothing here is told which record or column it is talking
- * about. What it draws comes off the field it is bound to; which control draws it, and what that control
- * is handed, is what a hook on `GridCells` decides - the field's own among them - rather than the grid
- * knowing the feature exists.
- */
+/** What one cell shows, and what it shows it with. */
 export class GridFieldControl {
     private _services: IGridServiceLocator;
     private _record: IRecord;
@@ -46,52 +38,30 @@ export class GridFieldControl {
         return this._field;
     }
 
-    /**
-     * Whether something other than the cell renderer draws this cell, which is what tells a caller to go
-     * through the nested-control registry rather than rendering the cell renderer itself.
-     */
+    /** Whether something other than the cell renderer draws this cell. */
     public isCustomRendererEnabled(): boolean {
         return this._isCustomRenderer(this.getCustomControl());
     }
 
-    /**
-     * What draws this cell, and what it is given.
-     *
-     * The cell renderer draws the value wherever it can, which is most cells. A column that named a control
-     * of its own, one that holds the inline ribbon, and a cell taking input go through the nested-control
-     * registry instead, which is the only thing that can resolve a control by name - and which takes these
-     * same props.
-     */
+    /** What draws this cell, and what it is given. */
     public getControlProps(): IGridCellRenderer {
         const control = this.getCustomControl();
         const parameters = this._getCellParameters(control);
         return {
             context: this._services.get('pcfContext'),
-            //a custom control merges these into its own parameters and finalizes them there, so the
-            //record's expression and the hooks run once over the whole bag rather than twice over half
+            //a custom control merges these into its own parameters and finalizes them there
             parameters: this._isCustomRenderer(control) ? parameters : this.getFinalControlParameters(parameters) as IGridCellRendererParameters,
         };
     }
 
-    /**
-     * Which control draws this cell: the grid's renderer, unless a hook named another - which is how the
-     * column's own control reaches it, the field registering that.
-     *
-     * The one way in: what a cell renders with, and whether that counts as a custom renderer, are the same
-     * question asked twice.
-     */
+    /** Which control draws this cell: the grid's renderer, unless a hook named another. */
     public getCustomControl(): Required<ICustomColumnControl> {
         const result = { control: this._getDefaultControl() };
         this._cells.applyControlHooks(result, this._hookParams);
         return result.control;
     }
 
-    /**
-     * The parameters a control is actually handed: what was built for it, and what the hooks made of that.
-     *
-     * The field's own hook runs first, so a module or a consumer has the later word on a column that
-     * overrides its own parameters.
-     */
+    /** The parameters a control is actually handed. */
     public getFinalControlParameters(parameters: IParameters): IParameters {
         this._cells.applyControlParametersHooks(parameters, this._hookParams);
         return parameters;
@@ -127,7 +97,7 @@ export class GridFieldControl {
             ShouldUnmountWhenOutputChanges: {
                 raw: (() => {
                     switch (column.dataType) {
-                        //these report a partial change as a value, so an editor of theirs stays open
+                        //these report a partial change as a value
                         case DataTypes.DateAndTimeDateAndTime:
                         case DataTypes.MultiSelectOptionSet: {
                             return false;
@@ -140,8 +110,7 @@ export class GridFieldControl {
                 type: DataTypes.TwoOptions
             },
         };
-        //what the column asked for wins: the icons and the placeholder are its to name, and a binding is
-        //where it names them
+        //what the column's bindings ask for wins
         Object.entries(control.bindings ?? {}).forEach(([name, binding]) => {
             parameters[name] = { raw: binding.value, type: binding.type };
         });
@@ -196,10 +165,7 @@ export class GridFieldControl {
         }
     }
 
-    /**
-     * The column as this record's own provider has it: a group's children are a provider of their own, and
-     * its copy of the column is what governs that row.
-     */
+    /** The column as this record's own provider has it. */
     private get _column(): IColumn | undefined {
         return this._record.getDataProvider().getColumnsMap()[this._columnName];
     }

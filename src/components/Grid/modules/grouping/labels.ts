@@ -1,9 +1,9 @@
-/** Every localizable string this module renders. Override any subset through its `labels` option. */
+/** Every localizable string this module renders. */
 export interface IGridGroupingLabels {
     group: string;
     ungroup: string;
     maximumGroupChildrenLimitReached: string;
-    /** What a grouped column is named in its header tooltip. Separate from `group`, which is the action. */
+    /** What a grouped column is named in its header tooltip. */
     headerTitle: string;
     /** What this module's section of a column's menu is called. */
     menuSection: string;

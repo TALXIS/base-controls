@@ -7,10 +7,7 @@ import { useGridService } from "@components/Grid/useGridService";
 import { RecordSaveIndicator, useRecordSaveStatus } from "@components/Grid/components/record-save-indicator";
 import { getSelectionCellStyles } from "./styles";
 
-/**
- * The checkbox a row is selected by, or what the row has to report about its last save — there is only room
- * in this column for one of them.
- */
+/** The checkbox a row is selected by, or what the row has to report about its last save. */
 export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
     //pinned rows have no record, and `cellRendererSelector` renders nothing there
     const record = props.data!;
@@ -20,9 +17,7 @@ export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
     const isRecordSelectionDisabled = selection.isRecordSelectionDisabled(record);
     const styles = useMemo(() => getSelectionCellStyles(), []);
 
-    //the label would otherwise activate the checkbox it wraps, and that second click toggles the record
-    //straight back off. Keeping the click from also selecting the row is `GridSelection`'s capture
-    //listener, which a React handler cannot do - it runs after AG Grid's own
+    //the label activates the checkbox it wraps, toggling the record back off
     const onCheckBoxClick = (e: React.MouseEvent) => {
         e.preventDefault();
         if (!isRecordSelectionDisabled) {

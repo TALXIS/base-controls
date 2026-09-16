@@ -8,12 +8,7 @@ export interface ICellControlProps extends React.HTMLAttributes<HTMLDivElement> 
     control: GridFieldControl;
 }
 
-/**
- * The room a cell's value is drawn in.
- *
- * Lays out rather than draws: what fills it is whatever it is given, and how much of the cell it takes -
- * and which edge it reads from - is the column's alignment, which the control it is handed knows.
- */
+/** The room a cell's value is drawn in. */
 export const Control = (props: ICellControlProps) => {
     const { control, className, ...divProps } = props;
     const alignment = control.getField().getColumn().alignment ?? 'left';

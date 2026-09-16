@@ -11,7 +11,7 @@ export interface IGridCellThemeParameters {
     node?: IRowNode<IRecord>;
 }
 
-/** The theme one cell is drawn in: the grid's own, unless its column or a hook asked for another. */
+/** The theme one cell is drawn in */
 export class GridCellTheme {
     private _services: IGridServiceLocator;
     private _record: IRecord;
@@ -32,8 +32,7 @@ export class GridCellTheme {
             return result.theme;
         }
         const { primary, background, text } = result.colors;
-        //the generator is keyed on the three colours, so two cells asking for the same ones are handed the
-        //same instance rather than a copy each
+        //the generator is keyed on the three colours
         return Theming.GenerateThemeV8(primary, background, text);
     }
 
@@ -47,13 +46,13 @@ export class GridCellTheme {
         };
     }
 
-    /** What the row this cell is in is drawn on: the grid's surface, or a step off it on every other row. */
+    /** What the row this cell is in is drawn on. */
     private get _rowBackground(): string {
         const gridTheme = this._gridTheme;
         if (!this._settings.isZebraEnabled() || this._isEvenRow) {
             return gridTheme.semanticColors.bodyBackground;
         }
-        //the faintest step off the surface Fluent has, which is what the grid striped with before
+        //the faintest step off the surface Fluent has.
         return gridTheme.palette.neutralLighterAlt;
     }
 

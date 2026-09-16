@@ -3,8 +3,7 @@ import { DeepPartial, IColumn } from "@talxis/client-libraries";
 import { ITheme } from "@legacy";
 import { ControlTheme, getJustifyContent, IAlignment, IFluentDesignState } from "@utils";
 
-//the component overrides depend only on the column alignment, so there are three of them in the whole
-//application - they used to be rebuilt, and deep-merged, per cell per render
+//the component overrides depend only on the column alignment
 const componentOverridesByAlignment = new Map<IColumn['alignment'] | undefined, DeepPartial<ITheme>['components']>();
 
 const getComponentOverrides = (columnAlignment: IColumn['alignment']) => {
@@ -51,13 +50,7 @@ const getComponentOverrides = (columnAlignment: IColumn['alignment']) => {
     return overrides as any;
 };
 
-/**
- * A stable name for a theme override, from its content.
- *
- * `undefined` means the override cannot be named, and so cannot be cached under one. That covers a style
- * *function*, which is part of what an override does to a theme and which no serialisation can tell from
- * another - naming two of those alike would hand the second one the first one's theme.
- */
+/** A stable name for a theme override, from its content. */
 const getOverrideName = (override?: object): string | undefined => {
     if (!override || Object.keys(override).length === 0) {
         return '';
@@ -91,20 +84,13 @@ export interface ICellFluentDesignLanguageParameters {
     parent?: IFluentDesignState;
 }
 
-/**
- * The design language a control is given inside a cell.
- *
- * A control on a form draws its own borders and its own background; in a cell the row has already drawn
- * both, so they go transparent and the cell's background stands in for the input's. The alignment cannot
- * reach a control through a theme's colours, so it arrives as component overrides.
- */
+/** The design language a control is given inside a cell. */
 export const getCellFluentDesignLanguage = (parameters: ICellFluentDesignLanguageParameters): IFluentDesignState => {
     const { theme, columnAlignment, parent } = parameters;
     const parentOverrides = parent?.v8FluentOverrides;
     const parentName = getOverrideName(parentOverrides);
     const ownOverrides: DeepPartial<ITheme> = {
-        //everything the override varies by has to appear here: the theme caches key on this id, so anything
-        //left out would serve another cell's theme. `undefined` is how a cell says it cannot be cached
+        //everything the override varies by has to appear here.
         id: parentName === undefined ? undefined : ['cell', theme.id, columnAlignment ?? '', parentName].join('|'),
         semanticColors: {
             inputBorder: 'transparent',
@@ -120,12 +106,9 @@ export const getCellFluentDesignLanguage = (parameters: ICellFluentDesignLanguag
         },
         components: getComponentOverrides(columnAlignment)
     };
-    //merged only when there is something to merge: only a grid inside another grid's cell inherits an
-    //override, and this used to run two deep merges regardless
+    //merged only when there is something to merge
     const v8FluentOverrides: any = parentOverrides ? merge({}, ownOverrides, parentOverrides) : ownOverrides;
-    //an override that names itself would otherwise write its own id over the one computed above, and both
-    //theme caches key on that id - so a grid rendered inside another grid's cell, which inherits that
-    //cell's named override, would serve every one of its own cells the same theme
+    //both theme caches key on the id, which a named override would overwrite
     v8FluentOverrides.id = ownOverrides.id;
     return ControlTheme.GenerateFluentDesignLanguage(
         theme.palette.themePrimary,

@@ -10,10 +10,7 @@ import { IGridAggregationServiceMap } from "./services";
 export interface IAggregationModuleOptions {
     /** Localized strings this module renders. */
     labels?: Partial<IGridAggregationLabels>;
-    /**
-     * Whether a column's menu offers the totals. Defaults to `true`: registering the module is what says
-     * the grid does totals at all, and this is only about whether the user may change them.
-     */
+    /** Whether a column's menu offers the totals. */
     allowUserAggregation?: boolean;
 }
 
@@ -21,13 +18,9 @@ export interface IAggregationModuleOptions {
  * Builds the module that shows totals in a row pinned under the rest.
  *
  * @example
- * ```tsx
- * <Grid.Root modules={{ rowModel: createServerSideRowModelModule(), aggregation: createAggregationModule() }} />
- * ```
  */
 export const createAggregationModule = (options?: IAggregationModuleOptions): IGridModule => ({
-    //stated here rather than read off the instance below: a total whose own provider failed has no value to
-    //put in a cell, so the row gives up its columns and carries the reason across the whole width instead
+    //stated here rather than read off the instance below
     getInitialComponentProps: () => ({
         isFullWidthRow: params => isAggregationErrorRow(params.rowNode),
         fullWidthCellRenderer: FullWidthCellRendererError,
@@ -36,12 +29,10 @@ export const createAggregationModule = (options?: IAggregationModuleOptions): IG
         }),
     }),
     onRegister: gridServices => {
-        //the module's own locator: what it registers here is what everything inside it reaches, with the
-        //grid's own locator as the one key that crosses over
+        //the module's own locator, with the grid's as the one key that crosses over
         const services = new ServiceLocator<IGridAggregationServiceMap>();
         services.register('gridServices', () => gridServices);
-        //built once, then registered: a resolver runs on every lookup, and what it hands out has to be
-        //the same object each time
+        //built once, then registered: a resolver runs on every lookup
         const labels = new LocalizationService<IGridAggregationLabels>({ ...GRID_AGGREGATION_LABELS, ...options?.labels });
         services.register('labels', () => labels);
         const aggregation = new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation ?? true });

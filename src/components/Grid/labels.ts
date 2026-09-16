@@ -1,4 +1,4 @@
-/** Every localizable string the grid itself renders. Override any subset through `IGrid.labels`. */
+/** Every localizable string the grid itself renders. */
 export interface IGridLabels {
     noRecordsFound: string;
     valueNotEditable: string;

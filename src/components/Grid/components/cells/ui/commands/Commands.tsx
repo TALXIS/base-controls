@@ -5,19 +5,13 @@ import { getClassNames, IAlignment } from "@utils";
 import { getCellCommandsStyles } from "./styles";
 
 export interface ICellCommandsProps extends ICommandBarProps {
-    /** Where the buttons sit in the width the bar takes. Left, unless told otherwise. */
+    /** Where the buttons sit in the width the bar takes. */
     alignment?: IAlignment;
-    /**
-     * What the overflow menu is drawn in.
-     *
-     * A menu is drawn over the grid rather than in the cell, so it takes the grid's theme: a cell's own
-     * would reach it through the context it is rendered under, and a menu in one cell's colours over rows
-     * of another's reads as a mistake.
-     */
+    /** What the overflow menu is drawn in. */
     surfaceTheme?: ITheme;
 }
 
-/** The commands a cell offers, drawn to fit the row it is in. Nothing where there are none to draw. */
+/** The commands a cell offers, drawn to fit the row it is in. */
 export const Commands = (props: ICellCommandsProps) => {
     const { alignment = 'left', className, surfaceTheme, overflowButtonProps, items, overflowItems, ...commandBarProps } = props;
     const styles = useMemo(() => getCellCommandsStyles(alignment), [alignment]);
@@ -43,12 +37,7 @@ export const Commands = (props: ICellCommandsProps) => {
     </div>;
 };
 
-/**
- * The items, with every menu one of them opens drawn in the given theme.
- *
- * A submenu is a surface over the grid like the overflow menu is, but it arrives on the item rather than
- * on the bar - so it is themed here, wherever the item came from, and all the way down.
- */
+/** The items, with every menu one of them opens drawn in the given theme. */
 const getThemedItems = <TItem extends IContextualMenuItem>(items: TItem[], theme?: ITheme): TItem[] => {
     if (!theme) {
         return items;
@@ -58,13 +47,7 @@ const getThemedItems = <TItem extends IContextualMenuItem>(items: TItem[], theme
         : item);
 };
 
-/**
- * A menu drawn in the given theme, surface and all.
- *
- * `theme` alone themes what the menu draws but not what it is drawn on: `ContextualMenu` spreads
- * `calloutProps` into its `Callout` without passing its own theme along, so the callout would resolve the
- * theme of whatever it is rendered under - the cell's.
- */
+/** A menu drawn in the given theme, surface and all. */
 const getThemedMenu = <TMenu extends Partial<IContextualMenuProps>>(menu: TMenu | undefined, theme?: ITheme): TMenu => {
     return {
         ...menu,

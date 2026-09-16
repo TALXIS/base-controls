@@ -8,16 +8,11 @@ import { IColumnHeaderAdornment, IColumnMenuSection } from "../../services/colum
 import { IGridSortingServiceLocator } from "./services";
 
 export interface IGridSortingParameters {
-    /** This module's own locator, which is what everything inside it reaches through. */
+    /** This module's own locator. */
     services: IGridSortingServiceLocator;
 }
 
-/**
- * Sorting the grid by a column.
- *
- * The dataset holds the sorting; this drives it and says what a column's menu offers. A grid without this
- * module cannot be sorted from its header, and its definitions carry no sort at all.
- */
+/** Sorting the grid by a column. */
 export class GridSorting {
     private _services: IGridSortingServiceLocator;
     private _sorting: Sorting;
@@ -58,7 +53,7 @@ export class GridSorting {
         });
     }
 
-    /** Puts `sortable` on the definitions, which the grid itself no longer knows to set. */
+    /** Puts `sortable` on the definitions. */
     public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
         for (const colDef of columnDefs) {
             const columnName = colDef.colId ?? colDef.field;

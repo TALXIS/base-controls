@@ -44,9 +44,14 @@ itself.
 
 ### Style
 
-- One line where possible. Two sentences is already long; a paragraph almost never belongs in source.
-- A TSDoc block is one sentence saying what the thing is for. A second paragraph explaining how it came to
-  be built that way belongs in the commit message.
+**Hard limits. A comment that breaks one of these is wrong, however true it is.**
+
+- **One line.** Never two. If it does not fit on one line, it is too long — cut it, don't wrap it.
+- **Under 100 characters**, including the indent and the `//`.
+- **One clause.** No `X, which is what Y`, no `X rather than Y`, no `A: B, and C`, no em-dash tails. If
+  you are about to explain the alternative, the consequence, or the mechanism, stop at the first comma.
+- **A TSDoc block is one short sentence.** No second sentence, no second paragraph, no blank `*` line.
+  `@param`/`@returns` are the only things that may follow it.
 - Plain, factual, present tense. No hedging, no enthusiasm, no explaining yourself to the reader.
 - `//` for implementation notes, TSDoc `/** */` only for public API.
 - Match the surrounding file's comment density — if the neighbouring code has no comments, that's the
@@ -54,6 +59,31 @@ itself.
 - Comments are the exception, not an annotation layer. Past roughly one comment line in ten, you are
   writing prose where naming and structure should have carried it — and a short file with a long header is
   the same failure.
+
+### The voice to avoid
+
+These are all real comments that had to be deleted. The pattern is always the same: a fact, then a clause
+explaining the fact, then a clause explaining the explanation.
+
+```ts
+//not the cell: a value written in a cell has the grid rebuild it, and the user is still in what it draws
+//the row rather than the cell: AG Grid works an auto-height row out from what its cells measure, and an
+//editor is not one of the cells it measures
+/**
+ * Whether the user is editing this cell, which is what its control is handed as `AutoFocus`.
+ *
+ * An editor is being edited from the moment AG Grid opens it - it was opened because the user asked to
+ * type here. A cell drawing its control in place is being edited once the user steps into it.
+ */
+```
+
+Write the first fact and stop:
+
+```ts
+//keyed by record and column: writing a value rebuilds the cell
+//AG Grid measures the renderer, not the editor
+/** Whether the user is editing this cell. */
+```
 
 ### The survival test
 

@@ -10,13 +10,7 @@ export interface IGridRowResizeGripProps {
     components?: Partial<IGridRowResizeGripComponents>;
 }
 
-/**
- * What a row is dragged taller by, around the cell that is dragged.
- *
- * Wraps the cell rather than sitting in it: the drag grows this element, and the row takes its height from
- * what its cells measure. Draws the grip only on a column that says `autoHeight`, because a row whose
- * height AG Grid decides cannot be dragged to another one.
- */
+/** What a row is dragged taller by, around the cell that is dragged. */
 export const RowResizeGrip = (props: IGridRowResizeGripProps) => {
     const { children } = props;
     const cell = useGridCell();
@@ -33,15 +27,13 @@ export const RowResizeGrip = (props: IGridRowResizeGripProps) => {
         return () => node?.removeEventListener('heightChanged', onHeightChanged);
     }, [node]);
 
-    //the row rather than the cell: AG Grid works an auto-height row out from what its cells measure, and
-    //an editor is not one of the cells it measures
+    //AG Grid measures the renderer, not the editor, for an auto-height row
     const onResize = (height: number) => {
         node?.setRowHeight(height);
         gridApi?.onRowHeightChanged();
     };
 
-    //a container above this means the grip was drawn inside one, and the drag grows this element while
-    //the container has already been sized to what holds it: the container has to be the one inside
+    //the drag grows this element, so the container has to be inside it
     if (hasContainerAbove) {
         throw new Error('Grid.RowResizeGrip has to be drawn around Grid.CellContainer rather than inside it.');
     }

@@ -13,18 +13,13 @@ import { getCellFluentDesignLanguage } from "./getCellFluentDesignLanguage";
 const client = new Client();
 
 export interface ILegacyNestedControlRendererProps {
-    /** What the cell renderer would have been given, which is what the control is given too. */
+    /** What the cell renderer would have been given. */
     controlProps: IGridCellRenderer;
     /** The cell this is drawing, which knows whether it takes input. */
     control: GridFieldControl;
 }
 
-/**
- * A control the nested-control registry resolves, as a cell needs it.
- *
- * Takes what the cell renderer takes and adds what a control drawn inside a cell needs on top of it: the
- * cell's theme, the row's height, and whether the field refuses input.
- */
+/** A control the nested-control registry resolves, as a cell needs it. */
 export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererProps) => {
     const { controlProps, control } = props;
     const { context, parameters } = controlProps;
@@ -36,8 +31,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const customControl = control.getCustomControl();
     const field = control.getField();
 
-    //a root of its own, so the control's own handlers run before AG Grid's: React attaches its listeners
-    //to the root's container, and the grid listens on the row container above it
+    //a root of its own, so the control's own handlers run before AG Grid's
     return <NestedReactRoot>
         <NestedControlRenderer
             context={context}
@@ -60,8 +54,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
             onOverrideComponentProps={(componentProps: INestedControlRendererComponentProps) => ({
                 ...componentProps,
                 onOverrideUnmount: (control, defaultUnmount) => {
-                    //unmounting a nested PCF in Power Apps re-initializes the others, which flickers - they
-                    //are unmounted when the grid is destroyed instead. The react component can still go
+                    //unmounting a nested PCF in Power Apps re-initializes the others.
                     if (control.isMountedPcfComponent() && !client.isTalxisPortal()) {
                         control.getControlInstance()?.destroy();
                         return;
@@ -69,8 +62,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                     return defaultUnmount();
                 },
                 onOverrideControlProps: (controlProps: IControl<any, any, any, any>) => {
-                    //the control builds its own parameters out of the bindings, so what the cell knows goes
-                    //under them - and the whole bag is what the record's expression and the hooks then see
+                    //the control builds its own parameters out of the bindings
                     const controlParameters = control.getFinalControlParameters({ ...parameters, ...controlProps.parameters });
                     return {
                         ...controlProps,
@@ -79,7 +71,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                             ...controlProps.context,
                             mode: Object.create(controlProps.context.mode, {
                                 allocatedHeight: {
-                                    //the row as the grid has it, which is what a resized one was dragged to
+                                    //the row as the grid has it
                                     value: (cell.getNode()?.rowHeight ?? settings.getDefaultRowHeight()) - 4
                                 },
                             }),

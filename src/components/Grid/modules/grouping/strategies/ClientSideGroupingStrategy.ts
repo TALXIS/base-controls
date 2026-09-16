@@ -3,26 +3,15 @@ import { IDataProvider, IRecord } from "@talxis/client-libraries";
 import { IGridGroupingServiceLocator } from "../services";
 import { IGroupingStrategy, IGroupingStrategyParameters } from "./interfaces";
 
-/**
- * Grouping where every level is in the grid at once, as a tree.
- *
- * The client-side model has no way to ask for a level, so the levels are fetched here instead: a load of
- * the records is followed by a walk that creates and refreshes every group's child provider, and the rows
- * are handed over again once it is done. Two pushes rather than one, so the groups paint immediately
- * instead of after the whole tree has been fetched.
- *
- * The child providers are what is walked rather than a flat list from the provider: selection drill-down,
- * the group counts and the dataset's own group aggregates are all read off that topology.
- */
+/** Grouping where every level is in the grid at once, as a tree. */
 export class ClientSideGroupingStrategy implements IGroupingStrategy {
     private _services: IGridGroupingServiceLocator;
-    /** Which load the walk in flight belongs to, so a load that has been overtaken drops its rows. */
+    /** Which load the walk in flight belongs to */
     private _loadToken: number = 0;
 
     constructor(parameters: IGroupingStrategyParameters) {
         this._services = parameters.services;
-        //ahead of the push the grid makes on the same event, because the rows about to be pushed are a
-        //hierarchy only while `treeData` says so
+        //ahead of the push the grid makes on the same event
         this._provider.addEventListener('onNewDataLoaded', () => {
             this._applyTreeData();
             this._loadEveryLevel();
@@ -30,38 +19,26 @@ export class ClientSideGroupingStrategy implements IGroupingStrategy {
     }
 
     /**
-     * Neither option is `@initial`, which is what lets grouping turn the hierarchy on and off as group-bys
-     * come and go.
-     *
-     * No column in this grid carries `aggFunc`, and that is what keeps this safe: under `treeData` AG Grid
-     * reads a group row's `aggData` ahead of the column's `valueGetter`, so a column given one would stop
-     * going through the cell pipeline on group rows — no formatting, no controls, no notifications.
+     * Neither option is `@initial`, so grouping can turn the hierarchy on and off.
      */
     public applyGridOptions(gridApi: GridApi<IRecord>): void {
         this._applyTreeData(gridApi);
     }
 
-    /** Nothing: `rowGroup` would have AG Grid group the rows itself, over a tree it was handed grouped. */
+    /** Nothing: `rowGroup` would have AG Grid group the rows itself, over a tree it was handed */
     public applyGroupedColumnDefinition(): void { }
 
     public getRows(): IRecord[] {
         return flattenGroupedRecords(this._provider.getRecords());
     }
 
-    /**
-     * A tree only while there is something to nest: a grid whose group-bys are gone is a flat list, and
-     * every path would be a record of its own.
-     *
-     * The path goes on and comes off with `treeData`, not once at the start — the grouping stage reads the
-     * two together, and a path left behind on a grid that is no longer a tree breaks it.
-     */
+    /** A tree only while there is something to nest. */
     private _applyTreeData(gridApi = this._services.get('gridServices').find('gridApi')): void {
         if (!gridApi) {
             return;
         }
         const isTree = this._provider.grouping.getGroupBys().length > 0;
-        //only on a change: `treeData` is a managed property, and setting it runs the grouping stage over
-        //the rows - which on a grid that has not been given any yet has nothing to group and throws
+        //only on a change: `treeData` is a managed property
         if (!!gridApi.getGridOption('treeData') === isTree) {
             return;
         }
@@ -69,12 +46,7 @@ export class ClientSideGroupingStrategy implements IGroupingStrategy {
         gridApi.setGridOption('treeData', isTree);
     }
 
-    /**
-     * Fetches every group's children, depth first, and hands the rows over again.
-     *
-     * Runs after the group-bys a load was stripped of have been put back, because it is those that decide
-     * what a child provider groups its own records by.
-     */
+    /** Fetches every group's children, depth first, and hands the rows over again. */
     private async _loadEveryLevel(): Promise<void> {
         if (!this._provider.grouping.getGroupBys().length) {
             return;
@@ -93,14 +65,7 @@ export class ClientSideGroupingStrategy implements IGroupingStrategy {
     }
 }
 
-/**
- * A record's ancestry, which is what `treeData` builds the hierarchy from.
- *
- * The chain of providers is the ancestry: each grouped child provider is keyed by the group record whose
- * children it holds, and the root's is empty. The ids line up with `getRowId`, which is what makes every
- * segment resolve to a row of ours instead of a placeholder AG Grid synthesises — and it has to, because a
- * group row carries the dataset's own aggregate values.
- */
+/** A record's ancestry, which is what `treeData` builds the hierarchy from. */
 const getRecordPath = (record: IRecord): string[] => {
     const path: string[] = [];
     let provider: IDataProvider | null = record.getDataProvider();
@@ -121,13 +86,7 @@ const flattenGroupedRecords = (records: IRecord[]): IRecord[] =>
             : [record];
     });
 
-/**
- * Fetches the children of every group in this list, and of every group under them.
- *
- * A level at a time rather than one group at a time: the groups of a level are independent, and a wide
- * grouping is otherwise as many round trips as there are groups. A group whose fetch failed is left
- * without children rather than taking the rest of the tree down with it.
- */
+/** Fetches the children of every group in this list, and of every group under them. */
 const loadGroupedRecords = async (records: IRecord[]): Promise<void> => {
     const groupRecords = records.filter(record => record.getSummarizationType() === 'grouping');
     if (!groupRecords.length) {

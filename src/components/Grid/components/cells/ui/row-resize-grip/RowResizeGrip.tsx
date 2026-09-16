@@ -9,7 +9,7 @@ export interface IRowResizeGripProps {
     children?: React.ReactNode;
 }
 
-//a row dragged to nothing takes its own grip off the screen with it, and there is no way back from that
+//a row dragged to nothing takes its own grip off the screen with it
 const MIN_HEIGHT = 20;
 
 /** What a row is dragged taller by: wrap it around what a cell draws. */
@@ -19,7 +19,7 @@ export const RowResizeGrip = (props: IRowResizeGripProps) => {
     const styles = useMemo(() => getRowResizeGripStyles(), []);
 
     const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-        //the same press reads as the start of a cell range to the grid, and as text selection to the browser
+        //the same press reads as the start of a cell range to the grid
         event.preventDefault();
         event.stopPropagation();
         const grip = event.currentTarget;
@@ -34,7 +34,7 @@ export const RowResizeGrip = (props: IRowResizeGripProps) => {
             grip.removeEventListener('pointerup', onPointerUp);
             grip.removeEventListener('pointercancel', onPointerUp);
         };
-        //captured, so a drag that leaves the cell - which any drag past the row's edge does - keeps coming
+        //captured, so a drag that leaves the cell
         grip.setPointerCapture(event.pointerId);
         grip.addEventListener('pointermove', onPointerMove);
         grip.addEventListener('pointerup', onPointerUp);

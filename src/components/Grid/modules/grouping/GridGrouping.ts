@@ -15,18 +15,18 @@ const CHILD_LIMIT = 5000;
 export interface IGroupingSettings {
     /** Whether a column's menu offers grouping, or the dataset's own group-bys are all there is. */
     allowUserGrouping: boolean;
-    /** How deep the groups nest: `'nested'` opens a level at a time, `'flat'` groups by one column. */
+    /** How deep the groups nest */
     type: 'nested' | 'flat';
-    /** How many levels open themselves. `-1` for none. */
+    /** How many levels open themselves. */
     defaultExpandedLevel: number;
     /** Whether a grouped column is pinned to the left. */
     pinGroupedColumns: boolean;
 }
 
 export interface IGridGroupingParameters {
-    /** This module's own locator, which is what everything inside it reaches through. */
+    /** This module's own locator. */
     services: IGridGroupingServiceLocator;
-    /** Where a group's children come from, which is what the caller's row model decides. */
+    /** Where a group's children come from. */
     strategy: IGroupingStrategyModule;
     settings: IGroupingSettings;
 }
@@ -34,16 +34,14 @@ export interface IGridGroupingParameters {
 /**
  * Grouping the rows by a column.
  *
- * The groups are the dataset's: a group row's children come from a provider of their own. Where those
- * children come from is the one thing the row model decides, and that is what {@link IGroupingStrategy}
- * holds — everything here is the same on both.
+ * children come from is the row model's, which {@link IGroupingStrategy}
  */
 export class GridGrouping {
     private _services: IGridGroupingServiceLocator;
     private _settings: IGroupingSettings;
     private _grouping: Grouping;
     private _strategy: IGroupingStrategy;
-    /** How many levels of groups are open. `-1` is none, and it is what the header steps. */
+    /** How many levels of groups are open. */
     private _expandedLevel: number;
     private _expandedRowGroupIds: Set<string> = new Set();
     private _hasUserExpanded: boolean = false;
@@ -54,12 +52,10 @@ export class GridGrouping {
         this._settings = parameters.settings;
         this._expandedLevel = parameters.settings.defaultExpandedLevel;
         this._grouping = new Grouping(this._provider);
-        //before the strategy, so a strategy of its own listening for a load is behind this: what the
-        //levels are put back to is what a child provider groups its own records by
+        //before the strategy, so a strategy of its own listening for a load is behind this
         this._interceptNestedGrouping();
         this._strategy = parameters.strategy.create({ services: this._services });
-        //ahead of `AgGridModel`, which registers its own listener only once there is an api - so whatever
-        //the strategy needs on the grid is on it before the first rows are pushed
+        //ahead of `AgGridModel`, which registers its own listener only once there is an api
         this._gridServices.whenAvailable('gridApi', gridApi => this._strategy.applyGridOptions(gridApi));
         //only a grouped provider has children to run out of
         this._provider.addEventListener('onNestedProviderPagingLimitReached', () => this._warnChildLimitReached());
@@ -71,8 +67,7 @@ export class GridGrouping {
     }
 
     /**
-     * The rows the grid is to be given, where the row model takes them as data rather than asking for a
-     * level at a time.
+     * The rows the grid is given, where the row model takes data rather than a level at a time.
      */
     public getRows(): IRecord[] | undefined {
         return this._strategy.getRows();
@@ -96,29 +91,17 @@ export class GridGrouping {
             && column.dataType !== DataTypes.MultiSelectOptionSet;
     }
 
-    /**
-     * Whether the row stands for a group rather than for a record.
-     *
-     * The record's own id, which is how the dataset itself tells the two apart. Not the provider's
-     * summarization type: a leaf's provider carries a group-by of its own whenever there is a level below
-     * it, so that reads as a group for rows that are records. And not AG Grid's `group` flag either, which
-     * is set on the server-side model and never under `treeData`.
-     */
+    /** Whether the row stands for a group rather than for a record. */
     public isGroupRow(node: IRowNode<IRecord>): boolean {
         return !!node.data?.getRecordId().startsWith(DataProvider.CONST.GROUP_PREFIX);
     }
 
-    /**
-     * Whether a row's cell in this column carries the chevron that opens it.
-     *
-     * The outermost group-by only: a row stands for one group, and that group is named by the column it was
-     * grouped on first.
-     */
+    /** Whether a row's cell in this column carries the chevron that opens it. */
     public isColumnExpandable(record: IRecord, column: IColumn): boolean {
         return record.getDataProvider().grouping.getGroupBys()[0]?.columnName === column.name;
     }
 
-    /** Whether a group row opens itself: what was open before a reload, else the level that is open. */
+    /** Whether a group row opens itself */
     public isGroupOpenByDefault(node: IRowNode<IRecord>): boolean {
         if (node.id && this._expandedRowGroupIds.has(node.id)) {
             return true;
@@ -129,7 +112,7 @@ export class GridGrouping {
         return node.level <= this._expandedLevel;
     }
 
-    /** How many levels of groups are open. `-1` is none. */
+    /** How many levels of groups are open. */
     public getExpandedLevel(): number {
         return this._expandedLevel;
     }
@@ -139,17 +122,10 @@ export class GridGrouping {
         return this._provider.grouping.getGroupBys().length - 1;
     }
 
-    /**
-     * Opens the groups down to a level and closes the rest.
-     *
-     * Every node with children rather than every group row the grid happens to have drawn — on the
-     * server-side model that is the levels already fetched, and a group opened here fetches its own
-     * children, which then read this same level and open in turn.
-     */
+    /** Opens the groups down to a level and closes the rest. */
     public setExpandedLevel(level: number): void {
         this._expandedLevel = Math.min(Math.max(level, -1), this.getDeepestLevel());
-        //the level is the authority from here: what the user had opened by hand would otherwise keep
-        //overriding it
+        //the level is the authority from here
         this._expandedRowGroupIds.clear();
         this._hasUserExpanded = false;
         const gridApi = this._gridServices.find('gridApi');
@@ -190,13 +166,7 @@ export class GridGrouping {
         });
     }
 
-    /**
-     * Moves a grouped column to the front, pins it if asked, and adds the column the levels are opened
-     * from.
-     *
-     * The grid builds definitions that know nothing of groups; this is the whole of what grouping needs
-     * on them, bar what the row model decides.
-     */
+    /** Moves a grouped column to the front, pins it if asked */
     public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
         const columnsMap = this._provider.getColumnsMap();
         const isGrouped = (colDef: ColDef<IRecord>): boolean =>
@@ -215,7 +185,7 @@ export class GridGrouping {
         }
     }
 
-    /** The grouping icon and what it stands for, while the column is what the rows are grouped by. */
+    /** The grouping icon and what it stands for, while the column is what the rows are grouped */
     public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], column: IColumn): void {
         if (!this.isColumnGrouped(column)) {
             return;
@@ -246,13 +216,7 @@ export class GridGrouping {
         });
     }
 
-    /**
-     * Keeps a nested grouping to one level while a load runs, and puts the rest back after.
-     *
-     * The provider groups by everything it is told to at once, which for nested grouping is the wrong
-     * shape: only the outermost level is asked for up front, and the rest arrive per group. So the extra
-     * levels — and the aggregations that belong to them — are taken off for the duration of the load.
-     */
+    /** Keeps a nested grouping to one level while a load runs, and puts the rest back after. */
     private _interceptNestedGrouping(): void {
         if (this._settings.type === 'flat') {
             return;
@@ -289,11 +253,7 @@ export class GridGrouping {
         }
     }
 
-    /**
-     * Says once that a group had more children than were loaded.
-     *
-     * Once per grid: the limit is reached per group, and a notification per group would bury the point.
-     */
+    /** Says once that a group had more children than were loaded. */
     //TODO: use control notification instead
     private async _warnChildLimitReached(): Promise<void> {
         if (this._childLimitNotificationId) {
@@ -309,8 +269,7 @@ export class GridGrouping {
     }
 
 
-    //the render method reached through a field of ours, rather than handed to AG Grid directly: what it
-    //gets has to keep one identity, and a component whose identity changed is one it rebuilds
+    //the render method reached through a field of ours.
     private _onRenderExpansionHeader = (): JSX.Element => this.components.onRenderExpansionHeader();
 
     /** The parts this module renders, merged with whatever the caller replaced. */

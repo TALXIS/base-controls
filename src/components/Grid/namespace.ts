@@ -17,21 +17,21 @@ import { GridRoot } from "./Grid";
 export interface IGridNamespace {
     /** The grid itself. */
     Root: typeof GridRoot;
-    /** A cell holding something other than a record's value: a consumer's own content, in a grid's cell. */
+    /** A cell holding something other than a record's value. */
     CellRenderer: typeof CellRenderer;
-    /** A cell of a record's column, drawing what that column holds. What a dataset column is drawn with. */
+    /** A cell of a record's column, drawing what that column holds. */
     FieldCellRenderer: typeof FieldCellRenderer;
-    /** The same cell while it is being edited, with nothing in it to share the row with the editor. */
+    /** The same cell while it is being edited, with nothing in it to share the row with the */
     CellEditor: typeof CellEditor;
-    /** A record's column while it is being edited. What a dataset column is edited with. */
+    /** A record's column while it is being edited. */
     FieldCellEditor: typeof FieldCellEditor;
-    /** A piece of all four: what makes everything inside it one cell. The only piece AG Grid's parameters go to. */
+    /** A piece of all four: what makes everything inside it one cell. */
     CellRoot: typeof CellRoot;
-    /** A piece of all four: the element a cell's content is drawn in, on the surface of the cell's theme. */
+    /** A piece of all four: the element a cell's content is drawn in, on the surface of the */
     CellContainer: typeof CellContainer;
     /** A piece of {@link CellRenderer}: what a cell offers to do. */
     CellCommands: typeof CellCommands;
-    /** A piece of all four: what is drawn in place of whatever is wrapped in it while the cell waits. */
+    /** A piece of all four: what is drawn in place of whatever is wrapped in it while the cell */
     CellLoading: typeof CellLoading;
     /** A piece of all four: what a row is dragged taller by, around the cell that is dragged. */
     RowResizeGrip: typeof RowResizeGrip;

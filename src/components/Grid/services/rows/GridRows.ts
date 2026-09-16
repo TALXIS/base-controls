@@ -3,7 +3,7 @@ import { EventEmitter, IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 
 export interface IGridRowsEvents {
-    /** Which rows the user is at changed: the pointer moved, focus moved, or a selection was made. */
+    /** Which rows the user is at changed */
     onActiveRowsChanged: () => void;
 }
 
@@ -34,11 +34,10 @@ export class GridRows extends EventEmitter<IGridRowsEvents> {
     }
 
     private _onGridApiAvailable(gridApi: GridApi<IRecord>): void {
-        //a selection reaches the cells nowhere else: the selection module redraws the checkboxes and
-        //nothing besides, so what a selected row draws of its own is this to tell
+        //a selection reaches the cells nowhere else
         this._services.get('provider').addEventListener('onRecordsSelected', () => this._onSelectionChanged());
         gridApi.addEventListener('cellMouseOver', (event: CellMouseOverEvent<IRecord>) => this._setActiveRow('hovered', event.data?.getRecordId()));
-        //AG Grid reports the cell the pointer left, which is this row only until the pointer is on another
+        //AG Grid reports the cell the pointer left
         gridApi.addEventListener('cellMouseOut', (event: CellMouseOutEvent<IRecord>) => {
             if (this._hoveredRecordId === event.data?.getRecordId()) {
                 this._setActiveRow('hovered', undefined);

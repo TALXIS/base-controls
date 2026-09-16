@@ -16,7 +16,7 @@ export interface IRecordSaveStatus {
     clearSaveResult: () => void;
 }
 
-/** Follows a record's saves. Call it once per cell: two callers are two answers that can disagree. */
+/** Follows a record's saves. */
 export const useRecordSaveStatus = (record: IRecord): IRecordSaveStatus => {
     const rerender = useRerender();
     const successTimeoutRef = useRef<NodeJS.Timeout>();

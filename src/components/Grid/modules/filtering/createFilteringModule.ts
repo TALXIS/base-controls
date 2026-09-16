@@ -8,13 +8,7 @@ import { GridFilteringComponents, IGridFilteringComponents } from "./moduleCompo
 /**
  * Builds the module that lets the grid be filtered.
  *
- * Registering it is what enables filtering: a grid without it offers no filter in any column menu, opens
- * no callout, and shows no filter state — including the icon a header would otherwise carry.
- *
  * @example
- * ```tsx
- * <Grid.Root modules={{ rowModel: createServerSideRowModelModule(), filtering: createFilteringModule() }} />
- * ```
  */
 export interface IFilteringModuleOptions {
     /** Localized strings this module renders. */

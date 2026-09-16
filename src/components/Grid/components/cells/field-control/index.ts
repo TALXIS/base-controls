@@ -1,4 +1,4 @@
-//`FieldControl` is published through the namespace rather than the flat barrel, like every other cell part
+//`FieldControl` is published through the namespace.
 export type { IGridFieldControlProps } from './FieldControl';
 export * from './components';
 export * from './context';

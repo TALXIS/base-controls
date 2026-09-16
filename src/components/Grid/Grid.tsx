@@ -16,11 +16,7 @@ import { GridComponents } from "./components";
 
 const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 
-/**
- * A grid over an {@link IDataProvider}.
- *
- * Reads the PCF context off `PcfContextProvider`, so render it inside one.
- */
+/** Reads the PCF context off `PcfContextProvider`. */
 export const GridRoot = (props: IGrid) => {
     const pcfContext = usePcfContext();
     const theme = useControlTheme(pcfContext.fluentDesignLanguage);
@@ -39,11 +35,10 @@ export const GridRoot = (props: IGrid) => {
         [theme, props.height, rowHeight]
     );
 
-    //not memoized: a slot closes over the caller's own state, and freezing it at mount is how that goes stale
+    //not memoized: a slot closes over the caller's own state
     const components = { ...GridComponents, ...props.components };
 
-    //AgGridReact is a child, so its teardown - and the `onDestroy` it fires - runs before this. The locator
-    //must not go first: the parts under it are what AG Grid is still talking to
+    //AgGridReact is a child, so its teardown - and the `onDestroy` it fires - runs before this.
     useEffect(() => {
         return () => {
             destroy();
@@ -73,8 +68,7 @@ export const GridRoot = (props: IGrid) => {
                 }
             },
         }, */
-        //the caller first, then the api: registering it is what builds the parts that talk to AG Grid, and
-        //the first thing they do is push columns - which a caller configuring those has to be ahead of
+        //the api last: registering it builds the parts that push columns
         onGridReady: (event) => {
             propsRef.current.onGridReady?.(event.api);
             services.register('gridApi', () => event.api);
@@ -83,18 +77,14 @@ export const GridRoot = (props: IGrid) => {
         onGridPreDestroyed: (event) => propsRef.current.onDestroy?.(event.api),
     }
 
-    //registered rather than passed down: a part that has to see a DOM event before AG Grid's own listeners
-    //needs this element, and it does not exist until the grid has mounted
+    //a part listening ahead of AG Grid needs this element, and it exists only once mounted
     const onGridRootRef = useCallback((gridRoot: HTMLDivElement | null) => {
         if (gridRoot) {
             services.register('gridRoot', () => gridRoot);
         }
     }, []);
 
-    //one context: everything a component needs is in the locator, `grid` included. The theme provider is
-    //what puts the grid's own theme above every cell, so a cell that reads `useTheme()` gets it rather than
-    //the host's - and only a cell with a theme of its own then needs a provider. `applyTo='none'` because
-    //the grid paints its own surfaces through `getGridStyles`
+    //one context: everything a component needs is in the locator, `grid` included.
     return <GridServicesContext.Provider value={services}>
         <ThemeProvider
             theme={theme}

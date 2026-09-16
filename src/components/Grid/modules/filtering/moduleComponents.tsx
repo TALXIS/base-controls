@@ -9,14 +9,9 @@ export interface IFilterCalloutProps {
     target: React.RefObject<HTMLDivElement>;
 }
 
-/** The replaceable parts of filtering. Override through `createFilteringModule({ components })`. */
+/** The replaceable parts of filtering. */
 export interface IGridFilteringComponents {
-    /**
-     * The callout a column's filter is set in.
-     *
-     * Rendered by the column header on every render, whether or not a filter is open — this module owns
-     * which column that is, so the default answers with nothing while none is.
-     */
+    /** The callout a column's filter is set in. */
     onRenderFilterCallout: (props: IFilterCalloutProps) => JSX.Element | null;
     /** What a filtered column shows in its header. */
     onRenderFilterIcon: () => JSX.Element;

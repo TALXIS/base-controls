@@ -18,19 +18,13 @@ export class GridKeyboard {
         this._services.whenAvailable('gridRoot', gridRoot => this._listen(gridRoot));
     }
 
-    /**
-     * The keypress the user is holding down, where the grid is what heard it go down.
-     *
-     * What a control closing its own editor asks: a close the user pressed Enter for carries the highlight
-     * on as a native one does - up rather than down where they held Shift - and a close they clicked for
-     * leaves it where it is.
-     */
+    /** The keypress the user is holding down. */
     public getKeyBeingPressed(): KeyboardEvent | undefined {
         return this._keyBeingPressed;
     }
 
     /**
-     * Runs the handler for every key pressed where the grid can hear it, ahead of whatever would answer it.
+     * Runs the handler for every key pressed where the grid can hear it, ahead of whatever would
      *
      * @returns What takes the handler off again.
      */
@@ -48,16 +42,12 @@ export class GridKeyboard {
         this._document?.removeEventListener('pointerdown', this._onKeyUp, true);
     }
 
-    /**
-     * The document rather than the grid's own element: a control's popup - a calendar, a list of options -
-     * is drawn in a layer outside the grid, and a key pressed in one is still a key pressed at a cell.
-     */
+    /** The document rather than the grid's own element. */
     private _listen(gridRoot: HTMLElement): void {
         this._document = gridRoot.ownerDocument;
         this._document.addEventListener('keydown', this._onKeyDown, true);
         this._document.addEventListener('keyup', this._onKeyUp, true);
-        //a key whose release was never heard would otherwise still read as held, and a pointer is the other
-        //way a control is asked to close its editor
+        //a release heard nowhere would leave the key reading as held
         this._document.addEventListener('pointerdown', this._onKeyUp, true);
     }
 

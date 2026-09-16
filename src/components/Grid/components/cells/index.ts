@@ -1,5 +1,4 @@
-//the four ready-made cells first: they are what a column is drawn and edited with, and everything below
-//them is what a consumer builds their own out of
+//the four ready-made cells first, the pieces they are built from below
 export * from './cell-renderer';
 export * from './field-cell-renderer';
 export * from './cell-editor';

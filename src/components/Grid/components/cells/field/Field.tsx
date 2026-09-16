@@ -11,17 +11,11 @@ export interface IGridFieldProps {
     children?: React.ReactNode;
 }
 
-/**
- * What binds everything drawn inside it to one record's column.
- *
- * Draws nothing of its own: whatever is under it reaches the field with `useGridField`, and what being
- * bound to one implies - what it reads as, whether it is valid - follows from there.
- */
+/** What binds everything drawn inside it to one record's column. */
 export const Field = (props: IGridFieldProps) => {
     const { record, name, children } = props;
     const services = useContext(GridServicesContext);
-    //the record instance, not its id: a reload hands the same row a new record, and a field holding the
-    //previous one would answer for a record nothing is looking at
+    //the instance, not its id: a reload hands the same row a new record
     const field = useMemo(() => new GridField({ record: record, columnName: name, services: services }), [record, name, services]);
 
     useLayoutEffect(() => () => field.destroy(), [field]);

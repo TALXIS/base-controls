@@ -3,7 +3,7 @@ import { CellUi, ICellControlProps } from "../ui";
 
 /** The replaceable pieces of a cell's field control. */
 export interface IGridFieldControlComponents extends Pick<IGridControlRendererComponents, 'onRenderValue'> {
-    /** The inset the value is drawn in, which is what lays it out inside the cell. */
+    /** The inset the value is drawn in. */
     onRenderControl: (props: ICellControlProps) => JSX.Element;
 }
 

@@ -5,12 +5,7 @@ import { useGridService } from "../../../../useGridService";
 import { useGridGroupingLabels } from "../../useGridGroupingLabels";
 import { getGroupExpandCollapseHeaderStyles } from "./styles";
 
-/**
- * Opens and closes the groups a level at a time.
- *
- * The level lives on the grouping module, which is what the rows are drawn from — this only steps it and
- * asks to be drawn again, so a level set from anywhere else reads correctly here too.
- */
+/** Opens and closes the groups a level at a time. */
 export const GroupExpandCollapseHeader = () => {
     const styles = React.useMemo(() => getGroupExpandCollapseHeaderStyles(), []);
     //this header is a column of the grouping module's own, so the module is there

@@ -6,17 +6,7 @@ export interface IGridColumnLayoutParameters {
     services: IGridServiceLocator;
 }
 
-/**
- * What the user did to the columns, written back to the provider.
- *
- * The grid draws from the provider's columns, so a width dragged or a column moved has to reach them or it
- * is forgotten on the next load. It is also what a saved view keeps: `UserQueryDataProvider` reads
- * `visualSizeFactor` and `order` when it captures one.
- *
- * Both handlers are the last event of their gesture rather than every event in it, and both write in one
- * read-map-write step — two writers each taking their own snapshot of `getColumns()` is how one of them
- * loses its write.
- */
+/** What the user did to the columns, written back to the provider. */
 export class GridColumnLayout {
     private _services: IGridServiceLocator;
 
@@ -51,7 +41,7 @@ export class GridColumnLayout {
         this._writeColumns(column => orderByColumnName.has(column.name)
             ? { ...column, order: orderByColumnName.get(column.name)! }
             : column);
-        //a grouped column carries its level with it, so where it sits decides what the groups nest as
+        //a grouped column carries its level with it
         if (this._provider.getColumnsMap()[event.column?.getColId()!]?.grouping?.isGrouped) {
             this._provider.refresh();
         }

@@ -2,7 +2,7 @@ import { CellUi } from "../ui";
 
 /** The replaceable pieces of what a cell shows while it waits. */
 export interface IGridCellLoadingComponents {
-    /** What is drawn in place of the content. Called only while the cell is waiting. */
+    /** What is drawn in place of the content. */
     onRenderLoading: () => JSX.Element;
 }
 

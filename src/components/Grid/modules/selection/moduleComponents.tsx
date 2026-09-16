@@ -4,7 +4,7 @@ import { IRecord } from "@talxis/client-libraries";
 import { SelectionCell } from "./components/selection-cell/SelectionCell";
 import { RecordSelectionCheckBox } from "./components/selection-header/RecordSelectionCheckbox";
 
-/** The replaceable parts of selection. Override through `createSelectionModule({ components })`. */
+/** The replaceable parts of selection. */
 export interface IGridSelectionComponents {
     /** The checkbox in a row. */
     onRenderCell: (props: ICellRendererParams<IRecord>) => JSX.Element;

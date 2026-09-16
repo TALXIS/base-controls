@@ -19,11 +19,11 @@ import { GridColumnLayout } from "./services/column-layout";
 import { GridOverlays } from "./services/overlays";
 
 export interface ICreateGridInstanceParameters {
-    /** The current props, read on demand so the grid follows them rather than the ones it was built with. */
+    /** The current props, read on demand so the grid follows them. */
     onGetProps: () => IGrid;
-    /** The host context. Needed outside React, where a cell's nested control is constructed. */
+    /** The host context. */
     pcfContext: ComponentFramework.Context<any, any>;
-    /** The control's theme. It does not change while a grid is alive. */
+    /** The control's theme. */
     theme: ITheme;
 }
 
@@ -35,43 +35,31 @@ export interface IGridInstance {
     services: IGridServiceLocator;
     /** What the modules say the grid has to be created with, merged. */
     initialComponentProps: Partial<AgGridReactProps<IRecord>>;
-    /**
-     * Releases what the modules and the grid's own parts hold. Called before the locator goes, which is
-     * what they resolve through.
-     */
+    /** Releases what the modules and the grid's own parts hold. */
     destroy: () => void;
 }
 
-/**
- * Assembles a grid.
- *
- * The parts that need no AG Grid are built here; the ones that *are* the grid are built when there is one,
- * which is what `whenAvailable` below is for. Nothing holds an api it might not have.
- */
+/** Assembles a grid. */
 export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGridInstanceParameters): IGridInstance => {
     const services = new ServiceLocator<IGridServiceMap>();
 
-    //first: everything below reads the props, the provider and the strings through these, and they need
-    //nothing back
+    //first: everything below reads the props and the provider through these
     const labels = new LocalizationService<IGridLabels>({ ...GRID_LABELS, ...onGetProps().labels });
     const settings = new GridSettings({ onGetProps });
     services.register('labels', () => labels);
     services.register('settings', () => settings);
     services.register('pcfContext', () => pcfContext);
-    //the one service whose resolver is the point: it runs on every lookup, so a provider handed over later
-    //is the one every part reads
+    //the one service whose resolver is the point
     services.register('provider', () => onGetProps().provider);
     services.register('theme', () => theme);
-    //constructed, then registered: a resolver runs on every lookup, so `() => new X()` would hand out a
-    //fresh instance each time - and these hold what the modules registered on them
+    //constructed, then registered: a resolver runs on every lookup
     const columns = new GridColumns({ services });
     const cells = new GridCells({ services });
     const rows = new GridRows({ services });
     const keyboard = new GridKeyboard({ services });
     const editing = new GridEditing({ services });
     const columnHeader = new GridColumnHeaderParts({ services });
-    //both wait for an api and then talk only to it, so nothing has to be registered before them - and
-    //being ahead of `AgGridModel` is what puts their listeners on the grid before it pushes anything
+    //both wait for an api and then talk only to it
     const columnLayout = new GridColumnLayout({ services });
     const overlays = new GridOverlays({ services });
     services.register('columns', () => columns);
@@ -88,12 +76,10 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     for (const module of orderModules(modules)) {
         module.onRegister?.(services);
     }
-    //after the modules have had their say, and before AG Grid is constructed on this same render: a grid
-    //whose row model is missing from the registry renders empty and reports a console error
+    //after the modules have had their say, and before AG Grid is constructed on this same render
     ModuleRegistry.registerModules(getAgGridModules(modules));
 
-    //constructed eagerly, and before anything can render: it waits for the api itself, and the first thing
-    //it does when one arrives is push columns - whose headers AG Grid renders, and they resolve this
+    //constructed eagerly, and before anything can render
     const agGrid = new AgGridModel({ services });
     services.register('agGrid', () => agGrid);
 
@@ -110,13 +96,7 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     };
 };
 
-/**
- * The one order modules are read in, so two grids configured the same behave the same.
- *
- * Not `Object.values`, whose order is whatever the caller happened to type: two modules setting the same
- * option would otherwise resolve differently between identical grids. The licence comes first, because the
- * key has to precede anything enterprise.
- */
+/** The one order modules are read in, so two grids configured the same behave the same. */
 const orderModules = (modules: IGridModules): IGridModule[] => [
     modules.license,
     modules.rowModel,
@@ -132,12 +112,7 @@ const orderModules = (modules: IGridModules): IGridModule[] => [
 const getAgGridModules = (modules: IGridModules): Module[] =>
     orderModules(modules).flatMap(module => module.agGridModules ?? []);
 
-/**
- * Refuses a combination where a module cannot work.
- *
- * Registering a module's AG Grid dependency is not enough to make the grid use it — `rowModelType` decides
- * that — so a module that only works on one model would otherwise render affordances that do nothing.
- */
+/** Refuses a combination where a module cannot work. */
 const assertModulesFitRowModel = (modules: IGridModules): void => {
     const rowModelType = modules.rowModel.getInitialComponentProps?.()?.rowModelType;
     for (const module of orderModules(modules)) {

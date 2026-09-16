@@ -9,24 +9,17 @@ import { IGridSelectionComponents } from "./moduleComponents";
 export type IGridSelectionState = 'checked' | 'unchecked' | 'indeterminate';
 
 export interface IGridSelectionParameters {
-    /** This module's own locator, which is what everything inside it reaches through. */
+    /** This module's own locator. */
     services: IGridSelectionServiceLocator;
     /** How many rows may be selected at once. */
     mode: 'single' | 'multiple';
 }
 
-/**
- * Which records are selected, in both directions.
- *
- * The provider is the one authority, exactly as it is for the records themselves: a click is written to it,
- * and the rows are then drawn from what it says — never from what the grid last drew. The two directions
- * meet, so the write the module makes onto the rows is fenced off with {@link _isApplying} rather than
- * relying on a change arriving late enough to be harmless.
- */
+/** Which records are selected, in both directions.  meet */
 export class GridSelection {
     private _services: IGridSelectionServiceLocator;
     private _mode: 'single' | 'multiple';
-    /** What the host persisted, until the records it names have been loaded and it can be applied. */
+    /** What the host persisted, until the records it names have been loaded and it can be */
     private _pendingRestoreRecordIds: string[] = [];
 
     constructor(parameters: IGridSelectionParameters) {
@@ -40,12 +33,7 @@ export class GridSelection {
         return this._mode;
     }
 
-    /**
-     * Adds the column the checkboxes live in, and takes out the one a save is otherwise reported in.
-     *
-     * The two occupy the same place and the checkbox cell reports a save itself, so a grid with selection
-     * needs only the one column.
-     */
+    /** Adds the column the checkboxes live in */
     public applyColumnDefinitions(columnDefs: ColDef<IRecord>[]): void {
         const recordSaveColumnIndex = columnDefs.findIndex(colDef => colDef.colId === RECORD_SAVE_COLUMN_KEY);
         if (recordSaveColumnIndex !== -1) {
@@ -55,13 +43,7 @@ export class GridSelection {
         columnDefs.forEach(colDef => this._suppressNavigation(colDef));
     }
 
-    /**
-     * Takes navigation off the checkbox column: a double click there is a second click on a checkbox, not a
-     * request to open the record.
-     *
-     * Wraps what the definition already does rather than replacing it, so every other column keeps whatever
-     * the grid, or a hook before this one, put there.
-     */
+    /** Takes navigation off the checkbox column. */
     private _suppressNavigation(colDef: ColDef<IRecord>): void {
         const onCellDoubleClicked = colDef.onCellDoubleClicked;
         colDef.onCellDoubleClicked = event => {
@@ -77,12 +59,7 @@ export class GridSelection {
         return columnName === DataProvider.CONST.CHECKBOX_COLUMN_KEY;
     }
 
-    /**
-     * How a row's checkbox should read.
-     *
-     * A row with children of its own is indeterminate while some of them are selected, so a parent shows
-     * what its group holds rather than only what it is itself.
-     */
+    /** How a row's checkbox should read. */
     public getRecordSelectionState(node: IRowNode<IRecord>): IGridSelectionState {
         const record = node.data!;
         const childDataProvider = record.getDataProvider().getGroupedRecordDataProvider(record.getRecordId());
@@ -95,16 +72,10 @@ export class GridSelection {
         return childDataProvider.getSelectedRecordIds().length === 0 ? 'unchecked' : 'indeterminate';
     }
 
-    /**
-     * Whether a record refuses selection at all.
-     *
-     * A group row is only ever a whole group, so selecting one where a single record is all that may be
-     * held is refused; and under nested grouping only the innermost level carries records rather than
-     * further groups.
-     */
+    /** Whether a record refuses selection at all. */
     public isRecordSelectionDisabled(record: IRecord): boolean {
         const provider = record.getDataProvider();
-        //a group selects every record under it, which is the opposite of what `single` means
+        //a group selects every record under it.
         return provider.getSummarizationType() === 'grouping' && this._mode === 'single';
     }
 
@@ -124,8 +95,7 @@ export class GridSelection {
         this._gridApi.addEventListener('selectionChanged', this._onGridSelectionChanged);
         this._services.get('gridServices').whenAvailable('gridRoot',
             gridRoot => gridRoot.addEventListener('click', this._onCaptureClick, true));
-        //what the host persisted, taken and cleared in one go: it is the grid's to apply from here, and
-        //leaving it on the provider would have the first write of ours read as the user's
+        //what the host persisted, taken and cleared in one go
         this._pendingRestoreRecordIds = this._provider.getSelectedRecordIds();
         if (this._pendingRestoreRecordIds.length) {
             this._provider.clearSelectedRecordIds();
@@ -133,21 +103,13 @@ export class GridSelection {
         }
     }
 
-    /**
-     * Decides what may reach AG Grid's own row-click selection, before it gets the chance.
-     *
-     * The marker is what AG Grid checks on its first line, and unlike `stopPropagation` it leaves the DOM
-     * event alone — so the checkbox's own handler still runs. It has to be the capture phase: AG Grid
-     * listens on the row container, which is ahead of React's delegated handler in bubble order.
-     */
+    /** Decides what may reach AG Grid's own row-click selection, before it gets the chance. */
     private _onCaptureClick = (event: Event): void => {
         const target = event.target as HTMLElement;
         const rowId = target.closest?.('[row-id]')?.getAttribute('row-id');
         const colId = target.closest?.('[col-id]')?.getAttribute('col-id');
         const hasModifier = (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey;
-        //the checkbox owns its own click, and a group row gives up selecting on a plain one: a click there
-        //is for expanding it, and its checkbox or a modifier is how it gets selected instead. A row under
-        //a group is a record like any other, so it selects
+        //the checkbox owns its own click, and a group row gives up selecting on a plain one.
         const node = rowId ? this._gridApi.getRowNode(rowId) : undefined;
         const isGroupRow = !!node && !!this._services.get('gridServices').find('grouping')?.isGroupRow(node);
         if (this.isSelectionColumn(colId ?? undefined) || (isGroupRow && !hasModifier)) {
@@ -156,8 +118,7 @@ export class GridSelection {
     };
 
     private _onGridSelectionChanged = (event: SelectionChangedEvent<IRecord>): void => {
-        //the source is the only fence there is: `selectionChanged` reaches a listener asynchronously, so a
-        //flag set around our own write is always cleared again before this runs
+        //the source is the only fence there is
         if (event.source === 'api' || event.source === 'apiSelectAll') {
             return;
         }
@@ -170,12 +131,7 @@ export class GridSelection {
         this._refreshSelectionColumn();
     };
 
-    /**
-     * Draws the checkboxes again.
-     *
-     * What a checkbox reads — the row's own selection, and how much of a group's is selected — is not
-     * among its props, so nothing about a selection changing re-renders it on its own.
-     */
+    /** Draws the checkboxes again. */
     private _refreshSelectionColumn(): void {
         this._gridApi.refreshCells({ columns: [DataProvider.CONST.CHECKBOX_COLUMN_KEY], force: true });
     }
@@ -184,22 +140,14 @@ export class GridSelection {
         this._applyPendingRestore();
     };
 
-    /**
-     * Puts a click onto the providers it concerns.
-     *
-     * Every provider that holds a selection is seeded empty first, so a provider the user just emptied is
-     * written as empty rather than left holding what it used to: the selected nodes alone cannot say that a
-     * provider no longer has any.
-     */
+    /** Puts a click onto the providers it concerns. */
     private _writeToProviders(): void {
         const selectedRecordIdsByProvider = new Map<IDataProvider, string[]>();
         for (const provider of this._getProvidersHoldingSelection()) {
             selectedRecordIdsByProvider.set(provider, []);
         }
         for (const recordId of this._rowModel.getSelectedRecordIds(this._gridApi)) {
-            //the row's own record, which is the one that was clicked. Not the root's copy of it: the root
-            //holds a record of its own for every id, whose provider is the root - so a row under a group
-            //would have its selection written there instead of to the provider that holds the group
+            //the row's own record, which is the one that was clicked.
             const provider = this._gridApi.getRowNode(recordId)?.data?.getDataProvider() ?? this._provider;
             const recordIds = selectedRecordIdsByProvider.get(provider) ?? [];
             recordIds.push(recordId);
@@ -208,20 +156,13 @@ export class GridSelection {
         selectedRecordIdsByProvider.forEach((recordIds, provider) => provider.setSelectedRecordIds(recordIds));
     }
 
-    //group ids asked for explicitly: a group marker is a selection worth seeding to empty, and it is the
-    //only way to be sure of getting one
+    //group ids asked for explicitly: nothing else reports a group marker
     private _getProvidersHoldingSelection(): IDataProvider[] {
         return [this._provider, ...this._provider.getGroupedRecordDataProviders(true)]
             .filter(provider => provider.getSelectedRecordIds({ includeChildrenRecordIds: false, includeGroupRecordIds: true }).length > 0);
     }
 
-    /**
-     * Re-applies a persisted selection once the rows it names are in the grid.
-     *
-     * Driven by the grid's own model rather than by polling for the records to turn up: a selection the
-     * grid was opened with names records that may arrive with any page, or with a group's children, and a
-     * row that is not there yet cannot be selected or scrolled to.
-     */
+    /** Re-applies a persisted selection once the rows it names are in the grid. */
     private _applyPendingRestore(): void {
         const nodes = this._pendingRestoreRecordIds
             .map(recordId => this._gridApi.getRowNode(recordId))
@@ -232,7 +173,7 @@ export class GridSelection {
         const pendingRecordIds = new Set(this._pendingRestoreRecordIds);
         this._pendingRestoreRecordIds = [];
         this._gridApi.removeEventListener('modelUpdated', this._onModelUpdated);
-        //per provider, because a selection spanning groups is held by the provider each row came from
+        //per provider, because a selection spanning groups is held by the provider each row came
         const providers = new Set(nodes.map(node => node.data!.getDataProvider()));
         for (const provider of providers) {
             provider.setSelectedRecordIds(Object.keys(provider.getRecordsMap()).filter(recordId => pendingRecordIds.has(recordId)));
@@ -240,7 +181,7 @@ export class GridSelection {
         this._scrollToSelection(nodes);
     }
 
-    //the middle one rather than the first, so a run of selected rows is shown surrounded by its own context
+    //the middle one rather than the first
     private _scrollToSelection(nodes: IRowNode<IRecord>[]): void {
         this._gridApi.ensureNodeVisible(nodes[Math.floor(nodes.length / 2)], 'middle');
     }

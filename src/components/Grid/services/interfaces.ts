@@ -22,73 +22,53 @@ import type { GridGrouping } from "../modules/grouping/GridGrouping";
 
 /** Everything the grid is made of, and when each of it turns up. */
 export interface IGridServiceMap {
-    /** What the caller asked the grid to be, with its defaults applied. There from the start. */
+    /** What the caller asked the grid to be, with its defaults applied. */
     settings: GridSettings;
     /** What a cell draws: its value, and whatever a module made of it. */
     /** What is true of a row rather than of one of its cells. */
     rows: GridRows;
-    /**
-     * Where the records, the columns and the paging come from.
-     *
-     * Resolved on every lookup, so a provider handed over later is the one every part reads.
-     */
+    /** Where the records, the columns and the paging come from. */
     provider: IDataProvider;
-    /** The host context. Needed outside React, where a cell's nested control is constructed. */
+    /** The host context. */
     pcfContext: ComponentFramework.Context<any, any>;
-    /**
-     * The grid's own element. Registered once it is mounted, which is what a part listening for a DOM event
-     * ahead of AG Grid's own listeners needs — so wait for it with `whenAvailable`.
-     */
+    /** The grid's own element. */
     gridRoot: HTMLElement;
-    /** Every string the grid renders, resolved. There from the start. */
+    /** Every string the grid renders, resolved. */
     labels: ILocalizationService<IGridLabels>;
-    /**
-     * The raw AG Grid api. Registered the moment AG Grid hands one over, which is after everything that
-     * does not need one — so wait for it with `whenAvailable` rather than resolving it in a constructor.
-     */
     gridApi: GridApi<IRecord>;
-    /** The theme the control was given. There from the start, and it does not change while a grid is alive. */
+    /** The theme the control was given. */
     theme: ITheme;
-    /** The column definitions, and the hooks a module puts its own on them through. There from the start. */
+    /** The column definitions, and the hooks a module puts its own on them through. */
     columns: GridColumns;
-    /** What a cell shows, and the hooks a module adds to it through. There from the start. */
+    /** What a cell shows, and the hooks a module adds to it through. */
     cells: GridCells;
-    /** What the user is pressing while the grid is doing something about it. There from the start. */
+    /** What the user is pressing while the grid is doing something about it. */
     keyboard: GridKeyboard;
-    /** Which cell the user is editing, and what the keyboard does about it. There from the start. */
+    /** Which cell the user is editing, and what the keyboard does about it. */
     editing: GridEditing;
-    /** What a column header offers, assembled from what the modules registered. There from the start. */
+    /** What a column header offers, assembled from what the modules registered. */
     columnHeader: GridColumnHeaderParts;
-    /** The widths and the order the user chose, written back to the provider. There from the start. */
+    /** The widths and the order the user chose, written back to the provider. */
     columnLayout: GridColumnLayout;
-    /** Which overlay the grid is showing: the spinner, the empty state, neither. There from the start. */
+    /** Which overlay the grid is showing: the spinner, the empty state, neither. */
     overlays: GridOverlays;
-    /** The totals under the rows. Present when the aggregation module is registered. */
+    /** The totals under the rows. */
     aggregation: GridAggregation;
-    /** Grouping the rows by a column. Present when the grouping module is registered. */
+    /** Grouping the rows by a column. */
     grouping: GridGrouping;
-    /** Filtering the grid by a column. Present when the filtering module is registered. */
+    /** Filtering the grid by a column. */
     filtering: GridFiltering;
-    /** Sorting the grid by a column. Present when the sorting module is registered. */
+    /** Sorting the grid by a column. */
     sorting: GridSorting;
-    /** Which records are selected. Present when the selection module is registered. */
+    /** Which records are selected. */
     selection: GridSelection;
-    /** How the grid gets its rows. Whichever row-model module the caller gave it. */
+    /** How the grid gets its rows. */
     rowModel: IGridRowModel;
-    /**
-     * The wiring between the grid and AG Grid: the options it is set up with, and pushing columns and rows
-     * when the provider has new ones. There from the start, and registered for its lifetime rather than to
-     * be resolved — it has no surface to call, because everything it used to answer now lives with whatever
-     * owns it.
-     */
+    /** The wiring between the grid and AG Grid. */
     agGrid: AgGridModel;
 }
 
-/**
- * The services that are only there when whatever registers them is: a module's, and the api AG Grid hands
- * over once it has built a grid. Every other key is there from the moment the grid is assembled, which is
- * what lets `useGridService` type those as always present.
- */
+/** The services that are only there when whatever registers them is. */
 export type IOptionalGridService = 'gridApi' | 'gridRoot' | 'selection' | 'sorting' | 'filtering' | 'grouping' | 'aggregation';
 
 /** Where the grid's parts find each other. */

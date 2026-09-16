@@ -27,7 +27,7 @@ const isEditStartKey = (event: KeyboardEvent): boolean => {
 /** Which cell the user is editing, and the keys that start and end it. */
 export class GridEditing extends EventEmitter<IGridEditingEvents> {
     private _services: IGridServiceLocator;
-    //by record and column, not by cell: writing a value has the grid rebuild the cell under the user
+    //by record and column, not by cell
     private _editedCell?: IGridEditedCell;
 
     constructor(parameters: IGridEditingParameters) {
@@ -39,7 +39,7 @@ export class GridEditing extends EventEmitter<IGridEditingEvents> {
         });
     }
 
-    /** Whether the user stepped into the control a cell draws in place. A cell with an editor over it is `GridCell`'s to answer. */
+    /** Whether the user stepped into the control a cell draws in place. */
     public isEditing(record: IRecord, columnName: string): boolean {
         return this._editedCell?.recordId === record.getRecordId() && this._editedCell?.columnName === columnName;
     }
@@ -50,8 +50,7 @@ export class GridEditing extends EventEmitter<IGridEditingEvents> {
     }
 
     /**
-     * The edit is over: whatever was opened over the cell closes and the highlight comes back, a row on where
-     * Enter ended it.
+     * The edit is over: what was opened over the cell closes and the highlight comes back.
      */
     public finish(cell: GridCell): void {
         const gridApi = this._services.find('gridApi');
@@ -83,7 +82,7 @@ export class GridEditing extends EventEmitter<IGridEditingEvents> {
         if (!cell?.takesInputInPlace()) {
             return;
         }
-        //AG Grid answers F2 by asking for an editor the column does not open, and takes the focus back for it
+        //AG Grid answers F2 by asking for an editor the column does not open
         event.preventDefault();
         event.stopPropagation();
         this.start(cell);
@@ -127,7 +126,7 @@ export class GridEditing extends EventEmitter<IGridEditingEvents> {
             && editing.column.getColId() === cell.getColumnName());
     }
 
-    //deferred: focus set while an editor is still being torn down goes back to the document with its input
+    //deferred: focus set while an editor is still being torn down goes back to the document with
     private _returnFocus(gridApi: GridApi<IRecord>, cell: GridCell): void {
         const rowIndex = cell.getNode()?.rowIndex;
         if (rowIndex === null || rowIndex === undefined) {

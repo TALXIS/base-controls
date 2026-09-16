@@ -8,12 +8,7 @@ export interface IClientSideRowModelParameters {
     services: IGridServiceLocator;
 }
 
-/**
- * Every row at once, handed over as data.
- *
- * What a grid over a set already in memory wants: nothing is fetched, so no row is ever a placeholder and
- * anything reading the rows alongside the grid sees the same list at the same time.
- */
+/** Every row at once, handed over as data. */
 export class ClientSideRowModel implements IGridRowModel {
     private _services: IGridServiceLocator;
 
@@ -26,20 +21,14 @@ export class ClientSideRowModel implements IGridRowModel {
     }
 
     public applyGridOptions(gridApi: GridApi<IRecord>): void {
-        //asked of the grouping module, because a group row is one of its: a grid without it has none, and
-        //nothing to open
+        //asked of the grouping module, because a group row is one of its
         gridApi.setGridOption('isGroupOpenByDefault', params =>
             this._services.find('grouping')?.isGroupOpenByDefault(params.rowNode) ?? false);
     }
 
-    /**
-     * Asked of the grouping module where there is one: a hierarchy is every level in one array, and only
-     * that module knows how to project the provider into it.
-     */
+    /** Asked of the grouping module where there is one. */
     public refresh(gridApi: GridApi<IRecord>): void {
-        //the same records are handed over again: with `getRowId` set the grid works out the difference
-        //itself and keeps the row objects it already has, so what is expanded, selected or being edited
-        //survives a load
+        //the same records are handed over again
         gridApi.setGridOption('rowData',
             this._services.find('grouping')?.getRows() ?? this._services.get('provider').getRecords());
     }
@@ -56,8 +45,7 @@ export class ClientSideRowModel implements IGridRowModel {
         const selectedIds = new Set(recordIds);
         const toSelect: any[] = [];
         const toDeselect: any[] = [];
-        //one walk of the rows and two calls, rather than a write per row: every write of ours reports
-        //itself as coming from the api, which is what the grid's selection handler ignores
+        //one walk of the rows and two calls, rather than a write per row
         gridApi.forEachNode(node => {
             if (!node.id) {
                 return;

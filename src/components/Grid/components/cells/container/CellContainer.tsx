@@ -6,19 +6,12 @@ export interface IGridCellContainerProps {
     children?: React.ReactNode;
 }
 
-/**
- * The element a cell's content is drawn in, and the surface it is drawn on.
- *
- * Reads the cell it belongs to, so it has to be inside a `Grid.CellRoot`. What sits between the two is
- * whatever wraps the cell's content rather than being part of it - the row-resize grip is the one the
- * grid brings.
- */
+/** The element a cell's content is drawn in, and the surface it is drawn on. */
 export const CellContainer = (props: IGridCellContainerProps) => {
-    //asked for rather than used: a container drawn outside a cell root is drawing a cell the grid knows
-    //nothing about, and this is what says so
+    //asked for rather than used: it throws outside a cell root
     useGridCell();
 
-    //what is inside a cell and what wraps one are not interchangeable, and this is how the pieces tell
+    //what is inside a cell and what wraps one are not interchangeable
     return <CellContainerProvider value={true}>
         <CellUi.Container>{props.children}</CellUi.Container>
     </CellContainerProvider>;

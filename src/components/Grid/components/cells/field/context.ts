@@ -8,7 +8,6 @@ GridFieldContext.displayName = 'GridField';
 /**
  * The field this component is bound to, or `undefined` where nothing bound one.
  *
- * Undefined rather than a throw: binding a field is the consumer's to do, so anything that merely adapts
  * to one has to draw without one. What cannot draw without one asks {@link useRequiredGridField}.
  */
 export const useGridField = (): GridField | undefined => {

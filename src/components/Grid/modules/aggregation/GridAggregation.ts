@@ -15,18 +15,13 @@ const TOTAL_LABELS: Record<string, keyof IGridAggregationLabels> = {
 };
 
 export interface IGridAggregationParameters {
-    /** This module's own locator, which is what everything inside it reaches through. */
+    /** This module's own locator. */
     services: IGridAggregationServiceLocator;
-    /** Whether a column's menu offers the totals, or the provider's own aggregations are all there is. */
+    /** Whether a column's menu offers the totals, or the provider's own aggregations are all */
     allowUserAggregation: boolean;
 }
 
-/**
- * The totals a grid shows, in the row pinned under the rest.
- *
- * A pinned row rather than a footer of AG Grid's, so the total is the dataset's answer rather than the
- * grid's arithmetic over the rows it happens to have loaded.
- */
+/** The totals a grid shows, in the row pinned under the rest. */
 export class GridAggregation {
     private _services: IGridAggregationServiceLocator;
     private _allowUserAggregation: boolean;
@@ -44,11 +39,7 @@ export class GridAggregation {
         return this._totalRow;
     }
 
-    /**
-     * The total row, created if the dataset now carries an aggregation.
-     *
-     * The provider clones the whole data provider, so this is put off until there is something to total.
-     */
+    /** The total row, created if the dataset now carries an aggregation. */
     private _ensureTotalRow(): TotalRow | undefined {
         if (this._totalRow || !this._isDatasetAggregated()) {
             return this._totalRow;
@@ -68,18 +59,13 @@ export class GridAggregation {
         this._write(() => this._totalRow?.removeAggregation(alias));
     }
 
-    /**
-     * What the column is totalling, for the header's tooltip.
-     *
-     * Left off a grouped column: it totals per group there, which the group rows already say.
-     */
+    /** What the column is totalling, for the header's tooltip. */
     public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], column: IColumn): void {
         const aggregationFunction = column.aggregation?.aggregationFunction;
         if (!aggregationFunction || this._services.get('gridServices').find('grouping')?.isColumnGrouped(column)) {
             return;
         }
-        //named rather than drawn: the total itself is already under the rows, and a glyph beside the name
-        //only competes with it for the space a long column name needs
+        //named rather than drawn: a glyph competes with a long column name for the space
         adornments.push({
             key: 'total',
             placement: 'suffix',
@@ -115,12 +101,7 @@ export class GridAggregation {
         });
     }
 
-    /**
-     * Applies a change, then asks whoever owns the answer to work it out again.
-     *
-     * A grouped dataset totals per group, so the whole thing reloads; an ungrouped one only has the total
-     * row to recompute.
-     */
+    /** Applies a change, then asks whoever owns the answer to work it out again. */
     private _write(change: () => void): void {
         const provider = this._provider;
         (provider as IInternalDataProvider).executeWithUnsavedChangesBlocker(() => {
@@ -135,12 +116,10 @@ export class GridAggregation {
     }
 
     private _onGridApiAvailable(): void {
-        //a view change can bring in an aggregated column, which is what creates the total row - so this is
-        //asked again on every load rather than only on the first
+        //a view change can bring in an aggregated column
         this._provider.addEventListener('onFirstDataLoaded', () => this._syncTotalRow());
         this._provider.addEventListener('onNewDataLoaded', () => this._syncTotalRow());
-        //a save changes what the totals are over. An auto-saving grid saves a record at a time, which is
-        //why the per-record event is only worth listening to there
+        //a save changes what the totals are over.
         this._provider.addEventListener('onAfterSaved', () => this._totalRow?.refresh());
         this._provider.addEventListener('onAfterRecordSaved', () => {
             if (this._gridServices.get('settings').isAutoSaveEnabled()) {
@@ -150,13 +129,7 @@ export class GridAggregation {
         this._syncTotalRow();
     }
 
-    /**
-     * Puts the dataset's total under the rows, and keeps it there.
-     *
-     * Idempotent: the total row only comes into existence once the dataset carries an aggregation, which can
-     * be long after the grid mounted. A grid whose dataset never aggregates leaves the pinned rows alone
-     * entirely, because other features own that row too (see `CheckListGridCustomizer`).
-     */
+    /** Puts the dataset's total under the rows, and keeps it there. */
     private _syncTotalRow(): void {
         const totalRow = this._ensureTotalRow();
         if (totalRow && !this._isTotalRowSubscribed) {
@@ -167,8 +140,7 @@ export class GridAggregation {
         this._setPinnedRowData();
     }
 
-    //a total row can be created by a menu click before or after there is a grid; only the grid's copy of
-    //it needs one, and the row itself is the dataset's either way
+    //a menu click can create the total row before there is a grid
     private _setPinnedRowData(): void {
         const gridApi = this._gridServices.find('gridApi');
         if (!gridApi || gridApi.isDestroyed()) {
@@ -183,7 +155,7 @@ export class GridAggregation {
     }
 
     private _createTotalRow(): TotalRow {
-        //assigned before it is put on the grid, so anything reading the module back sees the instance
+        //assigned before it is put on the grid
         this._totalRow = new TotalRow(this._provider);
         this._syncTotalRow();
         return this._totalRow;

@@ -8,14 +8,9 @@ export interface IGridCellEditorProps extends ICellRendererParams {
     children?: React.ReactNode;
 }
 
-/**
- * A cell of the grid while it is being edited, holding something other than a record's value.
- *
- * The cell a renderer draws, without what would share the row with an open editor: no commands, and
- * nothing said about the value while it is being typed.
- */
+/** A cell of the grid while it is being edited, holding something other than a record's value. */
 export const CellEditor = (props: IGridCellEditorProps) => {
-    //an editor takes input by being one, which is what the cell it makes is told
+    //an editor takes input by being one.
     return <CellRoot {...props} takesInput>
         <RowResizeGrip>
             <CellContainer>

@@ -8,7 +8,7 @@ export interface ICellContainerProps extends React.HTMLAttributes<HTMLDivElement
 /** The element a cell's content is drawn in. */
 export const CellContainer = (props: ICellContainerProps) => {
     const { className, ...divProps } = props;
-    //whatever the cell was drawn in: the theme a cell reaches its content through is the one above this
+    //whatever the cell was drawn in
     const theme = useTheme();
     const styles = useMemo(() => getCellContainerStyles(theme), [theme]);
 

@@ -2,7 +2,7 @@ import * as React from "react";
 import { Icon } from "@fluentui/react";
 import { GroupExpandCollapseHeader } from "./components";
 
-/** The replaceable parts of grouping. Override through `createGroupingModule({ components })`. */
+/** The replaceable parts of grouping. */
 export interface IGridGroupingComponents {
     /** What a column the rows are grouped by shows in its header, before the name. */
     onRenderGroupingIcon: () => JSX.Element;

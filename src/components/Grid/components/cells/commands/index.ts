@@ -1,3 +1,3 @@
-//`CellCommands` is published through the namespace rather than the flat barrel, like every other cell part
+//`CellCommands` is published through the namespace.
 export type { IGridCellCommandsProps } from './CellCommands';
 export * from './components';

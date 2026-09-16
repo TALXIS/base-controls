@@ -3,30 +3,13 @@ import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
 
-/**
- * A hook over what a column's menu offers.
- *
- * Mutates rather than returning, like the other hooks: a module pushes a section of its own onto the
- * array. Sections rather than loose entries, so no module has to know whether anything ran before it, and
- * none can leave a heading over somebody else's items.
- */
+/** A hook over what a column's menu offers. */
 export type GridColumnMenuSectionsHook = (sections: IColumnMenuSection[], column: IColumn) => void;
 
-/**
- * A hook over the menu the sections became.
- *
- * The way out for a module whose contribution is not a section — something above every heading, or a
- * change to what another module put there. Runs after the sections have been laid out, on the entries the
- * menu is about to be given.
- */
+/** A hook over the menu the sections became. */
 export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], column: IColumn) => void;
 
-/**
- * Something a module draws in a column header beside its name.
- *
- * A sort direction, a filter, a grouping, a total: each belongs to the module that knows about it, and
- * core only knows where they sit and in what order.
- */
+/** Something a module draws in a column header beside its name. */
 export interface IColumnHeaderAdornment {
     key: string;
     /** Before the name, or after it. */
@@ -37,13 +20,13 @@ export interface IColumnHeaderAdornment {
     onRender?: () => JSX.Element;
 }
 
-/** A hook over what a column header draws. Mutates the array it is handed. */
+/** A hook over what a column header draws. */
 export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], column: IColumn) => void;
 
 /** What a module contributes to a column's menu, under a heading of its own. */
 export interface IColumnMenuSection {
     key: string;
-    /** What the section is called, which is what tells the reader whose entries these are. */
+    /** What the section is called. */
     title: string;
     items: IContextualMenuItem[];
 }
@@ -52,12 +35,7 @@ export interface IColumnHeaderPartsParameters {
     services: IGridServiceLocator;
 }
 
-/**
- * What a column header offers, and what it draws.
- *
- * The grid contributes neither: sorting, filtering, grouping and totals are all modules, so a header with
- * none of them registered shows a name, draws nothing, and opens no menu.
- */
+/** What a column header offers, and what it draws. */
 export class GridColumnHeaderParts {
     private _services: IGridServiceLocator;
     private _menuSectionHooks = new HookRegistry<GridColumnMenuSectionsHook>();
@@ -71,8 +49,7 @@ export class GridColumnHeaderParts {
     /**
      * Registers a hook over what a column's menu offers.
      *
-     * @param priority Ascending, so a module can place its section against the others: sorting at `0`,
-     * filtering at `10`, grouping at `20`, totals at `30`.
+     * @param priority Ascending: sorting at `0`,
      */
     public registerColumnMenuSectionHook(hook: GridColumnMenuSectionsHook, priority?: number): () => void {
         return this._menuSectionHooks.register(hook, priority);
@@ -81,22 +58,14 @@ export class GridColumnHeaderParts {
     /**
      * Registers a hook over the assembled menu, for a contribution a section cannot express.
      *
-     * Runs after every section has been laid out, so this is where a module reaches an entry that is not
-     * its own. Prefer {@link registerColumnMenuSectionHook}: a section is what keeps a menu assembled
-     * from several modules readable.
-     *
+     * its own. Prefer {@link registerColumnMenuSectionHook}
      * @param priority Ascending, and applied after all the sections regardless.
      */
     public registerColumnMenuItemsHook(hook: GridColumnMenuItemsHook, priority?: number): () => void {
         return this._menuItemHooks.register(hook, priority);
     }
 
-    /**
-     * Everything the modules offer for a column, in order. Empty means no menu.
-     *
-     * Each section becomes a heading and the entries under it. A module that offered nothing for this
-     * column contributes no heading either.
-     */
+    /** Everything the modules offer for a column, in order. */
     public getMenuItems(column: IColumn): IContextualMenuItem[] {
         const sections: IColumnMenuSection[] = [];
         this._menuSectionHooks.apply(sections, column);
@@ -106,8 +75,7 @@ export class GridColumnHeaderParts {
                 key: `${section.key}Header`,
                 itemType: ContextualMenuItemType.Header,
                 text: section.title,
-                //a heading names the entries under it rather than being one, so it does not sit in the
-                //icon column they line up against
+                //a heading names the entries under it rather than being one
                 onRenderIcon: () => null,
             }, ...section.items]);
         this._menuItemHooks.apply(items, column);
