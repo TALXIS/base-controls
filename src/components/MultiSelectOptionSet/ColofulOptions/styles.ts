@@ -5,17 +5,10 @@ export const getColorfulOptionsStyles = () => {
         root: {
             gap: '5px',
             display: 'flex',
+            alignItems: 'center',
+            height: '100%',
             overflow: 'hidden',
             textAlign: 'center'
-        },
-        option: {
-            borderRadius: 5,
-            padding: 2,
-            paddingLeft: 4,
-            paddingRight: 4,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            flexGrow: 1,
         }
     })
 }

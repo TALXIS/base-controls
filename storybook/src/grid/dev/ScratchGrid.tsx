@@ -1,5 +1,5 @@
 import React from 'react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModule, IGridModules, IGridServiceLocator, OptionSet } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModule, IGridModules, IGridServiceLocator, MultiSelectOptionSet, OptionSet } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
@@ -37,6 +37,31 @@ const OptionSetPreview = (props: {
                 EnableOptionSetColors: { raw: props.enableColors },
             }}
             onNotifyOutputChanged={(outputs: { value?: number }) => setValue(outputs.value ?? null)} />
+    </div>
+}
+
+/** One `MultiSelectOptionSet` in its colourful variant, so a set of tags can be seen as a field beside the
+ * same set as tags in the grid. */
+const MultiSelectOptionSetPreview = (props: {
+    label: string
+    options: ComponentFramework.PropertyHelper.OptionMetadata[]
+    initialValue: number[]
+    disabled?: boolean
+}) => {
+    const [value, setValue] = React.useState<number[]>(props.initialValue)
+    const context = React.useMemo(() => getPreviewContext(!!props.disabled), [props.disabled])
+    return <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: 190 }}>
+        <span style={{ fontSize: 12, opacity: 0.7 }}>{props.label}</span>
+        <MultiSelectOptionSet
+            context={context}
+            parameters={{
+                value: {
+                    raw: value,
+                    attributes: { Options: props.options },
+                },
+                EnableOptionSetColors: { raw: true },
+            }}
+            onNotifyOutputChanged={(outputs: { value?: number[] }) => setValue(outputs.value ?? [])} />
     </div>
 }
 
@@ -233,6 +258,10 @@ export const ScratchGrid = (props: IScratchGridProps) => {
                 enableColors={props.enableOptionSetColors} />
             <OptionSetPreview label='Nothing selected, disabled' options={STATUS_OPTIONS} initialValue={null}
                 enableColors={props.enableOptionSetColors} disabled />
+            <MultiSelectOptionSetPreview label='Tags, a few' options={TAG_OPTIONS} initialValue={[10, 20, 30]} />
+            <MultiSelectOptionSetPreview label='Tags, every one' options={TAG_OPTIONS}
+                initialValue={TAG_OPTIONS.map(option => option.Value)} />
+            <MultiSelectOptionSetPreview label='Tags, disabled' options={TAG_OPTIONS} initialValue={[50, 90]} disabled />
             {/* the same options with the feature off, which is the field every other control is */}
             <OptionSetPreview label='Colours off' options={STATUS_OPTIONS} initialValue={2}
                 enableColors={false} />
@@ -242,6 +271,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             provider={provider}
             modules={modules}
             height='420px'
+            rowHeight={32}
             enableEditing={props.enableEditing}
             enableAutoSave={props.enableAutoSave}
             enableNavigation={props.enableNavigation}
