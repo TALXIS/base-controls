@@ -12,6 +12,7 @@ import { GridSettings } from "./services/settings";
 import { GridRows } from "./services/rows";
 import { GridColumns } from "./services/columns";
 import { GridCells } from "./services/cells";
+import { GridKeyboard } from "./services/keyboard";
 import { GridColumnHeaderParts } from "./services/column-header";
 import { GridColumnLayout } from "./services/column-layout";
 import { GridOverlays } from "./services/overlays";
@@ -33,7 +34,10 @@ export interface IGridInstance {
     services: IGridServiceLocator;
     /** What the modules say the grid has to be created with, merged. */
     initialComponentProps: Partial<AgGridReactProps<IRecord>>;
-    /** Releases what the modules hold. Called before the locator goes, which is what they resolve through. */
+    /**
+     * Releases what the modules and the grid's own parts hold. Called before the locator goes, which is
+     * what they resolve through.
+     */
     destroy: () => void;
 }
 
@@ -62,6 +66,7 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     const columns = new GridColumns({ services });
     const cells = new GridCells({ services });
     const rows = new GridRows({ services });
+    const keyboard = new GridKeyboard({ services });
     const columnHeader = new GridColumnHeaderParts({ services });
     //both wait for an api and then talk only to it, so nothing has to be registered before them - and
     //being ahead of `AgGridModel` is what puts their listeners on the grid before it pushes anything
@@ -70,6 +75,7 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
     services.register('columns', () => columns);
     services.register('cells', () => cells);
     services.register('rows', () => rows);
+    services.register('keyboard', () => keyboard);
     services.register('columnHeader', () => columnHeader);
     services.register('columnLayout', () => columnLayout);
     services.register('overlays', () => overlays);
@@ -94,7 +100,10 @@ export const createGridInstance = ({ onGetProps, pcfContext, theme }: ICreateGri
         initialComponentProps: orderModules(modules)
             .reduce<Partial<AgGridReactProps<IRecord>>>(
                 (props, module) => ({ ...props, ...module.getInitialComponentProps?.() }), {}),
-        destroy: () => orderModules(modules).forEach(module => module.onDestroy?.(services)),
+        destroy: () => {
+            orderModules(modules).forEach(module => module.onDestroy?.(services));
+            keyboard.destroy();
+        },
     };
 };
 

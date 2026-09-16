@@ -1,4 +1,4 @@
-import { ColDef, IRowNode } from "@ag-grid-community/core";
+import { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 import { IGridCellCommands, IGridCellEditable, IGridCellLoading } from "./GridCells";
@@ -36,6 +36,7 @@ export class GridCell {
     private _services: IGridServiceLocator;
     private _record: IRecord;
     private _colDef: ColDef<IRecord>;
+    private _node?: IRowNode<IRecord>;
     private _id: string;
     private _theme: GridCellTheme;
     private _control?: GridFieldControl;
@@ -46,6 +47,7 @@ export class GridCell {
         this._services = parameters.services;
         this._record = parameters.record;
         this._colDef = parameters.colDef;
+        this._node = parameters.node;
         this._editing = !!parameters.editing;
         this._id = `${parameters.record.getRecordId()}_${this.getColumnName()}_${++instanceCount}`;
         this._theme = new GridCellTheme({ services: parameters.services, record: parameters.record, columnName: this.getColumnName(), node: parameters.node });
@@ -93,13 +95,20 @@ export class GridCell {
     }
 
     /**
-     * Closes the editor over this cell, keeping what was written in it.
+     * Closes the editor over this cell, keeping what was written in it and leaving the grid where a native
+     * close would: the cell focused again, and the highlight a row on where the user pressed Enter for the
+     * close - up rather than down where they held Shift.
      *
      * For a control that finishes on a choice rather than on a blur - an option, a date, a duration - which
      * would otherwise leave its editor open over the value it has already reported.
      */
     public closeEditor(): void {
-        this._services.find('gridApi')?.stopEditing();
+        const gridApi = this._services.find('gridApi');
+        if (!gridApi || !this._isEditorOpen(gridApi)) {
+            return;
+        }
+        gridApi.stopEditing();
+        this._focusCell(gridApi, this._getRowsMoved(gridApi));
     }
 
     /** What draws this cell's value, once {@link createControl} has made one. */
@@ -158,6 +167,44 @@ export class GridCell {
      */
     public destroy(): void {
         this._isDestroyed = true;
+    }
+
+    /** How far the highlight travels, which is Enter's doing and nothing else's. */
+    private _getRowsMoved(gridApi: GridApi<IRecord>): number {
+        const keyPress = this._services.get('keyboard').getKeyBeingPressed();
+        if (keyPress?.key !== 'Enter' || !gridApi.getGridOption('enterNavigatesVerticallyAfterEdit')) {
+            return 0;
+        }
+        return keyPress.shiftKey ? -1 : 1;
+    }
+
+    private _isEditorOpen(gridApi: GridApi<IRecord>): boolean {
+        return gridApi.getEditingCells().some(cell => cell.rowIndex === this._node?.rowIndex && cell.column.getColId() === this.getColumnName());
+    }
+
+    /**
+     * Where the grid is left once the editor is gone, counted from this cell's own row so that a grid which
+     * already moved the highlight itself lands on the same cell rather than one further on.
+     *
+     * After the browser has finished with the editor: focus set while it is still being torn down is focus
+     * the removal of its input takes straight back to the document.
+     */
+    private _focusCell(gridApi: GridApi<IRecord>, rowsMoved: number): void {
+        const rowIndex = this._node?.rowIndex;
+        if (rowIndex === null || rowIndex === undefined) {
+            return;
+        }
+        const targetIndex = Math.max(Math.min(rowIndex + rowsMoved, gridApi.getDisplayedRowCount() - 1), 0);
+        setTimeout(() => {
+            gridApi.ensureIndexVisible(targetIndex);
+            gridApi.setFocusedCell(targetIndex, this.getColumnName());
+            //a range is not carried by the focus, and one left on the cell the editor was over reads as a
+            //second highlight
+            if (gridApi.getGridOption('enableRangeSelection')) {
+                gridApi.clearRangeSelection();
+                gridApi.addCellRange({ rowStartIndex: targetIndex, rowEndIndex: targetIndex, columns: [this.getColumnName()] });
+            }
+        });
     }
 
     private get _cells() {
