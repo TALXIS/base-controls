@@ -27,6 +27,10 @@ export const CellRoot = (props: IGridCellRootProps) => {
     const [revision, setRevision] = useState(() => Symbol('cellRevision'));
     const redraw = useCallback(() => setRevision(Symbol('cellRevision')), []);
 
+    const isThisCell = (edited: IGridEditedCell | undefined) => {
+        return edited?.recordId === record.getRecordId() && edited?.columnName === cell.getColumnName();
+    }
+
     //any field can decide what another cell of the row draws
     useEventEmitter<IRecordEvents>(record, RECORD_EVENTS, () => {
         redraw();
@@ -34,8 +38,6 @@ export const CellRoot = (props: IGridCellRootProps) => {
 
     //`AutoFocus` is whether this cell is the one being edited, so both sides of the change redraw
     useEventEmitter<IGridEditingEvents>(editing, 'onEditedCellChanged', (previous, next) => {
-        const isThisCell = (edited: IGridEditedCell | undefined) => edited?.recordId === record.getRecordId()
-            && edited?.columnName === cell.getColumnName();
         if (isThisCell(previous) || isThisCell(next)) {
             redraw();
         }
