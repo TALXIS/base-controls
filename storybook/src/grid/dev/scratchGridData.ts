@@ -57,12 +57,18 @@ const BILLABLE_OPTIONS = [
     { Value: 1, Label: 'Yes', Color: '#107c10' },
 ]
 
+/** The same two answers with no colour of their own, which is what a cell draws as plain text. */
+const APPROVED_OPTIONS = [
+    { Value: 0, Label: 'Pending' },
+    { Value: 1, Label: 'Approved' },
+]
+
 /**
  * One column per data type, so the grid can be seen rendering every one of them.
  *
- * `DataTypes.GetAll()` is the list this is kept against, plus `Lookup.Regarding`, which the list omits.
- * The first columns are the ones worth grouping, sorting and totalling by; the rest are here to be looked
- * at. Widen the story or scroll sideways — there are more columns than fit.
+ * One per data type of `DataTypes.GetAll()`, the lookups aside. The first columns are the ones worth
+ * grouping, sorting and totalling by; the rest are here to be looked at. Widen the story or scroll
+ * sideways — there are more columns than fit.
  */
 export const COLUMNS: IColumn[] = [
     {
@@ -102,7 +108,7 @@ export const COLUMNS: IColumn[] = [
         metadata: gridMetadata(DataTypes.SingleLineUrl),
     },
     {
-        name: 'notes', dataType: DataTypes.Multiple, displayName: 'Notes', visualSizeFactor: 240, autoHeight: true,
+        name: 'notes', dataType: DataTypes.Multiple, displayName: 'Notes', visualSizeFactor: 240, autoHeight: false,
         metadata: gridMetadata(DataTypes.Multiple),
     },
     {
@@ -129,20 +135,8 @@ export const COLUMNS: IColumn[] = [
         metadata: { ...gridMetadata(DataTypes.TwoOptions, true), OptionSet: BILLABLE_OPTIONS },
     },
     {
-        name: 'project', dataType: DataTypes.LookupSimple, displayName: 'Project', visualSizeFactor: 160,
-        metadata: { ...gridMetadata(DataTypes.LookupSimple), Targets: ['mem_project'] },
-    },
-    {
-        name: 'assignedto', dataType: DataTypes.LookupOwner, displayName: 'Assigned To', visualSizeFactor: 160,
-        metadata: { ...gridMetadata(DataTypes.LookupOwner), Targets: ['systemuser'] },
-    },
-    {
-        name: 'customer', dataType: DataTypes.LookupCustomer, displayName: 'Customer', visualSizeFactor: 160,
-        metadata: { ...gridMetadata(DataTypes.LookupCustomer), Targets: ['account', 'contact'] },
-    },
-    {
-        name: 'regarding', dataType: DataTypes.LookupRegarding, displayName: 'Regarding', visualSizeFactor: 160,
-        metadata: { ...gridMetadata(DataTypes.LookupRegarding), Targets: ['mem_task'] },
+        name: 'approved', dataType: DataTypes.TwoOptions, displayName: 'Approved', visualSizeFactor: 110,
+        metadata: { ...gridMetadata(DataTypes.TwoOptions, true), OptionSet: APPROVED_OPTIONS },
     },
     {
         name: 'duration', dataType: DataTypes.WholeDuration, displayName: 'Duration', visualSizeFactor: 120,
@@ -176,18 +170,6 @@ export const COLUMNS: IColumn[] = [
         metadata: gridMetadata(DataTypes.Object),
     },
 ]
-
-/**
- * A lookup as the raw record carries it: an id, the entity it points at, and the name to show.
- *
- * Three keys rather than one object, because that is the shape a record reads a lookup from — the value
- * the grid gets is assembled from them.
- */
-const lookup = (columnName: string, entityName: string, id: string, name: string) => ({
-    [`_${columnName}_value`]: id,
-    [`_${columnName}_value@Microsoft.Dynamics.CRM.lookuplogicalname`]: entityName,
-    [`_${columnName}_value@OData.Community.Display.V1.FormattedValue`]: name,
-})
 
 const OWNERS = ['Ada', 'Grace', 'Alan', 'Edsger']
 const STATUSES = [1, 2, 3, 4, 5, 6]
@@ -232,11 +214,7 @@ export const getDataSource = (rowCount: number = DEFAULT_ROW_COUNT): IRawRecord[
         createdon: new Date(2026, index % 12, (index % 27) + 1, index % 24, index % 60).toISOString(),
         tags: TAGS[index % TAGS.length],
         billable: index % 3 !== 0,
-        ...lookup('project', 'mem_project', `project-${(index % 4) + 1}`, `Project ${(index % 4) + 1}`),
-        ...lookup('assignedto', 'systemuser', `user-${(index % 4) + 1}`, OWNERS[index % OWNERS.length]!),
-        ...lookup('customer', index % 2 === 0 ? 'account' : 'contact', `customer-${(index % 3) + 1}`,
-            index % 2 === 0 ? `Account ${(index % 3) + 1}` : `Contact ${(index % 3) + 1}`),
-        ...lookup('regarding', 'mem_task', `task-${((index + 1) % rowCount) + 1}`, `Task ${((index + 1) % rowCount) + 1}`),
+        approved: index % 2 === 0,
         duration: (index % 6) * 30 + 15,
         language: LANGUAGES[index % LANGUAGES.length],
         timezone: TIME_ZONES[index % TIME_ZONES.length],

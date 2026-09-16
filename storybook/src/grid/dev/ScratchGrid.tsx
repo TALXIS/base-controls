@@ -65,8 +65,8 @@ const MultiSelectOptionSetPreview = (props: {
     </div>
 }
 
-/** The columns whose control takes input in the cell itself, with no editor to open. Add a name to try one. */
-const ONE_CLICK_EDIT_COLUMNS = ['name']
+/** The columns whose control takes input in the cell itself, with no editor to open. */
+const ONE_CLICK_EDIT_COLUMNS = COLUMNS.map(column => column.name)
 
 /**
  * The wash a row takes from the state it is in, by status value.
@@ -271,7 +271,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
             provider={provider}
             modules={modules}
             height='420px'
-            rowHeight={32}
+            rowHeight={42}
             enableEditing={props.enableEditing}
             enableAutoSave={props.enableAutoSave}
             enableNavigation={props.enableNavigation}

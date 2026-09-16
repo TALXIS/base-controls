@@ -4,10 +4,13 @@ export interface IGridKeyboardParameters {
     services: IGridServiceLocator;
 }
 
-/** What the user is pressing while the grid is doing something about it. */
+export type GridKeyDownHandler = (event: KeyboardEvent) => void;
+
+/** What the user is pressing while the grid is doing something about it, and who hears it. */
 export class GridKeyboard {
     private _services: IGridServiceLocator;
     private _keyBeingPressed?: KeyboardEvent;
+    private _keyDownHandlers: GridKeyDownHandler[] = [];
     private _document?: Document;
 
     constructor(parameters: IGridKeyboardParameters) {
@@ -24,6 +27,18 @@ export class GridKeyboard {
      */
     public getKeyBeingPressed(): KeyboardEvent | undefined {
         return this._keyBeingPressed;
+    }
+
+    /**
+     * Runs the handler for every key pressed where the grid can hear it, ahead of whatever would answer it.
+     *
+     * @returns What takes the handler off again.
+     */
+    public onKeyDown(handler: GridKeyDownHandler): () => void {
+        this._keyDownHandlers.push(handler);
+        return () => {
+            this._keyDownHandlers = this._keyDownHandlers.filter(registered => registered !== handler);
+        };
     }
 
     /** The grid is gone: what it put on the document goes with it. */
@@ -48,6 +63,7 @@ export class GridKeyboard {
 
     private _onKeyDown = (event: KeyboardEvent): void => {
         this._keyBeingPressed = event;
+        this._keyDownHandlers.forEach(handler => handler(event));
     };
 
     private _onKeyUp = (): void => {

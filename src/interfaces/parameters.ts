@@ -37,7 +37,8 @@ export interface IBaseParameters extends IParameters {
     /**
      * The grid cell this control is drawn in, where a grid is drawing it.
      *
-     * What the cell knows about itself is the control's to use - closing the editor over it, above all.
+     * What the cell knows about itself is the control's to use - `finishEditing()` above all, which says the
+     * control has nothing more to take.
      * `undefined` outside a grid, and while a cell is drawn for the first time: the grid is told about a
      * cell once it is on screen.
      */

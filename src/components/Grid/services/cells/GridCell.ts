@@ -1,4 +1,4 @@
-import { ColDef, GridApi, IRowNode } from "@ag-grid-community/core";
+import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
 import { IGridServiceLocator } from "../../services";
 import { IGridCellCommands, IGridCellEditable, IGridCellLoading } from "./GridCells";
@@ -14,12 +14,12 @@ export interface IGridCellParameters {
     /** The row AG Grid is drawing, where the cell is one being drawn rather than one being asked about. */
     node?: IRowNode<IRecord>;
     /**
-     * Whether this cell takes input rather than only drawing its value.
+     * Whether this cell draws a control the user can type in rather than the value it holds.
      *
      * True of an editor, and of a one-click-edit column's cell, whose control takes input without an
      * editor ever being opened.
      */
-    editing?: boolean;
+    takesInput?: boolean;
 }
 
 //enough to tell two cells apart in a registry, including the same one drawn twice while AG Grid swaps a
@@ -40,7 +40,7 @@ export class GridCell {
     private _id: string;
     private _theme: GridCellTheme;
     private _control?: GridFieldControl;
-    private _editing: boolean;
+    private _takesInput: boolean;
     private _isDestroyed: boolean = false;
 
     constructor(parameters: IGridCellParameters) {
@@ -48,7 +48,7 @@ export class GridCell {
         this._record = parameters.record;
         this._colDef = parameters.colDef;
         this._node = parameters.node;
-        this._editing = !!parameters.editing;
+        this._takesInput = !!parameters.takesInput;
         this._id = `${parameters.record.getRecordId()}_${this.getColumnName()}_${++instanceCount}`;
         this._theme = new GridCellTheme({ services: parameters.services, record: parameters.record, columnName: this.getColumnName(), node: parameters.node });
     }
@@ -76,7 +76,6 @@ export class GridCell {
         return this._node;
     }
 
-
     /** What this cell is drawn in. */
     public getTheme(): GridCellTheme {
         return this._theme;
@@ -94,26 +93,36 @@ export class GridCell {
         return result.isLoading;
     }
 
-    /** Whether this cell takes input rather than only drawing its value. */
-    public isEditing(): boolean {
-        return this._editing;
+    /** Whether this cell draws a control the user can type in rather than the value it holds. */
+    public takesInput(): boolean {
+        return this._takesInput;
+    }
+
+    /** Whether that control is drawn in the cell itself rather than in an editor opened over it. */
+    public takesInputInPlace(): boolean {
+        return !!this._colDef.propBag?.column?.oneClickEdit;
+    }
+
+    /** Whether the user is editing this cell, which is what its control is handed as `AutoFocus`. */
+    public isBeingEdited(): boolean {
+        //an editor was opened because the user asked to type here
+        if (this._takesInput && !this.takesInputInPlace()) {
+            return true;
+        }
+        return this._editing.isEditing(this._record, this.getColumnName());
+    }
+
+    /** The user stepped into the control this cell draws. */
+    public startEditing(): void {
+        this._editing.start(this);
     }
 
     /**
-     * Closes the editor over this cell, keeping what was written in it and leaving the grid where a native
-     * close would: the cell focused again, and the highlight a row on where the user pressed Enter for the
-     * close - up rather than down where they held Shift.
-     *
-     * For a control that finishes on a choice rather than on a blur - an option, a date, a duration - which
-     * would otherwise leave its editor open over the value it has already reported.
+     * The edit is over: the control has nothing more to take, or the user pressed the key that leaves.
+     * Whatever was opened over the cell closes and the highlight comes back.
      */
-    public closeEditor(): void {
-        const gridApi = this._services.find('gridApi');
-        if (!gridApi || !this._isEditorOpen(gridApi)) {
-            return;
-        }
-        gridApi.stopEditing();
-        this._focusCell(gridApi, this._getRowsMoved(gridApi));
+    public finishEditing(): void {
+        this._editing.finish(this);
     }
 
     /** What draws this cell's value, once {@link createControl} has made one. */
@@ -126,7 +135,7 @@ export class GridCell {
      * adapter's to hand over, and nothing else about it is the adapter's to decide.
      */
     public createControl(field: GridField): GridFieldControl {
-        this._control = new GridFieldControl({ services: this._services, field: field, takesInput: this._editing });
+        this._control = new GridFieldControl({ services: this._services, field: field, cell: this, takesInput: this._takesInput });
         return this._control;
     }
 
@@ -174,45 +183,11 @@ export class GridCell {
         this._isDestroyed = true;
     }
 
-    /** How far the highlight travels, which is Enter's doing and nothing else's. */
-    private _getRowsMoved(gridApi: GridApi<IRecord>): number {
-        const keyPress = this._services.get('keyboard').getKeyBeingPressed();
-        if (keyPress?.key !== 'Enter' || !gridApi.getGridOption('enterNavigatesVerticallyAfterEdit')) {
-            return 0;
-        }
-        return keyPress.shiftKey ? -1 : 1;
-    }
-
-    private _isEditorOpen(gridApi: GridApi<IRecord>): boolean {
-        return gridApi.getEditingCells().some(cell => cell.rowIndex === this._node?.rowIndex && cell.column.getColId() === this.getColumnName());
-    }
-
-    /**
-     * Where the grid is left once the editor is gone, counted from this cell's own row so that a grid which
-     * already moved the highlight itself lands on the same cell rather than one further on.
-     *
-     * After the browser has finished with the editor: focus set while it is still being torn down is focus
-     * the removal of its input takes straight back to the document.
-     */
-    private _focusCell(gridApi: GridApi<IRecord>, rowsMoved: number): void {
-        const rowIndex = this._node?.rowIndex;
-        if (rowIndex === null || rowIndex === undefined) {
-            return;
-        }
-        const targetIndex = Math.max(Math.min(rowIndex + rowsMoved, gridApi.getDisplayedRowCount() - 1), 0);
-        setTimeout(() => {
-            gridApi.ensureIndexVisible(targetIndex);
-            gridApi.setFocusedCell(targetIndex, this.getColumnName());
-            //a range is not carried by the focus, and one left on the cell the editor was over reads as a
-            //second highlight
-            if (gridApi.getGridOption('enableRangeSelection')) {
-                gridApi.clearRangeSelection();
-                gridApi.addCellRange({ rowStartIndex: targetIndex, rowEndIndex: targetIndex, columns: [this.getColumnName()] });
-            }
-        });
-    }
-
     private get _cells() {
         return this._services.get('cells');
+    }
+
+    private get _editing() {
+        return this._services.get('editing');
     }
 }

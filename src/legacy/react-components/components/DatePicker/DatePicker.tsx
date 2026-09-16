@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { DatePicker as DatePickerBase, ICommandBarItemProps, IDatePicker, ITextField } from "@fluentui/react";
+import { DatePicker as DatePickerBase, ICommandBarItemProps, IDatePicker } from "@fluentui/react";
 import { IReadOnly, IErrorMessage, IDisabled, IDeleteButton, IFillAvailableSpace, ISuffix, IPrefix, ICopyButton } from '@legacy/interfaces/components';
 import { useTheme } from "@fluentui/react";
 import { IDatePickerProps as IDatePickerPropsBase } from "@fluentui/react";
@@ -22,7 +22,9 @@ export const DatePicker = React.forwardRef<HTMLDivElement, IDatePickerProps>((pr
     const theme: ITheme = useTheme();
     const componentRef = React.useRef<IDatePicker>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const textFieldComponentRef = React.useRef<ITextField>(null);
+    //the element rather than a `componentRef`: Fluent hands its own text field a ref and spreads the
+    //caller's props over it, so a ref passed here replaces the one its `focus()` reaches for
+    const getInput = () => containerRef.current?.querySelector('input');
     const datePickerStyles = React.useMemo(() => getDatePickerStyles(theme), []);
     const classNames = useClassNames('DatePicker', props, [], [datePickerStyles.root]);
     const calloutClassNames = useClassNames('DatePicker__Callout', {className: props.className}, []).replace('---underlined', '')
@@ -60,19 +62,20 @@ export const DatePicker = React.forwardRef<HTMLDivElement, IDatePickerProps>((pr
                     if(props.clickToCopyProps?.getValueToCopy) {
                         return props.clickToCopyProps.getValueToCopy();
                     }
-                    return textFieldComponentRef.current?.value
+                    return getInput()?.value
                 },
                 onClick: () => {
                     props.clickToCopyProps?.onClick?.();
-                    textFieldComponentRef.current?.focus();
-                    textFieldComponentRef.current?.setSelectionRange(0, textFieldComponentRef.current?.value?.length ?? 0)
+                    const input = getInput();
+                    input?.focus();
+                    input?.setSelectionRange(0, input.value.length);
                 }
             } : undefined}
             deleteButtonProps={props.deleteButtonProps ? {
                 ...props.deleteButtonProps,
                 onClick: () => {
                     props.deleteButtonProps?.onClick?.();
-                    textFieldComponentRef.current?.focus();
+                    getInput()?.focus();
                 }
             } : undefined}
             value={props.value?.toString()}
@@ -157,7 +160,6 @@ export const DatePicker = React.forwardRef<HTMLDivElement, IDatePickerProps>((pr
                 ...props.textField,
                 readOnly: props.readOnly,
                 errorMessage: props.errorMessage,
-                componentRef: textFieldComponentRef,
                 onRenderPrefix: onRenderPrefix,
                 onRenderSuffix: onRenderSuffix,
             }} />

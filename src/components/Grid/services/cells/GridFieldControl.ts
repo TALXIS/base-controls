@@ -10,6 +10,8 @@ export interface IGridFieldControlParameters {
     services: IGridServiceLocator;
     /** The field this draws, which is what makes it a control of anything. */
     field: GridField;
+    /** The cell this draws, which is the one that made it. */
+    cell: GridCell;
     /** Whether the control takes input rather than only drawing the value. */
     takesInput?: boolean;
 }
@@ -28,10 +30,12 @@ export class GridFieldControl {
     private _columnName: string;
     private _takesInput: boolean;
     private _field: GridField;
+    private _cell: GridCell;
 
     constructor(parameters: IGridFieldControlParameters) {
         this._services = parameters.services;
         this._field = parameters.field;
+        this._cell = parameters.cell;
         this._record = parameters.field.getRecord();
         this._columnName = parameters.field.getColumnName();
         this._takesInput = !!parameters.takesInput;
@@ -114,7 +118,7 @@ export class GridFieldControl {
             SuffixIcon: { raw: null, type: DataTypes.SingleLineText },
             IsPrimaryColumn: { raw: column.isPrimary, type: DataTypes.TwoOptions },
             ShowErrorMessage: { raw: false, type: DataTypes.TwoOptions },
-            AutoFocus: { raw: this._takesInput && !column.oneClickEdit, type: DataTypes.TwoOptions },
+            AutoFocus: { raw: this._cell.isBeingEdited(), type: DataTypes.TwoOptions },
             FillAvailableSpace: { raw: true, type: DataTypes.TwoOptions },
             IsInlineNewEnabled: { raw: false, type: DataTypes.TwoOptions },
             EnableTypeSuffix: { raw: false, type: DataTypes.TwoOptions },
@@ -201,9 +205,6 @@ export class GridFieldControl {
     }
 
     /** The cell this draws, which the grid knows by the field it is bound to. */
-    private get _cell(): GridCell | undefined {
-        return this._cells.getCell(this._record, this._columnName);
-    }
 
     private get _hookParams() {
         return { record: this._record, columnName: this._columnName, takesInput: this._takesInput };

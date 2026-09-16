@@ -31,6 +31,7 @@ export const TwoOptions = (props: ITwoOptions) => {
         onNotifyOutputChanged({
             value: value
         });
+        parameters.Cell?.raw?.finishEditing();
     };
 
     return (
