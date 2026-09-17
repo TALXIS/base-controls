@@ -6,8 +6,8 @@ import { IControl } from "@interfaces";
 import { GridControl } from "../../../services/cells";
 import { useGridCell } from "../root";
 import { useGridService } from "../../../useGridService";
+import { NestedReactRoot } from "../nested-react-root/NestedReactRoot";
 import { getBindings } from "./getBindings";
-import { NestedReactRoot } from "./nested-react-root";
 
 const client = new Client();
 

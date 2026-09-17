@@ -206,8 +206,10 @@ const UnboundCell = (props: { column: IUnboundColumn, rowId: string, rowNumber: 
     return <>
         {error && <CellUi.FieldError message={error} surfaceTheme={gridTheme} />}
         <Grid.Control components={{
-            //a base control, handed the cell's own parameters and a value the story keeps itself
-            onRenderControl: controlProps => column.onRenderControl(controlProps, value, setValue)
+            //a root of its own, so the control answers Enter before the grid navigates on it
+            onRenderControl: controlProps => <Grid.NestedReactRoot>
+                {column.onRenderControl(controlProps, value, setValue)}
+            </Grid.NestedReactRoot>
         }} />
     </>
 }

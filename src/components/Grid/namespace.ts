@@ -10,6 +10,7 @@ import { CellLoading } from "./components/cells/loading/CellLoading";
 import { CellContainer } from "./components/cells/container/CellContainer";
 import { CellRoot } from "./components/cells/root/CellRoot";
 import { RowResizeGrip } from "./components/cells/row-resize-grip/RowResizeGrip";
+import { NestedReactRoot } from "./components/cells/nested-react-root/NestedReactRoot";
 import { ColumnHeader } from "./components/column-header/ColumnHeader";
 import { GridUi } from "./components/ui";
 import { GridRoot } from "./Grid";
@@ -42,6 +43,8 @@ export interface IGridNamespace {
     Control: typeof Control;
     /** A piece of {@link FieldCellRenderer}: what it says when the record refuses the value. */
     FieldValidation: typeof FieldValidation;
+    /** A root of its own for what is drawn in it, so its handlers answer a key before the grid does. */
+    NestedReactRoot: typeof NestedReactRoot;
     /** A column's header, with what the grid's own parts add to it. */
     ColumnHeader: typeof ColumnHeader;
     /** What draws the grid's own parts, knowing nothing of the grid. */
@@ -62,6 +65,7 @@ export const Grid: IGridNamespace = {
     Field: Field,
     Control: Control,
     FieldValidation: FieldValidation,
+    NestedReactRoot: NestedReactRoot,
     ColumnHeader: ColumnHeader,
     Ui: GridUi,
 };

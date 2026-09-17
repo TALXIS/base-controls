@@ -1,8 +1,10 @@
 import { mergeStyleSets } from "@fluentui/react";
 
 export const getNestedReactRootStyles = () => mergeStyleSets({
-    //the inset gives this its size, so this only lays out what is mounted in it
+    //a column, like the inset it sits in: what is mounted here stretches to the width it is given
     nestedReactRootContainer: {
         display: 'flex',
+        flexDirection: 'column',
+        minWidth: 0,
     },
 });
