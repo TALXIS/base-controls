@@ -1,15 +1,16 @@
-import { ControlRendererComponents, IGridControlRendererComponents } from "../control-renderer/components";
+import { GridCellRenderer, IGridCellRenderer } from "@components/GridCellRenderer";
 import { CellUi, ICellControlProps } from "../ui";
 
-/** The replaceable pieces of a cell's field control. */
-export interface IGridFieldControlComponents extends Pick<IGridControlRendererComponents, 'onRenderValue'> {
-    /** The inset the value is drawn in. */
-    onRenderControl: (props: ICellControlProps) => JSX.Element;
+/** The replaceable pieces of a cell's control. */
+export interface IGridControlComponents {
+    /** The inset the control is drawn in. */
+    onRenderControlContainer: (props: ICellControlProps) => JSX.Element;
+    /** What draws the cell's value, handed what the control resolved to. */
+    onRenderControl: (props: IGridCellRenderer, defaultRender: (props: IGridCellRenderer) => JSX.Element | null) => JSX.Element | null;
 }
 
-/** The defaults for {@link IGridFieldControlComponents}. */
-export const FieldControlComponents: IGridFieldControlComponents = {
-    onRenderControl: props => <CellUi.Control {...props} />,
-    //the one default, held where the component that draws with it holds it
-    onRenderValue: ControlRendererComponents.onRenderValue,
+/** The defaults for {@link IGridControlComponents}. */
+export const GridControlComponents: IGridControlComponents = {
+    onRenderControlContainer: props => <CellUi.Control {...props} />,
+    onRenderControl: (props, defaultRender) => defaultRender(props),
 };

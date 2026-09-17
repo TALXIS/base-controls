@@ -4,7 +4,7 @@ import { IGridServiceLocator } from "../../services";
 import { IGridCellCommands, IGridCellEditable, IGridCellLoading } from "./GridCells";
 import { GridCellTheme } from "./GridCellTheme";
 import { GridField } from "../fields";
-import { GridFieldControl } from "./GridFieldControl";
+import { GridControl } from "./GridControl";
 
 export interface IGridCellParameters {
     services: IGridServiceLocator;
@@ -28,7 +28,7 @@ export class GridCell {
     private _node?: IRowNode<IRecord>;
     private _id: string;
     private _theme: GridCellTheme;
-    private _control?: GridFieldControl;
+    private _control?: GridControl;
     private _takesInput: boolean;
     private _isDestroyed: boolean = false;
 
@@ -107,13 +107,13 @@ export class GridCell {
     }
 
     /** What draws this cell's value, once {@link createControl} has made one. */
-    public getControl(): GridFieldControl | undefined {
+    public getControl(): GridControl | undefined {
         return this._control;
     }
 
     /** Makes what draws this cell's value. */
-    public createControl(field: GridField): GridFieldControl {
-        this._control = new GridFieldControl({ services: this._services, field: field, cell: this, takesInput: this._takesInput });
+    public createControl(field?: GridField): GridControl {
+        this._control = new GridControl({ services: this._services, cell: this, field: field, takesInput: this._takesInput });
         return this._control;
     }
 

@@ -166,7 +166,7 @@ export class GridCells {
         return this._cellEditableHooks.register(hook, priority);
     }
 
-    /** Run by the `GridFieldControl` of the cell in question. */
+    /** Run by the `GridControl` of the cell in question. */
     public applyControlHooks(result: { control: Required<ICustomColumnControl> }, params: IGridCellHookParameters): void {
         this._controlHooks.apply(result, params);
     }

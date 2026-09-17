@@ -1,23 +1,39 @@
 import { useMemo } from "react";
+import { GridCellRenderer, IGridCellRenderer } from "@components/GridCellRenderer";
 import { useGridCell } from "../root/context";
-import { useRequiredGridField } from "../field";
-import { ControlRenderer } from "../control-renderer/ControlRenderer";
-import { GridFieldControlContext } from "./context";
-import { FieldControlComponents, IGridFieldControlComponents } from "./components";
+import { useGridField } from "../field";
+import { LegacyNestedControlRenderer } from "../legacy-nested-control-renderer";
+import { GridControlContext } from "./context";
+import { GridControlComponents, IGridControlComponents } from "./components";
 
-export interface IGridFieldControlProps {
-    components?: Partial<IGridFieldControlComponents>;
+export interface IGridControlProps {
+    components?: Partial<IGridControlComponents>;
 }
 
 /** What a cell draws for its value, and what tells it to redraw. */
-export const FieldControl = (props: IGridFieldControlProps) => {
+export const Control = (props: IGridControlProps) => {
     const cell = useGridCell();
-    //a field control without a field is a bug in whoever drew it, not a cell to be drawn empty
-    const field = useRequiredGridField();
+    const field = useGridField();
     const control = useMemo(() => cell.createControl(field), [cell, field]);
-    const components = { ...FieldControlComponents, ...props.components };
+    const components = { ...GridControlComponents, ...props.components };
+    const controlProps = control.getControlProps();
 
-    return <GridFieldControlContext.Provider value={control}>
-        {components.onRenderControl({ control: control, children: <ControlRenderer components={{ onRenderValue: components.onRenderValue }} /> })}
-    </GridFieldControlContext.Provider>;
+    const onRenderDefault = (renderProps: IGridCellRenderer) => {
+        //a column that named a control of its own
+        if (control.isCustomRendererEnabled()) {
+            //keyed: `AutoFocus` decides a control's first render
+            return <LegacyNestedControlRenderer
+                key={`${cell.isBeingEdited()}`}
+                controlProps={renderProps}
+                control={control} />;
+        }
+        return <GridCellRenderer {...renderProps} />;
+    };
+
+    return <GridControlContext.Provider value={control}>
+        {components.onRenderControlContainer({
+            control: control,
+            children: components.onRenderControl(controlProps, onRenderDefault),
+        })}
+    </GridControlContext.Provider>;
 };

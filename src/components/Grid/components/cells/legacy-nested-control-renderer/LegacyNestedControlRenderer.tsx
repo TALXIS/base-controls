@@ -3,7 +3,7 @@ import { NestedControlRenderer } from "@components/NestedControlRenderer";
 import { INestedControlRendererComponentProps } from "@components/NestedControlRenderer/interfaces";
 import { IGridCellRenderer } from "@components/GridCellRenderer";
 import { IControl } from "@interfaces";
-import { GridFieldControl } from "../../../services/cells";
+import { GridControl } from "../../../services/cells";
 import { useGridCell } from "../root";
 import { useGridService } from "../../../useGridService";
 import { getBindings } from "./getBindings";
@@ -16,7 +16,7 @@ export interface ILegacyNestedControlRendererProps {
     /** What the cell renderer would have been given. */
     controlProps: IGridCellRenderer;
     /** The cell this is drawing, which knows whether it takes input. */
-    control: GridFieldControl;
+    control: GridControl;
 }
 
 /** A control the nested-control registry resolves, as a cell needs it. */
@@ -25,11 +25,10 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const { context, parameters } = controlProps;
     const cell = useGridCell();
     const settings = useGridService('settings');
-    const record = cell.getRecord();
-    const column = record.getDataProvider().getColumnsMap()[cell.getColumnName()];
+    const fieldControl = control.getFieldControl();
+    const column = fieldControl?.getColumn();
     const cellTheme = cell.getTheme();
     const customControl = control.getCustomControl();
-    const field = control.getField();
 
     //a root of its own, so the control's own handlers run before AG Grid's
     return <NestedReactRoot>
@@ -39,13 +38,10 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                 ControlName: customControl.name,
                 LoadingType: 'shimmer',
                 Bindings: getBindings({
-                    record: record,
+                    field: fieldControl?.getField(),
                     column: column,
                     control: customControl,
-                    value: field.getValue(),
-                    formattedValue: field.getFormattedValue(),
                     enableNavigation: !!parameters.EnableNavigation?.raw,
-                    onNotifyOutputChanged: value => field.setValue(value)
                 }),
                 ControlStates: {
                     isControlDisabled: !cell.isEditable()
@@ -78,7 +74,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                             parameters: controlParameters,
                             fluentDesignLanguage: getCellFluentDesignLanguage({
                                 theme: cellTheme.getValue(),
-                                columnAlignment: column.alignment,
+                                columnAlignment: column?.alignment,
                                 parent: controlProps.context.fluentDesignLanguage
                             }),
                         },

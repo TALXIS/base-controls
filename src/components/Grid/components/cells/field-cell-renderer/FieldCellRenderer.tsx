@@ -2,7 +2,7 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { IGridCellRendererParams } from "../../interfaces";
 import { CellRenderer } from "../cell-renderer/CellRenderer";
 import { Field } from "../field/Field";
-import { FieldControl } from "../field-control/FieldControl";
+import { Control } from "../control/Control";
 import { FieldValidation } from "../field-validation/FieldValidation";
 
 export interface IGridFieldCellRendererProps extends ICellRendererParams, IGridCellRendererParams { }
@@ -12,7 +12,7 @@ export const FieldCellRenderer = (props: IGridFieldCellRendererProps) => {
     return <Field record={props.data} name={props.colDef!.colId!}>
         <CellRenderer {...props}>
             <FieldValidation />
-            <FieldControl />
+            <Control />
         </CellRenderer>
     </Field>;
 };

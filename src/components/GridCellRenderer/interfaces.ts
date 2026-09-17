@@ -22,7 +22,7 @@ export interface IGridCellRendererParameters extends IParameters {
     CellType: Omit<ComponentFramework.PropertyTypes.EnumProperty<'renderer' | 'editor'>, 'type'>;
     EnableNavigation: Omit<ITwoOptionsProperty, 'attributes'>;
     Column: {
-        raw: IColumn;
+        raw: IColumn | undefined;
     }
     /**
      * The cell this is drawn in, which is what it may do there and what it offers.

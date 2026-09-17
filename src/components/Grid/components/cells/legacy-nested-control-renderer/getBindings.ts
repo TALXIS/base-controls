@@ -1,34 +1,33 @@
-import { DataTypes, IColumn, ICustomColumnControl, IRecord, Sanitizer } from "@talxis/client-libraries";
+import { DataTypes, IColumn, ICustomColumnControl, Sanitizer } from "@talxis/client-libraries";
+import { GridField } from "../../../services/fields";
 import { IBinding } from "@components/NestedControlRenderer/interfaces";
 
 export interface IBindingsParameters {
-    record: IRecord;
-    column: IColumn;
+    /** The field the cell draws, where the cell is bound to one. */
+    field: GridField | undefined;
+    /** The column the cell is in, where the provider has one for it. */
+    column: IColumn | undefined;
     /** The control the bindings are for: whatever it declared itself is bound as static. */
     control: ICustomColumnControl;
-    /** What the cell holds, and what it reads as - both already through the field hooks. */
-    value: any;
-    formattedValue: string | null;
     enableNavigation: boolean;
-    onNotifyOutputChanged: (value: any) => void;
 }
 
 /** What a nested control is bound to */
 export const getBindings = (parameters: IBindingsParameters): { [name: string]: IBinding } => {
-    const { record, column, control, formattedValue, enableNavigation, onNotifyOutputChanged } = parameters;
-    //the field's own answer, which is what the cell draws its own mark from as well
-    const validity = record.getField(column.name).isValid();
+    const { field, column, control, enableNavigation } = parameters;
+    const value = field?.getValue();
+    const validity = field?.isValid();
     const bindings: { [name: string]: IBinding } = {
         'value': {
             isStatic: false,
-            type: column.dataType as any,
-            value: getControlValue(column, parameters.value),
-            formattedValue: formattedValue,
-            error: validity.error,
-            errorMessage: validity.errorMessage,
-            onNotifyOutputChanged: onNotifyOutputChanged,
+            type: column?.dataType as any,
+            value: column ? getControlValue(column, value) : value,
+            formattedValue: field?.getFormattedValue() ?? null,
+            error: validity?.error,
+            errorMessage: validity?.errorMessage,
+            onNotifyOutputChanged: newValue => field?.setValue(newValue),
             metadata: {
-                onOverrideMetadata: () => column.metadata
+                onOverrideMetadata: () => column?.metadata
             }
         },
         'IsCellCustomizer': {

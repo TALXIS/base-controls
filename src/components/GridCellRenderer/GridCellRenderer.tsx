@@ -18,17 +18,17 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
     const { ColumnAlignment, Placeholder, PrefixIcon, SuffixIcon, EnableNavigation, Column, Record } = props.parameters;
     const record = Record.raw;
     const column = Column.raw;
-    const dataType = column.dataType;
+    const dataType = column?.dataType;
     const enableNavigation = EnableNavigation.raw;
     const alignment = ColumnAlignment.raw ?? 'left';
-    const value = record.getValue(column.name);
-    const formattedValue = record.getFormattedValue(column.name);
-    const isMultiline = !!column.autoHeight;
+    const value = column ? record.getValue(column.name) : undefined;
+    const formattedValue = column ? record.getFormattedValue(column.name) : null;
+    const isMultiline = !!column?.autoHeight;
     const styles = useMemo(() => getGridCellRendererStyles(alignment, isMultiline), [alignment, isMultiline]);
     const components = { ...GridCellRendererComponents, ...props.components };
 
     const openRecord = (reference?: ComponentFramework.EntityReference) => {
-        record.getDataProvider().openDatasetItem(reference ?? record.getNamedReference(), { columnName: column.name });
+        record.getDataProvider().openDatasetItem(reference ?? record.getNamedReference(), { columnName: column?.name });
     };
 
     const renderValue = (): JSX.Element => {
@@ -71,7 +71,8 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             case DataTypes.OptionSet:
             case DataTypes.MultiSelectOptionSet:
             case DataTypes.TwoOptions: {
-                const selected = getSelectedOptions(value, column);
+                //a formatted value the cell has is a column's, whatever the props say
+                const selected = getSelectedOptions(value, column!);
                 //a colour is what makes an option worth a shape of its own; without one it is just text
                 if (selected.some(option => option.color)) {
                     return components.onRenderOptions({ options: selected, alignment: alignment });
@@ -80,7 +81,7 @@ export const GridCellRenderer = (props: IGridCellRenderer) => {
             }
         }
         //the primary column's value is the one that stands for the record itself
-        return enableNavigation && column.isPrimary
+        return enableNavigation && column?.isPrimary
             ? components.onRenderLink({ text: formattedValue, onClick: () => openRecord(), isMultiline: isMultiline })
             : components.onRenderText({ text: formattedValue, isMultiline: isMultiline });
     };

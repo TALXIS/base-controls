@@ -1,4 +1,4 @@
-//`FieldControl` is published through the namespace.
-export type { IGridFieldControlProps } from './FieldControl';
+//`Control` is published through the namespace.
+export type { IGridControlProps } from './Control';
 export * from './components';
 export * from './context';

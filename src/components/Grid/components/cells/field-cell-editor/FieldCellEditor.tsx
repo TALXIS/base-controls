@@ -1,7 +1,7 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { CellEditor } from "../cell-editor/CellEditor";
 import { Field } from "../field/Field";
-import { FieldControl } from "../field-control/FieldControl";
+import { Control } from "../control/Control";
 
 export interface IGridFieldCellEditorProps extends ICellRendererParams { }
 
@@ -9,7 +9,7 @@ export interface IGridFieldCellEditorProps extends ICellRendererParams { }
 export const FieldCellEditor = (props: IGridFieldCellEditorProps) => {
     return <Field record={props.data} name={props.colDef!.colId!}>
         <CellEditor {...props}>
-            <FieldControl />
+            <Control />
         </CellEditor>
     </Field>;
 };

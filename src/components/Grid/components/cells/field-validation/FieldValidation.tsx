@@ -1,4 +1,4 @@
-import { useRequiredGridField } from "../field/context";
+import { useGridField } from "../field/context";
 import { useGridService } from "../../../useGridService";
 import { FieldValidationComponents, IGridFieldValidationComponents } from "./components";
 
@@ -8,11 +8,11 @@ export interface IGridFieldValidationProps {
 
 /** What a cell says about a value its record refuses. */
 export const FieldValidation = (props: IGridFieldValidationProps) => {
-    const field = useRequiredGridField();
+    const field = useGridField();
     const gridTheme = useGridService('theme');
     const components = { ...FieldValidationComponents, ...props.components };
 
-    const { error, errorMessage } = field.isValid();
+    const { error, errorMessage } = field?.isValid() ?? { error: false, errorMessage: '' };
     if (!error) {
         return null;
     }

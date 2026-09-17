@@ -5,22 +5,10 @@ import { GridCellRevisionContext } from "../root/context";
 export const GridFieldContext = createContext<GridField | undefined>(undefined);
 GridFieldContext.displayName = 'GridField';
 
-/**
- * The field this component is bound to, or `undefined` where nothing bound one.
- *
- * to one has to draw without one. What cannot draw without one asks {@link useRequiredGridField}.
- */
+/** The field this component is bound to, or `undefined` where nothing bound one. */
 export const useGridField = (): GridField | undefined => {
     //what a field answers is the record's, and the record changes under whatever is drawing it
     useContext(GridCellRevisionContext);
     return useContext(GridFieldContext);
 };
 
-/** The field this component is bound to, throwing where nothing bound one. */
-export const useRequiredGridField = (): GridField => {
-    const field = useGridField();
-    if (!field) {
-        throw new Error('This has to be drawn inside Grid.Field, which is what binds it to a record\'s column.');
-    }
-    return field;
-};
