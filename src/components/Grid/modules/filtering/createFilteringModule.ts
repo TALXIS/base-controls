@@ -28,7 +28,7 @@ export const createFilteringModule = (options?: IFilteringModuleOptions): IGridM
         const filtering = new GridFiltering({ services });
         gridServices.register('filtering', () => filtering);
         gridServices.get('columns').registerColumnDefinitionsHook(columnDefs => filtering.applyColumnDefinitions(columnDefs));
-        gridServices.get('columnHeader').registerColumnMenuSectionHook((sections, column) => filtering.applyMenuSection(sections, column), 10);
-        gridServices.get('columnHeader').registerColumnHeaderAdornmentsHook((adornments, column) => filtering.applyColumnHeaderAdornments(adornments, column), 10);
+        gridServices.get('columnHeader').registerColumnMenuSectionHook((sections, params) => filtering.applyMenuSection(sections, params), 10);
+        gridServices.get('columnHeader').registerColumnHeaderAdornmentsHook((adornments, params) => filtering.applyColumnHeaderAdornments(adornments, params), 10);
     },
 });

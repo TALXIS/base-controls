@@ -10,6 +10,8 @@ import { CellLoading } from "./components/cells/loading/CellLoading";
 import { CellContainer } from "./components/cells/container/CellContainer";
 import { CellRoot } from "./components/cells/root/CellRoot";
 import { RowResizeGrip } from "./components/cells/row-resize-grip/RowResizeGrip";
+import { ColumnHeader } from "./components/column-header/ColumnHeader";
+import { GridUi } from "./components/ui";
 import { GridRoot } from "./Grid";
 
 /** Everything a grid is rendered from. */
@@ -40,6 +42,10 @@ export interface IGridNamespace {
     Control: typeof Control;
     /** A piece of {@link FieldCellRenderer}: what it says when the record refuses the value. */
     FieldValidation: typeof FieldValidation;
+    /** A column's header, with what the grid's own parts add to it. */
+    ColumnHeader: typeof ColumnHeader;
+    /** What draws the grid's own parts, knowing nothing of the grid. */
+    Ui: typeof GridUi;
 }
 
 export const Grid: IGridNamespace = {
@@ -56,4 +62,6 @@ export const Grid: IGridNamespace = {
     Field: Field,
     Control: Control,
     FieldValidation: FieldValidation,
+    ColumnHeader: ColumnHeader,
+    Ui: GridUi,
 };

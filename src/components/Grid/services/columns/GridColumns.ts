@@ -52,7 +52,11 @@ export class GridColumns {
         if (recordSaveColumn) {
             columnDefs.unshift(recordSaveColumn);
         }
+        const own = new Set(columnDefs);
         this._hooks.apply(columnDefs);
+        //a column a hook added draws its header the way the grid's own do
+        columnDefs.filter(columnDef => !own.has(columnDef))
+            .forEach(columnDef => columnDef.headerComponent ??= ColumnHeader);
         return columnDefs;
     }
 

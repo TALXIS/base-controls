@@ -4,7 +4,7 @@ import { DataTypes, IColumn, IInternalDataProvider, IRecord, Sorting } from "@ta
 import { ILocalizationService } from "@utils";
 import { IGridSortingLabels } from "./labels";
 import { IGridSortingComponents } from "./moduleComponents";
-import { IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
+import { IColumnHeaderAdornment, IColumnHeaderParams, IColumnMenuSection } from "../../services/column-header";
 import { IGridSortingServiceLocator } from "./services";
 
 export interface IGridSortingParameters {
@@ -65,8 +65,9 @@ export class GridSorting {
     }
 
     /** What a column's menu offers: the two directions, and clearing them. */
-    public applyMenuSection(sections: IColumnMenuSection[], column: IColumn): void {
-        if (!this.isColumnSortable(column)) {
+    public applyMenuSection(sections: IColumnMenuSection[], params: IColumnHeaderParams): void {
+        const column = params.column;
+        if (!column || !this.isColumnSortable(column)) {
             return;
         }
         const mine: IContextualMenuItem[] = [{
@@ -94,8 +95,9 @@ export class GridSorting {
     }
 
     /** The sort direction, as the header shows it. */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], column: IColumn): void {
-        if (!this.isSorted(column)) {
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], params: IColumnHeaderParams): void {
+        const column = params.column;
+        if (!column || !this.isSorted(column)) {
             return;
         }
         adornments.push({

@@ -6,7 +6,7 @@ import { FilterCalloutHost } from "./FilterCalloutHost";
 export interface IFilterCalloutProps {
     column: IColumn;
     /** What the callout is anchored to: the header the filter was opened from. */
-    target: React.RefObject<HTMLDivElement>;
+    target: React.RefObject<HTMLElement>;
 }
 
 /** The replaceable parts of filtering. */

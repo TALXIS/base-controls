@@ -4,7 +4,7 @@ import { FieldValue, Filtering, IColumn, IInternalDataProvider, IRecord, Type as
 import { ILocalizationService } from "@utils";
 import { IGridFilteringLabels } from "./labels";
 import { IGridFilteringComponents } from "./moduleComponents";
-import { IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
+import { IColumnHeaderAdornment, IColumnHeaderParams, IColumnMenuSection } from "../../services/column-header";
 import { IGridFilteringServiceLocator } from "./services";
 
 /** What changed about the filter a column header has open. */
@@ -95,8 +95,9 @@ export class GridFiltering {
     }
 
     /** What a column's menu offers: opening the filter, and clearing it. */
-    public applyMenuSection(sections: IColumnMenuSection[], column: IColumn): void {
-        if (!this.isColumnFilterable(column)) {
+    public applyMenuSection(sections: IColumnMenuSection[], params: IColumnHeaderParams): void {
+        const column = params.column;
+        if (!column || !this.isColumnFilterable(column)) {
             return;
         }
         const mine: IContextualMenuItem[] = [{
@@ -117,8 +118,9 @@ export class GridFiltering {
     }
 
     /** The funnel, while a filter is applied to the dataset. */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], column: IColumn): void {
-        if (!this.isFiltered(column)) {
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], params: IColumnHeaderParams): void {
+        const column = params.column;
+        if (!column || !this.isFiltered(column)) {
             return;
         }
         adornments.push({

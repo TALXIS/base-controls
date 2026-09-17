@@ -37,8 +37,8 @@ export const createAggregationModule = (options?: IAggregationModuleOptions): IG
         services.register('labels', () => labels);
         const aggregation = new GridAggregation({ services, allowUserAggregation: options?.allowUserAggregation ?? true });
         gridServices.register('aggregation', () => aggregation);
-        gridServices.get('columnHeader').registerColumnMenuSectionHook((sections, column) => aggregation.applyMenuSection(sections, column), 30);
-        gridServices.get('columnHeader').registerColumnHeaderAdornmentsHook((adornments, column) => aggregation.applyColumnHeaderAdornments(adornments, column), 30);
+        gridServices.get('columnHeader').registerColumnMenuSectionHook((sections, params) => aggregation.applyMenuSection(sections, params), 30);
+        gridServices.get('columnHeader').registerColumnHeaderAdornmentsHook((adornments, params) => aggregation.applyColumnHeaderAdornments(adornments, params), 30);
     },
 });
 

@@ -1,13 +1,22 @@
-import { IColumn } from "@talxis/client-libraries";
+import { ColDef } from "@ag-grid-community/core";
+import { IColumn, IRecord } from "@talxis/client-libraries";
 import { ContextualMenuItemType, IContextualMenuItem } from "@fluentui/react";
 import { HookRegistry } from "@utils";
 import { IGridServiceLocator } from "../../services";
 
+/** The column a header is drawn for, as everything that contributes to one is told about it. */
+export interface IColumnHeaderParams {
+    /** The definition AG Grid was given, which every column has. */
+    colDef: ColDef<IRecord>;
+    /** The column the provider has for it, where it has one. */
+    column?: IColumn;
+}
+
 /** A hook over what a column's menu offers. */
-export type GridColumnMenuSectionsHook = (sections: IColumnMenuSection[], column: IColumn) => void;
+export type GridColumnMenuSectionsHook = (sections: IColumnMenuSection[], params: IColumnHeaderParams) => void;
 
 /** A hook over the menu the sections became. */
-export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], column: IColumn) => void;
+export type GridColumnMenuItemsHook = (items: IContextualMenuItem[], params: IColumnHeaderParams) => void;
 
 /** Something a module draws in a column header beside its name. */
 export interface IColumnHeaderAdornment {
@@ -21,7 +30,7 @@ export interface IColumnHeaderAdornment {
 }
 
 /** A hook over what a column header draws. */
-export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], column: IColumn) => void;
+export type GridColumnHeaderAdornmentsHook = (adornments: IColumnHeaderAdornment[], params: IColumnHeaderParams) => void;
 
 /** What a module contributes to a column's menu, under a heading of its own. */
 export interface IColumnMenuSection {
@@ -66,9 +75,9 @@ export class GridColumnHeaderParts {
     }
 
     /** Everything the modules offer for a column, in order. */
-    public getMenuItems(column: IColumn): IContextualMenuItem[] {
+    public getMenuItems(params: IColumnHeaderParams): IContextualMenuItem[] {
         const sections: IColumnMenuSection[] = [];
-        this._menuSectionHooks.apply(sections, column);
+        this._menuSectionHooks.apply(sections, params);
         const items = sections
             .filter(section => section.items.length > 0)
             .flatMap(section => [{
@@ -78,7 +87,7 @@ export class GridColumnHeaderParts {
                 //a heading names the entries under it rather than being one
                 onRenderIcon: () => null,
             }, ...section.items]);
-        this._menuItemHooks.apply(items, column);
+        this._menuItemHooks.apply(items, params);
         return items;
     }
 
@@ -88,9 +97,9 @@ export class GridColumnHeaderParts {
     }
 
     /** Everything the modules draw for a column, in order. */
-    public getAdornments(column: IColumn): IColumnHeaderAdornment[] {
+    public getAdornments(params: IColumnHeaderParams): IColumnHeaderAdornment[] {
         const adornments: IColumnHeaderAdornment[] = [];
-        this._adornmentHooks.apply(adornments, column);
+        this._adornmentHooks.apply(adornments, params);
         return adornments;
     }
 }

@@ -4,7 +4,7 @@ import { DataProvider, DataTypes, Formatting, Grouping, IColumn, IGroupByMetadat
 import { ILocalizationService } from "@utils";
 import { IGridGroupingLabels } from "./labels";
 import { IGridGroupingComponents } from "./moduleComponents";
-import { IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
+import { IColumnHeaderAdornment, IColumnHeaderParams, IColumnMenuSection } from "../../services/column-header";
 import { IGridGroupingServiceLocator } from "./services";
 import { getGroupExpansionColumnDefinition } from "./getGroupExpansionColumnDefinition";
 import { IGroupingStrategy, IGroupingStrategyModule } from "./strategies";
@@ -186,8 +186,9 @@ export class GridGrouping {
     }
 
     /** The grouping icon and what it stands for, while the column is what the rows are grouped */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], column: IColumn): void {
-        if (!this.isColumnGrouped(column)) {
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], params: IColumnHeaderParams): void {
+        const column = params.column;
+        if (!column || !this.isColumnGrouped(column)) {
             return;
         }
         adornments.push({
@@ -199,8 +200,9 @@ export class GridGrouping {
     }
 
     /** What a column's menu offers: grouping by it, or ungrouping it. */
-    public applyMenuSection(sections: IColumnMenuSection[], column: IColumn): void {
-        if (!this.canColumnBeGrouped(column)) {
+    public applyMenuSection(sections: IColumnMenuSection[], params: IColumnHeaderParams): void {
+        const column = params.column;
+        if (!column || !this.canColumnBeGrouped(column)) {
             return;
         }
         const isGrouped = this.isColumnGrouped(column);

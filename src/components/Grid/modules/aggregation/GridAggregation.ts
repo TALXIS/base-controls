@@ -1,7 +1,7 @@
 import { AggregationFunction, IColumn, IDataProvider, IInternalDataProvider, TotalRow } from "@talxis/client-libraries";
 import { ILocalizationService } from "@utils";
 import { IGridAggregationLabels } from "./labels";
-import { IColumnHeaderAdornment, IColumnMenuSection } from "../../services/column-header";
+import { IColumnHeaderAdornment, IColumnHeaderParams, IColumnMenuSection } from "../../services/column-header";
 import { IGridAggregationServiceLocator } from "./services";
 
 /** Which label names a total, per aggregation a column can carry. */
@@ -60,9 +60,10 @@ export class GridAggregation {
     }
 
     /** What the column is totalling, for the header's tooltip. */
-    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], column: IColumn): void {
-        const aggregationFunction = column.aggregation?.aggregationFunction;
-        if (!aggregationFunction || this._services.get('gridServices').find('grouping')?.isColumnGrouped(column)) {
+    public applyColumnHeaderAdornments(adornments: IColumnHeaderAdornment[], params: IColumnHeaderParams): void {
+        const column = params.column;
+        const aggregationFunction = column?.aggregation?.aggregationFunction;
+        if (!column || !aggregationFunction || this._services.get('gridServices').find('grouping')?.isColumnGrouped(column)) {
             return;
         }
         //named rather than drawn: a glyph competes with a long column name for the space
@@ -74,9 +75,10 @@ export class GridAggregation {
     }
 
     /** The totals a column can show, as a submenu of what it is currently totalling. */
-    public applyMenuSection(sections: IColumnMenuSection[], column: IColumn): void {
-        const supported = column.metadata?.SupportedAggregations ?? [];
-        if (!this.canColumnBeAggregated(column) || !supported.length) {
+    public applyMenuSection(sections: IColumnMenuSection[], params: IColumnHeaderParams): void {
+        const column = params.column;
+        const supported = column?.metadata?.SupportedAggregations ?? [];
+        if (!column || !this.canColumnBeAggregated(column) || !supported.length) {
             return;
         }
         const grouping = this._services.get('gridServices').find('grouping');
