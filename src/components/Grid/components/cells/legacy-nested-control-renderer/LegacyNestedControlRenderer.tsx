@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { Client } from "@talxis/client-libraries";
 import { NestedControlRenderer } from "@components/NestedControlRenderer";
 import { INestedControlRendererComponentProps } from "@components/NestedControlRenderer/interfaces";
@@ -6,8 +7,10 @@ import { IControl } from "@interfaces";
 import { GridControl } from "../../../services/cells";
 import { useGridCell } from "../root";
 import { useGridService } from "../../../useGridService";
+import { GridServicesContext } from "../../../context";
 import { NestedReactRoot } from "../nested-react-root/NestedReactRoot";
 import { getBindings } from "./getBindings";
+import { getCellFluentDesignLanguage } from "./getCellFluentDesignLanguage";
 
 const client = new Client();
 
@@ -24,6 +27,7 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const { context, parameters } = controlProps;
     const cell = useGridCell();
     const settings = useGridService('settings');
+    const services = useContext(GridServicesContext);
     const fieldControl = control.getFieldControl();
     const column = fieldControl?.getColumn();
     const customControl = control.getCustomControl();
@@ -70,6 +74,8 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                                 },
                             }),
                             parameters: controlParameters,
+                            //a nested control reads its theme from a design language rather than the context
+                            fluentDesignLanguage: getCellFluentDesignLanguage(cell, services),
                         },
                     };
                 }

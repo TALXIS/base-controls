@@ -160,7 +160,8 @@ export const NestedControlRenderer = (props: INestedControlRenderer) => {
                 onNotifyOutputChanged: (outputs) => getRef().props.onNotifyOutputChanged?.(outputs)
             },
             overrides: {
-                onGetProps: getRef().componentProps.onOverrideControlProps,
+                //read at the call, like its siblings: an override closes over the render that made it
+                onGetProps: props => getRef().componentProps.onOverrideControlProps(props),
                 onRender: (control: NestedControl, defaultRender) => {
                     getRef().componentProps.onOverrideRender(control, !getRef().isBaseControl, () => {
                         onRender(control, defaultRender);

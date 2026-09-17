@@ -58,7 +58,7 @@ export const BILLABLE_OPTIONS = [
 ]
 
 /** The same two answers with no colour of their own, which is what a cell draws as plain text. */
-const APPROVED_OPTIONS = [
+export const APPROVED_OPTIONS = [
     { Value: 0, Label: 'Pending' },
     { Value: 1, Label: 'Approved' },
 ]

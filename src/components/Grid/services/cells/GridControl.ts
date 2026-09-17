@@ -1,13 +1,11 @@
 import { DataTypes, ICustomColumnControl, IDataProvider, IDataset, IRecord } from "@talxis/client-libraries";
-import { BaseControls, IFluentDesignState } from "@utils";
-import { ITheme } from "@legacy";
+import { BaseControls } from "@utils";
 import { IGridCellRenderer, IGridCellRendererParameters } from "@components/GridCellRenderer";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
 import { GridField } from "../fields";
 import { GridCell } from "./GridCell";
 import { GridFieldControl } from "./GridFieldControl";
-import { getCellFluentDesignLanguage } from "./getCellFluentDesignLanguage";
 
 export interface IGridControlParameters {
     services: IGridServiceLocator;
@@ -26,7 +24,7 @@ export class GridControl {
     private _takesInput: boolean;
     private _cell: GridCell;
     private _fieldControl?: GridFieldControl;
-    private _context?: { theme: ITheme; isDisabled: boolean; value: ComponentFramework.Context<any, any> };
+    private _context?: { isDisabled: boolean; value: ComponentFramework.Context<any, any> };
 
     constructor(parameters: IGridControlParameters) {
         this._services = parameters.services;
@@ -65,20 +63,20 @@ export class GridControl {
         };
     }
 
-    /** What the host gave the grid, in the theme this cell is drawn in and with what it may do here. */
+    /** What the host gave the grid, with what a control may do in this cell. */
     public getContext(): ComponentFramework.Context<any, any> {
-        const theme = this._cell.getTheme().getValue();
         const isDisabled = !this._cell.isEditable();
-        if (this._context?.theme === theme && this._context.isDisabled === isDisabled) {
+        if (this._context?.isDisabled === isDisabled) {
             return this._context.value;
         }
         const pcfContext = this._services.get('pcfContext');
         const value = {
             ...pcfContext,
             mode: Object.create(pcfContext.mode, { isControlDisabled: { value: isDisabled } }),
-            fluentDesignLanguage: this._getFluentDesignLanguage(theme),
+            //the cell is drawn in a theme of its own, and what is drawn in it takes that theme
+            fluentDesignLanguage: undefined,
         };
-        this._context = { theme: theme, isDisabled: isDisabled, value: value };
+        this._context = { isDisabled: isDisabled, value: value };
         return value;
     }
 
@@ -93,17 +91,6 @@ export class GridControl {
     public getFinalControlParameters(parameters: IParameters): IParameters {
         this._cells.applyControlParametersHooks(parameters, this._hookParams);
         return parameters;
-    }
-
-    /** The design language of a cell drawn in this theme, over the host's own. */
-    private _getFluentDesignLanguage(theme: ITheme): IFluentDesignState {
-        const parent = this._services.get('pcfContext').fluentDesignLanguage as IFluentDesignState | undefined;
-        return getCellFluentDesignLanguage({
-            theme: theme,
-            columnAlignment: this._cell.getAlignment(),
-            //a surface drawn over a recoloured cell belongs to the grid, not to the cell
-            parent: { ...parent, applicationTheme: parent?.applicationTheme ?? this._services.get('theme') } as IFluentDesignState,
-        });
     }
 
     private _isCustomRenderer(control: ICustomColumnControl): boolean {

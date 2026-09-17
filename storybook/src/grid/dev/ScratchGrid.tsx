@@ -1,7 +1,7 @@
 import React from 'react'
 import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, CellUi, DateTime, Decimal, Duration, Grid, IGridCellParams, IGridCellRenderer, IGridModule, IGridModules, IGridServiceLocator, MultiSelectOptionSet, OptionSet, TextField, TwoOptions, useGridService } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
-import { BILLABLE_OPTIONS, COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
+import { APPROVED_OPTIONS, BILLABLE_OPTIONS, COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
 /**
  * What a base control needs of a host, and no more.
@@ -152,6 +152,14 @@ const UNBOUND_COLUMNS: IUnboundColumn[] = [
             onNotifyOutputChanged={outputs => setValue(outputs.value ?? null)} />,
     },
     {
+        colId: 'unboundDateAndTime', headerName: 'Date and time, unbound', width: 200,
+        seed: rowNumber => new Date(2026, rowNumber % 12, (rowNumber % 27) + 1, rowNumber % 24, (rowNumber * 7) % 60),
+        onRenderControl: ({ context, parameters }, value, setValue) => <DateTime
+            context={context}
+            parameters={{ ...parameters, value: { raw: value, attributes: { Behavior: 1, Format: 'DateAndTime.DateAndTime' } } }}
+            onNotifyOutputChanged={outputs => setValue(outputs.value ?? null)} />,
+    },
+    {
         colId: 'unboundDuration', headerName: 'Duration, unbound', width: 160,
         seed: rowNumber => (rowNumber % 6) * 30 + 15,
         onRenderControl: ({ context, parameters }, value, setValue) => <Duration
@@ -181,6 +189,14 @@ const UNBOUND_COLUMNS: IUnboundColumn[] = [
         onRenderControl: ({ context, parameters }, value, setValue) => <TwoOptions
             context={context}
             parameters={{ ...parameters, value: { raw: value, attributes: { Options: BILLABLE_OPTIONS as any } } }}
+            onNotifyOutputChanged={outputs => setValue(outputs.value ?? false)} />,
+    },
+    {
+        colId: 'unboundTwoOptionsColourless', headerName: 'Yes or no, unbound, no colour', width: 200,
+        seed: rowNumber => rowNumber % 3 === 0,
+        onRenderControl: ({ context, parameters }, value, setValue) => <TwoOptions
+            context={context}
+            parameters={{ ...parameters, value: { raw: value, attributes: { Options: APPROVED_OPTIONS as any } } }}
             onNotifyOutputChanged={outputs => setValue(outputs.value ?? false)} />,
     },
 ]

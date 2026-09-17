@@ -41,7 +41,7 @@ export class GridCell {
         this._node = parameters.node;
         this._takesInput = !!parameters.takesInput;
         this._id = `${parameters.record.getRecordId()}_${this.getColumnName()}_${++instanceCount}`;
-        this._theme = new GridCellTheme({ services: parameters.services, record: parameters.record, columnName: this.getColumnName(), node: parameters.node });
+        this._theme = new GridCellTheme({ services: parameters.services, cell: this });
     }
 
     /** What tells this cell apart from every other one, this render of it included. */

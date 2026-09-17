@@ -1,54 +1,9 @@
-import { IComboBoxStyles, IDatePickerStyles, ITextFieldStyles, IToggleStyles, merge } from "@fluentui/react";
-import { DeepPartial, IColumn } from "@talxis/client-libraries";
+import { merge } from "@fluentui/react";
+import { DeepPartial } from "@talxis/client-libraries";
 import { ITheme } from "@legacy";
-import { ControlTheme, getJustifyContent, IAlignment, IFluentDesignState } from "@utils";
-
-//the component overrides depend only on the column alignment
-const componentOverridesByAlignment = new Map<IColumn['alignment'] | undefined, DeepPartial<ITheme>['components']>();
-
-const getComponentOverrides = (columnAlignment: IColumn['alignment']) => {
-    const alignment: IAlignment = columnAlignment ?? 'left';
-    const cached = componentOverridesByAlignment.get(columnAlignment);
-    if (cached) {
-        return cached;
-    }
-    const overrides = {
-        'TextField': {
-            styles: {
-                field: {
-                    textAlign: columnAlignment
-                }
-            } as ITextFieldStyles
-        },
-        'ComboBox': {
-            styles: {
-                input: {
-                    textAlign: columnAlignment === 'right' ? 'right' : undefined,
-                    paddingRight: columnAlignment === 'right' ? 8 : undefined,
-                }
-            } as IComboBoxStyles
-        },
-        'DatePicker': {
-            styles: {
-                root: {
-                    '.ms-TextField-field': {
-                        paddingRight: columnAlignment === 'right' ? 8 : undefined,
-                        textAlign: columnAlignment === 'right' ? 'right' : 'left'
-                    }
-                } as any
-            } as IDatePickerStyles
-        },
-        'Toggle': {
-            styles: {
-                root: {
-                    justifyContent: getJustifyContent(alignment)
-                }
-            } as IToggleStyles
-        }
-    };
-    componentOverridesByAlignment.set(columnAlignment, overrides as any);
-    return overrides as any;
-};
+import { ControlTheme, IFluentDesignState } from "@utils";
+import { IGridServiceLocator } from "../../../services";
+import { GridCell } from "../../../services/cells";
 
 /** A stable name for a theme override, from its content. */
 const getOverrideName = (override?: object): string | undefined => {
@@ -76,35 +31,23 @@ const getOverrideName = (override?: object): string | undefined => {
     }
 };
 
-export interface ICellFluentDesignLanguageParameters {
-    /** The theme this cell is drawn in. */
-    theme: ITheme;
-    columnAlignment: IColumn['alignment'];
-    /** What the control would have been given, which is the host's own. */
-    parent?: IFluentDesignState;
-}
-
-/** The design language a control is given inside a cell. */
-export const getCellFluentDesignLanguage = (parameters: ICellFluentDesignLanguageParameters): IFluentDesignState => {
-    const { theme, columnAlignment, parent } = parameters;
+/** The design language a nested control in this cell is given, which is the cell's own theme. */
+export const getCellFluentDesignLanguage = (cell: GridCell, services: IGridServiceLocator): IFluentDesignState => {
+    const theme = cell.getTheme().getValue();
+    const parent = services.get('pcfContext').fluentDesignLanguage as IFluentDesignState | undefined;
     const parentOverrides = parent?.v8FluentOverrides;
     const parentName = getOverrideName(parentOverrides);
+    const alignment = cell.getAlignment();
+    const cellOverrides = cell.getTheme().getOverrides(theme.semanticColors.bodyBackground);
     const ownOverrides: DeepPartial<ITheme> = {
+        ...cellOverrides,
         //everything the override varies by has to appear here.
-        id: parentName === undefined ? undefined : ['cell', theme.id, columnAlignment ?? '', parentName].join('|'),
+        id: parentName === undefined ? undefined : ['cell', theme.id, alignment, parentName].join('|'),
         semanticColors: {
-            inputBorder: 'transparent',
-            inputBorderHovered: 'transparent',
-            inputBackground: theme.semanticColors.bodyBackground,
-            focusBorder: 'transparent',
-            disabledBorder: 'transparent',
-            inputFocusBorderAlt: 'transparent',
+            ...cellOverrides.semanticColors,
+            //a nested control says nothing about a value the cell already reports on
             errorText: 'transparent'
         },
-        effects: {
-            underlined: false
-        },
-        components: getComponentOverrides(columnAlignment)
     };
     //merged only when there is something to merge
     const v8FluentOverrides: any = parentOverrides ? merge({}, ownOverrides, parentOverrides) : ownOverrides;
@@ -114,5 +57,9 @@ export const getCellFluentDesignLanguage = (parameters: ICellFluentDesignLanguag
         theme.palette.themePrimary,
         theme.semanticColors.bodyBackground,
         theme.semanticColors.bodyText,
-        { v8FluentOverrides: v8FluentOverrides, applicationTheme: parent?.applicationTheme });
+        {
+            v8FluentOverrides: v8FluentOverrides,
+            //a surface drawn over a recoloured cell belongs to the grid, not to the cell
+            applicationTheme: parent?.applicationTheme ?? services.get('theme')
+        });
 };
