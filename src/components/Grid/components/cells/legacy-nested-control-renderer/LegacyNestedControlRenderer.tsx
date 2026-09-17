@@ -8,7 +8,6 @@ import { useGridCell } from "../root";
 import { useGridService } from "../../../useGridService";
 import { getBindings } from "./getBindings";
 import { NestedReactRoot } from "./nested-react-root";
-import { getCellFluentDesignLanguage } from "./getCellFluentDesignLanguage";
 
 const client = new Client();
 
@@ -27,7 +26,6 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
     const settings = useGridService('settings');
     const fieldControl = control.getFieldControl();
     const column = fieldControl?.getColumn();
-    const cellTheme = cell.getTheme();
     const customControl = control.getCustomControl();
 
     //a root of its own, so the control's own handlers run before AG Grid's
@@ -72,11 +70,6 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                                 },
                             }),
                             parameters: controlParameters,
-                            fluentDesignLanguage: getCellFluentDesignLanguage({
-                                theme: cellTheme.getValue(),
-                                columnAlignment: column?.alignment,
-                                parent: controlProps.context.fluentDesignLanguage
-                            }),
                         },
                     };
                 }

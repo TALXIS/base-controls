@@ -83,6 +83,9 @@ const STATUS_TINTS: { [status: number]: string } = {
     6: '#f4f4f4',
 }
 
+/** The column the story adds itself, which the provider has no field for. */
+const UNBOUND_COLUMN = 'estimateUnbound'
+
 /** What the cell says about the estimate it draws, which is a field of another cell's column. */
 const EstimateError = (props: { record: IRecord }) => {
     const gridTheme = useGridService('theme')
@@ -125,13 +128,39 @@ const withCellHooks = (module: IGridModule): IGridModule => ({
         module.onRegister?.(services)
         //a column of the grid's own, which no record has a field for: `Grid.Control` draws it unbound
         services.get('columns').registerColumnDefinitionsHook(columnDefs => columnDefs.push({
-            colId: 'estimateUnbound',
+            colId: UNBOUND_COLUMN,
             headerName: 'Estimate, unbound',
-            width: 160,
+            width: 220,
             valueGetter: () => null,
             valueFormatter: () => '',
             cellRenderer: EstimateCell,
         }))
+        //a task nobody has estimated yet: the cell waits, and a cell of the grid's own can wait as well
+        services.get('cells').registerCellLoadingHook((result, params) => {
+            if (params.columnName === UNBOUND_COLUMN && Number(params.record.getValue('status')) === 6) {
+                result.isLoading = true
+            }
+        })
+        //commands on a cell with no field, which is the other half of what a column of the grid's own has
+        services.get('cells').registerCellCommandsHook((result, params) => {
+            if (params.columnName !== UNBOUND_COLUMN || Number(params.record.getValue('status')) === 6) {
+                return
+            }
+            const estimate = () => Number(params.record.getValue('estimate') ?? 0)
+            result.items.push({
+                key: 'Double',
+                iconOnly: true,
+                iconProps: { iconName: 'Calculator' },
+                title: 'Double the estimate',
+                onClick: () => params.record.setValue('estimate', estimate() * 2),
+            })
+            result.overflowItems.push({
+                key: 'Clear',
+                text: 'Clear the estimate',
+                iconProps: { iconName: 'Cancel' },
+                onClick: () => params.record.setValue('estimate', 0),
+            })
+        })
         //a row of commands on the two text columns, some labelled and some not, so what a bar does with
         //both is part of what the story shows - and one of those columns edits on a click while the other
         //opens an editor, so what commands do beside an input is in the story too
