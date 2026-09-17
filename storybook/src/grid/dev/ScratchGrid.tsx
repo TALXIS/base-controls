@@ -1,7 +1,7 @@
 import React from 'react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, CellUi, Grid, IGridCellParams, IGridModule, IGridModules, Decimal, IGridServiceLocator, MultiSelectOptionSet, OptionSet, useGridService } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, CellUi, DateTime, Decimal, Duration, Grid, IGridCellParams, IGridCellRenderer, IGridModule, IGridModules, IGridServiceLocator, MultiSelectOptionSet, OptionSet, TextField, TwoOptions, useGridService } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
-import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
+import { BILLABLE_OPTIONS, COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
 /**
  * What a base control needs of a host, and no more.
@@ -83,82 +83,184 @@ const STATUS_TINTS: { [status: number]: string } = {
     6: '#f4f4f4',
 }
 
-/** The column the story adds itself, which the provider has no field for. */
-const UNBOUND_COLUMN = 'estimateUnbound'
+/** The column of the grid's own that the story hangs its loading and its commands off. */
+const UNBOUND_DECIMAL_COLUMN = 'unboundDecimal'
 
-/** What the cell says about the estimate it draws, which is a field of another cell's column. */
-const EstimateError = (props: { record: IRecord }) => {
-    const gridTheme = useGridService('theme')
-    const { error, errorMessage } = props.record.getField('estimate').isValid()
-    if (!error) {
-        return null
-    }
-    return <CellUi.FieldError message={errorMessage ?? ''} surfaceTheme={gridTheme} />
+/** What the story's own columns hold, since no record has a field for any of them. */
+const unboundValues = {
+    values: new Map<string, any>(),
+    listeners: new Set<() => void>(),
+    get(key: string, seed: () => any) {
+        if (!this.values.has(key)) {
+            this.values.set(key, seed())
+        }
+        return this.values.get(key)
+    },
+    set(key: string, value: any) {
+        this.values.set(key, value)
+        this.listeners.forEach(listener => listener())
+    },
+    subscribe(listener: () => void) {
+        this.listeners.add(listener)
+        return () => { this.listeners.delete(listener) }
+    },
+}
+
+/** Which of the story's values a cell holds: one per row, per column of its own. */
+const getUnboundKey = (rowId: string, colId: string) => `${rowId}_${colId}`
+
+/** One column of the grid's own: no record has a field for it, and a base control draws it. */
+interface IUnboundColumn {
+    colId: string
+    headerName: string
+    width: number
+    /** What the cell starts with, worked out from the row it is in. */
+    seed: (rowNumber: number) => any
+    onRenderControl: (props: IGridCellRenderer, value: any, setValue: (value: any) => void) => JSX.Element
+    /** What the cell says about a value the story will not take. */
+    getError?: (value: any) => string | undefined
+}
+
+/** Every field base control but the lookup, each in a column the provider knows nothing about. */
+const UNBOUND_COLUMNS: IUnboundColumn[] = [
+    {
+        colId: 'unboundText', headerName: 'Text, unbound', width: 180,
+        seed: rowNumber => `Note ${rowNumber}`,
+        onRenderControl: ({ context, parameters }, value, setValue) => <TextField
+            context={context}
+            parameters={{ ...parameters, value: { raw: value } }}
+            onNotifyOutputChanged={outputs => setValue(outputs.value ?? '')} />,
+    },
+    {
+        colId: UNBOUND_DECIMAL_COLUMN, headerName: 'Decimal, unbound', width: 220,
+        seed: rowNumber => rowNumber,
+        //the story's own rule, so a cell of its own can be seen refusing a value
+        getError: value => value > 5 ? `${value} is more than the 5 this story takes.` : undefined,
+        onRenderControl: ({ context, parameters }, value, setValue) => <Decimal
+            context={context}
+            parameters={{ ...parameters, value: { raw: value, type: 'Decimal' }, EnableSpinButton: { raw: true } }}
+            onNotifyOutputChanged={outputs => setValue(outputs.value ?? 0)} />,
+    },
+    {
+        colId: 'unboundDateTime', headerName: 'Date, unbound', width: 180,
+        seed: rowNumber => new Date(2026, rowNumber % 12, (rowNumber % 27) + 1),
+        onRenderControl: ({ context, parameters }, value, setValue) => <DateTime
+            context={context}
+            parameters={{ ...parameters, value: { raw: value, attributes: { Behavior: 1, Format: 'DateAndTime.DateOnly' } } }}
+            onNotifyOutputChanged={outputs => setValue(outputs.value ?? null)} />,
+    },
+    {
+        colId: 'unboundDuration', headerName: 'Duration, unbound', width: 160,
+        seed: rowNumber => (rowNumber % 6) * 30 + 15,
+        onRenderControl: ({ context, parameters }, value, setValue) => <Duration
+            context={context}
+            parameters={{ ...parameters, value: { raw: value } }}
+            onNotifyOutputChanged={outputs => setValue(outputs.value ?? 0)} />,
+    },
+    {
+        colId: 'unboundOptionSet', headerName: 'Choice, unbound', width: 180,
+        seed: rowNumber => STATUS_OPTIONS[rowNumber % STATUS_OPTIONS.length].Value,
+        onRenderControl: ({ context, parameters }, value, setValue) => <OptionSet
+            context={context}
+            parameters={{ ...parameters, value: { raw: value, attributes: { Options: STATUS_OPTIONS } } }}
+            onNotifyOutputChanged={outputs => setValue(outputs.value ?? null)} />,
+    },
+    {
+        colId: 'unboundMultiSelect', headerName: 'Choices, unbound', width: 220,
+        seed: rowNumber => TAG_OPTIONS.slice(rowNumber % 4, (rowNumber % 4) + (rowNumber % 3) + 1).map(option => option.Value),
+        onRenderControl: ({ context, parameters }, value, setValue) => <MultiSelectOptionSet
+            context={context}
+            parameters={{ ...parameters, value: { raw: value, attributes: { Options: TAG_OPTIONS } } }}
+            onNotifyOutputChanged={outputs => setValue(outputs.value ?? [])} />,
+    },
+    {
+        colId: 'unboundTwoOptions', headerName: 'Yes or no, unbound', width: 160,
+        seed: rowNumber => rowNumber % 2 === 0,
+        onRenderControl: ({ context, parameters }, value, setValue) => <TwoOptions
+            context={context}
+            parameters={{ ...parameters, value: { raw: value, attributes: { Options: BILLABLE_OPTIONS as any } } }}
+            onNotifyOutputChanged={outputs => setValue(outputs.value ?? false)} />,
+    },
+]
+
+/** Every sixth row, by the id it was made with: the story's own reason for a cell to wait. */
+const isWaitingRow = (record: IRecord) => Number(record.getRecordId().split('-')[1]) % 6 === 0
+
+/** The value this cell holds, which changes under it when anything else writes one. */
+const useUnboundValue = (key: string, seed: () => any): [any, (value: any) => void] => {
+    const read = () => unboundValues.get(key, seed)
+    const [value, setValue] = React.useState(read)
+    React.useEffect(() => unboundValues.subscribe(() => setValue(read())), [key])
+    return [value, next => unboundValues.set(key, next)]
 }
 
 /** A cell of a column the provider has no field for: the same pieces a bound cell is drawn from. */
-const EstimateCell = (props: IGridCellParams) => {
-    //a pinned row stands for no record
-    if (!props.data) {
-        return null
-    }
-    return <Grid.CellRenderer {...props}>
-        <EstimateError record={props.data} />
+const UnboundCell = (props: { column: IUnboundColumn, rowId: string, rowNumber: number }) => {
+    const { column, rowId, rowNumber } = props
+    const gridTheme = useGridService('theme')
+    const [value, setValue] = useUnboundValue(getUnboundKey(rowId, column.colId), () => column.seed(rowNumber))
+    const error = column.getError?.(value)
+
+    return <>
+        {error && <CellUi.FieldError message={error} surfaceTheme={gridTheme} />}
         <Grid.Control components={{
-            //a base control, handed the cell's own parameters and pointed at a field of the story's choosing
-            onRenderControl: ({ context, parameters }) => {
-                const record = parameters.Record.raw
-                return <Decimal
-                    context={context}
-                    parameters={{
-                        ...parameters,
-                        value: { raw: Number(record.getValue('estimate') ?? 0), type: 'Decimal' },
-                        EnableSpinButton: { raw: true },
-                    }}
-                    onNotifyOutputChanged={outputs => record.setValue('estimate', outputs.value ?? 0)} />
-            }
+            //a base control, handed the cell's own parameters and a value the story keeps itself
+            onRenderControl: controlProps => column.onRenderControl(controlProps, value, setValue)
         }} />
-    </Grid.CellRenderer>
+    </>
 }
+
+//the renderers are made once: AG Grid rebuilds every cell of a column whose renderer is a new component
+const UNBOUND_COLUMN_DEFINITIONS = UNBOUND_COLUMNS.map(column => ({
+    colId: column.colId,
+    headerName: column.headerName,
+    width: column.width,
+    valueGetter: () => null,
+    valueFormatter: () => '',
+    cellRenderer: (props: IGridCellParams) => {
+        //a pinned row stands for no record, and a record is what tells one row's values from another's
+        if (!props.data) {
+            return null
+        }
+        return <Grid.CellRenderer {...props}>
+            <UnboundCell column={column} rowId={props.data.getRecordId()} rowNumber={(props.node.rowIndex ?? 0) + 1} />
+        </Grid.CellRenderer>
+    },
+}))
 
 /** What the story adds through the services, wired onto whichever module it is given. */
 const withCellHooks = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
-        //a column of the grid's own, which no record has a field for: `Grid.Control` draws it unbound
-        services.get('columns').registerColumnDefinitionsHook(columnDefs => columnDefs.push({
-            colId: UNBOUND_COLUMN,
-            headerName: 'Estimate, unbound',
-            width: 220,
-            valueGetter: () => null,
-            valueFormatter: () => '',
-            cellRenderer: EstimateCell,
-        }))
-        //a task nobody has estimated yet: the cell waits, and a cell of the grid's own can wait as well
+        //columns of the grid's own, which no record has a field for: `Grid.Control` draws them unbound
+        services.get('columns').registerColumnDefinitionsHook(
+            columnDefs => columnDefs.splice(1, 0, ...UNBOUND_COLUMN_DEFINITIONS))
+        //a value the story is still working out: a cell of the grid's own waits like any other
         services.get('cells').registerCellLoadingHook((result, params) => {
-            if (params.columnName === UNBOUND_COLUMN && Number(params.record.getValue('status')) === 6) {
+            if (params.columnName === UNBOUND_DECIMAL_COLUMN && isWaitingRow(params.record)) {
                 result.isLoading = true
             }
         })
+
         //commands on a cell with no field, which is the other half of what a column of the grid's own has
         services.get('cells').registerCellCommandsHook((result, params) => {
-            if (params.columnName !== UNBOUND_COLUMN || Number(params.record.getValue('status')) === 6) {
+            if (params.columnName !== UNBOUND_DECIMAL_COLUMN || isWaitingRow(params.record)) {
                 return
             }
-            const estimate = () => Number(params.record.getValue('estimate') ?? 0)
+            const key = getUnboundKey(params.record.getRecordId(), UNBOUND_DECIMAL_COLUMN)
+            const value = () => Number(unboundValues.values.get(key) ?? 0)
             result.items.push({
                 key: 'Double',
                 iconOnly: true,
                 iconProps: { iconName: 'Calculator' },
-                title: 'Double the estimate',
-                onClick: () => params.record.setValue('estimate', estimate() * 2),
-            })
-            result.overflowItems.push({
+                title: 'Double the value',
+                onClick: () => unboundValues.set(key, value() * 2),
+            }, {
                 key: 'Clear',
-                text: 'Clear the estimate',
+                text: 'Clear the value',
                 iconProps: { iconName: 'Cancel' },
-                onClick: () => params.record.setValue('estimate', 0),
+                onClick: () => unboundValues.set(key, 0),
             })
         })
         //a row of commands on the two text columns, some labelled and some not, so what a bar does with
@@ -219,10 +321,6 @@ const withCellHooks = (module: IGridModule): IGridModule => ({
                 submenu('Move', 'Move', 'Move to', ['Backlog', 'This sprint', 'Next sprint']),
                 command('Assign', 'FollowUser', { text: 'Assign to me' }),
                 command('Delete', 'Delete', { text: 'Delete', disabled: true }),
-            )
-            //the rest are never drawn as buttons: a menu is built when it is opened, so these cost the
-            //cell nothing until someone asks for them
-            result.overflowItems.push(
                 command('Copy', 'Copy', { text: 'Copy' }),
                 command('Share', 'Share', { text: 'Share' }),
                 command('Flag', 'Flag', { text: 'Flag' }),

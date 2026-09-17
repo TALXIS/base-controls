@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { CommandBarButton, ContextualMenu, Icon, IContextualMenuItem, Text, useTheme } from '@fluentui/react';
 import { useGridService } from '@components/Grid/useGridService';
-import { ColDef, IHeaderParams } from '@ag-grid-community/core';
-import { IRecord } from '@talxis/client-libraries';
+import { IHeaderParams } from '@ag-grid-community/core';
 import { getColumnHeaderContextualMenuStyles, getColumnHeaderStyles } from './styles';
 
 export interface IColumnHeader extends IHeaderParams { }

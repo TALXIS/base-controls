@@ -52,7 +52,7 @@ export const TAG_OPTIONS = [
     { Value: 130, Label: 'Onboarding', Color: '' },
 ]
 
-const BILLABLE_OPTIONS = [
+export const BILLABLE_OPTIONS = [
     { Value: 0, Label: 'No', Color: '#605e5c' },
     { Value: 1, Label: 'Yes', Color: '#107c10' },
 ]
