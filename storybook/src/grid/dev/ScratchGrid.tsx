@@ -1,5 +1,5 @@
 import React from 'react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridModule, IGridModules, IGridServiceLocator, MultiSelectOptionSet, OptionSet } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, CellUi, Grid, IGridCellParams, IGridModule, IGridModules, Decimal, IGridServiceLocator, MultiSelectOptionSet, OptionSet, useGridService } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
@@ -83,11 +83,55 @@ const STATUS_TINTS: { [status: number]: string } = {
     6: '#f4f4f4',
 }
 
-/** The commands a cell offers, wired onto whichever module the story is given. */
+/** What the cell says about the estimate it draws, which is a field of another cell's column. */
+const EstimateError = (props: { record: IRecord }) => {
+    const gridTheme = useGridService('theme')
+    const { error, errorMessage } = props.record.getField('estimate').isValid()
+    if (!error) {
+        return null
+    }
+    return <CellUi.FieldError message={errorMessage ?? ''} surfaceTheme={gridTheme} />
+}
+
+/** A cell of a column the provider has no field for: the same pieces a bound cell is drawn from. */
+const EstimateCell = (props: IGridCellParams) => {
+    //a pinned row stands for no record
+    if (!props.data) {
+        return null
+    }
+    return <Grid.CellRenderer {...props}>
+        <EstimateError record={props.data} />
+        <Grid.Control components={{
+            //a base control, handed the cell's own parameters and pointed at a field of the story's choosing
+            onRenderControl: ({ context, parameters }) => {
+                const record = parameters.Record.raw
+                return <Decimal
+                    context={context}
+                    parameters={{
+                        ...parameters,
+                        value: { raw: Number(record.getValue('estimate') ?? 0), type: 'Decimal' },
+                        EnableSpinButton: { raw: true },
+                    }}
+                    onNotifyOutputChanged={outputs => record.setValue('estimate', outputs.value ?? 0)} />
+            }
+        }} />
+    </Grid.CellRenderer>
+}
+
+/** What the story adds through the services, wired onto whichever module it is given. */
 const withCellHooks = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
+        //a column of the grid's own, which no record has a field for: `Grid.Control` draws it unbound
+        services.get('columns').registerColumnDefinitionsHook(columnDefs => columnDefs.push({
+            colId: 'estimateUnbound',
+            headerName: 'Estimate, unbound',
+            width: 160,
+            valueGetter: () => null,
+            valueFormatter: () => '',
+            cellRenderer: EstimateCell,
+        }))
         //a row of commands on the two text columns, some labelled and some not, so what a bar does with
         //both is part of what the story shows - and one of those columns edits on a click while the other
         //opens an editor, so what commands do beside an input is in the story too
