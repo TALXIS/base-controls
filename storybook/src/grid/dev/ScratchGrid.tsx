@@ -222,9 +222,17 @@ const UNBOUND_COLUMN_DEFINITIONS = UNBOUND_COLUMNS.map(column => ({
         if (!props.data) {
             return null
         }
-        return <Grid.CellRenderer {...props}>
-            <UnboundCell column={column} rowId={props.data.getRecordId()} rowNumber={(props.node.rowIndex ?? 0) + 1} />
-        </Grid.CellRenderer>
+        //the pieces rather than `Grid.CellRenderer`: the error is the story's own, and no field's
+        return <Grid.CellRoot {...props}>
+            <Grid.RowResizeGrip>
+                <Grid.CellContainer>
+                    <Grid.CellLoading>
+                        <UnboundCell column={column} rowId={props.data.getRecordId()} rowNumber={(props.node.rowIndex ?? 0) + 1} />
+                        <Grid.CellCommands />
+                    </Grid.CellLoading>
+                </Grid.CellContainer>
+            </Grid.RowResizeGrip>
+        </Grid.CellRoot>
     },
 }))
 

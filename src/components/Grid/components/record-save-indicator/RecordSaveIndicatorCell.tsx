@@ -10,7 +10,9 @@ export const RecordSaveIndicatorCell = (props: ICellRendererParams<IRecord>) => 
     const record = props.data!;
     const status = useRecordSaveStatus(record);
 
-    return <CellRenderer {...props}>
-        {status.hasAnythingToReport && <RecordSaveIndicator record={record} status={status} />}
-    </CellRenderer>;
+    return <CellRenderer {...props} components={{
+        control: {
+            onRenderControl: () => status.hasAnythingToReport ? <RecordSaveIndicator record={record} status={status} /> : null
+        }
+    }} />;
 };

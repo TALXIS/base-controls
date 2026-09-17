@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
-import { Checkbox, useTheme } from "@fluentui/react";
+import { Checkbox } from "@fluentui/react";
 import { CellRenderer } from "@components/Grid/components/cells/cell-renderer/CellRenderer";
 import { useGridService } from "@components/Grid/useGridService";
 import { RecordSaveIndicator, useRecordSaveStatus } from "@components/Grid/components/record-save-indicator";
@@ -25,9 +25,11 @@ export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
         }
     };
 
-    return <CellRenderer {...props}>
-        {saveStatus.hasAnythingToReport && <RecordSaveIndicator record={record} status={saveStatus} />}
-        {!saveStatus.hasAnythingToReport && <div
+    const onRenderCheckBox = () => {
+        if (saveStatus.hasAnythingToReport) {
+            return <RecordSaveIndicator record={record} status={saveStatus} />;
+        }
+        return <div
             onClick={onCheckBoxClick}
             className={styles.checkBoxContainer}>
             <Checkbox
@@ -37,6 +39,8 @@ export const SelectionCell = (props: ICellRendererParams<IRecord>) => {
                 styles={{
                     checkbox: styles.checkBox
                 }} />
-        </div>}
-    </CellRenderer>;
+        </div>;
+    };
+
+    return <CellRenderer {...props} components={{ control: { onRenderControl: onRenderCheckBox } }} />;
 };
