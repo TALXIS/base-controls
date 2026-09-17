@@ -1,6 +1,8 @@
 import { ColDef, IRowNode } from "@ag-grid-community/core";
 import { IRecord } from "@talxis/client-libraries";
+import { IAlignment } from "@utils";
 import { IGridServiceLocator } from "../../services";
+import { IGridColumnSettings } from "../columns/colDef";
 import { IGridCellCommands, IGridCellEditable, IGridCellLoading } from "./GridCells";
 import { GridCellTheme } from "./GridCellTheme";
 import { GridField } from "../fields";
@@ -82,15 +84,25 @@ export class GridCell {
         return this._takesInput;
     }
 
-    /** Whether that control is drawn in the cell itself. */
-    public takesInputInPlace(): boolean {
-        return !!this._colDef.propBag?.column?.oneClickEdit;
+    /** Whether that control is drawn in the cell itself, with no editor to open. */
+    public hasOneClickEdit(): boolean {
+        return !!this.getSettings().oneClickEdit;
+    }
+
+    /** What the column this cell is in says its cells are. */
+    public getSettings(): IGridColumnSettings {
+        return this._colDef.settings ?? {};
+    }
+
+    /** Which edge this cell reads from. */
+    public getAlignment(): IAlignment {
+        return this.getSettings().alignment ?? 'left';
     }
 
     /** Whether the user is editing this cell. */
     public isBeingEdited(): boolean {
         //an editor was opened because the user asked to type here
-        if (this._takesInput && !this.takesInputInPlace()) {
+        if (this._takesInput && !this.hasOneClickEdit()) {
             return true;
         }
         return this._editing.isEditing(this._record, this.getColumnName());
@@ -122,7 +134,7 @@ export class GridCell {
      */
     public isEditable(): boolean {
         //the column's word is the last one, and it is not `editable`
-        if (this._colDef.propBag?.column?.isEditable === false) {
+        if (this.getSettings().isEditable === false) {
             return false;
         }
         const result: IGridCellEditable = { isEditable: true };

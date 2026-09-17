@@ -14,8 +14,7 @@ export interface IGridCellEditorProps extends ICellRendererParams {
 export const CellEditor = (props: IGridCellEditorProps) => {
     const components = props.components ?? {};
 
-    //an editor takes input by being one.
-    return <CellRoot {...props} takesInput>
+    return <CellRoot {...props} isEditor>
         <RowResizeGrip components={components.rowResizeGrip}>
             <CellContainer>
                 <CellLoading components={components.loading}>

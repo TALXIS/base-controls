@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import { GridCellRenderer, IGridCellRenderer } from "@components/GridCellRenderer";
 import { useGridCell } from "../root/context";
 import { useGridField } from "../field";
@@ -21,11 +21,7 @@ export const Control = (props: IGridControlProps) => {
     const onRenderDefault = (renderProps: IGridCellRenderer) => {
         //a column that named a control of its own
         if (control.isCustomRendererEnabled()) {
-            //keyed: `AutoFocus` decides a control's first render
-            return <LegacyNestedControlRenderer
-                key={`${cell.isBeingEdited()}`}
-                controlProps={renderProps}
-                control={control} />;
+            return <LegacyNestedControlRenderer controlProps={renderProps} control={control} />;
         }
         return <GridCellRenderer {...renderProps} />;
     };
@@ -33,7 +29,9 @@ export const Control = (props: IGridControlProps) => {
     return <GridControlContext.Provider value={control}>
         {components.onRenderControlContainer({
             control: control,
-            children: components.onRenderControl(controlProps, onRenderDefault),
+            alignment: cell.getAlignment(),
+            //keyed: `AutoFocus` decides a control's first render, so stepping in has to be one
+            children: <Fragment key={`${cell.isBeingEdited()}`}>{components.onRenderControl(controlProps, onRenderDefault)}</Fragment>,
         })}
     </GridControlContext.Provider>;
 };

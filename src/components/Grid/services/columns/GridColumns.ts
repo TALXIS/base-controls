@@ -1,4 +1,4 @@
-import { CellDoubleClickedEvent, ColDef, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { DataProvider, DataTypes, IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
@@ -6,11 +6,10 @@ import { FieldCellEditor } from "../../components/cells/field-cell-editor/FieldC
 import { FieldCellRenderer } from "../../components/cells/field-cell-renderer/FieldCellRenderer";
 import { RequiredLevelEnum } from "@talxis/client-metadata";
 import { GridField } from "../fields";
-import { IGridCellRendererParams } from "../../components/interfaces";
 import { ColumnHeader } from "../../components/column-header/ColumnHeader";
 import { RecordSaveIndicatorCell } from "../../components/record-save-indicator";
 import { suppressRendererInPinnedRows } from "./suppressRendererInPinnedRows";
-import { IGridColumn } from "./colDef";
+import { IGridColumnSettings } from "./colDef";
 import { IGridServiceLocator } from "../../services";
 
 
@@ -54,10 +53,16 @@ export class GridColumns {
         }
         const own = new Set(columnDefs);
         this._hooks.apply(columnDefs);
-        //a column a hook added draws its header the way the grid's own do
-        columnDefs.filter(columnDef => !own.has(columnDef))
-            .forEach(columnDef => columnDef.headerComponent ??= ColumnHeader);
+        columnDefs.filter(columnDef => !own.has(columnDef)).forEach(columnDef => this._applyGridBehaviour(columnDef));
         return columnDefs;
+    }
+
+    /** What a column a hook added takes from the grid, where it did not say otherwise. */
+    private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
+        columnDef.headerComponent ??= ColumnHeader;
+        columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
+        //only a column that brought an editor has one to open
+        columnDef.editable ??= !!columnDef.cellEditor && ((params: EditableCallbackParams<IRecord>) => this._isEditorAvailable(params.data, params.colDef));
     }
 
     /** The column a row reports its save in, where one is wanted. */
@@ -132,10 +137,8 @@ export class GridColumns {
             autoHeight: !!column.autoHeight,
             //TODO: grid specific setting
             suppressMovable: column.isDraggable === false,
-            propBag: { column: this._getGridColumn(column) },
-            cellRendererParams: this._getCellRendererParameters(column),
+            settings: this._getColumnSettings(column),
             editable: this._getEditorAvailability(column),
-            cellEditorParams: this._getCellRendererParameters(column),
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeader,
@@ -160,9 +163,14 @@ export class GridColumns {
         return !!record && this._cells.createCell(record, colDef).isEditable();
     }
 
-    /** The column as everything downstream reads it */
-    private _getGridColumn(column: IColumn): IGridColumn {
-        return { ...column, isRequired: this._isColumnRequired(column), isEditable: this._isColumnEditable(column) };
+    /** What the grid's cells and header read about this column. */
+    private _getColumnSettings(column: IColumn): IGridColumnSettings {
+        return {
+            alignment: column.alignment,
+            oneClickEdit: !!column.oneClickEdit,
+            isEditable: this._isColumnEditable(column),
+            isRequired: this._isColumnRequired(column),
+        };
     }
 
     /** Whether a key press belongs to the control it was pressed in. */
@@ -222,12 +230,6 @@ export class GridColumns {
     /** The field AG Grid is asking about, as something to ask. */
     private _getField(record: IRecord, columnName: string): GridField {
         return new GridField({ record: record, columnName: columnName });
-    }
-
-    /** What a cell needs to draw a value beyond the record AG Grid hands it. */
-    private _getCellRendererParameters(column: IColumn): IGridCellRendererParams {
-        //a one-click-edit column takes input without ever entering edit mode
-        return { takesInput: !!column.oneClickEdit };
     }
 
     private get _cells() {

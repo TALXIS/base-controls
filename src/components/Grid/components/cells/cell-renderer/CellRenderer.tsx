@@ -1,5 +1,4 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { IGridCellRendererParams } from "../../interfaces";
 import { CellCommands } from "../commands/CellCommands";
 import { CellContainer } from "../container/CellContainer";
 import { Control } from "../control/Control";
@@ -9,7 +8,7 @@ import { CellRoot } from "../root/CellRoot";
 import { RowResizeGrip } from "../row-resize-grip/RowResizeGrip";
 import { IGridCellComponents } from "./components";
 
-export interface IGridCellRendererProps extends ICellRendererParams, IGridCellRendererParams {
+export interface IGridCellRendererProps extends ICellRendererParams {
     components?: IGridCellComponents;
 }
 

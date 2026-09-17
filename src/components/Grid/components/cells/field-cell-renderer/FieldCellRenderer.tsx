@@ -1,10 +1,9 @@
 import { ICellRendererParams } from "@ag-grid-community/core";
-import { IGridCellRendererParams } from "../../interfaces";
 import { CellRenderer } from "../cell-renderer/CellRenderer";
 import { IGridCellComponents } from "../cell-renderer/components";
 import { Field } from "../field/Field";
 
-export interface IGridFieldCellRendererProps extends ICellRendererParams, IGridCellRendererParams {
+export interface IGridFieldCellRendererProps extends ICellRendererParams {
     components?: IGridCellComponents;
 }
 

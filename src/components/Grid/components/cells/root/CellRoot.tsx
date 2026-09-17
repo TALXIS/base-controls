@@ -3,7 +3,6 @@ import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecordEvents } from "@talxis/client-libraries";
 import { ThemeContext } from "@utils";
 import { useEventEmitter } from "@hooks/useEventEmitter";
-import { IGridCellRendererParams } from "../../interfaces";
 import { useGridService } from "../../../useGridService";
 import { IGridEditedCell, IGridEditingEvents } from "../../../services/editing";
 import { GridCellContext, GridCellRevisionContext } from "./context";
@@ -11,7 +10,9 @@ import { GridCellContext, GridCellRevisionContext } from "./context";
 //`useEventEmitter` keys its subscription on the array it is given
 const RECORD_EVENTS: (keyof IRecordEvents)[] = ['onFieldValueChanged', 'onAfterSaved'];
 
-export interface IGridCellRootProps extends ICellRendererParams, IGridCellRendererParams {
+export interface IGridCellRootProps extends ICellRendererParams {
+    /** Whether this is the cell AG Grid opened over the one that was there. */
+    isEditor?: boolean;
     children?: React.ReactNode;
 }
 
@@ -22,7 +23,9 @@ export const CellRoot = (props: IGridCellRootProps) => {
     const editing = useGridService('editing');
     const parentCell = useContext(GridCellContext);
     const colDef = props.colDef!;
-    const cell = useMemo(() => cells.createCell(record, colDef, props.node, props.takesInput), [cells, record, colDef, props.node, props.takesInput]);
+    //an editor takes input whatever the column is, and a one-click column takes it without one
+    const takesInput = !!props.isEditor || !!colDef.settings?.oneClickEdit;
+    const cell = useMemo(() => cells.createCell(record, colDef, props.node, takesInput), [cells, record, colDef, props.node, takesInput]);
     const theme = cell.getTheme().getValue();
     const [revision, setRevision] = useState(() => Symbol('cellRevision'));
     const redraw = useCallback(() => setRevision(Symbol('cellRevision')), []);

@@ -12,9 +12,11 @@ export interface IColumnHeader extends IHeaderParams {
 export const ColumnHeader = (props: IColumnHeader) => {
     const columnHeaderParts = useGridService('columnHeader');
     const filtering = useGridService('filtering');
+    const provider = useGridService('provider');
     const colDef = props.column.getColDef();
-    //what the grid worked out about the column travels on the definition
-    const column = colDef.propBag?.column;
+    const settings = colDef.settings ?? {};
+    //the modules work on the dataset's own column, which a column of the grid's own has none of
+    const column = provider.getColumnsMap()[colDef.colId!];
     const [menuItems, setMenuItems] = React.useState<IContextualMenuItem[] | null>(null);
     const buttonRef = React.useRef<HTMLElement>(null);
     const adornments = columnHeaderParts.getAdornments({ colDef: colDef, column: column });
@@ -39,9 +41,9 @@ export const ColumnHeader = (props: IColumnHeader) => {
     return <GridUi.ColumnHeader
         name={colDef.headerName ?? ''}
         title={titles.length ? `${colDef.headerName} (${titles.join(', ')})` : undefined}
-        alignment={column?.alignment}
-        isRequired={column?.isRequired}
-        isEditable={column?.isEditable}
+        alignment={settings.alignment}
+        isRequired={settings.isRequired}
+        isEditable={settings.isEditable}
         components={{
             onRenderPrefix: () => renderAdornments('prefix'),
             onRenderSuffix: () => <ColumnHeaderSuffix>{renderAdornments('suffix')}</ColumnHeaderSuffix>,

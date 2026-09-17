@@ -100,7 +100,7 @@ export class GridControl {
         const parent = this._services.get('pcfContext').fluentDesignLanguage as IFluentDesignState | undefined;
         return getCellFluentDesignLanguage({
             theme: theme,
-            columnAlignment: this._fieldControl?.getColumn().alignment,
+            columnAlignment: this._cell.getAlignment(),
             //a surface drawn over a recoloured cell belongs to the grid, not to the cell
             parent: { ...parent, applicationTheme: parent?.applicationTheme ?? this._services.get('theme') } as IFluentDesignState,
         });

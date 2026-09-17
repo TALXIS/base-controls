@@ -79,7 +79,7 @@ export class GridEditing extends EventEmitter<IGridEditingEvents> {
             return;
         }
         const cell = this._getFocusedCell();
-        if (!cell?.takesInputInPlace()) {
+        if (!cell?.hasOneClickEdit()) {
             return;
         }
         //AG Grid answers F2 by asking for an editor the column does not open

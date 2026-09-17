@@ -37,7 +37,7 @@ export const CellCommands = (props: IGridCellCommandsProps) => {
     return components.onRenderCommands({
         items: items,
         overflowItems: overflowItems,
-        alignment: cell.getColDef().propBag?.column?.alignment,
+        alignment: cell.getAlignment(),
         surfaceTheme: gridTheme,
     });
 };

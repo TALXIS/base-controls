@@ -1,22 +1,20 @@
-import type { IColumn } from "@talxis/client-libraries";
+import type { IAlignment } from "@utils";
 
-/** A dataset column, and what the grid works out about it that the dataset does not say. */
-export interface IGridColumn extends IColumn {
+/** What the grid's own column is, whatever its cells are bound to. */
+export interface IGridColumnSettings {
+    /** Which edge the value reads from. */
+    alignment?: IAlignment;
+    /** Whether the control takes input where the cell stands, with no editor to open. */
+    oneClickEdit?: boolean;
+    /** Whether what the cells hold may be changed at all. */
+    isEditable?: boolean;
     /** Whether a value is demanded before the record may be saved. */
-    isRequired: boolean;
-    /** Whether the values in this column may be changed at all. */
-    isEditable: boolean;
-}
-
-/** What the grid keeps on a column definition that AG Grid knows nothing about. */
-export interface IGridColDefPropBag {
-    /** The dataset column this was built from. */
-    column?: IGridColumn;
+    isRequired?: boolean;
 }
 
 declare module "@ag-grid-community/core" {
     interface ColDef<TData = any, TValue = any> {
-        /** Whatever the grid keeps about this column that AG Grid has no field for. */
-        propBag?: IGridColDefPropBag;
+        /** What the grid's cells and header read about this column. */
+        settings?: IGridColumnSettings;
     }
 }

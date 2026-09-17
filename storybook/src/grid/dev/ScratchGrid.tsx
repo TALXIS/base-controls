@@ -114,6 +114,8 @@ interface IUnboundColumn {
     colId: string
     headerName: string
     width: number
+    /** Which edge the value reads from. */
+    alignment?: IAlignment
     /** What the cell starts with, worked out from the row it is in. */
     seed: (rowNumber: number) => any
     onRenderControl: (props: IGridCellRenderer, value: any, setValue: (value: any) => void) => JSX.Element
@@ -132,7 +134,7 @@ const UNBOUND_COLUMNS: IUnboundColumn[] = [
             onNotifyOutputChanged={outputs => setValue(outputs.value ?? '')} />,
     },
     {
-        colId: UNBOUND_DECIMAL_COLUMN, headerName: 'Decimal, unbound', width: 220,
+        colId: UNBOUND_DECIMAL_COLUMN, headerName: 'Decimal, unbound', width: 220, alignment: 'right',
         seed: rowNumber => rowNumber,
         //the story's own rule, so a cell of its own can be seen refusing a value
         getError: value => value > 5 ? `${value} is more than the 5 this story takes.` : undefined,
@@ -217,6 +219,8 @@ const UNBOUND_COLUMN_DEFINITIONS = UNBOUND_COLUMNS.map(column => ({
     width: column.width,
     valueGetter: () => null,
     valueFormatter: () => '',
+    //what the column is: no record has a field for it, so it says so itself
+    settings: { oneClickEdit: true, alignment: column.alignment },
     cellRenderer: (props: IGridCellParams) => {
         //a pinned row stands for no record, and a record is what tells one row's values from another's
         if (!props.data) {

@@ -20,9 +20,9 @@ enum ControlName {
  */
 export const LookupManyCellRenderer = (props: IGridCellParams) => {
     const { api, data: record } = props;
-    //the dataset column rides on the definition, which is what AG Grid hands every cell
-    const column = props.colDef!.propBag!.column!;
     const datasetControl = useDatasetControl();
+    //the column this is drawing, as the record's own provider has it
+    const column = record.getDataProvider().getColumnsMap()[props.colDef!.colId!];
     const [isDisabled, setIsDisabled] = React.useState(true);
     //one provider per cell: the picker drives it statefully via setSearchQuery/refresh, so a shared
     //instance would let one open cell clobber another's search
@@ -38,7 +38,7 @@ export const LookupManyCellRenderer = (props: IGridCellParams) => {
     const value: ComponentFramework.EntityReference[] | undefined = record.getValue(props.colDef!.colId!) as ComponentFramework.EntityReference[] | undefined;
     //asked of the column and the record rather than of a cell: this is the column's `cellRenderer`, so
     //there is no `Grid.CellRoot` above it and no cell to ask
-    const isEditable = !!column.isEditable && record.getColumnInfo(column.name).security.editable;
+    const isEditable = !!props.colDef!.settings?.isEditable && record.getColumnInfo(column.name).security.editable;
 
     const onSelectionChange = (selectedRecords: ComponentFramework.EntityReference[]) => {
         record.setValue(props.colDef!.colId!, selectedRecords);
