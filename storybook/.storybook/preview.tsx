@@ -1,14 +1,13 @@
 import type { Preview } from '@storybook/react-vite';
 import React from 'react';
-import { ThemeProvider } from '@fluentui/react';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import 'leaflet/dist/leaflet.css';
-import { PcfContextProvider, usePcfContext, useControlTheme } from '@talxis/base-controls';
+import { PcfContextProvider, Theming, ThemeProvider } from '@talxis/base-controls';
+
+//the theme every story is drawn in: a control takes what is above it, and this is what is above them
+const theme = Theming.GenerateThemeV8('#0078d4', '#ffffff', '#323130');
 
 const StorybookProviders = ({ children }: { children?: React.ReactNode }) => {
-  const context = usePcfContext();
-  const theme = useControlTheme(context.fluentDesignLanguage);
-
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
 };
 

@@ -16,7 +16,6 @@ interface IPcfContextFactoryParams {
     userSettings?: IPcfContextUserSettingsParams;
     mode?: IModeParams;
     factory?: IFactoryApiParams;
-    fluentDesignLanguage?: ComponentFramework.FluentDesignState
 }
 
 /**
@@ -45,7 +44,7 @@ export class PcfContextFactory {
      * @returns A context object shaped like a PCF runtime context.
      */
     public static createContext(params: IPcfContextFactoryParams = {}): ComponentFramework.Context<any, any> {
-        const { baseContext, userSettings, mode, factory, fluentDesignLanguage } = params;
+        const { baseContext, userSettings, mode, factory } = params;
         const xrm = XrmFactory.createXrm({ userSettings });
         const resolvedUserSettings = baseContext?.userSettings ?? new UserSettings(userSettings);
         const formatting = Formatting.Get((resolvedUserSettings as { formatInfoCultureName?: string }).formatInfoCultureName);
@@ -64,8 +63,7 @@ export class PcfContextFactory {
             parameters: baseContext?.parameters ?? {},
             updatedProperties: baseContext?.updatedProperties ?? [],
             resources: baseContext?.resources ?? new Resources(),
-            factory: baseContext?.factory ?? this._createFactoryApi(factory),
-            fluentDesignLanguage: fluentDesignLanguage ?? baseContext?.fluentDesignLanguage
+            factory: baseContext?.factory ?? this._createFactoryApi(factory)
         };
         context.userSettings.numberFormattingInfo = formatting.numberFormattingInfo;
         return context;

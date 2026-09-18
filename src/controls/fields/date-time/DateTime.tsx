@@ -1,6 +1,6 @@
 import { IDateTime } from "./interfaces";
 import { IDatePicker } from "@fluentui/react";
-import { ThemeProvider, useControlSurfaceTheme } from "@utils";
+import { ThemeProvider, useSurfaceTheme } from "@utils";
 import { useEffect, useRef } from "react";
 import { getDateTimeStyles } from "./styles";
 import { useDateTime } from "./hooks/useDateTime";
@@ -21,7 +21,7 @@ export const DateTime = (componentProps: IDateTime) => {
     const context = componentProps.context;
     const parameters = componentProps.parameters;
     const [isDateTime, theme, labels, date, patterns] = useDateTime(componentProps, ref);
-    const surfaceTheme = useControlSurfaceTheme(componentProps.context.fluentDesignLanguage);
+    const surfaceTheme = useSurfaceTheme();
     const styles = getDateTimeStyles(theme);
     const { height, width, fillsAvailableSpace } = useControlSizing(componentProps.context.mode, componentProps.parameters);
     const lastInputedTimeString = useRef<string>();

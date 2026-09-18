@@ -2,7 +2,7 @@ import type { IXrmFormStrategy } from '../../interfaces';
 import type { IXrmFormContext } from '../../interfaces';
 import { IFormConfig, XrmClientApiStrategyFactory } from '../../strategies/XrmClientApiStrategyFactory';
 import type { IFormLabels } from '@controls/form/labels';
-import { ControlTheme } from '@theme';
+import { getTheme } from '@fluentui/react';
 import type { ITheme } from '@theme';
 
 export interface IPcfXrmFormAdapterInputs {
@@ -117,7 +117,7 @@ export class PcfXrmFormAdapter<IInputs extends IPcfXrmFormAdapterInputs> {
     }
 
     private _getTheme(): ITheme {
-        return ControlTheme.GetV8ThemeFromFluentDesignLanguage(this._context.fluentDesignLanguage);
+        return getTheme();
     }
 
     private _getRequiredParameterValue(value: string | null | undefined, parameterName: string): string {

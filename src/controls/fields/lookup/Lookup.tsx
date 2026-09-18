@@ -2,7 +2,7 @@
 import { ILayout, ILookup, IMetadata } from "./interfaces";
 import { useLookup } from "./hooks/useLookup";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ThemeProvider, useControlSurfaceTheme } from "@utils";
+import { ThemeProvider, useSurfaceTheme } from "@utils";
 import { IItemProps, TagPicker } from "@legacy";
 import { TargetSelector } from "./components/TargetSelector";
 import { useMouseOver } from "@hooks/useMouseOver";
@@ -22,7 +22,7 @@ export const Lookup = (props: ILookup) => {
     const { height, fillsAvailableSpace } = useControlSizing(props.context.mode, props.parameters);
     const [value, entities, labels, records, selectEntity, getSearchResults, theme] = useLookup(props);
     const styles = getLookupStyles(theme, itemLimit === 1, height);
-    const suggestionsCalloutTheme = useControlSurfaceTheme(context.fluentDesignLanguage);
+    const suggestionsCalloutTheme = useSurfaceTheme();
     const suggestionsCalloutStyles = useMemo(() => getSuggestionsCalloutStyles(suggestionsCalloutTheme), [suggestionsCalloutTheme])
     const mouseOver = useMouseOver(ref);
     const isFocused = useFocusIn(ref, 100);

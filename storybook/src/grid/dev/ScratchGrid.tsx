@@ -6,7 +6,7 @@ import { APPROVED_OPTIONS, BILLABLE_OPTIONS, COLUMNS, DEFAULT_ROW_COUNT, getData
 /**
  * What a base control needs of a host, and no more.
  *
- * Every surface a control reaches for degrades on its own — no `fluentDesignLanguage` means the default
+ * Every surface a control reaches for degrades on its own — no theme above it means the default
  * Fluent theme, `-1` means the control sizes itself — so a story can hand one control a context without
  * standing up a PCF runtime around it.
  */

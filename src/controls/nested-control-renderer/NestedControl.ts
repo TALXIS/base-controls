@@ -6,7 +6,6 @@ import { NumberProperty } from "./properties/NumberProperty";
 import { DateProperty } from "./properties/DateProperty";
 import { LookupProperty } from "./properties/LookupProperty";
 import { IControl, IParameters, IProperty } from "@interfaces";
-import { ControlTheme, IFluentDesignState } from "@utils";
 import { Manifest } from "./manifest";
 import { FileProperty } from "./properties/FileProperty";
 import { NestedControlError } from "./NestedControlError";
@@ -102,7 +101,6 @@ export class NestedControl {
                     requestRender: () => this.render(),
                 },
                 formatting: Formatting.Get(),
-                fluentDesignLanguage: this._getFluentDesignLanguage(this.getOptions().parentPcfContext.fluentDesignLanguage)
             },
             parameters: parameters,
             onNotifyOutputChanged: (outputs: any) => {
@@ -513,12 +511,5 @@ export class NestedControl {
         }
 
         return context;
-    }
-    private _getFluentDesignLanguage(fluentDesignLanguage?: IFluentDesignState): IFluentDesignState {
-        const v8Theme = ControlTheme.GetV8ThemeFromFluentDesignLanguage(fluentDesignLanguage);
-        return ControlTheme.GenerateFluentDesignLanguage(v8Theme.palette.themePrimary, v8Theme.semanticColors.bodyBackground, v8Theme.semanticColors.bodyText, {
-            v8FluentOverrides: fluentDesignLanguage?.v8FluentOverrides,
-            applicationTheme: fluentDesignLanguage?.applicationTheme ?? v8Theme
-        })
     }
 }

@@ -58,7 +58,7 @@ export class Theming {
             return theme;
         }
         //an override that names itself can be cached: the id is the caller's promise that the same id means
-        //the same override, which is the convention `useControlTheme` already memoises on. Without one we
+        //the same override, which is what a caller memoises on. Without one we
         //merge every time, because two anonymous overrides cannot be told apart
         const overrideId = (themeOverride as ITheme).id;
         if (!overrideId) {

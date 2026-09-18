@@ -73,8 +73,6 @@ export class GridControl {
         const value = {
             ...pcfContext,
             mode: Object.create(pcfContext.mode, { isControlDisabled: { value: isDisabled } }),
-            //the cell is drawn in a theme of its own, and what is drawn in it takes that theme
-            fluentDesignLanguage: undefined,
         };
         this._context = { isDisabled: isDisabled, value: value };
         return value;

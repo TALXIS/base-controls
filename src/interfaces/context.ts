@@ -1,13 +1,10 @@
 import { IParameters } from ".";
-import { IFluentDesignState } from "../utils";
 
 export interface IOutputs {
     [key: string]: any
 }
 
-export interface IContext extends ComponentFramework.Context<any> {
-    fluentDesignLanguage?: IFluentDesignState;
-}
+export type IContext = ComponentFramework.Context<any>;
 
 export interface IControl<TParameters extends IParameters, TOutputs, TTranslations, TComponentProps> {
     context: IContext;

@@ -10,7 +10,6 @@ import { useGridService } from "../../../useGridService";
 import { GridServicesContext } from "../../../context";
 import { NestedReactRoot } from "../nested-react-root/NestedReactRoot";
 import { getBindings } from "./getBindings";
-import { getCellFluentDesignLanguage } from "./getCellFluentDesignLanguage";
 
 const client = new Client();
 
@@ -74,8 +73,6 @@ export const LegacyNestedControlRenderer = (props: ILegacyNestedControlRendererP
                                 },
                             }),
                             parameters: controlParameters,
-                            //a nested control reads its theme from a design language rather than the context
-                            fluentDesignLanguage: getCellFluentDesignLanguage(cell, services),
                         },
                     };
                 }

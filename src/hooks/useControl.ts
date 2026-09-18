@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { IControl, IOutputs, IParameters } from "../interfaces";
-import { useControlTheme } from "@theme";
-import { useControlSurfaceTheme } from "@theme";
+import { useTheme } from "@fluentui/react";
+import { useSurfaceTheme } from "@theme";
 import { IControlSizing, useControlSizing } from "./useControlSizing";
 import deepEqual from 'fast-deep-equal/es6';
 import { ITheme } from "@theme";
@@ -74,8 +74,8 @@ export const useControl = <TParameters extends IParameters, TOutputs extends IOu
         className: `talxis__baseControl__${name}`,
         labels,
         sizing,
-        theme: useControlTheme(context.fluentDesignLanguage),
-        surfaceTheme: useControlSurfaceTheme(context.fluentDesignLanguage),
+        theme: useTheme(),
+        surfaceTheme: useSurfaceTheme(),
         onNotifyOutputChanged
     }
 };

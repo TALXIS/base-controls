@@ -5,7 +5,6 @@
  * a callout, a menu, a tooltip - looks like. Nothing here depends on a control, so anything may use it.
  */
 export * from './Theming';
-export * from './ControlTheme';
 export * from './context';
 export * from './getThemeCustomizations';
 export * from './components';

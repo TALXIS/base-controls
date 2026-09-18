@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { GetRowIdParams } from "@ag-grid-community/core";
 import { AgGridReactProps } from "@ag-grid-community/react";
+import { useTheme } from "@fluentui/react";
 import { IRecord } from "@talxis/client-libraries";
 import { LoadingOverlay } from "./components/overlays/loading/LoadingOverlay";
 import { EmptyRecords } from "./components/overlays/empty-records/EmptyRecordsOverlay";
-import { getClassNames, usePcfContext, useControlTheme, IFluentDesignState, ThemeProvider } from "@utils";
+import { getClassNames, usePcfContext, ThemeProvider } from "@utils";
 import { IGrid } from "./interfaces";
 import { createGridInstance } from "./createGridInstance";
 import { getGridStyles } from "./styles";
@@ -18,9 +19,7 @@ const GRID_CLASS_NAME = 'talxis__baseControl__Grid';
 /** Reads the PCF context off `PcfContextProvider`. */
 export const GridRoot = (props: IGrid) => {
     const pcfContext = usePcfContext();
-    const theme = useControlTheme(pcfContext.fluentDesignLanguage);
-    //a cell may be drawn in colours of its own, but what it opens is drawn over the grid
-    const surfaceTheme = (pcfContext.fluentDesignLanguage as IFluentDesignState | undefined)?.applicationTheme ?? theme;
+    const theme = useTheme();
     const propsRef = useRef<IGrid>(props);
     propsRef.current = props;
 
@@ -89,7 +88,8 @@ export const GridRoot = (props: IGrid) => {
     return <GridServicesContext.Provider value={services}>
         <ThemeProvider
             theme={theme}
-            surfaceTheme={surfaceTheme}
+            //a cell may be drawn in colours of its own, but what it opens is drawn over the grid
+            surfaceTheme={theme}
             applyTo='none'
             ref={onGridRootRef}
             className={getClassNames([GRID_CLASS_NAME, props.className, styles.gridRoot, 'ag-theme-balham'])}>
