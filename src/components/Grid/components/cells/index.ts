@@ -4,6 +4,7 @@ export * from './field-cell-renderer';
 export * from './cell-editor';
 export * from './field-cell-editor';
 export * from './root';
+export * from './theme';
 export * from './container';
 export * from './field';
 export * from './control';

@@ -160,7 +160,7 @@ export class GridColumns {
 
     /** Whether an editor may be opened over this cell. */
     private _isEditorAvailable(record: IRecord | undefined, colDef: ColDef<IRecord>): boolean {
-        return !!record && this._cells.createCell(record, colDef).isEditable();
+        return !!record && this._cells.createCell({ record: record, colDef: colDef }).isEditable();
     }
 
     /** What the grid's cells and header read about this column. */

@@ -17,6 +17,8 @@ export interface IGridCellParameters {
     node?: IRowNode<IRecord>;
     /** Whether this cell draws a control the user can type in. */
     takesInput?: boolean;
+    /** The element AG Grid draws this cell in. */
+    element?: HTMLElement;
 }
 
 //enough to tell two cells apart in the registry, a renderer and its editor included
@@ -32,6 +34,7 @@ export class GridCell {
     private _theme: GridCellTheme;
     private _control?: GridControl;
     private _takesInput: boolean;
+    private _element?: HTMLElement;
     private _isDestroyed: boolean = false;
 
     constructor(parameters: IGridCellParameters) {
@@ -40,6 +43,7 @@ export class GridCell {
         this._colDef = parameters.colDef;
         this._node = parameters.node;
         this._takesInput = !!parameters.takesInput;
+        this._element = parameters.element;
         this._id = `${parameters.record.getRecordId()}_${this.getColumnName()}_${++instanceCount}`;
         this._theme = new GridCellTheme({ services: parameters.services, cell: this });
     }
@@ -60,6 +64,11 @@ export class GridCell {
 
     public getColumnName(): string {
         return this._colDef.colId!;
+    }
+
+    /** The element AG Grid draws this cell in, where it is drawn in one. */
+    public getElement(): HTMLElement | undefined {
+        return this._element;
     }
 
     /** The row AG Grid is drawing this cell in. */

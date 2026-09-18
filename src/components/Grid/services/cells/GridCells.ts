@@ -5,7 +5,7 @@ import { ICustomColumnControl, IRecord } from "@talxis/client-libraries";
 import { HookRegistry } from "@utils";
 import { IParameters } from "@interfaces";
 import { IGridServiceLocator } from "../../services";
-import { GridCell } from "./GridCell";
+import { GridCell, IGridCellParameters } from "./GridCell";
 
 /** Which cell a hook is running for. */
 export interface IGridCellHookParameters {
@@ -87,8 +87,8 @@ export class GridCells {
     }
 
     /** A cell of this grid. */
-    public createCell(record: IRecord, colDef: ColDef<IRecord>, node?: IRowNode<IRecord>, takesInput?: boolean): GridCell {
-        return new GridCell({ services: this._services, record: record, colDef: colDef, node: node, takesInput: takesInput });
+    public createCell(parameters: Omit<IGridCellParameters, 'services'>): GridCell {
+        return new GridCell({ ...parameters, services: this._services });
     }
 
     /** Registers a cell as rendered. */

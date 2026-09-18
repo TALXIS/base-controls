@@ -3,6 +3,7 @@ import { CellContainer } from "../container/CellContainer";
 import { Control } from "../control/Control";
 import { CellLoading } from "../loading/CellLoading";
 import { CellRoot } from "../root/CellRoot";
+import { CellTheme } from "../theme/CellTheme";
 import { RowResizeGrip } from "../row-resize-grip/RowResizeGrip";
 import { IGridCellEditorComponents } from "./components";
 
@@ -15,12 +16,14 @@ export const CellEditor = (props: IGridCellEditorProps) => {
     const components = props.components ?? {};
 
     return <CellRoot {...props} isEditor>
-        <RowResizeGrip components={components.rowResizeGrip}>
-            <CellContainer>
-                <CellLoading components={components.loading}>
-                    <Control components={components.control} />
-                </CellLoading>
-            </CellContainer>
-        </RowResizeGrip>
+        <CellTheme>
+            <RowResizeGrip components={components.rowResizeGrip}>
+                <CellContainer>
+                    <CellLoading components={components.loading}>
+                        <Control components={components.control} />
+                    </CellLoading>
+                </CellContainer>
+            </RowResizeGrip>
+        </CellTheme>
     </CellRoot>;
 };

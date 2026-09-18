@@ -9,6 +9,7 @@ import { FieldValidation } from "./components/cells/field-validation/FieldValida
 import { CellLoading } from "./components/cells/loading/CellLoading";
 import { CellContainer } from "./components/cells/container/CellContainer";
 import { CellRoot } from "./components/cells/root/CellRoot";
+import { CellTheme } from "./components/cells/theme/CellTheme";
 import { RowResizeGrip } from "./components/cells/row-resize-grip/RowResizeGrip";
 import { NestedReactRoot } from "./components/cells/nested-react-root/NestedReactRoot";
 import { ColumnHeader } from "./components/column-header/ColumnHeader";
@@ -29,6 +30,8 @@ export interface IGridNamespace {
     FieldCellEditor: typeof FieldCellEditor;
     /** A piece of all four: what makes everything inside it one cell. */
     CellRoot: typeof CellRoot;
+    /** A piece of all four: what a cell and everything drawn in it is drawn in. */
+    CellTheme: typeof CellTheme;
     /** A piece of all four: the element a cell's content is drawn in, on the surface of the */
     CellContainer: typeof CellContainer;
     /** A piece of {@link CellRenderer}: what a cell offers to do. */
@@ -58,6 +61,7 @@ export const Grid: IGridNamespace = {
     CellEditor: CellEditor,
     FieldCellEditor: FieldCellEditor,
     CellRoot: CellRoot,
+    CellTheme: CellTheme,
     CellContainer: CellContainer,
     CellCommands: CellCommands,
     CellLoading: CellLoading,

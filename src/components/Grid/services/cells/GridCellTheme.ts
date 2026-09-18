@@ -19,10 +19,16 @@ export interface IGridCellThemeParameters {
 export class GridCellTheme {
     private _services: IGridServiceLocator;
     private _cell: GridCell;
+    private _seed?: ITheme;
 
     constructor(parameters: IGridCellThemeParameters) {
         this._services = parameters.services;
         this._cell = parameters.cell;
+    }
+
+    /** What the cell's theme is worked out from, where the grid's own is not what it should be. */
+    public setSeed(seed: ITheme | undefined): void {
+        this._seed = seed;
     }
 
     public getValue(): ITheme {
@@ -56,17 +62,17 @@ export class GridCellTheme {
         };
     }
 
-    /** The colours of the row this cell is in: the grid's, striped on every other row. */
+    /** The colours this cell starts from: a seed's as they are, or the grid's striped by row. */
     private get _rowColors(): IGridCellThemeColors {
-        const gridTheme = this._gridTheme;
+        const base = this._seed ?? this._gridTheme;
         return {
-            primary: gridTheme.palette.themePrimary,
-            background: this._rowBackground,
-            text: gridTheme.semanticColors.bodyText,
+            primary: base.palette.themePrimary,
+            background: this._seed ? this._seed.semanticColors.bodyBackground : this._rowBackground,
+            text: base.semanticColors.bodyText,
         };
     }
 
-    /** What the row this cell is in is drawn on. */
+    /** What the row this cell is in is drawn on, where the grid's own theme is what it starts from. */
     private get _rowBackground(): string {
         const gridTheme = this._gridTheme;
         if (!this._settings.isZebraEnabled() || this._isEvenRow) {

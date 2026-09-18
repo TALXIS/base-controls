@@ -1,5 +1,5 @@
 import React from 'react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, CellUi, DateTime, Decimal, Duration, Grid, IGridCellParams, IGridCellRenderer, IGridModule, IGridModules, IGridServiceLocator, MultiSelectOptionSet, OptionSet, TextField, TwoOptions, useGridService } from '@talxis/base-controls'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, CellUi, DateTime, Decimal, Duration, Grid, IGridCellParams, IGridCellRenderer, IGridModule, IGridModules, IGridServiceLocator, MultiSelectOptionSet, OptionSet, TextField, TwoOptions, useGridService, Theming } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
 import { APPROVED_OPTIONS, BILLABLE_OPTIONS, COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS, TAG_OPTIONS } from './scratchGridData'
 
@@ -246,14 +246,16 @@ const UNBOUND_COLUMN_DEFINITIONS = UNBOUND_COLUMNS.map(column => ({
         }
         //the pieces rather than `Grid.CellRenderer`: the error is the story's own, and no field's
         return <Grid.CellRoot {...props}>
-            <Grid.RowResizeGrip>
-                <Grid.CellContainer>
-                    <Grid.CellLoading>
-                        <UnboundCell column={column} rowId={props.data.getRecordId()} rowNumber={(props.node.rowIndex ?? 0) + 1} />
-                        <Grid.CellCommands />
-                    </Grid.CellLoading>
-                </Grid.CellContainer>
-            </Grid.RowResizeGrip>
+            <Grid.CellTheme theme={Theming.GenerateThemeV8('blue', 'red', 'black')}>
+                <Grid.RowResizeGrip>
+                    <Grid.CellContainer>
+                        <Grid.CellLoading>
+                            <UnboundCell column={column} rowId={props.data.getRecordId()} rowNumber={(props.node.rowIndex ?? 0) + 1} />
+                            <Grid.CellCommands />
+                        </Grid.CellLoading>
+                    </Grid.CellContainer>
+                </Grid.RowResizeGrip>
+            </Grid.CellTheme>
         </Grid.CellRoot>
     },
 }))
@@ -299,12 +301,12 @@ const withCellHooks = (module: IGridModule): IGridModule => ({
         //the state a row is in, washed over every cell of it - the checkboxes included, which is what a
         //theme hook reaches and the record's own formatting expression cannot: that one is a field's, and
         //a column the grid added itself has no field
-        services.get('cells').registerCellThemeHook((result, params) => {
+/*         services.get('cells').registerCellThemeHook((result, params) => {
             const background = STATUS_TINTS[Number(params.record.getValue('status') ?? 0)]
             if (background) {
                 result.colors.background = background
             }
-        })
+        }) */
         services.get('cells').registerCellCommandsHook((result, params) => {
             //two of them on the estimates, which change the value rather than log it: an estimate dragged
             //over what the team plans in is what makes the cell say the record refuses it

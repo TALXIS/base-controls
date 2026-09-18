@@ -1,7 +1,6 @@
 import { useCallback, useContext, useLayoutEffect, useMemo, useState } from "react";
 import { ICellRendererParams } from "@ag-grid-community/core";
 import { IRecordEvents } from "@talxis/client-libraries";
-import { ThemeContext } from "@utils";
 import { useEventEmitter } from "@hooks/useEventEmitter";
 import { useGridService } from "../../../useGridService";
 import { IGridEditedCell, IGridEditingEvents } from "../../../services/editing";
@@ -25,8 +24,9 @@ export const CellRoot = (props: IGridCellRootProps) => {
     const colDef = props.colDef!;
     //an editor takes input whatever the column is, and a one-click column takes it without one
     const takesInput = !!props.isEditor || !!colDef.settings?.oneClickEdit;
-    const cell = useMemo(() => cells.createCell(record, colDef, props.node, takesInput), [cells, record, colDef, props.node, takesInput]);
-    const theme = cell.getTheme().getValue();
+    const cell = useMemo(
+        () => cells.createCell({ record: record, colDef: colDef, node: props.node, takesInput: takesInput, element: props.eGridCell }),
+        [cells, record, colDef, props.node, takesInput, props.eGridCell]);
     const [revision, setRevision] = useState(() => Symbol('cellRevision'));
     const redraw = useCallback(() => setRevision(Symbol('cellRevision')), []);
 
@@ -51,19 +51,12 @@ export const CellRoot = (props: IGridCellRootProps) => {
         return () => cells.removeCell(cell);
     }, [cells, cell]);
 
-    useLayoutEffect(() => {
-        props.eGridCell.style.backgroundColor = theme.semanticColors.bodyBackground;
-        props.eGridCell.style.color = theme.semanticColors.bodyText;
-    }, [props.eGridCell, theme]);
-
     //a cell inside a cell is two cells for one column of one record
     if (parentCell) {
         throw new Error('Grid.CellRoot cannot be drawn inside another one: a cell is not made of cells.');
     }
 
     return <GridCellContext.Provider value={cell}>
-        <GridCellRevisionContext.Provider value={revision}>
-            <ThemeContext theme={theme}>{children}</ThemeContext>
-        </GridCellRevisionContext.Provider>
+        <GridCellRevisionContext.Provider value={revision}>{children}</GridCellRevisionContext.Provider>
     </GridCellContext.Provider>;
 };
