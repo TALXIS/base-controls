@@ -9,6 +9,7 @@ import { Shimmer } from "@ui";
 import { ThemeProvider } from "@utils";
 import { IRibbonModelEvents, RibbonModel } from "./RibbonModel";
 import { useEventEmitter } from "@hooks/useEventEmitter";
+import { OptionSet } from "@controls/fields";
 
 const fluentIconMap: { [key: string]: string } = {
     'Activate': 'ActivateOrders',
@@ -123,3 +124,9 @@ export const Ribbon = (props: IRibbon) => {
     })
 
 }
+
+<OptionSet parameters={{
+    value: {
+        
+    }
+}} />
