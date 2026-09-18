@@ -1,60 +1,231 @@
 import React from 'react'
-import { Icon } from '@fluentui/react'
-import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Grid, IGridCellParams, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
+import { Icon, keyframes, mergeStyleSets, PrimaryButton, Text } from '@fluentui/react'
+import { createCellSelectionModule, createClientSideRowModelModule, createClipboardModule, createSelectionModule, createFilteringModule, createSortingModule, createAggregationModule, createGroupingModule, createClientSideGroupingStrategy, createServerSideGroupingStrategy, createServerSideRowModelModule, Callout, Grid, IGridCellParams, IGridModule, IGridModules, IGridServiceLocator } from '@talxis/base-controls'
 import { IRecord, MemoryDataProvider } from '@talxis/client-libraries'
-import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID } from './scratchGridData'
+import { COLUMNS, DEFAULT_ROW_COUNT, getDataSource, PRIMARY_ID, STATUS_OPTIONS } from './scratchGridData'
 
-/** What a row's heat is read from, and what that value runs between. */
-const HEAT_COLUMN = 'estimate'
-const HEAT_RANGE = { min: 1, max: 8 }
-
-/** Coolest to hottest. Pale on purpose: the values are drawn on this, and they still have to read. */
-const HEAT_COLORS = ['#eef4ff', '#dbe8fc', '#eef2dd', '#fdf1cf', '#fbd9a5', '#f4a98d', '#ed8377']
-
-/** What a record is worth on the heatmap, or nothing where it holds no value to read. */
-const getHeatColor = (record: IRecord): string | undefined => {
-    const value = record.getValue(HEAT_COLUMN)
-    if (typeof value !== 'number') {
-        return undefined
-    }
-    const position = Math.min(1, Math.max(0, (value - HEAT_RANGE.min) / (HEAT_RANGE.max - HEAT_RANGE.min)))
-    return HEAT_COLORS[Math.round(position * (HEAT_COLORS.length - 1))]
+/**
+ * The wash a row takes from the state it is in, by status value.
+ *
+ * Pale on purpose: this is the background of every cell in the row, and what is drawn on it still reads.
+ */
+const STATUS_TINTS: { [status: number]: string } = {
+    1: '#fdf3f3',
+    2: '#fdf8e7',
+    3: '#eff8ef',
+    4: '#fdf0f0',
+    5: '#eff6fd',
+    6: '#f4f4f4',
 }
 
-const APPROVED_COLUMN = 'approved'
+const PAYLOAD_COLUMN = 'payload'
 
-/** An approval as a mark rather than a word: ticked once it is approved, waiting until then. */
-const ApprovedCell = (props: IGridCellParams) => <Grid.FieldCellRenderer {...props} components={{
+/** What a JSON value is drawn in, by what it is. */
+const JSON_COLORS: { [type: string]: string } = {
+    string: '#0b6a0b',
+    number: '#0050c8',
+    boolean: '#8764b8',
+    null: '#8a8886',
+}
+
+const getJsonColor = (value: unknown) => JSON_COLORS[value === null ? 'null' : typeof value] ?? '#323130'
+
+/** One JSON value: a pill per entry of an object, and the value itself in the colour of its type. */
+const JsonValue = (props: { value: unknown }) => {
+    const { value } = props
+    if (Array.isArray(value)) {
+        return <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 4 }}>
+            {value.map((entry, index) => <JsonValue key={index} value={entry} />)}
+        </span>
+    }
+    if (value && typeof value === 'object') {
+        return <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 4, minWidth: 0 }}>
+            {Object.entries(value).map(([key, entry]) => <span
+                key={key}
+                style={{ display: 'inline-flex', gap: 4, alignItems: 'center', padding: '1px 6px', borderRadius: 10, border: '1px solid #00000014', background: '#0000000a', whiteSpace: 'nowrap' }}>
+                <span style={{ color: '#605e5c' }}>{key}</span>
+                <JsonValue value={entry} />
+            </span>)}
+        </span>
+    }
+    return <span style={{ color: getJsonColor(value), fontFamily: 'Consolas, monospace' }}>{JSON.stringify(value)}</span>
+}
+
+/** A payload drawn as what it holds rather than as the string it arrived in. */
+const PayloadCell = (props: IGridCellParams) => <Grid.FieldCellRenderer {...props} components={{
     control: {
         onRenderControl: controlProps => {
-            const record = controlProps.parameters.Record.raw
-            const isApproved = !!record.getValue(APPROVED_COLUMN)
-            return <Icon
-                iconName={isApproved ? 'CompletedSolid' : 'Clock'}
-                title={record.getFormattedValue(APPROVED_COLUMN) ?? ''}
-                styles={{ root: { fontSize: 16, padding: '0 9px', color: isApproved ? '#107C10' : undefined } }} />
+            const payload = controlProps.parameters.Record.raw.getValue(PAYLOAD_COLUMN)
+            if (typeof payload !== 'string') {
+                return null
+            }
+            return <span style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 4, padding: '6px 9px', fontSize: 12, overflow: 'hidden' }}>
+                {parseJson(payload)}
+            </span>
         },
     },
 }} />
 
+/** What the payload holds, or the string as it stands where it is no JSON. */
+const parseJson = (payload: string): JSX.Element => {
+    try {
+        return <JsonValue value={JSON.parse(payload)} />
+    }
+    catch {
+        return <span>{payload}</span>
+    }
+}
+
+const SUMMARY_COLUMN = 'aiSummary'
+
+/**
+ * Stands in for a model: the same shape of answer, worked out from what the record already holds.
+ *
+ * Swap the body for the call you want summarizing - the cell only asks for a promise of a sentence.
+ */
+const summarize = async (record: IRecord): Promise<string> => {
+    await new Promise(resolve => setTimeout(resolve, 700))
+    const say = (columnName: string) => record.getFormattedValue(columnName) ?? '---'
+    return `${say('name')} is ${say('status').toLowerCase()} with ${say('owner')}, estimated at ${say('estimate')} days and due ${say('due')}. It is tagged ${say('tags')}, and the team has it down as ${say('kind').toLowerCase()} work.`
+}
+
+//the sweep that says a model is working, the beat of the sparkle beside it, and how an answer arrives
+const shimmerKeyframes = keyframes({ from: { backgroundPosition: '200% 0' }, to: { backgroundPosition: '-200% 0' } })
+const pulseKeyframes = keyframes({ '0%, 100%': { transform: 'scale(1)', opacity: 0.65 }, '50%': { transform: 'scale(1.2)', opacity: 1 } })
+const riseKeyframes = keyframes({ from: { opacity: 0, transform: 'translateY(4px)' }, to: { opacity: 1, transform: 'none' } })
+const blinkKeyframes = keyframes({ '0%, 100%': { opacity: 1 }, '50%': { opacity: 0 } })
+
+const summaryStyles = mergeStyleSets({
+    thinking: {
+        backgroundImage: 'linear-gradient(90deg, #605e5c 0%, #8764b8 25%, #0078d4 50%, #8764b8 75%, #605e5c 100%)',
+        backgroundSize: '200% 100%',
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        color: 'transparent',
+        animation: `${shimmerKeyframes} 2s linear infinite`,
+    },
+    sparkle: {
+        color: '#8764b8',
+        animation: `${pulseKeyframes} 1.2s ease-in-out infinite`,
+    },
+    answer: {
+        animation: `${riseKeyframes} 250ms ease-out`,
+    },
+    caret: {
+        animation: `${blinkKeyframes} 900ms steps(1) infinite`,
+    },
+})
+
+/** An answer arriving a word at a time, the way a model hands one over. */
+const useStreamedText = (text: string | undefined) => {
+    const [shown, setShown] = React.useState('')
+
+    React.useEffect(() => {
+        setShown('')
+        if (!text) {
+            return
+        }
+        const words = text.split(' ')
+        let spoken = 0
+        const timer = setInterval(() => {
+            spoken++
+            setShown(words.slice(0, spoken).join(' '))
+            if (spoken === words.length) {
+                clearInterval(timer)
+            }
+        }, 35)
+        return () => clearInterval(timer)
+    }, [text])
+
+    return shown
+}
+
+/** The button a record is summarized from, and the callout the answer arrives in. */
+const RecordSummary = (props: { record: IRecord }) => {
+    const { record } = props
+    const [isOpen, setIsOpen] = React.useState(false)
+    const [summary, setSummary] = React.useState<string>()
+    const target = React.useRef<HTMLDivElement>(null)
+    const shown = useStreamedText(summary)
+    const isThinking = isOpen && !summary
+    const isStreaming = !!summary && shown.length < summary.length
+
+    const onSummarize = async () => {
+        setSummary(undefined)
+        setIsOpen(true)
+        setSummary(await summarize(record))
+    }
+
+    return <div ref={target} style={{ display: 'flex', padding: '0 9px' }}>
+        <PrimaryButton
+            iconProps={{ iconName: 'Robot' }}
+            text='Summarize'
+            disabled={isThinking}
+            onClick={onSummarize} />
+        {isOpen && <Callout
+            target={target}
+            gapSpace={4}
+            onDismiss={() => setIsOpen(false)}
+            styles={{ root: { maxWidth: 320 } }}>
+            <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Text variant='smallPlus' style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Icon iconName='Sparkle' className={isThinking || isStreaming ? summaryStyles.sparkle : undefined} />
+                    <span className={isThinking ? summaryStyles.thinking : undefined}>
+                        {isThinking ? 'Reading the record' : 'What this record says'}
+                    </span>
+                </Text>
+                {!isThinking && <Text variant='medium' className={summaryStyles.answer}>
+                    {shown}
+                    {isStreaming && <span className={summaryStyles.caret}>▍</span>}
+                </Text>}
+            </div>
+        </Callout>}
+    </div>
+}
+
+const SUMMARY_COLUMN_DEFINITION = {
+    colId: SUMMARY_COLUMN,
+    headerName: 'Summary',
+    width: 160,
+    valueGetter: () => null,
+    valueFormatter: () => '',
+    cellRenderer: (props: IGridCellParams) => {
+        //a pinned row stands for no record, and a summary is a record's
+        if (!props.data) {
+            return null
+        }
+        return <Grid.CellRoot {...props}>
+            <Grid.CellTheme>
+                <Grid.CellContainer>
+                    <RecordSummary record={props.data} />
+                </Grid.CellContainer>
+            </Grid.CellTheme>
+        </Grid.CellRoot>
+    },
+}
+
 /** What the story adds through the services, wired onto whichever module it is given. */
-const withCellHooks = (module: IGridModule): IGridModule => ({
+const withPayloadCell = (module: IGridModule): IGridModule => ({
     ...module,
     onRegister: (services: IGridServiceLocator) => {
         module.onRegister?.(services)
-        //washed over every cell of the row, the checkboxes included: that is what a theme hook reaches and
-        //a record's own formatting expression cannot
+        //the state a row is in, washed over every cell of it - the checkboxes included, which is what a
+        //theme hook reaches and the record's own formatting expression cannot
         services.get('cells').registerCellThemeHook((result, params) => {
-            const background = getHeatColor(params.record)
-            if (background) {
-                result.colors.background = background
+            const status = Number(params.record.getValue('status') ?? 0)
+            const background = STATUS_TINTS[status]
+            if (!background) {
+                return
             }
+            result.colors.background = background
+            result.colors.primary = STATUS_OPTIONS.find(option => option.Value === status)!.Color
         })
         services.get('columns').registerColumnDefinitionsHook(columnDefs => {
-            const approved = columnDefs.find(columnDef => columnDef.colId === APPROVED_COLUMN)
-            if (approved) {
-                approved.cellRenderer = ApprovedCell
+            const payload = columnDefs.find(columnDef => columnDef.colId === PAYLOAD_COLUMN)
+            if (payload) {
+                payload.cellRenderer = PayloadCell
             }
+            columnDefs.push(SUMMARY_COLUMN_DEFINITION)
         })
     },
 })
@@ -121,7 +292,7 @@ export const ScratchGrid = (props: IScratchGridProps) => {
     //remounted on every change: modules are read once, which is the contract this story holds to
     const key = `${props.rowModel}-${props.clipboard}-${props.cellSelection}-${props.selectableRows}-${props.sorting}-${props.filtering}-${props.grouping}-${props.aggregation}`
     const modules = React.useMemo<IGridModules>(() => ({
-        rowModel: withCellHooks(props.rowModel === 'clientSide'
+        rowModel: withPayloadCell(props.rowModel === 'clientSide'
             ? createClientSideRowModelModule()
             : createServerSideRowModelModule()),
         clipboard: props.clipboard ? createClipboardModule() : undefined,

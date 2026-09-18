@@ -14,16 +14,17 @@ export interface IGridCellEditorProps extends ICellRendererParams {
 /** A cell of the grid while it is being edited, with nothing in it to share the row with the input. */
 export const CellEditor = (props: IGridCellEditorProps) => {
     const components = props.components ?? {};
+    const content = <CellContainer>
+        <CellLoading components={components.loading}>
+            <Control components={components.control} />
+        </CellLoading>
+    </CellContainer>;
 
     return <CellRoot {...props} isEditor>
         <CellTheme>
-            <RowResizeGrip components={components.rowResizeGrip}>
-                <CellContainer>
-                    <CellLoading components={components.loading}>
-                        <Control components={components.control} />
-                    </CellLoading>
-                </CellContainer>
-            </RowResizeGrip>
+            {props.colDef?.autoHeight
+                ? <RowResizeGrip components={components.rowResizeGrip}>{content}</RowResizeGrip>
+                : content}
         </CellTheme>
     </CellRoot>;
 };

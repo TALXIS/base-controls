@@ -37,9 +37,6 @@ export const RowResizeGrip = (props: IGridRowResizeGripProps) => {
     if (hasContainerAbove) {
         throw new Error('Grid.RowResizeGrip has to be drawn around Grid.CellContainer rather than inside it.');
     }
-    if (!cell.getColDef().autoHeight) {
-        return <>{children}</>;
-    }
     return components.onRenderRowResizeGrip({
         height: node?.rowHeight ?? undefined,
         onResize: onResize,
