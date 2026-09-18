@@ -38,6 +38,20 @@ export const ColumnHeader = (props: IColumnHeader) => {
         }
     };
 
+    //AG Grid keeps the focus on the header cell rather than on what a header draws
+    React.useEffect(() => {
+        const header = props.eGridHeader;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== 'Enter' || event.target !== header) {
+                return;
+            }
+            event.preventDefault();
+            onClick();
+        };
+        header?.addEventListener('keydown', onKeyDown);
+        return () => header?.removeEventListener('keydown', onKeyDown);
+    }, [props.eGridHeader, colDef, column]);
+
     return <GridUi.ColumnHeader
         name={colDef.headerName ?? ''}
         title={titles.length ? `${colDef.headerName} (${titles.join(', ')})` : undefined}

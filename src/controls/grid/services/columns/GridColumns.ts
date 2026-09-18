@@ -1,4 +1,4 @@
-import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
+import { CellDoubleClickedEvent, ColDef, EditableCallbackParams, SuppressHeaderKeyboardEventParams, SuppressKeyboardEventParams, ValueFormatterParams, ValueGetterParams } from "@ag-grid-community/core";
 import { DataProvider, DataTypes, IColumn, IDataProvider, IRecord } from "@talxis/client-libraries";
 import deepEqual from 'fast-deep-equal/es6';
 import { HookRegistry } from "@utils";
@@ -61,6 +61,7 @@ export class GridColumns {
     private _applyGridBehaviour(columnDef: ColDef<IRecord>): void {
         columnDef.headerComponent ??= ColumnHeader;
         columnDef.suppressKeyboardEvent ??= (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params);
+        columnDef.suppressHeaderKeyboardEvent ??= (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params);
         //only a column that brought an editor has one to open
         columnDef.editable ??= !!columnDef.cellEditor && ((params: EditableCallbackParams<IRecord>) => this._isEditorAvailable(params.data, params.colDef));
     }
@@ -140,6 +141,7 @@ export class GridColumns {
             settings: this._getColumnSettings(column),
             editable: this._getEditorAvailability(column),
             suppressKeyboardEvent: (params: SuppressKeyboardEventParams<IRecord>) => this._isKeyTheControlsOwn(params),
+            suppressHeaderKeyboardEvent: (params: SuppressHeaderKeyboardEventParams<IRecord>) => this._isKeyTheHeadersOwn(params),
             equals: (valueA: any, valueB: any) => deepEqual(valueA ?? null, valueB ?? null),
             headerComponent: ColumnHeader,
             cellRenderer: FieldCellRenderer,
@@ -171,6 +173,12 @@ export class GridColumns {
             isEditable: this._isColumnEditable(column),
             isRequired: this._isColumnRequired(column),
         };
+    }
+
+    /** Whether a key press on a header belongs to the header rather than to AG Grid. */
+    private _isKeyTheHeadersOwn(params: SuppressHeaderKeyboardEventParams<IRecord>): boolean {
+        //AG Grid sorts on Enter, where the header answers it the way it answers a click
+        return params.event.key === 'Enter';
     }
 
     /** Whether a key press belongs to the control it was pressed in. */
